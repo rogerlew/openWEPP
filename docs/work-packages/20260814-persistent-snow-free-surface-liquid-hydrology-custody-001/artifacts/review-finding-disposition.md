@@ -312,3 +312,16 @@ No `87b187b19` finding is rejected, deferred, or moved to another package.
 | A/B-TERMINAL-2B7-EVIDENCE-006: exact-head heavy and terminal-diff evidence incomplete | Accepted | Historical whitespace corrected; fresh exact-head heavy run pending after remediation commit |
 
 No `2b713d659` finding is rejected, deferred, or moved to another package.
+
+## Exact-head terminal-review findings at `0e5262b4b`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-0E5-HIGH-001: canonical-last remainder violates exact proportional authorization and creates key-order priority | Accepted | Remainder substitution removed; every row stores the checked exact `D_i*S/D_sum`; three-equal-demand bit-vector and reverse-order poison PASS |
+| A/B-TERMINAL-0E5-HIGH-002: unified snapshot, binding, partition, authorization and protocol paths expose generic or misclassified errors | Accepted | Canonical E002/E003/E005/E006 failures now carry phase, exact available identity and rollback hashes; focused PASS |
+| A/B-TERMINAL-0E5-HIGH-003: structural E011 can preempt nonfinite E003 | Accepted | Global request, protocol and sealed-receiver numeric preflight runs before structural validation; mixed-precedence poisons PASS |
+| A-TERMINAL-0E5-HIGH-004: attempted receiver hashes omit thermal operands and beginning hydrology snapshot | Accepted | Framed hashes now bind ground-heat credit, infiltration enthalpy, ending temperature and beginning-snapshot identity; mutation poisons PASS |
+| A-TERMINAL-0E5-MEDIUM-005: first invalid attachment reports a false beginning-owner hash | Accepted | First attachment now reports `beginning_owner_sha256=None`; existing-owner replacement retains the real beginning hash; focused PASS |
+| A-TERMINAL-0E5-EVIDENCE-006: interrupted-run narrative, terminal diff and line-count inventory are incomplete | Accepted | Failed wrapper commands truthfully recorded; historical EOF whitespace removed; all touched Rust files at or above 2,000 lines inventoried; complete heavy rerun remains pending after fresh PASS reviews |
+
+No `0e5262b4b` finding is rejected, deferred, or moved to another package.

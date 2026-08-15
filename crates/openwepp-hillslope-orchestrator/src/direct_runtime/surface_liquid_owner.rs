@@ -1669,22 +1669,7 @@ fn authorize_surface_liquid_withdrawals_inner(
                     Ok((*index, share))
                 })
                 .collect::<Result<Vec<_>, DirectSurfaceLiquidError>>()?;
-            let last_index = canonical_indexes.len() - 1;
-            let mut allocated = 0.0;
-            for (rank, (index, checked_share)) in checked_shares.into_iter().enumerate() {
-                let amount = if rank == last_index {
-                    checked_surface_liquid_sub(supply, allocated).ok_or_else(|| {
-                        water_protocol_failure(
-                            DirectSurfaceLiquidErrorCode::E003,
-                            DirectSurfaceLiquidPhase::Authorization,
-                            transaction_id,
-                            &requests[index].key,
-                            "proportional authorization remainder is nonfinite or underflowed",
-                        )
-                    })?
-                } else {
-                    checked_share
-                };
+            for (index, amount) in checked_shares {
                 if !amount.is_finite()
                     || amount < 0.0
                     || amount > requests[index].amount_kg_m2_stand_ground
@@ -1694,21 +1679,10 @@ fn authorize_surface_liquid_withdrawals_inner(
                         DirectSurfaceLiquidPhase::Authorization,
                         transaction_id,
                         &requests[index].key,
-                        "proportional authorization remainder",
+                        "proportional authorization formula result",
                     ));
                 }
                 authorization_amounts[index] = amount;
-                let next_allocated =
-                    checked_surface_liquid_add(allocated, amount).ok_or_else(|| {
-                        water_protocol_failure(
-                            DirectSurfaceLiquidErrorCode::E003,
-                            DirectSurfaceLiquidPhase::Authorization,
-                            transaction_id,
-                            &requests[index].key,
-                            "proportional authorization accumulation is nonfinite",
-                        )
-                    })?;
-                allocated = next_allocated;
             }
         }
     }

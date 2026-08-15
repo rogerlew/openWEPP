@@ -245,6 +245,52 @@ fn same_store_requests_are_authorized_proportionally_from_one_snapshot() {
 }
 
 #[test]
+fn three_equal_demands_use_exact_formula_bits_without_canonical_last_priority() {
+    let configuration = DirectSurfaceLiquidConfiguration::new(
+        owner("hydrology"),
+        71,
+        vec![ofe("ofe-z")],
+        vec![binding("ofe-z", 0)],
+        vec![record(
+            "ofe-z",
+            "unit-supply",
+            1.0,
+            SurfaceClass::BareMineralSoil,
+            WaterSourceType::SurfaceLiquid,
+            DirectGroundIngressMode::OpenRawPrecipitation,
+        )],
+    )
+    .expect("unit-supply configuration");
+    let beginning = state(&configuration);
+    let transaction = TransactionId(118);
+    let mut request_a = request(&configuration, 0, transaction, 1.0);
+    request_a.key.requesting_owner_id = owner("request-a");
+    let mut request_b = request_a.clone();
+    request_b.key.requesting_owner_id = owner("request-b");
+    let mut request_c = request_a.clone();
+    request_c.key.requesting_owner_id = owner("request-c");
+
+    let arbitration = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        &[request_c, request_a, request_b],
+    )
+    .expect("three equal proportional authorizations");
+    let expected = (1.0_f64 * 1.0_f64) / 3.0_f64;
+    let actual_bits = arbitration
+        .authorizations()
+        .iter()
+        .map(|authorization| authorization.amount_kg_m2_stand_ground.to_bits())
+        .collect::<Vec<_>>();
+    assert_eq!(actual_bits, vec![expected.to_bits(); 3]);
+    assert!(arbitration.authorizations().iter().all(|authorization| {
+        authorization.reason == WaterAuthorizationReason::ProportionalSupply
+    }));
+}
+
+#[test]
 fn tiny_positive_same_store_oversubscription_fails_closed_without_key_priority() {
     let configuration = configuration();
     let open = record_index(&configuration, "open");

@@ -753,10 +753,11 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 ## Invalidated fresh-target heavy run and terminal review
 
 - INTERRUPTED retained: a new external-target heavy run began at
-  `87b187b19`; formatting, diff hygiene and strict workspace Clippy completed,
-  then the full suite was stopped when fresh independent review accepted
-  material source defects. Its partial logs are preserved and are not PASS
-  evidence.
+  `87b187b19`. Strict workspace Clippy completed successfully. The formatting
+  and diff-hygiene wrapper commands were malformed and exited 127; neither is
+  counted as evidence from this attempt. The full suite was then stopped when
+  fresh independent review accepted material source defects. All partial logs
+  are preserved and are not terminal PASS evidence.
 - HOLD retained: the Rust reviewer found checked-arithmetic underflow in
   proportional authorization, an incomplete public receiver validator, and
   noncanonical receiver/configuration/restart error payloads.
@@ -785,4 +786,24 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   focused custody and unified LSE/real-hydrology suites, 33/33; strict affected
   Clippy; science admission; formatting; and worktree plus terminal-diff
   hygiene.
+- Pending: commit exact bytes, fresh dual review, then complete heavy rerun.
+
+## Third exact-byte review remediation
+
+- HOLD retained: the `0e5262b4b` reviews found canonical-last rounding
+  priority, incomplete public canonical error coverage and E003 precedence,
+  incomplete attempted-state hashes, a false first-attachment beginning hash,
+  and incomplete release evidence.
+- PASS: every oversubscribed authorization row now retains the exact checked
+  `D_i*S/D_sum` result; the three-equal-demand unit-supply vector is bit-exact
+  and caller-order independent.
+- PASS: unified snapshot, production binding, request partition, authorization
+  ordering and final protocol failures now use contextual canonical errors;
+  global numeric preflight establishes E003 precedence.
+- PASS: attempted hashes bind the beginning hydrology snapshot and every
+  thermal receiver operand. First invalid attachment uses an absent beginning
+  hash, while replacement retains the actual beginning hash.
+- PASS after integrated remediation: orchestrator quick suite, 567/567;
+  focused custody and unified LSE/real-hydrology suites, 36/36; affected crate
+  checks; strict affected-crate Clippy; formatting; and diff hygiene.
 - Pending: commit exact bytes, fresh dual review, then complete heavy rerun.

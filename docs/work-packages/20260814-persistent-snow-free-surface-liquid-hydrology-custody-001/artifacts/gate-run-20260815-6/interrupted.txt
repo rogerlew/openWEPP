@@ -4,4 +4,3 @@ Formatting and diff hygiene completed. Workspace Clippy completed. The full
 workspace nextest run was deliberately interrupted after fresh independent
 review accepted material source defects that invalidated terminal closure.
 The partial log is preserved and is not counted as passing evidence.
-

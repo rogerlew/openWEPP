@@ -74,12 +74,8 @@ pub(crate) fn surface_liquid_attachment_error(
         attempted_owner_sha256.clone(),
     );
     if let DirectSurfaceLiquidError::Failure(failure) = &mut completed {
-        if beginning_owner_sha256.is_some() {
-            failure.rollback.beginning_owner_sha256 = beginning_owner_sha256;
-        }
-        if attempted_owner_sha256.is_some() {
-            failure.rollback.attempted_owner_sha256 = attempted_owner_sha256;
-        }
+        failure.rollback.beginning_owner_sha256 = beginning_owner_sha256;
+        failure.rollback.attempted_owner_sha256 = attempted_owner_sha256;
     }
     completed
 }

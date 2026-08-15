@@ -52,9 +52,12 @@ use crate::{
 
 mod receiver_validation;
 use receiver_validation::{
-    FramedSha256, finalization_receiver_sets_sha256, receiver_atomic_failure,
+    FramedSha256, canonicalize_finalized_error, canonicalize_unified_error,
+    finalization_receiver_sets_sha256, preflight_protocol_numerics, preflight_request_numerics,
+    protocol_error_code_and_detail, protocol_failure, receiver_atomic_failure,
     receiver_expectation_fields_sha256, receiver_expectations_sha256, receiver_operands_sha256,
-    require_receiver_close, water_protocol_sha256, water_request_batch_sha256,
+    request_failure, require_receiver_close, snapshot_failure, validate_surface_production_binding,
+    water_protocol_sha256, water_request_batch_sha256,
 };
 
 const WATER_DENSITY_KG_M3: f64 = 1_000.0;
@@ -77,12 +80,29 @@ pub enum LandSurfaceEnergyShadowError {
 
 impl From<RealHydrologyShadowError> for LandSurfaceEnergyShadowError {
     fn from(value: RealHydrologyShadowError) -> Self {
-        match value {
-            RealHydrologyShadowError::Identity(detail) => Self::Identity(detail),
-            RealHydrologyShadowError::Operand(detail) => Self::Operand(detail),
-            RealHydrologyShadowError::Bound(detail) => Self::Bound(detail),
-            RealHydrologyShadowError::Protocol(_) => Self::Bound("resource protocol"),
-        }
+        let (code, detail) = match value {
+            RealHydrologyShadowError::Identity(detail) => {
+                (DirectSurfaceLiquidErrorCode::E002, detail)
+            }
+            RealHydrologyShadowError::Operand(detail) => {
+                (DirectSurfaceLiquidErrorCode::E003, detail)
+            }
+            RealHydrologyShadowError::Bound(detail) => (DirectSurfaceLiquidErrorCode::E006, detail),
+            RealHydrologyShadowError::Protocol(_) => {
+                (DirectSurfaceLiquidErrorCode::E005, "resource protocol")
+            }
+        };
+        DirectSurfaceLiquidError::canonical_failure(
+            code,
+            DirectSurfaceLiquidPhase::Authorization,
+            DirectSurfaceLiquidErrorContext::default(),
+            DirectSurfaceLiquidRollbackHashes {
+                beginning_owner_sha256: None,
+                attempted_owner_sha256: None,
+            },
+            detail,
+        )
+        .into()
     }
 }
 
@@ -382,18 +402,30 @@ impl UnifiedLseFinalization {
         soil_thermal_candidates: Vec<SoilThermalTileCandidate>,
         rollback_hashes: Vec<OwnerRollbackHash>,
     ) -> Result<Self, LandSurfaceEnergyShadowError> {
+        let beginning = water_protocol.beginning_snapshot_sha256.clone();
+        let attempted_protocol = water_protocol_sha256(&water_protocol);
+        preflight_protocol_numerics(&water_protocol, &beginning, &attempted_protocol)?;
         if let Err(error) = water_protocol.validate() {
             let (code, detail) = protocol_error_code_and_detail(&error);
-            let beginning = water_protocol.beginning_snapshot_sha256.clone();
-            let attempted = water_protocol_sha256(&water_protocol);
             return Err(protocol_failure(
                 code,
                 &water_protocol,
                 &beginning,
-                &attempted,
+                &attempted_protocol,
                 detail,
             ));
         }
+        let attempted_receivers = finalization_receiver_sets_sha256(
+            &ending_tile_states_pre_ingress,
+            &soil_thermal_candidates,
+            &rollback_hashes,
+        );
+        receiver_validation::preflight_sealed_finalization_numerics(
+            &water_protocol,
+            &ending_tile_states_pre_ingress,
+            &soil_thermal_candidates,
+            &attempted_receivers,
+        )?;
         if let Some(violation) = first_sealed_finalization_violation(
             &water_protocol,
             &ending_tile_states_pre_ingress,
@@ -409,11 +441,7 @@ impl UnifiedLseFinalization {
                     ..DirectSurfaceLiquidErrorContext::default()
                 },
                 Some(water_protocol.beginning_snapshot_sha256.to_string()),
-                Some(finalization_receiver_sets_sha256(
-                    &ending_tile_states_pre_ingress,
-                    &soil_thermal_candidates,
-                    &rollback_hashes,
-                )),
+                Some(attempted_receivers),
                 violation.detail,
             )
             .into());
@@ -712,10 +740,20 @@ pub fn unified_beginning_hydrology_snapshot_sha256(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
 ) -> Result<Sha256Digest, LandSurfaceEnergyShadowError> {
-    surface_configuration.validate()?;
+    surface_configuration.validate().map_err(|error| {
+        snapshot_failure(
+            error.code(),
+            soil_adapter.owner,
+            surface_configuration,
+            "invalid surface-liquid configuration",
+        )
+    })?;
     validate_surface_production_binding(soil_adapter.owner, surface_configuration)?;
     if &surface_configuration.owner_id != soil_adapter.owner.hydrology_owner_id() {
-        return Err(LandSurfaceEnergyShadowError::Identity(
+        return Err(snapshot_failure(
+            DirectSurfaceLiquidErrorCode::E002,
+            soil_adapter.owner,
+            surface_configuration,
             "mixed unified hydrology owner",
         ));
     }
@@ -724,10 +762,24 @@ pub fn unified_beginning_hydrology_snapshot_sha256(
         .beginning_frame()
         .surface_liquid_shadow
         .as_deref()
-        .ok_or(LandSurfaceEnergyShadowError::Identity(
-            "missing beginning surface-liquid owner",
-        ))?;
-    surface_state.validate(surface_configuration)?;
+        .ok_or_else(|| {
+            snapshot_failure(
+                DirectSurfaceLiquidErrorCode::E002,
+                soil_adapter.owner,
+                surface_configuration,
+                "missing beginning surface-liquid owner",
+            )
+        })?;
+    surface_state
+        .validate(surface_configuration)
+        .map_err(|error| {
+            snapshot_failure(
+                error.code(),
+                soil_adapter.owner,
+                surface_configuration,
+                "invalid beginning surface-liquid owner",
+            )
+        })?;
     let mut digest = Sha256::new();
     for bytes in [
         b"openwepp-unified-hydrology-snapshot-v2".as_slice(),
@@ -740,43 +792,6 @@ pub fn unified_beginning_hydrology_snapshot_sha256(
         digest.update(bytes);
     }
     Sha256Digest::try_new(format!("{:x}", digest.finalize())).map_err(Into::into)
-}
-
-fn validate_surface_production_binding(
-    owner: &RealHydrologyShadowAdapter,
-    configuration: &DirectSurfaceLiquidConfiguration,
-) -> Result<(), LandSurfaceEnergyShadowError> {
-    let frame = owner.beginning_frame();
-    if configuration.run_id != frame.identity.run_id
-        || configuration.ofe_bindings.len() != frame.lanes.len()
-        || owner.layer_maps().len() != frame.lanes.len()
-    {
-        return Err(LandSurfaceEnergyShadowError::Identity(
-            "surface production run or lane count",
-        ));
-    }
-    for ((binding, mapping), lane) in configuration
-        .ofe_bindings
-        .iter()
-        .zip(owner.layer_maps())
-        .zip(&frame.lanes)
-    {
-        if binding.production_lane_index != mapping.ofe_lane.lane_index
-            || binding.production_lane_id != mapping.ofe_lane.lane_id
-            || binding.production_lane_id != lane.lane_id
-            || binding.ordered_soil_layer_ids != mapping.layer_ids
-            || binding.ordered_soil_layer_ids.len() != lane.subsurface_layers.len()
-            || configuration.records.iter().any(|record| {
-                record.key.ofe_id == binding.ofe_id
-                    && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
-            })
-        {
-            return Err(LandSurfaceEnergyShadowError::Identity(
-                "surface production OFE/lane/area/layer binding",
-            ));
-        }
-    }
-    Ok(())
 }
 
 /// Join one immutable LSE request batch to both actual water owners.
@@ -823,8 +838,18 @@ where
         .ok_or(LandSurfaceEnergyShadowError::Identity(
             "missing beginning surface-liquid owner",
         ))?;
-    let (soil_requests, surface_requests) = partition_requests(request_batch, soil_sources)?;
-    let soil = soil_adapter.authorize(&soil_requests)?;
+    let (soil_requests, surface_requests) = partition_requests(
+        request_batch,
+        soil_sources,
+        expected_beginning_hydrology_snapshot_sha256,
+    )?;
+    let soil = soil_adapter.authorize(&soil_requests).map_err(|error| {
+        canonicalize_unified_error(
+            error,
+            request_batch,
+            expected_beginning_hydrology_snapshot_sha256,
+        )
+    })?;
     let surface = authorize_surface_liquid_withdrawals(
         surface_configuration,
         beginning_surface,
@@ -835,7 +860,12 @@ where
             .and_then(|record| record.last_accepted_transaction_id),
         &surface_requests,
     )?;
-    let authorizations = restore_authorization_order(request_batch, &soil, &surface)?;
+    let authorizations = restore_authorization_order(
+        request_batch,
+        &soil,
+        &surface,
+        expected_beginning_hydrology_snapshot_sha256,
+    )?;
     let arbitration = UnifiedRealHydrologyArbitration {
         transaction_id: request_batch.transaction_id,
         requests: request_batch.requests.clone(),
@@ -850,6 +880,7 @@ where
         expected_beginning_hydrology_snapshot_sha256,
         &surface_configuration.owner_id,
     )?;
+    let finalized_protocol = finalized.water_protocol().clone();
     construct_unified_candidate(
         soil_adapter,
         surface_configuration,
@@ -858,6 +889,7 @@ where
         finalized,
         ingress,
     )
+    .map_err(|error| canonicalize_finalized_error(error, &finalized_protocol))
 }
 
 fn validate_unified_entry(
@@ -868,6 +900,16 @@ fn validate_unified_entry(
     expected_snapshot: &Sha256Digest,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
     let actual_snapshot = unified_beginning_hydrology_snapshot_sha256(soil_adapter, configuration)?;
+    preflight_request_numerics(request_batch, expected_snapshot)?;
+    if request_batch.requests.is_empty() {
+        return Err(request_failure(
+            DirectSurfaceLiquidErrorCode::E005,
+            request_batch,
+            expected_snapshot,
+            None,
+            "empty potential request cardinality",
+        ));
+    }
     if let Err(error) = request_batch.validate() {
         let (code, detail) = protocol_error_code_and_detail(&error);
         let key = request_batch.requests.first().map(|row| &row.key);
@@ -1085,6 +1127,7 @@ fn validate_final_protocol(
     expected_owner: &openwepp_kernel_contract::ResourceOwnerId,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
     let attempted_sha256 = water_protocol_sha256(protocol);
+    preflight_protocol_numerics(protocol, expected_snapshot, &attempted_sha256)?;
     if let Err(error) = protocol.validate() {
         let (code, detail) = protocol_error_code_and_detail(&error);
         return Err(protocol_failure(
@@ -1112,71 +1155,10 @@ fn validate_final_protocol(
     Ok(())
 }
 
-fn protocol_error_code_and_detail(
-    error: &LandSurfaceEnergyError,
-) -> (DirectSurfaceLiquidErrorCode, &'static str) {
-    match error {
-        LandSurfaceEnergyError::NonFinite(detail)
-        | LandSurfaceEnergyError::ConstitutiveDomain(detail) => {
-            (DirectSurfaceLiquidErrorCode::E006, *detail)
-        }
-        LandSurfaceEnergyError::WaterIdentityOrBound(detail) => {
-            let code = if detail.contains("duplicate")
-                || detail.contains("without exact")
-                || detail.contains("incomplete")
-            {
-                DirectSurfaceLiquidErrorCode::E005
-            } else if detail.contains("exceeds") {
-                DirectSurfaceLiquidErrorCode::E006
-            } else {
-                DirectSurfaceLiquidErrorCode::E002
-            };
-            (code, *detail)
-        }
-        _ => (
-            DirectSurfaceLiquidErrorCode::E002,
-            "invalid final water protocol",
-        ),
-    }
-}
-
-fn protocol_failure(
-    code: DirectSurfaceLiquidErrorCode,
-    protocol: &WaterProtocol,
-    beginning_sha256: &Sha256Digest,
-    attempted_sha256: &str,
-    detail: &'static str,
-) -> LandSurfaceEnergyShadowError {
-    let key = protocol
-        .requests
-        .first()
-        .map(|row| &row.key)
-        .or_else(|| protocol.authorizations.first().map(|row| &row.key))
-        .or_else(|| protocol.finalized_uses.first().map(|row| &row.key));
-    DirectSurfaceLiquidError::canonical_failure(
-        code,
-        DirectSurfaceLiquidPhase::ResourceCandidate,
-        DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(protocol.transaction_id),
-            owner_id: Some(protocol.hydrology_owner_id.clone()),
-            ofe_id: key.map(|key| key.ofe_id.clone()),
-            tile_id: key.map(|key| key.requesting_tile_id.clone()),
-            surface_id: key.and_then(|key| key.surface_id.clone()),
-            source_id: key.map(|key| key.source_id.clone()),
-            parcel_id: None,
-        },
-        DirectSurfaceLiquidRollbackHashes {
-            beginning_owner_sha256: Some(beginning_sha256.to_string()),
-            attempted_owner_sha256: Some(attempted_sha256.to_owned()),
-        },
-        detail,
-    )
-    .into()
-}
-
 fn partition_requests(
     batch: &PotentialWaterRequestBatch,
     soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
+    beginning_sha256: &Sha256Digest,
 ) -> Result<(Vec<MixedRealHydrologyRequest>, Vec<WaterAmount>), LandSurfaceEnergyShadowError> {
     let mut soil = Vec::new();
     let mut surface = Vec::new();
@@ -1184,9 +1166,15 @@ fn partition_requests(
     for request in &batch.requests {
         match request.key.source_type {
             WaterSourceType::SoilLayerLiquid => {
-                let source = soil_sources.get(&request.key).ok_or(
-                    LandSurfaceEnergyShadowError::Identity("missing soil source mapping"),
-                )?;
+                let source = soil_sources.get(&request.key).ok_or_else(|| {
+                    request_failure(
+                        DirectSurfaceLiquidErrorCode::E002,
+                        batch,
+                        beginning_sha256,
+                        Some(&request.key),
+                        "missing soil source mapping",
+                    )
+                })?;
                 consumed_soil_keys.insert(request.key.clone());
                 soil.push(MixedRealHydrologyRequest {
                     request: request.clone(),
@@ -1195,7 +1183,11 @@ fn partition_requests(
             }
             WaterSourceType::SurfaceLiquid | WaterSourceType::LitterLiquid => {
                 if soil_sources.contains_key(&request.key) {
-                    return Err(LandSurfaceEnergyShadowError::Identity(
+                    return Err(request_failure(
+                        DirectSurfaceLiquidErrorCode::E002,
+                        batch,
+                        beginning_sha256,
+                        Some(&request.key),
                         "surface request has soil mapping",
                     ));
                 }
@@ -1204,7 +1196,11 @@ fn partition_requests(
         }
     }
     if consumed_soil_keys.len() != soil_sources.len() {
-        return Err(LandSurfaceEnergyShadowError::Identity(
+        return Err(request_failure(
+            DirectSurfaceLiquidErrorCode::E002,
+            batch,
+            beginning_sha256,
+            None,
             "unused soil source mapping",
         ));
     }
@@ -1215,6 +1211,7 @@ fn restore_authorization_order(
     batch: &PotentialWaterRequestBatch,
     soil: &MixedRealHydrologyArbitration,
     surface: &DirectSurfaceLiquidArbitration,
+    beginning_sha256: &Sha256Digest,
 ) -> Result<Vec<WaterAuthorization>, LandSurfaceEnergyShadowError> {
     let by_key = soil
         .authorizations
@@ -1228,7 +1225,11 @@ fn restore_authorization_order(
         )
         .collect::<BTreeMap<_, _>>();
     if by_key.len() != batch.requests.len() {
-        return Err(LandSurfaceEnergyShadowError::Identity(
+        return Err(request_failure(
+            DirectSurfaceLiquidErrorCode::E005,
+            batch,
+            beginning_sha256,
+            None,
             "incomplete unified authorization",
         ));
     }
@@ -1236,12 +1237,15 @@ fn restore_authorization_order(
         .requests
         .iter()
         .map(|request| {
-            by_key
-                .get(&request.key)
-                .cloned()
-                .ok_or(LandSurfaceEnergyShadowError::Identity(
+            by_key.get(&request.key).cloned().ok_or_else(|| {
+                request_failure(
+                    DirectSurfaceLiquidErrorCode::E002,
+                    batch,
+                    beginning_sha256,
+                    Some(&request.key),
                     "authorization order identity",
-                ))
+                )
+            })
         })
         .collect()
 }
