@@ -726,3 +726,26 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   with conflicting incomplete and WARN dispositions.
 - PASS: the obsolete duplicate row is removed; one authoritative WARN row
   records current count, rationale and follow-on split intent.
+
+## Exact-head heavy-gate attempt at `4c7b64237`
+
+- PASS: formatting, diff hygiene, science admission, anti-evasion,
+  `SC-SURFACELIQUID-001` unit compliance, the corrected 28-test focused
+  custody/LSE suite, and the corrected 58-file package Markdown lint.
+- FAIL retained: strict workspace Clippy rejected the 110-line
+  `independent_real_receiver_equations_reject_layer_and_enthalpy_poisons`
+  integration test. The test is now decomposed into three cohesive poison
+  helpers without changing its assertions.
+- FAIL retained: the full workspace run completed 2,807 tests with 2,797
+  passing and 10 failing. All ten failures read compile-time
+  `CARGO_MANIFEST_DIR` paths from deleted terminal-review worktrees through
+  stale shared-target integration binaries; seven belonged to the advisory
+  linter authority suite and three to AUTH11. The standalone AUTH11 retry
+  reproduced the same stale-binary failure.
+- Ran: a fresh external target directory rebuilt the affected binaries from
+  the current checkout after the test decomposition. Strict focused Clippy
+  passed, AUTH11 passed 3/3, and the focused custody/LSE suite passed 28/28.
+  No tolerance, production behavior, scientific equation, or authority
+  surface changed.
+- Pending: commit the test-only decomposition and rerun the complete heavy
+  command set on exact committed bytes using a fresh external target.

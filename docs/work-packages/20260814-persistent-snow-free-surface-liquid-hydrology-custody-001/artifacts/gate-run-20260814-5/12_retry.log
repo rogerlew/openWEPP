@@ -1,0 +1,15 @@
+command: markdown-doc lint --path docs/work-packages/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001 --format json
+start_utc: 2026-08-15T07:38:05Z
+cwd: /home/workdir/openWEPP
+attempt: retry
+tmp_workdir: /tmp/ow-nextest-openwepp-20260814-5
+{
+  "summary": {
+    "files_scanned": 58,
+    "errors": 0,
+    "warnings": 0
+  },
+  "findings": []
+}
+elapsed_sec=0.02 user_sec=0.07 sys_sec=0.02
+exit_code: 0

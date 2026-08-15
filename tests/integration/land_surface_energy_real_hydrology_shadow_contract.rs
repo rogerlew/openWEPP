@@ -1331,6 +1331,14 @@ fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
     validate_real_receiver_closure(candidate.receiver_closure_operands())
         .expect("independent receiver closure");
 
+    reject_receiver_layer_distribution_poison(&candidate);
+    reject_receiver_enthalpy_poisons(&candidate);
+    reject_receiver_nonfinite_arithmetic_poisons(&candidate);
+}
+
+fn reject_receiver_layer_distribution_poison(
+    candidate: &openwepp_hillslope_orchestrator::land_surface_energy_shadow::UnifiedRealHydrologyCandidate,
+) {
     let mut wrong_distribution = candidate.receiver_closure_operands().clone();
     {
         let lane = &mut wrong_distribution.production_soil[0];
@@ -1360,7 +1368,11 @@ fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
     lane.ordered_layers[0].ending_liquid_m -= transfer;
     lane.ordered_layers[1].ending_liquid_m += transfer;
     assert_receiver_e011(validate_real_receiver_closure(&wrong_distribution));
+}
 
+fn reject_receiver_enthalpy_poisons(
+    candidate: &openwepp_hillslope_orchestrator::land_surface_energy_shadow::UnifiedRealHydrologyCandidate,
+) {
     let infiltration_enthalpy =
         candidate.receiver_closure_operands().soil_thermal[0].infiltration_enthalpy_j_m2_ofe_ground;
     assert_ne!(infiltration_enthalpy.to_bits(), 0.0_f64.to_bits());
@@ -1385,7 +1397,11 @@ fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
             + multiplier * retained_enthalpy / tile.tile_fraction;
         assert_receiver_e011(validate_real_receiver_closure(&poison));
     }
+}
 
+fn reject_receiver_nonfinite_arithmetic_poisons(
+    candidate: &openwepp_hillslope_orchestrator::land_surface_energy_shadow::UnifiedRealHydrologyCandidate,
+) {
     let mut thermal_overflow = candidate.receiver_closure_operands().clone();
     thermal_overflow.soil_thermal[0].beginning_infiltration_credit_j_m2_ofe_ground = f64::MAX;
     thermal_overflow.soil_thermal[0].beginning_enthalpy_j_m2_ofe_ground = f64::MAX;
