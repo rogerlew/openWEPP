@@ -535,3 +535,12 @@ No `413c0c32a` finding is rejected, deferred or moved to another package.
 
 The Rust review returned PASS with no material finding. No `15a110ece` finding
 is rejected, deferred or moved to another package.
+
+## Exact-head terminal-review findings at `4360daef1`
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A-TERMINAL-436-MEDIUM-001: contract-critical configuration/state/frame identity validation remains substantially duplicated | Accepted | Remediated: configuration/state constructors and full validation reuse the canonical structural/digest preflights then domain-only passes; attachment and independent receiver validation share one typed first-mismatch projection while retaining path-specific completion; exhaustive mismatch and identity-plus-domain anti-drift vectors PASS |
+
+The hydrology review returned PASS with no material finding. No `4360daef1`
+finding is rejected, deferred or moved to another package.

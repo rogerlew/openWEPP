@@ -111,3 +111,10 @@ the two required cross-poisons. Focused evidence passes 67/67 integration,
 10/10 authority and 600/600 orchestrator-library tests. A clean remediation
 commit and fresh dual exact-byte review remain required before heavy gates.
 This remains nonterminal and does not resume Child 3.
+Exact-byte Rust review at `4360daef1` then found contract-critical identity
+checks remained substantially duplicated. The current worktree removes the
+configuration/state duplicates and binds attachment/receiver identity to one
+typed first-mismatch projection without weakening independent receiver
+completion. Focused evidence passes 67/67 integration, 10/10 authority and
+600/600 orchestrator-library tests. A clean remediation commit and fresh dual
+exact-byte review remain required before heavy gates. This remains nonterminal.

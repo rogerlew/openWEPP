@@ -9,9 +9,9 @@ use sha2::{Digest, Sha256};
 use super::{
     DirectGroundIngressMode, DirectLaneFrame, DirectSurfaceLiquidArbitration,
     DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode,
-    DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidPhase,
-    DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidRollbackHashes,
-    DirectSurfaceLiquidStoreKey,
+    DirectSurfaceLiquidErrorContext, DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidOwnedState,
+    DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
+    DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStoreKey,
 };
 
 struct RawAttemptHash(Sha256);
@@ -603,28 +603,94 @@ pub(crate) fn validate_surface_liquid_frame_identities(
     beginning_owner_sha256: Option<String>,
     attempted_owner_sha256: Option<String>,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    if configuration.run_id != run_id {
-        return Err(surface_liquid_frame_identity_error(
-            configuration,
+    let mismatch = first_surface_liquid_frame_identity_mismatch(
+        run_id,
+        lanes,
+        configuration,
+        lanes.len(),
+        SurfaceLiquidAreaIdentityPolicy::FinitePositiveOnly,
+        |_, _, _| true,
+    );
+    let Some(mismatch) = mismatch else {
+        return Ok(());
+    };
+    let (ofe_id, detail) = match mismatch {
+        SurfaceLiquidFrameIdentityMismatch::Run => (
             None,
-            beginning_owner_sha256,
-            attempted_owner_sha256,
             "surface-liquid run identity does not match the direct frame",
-        ));
+        ),
+        SurfaceLiquidFrameIdentityMismatch::LaneCardinality => (
+            (configuration.ofe_topology.len() > lanes.len())
+                .then(|| configuration.ofe_topology.get(lanes.len()))
+                .flatten(),
+            "surface-liquid production lane cardinality does not match the direct frame",
+        ),
+        SurfaceLiquidFrameIdentityMismatch::Lane { topology_index } => (
+            configuration.ofe_topology.get(topology_index),
+            "surface-liquid production lane identity does not match the direct frame",
+        ),
+        SurfaceLiquidFrameIdentityMismatch::LayerCardinality { topology_index } => (
+            configuration.ofe_topology.get(topology_index),
+            "surface-liquid production soil-layer cardinality does not match the direct frame",
+        ),
+        SurfaceLiquidFrameIdentityMismatch::Area { record_index, .. } => (
+            configuration
+                .records
+                .get(record_index)
+                .map(|record| &record.key.ofe_id),
+            "surface-liquid configured OFE area does not match the direct production lane",
+        ),
+    };
+    Err(surface_liquid_frame_identity_error(
+        configuration,
+        ofe_id,
+        beginning_owner_sha256,
+        attempted_owner_sha256,
+        detail,
+    ))
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum SurfaceLiquidFrameIdentityMismatch {
+    Run,
+    LaneCardinality,
+    Lane {
+        topology_index: usize,
+    },
+    LayerCardinality {
+        topology_index: usize,
+    },
+    Area {
+        topology_index: usize,
+        record_index: usize,
+    },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum SurfaceLiquidAreaIdentityPolicy {
+    ExactBits,
+    FinitePositiveOnly,
+}
+
+pub(crate) fn first_surface_liquid_frame_identity_mismatch<F>(
+    run_id: u64,
+    lanes: &[DirectLaneFrame],
+    configuration: &DirectSurfaceLiquidConfiguration,
+    mapped_lane_count: usize,
+    area_policy: SurfaceLiquidAreaIdentityPolicy,
+    mut additional_lane_identity_matches: F,
+) -> Option<SurfaceLiquidFrameIdentityMismatch>
+where
+    F: FnMut(usize, &DirectSurfaceLiquidOfeBinding, &DirectLaneFrame) -> bool,
+{
+    if configuration.run_id != run_id {
+        return Some(SurfaceLiquidFrameIdentityMismatch::Run);
     }
     if configuration.ofe_bindings.len() != lanes.len()
         || configuration.ofe_topology.len() != lanes.len()
+        || mapped_lane_count != lanes.len()
     {
-        let excess_configured_ofe = (configuration.ofe_topology.len() > lanes.len())
-            .then(|| configuration.ofe_topology.get(lanes.len()))
-            .flatten();
-        return Err(surface_liquid_frame_identity_error(
-            configuration,
-            excess_configured_ofe,
-            beginning_owner_sha256,
-            attempted_owner_sha256,
-            "surface-liquid production lane cardinality does not match the direct frame",
-        ));
+        return Some(SurfaceLiquidFrameIdentityMismatch::LaneCardinality);
     }
     for (topology_index, (ofe_id, binding)) in configuration
         .ofe_topology
@@ -636,41 +702,40 @@ pub(crate) fn validate_surface_liquid_frame_identities(
         if &binding.ofe_id != ofe_id
             || binding.production_lane_index != topology_index
             || binding.production_lane_id != lane.lane_id
+            || !additional_lane_identity_matches(topology_index, binding, lane)
         {
-            return Err(surface_liquid_frame_identity_error(
-                configuration,
-                Some(ofe_id),
-                beginning_owner_sha256,
-                attempted_owner_sha256,
-                "surface-liquid production lane identity does not match the direct frame",
-            ));
+            return Some(SurfaceLiquidFrameIdentityMismatch::Lane { topology_index });
         }
         if binding.ordered_soil_layer_ids.len() != lane.subsurface_layers.len() {
-            return Err(surface_liquid_frame_identity_error(
-                configuration,
-                Some(ofe_id),
-                beginning_owner_sha256,
-                attempted_owner_sha256,
-                "surface-liquid production soil-layer cardinality does not match the direct frame",
-            ));
+            return Some(SurfaceLiquidFrameIdentityMismatch::LayerCardinality { topology_index });
         }
-        if let Some(record) = configuration.records.iter().find(|record| {
-            record.key.ofe_id == *ofe_id
-                && record.ofe_area_m2.is_finite()
-                && lane.area_m2.is_finite()
-                && lane.area_m2 > 0.0
-                && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
-        }) {
-            return Err(surface_liquid_frame_identity_error(
-                configuration,
-                Some(&record.key.ofe_id),
-                beginning_owner_sha256,
-                attempted_owner_sha256,
-                "surface-liquid configured OFE area does not match the direct production lane",
-            ));
+        if let Some((record_index, _)) =
+            configuration
+                .records
+                .iter()
+                .enumerate()
+                .find(|(_, record)| {
+                    record.key.ofe_id == *ofe_id
+                        && match area_policy {
+                            SurfaceLiquidAreaIdentityPolicy::ExactBits => {
+                                record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
+                            }
+                            SurfaceLiquidAreaIdentityPolicy::FinitePositiveOnly => {
+                                record.ofe_area_m2.is_finite()
+                                    && lane.area_m2.is_finite()
+                                    && lane.area_m2 > 0.0
+                                    && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
+                            }
+                        }
+                })
+        {
+            return Some(SurfaceLiquidFrameIdentityMismatch::Area {
+                topology_index,
+                record_index,
+            });
         }
     }
-    Ok(())
+    None
 }
 
 pub(crate) fn validate_surface_liquid_frame_domains(

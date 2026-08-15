@@ -1115,6 +1115,44 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
   execution remains blocked until both reviews return PASS.
 
+## Exact-byte review at `4360daef1`
+
+- PASS: fresh hydrology/science/ownership review found no material finding
+  across precedence, custody, D/A/F, rollback, restart, ingress and closure.
+- HOLD: fresh Rust review found substantially duplicated contract-critical
+  configuration/state/frame identity checks, a material drift seam given the
+  preceding attachment-precedence history.
+- PASS but non-dispositive: LSE 28/28; integration 67/67; custody authority
+  10/10; AUTH11 3/3; anti-evasion; affected strict Clippy; formatting and diff
+  hygiene.
+- Pending: centralize identity passes or bind unavoidable independent mirrors
+  with reviewed structural-equivalence guards, then repeat fresh dual review.
+  Heavy execution remains blocked.
+
+## `4360daef1` HOLD remediation
+
+- Ran: integration — PASS, 67/67; custody authority — PASS, 10/10;
+  orchestrator library — PASS, 600/600 with three slow tests; affected strict
+  all-target/all-feature Clippy, formatting and diff hygiene — PASS.
+- Ran: science admission — PASS, 46 contracts and 28 surfaces; anti-evasion —
+  PASS; AUTH11 — PASS, 3/3; package Markdown — PASS, 104 files with zero errors
+  and warnings.
+- Static + Ran: canonical configuration/state structural and digest preflights
+  are reused by constructors and full validation, followed only by extracted
+  domain passes. Duplicate topology/key/route and state key/lineage/
+  continuation identity bodies were removed.
+- Static + Ran: attachment and independent receiver validation consume one
+  typed first-mismatch projection over run, cardinality, lane, layer and area;
+  receiver-only layer-map membership and exact area policy remain independent,
+  and both paths retain their own failure phase/context/hash completion.
+- Ran: anti-drift poisons cover run, lane count, OFE, lane index, lane ID, layer
+  cardinality, area and identity-plus-NaN ordering.
+- Preserved retries: one targeted compile retry qualified `DirectLaneFrame`;
+  one Clippy retry extracted the anti-drift matrix helper after
+  `too_many_lines`/`items_after_statements` findings.
+- Pending: freeze a clean commit and repeat fresh dual exact-byte review. Heavy
+  execution remains blocked until both reviews return PASS.
+
 ## Exact-byte review at `85358c9b2`
 
 - PASS: fresh hydrology/science/ownership review found no material finding on

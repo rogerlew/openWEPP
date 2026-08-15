@@ -13,7 +13,9 @@ use super::{
 };
 use crate::DirectSurfaceLiquidConfigurationRecord;
 use crate::direct_runtime::{
-    surface_liquid_raw_snapshot_attempt_sha256, surface_liquid_raw_snapshot_sha256,
+    SurfaceLiquidAreaIdentityPolicy, SurfaceLiquidFrameIdentityMismatch,
+    first_surface_liquid_frame_identity_mismatch, surface_liquid_raw_snapshot_attempt_sha256,
+    surface_liquid_raw_snapshot_sha256,
 };
 use crate::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter;
 
@@ -48,61 +50,66 @@ pub(super) fn validate_surface_production_binding(
     configuration: &DirectSurfaceLiquidConfiguration,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
     let frame = owner.beginning_frame();
-    if configuration.run_id != frame.identity.run_id
-        || configuration.ofe_bindings.len() != frame.lanes.len()
-        || owner.layer_maps().len() != frame.lanes.len()
-    {
-        let mismatch_rank = configuration
-            .ofe_bindings
-            .len()
-            .min(owner.layer_maps().len())
-            .min(frame.lanes.len());
-        let offender = configuration.ofe_bindings.get(mismatch_rank);
-        return Err(snapshot_failure_at(
-            DirectSurfaceLiquidErrorCode::E002,
-            owner,
-            configuration,
-            offender.map(|binding| &binding.ofe_id),
-            None,
-            "surface production run or lane count",
-        ));
-    }
-    for ((binding, mapping), lane) in configuration
-        .ofe_bindings
-        .iter()
-        .zip(owner.layer_maps())
-        .zip(&frame.lanes)
-    {
-        if binding.production_lane_index != mapping.ofe_lane.lane_index
-            || binding.production_lane_id != mapping.ofe_lane.lane_id
-            || binding.production_lane_id != lane.lane_id
-            || binding.ordered_soil_layer_ids != mapping.layer_ids
-            || binding.ordered_soil_layer_ids.len() != lane.subsurface_layers.len()
-        {
-            return Err(snapshot_failure_at(
-                DirectSurfaceLiquidErrorCode::E002,
-                owner,
-                configuration,
-                Some(&binding.ofe_id),
+    let mismatch = first_surface_liquid_frame_identity_mismatch(
+        frame.identity.run_id,
+        &frame.lanes,
+        configuration,
+        owner.layer_maps().len(),
+        SurfaceLiquidAreaIdentityPolicy::ExactBits,
+        |topology_index, binding, lane| {
+            let mapping = &owner.layer_maps()[topology_index];
+            binding.production_lane_index == mapping.ofe_lane.lane_index
+                && binding.production_lane_id == mapping.ofe_lane.lane_id
+                && binding.production_lane_id == lane.lane_id
+                && binding.ordered_soil_layer_ids == mapping.layer_ids
+        },
+    );
+    let Some(mismatch) = mismatch else {
+        return Ok(());
+    };
+    let (ofe_id, record, detail) = match mismatch {
+        SurfaceLiquidFrameIdentityMismatch::Run
+        | SurfaceLiquidFrameIdentityMismatch::LaneCardinality => {
+            let mismatch_rank = configuration
+                .ofe_bindings
+                .len()
+                .min(owner.layer_maps().len())
+                .min(frame.lanes.len());
+            (
+                configuration
+                    .ofe_bindings
+                    .get(mismatch_rank)
+                    .map(|binding| &binding.ofe_id),
                 None,
-                "surface production OFE/lane/area/layer binding",
-            ));
+                "surface production run or lane count",
+            )
         }
-        if let Some(record) = configuration.records.iter().find(|record| {
-            record.key.ofe_id == binding.ofe_id
-                && record.ofe_area_m2.to_bits() != lane.area_m2.to_bits()
-        }) {
-            return Err(snapshot_failure_at(
-                DirectSurfaceLiquidErrorCode::E002,
-                owner,
-                configuration,
-                Some(&binding.ofe_id),
-                Some(record),
+        SurfaceLiquidFrameIdentityMismatch::Lane { topology_index }
+        | SurfaceLiquidFrameIdentityMismatch::LayerCardinality { topology_index } => (
+            configuration
+                .ofe_bindings
+                .get(topology_index)
+                .map(|binding| &binding.ofe_id),
+            None,
+            "surface production OFE/lane/area/layer binding",
+        ),
+        SurfaceLiquidFrameIdentityMismatch::Area { record_index, .. } => {
+            let record = configuration.records.get(record_index);
+            (
+                record.map(|record| &record.key.ofe_id),
+                record,
                 "surface production OFE/lane/area/layer binding",
-            ));
+            )
         }
-    }
-    Ok(())
+    };
+    Err(snapshot_failure_at(
+        DirectSurfaceLiquidErrorCode::E002,
+        owner,
+        configuration,
+        ofe_id,
+        record,
+        detail,
+    ))
 }
 
 pub(super) fn snapshot_failure(

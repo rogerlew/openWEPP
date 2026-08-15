@@ -1,3 +1,7 @@
+use super::super::surface_liquid_attachment::{
+    SurfaceLiquidAreaIdentityPolicy, SurfaceLiquidFrameIdentityMismatch,
+    first_surface_liquid_frame_identity_mismatch,
+};
 use super::*;
 use crate::direct_runtime::{
     DirectIngressAmount, DirectOfeWb14Parameters, DirectSurfaceLiquidIngressInput,
@@ -171,6 +175,93 @@ fn assert_complete_e002(error: &DirectSurfaceLiquidError, tile_id: &TileId) {
     assert!(failure.rollback.attempted_owner_sha256.is_some());
 }
 
+fn assert_frame_receiver_identity_projection_equivalence() {
+    let clean_configuration = configuration();
+    let clean_frame = attachment_frame();
+    let project = |configuration: &DirectSurfaceLiquidConfiguration,
+                   lanes: &[crate::DirectLaneFrame],
+                   mapped_lane_count: usize| {
+        let attachment = first_surface_liquid_frame_identity_mismatch(
+            clean_frame.identity.run_id,
+            lanes,
+            configuration,
+            mapped_lane_count,
+            SurfaceLiquidAreaIdentityPolicy::FinitePositiveOnly,
+            |_, _, _| true,
+        );
+        let receiver = first_surface_liquid_frame_identity_mismatch(
+            clean_frame.identity.run_id,
+            lanes,
+            configuration,
+            mapped_lane_count,
+            SurfaceLiquidAreaIdentityPolicy::ExactBits,
+            |_, _, _| true,
+        );
+        assert_eq!(attachment, receiver, "shared identity projection drift");
+        attachment
+    };
+
+    let mut wrong_run = clean_configuration.clone();
+    wrong_run.run_id += 1;
+    assert_eq!(
+        project(&wrong_run, &clean_frame.lanes, clean_frame.lanes.len()),
+        Some(SurfaceLiquidFrameIdentityMismatch::Run),
+    );
+    assert_eq!(
+        project(&clean_configuration, &[], 0),
+        Some(SurfaceLiquidFrameIdentityMismatch::LaneCardinality),
+    );
+    for lane_poison in 0..3 {
+        let mut wrong_lane = clean_configuration.clone();
+        match lane_poison {
+            0 => wrong_lane.ofe_bindings[0].ofe_id = ofe("wrong-ofe"),
+            1 => wrong_lane.ofe_bindings[0].production_lane_index += 1,
+            2 => wrong_lane.ofe_bindings[0].production_lane_id += 1,
+            _ => unreachable!("bounded lane identity poison table"),
+        }
+        assert_eq!(
+            project(&wrong_lane, &clean_frame.lanes, clean_frame.lanes.len()),
+            Some(SurfaceLiquidFrameIdentityMismatch::Lane { topology_index: 0 }),
+        );
+    }
+    let mut wrong_layer_count = clean_frame.lanes.clone();
+    wrong_layer_count[0].subsurface_layers.pop();
+    assert_eq!(
+        project(
+            &clean_configuration,
+            &wrong_layer_count,
+            wrong_layer_count.len(),
+        ),
+        Some(SurfaceLiquidFrameIdentityMismatch::LayerCardinality { topology_index: 0 }),
+    );
+    let mut wrong_area = clean_configuration.clone();
+    wrong_area.records[0].ofe_area_m2 += 1.0;
+    assert_eq!(
+        project(&wrong_area, &clean_frame.lanes, clean_frame.lanes.len()),
+        Some(SurfaceLiquidFrameIdentityMismatch::Area {
+            topology_index: 0,
+            record_index: 0,
+        }),
+    );
+
+    let mut identity_and_domain = clean_configuration;
+    identity_and_domain.ofe_bindings[0].production_lane_id += 1;
+    let mut nonfinite_lanes = clean_frame.lanes.clone();
+    nonfinite_lanes[0].area_m2 = f64::NAN;
+    assert_eq!(
+        first_surface_liquid_frame_identity_mismatch(
+            clean_frame.identity.run_id,
+            &nonfinite_lanes,
+            &identity_and_domain,
+            nonfinite_lanes.len(),
+            SurfaceLiquidAreaIdentityPolicy::FinitePositiveOnly,
+            |_, _, _| true,
+        ),
+        Some(SurfaceLiquidFrameIdentityMismatch::Lane { topology_index: 0 }),
+        "frame identity must remain earlier than lane numeric domain",
+    );
+}
+
 #[test]
 fn complete_configuration_identity_set_precedes_record_domains_in_any_row_position() {
     for domain_index in 0..2 {
@@ -288,6 +379,8 @@ fn attachment_and_authorization_preflight_complete_configuration_identity_before
                 .is_some()
         );
     }
+
+    assert_frame_receiver_identity_projection_equivalence();
 }
 
 #[test]

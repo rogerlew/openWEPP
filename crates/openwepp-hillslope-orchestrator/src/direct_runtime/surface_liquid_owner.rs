@@ -575,7 +575,8 @@ impl DirectSurfaceLiquidConfiguration {
             ofe_bindings,
             records,
         };
-        configuration.validate_structure()?;
+        configuration.preflight_schema_and_identity_structure()?;
+        configuration.validate_domains()?;
         configuration.configuration_sha256 = configuration.recomputed_sha256()?;
         Ok(configuration)
     }
@@ -597,66 +598,14 @@ impl DirectSurfaceLiquidConfiguration {
     }
 
     fn validate_inner(&self) -> Result<(), DirectSurfaceLiquidError> {
-        self.validate_structure()?;
-        if !is_sha256(&self.configuration_sha256)
-            || self.configuration_sha256 != self.recomputed_sha256()?
-        {
-            return Err(DirectSurfaceLiquidError::Identity(
-                "configuration digest mismatch",
-            ));
-        }
-        Ok(())
+        self.preflight_schema_and_identities()?;
+        self.validate_domains()
     }
 
-    fn validate_structure(&self) -> Result<(), DirectSurfaceLiquidError> {
-        if self.run_id == 0 || self.records.is_empty() || self.ofe_topology.is_empty() {
-            return Err(DirectSurfaceLiquidError::Schema(
-                "empty run or configuration records",
-            ));
-        }
-        self.preflight_complete_identity_set()?;
-        let mut keys = BTreeSet::new();
-        let mut tiles = BTreeSet::new();
-        let topology_set = self.ofe_topology.iter().cloned().collect::<BTreeSet<_>>();
-        if topology_set.len() != self.ofe_topology.len() {
-            let mut observed = BTreeSet::new();
-            let duplicate = self
-                .ofe_topology
-                .iter()
-                .find(|ofe_id| !observed.insert((*ofe_id).clone()))
-                .cloned();
-            return Err(configuration_record_failure(
-                DirectSurfaceLiquidError::Identity("duplicate OFE topology identity"),
-                DirectSurfaceLiquidErrorContext {
-                    owner_id: Some(self.owner_id.clone()),
-                    ofe_id: duplicate,
-                    ..DirectSurfaceLiquidErrorContext::default()
-                },
-            ));
-        }
-        self.validate_ofe_bindings()?;
-        self.validate_canonical_record_order()?;
+    fn validate_domains(&self) -> Result<(), DirectSurfaceLiquidError> {
         let mut fraction_by_ofe = BTreeMap::<OfeId, f64>::new();
-        let mut area_by_ofe = BTreeMap::<OfeId, u64>::new();
-        let mut route_by_ofe = BTreeMap::<OfeId, (Option<OfeId>, Option<TileId>)>::new();
         for record in &self.records {
             let context = surface_liquid_store_context(&self.owner_id, None, &record.key);
-            if record.key.run_id != self.run_id || !keys.insert(record.key.clone()) {
-                return Err(configuration_record_failure(
-                    DirectSurfaceLiquidError::Identity("duplicate or wrong-run store key"),
-                    context,
-                ));
-            }
-            if !topology_set.contains(&record.key.ofe_id)
-                || !tiles.insert((record.key.ofe_id.clone(), record.key.tile_id.clone()))
-            {
-                return Err(configuration_record_failure(
-                    DirectSurfaceLiquidError::Identity("unknown OFE or duplicate OFE/tile store"),
-                    context,
-                ));
-            }
-            validate_store_pair(record.key.surface_class, record.key.source_type)
-                .map_err(|error| configuration_record_failure(error, context.clone()))?;
             require_positive(record.tile_fraction, "tile fraction")
                 .map_err(|error| configuration_record_failure(error, context.clone()))?;
             if record.tile_fraction > 1.0 {
@@ -679,25 +628,8 @@ impl DirectSurfaceLiquidConfiguration {
                         context.clone(),
                     )
                 })?;
-            validate_same_ofe_value(
-                &mut area_by_ofe,
-                record.key.ofe_id.clone(),
-                record.ofe_area_m2.to_bits(),
-                "mixed OFE area within configuration",
-            )
-            .map_err(|error| configuration_record_failure(error, context.clone()))?;
-            validate_same_ofe_value(
-                &mut route_by_ofe,
-                record.key.ofe_id.clone(),
-                (
-                    record.runon_destination_ofe_id.clone(),
-                    record.runon_destination_tile_id.clone(),
-                ),
-                "mixed route within OFE",
-            )
-            .map_err(|error| configuration_record_failure(error, context))?;
         }
-        self.validate_topology_and_routes(&topology_set, &fraction_by_ofe, &route_by_ofe)
+        self.validate_fraction_domains(&fraction_by_ofe)
     }
 
     fn validate_ofe_bindings(&self) -> Result<(), DirectSurfaceLiquidError> {
@@ -789,17 +721,10 @@ impl DirectSurfaceLiquidConfiguration {
         Ok(())
     }
 
-    fn validate_topology_and_routes(
+    fn validate_fraction_domains(
         &self,
-        topology_set: &BTreeSet<OfeId>,
         fraction_by_ofe: &BTreeMap<OfeId, f64>,
-        route_by_ofe: &BTreeMap<OfeId, (Option<OfeId>, Option<TileId>)>,
     ) -> Result<(), DirectSurfaceLiquidError> {
-        self.validate_topology_and_route_identities(
-            topology_set,
-            &fraction_by_ofe.keys().cloned().collect(),
-            route_by_ofe,
-        )?;
         for (ofe_id, sum) in fraction_by_ofe {
             let tolerance = TOPOLOGY_MULTIPLIER * f64::EPSILON * sum.abs().max(1.0);
             if (*sum - 1.0).abs() > tolerance {
@@ -1112,7 +1037,8 @@ impl DirectSurfaceLiquidOwnedState {
             records,
             continuations,
         };
-        state.validate_structure(configuration, None)?;
+        let expected_lineage = state.preflight_schema_and_identity_structure(configuration)?;
+        state.validate_domains(configuration, expected_lineage)?;
         state.state_sha256 = state.recomputed_sha256()?;
         Ok(state)
     }
@@ -1143,12 +1069,8 @@ impl DirectSurfaceLiquidOwnedState {
     ) -> Result<(), DirectSurfaceLiquidError> {
         configuration.preflight_schema_and_identities()?;
         let expected_lineage = self.preflight_schema_and_identities(configuration)?;
-        configuration.validate()?;
-        self.validate_structure(configuration, expected_lineage)?;
-        if !is_sha256(&self.state_sha256) || self.state_sha256 != self.recomputed_sha256()? {
-            return Err(DirectSurfaceLiquidError::Identity("state digest mismatch"));
-        }
-        Ok(())
+        configuration.validate_domains()?;
+        self.validate_domains(configuration, expected_lineage)
     }
 
     fn validate_for_transaction(
@@ -1207,50 +1129,15 @@ impl DirectSurfaceLiquidOwnedState {
         observed.ok_or(DirectSurfaceLiquidError::Schema("empty state lineage"))
     }
 
-    fn validate_structure(
+    fn validate_domains(
         &self,
         configuration: &DirectSurfaceLiquidConfiguration,
         expected_lineage: Option<TransactionId>,
     ) -> Result<(), DirectSurfaceLiquidError> {
-        if self.owner_id != configuration.owner_id
-            || self.configuration_sha256 != configuration.configuration_sha256
-        {
-            return Err(DirectSurfaceLiquidError::Identity(
-                "state owner/configuration/key count mismatch",
-            ));
-        }
-        if self.records.len() != configuration.records.len() {
-            let key = self
-                .records
-                .get(configuration.records.len())
-                .map(|record| &record.key)
-                .or_else(|| {
-                    configuration
-                        .records
-                        .get(self.records.len())
-                        .map(|record| &record.key)
-                });
-            let context = key.map_or_else(
-                || DirectSurfaceLiquidErrorContext {
-                    owner_id: Some(self.owner_id.clone()),
-                    ..DirectSurfaceLiquidErrorContext::default()
-                },
-                |key| surface_liquid_store_context(&self.owner_id, expected_lineage, key),
-            );
-            return Err(restart_record_failure(
-                DirectSurfaceLiquidError::Identity("state owner/configuration/key count mismatch"),
-                context,
-            ));
-        }
         for (state, config) in self.records.iter().zip(&configuration.records) {
-            validate_restart_store_record(&self.owner_id, state, config, expected_lineage)?;
+            validate_restart_store_domains(&self.owner_id, state, config, expected_lineage)?;
         }
-        validate_restart_continuations(
-            &self.owner_id,
-            &self.continuations,
-            configured_ofes(configuration),
-            expected_lineage,
-        )
+        validate_restart_continuation_domains(&self.owner_id, &self.continuations, expected_lineage)
     }
 
     pub fn canonical_bytes(
@@ -2655,7 +2542,7 @@ fn restart_record_failure_with_hash(
     )
 }
 
-fn validate_restart_store_record(
+fn validate_restart_store_domains(
     owner_id: &ResourceOwnerId,
     state: &DirectSurfaceLiquidStateRecord,
     configuration: &DirectSurfaceLiquidConfigurationRecord,
@@ -2663,12 +2550,6 @@ fn validate_restart_store_record(
 ) -> Result<(), DirectSurfaceLiquidError> {
     let transaction_id = state.last_accepted_transaction_id.or(expected_lineage);
     let context = surface_liquid_store_context(owner_id, transaction_id, &state.key);
-    if state.key != configuration.key || state.last_accepted_transaction_id != expected_lineage {
-        return Err(restart_record_failure(
-            DirectSurfaceLiquidError::Identity("state key or lineage mismatch"),
-            context,
-        ));
-    }
     require_nonnegative(state.liquid_kg_m2_tile, "state liquid")
         .map_err(|error| restart_record_failure(error, context.clone()))?;
     if state.liquid_kg_m2_tile > configuration.capacity_kg_m2_tile {
@@ -2680,36 +2561,12 @@ fn validate_restart_store_record(
     Ok(())
 }
 
-fn validate_restart_continuations(
+fn validate_restart_continuation_domains(
     owner_id: &ResourceOwnerId,
     continuations: &[DirectSurfaceLiquidContinuationState],
-    ofes: Vec<OfeId>,
     expected_lineage: Option<TransactionId>,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    if continuations.len() != ofes.len() {
-        return Err(restart_binding_failure(
-            owner_id,
-            expected_lineage,
-            None,
-            "continuation cardinality mismatch",
-        ));
-    }
-    for (continuation, ofe_id) in continuations.iter().zip(ofes) {
-        if continuation.ofe_id != ofe_id
-            || continuation.last_accepted_transaction_id != expected_lineage
-        {
-            return Err(restart_record_failure(
-                DirectSurfaceLiquidError::Identity("continuation identity or lineage mismatch"),
-                DirectSurfaceLiquidErrorContext {
-                    transaction_id: continuation
-                        .last_accepted_transaction_id
-                        .or(expected_lineage),
-                    owner_id: Some(owner_id.clone()),
-                    ofe_id: Some(continuation.ofe_id.clone()),
-                    ..DirectSurfaceLiquidErrorContext::default()
-                },
-            ));
-        }
+    for continuation in continuations {
         if continuation.next_interval_index > 48 {
             return Err(restart_binding_failure(
                 owner_id,
