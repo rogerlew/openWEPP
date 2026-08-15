@@ -104,9 +104,13 @@ branch, PR or push is in scope.
   unvalidated zero-source identity, and fabricated first-tile aggregate
   context. The correction at `e19bcdbcf` restores `h_mix`, freezes every raw
   source identity and uses typed absent context where identity is unknowable.
-  It passes 554/554 orchestrator, 19/19 focused integration and 9/9 authority
-  tests, strict Clippy, formatting, diff hygiene, and line-count governance.
-  Fresh exact-byte reviews remain pending.
+  Closure5 review found evidence still collapsed chronological support into one
+  whole-OFE mixture and hardcoded source support/order. The correction at
+  `c4114fc8c` reconstructs per-window `h_mix,b`, actual support and canonical
+  source order without changing production physics. It passes 556/556
+  orchestrator, 19/19 focused integration and 9/9 authority tests, strict
+  Clippy, formatting, diff hygiene, and line-count governance. Fresh exact-byte
+  reviews remain pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

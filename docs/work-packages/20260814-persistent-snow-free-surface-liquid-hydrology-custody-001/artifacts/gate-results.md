@@ -498,6 +498,24 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
 - PASS: every edited Rust file remains below 3,000 lines.
 - Pending: fresh exact-byte Rust and hydrology closure review.
 
+## Chronological mixing and support remediation at `c4114fc8c`
+
+- HOLD retained: closure5 reviews found independent closure computed one
+  whole-OFE mixture instead of chronological `h_mix,b`, hardcoded local source
+  support to `[0,1800)`, and coupled exact identity to caller tile order.
+- PASS: frozen operands preserve actual support endpoints and canonical sorted
+  source identity independent of complete unique caller order.
+- PASS: closure partitions each OFE at every local/routed support boundary,
+  reconstructs raw segment mass/Q, computes checked `h_mix,b` for nonzero
+  windows, attributes every source segment with that mixture, then closes per
+  source, OFE and interval raw-to-attributed totals.
+- PASS: partial-overlap unequal-temperature multi-boundary vectors and reversed
+  caller order produce the same accepted result; wrong support and interval-wide
+  mixture poisons fail closed with exact context.
+- PASS: orchestrator quick suite, 556/556; real-LSE/real-hydrology integration,
+  19/19; custody authority, 9/9; strict Clippy; formatting; and diff hygiene.
+- Pending: fresh exact-byte Rust and hydrology closure review.
+
 ## Canonical mixed-enthalpy and source-identity remediation at `e19bcdbcf`
 
 - CRITICAL HOLD retained: closure4 reviews found production had replaced the

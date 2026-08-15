@@ -197,3 +197,15 @@ Canonical interval mixing is restored without tolerance or model change. Raw
 source identity and enthalpy remain independently frozen; post-mix attribution
 uses the single accepted `h_mix`. Aggregate failures expose only identities
 that are actually known.
+
+## Chronological closure and source-support findings
+
+| Finding | Disposition | Remediation status |
+|---|---|---|
+| A/B-TERMINAL-CLOSURE5-CRITICAL-001: independent closure collapses chronological `h_mix,b` to one whole-OFE mixture | Accepted | Remediated at `c4114fc8c`; focused PASS |
+| A/B-TERMINAL-CLOSURE5-HIGH-002: frozen source support hardcoded and identity depends on caller order | Accepted | Remediated at `c4114fc8c`; focused PASS |
+
+Independent closure now reconstructs the canonical chronological support
+partition and per-window mixture from actual frozen source operands. Source
+identity is canonicalized independently of caller order; production physics is
+unchanged.

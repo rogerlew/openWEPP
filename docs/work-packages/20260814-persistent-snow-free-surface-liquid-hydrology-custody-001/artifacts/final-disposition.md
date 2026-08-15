@@ -46,6 +46,10 @@ constitutive regression from interval `h_mix` to source-specific temperatures,
 left zero-source identity unvalidated and fabricated first-tile aggregate
 context. The correction at `e19bcdbcf` restores canonical `h_mix`, separates
 raw-source and post-mix ledgers, validates every source row and carries only
-known aggregate identity. Focused gates pass, but fresh exact-byte reviews and
-terminal verification remain required. This is not yet a terminal custody-lift
-or resumed-Child-3 claim.
+known aggregate identity. Closure5 review found the independent ledger still
+collapsed chronological support into one whole-OFE mixture and hardcoded
+source support/order. The correction at `c4114fc8c` reconstructs exact support
+windows and canonical source order without changing correct production mixing.
+Focused gates pass, but fresh exact-byte reviews and terminal verification
+remain required. This is not yet a terminal custody-lift or resumed-Child-3
+claim.
