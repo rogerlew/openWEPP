@@ -196,3 +196,25 @@ into a complete Child-3 release.
 - Remaining boundary: the public covered positive-condensation custody vector
   and the complete V8 vegetation/BGC/heterogeneous owner envelope are still
   pending. No public V8 commit claim is made.
+
+## Public covered condensation custody vector
+
+- PASS: the actual covered forest wrapper solves a positive-condensation case
+  from humid air and cold ground/soil starts while the hydrology-owned litter
+  store begins at its exact 6 kg m^-2 tile capacity.
+- PASS: the accepted ground branch is typed `Condensation`; ground request,
+  authorization and finalized withdrawal are exact zero. The signed credit
+  retains transaction, hydrology owner, OFE, tile, surface, stand-ground basis,
+  temperature and canonical liquid enthalpy.
+- PASS: the full store remains at capacity and the entire condensation excess
+  becomes typed `CondensationOverflow` ingress. WB14 receipt mass and enthalpy
+  reconstruct under the canonical closure envelope after the required
+  stand/tile conversion roundtrip.
+- PASS: unified candidate validation, unchanged production-frame bytes and all
+  rollback hashes (`before_sha256 == after_sha256`).
+- `Ran: focused covered condensation case` — PASS, 1/1.
+- `Ran: cargo nextest run --test land_surface_energy_real_hydrology_shadow_contract --profile quick`
+  — PASS, 72/72.
+- `Ran: cargo fmt --all -- --check` and file-scoped `git diff --check` — PASS.
+- Remaining boundary: persistent V8 vegetation/BGC and the complete
+  heterogeneous owner envelope remain pending.

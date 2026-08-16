@@ -1,8 +1,9 @@
 use super::*;
+use openwepp_hillslope_orchestrator::DirectSurfaceLiquidParcelKind;
 use openwepp_hillslope_orchestrator::land_surface_energy_shadow::{
-    BiochemicalConstants, CoveredColumnInputs, CoveredOccupancyInputs, LeafBiochemicalInputs,
-    RootHydraulicLayer, RootRuntimeIdentity, UnderCanopyGeometry, WaterAmount,
-    execute_covered_forest_shadow, solve_covered_potential_phase,
+    BiochemicalConstants, CoveredColumnInputs, CoveredForestShadowResult, CoveredOccupancyInputs,
+    LeafBiochemicalInputs, RootHydraulicLayer, RootRuntimeIdentity, UnderCanopyGeometry,
+    WaterAmount, execute_covered_forest_shadow, solve_covered_potential_phase,
 };
 
 const INTERVAL_S: f64 = 1_800.0;
@@ -331,7 +332,10 @@ fn covered_configuration() -> DirectSurfaceLiquidConfiguration {
     .expect("covered configuration")
 }
 
-fn covered_frame(configuration: &DirectSurfaceLiquidConfiguration) -> DirectRunFrame {
+fn covered_frame_with_forest_liquid(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    forest_liquid_kg_m2_tile: f64,
+) -> DirectRunFrame {
     let identity = DirectRunIdentity::new(83, 11, 1, 1).expect("identity");
     let mut frame = DirectRunFrame::skeleton(identity).expect("frame");
     frame.lanes[0].area_m2 = 100.0;
@@ -363,7 +367,7 @@ fn covered_frame(configuration: &DirectSurfaceLiquidConfiguration) -> DirectRunF
             (
                 record.key.clone(),
                 if record.key.tile_id.as_str() == "forest" {
-                    4.0
+                    forest_liquid_kg_m2_tile
                 } else {
                     0.0
                 },
@@ -376,6 +380,10 @@ fn covered_frame(configuration: &DirectSurfaceLiquidConfiguration) -> DirectRunF
         .configure_surface_liquid_shadow(configuration, state)
         .expect("attach surface owner");
     frame
+}
+
+fn covered_frame(configuration: &DirectSurfaceLiquidConfiguration) -> DirectRunFrame {
+    covered_frame_with_forest_liquid(configuration, 4.0)
 }
 
 fn covered_ingress(mass: f64) -> DirectSurfaceLiquidIngressInput {
@@ -431,7 +439,7 @@ fn covered_ingress(mass: f64) -> DirectSurfaceLiquidIngressInput {
     }
 }
 
-fn covered_soil_thermal() -> SoilThermalSnapshot {
+fn covered_soil_thermal_with_temperatures(temperatures_k: [f64; 2]) -> SoilThermalSnapshot {
     SoilThermalSnapshot {
         owner_id: ResourceOwnerId::try_new("soil-thermal").expect("owner"),
         configuration_sha256: digest('5'),
@@ -443,17 +451,180 @@ fn covered_soil_thermal() -> SoilThermalSnapshot {
             ordered_layers: vec![
                 SoilThermalLayerSnapshot {
                     layer_id: SoilLayerId::try_new("thermal-1").expect("layer"),
-                    temperature_k: 291.5,
+                    temperature_k: temperatures_k[0],
                     enthalpy_j_m2_ofe_ground: 1.0e6,
                 },
                 SoilThermalLayerSnapshot {
                     layer_id: SoilLayerId::try_new("thermal-2").expect("layer"),
-                    temperature_k: 289.8,
+                    temperature_k: temperatures_k[1],
                     enthalpy_j_m2_ofe_ground: 2.0e6,
                 },
             ],
         }],
     }
+}
+
+fn covered_soil_thermal() -> SoilThermalSnapshot {
+    covered_soil_thermal_with_temperatures([291.5, 289.8])
+}
+
+fn execute_covered_fixture(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    frame: &DirectRunFrame,
+    column: &CoveredColumnInputs,
+    solve_trial: Vec<f64>,
+    soil_thermal: &SoilThermalSnapshot,
+    ingress_mass_kg_m2_tile: f64,
+) -> CoveredForestShadowResult {
+    let lane = RealHydrologyOfeLaneId {
+        lane_index: 0,
+        lane_id: frame.lanes[0].lane_id,
+    };
+    let layer_ids = [
+        "thermal-1",
+        "thermal-2",
+        "soil-1",
+        "soil-2",
+        "soil-dry",
+        "soil-frozen",
+    ]
+    .map(|layer| SoilLayerId::try_new(layer).expect("layer"))
+    .to_vec();
+    let owner = RealHydrologyShadowAdapter::try_from_day_start(
+        frame,
+        0,
+        TransactionId(41),
+        INTERVAL_S,
+        ResourceOwnerId::try_new("production-hydrology").expect("owner"),
+        &[RealHydrologyLaneLayerMap {
+            ofe_lane: lane,
+            layer_ids,
+        }],
+    )
+    .expect("real owner");
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, configuration)
+        .expect("unified snapshot");
+    let runtime_identity = identity(
+        snapshot.clone(),
+        configuration.records[0].key.source_id.clone(),
+    );
+    let preview = solve_covered_potential_phase(
+        runtime_identity.clone(),
+        column,
+        root_runtime_identities(),
+        solve_trial.clone(),
+    )
+    .expect("preview potential");
+    let soil_sources = preview
+        .request_batch
+        .requests
+        .iter()
+        .filter_map(|request| {
+            request.key.soil_layer_id.as_ref().map(|layer_id| {
+                (
+                    request.key.clone(),
+                    RealHydrologySourceKey {
+                        ofe_lane: lane,
+                        layer_id: layer_id.clone(),
+                    },
+                )
+            })
+        })
+        .collect();
+    let expectations = UnifiedReceiverExpectations::try_new(
+        ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
+        digest('2'),
+        ResourceOwnerId::try_new("production-hydrology").expect("hydrology owner"),
+        snapshot,
+        ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
+        digest('4'),
+        ["forest", "open"]
+            .map(|tile| {
+                (
+                    OfeId::try_new("ofe-1").expect("OFE"),
+                    TileId::try_new(tile).expect("tile"),
+                    vec![
+                        SoilLayerId::try_new("thermal-1").expect("layer"),
+                        SoilLayerId::try_new("thermal-2").expect("layer"),
+                    ],
+                )
+            })
+            .to_vec(),
+    )
+    .expect("receiver expectations");
+    let companion_lse = TileState {
+        ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+        tile_id: TileId::try_new("open").expect("tile"),
+        surface_enthalpy_j_m2_tile_ground: 0.0,
+        surface_temperature_warm_start_k: 291.0,
+    };
+    let companion_thermal = SoilThermalTileCandidate {
+        owner_id: ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
+        beginning_state_sha256: digest('4'),
+        ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+        tile_id: TileId::try_new("open").expect("tile"),
+        layers: vec![
+            SoilThermalLayerCandidate {
+                layer_id: SoilLayerId::try_new("thermal-1").expect("layer"),
+                beginning_enthalpy_j_m2_ofe_ground: 1.0e6,
+                ground_heat_credit_j_m2_ofe_ground: 0.0,
+                infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
+                ending_enthalpy_j_m2_ofe_ground: 1.0e6,
+                ending_temperature_k: 291.5,
+            },
+            SoilThermalLayerCandidate {
+                layer_id: SoilLayerId::try_new("thermal-2").expect("layer"),
+                beginning_enthalpy_j_m2_ofe_ground: 2.0e6,
+                ground_heat_credit_j_m2_ofe_ground: 0.0,
+                infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
+                ending_enthalpy_j_m2_ofe_ground: 2.0e6,
+                ending_temperature_k: 289.8,
+            },
+        ],
+    };
+    let open_key = GroundWaterKey {
+        transaction_id: TransactionId(41),
+        requesting_owner_id: ResourceOwnerId::try_new("land-surface-energy-v1")
+            .expect("LSE owner"),
+        requesting_component: openwepp_hillslope_orchestrator::land_surface_energy_shadow::RequestingComponent::GroundSurface,
+        ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+        requesting_tile_id: TileId::try_new("open").expect("tile"),
+        occupancy_id: None,
+        surface_id: Some(SurfaceId::try_new("surface:ofe-1:open").expect("surface")),
+        surface_class: Some(SurfaceClass::BareMineralSoil),
+        source_type: WaterSourceType::SurfaceLiquid,
+        source_id: SourceId::try_new("surface-liquid:ofe-1:open").expect("source"),
+        source_tile_id: Some(TileId::try_new("open").expect("source tile")),
+        soil_layer_id: None,
+        amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+    };
+    let companion_request = WaterAmount {
+        key: open_key.clone(),
+        amount_kg_m2_stand_ground: 0.0,
+    };
+    let companion_use = WaterAmount {
+        key: open_key,
+        amount_kg_m2_stand_ground: 0.0,
+    };
+    execute_covered_forest_shadow(
+        &adapter,
+        configuration,
+        &expectations,
+        runtime_identity,
+        column,
+        root_runtime_identities(),
+        &soil_sources,
+        &covered_ingress(ingress_mass_kg_m2_tile),
+        solve_trial.clone(),
+        solve_trial,
+        soil_thermal,
+        &[companion_request],
+        &[companion_use],
+        &[companion_lse],
+        &[companion_thermal],
+    )
+    .expect("covered forest real-owner transaction")
 }
 
 #[test]
@@ -678,4 +849,153 @@ fn covered_forest_wrapper_uses_one_real_authorization_and_post_solve_ingress() {
     assert!(receipts[0].mass_kg_m2_basis_ofe_ground > 0.0);
     assert_eq!(receipts[0].origin_store_key.tile_id.as_str(), "forest");
     assert_eq!(result.hydrology_candidate().rollback_hashes().len(), 3);
+}
+
+#[test]
+fn covered_forest_condensation_credits_full_litter_store_and_routes_overflow() {
+    let configuration = covered_configuration();
+    let frame = covered_frame_with_forest_liquid(&configuration, 6.0);
+    let production_before = frame.clone();
+    let mut condensation_column = column();
+    condensation_column.air_specific_humidity_kg_kg = 0.021;
+    condensation_column.ground.air_specific_humidity_kg_kg = 0.021;
+    condensation_column.ground.surface_liquid_kg_m2_tile = 6.0;
+    condensation_column.ground.surface_enthalpy_j_m2_tile = 195_524.208_000_000_65;
+    condensation_column.ground.surface_temperature_warm_start_k = 280.0;
+    condensation_column.ground.soil_nodes[0].beginning_temperature_k = 278.0;
+    condensation_column.ground.soil_nodes[1].beginning_temperature_k = 276.0;
+    let mut condensation_trial = trial();
+    let common = condensation_trial.len() - 5;
+    condensation_trial[common + 2] = 280.0;
+    condensation_trial[common + 3] = 278.0;
+    condensation_trial[common + 4] = 276.0;
+    let soil_thermal = covered_soil_thermal_with_temperatures([278.0, 276.0]);
+
+    let result = execute_covered_fixture(
+        &configuration,
+        &frame,
+        &condensation_column,
+        condensation_trial,
+        &soil_thermal,
+        0.0,
+    );
+
+    assert_eq!(frame, production_before, "production frame mutated");
+    let ground = &result
+        .final_tile()
+        .final_solver_candidate
+        .evaluation
+        .ground_water;
+    assert_eq!(
+        serde_json::to_value(ground.branch).expect("serialize typed water branch"),
+        serde_json::json!("Condensation")
+    );
+    assert!(ground.law_kg_m2_tile_s < 0.0);
+    assert!(ground.final_kg_m2_tile_s < 0.0);
+    assert_eq!(
+        ground.request_kg_m2_stand_ground.to_bits(),
+        0.0_f64.to_bits()
+    );
+    assert_eq!(
+        ground
+            .authorization_kg_m2_stand_ground
+            .expect("fixed zero authorization")
+            .to_bits(),
+        0.0_f64.to_bits()
+    );
+    assert_eq!(
+        ground.finalized_use_kg_m2_stand_ground.to_bits(),
+        0.0_f64.to_bits()
+    );
+
+    let credits = &result.final_tile().water_protocol.condensation_credits;
+    assert_eq!(credits.len(), 1);
+    let credit = &credits[0];
+    let expected_credit = -ground.final_kg_m2_tile_s * TILE_FRACTION * INTERVAL_S;
+    assert_eq!(
+        credit.amount_kg_m2_stand_ground.to_bits(),
+        expected_credit.to_bits()
+    );
+    assert!(credit.amount_kg_m2_stand_ground > 0.0);
+    assert_eq!(credit.transaction_id, TransactionId(41));
+    assert_eq!(credit.hydrology_owner_id.as_str(), "production-hydrology");
+    assert_eq!(credit.ofe_id.as_str(), "ofe-1");
+    assert_eq!(credit.tile_id.as_str(), "forest");
+    assert_eq!(credit.surface_id.as_str(), "surface:ofe-1:forest");
+    assert_eq!(
+        credit.amount_basis,
+        StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval
+    );
+    assert_eq!(
+        credit.specific_liquid_enthalpy_j_kg.to_bits(),
+        (4_218.0 * (credit.temperature_k - 273.15)).to_bits()
+    );
+    assert_eq!(result.hydrology_candidate().condensation_credits(), credits);
+
+    let resource = result.hydrology_candidate().surface_resource();
+    assert_eq!(resource.condensation_credits(), credits);
+    assert_eq!(resource.condensation_overflow().len(), 1);
+    let overflow = &resource.condensation_overflow()[0];
+    assert_eq!(overflow.store_key.tile_id.as_str(), "forest");
+    let overflow_mass_tolerance = 1.0e-14
+        + 64.0
+            * f64::EPSILON
+            * (overflow.amount_kg_m2_ofe_ground.abs() + credit.amount_kg_m2_stand_ground.abs());
+    assert!(
+        (overflow.amount_kg_m2_ofe_ground - credit.amount_kg_m2_stand_ground).abs()
+            <= overflow_mass_tolerance
+    );
+    assert_eq!(
+        overflow.temperature_k.to_bits(),
+        credit.temperature_k.to_bits()
+    );
+    assert_eq!(
+        overflow.specific_liquid_enthalpy_j_kg.to_bits(),
+        credit.specific_liquid_enthalpy_j_kg.to_bits()
+    );
+    let working_forest = resource
+        .working_state()
+        .records
+        .iter()
+        .find(|row| row.key.tile_id.as_str() == "forest")
+        .expect("working forest store");
+    assert_eq!(
+        working_forest.liquid_kg_m2_tile.to_bits(),
+        6.0_f64.to_bits()
+    );
+
+    let ingress = result.hydrology_candidate().surface_ingress();
+    assert_eq!(ingress.beginning_state(), resource.working_state());
+    let condensation_receipts: Vec<_> = ingress
+        .receipts()
+        .iter()
+        .filter(|row| row.kind == DirectSurfaceLiquidParcelKind::CondensationOverflow)
+        .collect();
+    assert!(!condensation_receipts.is_empty());
+    let receipt_mass: f64 = condensation_receipts
+        .iter()
+        .map(|row| row.mass_kg_m2_basis_ofe_ground)
+        .sum();
+    let receipt_enthalpy: f64 = condensation_receipts
+        .iter()
+        .map(|row| row.enthalpy_j_m2_basis_ofe_ground)
+        .sum();
+    let receipt_mass_tolerance = 1.0e-14
+        + 64.0 * f64::EPSILON * (receipt_mass.abs() + overflow.amount_kg_m2_ofe_ground.abs());
+    assert!((receipt_mass - overflow.amount_kg_m2_ofe_ground).abs() <= receipt_mass_tolerance);
+    let expected_enthalpy = overflow.amount_kg_m2_ofe_ground * credit.specific_liquid_enthalpy_j_kg;
+    let receipt_enthalpy_tolerance =
+        1.0e-9 + 64.0 * f64::EPSILON * (receipt_enthalpy.abs() + expected_enthalpy.abs());
+    assert!((receipt_enthalpy - expected_enthalpy).abs() <= receipt_enthalpy_tolerance);
+    result
+        .hydrology_candidate()
+        .validate(&configuration)
+        .expect("unified condensation candidate");
+    assert!(
+        result
+            .hydrology_candidate()
+            .rollback_hashes()
+            .iter()
+            .all(|row| row.before_sha256 == row.after_sha256)
+    );
 }

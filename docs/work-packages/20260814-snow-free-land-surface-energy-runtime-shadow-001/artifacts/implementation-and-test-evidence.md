@@ -117,3 +117,18 @@ This closes the missing E04 operand boundary but not the Child-3 endpoint. A
 public covered condensation-to-WB14 vector and the persistent V8 vegetation,
 BGC and complete heterogeneous owner envelope remain required before atomic
 shadow commit can be claimed.
+
+## Public covered condensation-to-WB14 evidence
+
+The public forest wrapper now has a nondegenerate condensation case with a full
+hydrology-owned litter store. It retains exact-zero ground `D/A/F`, constructs
+one positive signed credit with complete identity and canonical liquid
+enthalpy, holds the resource store at capacity, and routes the excess as a
+timed `CondensationOverflow` parcel through WB14. The final receipt mass and
+enthalpy reconstruct from the owner operands; production state remains byte
+identical and every recorded rollback hash is unchanged.
+
+Ran: the focused case passed 1/1 and the complete LSE/real-hydrology integration
+target passed 72/72. This closes the previously named condensation evidence
+gap. The V8 persistent vegetation/BGC and heterogeneous atomic owner envelope
+remain the Child-3 completion boundary.
