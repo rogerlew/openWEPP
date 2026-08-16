@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / terminal verification pending`
+Status: `COMPLETE / persistent snow-free surface-liquid hydrology custody implemented / default-off only`
 
 The historical campaign and Child-3 HOLD remain controlling. The first
 hydrology and Rust implementation reviews are preserved. All eleven accepted
@@ -166,3 +166,21 @@ two independent verifiers inspect the frozen closure bytes and the active
 kickoff prompt is archived byte-for-byte. No runtime activation, production
 selector/default change, publication, calibration, deployment or cutover is
 claimed.
+
+## Terminal disposition
+
+Terminal hydrology/science verification and terminal Rust/QA/governance
+verification both returned `PASS` on `0e076d203` with no material finding.
+The kickoff prompt was then archived byte-for-byte with SHA-256
+`9adeecc2f23d12525b1140553c172acc1c48666a490c46f9edf6d77e2e2cf0d9`.
+
+The dependency blocker is lifted. Persistent snow-free surface/litter liquid
+now has strict hydrology-owned per-OFE/tile/surface/source state, restart and
+transaction lineage, immutable beginning-snapshot D/A/F, finalized-use-only
+debit, signed condensation credit, chronological ingress and independent
+mass/enthalpy/rollback closure. Child 3 is authorized to resume in its existing
+package; its historical HOLD remains immutable evidence.
+
+This terminal disposition authorizes no runtime activation, production
+selector/default change, output publication, deployment, calibration,
+empirical validation or cutover.

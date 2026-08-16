@@ -1,6 +1,6 @@
 # Admit And Implement Persistent Snow-Free Surface-Liquid Hydrology Custody
 
-Status: `executing / terminal verification pending`
+Status: `COMPLETE / persistent snow-free surface-liquid hydrology custody implemented / default-off only`
 
 Date: `2026-08-14`
 
@@ -144,7 +144,8 @@ branch, PR or push is in scope.
   2,901/2,901 with 33 profile skips, workspace strict Clippy, doctests,
   dependency policy, focused authority gates, formatting and diff hygiene all
   passing. Dual terminal verification remains pending.
-- [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
+- [x] (2026-08-15) Pass dual terminal verification and archive this prompt
+  byte-for-byte. The held Child 3 may now resume without rewriting its HOLD.
 
 ## Surprises & Discoveries
 

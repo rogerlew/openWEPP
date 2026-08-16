@@ -1729,3 +1729,13 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   with zero errors or warnings.
 - Pending: freeze corrected evidence bytes and repeat dual terminal
   verification.
+- PASS: terminal hydrology/science reverification of `0e076d203` found no
+  material finding; LSE 31/31, integration 69/69, custody authority 10/10,
+  formatting and diff hygiene passed.
+- PASS: terminal Rust/QA/governance reverification of `0e076d203` found no
+  material finding; LSE 31/31, integration 69/69, custody authority 10/10,
+  selected orchestrator 87/87, workspace strict Clippy, formatting and diff
+  hygiene passed.
+- PASS: all accepted findings are dispositioned, terminal reports are retained,
+  and the kickoff prompt is archived byte-for-byte with SHA-256
+  `9adeecc2f23d12525b1140553c172acc1c48666a490c46f9edf6d77e2e2cf0d9`.
