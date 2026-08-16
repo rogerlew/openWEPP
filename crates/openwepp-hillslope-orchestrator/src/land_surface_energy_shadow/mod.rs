@@ -54,12 +54,18 @@ use crate::{
 };
 
 mod covered_forest;
+mod covered_v8_owner;
 mod finalization_sealing;
 mod receiver_failure;
 mod receiver_preflight;
 mod receiver_validation;
 mod unified_entry_preflight;
+mod v8_projection;
 pub use covered_forest::{CoveredForestShadowResult, execute_covered_forest_shadow};
+pub use covered_v8_owner::{
+    CoveredV8OwnerEnvelopeError, UncommittedCoveredV8OwnerEnvelope,
+    construct_covered_v8_owner_envelope,
+};
 use finalization_sealing::first_sealed_finalization_violation;
 use receiver_failure::canonical_receiver_failure;
 use receiver_validation::{
@@ -73,6 +79,7 @@ use receiver_validation::{
     validate_surface_production_binding, validate_surface_production_lane_domains,
     water_protocol_sha256, water_request_batch_sha256,
 };
+pub use v8_projection::{V8CoveredProjection, V8ProjectionError, project_covered_forest_v8_passes};
 
 const WATER_DENSITY_KG_M3: f64 = 1_000.0;
 

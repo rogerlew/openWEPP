@@ -277,6 +277,23 @@ impl UncommittedV8VegetationCandidate {
         &self.material_proposals
     }
 
+    /// Exact mineral-nitrogen request, maximum-authorization, and finalized-use
+    /// protocol retained by the sealed persistent phase.
+    #[must_use]
+    pub fn nitrogen_protocol(
+        &self,
+    ) -> (
+        &[crate::transaction::NitrogenRequest],
+        &[crate::transaction::NitrogenAuthorization],
+        &[crate::transaction::NitrogenUse],
+    ) {
+        (
+            self.persistent_phase.requests(),
+            self.persistent_phase.authorizations(),
+            self.persistent_phase.finalized_uses(),
+        )
+    }
+
     pub fn validate_sealed(&self) -> Result<(), VegetationError> {
         if self.transaction_id != self.persistent_phase.transaction_id()
             || self.transaction_id != self.final_state_receipts.transaction_id

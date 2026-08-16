@@ -146,3 +146,18 @@ ledgers. It cannot authorize water, rerun V7 E01--E15, or commit state.
 Ran: vegetation quick 249/249, crate check, strict all-target Clippy,
 formatting and diff hygiene all passed. BGC receipt construction and the
 complete heterogeneous atomic owner envelope remain pending.
+
+## V8 projection and receiving-owner boundary
+
+The orchestrator now has a non-constitutive typed projection from the actual
+covered LSE/real-hydrology result to the three validated V8 receipt types. It
+checks complete E04 and root-water identity against the actual owner result.
+The separate heterogeneous envelope constructs BGC independently with soil
+transformations disabled, compares BGC receipts to vegetation proposals, and
+retains vegetation, real hydrology, LSE, soil thermal and BGC candidates with
+one transaction identity. Neither API can commit or authorize water.
+
+Ran: projection guards 2/2, envelope guards 2/2, affected checks, strict
+Clippy, formatting and diff hygiene passed. This is bounded helper evidence;
+the aligned public end-to-end V8 physical/persistent/BGC fixture remains
+required before Child-3 completion.

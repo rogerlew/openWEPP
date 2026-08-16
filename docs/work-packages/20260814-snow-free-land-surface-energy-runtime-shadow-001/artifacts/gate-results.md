@@ -243,3 +243,27 @@ into a complete Child-3 release.
 - Remaining boundary: construct the independent BGC receiving candidate and
   bind vegetation, real hydrology, LSE, BGC and soil thermal into one
   heterogeneous atomic shadow transaction.
+
+## V8 physical projection and heterogeneous envelope boundary
+
+- PASS: the orchestrator projects the actual covered physical result into
+  validated potential-carbon, capped-carbon and fixed-final V8 state receipts
+  using a caller-supplied typed component/occupancy bijection. It performs no
+  constitutive solve, authorization, string parsing or owner mutation.
+- PASS: the projection validates the complete sealed E04 ledgers and requires
+  exact root key sets and bit-identical `D/A/F` correspondence with the actual
+  unified hydrology candidate.
+- PASS: the heterogeneous uncommitted envelope retains vegetation, actual real
+  hydrology, LSE, soil-thermal and independently constructed BGC candidates.
+  BGC transformations remain disabled and BGC-created material receipts are
+  compared field-for-field with vegetation proposals. No commit API exists.
+- `Ran: cargo test -p openwepp-hillslope-orchestrator v8_projection --lib` —
+  PASS, 2/2.
+- `Ran: cargo test -p openwepp-hillslope-orchestrator covered_v8 --lib` —
+  PASS, 2/2.
+- `Ran: affected cargo check and strict all-target Clippy` — PASS.
+- `Ran: cargo fmt --all -- --check` and `git diff --check` — PASS.
+- Bounded limitation: helper-level projection and envelope guards do not by
+  themselves prove the complete public physical→persistent→BGC composition.
+  An aligned V8 vegetation configuration/state fixture must exercise that
+  exact public chain before the forest endpoint can close.
