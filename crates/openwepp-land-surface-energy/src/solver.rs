@@ -961,6 +961,16 @@ struct LeafTrialState {
     surface_q: f64,
     rs_s_m: f64,
     ci_pa: f64,
+    gross_assimilation_umol_co2_m2_leaf_s: f64,
+    net_assimilation_umol_co2_m2_leaf_s: f64,
+    dark_respiration_umol_co2_m2_leaf_s: f64,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct LeafCarbonState {
+    ag: f64,
+    an: f64,
+    rd: f64,
 }
 
 const MOLAR_GAS_CONSTANT: f64 = 8.314_462_618_153_24;
@@ -1109,7 +1119,7 @@ fn leaf_trial_state(
     if vpd <= 0.0 {
         return Err(LandSurfaceEnergyError::ConstitutiveDomain("surface_vpd"));
     }
-    let residual = |ci: f64| -> Result<(f64, f64), LandSurfaceEnergyError> {
+    let carbon_at_ci = |ci: f64| -> Result<LeafCarbonState, LandSurfaceEnergyError> {
         let ipsii = 0.5
             * p.electron_quantum_yield
             * p.par_photon_umol_per_j
@@ -1124,6 +1134,16 @@ fn leaf_trial_state(
         let ai = smaller_quadratic_root(p.ac_aj_curvature, -(ac + aj), ac * aj)?;
         let ag = smaller_quadratic_root(p.ag_ap_curvature, -(ai + 3.0 * tp), ai * 3.0 * tp)?;
         let an = ag - rd;
+        if !ag.is_finite() || !an.is_finite() || !rd.is_finite() {
+            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "photosynthesis_nonfinite",
+            ));
+        }
+        Ok(LeafCarbonState { ag, an, rd })
+    };
+    let residual = |ci: f64| -> Result<(f64, f64), LandSurfaceEnergyError> {
+        let carbon = carbon_at_ci(ci)?;
+        let an = carbon.an;
         let rb = 1.0 / gb_leaf;
         let cs = column.ca_pa - 1.4 * rb * MOLAR_GAS_CONSTANT * temperature * an * 1.0e-6;
         if cs <= 0.0 {
@@ -1154,10 +1174,14 @@ fn leaf_trial_state(
     let (mut fb, mut rs) = residual(b)?;
     if fa == 0.0 {
         rs = residual(a)?.1;
+        let carbon = carbon_at_ci(a)?;
         return Ok(LeafTrialState {
             surface_q: qsurface,
             rs_s_m: rs,
             ci_pa: a,
+            gross_assimilation_umol_co2_m2_leaf_s: carbon.ag,
+            net_assimilation_umol_co2_m2_leaf_s: carbon.an,
+            dark_respiration_umol_co2_m2_leaf_s: carbon.rd,
         });
     }
     if fa * fb > 0.0 {
@@ -1210,10 +1234,14 @@ fn leaf_trial_state(
             break;
         }
     }
+    let carbon = carbon_at_ci(b)?;
     Ok(LeafTrialState {
         surface_q: qsurface,
         rs_s_m: rs,
         ci_pa: b,
+        gross_assimilation_umol_co2_m2_leaf_s: carbon.ag,
+        net_assimilation_umol_co2_m2_leaf_s: carbon.an,
+        dark_respiration_umol_co2_m2_leaf_s: carbon.rd,
     })
 }
 
@@ -1235,6 +1263,12 @@ pub struct CoveredOccupancyEvaluation {
     pub wet_branch: WaterBranch,
     pub component_temperatures_k: [f64; 4],
     pub ci_pa: [f64; 2],
+    /// Accepted class-resolved `[sun, shade]` `FvCB` carbon operands. These are
+    /// evaluated at the same `ci` and component temperatures used by the
+    /// accepted coupled residual, never reconstructed from a potential pass.
+    pub gross_assimilation_umol_co2_m2_leaf_s: [f64; 2],
+    pub net_assimilation_umol_co2_m2_leaf_s: [f64; 2],
+    pub dark_respiration_umol_co2_m2_leaf_s: [f64; 2],
 }
 
 struct CoveredOccupancyTrialContext<'a> {
@@ -1506,6 +1540,18 @@ fn evaluate_covered_occupancy(
         wet_branch,
         component_temperatures_k: [tsun, tshade, twet, tstem],
         ci_pa: [sun.ci_pa, shade.ci_pa],
+        gross_assimilation_umol_co2_m2_leaf_s: [
+            sun.gross_assimilation_umol_co2_m2_leaf_s,
+            shade.gross_assimilation_umol_co2_m2_leaf_s,
+        ],
+        net_assimilation_umol_co2_m2_leaf_s: [
+            sun.net_assimilation_umol_co2_m2_leaf_s,
+            shade.net_assimilation_umol_co2_m2_leaf_s,
+        ],
+        dark_respiration_umol_co2_m2_leaf_s: [
+            sun.dark_respiration_umol_co2_m2_leaf_s,
+            shade.dark_respiration_umol_co2_m2_leaf_s,
+        ],
     })
 }
 
@@ -2645,6 +2691,17 @@ mod tests {
         .concat();
         let full =
             evaluate_covered_column(&column, &full_trial, None, None).expect("full covered column");
+        let carbon = &full.occupancies[0];
+        for class in 0..2 {
+            assert!(carbon.gross_assimilation_umol_co2_m2_leaf_s[class].is_finite());
+            assert!(carbon.dark_respiration_umol_co2_m2_leaf_s[class].is_finite());
+            assert_eq!(
+                carbon.net_assimilation_umol_co2_m2_leaf_s[class].to_bits(),
+                (carbon.gross_assimilation_umol_co2_m2_leaf_s[class]
+                    - carbon.dark_respiration_umol_co2_m2_leaf_s[class])
+                    .to_bits()
+            );
+        }
         assert!(
             full.normalized_residuals
                 .iter()
@@ -2699,6 +2756,15 @@ mod tests {
         ];
         let transaction = execute_covered_potential_final(&column, full_trial, &caps, capped_trial)
             .expect("immutable potential/final transaction");
+        assert_ne!(
+            transaction.potential.evaluation.occupancies[0].gross_assimilation_umol_co2_m2_leaf_s
+                [0]
+            .to_bits(),
+            transaction.final_pass.evaluation.occupancies[0].gross_assimilation_umol_co2_m2_leaf_s
+                [0]
+            .to_bits(),
+            "cap-active accepted carbon must come from the rebuilt final solve"
+        );
         assert_eq!(
             transaction.final_pass.ground_water.branch,
             WaterBranch::AuthorizationActiveOrTie
