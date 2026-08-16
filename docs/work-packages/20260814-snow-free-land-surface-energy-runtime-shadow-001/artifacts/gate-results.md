@@ -218,3 +218,28 @@ into a complete Child-3 release.
 - `Ran: cargo fmt --all -- --check` and file-scoped `git diff --check` — PASS.
 - Remaining boundary: persistent V8 vegetation/BGC and the complete
   heterogeneous owner envelope remain pending.
+
+## Uncommitted V8 vegetation owner candidate
+
+- PASS: an explicit typed LSE-component-to-vegetation-occupancy bijection
+  binds the dependency-neutral final receipt without parsing or concatenating
+  identity strings. Missing, duplicate and non-bijective mappings fail closed.
+- PASS: candidate construction requires the exact potential carbon pass,
+  fixed-final carbon pass, persistent phase, V8 configuration, beginning state,
+  transaction, interval, tile fraction and one consistent LSE lineage.
+- PASS: ending occupancy liquid and numerical lanes and the shared tile
+  canopy-air lane are sourced only from the fixed-authorization-final receipt.
+  Shared strata come only from the already finalized E16--E22 preallocations.
+- PASS: the V8 state digest is recomputed and validated; material proposals are
+  bound deterministically; vegetation C, N and dry-material ledgers are
+  independently reconstructed. The type exposes no commit method, water
+  arbiter or V7 E01--E15 entry.
+- `Ran: cargo nextest run -p openwepp-vegetation --profile quick` — PASS,
+  249/249.
+- `Ran: cargo check -p openwepp-vegetation` — PASS.
+- `Ran: cargo clippy -p openwepp-vegetation --all-targets -- -D warnings` —
+  PASS.
+- `Ran: cargo fmt --all -- --check` and `git diff --check` — PASS.
+- Remaining boundary: construct the independent BGC receiving candidate and
+  bind vegetation, real hydrology, LSE, BGC and soil thermal into one
+  heterogeneous atomic shadow transaction.

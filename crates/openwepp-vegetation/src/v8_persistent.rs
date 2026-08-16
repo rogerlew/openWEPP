@@ -207,6 +207,10 @@ pub struct V8PersistentForcingReceipt {
 #[derive(Clone, Debug, PartialEq)]
 pub struct UncommittedV8PersistentPhase {
     transaction_id: TransactionId,
+    configuration_sha256: String,
+    beginning_state_sha256: String,
+    potential_carbon: Box<ValidatedV8CarbonPass>,
+    capped_carbon: Box<ValidatedV8CarbonPass>,
     requests: Vec<PotentialMineralNitrogenRequest>,
     authorizations: Vec<MineralNitrogenMaximumAuthorization>,
     finalized_uses: Vec<MineralNitrogenFinalizedUse>,
@@ -236,9 +240,21 @@ impl UncommittedV8PersistentPhase {
 
     /// Persistent preallocation is intentionally read-only and cannot be
     /// converted into an owner state without the future complete E04 receipt.
-    #[cfg(test)]
     pub(crate) fn strata(&self) -> &BTreeMap<StratumId, StratumPreallocation> {
         &self.strata
+    }
+
+    pub(crate) fn matches_sources(
+        &self,
+        potential: &ValidatedV8CarbonPass,
+        capped: &ValidatedV8CarbonPass,
+        configuration_sha256: &str,
+        beginning_state_sha256: &str,
+    ) -> bool {
+        self.configuration_sha256 == configuration_sha256
+            && self.beginning_state_sha256 == beginning_state_sha256
+            && self.potential_carbon.as_ref() == potential
+            && self.capped_carbon.as_ref() == capped
     }
 }
 
@@ -336,6 +352,10 @@ pub fn execute_uncommitted_v8_persistent_phase(
     )?;
     Ok(UncommittedV8PersistentPhase {
         transaction_id: core.transaction_id,
+        configuration_sha256: configuration.configuration_sha256.clone(),
+        beginning_state_sha256: beginning.state_sha256.clone(),
+        potential_carbon: Box::new(potential.clone()),
+        capped_carbon: Box::new(capped.clone()),
         requests: core.requests,
         authorizations: core.authorizations,
         finalized_uses: core.finalized_uses,

@@ -132,3 +132,17 @@ Ran: the focused case passed 1/1 and the complete LSE/real-hydrology integration
 target passed 72/72. This closes the previously named condensation evidence
 gap. The V8 persistent vegetation/BGC and heterogeneous atomic owner envelope
 remain the Child-3 completion boundary.
+
+## Sealed uncommitted V8 vegetation owner
+
+The vegetation crate now constructs a complete uncommitted V8 owner candidate
+from the exact sealed physical and persistent receipts. A typed explicit
+component/occupancy bijection preserves topology without string parsing. The
+candidate accepts only fixed-final occupancy and shared canopy-air state,
+recomputes the strict V8 digest, binds deterministic material proposals, and
+independently reconstructs vegetation carbon, nitrogen and dry-material
+ledgers. It cannot authorize water, rerun V7 E01--E15, or commit state.
+
+Ran: vegetation quick 249/249, crate check, strict all-target Clippy,
+formatting and diff hygiene all passed. BGC receipt construction and the
+complete heterogeneous atomic owner envelope remain pending.
