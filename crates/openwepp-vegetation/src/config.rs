@@ -147,6 +147,23 @@ impl VegetationConfiguration {
         self.validate_for_model(MODEL_SHA256, true)
     }
 
+    /// Parses the unchanged vegetation configuration payload under the
+    /// immutable V8 coupled-land-surface model identity.
+    pub fn parse_v8_strict(bytes: &[u8]) -> Result<Self, VegetationError> {
+        let value: Self =
+            serde_json::from_slice(bytes).map_err(|e| VegetationError::Schema(e.to_string()))?;
+        value.validate_v8()?;
+        Ok(value)
+    }
+
+    /// Validates the V7 configuration surface under the V8 successor digest.
+    ///
+    /// V8 changes state topology and coupled boundary semantics, not the
+    /// stratum/topology configuration fields represented by this DTO.
+    pub fn validate_v8(&self) -> Result<(), VegetationError> {
+        self.validate_for_model(crate::v8_state::V8_MODEL_SHA256, true)
+    }
+
     pub(crate) fn validate_historical(
         &self,
         expected_model_sha256: &str,
