@@ -64,3 +64,27 @@ The frozen covered vector is evaporative. Constitutive positive condensation
 remains proven only at the existing unified-owner boundary, so this increment
 does not yet close the complete forest endpoint. It also does not yet construct
 the persistent V8 vegetation/BGC five-owner envelope.
+
+## V8 persistent state and physical receipt boundary
+
+The vegetation crate now has a separate strict V8 state surface while retaining
+V7 as its unchanged executable standalone identity. V8 moves canopy-air
+temperature and humidity from each occupancy to one shared covered-tile lane,
+binds all state bytes into a deterministic digest, and admits only the exact
+bit-identical V7-to-V8 migration. No OFE field or additional mutable numerical
+lane was invented inside the vegetation state; OFE identity remains an
+orchestrator envelope concern.
+
+The LSE transaction now exposes two distinct sealed physical projections. The
+potential projection retains the carbon operands required to issue canonical
+potential mineral-N requests. The final projection retains cap-active carbon,
+warm starts, shared canopy air, signed wet phase change and exact root D/A/F.
+Neither projection can be relabelled as the other, and the final projection is
+constructed only from the accepted fixed-cap rebuild.
+
+These increments deliberately do not fabricate a complete E04 canopy-liquid
+transition. Until rainfall/interception/routing is evaluated inside the joint
+covered solve, the V8 persistent candidate cannot claim ending canopy liquid or
+throughfall, stemflow, initial drainage and second drainage receipts. Likewise,
+the orchestrator must bind the LSE receipt to the exact beginning V8 vegetation
+state before E16--E22 candidate construction.

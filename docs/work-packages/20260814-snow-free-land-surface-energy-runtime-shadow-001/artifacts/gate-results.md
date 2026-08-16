@@ -135,3 +135,31 @@ into a complete Child-3 release.
   owner tests prove positive condensation credit, but a constitutive covered
   condensation fixture and the V8 vegetation/BGC five-owner envelope remain
   pending; Child 3 remains executing.
+
+## V8 state and accepted-operands increments
+
+- PASS at `1202fb76f`: separate strict `OPENWEPP_C3_WOODY_V8` vegetation state,
+  exact registry identity, deterministic state digest, restart parsing and
+  V7-to-V8 migration. Occupancy lanes remove exactly the two canopy-air fields;
+  each covered vegetation tile owns exactly one temperature/humidity lane.
+  Ambiguous V7 tile lanes report both unresolved fields and never average,
+  select, reset or synthesize values. The V7 executable identity remains
+  unchanged.
+- PASS at `b127cbfdf`: the joint LSE solver retains accepted class-resolved
+  `Ag`, `An` and `Rd` at the solved `ci` and temperature. A sealed potential
+  payload and a distinct sealed fixed-authorization-final payload preserve V8
+  model, LSE configuration/beginning-state, owner, OFE, tile, pass and typed
+  root D/A/F identity. The cap-active regression proves potential and final
+  carbon are not aliases.
+- `Ran: cargo nextest run -p openwepp-vegetation -p openwepp-land-surface-energy --profile quick`
+  — PASS, 273/273.
+- `Ran: cargo check -p openwepp-hillslope-orchestrator` — PASS.
+- `Ran: cargo clippy -p openwepp-vegetation -p openwepp-land-surface-energy --all-targets -- -D warnings`
+  — PASS.
+- `Ran: cargo fmt --all -- --check` and `git diff --check` — PASS.
+- Bounded limitation: the accepted payload intentionally does not claim a
+  complete E04 ending canopy store or release ledger. The current covered
+  solver has not yet integrated rainfall, interception, throughfall, stemflow
+  and both drainage terms. The later V8 vegetation owner remains fail-closed
+  until those accepted operands and exact vegetation beginning-state lineage
+  are present.
