@@ -1,6 +1,6 @@
 # Admit And Implement Persistent Snow-Free Surface-Liquid Hydrology Custody
 
-Status: `executing / exact-byte review remediation active`
+Status: `executing / terminal verification pending`
 
 Date: `2026-08-14`
 
@@ -68,7 +68,7 @@ branch, PR or push is in scope.
 - [x] (2026-08-14) Admit canonical surface-liquid hydrology authority and bind contract-derived tests.
 - [x] (2026-08-14) Record a passing pre-implementation contract gate.
 - [x] (2026-08-14) Implement persistent state, restart, D/A/F, credit, ingress and rollback.
-- [ ] Pass focused gates and dual independent review/verification. All fourteen
+- [x] Pass focused gates and dual independent implementation review. All fourteen
   accepted implementation-review findings now have focused passing
   remediation, including exact receiver identity, contextual canonical errors,
   and nonzero-residual production-soil reconstruction. A fresh exact-byte
@@ -139,7 +139,11 @@ branch, PR or push is in scope.
   incomplete unified ingress E002 preflight. Their corrections now pass 145
   selected library tests, 46 unified integration tests, 10 custody authority
   tests, strict affected Clippy, formatting and diff hygiene. Fresh exact-byte
-  reviews remain pending.
+  implementation reviews passed at `7df1ad0e0`; the semantic-neutral test-lint
+  correction is frozen at `0edf04577`. Exact-head workspace nextest then passed
+  2,901/2,901 with 33 profile skips, workspace strict Clippy, doctests,
+  dependency policy, focused authority gates, formatting and diff hygiene all
+  passing. Dual terminal verification remains pending.
 - [ ] Archive this prompt and resume held Child 3 without rewriting its HOLD.
 
 ## Surprises & Discoveries

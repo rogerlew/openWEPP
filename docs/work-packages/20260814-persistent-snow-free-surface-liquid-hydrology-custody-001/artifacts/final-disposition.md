@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `in progress / heavy-gate test-lint remediation active`
+Status: `in progress / terminal verification pending`
 
 The historical campaign and Child-3 HOLD remain controlling. The first
 hydrology and Rust implementation reviews are preserved. All eleven accepted
@@ -145,3 +145,24 @@ and target strict Clippy passing. This remains an in-progress placeholder
 pending a frozen correction commit, invalidated exact-head heavy gates,
 terminal diff reconciliation, dual terminal verification and prompt archival;
 Child 3 is not yet resumed.
+
+## Exact-head closure candidate
+
+The semantic-neutral heavy-gate lint corrections are frozen at
+`0edf04577ef21df43f40ed0bf0c449581e0213be`. On those exact bytes:
+
+- workspace strict all-target Clippy passes with warnings denied;
+- the full workspace profile passes 2,901/2,901 tests, with 20 slow tests and
+  33 tests skipped by the frozen profile, in 8,178.986 seconds;
+- workspace doctests, dependency policy, formatting and diff hygiene pass;
+- science admission, anti-evasion, AUTH11 and SC-SURFACELIQUID unit compliance
+  pass; and
+- historical failed/HOLD reviews and infrastructure-limited heavy attempts
+  remain preserved rather than replaced by the successful run.
+
+The dependency-lift implementation has no unresolved material implementation
+or focused-review finding. Final terminal disposition remains withheld until
+two independent verifiers inspect the frozen closure bytes and the active
+kickoff prompt is archived byte-for-byte. No runtime activation, production
+selector/default change, publication, calibration, deployment or cutover is
+claimed.

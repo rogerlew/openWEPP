@@ -1681,3 +1681,34 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   focused custody and unified LSE/real-hydrology suites, 36/36; affected crate
   checks; strict affected-crate Clippy; formatting; and diff hygiene.
 - Pending: commit exact bytes, fresh dual review, then complete heavy rerun.
+
+## Exact-head heavy closure at `0edf04577`
+
+- PASS: workspace strict all-target Clippy with warnings denied.
+- PASS: `TMPDIR=/tmp/ow-custody-final-session
+  CARGO_TARGET_DIR=/tmp/openwepp_gate_run3_20260815_124957/target_full
+  NEXTEST_TEST_THREADS=1 cargo nextest run --workspace --profile full` ran
+  2,901/2,901 tests successfully in 8,178.986 seconds; 20 were reported slow
+  and 33 were skipped by the frozen full profile.
+- PASS: `cargo test --doc --workspace`; all workspace doctest targets completed
+  with zero failures.
+- PASS: `cargo deny check`; advisories, bans, licenses and sources passed. The
+  pre-existing unmatched `MIT-0` allowance warning is retained.
+- PASS: science admission from
+  `af9a989063aa8751dfadb14c442e1b360653658c` admitted 46 contracts and 28
+  surfaces; anti-evasion passed; AUTH11 passed 3/3; SC-SURFACELIQUID unit
+  compliance passed; formatting and diff hygiene passed.
+- Preserved infrastructure evidence: an exact-head concurrent full run timed
+  out CPU-bound tests under an imposed 720-second limit; a one-thread
+  comparator run was terminated by the comparator's 30-minute execution
+  ceiling; and a detached process was reaped when its agent turn ended. None is
+  counted as product evidence. The parent-owned persistent one-thread command
+  above completed without a wrapper timeout or retry.
+- Static: no package benchmark command was frozen; no zero-selection benchmark
+  is claimed. The dependency package's acceptance budget is correctness and
+  restart/custody closure, while later Child-3 runtime benchmarks remain in the
+  resumed campaign.
+- Pending: dual terminal verification, final lifecycle reconciliation and
+  byte-preserving prompt archival.
+- PASS after evidence reconciliation: package Markdown lint scanned 110 files
+  with zero errors and zero warnings; formatting and diff hygiene remain clean.

@@ -2,7 +2,7 @@
 
 Evidence class: `Static`
 
-Status: `in progress / test-only heavy-gate correction not yet frozen`
+Status: `closure candidate / terminal verification pending`
 
 The current diff reconciles to the declared dependency-lift objective:
 
@@ -24,5 +24,9 @@ The two new Rust modules and every modified path are inside the amended intended
 write set. No unrelated source change is present. The only post-review source
 delta is a semantic-neutral strict-Clippy correction in five package-owned
 integration-test files; the failed lint output and successful focused retry are
-both retained. Final hashes and commit identity will be recorded after the
-correction is frozen and the invalidated exact-head gates pass.
+both retained. That correction is frozen at
+`0edf04577ef21df43f40ed0bf0c449581e0213be`. Exact-head workspace strict
+Clippy, 2,901/2,901 full-profile tests, doctests, dependency policy, authority
+gates, formatting and diff hygiene pass. The remaining diff is evidence-only
+lifecycle reconciliation. Final verifier reports and byte-preserving prompt
+archival are the only expected package-closing changes.
