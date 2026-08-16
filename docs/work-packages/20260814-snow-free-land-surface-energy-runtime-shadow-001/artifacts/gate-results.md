@@ -267,3 +267,38 @@ into a complete Child-3 release.
   themselves prove the complete public physical→persistent→BGC composition.
   An aligned V8 vegetation configuration/state fixture must exercise that
   exact public chain before the forest endpoint can close.
+
+## Complete public V8 forest owner composition
+
+- `Ran: first nonlexical two-stratum public fixture attempt` — FAIL with BGC
+  `OwnerMismatch`. Potential requests and authorizations retained configuration
+  order, while finalized uses were emitted in lexical stratum-map order. The
+  failure is preserved as implementation evidence and was not avoided by
+  renaming or reordering the fixture.
+- PASS after correction: finalized mineral-N uses are indexed by exact
+  transaction, owner, layer/species key and amount basis, then emitted in the
+  immutable original request order. Missing, duplicate and unexpected use
+  identities fail closed. Amounts are unchanged and the global nitrogen
+  arbiter is still called exactly once.
+- PASS: `execute_covered_v8_transaction` validates strict V8 configuration,
+  state, forcing and transaction lineage before physical execution. It derives
+  both potential and final solver trials from the same immutable V8, LSE and
+  soil-thermal beginning state; callers cannot supply a trial vector.
+- PASS: the public nonlexical two-rank forest fixture constructs the actual
+  potential and fixed-cap physical solve, typed projection, E16--E22 persistent
+  phase, strict ending V8 candidate and independent BGC receiving candidate.
+  Root water `D/A/F`, mineral-N `D/A/F`, and material proposal/receipt identity
+  all join across the retained owner candidates. No commit API is exposed and
+  the production frame and rollback hashes remain unchanged.
+- `Ran: cargo nextest run -p openwepp-vegetation --profile quick` — PASS,
+  250/250.
+- `Ran: cargo nextest run --test land_surface_energy_real_hydrology_shadow_contract --profile quick`
+  — PASS, 73/73.
+- `Ran: cargo clippy -p openwepp-vegetation --all-targets -- -D warnings` —
+  PASS.
+- `Ran: cargo clippy -p openwepp-hillslope-orchestrator --all-targets -- -D warnings`
+  — PASS.
+- Remaining boundary: fresh exact-byte science and Rust review, performance
+  evidence, heavy closure gates and dual terminal verification. This Child-3
+  runtime package still makes no real scheduler-consumer or atomic shadow
+  commit claim; those remain Child-4 responsibilities.

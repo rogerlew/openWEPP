@@ -5,7 +5,9 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_kernel_contract::{ResourceOwnerId, StratumId, TransactionId};
+use openwepp_kernel_contract::{
+    MineralNitrogenKey, ResourceAmountBasis, ResourceOwnerId, StratumId, TransactionId,
+};
 
 use crate::VegetationError;
 use crate::carbon_nitrogen::{
@@ -371,6 +373,7 @@ pub(crate) fn execute_persistent_core(
             "unexpected mineral-nitrogen authorization owner".into(),
         ));
     }
+    let finalized_uses = order_finalized_uses_by_request(&all_requests, finalized_uses)?;
 
     Ok(PersistentCoreResult {
         transaction_id,
@@ -379,6 +382,69 @@ pub(crate) fn execute_persistent_core(
         finalized_uses,
         strata,
     })
+}
+
+type NitrogenProtocolIdentity = (
+    TransactionId,
+    ResourceOwnerId,
+    MineralNitrogenKey,
+    ResourceAmountBasis,
+);
+
+fn order_finalized_uses_by_request(
+    requests: &[PotentialMineralNitrogenRequest],
+    finalized_uses: Vec<MineralNitrogenFinalizedUse>,
+) -> Result<Vec<MineralNitrogenFinalizedUse>, VegetationError> {
+    let request_identity =
+        |transaction_id, owner_id, key, basis| (transaction_id, owner_id, key, basis);
+    let mut expected = BTreeSet::<NitrogenProtocolIdentity>::new();
+    for request in requests {
+        let identity = request_identity(
+            request.transaction_id,
+            request.owner_id.clone(),
+            request.key.clone(),
+            request.basis,
+        );
+        if !expected.insert(identity) {
+            return Err(VegetationError::Receipt(
+                "duplicate mineral-nitrogen request identity".into(),
+            ));
+        }
+    }
+    let mut uses_by_identity = BTreeMap::<NitrogenProtocolIdentity, _>::new();
+    for finalized_use in finalized_uses {
+        let identity = request_identity(
+            finalized_use.transaction_id,
+            finalized_use.owner_id.clone(),
+            finalized_use.key.clone(),
+            finalized_use.basis,
+        );
+        if !expected.contains(&identity)
+            || uses_by_identity.insert(identity, finalized_use).is_some()
+        {
+            return Err(VegetationError::Receipt(
+                "unexpected or duplicate mineral-nitrogen finalized-use identity".into(),
+            ));
+        }
+    }
+    let mut ordered = Vec::with_capacity(requests.len());
+    for request in requests {
+        let identity = request_identity(
+            request.transaction_id,
+            request.owner_id.clone(),
+            request.key.clone(),
+            request.basis,
+        );
+        ordered.push(uses_by_identity.remove(&identity).ok_or_else(|| {
+            VegetationError::Receipt("missing mineral-nitrogen finalized-use identity".into())
+        })?);
+    }
+    if !uses_by_identity.is_empty() {
+        return Err(VegetationError::Receipt(
+            "unexpected mineral-nitrogen finalized-use identity".into(),
+        ));
+    }
+    Ok(ordered)
 }
 
 fn cn_parameters(stratum: &StratumConfiguration) -> Result<CnParameters, VegetationError> {
@@ -496,6 +562,7 @@ mod tests {
     #![allow(clippy::float_cmp)]
 
     use super::*;
+    use openwepp_kernel_contract::{FinalizedUse, MaximumAuthorization, ResourceRequest};
 
     #[test]
     fn configuration_mapping_preserves_exact_e17_e19_parameters() {
@@ -592,5 +659,89 @@ mod tests {
         assert_eq!(operands[0].nitrogen_fraction.to_bits(), 0.25_f64.to_bits());
         assert_eq!(operands[1].nitrogen_fraction.to_bits(), 0.75_f64.to_bits());
         assert_ne!(operands[0].nitrogen_fraction.to_bits(), 0.9_f64.to_bits());
+    }
+
+    #[test]
+    fn multi_stratum_finalized_uses_follow_original_request_order_for_bgc() {
+        use openwepp_biogeochemistry::{
+            BiogeochemistryState, MineralLayer, TransformationsMode,
+            construct_biogeochemistry_candidate,
+        };
+        use openwepp_kernel_contract::MineralNitrogenSpecies::{Ammonium, Nitrate};
+
+        let transaction_id = TransactionId(1);
+        let layer_id = openwepp_kernel_contract::SoilLayerId::try_new("soil-1").expect("layer");
+        let make_request = |owner: &str, species| ResourceRequest {
+            transaction_id,
+            owner_id: ResourceOwnerId::try_new(owner).expect("owner"),
+            key: MineralNitrogenKey {
+                layer_id: layer_id.clone(),
+                species,
+            },
+            amount: 0.25,
+            basis: ResourceAmountBasis::NitrogenKgPerSquareMeterInterval,
+        };
+        // Configuration order is deliberately the reverse of BTreeMap owner
+        // order, reproducing the public two-stratum failure.
+        let requests = vec![
+            make_request("z-stratum", Ammonium),
+            make_request("a-stratum", Nitrate),
+        ];
+        let authorizations = requests
+            .iter()
+            .map(|request| MaximumAuthorization {
+                transaction_id: request.transaction_id,
+                owner_id: request.owner_id.clone(),
+                key: request.key.clone(),
+                amount: request.amount,
+                basis: request.basis,
+            })
+            .collect::<Vec<_>>();
+        let unordered = requests
+            .iter()
+            .rev()
+            .map(|request| FinalizedUse {
+                transaction_id: request.transaction_id,
+                owner_id: request.owner_id.clone(),
+                key: request.key.clone(),
+                amount: request.amount / 2.0,
+                basis: request.basis,
+            })
+            .collect();
+        let ordered = order_finalized_uses_by_request(&requests, unordered).expect("ordered uses");
+        for ((request, authorization), finalized_use) in
+            requests.iter().zip(&authorizations).zip(&ordered)
+        {
+            assert_eq!(request.transaction_id, finalized_use.transaction_id);
+            assert_eq!(request.owner_id, finalized_use.owner_id);
+            assert_eq!(request.key, finalized_use.key);
+            assert_eq!(request.basis, finalized_use.basis);
+            openwepp_kernel_contract::validate_resource_protocol(
+                request,
+                authorization,
+                finalized_use,
+            )
+            .expect("aligned protocol triple");
+        }
+        let beginning = BiogeochemistryState {
+            layers: BTreeMap::from([(
+                "soil-1".into(),
+                MineralLayer {
+                    ammonium_n: 1.0,
+                    nitrate_n: 1.0,
+                },
+            )]),
+            ..BiogeochemistryState::default()
+        };
+        construct_biogeochemistry_candidate(
+            &beginning,
+            transaction_id,
+            &requests,
+            &authorizations,
+            &ordered,
+            &[],
+            TransformationsMode::Disabled,
+        )
+        .expect("BGC accepts aligned two-stratum protocol");
     }
 }

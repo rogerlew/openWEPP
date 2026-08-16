@@ -55,6 +55,7 @@ use crate::{
 
 mod covered_forest;
 mod covered_v8_owner;
+mod covered_v8_transaction;
 mod finalization_sealing;
 mod receiver_failure;
 mod receiver_preflight;
@@ -65,6 +66,9 @@ pub use covered_forest::{CoveredForestShadowResult, execute_covered_forest_shado
 pub use covered_v8_owner::{
     CoveredV8OwnerEnvelopeError, UncommittedCoveredV8OwnerEnvelope,
     construct_covered_v8_owner_envelope,
+};
+pub use covered_v8_transaction::{
+    CoveredV8TransactionError, construct_v8_beginning_trial, execute_covered_v8_transaction,
 };
 use finalization_sealing::first_sealed_finalization_violation;
 use receiver_failure::canonical_receiver_failure;

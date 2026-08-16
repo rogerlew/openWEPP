@@ -43,14 +43,14 @@ post-hoc energy proposals and meteorology helpers are not constitutive inputs.
   fixed-cap solves, typed diagnostics, owner operands and rollback hashes.
 - [x] Connect mixed root/bare-ground soil-layer requests to one actual
   production hydrology authorization with clone-only candidate debit.
-- [ ] Connect forest-litter/surface-liquid withdrawal and condensation credit
+- [x] Connect forest-litter/surface-liquid withdrawal and condensation credit
   to the terminally released persistent hydrology owner. The historical blocker
   remains recorded in `artifacts/real-hydrology-surface-liquid-hold-audit.md`;
   resumption authority and scope are recorded in `artifacts/resume-intake.md`.
-  The first resumed physical increment now passes the frozen evaporative
-  two-rank forest/litter path through one real authorization; a constitutive
-  positive-condensation covered vector and complete V8 vegetation/BGC envelope
-  are still required before checking this item.
+  The resumed path now proves evaporative and positive-condensation branches,
+  WB14 overflow routing, exact root and ground `D/A/F`, and one aligned public
+  physical-to-persistent-to-BGC envelope from immutable V8 beginning state.
+  The envelope is uncommitted and the production frame remains byte-identical.
 - [ ] Pass terminal science/Rust reviews, benchmark and dual verification only
   after the custody hold is lifted and the complete forest endpoint exists.
 

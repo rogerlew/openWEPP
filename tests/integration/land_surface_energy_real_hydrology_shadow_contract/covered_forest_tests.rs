@@ -1,10 +1,23 @@
 use super::*;
+use openwepp_biogeochemistry::{BiogeochemistryState, MaterialPool, MineralLayer};
 use openwepp_hillslope_orchestrator::DirectSurfaceLiquidParcelKind;
 use openwepp_hillslope_orchestrator::land_surface_energy_shadow::{
     BiochemicalConstants, CoveredColumnInputs, CoveredForestShadowResult, CoveredOccupancyInputs,
     LeafBiochemicalInputs, RootHydraulicLayer, RootRuntimeIdentity, UnderCanopyGeometry,
-    WaterAmount, execute_covered_forest_shadow, solve_covered_potential_phase,
+    WaterAmount, execute_covered_forest_shadow, execute_covered_v8_transaction,
+    solve_covered_potential_phase,
 };
+use openwepp_kernel_contract::{
+    MaterialReceiverClass, MaximumAuthorization, OccupancyId, StratumId,
+};
+use openwepp_vegetation::carbon_nitrogen::ElementPool;
+use openwepp_vegetation::{
+    CoupledOwnedState, NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, RootLayer,
+    TopologyTile, V8_MODEL_SHA256, V8ComponentOccupancyBinding, V8CoupledOwnedState,
+    V8LseComponentId, V8OccupancyState, V8PersistentForcingReceipt, V8TileCanopyAirState,
+    VegetationConfiguration, VegetationError,
+};
+use std::cell::Cell;
 
 const INTERVAL_S: f64 = 1_800.0;
 const TILE_FRACTION: f64 = 0.38;
@@ -271,6 +284,236 @@ fn identity(snapshot: Sha256Digest, source_id: SourceId) -> RuntimeTileIdentity 
     }
 }
 
+struct CountingFullNitrogen {
+    calls: Cell<u32>,
+}
+
+impl NitrogenArbiter for CountingFullNitrogen {
+    fn beginning_amount(
+        &self,
+        _key: &openwepp_kernel_contract::MineralNitrogenKey,
+    ) -> Result<f64, VegetationError> {
+        Ok(1.0)
+    }
+
+    fn authorize(
+        &self,
+        requests: &[NitrogenRequest],
+    ) -> Result<Vec<NitrogenAuthorization>, VegetationError> {
+        self.calls.set(self.calls.get() + 1);
+        Ok(requests
+            .iter()
+            .map(|request| MaximumAuthorization {
+                transaction_id: request.transaction_id,
+                owner_id: request.owner_id.clone(),
+                key: request.key.clone(),
+                amount: request.amount,
+                basis: request.basis,
+            })
+            .collect())
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+fn aligned_v8_vegetation_fixture() -> (
+    VegetationConfiguration,
+    V8CoupledOwnedState,
+    Vec<V8ComponentOccupancyBinding>,
+    V8PersistentForcingReceipt,
+    BiogeochemistryState,
+) {
+    let mut configuration: VegetationConfiguration = serde_json::from_slice(
+        &fs::read("tests/fixtures/c3_woody_v5_diagnostic_configuration.json")
+            .expect("committed V5 vegetation configuration fixture"),
+    )
+    .expect("V5 configuration DTO");
+    let source_state: CoupledOwnedState = serde_json::from_slice(
+        &fs::read("tests/fixtures/c3_woody_v5_diagnostic_state.json")
+            .expect("committed V5 vegetation state fixture"),
+    )
+    .expect("V5 state DTO");
+
+    let forest = TileId::try_new("forest").expect("forest tile");
+    let open = TileId::try_new("open").expect("open tile");
+    // Configuration order is physical rank order and deliberately differs
+    // from lexical map order, so the owner join cannot rely on incidental
+    // request/finalized-use vector ordering.
+    let upper_id = StratumId::try_new("stratum-z-upper").expect("upper stratum");
+    let lower_id = StratumId::try_new("stratum-a-lower").expect("lower stratum");
+    let root_layers = [
+        ("soil-1", 0.62),
+        ("soil-2", 0.38),
+        ("soil-dry", 0.0),
+        ("soil-frozen", 0.0),
+    ]
+    .map(|(layer, fraction)| RootLayer {
+        layer_id: SoilLayerId::try_new(layer).expect("root layer"),
+        root_fraction: fraction,
+        mineral_n_root_fraction: fraction,
+        lateral_root_length_m: 0.20,
+    })
+    .to_vec();
+    let mut upper_configuration = configuration.strata[0].clone();
+    upper_configuration.stratum_id = upper_id.clone();
+    upper_configuration.vertical_rank = 0;
+    upper_configuration.tile_ids = vec![forest.clone()];
+    upper_configuration.height_m = 12.5;
+    upper_configuration.current_growth_fraction = 1.0;
+    upper_configuration.root_layers.clone_from(&root_layers);
+    let mut lower_configuration = upper_configuration.clone();
+    lower_configuration.stratum_id = lower_id.clone();
+    lower_configuration.vertical_rank = 1;
+    lower_configuration.height_m = 8.0;
+    lower_configuration.crown_base_m = 1.5;
+    lower_configuration.displacement_m = 4.8;
+    configuration.model_definition_sha256 = V8_MODEL_SHA256.into();
+    configuration.dt_s = INTERVAL_S;
+    configuration.topology_tiles = vec![
+        TopologyTile {
+            tile_id: forest.clone(),
+            fraction: TILE_FRACTION,
+        },
+        TopologyTile {
+            tile_id: open,
+            fraction: 1.0 - TILE_FRACTION,
+        },
+    ];
+    configuration.strata = vec![upper_configuration, lower_configuration];
+    configuration.configuration_sha256.clear();
+    configuration.initial_state_sha256 = "0".repeat(64);
+    configuration.configuration_sha256 = configuration
+        .canonical_sha256()
+        .expect("aligned V8 configuration digest");
+
+    let source_shared = source_state
+        .strata
+        .values()
+        .next()
+        .expect("V5 shared stratum")
+        .clone();
+    let mut upper_shared = source_shared.clone();
+    let mut lower_shared = source_shared;
+    for shared in [&mut upper_shared, &mut lower_shared] {
+        shared.last_transaction_id = 40;
+        shared.pending_transfers.clear();
+        for pool in shared.tissues.values_mut() {
+            pool.storage = ElementPool::default();
+            pool.transfer = ElementPool::default();
+        }
+    }
+    let source_lane = source_state
+        .occupancies
+        .values()
+        .next()
+        .expect("V5 occupancy lane");
+    let occupancy = |canopy_liquid: f64| V8OccupancyState {
+        beta_hyd: 0.67,
+        canopy_liquid_kg_h2o_m2_tile_ground: canopy_liquid,
+        dry_stem_temperature_k: 295.2,
+        last_accepted_transaction_id: Some(40),
+        root_node_potential_mm: -2_850.0,
+        shade_ci_pa: source_lane.shade_ci_pa,
+        shade_leaf_potential_mm: -5_450.0,
+        shade_leaf_temperature_k: 295.4,
+        stem_potential_mm: -4_300.0,
+        sun_ci_pa: source_lane.sun_ci_pa,
+        sun_leaf_potential_mm: -5_900.0,
+        sun_leaf_temperature_k: 296.2,
+        wet_surface_temperature_k: 295.6,
+    };
+    let upper_occupancy = OccupancyId {
+        stratum_id: upper_id.clone(),
+        tile_id: forest.clone(),
+    };
+    let lower_occupancy = OccupancyId {
+        stratum_id: lower_id.clone(),
+        tile_id: forest.clone(),
+    };
+    let mut state = V8CoupledOwnedState {
+        configuration_sha256: configuration.configuration_sha256.clone(),
+        last_transaction_id: 40,
+        model_definition_sha256: V8_MODEL_SHA256.into(),
+        occupancies: BTreeMap::from([
+            (upper_occupancy.clone(), occupancy(0.018)),
+            (lower_occupancy.clone(), occupancy(0.018)),
+        ]),
+        state_sha256: String::new(),
+        strata: BTreeMap::from([(upper_id, upper_shared), (lower_id, lower_shared)]),
+        tile_canopy_air: BTreeMap::from([(
+            forest,
+            V8TileCanopyAirState {
+                canopy_air_specific_humidity_kg_kg: 0.011,
+                canopy_air_temperature_k: 295.8,
+            },
+        )]),
+    };
+    state.state_sha256 = state.canonical_sha256();
+    configuration
+        .initial_state_sha256
+        .clone_from(&state.state_sha256);
+    configuration
+        .validate_v8()
+        .expect("aligned V8 configuration");
+    state.validate(&configuration).expect("aligned V8 state");
+
+    let bindings = vec![
+        V8ComponentOccupancyBinding {
+            component_id: V8LseComponentId::try_new("canopy-rank-0").expect("upper component"),
+            occupancy_id: upper_occupancy,
+        },
+        V8ComponentOccupancyBinding {
+            component_id: V8LseComponentId::try_new("canopy-rank-1").expect("lower component"),
+            occupancy_id: lower_occupancy,
+        },
+    ];
+    let soil_temperature_k_by_layer = root_layers
+        .iter()
+        .map(|root| {
+            let temperature = if root.layer_id.as_str() == "soil-frozen" {
+                270.0
+            } else {
+                293.0
+            };
+            (root.layer_id.clone(), temperature)
+        })
+        .collect();
+    let forcing = V8PersistentForcingReceipt {
+        model_definition_sha256: V8_MODEL_SHA256.into(),
+        configuration_sha256: configuration.configuration_sha256.clone(),
+        transaction_id: TransactionId(41),
+        vegetation_beginning_state_sha256: state.state_sha256.clone(),
+        air_temperature_k: 296.0,
+        gsi: 1.0,
+        soil_temperature_k_by_layer,
+    };
+    let receivers = [
+        MaterialReceiverClass::Metabolic,
+        MaterialReceiverClass::Cellulose,
+        MaterialReceiverClass::Lignin,
+        MaterialReceiverClass::CoarseWoodyDebris,
+    ]
+    .into_iter()
+    .map(|receiver| (receiver, MaterialPool::default()))
+    .collect();
+    let biogeochemistry = BiogeochemistryState {
+        layers: root_layers
+            .iter()
+            .map(|root| {
+                (
+                    root.layer_id.as_str().to_owned(),
+                    MineralLayer {
+                        ammonium_n: 1.0,
+                        nitrate_n: 1.0,
+                    },
+                )
+            })
+            .collect(),
+        receivers,
+        last_transaction_id: 40,
+    };
+    (configuration, state, bindings, forcing, biogeochemistry)
+}
+
 fn covered_configuration() -> DirectSurfaceLiquidConfiguration {
     let forest = DirectSurfaceLiquidConfigurationRecord {
         key: DirectSurfaceLiquidStoreKey {
@@ -468,6 +711,7 @@ fn covered_soil_thermal() -> SoilThermalSnapshot {
     covered_soil_thermal_with_temperatures([291.5, 289.8])
 }
 
+#[allow(clippy::too_many_lines)]
 fn execute_covered_fixture(
     configuration: &DirectSurfaceLiquidConfiguration,
     frame: &DirectRunFrame,
@@ -603,7 +847,7 @@ fn execute_covered_fixture(
         key: open_key.clone(),
         amount_kg_m2_stand_ground: 0.0,
     };
-    let companion_use = WaterAmount {
+    let companion_finalized = WaterAmount {
         key: open_key,
         amount_kg_m2_stand_ground: 0.0,
     };
@@ -620,11 +864,193 @@ fn execute_covered_fixture(
         solve_trial,
         soil_thermal,
         &[companion_request],
-        &[companion_use],
+        &[companion_finalized],
         &[companion_lse],
         &[companion_thermal],
     )
     .expect("covered forest real-owner transaction")
+}
+
+#[allow(clippy::too_many_lines)]
+fn execute_aligned_v8_fixture(
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    frame: &DirectRunFrame,
+) -> (
+    openwepp_hillslope_orchestrator::land_surface_energy_shadow::UncommittedCoveredV8OwnerEnvelope,
+    u32,
+    VegetationConfiguration,
+    V8CoupledOwnedState,
+) {
+    let column = column();
+    let lane = RealHydrologyOfeLaneId {
+        lane_index: 0,
+        lane_id: frame.lanes[0].lane_id,
+    };
+    let layer_ids = [
+        "thermal-1",
+        "thermal-2",
+        "soil-1",
+        "soil-2",
+        "soil-dry",
+        "soil-frozen",
+    ]
+    .map(|layer| SoilLayerId::try_new(layer).expect("layer"))
+    .to_vec();
+    let owner = RealHydrologyShadowAdapter::try_from_day_start(
+        frame,
+        0,
+        TransactionId(41),
+        INTERVAL_S,
+        ResourceOwnerId::try_new("production-hydrology").expect("owner"),
+        &[RealHydrologyLaneLayerMap {
+            ofe_lane: lane,
+            layer_ids,
+        }],
+    )
+    .expect("real owner");
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owner);
+    let snapshot = unified_beginning_hydrology_snapshot_sha256(&adapter, surface_configuration)
+        .expect("unified snapshot");
+    let runtime_identity = identity(
+        snapshot.clone(),
+        surface_configuration.records[0].key.source_id.clone(),
+    );
+    let roots = root_runtime_identities();
+    let soil_sources = roots
+        .iter()
+        .map(|root| {
+            let key = GroundWaterKey {
+                transaction_id: TransactionId(41),
+                requesting_owner_id: root.requesting_owner_id.clone(),
+                requesting_component: openwepp_hillslope_orchestrator::land_surface_energy_shadow::RequestingComponent::VegetationRoot,
+                ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+                requesting_tile_id: TileId::try_new("forest").expect("tile"),
+                occupancy_id: Some(root.occupancy_id.clone()),
+                surface_id: None,
+                surface_class: None,
+                source_type: WaterSourceType::SoilLayerLiquid,
+                source_id: root.source_id.clone(),
+                source_tile_id: None,
+                soil_layer_id: Some(root.layer_id.clone()),
+                amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+            };
+            (
+                key,
+                RealHydrologySourceKey {
+                    ofe_lane: lane,
+                    layer_id: root.layer_id.clone(),
+                },
+            )
+        })
+        .collect();
+    let expectations = UnifiedReceiverExpectations::try_new(
+        ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
+        digest('2'),
+        ResourceOwnerId::try_new("production-hydrology").expect("hydrology owner"),
+        snapshot,
+        ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
+        digest('4'),
+        ["forest", "open"]
+            .map(|tile| {
+                (
+                    OfeId::try_new("ofe-1").expect("OFE"),
+                    TileId::try_new(tile).expect("tile"),
+                    vec![
+                        SoilLayerId::try_new("thermal-1").expect("layer"),
+                        SoilLayerId::try_new("thermal-2").expect("layer"),
+                    ],
+                )
+            })
+            .to_vec(),
+    )
+    .expect("receiver expectations");
+    let companion_lse = TileState {
+        ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+        tile_id: TileId::try_new("open").expect("tile"),
+        surface_enthalpy_j_m2_tile_ground: 0.0,
+        surface_temperature_warm_start_k: 291.0,
+    };
+    let companion_thermal = SoilThermalTileCandidate {
+        owner_id: ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
+        beginning_state_sha256: digest('4'),
+        ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+        tile_id: TileId::try_new("open").expect("tile"),
+        layers: vec![
+            SoilThermalLayerCandidate {
+                layer_id: SoilLayerId::try_new("thermal-1").expect("layer"),
+                beginning_enthalpy_j_m2_ofe_ground: 1.0e6,
+                ground_heat_credit_j_m2_ofe_ground: 0.0,
+                infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
+                ending_enthalpy_j_m2_ofe_ground: 1.0e6,
+                ending_temperature_k: 291.5,
+            },
+            SoilThermalLayerCandidate {
+                layer_id: SoilLayerId::try_new("thermal-2").expect("layer"),
+                beginning_enthalpy_j_m2_ofe_ground: 2.0e6,
+                ground_heat_credit_j_m2_ofe_ground: 0.0,
+                infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
+                ending_enthalpy_j_m2_ofe_ground: 2.0e6,
+                ending_temperature_k: 289.8,
+            },
+        ],
+    };
+    let open_key = GroundWaterKey {
+        transaction_id: TransactionId(41),
+        requesting_owner_id: ResourceOwnerId::try_new("land-surface-energy-v1")
+            .expect("LSE owner"),
+        requesting_component: openwepp_hillslope_orchestrator::land_surface_energy_shadow::RequestingComponent::GroundSurface,
+        ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+        requesting_tile_id: TileId::try_new("open").expect("tile"),
+        occupancy_id: None,
+        surface_id: Some(SurfaceId::try_new("surface:ofe-1:open").expect("surface")),
+        surface_class: Some(SurfaceClass::BareMineralSoil),
+        source_type: WaterSourceType::SurfaceLiquid,
+        source_id: SourceId::try_new("surface-liquid:ofe-1:open").expect("source"),
+        source_tile_id: Some(TileId::try_new("open").expect("source tile")),
+        soil_layer_id: None,
+        amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+    };
+    let companion_request = WaterAmount {
+        key: open_key.clone(),
+        amount_kg_m2_stand_ground: 0.0,
+    };
+    let companion_finalized = WaterAmount {
+        key: open_key,
+        amount_kg_m2_stand_ground: 0.0,
+    };
+    let (vegetation_configuration, vegetation_beginning, bindings, forcing, bgc_beginning) =
+        aligned_v8_vegetation_fixture();
+    let nitrogen = CountingFullNitrogen {
+        calls: Cell::new(0),
+    };
+    let result = execute_covered_v8_transaction(
+        &adapter,
+        surface_configuration,
+        &expectations,
+        runtime_identity,
+        &column,
+        roots,
+        &soil_sources,
+        &covered_ingress(0.05),
+        &covered_soil_thermal(),
+        &[companion_request],
+        &[companion_finalized],
+        &[companion_lse],
+        &[companion_thermal],
+        &vegetation_configuration,
+        &vegetation_beginning,
+        bindings,
+        &forcing,
+        &nitrogen,
+        &bgc_beginning,
+    )
+    .expect("complete aligned V8 uncommitted transaction");
+    (
+        result,
+        nitrogen.calls.get(),
+        vegetation_configuration,
+        vegetation_beginning,
+    )
 }
 
 #[test]
@@ -664,6 +1090,7 @@ fn covered_root_and_ground_requests_preserve_distinct_owner_identity() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn covered_forest_wrapper_uses_one_real_authorization_and_post_solve_ingress() {
     let configuration = covered_configuration();
     let frame = covered_frame(&configuration);
@@ -795,7 +1222,7 @@ fn covered_forest_wrapper_uses_one_real_authorization_and_post_solve_ingress() {
         key: open_key.clone(),
         amount_kg_m2_stand_ground: 0.0,
     };
-    let companion_use = WaterAmount {
+    let companion_finalized = WaterAmount {
         key: open_key,
         amount_kg_m2_stand_ground: 0.0,
     };
@@ -812,7 +1239,7 @@ fn covered_forest_wrapper_uses_one_real_authorization_and_post_solve_ingress() {
         trial(),
         &covered_soil_thermal(),
         &[companion_request],
-        &[companion_use],
+        &[companion_finalized],
         &[companion_lse],
         &[companion_thermal],
     )
@@ -852,6 +1279,7 @@ fn covered_forest_wrapper_uses_one_real_authorization_and_post_solve_ingress() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn covered_forest_condensation_credits_full_litter_store_and_routes_overflow() {
     let configuration = covered_configuration();
     let frame = covered_frame_with_forest_liquid(&configuration, 6.0);
@@ -998,4 +1426,130 @@ fn covered_forest_condensation_credits_full_litter_store_and_routes_overflow() {
             .iter()
             .all(|row| row.before_sha256 == row.after_sha256)
     );
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn covered_v8_public_wrapper_joins_all_uncommitted_owners_from_one_real_snapshot() {
+    let surface_configuration = covered_configuration();
+    let frame = covered_frame(&surface_configuration);
+    let production_before = frame.clone();
+
+    let (envelope, nitrogen_calls, vegetation_configuration, vegetation_beginning) =
+        execute_aligned_v8_fixture(&surface_configuration, &frame);
+
+    assert_eq!(frame, production_before, "production frame mutated");
+    assert_eq!(nitrogen_calls, 1, "nitrogen owner called more than once");
+    assert_eq!(envelope.transaction_id(), TransactionId(41));
+    envelope.validate().expect("complete uncommitted owner set");
+
+    let ending = envelope.vegetation().ending_state();
+    assert_eq!(ending.last_transaction_id, 41);
+    assert_eq!(ending.model_definition_sha256, V8_MODEL_SHA256);
+    assert_eq!(
+        ending.configuration_sha256,
+        vegetation_configuration.configuration_sha256
+    );
+    assert_eq!(ending.state_sha256, ending.canonical_sha256());
+    assert_ne!(ending.state_sha256, vegetation_beginning.state_sha256);
+    ending
+        .validate(&vegetation_configuration)
+        .expect("strict ending V8 state");
+    assert!(
+        ending
+            .occupancies
+            .values()
+            .all(|lane| lane.last_accepted_transaction_id == Some(41))
+    );
+
+    let arbitration = envelope.hydrology().arbitration();
+    let root_requests = arbitration
+        .requests
+        .iter()
+        .filter(|row| {
+            row.key.requesting_component
+                == openwepp_hillslope_orchestrator::land_surface_energy_shadow::RequestingComponent::VegetationRoot
+        })
+        .collect::<Vec<_>>();
+    let root_authorizations = arbitration
+        .authorizations
+        .iter()
+        .filter(|row| {
+            row.key.requesting_component
+                == openwepp_hillslope_orchestrator::land_surface_energy_shadow::RequestingComponent::VegetationRoot
+        })
+        .collect::<Vec<_>>();
+    let root_uses = envelope
+        .hydrology()
+        .finalized_uses()
+        .iter()
+        .filter(|row| {
+            row.key.requesting_component
+                == openwepp_hillslope_orchestrator::land_surface_energy_shadow::RequestingComponent::VegetationRoot
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(root_requests.len(), 8);
+    assert_eq!(root_authorizations.len(), root_requests.len());
+    assert_eq!(root_uses.len(), root_requests.len());
+    for ((request, authorization), finalized) in root_requests
+        .iter()
+        .zip(&root_authorizations)
+        .zip(&root_uses)
+    {
+        assert_eq!(request.key, authorization.key);
+        assert_eq!(request.key, finalized.key);
+        assert!(authorization.amount_kg_m2_stand_ground <= request.amount_kg_m2_stand_ground);
+        assert!(finalized.amount_kg_m2_stand_ground <= authorization.amount_kg_m2_stand_ground);
+    }
+    let final_root_count: usize = envelope
+        .physical()
+        .final_tile()
+        .vegetation_operands
+        .occupancies
+        .iter()
+        .map(|occupancy| occupancy.root_water.len())
+        .sum();
+    assert_eq!(final_root_count, root_uses.len());
+
+    let vegetation_n = envelope.vegetation().nitrogen_protocol();
+    let bgc_n = envelope.biogeochemistry().protocol();
+    assert_eq!(vegetation_n.0, bgc_n.0);
+    assert_eq!(vegetation_n.1, bgc_n.1);
+    assert_eq!(vegetation_n.2, bgc_n.2);
+    assert_eq!(
+        envelope.biogeochemistry().receipts().len(),
+        envelope.vegetation().material_proposals().len()
+    );
+    assert_eq!(envelope.biogeochemistry().ending().last_transaction_id, 41);
+
+    assert!(
+        envelope
+            .physical()
+            .final_tile()
+            .energy_operands
+            .validate()
+            .is_ok()
+    );
+    assert_eq!(
+        envelope
+            .physical()
+            .final_tile()
+            .soil_thermal
+            .owner_id
+            .as_str(),
+        "soil-thermal"
+    );
+    assert!(
+        envelope
+            .hydrology()
+            .rollback_hashes()
+            .iter()
+            .all(|row| row.before_sha256 == row.after_sha256)
+    );
+
+    let owner_source = fs::read_to_string(
+        "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_v8_owner.rs",
+    )
+    .expect("covered V8 owner source");
+    assert!(!owner_source.contains("fn commit"));
 }

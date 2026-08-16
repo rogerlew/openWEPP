@@ -161,3 +161,32 @@ Ran: projection guards 2/2, envelope guards 2/2, affected checks, strict
 Clippy, formatting and diff hygiene passed. This is bounded helper evidence;
 the aligned public end-to-end V8 physical/persistent/BGC fixture remains
 required before Child-3 completion.
+
+## Complete public V8 forest composition
+
+The public covered transaction now derives the joint numerical start from the
+strict V8 occupancy lanes, shared tile canopy-air state, LSE ground warm start
+and ordered soil-thermal beginning lanes. The potential and fixed-cap passes
+receive the same beginning-derived vector. No caller-provided trial or stale
+potential candidate can enter the accepted chain.
+
+The first deliberately nonlexical two-stratum fixture exposed a real protocol
+ordering defect: finalized mineral-N uses followed lexical state-map order
+instead of the immutable request order. The correction reorders by the complete
+typed protocol identity without modifying any amount or issuing another
+authorization. A crate-local regression proves the reordered triples pass the
+kernel protocol and independent BGC candidate constructor.
+
+Ran on the corrected bytes:
+
+- vegetation quick: 250/250 PASS;
+- full LSE/real-hydrology integration target: 73/73 PASS;
+- strict all-target Clippy for vegetation and hillslope orchestrator: PASS.
+
+The aligned public fixture now retains the uncommitted vegetation, actual
+unified hydrology, LSE, soil-thermal and independent BGC candidate surfaces from
+one beginning snapshot. It proves exact root-water and mineral-N protocol joins,
+material proposal/receipt identity, strict V8 ending-state validation,
+unchanged production bytes and rollback hashes. Child 3 still exposes no
+commit; atomic whole-shadow replacement and a real scheduler consumer remain
+owned by Child 4.
