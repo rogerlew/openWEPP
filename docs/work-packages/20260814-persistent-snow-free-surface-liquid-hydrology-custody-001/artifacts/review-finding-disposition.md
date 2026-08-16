@@ -572,5 +572,23 @@ Fresh hydrology/science/ownership review: `PASS`, no material finding.
 Fresh Rust correctness review: `PASS`, no material finding.
 
 All accepted findings through `537345efa` remain remediated. No finding is
-unresolved, rejected, deferred or moved to another package. Heavy comparator
-and terminal-verification evidence remains pending.
+unresolved, rejected, deferred or moved to another package. Exact-head heavy
+closure passes at `0edf04577`; terminal verification of the evidence-only
+closure commit is active.
+
+## Terminal-verification governance finding at `8a022a8ca`
+
+Hydrology/science terminal verification: `PASS`, no material finding.
+
+Rust terminal verification: bounded evidence/governance `HOLD`; no source,
+science, custody, rollback or isolation defect found. Accepted corrections are:
+
+- remove the single trailing blank line from the retained doctest retry log so
+  the complete base-to-head diff passes whitespace hygiene;
+- reconcile the four integration-test line counts changed by the lint-only
+  correction frozen at `0edf04577`; and
+- replace the stale final statement that heavy comparator evidence is pending
+  with the recorded exact-head heavy closure.
+
+No terminal finding is rejected, deferred or moved to another package. Fresh
+dual verification is required against the corrected exact bytes.

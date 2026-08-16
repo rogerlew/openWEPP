@@ -1712,3 +1712,20 @@ Attempt-4 raw logs are retained under `artifacts/gate-run-20260814-4/`.
   byte-preserving prompt archival.
 - PASS after evidence reconciliation: package Markdown lint scanned 110 files
   with zero errors and zero warnings; formatting and diff hygiene remain clean.
+- PASS against the campaign documentation baseline: full-docs Markdown lint
+  scanned 20,307 files and reported the same 15 pre-existing broken-link
+  findings and zero warnings. No finding target changed and no new broken link
+  was introduced; the nonzero command exit is the frozen baseline condition,
+  not a zero-error claim.
+- PASS: terminal hydrology/science verification of `8a022a8ca` found no
+  material finding and reran LSE 31/31, integration 69/69 and custody authority
+  10/10.
+- HOLD retained: terminal Rust verification found no implementation defect but
+  identified four stale line counts, one retained-log trailing blank line and
+  one stale heavy-pending disposition sentence.
+- PASS after bounded evidence remediation: actual line counts are reconciled,
+  the raw log has exactly one terminal newline, base-relative and worktree diff
+  hygiene pass, formatting passes, and package Markdown lint scans 110 files
+  with zero errors or warnings.
+- Pending: freeze corrected evidence bytes and repeat dual terminal
+  verification.
