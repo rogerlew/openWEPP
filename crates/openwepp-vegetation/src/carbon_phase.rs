@@ -22,6 +22,19 @@ pub struct StratumCarbonOperands {
     pub advanced_t10_k: f64,
 }
 
+/// Exact class-resolved physical operands required to integrate gross carbon
+/// gain and accepted leaf dark respiration. Acclimation state is deliberately
+/// absent because it is persistent-owner state, not an integration operand.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct ClassCarbonOperands {
+    pub sun_leaf_area_m2_m2_tile_ground: f64,
+    pub shade_leaf_area_m2_m2_tile_ground: f64,
+    pub sun_gross_assimilation_umol_co2_m2_leaf_s: f64,
+    pub shade_gross_assimilation_umol_co2_m2_leaf_s: f64,
+    pub sun_dark_respiration_umol_co2_m2_leaf_s: f64,
+    pub shade_dark_respiration_umol_co2_m2_leaf_s: f64,
+}
+
 /// Aggregate the accepted capped pass without re-running `FvCB`.
 pub(crate) fn aggregate_stratum_carbon(
     columns: &TileColumnsResult,
@@ -99,8 +112,31 @@ fn aggregate_stratum_carbon_for_pass(
     Ok(aggregate)
 }
 
-fn integrate_occupancy(
+pub(crate) fn integrate_occupancy(
     operands: OccupancyCarbonOperands,
+    interval_s: f64,
+    tile_fraction: f64,
+) -> Result<(f64, f64), VegetationError> {
+    integrate_class_carbon(
+        ClassCarbonOperands {
+            sun_leaf_area_m2_m2_tile_ground: operands.sun_leaf_area_m2_m2_tile_ground,
+            shade_leaf_area_m2_m2_tile_ground: operands.shade_leaf_area_m2_m2_tile_ground,
+            sun_gross_assimilation_umol_co2_m2_leaf_s: operands
+                .sun_gross_assimilation_umol_co2_m2_leaf_s,
+            shade_gross_assimilation_umol_co2_m2_leaf_s: operands
+                .shade_gross_assimilation_umol_co2_m2_leaf_s,
+            sun_dark_respiration_umol_co2_m2_leaf_s: operands
+                .sun_dark_respiration_umol_co2_m2_leaf_s,
+            shade_dark_respiration_umol_co2_m2_leaf_s: operands
+                .shade_dark_respiration_umol_co2_m2_leaf_s,
+        },
+        interval_s,
+        tile_fraction,
+    )
+}
+
+pub(crate) fn integrate_class_carbon(
+    operands: ClassCarbonOperands,
     interval_s: f64,
     tile_fraction: f64,
 ) -> Result<(f64, f64), VegetationError> {

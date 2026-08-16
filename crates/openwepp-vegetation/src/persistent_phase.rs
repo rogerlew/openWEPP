@@ -84,9 +84,24 @@ struct PreparedStratum {
     transfers: Vec<MaterialTransferAmounts>,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct PersistentForcingInputs {
+    pub air_temperature_k: f64,
+    pub gsi: f64,
+    pub soil_temperature_k_by_layer: BTreeMap<openwepp_kernel_contract::SoilLayerId, f64>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct PersistentCoreResult {
+    pub transaction_id: TransactionId,
+    pub requests: Vec<PotentialMineralNitrogenRequest>,
+    pub authorizations: Vec<MineralNitrogenMaximumAuthorization>,
+    pub finalized_uses: Vec<MineralNitrogenFinalizedUse>,
+    pub strata: BTreeMap<StratumId, StratumPreallocation>,
+}
+
 /// Prepare V7 phenology/turnover, authorize all exact `(layer, species)`
 /// requests once, and finalize the N protocol without mutating beginning state.
-#[allow(clippy::too_many_lines)]
 pub(crate) fn execute_uncommitted_nitrogen_phase(
     configuration: &VegetationConfiguration,
     beginning: &CoupledOwnedState,
@@ -110,12 +125,71 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
 
     let potential_carbon = water_phase.potential_stratum_carbon_operands()?;
     let final_carbon = water_phase.final_stratum_carbon_operands()?;
+    let forcing_inputs = PersistentForcingInputs {
+        air_temperature_k: forcing.air_temperature_k,
+        gsi: forcing.gsi,
+        soil_temperature_k_by_layer: forcing
+            .soil_layers
+            .iter()
+            .map(|layer| (layer.layer_id.clone(), layer.temperature_k))
+            .collect(),
+    };
+    let core = execute_persistent_core(
+        configuration,
+        &beginning.strata,
+        transaction_id,
+        &forcing_inputs,
+        &potential_carbon,
+        &final_carbon,
+        nitrogen,
+    )?;
+
+    Ok(UncommittedNitrogenPhase {
+        transaction_id: core.transaction_id,
+        requests: core.requests,
+        authorizations: core.authorizations,
+        finalized_uses: core.finalized_uses,
+        strata: core.strata,
+        source_water_phase: Box::new(water_phase.clone()),
+    })
+}
+
+/// Shared E16--E22/mineral-N core used by the sealed V7 water wrapper and the
+/// dependency-neutral V8 receipt boundary. It accepts only already aggregated
+/// potential and capped carbon operands and therefore cannot re-enter E01--E15.
+#[allow(clippy::too_many_lines)]
+pub(crate) fn execute_persistent_core(
+    configuration: &VegetationConfiguration,
+    beginning_strata: &BTreeMap<StratumId, StratumSharedState>,
+    transaction_id: TransactionId,
+    forcing: &PersistentForcingInputs,
+    potential_carbon: &BTreeMap<StratumId, StratumCarbonOperands>,
+    final_carbon: &BTreeMap<StratumId, StratumCarbonOperands>,
+    nitrogen: &dyn NitrogenArbiter,
+) -> Result<PersistentCoreResult, VegetationError> {
+    if transaction_id.0 == 0 {
+        return Err(VegetationError::Receipt(
+            "persistent core zero transaction identity".into(),
+        ));
+    }
+    if !forcing.air_temperature_k.is_finite()
+        || forcing.air_temperature_k <= 0.0
+        || !forcing.gsi.is_finite()
+        || !(0.0..=1.0).contains(&forcing.gsi)
+        || forcing
+            .soil_temperature_k_by_layer
+            .values()
+            .any(|temperature| !temperature.is_finite() || *temperature <= 0.0)
+    {
+        return Err(VegetationError::Domain("persistent forcing receipt"));
+    }
     let configured_ids = configuration
         .strata
         .iter()
         .map(|stratum| stratum.stratum_id.clone())
         .collect::<BTreeSet<_>>();
-    if potential_carbon.keys().cloned().collect::<BTreeSet<_>>() != configured_ids
+    if beginning_strata.keys().cloned().collect::<BTreeSet<_>>() != configured_ids
+        || potential_carbon.keys().cloned().collect::<BTreeSet<_>>() != configured_ids
         || final_carbon.keys().cloned().collect::<BTreeSet<_>>() != configured_ids
     {
         return Err(VegetationError::Receipt(
@@ -126,8 +200,7 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
     let mut prepared = BTreeMap::<StratumId, PreparedStratum>::new();
     let mut all_requests = Vec::new();
     for stratum in &configuration.strata {
-        let beginning_stratum = beginning
-            .strata
+        let beginning_stratum = beginning_strata
             .get(&stratum.stratum_id)
             .ok_or(VegetationError::Domain("persistent stratum identity"))?;
         let mut candidate = beginning_stratum.clone();
@@ -148,7 +221,10 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
         )?);
         candidate.retranslocation_n += phenology.retranslocated_n;
 
-        let root_operands = root_respiration_operands(stratum, forcing)?;
+        let root_operands = root_respiration_operands_from_temperatures(
+            stratum,
+            &forcing.soil_temperature_k_by_layer,
+        )?;
         let potential = potential_carbon
             .get(&stratum.stratum_id)
             .ok_or(VegetationError::Domain("potential carbon identity"))?;
@@ -296,13 +372,12 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
         ));
     }
 
-    Ok(UncommittedNitrogenPhase {
+    Ok(PersistentCoreResult {
         transaction_id,
         requests: all_requests,
         authorizations,
         finalized_uses,
         strata,
-        source_water_phase: Box::new(water_phase.clone()),
     })
 }
 
@@ -380,6 +455,7 @@ fn apply_phenology_update(state: &mut StratumSharedState, update: &PhenologyUpda
     state.previous_gsi = update.previous_gsi;
 }
 
+#[cfg(test)]
 fn root_respiration_operands(
     stratum: &StratumConfiguration,
     forcing: &SnowFreeForcing,
@@ -389,6 +465,17 @@ fn root_respiration_operands(
         .iter()
         .map(|layer| (&layer.layer_id, layer.temperature_k))
         .collect::<BTreeMap<_, _>>();
+    let temperatures = temperatures
+        .into_iter()
+        .map(|(identity, temperature)| (identity.clone(), temperature))
+        .collect();
+    root_respiration_operands_from_temperatures(stratum, &temperatures)
+}
+
+fn root_respiration_operands_from_temperatures(
+    stratum: &StratumConfiguration,
+    temperatures: &BTreeMap<openwepp_kernel_contract::SoilLayerId, f64>,
+) -> Result<Vec<RootRespirationOperand>, VegetationError> {
     stratum
         .root_layers
         .iter()

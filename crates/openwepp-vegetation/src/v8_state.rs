@@ -618,6 +618,41 @@ fn finite_fraction(value: f64, field: &'static str) -> Result<(), V8StateError> 
     Ok(())
 }
 
+#[cfg(test)]
+pub(crate) fn v8_test_fixture() -> (VegetationConfiguration, V8CoupledOwnedState) {
+    let (mut source_configuration, mut source_state) =
+        crate::transaction::v7_identity_rebound_fixture();
+    for lane in source_state.occupancies.values_mut() {
+        lane.canopy_air_temperature_k = 295.25;
+        lane.canopy_air_specific_humidity_kg_kg = 0.00925;
+    }
+    source_state.state_sha256 = source_state.canonical_sha256().expect("V7 state digest");
+    source_configuration.initial_state_sha256 = source_state.state_sha256.clone();
+    let mut target_configuration = source_configuration.clone();
+    target_configuration.model_definition_sha256 = V8_MODEL_SHA256.into();
+    target_configuration.configuration_sha256 = target_configuration
+        .canonical_sha256()
+        .expect("V8 configuration digest");
+    target_configuration.initial_state_sha256 = "0".repeat(64);
+    let provisional = migrate_one_state(
+        &source_state,
+        &target_configuration,
+        V7ToV8Snapshot::Initial,
+    )
+    .expect("unambiguous V8 migration");
+    target_configuration.initial_state_sha256 = provisional.state_sha256.clone();
+    let V7ToV8MigrationResult::Complete(migration) = migrate_v7_snapshot(
+        &source_configuration,
+        &source_state,
+        &source_state,
+        &target_configuration,
+    )
+    .expect("valid V8 migration") else {
+        panic!("V8 test fixture must migrate completely")
+    };
+    (target_configuration, migration.initial_state)
+}
+
 mod occupancy_map {
     use std::collections::BTreeMap;
     use std::fmt;
