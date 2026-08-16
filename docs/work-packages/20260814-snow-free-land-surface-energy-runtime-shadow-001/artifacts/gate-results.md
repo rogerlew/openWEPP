@@ -104,3 +104,14 @@ Status: accumulating; failures and retries will be preserved.
 Broad workspace, benchmark and terminal gates were not run because the
 required forest endpoint is absent. Running them would not convert this HOLD
 into a complete Child-3 release.
+
+## Dependency lift and resumption
+
+- PASS: persistent snow-free surface-liquid hydrology custody dependency closed
+  at `a7d692da4` with dual terminal verification, exact-head 2,901/2,901
+  workspace evidence and byte-preserving prompt archival.
+- Static: `SC-LANDSURFACEENERGY-001@3` and `SC-SURFACELIQUID-001@6` authorize
+  the covered forest implementation; no successor model identity is required.
+- Static: the historical HOLD and all rejected aliases remain preserved. Child
+  3 resumes in this package and has not yet earned runtime, benchmark or
+  terminal completion evidence.

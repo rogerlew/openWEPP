@@ -1,6 +1,6 @@
 # Implement Snow-Free Land-Surface-Energy Runtime Shadow
 
-Status: `executed-hold / exact runtime core and soil-layer real-owner bridge pass / forest-litter water custody absent`
+Status: `executing / surface-liquid custody dependency lifted / covered forest runtime active`
 
 Date: `2026-08-14`
 
@@ -44,8 +44,9 @@ post-hoc energy proposals and meteorology helpers are not constitutive inputs.
 - [x] Connect mixed root/bare-ground soil-layer requests to one actual
   production hydrology authorization with clone-only candidate debit.
 - [ ] Connect forest-litter/surface-liquid withdrawal and condensation credit
-  to an actual persistent hydrology owner. Blocked by the exact interface
-  recorded in `artifacts/real-hydrology-surface-liquid-hold-audit.md`.
+  to the terminally released persistent hydrology owner. The historical blocker
+  remains recorded in `artifacts/real-hydrology-surface-liquid-hold-audit.md`;
+  resumption authority and scope are recorded in `artifacts/resume-intake.md`.
 - [ ] Pass terminal science/Rust reviews, benchmark and dual verification only
   after the custody hold is lifted and the complete forest endpoint exists.
 

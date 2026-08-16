@@ -592,25 +592,17 @@
 
 State as of `2026-08-14 UTC`:
 
-- `20260814-persistent-snow-free-surface-liquid-hydrology-custody-001/`
-  - EXECUTING / CONTRACT-FIRST DEPENDENCY LIFT: admits and implements the
-    persistent per-OFE/tile/surface-class hydrology owner named by the Child-3
-    HOLD, including strict restart lineage, D/A/F debit, signed condensation
-    credit, ingress routing and rollback. Production selection and behavior
-    remain protected; the held Child 3 resumes only after this package passes.
-
 - `20260814-snow-free-land-surface-real-hydrology-integration-001/`
-  - HOLD / CHILDREN 1-2 COMPLETE / CHILD 3 FOREST SURFACE-LIQUID CUSTODY
-    ABSENT: coordinates four
+  - EXECUTING / CHILDREN 1-2 COMPLETE / CHILD 3 RESUMED AFTER CUSTODY LIFT:
+    coordinates four
     independently closed packages for complete snow-free ground/forest-floor
     authority, V8 arbitration against the real hillslope hydrology owner, a
     default-off LSE runtime, and a real scheduler consumer. Local base is the
     unpushed governance commit `0db196012`; production selection, state,
     outputs, calibration, deployment and cutover remain excluded. Child 3
-    retains a passing exact runtime and production soil-layer bridge, but
-    cannot close the forest endpoint until hydrology owns a persistent
-    per-OFE/tile surface or litter liquid state with signed condensation
-    credit. Child 4 has not started.
+    retains a passing exact runtime and production soil-layer bridge. The
+    persistent per-OFE/tile surface/litter owner is now terminally released;
+    covered forest integration is active. Child 4 has not started.
 
 - `20260814-snow-free-land-surface-energy-authority-001/`
   - COMPLETE / SNOW-FREE LAND-SURFACE-ENERGY IMPLEMENTATION AUTHORITY
@@ -626,10 +618,10 @@ State as of `2026-08-14 UTC`:
     hydrology while preserving production bytes and legacy behavior.
 
 - `20260814-snow-free-land-surface-energy-runtime-shadow-001/`
-  - EXECUTED-HOLD / EXACT RUNTIME CORE AND SOIL-LAYER REAL-OWNER BRIDGE PASS /
-    FOREST-LITTER WATER CUSTODY ABSENT: the retained default-off checkpoint
-    passes its bounded focused gates. It does not claim the prohibited
-    bare-soil-only forest endpoint. Its active kickoff prompt remains active.
+  - EXECUTING / SURFACE-LIQUID CUSTODY DEPENDENCY LIFTED / COVERED FOREST
+    RUNTIME ACTIVE: the historical HOLD remains preserved, the retained
+    default-off core and soil-layer bridge remain passing, and the real
+    covered forest/litter endpoint is now being connected.
 
 - `20260814-vegetation-land-surface-real-consumer-shadow-001/`
   - NOT STARTED / BLOCKED ON COMPLETE CHILD 3 FOREST ENDPOINT. No package PASS,
@@ -2488,6 +2480,16 @@ artifacts remain factual; do not dispatch or resume them independently.
   coordinated terminal deletion instead of continuing the held slices.
 
 ## Execution Log
+
+- `20260814-persistent-snow-free-surface-liquid-hydrology-custody-001/` is
+  complete as PERSISTENT SNOW-FREE SURFACE-LIQUID HYDROLOGY CUSTODY
+  IMPLEMENTED / DEFAULT-OFF ONLY. It admits and implements strict persistent
+  per-OFE/tile/surface/source state, restart lineage, immutable-snapshot D/A/F,
+  signed condensation credit, ingress routing, independent mass/enthalpy
+  closure and rollback. Exact-head full workspace passed 2,901/2,901, both
+  terminal verifiers passed, and the prompt is archived byte-identically at
+  commit `a7d692da4`. No selector, activation, cutover or publication is
+  authorized.
 
 - `20260808-rhessys-east-coast-vegetation-authority-admission-001/` closed
   `executed-hold` after an integrated three-gate authority attempt. It admitted
