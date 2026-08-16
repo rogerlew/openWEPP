@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `bounded checkpoint PASS / forest real-owner endpoint HOLD`
+Status: `resumed increment PASS / covered physical three-owner sub-envelope`
 
 Evidence class: `Ran + Static`
 
@@ -34,3 +34,33 @@ Typed negative coverage rejects wrong/duplicate identity, frozen sources,
 stale state, unsupported litter/surface sources, unsupported condensation and
 selector reachability. These results do not turn the soil-layer path into the
 required forest-litter endpoint.
+
+## Resumed covered-forest increment
+
+The orchestrator now exposes `execute_covered_forest_shadow()`. It consumes the
+frozen two-rank forest-litter problem, obtains exact root plus litter requests
+from `solve_covered_potential_phase()`, joins caller-produced companion-tile
+requests, performs one unified real-owner authorization, and rebuilds the
+covered solve from immutable beginning state through `finalize_covered_phase()`.
+The accepted covered tile, complete submitted request batch and unified
+hydrology/LSE/soil-thermal candidate remain separately inspectable.
+
+The low-level root identity now carries its actual vegetation owner instead of
+aliasing the LSE owner. The public boundary rejects an LSE-owned root row and
+mixed vegetation owners. The real fixture proves exact request/authorization/
+final-use identity, signed-credit-capable owner composition, post-solve canopy
+ingress, component-energy validation, rollback-set identity and unchanged
+production-frame bytes.
+
+Ran on the resumed worktree:
+
+- covered focused tests: 2/2 PASS;
+- complete real-hydrology/LSE integration: 71/71 PASS;
+- LSE crate: 31/31 PASS;
+- affected crate checks and strict all-target Clippy: PASS;
+- formatting and diff hygiene: PASS.
+
+The frozen covered vector is evaporative. Constitutive positive condensation
+remains proven only at the existing unified-owner boundary, so this increment
+does not yet close the complete forest endpoint. It also does not yet construct
+the persistent V8 vegetation/BGC five-owner envelope.

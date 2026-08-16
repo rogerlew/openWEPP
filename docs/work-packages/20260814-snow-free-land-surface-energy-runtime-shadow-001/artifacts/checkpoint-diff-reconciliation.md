@@ -1,6 +1,6 @@
 # Checkpoint Diff Reconciliation
 
-Status: `reconciled bounded HOLD checkpoint`
+Status: `resumed increment reconciled / Child 3 remains executing`
 
 Evidence class: `Static`
 
@@ -18,8 +18,17 @@ output publication, V7 model definition or completed V7 package mutation.
 Child 4 was not scaffolded because its real-consumer work is blocked on the
 complete Child-3 forest endpoint.
 
-The implementation matches the bounded claim: exact LSE constitutive runtime
-and soil-layer real-owner integration are present; surface/litter liquid and
-condensation remain typed unsupported at the real-owner boundary. The active
-kickoff prompt remains active, and no terminal benchmark, terminal verifier or
-runtime-completion evidence is claimed.
+The historical checkpoint matched its bounded claim. The resumed delta adds a
+typed covered forest wrapper, distinct vegetation-root owner identity and one
+frozen two-rank real-owner integration fixture. Persistent surface/litter liquid
+is no longer unsupported at this boundary: litter withdrawal, post-solve
+ingress and the signed-credit-capable owner protocol are connected to the
+released custody owner. The new covered fixture is evaporative, so a positive
+covered-solver condensation vector remains pending.
+
+No caller fabricates companion physics inside the wrapper: other configured
+tile requests, finalized uses and receiving candidates are explicit caller
+operands and are validated by the unified envelope. Persistent V8 vegetation
+state, final carbon operands, BGC receipts and the heterogeneous five-owner
+atomic shadow remain later Child-3 work. The active kickoff prompt stays active;
+no terminal benchmark, verifier or completion claim is made.

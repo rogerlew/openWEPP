@@ -14,16 +14,19 @@ use openwepp_kernel_contract::{
     ResourceOwnerId, SoilLayerId, TileId, TransactionId, canonical_resource_amount_sum,
 };
 pub use openwepp_land_surface_energy::{
-    BandDirectionalFluxes, BareSoilParameters, ComponentId, CondensationCredit, GroundWaterKey,
-    LandSurfaceEnergyError, LandSurfaceEnergyErrorClass, OfeId, OpenNeutralGeometry,
-    OpenPotentialPhase, OpenSurfaceProblem, OwnerKind, OwnerRollbackHash,
-    PotentialWaterRequestBatch, RequestingComponent, RuntimeTileIdentity, Sha256Digest,
+    BandDirectionalFluxes, BareSoilParameters, BiochemicalConstants, ComponentId,
+    CondensationCredit, CoveredColumnInputs, CoveredOccupancyInputs, CoveredPotentialPhase,
+    FinalCoveredTileCandidate, GroundWaterKey, LandSurfaceEnergyError, LandSurfaceEnergyErrorClass,
+    LeafBiochemicalInputs, OfeId, OpenNeutralGeometry, OpenPotentialPhase, OpenSurfaceProblem,
+    OwnerKind, OwnerRollbackHash, PotentialWaterRequestBatch, RequestingComponent,
+    RootHydraulicLayer, RootRuntimeIdentity, RuntimeTileIdentity, Sha256Digest,
     SoilThermalLayerCandidate, SoilThermalLayerSnapshot, SoilThermalNodeOperands,
     SoilThermalOfeSnapshot, SoilThermalSnapshot, SoilThermalTileCandidate, SourceId,
     StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceId, SurfaceStorageBranch,
-    TileState, WaterAmount, WaterAuthorization, WaterAuthorizationReason, WaterProtocol,
-    WaterProtocolRow, WaterProtocolViolation, WaterSourceType, WaterUseOperands,
-    evaluate_open_surface, finalize_open_phase, solve_open_potential_phase, validate_water_use,
+    TileState, UnderCanopyGeometry, WaterAmount, WaterAuthorization, WaterAuthorizationReason,
+    WaterProtocol, WaterProtocolRow, WaterProtocolViolation, WaterSourceType, WaterUseOperands,
+    evaluate_open_surface, finalize_covered_phase, finalize_open_phase,
+    solve_covered_potential_phase, solve_open_potential_phase, validate_water_use,
 };
 use openwepp_land_surface_energy::{OpenSurfaceSolveOutcome, WaterBranch, solve_open_surface};
 use sha2::{Digest, Sha256};
@@ -50,11 +53,13 @@ use crate::{
     execute_surface_liquid_ingress,
 };
 
+mod covered_forest;
 mod finalization_sealing;
 mod receiver_failure;
 mod receiver_preflight;
 mod receiver_validation;
 mod unified_entry_preflight;
+pub use covered_forest::{CoveredForestShadowResult, execute_covered_forest_shadow};
 use finalization_sealing::first_sealed_finalization_violation;
 use receiver_failure::canonical_receiver_failure;
 use receiver_validation::{

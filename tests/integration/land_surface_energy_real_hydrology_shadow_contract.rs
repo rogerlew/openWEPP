@@ -47,6 +47,8 @@ mod finalization_test_support;
 #[path = "land_surface_energy_real_hydrology_shadow_contract/sealed_receiver_context_tests.rs"]
 mod sealed_receiver_context_tests;
 use finalization_test_support::finalization_expectations;
+#[path = "land_surface_energy_real_hydrology_shadow_contract/covered_forest_tests.rs"]
+mod covered_forest_tests;
 #[path = "land_surface_energy_real_hydrology_shadow_contract/source_binding_tests.rs"]
 mod source_binding_tests;
 #[path = "land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs"]

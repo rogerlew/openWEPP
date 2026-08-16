@@ -15,6 +15,12 @@ The retained checkpoint owns:
 No runner, production selector, default, publication or production scheduler
 call site is in the diff.
 
-Line-count evidence: `solver.rs` 2,783; `transaction.rs` 1,544; `physics.rs`
-665; `closure.rs` 484; orchestrator shadow module 475; integration test 364.
-Every production source file remains below the 3,000-line package threshold.
+Resumed ownership additionally includes the typed root-owner addition in
+`transaction.rs`, `land_surface_energy_shadow/covered_forest.rs`, the shadow
+module exports and `covered_forest_tests.rs`.
+
+Current line-count evidence: `solver.rs` 2,802; `transaction.rs` 1,674;
+`physics.rs` 665; `closure.rs` 484; orchestrator shadow `mod.rs` 2,943;
+`covered_forest.rs` 158; integration root 2,757; covered tests 677. The two
+2,000+ production/test files remain WARN with active decomposition through
+submodules. Every file remains below the 3,000-line closure threshold.

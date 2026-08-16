@@ -110,6 +110,9 @@ impl RuntimeTileIdentity {
 #[derive(Clone, Debug, PartialEq)]
 pub struct RootRuntimeIdentity {
     pub solver_occupancy_id: String,
+    /// Vegetation owner that issued this root withdrawal. This is deliberately
+    /// distinct from the LSE owner carried by [`RuntimeTileIdentity`].
+    pub requesting_owner_id: ResourceOwnerId,
     pub occupancy_id: ComponentId,
     pub layer_id: SoilLayerId,
     pub source_id: SourceId,
@@ -131,6 +134,26 @@ pub struct PotentialWaterRequestBatch {
 }
 
 impl PotentialWaterRequestBatch {
+    pub fn try_new(
+        transaction_id: TransactionId,
+        beginning_lse_state_sha256: Sha256Digest,
+        requests: Vec<WaterAmount>,
+    ) -> Result<Self, LandSurfaceEnergyError> {
+        let potential_signature_sha256 = canonical_digest(&PotentialSignature {
+            transaction_id,
+            beginning_lse_state_sha256: &beginning_lse_state_sha256,
+            requests: &requests,
+        })?;
+        let batch = Self {
+            transaction_id,
+            beginning_lse_state_sha256,
+            requests,
+            potential_signature_sha256,
+        };
+        batch.validate()?;
+        Ok(batch)
+    }
+
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
         if self.transaction_id.0 == 0 {
             return Err(LandSurfaceEnergyError::water_identity(
@@ -247,7 +270,7 @@ pub struct CoveredPotentialPhase {
 fn root_key(tile: &RuntimeTileIdentity, root: &RootRuntimeIdentity) -> GroundWaterKey {
     GroundWaterKey {
         transaction_id: tile.transaction_id,
-        requesting_owner_id: tile.lse_owner_id.clone(),
+        requesting_owner_id: root.requesting_owner_id.clone(),
         requesting_component: RequestingComponent::VegetationRoot,
         ofe_id: tile.ofe_id.clone(),
         requesting_tile_id: tile.tile_id.clone(),
@@ -285,7 +308,22 @@ pub fn solve_covered_potential_phase(
         }
     };
     let mut identities = BTreeMap::new();
+    let mut vegetation_owner = None;
     for root in roots {
+        if root.requesting_owner_id == identity.lse_owner_id {
+            return Err(LandSurfaceEnergyError::water_identity(
+                "vegetation root owner aliases land-surface-energy owner",
+            ));
+        }
+        if vegetation_owner
+            .as_ref()
+            .is_some_and(|owner| owner != &root.requesting_owner_id)
+        {
+            return Err(LandSurfaceEnergyError::water_identity(
+                "mixed vegetation root owners",
+            ));
+        }
+        vegetation_owner = Some(root.requesting_owner_id.clone());
         let key = (
             root.solver_occupancy_id.clone(),
             root.layer_id.as_str().to_owned(),

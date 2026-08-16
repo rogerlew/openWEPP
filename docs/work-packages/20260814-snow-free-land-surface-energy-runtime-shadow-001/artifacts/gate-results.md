@@ -115,3 +115,23 @@ into a complete Child-3 release.
 - Static: the historical HOLD and all rejected aliases remain preserved. Child
   3 resumes in this package and has not yet earned runtime, benchmark or
   terminal completion evidence.
+
+## Covered forest real-owner increment
+
+- FAIL then PASS: the first wrapper integration exposed a typed identity defect
+  in `RootRuntimeIdentity`: root keys inherited the LSE owner. The DTO now
+  carries the actual vegetation owner, root/LSE alias and mixed-owner rows are
+  rejected, and the frozen `vegetation-v8` versus `land-surface-energy-v1`
+  owner identities pass without rewriting keys.
+- PASS: frozen two-rank forest/litter potential and fixed-cap solves feed one
+  unified authorization spanning eight root rows, the litter store and the
+  explicit companion open-tile row.
+- PASS: covered focused tests 2/2; complete integration 71/71; LSE 31/31;
+  affected checks and strict all-target Clippy; formatting and diff hygiene.
+- PASS: finalized D/A/F, accepted energy/diagnostics, post-solve covered ingress,
+  three physical rollback owners and byte-identical production frame are
+  exercised through the public wrapper.
+- Bounded limitation: the frozen covered solve is evaporative. Existing unified
+  owner tests prove positive condensation credit, but a constitutive covered
+  condensation fixture and the V8 vegetation/BGC five-owner envelope remain
+  pending; Child 3 remains executing.
