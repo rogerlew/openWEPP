@@ -18,6 +18,10 @@
 )]
 
 use crate::LandSurfaceEnergyError;
+use crate::covered_liquid::{
+    CoveredLiquidPass, CoveredLiquidPreparation, finalize_covered_liquid, prepare_covered_liquid,
+};
+use crate::covered_output::{CoveredColumnEvaluation, CoveredOccupancyEvaluation};
 use crate::physics::{
     AIR_HEAT_CAPACITY_J_KG_K, BandDirectionalFluxes, BareSoilVaporOperands, BareSoilVaporResult,
     DRY_AIR_GAS_CONSTANT_J_KG_K, NeutralResistances, OpenNeutralGeometry, REFERENCE_TEMPERATURE_K,
@@ -25,6 +29,7 @@ use crate::physics::{
     harmonic_interface_conductance_w_m2_k, litter_relative_humidity, open_neutral_resistances,
     partition_ground_shortwave, saturation_specific_humidity, vapor_export_w_m2,
 };
+use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 
 const MAX_NEWTON_ITERATIONS: u32 = 50;
@@ -90,7 +95,7 @@ pub struct OpenSurfaceProblem {
     pub soil_nodes: Vec<SoilThermalNodeOperands>,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
 pub enum WaterBranch {
     ConstitutiveLaw,
     AuthorizationActiveOrTie,
@@ -913,8 +918,11 @@ pub struct CoveredOccupancyInputs {
     pub biochemical: BiochemicalConstants,
     pub stem_area_m2_m2_tile: f64,
     pub stem_absorbed_shortwave_w_m2_tile: f64,
-    pub wet_fraction: f64,
-    pub canopy_liquid_kg_m2_tile: f64,
+    /// Immutable beginning occupancy store before current top-to-bottom E04.
+    pub beginning_canopy_liquid_kg_m2_tile: f64,
+    pub liquid_interception_fraction: f64,
+    pub liquid_capacity_kg_m2_plant: f64,
+    pub stemflow_fraction: f64,
     pub gb_leaf_m_s: f64,
     pub gb_wet_m_s: f64,
     pub gb_stem_m_s: f64,
@@ -951,6 +959,8 @@ pub struct CoveredColumnInputs {
     pub canopy_to_atmosphere_heat_resistance_s_m: f64,
     pub canopy_to_atmosphere_vapor_resistance_s_m: f64,
     pub latent_heat_j_kg: f64,
+    /// Current interval rain entering the top occupancy on tile-ground basis.
+    pub top_rain_kg_m2_tile: f64,
     pub under_canopy_geometry: crate::physics::UnderCanopyGeometry,
     pub ground: OpenSurfaceProblem,
     pub occupancies: Vec<CoveredOccupancyInputs>,
@@ -1250,27 +1260,6 @@ fn vulnerability(potential: f64, p50: f64, exponent: f64) -> f64 {
     2.0_f64.powf(-(potential / p50).powf(exponent))
 }
 
-/// Evaluate the concrete per-occupancy V8 hydraulic and component-energy
-/// block at the shared current-trial canopy-air and longwave boundaries.
-#[derive(Clone, Debug, PartialEq)]
-pub struct CoveredOccupancyEvaluation {
-    pub residuals: Vec<f64>,
-    pub tolerances: Vec<f64>,
-    pub source_water: Vec<SourceWaterFlux>,
-    pub canopy_sensible_w_m2: f64,
-    pub canopy_vapor_kg_m2_s: f64,
-    pub wet_vapor_kg_m2_s: f64,
-    pub wet_branch: WaterBranch,
-    pub component_temperatures_k: [f64; 4],
-    pub ci_pa: [f64; 2],
-    /// Accepted class-resolved `[sun, shade]` `FvCB` carbon operands. These are
-    /// evaluated at the same `ci` and component temperatures used by the
-    /// accepted coupled residual, never reconstructed from a potential pass.
-    pub gross_assimilation_umol_co2_m2_leaf_s: [f64; 2],
-    pub net_assimilation_umol_co2_m2_leaf_s: [f64; 2],
-    pub dark_respiration_umol_co2_m2_leaf_s: [f64; 2],
-}
-
 struct CoveredOccupancyTrialContext<'a> {
     column: &'a CoveredColumnInputs,
     canopy_air_temperature_k: f64,
@@ -1278,6 +1267,46 @@ struct CoveredOccupancyTrialContext<'a> {
     component_longwave_w_m2: [f64; 4],
     caps: Option<&'a CoveredWaterCaps>,
     frozen: Option<&'a CoveredFrozenBranches>,
+    liquid: CoveredLiquidPreparation,
+}
+
+fn covered_wet_flux(
+    column: &CoveredColumnInputs,
+    occupancy: &CoveredOccupancyInputs,
+    liquid: CoveredLiquidPreparation,
+    wet_surface_temperature_k: f64,
+    canopy_air_temperature_k: f64,
+    canopy_air_q: f64,
+    frozen: Option<&CoveredFrozenBranches>,
+) -> Result<(f64, WaterBranch), LandSurfaceEnergyError> {
+    let rho = column.pressure_pa / (DRY_AIR_GAS_CONSTANT_J_KG_K * canopy_air_temperature_k);
+    let wet_area = liquid.wet_fraction
+        * (occupancy.sun.leaf_area_m2_m2_tile
+            + occupancy.shade.leaf_area_m2_m2_tile
+            + occupancy.stem_area_m2_m2_tile);
+    let wet_potential = rho
+        * occupancy.gb_wet_m_s
+        * (canopy_saturation_q(wet_surface_temperature_k, column.pressure_pa)? - canopy_air_q)
+        * wet_area;
+    let wet_cap = liquid.preliminary_store / column.interval_s;
+    let natural_branch = if wet_potential >= 0.0 && wet_cap <= wet_potential {
+        WaterBranch::AuthorizationActiveOrTie
+    } else if wet_potential < 0.0 {
+        WaterBranch::Condensation
+    } else {
+        WaterBranch::ConstitutiveLaw
+    };
+    let branch = frozen
+        .and_then(|value| value.wet.get(&occupancy.occupancy_id).copied())
+        .unwrap_or(natural_branch);
+    Ok((
+        if branch == WaterBranch::AuthorizationActiveOrTie {
+            wet_cap
+        } else {
+            wet_potential
+        },
+        branch,
+    ))
 }
 
 fn evaluate_covered_occupancy(
@@ -1298,13 +1327,14 @@ fn evaluate_covered_occupancy(
     let (beta_sun, beta_shade) = (block[4], block[5]);
     let (tsun, tshade, twet, tstem) = (block[6], block[7], block[8], block[9]);
     let rho = column.pressure_pa / (DRY_AIR_GAS_CONSTANT_J_KG_K * canopy_air_temperature_k);
-    let dry_sun = occupancy.sun.leaf_area_m2_m2_tile * (1.0 - occupancy.wet_fraction);
-    let dry_shade = occupancy.shade.leaf_area_m2_m2_tile * (1.0 - occupancy.wet_fraction);
-    let wet_area = occupancy.wet_fraction
+    let wet_fraction = context.liquid.wet_fraction;
+    let dry_sun = occupancy.sun.leaf_area_m2_m2_tile * (1.0 - wet_fraction);
+    let dry_shade = occupancy.shade.leaf_area_m2_m2_tile * (1.0 - wet_fraction);
+    let wet_area = wet_fraction
         * (occupancy.sun.leaf_area_m2_m2_tile
             + occupancy.shade.leaf_area_m2_m2_tile
             + occupancy.stem_area_m2_m2_tile);
-    let dry_stem = (1.0 - occupancy.wet_fraction) * occupancy.stem_area_m2_m2_tile;
+    let dry_stem = (1.0 - wet_fraction) * occupancy.stem_area_m2_m2_tile;
     let sun = leaf_trial_state(
         occupancy.sun,
         occupancy.biochemical,
@@ -1328,27 +1358,15 @@ fn evaluate_covered_occupancy(
     let shade_e = rho * (shade.surface_q - canopy_air_q)
         / (1.0 / occupancy.gb_leaf_m_s + shade.rs_s_m)
         * dry_shade;
-    let wet_potential = rho
-        * occupancy.gb_wet_m_s
-        * (canopy_saturation_q(twet, column.pressure_pa)? - canopy_air_q)
-        * wet_area;
-    let wet_cap = occupancy.canopy_liquid_kg_m2_tile / column.interval_s;
-    let natural_wet_branch = if wet_potential >= 0.0 && wet_cap <= wet_potential {
-        WaterBranch::AuthorizationActiveOrTie
-    } else if wet_potential < 0.0 {
-        WaterBranch::Condensation
-    } else {
-        WaterBranch::ConstitutiveLaw
-    };
-    let wet_branch = context
-        .frozen
-        .and_then(|value| value.wet.get(&occupancy.occupancy_id).copied())
-        .unwrap_or(natural_wet_branch);
-    let wet_e = if wet_branch == WaterBranch::AuthorizationActiveOrTie {
-        wet_cap
-    } else {
-        wet_potential
-    };
+    let (wet_e, wet_branch) = covered_wet_flux(
+        column,
+        occupancy,
+        context.liquid,
+        twet,
+        canopy_air_temperature_k,
+        canopy_air_q,
+        context.frozen,
+    )?;
     let leaf_factor = occupancy.k1_max / occupancy.stem_to_leaf_path_m;
     let q1sun = leaf_factor
         * occupancy.sun.leaf_area_m2_m2_tile
@@ -1479,22 +1497,22 @@ fn evaluate_covered_occupancy(
                 ),
         q1sun + q1shade - q2,
         q2 - root_source_sum,
-        occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - occupancy.wet_fraction)
+        occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction)
             + component_longwave_w_m2[0]
             - sun_h
             - column.latent_heat_j_kg * sun_e,
-        occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - occupancy.wet_fraction)
+        occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction)
             + component_longwave_w_m2[1]
             - shade_h
             - column.latent_heat_j_kg * shade_e,
-        occupancy.wet_fraction
+        wet_fraction
             * (occupancy.sun.absorbed_shortwave_w_m2_tile
                 + occupancy.shade.absorbed_shortwave_w_m2_tile
                 + occupancy.stem_absorbed_shortwave_w_m2_tile)
             + component_longwave_w_m2[2]
             - wet_h
             - column.latent_heat_j_kg * wet_e,
-        (1.0 - occupancy.wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile
+        (1.0 - wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile
             + component_longwave_w_m2[3]
             - stem_h,
     ];
@@ -1506,13 +1524,13 @@ fn evaluate_covered_occupancy(
         .max(q2.abs())
         .max(root_source_sum.abs());
     let component_operands = [
-        occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - occupancy.wet_fraction),
-        occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - occupancy.wet_fraction),
-        occupancy.wet_fraction
+        occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction),
+        occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction),
+        wet_fraction
             * (occupancy.sun.absorbed_shortwave_w_m2_tile
                 + occupancy.shade.absorbed_shortwave_w_m2_tile
                 + occupancy.stem_absorbed_shortwave_w_m2_tile),
-        (1.0 - occupancy.wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile,
+        (1.0 - wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile,
     ];
     let sensible = [sun_h, shade_h, wet_h, stem_h];
     let latent = [
@@ -1530,6 +1548,16 @@ fn evaluate_covered_occupancy(
                 + latent[index].abs(),
         )
     }));
+    let liquid = finalize_covered_liquid(
+        context.liquid,
+        wet_e * column.interval_s,
+        twet,
+        if context.caps.is_some() {
+            CoveredLiquidPass::FixedAuthorizationFinal
+        } else {
+            CoveredLiquidPass::Potential
+        },
+    )?;
     Ok(CoveredOccupancyEvaluation {
         residuals,
         tolerances,
@@ -1552,6 +1580,7 @@ fn evaluate_covered_occupancy(
             sun.dark_respiration_umol_co2_m2_leaf_s,
             shade.dark_respiration_umol_co2_m2_leaf_s,
         ],
+        liquid,
     })
 }
 
@@ -1563,6 +1592,7 @@ pub fn evaluate_covered_occupancy_block(
     canopy_air_q: f64,
     component_longwave_w_m2: [f64; 4],
 ) -> Result<Vec<f64>, LandSurfaceEnergyError> {
+    let liquid = prepare_covered_liquid(occupancy, column.top_rain_kg_m2_tile)?;
     let context = CoveredOccupancyTrialContext {
         column,
         canopy_air_temperature_k,
@@ -1570,25 +1600,9 @@ pub fn evaluate_covered_occupancy_block(
         component_longwave_w_m2,
         caps: None,
         frozen: None,
+        liquid,
     };
     Ok(evaluate_covered_occupancy(&context, occupancy, block)?.residuals)
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct CoveredColumnEvaluation {
-    pub raw_residuals: Vec<f64>,
-    pub normalized_residuals: Vec<f64>,
-    pub tolerances: Vec<f64>,
-    pub occupancies: Vec<CoveredOccupancyEvaluation>,
-    pub canopy_air_temperature_k: f64,
-    pub canopy_air_specific_humidity_kg_kg: f64,
-    pub ground_temperature_k: f64,
-    pub soil_temperature_k: Vec<f64>,
-    pub ground_water: GroundWaterFlux,
-    pub ground_heat_cn_w_m2_tile: Vec<f64>,
-    pub ground_storage_w_m2_tile: f64,
-    pub ending_surface_enthalpy_j_m2_tile: f64,
-    pub whole_column_longwave: crate::physics::CanopyLongwaveResult,
 }
 
 fn validate_covered_caps(
@@ -1689,15 +1703,54 @@ pub fn evaluate_covered_column(
     let canopy_q = trial[common_offset + 1];
     let ground_temperature = trial[common_offset + 2];
     let soil_temperatures = &trial[common_offset + 3..];
+    if !column.top_rain_kg_m2_tile.is_finite() || column.top_rain_kg_m2_tile < 0.0 {
+        return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+            "covered top rain",
+        ));
+    }
+    let mut incident_rain = column.top_rain_kg_m2_tile;
+    let mut ground_stemflow = 0.0;
+    let mut liquid_preparations = Vec::with_capacity(column.occupancies.len());
+    let mut routed_liquid = Vec::with_capacity(column.occupancies.len());
+    for (index, occupancy) in column.occupancies.iter().enumerate() {
+        let block = &trial[index * 10..(index + 1) * 10];
+        let preparation = prepare_covered_liquid(occupancy, incident_rain)?;
+        let (wet_flux, _) = covered_wet_flux(
+            column,
+            occupancy,
+            preparation,
+            block[8],
+            canopy_temperature,
+            canopy_q,
+            frozen,
+        )?;
+        let liquid = finalize_covered_liquid(
+            preparation,
+            wet_flux * column.interval_s,
+            block[8],
+            if caps.is_some() {
+                CoveredLiquidPass::FixedAuthorizationFinal
+            } else {
+                CoveredLiquidPass::Potential
+            },
+        )?;
+        incident_rain = liquid.throughfall_kg_m2_tile
+            + liquid.initial_drainage_kg_m2_tile
+            + liquid.second_drainage_kg_m2_tile;
+        ground_stemflow += liquid.stemflow_kg_m2_tile;
+        liquid_preparations.push(preparation);
+        routed_liquid.push(liquid);
+    }
     let longwave_layers: Vec<_> = column
         .occupancies
         .iter()
+        .zip(&liquid_preparations)
         .enumerate()
-        .map(|(index, occupancy)| {
+        .map(|(index, (occupancy, liquid))| {
             let block = &trial[index * 10..(index + 1) * 10];
-            let dry_sun = occupancy.sun.leaf_area_m2_m2_tile * (1.0 - occupancy.wet_fraction);
-            let dry_shade = occupancy.shade.leaf_area_m2_m2_tile * (1.0 - occupancy.wet_fraction);
-            let wet = occupancy.wet_fraction
+            let dry_sun = occupancy.sun.leaf_area_m2_m2_tile * (1.0 - liquid.wet_fraction);
+            let dry_shade = occupancy.shade.leaf_area_m2_m2_tile * (1.0 - liquid.wet_fraction);
+            let wet = liquid.wet_fraction
                 * (occupancy.sun.leaf_area_m2_m2_tile
                     + occupancy.shade.leaf_area_m2_m2_tile
                     + occupancy.stem_area_m2_m2_tile);
@@ -1709,7 +1762,7 @@ pub fn evaluate_covered_column(
                     dry_sun,
                     dry_shade,
                     wet,
-                    (1.0 - occupancy.wet_fraction) * occupancy.stem_area_m2_m2_tile,
+                    (1.0 - liquid.wet_fraction) * occupancy.stem_area_m2_m2_tile,
                 ],
                 component_temperatures_k: [block[6], block[7], block[8], block[9]],
             }
@@ -1731,9 +1784,15 @@ pub fn evaluate_covered_column(
             component_longwave_w_m2: longwave.component_net_w_m2[index],
             caps,
             frozen,
+            liquid: liquid_preparations[index],
         };
         let result =
             evaluate_covered_occupancy(&context, occupancy, &trial[index * 10..(index + 1) * 10])?;
+        if result.liquid != routed_liquid[index] {
+            return Err(LandSurfaceEnergyError::OwnerEnvelope(
+                "covered E04 routed/final evaluation mismatch",
+            ));
+        }
         raw.extend(result.residuals.iter().copied());
         tolerances.extend(result.tolerances.iter().copied());
         occupancy_results.push(result);
@@ -1962,6 +2021,8 @@ pub fn evaluate_covered_column(
         ground_storage_w_m2_tile: ground_storage,
         ending_surface_enthalpy_j_m2_tile: ending_enthalpy,
         whole_column_longwave: longwave,
+        ground_canopy_release_kg_m2_tile: incident_rain,
+        ground_stemflow_kg_m2_tile: ground_stemflow,
     })
 }
 
@@ -2531,6 +2592,7 @@ mod tests {
             canopy_to_atmosphere_heat_resistance_s_m: 20.992_293_151_292_14,
             canopy_to_atmosphere_vapor_resistance_s_m: 22.734_132_598_127_985,
             latent_heat_j_kg: 2_501_000.0,
+            top_rain_kg_m2_tile: 0.0,
             under_canopy_geometry: crate::physics::UnderCanopyGeometry {
                 canopy_height_m: 12.5,
                 canopy_roughness_m: 1.25,
@@ -2582,8 +2644,10 @@ mod tests {
             biochemical,
             stem_area_m2_m2_tile: 0.72,
             stem_absorbed_shortwave_w_m2_tile: 185.377_620_426_979_95,
-            wet_fraction: 0.37,
-            canopy_liquid_kg_m2_tile: 0.018,
+            beginning_canopy_liquid_kg_m2_tile: 0.018,
+            liquid_interception_fraction: 0.35,
+            liquid_capacity_kg_m2_plant: 0.023_328_503_368_824_437,
+            stemflow_fraction: 0.08,
             gb_leaf_m_s: 0.035_961_386_715_575_215,
             gb_wet_m_s: 0.019_071_405_305_591_295,
             gb_stem_m_s: 0.013_082_876_106_352_972,
@@ -2798,6 +2862,7 @@ mod tests {
         lower.stem_absorbed_shortwave_w_m2_tile = 23.961_096_147_421_54;
         lower.lai = 1.570_833_333_333_333;
         lower.sai = 0.417_6;
+        lower.liquid_capacity_kg_m2_plant = 0.040_221_557_532_455_925;
         lower.clumping_index = 0.91;
         column.occupancies.push(lower);
         column.ground.terminal_shortwave_w_m2_tile = BandDirectionalFluxes {
@@ -2811,6 +2876,71 @@ mod tests {
             -5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.68, 0.66, 295.5, 295.0, 295.6, 295.2, 295.8,
             0.011, 295.0, 291.5, 289.8,
         ];
+        let mut rain_column = column.clone();
+        rain_column.top_rain_kg_m2_tile = 0.5;
+        let rain = evaluate_covered_column(&rain_column, &multirank_potential_trial, None, None)
+            .expect("rain routing evaluation");
+        let upper_liquid = rain.occupancies[0].liquid;
+        let lower_liquid = rain.occupancies[1].liquid;
+        assert!(upper_liquid.throughfall_kg_m2_tile > 0.0);
+        assert!(upper_liquid.initial_drainage_kg_m2_tile > 0.0);
+        assert_eq!(
+            lower_liquid.incident_rain_kg_m2_tile.to_bits(),
+            (upper_liquid.throughfall_kg_m2_tile
+                + upper_liquid.initial_drainage_kg_m2_tile
+                + upper_liquid.second_drainage_kg_m2_tile)
+                .to_bits()
+        );
+        assert_eq!(
+            rain.ground_stemflow_kg_m2_tile.to_bits(),
+            rain.occupancies
+                .iter()
+                .map(|value| value.liquid.stemflow_kg_m2_tile)
+                .sum::<f64>()
+                .to_bits()
+        );
+        for occupancy in &rain.occupancies {
+            occupancy.liquid.validate().expect("rain liquid closure");
+            assert_eq!(
+                occupancy
+                    .liquid
+                    .wet_surface_specific_enthalpy_j_kg
+                    .to_bits(),
+                (WATER_HEAT_CAPACITY_J_KG_K
+                    * (occupancy.liquid.wet_surface_temperature_k - REFERENCE_TEMPERATURE_K))
+                    .to_bits()
+            );
+        }
+
+        let mut condensation_column = column.clone();
+        condensation_column.occupancies[0].liquid_capacity_kg_m2_plant = 0.018
+            / (condensation_column.occupancies[0].lai + condensation_column.occupancies[0].sai);
+        let mut condensation_trial = multirank_potential_trial.clone();
+        condensation_trial[8] = 280.0;
+        let condensation =
+            evaluate_covered_column(&condensation_column, &condensation_trial, None, None)
+                .expect("condensation routing evaluation");
+        assert!(condensation.occupancies[0].liquid.condensation_kg_m2_tile > 0.0);
+        assert!(
+            condensation.occupancies[0]
+                .liquid
+                .second_drainage_kg_m2_tile
+                > 0.0
+        );
+        assert_eq!(
+            condensation.occupancies[1]
+                .liquid
+                .incident_rain_kg_m2_tile
+                .to_bits(),
+            (condensation.occupancies[0].liquid.throughfall_kg_m2_tile
+                + condensation.occupancies[0]
+                    .liquid
+                    .initial_drainage_kg_m2_tile
+                + condensation.occupancies[0]
+                    .liquid
+                    .second_drainage_kg_m2_tile)
+                .to_bits()
+        );
         let multirank_potential =
             match solve_covered_column(&column, None, multirank_potential_trial.clone())
                 .expect("multirank potential")

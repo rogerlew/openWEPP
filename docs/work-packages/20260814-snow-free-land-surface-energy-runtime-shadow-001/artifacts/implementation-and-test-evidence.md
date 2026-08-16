@@ -82,9 +82,38 @@ warm starts, shared canopy air, signed wet phase change and exact root D/A/F.
 Neither projection can be relabelled as the other, and the final projection is
 constructed only from the accepted fixed-cap rebuild.
 
-These increments deliberately do not fabricate a complete E04 canopy-liquid
-transition. Until rainfall/interception/routing is evaluated inside the joint
-covered solve, the V8 persistent candidate cannot claim ending canopy liquid or
-throughfall, stemflow, initial drainage and second drainage receipts. Likewise,
-the orchestrator must bind the LSE receipt to the exact beginning V8 vegetation
-state before E16--E22 candidate construction.
+At that checkpoint, the increments deliberately did not fabricate a complete
+E04 canopy-liquid transition. Rainfall/interception/routing and exact beginning
+V8 vegetation-state lineage remained the next required boundaries; the
+subsequent evidence below records their disposition without rewriting the
+earlier limitation.
+
+## V8 persistent composition and complete E04 receipts
+
+The bounded V8 persistent phase now consumes the sealed potential and final
+carbon projections directly. It constructs potential mineral-N requests from
+potential carbon, performs one global authorization, and applies the finalized
+receipt to capped carbon and six-tissue E16--E22 composition. It does not call
+the V7 public transaction, rerun E01--E15, or mutate a persistent owner.
+
+The covered solve now performs E04 in every nonlinear residual evaluation.
+Each occupancy starts from its immutable beginning liquid store, receives rain
+from the upper accepted release, and exposes throughfall, stemflow, both
+drainage stages, signed wet phase change, ending store, wet fraction,
+temperature and canonical liquid enthalpy. Stemflow bypasses lower occupancies;
+throughfall and both drainage terms route to the descendant. The potential and
+fixed-cap final passes carry distinct sealed ledgers and both rebuild from the
+same beginning stores.
+
+Ran on these bytes:
+
+- LSE runtime: 33/33 PASS;
+- complete real-hydrology/LSE integration: 71/71 PASS;
+- affected strict all-target Clippy: PASS;
+- formatting and diff hygiene: PASS;
+- `solver.rs`: 2,998 lines, within the hard 3,000-line governance bound.
+
+This closes the missing E04 operand boundary but not the Child-3 endpoint. A
+public covered condensation-to-WB14 vector and the persistent V8 vegetation,
+BGC and complete heterogeneous owner envelope remain required before atomic
+shadow commit can be claimed.

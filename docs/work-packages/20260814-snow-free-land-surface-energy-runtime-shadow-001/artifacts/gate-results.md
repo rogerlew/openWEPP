@@ -163,3 +163,36 @@ into a complete Child-3 release.
   and both drainage terms. The later V8 vegetation owner remains fail-closed
   until those accepted operands and exact vegetation beginning-state lineage
   are present.
+
+## V8 persistent composition and E04 increments
+
+- PASS at `fac5b4fd7`: the dependency-neutral V8 persistent phase consumes the
+  sealed potential and fixed-authorization carbon receipts without rerunning
+  V7 water or E01--E15 physics. Potential carbon issues the immutable mineral-N
+  requests; capped carbon determines final demand and receipt-bound growth.
+  One global nitrogen authorization is retained and `T10` is advanced from the
+  immutable beginning state and forcing. The phase remains uncommitted.
+- PASS on the current E04 bytes: rainfall, interception, throughfall,
+  stemflow, initial drainage, signed wet evaporation/condensation and second
+  drainage are evaluated inside every covered-column residual. Descendants
+  receive the accepted upper release top-to-bottom; stemflow bypasses lower
+  foliage. Potential and fixed-authorization-final passes rebuild separately
+  from the immutable beginning stores.
+- PASS: sealed vegetation-facing potential and final payloads now retain the
+  complete pass-tagged occupancy liquid operands, ground canopy release and
+  ground stemflow. Independent validation reconstructs occupancy closure,
+  top-to-bottom routing, final signed wet phase change, exact root `D/A/F` and
+  the canonical 4,218 J kg^-1 K^-1 liquid enthalpy.
+- `Ran: cargo nextest run -p openwepp-land-surface-energy --profile quick` —
+  PASS, 33/33.
+- `Ran: cargo nextest run --test land_surface_energy_real_hydrology_shadow_contract --profile quick`
+  — PASS, 71/71.
+- `Ran: cargo clippy -p openwepp-land-surface-energy -p openwepp-hillslope-orchestrator --all-targets -- -D warnings`
+  — PASS.
+- `Ran: cargo fmt --all -- --check` and `git diff --check` — PASS.
+- `Static: line-count governance` — PASS: `solver.rs` is 2,998 lines after
+  extracting the E04 ledger and covered output DTOs; no lint suppression was
+  added.
+- Remaining boundary: the public covered positive-condensation custody vector
+  and the complete V8 vegetation/BGC/heterogeneous owner envelope are still
+  pending. No public V8 commit claim is made.

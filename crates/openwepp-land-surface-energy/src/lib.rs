@@ -6,6 +6,8 @@
 
 pub mod closure;
 pub mod config;
+mod covered_liquid;
+mod covered_output;
 pub mod diagnostics;
 pub mod error;
 pub mod forcing;
@@ -19,6 +21,8 @@ pub mod water;
 
 pub use closure::*;
 pub use config::*;
+pub use covered_liquid::{CoveredLiquidPass, CoveredOccupancyLiquidLedger};
+pub use covered_output::{CoveredColumnEvaluation, CoveredOccupancyEvaluation};
 pub use diagnostics::*;
 pub use error::*;
 pub use forcing::*;

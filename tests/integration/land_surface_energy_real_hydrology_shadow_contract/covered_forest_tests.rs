@@ -103,8 +103,10 @@ fn upper() -> CoveredOccupancyInputs {
         biochemical: biochemical(),
         stem_area_m2_m2_tile: 0.72,
         stem_absorbed_shortwave_w_m2_tile: 183.772_038_359_786_73,
-        wet_fraction: 0.37,
-        canopy_liquid_kg_m2_tile: 0.018,
+        beginning_canopy_liquid_kg_m2_tile: 0.018,
+        liquid_interception_fraction: 0.35,
+        liquid_capacity_kg_m2_plant: 0.023_328_503_368_824_437,
+        stemflow_fraction: 0.08,
         gb_leaf_m_s: 0.035_961_386_715_575_215,
         gb_wet_m_s: 0.019_071_405_305_591_295,
         gb_stem_m_s: 0.013_082_876_106_352_972,
@@ -140,6 +142,7 @@ fn column() -> CoveredColumnInputs {
     lower.stem_absorbed_shortwave_w_m2_tile = 23.961_096_147_421_54;
     lower.lai = 1.570_833_333_333_333;
     lower.sai = 0.417_6;
+    lower.liquid_capacity_kg_m2_plant = 0.040_221_557_532_455_925;
     lower.clumping_index = 0.91;
     CoveredColumnInputs {
         interval_s: INTERVAL_S,
@@ -155,6 +158,7 @@ fn column() -> CoveredColumnInputs {
         canopy_to_atmosphere_heat_resistance_s_m: 20.992_293_151_292_14,
         canopy_to_atmosphere_vapor_resistance_s_m: 22.734_132_598_127_985,
         latent_heat_j_kg: 2_501_000.0,
+        top_rain_kg_m2_tile: 0.0,
         under_canopy_geometry: UnderCanopyGeometry {
             canopy_height_m: 12.5,
             canopy_roughness_m: 1.25,
