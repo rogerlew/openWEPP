@@ -19,3 +19,4 @@ thiserror = "2"
 
 [dev-dependencies]
 approx = "0.5"
+openwepp-biogeochemistry = { path = "../openwepp-biogeochemistry", version = "0.1.0" }

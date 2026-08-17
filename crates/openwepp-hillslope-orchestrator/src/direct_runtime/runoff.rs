@@ -8,6 +8,10 @@ use crate::hydrology::{
 };
 use crate::winter_column::DirectFrostLaneState;
 
+pub(super) use super::surface_liquid_wb14::{
+    DirectWb14ContinuationIntervalInputs, advance_wb14_continuation_interval,
+};
+use super::surface_liquid_wb14::{DirectWb14IntervalTransitionInputs, advance_wb14_interval_state};
 use super::{
     DIRECT_AUDIT, DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4I_PHASE_SPAN_COUNT,
     DIRECT_R4J_PHASE_SPAN_COUNT, DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT,
@@ -1908,56 +1912,20 @@ fn compute_wb14_infiltration_depression_with_optional_subhourly(
             );
         }
         validate_finite("infiltration_depression.interval_rainfall_m", rainfall_m)?;
-        total_rainfall_m += rainfall_m;
-        validate_finite(
-            "infiltration_depression.hyetograph_rainfall_m",
-            total_rainfall_m,
-        )?;
-        let remaining_storage_m = (inputs.storage_capacity_m - cumulative_infiltration_m).max(0.0);
-        if remaining_storage_m <= WB11_ZERO_THRESHOLD {
-            add_depth_to_fixed_bins(
-                &mut hourly_excess_m,
-                DC01_HOUR_BIN_SECONDS,
-                interval.start_s,
-                interval.end_s,
-                rainfall_m,
-            );
-            if let Some(profile) = subhourly.as_mut() {
-                add_depth_to_fixed_bins(
-                    &mut profile.post_depression_excess_m,
-                    WAT5_INTERVAL_SECONDS,
-                    interval.start_s,
-                    interval.end_s,
-                    rainfall_m,
-                );
-            }
-            continue;
-        }
-        let interval_infiltration_m = compute_green_ampt_interval_infiltration(
+        let transition = advance_wb14_interval_state(DirectWb14IntervalTransitionInputs {
+            cumulative_supply_m: total_rainfall_m,
             cumulative_infiltration_m,
-            rainfall_m.min(remaining_storage_m),
-            duration_s,
-            interval.intensity_m_s,
-            inputs.effective_conductivity_m_s,
-            inputs.matric_potential_m,
-        )?;
-        if interval_infiltration_m > rainfall_m + 1.0e-9 {
-            return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "infiltration_depression.interval_infiltration_m",
-            });
-        }
-        let cumulative_before_m = cumulative_infiltration_m;
-        cumulative_infiltration_m += interval_infiltration_m.min(rainfall_m);
-        cumulative_infiltration_m = cumulative_infiltration_m
-            .min(inputs.storage_capacity_m)
-            .min(total_rainfall_m);
-        validate_finite(
-            "infiltration_depression.cumulative_infiltration_m",
-            cumulative_infiltration_m,
-        )?;
-        let interval_excess_m =
-            (rainfall_m - (cumulative_infiltration_m - cumulative_before_m)).max(0.0);
-        let interval_infiltration_m = rainfall_m - interval_excess_m;
+            interval_supply_m: rainfall_m,
+            interval_duration_s: duration_s,
+            interval_intensity_m_s: interval.intensity_m_s,
+            effective_conductivity_m_s: inputs.effective_conductivity_m_s,
+            matric_potential_m: inputs.matric_potential_m,
+            storage_capacity_m: inputs.storage_capacity_m,
+        })?;
+        total_rainfall_m = transition.cumulative_supply_m;
+        cumulative_infiltration_m = transition.cumulative_infiltration_m;
+        let interval_infiltration_m = transition.interval_infiltration_m;
+        let interval_excess_m = transition.interval_excess_m;
         if let Some(profile) = subhourly.as_mut() {
             add_depth_to_fixed_bins(
                 &mut profile.infiltration_m,
@@ -2110,7 +2078,7 @@ fn validate_wb14_infiltration_inputs(
     Ok(())
 }
 
-fn compute_green_ampt_interval_infiltration(
+pub(super) fn compute_green_ampt_interval_infiltration(
     cumulative_infiltration_m: f64,
     rainfall_m: f64,
     duration_s: f64,

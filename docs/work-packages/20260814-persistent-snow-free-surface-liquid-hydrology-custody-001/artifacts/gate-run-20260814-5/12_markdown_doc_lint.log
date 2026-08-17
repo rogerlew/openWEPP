@@ -1,0 +1,16 @@
+command: markdown-doc lint package JSON
+start_utc: 2026-08-15T07:37:54Z
+cwd: /home/workdir/openWEPP
+commit: 4c7b64237
+command_index: 12
+tmp_workdir: /tmp/ow-nextest-openwepp-20260814-5
+rustc_version: rustc 1.92.0 (ded5c06cf 2025-12-08)
+cargo_version: cargo 1.92.0 (344c4567c 2025-10-21)
+error: unexpected argument 'package' found
+
+Usage: markdown-doc lint [OPTIONS]
+
+For more information, try '--help'.
+Command exited with non-zero status 2
+elapsed_sec=0.01 user_sec=0.00 sys_sec=0.00
+exit_code: 2

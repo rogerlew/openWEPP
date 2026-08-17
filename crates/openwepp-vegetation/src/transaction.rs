@@ -11,7 +11,7 @@ use crate::occupancy_state::OccupancyState;
 use crate::{MODEL_BYTES, MODEL_SHA256, ModelDefinition, VegetationConfiguration, VegetationError};
 use sha2::{Digest, Sha256};
 
-mod state_canonical;
+pub(crate) mod state_canonical;
 mod state_shape;
 
 mod occupancy_state_map {
@@ -2059,7 +2059,7 @@ pub(crate) fn displayed_leaf_derived_areas(
     Ok((leaf_area, stem_area, root_area))
 }
 
-fn validate_displayed_leaf_identity(
+pub(crate) fn validate_displayed_leaf_identity(
     state: &StratumSharedState,
     stratum: &crate::StratumConfiguration,
 ) -> Result<(), VegetationError> {

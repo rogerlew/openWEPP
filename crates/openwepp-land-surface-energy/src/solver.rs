@@ -17,7 +17,17 @@
     clippy::too_many_lines
 )]
 
-use crate::LandSurfaceEnergyError;
+use crate::covered_liquid::{
+    CoveredLiquidPass, CoveredLiquidPreparation, finalize_covered_liquid, prepare_covered_liquid,
+};
+use crate::covered_output::{CoveredColumnEvaluation, CoveredOccupancyEvaluation};
+use crate::numerics::{
+    MAX_BACKTRACKING_HALVINGS, MAX_NEWTON_ITERATIONS, is_strict_residual_decrease,
+    normalized_infinity_norm, solve_linear,
+};
+pub use crate::numerics::{
+    NormalizedSolveOutcome, NumericalFailure, NumericalFailureKind, solve_normalized_system,
+};
 use crate::physics::{
     AIR_HEAT_CAPACITY_J_KG_K, BandDirectionalFluxes, BareSoilVaporOperands, BareSoilVaporResult,
     DRY_AIR_GAS_CONSTANT_J_KG_K, NeutralResistances, OpenNeutralGeometry, REFERENCE_TEMPERATURE_K,
@@ -25,12 +35,9 @@ use crate::physics::{
     harmonic_interface_conductance_w_m2_k, litter_relative_humidity, open_neutral_resistances,
     partition_ground_shortwave, saturation_specific_humidity, vapor_export_w_m2,
 };
+use crate::{LandSurfaceEnergyError, StepNorms};
+use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
-
-const MAX_NEWTON_ITERATIONS: u32 = 50;
-const MAX_BACKTRACKING_HALVINGS: u32 = 20;
-const TEMPERATURE_STEP_TOLERANCE_K: f64 = 1.0e-8;
-const PIVOT_MULTIPLIER: f64 = 64.0;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum SurfaceStorageBranch {
@@ -90,7 +97,7 @@ pub struct OpenSurfaceProblem {
     pub soil_nodes: Vec<SoilThermalNodeOperands>,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
 pub enum WaterBranch {
     ConstitutiveLaw,
     AuthorizationActiveOrTie,
@@ -191,11 +198,13 @@ impl OpenSurfaceProblem {
             ));
         }
         if self.soil_nodes.is_empty() {
-            return Err(LandSurfaceEnergyError::Topology("soil_nodes"));
+            return Err(LandSurfaceEnergyError::topology_cardinality("soil_nodes"));
         }
         for node in &self.soil_nodes {
             if node.layer_id.is_empty() {
-                return Err(LandSurfaceEnergyError::Topology("soil_layer_id"));
+                return Err(LandSurfaceEnergyError::topology_cardinality(
+                    "soil_layer_id",
+                ));
             }
             for (value, field) in [
                 (node.depth_m, "soil_depth_m"),
@@ -278,7 +287,7 @@ pub fn evaluate_open_surface(
 ) -> Result<OpenSurfaceEvaluation, LandSurfaceEnergyError> {
     problem.validate()?;
     if trial.len() != problem.soil_nodes.len() + 1 {
-        return Err(LandSurfaceEnergyError::Topology("open_trial_shape"));
+        return Err(LandSurfaceEnergyError::topology_domain("open_trial_shape"));
     }
     if !temperature_trial_is_valid(trial) {
         return Err(LandSurfaceEnergyError::ConstitutiveDomain(
@@ -290,7 +299,7 @@ pub fn evaluate_open_surface(
             return Err(LandSurfaceEnergyError::NonFinite("authorization_cap_rate"));
         }
         if cap < 0.0 {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            return Err(LandSurfaceEnergyError::water_bound(
                 "negative_authorization_cap_rate",
             ));
         }
@@ -352,7 +361,7 @@ pub fn evaluate_open_surface(
     let branch = frozen.map_or(natural_branch, |value| value.ground);
     let final_vapor = match branch {
         WaterBranch::AuthorizationActiveOrTie => authorization_cap_rate_kg_m2_tile_s.ok_or(
-            LandSurfaceEnergyError::WaterIdentityOrBound("frozen_cap_without_authorization"),
+            LandSurfaceEnergyError::water_cardinality("frozen_cap_without_authorization"),
         )?,
         WaterBranch::ConstitutiveLaw | WaterBranch::Condensation => law,
     };
@@ -365,7 +374,7 @@ pub fn evaluate_open_surface(
         problem.surface_liquid_kg_m2_tile
     };
     if ending_pre_ingress_water < -1.0e-14 {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_bound(
             "surface_water_negative_after_finalized_vapor",
         ));
     }
@@ -474,7 +483,7 @@ pub fn evaluate_open_surface(
     let authorization_amount = authorization_cap_rate_kg_m2_tile_s
         .map(|cap| cap * problem.tile_fraction * problem.interval_s);
     let finalized_use = if branch == WaterBranch::AuthorizationActiveOrTie {
-        authorization_amount.ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        authorization_amount.ok_or(LandSurfaceEnergyError::water_cardinality(
             "missing_active_authorization",
         ))?
     } else {
@@ -509,241 +518,6 @@ pub fn evaluate_open_surface(
         neutral_resistances: resistance,
         bare_soil_vapor: bare_detail,
     })
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum NumericalFailureKind {
-    SingularPivot,
-    BacktrackingLimit,
-    IterationLimit,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct NumericalFailure {
-    pub kind: NumericalFailureKind,
-    pub iterations: u32,
-    pub normalized_residuals: Vec<f64>,
-    pub backtracking_count: u32,
-    pub step_norm: Option<f64>,
-    pub pivot_magnitude: Option<f64>,
-    pub matrix_norm: Option<f64>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum NormalizedSolveOutcome<D> {
-    Accepted {
-        solution: Vec<f64>,
-        detail: D,
-        iterations: u32,
-        residual_norm_history: Vec<f64>,
-        backtracking_count: u32,
-        step_norm: f64,
-        pivot_magnitude: Option<f64>,
-        matrix_norm: Option<f64>,
-    },
-    Rejected(NumericalFailure),
-}
-
-#[derive(Debug)]
-struct SingularEvidence {
-    pivot: f64,
-    matrix_norm: f64,
-}
-
-fn solve_linear(
-    matrix: &[Vec<f64>],
-    rhs: &[f64],
-) -> Result<(Vec<f64>, f64, f64), SingularEvidence> {
-    let n = rhs.len();
-    let matrix_norm = matrix
-        .iter()
-        .map(|row| row.iter().map(|value| value.abs()).sum::<f64>())
-        .fold(0.0, f64::max);
-    let threshold = PIVOT_MULTIPLIER * f64::EPSILON * matrix_norm;
-    let mut a = matrix.to_vec();
-    let mut b = rhs.to_vec();
-    let mut minimum_pivot = f64::INFINITY;
-    for column in 0..n {
-        let mut pivot_row = column;
-        for row in column + 1..n {
-            if a[row][column].abs() > a[pivot_row][column].abs() {
-                pivot_row = row;
-            }
-        }
-        let pivot = a[pivot_row][column].abs();
-        minimum_pivot = minimum_pivot.min(pivot);
-        if !pivot.is_finite() || pivot < threshold {
-            return Err(SingularEvidence { pivot, matrix_norm });
-        }
-        if pivot_row != column {
-            a.swap(column, pivot_row);
-            b.swap(column, pivot_row);
-        }
-        for row in column + 1..n {
-            let factor = a[row][column] / a[column][column];
-            a[row][column] = 0.0;
-            for inner in column + 1..n {
-                a[row][inner] -= factor * a[column][inner];
-            }
-            b[row] -= factor * b[column];
-        }
-    }
-    let mut solution = vec![0.0; n];
-    for row in (0..n).rev() {
-        let tail: f64 = a[row][row + 1..]
-            .iter()
-            .zip(solution[row + 1..].iter())
-            .map(|(coefficient, value)| coefficient * value)
-            .sum();
-        solution[row] = (b[row] - tail) / a[row][row];
-    }
-    Ok((solution, minimum_pivot, matrix_norm))
-}
-
-/// Frozen centered-difference Newton algorithm shared by open and joint columns.
-pub fn solve_normalized_system<D, B, E, V, F>(
-    mut evaluator: E,
-    initial: Vec<f64>,
-    unit_scales: &[f64],
-    mut valid_trial: V,
-    mut freeze_branches: F,
-) -> Result<NormalizedSolveOutcome<D>, LandSurfaceEnergyError>
-where
-    D: Clone,
-    E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
-    V: FnMut(&[f64]) -> bool,
-    F: FnMut(&D) -> B,
-    B: Clone,
-{
-    if initial.len() != unit_scales.len() || initial.is_empty() {
-        return Err(LandSurfaceEnergyError::Topology("normalized_solver_shape"));
-    }
-    let mut x = initial;
-    let mut last_step = None;
-    let mut backtracking_count = 0;
-    let mut pivot = None;
-    let mut matrix_norm = None;
-    let mut history = Vec::new();
-    for iteration in 0..=MAX_NEWTON_ITERATIONS {
-        let (normalized, detail) = evaluator(&x, None)?;
-        if normalized.len() != x.len() || normalized.iter().any(|value| !value.is_finite()) {
-            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
-                "normalized_residual_shape_or_domain",
-            ));
-        }
-        let norm = normalized
-            .iter()
-            .map(|value| value.abs())
-            .fold(0.0, f64::max);
-        history.push(norm);
-        if norm <= 1.0 && last_step.is_some_and(|step| step <= TEMPERATURE_STEP_TOLERANCE_K) {
-            return Ok(NormalizedSolveOutcome::Accepted {
-                solution: x,
-                detail,
-                iterations: iteration,
-                residual_norm_history: history,
-                backtracking_count,
-                step_norm: last_step.unwrap_or(0.0),
-                pivot_magnitude: pivot,
-                matrix_norm,
-            });
-        }
-        if iteration == MAX_NEWTON_ITERATIONS {
-            return Ok(NormalizedSolveOutcome::Rejected(NumericalFailure {
-                kind: NumericalFailureKind::IterationLimit,
-                iterations: iteration,
-                normalized_residuals: normalized,
-                backtracking_count,
-                step_norm: last_step,
-                pivot_magnitude: pivot,
-                matrix_norm,
-            }));
-        }
-        let frozen = freeze_branches(&detail);
-        let perturbations: Vec<f64> = x
-            .iter()
-            .zip(unit_scales.iter())
-            .map(|(value, scale)| f64::EPSILON.sqrt() * value.abs().max(*scale))
-            .collect();
-        let mut jacobian = vec![vec![0.0; x.len()]; x.len()];
-        for column in 0..x.len() {
-            let mut minus = x.clone();
-            let mut plus = x.clone();
-            minus[column] -= perturbations[column];
-            plus[column] += perturbations[column];
-            let (minus_residual, _) = evaluator(&minus, Some(&frozen))?;
-            let (plus_residual, _) = evaluator(&plus, Some(&frozen))?;
-            for row in 0..x.len() {
-                jacobian[row][column] =
-                    (plus_residual[row] - minus_residual[row]) / (2.0 * perturbations[column]);
-            }
-        }
-        let right_hand_side: Vec<f64> = normalized.iter().map(|value| -value).collect();
-        let (delta, current_pivot, current_matrix_norm) =
-            match solve_linear(&jacobian, &right_hand_side) {
-                Ok(value) => value,
-                Err(evidence) => {
-                    return Ok(NormalizedSolveOutcome::Rejected(NumericalFailure {
-                        kind: NumericalFailureKind::SingularPivot,
-                        iterations: iteration,
-                        normalized_residuals: normalized,
-                        backtracking_count,
-                        step_norm: last_step,
-                        pivot_magnitude: Some(evidence.pivot),
-                        matrix_norm: Some(evidence.matrix_norm),
-                    }));
-                }
-            };
-        pivot = Some(current_pivot);
-        matrix_norm = Some(current_matrix_norm);
-        let prospective_step = delta.iter().map(|value| value.abs()).fold(0.0, f64::max);
-        if norm <= 1.0 && prospective_step <= TEMPERATURE_STEP_TOLERANCE_K {
-            last_step = Some(prospective_step);
-            continue;
-        }
-        let mut accepted = None;
-        for exponent in 0..=MAX_BACKTRACKING_HALVINGS {
-            let factor = 0.5_f64.powf(f64::from(exponent));
-            let trial: Vec<f64> = x
-                .iter()
-                .zip(delta.iter())
-                .map(|(value, change)| value + factor * change)
-                .collect();
-            if !valid_trial(&trial) {
-                continue;
-            }
-            let trial_result = evaluator(&trial, None);
-            let Ok((trial_residual, _)) = trial_result else {
-                continue;
-            };
-            let trial_norm = trial_residual
-                .iter()
-                .map(|value| value.abs())
-                .fold(0.0, f64::max);
-            if trial_norm < norm {
-                accepted = Some((trial, factor * prospective_step, exponent));
-                break;
-            }
-        }
-        if let Some((trial, step, exponent)) = accepted {
-            x = trial;
-            last_step = Some(step);
-            backtracking_count += exponent;
-        } else {
-            return Ok(NormalizedSolveOutcome::Rejected(NumericalFailure {
-                kind: NumericalFailureKind::BacktrackingLimit,
-                iterations: iteration,
-                normalized_residuals: normalized,
-                backtracking_count: backtracking_count + MAX_BACKTRACKING_HALVINGS,
-                step_norm: last_step,
-                pivot_magnitude: pivot,
-                matrix_norm,
-            }));
-        }
-    }
-    Err(LandSurfaceEnergyError::ConstitutiveDomain(
-        "unreachable_normalized_solver_state",
-    ))
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -904,25 +678,28 @@ pub struct SourceWaterFlux {
 #[derive(Clone, Debug, PartialEq)]
 pub struct CoveredOccupancyInputs {
     pub occupancy_id: String,
+    pub medlyn_g1_kpa_sqrt: f64,
+    pub g0_umol_m2_s: f64,
     pub sun: LeafBiochemicalInputs,
     pub shade: LeafBiochemicalInputs,
     pub biochemical: BiochemicalConstants,
     pub stem_area_m2_m2_tile: f64,
     pub stem_absorbed_shortwave_w_m2_tile: f64,
-    pub wet_fraction: f64,
-    pub canopy_liquid_kg_m2_tile: f64,
+    /// Immutable beginning occupancy store before current top-to-bottom E04.
+    pub beginning_canopy_liquid_kg_m2_tile: f64,
+    pub liquid_interception_fraction: f64,
+    pub liquid_capacity_kg_m2_plant: f64,
+    pub stemflow_fraction: f64,
     pub gb_leaf_m_s: f64,
     pub gb_wet_m_s: f64,
     pub gb_stem_m_s: f64,
-    pub emax_sun_kg_m2_s: f64,
-    pub emax_shade_kg_m2_s: f64,
     pub lai: f64,
     pub sai: f64,
     pub clumping_index: f64,
-    pub k1_max: f64,
+    pub k1_sun_max_s1: f64,
+    pub k1_shade_max_s1: f64,
     pub k2_max: f64,
     pub k3_max_m_s: f64,
-    pub stem_to_leaf_path_m: f64,
     pub height_m: f64,
     pub root_to_leaf_area: f64,
     pub p50_leaf_mm: f64,
@@ -930,6 +707,29 @@ pub struct CoveredOccupancyInputs {
     pub p50_root_mm: f64,
     pub vulnerability_exponent: f64,
     pub root_layers: Vec<RootHydraulicLayer>,
+}
+
+/// Bound E01--E03 band/direction absorption owned by one physical canopy
+/// occupancy before wet/dry surface partitioning.
+#[derive(Clone, Debug, PartialEq)]
+pub struct CoveredOccupancyShortwaveInputs {
+    pub occupancy_id: String,
+    pub sun_leaf_absorbed_w_m2_tile: BandDirectionalFluxes,
+    pub shade_leaf_absorbed_w_m2_tile: BandDirectionalFluxes,
+    pub stem_absorbed_w_m2_tile: BandDirectionalFluxes,
+}
+
+/// Complete column shortwave boundary receipt from the admitted radiation
+/// owner. These are primitive E01--E03 results, not inferred all-wave shares.
+#[derive(Clone, Debug, PartialEq)]
+pub struct CoveredColumnShortwaveInputs {
+    pub incident_w_m2_tile: BandDirectionalFluxes,
+    pub top_reflected_w_m2_tile: BandDirectionalFluxes,
+    /// Ground absorption attributed to each incident band/direction after
+    /// reciprocal ground-canopy reflection. This is distinct from the raw
+    /// downward terminal flux at the ground boundary.
+    pub ground_absorbed_by_incident_w_m2_tile: BandDirectionalFluxes,
+    pub occupancies: Vec<CoveredOccupancyShortwaveInputs>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -942,14 +742,15 @@ pub struct CoveredColumnInputs {
     pub reference_wind_m_s: f64,
     pub atmospheric_downward_longwave_w_m2: f64,
     pub ca_pa: f64,
-    pub medlyn_g1_kpa_sqrt: f64,
-    pub g0_umol_m2_s: f64,
     pub canopy_to_atmosphere_heat_resistance_s_m: f64,
     pub canopy_to_atmosphere_vapor_resistance_s_m: f64,
     pub latent_heat_j_kg: f64,
+    /// Current interval rain entering the top occupancy on tile-ground basis.
+    pub top_rain_kg_m2_tile: f64,
     pub under_canopy_geometry: crate::physics::UnderCanopyGeometry,
     pub ground: OpenSurfaceProblem,
     pub occupancies: Vec<CoveredOccupancyInputs>,
+    pub shortwave: CoveredColumnShortwaveInputs,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -957,6 +758,16 @@ struct LeafTrialState {
     surface_q: f64,
     rs_s_m: f64,
     ci_pa: f64,
+    gross_assimilation_umol_co2_m2_leaf_s: f64,
+    net_assimilation_umol_co2_m2_leaf_s: f64,
+    dark_respiration_umol_co2_m2_leaf_s: f64,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct LeafCarbonState {
+    ag: f64,
+    an: f64,
+    rd: f64,
 }
 
 const MOLAR_GAS_CONSTANT: f64 = 8.314_462_618_153_24;
@@ -1070,6 +881,7 @@ fn canopy_saturation_q(temperature: f64, pressure: f64) -> Result<f64, LandSurfa
     Ok(0.622 * es / (pressure - 0.378 * es))
 }
 
+#[allow(clippy::too_many_arguments)]
 fn leaf_trial_state(
     inputs: LeafBiochemicalInputs,
     p: BiochemicalConstants,
@@ -1078,6 +890,8 @@ fn leaf_trial_state(
     beta: f64,
     column: &CoveredColumnInputs,
     gb_leaf: f64,
+    g0_umol_m2_s: f64,
+    medlyn_g1_kpa_sqrt: f64,
 ) -> Result<LeafTrialState, LandSurfaceEnergyError> {
     let vcmax_factor = peaked(
         temperature,
@@ -1105,7 +919,7 @@ fn leaf_trial_state(
     if vpd <= 0.0 {
         return Err(LandSurfaceEnergyError::ConstitutiveDomain("surface_vpd"));
     }
-    let residual = |ci: f64| -> Result<(f64, f64), LandSurfaceEnergyError> {
+    let carbon_at_ci = |ci: f64| -> Result<LeafCarbonState, LandSurfaceEnergyError> {
         let ipsii = 0.5
             * p.electron_quantum_yield
             * p.par_photon_umol_per_j
@@ -1120,19 +934,28 @@ fn leaf_trial_state(
         let ai = smaller_quadratic_root(p.ac_aj_curvature, -(ac + aj), ac * aj)?;
         let ag = smaller_quadratic_root(p.ag_ap_curvature, -(ai + 3.0 * tp), ai * 3.0 * tp)?;
         let an = ag - rd;
+        if !ag.is_finite() || !an.is_finite() || !rd.is_finite() {
+            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "photosynthesis_nonfinite",
+            ));
+        }
+        Ok(LeafCarbonState { ag, an, rd })
+    };
+    let residual = |ci: f64| -> Result<(f64, f64), LandSurfaceEnergyError> {
+        let carbon = carbon_at_ci(ci)?;
+        let an = carbon.an;
         let rb = 1.0 / gb_leaf;
         let cs = column.ca_pa - 1.4 * rb * MOLAR_GAS_CONSTANT * temperature * an * 1.0e-6;
         if cs <= 0.0 {
             return Err(LandSurfaceEnergyError::ConstitutiveDomain("surface_co2"));
         }
         let potential = if an <= 0.0 {
-            column.g0_umol_m2_s
+            g0_umol_m2_s
         } else {
-            column.g0_umol_m2_s
-                + 1.6 * (1.0 + column.medlyn_g1_kpa_sqrt / vpd.sqrt()) * an
-                    / (cs / column.pressure_pa)
+            g0_umol_m2_s
+                + 1.6 * (1.0 + medlyn_g1_kpa_sqrt / vpd.sqrt()) * an / (cs / column.pressure_pa)
         };
-        let gs = column.g0_umol_m2_s + beta * (potential - column.g0_umol_m2_s);
+        let gs = g0_umol_m2_s + beta * (potential - g0_umol_m2_s);
         let gs_ms = gs * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature / column.pressure_pa;
         if gs_ms <= 0.0 {
             return Err(LandSurfaceEnergyError::ConstitutiveDomain(
@@ -1150,10 +973,14 @@ fn leaf_trial_state(
     let (mut fb, mut rs) = residual(b)?;
     if fa == 0.0 {
         rs = residual(a)?.1;
+        let carbon = carbon_at_ci(a)?;
         return Ok(LeafTrialState {
             surface_q: qsurface,
             rs_s_m: rs,
             ci_pa: a,
+            gross_assimilation_umol_co2_m2_leaf_s: carbon.ag,
+            net_assimilation_umol_co2_m2_leaf_s: carbon.an,
+            dark_respiration_umol_co2_m2_leaf_s: carbon.rd,
         });
     }
     if fa * fb > 0.0 {
@@ -1206,31 +1033,20 @@ fn leaf_trial_state(
             break;
         }
     }
+    let carbon = carbon_at_ci(b)?;
     Ok(LeafTrialState {
         surface_q: qsurface,
         rs_s_m: rs,
         ci_pa: b,
+        gross_assimilation_umol_co2_m2_leaf_s: carbon.ag,
+        net_assimilation_umol_co2_m2_leaf_s: carbon.an,
+        dark_respiration_umol_co2_m2_leaf_s: carbon.rd,
     })
 }
 
 #[must_use]
 fn vulnerability(potential: f64, p50: f64, exponent: f64) -> f64 {
     2.0_f64.powf(-(potential / p50).powf(exponent))
-}
-
-/// Evaluate the concrete per-occupancy V8 hydraulic and component-energy
-/// block at the shared current-trial canopy-air and longwave boundaries.
-#[derive(Clone, Debug, PartialEq)]
-pub struct CoveredOccupancyEvaluation {
-    pub residuals: Vec<f64>,
-    pub tolerances: Vec<f64>,
-    pub source_water: Vec<SourceWaterFlux>,
-    pub canopy_sensible_w_m2: f64,
-    pub canopy_vapor_kg_m2_s: f64,
-    pub wet_vapor_kg_m2_s: f64,
-    pub wet_branch: WaterBranch,
-    pub component_temperatures_k: [f64; 4],
-    pub ci_pa: [f64; 2],
 }
 
 struct CoveredOccupancyTrialContext<'a> {
@@ -1240,6 +1056,46 @@ struct CoveredOccupancyTrialContext<'a> {
     component_longwave_w_m2: [f64; 4],
     caps: Option<&'a CoveredWaterCaps>,
     frozen: Option<&'a CoveredFrozenBranches>,
+    liquid: CoveredLiquidPreparation,
+}
+
+fn covered_wet_flux(
+    column: &CoveredColumnInputs,
+    occupancy: &CoveredOccupancyInputs,
+    liquid: CoveredLiquidPreparation,
+    wet_surface_temperature_k: f64,
+    canopy_air_temperature_k: f64,
+    canopy_air_q: f64,
+    frozen: Option<&CoveredFrozenBranches>,
+) -> Result<(f64, WaterBranch), LandSurfaceEnergyError> {
+    let rho = column.pressure_pa / (DRY_AIR_GAS_CONSTANT_J_KG_K * canopy_air_temperature_k);
+    let wet_area = liquid.wet_fraction
+        * (occupancy.sun.leaf_area_m2_m2_tile
+            + occupancy.shade.leaf_area_m2_m2_tile
+            + occupancy.stem_area_m2_m2_tile);
+    let wet_potential = rho
+        * occupancy.gb_wet_m_s
+        * (canopy_saturation_q(wet_surface_temperature_k, column.pressure_pa)? - canopy_air_q)
+        * wet_area;
+    let wet_cap = liquid.preliminary_store / column.interval_s;
+    let natural_branch = if wet_potential >= 0.0 && wet_cap <= wet_potential {
+        WaterBranch::AuthorizationActiveOrTie
+    } else if wet_potential < 0.0 {
+        WaterBranch::Condensation
+    } else {
+        WaterBranch::ConstitutiveLaw
+    };
+    let branch = frozen
+        .and_then(|value| value.wet.get(&occupancy.occupancy_id).copied())
+        .unwrap_or(natural_branch);
+    Ok((
+        if branch == WaterBranch::AuthorizationActiveOrTie {
+            wet_cap
+        } else {
+            wet_potential
+        },
+        branch,
+    ))
 }
 
 fn evaluate_covered_occupancy(
@@ -1252,19 +1108,22 @@ fn evaluate_covered_occupancy(
     let canopy_air_q = context.canopy_air_q;
     let component_longwave_w_m2 = context.component_longwave_w_m2;
     if block.len() != 10 {
-        return Err(LandSurfaceEnergyError::Topology("covered_occupancy_trial"));
+        return Err(LandSurfaceEnergyError::topology_domain(
+            "covered_occupancy_trial",
+        ));
     }
     let (psi_sun, psi_shade, psi_stem, psi_root) = (block[0], block[1], block[2], block[3]);
     let (beta_sun, beta_shade) = (block[4], block[5]);
     let (tsun, tshade, twet, tstem) = (block[6], block[7], block[8], block[9]);
     let rho = column.pressure_pa / (DRY_AIR_GAS_CONSTANT_J_KG_K * canopy_air_temperature_k);
-    let dry_sun = occupancy.sun.leaf_area_m2_m2_tile * (1.0 - occupancy.wet_fraction);
-    let dry_shade = occupancy.shade.leaf_area_m2_m2_tile * (1.0 - occupancy.wet_fraction);
-    let wet_area = occupancy.wet_fraction
+    let wet_fraction = context.liquid.wet_fraction;
+    let dry_sun = occupancy.sun.leaf_area_m2_m2_tile * (1.0 - wet_fraction);
+    let dry_shade = occupancy.shade.leaf_area_m2_m2_tile * (1.0 - wet_fraction);
+    let wet_area = wet_fraction
         * (occupancy.sun.leaf_area_m2_m2_tile
             + occupancy.shade.leaf_area_m2_m2_tile
             + occupancy.stem_area_m2_m2_tile);
-    let dry_stem = (1.0 - occupancy.wet_fraction) * occupancy.stem_area_m2_m2_tile;
+    let dry_stem = (1.0 - wet_fraction) * occupancy.stem_area_m2_m2_tile;
     let sun = leaf_trial_state(
         occupancy.sun,
         occupancy.biochemical,
@@ -1273,6 +1132,8 @@ fn evaluate_covered_occupancy(
         beta_sun,
         column,
         occupancy.gb_leaf_m_s,
+        occupancy.g0_umol_m2_s,
+        occupancy.medlyn_g1_kpa_sqrt,
     )?;
     let shade = leaf_trial_state(
         occupancy.shade,
@@ -1282,35 +1143,54 @@ fn evaluate_covered_occupancy(
         beta_shade,
         column,
         occupancy.gb_leaf_m_s,
+        occupancy.g0_umol_m2_s,
+        occupancy.medlyn_g1_kpa_sqrt,
     )?;
+    // V8 maximum demand is an internal beta=1 evaluation at the current
+    // leaf/canopy state. It is never a caller-configurable runtime operand.
+    let sun_maximum = leaf_trial_state(
+        occupancy.sun,
+        occupancy.biochemical,
+        tsun,
+        canopy_air_q,
+        1.0,
+        column,
+        occupancy.gb_leaf_m_s,
+        occupancy.g0_umol_m2_s,
+        occupancy.medlyn_g1_kpa_sqrt,
+    )?;
+    let shade_maximum = leaf_trial_state(
+        occupancy.shade,
+        occupancy.biochemical,
+        tshade,
+        canopy_air_q,
+        1.0,
+        column,
+        occupancy.gb_leaf_m_s,
+        occupancy.g0_umol_m2_s,
+        occupancy.medlyn_g1_kpa_sqrt,
+    )?;
+    let emax_sun_kg_m2_s = rho * (sun_maximum.surface_q - canopy_air_q)
+        / (1.0 / occupancy.gb_leaf_m_s + sun_maximum.rs_s_m)
+        * dry_sun;
+    let emax_shade_kg_m2_s = rho * (shade_maximum.surface_q - canopy_air_q)
+        / (1.0 / occupancy.gb_leaf_m_s + shade_maximum.rs_s_m)
+        * dry_shade;
     let sun_e =
         rho * (sun.surface_q - canopy_air_q) / (1.0 / occupancy.gb_leaf_m_s + sun.rs_s_m) * dry_sun;
     let shade_e = rho * (shade.surface_q - canopy_air_q)
         / (1.0 / occupancy.gb_leaf_m_s + shade.rs_s_m)
         * dry_shade;
-    let wet_potential = rho
-        * occupancy.gb_wet_m_s
-        * (canopy_saturation_q(twet, column.pressure_pa)? - canopy_air_q)
-        * wet_area;
-    let wet_cap = occupancy.canopy_liquid_kg_m2_tile / column.interval_s;
-    let natural_wet_branch = if wet_potential >= 0.0 && wet_cap <= wet_potential {
-        WaterBranch::AuthorizationActiveOrTie
-    } else if wet_potential < 0.0 {
-        WaterBranch::Condensation
-    } else {
-        WaterBranch::ConstitutiveLaw
-    };
-    let wet_branch = context
-        .frozen
-        .and_then(|value| value.wet.get(&occupancy.occupancy_id).copied())
-        .unwrap_or(natural_wet_branch);
-    let wet_e = if wet_branch == WaterBranch::AuthorizationActiveOrTie {
-        wet_cap
-    } else {
-        wet_potential
-    };
-    let leaf_factor = occupancy.k1_max / occupancy.stem_to_leaf_path_m;
-    let q1sun = leaf_factor
+    let (wet_e, wet_branch) = covered_wet_flux(
+        column,
+        occupancy,
+        context.liquid,
+        twet,
+        canopy_air_temperature_k,
+        canopy_air_q,
+        context.frozen,
+    )?;
+    let q1sun = occupancy.k1_sun_max_s1
         * occupancy.sun.leaf_area_m2_m2_tile
         * vulnerability(
             psi_stem,
@@ -1318,7 +1198,7 @@ fn evaluate_covered_occupancy(
             occupancy.vulnerability_exponent,
         )
         * (psi_stem - psi_sun);
-    let q1shade = leaf_factor
+    let q1shade = occupancy.k1_shade_max_s1
         * occupancy.shade.leaf_area_m2_m2_tile
         * vulnerability(
             psi_stem,
@@ -1371,7 +1251,7 @@ fn evaluate_covered_occupancy(
             .and_then(|value| value.root.get(&key).copied())
             .unwrap_or(natural_branch);
         let final_flux = if branch == WaterBranch::AuthorizationActiveOrTie {
-            cap_rate.ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            cap_rate.ok_or(LandSurfaceEnergyError::water_cardinality(
                 "frozen_root_cap_without_authorization",
             ))?
         } else {
@@ -1383,7 +1263,7 @@ fn evaluate_covered_occupancy(
         let authorization =
             cap_rate.map(|amount| amount * column.tile_fraction * column.interval_s);
         let finalized = if branch == WaterBranch::AuthorizationActiveOrTie {
-            authorization.ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            authorization.ok_or(LandSurfaceEnergyError::water_cardinality(
                 "missing_root_authorization",
             ))?
         } else {
@@ -1424,14 +1304,14 @@ fn evaluate_covered_occupancy(
         sun_e - q1sun,
         shade_e - q1shade,
         sun_e
-            - occupancy.emax_sun_kg_m2_s
+            - emax_sun_kg_m2_s
                 * vulnerability(
                     psi_sun,
                     occupancy.p50_leaf_mm,
                     occupancy.vulnerability_exponent,
                 ),
         shade_e
-            - occupancy.emax_shade_kg_m2_s
+            - emax_shade_kg_m2_s
                 * vulnerability(
                     psi_shade,
                     occupancy.p50_leaf_mm,
@@ -1439,40 +1319,39 @@ fn evaluate_covered_occupancy(
                 ),
         q1sun + q1shade - q2,
         q2 - root_source_sum,
-        occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - occupancy.wet_fraction)
+        occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction)
             + component_longwave_w_m2[0]
             - sun_h
             - column.latent_heat_j_kg * sun_e,
-        occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - occupancy.wet_fraction)
+        occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction)
             + component_longwave_w_m2[1]
             - shade_h
             - column.latent_heat_j_kg * shade_e,
-        occupancy.wet_fraction
+        wet_fraction
             * (occupancy.sun.absorbed_shortwave_w_m2_tile
                 + occupancy.shade.absorbed_shortwave_w_m2_tile
                 + occupancy.stem_absorbed_shortwave_w_m2_tile)
             + component_longwave_w_m2[2]
             - wet_h
             - column.latent_heat_j_kg * wet_e,
-        (1.0 - occupancy.wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile
+        (1.0 - wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile
             + component_longwave_w_m2[3]
             - stem_h,
     ];
-    let water_scale = occupancy
-        .emax_sun_kg_m2_s
-        .max(occupancy.emax_shade_kg_m2_s)
+    let water_scale = emax_sun_kg_m2_s
+        .max(emax_shade_kg_m2_s)
         .max(q1sun.abs())
         .max(q1shade.abs())
         .max(q2.abs())
         .max(root_source_sum.abs());
     let component_operands = [
-        occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - occupancy.wet_fraction),
-        occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - occupancy.wet_fraction),
-        occupancy.wet_fraction
+        occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction),
+        occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction),
+        wet_fraction
             * (occupancy.sun.absorbed_shortwave_w_m2_tile
                 + occupancy.shade.absorbed_shortwave_w_m2_tile
                 + occupancy.stem_absorbed_shortwave_w_m2_tile),
-        (1.0 - occupancy.wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile,
+        (1.0 - wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile,
     ];
     let sensible = [sun_h, shade_h, wet_h, stem_h];
     let latent = [
@@ -1490,6 +1369,16 @@ fn evaluate_covered_occupancy(
                 + latent[index].abs(),
         )
     }));
+    let liquid = finalize_covered_liquid(
+        context.liquid,
+        wet_e * column.interval_s,
+        twet,
+        if context.caps.is_some() {
+            CoveredLiquidPass::FixedAuthorizationFinal
+        } else {
+            CoveredLiquidPass::Potential
+        },
+    )?;
     Ok(CoveredOccupancyEvaluation {
         residuals,
         tolerances,
@@ -1500,6 +1389,24 @@ fn evaluate_covered_occupancy(
         wet_branch,
         component_temperatures_k: [tsun, tshade, twet, tstem],
         ci_pa: [sun.ci_pa, shade.ci_pa],
+        gross_assimilation_umol_co2_m2_leaf_s: [
+            sun.gross_assimilation_umol_co2_m2_leaf_s,
+            shade.gross_assimilation_umol_co2_m2_leaf_s,
+        ],
+        net_assimilation_umol_co2_m2_leaf_s: [
+            sun.net_assimilation_umol_co2_m2_leaf_s,
+            shade.net_assimilation_umol_co2_m2_leaf_s,
+        ],
+        dark_respiration_umol_co2_m2_leaf_s: [
+            sun.dark_respiration_umol_co2_m2_leaf_s,
+            shade.dark_respiration_umol_co2_m2_leaf_s,
+        ],
+        emax_kg_m2_s: [emax_sun_kg_m2_s, emax_shade_kg_m2_s],
+        liquid,
+        absorbed_shortwave_w_m2: component_operands,
+        net_longwave_w_m2: component_longwave_w_m2,
+        sensible_to_canopy_air_w_m2: sensible,
+        signed_vapor_to_canopy_air_kg_m2_s: [sun_e, shade_e, wet_e, 0.0],
     })
 }
 
@@ -1511,6 +1418,7 @@ pub fn evaluate_covered_occupancy_block(
     canopy_air_q: f64,
     component_longwave_w_m2: [f64; 4],
 ) -> Result<Vec<f64>, LandSurfaceEnergyError> {
+    let liquid = prepare_covered_liquid(occupancy, column.top_rain_kg_m2_tile)?;
     let context = CoveredOccupancyTrialContext {
         column,
         canopy_air_temperature_k,
@@ -1518,25 +1426,9 @@ pub fn evaluate_covered_occupancy_block(
         component_longwave_w_m2,
         caps: None,
         frozen: None,
+        liquid,
     };
     Ok(evaluate_covered_occupancy(&context, occupancy, block)?.residuals)
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct CoveredColumnEvaluation {
-    pub raw_residuals: Vec<f64>,
-    pub normalized_residuals: Vec<f64>,
-    pub tolerances: Vec<f64>,
-    pub occupancies: Vec<CoveredOccupancyEvaluation>,
-    pub canopy_air_temperature_k: f64,
-    pub canopy_air_specific_humidity_kg_kg: f64,
-    pub ground_temperature_k: f64,
-    pub soil_temperature_k: Vec<f64>,
-    pub ground_water: GroundWaterFlux,
-    pub ground_heat_cn_w_m2_tile: Vec<f64>,
-    pub ground_storage_w_m2_tile: f64,
-    pub ending_surface_enthalpy_j_m2_tile: f64,
-    pub whole_column_longwave: crate::physics::CanopyLongwaveResult,
 }
 
 fn validate_covered_caps(
@@ -1558,7 +1450,7 @@ fn validate_covered_caps(
         .collect();
     let actual: BTreeSet<_> = caps.root.keys().cloned().collect();
     if expected != actual {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_identity(
             "covered_root_authorization_identity",
         ));
     }
@@ -1569,11 +1461,22 @@ fn validate_covered_caps(
         .any(|value| {
             !value.request_rate_kg_m2_tile_s.is_finite()
                 || !value.authorization_rate_kg_m2_tile_s.is_finite()
-                || value.authorization_rate_kg_m2_tile_s < 0.0
+        })
+    {
+        return Err(LandSurfaceEnergyError::water_domain(
+            "covered_authorization_domain",
+        ));
+    }
+    if caps
+        .root
+        .values()
+        .chain(std::iter::once(&caps.ground))
+        .any(|value| {
+            value.authorization_rate_kg_m2_tile_s < 0.0
                 || value.request_rate_kg_m2_tile_s < value.authorization_rate_kg_m2_tile_s
         })
     {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_bound(
             "covered_authorization_domain",
         ));
     }
@@ -1603,6 +1506,95 @@ fn covered_trial_is_valid(trial: &[f64], occupancy_count: usize) -> bool {
             .all(|value| (200.0..=350.0).contains(value))
 }
 
+fn validate_covered_shortwave_inputs(
+    column: &CoveredColumnInputs,
+) -> Result<(), LandSurfaceEnergyError> {
+    column.shortwave.incident_w_m2_tile.validate_nonnegative()?;
+    column
+        .shortwave
+        .top_reflected_w_m2_tile
+        .validate_nonnegative()?;
+    column
+        .shortwave
+        .ground_absorbed_by_incident_w_m2_tile
+        .validate_nonnegative()?;
+    column
+        .ground
+        .terminal_shortwave_w_m2_tile
+        .validate_nonnegative()?;
+    if column.shortwave.occupancies.len() != column.occupancies.len() {
+        return Err(LandSurfaceEnergyError::topology_cardinality(
+            "covered shortwave occupancy set",
+        ));
+    }
+    for (radiation, occupancy) in column.shortwave.occupancies.iter().zip(&column.occupancies) {
+        radiation
+            .sun_leaf_absorbed_w_m2_tile
+            .validate_nonnegative()?;
+        radiation
+            .shade_leaf_absorbed_w_m2_tile
+            .validate_nonnegative()?;
+        radiation.stem_absorbed_w_m2_tile.validate_nonnegative()?;
+        if radiation.occupancy_id != occupancy.occupancy_id
+            || radiation.sun_leaf_absorbed_w_m2_tile.total().to_bits()
+                != occupancy.sun.absorbed_shortwave_w_m2_tile.to_bits()
+            || radiation.shade_leaf_absorbed_w_m2_tile.total().to_bits()
+                != occupancy.shade.absorbed_shortwave_w_m2_tile.to_bits()
+            || radiation.stem_absorbed_w_m2_tile.total().to_bits()
+                != occupancy.stem_absorbed_shortwave_w_m2_tile.to_bits()
+        {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "covered bound shortwave component identity",
+            ));
+        }
+    }
+    let incident = directional_values(column.shortwave.incident_w_m2_tile);
+    let reflected = directional_values(column.shortwave.top_reflected_w_m2_tile);
+    let ground_absorbed = directional_values(
+        column
+            .shortwave
+            .ground_absorbed_by_incident_w_m2_tile,
+    );
+    for direction in 0..4 {
+        let canopy_absorbed: f64 = column
+            .shortwave
+            .occupancies
+            .iter()
+            .map(|occupancy| {
+                directional_values(occupancy.sun_leaf_absorbed_w_m2_tile)[direction]
+                    + directional_values(occupancy.shade_leaf_absorbed_w_m2_tile)[direction]
+                    + directional_values(occupancy.stem_absorbed_w_m2_tile)[direction]
+            })
+            .sum();
+        let residual = incident[direction]
+            - reflected[direction]
+            - canopy_absorbed
+            - ground_absorbed[direction];
+        if residual.abs()
+            > energy_tolerance(
+                incident[direction].abs()
+                    + reflected[direction].abs()
+                    + canopy_absorbed.abs()
+                    + ground_absorbed[direction].abs(),
+            )
+        {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "covered whole-column band/direction shortwave",
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn directional_values(value: BandDirectionalFluxes) -> [f64; 4] {
+    [
+        value.direct_vis,
+        value.diffuse_vis,
+        value.direct_nir,
+        value.diffuse_nir,
+    ]
+}
+
 pub fn evaluate_covered_column(
     column: &CoveredColumnInputs,
     trial: &[f64],
@@ -1610,9 +1602,12 @@ pub fn evaluate_covered_column(
     frozen: Option<&CoveredFrozenBranches>,
 ) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
     if column.occupancies.is_empty() || column.ground.soil_nodes.is_empty() {
-        return Err(LandSurfaceEnergyError::Topology("covered_column"));
+        return Err(LandSurfaceEnergyError::topology_cardinality(
+            "covered_column",
+        ));
     }
     validate_covered_caps(column, caps)?;
+    validate_covered_shortwave_inputs(column)?;
     let expected = 10 * column.occupancies.len() + 3 + column.ground.soil_nodes.len();
     if trial.len() != expected || !covered_trial_is_valid(trial, column.occupancies.len()) {
         return Err(LandSurfaceEnergyError::ConstitutiveDomain(
@@ -1624,15 +1619,54 @@ pub fn evaluate_covered_column(
     let canopy_q = trial[common_offset + 1];
     let ground_temperature = trial[common_offset + 2];
     let soil_temperatures = &trial[common_offset + 3..];
+    if !column.top_rain_kg_m2_tile.is_finite() || column.top_rain_kg_m2_tile < 0.0 {
+        return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+            "covered top rain",
+        ));
+    }
+    let mut incident_rain = column.top_rain_kg_m2_tile;
+    let mut ground_stemflow = 0.0;
+    let mut liquid_preparations = Vec::with_capacity(column.occupancies.len());
+    let mut routed_liquid = Vec::with_capacity(column.occupancies.len());
+    for (index, occupancy) in column.occupancies.iter().enumerate() {
+        let block = &trial[index * 10..(index + 1) * 10];
+        let preparation = prepare_covered_liquid(occupancy, incident_rain)?;
+        let (wet_flux, _) = covered_wet_flux(
+            column,
+            occupancy,
+            preparation,
+            block[8],
+            canopy_temperature,
+            canopy_q,
+            frozen,
+        )?;
+        let liquid = finalize_covered_liquid(
+            preparation,
+            wet_flux * column.interval_s,
+            block[8],
+            if caps.is_some() {
+                CoveredLiquidPass::FixedAuthorizationFinal
+            } else {
+                CoveredLiquidPass::Potential
+            },
+        )?;
+        incident_rain = liquid.throughfall_kg_m2_tile
+            + liquid.initial_drainage_kg_m2_tile
+            + liquid.second_drainage_kg_m2_tile;
+        ground_stemflow += liquid.stemflow_kg_m2_tile;
+        liquid_preparations.push(preparation);
+        routed_liquid.push(liquid);
+    }
     let longwave_layers: Vec<_> = column
         .occupancies
         .iter()
+        .zip(&liquid_preparations)
         .enumerate()
-        .map(|(index, occupancy)| {
+        .map(|(index, (occupancy, liquid))| {
             let block = &trial[index * 10..(index + 1) * 10];
-            let dry_sun = occupancy.sun.leaf_area_m2_m2_tile * (1.0 - occupancy.wet_fraction);
-            let dry_shade = occupancy.shade.leaf_area_m2_m2_tile * (1.0 - occupancy.wet_fraction);
-            let wet = occupancy.wet_fraction
+            let dry_sun = occupancy.sun.leaf_area_m2_m2_tile * (1.0 - liquid.wet_fraction);
+            let dry_shade = occupancy.shade.leaf_area_m2_m2_tile * (1.0 - liquid.wet_fraction);
+            let wet = liquid.wet_fraction
                 * (occupancy.sun.leaf_area_m2_m2_tile
                     + occupancy.shade.leaf_area_m2_m2_tile
                     + occupancy.stem_area_m2_m2_tile);
@@ -1644,7 +1678,7 @@ pub fn evaluate_covered_column(
                     dry_sun,
                     dry_shade,
                     wet,
-                    (1.0 - occupancy.wet_fraction) * occupancy.stem_area_m2_m2_tile,
+                    (1.0 - liquid.wet_fraction) * occupancy.stem_area_m2_m2_tile,
                 ],
                 component_temperatures_k: [block[6], block[7], block[8], block[9]],
             }
@@ -1666,9 +1700,15 @@ pub fn evaluate_covered_column(
             component_longwave_w_m2: longwave.component_net_w_m2[index],
             caps,
             frozen,
+            liquid: liquid_preparations[index],
         };
         let result =
             evaluate_covered_occupancy(&context, occupancy, &trial[index * 10..(index + 1) * 10])?;
+        if result.liquid != routed_liquid[index] {
+            return Err(LandSurfaceEnergyError::OwnerEnvelope(
+                "covered E04 routed/final evaluation mismatch",
+            ));
+        }
         raw.extend(result.residuals.iter().copied());
         tolerances.extend(result.tolerances.iter().copied());
         occupancy_results.push(result);
@@ -1730,7 +1770,7 @@ pub fn evaluate_covered_column(
         .and_then(|value| value.ground)
         .unwrap_or(natural_ground_branch);
     let final_ground_vapor = if ground_branch == WaterBranch::AuthorizationActiveOrTie {
-        caps.ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        caps.ok_or(LandSurfaceEnergyError::water_cardinality(
             "frozen_ground_cap_without_authorization",
         ))?
         .ground
@@ -1747,7 +1787,7 @@ pub fn evaluate_covered_column(
         ground.surface_liquid_kg_m2_tile
     };
     if ending_water < -1.0e-14 {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_bound(
             "covered_surface_water_negative",
         ));
     }
@@ -1864,7 +1904,7 @@ pub fn evaluate_covered_column(
         value.ground.authorization_rate_kg_m2_tile_s * column.tile_fraction * column.interval_s
     });
     let ground_finalized = if ground_branch == WaterBranch::AuthorizationActiveOrTie {
-        ground_authorization.ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        ground_authorization.ok_or(LandSurfaceEnergyError::water_cardinality(
             "missing_ground_authorization",
         ))?
     } else {
@@ -1897,6 +1937,11 @@ pub fn evaluate_covered_column(
         ground_storage_w_m2_tile: ground_storage,
         ending_surface_enthalpy_j_m2_tile: ending_enthalpy,
         whole_column_longwave: longwave,
+        ground_canopy_release_kg_m2_tile: incident_rain,
+        ground_stemflow_kg_m2_tile: ground_stemflow,
+        ground_sensible_to_canopy_air_w_m2: ground_sensible,
+        sensible_to_reference_air_w_m2: reference_heat,
+        vapor_to_reference_air_kg_m2_s: reference_vapor,
     })
 }
 
@@ -1916,6 +1961,26 @@ impl CoveredStepNorms {
             && self.temperature_k <= 1.0e-8
             && self.humidity_kg_kg <= 1.0e-12
             && self.ci_pa <= 1.0e-8
+    }
+
+    fn diagnostics(self) -> StepNorms {
+        StepNorms {
+            temperature_k: Some(self.temperature_k),
+            humidity_kg_kg: Some(self.humidity_kg_kg),
+            ci_pa: Some(self.ci_pa),
+            hydraulic_mm: Some(self.hydraulic_mm),
+            beta: Some(self.beta),
+        }
+    }
+}
+
+fn empty_step_norms() -> StepNorms {
+    StepNorms {
+        temperature_k: None,
+        humidity_kg_kg: None,
+        ci_pa: None,
+        hydraulic_mm: None,
+        beta: None,
     }
 }
 
@@ -2022,11 +2087,7 @@ pub fn solve_covered_column(
     let mut matrix_norm = None;
     for iteration in 0..=MAX_NEWTON_ITERATIONS {
         let detail = evaluate_covered_column(beginning, &x, caps, None)?;
-        let norm = detail
-            .normalized_residuals
-            .iter()
-            .map(|value| value.abs())
-            .fold(0.0, f64::max);
+        let norm = normalized_infinity_norm(&detail.normalized_residuals);
         if norm <= 1.0 && last_steps.is_some_and(CoveredStepNorms::accepted) {
             let root_water = detail
                 .occupancies
@@ -2053,14 +2114,7 @@ pub fn solve_covered_column(
                 iterations: iteration,
                 normalized_residuals: detail.normalized_residuals,
                 backtracking_count,
-                step_norm: last_steps.map(|value: CoveredStepNorms| {
-                    value
-                        .temperature_k
-                        .max(value.hydraulic_mm)
-                        .max(value.beta)
-                        .max(value.humidity_kg_kg)
-                        .max(value.ci_pa)
-                }),
+                step_norms: last_steps.map_or_else(empty_step_norms, CoveredStepNorms::diagnostics),
                 pivot_magnitude: pivot,
                 matrix_norm,
             }));
@@ -2103,7 +2157,8 @@ pub fn solve_covered_column(
                     iterations: iteration,
                     normalized_residuals: detail.normalized_residuals,
                     backtracking_count,
-                    step_norm: None,
+                    step_norms: last_steps
+                        .map_or_else(empty_step_norms, CoveredStepNorms::diagnostics),
                     pivot_magnitude: Some(evidence.pivot),
                     matrix_norm: Some(evidence.matrix_norm),
                 }));
@@ -2111,36 +2166,8 @@ pub fn solve_covered_column(
         };
         pivot = Some(current_pivot);
         matrix_norm = Some(current_matrix_norm);
-        // The admitted algorithm takes a valid full Newton step when the
-        // current residual already passes and that prospective step satisfies
-        // every dimensional step criterion. Requiring another residual-norm
-        // decrease here would incorrectly turn a converged trajectory into a
-        // backtracking failure at floating-point resolution.
-        if norm <= 1.0 {
-            let prospective: Vec<f64> = x
-                .iter()
-                .zip(delta.iter())
-                .map(|(value, change)| value + change)
-                .collect();
-            if covered_trial_is_valid(&prospective, beginning.occupancies.len()) {
-                if let Ok(prospective_detail) =
-                    evaluate_covered_column(beginning, &prospective, caps, Some(&frozen))
-                {
-                    let prospective_steps = covered_step_norms(
-                        &delta,
-                        beginning.occupancies.len(),
-                        &detail,
-                        &prospective_detail,
-                    );
-                    if prospective_steps.accepted() {
-                        x = prospective;
-                        last_steps = Some(prospective_steps);
-                        continue;
-                    }
-                }
-            }
-        }
         let mut accepted = None;
+        let mut rejected_step_norms = None;
         for exponent in 0..=MAX_BACKTRACKING_HALVINGS {
             let factor = 0.5_f64.powf(f64::from(exponent));
             let trial: Vec<f64> = x
@@ -2155,19 +2182,15 @@ pub fn solve_covered_column(
             else {
                 continue;
             };
-            let trial_norm = trial_detail
-                .normalized_residuals
-                .iter()
-                .map(|value| value.abs())
-                .fold(0.0, f64::max);
-            if trial_norm < norm {
-                let applied: Vec<f64> = delta.iter().map(|value| factor * value).collect();
-                let steps = covered_step_norms(
-                    &applied,
-                    beginning.occupancies.len(),
-                    &detail,
-                    &trial_detail,
-                );
+            let applied: Vec<f64> = delta.iter().map(|value| factor * value).collect();
+            let steps = covered_step_norms(
+                &applied,
+                beginning.occupancies.len(),
+                &detail,
+                &trial_detail,
+            );
+            rejected_step_norms = Some(steps);
+            if is_strict_residual_decrease(norm, &trial_detail.normalized_residuals) {
                 accepted = Some((trial, steps, exponent));
                 break;
             }
@@ -2182,7 +2205,9 @@ pub fn solve_covered_column(
                 iterations: iteration,
                 normalized_residuals: detail.normalized_residuals,
                 backtracking_count: backtracking_count + MAX_BACKTRACKING_HALVINGS,
-                step_norm: None,
+                step_norms: rejected_step_norms
+                    .or(last_steps)
+                    .map_or_else(empty_step_norms, CoveredStepNorms::diagnostics),
                 pivot_magnitude: pivot,
                 matrix_norm,
             }));
@@ -2216,13 +2241,13 @@ pub fn execute_covered_potential_final(
         let cap = caps
             .root
             .get(&(source.occupancy_id.clone(), source.layer_id.clone()))
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            .ok_or(LandSurfaceEnergyError::water_cardinality(
                 "missing_potential_root_request_identity",
             ))?;
         let potential_rate =
             source.request_kg_m2_stand_ground / (beginning.tile_fraction * beginning.interval_s);
         if cap.request_rate_kg_m2_tile_s != potential_rate {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            return Err(LandSurfaceEnergyError::water_identity(
                 "changed_potential_root_request",
             ));
         }
@@ -2230,7 +2255,7 @@ pub fn execute_covered_potential_final(
     let ground_potential_rate = potential.ground_water.request_kg_m2_stand_ground
         / (beginning.tile_fraction * beginning.interval_s);
     if caps.ground.request_rate_kg_m2_tile_s != ground_potential_rate {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_identity(
             "changed_potential_ground_request",
         ));
     }
@@ -2243,24 +2268,24 @@ pub fn execute_covered_potential_final(
     };
     for source in &final_pass.root_water {
         let authorization = source.authorization_kg_m2_stand_ground.ok_or(
-            LandSurfaceEnergyError::WaterIdentityOrBound("missing_final_root_authorization"),
+            LandSurfaceEnergyError::water_cardinality("missing_final_root_authorization"),
         )?;
         if source.finalized_use_kg_m2_stand_ground > authorization
             || authorization > source.request_kg_m2_stand_ground
         {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound("root_D/A/F"));
+            return Err(LandSurfaceEnergyError::water_bound("root_D/A/F"));
         }
     }
     let ground_authorization = final_pass
         .ground_water
         .authorization_kg_m2_stand_ground
-        .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        .ok_or(LandSurfaceEnergyError::water_cardinality(
             "missing_final_ground_authorization",
         ))?;
     if final_pass.ground_water.finalized_use_kg_m2_stand_ground > ground_authorization
         || ground_authorization > final_pass.ground_water.request_kg_m2_stand_ground
     {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound("ground_D/A/F"));
+        return Err(LandSurfaceEnergyError::water_bound("ground_D/A/F"));
     }
     Ok(CoveredPotentialFinalTransaction {
         potential,
@@ -2271,6 +2296,124 @@ pub fn execute_covered_potential_final(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn norm_below_one_non_decreasing_poison(trial_residual: f64) -> NumericalFailure {
+        let outcome = solve_normalized_system(
+            |trial: &[f64], frozen: Option<&bool>| {
+                let residual = if frozen.is_some() {
+                    0.5 + 1.0e8 * trial[0]
+                } else if trial[0] == 0.0 {
+                    0.5
+                } else {
+                    trial_residual
+                };
+                Ok((vec![residual], ()))
+            },
+            vec![0.0],
+            &[1.0],
+            |_| true,
+            |_| true,
+        )
+        .expect("bounded strict-decrease poison");
+        match outcome {
+            NormalizedSolveOutcome::Rejected(failure) => failure,
+            NormalizedSolveOutcome::Accepted { .. } => {
+                panic!("non-decreasing norm below one must not be accepted")
+            }
+        }
+    }
+
+    #[test]
+    fn normalized_solver_rejects_stagnation_below_one() {
+        let failure = norm_below_one_non_decreasing_poison(0.5);
+        assert_eq!(failure.kind, NumericalFailureKind::BacktrackingLimit);
+        assert_eq!(failure.normalized_residuals, vec![0.5]);
+        assert!(failure.step_norms.temperature_k.is_some());
+    }
+
+    #[test]
+    fn normalized_solver_rejects_increase_remaining_below_one() {
+        let failure = norm_below_one_non_decreasing_poison(0.75);
+        assert_eq!(failure.kind, NumericalFailureKind::BacktrackingLimit);
+        assert_eq!(failure.normalized_residuals, vec![0.5]);
+        assert!(failure.step_norms.temperature_k.is_some());
+    }
+
+    fn distinct_bands(total: f64, seed: f64) -> BandDirectionalFluxes {
+        let direct_vis = total * (0.10 + seed);
+        let diffuse_vis = total * (0.17 - seed / 2.0);
+        let direct_nir = total * (0.29 + seed / 3.0);
+        BandDirectionalFluxes {
+            direct_vis,
+            diffuse_vis,
+            direct_nir,
+            diffuse_nir: total - direct_vis - diffuse_vis - direct_nir,
+        }
+    }
+
+    fn bound_shortwave(
+        occupancies: &[CoveredOccupancyInputs],
+        terminal: BandDirectionalFluxes,
+        surface_vis_albedo: f64,
+        surface_nir_albedo: f64,
+    ) -> CoveredColumnShortwaveInputs {
+        let rows = occupancies
+            .iter()
+            .enumerate()
+            .map(|(index, occupancy)| CoveredOccupancyShortwaveInputs {
+                occupancy_id: occupancy.occupancy_id.clone(),
+                sun_leaf_absorbed_w_m2_tile: distinct_bands(
+                    occupancy.sun.absorbed_shortwave_w_m2_tile,
+                    0.01 * index as f64,
+                ),
+                shade_leaf_absorbed_w_m2_tile: distinct_bands(
+                    occupancy.shade.absorbed_shortwave_w_m2_tile,
+                    0.02 + 0.01 * index as f64,
+                ),
+                stem_absorbed_w_m2_tile: distinct_bands(
+                    occupancy.stem_absorbed_shortwave_w_m2_tile,
+                    0.04 + 0.01 * index as f64,
+                ),
+            })
+            .collect::<Vec<_>>();
+        let top_reflected = BandDirectionalFluxes {
+            direct_vis: 7.0,
+            diffuse_vis: 11.0,
+            direct_nir: 13.0,
+            diffuse_nir: 17.0,
+        };
+        let ground_absorbed = crate::partition_ground_shortwave(
+            terminal,
+            surface_vis_albedo,
+            surface_nir_albedo,
+        )
+        .expect("ground shortwave partition")
+        .absorbed;
+        let mut incident = directional_values(top_reflected);
+        let ground_absorbed_values = directional_values(ground_absorbed);
+        for index in 0..4 {
+            incident[index] += ground_absorbed_values[index]
+                + rows
+                    .iter()
+                    .map(|row| {
+                        directional_values(row.sun_leaf_absorbed_w_m2_tile)[index]
+                            + directional_values(row.shade_leaf_absorbed_w_m2_tile)[index]
+                            + directional_values(row.stem_absorbed_w_m2_tile)[index]
+                    })
+                    .sum::<f64>();
+        }
+        CoveredColumnShortwaveInputs {
+            incident_w_m2_tile: BandDirectionalFluxes {
+                direct_vis: incident[0],
+                diffuse_vis: incident[1],
+                direct_nir: incident[2],
+                diffuse_nir: incident[3],
+            },
+            top_reflected_w_m2_tile: top_reflected,
+            ground_absorbed_by_incident_w_m2_tile: ground_absorbed,
+            occupancies: rows,
+        }
+    }
 
     fn four_layer_problem() -> OpenSurfaceProblem {
         OpenSurfaceProblem {
@@ -2461,11 +2604,10 @@ mod tests {
             reference_wind_m_s: 3.7,
             atmospheric_downward_longwave_w_m2: 395.0,
             ca_pa: 42.0,
-            medlyn_g1_kpa_sqrt: 3.5,
-            g0_umol_m2_s: 25.0,
             canopy_to_atmosphere_heat_resistance_s_m: 20.992_293_151_292_14,
             canopy_to_atmosphere_vapor_resistance_s_m: 22.734_132_598_127_985,
             latent_heat_j_kg: 2_501_000.0,
+            top_rain_kg_m2_tile: 0.0,
             under_canopy_geometry: crate::physics::UnderCanopyGeometry {
                 canopy_height_m: 12.5,
                 canopy_roughness_m: 1.25,
@@ -2474,6 +2616,12 @@ mod tests {
             },
             ground,
             occupancies: Vec::new(),
+            shortwave: CoveredColumnShortwaveInputs {
+                incident_w_m2_tile: BandDirectionalFluxes::default(),
+                top_reflected_w_m2_tile: BandDirectionalFluxes::default(),
+                ground_absorbed_by_incident_w_m2_tile: BandDirectionalFluxes::default(),
+                occupancies: Vec::new(),
+            },
         };
         let biochemical = BiochemicalConstants {
             ha_vcmax_j_mol: 65_330.0,
@@ -2498,6 +2646,8 @@ mod tests {
         };
         let occupancy = CoveredOccupancyInputs {
             occupancy_id: "canopy-rank-0".into(),
+            medlyn_g1_kpa_sqrt: 3.5,
+            g0_umol_m2_s: 25.0,
             sun: LeafBiochemicalInputs {
                 leaf_area_m2_m2_tile: 1.110_267_869_704_946_6,
                 absorbed_shortwave_w_m2_tile: 220.671_526_988_526_7,
@@ -2517,20 +2667,20 @@ mod tests {
             biochemical,
             stem_area_m2_m2_tile: 0.72,
             stem_absorbed_shortwave_w_m2_tile: 185.377_620_426_979_95,
-            wet_fraction: 0.37,
-            canopy_liquid_kg_m2_tile: 0.018,
+            beginning_canopy_liquid_kg_m2_tile: 0.018,
+            liquid_interception_fraction: 0.35,
+            liquid_capacity_kg_m2_plant: 0.023_328_503_368_824_437,
+            stemflow_fraction: 0.08,
             gb_leaf_m_s: 0.035_961_386_715_575_215,
             gb_wet_m_s: 0.019_071_405_305_591_295,
             gb_stem_m_s: 0.013_082_876_106_352_972,
-            emax_sun_kg_m2_s: 4.016_697_077_733_990_4e-5,
-            emax_shade_kg_m2_s: 1.685_782_614_110_486_5e-5,
             lai: 2.708_333_333_333_333,
             sai: 0.72,
             clumping_index: 0.82,
-            k1_max: 1.2e-6,
+            k1_sun_max_s1: 1.2e-6,
+            k1_shade_max_s1: 1.2e-6,
             k2_max: 4.2e-6,
             k3_max_m_s: 5.0e-5,
-            stem_to_leaf_path_m: 1.0,
             height_m: 12.5,
             root_to_leaf_area: 1.8,
             p50_leaf_mm: -9_800.0,
@@ -2613,6 +2763,12 @@ mod tests {
         assert!(residual[..6].iter().all(|value| value.abs() < 1.0e-12));
         assert!(residual[6..].iter().all(|value| value.abs() < 1.0e-6));
         column.occupancies = vec![occupancy];
+        column.shortwave = bound_shortwave(
+            &column.occupancies,
+            column.ground.terminal_shortwave_w_m2_tile,
+            column.ground.surface_vis_albedo,
+            column.ground.surface_nir_albedo,
+        );
         let full_trial = [
             block.as_slice(),
             &[
@@ -2626,6 +2782,17 @@ mod tests {
         .concat();
         let full =
             evaluate_covered_column(&column, &full_trial, None, None).expect("full covered column");
+        let carbon = &full.occupancies[0];
+        for class in 0..2 {
+            assert!(carbon.gross_assimilation_umol_co2_m2_leaf_s[class].is_finite());
+            assert!(carbon.dark_respiration_umol_co2_m2_leaf_s[class].is_finite());
+            assert_eq!(
+                carbon.net_assimilation_umol_co2_m2_leaf_s[class].to_bits(),
+                (carbon.gross_assimilation_umol_co2_m2_leaf_s[class]
+                    - carbon.dark_respiration_umol_co2_m2_leaf_s[class])
+                    .to_bits()
+            );
+        }
         assert!(
             full.normalized_residuals
                 .iter()
@@ -2680,6 +2847,15 @@ mod tests {
         ];
         let transaction = execute_covered_potential_final(&column, full_trial, &caps, capped_trial)
             .expect("immutable potential/final transaction");
+        assert_ne!(
+            transaction.potential.evaluation.occupancies[0].gross_assimilation_umol_co2_m2_leaf_s
+                [0]
+            .to_bits(),
+            transaction.final_pass.evaluation.occupancies[0].gross_assimilation_umol_co2_m2_leaf_s
+                [0]
+            .to_bits(),
+            "cap-active accepted carbon must come from the rebuilt final solve"
+        );
         assert_eq!(
             transaction.final_pass.ground_water.branch,
             WaterBranch::AuthorizationActiveOrTie
@@ -2713,6 +2889,7 @@ mod tests {
         lower.stem_absorbed_shortwave_w_m2_tile = 23.961_096_147_421_54;
         lower.lai = 1.570_833_333_333_333;
         lower.sai = 0.417_6;
+        lower.liquid_capacity_kg_m2_plant = 0.040_221_557_532_455_925;
         lower.clumping_index = 0.91;
         column.occupancies.push(lower);
         column.ground.terminal_shortwave_w_m2_tile = BandDirectionalFluxes {
@@ -2726,6 +2903,71 @@ mod tests {
             -5_900.0, -5_450.0, -4_300.0, -2_850.0, 0.68, 0.66, 295.5, 295.0, 295.6, 295.2, 295.8,
             0.011, 295.0, 291.5, 289.8,
         ];
+        let mut rain_column = column.clone();
+        rain_column.top_rain_kg_m2_tile = 0.5;
+        let rain = evaluate_covered_column(&rain_column, &multirank_potential_trial, None, None)
+            .expect("rain routing evaluation");
+        let upper_liquid = rain.occupancies[0].liquid;
+        let lower_liquid = rain.occupancies[1].liquid;
+        assert!(upper_liquid.throughfall_kg_m2_tile > 0.0);
+        assert!(upper_liquid.initial_drainage_kg_m2_tile > 0.0);
+        assert_eq!(
+            lower_liquid.incident_rain_kg_m2_tile.to_bits(),
+            (upper_liquid.throughfall_kg_m2_tile
+                + upper_liquid.initial_drainage_kg_m2_tile
+                + upper_liquid.second_drainage_kg_m2_tile)
+                .to_bits()
+        );
+        assert_eq!(
+            rain.ground_stemflow_kg_m2_tile.to_bits(),
+            rain.occupancies
+                .iter()
+                .map(|value| value.liquid.stemflow_kg_m2_tile)
+                .sum::<f64>()
+                .to_bits()
+        );
+        for occupancy in &rain.occupancies {
+            occupancy.liquid.validate().expect("rain liquid closure");
+            assert_eq!(
+                occupancy
+                    .liquid
+                    .wet_surface_specific_enthalpy_j_kg
+                    .to_bits(),
+                (WATER_HEAT_CAPACITY_J_KG_K
+                    * (occupancy.liquid.wet_surface_temperature_k - REFERENCE_TEMPERATURE_K))
+                    .to_bits()
+            );
+        }
+
+        let mut condensation_column = column.clone();
+        condensation_column.occupancies[0].liquid_capacity_kg_m2_plant = 0.018
+            / (condensation_column.occupancies[0].lai + condensation_column.occupancies[0].sai);
+        let mut condensation_trial = multirank_potential_trial.clone();
+        condensation_trial[8] = 280.0;
+        let condensation =
+            evaluate_covered_column(&condensation_column, &condensation_trial, None, None)
+                .expect("condensation routing evaluation");
+        assert!(condensation.occupancies[0].liquid.condensation_kg_m2_tile > 0.0);
+        assert!(
+            condensation.occupancies[0]
+                .liquid
+                .second_drainage_kg_m2_tile
+                > 0.0
+        );
+        assert_eq!(
+            condensation.occupancies[1]
+                .liquid
+                .incident_rain_kg_m2_tile
+                .to_bits(),
+            (condensation.occupancies[0].liquid.throughfall_kg_m2_tile
+                + condensation.occupancies[0]
+                    .liquid
+                    .initial_drainage_kg_m2_tile
+                + condensation.occupancies[0]
+                    .liquid
+                    .second_drainage_kg_m2_tile)
+                .to_bits()
+        );
         let multirank_potential =
             match solve_covered_column(&column, None, multirank_potential_trial.clone())
                 .expect("multirank potential")

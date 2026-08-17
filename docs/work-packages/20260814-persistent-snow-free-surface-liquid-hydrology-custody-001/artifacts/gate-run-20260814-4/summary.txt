@@ -1,0 +1,9 @@
+run_summary
+commit=74d512f44
+fmt=0
+diff=0
+clippy=0
+nextest_full=0
+doctest=0
+deny=0
+log_dir=/home/workdir/openWEPP/docs/work-packages/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001/artifacts/gate-run-20260814-4

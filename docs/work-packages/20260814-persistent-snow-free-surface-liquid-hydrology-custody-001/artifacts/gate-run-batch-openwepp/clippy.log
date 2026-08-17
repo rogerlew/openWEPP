@@ -1,0 +1,160 @@
+    Checking openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+error: consider adding a `;` to the last statement for consistent formatting
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs:223:17
+    |
+223 |                 *tile_id = TileId::try_new("unknown-tile").expect("tile")
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `*tile_id = TileId::try_new("unknown-tile").expect("tile");`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#semicolon_if_nothing_returned
+    = note: `-D clippy::semicolon-if-nothing-returned` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::semicolon_if_nothing_returned)]`
+
+error: assigning the result of `Clone::clone()` may be inefficient
+  --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs:68:9
+   |
+68 |         frame.lanes[index].subsurface_layers = layer_template.clone();
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use `clone_from()`: `frame.lanes[index].subsurface_layers.clone_from(&layer_template)`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#assigning_clones
+   = note: `-D clippy::assigning-clones` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::assigning_clones)]`
+
+error: consider adding a `;` to the last statement for consistent formatting
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs:193:25
+    |
+193 |                         *tile_id = TileId::try_new("unknown-tile").expect("unknown tile")
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `*tile_id = TileId::try_new("unknown-tile").expect("unknown tile");`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs:521:17
+    |
+521 | /                 attempted_state.records[1].key.tile_id =
+522 | |                     TileId::try_new("wrong-state-tile").expect("wrong tile")
+    | |____________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#semicolon_if_nothing_returned
+help: add a `;` here
+    |
+521 |                 attempted_state.records[1].key.tile_id =
+522 ~                     TileId::try_new("wrong-state-tile").expect("wrong tile");
+    |
+
+error: consider adding a `;` to the last statement for consistent formatting
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs:709:25
+    |
+709 |                         *tile_id = TileId::try_new("unknown-tile").expect("tile")
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `*tile_id = TileId::try_new("unknown-tile").expect("tile");`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs:713:21
+    |
+713 | /                     batch.requests[0].key.source_id =
+714 | |                         SourceId::try_new("wrong-configured-source").expect("source")
+    | |_____________________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#semicolon_if_nothing_returned
+help: add a `;` here
+    |
+713 |                     batch.requests[0].key.source_id =
+714 ~                         SourceId::try_new("wrong-configured-source").expect("source");
+    |
+
+error: consider adding a `;` to the last statement for consistent formatting
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs:890:17
+    |
+890 | /                 state.records[0].key.tile_id =
+891 | |                     TileId::try_new("wrong-state-tile").expect("wrong tile")
+    | |____________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#semicolon_if_nothing_returned
+help: add a `;` here
+    |
+890 |                 state.records[0].key.tile_id =
+891 ~                     TileId::try_new("wrong-state-tile").expect("wrong tile");
+    |
+
+error: this argument is passed by value, but not consumed in the function body
+  --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/snow_preflight_tests.rs:58:14
+   |
+58 |     ingress: DirectSurfaceLiquidIngressInput,
+   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#needless_pass_by_value
+   = note: `-D clippy::needless-pass-by-value` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_pass_by_value)]`
+help: consider taking a reference instead
+   |
+58 |     ingress: &DirectSurfaceLiquidIngressInput,
+   |              +
+
+error: this function has too many lines (101/100)
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/snow_preflight_tests.rs:493:1
+    |
+493 | fn frost_nested_layer_and_fine_layer_domains_precede_e004() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: strict comparison of `f32` or `f64`
+  --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/sealed_receiver_context_tests.rs:46:5
+   |
+46 | /     assert_eq!(
+47 | |         baseline.water_protocol().requests[0].amount_kg_m2_stand_ground,
+48 | |         0.0
+49 | |     );
+   | |_____^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+   = note: `-D clippy::float-cmp` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+   = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: this function has too many arguments (8/7)
+  --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs:51:1
+   |
+51 | / fn expectation(
+52 | |     snapshot: Sha256Digest,
+53 | |     lse_owner: &str,
+54 | |     lse_beginning: Sha256Digest,
+...  |
+59 | |     layer: &str,
+60 | | ) -> UnifiedReceiverExpectations {
+   | |________________________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+   = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: this function has too many lines (156/100)
+  --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs:78:1
+   |
+78 | fn attempted_hash_binds_every_receiver_expectation_field_and_expected_snapshot() {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+
+error: this function has too many lines (221/100)
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs:409:1
+    |
+409 | fn callback_lse_taxonomy_is_exhaustive_and_rebound_to_resource_candidate() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+
+error: this function has too many lines (112/100)
+   --> tests/integration/land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs:634:1
+    |
+634 | fn raw_and_canonical_surface_errors_rebind_and_preserve_exact_lower_identity() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+
+error: could not compile `openwepp` (test "land_surface_energy_real_hydrology_shadow_contract") due to 14 previous errors
+warning: build failed, waiting for other jobs to finish...

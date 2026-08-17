@@ -1063,6 +1063,7 @@ dependencies = [
  "openwepp-vegetation",
  "serde",
  "serde_json",
+ "sha2",
  "thiserror",
 ]
 
@@ -1199,6 +1200,7 @@ name = "openwepp-vegetation"
 version = "0.1.0"
 dependencies = [
  "approx",
+ "openwepp-biogeochemistry",
  "openwepp-kernel-contract",
  "serde",
  "serde_json",

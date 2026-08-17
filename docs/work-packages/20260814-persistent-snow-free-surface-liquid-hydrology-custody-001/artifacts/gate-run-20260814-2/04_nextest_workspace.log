@@ -1,0 +1,112 @@
+command: TMPDIR="/tmp/ow-nextest-openwepp-20260814-2" cargo nextest run --workspace
+start_utc: 2026-08-14T21:51:58Z
+   Compiling openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+   Compiling openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+   Compiling openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+   Compiling openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/workdir/openWEPP/crates/openwepp-land-surface-energy)
+   Compiling openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+   Compiling openwepp-biogeochemistry v0.1.0 (/home/workdir/openWEPP/crates/openwepp-biogeochemistry)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+   Compiling openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+   Compiling openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.21s
+────────────
+ Nextest run ID 55853844-ec07-4776-b805-d7afff4be659 with nextest profile: default
+    Starting 2795 tests across 226 binaries (5 tests skipped)
+        FAIL [   0.108s] (  38/2795) openwepp::advisory_linter_authority_contract live_impact_map_has_no_planner_admission_rows
+  stdout ───
+
+    running 1 test
+    test live_impact_map_has_no_planner_admission_rows ... FAILED
+
+    failures:
+
+    failures:
+        live_impact_map_has_no_planner_admission_rows
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.10s
+
+  stderr ───
+
+    thread 'live_impact_map_has_no_planner_admission_rows' (1250858) panicked at tests/integration/advisory_linter_authority_contract.rs:209:9:
+    assertion `left == right` failed: shared runtime path must retain both independent authorities: crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs
+      left: ["SC-OUTPUT-WAT5-001", "SC-PLANT-001", "SC-SURFACELIQUID-001"]
+     right: ["SC-OUTPUT-WAT5-001", "SC-PLANT-001"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 47 tests still running
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract attribution_check_is_read_only_and_apply_is_layer_proportional
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract supersession_is_terminal_and_requires_a_named_successor
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract report_lead_can_return_pending_review_to_draft_without_erasing_history
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rolls_back_an_invalid_isolated_candidate
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_assembly_contract canopy_named_and_all_builds_are_byte_equivalent_and_complete
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_assembly_contract real_named_and_all_builds_are_deterministic_equivalent_and_checkable
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_assembly_contract real_cli_selects_v2_staging_without_weakening_zero_public_operations
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_assembly_contract malformed_duplicate_unsafe_link_and_inaccessible_figure_fail_closed
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_amendment_contract role_assignment_is_typed_receipted_and_idempotent
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_normalization_contract apply_rebinds_complete_graph_builds_and_is_idempotent
+        SLOW [> 60.000s] (─────────) openwepp::assurance_v2_normalization_contract equivalent_inputs_emit_identical_receipts
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rolls_back_an_invalid_isolated_candidate
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract supersession_is_terminal_and_requires_a_named_successor
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract report_lead_can_return_pending_review_to_draft_without_erasing_history
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation
+        SLOW [>120.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract report_lead_can_return_pending_review_to_draft_without_erasing_history
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>240.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [>240.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [>240.000s] (─────────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [>240.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>300.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>360.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+────────────
+     Summary [ 380.206s] 85/2795 tests run: 84 passed (19 slow), 1 failed, 5 skipped
+        FAIL [   0.108s] (  38/2795) openwepp::advisory_linter_authority_contract live_impact_map_has_no_planner_admission_rows
+  stdout ───
+
+    running 1 test
+    test live_impact_map_has_no_planner_admission_rows ... FAILED
+
+    failures:
+
+    failures:
+        live_impact_map_has_no_planner_admission_rows
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.10s
+
+  stderr ───
+
+    thread 'live_impact_map_has_no_planner_admission_rows' (1250858) panicked at tests/integration/advisory_linter_authority_contract.rs:209:9:
+    assertion `left == right` failed: shared runtime path must retain both independent authorities: crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs
+      left: ["SC-OUTPUT-WAT5-001", "SC-PLANT-001", "SC-SURFACELIQUID-001"]
+     right: ["SC-OUTPUT-WAT5-001", "SC-PLANT-001"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+warning: 2710/2795 tests were not run due to test failure (run with --no-fail-fast to run all tests, or run with --max-fail)
+error: test run failed
+Command exited with non-zero status 100
+elapsed_sec=409.69 user_sec=3016.28 sys_sec=191.63
+exit_code: 100

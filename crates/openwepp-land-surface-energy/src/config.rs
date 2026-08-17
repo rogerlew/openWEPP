@@ -324,7 +324,9 @@ impl TileConfiguration {
     fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
         require_finite_positive(self.fraction_ofe_ground, "tile.fraction_ofe_ground")?;
         if self.fraction_ofe_ground > 1.0 {
-            return Err(LandSurfaceEnergyError::Topology("tile fraction above one"));
+            return Err(LandSurfaceEnergyError::topology_domain(
+                "tile fraction above one",
+            ));
         }
         for (value, name) in [
             (self.surface_vis_albedo, "tile.surface_vis_albedo"),
@@ -353,14 +355,16 @@ impl OfeConfiguration {
     fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
         require_finite_positive(self.area_m2, "ofe.area_m2")?;
         if self.soil_interface_layers.is_empty() || self.tiles.is_empty() {
-            return Err(LandSurfaceEnergyError::Topology(
+            return Err(LandSurfaceEnergyError::topology_cardinality(
                 "empty OFE layer or tile set",
             ));
         }
         let mut layers = BTreeSet::new();
         for layer in &self.soil_interface_layers {
             if !layers.insert(layer.layer_id.clone()) {
-                return Err(LandSurfaceEnergyError::Topology("duplicate soil layer"));
+                return Err(LandSurfaceEnergyError::topology_cardinality(
+                    "duplicate soil layer",
+                ));
             }
             layer.validate()?;
         }
@@ -368,14 +372,16 @@ impl OfeConfiguration {
         let mut fraction_sum = 0.0;
         for tile in &self.tiles {
             if !tiles.insert(tile.tile_id.clone()) {
-                return Err(LandSurfaceEnergyError::Topology("duplicate tile"));
+                return Err(LandSurfaceEnergyError::topology_cardinality(
+                    "duplicate tile",
+                ));
             }
             tile.validate()?;
             fraction_sum += tile.fraction_ofe_ground;
         }
         let tolerance = 64.0 * f64::EPSILON * fraction_sum.abs().max(1.0);
         if (fraction_sum - 1.0).abs() > tolerance {
-            return Err(LandSurfaceEnergyError::Topology(
+            return Err(LandSurfaceEnergyError::topology_domain(
                 "tile fractions do not sum to one",
             ));
         }
@@ -434,12 +440,16 @@ impl LandSurfaceEnergyConfiguration {
         }
         self.numerics.validate()?;
         if self.ofes.is_empty() {
-            return Err(LandSurfaceEnergyError::Topology("empty OFE set"));
+            return Err(LandSurfaceEnergyError::topology_cardinality(
+                "empty OFE set",
+            ));
         }
         let mut ofes = BTreeSet::new();
         for ofe in &self.ofes {
             if !ofes.insert(ofe.ofe_id.clone()) {
-                return Err(LandSurfaceEnergyError::Topology("duplicate OFE"));
+                return Err(LandSurfaceEnergyError::topology_cardinality(
+                    "duplicate OFE",
+                ));
             }
             ofe.validate()?;
         }

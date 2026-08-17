@@ -1,0 +1,6 @@
+command: cargo clippy --workspace --all-targets --all-features -- -D warnings
+start_utc: 2026-08-14T23:58:04Z
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.62s
+elapsed_sec=3.07 user_sec=40.35 sys_sec=20.60
+exit_code: 0

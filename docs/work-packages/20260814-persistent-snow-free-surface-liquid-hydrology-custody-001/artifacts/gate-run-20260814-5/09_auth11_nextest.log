@@ -1,0 +1,133 @@
+command: TMPDIR="/tmp/ow-nextest-openwepp-20260814-5" cargo nextest run --test auth11_required_suite_obligation_guards_contract
+start_utc: 2026-08-15T07:37:52Z
+cwd: /home/workdir/openWEPP
+commit: 4c7b64237
+command_index: 09
+tmp_workdir: /tmp/ow-nextest-openwepp-20260814-5
+rustc_version: rustc 1.92.0 (ded5c06cf 2025-12-08)
+cargo_version: cargo 1.92.0 (344c4567c 2025-10-21)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.49s
+────────────
+ Nextest run ID 3da9e33f-c6d0-4737-9323-f421900123cb with nextest profile: default
+    Starting 3 tests across 1 binary
+        FAIL [   0.006s] (1/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_all_active_required_suite_targets_exist_and_are_registered
+  stdout ───
+
+    running 1 test
+    test auth11_all_active_required_suite_targets_exist_and_are_registered ... FAILED
+
+    failures:
+
+    failures:
+        auth11_all_active_required_suite_targets_exist_and_are_registered
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'auth11_all_active_required_suite_targets_exist_and_are_registered' (3286972) panicked at tests/integration/auth11_required_suite_obligation_guards_contract.rs:57:33:
+    expected readable file /tmp/openwepp-terminal-release-git-b42/docs/specifications/external-authority/registry.yaml: No such file or directory (os error 2)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 2 tests still running
+        FAIL [   0.007s] (2/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_registry_posture_and_protocol_guard_paths_exist
+  stdout ───
+
+    running 1 test
+    test auth11_registry_posture_and_protocol_guard_paths_exist ... FAILED
+
+    failures:
+
+    failures:
+        auth11_registry_posture_and_protocol_guard_paths_exist
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'auth11_registry_posture_and_protocol_guard_paths_exist' (3286973) panicked at tests/integration/auth11_required_suite_obligation_guards_contract.rs:57:33:
+    expected readable file /tmp/openwepp-terminal-release-git-b42/docs/specifications/external-authority/registry.yaml: No such file or directory (os error 2)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (3/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_obligations_schema_and_anchor_bindings_are_enforced
+  stdout ───
+
+    running 1 test
+    test auth11_obligations_schema_and_anchor_bindings_are_enforced ... FAILED
+
+    failures:
+
+    failures:
+        auth11_obligations_schema_and_anchor_bindings_are_enforced
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'auth11_obligations_schema_and_anchor_bindings_are_enforced' (3286971) panicked at tests/integration/auth11_required_suite_obligation_guards_contract.rs:57:33:
+    expected readable file /tmp/openwepp-terminal-release-git-b42/docs/specifications/external-authority/required-suite-obligations.json: No such file or directory (os error 2)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.008s] 3 tests run: 0 passed, 3 failed, 0 skipped
+        FAIL [   0.006s] (1/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_all_active_required_suite_targets_exist_and_are_registered
+  stdout ───
+
+    running 1 test
+    test auth11_all_active_required_suite_targets_exist_and_are_registered ... FAILED
+
+    failures:
+
+    failures:
+        auth11_all_active_required_suite_targets_exist_and_are_registered
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'auth11_all_active_required_suite_targets_exist_and_are_registered' (3286972) panicked at tests/integration/auth11_required_suite_obligation_guards_contract.rs:57:33:
+    expected readable file /tmp/openwepp-terminal-release-git-b42/docs/specifications/external-authority/registry.yaml: No such file or directory (os error 2)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (2/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_registry_posture_and_protocol_guard_paths_exist
+  stdout ───
+
+    running 1 test
+    test auth11_registry_posture_and_protocol_guard_paths_exist ... FAILED
+
+    failures:
+
+    failures:
+        auth11_registry_posture_and_protocol_guard_paths_exist
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'auth11_registry_posture_and_protocol_guard_paths_exist' (3286973) panicked at tests/integration/auth11_required_suite_obligation_guards_contract.rs:57:33:
+    expected readable file /tmp/openwepp-terminal-release-git-b42/docs/specifications/external-authority/registry.yaml: No such file or directory (os error 2)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (3/3) openwepp::auth11_required_suite_obligation_guards_contract auth11_obligations_schema_and_anchor_bindings_are_enforced
+  stdout ───
+
+    running 1 test
+    test auth11_obligations_schema_and_anchor_bindings_are_enforced ... FAILED
+
+    failures:
+
+    failures:
+        auth11_obligations_schema_and_anchor_bindings_are_enforced
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'auth11_obligations_schema_and_anchor_bindings_are_enforced' (3286971) panicked at tests/integration/auth11_required_suite_obligation_guards_contract.rs:57:33:
+    expected readable file /tmp/openwepp-terminal-release-git-b42/docs/specifications/external-authority/required-suite-obligations.json: No such file or directory (os error 2)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed
+Command exited with non-zero status 100
+elapsed_sec=1.19 user_sec=0.48 sys_sec=0.31
+exit_code: 100

@@ -16,7 +16,7 @@ macro_rules! string_identity {
             pub fn try_new(value: impl Into<String>) -> Result<Self, LandSurfaceEnergyError> {
                 let value = value.into();
                 if value.trim().is_empty() {
-                    return Err(LandSurfaceEnergyError::Topology($field));
+                    return Err(LandSurfaceEnergyError::topology_cardinality($field));
                 }
                 Ok(Self(value))
             }

@@ -1,0 +1,4 @@
+command: cargo fmt --all -- --check
+start_utc: 2026-08-14T21:49:33Z
+elapsed_sec=3.65 user_sec=3.47 sys_sec=0.21
+exit_code: 0

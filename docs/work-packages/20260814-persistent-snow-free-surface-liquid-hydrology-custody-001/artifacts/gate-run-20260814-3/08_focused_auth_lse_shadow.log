@@ -1,0 +1,10 @@
+command: cargo nextest run --test land_surface_energy_real_hydrology_shadow_contract --profile quick
+start_utc: 2026-08-15T00:38:06Z
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+────────────
+ Nextest run ID 0108ed5c-d366-4ada-bad8-57eace2866fb with nextest profile: quick
+    Starting 18 tests across 1 binary
+────────────
+     Summary [   0.078s] 18 tests run: 18 passed, 0 skipped
+elapsed_sec=0.74 user_sec=0.73 sys_sec=0.36
+exit_code: 0

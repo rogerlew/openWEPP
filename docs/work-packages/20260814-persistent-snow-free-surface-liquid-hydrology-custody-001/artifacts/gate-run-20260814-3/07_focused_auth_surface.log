@@ -1,0 +1,10 @@
+command: cargo nextest run --test surface_liquid_hydrology_custody_authority_contract --profile quick
+start_utc: 2026-08-15T00:38:05Z
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+────────────
+ Nextest run ID fca26b5f-ec25-4a04-9b64-f376a88489bc with nextest profile: quick
+    Starting 9 tests across 1 binary
+────────────
+     Summary [   0.014s] 9 tests run: 9 passed, 0 skipped
+elapsed_sec=0.68 user_sec=0.48 sys_sec=0.32
+exit_code: 0

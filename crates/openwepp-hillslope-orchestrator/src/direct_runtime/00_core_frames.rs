@@ -551,6 +551,10 @@ pub struct DirectRunFrame {
     pub lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands,
     pub lane_transfer_shadow_projection: Option<DirectRunTransferShadowProjection>,
     pub groundwater: DirectGroundwaterRunState,
+    /// Default-off native snow-free surface/depression and litter liquid.
+    /// `None` preserves the production lane exactly; shadow consumers must
+    /// provide a strict digest-bound state before requesting this owner.
+    pub surface_liquid_shadow: Option<Box<DirectSurfaceLiquidOwnedState>>,
     /// D15A (rev 27): the opt-in ACTIVE routing configuration. `Some` IS the
     /// activation selector inside the orchestrator (the runner sets it from
     /// `OPENWEPP_LANED_ACTIVE=1` after its fail-closed preflight); `None`
@@ -577,6 +581,7 @@ impl DirectRunFrame {
             lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
             lane_transfer_shadow_projection: None,
             groundwater: DirectGroundwaterRunState::disabled(),
+            surface_liquid_shadow: None,
             laned_active: None,
             laned_active_summary: None,
         })
@@ -605,6 +610,7 @@ impl DirectRunFrame {
             lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
             lane_transfer_shadow_projection: None,
             groundwater: DirectGroundwaterRunState::disabled(),
+            surface_liquid_shadow: None,
             laned_active: None,
             laned_active_summary: None,
         })
@@ -616,6 +622,91 @@ impl DirectRunFrame {
     ) -> Result<(), DirectRuntimeError> {
         let total_area_m2 = self.total_area_m2()?;
         self.groundwater = DirectGroundwaterRunState::from_authority(authority, total_area_m2)?;
+        Ok(())
+    }
+
+    pub fn configure_surface_liquid_shadow(
+        &mut self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+        state: DirectSurfaceLiquidOwnedState,
+    ) -> Result<(), DirectSurfaceLiquidError> {
+        let (beginning_owner_sha256, attempted_owner_sha256) = surface_liquid_attachment_hashes(
+            configuration,
+            &state,
+            self.surface_liquid_shadow.as_deref(),
+        );
+        configuration
+            .preflight_schema_and_identity_structure()
+            .map_err(|error| {
+                surface_liquid_attachment_error(
+                    error,
+                    DirectSurfaceLiquidPhase::Configuration,
+                    surface_liquid_configuration_context(configuration, None),
+                    beginning_owner_sha256.clone(),
+                    attempted_owner_sha256.clone(),
+                )
+            })?;
+        validate_surface_liquid_frame_identities(
+            self.identity.run_id,
+            &self.lanes,
+            configuration,
+            beginning_owner_sha256.clone(),
+            attempted_owner_sha256.clone(),
+        )?;
+        state
+            .preflight_schema_and_identity_structure(configuration)
+            .map_err(|error| {
+                surface_liquid_attachment_error(
+                    error,
+                    DirectSurfaceLiquidPhase::Restart,
+                    surface_liquid_state_context(&state),
+                    beginning_owner_sha256.clone(),
+                    attempted_owner_sha256.clone(),
+                )
+            })?;
+        configuration.preflight_declared_digest().map_err(|error| {
+            surface_liquid_attachment_error(
+                error,
+                DirectSurfaceLiquidPhase::Configuration,
+                surface_liquid_configuration_context(configuration, None),
+                beginning_owner_sha256.clone(),
+                attempted_owner_sha256.clone(),
+            )
+        })?;
+        state.preflight_declared_digest().map_err(|error| {
+            surface_liquid_attachment_error(
+                error,
+                DirectSurfaceLiquidPhase::Restart,
+                surface_liquid_state_context(&state),
+                beginning_owner_sha256.clone(),
+                attempted_owner_sha256.clone(),
+            )
+        })?;
+        surface_liquid_attachment::validate_surface_liquid_frame_domains(
+            &self.lanes,
+            configuration,
+            beginning_owner_sha256.as_deref(),
+            attempted_owner_sha256.as_deref(),
+        )?;
+        configuration.validate().map_err(|error| {
+            surface_liquid_attachment_error(
+                error,
+                DirectSurfaceLiquidPhase::Configuration,
+                surface_liquid_configuration_context(configuration, None),
+                beginning_owner_sha256.clone(),
+                attempted_owner_sha256.clone(),
+            )
+        })?;
+        state.validate(configuration).map_err(|error| {
+            surface_liquid_attachment_error(
+                error,
+                DirectSurfaceLiquidPhase::Restart,
+                surface_liquid_state_context(&state),
+                beginning_owner_sha256,
+                attempted_owner_sha256,
+            )
+        })?;
+        self.surface_liquid_shadow = Some(Box::new(state));
         Ok(())
     }
 
@@ -2192,6 +2283,11 @@ fn validate_direct_snow_lane_state(
             .map_err(|_| DirectRuntimeError::DirectDomainViolation {
                 field: direct_snow_lane_validation_field(prefix, "snow_albedo_state"),
             })?;
+        if state.runtime_swe_m <= 1.0e-9 || state.runtime_depth_m <= 1.0e-9 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: direct_snow_lane_validation_field(prefix, "snow_albedo_state"),
+            });
+        }
     }
     validate_direct_snow_layers(prefix, state)?;
     Ok(())
@@ -2215,12 +2311,40 @@ fn validate_direct_snow_layers(
             ("layers.thickness_m", layer.thickness_m),
             ("layers.density_kg_m3", layer.density_kg_m3),
             ("layers.settle_day_count", layer.settle_day_count),
+            ("layers.liquid_water_m", layer.liquid_water_m),
+            ("layers.cold_content_j_m2", layer.cold_content_j_m2),
+            ("layers.refrozen_liquid_m", layer.refrozen_liquid_m),
         ] {
             validate_nonnegative_direct_m(direct_snow_lane_validation_field(prefix, field), value)?;
         }
+        validate_finite(
+            direct_snow_lane_validation_field(prefix, "layers.temperature_c"),
+            layer.temperature_c,
+        )?;
         if layer.density_kg_m3 > 522.0 {
             return Err(DirectRuntimeError::DirectDomainViolation {
                 field: direct_snow_lane_validation_field(prefix, "layers.density_kg_m3"),
+            });
+        }
+        if layer.mass_swe_m > LAYER_CLOSURE_TOLERANCE_M
+            && layer.thickness_m > LAYER_CLOSURE_TOLERANCE_M
+        {
+            let reconstructed_density = layer.mass_swe_m * 1_000.0 / layer.thickness_m;
+            if (layer.density_kg_m3 - reconstructed_density).abs() > 1.0e-4 {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: direct_snow_lane_validation_field(prefix, "layers.density_kg_m3"),
+                });
+            }
+        } else if layer.mass_swe_m > LAYER_CLOSURE_TOLERANCE_M
+            || layer.thickness_m > LAYER_CLOSURE_TOLERANCE_M
+        {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: direct_snow_lane_validation_field(prefix, "layers.density_kg_m3"),
+            });
+        }
+        if layer.liquid_water_m > layer.mass_swe_m || layer.refrozen_liquid_m > layer.mass_swe_m {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: direct_snow_lane_validation_field(prefix, "layers.liquid_water_m"),
             });
         }
         layer_swe_sum_m += layer.mass_swe_m;
@@ -2242,6 +2366,12 @@ fn validate_direct_snow_layers(
     {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: direct_snow_lane_validation_field(prefix, "layers"),
+        });
+    }
+    let aggregate_density_kg_m3 = state.runtime_swe_m * 1_000.0 / state.runtime_depth_m;
+    if (state.runtime_density_kg_m3 - aggregate_density_kg_m3).abs() > 1.0e-4 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: direct_snow_lane_validation_field(prefix, "runtime_density_kg_m3"),
         });
     }
     Ok(())
@@ -2306,7 +2436,93 @@ fn validate_direct_frost_runtime_carry(
 ) -> Result<(), DirectRuntimeError> {
     validate_direct_frost_runtime_scalar_carry(carry)?;
     validate_direct_frost_runtime_layer_shadows(carry)?;
-    validate_direct_frost_runtime_fine_layers(carry)
+    validate_direct_frost_runtime_fine_layers(carry)?;
+    validate_direct_frost_runtime_structure(carry)
+}
+
+fn validate_direct_frost_runtime_structure(
+    carry: &DirectFrostRuntimeCarry,
+) -> Result<(), DirectRuntimeError> {
+    let expected_fine_layer_count =
+        crate::hydrology::Wb11HydrologyKernel::diagnostic_count_to_f64(carry.fine_layers.len());
+    if carry.total_fine_layer_count.to_bits() != expected_fine_layer_count.to_bits() {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.frost_runtime_carry.total_fine_layer_count",
+        });
+    }
+    if carry.layer_shadows.is_empty() != carry.fine_layers.is_empty() {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.frost_runtime_carry.layer_shadow.layer_index",
+        });
+    }
+    if carry
+        .layer_shadows
+        .windows(2)
+        .any(|pair| pair[0].layer_index >= pair[1].layer_index)
+    {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.frost_runtime_carry.layer_shadow.layer_index",
+        });
+    }
+    let mut prior: Option<(usize, usize)> = None;
+    for fine in &carry.fine_layers {
+        if !carry.layer_shadows.is_empty()
+            && carry
+                .layer_shadows
+                .binary_search_by_key(&fine.layer_index, |layer| layer.layer_index)
+                .is_err()
+        {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "constructor.frost_runtime_carry.fine_layer.layer_index",
+            });
+        }
+        let expected_fine_index = match prior {
+            Some((layer_index, fine_index)) if layer_index == fine.layer_index => fine_index
+                .checked_add(1)
+                .ok_or(DirectRuntimeError::DirectDomainViolation {
+                    field: "constructor.frost_runtime_carry.fine_layer.fine_index",
+                })?,
+            Some((layer_index, _)) if layer_index < fine.layer_index => 1,
+            None => 1,
+            _ => {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "constructor.frost_runtime_carry.fine_layer.layer_index",
+                });
+            }
+        };
+        if fine.fine_index != expected_fine_index {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "constructor.frost_runtime_carry.fine_layer.fine_index",
+            });
+        }
+        prior = Some((fine.layer_index, fine.fine_index));
+    }
+    if carry.layer_shadows.iter().any(|layer| {
+        !carry
+            .fine_layers
+            .iter()
+            .any(|fine| fine.layer_index == layer.layer_index)
+    }) {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.frost_runtime_carry.layer_shadow.layer_index",
+        });
+    }
+    Ok(())
+}
+
+/// Validate the complete persisted winter domain before a production lane is consumed.
+pub(crate) fn validate_direct_production_winter_lane_domain(
+    lane: &DirectLaneFrame,
+) -> Result<(), DirectRuntimeError> {
+    validate_direct_snow_lane_state("constructor.winter_column.snow", &lane.winter_column.snow)?;
+    if let Some(carry) = &lane.snow_runtime_carry {
+        validate_direct_snow_runtime_carry(carry)?;
+    }
+    validate_direct_frost_runtime_carry(&lane.winter_column.frost.clone().into())?;
+    if let Some(carry) = &lane.frost_runtime_carry {
+        validate_direct_frost_runtime_carry(carry)?;
+    }
+    Ok(())
 }
 
 fn validate_direct_frost_runtime_scalar_carry(

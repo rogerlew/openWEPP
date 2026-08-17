@@ -166,12 +166,12 @@ pub fn validate_water_use(operands: WaterUseOperands) -> Result<(), LandSurfaceE
         || operands.authorization_kg_m2 > operands.request_kg_m2
         || operands.finalized_use_kg_m2 > operands.authorization_kg_m2
     {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound("D/A/F"));
+        return Err(LandSurfaceEnergyError::water_bound("D/A/F"));
     }
     let reconstructed = operands.beginning_store_kg_m2 - operands.finalized_use_kg_m2
         + operands.condensation_credit_kg_m2;
     if reconstructed != operands.ending_pre_ingress_store_kg_m2 {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_closure(
             "pre_ingress_source_mass_closure",
         ));
     }
@@ -430,7 +430,7 @@ mod tests {
         .expect_err("ending store exposes substituted authorization");
         assert_eq!(
             error,
-            LandSurfaceEnergyError::WaterIdentityOrBound("pre_ingress_source_mass_closure")
+            LandSurfaceEnergyError::water_closure("pre_ingress_source_mass_closure")
         );
     }
 

@@ -169,6 +169,12 @@ mod runoff;
 mod storage;
 mod subhourly_generation;
 mod subsurface;
+pub(crate) use subsurface::apply_direct_same_pass_infiltration;
+mod surface_liquid_attachment;
+mod surface_liquid_closure;
+mod surface_liquid_ingress;
+mod surface_liquid_owner;
+mod surface_liquid_wb14;
 
 pub use decomposition::{
     DirectDecompositionAction, DirectDecompositionActiveContext,
@@ -371,6 +377,40 @@ pub use subsurface::{
     DirectSubsurfaceComputeShadowProjection, DirectSubsurfaceComputeSpanReport,
     DirectSubsurfaceComputeState, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
 };
+pub(crate) use surface_liquid_attachment::{
+    SurfaceLiquidFrameDomainViolation, SurfaceLiquidFrameIdentityMismatch,
+    first_invalid_surface_liquid_production_lane, first_surface_liquid_frame_identity_mismatch,
+    surface_liquid_attachment_error, surface_liquid_attachment_hashes,
+    surface_liquid_configuration_context, surface_liquid_raw_snapshot_attempt_sha256,
+    surface_liquid_raw_snapshot_sha256, surface_liquid_state_context,
+    validate_surface_liquid_frame_identities,
+};
+pub use surface_liquid_closure::{
+    DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidParcelClosureOperands,
+    DirectSurfaceLiquidStoreClosureOperands,
+};
+pub(crate) use surface_liquid_ingress::preflight_surface_liquid_ingress_input_identities;
+pub use surface_liquid_ingress::{
+    DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
+    DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidIngressInput,
+    DirectSurfaceLiquidIngressLedger, DirectSurfaceLiquidParcelKind,
+    DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidReceiptDisposition,
+    DirectSurfaceLiquidReceiptRecipient, DirectTileGroundIngress, execute_surface_liquid_ingress,
+};
+pub use surface_liquid_owner::{
+    DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
+    DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidContinuationState,
+    DirectSurfaceLiquidError, DirectSurfaceLiquidErrorCode, DirectSurfaceLiquidErrorContext,
+    DirectSurfaceLiquidFailure, DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidOwnedState,
+    DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
+    DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
+    apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
+};
+pub(crate) use surface_liquid_owner::{
+    DirectSurfaceLiquidClosureUnit, checked_surface_liquid_add, checked_surface_liquid_close,
+    checked_surface_liquid_div, checked_surface_liquid_mul, checked_surface_liquid_sub,
+    checked_surface_liquid_sum,
+};
 
 include!("direct_runtime/00_core_frames.rs");
 include!("direct_runtime/01_publication.rs");
@@ -532,6 +572,17 @@ mod cqr_row9_direct_runtime_tests {
 
     fn row9_frost_carry() -> DirectFrostRuntimeCarry {
         let mut frost = DirectFrostRuntimeCarry::from(DirectFrostLaneState::zero());
+        frost.total_fine_layer_count = 1.0;
+        frost.layer_shadows = vec![DirectFrostLayerShadowCarry {
+            layer_index: 1,
+            st_m: 0.0,
+            soil_water_m: 0.0,
+            frozen_depth_m: 0.0,
+            frozen_water_m: 0.0,
+            soilf_m: 0.0,
+            yst_m: 0.0,
+            nwfrzz_m: 0.0,
+        }];
         frost.fine_layers = vec![DirectFrostFineLayerCarry {
             layer_index: 1,
             fine_index: 1,
@@ -756,7 +807,7 @@ mod cqr_row9_direct_runtime_tests {
         populated_day.subsurface_compute_inputs.layers = vec![row9_layer_inputs(&layer)];
         populated_day.frost_layer_carry_projection = Some(vec![DirectFrostLayerCarryProjection {
             layer_index: 1,
-            fine_layer_count: 2,
+            fine_layer_count: 1,
             fine_layer_thickness_m: 0.05,
         }]);
         populated_day.snow_runtime_carry = Some(Box::new(row9_snow_carry()));

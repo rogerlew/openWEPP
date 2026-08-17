@@ -1,0 +1,36 @@
+command: cargo clippy --workspace --all-targets --all-features -- -D warnings
+start_utc: 2026-08-15T06:57:28Z
+cwd: /home/workdir/openWEPP
+commit: 4c7b64237
+command_index: 03
+tmp_workdir: /tmp/ow-nextest-openwepp-20260814-5
+rustc_version: rustc 1.92.0 (ded5c06cf 2025-12-08)
+cargo_version: cargo 1.92.0 (344c4567c 2025-10-21)
+    Checking openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+    Checking openwepp-meteorology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-meteorology)
+    Checking openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+    Checking openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+    Checking openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/workdir/openWEPP/crates/openwepp-land-surface-energy)
+    Checking openwepp-biogeochemistry v0.1.0 (/home/workdir/openWEPP/crates/openwepp-biogeochemistry)
+    Checking openwepp-vegetation v0.1.0 (/home/workdir/openWEPP/crates/openwepp-vegetation)
+    Checking openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+    Checking openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+error: this function has too many lines (110/100)
+    --> tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs:1299:1
+     |
+1299 | fn independent_real_receiver_equations_reject_layer_and_enthalpy_poisons() {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+     = note: `-D clippy::too-many-lines` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: could not compile `openwepp` (test "land_surface_energy_real_hydrology_shadow_contract") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+Command exited with non-zero status 101
+elapsed_sec=31.54 user_sec=106.43 sys_sec=21.57
+exit_code: 101

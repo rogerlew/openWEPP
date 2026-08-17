@@ -1,0 +1,13 @@
+command: TMPDIR="/tmp/ow-nextest-openwepp-20260814-5" cargo nextest run --profile quick --test surface_liquid_hydrology_custody_authority_contract --test land_surface_energy_real_hydrology_shadow_contract
+start_utc: 2026-08-15T07:38:05Z
+cwd: /home/workdir/openWEPP
+attempt: retry
+tmp_workdir: /tmp/ow-nextest-openwepp-20260814-5
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+────────────
+ Nextest run ID 79afd2cd-7fe6-4104-8a19-5755ee33a748 with nextest profile: quick
+    Starting 28 tests across 2 binaries
+────────────
+     Summary [   0.074s] 28 tests run: 28 passed, 0 skipped
+elapsed_sec=0.75 user_sec=0.79 sys_sec=0.41
+exit_code: 0

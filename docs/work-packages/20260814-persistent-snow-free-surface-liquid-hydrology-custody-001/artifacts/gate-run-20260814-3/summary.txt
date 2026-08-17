@@ -1,0 +1,15 @@
+run_summary
+fmt=0
+diff=0
+clippy=0
+nextest_full=100
+doctest=0
+deny=0
+focused_surface=0
+focused_lse=0
+focused_balance=0
+focused_auth11=0
+focused_advisory=0
+benchmark_selected=false
+benchmark_reason=no frozen benchmark command found in package declaration
+log_dir=/home/workdir/openWEPP/docs/work-packages/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001/artifacts/gate-run-20260814-3

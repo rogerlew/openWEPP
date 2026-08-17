@@ -1,6 +1,6 @@
 # Execute Snow-Free Land-Surface and Real-Hydrology Integration
 
-Status: `executed-hold / Children 1-2 complete / Child 3 blocked on real surface-liquid custody`
+Status: `executing / Children 1-2 complete / Child 3 resumed after custody lift`
 
 Date: `2026-08-14`
 
@@ -100,3 +100,10 @@ condensation credit, capacity/infiltration/runoff joins and atomic rollback.
 Child 3 then resumes in place. Child 4 has not started, campaign-wide heavy
 gates and terminal verification have not run, and no campaign completion or
 production claim is made.
+
+## Resume disposition
+
+The named dependency closed at `a7d692da4` with dual terminal PASS. The
+historical campaign and Child-3 HOLD records above remain immutable; active
+lifecycle now resumes Child 3 in place. Child 4, campaign heavy gates and
+terminal verification remain pending.

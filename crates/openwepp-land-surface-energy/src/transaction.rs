@@ -13,8 +13,11 @@ use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, Transaction
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    AIR_HEAT_CAPACITY_J_KG_K, AcceptedOpenSurface, ComponentId, CoveredColumnCandidate,
-    CoveredColumnInputs, CoveredColumnSolveOutcome, CoveredWaterCaps, DRY_AIR_GAS_CONSTANT_J_KG_K,
+    AIR_HEAT_CAPACITY_J_KG_K, AcceptedOpenSurface, ComponentId, CondensationCredit,
+    CoveredCanopyAirEnergyOperands, CoveredColumnCandidate, CoveredColumnEnergyOperands,
+    CoveredColumnInputs, CoveredColumnLongwaveOperands, CoveredColumnShortwaveOperands,
+    CoveredColumnSolveOutcome, CoveredOccupancyEnergyOperands, CoveredOccupancyLiquidLedger,
+    CoveredSurfaceEnergyOperands, CoveredWaterCaps, DRY_AIR_GAS_CONSTANT_J_KG_K,
     DiagnosticFailureKind, GroundHeatJoinOperands, GroundWaterKey, LandSurfaceEnergyError,
     LandSurfaceEnergyState, LatentJoinOperands, MODEL_DEFINITION_SHA256, MODEL_VERSION,
     NormalizedResidual, NumericalDiagnostics, NumericalFailure, NumericalFailureCode,
@@ -22,8 +25,9 @@ use crate::{
     OwnerEnvelopeIdentity, OwnerKind, OwnerRollbackHash, RequestingComponent, ResidualUnit,
     Sha256Digest, SoilThermalSnapshot, SolveIdentity, SolvePass, SourceId, SourceWaterCap,
     StandGroundWaterAmountBasis, StepNorms, SurfaceClass, SurfaceClassKind, SurfaceEnergyOperands,
-    SurfaceId, TileState, WaterAmount, WaterAuthorization, WaterProtocol, WaterSourceType,
-    canonical_digest, liquid_enthalpy_j_kg, solve_covered_column, solve_open_surface,
+    SurfaceId, TileState, VEGETATION_MODEL_DEFINITION_SHA256, VEGETATION_MODEL_VERSION,
+    WaterAmount, WaterAuthorization, WaterProtocol, WaterSourceType, canonical_digest,
+    liquid_enthalpy_j_kg, solve_covered_column, solve_open_surface,
     under_canopy_neutral_resistance, validate_ground_heat_join, validate_latent_join,
     validate_surface_energy,
 };
@@ -70,7 +74,7 @@ impl RuntimeTileIdentity {
         match self.ground_source_type {
             WaterSourceType::SoilLayerLiquid => {
                 if self.ground_source_tile_id.is_some() || self.ground_soil_layer_id.is_none() {
-                    return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                    return Err(LandSurfaceEnergyError::water_identity(
                         "ground soil source identity",
                     ));
                 }
@@ -79,7 +83,7 @@ impl RuntimeTileIdentity {
                 if self.ground_source_tile_id.as_ref() != Some(&self.tile_id)
                     || self.ground_soil_layer_id.is_some()
                 {
-                    return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+                    return Err(LandSurfaceEnergyError::water_identity(
                         "ground tile source identity",
                     ));
                 }
@@ -110,6 +114,9 @@ impl RuntimeTileIdentity {
 #[derive(Clone, Debug, PartialEq)]
 pub struct RootRuntimeIdentity {
     pub solver_occupancy_id: String,
+    /// Vegetation owner that issued this root withdrawal. This is deliberately
+    /// distinct from the LSE owner carried by [`RuntimeTileIdentity`].
+    pub requesting_owner_id: ResourceOwnerId,
     pub occupancy_id: ComponentId,
     pub layer_id: SoilLayerId,
     pub source_id: SourceId,
@@ -131,20 +138,52 @@ pub struct PotentialWaterRequestBatch {
 }
 
 impl PotentialWaterRequestBatch {
+    pub fn try_new(
+        transaction_id: TransactionId,
+        beginning_lse_state_sha256: Sha256Digest,
+        requests: Vec<WaterAmount>,
+    ) -> Result<Self, LandSurfaceEnergyError> {
+        let potential_signature_sha256 = canonical_digest(&PotentialSignature {
+            transaction_id,
+            beginning_lse_state_sha256: &beginning_lse_state_sha256,
+            requests: &requests,
+        })?;
+        let batch = Self {
+            transaction_id,
+            beginning_lse_state_sha256,
+            requests,
+            potential_signature_sha256,
+        };
+        batch.validate()?;
+        Ok(batch)
+    }
+
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
-        if self.transaction_id.0 == 0 || self.requests.is_empty() {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        if self.transaction_id.0 == 0 {
+            return Err(LandSurfaceEnergyError::water_identity(
+                "empty or zero-transaction potential request batch",
+            ));
+        }
+        if self.requests.is_empty() {
+            return Err(LandSurfaceEnergyError::water_cardinality(
                 "empty or zero-transaction potential request batch",
             ));
         }
         let mut keys = BTreeSet::new();
         for request in &self.requests {
             request.key.validate(self.transaction_id)?;
-            if !request.amount_kg_m2_stand_ground.is_finite()
-                || request.amount_kg_m2_stand_ground < 0.0
-                || !keys.insert(request.key.clone())
-            {
-                return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            if !request.amount_kg_m2_stand_ground.is_finite() {
+                return Err(LandSurfaceEnergyError::NonFinite(
+                    "invalid or duplicate potential request",
+                ));
+            }
+            if request.amount_kg_m2_stand_ground < 0.0 {
+                return Err(LandSurfaceEnergyError::water_bound(
+                    "invalid or duplicate potential request",
+                ));
+            }
+            if !keys.insert(request.key.clone()) {
+                return Err(LandSurfaceEnergyError::water_cardinality(
                     "invalid or duplicate potential request",
                 ));
             }
@@ -195,8 +234,14 @@ pub fn solve_open_potential_phase(
     }
     let accepted = match solve_open_surface(beginning, None, initial_trial)? {
         OpenSurfaceSolveOutcome::Accepted(value) => value,
-        OpenSurfaceSolveOutcome::Rejected(_) => {
-            return Err(LandSurfaceEnergyError::NumericalAcceptedResidual);
+        OpenSurfaceSolveOutcome::Rejected(failure) => {
+            return Err(numerical_failure_error(
+                &identity,
+                SolvePass::Potential,
+                SolveIdentity::SurfaceEnergy,
+                &failure,
+                Vec::new(),
+            )?);
         }
     };
     let requests = vec![WaterAmount {
@@ -229,13 +274,169 @@ pub struct CoveredPotentialPhase {
     beginning: CoveredColumnInputs,
     pub accepted: Box<CoveredColumnCandidate>,
     pub request_batch: PotentialWaterRequestBatch,
+    pub potential_vegetation_operands: PotentialCoveredVegetationOperands,
     root_identities: BTreeMap<(String, String), RootRuntimeIdentity>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+pub enum CoveredVegetationOperandPass {
+    Potential,
+    FixedAuthorizationFinal,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum SealedCoveredVegetationOperands {
+    Potential,
+    FixedAuthorizationFinal,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct PotentialCoveredOccupancyCarbonOperands {
+    pub occupancy_id: ComponentId,
+    pub sun_leaf_area_m2_m2_tile_ground: f64,
+    pub shade_leaf_area_m2_m2_tile_ground: f64,
+    pub sun_gross_assimilation_umol_co2_m2_leaf_s: f64,
+    pub shade_gross_assimilation_umol_co2_m2_leaf_s: f64,
+    pub sun_net_assimilation_umol_co2_m2_leaf_s: f64,
+    pub shade_net_assimilation_umol_co2_m2_leaf_s: f64,
+    pub sun_dark_respiration_umol_co2_m2_leaf_s: f64,
+    pub shade_dark_respiration_umol_co2_m2_leaf_s: f64,
+    pub liquid: CoveredOccupancyLiquidLedger,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct PotentialCoveredVegetationOperands {
+    pub pass: CoveredVegetationOperandPass,
+    pub transaction_id: TransactionId,
+    pub vegetation_model_version: &'static str,
+    pub vegetation_model_definition_sha256: &'static str,
+    pub lse_configuration_sha256: Sha256Digest,
+    pub beginning_lse_state_sha256: Sha256Digest,
+    pub vegetation_owner_id: ResourceOwnerId,
+    pub ofe_id: OfeId,
+    pub tile_id: TileId,
+    pub tile_fraction: f64,
+    pub interval_s: f64,
+    pub canopy_air_temperature_k: f64,
+    pub canopy_air_specific_humidity_kg_kg: f64,
+    pub top_rain_kg_m2_tile_ground: f64,
+    pub ground_canopy_release_kg_m2_tile_ground: f64,
+    pub ground_stemflow_kg_m2_tile_ground: f64,
+    pub occupancies: Vec<PotentialCoveredOccupancyCarbonOperands>,
+    #[serde(skip)]
+    payload_sha256: Sha256Digest,
+    #[serde(skip)]
+    seal: SealedCoveredVegetationOperands,
+}
+
+impl PotentialCoveredVegetationOperands {
+    pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+        if self.pass != CoveredVegetationOperandPass::Potential
+            || self.seal != SealedCoveredVegetationOperands::Potential
+            || self.transaction_id.0 == 0
+            || self.vegetation_model_version != VEGETATION_MODEL_VERSION
+            || self.vegetation_model_definition_sha256 != VEGETATION_MODEL_DEFINITION_SHA256
+        {
+            return Err(LandSurfaceEnergyError::Identity {
+                field: "potential vegetation operand identity",
+                expected: "sealed OPENWEPP_C3_WOODY_V8 potential pass".into(),
+                found: "mismatch".into(),
+            });
+        }
+        if canonical_digest(self)? != self.payload_sha256 {
+            return Err(LandSurfaceEnergyError::Identity {
+                field: "potential vegetation operand digest",
+                expected: self.payload_sha256.to_string(),
+                found: canonical_digest(self)?.to_string(),
+            });
+        }
+        if !self.tile_fraction.is_finite()
+            || self.tile_fraction <= 0.0
+            || self.tile_fraction > 1.0
+            || !self.interval_s.is_finite()
+            || self.interval_s <= 0.0
+            || !(200.0..=350.0).contains(&self.canopy_air_temperature_k)
+            || !(0.0..=0.1).contains(&self.canopy_air_specific_humidity_kg_kg)
+            || !self.top_rain_kg_m2_tile_ground.is_finite()
+            || self.top_rain_kg_m2_tile_ground < 0.0
+            || !self.ground_canopy_release_kg_m2_tile_ground.is_finite()
+            || self.ground_canopy_release_kg_m2_tile_ground < 0.0
+            || !self.ground_stemflow_kg_m2_tile_ground.is_finite()
+            || self.ground_stemflow_kg_m2_tile_ground < 0.0
+            || self.occupancies.is_empty()
+        {
+            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "potential vegetation shared operand",
+            ));
+        }
+        let mut identities = BTreeSet::new();
+        let mut expected_incident = self.top_rain_kg_m2_tile_ground;
+        let mut stemflow = 0.0;
+        for occupancy in &self.occupancies {
+            if !identities.insert(occupancy.occupancy_id.clone()) {
+                return Err(LandSurfaceEnergyError::topology_cardinality(
+                    "duplicate potential vegetation occupancy",
+                ));
+            }
+            let values = [
+                occupancy.sun_leaf_area_m2_m2_tile_ground,
+                occupancy.shade_leaf_area_m2_m2_tile_ground,
+                occupancy.sun_gross_assimilation_umol_co2_m2_leaf_s,
+                occupancy.shade_gross_assimilation_umol_co2_m2_leaf_s,
+                occupancy.sun_net_assimilation_umol_co2_m2_leaf_s,
+                occupancy.shade_net_assimilation_umol_co2_m2_leaf_s,
+                occupancy.sun_dark_respiration_umol_co2_m2_leaf_s,
+                occupancy.shade_dark_respiration_umol_co2_m2_leaf_s,
+            ];
+            if values.iter().any(|value| !value.is_finite()) {
+                return Err(LandSurfaceEnergyError::NonFinite(
+                    "potential vegetation carbon operand",
+                ));
+            }
+            occupancy.liquid.validate()?;
+            if occupancy.liquid.pass != crate::CoveredLiquidPass::Potential {
+                return Err(LandSurfaceEnergyError::StateLineage(
+                    "potential vegetation liquid pass",
+                ));
+            }
+            if occupancy.liquid.incident_rain_kg_m2_tile.to_bits() != expected_incident.to_bits() {
+                return Err(LandSurfaceEnergyError::water_closure(
+                    "potential vegetation liquid routing",
+                ));
+            }
+            expected_incident = occupancy.liquid.throughfall_kg_m2_tile
+                + occupancy.liquid.initial_drainage_kg_m2_tile
+                + occupancy.liquid.second_drainage_kg_m2_tile;
+            stemflow += occupancy.liquid.stemflow_kg_m2_tile;
+            if values[0] < 0.0
+                || values[1] < 0.0
+                || values[2] < 0.0
+                || values[3] < 0.0
+                || values[6] < 0.0
+                || values[7] < 0.0
+                || values[4].to_bits() != (values[2] - values[6]).to_bits()
+                || values[5].to_bits() != (values[3] - values[7]).to_bits()
+            {
+                return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                    "potential vegetation carbon operand",
+                ));
+            }
+        }
+        if expected_incident.to_bits() != self.ground_canopy_release_kg_m2_tile_ground.to_bits()
+            || stemflow.to_bits() != self.ground_stemflow_kg_m2_tile_ground.to_bits()
+        {
+            return Err(LandSurfaceEnergyError::water_closure(
+                "potential vegetation ground liquid routing",
+            ));
+        }
+        Ok(())
+    }
 }
 
 fn root_key(tile: &RuntimeTileIdentity, root: &RootRuntimeIdentity) -> GroundWaterKey {
     GroundWaterKey {
         transaction_id: tile.transaction_id,
-        requesting_owner_id: tile.lse_owner_id.clone(),
+        requesting_owner_id: root.requesting_owner_id.clone(),
         requesting_component: RequestingComponent::VegetationRoot,
         ofe_id: tile.ofe_id.clone(),
         requesting_tile_id: tile.tile_id.clone(),
@@ -250,6 +451,7 @@ fn root_key(tile: &RuntimeTileIdentity, root: &RootRuntimeIdentity) -> GroundWat
     }
 }
 
+#[allow(clippy::too_many_lines)]
 pub fn solve_covered_potential_phase(
     identity: RuntimeTileIdentity,
     beginning: &CoveredColumnInputs,
@@ -268,12 +470,33 @@ pub fn solve_covered_potential_phase(
     }
     let accepted = match solve_covered_column(beginning, None, initial_trial)? {
         CoveredColumnSolveOutcome::Accepted(value) => value,
-        CoveredColumnSolveOutcome::Rejected(_) => {
-            return Err(LandSurfaceEnergyError::NumericalAcceptedResidual);
+        CoveredColumnSolveOutcome::Rejected(failure) => {
+            return Err(numerical_failure_error(
+                &identity,
+                SolvePass::Potential,
+                SolveIdentity::JointCanopyGround,
+                &failure,
+                Vec::new(),
+            )?);
         }
     };
     let mut identities = BTreeMap::new();
+    let mut vegetation_owner = None;
     for root in roots {
+        if root.requesting_owner_id == identity.lse_owner_id {
+            return Err(LandSurfaceEnergyError::water_identity(
+                "vegetation root owner aliases land-surface-energy owner",
+            ));
+        }
+        if vegetation_owner
+            .as_ref()
+            .is_some_and(|owner| owner != &root.requesting_owner_id)
+        {
+            return Err(LandSurfaceEnergyError::water_identity(
+                "mixed vegetation root owners",
+            ));
+        }
+        vegetation_owner = Some(root.requesting_owner_id.clone());
         let key = (
             root.solver_occupancy_id.clone(),
             root.layer_id.as_str().to_owned(),
@@ -281,7 +504,7 @@ pub fn solve_covered_potential_phase(
         if root.source_id.as_str() != root.layer_id.as_str()
             || identities.insert(key, root).is_some()
         {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            return Err(LandSurfaceEnergyError::water_cardinality(
                 "duplicate or aliased root source identity",
             ));
         }
@@ -292,7 +515,7 @@ pub fn solve_covered_potential_phase(
         .map(|row| (row.occupancy_id.clone(), row.layer_id.clone()))
         .collect();
     if expected != identities.keys().cloned().collect() {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_cardinality(
             "root identity set mismatch",
         ));
     }
@@ -300,7 +523,7 @@ pub fn solve_covered_potential_phase(
     for row in &accepted.root_water {
         let key = identities
             .get(&(row.occupancy_id.clone(), row.layer_id.clone()))
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            .ok_or(LandSurfaceEnergyError::water_cardinality(
                 "missing root identity",
             ))?;
         requests.push(WaterAmount {
@@ -324,11 +547,79 @@ pub fn solve_covered_potential_phase(
         potential_signature_sha256: signature,
     };
     request_batch.validate()?;
+    let vegetation_owner_id = identities
+        .values()
+        .next()
+        .ok_or(LandSurfaceEnergyError::water_cardinality(
+            "missing potential vegetation owner",
+        ))?
+        .requesting_owner_id
+        .clone();
+    let mut carbon_operands = Vec::with_capacity(beginning.occupancies.len());
+    for (input, evaluation) in beginning
+        .occupancies
+        .iter()
+        .zip(&accepted.evaluation.occupancies)
+    {
+        let runtime = identities
+            .iter()
+            .find_map(|((solver_occupancy, _), runtime)| {
+                (solver_occupancy == &input.occupancy_id).then_some(runtime)
+            })
+            .ok_or(LandSurfaceEnergyError::water_identity(
+                "missing potential vegetation occupancy identity",
+            ))?;
+        carbon_operands.push(PotentialCoveredOccupancyCarbonOperands {
+            occupancy_id: runtime.occupancy_id.clone(),
+            sun_leaf_area_m2_m2_tile_ground: input.sun.leaf_area_m2_m2_tile,
+            shade_leaf_area_m2_m2_tile_ground: input.shade.leaf_area_m2_m2_tile,
+            sun_gross_assimilation_umol_co2_m2_leaf_s: evaluation
+                .gross_assimilation_umol_co2_m2_leaf_s[0],
+            shade_gross_assimilation_umol_co2_m2_leaf_s: evaluation
+                .gross_assimilation_umol_co2_m2_leaf_s[1],
+            sun_net_assimilation_umol_co2_m2_leaf_s: evaluation.net_assimilation_umol_co2_m2_leaf_s
+                [0],
+            shade_net_assimilation_umol_co2_m2_leaf_s: evaluation
+                .net_assimilation_umol_co2_m2_leaf_s[1],
+            sun_dark_respiration_umol_co2_m2_leaf_s: evaluation.dark_respiration_umol_co2_m2_leaf_s
+                [0],
+            shade_dark_respiration_umol_co2_m2_leaf_s: evaluation
+                .dark_respiration_umol_co2_m2_leaf_s[1],
+            liquid: evaluation.liquid,
+        });
+    }
+    let mut potential_vegetation_operands = PotentialCoveredVegetationOperands {
+        pass: CoveredVegetationOperandPass::Potential,
+        transaction_id: identity.transaction_id,
+        vegetation_model_version: VEGETATION_MODEL_VERSION,
+        vegetation_model_definition_sha256: VEGETATION_MODEL_DEFINITION_SHA256,
+        lse_configuration_sha256: identity.configuration_sha256.clone(),
+        beginning_lse_state_sha256: identity.beginning_lse_state_sha256.clone(),
+        vegetation_owner_id,
+        ofe_id: identity.ofe_id.clone(),
+        tile_id: identity.tile_id.clone(),
+        tile_fraction: identity.tile_fraction,
+        interval_s: identity.interval_s,
+        canopy_air_temperature_k: accepted.evaluation.canopy_air_temperature_k,
+        canopy_air_specific_humidity_kg_kg: accepted.evaluation.canopy_air_specific_humidity_kg_kg,
+        top_rain_kg_m2_tile_ground: beginning.top_rain_kg_m2_tile,
+        ground_canopy_release_kg_m2_tile_ground: accepted
+            .evaluation
+            .ground_canopy_release_kg_m2_tile,
+        ground_stemflow_kg_m2_tile_ground: accepted.evaluation.ground_stemflow_kg_m2_tile,
+        occupancies: carbon_operands,
+        payload_sha256: identity.beginning_lse_state_sha256.clone(),
+        seal: SealedCoveredVegetationOperands::Potential,
+    };
+    potential_vegetation_operands.payload_sha256 =
+        canonical_digest(&potential_vegetation_operands)?;
+    potential_vegetation_operands.validate()?;
     Ok(CoveredPotentialPhase {
         identity,
         beginning: beginning.clone(),
         accepted,
         request_batch,
+        potential_vegetation_operands,
         root_identities: identities,
     })
 }
@@ -351,6 +642,49 @@ impl TileEnergyOperandSet {
         }
         for join in &self.ground_heat {
             validate_ground_heat_join(*join)?;
+        }
+        Ok(())
+    }
+}
+
+/// Covered-column energy receipt. The ground control volume remains the same
+/// independently reconstructed type used by the open path, while `column`
+/// makes every canopy surface and the shared canopy-air node mandatory.
+#[derive(Clone, Debug, PartialEq)]
+pub struct CoveredTileEnergyOperandSet {
+    pub ground: TileEnergyOperandSet,
+    pub column: CoveredColumnEnergyOperands,
+}
+
+impl CoveredTileEnergyOperandSet {
+    pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+        self.ground.validate()?;
+        self.column.validate()?;
+        if self.ground.surface.absorbed_shortwave_w_m2.to_bits()
+            != self
+                .column
+                .shortwave
+                .ground_absorbed_w_m2_tile
+                .total()
+                .to_bits()
+            || self.ground.surface.sensible_w_m2.to_bits()
+                != self
+                    .column
+                    .canopy_air
+                    .ground_sensible_to_canopy_air_w_m2_tile
+                    .to_bits()
+            || self.ground.surface.signed_vapor_kg_m2_s.to_bits()
+                != self
+                    .column
+                    .canopy_air
+                    .ground_vapor_to_canopy_air_kg_m2_tile_s
+                    .to_bits()
+            || self.ground.surface.net_longwave_w_m2.to_bits()
+                != self.column.longwave.ground_net_w_m2_tile.to_bits()
+        {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "covered ground/column energy join",
+            ));
         }
         Ok(())
     }
@@ -400,23 +734,35 @@ fn exact_authorization_map(
     let mut result = BTreeMap::new();
     for authorization in authorizations {
         authorization.key.validate(batch.transaction_id)?;
-        let request = requests.get(&authorization.key).ok_or(
-            LandSurfaceEnergyError::WaterIdentityOrBound("authorization without potential request"),
-        )?;
-        if !authorization.amount_kg_m2_stand_ground.is_finite()
-            || authorization.amount_kg_m2_stand_ground < 0.0
+        let request =
+            requests
+                .get(&authorization.key)
+                .ok_or(LandSurfaceEnergyError::water_cardinality(
+                    "authorization without potential request",
+                ))?;
+        if !authorization.amount_kg_m2_stand_ground.is_finite() {
+            return Err(LandSurfaceEnergyError::NonFinite(
+                "invalid or duplicate fixed authorization",
+            ));
+        }
+        if authorization.amount_kg_m2_stand_ground < 0.0
             || authorization.amount_kg_m2_stand_ground > *request
-            || result
-                .insert(authorization.key.clone(), authorization)
-                .is_some()
         {
-            return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+            return Err(LandSurfaceEnergyError::water_bound(
+                "invalid or duplicate fixed authorization",
+            ));
+        }
+        if result
+            .insert(authorization.key.clone(), authorization)
+            .is_some()
+        {
+            return Err(LandSurfaceEnergyError::water_cardinality(
                 "invalid or duplicate fixed authorization",
             ));
         }
     }
     if result.len() != requests.len() {
-        return Err(LandSurfaceEnergyError::WaterIdentityOrBound(
+        return Err(LandSurfaceEnergyError::water_cardinality(
             "incomplete fixed authorization set",
         ));
     }
@@ -524,8 +870,10 @@ fn accepted_diagnostics(
 
 pub fn rejected_numerical_diagnostics(
     identity: &RuntimeTileIdentity,
+    pass: SolvePass,
     solve: SolveIdentity,
     failure: &NumericalFailure,
+    active_water_caps: Vec<GroundWaterKey>,
 ) -> Result<NumericalDiagnostics, LandSurfaceEnergyError> {
     let failure_kind = match failure.kind {
         NumericalFailureKind::SingularPivot => DiagnosticFailureKind::SingularPivot,
@@ -555,7 +903,7 @@ pub fn rejected_numerical_diagnostics(
         ofe_id: identity.ofe_id.clone(),
         tile_id: identity.tile_id.clone(),
         occupancy_id: None,
-        pass: SolvePass::FinalFixedCap,
+        pass,
         solve,
         accepted: false,
         failure_code: Some(NumericalFailureCode::LsebE034),
@@ -563,15 +911,9 @@ pub fn rejected_numerical_diagnostics(
         iterations: failure.iterations,
         backtracking_count: failure.backtracking_count,
         ordered_residuals: normalized,
-        step_norms: StepNorms {
-            temperature_k: failure.step_norm,
-            humidity_kg_kg: None,
-            ci_pa: None,
-            hydraulic_mm: None,
-            beta: None,
-        },
+        step_norms: failure.step_norms.clone(),
         active_bounds: Vec::new(),
-        active_water_caps: Vec::new(),
+        active_water_caps,
         bracket: None,
         pivot_magnitude: failure.pivot_magnitude,
         matrix_infinity_norm: failure.matrix_norm,
@@ -581,17 +923,54 @@ pub fn rejected_numerical_diagnostics(
     Ok(diagnostics)
 }
 
+fn numerical_failure_error(
+    identity: &RuntimeTileIdentity,
+    pass: SolvePass,
+    solve: SolveIdentity,
+    failure: &NumericalFailure,
+    active_water_caps: Vec<GroundWaterKey>,
+) -> Result<LandSurfaceEnergyError, LandSurfaceEnergyError> {
+    let diagnostics = Box::new(rejected_numerical_diagnostics(
+        identity,
+        pass,
+        solve,
+        failure,
+        active_water_caps,
+    )?);
+    Ok(match failure.kind {
+        NumericalFailureKind::SingularPivot => {
+            let pivot = failure
+                .pivot_magnitude
+                .ok_or(LandSurfaceEnergyError::OwnerEnvelope(
+                    "singular failure missing pivot evidence",
+                ))?;
+            let matrix_norm = failure
+                .matrix_norm
+                .ok_or(LandSurfaceEnergyError::OwnerEnvelope(
+                    "singular failure missing matrix evidence",
+                ))?;
+            LandSurfaceEnergyError::NumericalSingular {
+                pivot,
+                matrix_norm,
+                diagnostics,
+            }
+        }
+        NumericalFailureKind::BacktrackingLimit => {
+            LandSurfaceEnergyError::NumericalBacktrackingLimit { diagnostics }
+        }
+        NumericalFailureKind::IterationLimit => {
+            LandSurfaceEnergyError::NumericalIterationLimit { diagnostics }
+        }
+    })
+}
+
 pub fn validate_five_owner_envelope(
     identity: &OwnerEnvelopeIdentity,
     expected_configuration_sha256: &Sha256Digest,
 ) -> Result<(), LandSurfaceEnergyError> {
-    identity.validate()?;
-    if &identity.lse_configuration_sha256 != expected_configuration_sha256 {
-        return Err(LandSurfaceEnergyError::OwnerEnvelope(
-            "five-owner LSE configuration mismatch",
-        ));
-    }
-    Ok(())
+    identity
+        .validate_identity_stage_with_expected_configuration(Some(expected_configuration_sha256))?;
+    identity.validate_after_identity_stage()
 }
 
 fn build_energy_and_soil(
@@ -702,7 +1081,7 @@ pub fn finalize_open_phase(
         exact_authorization_map(&phase.request_batch, vec![authorization.clone()])?;
     let fixed = authorizations
         .remove(&phase.request_batch.requests[0].key)
-        .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        .ok_or(LandSurfaceEnergyError::water_cardinality(
             "missing exact ground authorization",
         ))?;
     let cap_rate = fixed.amount_kg_m2_stand_ground
@@ -711,8 +1090,14 @@ pub fn finalize_open_phase(
     let final_value =
         match solve_open_surface(&phase.beginning, Some(cap_rate), final_initial_trial)? {
             OpenSurfaceSolveOutcome::Accepted(value) => value,
-            OpenSurfaceSolveOutcome::Rejected(_) => {
-                return Err(LandSurfaceEnergyError::NumericalAcceptedResidual);
+            OpenSurfaceSolveOutcome::Rejected(failure) => {
+                return Err(numerical_failure_error(
+                    &phase.identity,
+                    SolvePass::FinalFixedCap,
+                    SolveIdentity::SurfaceEnergy,
+                    &failure,
+                    vec![fixed.key.clone()],
+                )?);
             }
         };
     let finalized = WaterAmount {
@@ -728,6 +1113,14 @@ pub fn finalize_open_phase(
                 .finalized_use_kg_m2_stand_ground
         },
     };
+    let condensation_credits = condensation_credits(
+        &phase.identity,
+        final_value
+            .evaluation
+            .water
+            .condensation_credit_kg_m2_stand_ground,
+        final_value.evaluation.surface_temperature_k,
+    )?;
     let protocol = WaterProtocol {
         transaction_id: phase.identity.transaction_id,
         hydrology_owner_id: phase.identity.hydrology_owner_id.clone(),
@@ -735,7 +1128,7 @@ pub fn finalize_open_phase(
         requests: phase.request_batch.requests.clone(),
         authorizations: vec![fixed],
         finalized_uses: vec![finalized],
-        condensation_credits: Vec::new(),
+        condensation_credits,
     };
     protocol.validate()?;
     let (energy_operands, soil_thermal) =
@@ -793,9 +1186,310 @@ pub struct FinalCoveredTileCandidate {
     pub water_protocol: WaterProtocol,
     pub ending_tile_state_pre_ingress: TileState,
     pub soil_thermal: SoilThermalTileCandidate,
-    pub energy_operands: TileEnergyOperandSet,
+    pub energy_operands: CoveredTileEnergyOperandSet,
     pub diagnostics: NumericalDiagnostics,
     pub rollback_hashes: Vec<OwnerRollbackHash>,
+    /// Dependency-neutral, sealed V8 vegetation operands projected only from
+    /// the accepted fixed-cap solve. The LSE crate does not construct or
+    /// mutate a vegetation owner candidate.
+    pub vegetation_operands: AcceptedCoveredVegetationOperands,
+}
+
+/// One exact vegetation-root D/A/F row retained from the shared water
+/// protocol. Amounts use the key's stand-ground interval basis.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct AcceptedRootWaterOperands {
+    pub key: GroundWaterKey,
+    pub request_kg_m2_stand_ground: f64,
+    pub authorization_kg_m2_stand_ground: f64,
+    pub finalized_use_kg_m2_stand_ground: f64,
+}
+
+/// Accepted V8 state and carbon operands for one exact occupancy.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct AcceptedCoveredOccupancyOperands {
+    pub occupancy_id: ComponentId,
+    pub sun_leaf_area_m2_m2_tile_ground: f64,
+    pub shade_leaf_area_m2_m2_tile_ground: f64,
+    pub sun_leaf_potential_mm: f64,
+    pub shade_leaf_potential_mm: f64,
+    pub stem_potential_mm: f64,
+    pub root_node_potential_mm: f64,
+    pub beta_sun: f64,
+    pub beta_shade: f64,
+    pub sun_emax_kg_m2_tile_s: f64,
+    pub shade_emax_kg_m2_tile_s: f64,
+    pub beta_hyd: f64,
+    pub sun_leaf_temperature_k: f64,
+    pub shade_leaf_temperature_k: f64,
+    pub wet_surface_temperature_k: f64,
+    pub dry_stem_temperature_k: f64,
+    pub sun_ci_pa: f64,
+    pub shade_ci_pa: f64,
+    pub sun_gross_assimilation_umol_co2_m2_leaf_s: f64,
+    pub shade_gross_assimilation_umol_co2_m2_leaf_s: f64,
+    pub sun_net_assimilation_umol_co2_m2_leaf_s: f64,
+    pub shade_net_assimilation_umol_co2_m2_leaf_s: f64,
+    pub sun_dark_respiration_umol_co2_m2_leaf_s: f64,
+    pub shade_dark_respiration_umol_co2_m2_leaf_s: f64,
+    /// Signed accepted wet-surface phase change: positive evaporation,
+    /// negative condensation, on tile-ground interval basis.
+    pub signed_wet_phase_change_kg_m2_tile_ground: f64,
+    pub wet_phase_branch: crate::WaterBranch,
+    pub liquid: CoveredOccupancyLiquidLedger,
+    pub root_water: Vec<AcceptedRootWaterOperands>,
+}
+
+/// Complete accepted vegetation-facing payload for one covered tile.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct AcceptedCoveredVegetationOperands {
+    pub pass: CoveredVegetationOperandPass,
+    pub transaction_id: TransactionId,
+    pub vegetation_model_version: &'static str,
+    pub vegetation_model_definition_sha256: &'static str,
+    pub lse_configuration_sha256: Sha256Digest,
+    pub beginning_lse_state_sha256: Sha256Digest,
+    pub vegetation_owner_id: ResourceOwnerId,
+    pub ofe_id: OfeId,
+    pub tile_id: TileId,
+    pub tile_fraction: f64,
+    pub interval_s: f64,
+    pub canopy_air_temperature_k: f64,
+    pub canopy_air_specific_humidity_kg_kg: f64,
+    pub top_rain_kg_m2_tile_ground: f64,
+    pub ground_canopy_release_kg_m2_tile_ground: f64,
+    pub ground_stemflow_kg_m2_tile_ground: f64,
+    pub occupancies: Vec<AcceptedCoveredOccupancyOperands>,
+    #[serde(skip)]
+    payload_sha256: Sha256Digest,
+    #[serde(skip)]
+    seal: SealedCoveredVegetationOperands,
+}
+
+impl AcceptedCoveredVegetationOperands {
+    #[allow(clippy::too_many_lines)]
+    pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+        if self.pass != CoveredVegetationOperandPass::FixedAuthorizationFinal
+            || self.seal != SealedCoveredVegetationOperands::FixedAuthorizationFinal
+            || self.transaction_id.0 == 0
+        {
+            return Err(LandSurfaceEnergyError::StateLineage(
+                "invalid accepted vegetation final pass",
+            ));
+        }
+        if canonical_digest(self)? != self.payload_sha256 {
+            return Err(LandSurfaceEnergyError::Identity {
+                field: "accepted vegetation operand digest",
+                expected: self.payload_sha256.to_string(),
+                found: canonical_digest(self)?.to_string(),
+            });
+        }
+        if self.vegetation_model_version != VEGETATION_MODEL_VERSION
+            || self.vegetation_model_definition_sha256 != VEGETATION_MODEL_DEFINITION_SHA256
+        {
+            return Err(LandSurfaceEnergyError::Identity {
+                field: "accepted vegetation model",
+                expected: format!(
+                    "{VEGETATION_MODEL_VERSION}/{VEGETATION_MODEL_DEFINITION_SHA256}"
+                ),
+                found: format!(
+                    "{}/{}",
+                    self.vegetation_model_version, self.vegetation_model_definition_sha256
+                ),
+            });
+        }
+        let shared = [
+            self.tile_fraction,
+            self.interval_s,
+            self.canopy_air_temperature_k,
+            self.canopy_air_specific_humidity_kg_kg,
+            self.top_rain_kg_m2_tile_ground,
+            self.ground_canopy_release_kg_m2_tile_ground,
+            self.ground_stemflow_kg_m2_tile_ground,
+        ];
+        if shared.iter().any(|value| !value.is_finite()) {
+            return Err(LandSurfaceEnergyError::NonFinite(
+                "accepted vegetation shared operand",
+            ));
+        }
+        if !(0.0..=1.0).contains(&self.tile_fraction)
+            || self.tile_fraction == 0.0
+            || self.interval_s <= 0.0
+            || !(200.0..=350.0).contains(&self.canopy_air_temperature_k)
+            || !(0.0..=0.1).contains(&self.canopy_air_specific_humidity_kg_kg)
+            || self.top_rain_kg_m2_tile_ground < 0.0
+            || self.ground_canopy_release_kg_m2_tile_ground < 0.0
+            || self.ground_stemflow_kg_m2_tile_ground < 0.0
+            || self.occupancies.is_empty()
+        {
+            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "accepted vegetation shared operand",
+            ));
+        }
+        let mut occupancy_ids = BTreeSet::new();
+        let mut expected_incident = self.top_rain_kg_m2_tile_ground;
+        let mut stemflow = 0.0;
+        for occupancy in &self.occupancies {
+            if !occupancy_ids.insert(occupancy.occupancy_id.clone()) {
+                return Err(LandSurfaceEnergyError::topology_cardinality(
+                    "duplicate accepted vegetation occupancy",
+                ));
+            }
+            let finite = [
+                occupancy.sun_leaf_area_m2_m2_tile_ground,
+                occupancy.shade_leaf_area_m2_m2_tile_ground,
+                occupancy.sun_leaf_potential_mm,
+                occupancy.shade_leaf_potential_mm,
+                occupancy.stem_potential_mm,
+                occupancy.root_node_potential_mm,
+                occupancy.beta_sun,
+                occupancy.beta_shade,
+                occupancy.sun_emax_kg_m2_tile_s,
+                occupancy.shade_emax_kg_m2_tile_s,
+                occupancy.beta_hyd,
+                occupancy.sun_leaf_temperature_k,
+                occupancy.shade_leaf_temperature_k,
+                occupancy.wet_surface_temperature_k,
+                occupancy.dry_stem_temperature_k,
+                occupancy.sun_ci_pa,
+                occupancy.shade_ci_pa,
+                occupancy.sun_gross_assimilation_umol_co2_m2_leaf_s,
+                occupancy.shade_gross_assimilation_umol_co2_m2_leaf_s,
+                occupancy.sun_net_assimilation_umol_co2_m2_leaf_s,
+                occupancy.shade_net_assimilation_umol_co2_m2_leaf_s,
+                occupancy.sun_dark_respiration_umol_co2_m2_leaf_s,
+                occupancy.shade_dark_respiration_umol_co2_m2_leaf_s,
+                occupancy.signed_wet_phase_change_kg_m2_tile_ground,
+            ];
+            if finite.iter().any(|value| !value.is_finite()) {
+                return Err(LandSurfaceEnergyError::NonFinite(
+                    "accepted vegetation occupancy operand",
+                ));
+            }
+            occupancy.liquid.validate()?;
+            if occupancy.liquid.pass != crate::CoveredLiquidPass::FixedAuthorizationFinal {
+                return Err(LandSurfaceEnergyError::StateLineage(
+                    "accepted vegetation liquid pass",
+                ));
+            }
+            if occupancy.liquid.incident_rain_kg_m2_tile.to_bits() != expected_incident.to_bits() {
+                return Err(LandSurfaceEnergyError::water_closure(
+                    "accepted vegetation liquid routing",
+                ));
+            }
+            expected_incident = occupancy.liquid.throughfall_kg_m2_tile
+                + occupancy.liquid.initial_drainage_kg_m2_tile
+                + occupancy.liquid.second_drainage_kg_m2_tile;
+            stemflow += occupancy.liquid.stemflow_kg_m2_tile;
+            if occupancy.sun_leaf_area_m2_m2_tile_ground < 0.0
+                || occupancy.shade_leaf_area_m2_m2_tile_ground < 0.0
+                || !(0.0..=1.0).contains(&occupancy.beta_sun)
+                || !(0.0..=1.0).contains(&occupancy.beta_shade)
+                || occupancy.sun_emax_kg_m2_tile_s < 0.0
+                || occupancy.shade_emax_kg_m2_tile_s < 0.0
+                || !(0.0..=1.0).contains(&occupancy.beta_hyd)
+                || [
+                    occupancy.sun_leaf_temperature_k,
+                    occupancy.shade_leaf_temperature_k,
+                    occupancy.wet_surface_temperature_k,
+                    occupancy.dry_stem_temperature_k,
+                ]
+                .iter()
+                .any(|value| !(200.0..=350.0).contains(value))
+                || occupancy.sun_ci_pa <= 0.0
+                || occupancy.shade_ci_pa <= 0.0
+                || occupancy.sun_gross_assimilation_umol_co2_m2_leaf_s < 0.0
+                || occupancy.shade_gross_assimilation_umol_co2_m2_leaf_s < 0.0
+                || occupancy.sun_dark_respiration_umol_co2_m2_leaf_s < 0.0
+                || occupancy.shade_dark_respiration_umol_co2_m2_leaf_s < 0.0
+                || occupancy.root_water.is_empty()
+                || match occupancy.wet_phase_branch {
+                    crate::WaterBranch::Condensation => {
+                        occupancy.signed_wet_phase_change_kg_m2_tile_ground >= 0.0
+                    }
+                    crate::WaterBranch::ConstitutiveLaw
+                    | crate::WaterBranch::AuthorizationActiveOrTie => {
+                        occupancy.signed_wet_phase_change_kg_m2_tile_ground < 0.0
+                    }
+                }
+                || occupancy
+                    .signed_wet_phase_change_kg_m2_tile_ground
+                    .to_bits()
+                    != (occupancy.liquid.evaporation_kg_m2_tile
+                        - occupancy.liquid.condensation_kg_m2_tile)
+                        .to_bits()
+            {
+                return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                    "accepted vegetation occupancy operand",
+                ));
+            }
+            let maximum = occupancy.sun_emax_kg_m2_tile_s + occupancy.shade_emax_kg_m2_tile_s;
+            let expected_beta = if maximum == 0.0 {
+                1.0
+            } else {
+                (occupancy.sun_emax_kg_m2_tile_s * occupancy.beta_sun
+                    + occupancy.shade_emax_kg_m2_tile_s * occupancy.beta_shade)
+                    / maximum
+            };
+            if occupancy.beta_hyd.to_bits() != expected_beta.to_bits()
+                || occupancy.sun_net_assimilation_umol_co2_m2_leaf_s.to_bits()
+                    != (occupancy.sun_gross_assimilation_umol_co2_m2_leaf_s
+                        - occupancy.sun_dark_respiration_umol_co2_m2_leaf_s)
+                        .to_bits()
+                || occupancy
+                    .shade_net_assimilation_umol_co2_m2_leaf_s
+                    .to_bits()
+                    != (occupancy.shade_gross_assimilation_umol_co2_m2_leaf_s
+                        - occupancy.shade_dark_respiration_umol_co2_m2_leaf_s)
+                        .to_bits()
+            {
+                return Err(LandSurfaceEnergyError::OwnerEnvelope(
+                    "accepted vegetation derived operand mismatch",
+                ));
+            }
+            let mut root_keys = BTreeSet::new();
+            for root in &occupancy.root_water {
+                root.key.validate(self.transaction_id)?;
+                if root.key.requesting_component != RequestingComponent::VegetationRoot
+                    || root.key.requesting_owner_id != self.vegetation_owner_id
+                    || root.key.occupancy_id.as_ref() != Some(&occupancy.occupancy_id)
+                    || !root_keys.insert(root.key.clone())
+                {
+                    return Err(LandSurfaceEnergyError::water_identity(
+                        "accepted vegetation root identity",
+                    ));
+                }
+                if [
+                    root.request_kg_m2_stand_ground,
+                    root.authorization_kg_m2_stand_ground,
+                    root.finalized_use_kg_m2_stand_ground,
+                ]
+                .iter()
+                .any(|value| !value.is_finite())
+                {
+                    return Err(LandSurfaceEnergyError::NonFinite(
+                        "accepted vegetation root amount",
+                    ));
+                }
+                if root.finalized_use_kg_m2_stand_ground < 0.0
+                    || root.finalized_use_kg_m2_stand_ground > root.authorization_kg_m2_stand_ground
+                    || root.authorization_kg_m2_stand_ground > root.request_kg_m2_stand_ground
+                {
+                    return Err(LandSurfaceEnergyError::water_bound(
+                        "accepted vegetation root D/A/F",
+                    ));
+                }
+            }
+        }
+        if expected_incident.to_bits() != self.ground_canopy_release_kg_m2_tile_ground.to_bits()
+            || stemflow.to_bits() != self.ground_stemflow_kg_m2_tile_ground.to_bits()
+        {
+            return Err(LandSurfaceEnergyError::water_closure(
+                "accepted vegetation ground liquid routing",
+            ));
+        }
+        Ok(())
+    }
 }
 
 fn build_covered_soil_candidate(
@@ -866,7 +1560,7 @@ fn build_covered_soil_candidate(
 fn build_covered_energy_operands(
     phase: &CoveredPotentialPhase,
     final_value: &CoveredColumnCandidate,
-) -> Result<TileEnergyOperandSet, LandSurfaceEnergyError> {
+) -> Result<CoveredTileEnergyOperandSet, LandSurfaceEnergyError> {
     let identity = &phase.identity;
     let evaluation = &final_value.evaluation;
     let resistance = under_canopy_neutral_resistance(
@@ -897,7 +1591,42 @@ fn build_covered_energy_operands(
     };
     let ground_heat_amount =
         evaluation.ground_heat_cn_w_m2_tile[0] * identity.tile_fraction * identity.interval_s;
-    let operands = TileEnergyOperandSet {
+    if evaluation.occupancies.len() != phase.beginning.occupancies.len() {
+        return Err(LandSurfaceEnergyError::ComponentClosure(
+            "covered energy occupancy cardinality",
+        ));
+    }
+    let occupancies = phase
+        .beginning
+        .occupancies
+        .iter()
+        .zip(&evaluation.occupancies)
+        .map(|(input, accepted)| {
+            let surface = |index| CoveredSurfaceEnergyOperands {
+                absorbed_shortwave_w_m2_tile: accepted.absorbed_shortwave_w_m2[index],
+                net_longwave_w_m2_tile: accepted.net_longwave_w_m2[index],
+                sensible_to_canopy_air_w_m2_tile: accepted.sensible_to_canopy_air_w_m2[index],
+                signed_vapor_to_canopy_air_kg_m2_tile_s: accepted
+                    .signed_vapor_to_canopy_air_kg_m2_s[index],
+                surface_temperature_k: accepted.component_temperatures_k[index],
+                latent_heat_j_kg: phase.beginning.latent_heat_j_kg,
+            };
+            CoveredOccupancyEnergyOperands {
+                occupancy_id: input.occupancy_id.clone(),
+                sun_leaf: surface(0),
+                shade_leaf: surface(1),
+                wet_surface: surface(2),
+                dry_stem: surface(3),
+            }
+        })
+        .collect::<Vec<_>>();
+    let ground_shortwave = crate::partition_ground_shortwave(
+        phase.beginning.ground.terminal_shortwave_w_m2_tile,
+        phase.beginning.ground.surface_vis_albedo,
+        phase.beginning.ground.surface_nir_albedo,
+    )?;
+    let longwave = &evaluation.whole_column_longwave;
+    let ground = TileEnergyOperandSet {
         surface,
         latent: LatentJoinOperands {
             signed_vapor_kg_m2_s: evaluation.ground_water.final_kg_m2_tile_s,
@@ -914,6 +1643,48 @@ fn build_covered_energy_operands(
             soil_credit_j_m2: ground_heat_amount,
         }],
     };
+    let operands = CoveredTileEnergyOperandSet {
+        ground,
+        column: CoveredColumnEnergyOperands {
+            occupancies,
+            canopy_air: CoveredCanopyAirEnergyOperands {
+                canopy_air_temperature_k: evaluation.canopy_air_temperature_k,
+                canopy_air_specific_humidity_kg_kg: evaluation.canopy_air_specific_humidity_kg_kg,
+                ground_sensible_to_canopy_air_w_m2_tile: evaluation
+                    .ground_sensible_to_canopy_air_w_m2,
+                ground_vapor_to_canopy_air_kg_m2_tile_s: evaluation.ground_water.final_kg_m2_tile_s,
+                sensible_to_reference_air_w_m2_tile: evaluation.sensible_to_reference_air_w_m2,
+                vapor_to_reference_air_kg_m2_tile_s: evaluation.vapor_to_reference_air_kg_m2_s,
+            },
+            shortwave: CoveredColumnShortwaveOperands {
+                incident_w_m2_tile: phase.beginning.shortwave.incident_w_m2_tile,
+                top_reflected_w_m2_tile: phase.beginning.shortwave.top_reflected_w_m2_tile,
+                ground_absorbed_by_incident_w_m2_tile: phase
+                    .beginning
+                    .shortwave
+                    .ground_absorbed_by_incident_w_m2_tile,
+                ground_terminal_w_m2_tile: phase.beginning.ground.terminal_shortwave_w_m2_tile,
+                ground_absorbed_w_m2_tile: ground_shortwave.absorbed,
+                ground_reflected_w_m2_tile: ground_shortwave.reflected,
+                occupancies: phase.beginning.shortwave.occupancies.clone(),
+            },
+            longwave: CoveredColumnLongwaveOperands {
+                atmospheric_downward_w_m2_tile: phase.beginning.atmospheric_downward_longwave_w_m2,
+                transmissivities: longwave.transmissivities.clone(),
+                downward_boundaries_w_m2_tile: longwave.downward_boundaries_w_m2.clone(),
+                upward_boundaries_w_m2_tile: longwave.upward_boundaries_w_m2.clone(),
+                top_upward_w_m2_tile: longwave.top_upward_w_m2,
+                ground_net_w_m2_tile: longwave.ground_net_w_m2,
+                occupancy_component_net_w_m2_tile: phase
+                    .beginning
+                    .occupancies
+                    .iter()
+                    .zip(&longwave.component_net_w_m2)
+                    .map(|(input, values)| (input.occupancy_id.clone(), *values))
+                    .collect(),
+            },
+        },
+    };
     operands.validate()?;
     Ok(operands)
 }
@@ -922,7 +1693,7 @@ fn build_covered_energy_and_soil(
     phase: &CoveredPotentialPhase,
     final_value: &CoveredColumnCandidate,
     soil: &SoilThermalSnapshot,
-) -> Result<(TileEnergyOperandSet, SoilThermalTileCandidate), LandSurfaceEnergyError> {
+) -> Result<(CoveredTileEnergyOperandSet, SoilThermalTileCandidate), LandSurfaceEnergyError> {
     Ok((
         build_covered_energy_operands(phase, final_value)?,
         build_covered_soil_candidate(phase, final_value, soil)?,
@@ -942,12 +1713,12 @@ fn covered_caps_from_authorizations(
             .requests
             .iter()
             .find(|row| row.key == key)
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            .ok_or(LandSurfaceEnergyError::water_cardinality(
                 "missing covered potential root request",
             ))?;
         let authorization = exact
             .get(&key)
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            .ok_or(LandSurfaceEnergyError::water_cardinality(
                 "missing covered root authorization",
             ))?;
         root.insert(
@@ -965,15 +1736,14 @@ fn covered_caps_from_authorizations(
         .requests
         .iter()
         .find(|row| row.key == ground_key)
-        .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+        .ok_or(LandSurfaceEnergyError::water_cardinality(
             "missing covered potential ground request",
         ))?;
-    let authorization =
-        exact
-            .get(&ground_key)
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
-                "missing covered ground authorization",
-            ))?;
+    let authorization = exact
+        .get(&ground_key)
+        .ok_or(LandSurfaceEnergyError::water_cardinality(
+            "missing covered ground authorization",
+        ))?;
     Ok(CoveredWaterCaps {
         root,
         ground: SourceWaterCap {
@@ -993,14 +1763,14 @@ fn covered_water_protocol(
         let runtime = phase
             .root_identities
             .get(&(row.occupancy_id.clone(), row.layer_id.clone()))
-            .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+            .ok_or(LandSurfaceEnergyError::water_identity(
                 "final covered root identity mismatch",
             ))?;
         let key = root_key(&phase.identity, runtime);
         let amount = if row.branch == crate::WaterBranch::AuthorizationActiveOrTie {
             exact
                 .get(&key)
-                .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+                .ok_or(LandSurfaceEnergyError::water_cardinality(
                     "missing exact active root authorization",
                 ))?
                 .amount_kg_m2_stand_ground
@@ -1017,7 +1787,7 @@ fn covered_water_protocol(
         if final_value.ground_water.branch == crate::WaterBranch::AuthorizationActiveOrTie {
             exact
                 .get(&ground_key)
-                .ok_or(LandSurfaceEnergyError::WaterIdentityOrBound(
+                .ok_or(LandSurfaceEnergyError::water_cardinality(
                     "missing exact active ground authorization",
                 ))?
                 .amount_kg_m2_stand_ground
@@ -1028,6 +1798,13 @@ fn covered_water_protocol(
         key: ground_key,
         amount_kg_m2_stand_ground: ground_amount,
     });
+    let condensation_credits = condensation_credits(
+        &phase.identity,
+        final_value
+            .ground_water
+            .condensation_credit_kg_m2_stand_ground,
+        final_value.evaluation.ground_temperature_k,
+    )?;
     let protocol = WaterProtocol {
         transaction_id: phase.identity.transaction_id,
         hydrology_owner_id: phase.identity.hydrology_owner_id.clone(),
@@ -1035,10 +1812,212 @@ fn covered_water_protocol(
         requests: phase.request_batch.requests.clone(),
         authorizations: exact.into_values().collect(),
         finalized_uses: finalized,
-        condensation_credits: Vec::new(),
+        condensation_credits,
     };
     protocol.validate()?;
     Ok(protocol)
+}
+
+#[allow(clippy::too_many_lines)]
+fn accepted_covered_vegetation_operands(
+    phase: &CoveredPotentialPhase,
+    final_value: &CoveredColumnCandidate,
+    protocol: &WaterProtocol,
+) -> Result<AcceptedCoveredVegetationOperands, LandSurfaceEnergyError> {
+    if final_value.evaluation.occupancies.len() != phase.beginning.occupancies.len()
+        || final_value.solution.len() < 10 * phase.beginning.occupancies.len() + 2
+    {
+        return Err(LandSurfaceEnergyError::OwnerEnvelope(
+            "accepted vegetation final occupancy shape",
+        ));
+    }
+    let requests: BTreeMap<_, _> = protocol
+        .requests
+        .iter()
+        .map(|row| (row.key.clone(), row.amount_kg_m2_stand_ground))
+        .collect();
+    let authorizations: BTreeMap<_, _> = protocol
+        .authorizations
+        .iter()
+        .map(|row| (row.key.clone(), row.amount_kg_m2_stand_ground))
+        .collect();
+    let finalized: BTreeMap<_, _> = protocol
+        .finalized_uses
+        .iter()
+        .map(|row| (row.key.clone(), row.amount_kg_m2_stand_ground))
+        .collect();
+    let mut occupancies = Vec::with_capacity(phase.beginning.occupancies.len());
+    for (index, (input, evaluation)) in phase
+        .beginning
+        .occupancies
+        .iter()
+        .zip(&final_value.evaluation.occupancies)
+        .enumerate()
+    {
+        let block = &final_value.solution[index * 10..(index + 1) * 10];
+        let runtime_identity = phase
+            .root_identities
+            .iter()
+            .find_map(|((solver_occupancy, _), runtime)| {
+                (solver_occupancy == &input.occupancy_id).then_some(runtime)
+            })
+            .ok_or(LandSurfaceEnergyError::water_identity(
+                "missing accepted vegetation occupancy identity",
+            ))?;
+        let mut root_water = Vec::with_capacity(evaluation.source_water.len());
+        for source in &evaluation.source_water {
+            let runtime = phase
+                .root_identities
+                .get(&(source.occupancy_id.clone(), source.layer_id.clone()))
+                .ok_or(LandSurfaceEnergyError::water_identity(
+                    "missing accepted vegetation root identity",
+                ))?;
+            if runtime.occupancy_id != runtime_identity.occupancy_id {
+                return Err(LandSurfaceEnergyError::water_identity(
+                    "mixed accepted vegetation occupancy identity",
+                ));
+            }
+            let key = root_key(&phase.identity, runtime);
+            root_water.push(AcceptedRootWaterOperands {
+                request_kg_m2_stand_ground: *requests.get(&key).ok_or(
+                    LandSurfaceEnergyError::water_cardinality(
+                        "missing accepted vegetation root request",
+                    ),
+                )?,
+                authorization_kg_m2_stand_ground: *authorizations.get(&key).ok_or(
+                    LandSurfaceEnergyError::water_cardinality(
+                        "missing accepted vegetation root authorization",
+                    ),
+                )?,
+                finalized_use_kg_m2_stand_ground: *finalized.get(&key).ok_or(
+                    LandSurfaceEnergyError::water_cardinality(
+                        "missing accepted vegetation root final use",
+                    ),
+                )?,
+                key,
+            });
+        }
+        let maximum = evaluation.emax_kg_m2_s[0] + evaluation.emax_kg_m2_s[1];
+        let beta_hyd = if maximum == 0.0 {
+            1.0
+        } else {
+            (evaluation.emax_kg_m2_s[0] * block[4] + evaluation.emax_kg_m2_s[1] * block[5])
+                / maximum
+        };
+        occupancies.push(AcceptedCoveredOccupancyOperands {
+            occupancy_id: runtime_identity.occupancy_id.clone(),
+            sun_leaf_area_m2_m2_tile_ground: input.sun.leaf_area_m2_m2_tile,
+            shade_leaf_area_m2_m2_tile_ground: input.shade.leaf_area_m2_m2_tile,
+            sun_leaf_potential_mm: block[0],
+            shade_leaf_potential_mm: block[1],
+            stem_potential_mm: block[2],
+            root_node_potential_mm: block[3],
+            beta_sun: block[4],
+            beta_shade: block[5],
+            sun_emax_kg_m2_tile_s: evaluation.emax_kg_m2_s[0],
+            shade_emax_kg_m2_tile_s: evaluation.emax_kg_m2_s[1],
+            beta_hyd,
+            sun_leaf_temperature_k: evaluation.component_temperatures_k[0],
+            shade_leaf_temperature_k: evaluation.component_temperatures_k[1],
+            wet_surface_temperature_k: evaluation.component_temperatures_k[2],
+            dry_stem_temperature_k: evaluation.component_temperatures_k[3],
+            sun_ci_pa: evaluation.ci_pa[0],
+            shade_ci_pa: evaluation.ci_pa[1],
+            sun_gross_assimilation_umol_co2_m2_leaf_s: evaluation
+                .gross_assimilation_umol_co2_m2_leaf_s[0],
+            shade_gross_assimilation_umol_co2_m2_leaf_s: evaluation
+                .gross_assimilation_umol_co2_m2_leaf_s[1],
+            sun_net_assimilation_umol_co2_m2_leaf_s: evaluation.net_assimilation_umol_co2_m2_leaf_s
+                [0],
+            shade_net_assimilation_umol_co2_m2_leaf_s: evaluation
+                .net_assimilation_umol_co2_m2_leaf_s[1],
+            sun_dark_respiration_umol_co2_m2_leaf_s: evaluation.dark_respiration_umol_co2_m2_leaf_s
+                [0],
+            shade_dark_respiration_umol_co2_m2_leaf_s: evaluation
+                .dark_respiration_umol_co2_m2_leaf_s[1],
+            signed_wet_phase_change_kg_m2_tile_ground: evaluation.wet_vapor_kg_m2_s
+                * phase.identity.interval_s,
+            wet_phase_branch: evaluation.wet_branch,
+            liquid: evaluation.liquid,
+            root_water,
+        });
+    }
+    let vegetation_owner_id = phase
+        .root_identities
+        .values()
+        .next()
+        .ok_or(LandSurfaceEnergyError::water_cardinality(
+            "missing accepted vegetation owner",
+        ))?
+        .requesting_owner_id
+        .clone();
+    let mut operands = AcceptedCoveredVegetationOperands {
+        pass: CoveredVegetationOperandPass::FixedAuthorizationFinal,
+        transaction_id: phase.identity.transaction_id,
+        vegetation_model_version: VEGETATION_MODEL_VERSION,
+        vegetation_model_definition_sha256: VEGETATION_MODEL_DEFINITION_SHA256,
+        lse_configuration_sha256: phase.identity.configuration_sha256.clone(),
+        beginning_lse_state_sha256: phase.identity.beginning_lse_state_sha256.clone(),
+        vegetation_owner_id,
+        ofe_id: phase.identity.ofe_id.clone(),
+        tile_id: phase.identity.tile_id.clone(),
+        tile_fraction: phase.identity.tile_fraction,
+        interval_s: phase.identity.interval_s,
+        canopy_air_temperature_k: final_value.evaluation.canopy_air_temperature_k,
+        canopy_air_specific_humidity_kg_kg: final_value
+            .evaluation
+            .canopy_air_specific_humidity_kg_kg,
+        top_rain_kg_m2_tile_ground: phase.beginning.top_rain_kg_m2_tile,
+        ground_canopy_release_kg_m2_tile_ground: final_value
+            .evaluation
+            .ground_canopy_release_kg_m2_tile,
+        ground_stemflow_kg_m2_tile_ground: final_value.evaluation.ground_stemflow_kg_m2_tile,
+        occupancies,
+        payload_sha256: phase.identity.beginning_lse_state_sha256.clone(),
+        seal: SealedCoveredVegetationOperands::FixedAuthorizationFinal,
+    };
+    operands.payload_sha256 = canonical_digest(&operands)?;
+    operands.validate()?;
+    Ok(operands)
+}
+
+fn condensation_credits(
+    identity: &RuntimeTileIdentity,
+    amount_kg_m2_stand_ground: f64,
+    temperature_k: f64,
+) -> Result<Vec<CondensationCredit>, LandSurfaceEnergyError> {
+    if !amount_kg_m2_stand_ground.is_finite() {
+        return Err(LandSurfaceEnergyError::NonFinite(
+            "invalid condensation amount",
+        ));
+    }
+    if amount_kg_m2_stand_ground < 0.0 {
+        return Err(LandSurfaceEnergyError::water_bound(
+            "invalid condensation amount",
+        ));
+    }
+    if amount_kg_m2_stand_ground == 0.0 {
+        return Ok(Vec::new());
+    }
+    if !matches!(
+        identity.ground_source_type,
+        WaterSourceType::SurfaceLiquid | WaterSourceType::LitterLiquid
+    ) {
+        return Err(LandSurfaceEnergyError::water_identity(
+            "condensation requires tile surface-liquid source",
+        ));
+    }
+    Ok(vec![CondensationCredit {
+        transaction_id: identity.transaction_id,
+        hydrology_owner_id: identity.hydrology_owner_id.clone(),
+        ofe_id: identity.ofe_id.clone(),
+        tile_id: identity.tile_id.clone(),
+        surface_id: identity.surface_id.clone(),
+        amount_kg_m2_stand_ground,
+        amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+        temperature_k,
+        specific_liquid_enthalpy_j_kg: liquid_enthalpy_j_kg(temperature_k),
+    }])
 }
 
 fn active_cap_keys(protocol: &WaterProtocol) -> Vec<GroundWaterKey> {
@@ -1077,11 +2056,18 @@ pub fn finalize_covered_phase(
     let final_value =
         match solve_covered_column(&phase.beginning, Some(&caps), final_initial_trial)? {
             CoveredColumnSolveOutcome::Accepted(value) => value,
-            CoveredColumnSolveOutcome::Rejected(_) => {
-                return Err(LandSurfaceEnergyError::NumericalAcceptedResidual);
+            CoveredColumnSolveOutcome::Rejected(failure) => {
+                return Err(numerical_failure_error(
+                    &phase.identity,
+                    SolvePass::FinalFixedCap,
+                    SolveIdentity::JointCanopyGround,
+                    &failure,
+                    exact.keys().cloned().collect(),
+                )?);
             }
         };
     let protocol = covered_water_protocol(phase, &final_value, exact)?;
+    let vegetation_operands = accepted_covered_vegetation_operands(phase, &final_value, &protocol)?;
     let (energy_operands, soil_thermal) = build_covered_energy_and_soil(phase, &final_value, soil)?;
     let active_caps = active_cap_keys(&protocol);
     let diagnostics = accepted_diagnostics(
@@ -1118,6 +2104,7 @@ pub fn finalize_covered_phase(
         energy_operands,
         diagnostics,
         rollback_hashes: rollback_hashes(&phase.identity),
+        vegetation_operands,
     })
 }
 
@@ -1209,7 +2196,7 @@ pub fn build_lse_ending_state(
         .map(|tile| (tile.ofe_id.clone(), tile.tile_id.clone()))
         .collect();
     if expected != actual || tiles.len() != actual.len() {
-        return Err(LandSurfaceEnergyError::Topology(
+        return Err(LandSurfaceEnergyError::topology_cardinality(
             "ending LSE tile identity set",
         ));
     }
@@ -1515,30 +2502,286 @@ mod tests {
     }
 
     #[test]
-    fn rejected_diagnostics_carry_complete_exact_rollback_owner_set() {
-        let failure = NumericalFailure {
-            kind: NumericalFailureKind::BacktrackingLimit,
-            iterations: 7,
-            normalized_residuals: vec![2.0, -3.0],
-            backtracking_count: 20,
-            step_norm: Some(1.0e-5),
-            pivot_magnitude: Some(2.0e-9),
-            matrix_norm: Some(4.0),
-        };
-        let diagnostics =
-            rejected_numerical_diagnostics(&identity(), SolveIdentity::SurfaceEnergy, &failure)
-                .expect("typed failure diagnostics");
-        assert!(!diagnostics.accepted);
+    fn numerical_failure_errors_preserve_kind_diagnostics_and_rollback_lineage() {
+        let identity = identity();
+        let cap = identity.ground_key();
+        for (kind, diagnostic_kind) in [
+            (
+                NumericalFailureKind::SingularPivot,
+                DiagnosticFailureKind::SingularPivot,
+            ),
+            (
+                NumericalFailureKind::BacktrackingLimit,
+                DiagnosticFailureKind::BacktrackingLimit,
+            ),
+            (
+                NumericalFailureKind::IterationLimit,
+                DiagnosticFailureKind::IterationLimit,
+            ),
+        ] {
+            let failure = NumericalFailure {
+                kind,
+                iterations: 7,
+                normalized_residuals: vec![2.0, -3.0],
+                backtracking_count: 20,
+                step_norms: StepNorms {
+                    temperature_k: Some(1.0e-5),
+                    humidity_kg_kg: Some(2.0e-9),
+                    ci_pa: Some(3.0e-5),
+                    hydraulic_mm: Some(4.0e-6),
+                    beta: Some(5.0e-10),
+                },
+                pivot_magnitude: Some(2.0e-9),
+                matrix_norm: Some(4.0),
+            };
+            let error = numerical_failure_error(
+                &identity,
+                SolvePass::Potential,
+                SolveIdentity::SurfaceEnergy,
+                &failure,
+                vec![cap.clone()],
+            )
+            .expect("typed numerical error");
+            match (&kind, &error) {
+                (
+                    NumericalFailureKind::SingularPivot,
+                    LandSurfaceEnergyError::NumericalSingular { .. },
+                )
+                | (
+                    NumericalFailureKind::BacktrackingLimit,
+                    LandSurfaceEnergyError::NumericalBacktrackingLimit { .. },
+                )
+                | (
+                    NumericalFailureKind::IterationLimit,
+                    LandSurfaceEnergyError::NumericalIterationLimit { .. },
+                ) => {}
+                _ => panic!("wrong public numerical error variant: {error:?}"),
+            }
+            let diagnostics = error
+                .numerical_diagnostics()
+                .expect("public error carries diagnostics");
+            assert!(!diagnostics.accepted);
+            assert_eq!(diagnostics.pass, SolvePass::Potential);
+            assert_eq!(diagnostics.failure_kind, Some(diagnostic_kind));
+            assert_eq!(diagnostics.step_norms, failure.step_norms);
+            assert_eq!(diagnostics.active_water_caps, vec![cap.clone()]);
+            assert_eq!(diagnostics.owner_rollback_hashes.len(), 5);
+            assert!(
+                diagnostics
+                    .owner_rollback_hashes
+                    .iter()
+                    .all(|row| row.before_sha256 == row.after_sha256)
+            );
+        }
+    }
+
+    #[test]
+    fn condensation_receipt_binds_exact_surface_identity_temperature_and_enthalpy() {
+        let mut identity = identity();
+        identity.ground_source_type = WaterSourceType::SurfaceLiquid;
+        identity.ground_source_tile_id = Some(identity.tile_id.clone());
+        identity.ground_soil_layer_id = None;
+        let credits = condensation_credits(&identity, 0.0125, 281.0).expect("credit");
+        assert_eq!(credits.len(), 1);
+        let credit = &credits[0];
+        assert_eq!(credit.transaction_id, identity.transaction_id);
+        assert_eq!(credit.tile_id, identity.tile_id);
+        assert_eq!(credit.surface_id, identity.surface_id);
+        assert!((credit.amount_kg_m2_stand_ground - 0.0125).abs() < f64::EPSILON);
         assert_eq!(
-            diagnostics.failure_kind,
-            Some(DiagnosticFailureKind::BacktrackingLimit)
+            credit.specific_liquid_enthalpy_j_kg.to_bits(),
+            liquid_enthalpy_j_kg(281.0).to_bits()
         );
-        assert_eq!(diagnostics.owner_rollback_hashes.len(), 5);
-        assert!(
-            diagnostics
-                .owner_rollback_hashes
-                .iter()
-                .all(|row| row.before_sha256 == row.after_sha256)
+    }
+
+    fn accepted_vegetation_fixture() -> AcceptedCoveredVegetationOperands {
+        let tile = identity();
+        let occupancy_id = ComponentId::try_new("stratum-a@tile-open").expect("occupancy");
+        let runtime = RootRuntimeIdentity {
+            solver_occupancy_id: "canopy-rank-0".into(),
+            requesting_owner_id: owner("vegetation-v8"),
+            occupancy_id: occupancy_id.clone(),
+            layer_id: layer("soil-layer-1"),
+            source_id: SourceId::try_new("soil-layer-1").expect("source"),
+        };
+        let mut result = AcceptedCoveredVegetationOperands {
+            pass: CoveredVegetationOperandPass::FixedAuthorizationFinal,
+            transaction_id: tile.transaction_id,
+            vegetation_model_version: VEGETATION_MODEL_VERSION,
+            vegetation_model_definition_sha256: VEGETATION_MODEL_DEFINITION_SHA256,
+            lse_configuration_sha256: tile.configuration_sha256.clone(),
+            beginning_lse_state_sha256: tile.beginning_lse_state_sha256.clone(),
+            vegetation_owner_id: runtime.requesting_owner_id.clone(),
+            ofe_id: tile.ofe_id.clone(),
+            tile_id: tile.tile_id.clone(),
+            tile_fraction: tile.tile_fraction,
+            interval_s: tile.interval_s,
+            canopy_air_temperature_k: 295.0,
+            canopy_air_specific_humidity_kg_kg: 0.01,
+            top_rain_kg_m2_tile_ground: 0.0,
+            ground_canopy_release_kg_m2_tile_ground: 0.0,
+            ground_stemflow_kg_m2_tile_ground: 0.0,
+            occupancies: vec![AcceptedCoveredOccupancyOperands {
+                occupancy_id,
+                sun_leaf_area_m2_m2_tile_ground: 1.2,
+                shade_leaf_area_m2_m2_tile_ground: 0.8,
+                sun_leaf_potential_mm: -5_900.0,
+                shade_leaf_potential_mm: -5_500.0,
+                stem_potential_mm: -4_300.0,
+                root_node_potential_mm: -2_850.0,
+                beta_sun: 0.5,
+                beta_shade: 0.25,
+                sun_emax_kg_m2_tile_s: 3.0,
+                shade_emax_kg_m2_tile_s: 1.0,
+                beta_hyd: 0.4375,
+                sun_leaf_temperature_k: 296.0,
+                shade_leaf_temperature_k: 295.5,
+                wet_surface_temperature_k: 295.2,
+                dry_stem_temperature_k: 294.8,
+                sun_ci_pa: 28.0,
+                shade_ci_pa: 30.0,
+                sun_gross_assimilation_umol_co2_m2_leaf_s: 12.0,
+                shade_gross_assimilation_umol_co2_m2_leaf_s: 6.0,
+                sun_net_assimilation_umol_co2_m2_leaf_s: 11.0,
+                shade_net_assimilation_umol_co2_m2_leaf_s: 5.5,
+                sun_dark_respiration_umol_co2_m2_leaf_s: 1.0,
+                shade_dark_respiration_umol_co2_m2_leaf_s: 0.5,
+                signed_wet_phase_change_kg_m2_tile_ground: 0.01,
+                wet_phase_branch: crate::WaterBranch::ConstitutiveLaw,
+                liquid: CoveredOccupancyLiquidLedger {
+                    pass: crate::CoveredLiquidPass::FixedAuthorizationFinal,
+                    beginning_store_kg_m2_tile: 0.02,
+                    incident_rain_kg_m2_tile: 0.0,
+                    ending_store_kg_m2_tile: 0.01,
+                    evaporation_kg_m2_tile: 0.01,
+                    condensation_kg_m2_tile: 0.0,
+                    throughfall_kg_m2_tile: 0.0,
+                    stemflow_kg_m2_tile: 0.0,
+                    initial_drainage_kg_m2_tile: 0.0,
+                    second_drainage_kg_m2_tile: 0.0,
+                    wet_fraction: 0.5,
+                    wet_surface_temperature_k: 295.2,
+                    wet_surface_specific_enthalpy_j_kg: crate::WATER_HEAT_CAPACITY_J_KG_K
+                        * (295.2 - crate::REFERENCE_TEMPERATURE_K),
+                },
+                root_water: vec![AcceptedRootWaterOperands {
+                    key: root_key(&tile, &runtime),
+                    request_kg_m2_stand_ground: 0.3,
+                    authorization_kg_m2_stand_ground: 0.2,
+                    finalized_use_kg_m2_stand_ground: 0.15,
+                }],
+            }],
+            payload_sha256: tile.beginning_lse_state_sha256.clone(),
+            seal: SealedCoveredVegetationOperands::FixedAuthorizationFinal,
+        };
+        result.payload_sha256 = canonical_digest(&result).expect("accepted payload digest");
+        result
+    }
+
+    #[test]
+    fn accepted_v8_payload_validates_identity_state_carbon_and_root_daf() {
+        let accepted = accepted_vegetation_fixture();
+        accepted.validate().expect("accepted V8 operands");
+        assert_eq!(
+            accepted.occupancies[0]
+                .sun_net_assimilation_umol_co2_m2_leaf_s
+                .to_bits(),
+            (accepted.occupancies[0].sun_gross_assimilation_umol_co2_m2_leaf_s
+                - accepted.occupancies[0].sun_dark_respiration_umol_co2_m2_leaf_s)
+                .to_bits()
         );
+        assert_eq!(
+            accepted.occupancies[0].root_water[0]
+                .key
+                .requesting_owner_id,
+            accepted.vegetation_owner_id
+        );
+    }
+
+    #[test]
+    fn accepted_v8_payload_rejects_pass_derived_and_identity_poisons() {
+        let mut wrong_pass = accepted_vegetation_fixture();
+        wrong_pass.pass = CoveredVegetationOperandPass::Potential;
+        assert!(matches!(
+            wrong_pass.validate(),
+            Err(LandSurfaceEnergyError::StateLineage(_))
+        ));
+
+        let mut wrong_carbon = accepted_vegetation_fixture();
+        wrong_carbon.occupancies[0].sun_net_assimilation_umol_co2_m2_leaf_s = 12.0;
+        assert!(matches!(
+            wrong_carbon.validate(),
+            Err(LandSurfaceEnergyError::Identity {
+                field: "accepted vegetation operand digest",
+                ..
+            })
+        ));
+
+        let mut wrong_owner = accepted_vegetation_fixture();
+        wrong_owner.occupancies[0].root_water[0]
+            .key
+            .requesting_owner_id = owner("other-vegetation");
+        assert!(matches!(
+            wrong_owner.validate(),
+            Err(LandSurfaceEnergyError::Identity {
+                field: "accepted vegetation operand digest",
+                ..
+            })
+        ));
+
+        let mut wrong_daf = accepted_vegetation_fixture();
+        wrong_daf.occupancies[0].root_water[0].finalized_use_kg_m2_stand_ground = 0.21;
+        assert!(matches!(
+            wrong_daf.validate(),
+            Err(LandSurfaceEnergyError::Identity {
+                field: "accepted vegetation operand digest",
+                ..
+            })
+        ));
+
+        let mut stale_potential_liquid = accepted_vegetation_fixture();
+        stale_potential_liquid.occupancies[0]
+            .liquid
+            .ending_store_kg_m2_tile = 0.02;
+        stale_potential_liquid.occupancies[0]
+            .liquid
+            .evaporation_kg_m2_tile = 0.0;
+        stale_potential_liquid.occupancies[0].signed_wet_phase_change_kg_m2_tile_ground = 0.0;
+        assert!(matches!(
+            stale_potential_liquid.validate(),
+            Err(LandSurfaceEnergyError::Identity {
+                field: "accepted vegetation operand digest",
+                ..
+            })
+        ));
+
+        // Module-local adversarial tests can recompute the payload seal. The
+        // independent final-pass and D/A/F validators must still reject
+        // producer-consistent but noncanonical payloads.
+        let mut sealed_stale_potential_liquid = accepted_vegetation_fixture();
+        sealed_stale_potential_liquid.occupancies[0].liquid.pass =
+            crate::CoveredLiquidPass::Potential;
+        sealed_stale_potential_liquid.payload_sha256 =
+            canonical_digest(&sealed_stale_potential_liquid)
+                .expect("reseal stale-potential poison");
+        assert!(matches!(
+            sealed_stale_potential_liquid.validate(),
+            Err(LandSurfaceEnergyError::StateLineage(
+                "accepted vegetation liquid pass"
+            ))
+        ));
+
+        let mut sealed_finalized_above_authorization = accepted_vegetation_fixture();
+        sealed_finalized_above_authorization.occupancies[0].root_water[0]
+            .finalized_use_kg_m2_stand_ground = 0.21;
+        sealed_finalized_above_authorization.payload_sha256 =
+            canonical_digest(&sealed_finalized_above_authorization).expect("reseal D/A/F poison");
+        assert!(matches!(
+            sealed_finalized_above_authorization.validate(),
+            Err(LandSurfaceEnergyError::WaterIdentityOrBound {
+                class: crate::WaterErrorClass::Bound,
+                ..
+            })
+        ));
     }
 }

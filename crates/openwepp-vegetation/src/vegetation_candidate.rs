@@ -157,8 +157,13 @@ pub(crate) fn construct_uncommitted_vegetation_candidate(
         ));
     }
 
-    let material_proposals = bind_material_proposals(transaction_id, nitrogen_phase)?;
-    let ending_strata = construct_ending_strata(configuration, transaction_id, nitrogen_phase)?;
+    let material_proposals =
+        bind_material_proposals_from_strata(transaction_id, nitrogen_phase.strata())?;
+    let ending_strata = construct_ending_strata_from_preallocations(
+        configuration,
+        transaction_id,
+        nitrogen_phase.strata(),
+    )?;
     let ending_occupancies = construct_ending_occupancies(
         configuration,
         beginning,
@@ -182,13 +187,21 @@ pub(crate) fn construct_uncommitted_vegetation_candidate(
         water_phase,
     )?;
 
-    let (carbon_ledgers, nitrogen_ledgers, dry_material_ledgers) = construct_ledgers(
-        configuration,
-        beginning,
-        &ending_state,
-        nitrogen_phase,
-        &material_proposals,
-    )?;
+    let (carbon_ledgers, nitrogen_ledgers, dry_material_ledgers) =
+        construct_ledgers_from_preallocations(
+            configuration,
+            VegetationLedgerStateView {
+                strata: &beginning.strata,
+                state_sha256: &beginning.state_sha256,
+            },
+            VegetationLedgerStateView {
+                strata: &ending_state.strata,
+                state_sha256: &ending_state.state_sha256,
+            },
+            nitrogen_phase.transaction_id(),
+            nitrogen_phase.strata(),
+            &material_proposals,
+        )?;
     let expected_strata = configuration
         .strata
         .iter()
@@ -218,23 +231,17 @@ pub(crate) fn construct_uncommitted_vegetation_candidate(
     })
 }
 
-fn construct_ending_strata(
+pub(crate) fn construct_ending_strata_from_preallocations(
     configuration: &VegetationConfiguration,
     transaction_id: TransactionId,
-    nitrogen_phase: &UncommittedNitrogenPhase,
+    strata: &BTreeMap<StratumId, crate::persistent_phase::StratumPreallocation>,
 ) -> Result<BTreeMap<StratumId, StratumSharedState>, VegetationError> {
     let expected = configuration
         .strata
         .iter()
         .map(|stratum| stratum.stratum_id.clone())
         .collect::<BTreeSet<_>>();
-    if nitrogen_phase
-        .strata()
-        .keys()
-        .cloned()
-        .collect::<BTreeSet<_>>()
-        != expected
-    {
+    if strata.keys().cloned().collect::<BTreeSet<_>>() != expected {
         return Err(VegetationError::V7CandidateRollback(
             "stratum identity mismatch",
         ));
@@ -243,9 +250,12 @@ fn construct_ending_strata(
         .strata
         .iter()
         .map(|stratum| {
-            let preallocation = nitrogen_phase.strata().get(&stratum.stratum_id).ok_or(
-                VegetationError::V7CandidateRollback("vegetation candidate stratum"),
-            )?;
+            let preallocation =
+                strata
+                    .get(&stratum.stratum_id)
+                    .ok_or(VegetationError::V7CandidateRollback(
+                        "vegetation candidate stratum",
+                    ))?;
             let mut candidate = preallocation.candidate_after_growth.clone();
             if !candidate.pending_transfers.is_empty() {
                 return Err(VegetationError::V7Candidate("unresolved material transfer"));
@@ -315,12 +325,11 @@ fn construct_ending_occupancies(
     Ok(ending)
 }
 
-fn bind_material_proposals(
+pub(crate) fn bind_material_proposals_from_strata(
     transaction_id: TransactionId,
-    nitrogen_phase: &UncommittedNitrogenPhase,
+    strata: &BTreeMap<StratumId, crate::persistent_phase::StratumPreallocation>,
 ) -> Result<Vec<MaterialTransfer>, VegetationError> {
-    let mut amounts = nitrogen_phase
-        .strata()
+    let mut amounts = strata
         .iter()
         .flat_map(|(stratum_id, preallocation)| {
             preallocation
@@ -355,17 +364,24 @@ fn bind_material_proposals(
         .collect()
 }
 
-type CandidateLedgers = (
+pub(crate) type CandidateLedgers = (
     Vec<VegetationCarbonLedger>,
     Vec<VegetationNitrogenLedger>,
     Vec<VegetationDryMaterialLedger>,
 );
 
-fn construct_ledgers(
+#[derive(Clone, Copy)]
+pub(crate) struct VegetationLedgerStateView<'a> {
+    pub strata: &'a BTreeMap<StratumId, StratumSharedState>,
+    pub state_sha256: &'a str,
+}
+
+pub(crate) fn construct_ledgers_from_preallocations(
     configuration: &VegetationConfiguration,
-    beginning: &CoupledOwnedState,
-    ending: &CoupledOwnedState,
-    nitrogen_phase: &UncommittedNitrogenPhase,
+    beginning: VegetationLedgerStateView<'_>,
+    ending: VegetationLedgerStateView<'_>,
+    transaction_id: TransactionId,
+    strata: &BTreeMap<StratumId, crate::persistent_phase::StratumPreallocation>,
     proposals: &[MaterialTransfer],
 ) -> Result<CandidateLedgers, VegetationError> {
     let mut carbon_ledgers = Vec::new();
@@ -382,9 +398,12 @@ fn construct_ledgers(
                 .ok_or(VegetationError::V7CandidateRollback(
                     "vegetation ledger ending stratum",
                 ))?;
-        let preallocation = nitrogen_phase.strata().get(&stratum.stratum_id).ok_or(
-            VegetationError::V7CandidateRollback("vegetation ledger preallocation"),
-        )?;
+        let preallocation =
+            strata
+                .get(&stratum.stratum_id)
+                .ok_or(VegetationError::V7CandidateRollback(
+                    "vegetation ledger preallocation",
+                ))?;
         let owner = format!("stratum:{}", stratum.stratum_id.as_str());
         let stratum_proposals = proposals
             .iter()
@@ -393,10 +412,10 @@ fn construct_ledgers(
         let outgoing_carbon = stratum_proposals.iter().map(|value| value.carbon).sum();
         let outgoing_nitrogen = stratum_proposals.iter().map(|value| value.nitrogen).sum();
         let identity = VegetationLedgerIdentity {
-            transaction_id: nitrogen_phase.transaction_id(),
+            transaction_id,
             stratum_id: stratum.stratum_id.clone(),
-            beginning_state_sha256: beginning.state_sha256.clone(),
-            ending_state_sha256: ending.state_sha256.clone(),
+            beginning_state_sha256: beginning.state_sha256.to_owned(),
+            ending_state_sha256: ending.state_sha256.to_owned(),
         };
         carbon_ledgers.push(VegetationCarbonLedger {
             identity: identity.clone(),

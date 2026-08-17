@@ -1,0 +1,5 @@
+command: cargo clippy --workspace --all-targets -- -D warnings
+start_utc: 2026-08-14T21:51:57Z
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.62s
+elapsed_sec=1.01 user_sec=0.56 sys_sec=0.20
+exit_code: 0

@@ -104,3 +104,201 @@ Status: accumulating; failures and retries will be preserved.
 Broad workspace, benchmark and terminal gates were not run because the
 required forest endpoint is absent. Running them would not convert this HOLD
 into a complete Child-3 release.
+
+## Dependency lift and resumption
+
+- PASS: persistent snow-free surface-liquid hydrology custody dependency closed
+  at `a7d692da4` with dual terminal verification, exact-head 2,901/2,901
+  workspace evidence and byte-preserving prompt archival.
+- Static: `SC-LANDSURFACEENERGY-001@3` and `SC-SURFACELIQUID-001@6` authorize
+  the covered forest implementation; no successor model identity is required.
+- Static: the historical HOLD and all rejected aliases remain preserved. Child
+  3 resumes in this package and has not yet earned runtime, benchmark or
+  terminal completion evidence.
+
+## Covered forest real-owner increment
+
+- FAIL then PASS: the first wrapper integration exposed a typed identity defect
+  in `RootRuntimeIdentity`: root keys inherited the LSE owner. The DTO now
+  carries the actual vegetation owner, root/LSE alias and mixed-owner rows are
+  rejected, and the frozen `vegetation-v8` versus `land-surface-energy-v1`
+  owner identities pass without rewriting keys.
+- PASS: frozen two-rank forest/litter potential and fixed-cap solves feed one
+  unified authorization spanning eight root rows, the litter store and the
+  explicit companion open-tile row.
+- PASS: covered focused tests 2/2; complete integration 71/71; LSE 31/31;
+  affected checks and strict all-target Clippy; formatting and diff hygiene.
+- PASS: finalized D/A/F, accepted energy/diagnostics, post-solve covered ingress,
+  three physical rollback owners and byte-identical production frame are
+  exercised through the public wrapper.
+- Bounded limitation: the frozen covered solve is evaporative. Existing unified
+  owner tests prove positive condensation credit, but a constitutive covered
+  condensation fixture and the V8 vegetation/BGC five-owner envelope remain
+  pending; Child 3 remains executing.
+
+## V8 state and accepted-operands increments
+
+- PASS at `1202fb76f`: separate strict `OPENWEPP_C3_WOODY_V8` vegetation state,
+  exact registry identity, deterministic state digest, restart parsing and
+  V7-to-V8 migration. Occupancy lanes remove exactly the two canopy-air fields;
+  each covered vegetation tile owns exactly one temperature/humidity lane.
+  Ambiguous V7 tile lanes report both unresolved fields and never average,
+  select, reset or synthesize values. The V7 executable identity remains
+  unchanged.
+- PASS at `b127cbfdf`: the joint LSE solver retains accepted class-resolved
+  `Ag`, `An` and `Rd` at the solved `ci` and temperature. A sealed potential
+  payload and a distinct sealed fixed-authorization-final payload preserve V8
+  model, LSE configuration/beginning-state, owner, OFE, tile, pass and typed
+  root D/A/F identity. The cap-active regression proves potential and final
+  carbon are not aliases.
+- `Ran: cargo nextest run -p openwepp-vegetation -p openwepp-land-surface-energy --profile quick`
+  — PASS, 273/273.
+- `Ran: cargo check -p openwepp-hillslope-orchestrator` — PASS.
+- `Ran: cargo clippy -p openwepp-vegetation -p openwepp-land-surface-energy --all-targets -- -D warnings`
+  — PASS.
+- `Ran: cargo fmt --all -- --check` and `git diff --check` — PASS.
+- Bounded limitation: the accepted payload intentionally does not claim a
+  complete E04 ending canopy store or release ledger. The current covered
+  solver has not yet integrated rainfall, interception, throughfall, stemflow
+  and both drainage terms. The later V8 vegetation owner remains fail-closed
+  until those accepted operands and exact vegetation beginning-state lineage
+  are present.
+
+## V8 persistent composition and E04 increments
+
+- PASS at `fac5b4fd7`: the dependency-neutral V8 persistent phase consumes the
+  sealed potential and fixed-authorization carbon receipts without rerunning
+  V7 water or E01--E15 physics. Potential carbon issues the immutable mineral-N
+  requests; capped carbon determines final demand and receipt-bound growth.
+  One global nitrogen authorization is retained and `T10` is advanced from the
+  immutable beginning state and forcing. The phase remains uncommitted.
+- PASS on the current E04 bytes: rainfall, interception, throughfall,
+  stemflow, initial drainage, signed wet evaporation/condensation and second
+  drainage are evaluated inside every covered-column residual. Descendants
+  receive the accepted upper release top-to-bottom; stemflow bypasses lower
+  foliage. Potential and fixed-authorization-final passes rebuild separately
+  from the immutable beginning stores.
+- PASS: sealed vegetation-facing potential and final payloads now retain the
+  complete pass-tagged occupancy liquid operands, ground canopy release and
+  ground stemflow. Independent validation reconstructs occupancy closure,
+  top-to-bottom routing, final signed wet phase change, exact root `D/A/F` and
+  the canonical 4,218 J kg^-1 K^-1 liquid enthalpy.
+- `Ran: cargo nextest run -p openwepp-land-surface-energy --profile quick` —
+  PASS, 33/33.
+- `Ran: cargo nextest run --test land_surface_energy_real_hydrology_shadow_contract --profile quick`
+  — PASS, 71/71.
+- `Ran: cargo clippy -p openwepp-land-surface-energy -p openwepp-hillslope-orchestrator --all-targets -- -D warnings`
+  — PASS.
+- `Ran: cargo fmt --all -- --check` and `git diff --check` — PASS.
+- `Static: line-count governance` — PASS: `solver.rs` is 2,998 lines after
+  extracting the E04 ledger and covered output DTOs; no lint suppression was
+  added.
+- Remaining boundary: the public covered positive-condensation custody vector
+  and the complete V8 vegetation/BGC/heterogeneous owner envelope are still
+  pending. No public V8 commit claim is made.
+
+## Public covered condensation custody vector
+
+- PASS: the actual covered forest wrapper solves a positive-condensation case
+  from humid air and cold ground/soil starts while the hydrology-owned litter
+  store begins at its exact 6 kg m^-2 tile capacity.
+- PASS: the accepted ground branch is typed `Condensation`; ground request,
+  authorization and finalized withdrawal are exact zero. The signed credit
+  retains transaction, hydrology owner, OFE, tile, surface, stand-ground basis,
+  temperature and canonical liquid enthalpy.
+- PASS: the full store remains at capacity and the entire condensation excess
+  becomes typed `CondensationOverflow` ingress. WB14 receipt mass and enthalpy
+  reconstruct under the canonical closure envelope after the required
+  stand/tile conversion roundtrip.
+- PASS: unified candidate validation, unchanged production-frame bytes and all
+  rollback hashes (`before_sha256 == after_sha256`).
+- `Ran: focused covered condensation case` — PASS, 1/1.
+- `Ran: cargo nextest run --test land_surface_energy_real_hydrology_shadow_contract --profile quick`
+  — PASS, 72/72.
+- `Ran: cargo fmt --all -- --check` and file-scoped `git diff --check` — PASS.
+- Remaining boundary: persistent V8 vegetation/BGC and the complete
+  heterogeneous owner envelope remain pending.
+
+## Uncommitted V8 vegetation owner candidate
+
+- PASS: an explicit typed LSE-component-to-vegetation-occupancy bijection
+  binds the dependency-neutral final receipt without parsing or concatenating
+  identity strings. Missing, duplicate and non-bijective mappings fail closed.
+- PASS: candidate construction requires the exact potential carbon pass,
+  fixed-final carbon pass, persistent phase, V8 configuration, beginning state,
+  transaction, interval, tile fraction and one consistent LSE lineage.
+- PASS: ending occupancy liquid and numerical lanes and the shared tile
+  canopy-air lane are sourced only from the fixed-authorization-final receipt.
+  Shared strata come only from the already finalized E16--E22 preallocations.
+- PASS: the V8 state digest is recomputed and validated; material proposals are
+  bound deterministically; vegetation C, N and dry-material ledgers are
+  independently reconstructed. The type exposes no commit method, water
+  arbiter or V7 E01--E15 entry.
+- `Ran: cargo nextest run -p openwepp-vegetation --profile quick` — PASS,
+  249/249.
+- `Ran: cargo check -p openwepp-vegetation` — PASS.
+- `Ran: cargo clippy -p openwepp-vegetation --all-targets -- -D warnings` —
+  PASS.
+- `Ran: cargo fmt --all -- --check` and `git diff --check` — PASS.
+- Remaining boundary: construct the independent BGC receiving candidate and
+  bind vegetation, real hydrology, LSE, BGC and soil thermal into one
+  heterogeneous atomic shadow transaction.
+
+## V8 physical projection and heterogeneous envelope boundary
+
+- PASS: the orchestrator projects the actual covered physical result into
+  validated potential-carbon, capped-carbon and fixed-final V8 state receipts
+  using a caller-supplied typed component/occupancy bijection. It performs no
+  constitutive solve, authorization, string parsing or owner mutation.
+- PASS: the projection validates the complete sealed E04 ledgers and requires
+  exact root key sets and bit-identical `D/A/F` correspondence with the actual
+  unified hydrology candidate.
+- PASS: the heterogeneous uncommitted envelope retains vegetation, actual real
+  hydrology, LSE, soil-thermal and independently constructed BGC candidates.
+  BGC transformations remain disabled and BGC-created material receipts are
+  compared field-for-field with vegetation proposals. No commit API exists.
+- `Ran: cargo test -p openwepp-hillslope-orchestrator v8_projection --lib` —
+  PASS, 2/2.
+- `Ran: cargo test -p openwepp-hillslope-orchestrator covered_v8 --lib` —
+  PASS, 2/2.
+- `Ran: affected cargo check and strict all-target Clippy` — PASS.
+- `Ran: cargo fmt --all -- --check` and `git diff --check` — PASS.
+- Bounded limitation: helper-level projection and envelope guards do not by
+  themselves prove the complete public physical→persistent→BGC composition.
+  An aligned V8 vegetation configuration/state fixture must exercise that
+  exact public chain before the forest endpoint can close.
+
+## Complete public V8 forest owner composition
+
+- `Ran: first nonlexical two-stratum public fixture attempt` — FAIL with BGC
+  `OwnerMismatch`. Potential requests and authorizations retained configuration
+  order, while finalized uses were emitted in lexical stratum-map order. The
+  failure is preserved as implementation evidence and was not avoided by
+  renaming or reordering the fixture.
+- PASS after correction: finalized mineral-N uses are indexed by exact
+  transaction, owner, layer/species key and amount basis, then emitted in the
+  immutable original request order. Missing, duplicate and unexpected use
+  identities fail closed. Amounts are unchanged and the global nitrogen
+  arbiter is still called exactly once.
+- PASS: `execute_covered_v8_transaction` validates strict V8 configuration,
+  state, forcing and transaction lineage before physical execution. It derives
+  both potential and final solver trials from the same immutable V8, LSE and
+  soil-thermal beginning state; callers cannot supply a trial vector.
+- PASS: the public nonlexical two-rank forest fixture constructs the actual
+  potential and fixed-cap physical solve, typed projection, E16--E22 persistent
+  phase, strict ending V8 candidate and independent BGC receiving candidate.
+  Root water `D/A/F`, mineral-N `D/A/F`, and material proposal/receipt identity
+  all join across the retained owner candidates. No commit API is exposed and
+  the production frame and rollback hashes remain unchanged.
+- `Ran: cargo nextest run -p openwepp-vegetation --profile quick` — PASS,
+  250/250.
+- `Ran: cargo nextest run --test land_surface_energy_real_hydrology_shadow_contract --profile quick`
+  — PASS, 73/73.
+- `Ran: cargo clippy -p openwepp-vegetation --all-targets -- -D warnings` —
+  PASS.
+- `Ran: cargo clippy -p openwepp-hillslope-orchestrator --all-targets -- -D warnings`
+  — PASS.
+- Remaining boundary: fresh exact-byte science and Rust review, performance
+  evidence, heavy closure gates and dual terminal verification. This Child-3
+  runtime package still makes no real scheduler-consumer or atomic shadow
+  commit claim; those remain Child-4 responsibilities.

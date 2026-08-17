@@ -1,0 +1,11 @@
+command: bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md
+start_utc: 2026-08-15T07:37:54Z
+cwd: /home/workdir/openWEPP
+commit: 4c7b64237
+command_index: 10
+tmp_workdir: /tmp/ow-nextest-openwepp-20260814-5
+rustc_version: rustc 1.92.0 (ded5c06cf 2025-12-08)
+cargo_version: cargo 1.92.0 (344c4567c 2025-10-21)
+PASS: SC unit compliance lint found no findings
+elapsed_sec=0.12 user_sec=0.10 sys_sec=0.02
+exit_code: 0

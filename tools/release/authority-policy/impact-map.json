@@ -2,10 +2,400 @@
   "schema_version": "openwepp-gate-impact-map-v1",
   "policy_id": "ADR-0039",
   "policy_sha256": "7a95025d00a8dd655f1a858c6990573c85ca202a11228520ed2370ba2d09cea3",
-  "generation": 24,
+  "generation": 34,
   "enforcement_status": "SCHEMA_ONLY_NONBLOCKING",
   "unknown_path_action": "ESCALATE_CRITICAL",
   "entries": [
+    {
+      "entry_id": "surface-liquid-orchestrator-manifest",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/Cargo.toml" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-direct-owner",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-direct-identity-validation",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/identity_validation.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-direct-resource-validation",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/resource_validation.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-direct-attachment-errors",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_attachment.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-direct-ingress",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-independent-closure",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-independent-enthalpy-closure",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_enthalpy_closure.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-independent-closure-preflight",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure_preflight.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-independent-raw-parent-closure",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_raw_parent_closure.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-direct-core-frame",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-wb14-transition",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-wb14-shared-transition",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-direct-owner-tests",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner_tests.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-direct-ingress-tests",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_tests.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-direct-ingress-context-tests",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_context_tests.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-authority-contract-test",
+      "matcher": { "kind": "exact_path", "value": "tests/integration/surface_liquid_hydrology_custody_authority_contract.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-lse-condensation-protocol",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-land-surface-energy/src/transaction.rs" },
+      "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-land-surface-energy", "openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-land-surface-energy", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-land-surface-energy", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md", "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-lse-condensation-lse-contract",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-land-surface-energy/src/transaction.rs" },
+      "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "snow-free-land-surface-energy", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-land-surface-energy", "openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-land-surface-energy", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-land-surface-energy", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-LANDSURFACEENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-unified-real-owner-bridge",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md", "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-receiver-validation",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/receiver_validation.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md", "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-receiver-validation-lse-contract",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/receiver_validation.rs" },
+      "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "snow-free-land-surface-energy", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-LANDSURFACEENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-receiver-preflight",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/receiver_preflight.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md", "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-receiver-preflight-lse-contract",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/receiver_preflight.rs" },
+      "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "snow-free-land-surface-energy", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-LANDSURFACEENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-receiver-failure",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/receiver_failure.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md", "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-receiver-failure-lse-contract",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/receiver_failure.rs" },
+      "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "snow-free-land-surface-energy", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-LANDSURFACEENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-unified-entry-preflight",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/unified_entry_preflight.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md", "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-unified-entry-preflight-lse-contract",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/unified_entry_preflight.rs" },
+      "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "snow-free-land-surface-energy", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-LANDSURFACEENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-finalization-sealing",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/finalization_sealing.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md", "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-finalization-sealing-lse-contract",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/finalization_sealing.rs" },
+      "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "snow-free-land-surface-energy", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-LANDSURFACEENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-unified-real-owner-lse-contract",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs" },
+      "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "snow-free-land-surface-energy", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-LANDSURFACEENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-owner-contract-test",
+      "matcher": { "kind": "exact_path", "value": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp", "openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md", "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-owner-lse-contract-test",
+      "matcher": { "kind": "exact_path", "value": "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs" },
+      "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "snow-free-land-surface-energy", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp", "openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-LANDSURFACEENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-owner-raw-hash-contract-test",
+      "matcher": { "kind": "exact_path", "value": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp", "openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md", "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-owner-raw-hash-lse-contract-test",
+      "matcher": { "kind": "exact_path", "value": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs" },
+      "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "snow-free-land-surface-energy", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp", "openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-LANDSURFACEENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-owner-extracted-contract-tests",
+      "matcher": { "kind": "path_prefix", "value": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp", "openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md", "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-real-owner-extracted-lse-contract-tests",
+      "matcher": { "kind": "path_prefix", "value": "tests/integration/land_surface_energy_real_hydrology_shadow_contract/" },
+      "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "snow-free-land-surface-energy", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp", "openwepp-hillslope-orchestrator", "openwepp-land-surface-energy"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-LANDSURFACEENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-unit-boundary-catalog",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-sim-contract/src/units_mod/boundary_catalog.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-sim-contract", "openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-sim-contract"], "covering_test_targets": ["openwepp", "openwepp-sim-contract"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "surface-liquid-unit-boundary-types",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-sim-contract/src/units_mod/types.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "persistent-snow-free-surface-liquid-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-sim-contract", "openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-sim-contract"], "covering_test_targets": ["openwepp", "openwepp-sim-contract"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
     {
       "entry_id": "c3-biogeochemistry-process",
       "matcher": { "kind": "path_prefix", "value": "crates/openwepp-biogeochemistry" },

@@ -40,12 +40,16 @@ impl LandSurfaceEnergyState {
             });
         }
         if self.tiles.is_empty() {
-            return Err(LandSurfaceEnergyError::Topology("empty state tile set"));
+            return Err(LandSurfaceEnergyError::topology_cardinality(
+                "empty state tile set",
+            ));
         }
         let mut identities = BTreeSet::new();
         for tile in &self.tiles {
             if !identities.insert((tile.ofe_id.clone(), tile.tile_id.clone())) {
-                return Err(LandSurfaceEnergyError::Topology("duplicate tile state"));
+                return Err(LandSurfaceEnergyError::topology_cardinality(
+                    "duplicate tile state",
+                ));
             }
             require_finite(
                 tile.surface_enthalpy_j_m2_tile_ground,
@@ -110,7 +114,9 @@ impl LandSurfaceEnergyState {
         let mut actual = BTreeSet::new();
         for tile in &self.tiles {
             if !actual.insert((tile.ofe_id.clone(), tile.tile_id.clone())) {
-                return Err(LandSurfaceEnergyError::Topology("duplicate tile state"));
+                return Err(LandSurfaceEnergyError::topology_cardinality(
+                    "duplicate tile state",
+                ));
             }
             require_finite(
                 tile.surface_enthalpy_j_m2_tile_ground,
@@ -134,7 +140,9 @@ impl LandSurfaceEnergyState {
                         .iter()
                         .find(|candidate| candidate.tile_id == tile.tile_id)
                 })
-                .ok_or(LandSurfaceEnergyError::Topology("extra tile state"))?;
+                .ok_or(LandSurfaceEnergyError::topology_cardinality(
+                    "extra tile state",
+                ))?;
             if configured_tile.surface_heat_storage_mode == SurfaceHeatStorageMode::EquilibriumZero
                 && tile.surface_enthalpy_j_m2_tile_ground != 0.0
             {
@@ -153,7 +161,9 @@ impl LandSurfaceEnergyState {
             }
         }
         if actual != expected {
-            return Err(LandSurfaceEnergyError::Topology("state tile set mismatch"));
+            return Err(LandSurfaceEnergyError::topology_cardinality(
+                "state tile set mismatch",
+            ));
         }
         let computed = self.canonical_sha256()?;
         if self.state_sha256 != computed {

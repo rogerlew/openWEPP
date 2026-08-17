@@ -1,0 +1,193 @@
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling cfg-if v1.0.4
+   Compiling version_check v0.9.5
+   Compiling libm v0.2.16
+   Compiling autocfg v1.5.1
+   Compiling libc v0.2.186
+   Compiling itoa v1.0.18
+   Compiling typenum v1.20.0
+   Compiling equivalent v1.0.2
+   Compiling openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+   Compiling cpufeatures v0.2.17
+   Compiling ryu v1.0.23
+   Compiling memchr v2.8.0
+   Compiling hashbrown v0.17.1
+   Compiling crc32fast v1.5.0
+   Compiling openwepp-unit-boundary v0.1.0 (/home/workdir/openWEPP/crates/openwepp-unit-boundary)
+   Compiling adler2 v2.0.1
+   Compiling unsafe-libyaml v0.2.11
+   Compiling zerocopy v0.8.48
+   Compiling simd-adler32 v0.3.9
+   Compiling zmij v1.0.21
+   Compiling serde_json v1.0.150
+   Compiling getrandom v0.3.4
+   Compiling shlex v1.3.0
+   Compiling once_cell v1.21.4
+   Compiling find-msvc-tools v0.1.9
+   Compiling bytes v1.11.1
+   Compiling pkg-config v0.3.33
+   Compiling lexical-util v1.0.7
+   Compiling arrow-schema v54.3.1
+   Compiling thiserror v2.0.20
+   Compiling semver v1.0.28
+   Compiling stable_deref_trait v1.2.1
+   Compiling iana-time-zone v0.1.65
+   Compiling hashbrown v0.15.5
+   Compiling alloc-no-stdlib v2.0.4
+   Compiling zstd-safe v7.2.4
+   Compiling paste v1.0.15
+   Compiling snap v1.1.1
+   Compiling bitflags v1.3.2
+   Compiling base64 v0.22.1
+   Compiling byteorder v1.5.0
+   Compiling twox-hash v2.1.2
+   Compiling integer-encoding v3.0.4
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcUpuAbP"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcnpwcO4"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcleiXfn"
+
+error: could not compile `cpufeatures` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcciIgA9"
+
+error: could not compile `equivalent` (lib) due to 1 previous error
+error: could not compile `cfg-if` (lib) due to 1 previous error
+error: could not compile `unicode-ident` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcI8WPDm"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcHPIryI"
+
+error: could not compile `stable_deref_trait` (lib) due to 1 previous error
+error: could not compile `adler2` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcIXn3ot"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcsgmBB0"
+
+error: could not compile `quote` (build script) due to 1 previous error
+error: could not compile `bitflags` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcFchp99"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcjuZso7"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcOIkQMT"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustccZ9ovf"
+
+error: could not compile `crc32fast` (build script) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustc5kd9gV"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcYpjxr6"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustclojKY9"
+
+error: could not compile `proc-macro2` (build script) due to 1 previous error
+error: could not compile `libm` (build script) due to 1 previous error
+error: could not compile `serde` (build script) due to 1 previous error
+error: could not compile `serde_core` (build script) due to 1 previous error
+error: could not compile `zstd-safe` (build script) due to 1 previous error
+error: could not compile `serde_json` (build script) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustc5KcDtq"
+
+error: could not compile `twox-hash` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcsQP8wq"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcmy2iMb"
+
+error: could not compile `alloc-no-stdlib` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcTUYpfE"
+
+error: could not compile `itoa` (lib) due to 1 previous error
+error: could not compile `ryu` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcz9Yris"
+
+error: could not compile `libc` (build script) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcnBqvtq"
+
+error: could not compile `zmij` (build script) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcVofHbp"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcDqgxVU"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcjSUnxe"
+
+error: could not compile `zerocopy` (build script) due to 1 previous error
+error: could not compile `getrandom` (build script) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustc6zYqLg"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcx2B4Tp"
+
+error: could not compile `once_cell` (lib) due to 1 previous error
+error: could not compile `snap` (build script) due to 1 previous error
+error: could not compile `integer-encoding` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcIMOyiY"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcNgh2GQ"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcLIZxRC"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcpww4ch"
+
+error: could not compile `version_check` (lib) due to 1 previous error
+error: could not compile `openwepp-unit-boundary` (lib) due to 1 previous error
+error: could not compile `simd-adler32` (lib) due to 1 previous error
+error: could not compile `shlex` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustc0vRrqF"
+
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustceDj5R2"
+
+error: could not compile `thiserror` (build script) due to 1 previous error
+error: could not compile `paste` (build script) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustc5g8Ao6"
+
+error: could not compile `iana-time-zone` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustc40ewKK"
+
+error: could not compile `find-msvc-tools` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcswGp4G"
+
+error: could not compile `byteorder` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcV5YU40"
+
+error: could not compile `autocfg` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcXd52DV"
+
+error: could not compile `semver` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcn1cz8n"
+
+error: could not compile `pkg-config` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcOEhJBp"
+
+error: could not compile `base64` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcRnSHxD"
+
+error: could not compile `lexical-util` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustckX579O"
+
+error: could not compile `memchr` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcTO7Uzd"
+
+error: could not compile `hashbrown` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcZnqoMr"
+
+error: could not compile `hashbrown` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcB6B2wc"
+
+error: could not compile `bytes` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcZBAOqY"
+
+error: could not compile `unsafe-libyaml` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcsrN1x9"
+
+error: could not compile `typenum` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcVDkQbX"
+
+error: could not compile `arrow-schema` (lib) due to 1 previous error
+error: couldn't create a temp dir: No such file or directory (os error 2) at path "/tmp/openwepp_gate_run3_20260815_124957/tmpdir/rustcnwzFMn"
+
+error: could not compile `openwepp-sim-contract` (lib) due to 1 previous error

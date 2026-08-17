@@ -8,6 +8,7 @@ use sha2::{Digest, Sha256};
 use super::{CoupledOwnedState, PhenologyPhase, StratumSharedState};
 use crate::carbon_nitrogen::{ElementPool, MaterialTransfer, Tissue, TissuePool};
 use crate::occupancy_state::OccupancyState;
+use crate::v8_state::{V8CoupledOwnedState, V8OccupancyState, V8TileCanopyAirState};
 
 enum Node {
     Object(BTreeMap<String, Node>),
@@ -20,6 +21,146 @@ enum Node {
 
 pub(super) fn sha256(state: &CoupledOwnedState) -> String {
     format!("{:x}", Sha256::digest(bytes(state)))
+}
+
+pub(crate) fn v8_sha256(state: &V8CoupledOwnedState) -> String {
+    format!("{:x}", Sha256::digest(v8_bytes(state)))
+}
+
+pub(crate) fn v8_bytes(state: &V8CoupledOwnedState) -> Vec<u8> {
+    let mut output = Vec::new();
+    encode(&v8_node(state), "", &mut output);
+    output
+}
+
+fn v8_node(state: &V8CoupledOwnedState) -> Node {
+    let mut root = BTreeMap::new();
+    root.insert(
+        "configuration_sha256".into(),
+        Node::String(state.configuration_sha256.clone()),
+    );
+    root.insert(
+        "last_transaction_id".into(),
+        Node::U128(state.last_transaction_id),
+    );
+    root.insert(
+        "model_definition_sha256".into(),
+        Node::String(state.model_definition_sha256.clone()),
+    );
+    root.insert(
+        "occupancies".into(),
+        Node::Array(
+            state
+                .occupancies
+                .iter()
+                .map(|(id, lane)| {
+                    object([
+                        (
+                            "identity",
+                            object([
+                                (
+                                    "stratum_id",
+                                    Node::String(id.stratum_id.as_str().to_owned()),
+                                ),
+                                ("tile_id", Node::String(id.tile_id.as_str().to_owned())),
+                            ]),
+                        ),
+                        ("state", v8_occupancy(lane)),
+                    ])
+                })
+                .collect(),
+        ),
+    );
+    root.insert("state_sha256".into(), Node::String(String::new()));
+    root.insert(
+        "strata".into(),
+        Node::Object(
+            state
+                .strata
+                .iter()
+                .map(|(id, shared)| (id.as_str().to_owned(), stratum(shared)))
+                .collect(),
+        ),
+    );
+    root.insert(
+        "tile_canopy_air".into(),
+        Node::Array(
+            state
+                .tile_canopy_air
+                .iter()
+                .map(|(id, lane)| {
+                    object([
+                        (
+                            "identity",
+                            object([("tile_id", Node::String(id.as_str().to_owned()))]),
+                        ),
+                        ("state", v8_tile_air(lane)),
+                    ])
+                })
+                .collect(),
+        ),
+    );
+    Node::Object(root)
+}
+
+fn v8_occupancy(value: &V8OccupancyState) -> Node {
+    object([
+        ("beta_hyd", Node::F64(value.beta_hyd)),
+        (
+            "canopy_liquid_kg_h2o_m2_tile_ground",
+            Node::F64(value.canopy_liquid_kg_h2o_m2_tile_ground),
+        ),
+        (
+            "dry_stem_temperature_k",
+            Node::F64(value.dry_stem_temperature_k),
+        ),
+        (
+            "last_accepted_transaction_id",
+            value
+                .last_accepted_transaction_id
+                .map_or(Node::Null, Node::U128),
+        ),
+        (
+            "root_node_potential_mm",
+            Node::F64(value.root_node_potential_mm),
+        ),
+        ("shade_ci_pa", Node::F64(value.shade_ci_pa)),
+        (
+            "shade_leaf_potential_mm",
+            Node::F64(value.shade_leaf_potential_mm),
+        ),
+        (
+            "shade_leaf_temperature_k",
+            Node::F64(value.shade_leaf_temperature_k),
+        ),
+        ("stem_potential_mm", Node::F64(value.stem_potential_mm)),
+        ("sun_ci_pa", Node::F64(value.sun_ci_pa)),
+        (
+            "sun_leaf_potential_mm",
+            Node::F64(value.sun_leaf_potential_mm),
+        ),
+        (
+            "sun_leaf_temperature_k",
+            Node::F64(value.sun_leaf_temperature_k),
+        ),
+        (
+            "wet_surface_temperature_k",
+            Node::F64(value.wet_surface_temperature_k),
+        ),
+    ])
+}
+
+fn v8_tile_air(value: &V8TileCanopyAirState) -> Node {
+    object([
+        (
+            "canopy_air_specific_humidity_kg_kg",
+            Node::F64(value.canopy_air_specific_humidity_kg_kg),
+        ),
+        (
+            "canopy_air_temperature_k",
+            Node::F64(value.canopy_air_temperature_k),
+        ),
+    ])
 }
 
 fn bytes(state: &CoupledOwnedState) -> Vec<u8> {

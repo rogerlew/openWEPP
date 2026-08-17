@@ -69,6 +69,17 @@ winter unit governance:
 - WB13 profile runtime aliases: `wb13_profile_depth_mm`,
   `wb13_profile_porosity_cap_mm`, `wb13_profile_fc_store_mm`,
   `wb13_profile_fc_tail_mm`, and `wb13_profile_wp_store_mm`.
+- Persistent snow-free surface-liquid custody aliases:
+  `surface_liquid.liquid_kg_m2_tile`,
+  `surface_liquid.capacity_kg_m2_tile`,
+  `surface_liquid.amount_kg_m2_ofe_ground`,
+  `surface_liquid.condensation_kg_m2_ofe_ground`,
+  `surface_liquid.parcel_mass_kg_m2_basis_ofe`,
+  `surface_liquid.parcel_temperature_k`,
+  `surface_liquid.parcel_enthalpy_j_m2_basis_ofe`,
+  `surface_liquid.ofe_area_m2`, and `surface_liquid.interval_s`. These are
+  candidate-only typed runtime seams owned by `SC-SURFACELIQUID-001`; none is a
+  production publication alias.
 
 `prcp` and WAT `P` are intentionally separate rows: runtime climate
 precipitation is meters at the parser seam, while the WAT publication column is

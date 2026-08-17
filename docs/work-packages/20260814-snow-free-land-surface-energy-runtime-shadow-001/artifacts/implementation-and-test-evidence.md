@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `bounded checkpoint PASS / forest real-owner endpoint HOLD`
+Status: `resumed increment PASS / covered physical three-owner sub-envelope`
 
 Evidence class: `Ran + Static`
 
@@ -34,3 +34,159 @@ Typed negative coverage rejects wrong/duplicate identity, frozen sources,
 stale state, unsupported litter/surface sources, unsupported condensation and
 selector reachability. These results do not turn the soil-layer path into the
 required forest-litter endpoint.
+
+## Resumed covered-forest increment
+
+The orchestrator now exposes `execute_covered_forest_shadow()`. It consumes the
+frozen two-rank forest-litter problem, obtains exact root plus litter requests
+from `solve_covered_potential_phase()`, joins caller-produced companion-tile
+requests, performs one unified real-owner authorization, and rebuilds the
+covered solve from immutable beginning state through `finalize_covered_phase()`.
+The accepted covered tile, complete submitted request batch and unified
+hydrology/LSE/soil-thermal candidate remain separately inspectable.
+
+The low-level root identity now carries its actual vegetation owner instead of
+aliasing the LSE owner. The public boundary rejects an LSE-owned root row and
+mixed vegetation owners. The real fixture proves exact request/authorization/
+final-use identity, signed-credit-capable owner composition, post-solve canopy
+ingress, component-energy validation, rollback-set identity and unchanged
+production-frame bytes.
+
+Ran on the resumed worktree:
+
+- covered focused tests: 2/2 PASS;
+- complete real-hydrology/LSE integration: 71/71 PASS;
+- LSE crate: 31/31 PASS;
+- affected crate checks and strict all-target Clippy: PASS;
+- formatting and diff hygiene: PASS.
+
+The frozen covered vector is evaporative. Constitutive positive condensation
+remains proven only at the existing unified-owner boundary, so this increment
+does not yet close the complete forest endpoint. It also does not yet construct
+the persistent V8 vegetation/BGC five-owner envelope.
+
+## V8 persistent state and physical receipt boundary
+
+The vegetation crate now has a separate strict V8 state surface while retaining
+V7 as its unchanged executable standalone identity. V8 moves canopy-air
+temperature and humidity from each occupancy to one shared covered-tile lane,
+binds all state bytes into a deterministic digest, and admits only the exact
+bit-identical V7-to-V8 migration. No OFE field or additional mutable numerical
+lane was invented inside the vegetation state; OFE identity remains an
+orchestrator envelope concern.
+
+The LSE transaction now exposes two distinct sealed physical projections. The
+potential projection retains the carbon operands required to issue canonical
+potential mineral-N requests. The final projection retains cap-active carbon,
+warm starts, shared canopy air, signed wet phase change and exact root D/A/F.
+Neither projection can be relabelled as the other, and the final projection is
+constructed only from the accepted fixed-cap rebuild.
+
+At that checkpoint, the increments deliberately did not fabricate a complete
+E04 canopy-liquid transition. Rainfall/interception/routing and exact beginning
+V8 vegetation-state lineage remained the next required boundaries; the
+subsequent evidence below records their disposition without rewriting the
+earlier limitation.
+
+## V8 persistent composition and complete E04 receipts
+
+The bounded V8 persistent phase now consumes the sealed potential and final
+carbon projections directly. It constructs potential mineral-N requests from
+potential carbon, performs one global authorization, and applies the finalized
+receipt to capped carbon and six-tissue E16--E22 composition. It does not call
+the V7 public transaction, rerun E01--E15, or mutate a persistent owner.
+
+The covered solve now performs E04 in every nonlinear residual evaluation.
+Each occupancy starts from its immutable beginning liquid store, receives rain
+from the upper accepted release, and exposes throughfall, stemflow, both
+drainage stages, signed wet phase change, ending store, wet fraction,
+temperature and canonical liquid enthalpy. Stemflow bypasses lower occupancies;
+throughfall and both drainage terms route to the descendant. The potential and
+fixed-cap final passes carry distinct sealed ledgers and both rebuild from the
+same beginning stores.
+
+Ran on these bytes:
+
+- LSE runtime: 33/33 PASS;
+- complete real-hydrology/LSE integration: 71/71 PASS;
+- affected strict all-target Clippy: PASS;
+- formatting and diff hygiene: PASS;
+- `solver.rs`: 2,998 lines, within the hard 3,000-line governance bound.
+
+This closes the missing E04 operand boundary but not the Child-3 endpoint. A
+public covered condensation-to-WB14 vector and the persistent V8 vegetation,
+BGC and complete heterogeneous owner envelope remain required before atomic
+shadow commit can be claimed.
+
+## Public covered condensation-to-WB14 evidence
+
+The public forest wrapper now has a nondegenerate condensation case with a full
+hydrology-owned litter store. It retains exact-zero ground `D/A/F`, constructs
+one positive signed credit with complete identity and canonical liquid
+enthalpy, holds the resource store at capacity, and routes the excess as a
+timed `CondensationOverflow` parcel through WB14. The final receipt mass and
+enthalpy reconstruct from the owner operands; production state remains byte
+identical and every recorded rollback hash is unchanged.
+
+Ran: the focused case passed 1/1 and the complete LSE/real-hydrology integration
+target passed 72/72. This closes the previously named condensation evidence
+gap. The V8 persistent vegetation/BGC and heterogeneous atomic owner envelope
+remain the Child-3 completion boundary.
+
+## Sealed uncommitted V8 vegetation owner
+
+The vegetation crate now constructs a complete uncommitted V8 owner candidate
+from the exact sealed physical and persistent receipts. A typed explicit
+component/occupancy bijection preserves topology without string parsing. The
+candidate accepts only fixed-final occupancy and shared canopy-air state,
+recomputes the strict V8 digest, binds deterministic material proposals, and
+independently reconstructs vegetation carbon, nitrogen and dry-material
+ledgers. It cannot authorize water, rerun V7 E01--E15, or commit state.
+
+Ran: vegetation quick 249/249, crate check, strict all-target Clippy,
+formatting and diff hygiene all passed. BGC receipt construction and the
+complete heterogeneous atomic owner envelope remain pending.
+
+## V8 projection and receiving-owner boundary
+
+The orchestrator now has a non-constitutive typed projection from the actual
+covered LSE/real-hydrology result to the three validated V8 receipt types. It
+checks complete E04 and root-water identity against the actual owner result.
+The separate heterogeneous envelope constructs BGC independently with soil
+transformations disabled, compares BGC receipts to vegetation proposals, and
+retains vegetation, real hydrology, LSE, soil thermal and BGC candidates with
+one transaction identity. Neither API can commit or authorize water.
+
+Ran: projection guards 2/2, envelope guards 2/2, affected checks, strict
+Clippy, formatting and diff hygiene passed. This is bounded helper evidence;
+the aligned public end-to-end V8 physical/persistent/BGC fixture remains
+required before Child-3 completion.
+
+## Complete public V8 forest composition
+
+The public covered transaction now derives the joint numerical start from the
+strict V8 occupancy lanes, shared tile canopy-air state, LSE ground warm start
+and ordered soil-thermal beginning lanes. The potential and fixed-cap passes
+receive the same beginning-derived vector. No caller-provided trial or stale
+potential candidate can enter the accepted chain.
+
+The first deliberately nonlexical two-stratum fixture exposed a real protocol
+ordering defect: finalized mineral-N uses followed lexical state-map order
+instead of the immutable request order. The correction reorders by the complete
+typed protocol identity without modifying any amount or issuing another
+authorization. A crate-local regression proves the reordered triples pass the
+kernel protocol and independent BGC candidate constructor.
+
+Ran on the corrected bytes:
+
+- vegetation quick: 250/250 PASS;
+- full LSE/real-hydrology integration target: 73/73 PASS;
+- strict all-target Clippy for vegetation and hillslope orchestrator: PASS.
+
+The aligned public fixture now retains the uncommitted vegetation, actual
+unified hydrology, LSE, soil-thermal and independent BGC candidate surfaces from
+one beginning snapshot. It proves exact root-water and mineral-N protocol joins,
+material proposal/receipt identity, strict V8 ending-state validation,
+unchanged production bytes and rollback hashes. Child 3 still exposes no
+commit; atomic whole-shadow replacement and a real scheduler consumer remain
+owned by Child 4.

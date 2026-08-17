@@ -1,6 +1,6 @@
 # Implement Snow-Free Land-Surface-Energy Runtime Shadow
 
-Status: `executed-hold / exact runtime core and soil-layer real-owner bridge pass / forest-litter water custody absent`
+Status: `executing / independent review remediation active / terminal gates withheld`
 
 Date: `2026-08-14`
 
@@ -20,6 +20,9 @@ remaining default-off and without a real hillslope consumer claim.
 - `crates/openwepp-land-surface-energy/**`;
 - dependency-neutral boundary additions in `openwepp-kernel-contract` only when
   the frozen schemas cannot be represented locally without duplication;
+- V8-only projection, receipt, candidate and protocol-ordering additions in
+  `crates/openwepp-vegetation/**` required to connect the already admitted V8
+  owner to the LSE runtime without rerunning or mutating V7;
 - default-off adapter code in `openwepp-hillslope-orchestrator`;
 - Child-3 contract/integration tests; and
 - this package and campaign lifecycle surfaces.
@@ -43,11 +46,21 @@ post-hoc energy proposals and meteorology helpers are not constitutive inputs.
   fixed-cap solves, typed diagnostics, owner operands and rollback hashes.
 - [x] Connect mixed root/bare-ground soil-layer requests to one actual
   production hydrology authorization with clone-only candidate debit.
-- [ ] Connect forest-litter/surface-liquid withdrawal and condensation credit
-  to an actual persistent hydrology owner. Blocked by the exact interface
-  recorded in `artifacts/real-hydrology-surface-liquid-hold-audit.md`.
+- [x] Connect forest-litter/surface-liquid withdrawal and condensation credit
+  to the terminally released persistent hydrology owner. The historical blocker
+  remains recorded in `artifacts/real-hydrology-surface-liquid-hold-audit.md`;
+  resumption authority and scope are recorded in `artifacts/resume-intake.md`.
+  The resumed path now proves evaporative and positive-condensation branches,
+  WB14 overflow routing, exact root and ground `D/A/F`, and one aligned public
+  physical-to-persistent-to-BGC envelope from immutable V8 beginning state.
+  The envelope is uncommitted and the production frame remains byte-identical.
 - [ ] Pass terminal science/Rust reviews, benchmark and dual verification only
   after the custody hold is lifted and the complete forest endpoint exists.
+
+Fresh review at `dfc7cf971` rejected the first endpoint claim. The retained
+physical kernels and custody owner remain active implementation evidence, while
+all accepted findings in `artifacts/review-finding-disposition.md` are corrected
+before performance or heavy gates become legitimate.
 
 ## Delegation
 

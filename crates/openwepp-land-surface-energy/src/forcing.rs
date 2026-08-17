@@ -171,7 +171,9 @@ impl LandSurfaceForcing {
             .chain(self.runon_parcels.iter())
         {
             if !identities.insert(parcel.parcel_id.clone()) {
-                return Err(LandSurfaceEnergyError::Topology("duplicate liquid parcel"));
+                return Err(LandSurfaceEnergyError::topology_cardinality(
+                    "duplicate liquid parcel",
+                ));
             }
             parcel.validate()?;
         }
@@ -184,7 +186,7 @@ impl LandSurfaceForcing {
                 .iter()
                 .any(|parcel| parcel.parcel_kind != LiquidParcelKind::RoutedRunon)
         {
-            return Err(LandSurfaceEnergyError::Topology(
+            return Err(LandSurfaceEnergyError::topology_cardinality(
                 "parcel in wrong forcing collection",
             ));
         }

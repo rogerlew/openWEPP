@@ -810,6 +810,10 @@ name = "land_surface_energy_real_hydrology_shadow_contract"
 path = "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
 
 [[test]]
+name = "surface_liquid_hydrology_custody_authority_contract"
+path = "tests/integration/surface_liquid_hydrology_custody_authority_contract.rs"
+
+[[test]]
 name = "peak_hourly_authority_contract"
 path = "tests/integration/peak_hourly_authority_contract.rs"
 

@@ -5,7 +5,9 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_kernel_contract::{ResourceOwnerId, StratumId, TransactionId};
+use openwepp_kernel_contract::{
+    MineralNitrogenKey, ResourceAmountBasis, ResourceOwnerId, StratumId, TransactionId,
+};
 
 use crate::VegetationError;
 use crate::carbon_nitrogen::{
@@ -84,9 +86,24 @@ struct PreparedStratum {
     transfers: Vec<MaterialTransferAmounts>,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct PersistentForcingInputs {
+    pub air_temperature_k: f64,
+    pub gsi: f64,
+    pub soil_temperature_k_by_layer: BTreeMap<openwepp_kernel_contract::SoilLayerId, f64>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct PersistentCoreResult {
+    pub transaction_id: TransactionId,
+    pub requests: Vec<PotentialMineralNitrogenRequest>,
+    pub authorizations: Vec<MineralNitrogenMaximumAuthorization>,
+    pub finalized_uses: Vec<MineralNitrogenFinalizedUse>,
+    pub strata: BTreeMap<StratumId, StratumPreallocation>,
+}
+
 /// Prepare V7 phenology/turnover, authorize all exact `(layer, species)`
 /// requests once, and finalize the N protocol without mutating beginning state.
-#[allow(clippy::too_many_lines)]
 pub(crate) fn execute_uncommitted_nitrogen_phase(
     configuration: &VegetationConfiguration,
     beginning: &CoupledOwnedState,
@@ -110,12 +127,71 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
 
     let potential_carbon = water_phase.potential_stratum_carbon_operands()?;
     let final_carbon = water_phase.final_stratum_carbon_operands()?;
+    let forcing_inputs = PersistentForcingInputs {
+        air_temperature_k: forcing.air_temperature_k,
+        gsi: forcing.gsi,
+        soil_temperature_k_by_layer: forcing
+            .soil_layers
+            .iter()
+            .map(|layer| (layer.layer_id.clone(), layer.temperature_k))
+            .collect(),
+    };
+    let core = execute_persistent_core(
+        configuration,
+        &beginning.strata,
+        transaction_id,
+        &forcing_inputs,
+        &potential_carbon,
+        &final_carbon,
+        nitrogen,
+    )?;
+
+    Ok(UncommittedNitrogenPhase {
+        transaction_id: core.transaction_id,
+        requests: core.requests,
+        authorizations: core.authorizations,
+        finalized_uses: core.finalized_uses,
+        strata: core.strata,
+        source_water_phase: Box::new(water_phase.clone()),
+    })
+}
+
+/// Shared E16--E22/mineral-N core used by the sealed V7 water wrapper and the
+/// dependency-neutral V8 receipt boundary. It accepts only already aggregated
+/// potential and capped carbon operands and therefore cannot re-enter E01--E15.
+#[allow(clippy::too_many_lines)]
+pub(crate) fn execute_persistent_core(
+    configuration: &VegetationConfiguration,
+    beginning_strata: &BTreeMap<StratumId, StratumSharedState>,
+    transaction_id: TransactionId,
+    forcing: &PersistentForcingInputs,
+    potential_carbon: &BTreeMap<StratumId, StratumCarbonOperands>,
+    final_carbon: &BTreeMap<StratumId, StratumCarbonOperands>,
+    nitrogen: &dyn NitrogenArbiter,
+) -> Result<PersistentCoreResult, VegetationError> {
+    if transaction_id.0 == 0 {
+        return Err(VegetationError::Receipt(
+            "persistent core zero transaction identity".into(),
+        ));
+    }
+    if !forcing.air_temperature_k.is_finite()
+        || forcing.air_temperature_k <= 0.0
+        || !forcing.gsi.is_finite()
+        || !(0.0..=1.0).contains(&forcing.gsi)
+        || forcing
+            .soil_temperature_k_by_layer
+            .values()
+            .any(|temperature| !temperature.is_finite() || *temperature <= 0.0)
+    {
+        return Err(VegetationError::Domain("persistent forcing receipt"));
+    }
     let configured_ids = configuration
         .strata
         .iter()
         .map(|stratum| stratum.stratum_id.clone())
         .collect::<BTreeSet<_>>();
-    if potential_carbon.keys().cloned().collect::<BTreeSet<_>>() != configured_ids
+    if beginning_strata.keys().cloned().collect::<BTreeSet<_>>() != configured_ids
+        || potential_carbon.keys().cloned().collect::<BTreeSet<_>>() != configured_ids
         || final_carbon.keys().cloned().collect::<BTreeSet<_>>() != configured_ids
     {
         return Err(VegetationError::Receipt(
@@ -126,8 +202,7 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
     let mut prepared = BTreeMap::<StratumId, PreparedStratum>::new();
     let mut all_requests = Vec::new();
     for stratum in &configuration.strata {
-        let beginning_stratum = beginning
-            .strata
+        let beginning_stratum = beginning_strata
             .get(&stratum.stratum_id)
             .ok_or(VegetationError::Domain("persistent stratum identity"))?;
         let mut candidate = beginning_stratum.clone();
@@ -148,7 +223,10 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
         )?);
         candidate.retranslocation_n += phenology.retranslocated_n;
 
-        let root_operands = root_respiration_operands(stratum, forcing)?;
+        let root_operands = root_respiration_operands_from_temperatures(
+            stratum,
+            &forcing.soil_temperature_k_by_layer,
+        )?;
         let potential = potential_carbon
             .get(&stratum.stratum_id)
             .ok_or(VegetationError::Domain("potential carbon identity"))?;
@@ -234,6 +312,7 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
     } else {
         nitrogen.authorize(&all_requests)?
     };
+    let authorizations = order_authorizations_by_request(&all_requests, authorizations)?;
     let mut by_owner = BTreeMap::<ResourceOwnerId, Vec<_>>::new();
     for authorization in &authorizations {
         by_owner
@@ -295,15 +374,142 @@ pub(crate) fn execute_uncommitted_nitrogen_phase(
             "unexpected mineral-nitrogen authorization owner".into(),
         ));
     }
+    let finalized_uses = order_finalized_uses_by_request(&all_requests, finalized_uses)?;
 
-    Ok(UncommittedNitrogenPhase {
+    Ok(PersistentCoreResult {
         transaction_id,
         requests: all_requests,
         authorizations,
         finalized_uses,
         strata,
-        source_water_phase: Box::new(water_phase.clone()),
     })
+}
+
+type NitrogenProtocolIdentity = (
+    TransactionId,
+    ResourceOwnerId,
+    MineralNitrogenKey,
+    ResourceAmountBasis,
+);
+
+fn order_finalized_uses_by_request(
+    requests: &[PotentialMineralNitrogenRequest],
+    finalized_uses: Vec<MineralNitrogenFinalizedUse>,
+) -> Result<Vec<MineralNitrogenFinalizedUse>, VegetationError> {
+    let request_identity =
+        |transaction_id, owner_id, key, basis| (transaction_id, owner_id, key, basis);
+    let mut expected = BTreeSet::<NitrogenProtocolIdentity>::new();
+    for request in requests {
+        let identity = request_identity(
+            request.transaction_id,
+            request.owner_id.clone(),
+            request.key.clone(),
+            request.basis,
+        );
+        if !expected.insert(identity) {
+            return Err(VegetationError::Receipt(
+                "duplicate mineral-nitrogen request identity".into(),
+            ));
+        }
+    }
+    let mut uses_by_identity = BTreeMap::<NitrogenProtocolIdentity, _>::new();
+    for finalized_use in finalized_uses {
+        let identity = request_identity(
+            finalized_use.transaction_id,
+            finalized_use.owner_id.clone(),
+            finalized_use.key.clone(),
+            finalized_use.basis,
+        );
+        if !expected.contains(&identity)
+            || uses_by_identity.insert(identity, finalized_use).is_some()
+        {
+            return Err(VegetationError::Receipt(
+                "unexpected or duplicate mineral-nitrogen finalized-use identity".into(),
+            ));
+        }
+    }
+    let mut ordered = Vec::with_capacity(requests.len());
+    for request in requests {
+        let identity = request_identity(
+            request.transaction_id,
+            request.owner_id.clone(),
+            request.key.clone(),
+            request.basis,
+        );
+        ordered.push(uses_by_identity.remove(&identity).ok_or_else(|| {
+            VegetationError::Receipt("missing mineral-nitrogen finalized-use identity".into())
+        })?);
+    }
+    if !uses_by_identity.is_empty() {
+        return Err(VegetationError::Receipt(
+            "unexpected mineral-nitrogen finalized-use identity".into(),
+        ));
+    }
+    Ok(ordered)
+}
+
+fn order_authorizations_by_request(
+    requests: &[PotentialMineralNitrogenRequest],
+    authorizations: Vec<MineralNitrogenMaximumAuthorization>,
+) -> Result<Vec<MineralNitrogenMaximumAuthorization>, VegetationError> {
+    let request_identity =
+        |transaction_id, owner_id, key, basis| (transaction_id, owner_id, key, basis);
+    let mut expected = BTreeSet::<NitrogenProtocolIdentity>::new();
+    for request in requests {
+        let identity = request_identity(
+            request.transaction_id,
+            request.owner_id.clone(),
+            request.key.clone(),
+            request.basis,
+        );
+        if !expected.insert(identity) {
+            return Err(VegetationError::Receipt(
+                "duplicate mineral-nitrogen request identity".into(),
+            ));
+        }
+    }
+    let mut authorizations_by_identity = BTreeMap::<NitrogenProtocolIdentity, _>::new();
+    for authorization in authorizations {
+        let identity = request_identity(
+            authorization.transaction_id,
+            authorization.owner_id.clone(),
+            authorization.key.clone(),
+            authorization.basis,
+        );
+        if !expected.contains(&identity)
+            || authorizations_by_identity
+                .insert(identity, authorization)
+                .is_some()
+        {
+            return Err(VegetationError::Receipt(
+                "unexpected or duplicate mineral-nitrogen authorization identity".into(),
+            ));
+        }
+    }
+    let mut ordered = Vec::with_capacity(requests.len());
+    for request in requests {
+        let identity = request_identity(
+            request.transaction_id,
+            request.owner_id.clone(),
+            request.key.clone(),
+            request.basis,
+        );
+        ordered.push(
+            authorizations_by_identity
+                .remove(&identity)
+                .ok_or_else(|| {
+                    VegetationError::Receipt(
+                        "missing mineral-nitrogen authorization identity".into(),
+                    )
+                })?,
+        );
+    }
+    if !authorizations_by_identity.is_empty() {
+        return Err(VegetationError::Receipt(
+            "unexpected mineral-nitrogen authorization identity".into(),
+        ));
+    }
+    Ok(ordered)
 }
 
 fn cn_parameters(stratum: &StratumConfiguration) -> Result<CnParameters, VegetationError> {
@@ -380,6 +586,7 @@ fn apply_phenology_update(state: &mut StratumSharedState, update: &PhenologyUpda
     state.previous_gsi = update.previous_gsi;
 }
 
+#[cfg(test)]
 fn root_respiration_operands(
     stratum: &StratumConfiguration,
     forcing: &SnowFreeForcing,
@@ -389,6 +596,17 @@ fn root_respiration_operands(
         .iter()
         .map(|layer| (&layer.layer_id, layer.temperature_k))
         .collect::<BTreeMap<_, _>>();
+    let temperatures = temperatures
+        .into_iter()
+        .map(|(identity, temperature)| (identity.clone(), temperature))
+        .collect();
+    root_respiration_operands_from_temperatures(stratum, &temperatures)
+}
+
+fn root_respiration_operands_from_temperatures(
+    stratum: &StratumConfiguration,
+    temperatures: &BTreeMap<openwepp_kernel_contract::SoilLayerId, f64>,
+) -> Result<Vec<RootRespirationOperand>, VegetationError> {
     stratum
         .root_layers
         .iter()
@@ -409,6 +627,7 @@ mod tests {
     #![allow(clippy::float_cmp)]
 
     use super::*;
+    use openwepp_kernel_contract::{FinalizedUse, MaximumAuthorization, ResourceRequest};
 
     #[test]
     fn configuration_mapping_preserves_exact_e17_e19_parameters() {
@@ -505,5 +724,133 @@ mod tests {
         assert_eq!(operands[0].nitrogen_fraction.to_bits(), 0.25_f64.to_bits());
         assert_eq!(operands[1].nitrogen_fraction.to_bits(), 0.75_f64.to_bits());
         assert_ne!(operands[0].nitrogen_fraction.to_bits(), 0.9_f64.to_bits());
+    }
+
+    #[test]
+    fn multi_stratum_protocol_follows_original_request_order_for_bgc() {
+        use openwepp_biogeochemistry::{
+            BiogeochemistryState, MineralLayer, TransformationsMode,
+            construct_biogeochemistry_candidate,
+        };
+        use openwepp_kernel_contract::MineralNitrogenSpecies::{Ammonium, Nitrate};
+
+        let transaction_id = TransactionId(1);
+        let layer_id = openwepp_kernel_contract::SoilLayerId::try_new("soil-1").expect("layer");
+        let make_request = |owner: &str, species| ResourceRequest {
+            transaction_id,
+            owner_id: ResourceOwnerId::try_new(owner).expect("owner"),
+            key: MineralNitrogenKey {
+                layer_id: layer_id.clone(),
+                species,
+            },
+            amount: 0.25,
+            basis: ResourceAmountBasis::NitrogenKgPerSquareMeterInterval,
+        };
+        // Configuration order is deliberately the reverse of BTreeMap owner
+        // order, reproducing the public two-stratum failure.
+        let requests = vec![
+            make_request("z-stratum", Ammonium),
+            make_request("a-stratum", Nitrate),
+        ];
+        let unordered_authorizations = requests
+            .iter()
+            .rev()
+            .map(|request| MaximumAuthorization {
+                transaction_id: request.transaction_id,
+                owner_id: request.owner_id.clone(),
+                key: request.key.clone(),
+                amount: request.amount,
+                basis: request.basis,
+            })
+            .collect::<Vec<_>>();
+        let authorizations = order_authorizations_by_request(&requests, unordered_authorizations)
+            .expect("ordered authorizations");
+        let unordered = requests
+            .iter()
+            .rev()
+            .map(|request| FinalizedUse {
+                transaction_id: request.transaction_id,
+                owner_id: request.owner_id.clone(),
+                key: request.key.clone(),
+                amount: request.amount / 2.0,
+                basis: request.basis,
+            })
+            .collect();
+        let ordered = order_finalized_uses_by_request(&requests, unordered).expect("ordered uses");
+        for ((request, authorization), finalized_use) in
+            requests.iter().zip(&authorizations).zip(&ordered)
+        {
+            assert_eq!(request.transaction_id, finalized_use.transaction_id);
+            assert_eq!(request.owner_id, finalized_use.owner_id);
+            assert_eq!(request.key, finalized_use.key);
+            assert_eq!(request.basis, finalized_use.basis);
+            openwepp_kernel_contract::validate_resource_protocol(
+                request,
+                authorization,
+                finalized_use,
+            )
+            .expect("aligned protocol triple");
+        }
+        let beginning = BiogeochemistryState {
+            layers: BTreeMap::from([(
+                "soil-1".into(),
+                MineralLayer {
+                    ammonium_n: 1.0,
+                    nitrate_n: 1.0,
+                },
+            )]),
+            ..BiogeochemistryState::default()
+        };
+        construct_biogeochemistry_candidate(
+            &beginning,
+            transaction_id,
+            &requests,
+            &authorizations,
+            &ordered,
+            &[],
+            TransformationsMode::Disabled,
+        )
+        .expect("BGC accepts aligned two-stratum protocol");
+    }
+
+    #[test]
+    fn authorization_ordering_rejects_missing_duplicate_and_unexpected_identity() {
+        use openwepp_kernel_contract::MineralNitrogenSpecies::{Ammonium, Nitrate};
+
+        let transaction_id = TransactionId(7);
+        let layer_id = openwepp_kernel_contract::SoilLayerId::try_new("soil-1").expect("layer");
+        let make_request = |owner: &str, species| ResourceRequest {
+            transaction_id,
+            owner_id: ResourceOwnerId::try_new(owner).expect("owner"),
+            key: MineralNitrogenKey {
+                layer_id: layer_id.clone(),
+                species,
+            },
+            amount: 0.25,
+            basis: ResourceAmountBasis::NitrogenKgPerSquareMeterInterval,
+        };
+        let requests = vec![
+            make_request("z-stratum", Ammonium),
+            make_request("a-stratum", Nitrate),
+        ];
+        let authorization = |request: &PotentialMineralNitrogenRequest| MaximumAuthorization {
+            transaction_id: request.transaction_id,
+            owner_id: request.owner_id.clone(),
+            key: request.key.clone(),
+            amount: request.amount,
+            basis: request.basis,
+        };
+
+        let missing = vec![authorization(&requests[0])];
+        assert!(order_authorizations_by_request(&requests, missing).is_err());
+
+        let duplicate = vec![authorization(&requests[0]), authorization(&requests[0])];
+        assert!(order_authorizations_by_request(&requests, duplicate).is_err());
+
+        let mut unexpected_authorization = authorization(&requests[1]);
+        unexpected_authorization.owner_id =
+            ResourceOwnerId::try_new("unexpected-owner").expect("owner");
+        let unexpected = vec![authorization(&requests[0]), unexpected_authorization];
+        assert!(order_authorizations_by_request(&requests, unexpected).is_err());
     }
 }
