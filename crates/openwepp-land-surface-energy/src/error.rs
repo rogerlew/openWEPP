@@ -1,5 +1,7 @@
 use thiserror::Error;
 
+use crate::NumericalDiagnostics;
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LandSurfaceEnergyErrorClass {
     Malformed,
@@ -59,11 +61,19 @@ pub enum LandSurfaceEnergyError {
     #[error("candidate owner envelope violation: {0}")]
     OwnerEnvelope(&'static str),
     #[error("singular numerical system: pivot={pivot}, matrix infinity norm={matrix_norm}")]
-    NumericalSingular { pivot: f64, matrix_norm: f64 },
+    NumericalSingular {
+        pivot: f64,
+        matrix_norm: f64,
+        diagnostics: Box<NumericalDiagnostics>,
+    },
     #[error("numerical backtracking limit")]
-    NumericalBacktrackingLimit,
+    NumericalBacktrackingLimit {
+        diagnostics: Box<NumericalDiagnostics>,
+    },
     #[error("numerical iteration limit")]
-    NumericalIterationLimit,
+    NumericalIterationLimit {
+        diagnostics: Box<NumericalDiagnostics>,
+    },
     #[error("accepted iterate failed residual or step acceptance")]
     NumericalAcceptedResidual,
     #[error("component energy closure failed: {0}")]
@@ -145,8 +155,8 @@ impl LandSurfaceEnergyError {
             Self::NonFinite(_)
             | Self::ConstitutiveDomain(_)
             | Self::NumericalSingular { .. }
-            | Self::NumericalBacktrackingLimit
-            | Self::NumericalIterationLimit
+            | Self::NumericalBacktrackingLimit { .. }
+            | Self::NumericalIterationLimit { .. }
             | Self::NumericalAcceptedResidual => LandSurfaceEnergyErrorClass::Domain,
             Self::UnsupportedDomain(_) => LandSurfaceEnergyErrorClass::Unsupported,
             Self::WaterIdentityOrBound { class, .. } => match class {
@@ -161,6 +171,16 @@ impl LandSurfaceEnergyError {
             | Self::ControlVolumeClosure(_)
             | Self::LatentJoin(_)
             | Self::GroundHeatJoin(_) => LandSurfaceEnergyErrorClass::Closure,
+        }
+    }
+
+    #[must_use]
+    pub fn numerical_diagnostics(&self) -> Option<&NumericalDiagnostics> {
+        match self {
+            Self::NumericalSingular { diagnostics, .. }
+            | Self::NumericalBacktrackingLimit { diagnostics }
+            | Self::NumericalIterationLimit { diagnostics } => Some(diagnostics),
+            _ => None,
         }
     }
 }
@@ -286,21 +306,6 @@ mod tests {
             (
                 LandSurfaceEnergyError::OwnerEnvelope("owner"),
                 Class::OwnerEnvelope,
-            ),
-            (
-                LandSurfaceEnergyError::NumericalSingular {
-                    pivot: 0.0,
-                    matrix_norm: 1.0,
-                },
-                Class::Domain,
-            ),
-            (
-                LandSurfaceEnergyError::NumericalBacktrackingLimit,
-                Class::Domain,
-            ),
-            (
-                LandSurfaceEnergyError::NumericalIterationLimit,
-                Class::Domain,
             ),
             (
                 LandSurfaceEnergyError::NumericalAcceptedResidual,

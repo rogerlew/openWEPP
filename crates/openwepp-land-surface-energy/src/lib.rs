@@ -12,6 +12,7 @@ pub mod diagnostics;
 pub mod error;
 pub mod forcing;
 pub mod identity;
+mod numerics;
 pub mod owner_envelope;
 pub mod physics;
 pub mod solver;
@@ -22,7 +23,7 @@ pub mod water;
 pub use closure::*;
 pub use config::*;
 pub use covered_liquid::{CoveredLiquidPass, CoveredOccupancyLiquidLedger};
-pub use covered_output::{CoveredColumnEvaluation, CoveredOccupancyEvaluation};
+pub use covered_output::*;
 pub use diagnostics::*;
 pub use error::*;
 pub use forcing::*;
@@ -44,6 +45,9 @@ pub const VEGETATION_MODEL_VERSION: &str = "OPENWEPP_C3_WOODY_V8";
 /// Required coupled vegetation model-definition digest.
 pub const VEGETATION_MODEL_DEFINITION_SHA256: &str =
     "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b";
+
+#[cfg(test)]
+mod covered_oracle_conformance_tests;
 
 #[cfg(test)]
 mod authority_schema_tests {

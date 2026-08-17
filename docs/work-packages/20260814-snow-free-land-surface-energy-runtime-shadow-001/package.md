@@ -1,6 +1,6 @@
 # Implement Snow-Free Land-Surface-Energy Runtime Shadow
 
-Status: `executing / surface-liquid custody dependency lifted / covered forest runtime active`
+Status: `executing / independent review remediation active / terminal gates withheld`
 
 Date: `2026-08-14`
 
@@ -20,6 +20,9 @@ remaining default-off and without a real hillslope consumer claim.
 - `crates/openwepp-land-surface-energy/**`;
 - dependency-neutral boundary additions in `openwepp-kernel-contract` only when
   the frozen schemas cannot be represented locally without duplication;
+- V8-only projection, receipt, candidate and protocol-ordering additions in
+  `crates/openwepp-vegetation/**` required to connect the already admitted V8
+  owner to the LSE runtime without rerunning or mutating V7;
 - default-off adapter code in `openwepp-hillslope-orchestrator`;
 - Child-3 contract/integration tests; and
 - this package and campaign lifecycle surfaces.
@@ -53,6 +56,11 @@ post-hoc energy proposals and meteorology helpers are not constitutive inputs.
   The envelope is uncommitted and the production frame remains byte-identical.
 - [ ] Pass terminal science/Rust reviews, benchmark and dual verification only
   after the custody hold is lifted and the complete forest endpoint exists.
+
+Fresh review at `dfc7cf971` rejected the first endpoint claim. The retained
+physical kernels and custody owner remain active implementation evidence, while
+all accepted findings in `artifacts/review-finding-disposition.md` are corrected
+before performance or heavy gates become legitimate.
 
 ## Delegation
 

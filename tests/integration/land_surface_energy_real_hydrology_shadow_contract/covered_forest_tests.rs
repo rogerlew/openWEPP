@@ -10,6 +10,7 @@ use openwepp_hillslope_orchestrator::land_surface_energy_shadow::{
 use openwepp_kernel_contract::{
     MaterialReceiverClass, MaximumAuthorization, OccupancyId, StratumId,
 };
+use openwepp_land_surface_energy::{CoveredColumnShortwaveInputs, CoveredOccupancyShortwaveInputs};
 use openwepp_vegetation::carbon_nitrogen::ElementPool;
 use openwepp_vegetation::{
     CoupledOwnedState, NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, RootLayer,
@@ -98,6 +99,8 @@ fn roots() -> Vec<RootHydraulicLayer> {
 fn upper() -> CoveredOccupancyInputs {
     CoveredOccupancyInputs {
         occupancy_id: "canopy-rank-0".into(),
+        medlyn_g1_kpa_sqrt: 3.5,
+        g0_umol_m2_s: 25.0,
         sun: LeafBiochemicalInputs {
             leaf_area_m2_m2_tile: 1.110_267_869_704_946_6,
             absorbed_shortwave_w_m2_tile: 219.583_484_232_463_2,
@@ -124,8 +127,6 @@ fn upper() -> CoveredOccupancyInputs {
         gb_leaf_m_s: 0.035_961_386_715_575_215,
         gb_wet_m_s: 0.019_071_405_305_591_295,
         gb_stem_m_s: 0.013_082_876_106_352_972,
-        emax_sun_kg_m2_s: 4.016_697_077_733_990_4e-5,
-        emax_shade_kg_m2_s: 1.685_782_614_110_486_5e-5,
         lai: 2.708_333_333_333_333,
         sai: 0.72,
         clumping_index: 0.82,
@@ -140,6 +141,89 @@ fn upper() -> CoveredOccupancyInputs {
         p50_root_mm: -14_000.0,
         vulnerability_exponent: 2.0,
         root_layers: roots(),
+    }
+}
+
+fn distinct_bands(total: f64, seed: f64) -> BandDirectionalFluxes {
+    let direct_vis = total * (0.10 + seed);
+    let diffuse_vis = total * (0.17 - seed / 2.0);
+    let direct_nir = total * (0.29 + seed / 3.0);
+    BandDirectionalFluxes {
+        direct_vis,
+        diffuse_vis,
+        direct_nir,
+        diffuse_nir: total - direct_vis - diffuse_vis - direct_nir,
+    }
+}
+
+fn bound_shortwave(
+    occupancies: &[CoveredOccupancyInputs],
+    terminal: BandDirectionalFluxes,
+    surface_vis_albedo: f64,
+    surface_nir_albedo: f64,
+) -> CoveredColumnShortwaveInputs {
+    let rows = occupancies
+        .iter()
+        .enumerate()
+        .map(|(index, occupancy)| CoveredOccupancyShortwaveInputs {
+            occupancy_id: occupancy.occupancy_id.clone(),
+            sun_leaf_absorbed_w_m2_tile: distinct_bands(
+                occupancy.sun.absorbed_shortwave_w_m2_tile,
+                0.01 * index as f64,
+            ),
+            shade_leaf_absorbed_w_m2_tile: distinct_bands(
+                occupancy.shade.absorbed_shortwave_w_m2_tile,
+                0.02 + 0.01 * index as f64,
+            ),
+            stem_absorbed_w_m2_tile: distinct_bands(
+                occupancy.stem_absorbed_shortwave_w_m2_tile,
+                0.04 + 0.01 * index as f64,
+            ),
+        })
+        .collect::<Vec<_>>();
+    let top_reflected = BandDirectionalFluxes {
+        direct_vis: 7.0,
+        diffuse_vis: 11.0,
+        direct_nir: 13.0,
+        diffuse_nir: 17.0,
+    };
+    let values = |bands: BandDirectionalFluxes| {
+        [
+            bands.direct_vis,
+            bands.diffuse_vis,
+            bands.direct_nir,
+            bands.diffuse_nir,
+        ]
+    };
+    let ground_absorbed = BandDirectionalFluxes {
+        direct_vis: terminal.direct_vis * (1.0 - surface_vis_albedo),
+        diffuse_vis: terminal.diffuse_vis * (1.0 - surface_vis_albedo),
+        direct_nir: terminal.direct_nir * (1.0 - surface_nir_albedo),
+        diffuse_nir: terminal.diffuse_nir * (1.0 - surface_nir_albedo),
+    };
+    let mut incident = values(top_reflected);
+    let ground_absorbed_values = values(ground_absorbed);
+    for index in 0..4 {
+        incident[index] += ground_absorbed_values[index]
+            + rows
+                .iter()
+                .map(|row| {
+                    values(row.sun_leaf_absorbed_w_m2_tile)[index]
+                        + values(row.shade_leaf_absorbed_w_m2_tile)[index]
+                        + values(row.stem_absorbed_w_m2_tile)[index]
+                })
+                .sum::<f64>();
+    }
+    CoveredColumnShortwaveInputs {
+        incident_w_m2_tile: BandDirectionalFluxes {
+            direct_vis: incident[0],
+            diffuse_vis: incident[1],
+            direct_nir: incident[2],
+            diffuse_nir: incident[3],
+        },
+        top_reflected_w_m2_tile: top_reflected,
+        ground_absorbed_by_incident_w_m2_tile: ground_absorbed,
+        occupancies: rows,
     }
 }
 
@@ -158,6 +242,13 @@ fn column() -> CoveredColumnInputs {
     lower.sai = 0.417_6;
     lower.liquid_capacity_kg_m2_plant = 0.040_221_557_532_455_925;
     lower.clumping_index = 0.91;
+    let occupancies = vec![upper(), lower];
+    let terminal = BandDirectionalFluxes {
+        direct_vis: 12.572_362_927_904_654,
+        diffuse_vis: 2.794_652_935_170_348_4,
+        direct_nir: 10.885_826_437_575_982,
+        diffuse_nir: 20.063_182_822_663_31,
+    };
     CoveredColumnInputs {
         interval_s: INTERVAL_S,
         tile_fraction: TILE_FRACTION,
@@ -167,8 +258,6 @@ fn column() -> CoveredColumnInputs {
         reference_wind_m_s: 3.7,
         atmospheric_downward_longwave_w_m2: 395.0,
         ca_pa: 42.0,
-        medlyn_g1_kpa_sqrt: 3.5,
-        g0_umol_m2_s: 25.0,
         canopy_to_atmosphere_heat_resistance_s_m: 20.992_293_151_292_14,
         canopy_to_atmosphere_vapor_resistance_s_m: 22.734_132_598_127_985,
         latent_heat_j_kg: 2_501_000.0,
@@ -184,12 +273,7 @@ fn column() -> CoveredColumnInputs {
             tile_fraction: TILE_FRACTION,
             class: SurfaceClassKind::ForestLitter,
             storage_branch: SurfaceStorageBranch::FiniteCapacity,
-            terminal_shortwave_w_m2_tile: BandDirectionalFluxes {
-                direct_vis: 12.572_362_927_904_654,
-                diffuse_vis: 2.794_652_935_170_348_4,
-                direct_nir: 10.885_826_437_575_982,
-                diffuse_nir: 20.063_182_822_663_31,
-            },
+            terminal_shortwave_w_m2_tile: terminal,
             surface_vis_albedo: 0.12,
             surface_nir_albedo: 0.24,
             surface_emissivity: 1.0,
@@ -229,7 +313,8 @@ fn column() -> CoveredColumnInputs {
                 },
             ],
         },
-        occupancies: vec![upper(), lower],
+        shortwave: bound_shortwave(&occupancies, terminal, 0.12, 0.24),
+        occupancies,
     }
 }
 
@@ -460,10 +545,12 @@ fn aligned_v8_vegetation_fixture() -> (
         V8ComponentOccupancyBinding {
             component_id: V8LseComponentId::try_new("canopy-rank-0").expect("upper component"),
             occupancy_id: upper_occupancy,
+            vertical_rank: 0,
         },
         V8ComponentOccupancyBinding {
             component_id: V8LseComponentId::try_new("canopy-rank-1").expect("lower component"),
             occupancy_id: lower_occupancy,
+            vertical_rank: 1,
         },
     ];
     let soil_temperature_k_by_layer = root_layers

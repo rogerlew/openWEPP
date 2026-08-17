@@ -53,16 +53,24 @@ use crate::{
     execute_surface_liquid_ingress,
 };
 
+mod covered_derived_ingress;
 mod covered_forest;
 mod covered_v8_owner;
 mod covered_v8_transaction;
 mod finalization_sealing;
+mod multi_tile_runtime;
 mod receiver_failure;
 mod receiver_preflight;
 mod receiver_validation;
 mod unified_entry_preflight;
+mod v8_input_projection;
 mod v8_projection;
-pub use covered_forest::{CoveredForestShadowResult, execute_covered_forest_shadow};
+mod v8_rollback;
+pub use covered_derived_ingress::CoveredIngressSchedule;
+pub use covered_forest::{
+    CoveredForestShadowResult, execute_covered_forest_shadow,
+    execute_covered_forest_shadow_derived_ingress,
+};
 pub use covered_v8_owner::{
     CoveredV8OwnerEnvelopeError, UncommittedCoveredV8OwnerEnvelope,
     construct_covered_v8_owner_envelope,
@@ -83,7 +91,16 @@ use receiver_validation::{
     validate_surface_production_binding, validate_surface_production_lane_domains,
     water_protocol_sha256, water_request_batch_sha256,
 };
+pub use v8_input_projection::{
+    V8CanopyForcingReceipt, V8InputProjectionError, V8ProjectedColumnRadiation,
+    V8ProjectedGroundInput, V8ProjectedOccupancyInput, V8ProjectedRootLayer,
+    V8ProjectedTileRuntimeInput, ValidatedV8RuntimeInputProjection, project_v8_runtime_inputs,
+};
 pub use v8_projection::{V8CoveredProjection, V8ProjectionError, project_covered_forest_v8_passes};
+pub use v8_rollback::{
+    V8RollbackError, V8RollbackInputs, V8RollbackOwnerBytes, V8RollbackOwnerKind,
+    V8RollbackSnapshot,
+};
 
 const WATER_DENSITY_KG_M3: f64 = 1_000.0;
 

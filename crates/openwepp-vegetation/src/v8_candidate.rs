@@ -54,6 +54,9 @@ impl V8LseComponentId {
 pub struct V8ComponentOccupancyBinding {
     pub component_id: V8LseComponentId,
     pub occupancy_id: OccupancyId,
+    /// Top-to-bottom rank carried by the ordered LSE component and checked
+    /// against the exact configured vegetation stratum.
+    pub vertical_rank: u32,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -133,24 +136,8 @@ impl ValidatedV8FinalStatePass {
                 .ok_or_else(|| VegetationError::Receipt("V8 transaction overflow".into()))?,
         );
         let expected_occupancies = configuration.expected_occupancies();
-        let mut binding_map = BTreeMap::new();
-        let mut bound_occupancies = BTreeSet::new();
-        for binding in bindings {
-            if binding_map
-                .insert(binding.component_id, binding.occupancy_id.clone())
-                .is_some()
-                || !bound_occupancies.insert(binding.occupancy_id)
-            {
-                return Err(VegetationError::Receipt(
-                    "V8 component/occupancy mapping is not bijective".into(),
-                ));
-            }
-        }
-        if bound_occupancies != expected_occupancies {
-            return Err(VegetationError::Receipt(
-                "V8 component/occupancy mapping is incomplete".into(),
-            ));
-        }
+        let binding_map =
+            validate_component_bindings(bindings, configuration, &expected_occupancies)?;
         if tiles
             .windows(2)
             .any(|pair| pair[0].tile_id >= pair[1].tile_id)
@@ -241,6 +228,47 @@ impl ValidatedV8FinalStatePass {
         values.sort_by(|left, right| left.occupancy_id.cmp(&right.occupancy_id));
         values
     }
+}
+
+fn validate_component_bindings(
+    bindings: Vec<V8ComponentOccupancyBinding>,
+    configuration: &VegetationConfiguration,
+    expected_occupancies: &BTreeSet<OccupancyId>,
+) -> Result<BTreeMap<V8LseComponentId, OccupancyId>, VegetationError> {
+    let configured_ranks = configuration
+        .strata
+        .iter()
+        .map(|stratum| (&stratum.stratum_id, stratum.vertical_rank))
+        .collect::<BTreeMap<_, _>>();
+    let mut binding_map = BTreeMap::new();
+    let mut bound_occupancies = BTreeSet::new();
+    for binding in bindings {
+        let configured_rank = configured_ranks
+            .get(&binding.occupancy_id.stratum_id)
+            .ok_or_else(|| {
+                VegetationError::Receipt("V8 component binding has unknown stratum identity".into())
+            })?;
+        if binding.vertical_rank != *configured_rank {
+            return Err(VegetationError::Receipt(
+                "V8 component/occupancy vertical-rank mismatch".into(),
+            ));
+        }
+        if binding_map
+            .insert(binding.component_id, binding.occupancy_id.clone())
+            .is_some()
+            || !bound_occupancies.insert(binding.occupancy_id)
+        {
+            return Err(VegetationError::Receipt(
+                "V8 component/occupancy mapping is not bijective".into(),
+            ));
+        }
+    }
+    if bound_occupancies != *expected_occupancies {
+        return Err(VegetationError::Receipt(
+            "V8 component/occupancy mapping is incomplete".into(),
+        ));
+    }
+    Ok(binding_map)
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -692,16 +720,17 @@ mod tests {
         for (index, occupancy_id) in configuration.expected_occupancies().into_iter().enumerate() {
             let component_id =
                 V8LseComponentId::try_new(format!("component-{index}")).expect("component");
-            bindings.push(V8ComponentOccupancyBinding {
-                component_id: component_id.clone(),
-                occupancy_id: occupancy_id.clone(),
-            });
             let lane = &beginning.occupancies[&occupancy_id];
             let stratum = configuration
                 .strata
                 .iter()
                 .find(|row| row.stratum_id == occupancy_id.stratum_id)
                 .expect("stratum");
+            bindings.push(V8ComponentOccupancyBinding {
+                component_id: component_id.clone(),
+                occupancy_id: occupancy_id.clone(),
+                vertical_rank: stratum.vertical_rank,
+            });
             by_tile
                 .entry(occupancy_id.tile_id)
                 .or_default()
@@ -825,6 +854,20 @@ mod tests {
         assert!(matches!(
             ValidatedV8FinalStatePass::try_new(bindings, tiles, &configuration, &beginning),
             Err(VegetationError::Receipt(_))
+        ));
+    }
+
+    #[test]
+    fn component_mapping_rejects_wrong_vertical_rank() {
+        let (configuration, beginning, _, _, _, mut bindings, tiles) = setup();
+        bindings[0].vertical_rank = bindings[0]
+            .vertical_rank
+            .checked_add(1)
+            .expect("fixture rank increment");
+        assert!(matches!(
+            ValidatedV8FinalStatePass::try_new(bindings, tiles, &configuration, &beginning),
+            Err(VegetationError::Receipt(message))
+                if message == "V8 component/occupancy vertical-rank mismatch"
         ));
     }
 
