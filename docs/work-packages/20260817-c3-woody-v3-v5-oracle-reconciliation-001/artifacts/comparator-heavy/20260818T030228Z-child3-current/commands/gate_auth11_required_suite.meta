@@ -1,0 +1,14 @@
+{
+  "label": "gate_auth11_required_suite",
+  "command": "cargo nextest run --test auth11_required_suite_obligation_guards_contract",
+  "status": "PASS",
+  "exit_code": 0,
+  "start": "2026-08-18T03:03:55Z",
+  "end": "2026-08-18T03:03:56Z",
+  "duration_ms": 1608320012879413368,
+  "env_OPENWEPP_TASK_ID": "child3-recon-20260818T030228Z",
+  "env_TMPDIR": "/tmp/ow-lse-20260818T030228Z",
+  "passed": 0,
+  "failed": 0,
+  "list_count": 0
+}

@@ -1,0 +1,13 @@
+command=OPENWEPP_TASK_ID=child3-recon-20260818T030228Z TMPDIR=/tmp/ow-lse-20260818T030228Z cargo nextest run --test auth11_required_suite_obligation_guards_contract
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-recon-20260818T030228Z
+  scratch: /tmp/openwepp-roger-child3-recon-20260818T030228Z
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp v0.1.0 (/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.73s
+────────────
+ Nextest run ID 3f107ffc-bc37-47cc-906d-6f425ff69a34 with nextest profile: default
+    Starting 3 tests across 1 binary
+────────────
+     Summary [   0.006s] 3 tests run: 3 passed, 0 skipped

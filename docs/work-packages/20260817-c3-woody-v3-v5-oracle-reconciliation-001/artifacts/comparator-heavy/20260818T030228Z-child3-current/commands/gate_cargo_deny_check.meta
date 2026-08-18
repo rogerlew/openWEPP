@@ -1,0 +1,14 @@
+{
+  "label": "gate_cargo_deny_check",
+  "command": "cargo deny check",
+  "status": "PASS",
+  "exit_code": 0,
+  "start": "2026-08-18T03:03:52Z",
+  "end": "2026-08-18T03:03:53Z",
+  "duration_ms": 1174052208,
+  "env_OPENWEPP_TASK_ID": "child3-recon-20260818T030228Z",
+  "env_TMPDIR": "/tmp/ow-lse-20260818T030228Z",
+  "passed": 0,
+  "failed": 0,
+  "list_count": 0
+}

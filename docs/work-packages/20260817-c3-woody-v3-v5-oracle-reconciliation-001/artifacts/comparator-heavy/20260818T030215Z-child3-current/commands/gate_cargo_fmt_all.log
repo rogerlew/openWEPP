@@ -1,0 +1,6 @@
+command=OPENWEPP_TASK_ID=child3-recon-20260818T030215Z TMPDIR=/tmp/ow-lse-20260818T030215Z cargo fmt --all -- --check
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-recon-20260818T030215Z
+  scratch: /tmp/openwepp-roger-child3-recon-20260818T030215Z
+  cache:   /workdir/.cache/openwepp

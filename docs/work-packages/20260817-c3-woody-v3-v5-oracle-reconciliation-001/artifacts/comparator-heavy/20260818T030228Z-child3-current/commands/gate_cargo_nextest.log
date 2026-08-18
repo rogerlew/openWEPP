@@ -1,0 +1,137 @@
+command=OPENWEPP_TASK_ID=child3-recon-20260818T030228Z TMPDIR=/tmp/ow-lse-20260818T030228Z cargo nextest run --workspace --profile full
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-recon-20260818T030228Z
+  scratch: /tmp/openwepp-roger-child3-recon-20260818T030228Z
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-assurance v0.1.0 (/workdir/openWEPP/crates/openwepp-assurance)
+   Compiling openwepp-landuse-migrate v0.1.0 (/workdir/openWEPP/crates/openwepp-landuse-migrate)
+   Compiling openwepp-hillslope-output v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-output)
+   Compiling openwepp-watershed-output v0.1.0 (/workdir/openWEPP/crates/openwepp-watershed-output)
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openWEPP/crates/openwepp-vegetation)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-runner v0.1.0 (/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/workdir/openWEPP)
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+   Compiling openwepp-plant-phenology v0.1.0 (/workdir/openWEPP/crates/openwepp-plant-phenology)
+   Compiling openwepp-legacy-bridge v0.1.0 (/workdir/openWEPP/crates/openwepp-legacy-bridge)
+   Compiling openwepp-summary-accumulator v0.1.0 (/workdir/openWEPP/crates/openwepp-summary-accumulator)
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-input-contract v0.1.0 (/workdir/openWEPP/crates/openwepp-input-contract)
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+   Compiling openwepp-management-schema v0.1.0 (/workdir/openWEPP/crates/openwepp-management-schema)
+   Compiling openwepp-biogeochemistry v0.1.0 (/workdir/openWEPP/crates/openwepp-biogeochemistry)
+   Compiling openwepp-kernel-contract v0.1.0 (/workdir/openWEPP/crates/openwepp-kernel-contract)
+   Compiling openwepp-meteorology v0.1.0 (/workdir/openWEPP/crates/openwepp-meteorology)
+   Compiling openwepp-topology v0.1.0 (/workdir/openWEPP/crates/openwepp-topology)
+   Compiling openwepp-unit-boundary v0.1.0 (/workdir/openWEPP/crates/openwepp-unit-boundary)
+   Compiling openwepp-comparator-metadata v0.1.0 (/workdir/openWEPP/crates/openwepp-comparator-metadata)
+   Compiling openwepp-sim-contract v0.1.0 (/workdir/openWEPP/crates/openwepp-sim-contract)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 15s
+────────────
+ Nextest run ID b0581803-a9d0-40d3-9004-b7c250f3528e with nextest profile: full
+    Starting 2999 tests across 221 binaries (33 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract approval_conflicts_and_release_mismatch_fail_before_publication
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        SLOW [>180.000s] (─────────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        FAIL [   1.291s] ( 246/2999) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+  stdout ───
+
+    running 1 test
+    test cqr_quality_evidence_self_test_passes ... FAILED
+
+    failures:
+
+    failures:
+        cqr_quality_evidence_self_test_passes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 1.28s
+
+  stderr ───
+
+    thread 'cqr_quality_evidence_self_test_passes' (1091728) panicked at tests/integration/cqr_quality_evidence_handoff_contract.rs:31:5:
+    stdout:
+    cqr-quality-intake: INVALID
+    cqr-quality-intake: INVALID
+    cqr-recollection: AUTHORIZED disposition=INVALID
+
+    stderr:
+    Traceback (most recent call last):
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1167, in <module>
+        raise SystemExit(main())
+                         ^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1160, in main
+        return args.function(args)
+               ^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1151, in <lambda>
+        test.set_defaults(function=lambda _args: self_test())
+                                                 ^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1030, in self_test
+        inventories = quality.independent_inventory_partition(repo)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 1896, in independent_inventory_partition
+        run(
+      File "/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 119, in run
+        raise QualityError(
+    quality_observatory_self_test.QualityError: command failed (1): cargo llvm-cov show-env --sh
+    info: cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage
+    error: failed to find llvm-tools-preview, please install llvm-tools-preview, or set LLVM_COV and LLVM_PROFDATA environment variables
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity10_3_1a_per_day_cancov snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar
+────────────
+     Summary [ 934.445s] 2999 tests run: 2998 passed (9 slow), 1 failed, 33 skipped
+        FAIL [   1.291s] ( 246/2999) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+  stdout ───
+
+    running 1 test
+    test cqr_quality_evidence_self_test_passes ... FAILED
+
+    failures:
+
+    failures:
+        cqr_quality_evidence_self_test_passes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 1.28s
+
+  stderr ───
+
+    thread 'cqr_quality_evidence_self_test_passes' (1091728) panicked at tests/integration/cqr_quality_evidence_handoff_contract.rs:31:5:
+    stdout:
+    cqr-quality-intake: INVALID
+    cqr-quality-intake: INVALID
+    cqr-recollection: AUTHORIZED disposition=INVALID
+
+    stderr:
+    Traceback (most recent call last):
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1167, in <module>
+        raise SystemExit(main())
+                         ^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1160, in main
+        return args.function(args)
+               ^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1151, in <lambda>
+        test.set_defaults(function=lambda _args: self_test())
+                                                 ^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1030, in self_test
+        inventories = quality.independent_inventory_partition(repo)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 1896, in independent_inventory_partition
+        run(
+      File "/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 119, in run
+        raise QualityError(
+    quality_observatory_self_test.QualityError: command failed (1): cargo llvm-cov show-env --sh
+    info: cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage
+    error: failed to find llvm-tools-preview, please install llvm-tools-preview, or set LLVM_COV and LLVM_PROFDATA environment variables
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

@@ -1,0 +1,9 @@
+Script started on 2026-08-17 20:48:55-07:00 [COMMAND="nix develop --command cargo nextest run --workspace --profile full --no-fail-fast" <not executed on terminal>]
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.19s
+
+Script done on 2026-08-17 21:03:56-07:00 [COMMAND_EXIT_CODE="0"]

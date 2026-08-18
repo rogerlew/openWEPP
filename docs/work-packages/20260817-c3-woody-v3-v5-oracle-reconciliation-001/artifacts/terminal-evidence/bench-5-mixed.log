@@ -1,0 +1,16 @@
+Script started on 2026-08-17 21:04:30-07:00 [COMMAND="nix develop --command cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_mixed_open_and_covered_owners_once" <not executed on terminal>]
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running tests/integration/land_surface_energy_strict_v8_public_contract.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/debug/deps/land_surface_energy_real_hydrology_shadow_contract-f9e2bb0f84d6548e)
+
+running 1 test
+test covered_forest_tests::public_v8_endpoint_closes_mixed_open_and_covered_owners_once ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.09s
+
+
+Script done on 2026-08-17 21:04:31-07:00 [COMMAND_EXIT_CODE="0"]

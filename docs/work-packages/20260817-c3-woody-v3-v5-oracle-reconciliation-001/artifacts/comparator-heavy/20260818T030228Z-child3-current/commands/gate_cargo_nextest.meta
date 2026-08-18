@@ -1,0 +1,14 @@
+{
+  "label": "gate_cargo_nextest",
+  "command": "cargo nextest run --workspace --profile full",
+  "status": "FAIL",
+  "exit_code": 100,
+  "start": "2026-08-18T03:03:56Z",
+  "end": "2026-08-18T03:20:47Z",
+  "duration_ms": 1010904617393,
+  "env_OPENWEPP_TASK_ID": "child3-recon-20260818T030228Z",
+  "env_TMPDIR": "/tmp/ow-lse-20260818T030228Z",
+  "passed": 0,
+  "failed": 1,
+  "list_count": 0
+}

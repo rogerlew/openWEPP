@@ -1,0 +1,2 @@
+command=env OPENWEPP_TASK_ID=child3-recon-20260818T030134Z TMPDIR=/tmp/ow-lse-20260818T030134Z cargo fmt --all -- --check
+bash: line 1: cargo: command not found

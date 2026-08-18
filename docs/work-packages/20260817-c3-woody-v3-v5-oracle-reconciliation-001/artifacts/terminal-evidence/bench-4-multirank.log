@@ -1,0 +1,16 @@
+Script started on 2026-08-17 21:04:29-07:00 [COMMAND="nix develop --command cargo test -p openwepp-land-surface-energy covered_multirank_potential_fixed_cap_and_alternate_start_match_frozen_oracle" <not executed on terminal>]
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/debug/deps/openwepp_land_surface_energy-90ec5b504634e79f)
+
+running 1 test
+test covered_oracle_conformance_tests::covered_multirank_potential_fixed_cap_and_alternate_start_match_frozen_oracle ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 53 filtered out; finished in 0.13s
+
+
+Script done on 2026-08-17 21:04:30-07:00 [COMMAND_EXIT_CODE="0"]

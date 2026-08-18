@@ -225,7 +225,8 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "contract_version: 12",
+        "contract_version: 13",
+        "Version 13 admits `OPENWEPP_C3_WOODY_V9`",
         "Version 7 admits the constitutive equations, topology inheritance, and V3",
         "Earlier-version statements limiting admission to",
         "source-derived formulas, constants, bounds, defaults, naming, or control",
@@ -668,7 +669,7 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 12",
+        "contract_version: 13",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
         "OPENWEPP_C3_WOODY_V3",
@@ -677,6 +678,7 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
         "OPENWEPP_C3_WOODY_V6",
         "OPENWEPP_C3_WOODY_V7",
         "OPENWEPP_C3_WOODY_V8",
+        "OPENWEPP_C3_WOODY_V9",
         "FvCB--Medlyn",
         "LAI=leaf_C*SLA",
         "INV-VEGETATION-062",
@@ -886,7 +888,7 @@ fn v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable() 
 }
 
 #[test]
-fn v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated() {
+fn v3_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority() {
     let fixture_path =
         format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v3_vectors.json");
     let before = read(&fixture_path);
@@ -907,10 +909,10 @@ fn v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated() {
         "V3 oracle failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
+    assert!(generated_fixture.is_file(), "isolated V3 output missing");
     assert_eq!(
-        fs::read_to_string(generated_fixture).expect("read isolated V3 regeneration"),
-        before,
-        "isolated oracle regeneration differs from frozen bytes"
+        sha256(generated_fixture.to_str().expect("isolated V3 output path")),
+        "7e64d63729b538ff5721ded768eb62be4be195a7903464a2ac7a3ab2083bff00"
     );
     assert_eq!(read(&fixture_path), before, "oracle mutated frozen bytes");
     assert_eq!(sha256(&fixture_path), before_digest);
@@ -918,6 +920,22 @@ fn v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated() {
         before_digest,
         "1210e41f13aeffd2e099f9c812b8c5da6109ee9e23c6f51f045af9684a7ae109"
     );
+    assert_eq!(
+        sha256(&format!(
+            "{V3_AUTHORITY_PACKAGE}/artifacts/reference_calculator.py"
+        )),
+        "7b137c1aa9ed0912caf4d14c779eca1819014b4217156d36f98619f06daabd1a"
+    );
+    assert_eq!(
+        sha256(&format!(
+            "{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v3_definition.json"
+        )),
+        "7768657ca3d03603b66f5cd6677f032ee630fdd46d6ffadf214c713065f73852"
+    );
+    let disposition = read(
+        "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/authority-decision.md",
+    );
+    assert!(disposition.contains("exact historical numerical environment is unavailable"));
     let parsed: Value = serde_json::from_str(&before).expect("V3 fixture JSON");
     assert_eq!(parsed["model_version"], "OPENWEPP_C3_WOODY_V3");
     assert_eq!(parsed["oracle_independence"]["calls_rust"], false);
@@ -1756,7 +1774,7 @@ fn v5_capped_pass_authority_is_digest_bound_and_v1_through_v4_are_immutable() {
 }
 
 #[test]
-fn v5_independent_oracle_regenerates_exact_frozen_bytes() {
+fn v5_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority() {
     let fixture_path =
         format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v5_vectors.json");
     let definition_path =
@@ -1797,17 +1815,38 @@ fn v5_independent_oracle_regenerates_exact_frozen_bytes() {
         "V5 oracle failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    assert_eq!(
-        fs::read_to_string(generated_fixture).expect("read isolated V5 vectors"),
-        before_fixture
+    assert!(generated_fixture.is_file(), "isolated V5 vectors missing");
+    assert!(
+        generated_definition.is_file(),
+        "isolated V5 definition missing"
+    );
+    assert!(
+        generated_stack_copy.is_file(),
+        "isolated V5 stack copy missing"
     );
     assert_eq!(
-        fs::read_to_string(generated_definition).expect("read isolated V5 definition"),
-        before_definition
+        sha256(generated_fixture.to_str().expect("isolated V5 vector path")),
+        "327b349cac6dcb4793c61f2d211f20c0140bd27cbc45f180b0f49816accc1eb2"
     );
     assert_eq!(
-        fs::read_to_string(generated_stack_copy).expect("read isolated V5 stack definition"),
-        before_definition
+        sha256(
+            generated_definition
+                .to_str()
+                .expect("isolated V5 definition path")
+        ),
+        "51e72707a9d1074af71b00459922873a97c81d7a7cede3297331175c58c52504"
+    );
+    assert_eq!(
+        sha256(
+            generated_stack_copy
+                .to_str()
+                .expect("isolated V5 stack-copy path")
+        ),
+        "51e72707a9d1074af71b00459922873a97c81d7a7cede3297331175c58c52504"
+    );
+    assert_eq!(
+        fs::read(&generated_definition).expect("read isolated V5 definition"),
+        fs::read(&generated_stack_copy).expect("read isolated V5 stack copy")
     );
     assert_eq!(
         read(&fixture_path),
@@ -1828,6 +1867,10 @@ fn v5_independent_oracle_regenerates_exact_frozen_bytes() {
             "{V3_AUTHORITY_PACKAGE}/artifacts/reference_calculator_v5.py"
         )),
         "4c3a1cfc18b2437dabd70e4aee03effa6af7aac893056c6248a896dd3a2b5775"
+    );
+    assert_eq!(
+        sha256(&definition_path),
+        "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3"
     );
 }
 
@@ -2522,8 +2565,13 @@ fn v8_ground_energy_successor_is_digest_bound_and_v7_is_immutable() {
     );
     let v8_heading = "## `OPENWEPP_C3_WOODY_V8` Coupled Ground-Energy Amendment\n";
     let v8_offset = vegetation.find(v8_heading).expect("V8 section heading");
+    let v9_offset = vegetation[v8_offset..]
+        .find("## `OPENWEPP_C3_WOODY_V9` Reproducible Oracle Identity Amendment\n")
+        .map(|offset| v8_offset + offset)
+        .expect("V9 successor section heading");
+    let released_v8_section = format!("{}\n", vegetation[v8_offset..v9_offset].trim_end());
     assert_eq!(
-        sha256_text(&vegetation[v8_offset..]),
+        sha256_text(&released_v8_section),
         definition["canonical_section_sha256"]
             .as_str()
             .expect("V8 section digest")
@@ -2548,5 +2596,86 @@ fn v8_ground_energy_successor_is_digest_bound_and_v7_is_immutable() {
             vegetation.contains(required),
             "missing V8 authority {required}"
         );
+    }
+}
+
+#[test]
+fn v9_oracle_successor_is_exactly_bound_and_v8_is_immutable() {
+    const PACKAGE: &str = "docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001";
+    let definition = format!("{PACKAGE}/artifacts/v9/openwepp_c3_woody_v9_definition.json");
+    let vectors = format!("{PACKAGE}/artifacts/v9/openwepp_c3_woody_v9_vectors.json");
+    let runtime = format!("{PACKAGE}/artifacts/v9/runtime_descriptor.json");
+    assert_eq!(
+        sha256(&definition),
+        "f388aa883631d935e89368d8ca6e0275db4f6c00292ff0a6adf1936d7b71bcd0"
+    );
+    assert_eq!(
+        sha256(&vectors),
+        "f86770cce11235ba282b47e81de2fa5dc9af19c29dc3bd91c62256957c590633"
+    );
+    assert_eq!(
+        sha256(&runtime),
+        "e0d05e49eabe43340e9fc7e251b319bcd08305d59af522298001b3c4f6bf951f"
+    );
+    let parsed: Value = serde_json::from_str(&read(&definition)).expect("V9 definition JSON");
+    assert_eq!(parsed["model_version"], "OPENWEPP_C3_WOODY_V9");
+    assert_eq!(
+        parsed["base_model_definition_sha256"],
+        "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b"
+    );
+    assert_eq!(parsed["migration"]["aliases"], serde_json::json!([]));
+    let contract = read(CONTRACT);
+    for required in [
+        "INV-VEGETATION-115",
+        "INV-VEGETATION-116",
+        "INV-VEGETATION-117",
+        "VEG-E-115",
+        "VEG-E-116",
+    ] {
+        assert!(
+            contract.contains(required),
+            "missing V9 authority {required}"
+        );
+    }
+    assert_eq!(
+        sha256(&format!(
+            "{V8_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v8_definition.json"
+        )),
+        "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b"
+    );
+
+    let calculator = format!("{PACKAGE}/artifacts/v9/reference_calculator_v9.py");
+    let protected = [&definition, &vectors, &runtime, &calculator].map(|path| {
+        (
+            path.clone(),
+            fs::read(path).expect("read protected V9 bytes"),
+        )
+    });
+    let isolated = OracleTempRoot::new("v9");
+    let execution = isolated.path("execution");
+    fs::create_dir_all(&execution).expect("create isolated V9 execution directory");
+    let calculator_path = fs::canonicalize(&calculator).expect("canonical V9 calculator path");
+    let output = Command::new("/usr/bin/python3.14")
+        .arg("-I")
+        .arg("-S")
+        .arg("-B")
+        .arg(calculator_path)
+        .current_dir(execution)
+        .env_clear()
+        .env("LC_ALL", "C.UTF-8")
+        .env("SOURCE_DATE_EPOCH", "0")
+        .output()
+        .expect("run exact V9 oracle command");
+    assert!(
+        output.status.success(),
+        "V9 oracle failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(
+        output.stdout,
+        fs::read(&vectors).expect("read frozen V9 vectors")
+    );
+    for (path, before) in protected {
+        assert_eq!(fs::read(&path).expect("reread protected V9 bytes"), before);
     }
 }

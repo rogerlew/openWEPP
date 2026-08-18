@@ -1,0 +1,7 @@
+command=OPENWEPP_TASK_ID=child3-recon-20260818T030228Z TMPDIR=/tmp/ow-lse-20260818T030228Z bash tools/release/check_authority_suite_antievasion.sh
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-recon-20260818T030228Z
+  scratch: /tmp/openwepp-roger-child3-recon-20260818T030228Z
+  cache:   /workdir/.cache/openwepp
+PASS: authority suite anti-evasion checks passed.

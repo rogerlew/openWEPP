@@ -164,6 +164,20 @@ impl VegetationConfiguration {
         self.validate_for_model(crate::v8_state::V8_MODEL_SHA256, true)
     }
 
+    /// Parses the unchanged V8 configuration payload under the prospective
+    /// reproducible-oracle V9 successor identity.
+    pub fn parse_v9_strict(bytes: &[u8]) -> Result<Self, VegetationError> {
+        let value: Self =
+            serde_json::from_slice(bytes).map_err(|e| VegetationError::Schema(e.to_string()))?;
+        value.validate_v9()?;
+        Ok(value)
+    }
+
+    /// Validates the imported V8 configuration surface under the V9 digest.
+    pub fn validate_v9(&self) -> Result<(), VegetationError> {
+        self.validate_for_model(crate::v9_state::V9_MODEL_SHA256, true)
+    }
+
     pub(crate) fn validate_historical(
         &self,
         expected_model_sha256: &str,

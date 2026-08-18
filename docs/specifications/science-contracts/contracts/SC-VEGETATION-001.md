@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 12
+contract_version: 13
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -74,6 +74,11 @@ occupancy canopy-air nodes with reciprocal arbitrary-rank longwave and one
 shared tile canopy-air node receiving ground sensible and vapor exchange. Every
 other V7 equation remains unchanged. V1--V7 remain immutable historical
 identities and are not V8 runtime aliases.
+Version 13 admits `OPENWEPP_C3_WOODY_V9` as the prospective reproducible-oracle
+successor to V8. V9 imports every V8 scientific and runtime rule exactly and
+supersedes only the independent oracle's numerical-runtime, canonical
+serialization, definition, and vector identity. V1--V8 remain immutable
+historical identities and none is a V9 runtime alias.
 
 The local definition identity for `OPENWEPP_C3_WOODY_V1` is
 `sha256:003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`
@@ -132,6 +137,15 @@ for
 `docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_c3_woody_v8_definition.json`.
 It imports exact V7 and supersedes only the longwave, shared canopy-air,
 joint-solve and migration delta in the Version 12 amendment below.
+
+The prospective V9 definition identity is
+`sha256:f388aa883631d935e89368d8ca6e0275db4f6c00292ff0a6adf1936d7b71bcd0`
+for
+`docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/openwepp_c3_woody_v9_definition.json`.
+It imports exact V8 definition
+`sha256:622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b`
+and supersedes no V8 equation, constant, branch, state, configuration,
+ownership, guard, or supported-domain rule.
 
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
@@ -2213,6 +2227,7 @@ calibration, identifiability, empirical validity, or transferability.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-17 | 13 | Codex | Admitted prospective `OPENWEPP_C3_WOODY_V9` with exact V8 science/runtime import, exact identity-only migration, and content-addressed non-Rust oracle runtime and serialization; preserved V1--V8 bytes. |
 | 2026-08-14 | 12 | Codex | Admitted `OPENWEPP_C3_WOODY_V8` reciprocal multirank ground longwave, shared tile canopy-air ground H/E coupling, joint potential/final transaction, strict migration and independent LSE coupling; preserved V1--V7. |
 | 2026-08-13 | 11 | Codex | Admitted `OPENWEPP_C3_WOODY_V7` exact six-tissue seasonal storage-to-transfer preparation, onset deployment, immutable-beginning ordering, evergreen zero-pool posture, conservation, failure, migration, and independent fixtures; preserved V1--V6 bytes. |
 | 2026-08-13 | 10 | Codex | Admitted `OPENWEPP_C3_WOODY_V6` narrowly scoped portable comparison for rejected cross-runtime `backtracking_limit.step_norm`, with exact eligibility and anti-laundering guards plus independent binary64 boundary fixtures; preserved all V1--V5 bytes and accepted numerical/physical authority unchanged. |
@@ -2328,3 +2343,70 @@ V8 and V8 state cannot execute under V7. Failures preserve every owner byte.
 This amendment authorizes later default-off shadow implementation only. It
 does not alter V7 runtime bytes, activate a selector, support canopy snow, or
 make calibration, empirical validation or transferability claims.
+
+## `OPENWEPP_C3_WOODY_V9` Reproducible Oracle Identity Amendment
+
+V9 imports the exact V8 definition, scientific equations, constants,
+configuration, state, ownership, numerical algorithm, branches, guards,
+diagnostics, rollback, and supported domain. It changes no production physics
+or accepted runtime value. V9 supersedes only the prospective independent
+oracle identity so future release bytes are generated under a declared exact
+numerical runtime and canonical serializer rather than inheriting unavailable
+V3/V5 release-environment provenance.
+
+### Content-addressed oracle authority
+
+The V9 non-Rust calculator is
+`artifacts/v9/reference_calculator_v9.py` at
+`sha256:05cee9082a2595fe3692c4e0ad69dd9d190d2b0577e3c9a71d53d8494156ad5a`.
+Before executing, it checksum-validates and imports the immutable V8 Python
+calculator at
+`sha256:525538f32c91e2377f5d58f72fa4cfff2e81d46d5e12555e79792d92e1e81d6f`.
+It does not import Rust. The numerical runtime and canonical JSON serializer
+are frozen by `artifacts/v9/runtime_descriptor.json` at
+`sha256:e0d05e49eabe43340e9fc7e251b319bcd08305d59af522298001b3c4f6bf951f`.
+That descriptor binds the interpreter executable, the complete Python standard
+library tree, every loaded extension's transitive shared objects, locale and
+OpenSSL runtime files, OS, architecture, epoch, JSON options, UTF-8, LF, and
+the exact CPU vendor/family/model/stepping/flags and Linux `AT_HWCAP` /
+`AT_HWCAP2` dispatch identity, and the isolated/no-site/no-bytecode generation
+command. The generator
+recomputes and rejects every binding, including its own calculator SHA-256,
+before importing V8.
+
+The V9 vector is
+`artifacts/v9/openwepp_c3_woody_v9_vectors.json`. The definition binds its
+noncircular imported-execution payload at
+`sha256:4c34e075e2d8384aeae2616d0a2900fa46fc80ff01e357401cb3923dc1f264ac`;
+the complete vector bytes are
+`sha256:f86770cce11235ba282b47e81de2fa5dc9af19c29dc3bd91c62256957c590633`.
+The payload binds the complete canonicalized imported V8 execution plus every
+top-level scenario-family digest. Two executions in separate working
+directories must be byte-identical. Generator validation writes only stdout
+and must prove all repository authority bytes unchanged.
+
+### Exact V8-to-V9 migration
+
+Migration accepts only the complete V8 definition identity and copies every
+configuration, state, parameter, warm start, persistent value, categorical
+branch, and resolved migration value bit-identically. It changes only the
+model-definition identity and derived identities that transitively bind it.
+V8 cannot execute as V9, V9 cannot execute as V8, and no V1--V8 name, digest,
+configuration, or state is a V9 alias. Any mismatch rejects without a partial
+V9 state.
+
+### V9 invariants and guards
+
+| ID | Binding rule |
+|---|---|
+| `INV-VEGETATION-115` | V9 imports exact V8 physics/runtime semantics and supersedes only reproducible oracle numerical-runtime and serialization identity. |
+| `INV-VEGETATION-116` | V9 oracle execution checksum-binds the independent Python calculator, interpreter, dynamic runtime objects, serializer, definition, and full imported-execution payload. |
+| `INV-VEGETATION-117` | V8-to-V9 migration validates exact V8 identity, copies all scientific state/configuration values bit-identically, derives only V9 identities, and defines no historical alias. |
+| `VEG-E-115` | Any calculator, runtime descriptor, serializer, definition, imported V8 source, payload, or repeated-generation byte mismatch rejects V9 authority generation. |
+| `VEG-E-116` | Any non-identity migration mutation, stale V8 identity under V9, V9 identity under V8, or partial migration rejects without a V9 state. |
+
+This prospective amendment preserves every V1--V8 calculator, vector,
+definition, contract-era digest, fixture, and runtime expectation byte. It
+does not activate a selector, change V8 science, authorize fixture rewriting,
+weaken exact regeneration, or establish calibration, empirical validation, or
+transferability.

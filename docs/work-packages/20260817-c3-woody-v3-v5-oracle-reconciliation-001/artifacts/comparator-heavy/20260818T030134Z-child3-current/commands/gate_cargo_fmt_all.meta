@@ -1,0 +1,14 @@
+{
+  "label": "gate_cargo_fmt_all",
+  "command": "cargo fmt --all -- --check",
+  "status": "FAIL",
+  "exit_code": 127,
+  "start": "2026-08-18T03:01:34Z",
+  "end": "2026-08-18T03:01:34Z",
+  "duration_ms": 75765457,
+  "env_OPENWEPP_TASK_ID": "child3-recon-20260818T030134Z",
+  "env_TMPDIR": "/tmp/ow-lse-20260818T030134Z",
+  "passed": 0,
+  "failed": 0,
+  "list_count": 1
+}

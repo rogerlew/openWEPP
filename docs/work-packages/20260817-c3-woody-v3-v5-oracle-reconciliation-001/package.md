@@ -1,6 +1,6 @@
 # Reconcile C3 Woody V3/V5 Oracle Authority
 
-Status: `queued / contract-first / Child-3 hold-lift dependency`
+Status: `COMPLETE / terminally verified`
 
 Date: `2026-08-17`
 
@@ -10,11 +10,12 @@ Plan class: `Critical science-authority reconciliation`
 
 ## Objective
 
-Resolve the reproducible mismatch between checked-in V3/V5 frozen authority
-bytes and their isolated checked-in calculators, then propagate only the
-reviewed canonical identity consequences through successors. Produce one
-unambiguous authority state in which isolated regeneration, frozen definitions,
-successor bindings, implementation tests, and the full workspace agree exactly.
+Preserve immutable V3--V8 historical identity while truthfully recording that
+V3/V5 release-time numerical-runtime provenance is unavailable, then admit a
+prospective reproducible V9 successor with pinned execution and serialization
+identity. Produce one unambiguous authority state in which historical bytes
+remain unchanged and prospective regeneration, successor bindings,
+implementation tests, and the full workspace agree exactly.
 
 ## Rationale and correction authority envelope
 
@@ -47,10 +48,11 @@ constitutive runtime behavior. Preserve isolated, nonmutating oracle execution.
 1. Freeze exact current bytes, environments, isolated regeneration outputs,
    and the complete V3--V8 digest dependency graph.
 2. Adjudicate authority contract-first using cited provenance and independent
-   science review; record why the selected bytes and operation order are
-   canonical.
-3. Implement the minimum exact calculator/fixture/definition/digest migration
-   authorized by that decision, with independent poison and immutability tests.
+   science review. Preserve V3--V8 and select a prospective V9 identity because
+   science cannot distinguish the historical/current binary64 terminal points.
+3. Implement a new V9 calculator, fixture, definition, pinned runtime
+   descriptor, migration, and digest chain with independent reconstruction,
+   repeatability, poison, and historical-immutability tests.
 4. Run focused vegetation authority gates, anti-evasion, exact regeneration,
    successor migration tests, and a clean full-workspace correctness gate.
 5. Complete independent Rust and science reviews, finding disposition, line
@@ -61,16 +63,20 @@ constitutive runtime behavior. Preserve isolated, nonmutating oracle execution.
 
 - [x] Scaffold the separate contract-first package without changing V3/V5
   frozen fixtures or calculators in Child 3.
-- [ ] Freeze the authority contradiction and dependency graph.
-- [ ] Adjudicate canonical authority before implementation.
-- [ ] Implement and verify the reviewed identity reconciliation.
-- [ ] Pass clean full-workspace correctness and terminal gates.
+- [x] Freeze the authority contradiction and dependency graph.
+- [x] Adjudicate canonical authority before implementation: preserve V3--V8
+  exactly and admit a prospective reproducible V9 successor.
+- [x] Implement and verify the reviewed identity reconciliation.
+- [x] Pass clean full-workspace correctness and review gates.
+- [x] Pass both terminal verifiers, archive prompts, and close packages in order.
 
 ## Exit criteria
 
-Closure requires byte-identical isolated V3 and V5 regeneration in the
-canonical environment; exact, reviewed successor identity propagation through
-V8; unchanged repository bytes after every generator test; all authority,
+Closure requires exact V3--V8 byte/digest immutability and a truthful historical
+non-regenerability record; byte-identical isolated V9 regeneration in its
+content-addressed pinned environment; exact, reviewed V8-to-V9 migration and
+successor identity propagation; unchanged repository bytes after every
+generator test; all authority,
 anti-evasion, formatting, Clippy, and full-workspace correctness gates passing;
 dual independent reviews with every finding dispositioned; and dual terminal
 verification. Any failed or missing current-scope gate keeps this package and
@@ -92,13 +98,29 @@ package may alter external-authority fixtures or required-case bindings.
 
 ## Surprises and discoveries
 
-None yet beyond the already frozen isolated-regeneration contradiction.
+- Release/current V3 and V5 calculator, vector, and definition blobs are
+  byte-identical. Exact release-tree execution still diverges under the current
+  Python/libm environment.
+- No alternate or superseded generator/fixture survives in local refs,
+  reflogs, unreachable objects, or the complete object database.
+- Semantic differences are numeric-only and do not select different science
+  branches; the contract cannot choose between terminal binary64 points.
 
 ## Decision log
 
 - 2026-08-17: Split authority reconciliation from Child 3 so the bounded LSE
   runtime correction cannot silently choose or migrate V3/V5 authority.
+- 2026-08-17: Independent science review selected prospective V9. V3--V8 stay
+  immutable; no historical calculator, fixture, definition, or digest is
+  rewritten merely to match the current numerical runtime.
 
 ## Outcomes and retrospective
 
-Queued. No authority bytes have been changed by this package.
+Release/current provenance, object archaeology, exhaustive semantic diffs, and
+independent reconstruction selected a prospective V9 successor while preserving
+V3--V8. Contract version 13, content-addressed V9 authority, exact isolated
+generation, and explicit V8-to-V9 migration are implemented. Every review
+finding was corrected. Focused authority, anti-evasion, 2,999/2,999 full
+workspace correctness, workspace quality gates, and all seven corrected-litter
+Child-3 benchmark surfaces pass. Both independent terminal verifiers returned
+PASS. This reconciliation package closed before Child 3, as required.

@@ -1,0 +1,1 @@
+{"label":"gate_cargo_fmt_all","command":"cargo fmt --all -- --check
