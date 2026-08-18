@@ -11,8 +11,8 @@ use openwepp_kernel_contract::{
     authorize_proportionally,
 };
 use openwepp_land_surface_energy::{
-    LandSurfaceEnergyConfiguration, LandSurfaceEnergyState, LandSurfaceForcing, Sha256Digest,
-    SoilThermalLayerSnapshot, SoilThermalOfeSnapshot, SoilThermalSnapshot,
+    LandSurfaceEnergyConfiguration, LandSurfaceEnergyState, LandSurfaceForcing, LiquidParcelKind,
+    Sha256Digest, SoilThermalLayerSnapshot, SoilThermalOfeSnapshot, SoilThermalSnapshot,
     SoilThermalTileCandidate, build_lse_ending_state,
 };
 use openwepp_vegetation::{
@@ -51,70 +51,6 @@ pub struct DirectV9ShadowIntervalInput {
 pub struct DirectV9ShadowDayInput {
     pub day_index: usize,
     pub intervals: Vec<DirectV9ShadowIntervalInput>,
-}
-
-/// One immutable repository-provider record joining the native daily inputs
-/// to the retained subdaily forcing records consumed by the strict shadow.
-/// The interval records are forcing receipts, never caller solver trials.
-#[derive(Clone, Debug, PartialEq)]
-pub struct DirectV9RepositoryDayProjection {
-    run_id: u64,
-    day_index: usize,
-    publication_inputs: Vec<DirectPublicationDayInput>,
-    shadow_input: DirectV9ShadowDayInput,
-}
-
-impl DirectV9RepositoryDayProjection {
-    pub fn try_new(
-        run_id: u64,
-        day_index: usize,
-        publication_inputs: Vec<DirectPublicationDayInput>,
-        shadow_input: DirectV9ShadowDayInput,
-    ) -> Result<Self, DirectV9RealConsumerError> {
-        if publication_inputs.is_empty()
-            || shadow_input.day_index != day_index
-            || shadow_input.intervals.len() != INTERVALS_PER_DAY
-        {
-            return Err(DirectV9RealConsumerError::Identity(
-                "repository day projection source identity or cardinality",
-            ));
-        }
-        let interval_rain_kg_m2 = shadow_input
-            .intervals
-            .iter()
-            .map(|interval| interval.vegetation_forcing.rain_kg_m2)
-            .sum::<f64>();
-        if publication_inputs.iter().any(|input| {
-            (input.precipitation_m * 1_000.0).to_bits() != interval_rain_kg_m2.to_bits()
-        }) {
-            return Err(DirectV9RealConsumerError::Identity(
-                "repository daily precipitation/subdaily liquid-mass join",
-            ));
-        }
-        Ok(Self {
-            run_id,
-            day_index,
-            publication_inputs,
-            shadow_input,
-        })
-    }
-
-    pub(crate) fn into_parts(
-        self,
-        frame: &DirectRunFrame,
-        day_index: usize,
-    ) -> Result<(Vec<DirectPublicationDayInput>, DirectV9ShadowDayInput), DirectV9RealConsumerError>
-    {
-        if self.run_id != frame.identity.run_id
-            || self.day_index != day_index
-            || self.shadow_input.day_index != day_index
-        {
-            return Err(DirectV9RealConsumerError::Identity(
-                "repository day projection immutable source lineage",
-            ));
-        }
-        Ok((self.publication_inputs, self.shadow_input))
-    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -326,6 +262,7 @@ impl DirectV9RealConsumerShadow {
             projected_day_frames,
             projected_day_inputs,
             input,
+            &self.lse_configuration,
         )?;
         let beginning_shadow_diagnostic_fingerprint = self.diagnostic_fingerprint()?;
         let first_transaction_id = input.intervals[0].lse_forcing.transaction_id;
@@ -563,6 +500,7 @@ fn validate_repository_day_projection(
     projected_day_frames: &[DirectDayFrame],
     projected_day_inputs: &[DirectPublicationDayInput],
     shadow_input: &DirectV9ShadowDayInput,
+    lse_configuration: &LandSurfaceEnergyConfiguration,
 ) -> Result<(), DirectV9RealConsumerError> {
     if projected_day_frames.len() != production_frame.identity.lane_count
         || projected_day_inputs.len() != production_frame.identity.lane_count
@@ -587,6 +525,32 @@ fn validate_repository_day_projection(
             return Err(DirectV9RealConsumerError::Identity(
                 "repository day input/frame receipt",
             ));
+        }
+        let ofe =
+            lse_configuration
+                .ofes
+                .get(lane_index)
+                .ok_or(DirectV9RealConsumerError::Identity(
+                    "repository LSE OFE/lane projection",
+                ))?;
+        let expected_precipitation_kg_m2 = day_input.precipitation_m * 1_000.0;
+        for tile in &ofe.tiles {
+            let tile_precipitation_kg_m2 = shadow_input
+                .intervals
+                .iter()
+                .flat_map(|interval| &interval.lse_forcing.precipitation_parcels)
+                .filter(|parcel| {
+                    parcel.parcel_kind == LiquidParcelKind::Precipitation
+                        && parcel.destination_ofe_id == ofe.ofe_id
+                        && parcel.destination_tile_id == tile.tile_id
+                })
+                .map(|parcel| parcel.amount_kg_m2_destination_tile_ground)
+                .fold(0.0, |sum, value| sum + value);
+            if tile_precipitation_kg_m2.to_bits() != expected_precipitation_kg_m2.to_bits() {
+                return Err(DirectV9RealConsumerError::Identity(
+                    "repository daily precipitation/subdaily LSE parcel mass",
+                ));
+            }
         }
     }
     Ok(())
@@ -1226,54 +1190,6 @@ mod tests {
     }
 
     #[test]
-    fn repository_projection_binds_source_lineage_and_exact_liquid_mass() {
-        let (_, fixture) = shadow_fixture();
-        let frame = fixture.hydrology.beginning_frame();
-        let mut shadow_input = day_input(&fixture);
-        let mut production_input = production_day_input();
-        production_input.precipitation_m = 0.012;
-        shadow_input.intervals[0].vegetation_forcing.rain_kg_m2 =
-            production_input.precipitation_m * 1_000.0;
-        let valid_shadow_input = shadow_input.clone();
-        let projection = DirectV9RepositoryDayProjection::try_new(
-            frame.identity.run_id,
-            0,
-            vec![production_input.clone()],
-            shadow_input.clone(),
-        )
-        .expect("exact repository receipt");
-        projection
-            .into_parts(frame, 0)
-            .expect("matching immutable source lineage");
-
-        shadow_input.intervals[0].vegetation_forcing.rain_kg_m2 = f64::from_bits(
-            shadow_input.intervals[0]
-                .vegetation_forcing
-                .rain_kg_m2
-                .to_bits()
-                ^ 1,
-        );
-        assert!(
-            DirectV9RepositoryDayProjection::try_new(
-                frame.identity.run_id,
-                0,
-                vec![production_input.clone()],
-                shadow_input,
-            )
-            .is_err()
-        );
-
-        let wrong_lineage = DirectV9RepositoryDayProjection::try_new(
-            frame.identity.run_id.wrapping_add(1),
-            0,
-            vec![production_input],
-            valid_shadow_input,
-        )
-        .expect("internally coherent foreign receipt");
-        assert!(wrong_lineage.into_parts(frame, 0).is_err());
-    }
-
-    #[test]
     fn explicit_scheduler_consumer_advances_shadow_without_changing_production() {
         let (mut shadow, fixture) = shadow_fixture();
         let mut baseline = fixture.hydrology.beginning_frame().clone();
@@ -1304,15 +1220,7 @@ mod tests {
                 &mut observed,
                 metadata,
                 |_, _, _| Ok(production_input.clone()),
-                |frame, day_index| {
-                    Ok(DirectV9RepositoryDayProjection::try_new(
-                        frame.identity.run_id,
-                        day_index,
-                        vec![production_input.clone()],
-                        shadow_input.clone(),
-                    )
-                    .expect("repository projection"))
-                },
+                |_, _, _, _| Ok(shadow_input.clone()),
                 |row, _| {
                     observed_rows.push(row.clone());
                     Ok(())
@@ -1343,15 +1251,7 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(production_input.clone()),
-                |frame, day_index| {
-                    Ok(DirectV9RepositoryDayProjection::try_new(
-                        frame.identity.run_id,
-                        day_index,
-                        vec![production_input.clone()],
-                        shadow_input.clone(),
-                    )
-                    .expect("repository projection"))
-                },
+                |_, _, _, _| Ok(shadow_input.clone()),
                 |_, _| {
                     Err(crate::DirectRuntimeError::PublicationSinkFailure {
                         detail: "injected after shadow day".into(),
@@ -1403,15 +1303,7 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(production_input.clone()),
-                |frame, day_index| {
-                    Ok(DirectV9RepositoryDayProjection::try_new(
-                        frame.identity.run_id,
-                        day_index,
-                        vec![production_input.clone()],
-                        shadow_input.clone(),
-                    )
-                    .expect("repository projection"))
-                },
+                |_, _, _, _| Ok(shadow_input.clone()),
                 |_, _| Ok(()),
                 &mut shadow,
             )
@@ -1433,8 +1325,7 @@ mod tests {
         let production_before = production.clone();
         let shadow_before = shadow.clone();
         let shadow_input = day_input(&fixture);
-        let projected_input = production_day_input();
-        let mut actual_input = projected_input.clone();
+        let mut actual_input = production_day_input();
         actual_input.precipitation_m = f64::from_bits(actual_input.precipitation_m.to_bits() ^ 1);
         let error = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
             .run_publication_stream_with_v9_real_consumer_shadow(
@@ -1445,23 +1336,16 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(actual_input.clone()),
-                |frame, day_index| {
-                    Ok(DirectV9RepositoryDayProjection::try_new(
-                        frame.identity.run_id,
-                        day_index,
-                        vec![projected_input.clone()],
-                        shadow_input.clone(),
-                    )
-                    .expect("repository projection"))
-                },
+                |_, _, _, _| Ok(shadow_input.clone()),
                 |_, _| Ok(()),
                 &mut shadow,
             )
             .expect_err("repository receipt mismatch");
         assert!(matches!(
             error,
-            crate::DirectRuntimeError::DirectDomainViolation {
-                field: "v9_shadow.repository_day_input_join"
+            crate::DirectRuntimeError::V9RealConsumerShadowFailure {
+                category: "identity",
+                ..
             }
         ));
         assert_eq!(production, production_before);
