@@ -1253,29 +1253,6 @@ fn solve_class_inner(
     let tp = b.tp_vcmax_ratio * class.vcmax25 * vcmax_factor;
     let rd = class.rd25 * peaked_response(temperature_k, 46_390.0, 150_650.0, 490.0)?;
     let rb = 1.0 / f.gb_leaf_m_s;
-    if class.absorbed_par_w_m2_leaf == 0.0 {
-        let gs_m_s = f.g0_umol_m2_s * 1.0e-6 * R_GAS * temperature_k / pressure;
-        if gs_m_s <= 0.0 || !gs_m_s.is_finite() {
-            return Err(VegetationError::Domain(
-                "V10 nighttime stomatal conductance",
-            ));
-        }
-        let rs = 1.0 / gs_m_s;
-        let an = -rd;
-        let cs = f.ca_pa - 1.4 * rb * R_GAS * temperature_k * an * 1.0e-6;
-        let ci = f.ca_pa - (1.4 * rb + 1.6 * rs) * R_GAS * temperature_k * an * 1.0e-6;
-        if !cs.is_finite() || cs <= 0.0 || !ci.is_finite() || ci <= 0.0 || ci >= pressure {
-            return Err(VegetationError::Domain("V10 nighttime Ci domain"));
-        }
-        return Ok(SolvedClass {
-            ci_pa: ci,
-            rs_s_m: rs,
-            iterations: 0,
-            bracket: (ci, ci),
-            gross_assimilation: 0.0,
-            dark_respiration: rd,
-        });
-    }
     let residual = |ci: f64| -> Result<(f64, SolvedClass), VegetationError> {
         let photo = fvcb(FvcbInput {
             ci_pa: ci,
@@ -1318,30 +1295,7 @@ fn solve_class_inner(
             },
         ))
     };
-    let (gamma_residual, _) = residual(gamma)?;
-    let (ambient_residual, _) = residual(f.ca_pa)?;
-    if gamma_residual * ambient_residual <= 0.0 {
-        return brent_dekker_class(residual, gamma, f.ca_pa, 64, context, solve_identity);
-    }
-    if ambient_residual >= 0.0 {
-        return Err(VegetationError::CiNonConvergence);
-    }
-    let gs_m_s = f.g0_umol_m2_s * 1.0e-6 * R_GAS * temperature_k / pressure;
-    if gs_m_s <= 0.0 || !gs_m_s.is_finite() {
-        return Err(VegetationError::Domain(
-            "V10 low-light stomatal conductance",
-        ));
-    }
-    let rs = 1.0 / gs_m_s;
-    let ci_dark = f.ca_pa + (1.4 * rb + 1.6 * rs) * R_GAS * temperature_k * rd * 1.0e-6;
-    if !ci_dark.is_finite() || ci_dark <= f.ca_pa || ci_dark >= pressure {
-        return Err(VegetationError::Domain("V10 low-light Ci bound"));
-    }
-    let (dark_residual, _) = residual(ci_dark)?;
-    if dark_residual < 0.0 {
-        return Err(VegetationError::CiNonConvergence);
-    }
-    brent_dekker_class(residual, f.ca_pa, ci_dark, 64, context, solve_identity)
+    brent_dekker_class(residual, gamma, f.ca_pa, 64, context, solve_identity)
 }
 
 pub(super) fn brent_dekker_class<F>(

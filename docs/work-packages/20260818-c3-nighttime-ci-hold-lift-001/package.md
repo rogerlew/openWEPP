@@ -1,6 +1,6 @@
 # Admit and Implement the C3 Nighttime Leaf-CO2 Branch
 
-Status: `HOLD / V10 Ci provisional / full coupled hydraulic oracle required`
+Status: `HOLD / provisional runtime contained / full coupled oracle required`
 
 Date: `2026-08-18`
 
@@ -58,6 +58,15 @@ envelope. Independent review found that it substitutes warm-start values and
 does not solve the complete two-occupancy energy, shared-air, soil, and
 per-layer-cap system. Production implementation is therefore paused at the
 contract-first boundary while the full coupled authority artifact is built.
+
+## Containment checkpoint
+
+The active runtime and canonical authority were restored byte-for-byte to the
+pre-WIP `7bda42a5614feb3027b51dfced783eb39e7c37ad` posture. The provisional V14
+vegetation contract, V4 LSE contract, V10 definition, and V10 integration test
+are retained only as package-local artifacts. They are not active authority or
+an executable runtime identity. The committed WIP and its exact rejected diff
+remain preserved as evidence.
 
 ## Exact contradiction
 

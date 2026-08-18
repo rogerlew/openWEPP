@@ -831,10 +831,6 @@ path = "tests/integration/snow_free_half_hour_forcing_authority_contract.rs"
 name = "snow_free_half_hour_forcing_adapter_contract"
 path = "tests/integration/snow_free_half_hour_forcing_adapter_contract.rs"
 
-[[test]]
-name = "v10_nighttime_authority_contract"
-path = "tests/integration/v10_nighttime_authority_contract.rs"
-
 [profile.release]
 lto = "thin"
 codegen-units = 1

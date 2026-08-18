@@ -1143,33 +1143,6 @@ fn leaf_trial_state(
             column.ca_pa - (1.4 * rb + 1.6 * rs) * MOLAR_GAS_CONSTANT * temperature * an * 1.0e-6;
         Ok((ci - predicted, rs))
     };
-    let rb = 1.0 / gb_leaf;
-    let nighttime_gs_ms =
-        g0_umol_m2_s * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature / column.pressure_pa;
-    if inputs.absorbed_par_w_m2_leaf == 0.0 {
-        if nighttime_gs_ms <= 0.0 || !nighttime_gs_ms.is_finite() {
-            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
-                "v10_nighttime_stomatal_conductance",
-            ));
-        }
-        let rs = 1.0 / nighttime_gs_ms;
-        let ci =
-            column.ca_pa + (1.4 * rb + 1.6 * rs) * MOLAR_GAS_CONSTANT * temperature * rd * 1.0e-6;
-        if !ci.is_finite() || ci <= 0.0 || ci >= column.pressure_pa {
-            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
-                "v10_nighttime_ci",
-            ));
-        }
-        let carbon = carbon_at_ci(ci)?;
-        return Ok(LeafTrialState {
-            surface_q: qsurface,
-            rs_s_m: rs,
-            ci_pa: ci,
-            gross_assimilation_umol_co2_m2_leaf_s: 0.0,
-            net_assimilation_umol_co2_m2_leaf_s: -rd,
-            dark_respiration_umol_co2_m2_leaf_s: carbon.rd,
-        });
-    }
     let mut a = gamma;
     let mut b = column.ca_pa;
     let (mut fa, _) = residual(a)?;
@@ -1186,38 +1159,8 @@ fn leaf_trial_state(
             dark_respiration_umol_co2_m2_leaf_s: carbon.rd,
         });
     }
-    if fb == 0.0 {
-        let carbon = carbon_at_ci(b)?;
-        return Ok(LeafTrialState {
-            surface_q: qsurface,
-            rs_s_m: rs,
-            ci_pa: b,
-            gross_assimilation_umol_co2_m2_leaf_s: carbon.ag,
-            net_assimilation_umol_co2_m2_leaf_s: carbon.an,
-            dark_respiration_umol_co2_m2_leaf_s: carbon.rd,
-        });
-    }
     if fa * fb > 0.0 {
-        if fb >= 0.0 || nighttime_gs_ms <= 0.0 || !nighttime_gs_ms.is_finite() {
-            return Err(LandSurfaceEnergyError::ConstitutiveDomain("ci_bracket"));
-        }
-        let nighttime_rs = 1.0 / nighttime_gs_ms;
-        let ci_dark = column.ca_pa
-            + (1.4 * rb + 1.6 * nighttime_rs) * MOLAR_GAS_CONSTANT * temperature * rd * 1.0e-6;
-        if !ci_dark.is_finite() || ci_dark <= column.ca_pa || ci_dark >= column.pressure_pa {
-            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
-                "v10_low_light_ci_bound",
-            ));
-        }
-        let (dark_residual, dark_rs) = residual(ci_dark)?;
-        if dark_residual < 0.0 {
-            return Err(LandSurfaceEnergyError::ConstitutiveDomain("ci_bracket"));
-        }
-        a = column.ca_pa;
-        fa = fb;
-        b = ci_dark;
-        fb = dark_residual;
-        rs = dark_rs;
+        return Err(LandSurfaceEnergyError::ConstitutiveDomain("ci_bracket"));
     }
     let mut c = a;
     let mut fc = fa;
@@ -1563,42 +1506,22 @@ fn evaluate_covered_occupancy(
         }
     });
     let residuals = vec![
-        if occupancy.sun.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-            psi_sun - psi_stem
-        } else {
-            sun_e - q1sun
-        },
-        if occupancy.shade.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-            psi_shade - psi_stem
-        } else {
-            shade_e - q1shade
-        },
-        if occupancy.sun.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits()
-            || sun.net_assimilation_umol_co2_m2_leaf_s <= 0.0
-        {
-            beta_sun - 1.0
-        } else {
-            sun_e
-                - emax_sun_kg_m2_s
-                    * vulnerability(
-                        psi_sun,
-                        occupancy.p50_leaf_mm,
-                        occupancy.vulnerability_exponent,
-                    )
-        },
-        if occupancy.shade.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits()
-            || shade.net_assimilation_umol_co2_m2_leaf_s <= 0.0
-        {
-            beta_shade - 1.0
-        } else {
-            shade_e
-                - emax_shade_kg_m2_s
-                    * vulnerability(
-                        psi_shade,
-                        occupancy.p50_leaf_mm,
-                        occupancy.vulnerability_exponent,
-                    )
-        },
+        sun_e - q1sun,
+        shade_e - q1shade,
+        sun_e
+            - emax_sun_kg_m2_s
+                * vulnerability(
+                    psi_sun,
+                    occupancy.p50_leaf_mm,
+                    occupancy.vulnerability_exponent,
+                ),
+        shade_e
+            - emax_shade_kg_m2_s
+                * vulnerability(
+                    psi_shade,
+                    occupancy.p50_leaf_mm,
+                    occupancy.vulnerability_exponent,
+                ),
         q1sun + q1shade - q2,
         q2 - root_source_sum,
         energy_residuals[0],
@@ -1629,22 +1552,6 @@ fn evaluate_covered_occupancy(
         0.0,
     ];
     let mut tolerances = vec![crate::physics::water_tolerance(water_scale); 6];
-    if occupancy.sun.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-        tolerances[0] = 1.0e-6;
-    }
-    if occupancy.shade.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-        tolerances[1] = 1.0e-6;
-    }
-    if occupancy.sun.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits()
-        || sun.net_assimilation_umol_co2_m2_leaf_s <= 0.0
-    {
-        tolerances[2] = 1.0e-8;
-    }
-    if occupancy.shade.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits()
-        || shade.net_assimilation_umol_co2_m2_leaf_s <= 0.0
-    {
-        tolerances[3] = 1.0e-8;
-    }
     tolerances.extend((0..4).map(|index| {
         if component_areas[index].to_bits() == 0.0_f64.to_bits() {
             crate::physics::energy_tolerance(1.0)
@@ -1676,53 +1583,18 @@ fn evaluate_covered_occupancy(
         wet_vapor_kg_m2_s: wet_e,
         wet_branch,
         component_temperatures_k: [tsun, tshade, twet, tstem],
-        ci_pa: [
-            if occupancy.sun.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-                column.ca_pa
-            } else {
-                sun.ci_pa
-            },
-            if occupancy.shade.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-                column.ca_pa
-            } else {
-                shade.ci_pa
-            },
-        ],
+        ci_pa: [sun.ci_pa, shade.ci_pa],
         gross_assimilation_umol_co2_m2_leaf_s: [
-            if occupancy.sun.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-                0.0
-            } else {
-                sun.gross_assimilation_umol_co2_m2_leaf_s
-            },
-            if occupancy.shade.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-                0.0
-            } else {
-                shade.gross_assimilation_umol_co2_m2_leaf_s
-            },
+            sun.gross_assimilation_umol_co2_m2_leaf_s,
+            shade.gross_assimilation_umol_co2_m2_leaf_s,
         ],
         net_assimilation_umol_co2_m2_leaf_s: [
-            if occupancy.sun.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-                0.0
-            } else {
-                sun.net_assimilation_umol_co2_m2_leaf_s
-            },
-            if occupancy.shade.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-                0.0
-            } else {
-                shade.net_assimilation_umol_co2_m2_leaf_s
-            },
+            sun.net_assimilation_umol_co2_m2_leaf_s,
+            shade.net_assimilation_umol_co2_m2_leaf_s,
         ],
         dark_respiration_umol_co2_m2_leaf_s: [
-            if occupancy.sun.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-                0.0
-            } else {
-                sun.dark_respiration_umol_co2_m2_leaf_s
-            },
-            if occupancy.shade.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-                0.0
-            } else {
-                shade.dark_respiration_umol_co2_m2_leaf_s
-            },
+            sun.dark_respiration_umol_co2_m2_leaf_s,
+            shade.dark_respiration_umol_co2_m2_leaf_s,
         ],
         emax_kg_m2_s: [emax_sun_kg_m2_s, emax_shade_kg_m2_s],
         liquid,
@@ -2473,16 +2345,7 @@ pub fn solve_covered_column(
     let mut backtracking_count = 0;
     let mut pivot = None;
     let mut matrix_norm = None;
-    let exact_zero_par = beginning.occupancies.iter().any(|occupancy| {
-        occupancy.sun.absorbed_par_w_m2_leaf == 0.0
-            || occupancy.shade.absorbed_par_w_m2_leaf == 0.0
-    });
-    let maximum_iterations = if exact_zero_par {
-        200
-    } else {
-        MAX_NEWTON_ITERATIONS
-    };
-    for iteration in 0..=maximum_iterations {
+    for iteration in 0..=MAX_NEWTON_ITERATIONS {
         let detail = evaluate_covered_column(beginning, &x, caps, None)?;
         let norm = normalized_infinity_norm(&detail.normalized_residuals);
         if norm <= 1.0 && last_steps.is_some_and(CoveredStepNorms::accepted) {
@@ -2505,7 +2368,7 @@ pub fn solve_covered_column(
                 },
             )));
         }
-        if iteration == maximum_iterations {
+        if iteration == MAX_NEWTON_ITERATIONS {
             let (occupancy_id, active_bounds) = covered_failure_metadata(beginning, &detail, &x);
             return Ok(CoveredColumnSolveOutcome::Rejected(NumericalFailure {
                 kind: NumericalFailureKind::IterationLimit,
@@ -2538,108 +2401,20 @@ pub fn solve_covered_column(
             let mut plus = x.clone();
             minus[column_index] -= perturbations[column_index];
             plus[column_index] += perturbations[column_index];
-            let minus_valid = covered_trial_is_valid(&minus, beginning.occupancies.len());
-            let plus_valid = covered_trial_is_valid(&plus, beginning.occupancies.len());
-            let minus_detail = minus_valid
-                .then(|| evaluate_covered_column(beginning, &minus, caps, Some(&frozen)))
-                .transpose()?;
-            let plus_detail = plus_valid
-                .then(|| evaluate_covered_column(beginning, &plus, caps, Some(&frozen)))
-                .transpose()?;
+            let minus_detail = evaluate_covered_column(beginning, &minus, caps, Some(&frozen))?;
+            let plus_detail = evaluate_covered_column(beginning, &plus, caps, Some(&frozen))?;
             for row in 0..x.len() {
-                jacobian[row][column_index] = match (&minus_detail, &plus_detail) {
-                    (Some(minus), Some(plus)) => {
-                        (plus.normalized_residuals[row] - minus.normalized_residuals[row])
-                            / (2.0 * perturbations[column_index])
-                    }
-                    (Some(minus), None) => {
-                        (detail.normalized_residuals[row] - minus.normalized_residuals[row])
-                            / perturbations[column_index]
-                    }
-                    (None, Some(plus)) => {
-                        (plus.normalized_residuals[row] - detail.normalized_residuals[row])
-                            / perturbations[column_index]
-                    }
-                    (None, None) => {
-                        return Err(LandSurfaceEnergyError::ConstitutiveDomain(
-                            "covered_jacobian_bound",
-                        ));
-                    }
-                };
+                jacobian[row][column_index] = (plus_detail.normalized_residuals[row]
+                    - minus_detail.normalized_residuals[row])
+                    / (2.0 * perturbations[column_index]);
             }
         }
-        let mut rhs: Vec<f64> = detail
+        let rhs: Vec<f64> = detail
             .normalized_residuals
             .iter()
             .map(|value| -value)
             .collect();
-        for (occupancy_index, (occupancy, evaluation)) in beginning
-            .occupancies
-            .iter()
-            .zip(&detail.occupancies)
-            .enumerate()
-        {
-            let offset = 10 * occupancy_index;
-            let anchors = [
-                (
-                    occupancy.sun.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits(),
-                    offset,
-                    offset,
-                    Some(offset + 2),
-                    x[offset] - x[offset + 2],
-                ),
-                (
-                    occupancy.shade.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits(),
-                    offset + 1,
-                    offset + 1,
-                    Some(offset + 2),
-                    x[offset + 1] - x[offset + 2],
-                ),
-                (
-                    evaluation.net_assimilation_umol_co2_m2_leaf_s[0] <= 0.0,
-                    offset + 4,
-                    offset + 2,
-                    None,
-                    x[offset + 4] - 1.0,
-                ),
-                (
-                    evaluation.net_assimilation_umol_co2_m2_leaf_s[1] <= 0.0,
-                    offset + 5,
-                    offset + 3,
-                    None,
-                    x[offset + 5] - 1.0,
-                ),
-            ];
-            for (active, variable, row_index, coupled_variable, raw_residual) in anchors {
-                if !active {
-                    continue;
-                }
-                for row in &mut jacobian {
-                    row[variable] = 0.0;
-                }
-                jacobian[row_index].fill(0.0);
-                jacobian[row_index][variable] = 1.0;
-                if let Some(coupled) = coupled_variable {
-                    jacobian[row_index][coupled] = -1.0;
-                }
-                rhs[row_index] = -raw_residual;
-            }
-        }
-        if exact_zero_par {
-            for (row, value) in jacobian.iter_mut().zip(&mut rhs) {
-                let scale = row
-                    .iter()
-                    .map(|coefficient| coefficient.abs())
-                    .fold(0.0, f64::max);
-                if scale.is_finite() && scale > 0.0 {
-                    for coefficient in row {
-                        *coefficient /= scale;
-                    }
-                    *value /= scale;
-                }
-            }
-        }
-        let (mut delta, current_pivot, current_matrix_norm) = match solve_linear(&jacobian, &rhs) {
+        let (delta, current_pivot, current_matrix_norm) = match solve_linear(&jacobian, &rhs) {
             Ok(value) => value,
             Err(evidence) => {
                 let (occupancy_id, active_bounds) =
@@ -2660,41 +2435,6 @@ pub fn solve_covered_column(
                 }));
             }
         };
-        if exact_zero_par {
-            let maximum_hydraulic_step = delta
-                .chunks_exact(10)
-                .take(beginning.occupancies.len())
-                .flat_map(|block| block[..4].iter())
-                .map(|value| value.abs())
-                .fold(0.0, f64::max);
-            if maximum_hydraulic_step > 50_000.0 {
-                let factor = 50_000.0 / maximum_hydraulic_step;
-                for change in &mut delta {
-                    *change *= factor;
-                }
-            }
-            for (occupancy_index, (occupancy, evaluation)) in beginning
-                .occupancies
-                .iter()
-                .zip(&detail.occupancies)
-                .enumerate()
-            {
-                let offset = 10 * occupancy_index;
-                if occupancy.sun.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-                    delta[offset] = delta[offset + 2] - (x[offset] - x[offset + 2]);
-                }
-                if occupancy.shade.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits() {
-                    delta[offset + 1] =
-                        delta[offset + 2] - (x[offset + 1] - x[offset + 2]);
-                }
-                if evaluation.net_assimilation_umol_co2_m2_leaf_s[0] <= 0.0 {
-                    delta[offset + 4] = 1.0 - x[offset + 4];
-                }
-                if evaluation.net_assimilation_umol_co2_m2_leaf_s[1] <= 0.0 {
-                    delta[offset + 5] = 1.0 - x[offset + 5];
-                }
-            }
-        }
         pivot = Some(current_pivot);
         matrix_norm = Some(current_matrix_norm);
         let prospective: Vec<f64> = x
