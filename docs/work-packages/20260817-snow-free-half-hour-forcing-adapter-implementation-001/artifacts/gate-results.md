@@ -1,7 +1,7 @@
 # Gate Results
 
-Disposition: `HOLD`. Earlier green evidence below predates the real-kernel
-consumer extension and is retained as increment evidence, not terminal proof.
+Disposition: `PHYSICS PASS / OWNERSHIP-RESTART HOLD`. Earlier green evidence
+below is retained as increment evidence, not terminal proof.
 
 Ran on the exact implementation bytes:
 
@@ -26,8 +26,11 @@ Fresh exact consumer evidence:
   `SnowFreeHalfHourProvider` mode alone admits support through 48 hours: PASS;
 - adapter authority contract after prepare/commit cursor conversion: `3/3 PASS`;
 - workspace `cargo check`: PASS;
-- actual sealed provider day entering `DirectV9RealConsumerShadow`:
-  **FAIL/HOLD** at interval zero with
-  `ConstitutiveDomain("ci_bracket")`.
+- actual sealed zero-radiation provider day entering the public
+  `DirectV10RealConsumerShadow::execute_day`: PASS, 48/48 with V10/LSE-V2
+  successor state committed;
+- actual sealed realistic positive-radiation provider day entering the same
+  public transaction: PASS, 48/48 including respiration-dominated interval 8.
 
-The last result is load-bearing. No terminal PASS is claimed.
+Live GSI custody and provider-cursor persisted atomic restart remain
+load-bearing HOLDs. No terminal PASS is claimed.

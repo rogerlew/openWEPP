@@ -10,7 +10,7 @@ producer_scope:
   - SIMIMPL28 hourly meteorological parent reconstruction
   - Snow-free 1800-second atmospheric forcing receipts
 consumer_scope:
-  - Default-off V9 vegetation and snow-free LSE real-consumer shadow
+  - Default-off V10 vegetation and snow-free LSE-V2 real-consumer shadow
 evidence_level: static+independent_oracle
 last_reviewed: 2026-08-18
 supersedes: []
@@ -30,7 +30,7 @@ Evidence mode: `Static + independent contract vectors`
 Define `OPENWEPP_SNOW_FREE_HALF_HOUR_FORCING_V1`, the exact default-off
 repository operator that composes existing daily climate, breakpoint storms,
 SIMIMPL28 hourly mechanics, static run configuration, and separately owned live
-state into 48 consecutive 1,800-second receipts for the V9 vegetation and
+state into 48 consecutive 1,800-second receipts for the V10 vegetation and
 snow-free land-surface-energy shadow.
 
 ## Scientific scope
@@ -91,7 +91,7 @@ daily admitted GSI, typed per-OFE WB14 configuration, run/day/OFE/tile identitie
 and provider definition identity. Output is one immutable 48-receipt day object
 with consecutive half-open supports and a canonical digest. The meteorological
 operator mutates no production or scientific owner state. Soil water/hydraulics,
-soil thermal state, surface/litter liquid, V9 canopy/C/N state, BGC inventory,
+soil thermal state, surface/litter liquid, V10 canopy/C/N state, BGC inventory,
 and accepted runon remain separately owned and are re-read after each accepted
 half-hour by the consumer.
 
@@ -299,8 +299,8 @@ specific humidity needed for an LSE-only future consumer.
 |---|---|---|---|---|
 | `radly` | daily climate `rad` | parser/runtime | Ly/day conversion helper | SC-CLIMATE-001 |
 | `E_g,h` | `horizontal_radiation_mj_m2` | hourly parent | MJ m^-2 h^-1 | this contract |
-| `S_DV,S_dV` | LSE `direct_vis_w_m2`/`diffuse_vis_w_m2` and V9 `direct_par_w_m2`/`diffuse_par_w_m2` | receipt | same Weiss--Norman 400--700 nm energy flux bytes; no photon conversion | this contract |
-| `S_DN,S_dN` | LSE/V9 direct/diffuse NIR fields | receipt | W m^-2 | this contract |
+| `S_DV,S_dV` | LSE-V2 `direct_vis_w_m2`/`diffuse_vis_w_m2` and V10 `direct_par_w_m2`/`diffuse_par_w_m2` | receipt | same Weiss--Norman 400--700 nm energy flux bytes; no photon conversion | this contract |
+| `S_DN,S_dN` | LSE-V2/V10 direct/diffuse NIR fields | receipt | W m^-2 | this contract |
 | `L_down` | LSE atmospheric downward longwave | receipt | W m^-2 | this contract |
 | `e_a` | actual vapor pressure | meteorology/LSE | kPa/Pa named conversion | this contract |
 | `q` | specific humidity | LSE forcing | kg kg^-1 | this contract |

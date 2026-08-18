@@ -2183,12 +2183,14 @@ fn require_v10_exact_full_supply(
 }
 
 fn sealed_v10_nonpositive_assimilation(phase: &CoveredPotentialPhase) -> bool {
-    phase.gas_branches.iter().flatten().any(|branch| {
-        matches!(
-            branch,
-            crate::V10LeafGasBranch::ExactZeroPar | crate::V10LeafGasBranch::RespirationDominated
-        )
-    })
+    phase.beginning.authority == crate::CoveredColumnAuthority::V10NonpositiveAssimilation
+        && phase.gas_branches.iter().flatten().any(|branch| {
+            matches!(
+                branch,
+                crate::V10LeafGasBranch::ExactZeroPar
+                    | crate::V10LeafGasBranch::RespirationDominated
+            )
+        })
 }
 
 fn validate_sealed_gas_branches(

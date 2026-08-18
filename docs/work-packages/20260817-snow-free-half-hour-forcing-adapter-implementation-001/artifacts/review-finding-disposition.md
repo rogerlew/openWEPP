@@ -19,14 +19,13 @@ Accepted findings and dispositions:
 
 Open material findings:
 
-- canonical midnight zero-PAR forcing fails the real kernel at the existing
-  V8/V9 Ci bracket; package
-  `20260818-c3-nighttime-ci-hold-lift-001` owns the contract-first resolution;
+- canonical midnight and positive-low-light forcing now execute through the
+  public V10/LSE-V2 day transaction for all 48 intervals;
 - daily GSI custody is not yet joined to the actual stateful GSI owner result;
 - provider cursor persistence and atomic commit with the shadow checkpoint are
   not yet proved;
-- the real provider day therefore does not yet complete 48 accepted Child-4
-  intervals.
+- combined provider-cursor plus complete V10/LSE-V2 persisted restart remains
+  required before lifecycle closure.
 
 No finding is waived. Earlier climate/radiation and vegetation/LSE PASS results
 cover the provider science before the real-kernel contradiction was exposed;

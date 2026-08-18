@@ -1,7 +1,7 @@
 {
   "model_version": "OPENWEPP_SNOW_FREE_HALF_HOUR_FORCING_V1",
   "contract": "SC-SNOWFREEFORCING-001",
-  "contract_sha256": "9ded200e62e59265bc704508f4aff91413c4829213fe373f852902dd50c21560",
+  "contract_sha256": "1dc78f05bf6841254da2016f7eeec69d4a84963af763603d53a5ae5e6dc0e638",
   "reference_calculator_sha256": "67154eb54f09f394c317fa82f6faff93ee3195bb944ba3ba7dc0839b3e839f59",
   "vectors_sha256": "e69c39187aac47993a63c3aa9e0ede922ccd3249b7fe4fa72116a8cc2d5c645c",
   "forcing_schema_sha256": "c2c08620052ca4e463a81031c42e05cdca904b90803877b78cde2a7ebad79a3c",

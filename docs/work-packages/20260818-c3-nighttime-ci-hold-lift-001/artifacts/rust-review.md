@@ -1,9 +1,11 @@
 # Independent Rust review
 
-Disposition: `CODE PASS / CAMPAIGN HOLD`.
+Disposition: `SUPERSEDED / fresh terminal review required`.
 
 Reviewed implementation bytes are committed as
-`40fa0c484881e560e2904ade51e3754b17436fb3`.
+`40fa0c484881e560e2904ade51e3754b17436fb3`. This review is retained as
+historical evidence and does not claim review of the later low-light branch at
+`8abc81f6f2e40b99ecccc4a975cb1fa7f0f915d6`.
 
 The final review found no remaining material Rust defect. It verified that:
 

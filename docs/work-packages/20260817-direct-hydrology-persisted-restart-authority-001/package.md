@@ -11,7 +11,7 @@ Plan class: `Critical contract-first restart authority`
 ## Objective
 
 Define versioned, deterministic, layout-independent
-`DirectHydrologyRestartV1` and `DirectV9RealConsumerCheckpointV1` authority,
+`DirectHydrologyRestartV1` and `DirectV10RealConsumerCheckpointV1` authority,
 including complete field classification, identities, cursor, owner state,
 canonical serialization, and fail-closed restoration.
 
@@ -35,4 +35,3 @@ dual verification pass.
 Subagent authorization: this package explicitly authorizes spawning/delegating
 to independent read-only state/restart and hydrology reviewers and two read-only
 terminal verifiers, with package-local outputs.
-

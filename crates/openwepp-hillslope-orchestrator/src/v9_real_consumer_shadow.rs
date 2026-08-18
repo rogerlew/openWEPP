@@ -465,7 +465,7 @@ impl DirectV10RealConsumerShadow {
             biogeochemistry,
             hydrology_frame,
             next_day_index,
-            CoveredColumnAuthority::V10ExactZeroPar,
+            CoveredColumnAuthority::V10NonpositiveAssimilation,
             provider_gsi_receipt_sha256,
         )?;
         Ok(Self {
@@ -1702,9 +1702,18 @@ mod tests {
         let projected = shadow
             .project_repository_forcing_receipts(&receipts, template)
             .expect("real Child4 forcing projection");
-        shadow
-            .execute_intervals_for_test(&projected, 47)
+        let production = fixture.hydrology.beginning_frame().clone();
+        let production_input = production_day_input();
+        let day_frame = projected_day(&production, &production_input);
+        let receipt = shadow
+            .execute_day(&production, &[day_frame], &[production_input], &projected)
             .expect("complete zero-radiation provider day");
+        assert_eq!(receipt.accepted_interval_count, 48);
+        assert_eq!(shadow.vegetation_state.0.last_transaction_id, 88);
+        assert_eq!(
+            shadow.lse_state.0.last_accepted_transaction_id,
+            Some(TransactionId(88))
+        );
     }
 
     #[test]
@@ -1740,12 +1749,18 @@ mod tests {
         let projected = shadow
             .project_repository_forcing_receipts(&receipts, template)
             .expect("real Child4 forcing projection");
-        for interval_index in 0..48 {
-            shadow
-                .inner
-                .execute_interval(0, interval_index, &projected.intervals[interval_index])
-                .unwrap_or_else(|error| panic!("interval {interval_index}: {error:?}"));
-        }
+        let production = fixture.hydrology.beginning_frame().clone();
+        let production_input = production_day_input();
+        let day_frame = projected_day(&production, &production_input);
+        let receipt = shadow
+            .execute_day(&production, &[day_frame], &[production_input], &projected)
+            .expect("complete realistic positive-radiation provider day");
+        assert_eq!(receipt.accepted_interval_count, 48);
+        assert_eq!(shadow.vegetation_state.0.last_transaction_id, 88);
+        assert_eq!(
+            shadow.lse_state.0.last_accepted_transaction_id,
+            Some(TransactionId(88))
+        );
     }
 
     #[test]

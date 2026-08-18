@@ -1,21 +1,21 @@
 # Independent science review
 
-Disposition: `PASS for exact current V10/LSE-V2 physiology; campaign HOLD`.
+Disposition: `PHYSIOLOGY PASS / LIFECYCLE HOLD`.
 
-The reviewer confirmed the physical derivation and exact calculator vectors:
-at exact zero absorbed PAR, `Ag=0`, `An=-Rd`, `gs=g0`, and the admitted
-diffusion identities produce `cs>ca` and `ci>ca`.
+Fresh review covers exact HEAD
+`8abc81f6f2e40b99ecccc4a975cb1fa7f0f915d6` plus the terminalization-only
+identity diff. V10 exact zero retains `Ag=0`, `An=-Rd`, and `gs=g0`.
+Positive low light extends only an unbracketed historical interval with
+`F(Ca)<0` to the constructive `[Ca,Ci_dark]` bracket, and accepts only
+`Ag>0`, `An<=0`, `Ci>=Ca`, and exact `g0`. Nonpositive branches replace the
+unavailable vulnerability-demand row with `beta_hyd=1` and `Egas=q1`.
 
-V14 now assigns the positive-area exact-zero-PAR branch to V10: `Ag=0`,
-`An=-Rd`, `gs=g0`, physical `ci>ca`, `beta_hyd=1`, and `Egas=q1`. LSE V4
-assigns exact FullSupply iteration-zero acceptance only after rebuilding and
-reevaluating the complete fixed-final system from immutable beginning owners.
-Partial zero-PAR authorization remains typed unsupported.
+Potential gas-branch identities are sealed and checked against the complete
+fixed-final reevaluation. Root supply remains exact FullSupply-only whenever a
+nonpositive branch is present. Historical V8/V9 dispatch remains unchanged.
+Both complete 48-interval provider days pass. No material physiology or
+coupled-energy finding remains.
 
-The final review found and then verified correction of one material defect:
-finalization now calls the same shared predicate as the solver, requiring
-positive leaf area with signed-zero PAR. The regression proves an inactive
-zero-area/zero-PAR class beside an active positive-PAR class does not activate
-the shortcut, while an active `-0.0` class does. Historical V8/V9 dispatch is
-unchanged. No remaining physiology finding was reported. The review does not
-waive the separate complete-day numerical HOLD.
+Lifecycle disposition remains HOLD until the forcing-adapter GSI/cursor
+persistence findings and exact-current review/gate artifacts are reconciled;
+this science PASS does not waive those ownership/restart obligations.

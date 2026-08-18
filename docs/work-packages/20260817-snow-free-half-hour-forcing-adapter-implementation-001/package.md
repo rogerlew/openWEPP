@@ -1,6 +1,6 @@
 # Implement Snow-Free Half-Hour Forcing Adapter
 
-Status: `HOLD / exact nighttime Ci contradiction requires prospective vegetation authority`
+Status: `IMPLEMENTATION PHYSICS PASS / OWNERSHIP-RESTART HOLD`
 
 Date: `2026-08-17`
 
@@ -11,7 +11,7 @@ Plan class: `Critical forcing-provider implementation`
 ## Objective
 
 Implement a concrete, digest-bound repository provider producing 48 exact
-half-hour V9/LSE receipts from actual climate/runtime inputs under
+half-hour V10/LSE-V2 receipts from actual climate/runtime inputs under
 `OPENWEPP_SNOW_FREE_HALF_HOUR_FORCING_V1`, default-off only.
 
 ## Dependency and protected boundary
@@ -23,7 +23,9 @@ completed closure-eligible interval physics. Live hydrology, thermal,
 surface-liquid, vegetation, and BGC state remain owner-read at each interval.
 
 The authority dependency completed in local commit `8ffc49aed`; implementation
-started only afterward.
+started only afterward. The V10/LSE-V2 consumer dependency now passes both
+complete zero-radiation and realistic positive-radiation 48-interval days at
+`8abc81f6f2e40b99ecccc4a975cb1fa7f0f915d6`.
 
 ## Intended write set
 

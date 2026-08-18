@@ -883,7 +883,7 @@ fn v10_exact_zero_par_is_identity_gated_and_replaces_daytime_vulnerability_rows(
         crate::LandSurfaceEnergyError::ConstitutiveDomain("ci_bracket")
     );
 
-    column.authority = crate::CoveredColumnAuthority::V10ExactZeroPar;
+    column.authority = crate::CoveredColumnAuthority::V10NonpositiveAssimilation;
     let evaluation = evaluate_covered_column(&column, &start, None, None)
         .expect("V10 analytic zero-PAR evaluation");
     let occupancy = &evaluation.occupancies[0];
@@ -1189,7 +1189,7 @@ fn v10_zero_par_branch_requires_positive_leaf_area() {
     let fixture = fixture();
     let single = &fixture["exact_model_reductions"]["covered_single_rank"]["potential"];
     let (mut candidate, _) = column(&fixture, 1, single);
-    candidate.authority = crate::CoveredColumnAuthority::V10ExactZeroPar;
+    candidate.authority = crate::CoveredColumnAuthority::V10NonpositiveAssimilation;
     candidate.occupancies[0].sun.leaf_area_m2_m2_tile = 0.0;
     candidate.occupancies[0].sun.absorbed_par_w_m2_leaf = 0.0;
     candidate.occupancies[0].shade.leaf_area_m2_m2_tile = 1.0;
