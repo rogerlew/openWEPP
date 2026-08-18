@@ -22,10 +22,11 @@ Child 4 or the campaign.
 
 ## Objective
 
-Admit and implement the narrow V10 exact-zero-PAR gas--hydraulic branch needed
-by canonical nighttime receipts. Preserve V3--V9 historical definitions,
-runtime behavior, and bytes. Bind LSE-V2 iteration-zero FullSupply acceptance
-to complete fixed-final reevaluation from immutable beginning owners.
+Admit and implement the V10 nonpositive-assimilation gas--hydraulic branches
+needed by canonical nighttime and respiration-dominated low-light receipts.
+Preserve V3--V9 historical definitions, runtime behavior, and bytes. Bind
+LSE-V2 iteration-zero FullSupply acceptance to complete fixed-final
+reevaluation from immutable beginning owners.
 
 ## Provisional derivation and independent-review disposition
 
@@ -39,13 +40,12 @@ contract successor (or an equally explicit reviewed versioned erratum), plus a
 signed-zero disposition. No vegetation production Rust may change before that
 authority is admitted.
 
-The prospective successor authority is implemented. V10 owns the positive-area
-exact-zero-PAR branch; LSE-V2 owns deterministic iteration-zero FullSupply
-finalization after complete fixed-final reevaluation. The zero-radiation
-provider day now executes all 48 intervals after the bounded potential-solve
-classification below. A realistic positive-radiation day exposes a separate
-positive-PAR low-light `ci_bracket` HOLD before persisted restart, Child 4, or
-campaign gates may close.
+The prospective successor authority is implemented. V10 owns positive-area
+exact-zero-PAR and respiration-dominated positive-low-light branches; LSE-V2
+owns deterministic iteration-zero FullSupply finalization after complete
+fixed-final reevaluation. Both the zero-radiation and realistic
+positive-radiation provider days now execute all 48 intervals. Persisted
+restart, Child 4, and campaign gates remain subsequent obligations.
 
 ## Current hydraulic HOLD
 
@@ -73,9 +73,11 @@ poisoned interval. A complete provider-derived zero-shortwave day now passes
 all 48 intervals. The interval-15 uncapped potential failure was a rank-28
 scaled Jacobian whose null direction was the lower occupancy wet-surface
 temperature backed by a store-cap-active `6.776263578034403e-21 kg m^-2`
-liquid store. V2 anchors that coordinate only below the canonical water-rate
-tolerance and retains all liquid and energy ledgers. The remaining HOLD is the
-first positive-PAR, low-light interval in a realistic-radiation provider day.
+liquid store. V2 anchors that coordinate only when both the water-rate and
+physical wet-energy residual satisfy their canonical tolerances. V10 now uses
+the historical bracket whenever it succeeds and the admitted `[Ca,Ci_dark]`
+Brent continuation only for positive-area respiration-dominated low light.
+Potential gas-branch identities are sealed and checked during finalization.
 
 ## Exact contradiction
 
@@ -117,11 +119,12 @@ authorized.
 
 ## Current actionable step
 
-Adjudicate the newly reproduced positive-PAR low-light `ci_bracket` at provider
-interval 8 before persisted restart. The zero-radiation numerical failure is
-closed and must not be used to reopen hydraulics. Historical V8/V9 remain
-immutable; any expansion beyond V10's exact-zero-PAR domain requires explicit
-prospective authority rather than an inferred threshold or fallback.
+Complete persisted restart, forcing-adapter closure, Child 4, and campaign
+gates. The zero-radiation numerical failure and interval-8 positive-low-light
+branch are closed and must not be used to reopen hydraulics. Historical V8/V9
+remain immutable; any expansion beyond V10's declared nonpositive-assimilation
+domain requires explicit prospective authority rather than an inferred light
+threshold or fallback.
 
 ## Delegation
 

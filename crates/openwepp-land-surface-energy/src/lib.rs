@@ -50,10 +50,10 @@ pub const VEGETATION_MODEL_DEFINITION_SHA256: &str =
 /// Prospective exact-zero-PAR coupled successor identity.
 pub const V2_MODEL_VERSION: &str = "OPENWEPP_SNOW_FREE_LSE_V2";
 pub const V2_MODEL_DEFINITION_SHA256: &str =
-    "86eb2f5bdb7db494c80e90d1395799aa85c1ffcca3ba6698ca2503cba902d99f";
+    "67d1681bf47c2b8b87d6195433209990b4021b7896bc50df973ac9246bfd6c19";
 pub const V2_VEGETATION_MODEL_VERSION: &str = "OPENWEPP_C3_WOODY_V10";
 pub const V2_VEGETATION_MODEL_DEFINITION_SHA256: &str =
-    "9133d41fa67c5a8e3d50690cbdc24ebe06b8647fcdd569c0f1646618fb9fa947";
+    "0c42b025b6f9282d85afd5c8819ec9cc60d66a2b79ac6d5922bfdcc8026dd182";
 
 #[cfg(test)]
 mod covered_oracle_conformance_tests;

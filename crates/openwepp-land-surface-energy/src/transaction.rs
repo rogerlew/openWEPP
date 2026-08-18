@@ -282,6 +282,7 @@ pub struct CoveredPotentialPhase {
     request_batch: PotentialWaterRequestBatch,
     pub potential_vegetation_operands: PotentialCoveredVegetationOperands,
     root_identities: BTreeMap<(String, String), RootRuntimeIdentity>,
+    gas_branches: Vec<[crate::V10LeafGasBranch; 2]>,
 }
 
 impl CoveredPotentialPhase {
@@ -632,6 +633,12 @@ pub fn solve_covered_potential_phase(
     potential_vegetation_operands.payload_sha256 =
         canonical_digest(&potential_vegetation_operands)?;
     potential_vegetation_operands.validate()?;
+    let gas_branches = accepted
+        .evaluation
+        .occupancies
+        .iter()
+        .map(|occupancy| occupancy.gas_branches)
+        .collect();
     Ok(CoveredPotentialPhase {
         identity,
         beginning: beginning.clone(),
@@ -639,6 +646,7 @@ pub fn solve_covered_potential_phase(
         request_batch,
         potential_vegetation_operands,
         root_identities: identities,
+        gas_branches,
     })
 }
 
@@ -2162,13 +2170,34 @@ fn v10_exact_root_full_supply(
 }
 
 fn require_v10_exact_full_supply(
-    v10_zero_par: bool,
+    v10_nonpositive_assimilation: bool,
     request_batch: &PotentialWaterRequestBatch,
     exact: &BTreeMap<GroundWaterKey, WaterAuthorization>,
 ) -> Result<(), LandSurfaceEnergyError> {
-    if v10_zero_par && !v10_exact_root_full_supply(request_batch, exact) {
+    if v10_nonpositive_assimilation && !v10_exact_root_full_supply(request_batch, exact) {
         return Err(LandSurfaceEnergyError::UnsupportedDomain(
-            "V10 exact-zero-PAR partial root authorization",
+            "V10 nonpositive-assimilation partial root authorization",
+        ));
+    }
+    Ok(())
+}
+
+fn sealed_v10_nonpositive_assimilation(phase: &CoveredPotentialPhase) -> bool {
+    phase.gas_branches.iter().flatten().any(|branch| {
+        matches!(
+            branch,
+            crate::V10LeafGasBranch::ExactZeroPar | crate::V10LeafGasBranch::RespirationDominated
+        )
+    })
+}
+
+fn validate_sealed_gas_branches(
+    potential: &[[crate::V10LeafGasBranch; 2]],
+    final_value: &[[crate::V10LeafGasBranch; 2]],
+) -> Result<(), LandSurfaceEnergyError> {
+    if final_value != potential {
+        return Err(LandSurfaceEnergyError::water_identity(
+            "covered potential/final gas branch receipt",
         ));
     }
     Ok(())
@@ -2203,12 +2232,12 @@ pub fn finalize_covered_phase(
     }
     validate_covered_phase_lineage(&phase.identity, &phase.request_batch)?;
     let exact = exact_authorization_map(&phase.request_batch, authorizations)?;
-    let v10_zero_par = crate::solver::v10_exact_zero_par_active(&phase.beginning);
-    require_v10_exact_full_supply(v10_zero_par, &phase.request_batch, &exact)?;
+    let v10_nonpositive_assimilation = sealed_v10_nonpositive_assimilation(phase);
+    require_v10_exact_full_supply(v10_nonpositive_assimilation, &phase.request_batch, &exact)?;
     let caps = covered_caps_from_authorizations(phase, &exact)?;
     // Rebuild from `phase.beginning`; no potential solution enters this call.
     let v10_all_sources_full_supply =
-        v10_zero_par && v10_exact_full_supply(&phase.request_batch, &exact);
+        v10_nonpositive_assimilation && v10_exact_full_supply(&phase.request_batch, &exact);
     let selected_initial_trial = if v10_all_sources_full_supply {
         phase.accepted.solution.clone()
     } else {
@@ -2231,6 +2260,13 @@ pub fn finalize_covered_phase(
             )?);
         }
     };
+    let final_gas_branches: Vec<_> = final_value
+        .evaluation
+        .occupancies
+        .iter()
+        .map(|occupancy| occupancy.gas_branches)
+        .collect();
+    validate_sealed_gas_branches(&phase.gas_branches, &final_gas_branches)?;
     let protocol = covered_water_protocol(phase, &final_value, exact)?;
     let vegetation_operands = accepted_covered_vegetation_operands(phase, &final_value, &protocol)?;
     let (energy_operands, soil_thermal) = build_covered_energy_and_soil(phase, &final_value, soil)?;

@@ -301,7 +301,7 @@ mod tests {
         assert_eq!(
             require_v10_exact_full_supply(true, &batch, &BTreeMap::from([(key.clone(), partial)])),
             Err(LandSurfaceEnergyError::UnsupportedDomain(
-                "V10 exact-zero-PAR partial root authorization"
+                "V10 nonpositive-assimilation partial root authorization"
             ))
         );
 
@@ -335,6 +335,22 @@ mod tests {
         assert!(!v10_exact_full_supply(
             &batch,
             &BTreeMap::from([(wrong_key, exact)])
+        ));
+    }
+
+    #[test]
+    fn v10_finalization_rejects_wrong_sealed_gas_branch_receipt() {
+        use crate::V10LeafGasBranch::{ExactZeroPar, RespirationDominated};
+
+        assert!(matches!(
+            validate_sealed_gas_branches(
+                &[[ExactZeroPar, RespirationDominated]],
+                &[[ExactZeroPar, ExactZeroPar]],
+            ),
+            Err(LandSurfaceEnergyError::WaterIdentityOrBound {
+                class: crate::WaterErrorClass::Identity,
+                ..
+            })
         ));
     }
 

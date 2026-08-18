@@ -9,7 +9,7 @@ use crate::{VegetationConfiguration, VegetationError};
 
 pub const V10_MODEL_VERSION: &str = "OPENWEPP_C3_WOODY_V10";
 pub const V10_MODEL_SHA256: &str =
-    "9133d41fa67c5a8e3d50690cbdc24ebe06b8647fcdd569c0f1646618fb9fa947";
+    "0c42b025b6f9282d85afd5c8819ec9cc60d66a2b79ac6d5922bfdcc8026dd182";
 pub const V10_MODEL_BYTES: &[u8] =
     include_bytes!("../model-registry/openwepp_c3_woody_v10_definition.json");
 

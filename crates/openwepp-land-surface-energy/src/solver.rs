@@ -938,6 +938,15 @@ pub enum CoveredColumnAuthority {
     V10ExactZeroPar,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum V10LeafGasBranch {
+    Inactive,
+    ExactZeroPar,
+    RespirationDominated,
+    PositiveAssimilation,
+}
+
+#[cfg(test)]
 pub(crate) fn v10_exact_zero_par_active(beginning: &CoveredColumnInputs) -> bool {
     beginning.authority == CoveredColumnAuthority::V10ExactZeroPar
         && beginning.occupancies.iter().any(|occupancy| {
@@ -954,6 +963,17 @@ pub(crate) fn v10_initial_final_residuals_pass(normalized_residuals: &[f64]) -> 
         .all(|value| value.is_finite() && value.abs() <= 1.0)
 }
 
+pub(crate) fn v10_nonpositive_assimilation_active(evaluation: &CoveredColumnEvaluation) -> bool {
+    evaluation.occupancies.iter().any(|occupancy| {
+        occupancy.gas_branches.iter().any(|branch| {
+            matches!(
+                branch,
+                V10LeafGasBranch::ExactZeroPar | V10LeafGasBranch::RespirationDominated
+            )
+        })
+    })
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct LeafTrialState {
     surface_q: f64,
@@ -962,6 +982,7 @@ struct LeafTrialState {
     gross_assimilation_umol_co2_m2_leaf_s: f64,
     net_assimilation_umol_co2_m2_leaf_s: f64,
     dark_respiration_umol_co2_m2_leaf_s: f64,
+    gas_branch: V10LeafGasBranch,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -1130,6 +1151,7 @@ fn leaf_trial_state(
             gross_assimilation_umol_co2_m2_leaf_s: 0.0,
             net_assimilation_umol_co2_m2_leaf_s: 0.0,
             dark_respiration_umol_co2_m2_leaf_s: 0.0,
+            gas_branch: V10LeafGasBranch::Inactive,
         });
     }
     let es_leaf = qsurface * column.pressure_pa / (0.622 + 0.378 * qsurface);
@@ -1170,6 +1192,7 @@ fn leaf_trial_state(
             gross_assimilation_umol_co2_m2_leaf_s: 0.0,
             net_assimilation_umol_co2_m2_leaf_s: an,
             dark_respiration_umol_co2_m2_leaf_s: rd,
+            gas_branch: V10LeafGasBranch::ExactZeroPar,
         });
     }
     let carbon_at_ci = |ci: f64| -> Result<LeafCarbonState, LandSurfaceEnergyError> {
@@ -1234,10 +1257,60 @@ fn leaf_trial_state(
             gross_assimilation_umol_co2_m2_leaf_s: carbon.ag,
             net_assimilation_umol_co2_m2_leaf_s: carbon.an,
             dark_respiration_umol_co2_m2_leaf_s: carbon.rd,
+            gas_branch: if carbon.an <= 0.0 {
+                V10LeafGasBranch::RespirationDominated
+            } else {
+                V10LeafGasBranch::PositiveAssimilation
+            },
         });
     }
+    if column.authority == CoveredColumnAuthority::V10ExactZeroPar && fb == 0.0 {
+        let carbon = carbon_at_ci(b)?;
+        return Ok(LeafTrialState {
+            surface_q: qsurface,
+            rs_s_m: rs,
+            ci_pa: b,
+            gross_assimilation_umol_co2_m2_leaf_s: carbon.ag,
+            net_assimilation_umol_co2_m2_leaf_s: carbon.an,
+            dark_respiration_umol_co2_m2_leaf_s: carbon.rd,
+            gas_branch: if carbon.an <= 0.0 {
+                V10LeafGasBranch::RespirationDominated
+            } else {
+                V10LeafGasBranch::PositiveAssimilation
+            },
+        });
+    }
+    let mut gas_branch = V10LeafGasBranch::PositiveAssimilation;
     if fa * fb > 0.0 {
-        return Err(LandSurfaceEnergyError::ConstitutiveDomain("ci_bracket"));
+        if column.authority != CoveredColumnAuthority::V10ExactZeroPar || fb >= 0.0 {
+            return Err(LandSurfaceEnergyError::ConstitutiveDomain("ci_bracket"));
+        }
+        let gs0_m_s = g0_umol_m2_s * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature / column.pressure_pa;
+        if !gs0_m_s.is_finite() || gs0_m_s <= 0.0 {
+            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "v10_low_light_stomatal_conductance",
+            ));
+        }
+        let rb = 1.0 / gb_leaf;
+        let ci_dark = column.ca_pa
+            + (1.4 * rb + 1.6 / gs0_m_s) * MOLAR_GAS_CONSTANT * temperature * rd * 1.0e-6;
+        if !ci_dark.is_finite() || ci_dark <= column.ca_pa || ci_dark >= column.pressure_pa {
+            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "v10_low_light_ci_dark",
+            ));
+        }
+        let (f_dark, rs_dark) = residual(ci_dark)?;
+        if f_dark < 0.0 {
+            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "v10_low_light_dark_bracket",
+            ));
+        }
+        a = column.ca_pa;
+        fa = fb;
+        b = ci_dark;
+        fb = f_dark;
+        rs = rs_dark;
+        gas_branch = V10LeafGasBranch::RespirationDominated;
     }
     let mut c = a;
     let mut fc = fa;
@@ -1287,6 +1360,20 @@ fn leaf_trial_state(
         }
     }
     let carbon = carbon_at_ci(b)?;
+    if gas_branch == V10LeafGasBranch::RespirationDominated
+        && (carbon.ag.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater)
+            || carbon.an > 0.0
+            || b < column.ca_pa
+            || rs.to_bits()
+                != (1.0
+                    / (g0_umol_m2_s * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature
+                        / column.pressure_pa))
+                    .to_bits())
+    {
+        return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+            "v10_low_light_accepted_branch",
+        ));
+    }
     Ok(LeafTrialState {
         surface_q: qsurface,
         rs_s_m: rs,
@@ -1294,6 +1381,7 @@ fn leaf_trial_state(
         gross_assimilation_umol_co2_m2_leaf_s: carbon.ag,
         net_assimilation_umol_co2_m2_leaf_s: carbon.an,
         dark_respiration_umol_co2_m2_leaf_s: carbon.rd,
+        gas_branch,
     })
 }
 
@@ -1575,13 +1663,29 @@ fn evaluate_covered_occupancy(
             + component_longwave_w_m2[3]
             - stem_h,
     ];
+    let v10_nonpositive_sun = matches!(
+        sun.gas_branch,
+        V10LeafGasBranch::ExactZeroPar | V10LeafGasBranch::RespirationDominated
+    );
+    let v10_nonpositive_shade = matches!(
+        shade.gas_branch,
+        V10LeafGasBranch::ExactZeroPar | V10LeafGasBranch::RespirationDominated
+    );
+    let wet_energy_tolerance = crate::physics::energy_tolerance(
+        physical_energy_residuals[2].abs()
+            + component_longwave_w_m2[2].abs()
+            + wet_h.abs()
+            + (column.latent_heat_j_kg * wet_e).abs(),
+    );
     let v10_inactive_wet = column.authority == CoveredColumnAuthority::V10ExactZeroPar
+        && (v10_nonpositive_sun || v10_nonpositive_shade)
         && context.caps.is_none()
         && wet_branch == WaterBranch::AuthorizationActiveOrTie
         && context.liquid.preliminary_store / column.interval_s
             <= crate::physics::water_tolerance(
                 context.liquid.preliminary_store / column.interval_s,
-            );
+            )
+        && physical_energy_residuals[2].abs() <= wet_energy_tolerance;
     let energy_residuals: [f64; 4] = std::array::from_fn(|index| {
         if component_areas[index].to_bits() == 0.0_f64.to_bits() || (index == 2 && v10_inactive_wet)
         {
@@ -1594,12 +1698,6 @@ fn evaluate_covered_occupancy(
         && occupancy.sun.leaf_area_m2_m2_tile == 0.0;
     let v10_inactive_shade = column.authority == CoveredColumnAuthority::V10ExactZeroPar
         && occupancy.shade.leaf_area_m2_m2_tile == 0.0;
-    let v10_zero_sun = column.authority == CoveredColumnAuthority::V10ExactZeroPar
-        && occupancy.sun.absorbed_par_w_m2_leaf == 0.0
-        && occupancy.sun.leaf_area_m2_m2_tile > 0.0;
-    let v10_zero_shade = column.authority == CoveredColumnAuthority::V10ExactZeroPar
-        && occupancy.shade.absorbed_par_w_m2_leaf == 0.0
-        && occupancy.shade.leaf_area_m2_m2_tile > 0.0;
     let residuals = vec![
         if v10_inactive_sun {
             psi_sun - psi_stem
@@ -1611,7 +1709,7 @@ fn evaluate_covered_occupancy(
         } else {
             shade_e - q1shade
         },
-        if v10_zero_sun || v10_inactive_sun {
+        if v10_nonpositive_sun || v10_inactive_sun {
             beta_sun - 1.0
         } else {
             sun_e
@@ -1622,7 +1720,7 @@ fn evaluate_covered_occupancy(
                         occupancy.vulnerability_exponent,
                     )
         },
-        if v10_zero_shade || v10_inactive_shade {
+        if v10_nonpositive_shade || v10_inactive_shade {
             beta_shade - 1.0
         } else {
             shade_e
@@ -1669,10 +1767,10 @@ fn evaluate_covered_occupancy(
     if v10_inactive_shade {
         tolerances[1] = 1.0e-7;
     }
-    if v10_zero_sun || v10_inactive_sun {
+    if v10_nonpositive_sun || v10_inactive_sun {
         tolerances[2] = 1.0e-8;
     }
-    if v10_zero_shade || v10_inactive_shade {
+    if v10_nonpositive_shade || v10_inactive_shade {
         tolerances[3] = 1.0e-8;
     }
     tolerances.extend((0..4).map(|index| {
@@ -1707,6 +1805,7 @@ fn evaluate_covered_occupancy(
         wet_branch,
         component_temperatures_k: [tsun, tshade, twet, tstem],
         ci_pa: [sun.ci_pa, shade.ci_pa],
+        gas_branches: [sun.gas_branch, shade.gas_branch],
         gross_assimilation_umol_co2_m2_leaf_s: [
             sun.gross_assimilation_umol_co2_m2_leaf_s,
             shade.gross_assimilation_umol_co2_m2_leaf_s,
@@ -2488,10 +2587,13 @@ fn solve_covered_column_impl(
     for iteration in 0..=MAX_NEWTON_ITERATIONS {
         let detail = evaluate_covered_column(beginning, &x, caps, None)?;
         let norm = normalized_infinity_norm(&detail.normalized_residuals);
+        let v10_nonpositive_assimilation = beginning.authority
+            == CoveredColumnAuthority::V10ExactZeroPar
+            && v10_nonpositive_assimilation_active(&detail);
         let v10_initial_final_acceptance = allow_v10_initial_final_acceptance
             && iteration == 0
             && caps.is_some()
-            && v10_exact_zero_par_active(beginning)
+            && v10_nonpositive_assimilation
             && v10_initial_final_residuals_pass(&detail.normalized_residuals);
         if norm <= 1.0
             && (last_steps.is_some_and(CoveredStepNorms::accepted) || v10_initial_final_acceptance)
@@ -2548,7 +2650,7 @@ fn solve_covered_column_impl(
             let mut plus = x.clone();
             minus[column_index] -= perturbations[column_index];
             plus[column_index] += perturbations[column_index];
-            if caps.is_none() && v10_exact_zero_par_active(beginning) {
+            if caps.is_none() && v10_nonpositive_assimilation {
                 let minus_detail = covered_trial_is_valid(&minus, beginning.occupancies.len())
                     .then(|| evaluate_covered_column(beginning, &minus, caps, Some(&frozen)))
                     .transpose()?;
@@ -2591,7 +2693,7 @@ fn solve_covered_column_impl(
             .iter()
             .map(|value| -value)
             .collect();
-        let v10_scaled_potential = caps.is_none() && v10_exact_zero_par_active(beginning);
+        let v10_scaled_potential = caps.is_none() && v10_nonpositive_assimilation;
         if v10_scaled_potential {
             for row in &mut jacobian {
                 for (coefficient, unit) in row.iter_mut().zip(&units) {

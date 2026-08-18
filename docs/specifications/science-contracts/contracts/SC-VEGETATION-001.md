@@ -2411,11 +2411,12 @@ does not activate a selector, change V8 science, authorize fixture rewriting,
 weaken exact regeneration, or establish calibration, empirical validation, or
 transferability.
 
-## `OPENWEPP_C3_WOODY_V10` Exact-Zero-PAR Amendment
+## `OPENWEPP_C3_WOODY_V10` Nonpositive-Assimilation Amendment
 
 V10 imports the complete V9 configuration, state, ownership, equations,
 constants, accepted positive-PAR numerical paths, diagnostics, and rollback.
-It prospectively supersedes only the exact-zero-PAR gas--hydraulic branch.
+It prospectively supersedes only the exact-zero-PAR and respiration-dominated
+positive-low-light gas--hydraulic branches.
 V1--V9 identities and authority bytes remain immutable and are not V10
 aliases.
 
@@ -2439,12 +2440,21 @@ selected conductance is independent of beta. This is prospective V10 behavior,
 not unchanged V9 behavior. No hydraulic attenuation of `g0`, conductance or
 vulnerability floor, plant capacitance, or authorization donation is admitted.
 
-Positive absorbed PAR retains the exact V9 branch in this release. An exact
-zero-area class remains an inactive component with exact-zero flow and demand,
+For positive absorbed PAR, first evaluate the exact historical `[Gamma*,ca]`
+interval. A bracketed root retains the V9 Brent-Dekker path byte-for-byte. If
+that interval is unbracketed with `F(ca)<0`, form the constructive dark bound
+`ci_dark=ca+(1.4*rb+1.6*rs0)*R*Tleaf*Rd*1e-6`, require
+`ca<ci_dark<Patm` and `F(ci_dark)>=0`, and run the same Brent-Dekker algorithm
+on `[ca,ci_dark]`. The accepted respiration-dominated state requires
+`Ag>0`, `An<=0`, exact `gs=g0`, and `ci>=ca`; exact compensation admits
+`An=0`, `ci=ca`, and `gs=g0`. No light threshold or epsilon around
+compensation is admitted.
+
+An exact zero-area class remains an inactive component with exact-zero flow and demand,
 leaf potential anchored to stem potential, beta anchored to one, and no active
 gas state.
 
-Exact-zero-PAR root authorization is supported only when every positive
+Exact-zero-PAR or respiration-dominated root authorization is supported only when every positive
 potential request receives an identity- and amount-equal `FullSupply`
 authorization and every canonical zero request retains its exact source
 identity and zero amount. Any partial positive authorization is typed
@@ -2457,11 +2467,11 @@ V10; no historical identity is a V10 alias.
 
 | ID | Binding rule |
 |---|---|
-| `INV-VEGETATION-118` | Exact signed-zero PAR with positive leaf area selects `Ag=0`, `An=-Rd`, `gs=g0`, physical `ci>ca`, `beta_hyd=1`, and `Egas=q1`; positive PAR retains V9. |
-| `INV-VEGETATION-119` | V10 exact-zero-PAR root finalization accepts only complete identity- and amount-equal FullSupply; partial positive authorization is unsupported. |
+| `INV-VEGETATION-118` | Exact signed-zero PAR selects the analytic branch; positive low light uses the constructive `[ca,ci_dark]` bracket exactly when the historical bracket fails with `F(ca)<0`; both nonpositive-assimilation branches use `gs=g0`, `beta_hyd=1`, and `Egas=q1`, while bracketed positive assimilation retains V9 byte-for-byte. |
+| `INV-VEGETATION-119` | V10 nonpositive-assimilation root finalization accepts only complete identity- and amount-equal FullSupply; partial positive authorization is unsupported. |
 | `INV-VEGETATION-120` | V9-to-V10 migration is value-bit-identical and identity-distinct; V1--V9 remain immutable non-aliases. |
 | `VEG-E-118` | Nonfinite/nonpositive `gs` or `cs`, or nonfinite/out-of-domain `ci`, rejects V10 gas evaluation. |
-| `VEG-E-119` | Partial exact-zero-PAR root authorization rejects as typed unsupported without owner mutation. |
+| `VEG-E-119` | Partial nonpositive-assimilation root authorization rejects as typed unsupported without owner mutation. |
 | `VEG-E-120` | Stale source identity, value mutation, partial migration, or V9/V10 aliasing rejects without a V10 state. |
 
 This amendment is default-off and authorizes no selector, default/output

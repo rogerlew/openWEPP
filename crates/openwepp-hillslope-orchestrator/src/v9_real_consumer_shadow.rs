@@ -1708,7 +1708,7 @@ mod tests {
     }
 
     #[test]
-    fn v10_positive_radiation_provider_day_exposes_low_light_hold() {
+    fn v10_positive_radiation_provider_day_executes_low_light_and_daylight() {
         let (mut shadow, fixture) = v10_shadow_fixture();
         let template = day_input(&fixture);
         let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 20.0 2.5 180.0 20.0\n";
@@ -1740,17 +1740,12 @@ mod tests {
         let projected = shadow
             .project_repository_forcing_receipts(&receipts, template)
             .expect("real Child4 forcing projection");
-        for interval_index in 0..8 {
+        for interval_index in 0..48 {
             shadow
                 .inner
                 .execute_interval(0, interval_index, &projected.intervals[interval_index])
                 .unwrap_or_else(|error| panic!("interval {interval_index}: {error:?}"));
         }
-        let error = shadow
-            .inner
-            .execute_interval(0, 8, &projected.intervals[8])
-            .expect_err("low-light positive-PAR interval remains outside V10 exact-zero branch");
-        assert!(format!("{error:?}").contains("ci_bracket"));
     }
 
     #[test]

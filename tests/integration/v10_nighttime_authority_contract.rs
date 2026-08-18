@@ -65,6 +65,21 @@ fn independent_nighttime_calculator_regenerates_frozen_vectors() {
     assert_eq!(cases[0]["result"]["branch"], "exact_zero_analytic");
     assert_eq!(cases[1]["result"]["branch"], "exact_zero_analytic");
     assert_eq!(cases[0]["result"]["ci"], cases[1]["result"]["ci"]);
+    for case in &cases[2..4] {
+        assert_eq!(case["result"]["branch"], "positive_low_light");
+        let state = &case["result"]["state"];
+        assert!(state["ag"].as_f64().is_some_and(|ag| ag > 0.0));
+        assert!(state["an"].as_f64().is_some_and(|an| an < 0.0));
+        assert!(state["ci"].is_null());
+        assert!(case["result"]["ci"].as_f64().is_some_and(|ci| ci > 42.0));
+        assert_eq!(state["gs"], 100.0);
+    }
+    assert_eq!(cases[4]["result"]["branch"], "historical_daylight");
+    assert!(
+        cases[4]["result"]["state"]["an"]
+            .as_f64()
+            .is_some_and(|an| an > 0.0)
+    );
 }
 
 #[test]

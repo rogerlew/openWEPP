@@ -5,7 +5,8 @@ use std::collections::BTreeSet;
 use crate::physics::{BandDirectionalFluxes, CanopyLongwaveResult};
 use crate::{
     CoveredOccupancyLiquidLedger, CoveredOccupancyShortwaveInputs, GroundWaterFlux,
-    LandSurfaceEnergyError, SourceWaterFlux, WaterBranch, energy_tolerance, water_tolerance,
+    LandSurfaceEnergyError, SourceWaterFlux, V10LeafGasBranch, WaterBranch, energy_tolerance,
+    water_tolerance,
 };
 
 /// Primitive energy terms for one named canopy surface. No producer residual
@@ -479,6 +480,7 @@ pub struct CoveredOccupancyEvaluation {
     pub wet_branch: WaterBranch,
     pub component_temperatures_k: [f64; 4],
     pub ci_pa: [f64; 2],
+    pub gas_branches: [V10LeafGasBranch; 2],
     /// Accepted class-resolved `[sun, shade]` `FvCB` carbon operands.
     pub gross_assimilation_umol_co2_m2_leaf_s: [f64; 2],
     pub net_assimilation_umol_co2_m2_leaf_s: [f64; 2],
