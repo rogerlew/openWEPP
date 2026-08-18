@@ -1,6 +1,6 @@
 # Line Count Governance
 
-Status: `exact HOLD snapshot at 1d1bb33d3`
+Status: `exact code-count HOLD snapshot at 1d1bb33d3`
 
 Exact counts after the focused implementation increment:
 

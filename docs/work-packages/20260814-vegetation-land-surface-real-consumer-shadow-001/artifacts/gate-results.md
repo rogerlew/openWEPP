@@ -2,7 +2,8 @@
 
 Status: `focused PASS / terminal gates withheld on accepted HOLD`
 
-Exact current implementation evidence after the final typed-error refactor:
+Exact source-byte evidence at `1d1bb33d3`, rerun after evidence custody commit
+`546b8a85d` with no source changes:
 
 - Child-4 focused selection: 9/9 PASS.
 - affected orchestrator all-target Clippy with `-D warnings`: PASS.
