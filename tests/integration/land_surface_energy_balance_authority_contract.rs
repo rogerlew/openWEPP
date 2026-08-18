@@ -73,13 +73,14 @@ fn contract_preserves_adjacent_owners_and_rejects_terminal_payload() {
 }
 
 #[test]
-fn version_three_releases_named_authority_without_production_claims() {
+fn current_version_releases_named_authority_without_production_claims() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 3",
+        "contract_version: 4",
         "status: approved",
         "maturity: active",
         "OPENWEPP_SNOW_FREE_LSE_V1",
+        "OPENWEPP_SNOW_FREE_LSE_V2",
         "OPENWEPP_C3_WOODY_V8",
         "AUTHORITY_ADMITTED",
         "IMPLEMENTATION_MISSING",
