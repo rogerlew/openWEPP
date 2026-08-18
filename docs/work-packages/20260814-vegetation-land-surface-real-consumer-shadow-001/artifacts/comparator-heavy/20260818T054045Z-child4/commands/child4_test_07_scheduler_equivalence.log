@@ -1,0 +1,13 @@
+$ cargo test -p openwepp-hillslope-orchestrator explicit_scheduler_consumer_advances_shadow_without_changing_production
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child4-20260818T054045Z
+  scratch: /tmp/openwepp-roger-child4-20260818T054045Z
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/child4-20260818T054045Z/debug/deps/openwepp_hillslope_orchestrator-5e3e5ae75aef47d5)
+
+running 1 test
+test v9_real_consumer_shadow::tests::explicit_scheduler_consumer_advances_shadow_without_changing_production ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 711 filtered out; finished in 2.66s
+

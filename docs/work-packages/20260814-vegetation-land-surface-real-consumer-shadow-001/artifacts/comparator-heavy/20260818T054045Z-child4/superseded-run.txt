@@ -1,0 +1,3 @@
+prior_run=20260818T052635Z-child4
+prior_commit=f4deb1c7...
+status=explicitly superseded by this rerun

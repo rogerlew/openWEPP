@@ -1,0 +1,13 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child4-20260818T052635Z
+  scratch: /tmp/openwepp-roger-child4-20260818T052635Z
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/child4-20260818T052635Z/debug/deps/openwepp_hillslope_orchestrator-5e3e5ae75aef47d5)
+
+running 1 test
+test v9_real_consumer_shadow::tests::repository_day_receipt_mismatch_discards_both_candidates ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 710 filtered out; finished in 2.68s
+

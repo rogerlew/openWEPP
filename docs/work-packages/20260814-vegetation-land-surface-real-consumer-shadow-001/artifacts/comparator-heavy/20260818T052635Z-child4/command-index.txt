@@ -1,0 +1,16 @@
+bench_strict_projection	cargo test -p openwepp-hillslope-orchestrator all_open_topology_projects_empty_canonical_v8_passes	PASS	0	2026-08-18T05:26:35Z	2026-08-18T05:27:28Z	52433340159	1	0	0
+bench_one_open_tile	cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_an_all_open_ofe	PASS	0	2026-08-18T05:27:28Z	2026-08-18T05:28:22Z	54112287006	1	0	0
+bench_single_rank_covered	cargo test -p openwepp-land-surface-energy covered_single_rank_potential_fixed_cap_and_alternate_start_match_frozen_oracle	PASS	0	2026-08-18T05:28:22Z	2026-08-18T05:28:29Z	7234286778	1	0	0
+bench_two_rank_covered	cargo test -p openwepp-land-surface-energy covered_multirank_potential_fixed_cap_and_alternate_start_match_frozen_oracle	PASS	0	2026-08-18T05:28:29Z	2026-08-18T05:28:30Z	612465372	1	0	0
+bench_mixed_open_covered	cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_mixed_open_and_covered_owners_once	PASS	0	2026-08-18T05:28:30Z	2026-08-18T05:28:35Z	4944201177	1	0	0
+bench_complete_public_envelope	cargo test --test land_surface_energy_real_hydrology_shadow_contract	PASS	0	2026-08-18T05:28:35Z	2026-08-18T05:28:35Z	657032717	10	0	0
+bench_actual_byte_rollback	cargo test -p openwepp-hillslope-orchestrator every_injected_phase_preserves_all_six_actual_owner_byte_records	PASS	0	2026-08-18T05:28:35Z	2026-08-18T05:28:42Z	6705734949	1	0	0
+child4_test_01_48_replaces_complete_shadow	cargo test -p openwepp-hillslope-orchestrator forty_eight_interval_day_replaces_only_complete_shadow_state	PASS	0	2026-08-18T05:28:42Z	2026-08-18T05:28:45Z	3279347515	1	0	0
+child4_test_02_48_late_failure	cargo test -p openwepp-hillslope-orchestrator failed_late_interval_rolls_back_every_shadow_and_production_byte	PASS	0	2026-08-18T05:28:46Z	2026-08-18T05:28:49Z	1769160619838750170	1	0	0
+child4_test_03_half_day_restart	cargo test -p openwepp-hillslope-orchestrator retained_half_day_restart_is_byte_identical_to_uninterrupted_day	PASS	0	2026-08-18T05:28:49Z	2026-08-18T05:28:54Z	5734933649	1	0	0
+child4_test_04_shared_soil_aggregation	cargo test -p openwepp-hillslope-orchestrator shared_soil_thermal_aggregation_is_ordered_complete_and_owner_bound	PASS	0	2026-08-18T05:28:54Z	2026-08-18T05:28:55Z	479127504	1	0	0
+child4_test_05_mixed_lineage_rejected	cargo test -p openwepp-hillslope-orchestrator mixed_complete_owner_lineage_is_rejected_before_execution	PASS	0	2026-08-18T05:28:55Z	2026-08-18T05:28:55Z	535523995	1	0	0
+child4_test_06_scheduler_equivalence	cargo test -p openwepp-hillslope-orchestrator explicit_scheduler_consumer_advances_shadow_without_changing_production	PASS	0	2026-08-18T05:28:55Z	2026-08-18T05:28:59Z	-1608327841984420898	1	0	0
+child4_test_07_downstream_rollback	cargo test -p openwepp-hillslope-orchestrator downstream_scheduler_failure_discards_production_and_complete_shadow_candidate	PASS	0	2026-08-18T05:28:59Z	2026-08-18T05:29:02Z	1608327848207421433	1	0	0
+child4_test_08_routing_unsupported	cargo test -p openwepp-hillslope-orchestrator active_routing_is_typed_unsupported_before_any_shadow_or_production_change	PASS	0	2026-08-18T05:29:02Z	2026-08-18T05:29:02Z	512708880	1	0	0
+child4_test_09_receipt_mismatch	cargo test -p openwepp-hillslope-orchestrator repository_day_receipt_mismatch_discards_both_candidates	PASS	0	2026-08-18T05:29:02Z	2026-08-18T05:29:05Z	3135085226	1	0	0

@@ -1,6 +1,6 @@
 # Review Finding Disposition
 
-Status: `first review findings accepted / remediation awaiting re-review`
+Status: `all findings accepted / two material closure findings unresolved`
 
 The first independent land-surface, hydrology/ownership, and Rust reviews all
 returned HOLD. Every material finding was accepted:
@@ -27,4 +27,16 @@ the admitted `SnowFreeForcing` physiological soil vector is global. A complete
 multi-OFE repository day record may execute only when those global operands
 are bit-identical; no averaging or first-OFE selection is permitted.
 
-Fresh exact-byte re-reviews remain pending.
+Subsequent exact-byte science and hydrology reviews passed the bounded runtime.
+Rust review confirmed the high scheduler/output and lane/OFE defects corrected,
+then retained HOLD on:
+
+- absence of a default-off integration harness pairing the real production day
+  builder with an authoritative higher-frequency repository receipt provider;
+- absence of complete persisted restart for the production hydrology owner;
+- typed error causes (corrected after that review by concrete source variants);
+- full-run buffering performance and stale governance evidence (now truthfully
+  documented; terminal performance remains withheld).
+
+The provider and persisted-restart findings are accepted and unresolved. They
+are not deferred, waived, or converted to documentation-only limitations.

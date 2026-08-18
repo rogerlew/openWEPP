@@ -1,0 +1,13 @@
+$ cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_mixed_open_and_covered_owners_once
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child4-20260818T054045Z
+  scratch: /tmp/openwepp-roger-child4-20260818T054045Z
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/integration/land_surface_energy_strict_v8_public_contract.rs (/workdir/.cache/openwepp/targets/child4-20260818T054045Z/debug/deps/land_surface_energy_real_hydrology_shadow_contract-f9e2bb0f84d6548e)
+
+running 1 test
+test covered_forest_tests::public_v8_endpoint_closes_mixed_open_and_covered_owners_once ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.10s
+

@@ -1,6 +1,6 @@
 # Execute Snow-Free Land-Surface and Real-Hydrology Integration
 
-Status: `executing / Children 1-2 complete / Child 3 resumed after custody lift`
+Status: `executing HOLD / Children 1-3 complete / Child 4 provider closure open`
 
 Date: `2026-08-14`
 
@@ -56,7 +56,7 @@ default, publication, or deployment path is in scope.
 - [x] Complete Child 2 real-hydrology arbitration shadow.
 - [x] Retain Child 3's exact LSE runtime and soil-layer real-owner bridge as a
   bounded passing checkpoint.
-- [ ] Complete Child 3 LSE runtime shadow.
+- [x] Complete Child 3 LSE runtime shadow.
 - [ ] Complete Child 4 real hillslope consumer shadow.
 - [ ] Run campaign-wide reviews, heavy gates, terminal verification, archive
   prompts, and reconcile lifecycle documentation.
@@ -87,19 +87,16 @@ scan introduces no new broken link; and terminal limitations remain explicit.
 
 ## Outcomes And Retrospective
 
-The campaign is held at Child 3. The exact LSE runtime core and a default-off
-bridge to the production soil-layer water owner pass their bounded focused
-gates, but production hydrology exposes no persistent, restart-serialized
-forest-floor/surface-liquid beginning store, candidate debit, ending state or
-signed condensation-credit operation. Residue interception inputs,
-depression/WAT5 diagnostics and snow liquid are not valid aliases.
+Children 1--3 and the V9 reconciliation are complete. Child 4 implemented the
+explicit isolated scheduler attachment and closed its bounded physics,
+ownership, aggregation, identity, and rollback findings. It remains on HOLD:
+the repository has no authoritative provider for the complete 48-step
+snow-free LSE/vegetation/WB14 receipt, and complete persisted restart of the
+production hydrology owner is not proven. Daily climate records cannot be
+silently disaggregated into those operands.
 
-The first lift action is a hydrology-owned per-OFE/tile surface or litter
-liquid state with immutable snapshot, request/authorization/final-use debit,
-condensation credit, capacity/infiltration/runoff joins and atomic rollback.
-Child 3 then resumes in place. Child 4 has not started, campaign-wide heavy
-gates and terminal verification have not run, and no campaign completion or
-production claim is made.
+Campaign-wide terminal gates and prompt archival remain withheld. No campaign
+completion or production claim is made.
 
 ## Resume disposition
 

@@ -1,18 +1,19 @@
 # Implementation And Test Evidence
 
-Status: `executing / focused implementation gates pass`
+Status: `executing HOLD / focused implementation gates pass`
 
 ## Runtime Path
 
 `DirectFrameExecutor::run_publication_stream_with_v9_real_consumer_shadow` is
 the sole explicit attachment. It clones the production frame and the complete
-shadow owner set. At each day boundary it requires one complete repository day
-input set, applies those inputs to independently seeded immutable day frames,
-and executes the shadow before any native day span. The unchanged production
-builder then runs in its original lane-interleaved order and each actual input
-must equal the frozen repository receipt. Only a complete successful call
-replaces production and shadow candidates. The runner has no call to the V9
-attachment; laned-active routing is typed unsupported rather than skipped.
+shadow owner set. The unchanged stateful production builder runs once in its
+original lane-interleaved order. Each actual input and applied pre-native day
+frame is retained; after the complete set exists, the shadow executes against
+its isolated hydrology. The higher-frequency callback cannot read the
+post-native production frame. Rows are buffered and exposed only after every
+shadow day accepts. Only a complete successful call replaces production and
+shadow candidates. The runner has no call to the V9 attachment; laned-active
+routing is typed unsupported rather than skipped.
 
 Each shadow day executes exactly 48 retained 1800 s transactions. The adapter
 projects V9 to the byte-identical V8 physical payload, consumes the strict
@@ -51,4 +52,14 @@ Ran in the repository Nix environment:
 - affected four-crate all-target warnings-denied Clippy: PASS.
 - affected cargo check and rustfmt: PASS.
 
-Heavy, benchmark, independent review, and terminal evidence remains pending.
+## Open Closure Boundary
+
+No repository component currently provides the complete higher-frequency
+snow-free receipt. Daily climate supplies precipitation, extrema, daily
+radiation, wind and dew point plus rainfall breakpoints, but not the exact 48
+step LSE radiation/humidity/canopy/thermal/WB14 operands. The module fixture is
+not valid real-provider evidence. Deriving those operands here would introduce
+unauthorized physics. The complete checkpoint also retains the nonserializable
+production hydrology frame by typed clone; it is not persisted-restart proof.
+
+Heavy, fresh benchmark, terminal review, and closure evidence is withheld.

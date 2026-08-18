@@ -11,10 +11,12 @@ immutable same-day seam is after `seed_day_frame` and
 repository climate/frost/hydrology inputs are present and native infiltration,
 ET, root uptake, runoff and state commit have not executed.
 
-The shadow executes once for the complete OFE set at this seam, never once per
-lane. It retains 48 consecutive `1800 s` candidates on isolated state. Native
-hydrology then executes its unchanged daily path from the unchanged production
-frame.
+Each actual lane input and its applied day frame are captured at this seam in
+the original stateful lane-interleaved order. After the complete set exists,
+the shadow executes 48 consecutive `1800 s` candidates only against its
+isolated beginning hydrology. The higher-frequency provider cannot inspect the
+post-native production frame. Production rows remain buffered until every
+shadow day accepts.
 
 ## Complete owner set
 
@@ -31,8 +33,11 @@ frame.
 The attachment accepts typed repository-provider records, not caller-injected
 solver trials, bindings, raw residuals or finalized candidates. Provider
 projection validates exact day/OFE/tile/layer identity and maps daily repository
-inputs into 48 explicit interval receipts. Missing higher-frequency inputs are
-unsupported rather than defaulted.
+inputs to 48 explicit interval receipts. The repository currently has no
+authoritative provider for the complete snow-free interval receipt; daily
+climate and rainfall breakpoints are insufficient to derive radiation,
+humidity, canopy, thermal, and WB14 operands. Missing higher-frequency inputs
+are therefore a live typed-unsupported closure blocker, not defaulted.
 
 ## Shared soil-thermal continuation
 

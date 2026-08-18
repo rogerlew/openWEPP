@@ -1,6 +1,6 @@
 # Execute Vegetation And Land Surface Through A Real Shadow Consumer
 
-Status: `executing / Children 1--3 and V9 reconciliation complete`
+Status: `executing / implementation HOLD on real provider and persisted restart`
 
 Date: `2026-08-14`
 
@@ -19,7 +19,7 @@ domain coverage and performance without activation.
 
 - [x] Start after Children 1--3 close.
 - [x] Freeze real input providers, scheduler point and complete owner set.
-- [ ] Implement explicit shadow API and atomic whole-state transaction.
+- [x] Implement explicit shadow API and atomic whole-state transaction.
 - [ ] Run repository-backed scenarios, coverage audit and legacy comparison.
 - [ ] Pass reviews, heavy gates, benchmark and dual verification.
 

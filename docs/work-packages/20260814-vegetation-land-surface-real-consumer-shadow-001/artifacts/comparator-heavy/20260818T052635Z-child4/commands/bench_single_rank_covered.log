@@ -1,0 +1,14 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child4-20260818T052635Z
+  scratch: /tmp/openwepp-roger-child4-20260818T052635Z
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.23s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/child4-20260818T052635Z/debug/deps/openwepp_land_surface_energy-90ec5b504634e79f)
+
+running 1 test
+test covered_oracle_conformance_tests::covered_single_rank_potential_fixed_cap_and_alternate_start_match_frozen_oracle ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 53 filtered out; finished in 0.08s
+

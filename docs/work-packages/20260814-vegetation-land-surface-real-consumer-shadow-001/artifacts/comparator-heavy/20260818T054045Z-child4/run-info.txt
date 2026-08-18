@@ -1,0 +1,5 @@
+run_timestamp=20260818T054045Z
+run_root=/workdir/openWEPP/docs/work-packages/20260814-vegetation-land-surface-real-consumer-shadow-001/artifacts/comparator-heavy/20260818T054045Z-child4
+task_id=child4-20260818T054045Z
+child4_test_count=10
+child3_surface_count=7
