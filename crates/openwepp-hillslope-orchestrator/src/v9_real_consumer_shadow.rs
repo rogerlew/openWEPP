@@ -5,15 +5,15 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_biogeochemistry::{BiogeochemistryState, available_by_key};
+use openwepp_biogeochemistry::{BiogeochemistryError, BiogeochemistryState, available_by_key};
 use openwepp_kernel_contract::{
     MineralNitrogenKey, ResourceAmountBasis, ResourceOwnerId, TransactionId,
     authorize_proportionally,
 };
 use openwepp_land_surface_energy::{
-    LandSurfaceEnergyConfiguration, LandSurfaceEnergyState, LandSurfaceForcing, LiquidParcelKind,
-    Sha256Digest, SoilThermalLayerSnapshot, SoilThermalOfeSnapshot, SoilThermalSnapshot,
-    SoilThermalTileCandidate, build_lse_ending_state,
+    LandSurfaceEnergyConfiguration, LandSurfaceEnergyError, LandSurfaceEnergyState,
+    LandSurfaceForcing, LiquidParcelKind, Sha256Digest, SoilThermalLayerSnapshot,
+    SoilThermalOfeSnapshot, SoilThermalSnapshot, SoilThermalTileCandidate, build_lse_ending_state,
 };
 use openwepp_vegetation::{
     NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, SnowFreeForcing, V9CoupledOwnedState,
@@ -25,12 +25,13 @@ use sha2::{Digest, Sha256};
 use thiserror::Error;
 
 use crate::land_surface_energy_shadow::{
-    ExecuteV8LseRuntimeShadowError, LandSurfaceEnergyRealHydrologyAdapter,
-    UncommittedCoveredV8OwnerEnvelope, V8CanopyForcingReceipt, execute_v8_lse_runtime_shadow,
-    unified_beginning_hydrology_snapshot_sha256,
+    CoveredV8OwnerEnvelopeError, ExecuteV8LseRuntimeShadowError,
+    LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError,
+    UncommittedCoveredV8OwnerEnvelope, V8CanopyForcingReceipt, V8InputProjectionError,
+    execute_v8_lse_runtime_shadow, unified_beginning_hydrology_snapshot_sha256,
 };
 use crate::vegetation_real_hydrology_shadow::{
-    RealHydrologyLaneLayerMap, RealHydrologyShadowAdapter,
+    RealHydrologyLaneLayerMap, RealHydrologyShadowAdapter, RealHydrologyShadowError,
 };
 use crate::{
     DirectDayFrame, DirectOfeWb14Parameters, DirectPublicationDayInput, DirectRunFrame,
@@ -99,8 +100,20 @@ pub enum DirectV9RealConsumerError {
     V9(#[from] V9StateError),
     #[error(transparent)]
     Physical(#[from] ExecuteV8LseRuntimeShadowError),
-    #[error("V9 real-consumer adapter failure: {0}")]
-    Adapter(String),
+    #[error(transparent)]
+    LandSurface(#[from] LandSurfaceEnergyError),
+    #[error(transparent)]
+    LandSurfaceShadow(#[from] LandSurfaceEnergyShadowError),
+    #[error(transparent)]
+    RealHydrology(#[from] RealHydrologyShadowError),
+    #[error(transparent)]
+    Biogeochemistry(#[from] BiogeochemistryError),
+    #[error(transparent)]
+    Projection(#[from] V8InputProjectionError),
+    #[error(transparent)]
+    OwnerEnvelope(#[from] CoveredV8OwnerEnvelopeError),
+    #[error("V9 real-consumer serialization failure: {0}")]
+    Serialization(String),
 }
 
 impl DirectV9RealConsumerError {
@@ -113,7 +126,13 @@ impl DirectV9RealConsumerError {
             Self::Vegetation(_) => "vegetation",
             Self::V9(_) => "v9_identity",
             Self::Physical(_) => "strict_v8_lse_runtime",
-            Self::Adapter(_) => "typed_adapter_boundary",
+            Self::LandSurface(_) => "land_surface",
+            Self::LandSurfaceShadow(_) => "land_surface_shadow",
+            Self::RealHydrology(_) => "real_hydrology",
+            Self::Biogeochemistry(_) => "biogeochemistry",
+            Self::Projection(_) => "projection",
+            Self::OwnerEnvelope(_) => "owner_envelope",
+            Self::Serialization(_) => "serialization",
         }
     }
 }
@@ -136,15 +155,9 @@ impl DirectV9RealConsumerShadow {
         vegetation_state.validate(&vegetation_configuration)?;
         let (v8_configuration, v8_state) =
             project_v9_runtime_to_v8(&vegetation_configuration, &vegetation_state)?;
-        lse_configuration
-            .validate()
-            .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
-        lse_state
-            .validate(&lse_configuration)
-            .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
-        soil_thermal
-            .validate()
-            .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
+        lse_configuration.validate()?;
+        lse_state.validate(&lse_configuration)?;
+        soil_thermal.validate()?;
         if lse_configuration
             .vegetation_configuration
             .configuration_sha256
@@ -318,10 +331,7 @@ impl DirectV9RealConsumerShadow {
                 "forcing transaction, cadence, or snow domain",
             ));
         }
-        input
-            .lse_forcing
-            .validate(transaction_id)
-            .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
+        input.lse_forcing.validate(transaction_id)?;
         let (v8_configuration, v8_beginning) =
             project_v9_runtime_to_v8(&self.vegetation_configuration, &self.vegetation_state)?;
         if self
@@ -342,16 +352,13 @@ impl DirectV9RealConsumerShadow {
             INTERVAL_S,
             self.surface_configuration.owner_id.clone(),
             &self.layer_maps,
-        )
-        .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
+        )?;
         let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hydrology);
-        let hydrology_snapshot =
-            unified_beginning_hydrology_snapshot_sha256(&soil_adapter, &self.surface_configuration)
-                .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
-        let forcing_sha256 = input
-            .lse_forcing
-            .canonical_sha256()
-            .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
+        let hydrology_snapshot = unified_beginning_hydrology_snapshot_sha256(
+            &soil_adapter,
+            &self.surface_configuration,
+        )?;
+        let forcing_sha256 = input.lse_forcing.canonical_sha256()?;
         let vegetation_forcing = project_live_vegetation_forcing(
             &input.vegetation_forcing,
             &hydrology,
@@ -366,8 +373,7 @@ impl DirectV9RealConsumerShadow {
             self.soil_thermal.snapshot_sha256.clone(),
             transaction_id,
             vegetation_forcing,
-        )
-        .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
+        )?;
         let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
         let envelope = execute_v8_lse_runtime_shadow(
             &v8_configuration,
@@ -394,9 +400,7 @@ impl DirectV9RealConsumerShadow {
         transaction_id: TransactionId,
         envelope: &UncommittedCoveredV8OwnerEnvelope,
     ) -> Result<(), DirectV9RealConsumerError> {
-        envelope
-            .validate()
-            .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
+        envelope.validate()?;
         let vegetation_state = project_v8_runtime_to_v9(
             envelope.vegetation().ending_state(),
             &self.vegetation_configuration,
@@ -405,8 +409,7 @@ impl DirectV9RealConsumerShadow {
             &self.lse_state,
             transaction_id,
             envelope.hydrology().ending_lse_tile_states().to_vec(),
-        )
-        .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
+        )?;
         let soil_thermal = aggregate_soil_thermal_ending(
             &self.soil_thermal,
             &self.lse_configuration,
@@ -427,12 +430,8 @@ impl DirectV9RealConsumerShadow {
     fn validate_complete_owner_set(&self) -> Result<(), DirectV9RealConsumerError> {
         self.vegetation_state
             .validate(&self.vegetation_configuration)?;
-        self.lse_state
-            .validate(&self.lse_configuration)
-            .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
-        self.soil_thermal
-            .validate()
-            .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
+        self.lse_state.validate(&self.lse_configuration)?;
+        self.soil_thermal.validate()?;
         let transaction_id = TransactionId(self.vegetation_state.0.last_transaction_id);
         let lse_transaction_matches = self
             .lse_state
@@ -491,7 +490,7 @@ impl DirectV9RealConsumerShadow {
             next_day_index: self.next_day_index,
             accepted_interval_count: self.accepted_interval_count,
         })
-        .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
+        .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
         Ok(format!("{:x}", Sha256::digest(bytes)))
     }
 }
@@ -623,8 +622,7 @@ struct BiogeochemistryNitrogenArbiter {
 impl BiogeochemistryNitrogenArbiter {
     fn try_new(state: &BiogeochemistryState) -> Result<Self, DirectV9RealConsumerError> {
         Ok(Self {
-            available: available_by_key(state)
-                .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?,
+            available: available_by_key(state)?,
         })
     }
 }
@@ -682,9 +680,7 @@ fn aggregate_soil_thermal_ending(
         last_accepted_transaction_id: Some(transaction_id),
         ofes,
     };
-    ending
-        .validate()
-        .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
+    ending.validate()?;
     Ok(ending)
 }
 
@@ -845,9 +841,8 @@ fn digest_soil_snapshot(
 
 fn digest_serialized<T: Serialize>(value: &T) -> Result<Sha256Digest, DirectV9RealConsumerError> {
     let bytes = serde_json::to_vec(value)
-        .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
-    Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes)))
-        .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))
+        .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
+    Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes))).map_err(Into::into)
 }
 
 #[cfg(test)]
