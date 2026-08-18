@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 13
+contract_version: 14
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-08-14
+last_reviewed: 2026-08-18
 supersedes: []
 superseded_by: []
 ---
@@ -2409,4 +2409,74 @@ This prospective amendment preserves every V1--V8 calculator, vector,
 definition, contract-era digest, fixture, and runtime expectation byte. It
 does not activate a selector, change V8 science, authorize fixture rewriting,
 weaken exact regeneration, or establish calibration, empirical validation, or
+transferability.
+
+## `OPENWEPP_C3_WOODY_V10` Nighttime and Low-Light Ci Amendment
+
+V10 imports the complete V9 configuration, state, ownership, equations,
+constants, accepted daylight numerical paths, diagnostics, and rollback. It
+supersedes only the Ci solution domain when net leaf assimilation is
+nonpositive at exact-zero or positive low absorbed PAR. V1--V9 identities and
+authority bytes remain immutable and are not V10 aliases.
+
+For one positive-area leaf class, retain the V9 FvCB definitions and compute
+`Rd`, `Ag`, and `An=Ag-Rd` without a radiation floor. Exact `+0.0` and `-0.0`
+absorbed PAR are the same physical zero branch. They give exactly `Ag=0`,
+`An=-Rd`, and, because `An<=0`, `gs=g0`. Convert `g0` to `m s^-1`, set
+`rs=1/gs`, and evaluate the existing diffusion identities directly:
+
+```text
+cs = ca - 1.4*rb*R*Tleaf*An*1e-6
+ci = ca - (1.4*rb + 1.6*rs)*R*Tleaf*An*1e-6
+```
+
+The accepted zero-PAR state has `ci>ca` when `Rd>0`, exact
+`gross_assimilation=0`, exact `dark_respiration=Rd`, zero Ci iterations, and
+the degenerate diagnostic bracket `[ci,ci]`. Nonfinite/nonpositive `gs`, `cs`,
+or `ci`, or `ci>=Patm`, rejects as `VEG-E-118`; no clamp is authorized.
+
+For positive absorbed PAR, first evaluate the unchanged V9 residual on
+`[Gamma*,ca]`. If that interval brackets a root, execute the exact V9
+Brent--Dekker algorithm and preserve its output bytes. Only when the residual
+at `ca` remains negative because `An(ca)<0`, compute the finite dark upper
+bound
+
+```text
+ci_dark = ca + (1.4*rb + 1.6*rs(g0))*R*Tleaf*Rd*1e-6
+```
+
+require `ca < ci_dark < Patm`, require the residual at `ci_dark` to be
+nonnegative, and execute the same Brent--Dekker algorithm on `[ca,ci_dark]`.
+Any other same-sign endpoint combination rejects. There is no irradiance
+epsilon, transition tolerance, post-hoc clipping, or warm-start-selected
+branch. Exact endpoint equality is accepted by the existing deterministic
+endpoint rule.
+
+A radiation class with exact zero leaf area is an absent hydraulic component:
+its flow and demand are exact zero, its leaf potential is anchored exactly to
+stem potential, and its beta is anchored to one. It contributes no hydraulic
+source or sink and cannot leave a zero Jacobian column. Its exported gross,
+net, and respiration operands are canonical `+0.0`, and its diagnostic `ci`
+is `ca`; these are absent-component records, not a positive-area gas state.
+
+### V9-to-V10 migration and guards
+
+Migration requires a valid complete V9 configuration/state and copies every
+scientific value bit-identically. It changes only the model identity and
+transitively derived configuration/state receipts. Nonzero transaction lineage
+is retained; an initial migration additionally rebinds the exact V10 initial
+state receipt. No V8 or earlier source migrates directly to V10.
+
+| ID | Binding rule |
+|---|---|
+| `INV-VEGETATION-118` | Exact signed zero PAR selects the analytic `Ag=0`, `An=-Rd`, `gs=g0` diffusion solution; no Brent interval is fabricated. |
+| `INV-VEGETATION-119` | Positive low light uses the V9 bracket when valid and otherwise the exact `[ca,ci_dark]` bracket; accepted V9 daylight roots remain byte-identical. |
+| `INV-VEGETATION-120` | V9-to-V10 migration is value-bit-identical and identity-distinct; V1--V9 remain immutable non-aliases. |
+| `VEG-E-118` | Invalid zero-PAR diffusion result, nonpositive conductance, or `ci>=Patm` rejects without a candidate. |
+| `VEG-E-119` | A positive-low-light residual not bracketed by either authorized interval rejects with complete Ci diagnostics. |
+| `VEG-E-120` | Stale source identity, value mutation, partial migration, or V9/V10 aliasing rejects without a V10 state. |
+
+This amendment authorizes default-off implementation and contract-derived
+fixtures only. It does not alter historical V1--V9 bytes, activate a selector,
+publish output, or establish calibration, empirical validation, or
 transferability.

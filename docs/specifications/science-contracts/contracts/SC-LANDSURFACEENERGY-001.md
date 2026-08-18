@@ -4,14 +4,14 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
 consumer_scope:
   - Future soil-heat/frost boundary, evaporation, infiltration/runoff, and surface-water ledgers
 evidence_level: static+independent_oracle
-last_reviewed: 2026-08-14
+last_reviewed: 2026-08-18
 supersedes: []
 superseded_by: []
 ---
@@ -883,6 +883,66 @@ cutover.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-18 | 4 | Codex | Admitted `OPENWEPP_SNOW_FREE_LSE_V2` as the exact V1 successor binding `OPENWEPP_C3_WOODY_V10` nighttime/low-light Ci; all LSE equations, state values, ownership, numerics and accepted V1 paths remain unchanged. |
 | 2026-08-14 | 3 | Codex | Admitted `OPENWEPP_SNOW_FREE_LSE_V1`: explicit bare-soil and forest-litter thermal state, reciprocal V8 canopy-ground radiation/turbulence, hydrology-owned water mass, liquid enthalpy, coupled potential/final solve, strict numerics and independent closure; no runtime or cutover. |
 | 2026-08-08 | 2 | Codex | VEGETATION-BOUNDARY-AUTHORITY amendment: separated canopy/ground/litter/snow/soil radiation lineage and bound actual transpiration to one independently reconstructed latent-energy debit without admitting constitutive physics. |
 | 2026-08-08 | 1 | Codex | Initial control-volume, custody, conservation, ownership, guard, test-vector, and non-promotable authority-gap contract. |
+
+## `OPENWEPP_SNOW_FREE_LSE_V2` V10 Coupling Amendment
+
+V2 imports every V1 control volume, equation, constant, parameter, state
+field, owner, ordering rule, numerical algorithm, tolerance, diagnostic,
+rollback rule, and accepted result byte. It supersedes only the coupled
+vegetation identity: V2 requires `OPENWEPP_C3_WOODY_V10` and admits the exact
+zero-PAR and positive-low-light Ci branches defined by
+`SC-VEGETATION-001@14`. LSE does not recompute, clamp, or relabel those gas
+states.
+
+At an exact active trial bound, the V2 covered-column Jacobian uses the
+interior one-sided finite difference with the same perturbation magnitude;
+interior columns retain the historical centered difference. This is required
+for the exact inactive-class `beta=1` anchor and does not relax a bound.
+The inactive hydraulic potential anchor uses the exact dimensional tolerance
+`1e-6 mm`; it is not normalized as a water-flux residual. The exact
+nonpositive-assimilation beta anchor uses the dimensionless tolerance `1e-8`;
+it is not normalized as a water-flux residual because beta has no water-flux
+constitutive role on that branch. Both constants are trial-independent so
+their finite-difference rows remain linear anchors.
+V2 eliminates an anchored coordinate from all other finite-difference rows and
+places its exact analytic identity in the retained fixed-size row: coefficient
+`+1` for the anchored coordinate and, for an inactive leaf potential, `-1` for
+stem potential. This is algebraic absent-variable elimination, not diagonal
+regularization.
+For a V10 exact-zero-PAR covered solve, V2 deterministically divides each
+Newton row and its right-hand side by that row's maximum absolute coefficient
+before pivoting. This changes conditioning only, not the represented linear
+system; positive-PAR historical rows retain their prior bytes and ordering.
+Before backtracking an exact-zero-PAR V2 Newton correction, scale the complete
+coupled correction by one common factor when any hydraulic-potential component
+would exceed `50000 mm`; the largest such component then equals `50000 mm`.
+This deterministic trust bound preserves direction and coupling and prevents
+entry into the flat underflow tail of the authorized vulnerability curves.
+After that common scaling, exact anchor coordinates are reconstructed from the
+scaled coupled coordinates (`delta_psi_leaf = delta_psi_stem -
+(psi_leaf-psi_stem)` and `delta_beta=1-beta`). Thus a trust bound cannot defer
+or dilute an algebraically eliminated identity.
+The exact-zero-PAR V2 solve has a `200`-iteration ceiling; every positive-PAR
+historical solve retains the V1 ceiling of `50`. Typed iteration-limit evidence
+reports the branch-specific exact ceiling.
+
+V1-to-V2 migration validates complete V1 and V10 owner identities, copies all
+LSE scientific values bit-identically, and changes only the LSE model identity
+and transitively derived receipts. V1 remains immutable and is not a V2 alias.
+
+| ID | Binding rule |
+|---|---|
+| `INV-LANDSURFACEENERGY-109` | LSE-V2 imports exact LSE-V1 physics and accepts only the V10 vegetation owner at the coupled boundary. |
+| `INV-LANDSURFACEENERGY-110` | Nighttime and low-light gas states are consumed exactly once from V10; LSE introduces no PAR/VPD/Ci fallback. |
+| `INV-LANDSURFACEENERGY-111` | V1-to-V2 migration copies every LSE scientific value bit-identically and derives only V2 identity receipts. |
+| `LSE-E-109` | V8/V9 vegetation identity, mixed V1/V2 receipts, or any owner alias rejects before physics. |
+| `LSE-E-110` | Missing, duplicated, mutated, or locally recomputed V10 nighttime gas state rejects the coupled owner envelope. |
+| `LSE-E-111` | Partial or value-mutating V1-to-V2 migration rejects without a V2 state. |
+
+This amendment remains default-off. It authorizes no production selector,
+default/output change, cutover, snow handoff, deployment, calibration, or
+empirical claim.
