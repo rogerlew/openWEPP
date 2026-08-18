@@ -1,6 +1,6 @@
 # Admit and Implement the C3 Nighttime Leaf-CO2 Branch
 
-Status: `HOLD / prospective successor authority required before implementation`
+Status: `HOLD / V10 Ci provisional / full coupled hydraulic oracle required`
 
 Date: `2026-08-18`
 
@@ -22,9 +22,11 @@ Child 4 or the campaign.
 
 ## Objective
 
-Select, independently reconstruct, and implement the zero-absorbed-PAR leaf
-CO2/dark-respiration branch needed by canonical nighttime receipts. Preserve
-V3--V9 historical definitions and bytes.
+Admit and implement the complete V10 nighttime and respiration-dominated
+gas--hydraulic branch needed by canonical nighttime receipts. Preserve V3--V9
+historical definitions, runtime behavior, and bytes. Correct the provisional
+LSE-V2 authority only after an independent high-precision feasibility audit
+classifies the fixed-final midnight failure.
 
 ## Provisional derivation and independent-review disposition
 
@@ -37,6 +39,25 @@ An analytic nighttime path therefore requires an explicit prospective
 contract successor (or an equally explicit reviewed versioned erratum), plus a
 signed-zero disposition. No vegetation production Rust may change before that
 authority is admitted.
+
+The WIP successor now admits Ci provisionally but does not release V10 or
+LSE-V2. Its numerical experiments are diagnostic evidence only and must be
+removed or independently reselected before authority admission.
+
+## Current hydraulic HOLD
+
+The first real midnight execution clears the historical Ci bracket and then
+fails in the fixed-final gas--hydraulic solve. Before another solver change,
+the package freezes potential/final operands, caps, solutions, residuals,
+Jacobian evidence, and log-space vulnerability reconstruction and classifies
+whether a finite steady-state root exists. Newton inconvenience is not a hold
+boundary; only independently proven physical or ownership infeasibility is.
+
+The first 100-decimal calculation is retained only as a scalar feasibility
+envelope. Independent review found that it substitutes warm-start values and
+does not solve the complete two-occupancy energy, shared-air, soil, and
+per-layer-cap system. Production implementation is therefore paused at the
+contract-first boundary while the full coupled authority artifact is built.
 
 ## Exact contradiction
 
@@ -68,7 +89,9 @@ authorized.
 3. Obtain science review before production implementation.
 4. Implement under a prospective identity with explicit migration if required.
 5. Prove zero-PAR, dawn, ordinary daylight, signed-zero, and one-bit poisons.
-6. Rerun historical authority immutability, vegetation/LSE gates, the native
+6. Independently prove fixed-final hydraulic feasibility at >=80 decimal
+   digits, including zero and insufficient authorization typed outcomes.
+7. Rerun historical authority immutability, vegetation/LSE gates, the native
    forcing real-consumer day, and exact-byte Rust/science reviews.
 
 ## First actionable step
