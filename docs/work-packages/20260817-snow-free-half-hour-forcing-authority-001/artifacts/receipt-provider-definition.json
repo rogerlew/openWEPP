@@ -1,0 +1,14 @@
+{
+  "provider_version": "OPENWEPP_SNOW_FREE_HALF_HOUR_FORCING_V1",
+  "contract_id": "SC-SNOWFREEFORCING-001",
+  "parent_interval_s": 3600,
+  "child_interval_s": 1800,
+  "child_count": 48,
+  "meteorological_refinement": "zero_order_hold_parent_hour",
+  "shortwave_partition": "WEISS_NORMAN_1985",
+  "atmospheric_longwave": "DILLEY_OBRIEN_1998_PLUS_UNSWORTH_MONTEITH_1975",
+  "pressure": "FAO56_STATION_ELEVATION",
+  "humidity": "HARDER_POMEROY_WATER_SATURATION_PLUS_CLM_EXACT_SPECIFIC_HUMIDITY",
+  "precipitation_temperature": "HARDER_POMEROY_HOURLY_HYDROMETEOR_TEMPERATURE",
+  "activation": "DEFAULT_OFF_ONLY"
+}

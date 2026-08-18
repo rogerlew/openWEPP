@@ -1,6 +1,6 @@
 # Admit Snow-Free Half-Hour Forcing Authority
 
-Status: `executing / contract-first authority`
+Status: `complete / terminal PASS / downstream authority released`
 
 Date: `2026-08-17`
 
@@ -57,4 +57,3 @@ No secrets, network service, unsafe code, activation, calibration, deployment,
 publication, PR, remote branch, or push. Restricted source text stays outside
 Git; only citations, checksums, equation-use records, and lawful excerpts are
 committed.
-

@@ -1,0 +1,18 @@
+{
+  "model_version": "OPENWEPP_SNOW_FREE_HALF_HOUR_FORCING_V1",
+  "contract": "SC-SNOWFREEFORCING-001",
+  "contract_sha256": "9ded200e62e59265bc704508f4aff91413c4829213fe373f852902dd50c21560",
+  "reference_calculator_sha256": "67154eb54f09f394c317fa82f6faff93ee3195bb944ba3ba7dc0839b3e839f59",
+  "vectors_sha256": "e69c39187aac47993a63c3aa9e0ede922ccd3249b7fe4fa72116a8cc2d5c645c",
+  "forcing_schema_sha256": "c2c08620052ca4e463a81031c42e05cdca904b90803877b78cde2a7ebad79a3c",
+  "receipt_provider_definition_sha256": "4658de9f7590897633ffbfe0facedd52b5c9b9754f7d829f25869ef2c592f153",
+  "parent_interval_s": 3600,
+  "child_interval_s": 1800,
+  "child_count": 48,
+  "meteorological_refinement": "zero_order_hold_parent_hour",
+  "shortwave_partition": "WEISS_NORMAN_1985",
+  "atmospheric_longwave": "DILLEY_OBRIEN_1998_PLUS_UNSWORTH_MONTEITH_1975",
+  "pressure": "FAO56_STATION_ELEVATION",
+  "humidity": "HARDER_POMEROY_WATER_SATURATION_PLUS_CLM_EXACT_SPECIFIC_HUMIDITY",
+  "activation": "DEFAULT_OFF_ONLY"
+}

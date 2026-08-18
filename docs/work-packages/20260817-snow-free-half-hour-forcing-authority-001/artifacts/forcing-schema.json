@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openwepp.snow_free_half_hour_forcing.v1",
+  "type": "object",
+  "required": ["provider_version", "provider_definition_sha256", "source_climate_sha256", "run_id", "day_index", "daily_horizontal_energy_mj_m2", "intervals", "next_day_precipitation_carry", "receipt_sha256"],
+  "properties": {
+    "provider_version": {"const": "OPENWEPP_SNOW_FREE_HALF_HOUR_FORCING_V1"},
+    "provider_definition_sha256": {"$ref": "#/$defs/digest"},
+    "source_climate_sha256": {"$ref": "#/$defs/digest"},
+    "run_id": {"type": "string", "minLength": 1},
+    "day_index": {"type": "integer", "minimum": 0},
+    "daily_horizontal_energy_mj_m2": {"type": "number", "minimum": 0},
+    "intervals": {"type": "array", "minItems": 48, "maxItems": 48, "items": {"$ref": "#/$defs/interval"}},
+    "next_day_precipitation_carry": {"type": "array", "items": {"$ref": "#/$defs/parcel"}},
+    "receipt_sha256": {"$ref": "#/$defs/digest"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "parcel": {
+      "type": "object",
+      "required": ["parcel_id", "source_owner_id", "destination_ofe_id", "destination_tile_id", "start_s", "end_s", "mass_kg_m2", "temperature_k", "enthalpy_j_m2"],
+      "properties": {
+        "parcel_id": {"type": "string", "minLength": 1},
+        "source_owner_id": {"type": "string", "minLength": 1},
+        "destination_ofe_id": {"type": "string", "minLength": 1},
+        "destination_tile_id": {"type": "string", "minLength": 1},
+        "start_s": {"type": "number", "minimum": 0},
+        "end_s": {"type": "number", "exclusiveMinimum": 0},
+        "mass_kg_m2": {"type": "number", "minimum": 0},
+        "temperature_k": {"type": "number", "exclusiveMinimum": 0},
+        "enthalpy_j_m2": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "interval": {
+      "type": "object",
+      "required": ["provider_definition_sha256", "source_climate_sha256", "run_id", "day_index", "ofe_id", "tile_id", "interval_index", "transaction_id", "start_s", "end_s", "parent_hour_index", "air_temperature_c", "dew_point_c", "wind_m_s", "pressure_kpa", "actual_vapor_pressure_kpa", "specific_humidity_kg_kg", "vpd_kpa", "cloud_fraction", "solar_zenith_cosine", "global_horizontal_shortwave_w_m2", "direct_visible_w_m2", "diffuse_visible_w_m2", "direct_nir_w_m2", "diffuse_nir_w_m2", "downward_longwave_w_m2", "co2_pa", "reference_height_m", "gsi", "gsi_receipt_sha256", "wb14_configuration_sha256", "precipitation_parcels", "interval_receipt_sha256"],
+      "properties": {
+        "provider_definition_sha256": {"$ref": "#/$defs/digest"},
+        "source_climate_sha256": {"$ref": "#/$defs/digest"},
+        "run_id": {"type": "string", "minLength": 1},
+        "day_index": {"type": "integer", "minimum": 0},
+        "ofe_id": {"type": "string", "minLength": 1},
+        "tile_id": {"type": "string", "minLength": 1},
+        "interval_index": {"type": "integer", "minimum": 0, "maximum": 47},
+        "transaction_id": {"type": "string", "minLength": 1},
+        "start_s": {"type": "integer", "multipleOf": 1800, "minimum": 0, "maximum": 84600},
+        "end_s": {"type": "integer", "multipleOf": 1800, "minimum": 1800, "maximum": 86400},
+        "parent_hour_index": {"type": "integer", "minimum": 0, "maximum": 23},
+        "air_temperature_c": {"type": "number"},
+        "dew_point_c": {"type": "number"},
+        "wind_m_s": {"type": "number", "exclusiveMinimum": 0},
+        "pressure_kpa": {"type": "number", "exclusiveMinimum": 0},
+        "actual_vapor_pressure_kpa": {"type": "number", "minimum": 0},
+        "specific_humidity_kg_kg": {"type": "number", "minimum": 0},
+        "vpd_kpa": {"type": "number"},
+        "cloud_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+        "solar_zenith_cosine": {"type": "number", "minimum": 0, "maximum": 1},
+        "global_horizontal_shortwave_w_m2": {"type": "number", "minimum": 0},
+        "direct_visible_w_m2": {"type": "number", "minimum": 0},
+        "diffuse_visible_w_m2": {"type": "number", "minimum": 0},
+        "direct_nir_w_m2": {"type": "number", "minimum": 0},
+        "diffuse_nir_w_m2": {"type": "number", "minimum": 0},
+        "downward_longwave_w_m2": {"type": "number", "minimum": 0},
+        "co2_pa": {"type": "number", "exclusiveMinimum": 0},
+        "reference_height_m": {"type": "number", "exclusiveMinimum": 0},
+        "gsi": {"type": "number"},
+        "gsi_receipt_sha256": {"$ref": "#/$defs/digest"},
+        "wb14_configuration_sha256": {"$ref": "#/$defs/digest"},
+        "precipitation_parcels": {"type": "array", "items": {"$ref": "#/$defs/parcel"}},
+        "interval_receipt_sha256": {"$ref": "#/$defs/digest"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

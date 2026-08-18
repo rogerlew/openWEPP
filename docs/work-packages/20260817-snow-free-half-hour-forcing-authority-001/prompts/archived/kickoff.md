@@ -7,4 +7,3 @@ HOLD evidence. Apply contract-first sequencing and do not edit production Rust.
 Subagent authorization: this package explicitly authorizes spawning/delegating
 to the independent reviewers and terminal verifiers named in `package.md`, with
 read-only review/verification access and compact package-local outputs.
-

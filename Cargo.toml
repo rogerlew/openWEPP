@@ -96,6 +96,8 @@ openwepp-landuse-migrate = { path = "crates/openwepp-landuse-migrate", version =
 openwepp-assurance = { path = "crates/openwepp-assurance", version = "0.1.0" }
 openwepp-vegetation = { path = "crates/openwepp-vegetation", version = "0.1.0" }
 openwepp-biogeochemistry = { path = "crates/openwepp-biogeochemistry", version = "0.1.0" }
+openwepp-meteorology = { path = "crates/openwepp-meteorology", version = "0.1.0" }
+openwepp-unit-boundary = { path = "crates/openwepp-unit-boundary", version = "0.1.0" }
 
 [[test]]
 name = "infile_slope_parser_contract"
@@ -820,6 +822,10 @@ path = "tests/integration/peak_hourly_authority_contract.rs"
 [[test]]
 name = "snow_wet_compaction_operand_authority"
 path = "tests/integration/snow_wet_compaction_operand_authority.rs"
+
+[[test]]
+name = "snow_free_half_hour_forcing_authority_contract"
+path = "tests/integration/snow_free_half_hour_forcing_authority_contract.rs"
 
 [profile.release]
 lto = "thin"

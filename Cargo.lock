@@ -999,6 +999,7 @@ dependencies = [
  "openwepp-landuse-migrate",
  "openwepp-legacy-bridge",
  "openwepp-management-schema",
+ "openwepp-meteorology",
  "openwepp-runner",
  "openwepp-sim-contract",
  "openwepp-summary-accumulator",
