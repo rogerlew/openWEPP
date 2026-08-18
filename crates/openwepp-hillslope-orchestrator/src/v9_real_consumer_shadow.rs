@@ -58,28 +58,62 @@ pub struct DirectV9ShadowDayInput {
 /// The interval records are forcing receipts, never caller solver trials.
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectV9RepositoryDayProjection {
+    run_id: u64,
+    day_index: usize,
     publication_inputs: Vec<DirectPublicationDayInput>,
     shadow_input: DirectV9ShadowDayInput,
 }
 
 impl DirectV9RepositoryDayProjection {
     pub fn try_new(
+        run_id: u64,
+        day_index: usize,
         publication_inputs: Vec<DirectPublicationDayInput>,
         shadow_input: DirectV9ShadowDayInput,
     ) -> Result<Self, DirectV9RealConsumerError> {
-        if publication_inputs.is_empty() || shadow_input.intervals.len() != INTERVALS_PER_DAY {
+        if publication_inputs.is_empty()
+            || shadow_input.day_index != day_index
+            || shadow_input.intervals.len() != INTERVALS_PER_DAY
+        {
             return Err(DirectV9RealConsumerError::Identity(
-                "repository day projection cardinality",
+                "repository day projection source identity or cardinality",
+            ));
+        }
+        let interval_rain_kg_m2 = shadow_input
+            .intervals
+            .iter()
+            .map(|interval| interval.vegetation_forcing.rain_kg_m2)
+            .sum::<f64>();
+        if publication_inputs.iter().any(|input| {
+            (input.precipitation_m * 1_000.0).to_bits() != interval_rain_kg_m2.to_bits()
+        }) {
+            return Err(DirectV9RealConsumerError::Identity(
+                "repository daily precipitation/subdaily liquid-mass join",
             ));
         }
         Ok(Self {
+            run_id,
+            day_index,
             publication_inputs,
             shadow_input,
         })
     }
 
-    pub(crate) fn into_parts(self) -> (Vec<DirectPublicationDayInput>, DirectV9ShadowDayInput) {
-        (self.publication_inputs, self.shadow_input)
+    pub(crate) fn into_parts(
+        self,
+        frame: &DirectRunFrame,
+        day_index: usize,
+    ) -> Result<(Vec<DirectPublicationDayInput>, DirectV9ShadowDayInput), DirectV9RealConsumerError>
+    {
+        if self.run_id != frame.identity.run_id
+            || self.day_index != day_index
+            || self.shadow_input.day_index != day_index
+        {
+            return Err(DirectV9RealConsumerError::Identity(
+                "repository day projection immutable source lineage",
+            ));
+        }
+        Ok((self.publication_inputs, self.shadow_input))
     }
 }
 
@@ -1192,6 +1226,54 @@ mod tests {
     }
 
     #[test]
+    fn repository_projection_binds_source_lineage_and_exact_liquid_mass() {
+        let (_, fixture) = shadow_fixture();
+        let frame = fixture.hydrology.beginning_frame();
+        let mut shadow_input = day_input(&fixture);
+        let mut production_input = production_day_input();
+        production_input.precipitation_m = 0.012;
+        shadow_input.intervals[0].vegetation_forcing.rain_kg_m2 =
+            production_input.precipitation_m * 1_000.0;
+        let valid_shadow_input = shadow_input.clone();
+        let projection = DirectV9RepositoryDayProjection::try_new(
+            frame.identity.run_id,
+            0,
+            vec![production_input.clone()],
+            shadow_input.clone(),
+        )
+        .expect("exact repository receipt");
+        projection
+            .into_parts(frame, 0)
+            .expect("matching immutable source lineage");
+
+        shadow_input.intervals[0].vegetation_forcing.rain_kg_m2 = f64::from_bits(
+            shadow_input.intervals[0]
+                .vegetation_forcing
+                .rain_kg_m2
+                .to_bits()
+                ^ 1,
+        );
+        assert!(
+            DirectV9RepositoryDayProjection::try_new(
+                frame.identity.run_id,
+                0,
+                vec![production_input.clone()],
+                shadow_input,
+            )
+            .is_err()
+        );
+
+        let wrong_lineage = DirectV9RepositoryDayProjection::try_new(
+            frame.identity.run_id.wrapping_add(1),
+            0,
+            vec![production_input],
+            valid_shadow_input,
+        )
+        .expect("internally coherent foreign receipt");
+        assert!(wrong_lineage.into_parts(frame, 0).is_err());
+    }
+
+    #[test]
     fn explicit_scheduler_consumer_advances_shadow_without_changing_production() {
         let (mut shadow, fixture) = shadow_fixture();
         let mut baseline = fixture.hydrology.beginning_frame().clone();
@@ -1222,8 +1304,10 @@ mod tests {
                 &mut observed,
                 metadata,
                 |_, _, _| Ok(production_input.clone()),
-                |_, _| {
+                |frame, day_index| {
                     Ok(DirectV9RepositoryDayProjection::try_new(
+                        frame.identity.run_id,
+                        day_index,
                         vec![production_input.clone()],
                         shadow_input.clone(),
                     )
@@ -1259,8 +1343,10 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(production_input.clone()),
-                |_, _| {
+                |frame, day_index| {
                     Ok(DirectV9RepositoryDayProjection::try_new(
+                        frame.identity.run_id,
+                        day_index,
                         vec![production_input.clone()],
                         shadow_input.clone(),
                     )
@@ -1317,8 +1403,10 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(production_input.clone()),
-                |_, _| {
+                |frame, day_index| {
                     Ok(DirectV9RepositoryDayProjection::try_new(
+                        frame.identity.run_id,
+                        day_index,
                         vec![production_input.clone()],
                         shadow_input.clone(),
                     )
@@ -1357,8 +1445,10 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(actual_input.clone()),
-                |_, _| {
+                |frame, day_index| {
                     Ok(DirectV9RepositoryDayProjection::try_new(
+                        frame.identity.run_id,
+                        day_index,
                         vec![projected_input.clone()],
                         shadow_input.clone(),
                     )

@@ -371,11 +371,15 @@ impl DirectFrameExecutor {
             consume_row,
             |event| match event {
                 DirectPublicationDayHook::BeforeDay { frame, day_index } => {
-                    let (projected_inputs, shadow_input) = build_shadow_day_input(
-                        frame,
-                        day_index,
-                    )?
-                    .into_parts();
+                    let (projected_inputs, shadow_input) =
+                        build_shadow_day_input(frame, day_index)?
+                            .into_parts(frame, day_index)
+                            .map_err(|error| {
+                                DirectRuntimeError::V9RealConsumerShadowFailure {
+                                    category: error.category(),
+                                    detail: error.to_string(),
+                                }
+                            })?;
                     if projected_inputs.len() != frame.identity.lane_count {
                         return Err(DirectRuntimeError::DirectDomainViolation {
                             field: "v9_shadow.complete_repository_day_inputs",
