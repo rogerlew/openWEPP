@@ -1,0 +1,842 @@
+{
+  "accepted_authority": false,
+  "all_root_branches": "authorization_active_or_tie",
+  "evaluated_pass": "final_fixed_cap",
+  "evidence_class": "direct_wip_runtime_diagnostic_not_authority",
+  "experiment": "replace fixed-final initial trial with accepted potential solution; independently reevaluate all fixed-cap equations from immutable phase.beginning",
+  "fixed_final_source_fluxes": [
+    {
+      "authorization_kg_m2_stand_ground": {
+        "decimal": "4.138821210058509e-07",
+        "f64_bits": "3e9bc670d17bfc14"
+      },
+      "branch": "AuthorizationActiveOrTie",
+      "final_kg_m2_tile_s": {
+        "decimal": "6.050908201839925e-10",
+        "f64_bits": "3e04ca6f656a47eb"
+      },
+      "finalized_use_kg_m2_stand_ground": {
+        "decimal": "4.138821210058509e-07",
+        "f64_bits": "3e9bc670d17bfc14"
+      },
+      "law_kg_m2_tile_s": {
+        "decimal": "6.050908201839925e-10",
+        "f64_bits": "3e04ca6f656a47eb"
+      },
+      "layer_id": "soil-1",
+      "occupancy_id": "stratum-z-upper::forest",
+      "request_kg_m2_stand_ground": {
+        "decimal": "4.138821210058509e-07",
+        "f64_bits": "3e9bc670d17bfc14"
+      }
+    },
+    {
+      "authorization_kg_m2_stand_ground": {
+        "decimal": "2.536696870681022e-07",
+        "f64_bits": "3e9106031509ed15"
+      },
+      "branch": "AuthorizationActiveOrTie",
+      "final_kg_m2_tile_s": {
+        "decimal": "3.7086211559664063e-10",
+        "f64_bits": "3df97c467c50bb42"
+      },
+      "finalized_use_kg_m2_stand_ground": {
+        "decimal": "2.536696870681022e-07",
+        "f64_bits": "3e9106031509ed15"
+      },
+      "law_kg_m2_tile_s": {
+        "decimal": "3.7086211559664063e-10",
+        "f64_bits": "3df97c467c50bb42"
+      },
+      "layer_id": "soil-2",
+      "occupancy_id": "stratum-z-upper::forest",
+      "request_kg_m2_stand_ground": {
+        "decimal": "2.536696870681022e-07",
+        "f64_bits": "3e9106031509ed15"
+      }
+    },
+    {
+      "authorization_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "branch": "AuthorizationActiveOrTie",
+      "final_kg_m2_tile_s": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "finalized_use_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "law_kg_m2_tile_s": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "layer_id": "soil-dry",
+      "occupancy_id": "stratum-z-upper::forest",
+      "request_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      }
+    },
+    {
+      "authorization_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "branch": "AuthorizationActiveOrTie",
+      "final_kg_m2_tile_s": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "finalized_use_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "law_kg_m2_tile_s": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "layer_id": "soil-frozen",
+      "occupancy_id": "stratum-z-upper::forest",
+      "request_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      }
+    },
+    {
+      "authorization_kg_m2_stand_ground": {
+        "decimal": "4.123764176237719e-07",
+        "f64_bits": "3e9bac92aa2fcb8f"
+      },
+      "branch": "AuthorizationActiveOrTie",
+      "final_kg_m2_tile_s": {
+        "decimal": "6.028894994499589e-10",
+        "f64_bits": "3e04b7127668a459"
+      },
+      "finalized_use_kg_m2_stand_ground": {
+        "decimal": "4.123764176237719e-07",
+        "f64_bits": "3e9bac92aa2fcb8f"
+      },
+      "law_kg_m2_tile_s": {
+        "decimal": "6.028894994499589e-10",
+        "f64_bits": "3e04b7127668a459"
+      },
+      "layer_id": "soil-1",
+      "occupancy_id": "stratum-a-lower::forest",
+      "request_kg_m2_stand_ground": {
+        "decimal": "4.123764176237719e-07",
+        "f64_bits": "3e9bac92aa2fcb8f"
+      }
+    },
+    {
+      "authorization_kg_m2_stand_ground": {
+        "decimal": "2.527468366081183e-07",
+        "f64_bits": "3e90f62857cab692"
+      },
+      "branch": "AuthorizationActiveOrTie",
+      "final_kg_m2_tile_s": {
+        "decimal": "3.695129190177168e-10",
+        "f64_bits": "3df9648a3e90c976"
+      },
+      "finalized_use_kg_m2_stand_ground": {
+        "decimal": "2.527468366081183e-07",
+        "f64_bits": "3e90f62857cab692"
+      },
+      "law_kg_m2_tile_s": {
+        "decimal": "3.695129190177168e-10",
+        "f64_bits": "3df9648a3e90c976"
+      },
+      "layer_id": "soil-2",
+      "occupancy_id": "stratum-a-lower::forest",
+      "request_kg_m2_stand_ground": {
+        "decimal": "2.527468366081183e-07",
+        "f64_bits": "3e90f62857cab692"
+      }
+    },
+    {
+      "authorization_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "branch": "AuthorizationActiveOrTie",
+      "final_kg_m2_tile_s": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "finalized_use_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "law_kg_m2_tile_s": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "layer_id": "soil-dry",
+      "occupancy_id": "stratum-a-lower::forest",
+      "request_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      }
+    },
+    {
+      "authorization_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "branch": "AuthorizationActiveOrTie",
+      "final_kg_m2_tile_s": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "finalized_use_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "law_kg_m2_tile_s": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "layer_id": "soil-frozen",
+      "occupancy_id": "stratum-a-lower::forest",
+      "request_kg_m2_stand_ground": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      }
+    }
+  ],
+  "ground_cap": {
+    "authorization_rate_kg_m2_tile_s": {
+      "decimal": "6.8489799837229e-06",
+      "f64_bits": "3edcba09485a3ff0"
+    },
+    "request_rate_kg_m2_tile_s": {
+      "decimal": "6.8489799837229e-06",
+      "f64_bits": "3edcba09485a3ff0"
+    }
+  },
+  "ground_water": {
+    "authorization_kg_m2_stand_ground": {
+      "decimal": "0.0046847023088664634",
+      "f64_bits": "3f733044335448b5"
+    },
+    "branch": "constitutive_law",
+    "condensation_credit_kg_m2_stand_ground": {
+      "decimal": "0.0",
+      "f64_bits": "0000000000000000"
+    },
+    "final_kg_m2_tile_s": {
+      "decimal": "6.848979983722899e-06",
+      "f64_bits": "3edcba09485a3fef"
+    },
+    "finalized_use_kg_m2_stand_ground": {
+      "decimal": "0.0046847023088664634",
+      "f64_bits": "3f733044335448b5"
+    },
+    "law_kg_m2_tile_s": {
+      "decimal": "6.848979983722899e-06",
+      "f64_bits": "3edcba09485a3fef"
+    },
+    "request_kg_m2_stand_ground": {
+      "decimal": "0.0046847023088664634",
+      "f64_bits": "3f733044335448b5"
+    }
+  },
+  "matrix_infinity_norm": {
+    "decimal": "2.0244335994229328",
+    "f64_bits": "4000320a3e338f7c"
+  },
+  "maximum_absolute_normalized_residual": 1.4944954552325508e-05,
+  "pivot": {
+    "decimal": "2.2158381900172497e-18",
+    "f64_bits": "3c44700000000000"
+  },
+  "rebuild_source": "immutable_phase_beginning",
+  "residuals": [
+    {
+      "identity": "stratum-z-upper::forest:sun_gas_minus_q1",
+      "normalized": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "raw": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1e-06",
+        "f64_bits": "3eb0c6f7a0b5ed8d"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-z-upper::forest:shade_gas_minus_q1",
+      "normalized": {
+        "decimal": "1.3294550462563076e-05",
+        "f64_bits": "3eebe1751a3a83c0"
+      },
+      "raw": {
+        "decimal": "1.329456343741863e-17",
+        "f64_bits": "3c6ea7b9a0000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0000009759529358e-12",
+        "f64_bits": "3d71979aa13ad550"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-z-upper::forest:sun_gas_minus_vulnerability_demand",
+      "normalized": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "raw": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1e-08",
+        "f64_bits": "3e45798ee2308c3a"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-z-upper::forest:shade_gas_minus_vulnerability_demand",
+      "normalized": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "raw": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1e-08",
+        "f64_bits": "3e45798ee2308c3a"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-z-upper::forest:q1_sum_minus_q2",
+      "normalized": {
+        "decimal": "-1.3295638204006999e-05",
+        "f64_bits": "beebe20a99ba700d"
+      },
+      "raw": {
+        "decimal": "-1.3295651179924138e-17",
+        "f64_bits": "bc6ea85e00000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0000009759529358e-12",
+        "f64_bits": "3d71979aa13ad550"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-z-upper::forest:q2_minus_root_source_sum",
+      "normalized": {
+        "decimal": "8.728814895053302e-10",
+        "f64_bits": "3e0dfdf2601caa6d"
+      },
+      "raw": {
+        "decimal": "8.728823413965825e-22",
+        "f64_bits": "3b907d0000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0000009759529358e-12",
+        "f64_bits": "3d71979aa13ad550"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-z-upper::forest:sun_leaf_energy",
+      "normalized": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "raw": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0001e-06",
+        "f64_bits": "3eb0c765943554ec"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "stratum-z-upper::forest:shade_leaf_energy",
+      "normalized": {
+        "decimal": "1.020908396387734e-06",
+        "f64_bits": "3eb120c4a718d1c1"
+      },
+      "raw": {
+        "decimal": "1.0215170723193445e-12",
+        "f64_bits": "3d71f88100000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0005962101338026e-06",
+        "f64_bits": "3eb0c9872af1b5f6"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "stratum-z-upper::forest:wet_surface_energy",
+      "normalized": {
+        "decimal": "-9.405501086490525e-08",
+        "f64_bits": "be793f693fe22e0e"
+      },
+      "raw": {
+        "decimal": "-9.414691248821327e-14",
+        "f64_bits": "bd3a800000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0009771050203803e-06",
+        "f64_bits": "3eb0cb29f752d1a5"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "stratum-z-upper::forest:dry_stem_energy",
+      "normalized": {
+        "decimal": "6.360446573387367e-08",
+        "f64_bits": "3e7112dd982d9cbe"
+      },
+      "raw": {
+        "decimal": "6.361577931102147e-14",
+        "f64_bits": "3d31e80000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0001778739435552e-06",
+        "f64_bits": "3eb0c7bb33c657b2"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "stratum-a-lower::forest:sun_gas_minus_q1",
+      "normalized": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "raw": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1e-06",
+        "f64_bits": "3eb0c6f7a0b5ed8d"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-a-lower::forest:shade_gas_minus_q1",
+      "normalized": {
+        "decimal": "1.4944300459892173e-05",
+        "f64_bits": "3eef572903fcf75c"
+      },
+      "raw": {
+        "decimal": "1.494431499176608e-17",
+        "f64_bits": "3c713ac884000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0000009724024184e-12",
+        "f64_bits": "3d71979aa02e9051"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-a-lower::forest:sun_gas_minus_vulnerability_demand",
+      "normalized": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "raw": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1e-08",
+        "f64_bits": "3e45798ee2308c3a"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-a-lower::forest:shade_gas_minus_vulnerability_demand",
+      "normalized": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "raw": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1e-08",
+        "f64_bits": "3e45798ee2308c3a"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-a-lower::forest:q1_sum_minus_q2",
+      "normalized": {
+        "decimal": "-1.4944954552325508e-05",
+        "f64_bits": "beef5782e9d1d825"
+      },
+      "raw": {
+        "decimal": "-1.4944969084835458e-17",
+        "f64_bits": "bc713af9f0000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0000009724024184e-12",
+        "f64_bits": "3d71979aa02e9051"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-a-lower::forest:q2_minus_root_source_sum",
+      "normalized": {
+        "decimal": "1.566678556733417e-09",
+        "f64_bits": "3e1aea533db751ea"
+      },
+      "raw": {
+        "decimal": "1.5666800801754344e-21",
+        "f64_bits": "3b9d980000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0000009724024184e-12",
+        "f64_bits": "3d71979aa02e9051"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "stratum-a-lower::forest:sun_leaf_energy",
+      "normalized": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "raw": {
+        "decimal": "0.0",
+        "f64_bits": "0000000000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0001e-06",
+        "f64_bits": "3eb0c765943554ec"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "stratum-a-lower::forest:shade_leaf_energy",
+      "normalized": {
+        "decimal": "1.3228580418447972e-06",
+        "f64_bits": "3eb631a1cc850f89"
+      },
+      "raw": {
+        "decimal": "1.3236681715989018e-12",
+        "f64_bits": "3d77494580000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.000612408685194e-06",
+        "f64_bits": "3eb0c998fa6e59d8"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "stratum-a-lower::forest:wet_surface_energy",
+      "normalized": {
+        "decimal": "-6.3887291102668e-08",
+        "f64_bits": "be71264d1c6757f7"
+      },
+      "raw": {
+        "decimal": "-6.394884621840902e-14",
+        "f64_bits": "bd32000000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0009634954727084e-06",
+        "f64_bits": "3eb0cb1b00938ec8"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "stratum-a-lower::forest:dry_stem_energy",
+      "normalized": {
+        "decimal": "1.8970250064434516e-07",
+        "f64_bits": "3e897620d79b47a7"
+      },
+      "raw": {
+        "decimal": "1.8973711490843925e-13",
+        "f64_bits": "3d4ab40000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0001824660401234e-06",
+        "f64_bits": "3eb0c7c04055c5da"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "shared_canopy_air_heat",
+      "normalized": {
+        "decimal": "-3.946004015675813e-06",
+        "f64_bits": "bed08cfd531a6679"
+      },
+      "raw": {
+        "decimal": "-3.97193389289896e-12",
+        "f64_bits": "bd91780000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0065711735518106e-06",
+        "f64_bits": "3eb0e330b5a213bb"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "shared_canopy_air_vapor",
+      "normalized": {
+        "decimal": "-1.6257981645254642e-07",
+        "f64_bits": "be85d23330659661"
+      },
+      "raw": {
+        "decimal": "-1.6432439176733427e-19",
+        "f64_bits": "bc08400000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0107305774656047e-12",
+        "f64_bits": "3d71c7ed04a3c2c7"
+      },
+      "unit": "KilogramsPerSquareMeterSecond"
+    },
+    {
+      "identity": "ground_surface_energy",
+      "normalized": {
+        "decimal": "1.3629936295511688e-06",
+        "f64_bits": "3eb6de0358227ae5"
+      },
+      "raw": {
+        "decimal": "1.3713474800169934e-12",
+        "f64_bits": "3d78200000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0061290458625074e-06",
+        "f64_bits": "3eb0e14a95c08741"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "soil_thermal:thermal-1",
+      "normalized": {
+        "decimal": "1.946520655951642e-06",
+        "f64_bits": "3ec0541f0c268097"
+      },
+      "raw": {
+        "decimal": "1.9522161665008753e-12",
+        "f64_bits": "3d812c0000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0029259954328348e-06",
+        "f64_bits": "3eb0d388cb34fbe6"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "soil_thermal:thermal-2",
+      "normalized": {
+        "decimal": "5.219947185287746e-07",
+        "f64_bits": "3ea183e6867b60b7"
+      },
+      "raw": {
+        "decimal": "5.258016244624741e-13",
+        "f64_bits": "3d62800000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.007292997033436e-06",
+        "f64_bits": "3eb0e64a5ce17bab"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "soil_thermal:soil-1",
+      "normalized": {
+        "decimal": "2.4760865014453106e-06",
+        "f64_bits": "3ec4c55af329f840"
+      },
+      "raw": {
+        "decimal": "2.4868995751603507e-12",
+        "f64_bits": "3d85e00000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0043670016006017e-06",
+        "f64_bits": "3eb0d9b932626d55"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "soil_thermal:soil-2",
+      "normalized": {
+        "decimal": "1.2064383661131857e-06",
+        "f64_bits": "3eb43d9d03012a3e"
+      },
+      "raw": {
+        "decimal": "1.2079226507921703e-12",
+        "f64_bits": "3d75400000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0012303029484769e-06",
+        "f64_bits": "3eb0cc405c34553c"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "soil_thermal:soil-dry",
+      "normalized": {
+        "decimal": "-1.5145291881960774e-06",
+        "f64_bits": "beb968da73f9a021"
+      },
+      "raw": {
+        "decimal": "-1.5631940186722204e-12",
+        "f64_bits": "bd7b800000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.0321319858708743e-06",
+        "f64_bits": "3eb150f91eaf719f"
+      },
+      "unit": "WattsPerSquareMeter"
+    },
+    {
+      "identity": "soil_thermal:soil-frozen",
+      "normalized": {
+        "decimal": "2.6160049614295886e-06",
+        "f64_bits": "3ec5f1d3efcbf306"
+      },
+      "raw": {
+        "decimal": "2.7000623958883807e-12",
+        "f64_bits": "3d87c00000000000"
+      },
+      "scale": {
+        "decimal": "1.0",
+        "f64_bits": "3ff0000000000000"
+      },
+      "tolerance": {
+        "decimal": "1.032131985870874e-06",
+        "f64_bits": "3eb150f91eaf719e"
+      },
+      "unit": "WattsPerSquareMeter"
+    }
+  ],
+  "root_cap_count": 8,
+  "solver_disposition": "singular_pivot_at_iteration_zero_after_residual_evaluation",
+  "source_commit": "aa8f55d93d58df6c62b5ae4eebb78245b5469fd6",
+  "source_log_sha256": "d162113a3a1f5d96d5c266b812dd1101abbc0be7b46f0f6334e568e519f0beed"
+}

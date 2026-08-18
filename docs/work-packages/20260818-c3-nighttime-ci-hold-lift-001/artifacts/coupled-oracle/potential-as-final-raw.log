@@ -1,0 +1,547 @@
+warning: Git tree '/tmp/openwepp-v10-cap-eval.gqCnWL' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openwepp-v10-cap-eval.gqCnWL-61461ab77599
+  scratch: /tmp/openwepp-roger-openwepp-v10-cap-eval.gqCnWL-61461ab77599
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/tmp/openwepp-v10-cap-eval.gqCnWL/crates/openwepp-land-surface-energy)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/tmp/openwepp-v10-cap-eval.gqCnWL/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.48s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openwepp-v10-cap-eval.gqCnWL-61461ab77599/debug/deps/openwepp_hillslope_orchestrator-b40160e80aea9c8a)
+
+running 1 test
+V10_FIXED_FINAL_AT_INITIAL=CoveredColumnEvaluation {
+    raw_residuals: [
+        0.0,
+        1.329456343741863e-17,
+        0.0,
+        0.0,
+        -1.3295651179924138e-17,
+        8.728823413965825e-22,
+        0.0,
+        1.0215170723193445e-12,
+        -9.414691248821327e-14,
+        6.361577931102147e-14,
+        0.0,
+        1.494431499176608e-17,
+        0.0,
+        0.0,
+        -1.4944969084835458e-17,
+        1.5666800801754344e-21,
+        0.0,
+        1.3236681715989018e-12,
+        -6.394884621840902e-14,
+        1.8973711490843925e-13,
+        -3.97193389289896e-12,
+        -1.6432439176733427e-19,
+        1.3713474800169934e-12,
+        1.9522161665008753e-12,
+        5.258016244624741e-13,
+        2.4868995751603507e-12,
+        1.2079226507921703e-12,
+        -1.5631940186722204e-12,
+        2.7000623958883807e-12,
+    ],
+    normalized_residuals: [
+        0.0,
+        1.3294550462563076e-5,
+        0.0,
+        0.0,
+        -1.3295638204006999e-5,
+        8.728814895053302e-10,
+        0.0,
+        1.020908396387734e-6,
+        -9.405501086490525e-8,
+        6.360446573387367e-8,
+        0.0,
+        1.4944300459892173e-5,
+        0.0,
+        0.0,
+        -1.4944954552325508e-5,
+        1.566678556733417e-9,
+        0.0,
+        1.3228580418447972e-6,
+        -6.3887291102668e-8,
+        1.8970250064434516e-7,
+        -3.946004015675813e-6,
+        -1.6257981645254642e-7,
+        1.3629936295511688e-6,
+        1.946520655951642e-6,
+        5.219947185287746e-7,
+        2.4760865014453106e-6,
+        1.2064383661131857e-6,
+        -1.5145291881960774e-6,
+        2.6160049614295886e-6,
+    ],
+    tolerances: [
+        1e-6,
+        1.0000009759529358e-12,
+        1e-8,
+        1e-8,
+        1.0000009759529358e-12,
+        1.0000009759529358e-12,
+        1.0001e-6,
+        1.0005962101338026e-6,
+        1.0009771050203803e-6,
+        1.0001778739435552e-6,
+        1e-6,
+        1.0000009724024184e-12,
+        1e-8,
+        1e-8,
+        1.0000009724024184e-12,
+        1.0000009724024184e-12,
+        1.0001e-6,
+        1.000612408685194e-6,
+        1.0009634954727084e-6,
+        1.0001824660401234e-6,
+        1.0065711735518106e-6,
+        1.0107305774656047e-12,
+        1.0061290458625074e-6,
+        1.0029259954328348e-6,
+        1.007292997033436e-6,
+        1.0043670016006017e-6,
+        1.0012303029484769e-6,
+        1.0321319858708743e-6,
+        1.032131985870874e-6,
+    ],
+    occupancies: [
+        CoveredOccupancyEvaluation {
+            residuals: [
+                0.0,
+                1.329456343741863e-17,
+                0.0,
+                0.0,
+                -1.3295651179924138e-17,
+                8.728823413965825e-22,
+                0.0,
+                1.0215170723193445e-12,
+                -9.414691248821327e-14,
+                6.361577931102147e-14,
+            ],
+            tolerances: [
+                1e-6,
+                1.0000009759529358e-12,
+                1e-8,
+                1e-8,
+                1.0000009759529358e-12,
+                1.0000009759529358e-12,
+                1.0001e-6,
+                1.0005962101338026e-6,
+                1.0009771050203803e-6,
+                1.0001778739435552e-6,
+            ],
+            source_water: [
+                SourceWaterFlux {
+                    occupancy_id: "stratum-z-upper::forest",
+                    layer_id: "soil-1",
+                    law_kg_m2_tile_s: 6.050908201839925e-10,
+                    final_kg_m2_tile_s: 6.050908201839925e-10,
+                    request_kg_m2_stand_ground: 4.138821210058509e-7,
+                    authorization_kg_m2_stand_ground: Some(
+                        4.138821210058509e-7,
+                    ),
+                    finalized_use_kg_m2_stand_ground: 4.138821210058509e-7,
+                    branch: AuthorizationActiveOrTie,
+                },
+                SourceWaterFlux {
+                    occupancy_id: "stratum-z-upper::forest",
+                    layer_id: "soil-2",
+                    law_kg_m2_tile_s: 3.7086211559664063e-10,
+                    final_kg_m2_tile_s: 3.7086211559664063e-10,
+                    request_kg_m2_stand_ground: 2.536696870681022e-7,
+                    authorization_kg_m2_stand_ground: Some(
+                        2.536696870681022e-7,
+                    ),
+                    finalized_use_kg_m2_stand_ground: 2.536696870681022e-7,
+                    branch: AuthorizationActiveOrTie,
+                },
+                SourceWaterFlux {
+                    occupancy_id: "stratum-z-upper::forest",
+                    layer_id: "soil-dry",
+                    law_kg_m2_tile_s: 0.0,
+                    final_kg_m2_tile_s: 0.0,
+                    request_kg_m2_stand_ground: 0.0,
+                    authorization_kg_m2_stand_ground: Some(
+                        0.0,
+                    ),
+                    finalized_use_kg_m2_stand_ground: 0.0,
+                    branch: AuthorizationActiveOrTie,
+                },
+                SourceWaterFlux {
+                    occupancy_id: "stratum-z-upper::forest",
+                    layer_id: "soil-frozen",
+                    law_kg_m2_tile_s: 0.0,
+                    final_kg_m2_tile_s: 0.0,
+                    request_kg_m2_stand_ground: 0.0,
+                    authorization_kg_m2_stand_ground: Some(
+                        0.0,
+                    ),
+                    finalized_use_kg_m2_stand_ground: 0.0,
+                    branch: AuthorizationActiveOrTie,
+                },
+            ],
+            canopy_sensible_w_m2: -8.333317464672092,
+            canopy_vapor_kg_m2_s: 1.9544046222288894e-6,
+            wet_vapor_kg_m2_s: 1.953428669293109e-6,
+            wet_branch: ConstitutiveLaw,
+            component_temperatures_k: [
+                295.11169874707656,
+                294.98276276984404,
+                294.00334308029164,
+                294.8918879365086,
+            ],
+            ci_pa: [
+                42.0,
+                3187.6978563715656,
+            ],
+            gross_assimilation_umol_co2_m2_leaf_s: [
+                0.0,
+                0.0,
+            ],
+            net_assimilation_umol_co2_m2_leaf_s: [
+                0.0,
+                -0.5608628068746858,
+            ],
+            dark_respiration_umol_co2_m2_leaf_s: [
+                0.0,
+                0.5608628068746858,
+            ],
+            emax_kg_m2_s: [
+                0.0,
+                9.759529357804183e-10,
+            ],
+            liquid: CoveredOccupancyLiquidLedger {
+                pass: FixedAuthorizationFinal,
+                beginning_store_kg_m2_tile: 0.018,
+                incident_rain_kg_m2_tile: 0.0,
+                ending_store_kg_m2_tile: 0.014483828395272402,
+                evaporation_kg_m2_tile: 0.003516171604727596,
+                condensation_kg_m2_tile: 0.0,
+                throughfall_kg_m2_tile: 0.0,
+                stemflow_kg_m2_tile: 0.0,
+                initial_drainage_kg_m2_tile: 0.0,
+                second_drainage_kg_m2_tile: 0.0,
+                wet_fraction: 0.1542922233230148,
+                wet_surface_temperature_k: 294.00334308029164,
+                wet_surface_specific_enthalpy_j_kg: 87959.40111267024,
+            },
+            absorbed_shortwave_w_m2: [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+            ],
+            net_longwave_w_m2: [
+                0.0,
+                -2.9786098107205135,
+                0.4226280240201987,
+                -0.8893697177763329,
+            ],
+            sensible_to_canopy_air_w_m2: [
+                0.0,
+                -2.981050669013922,
+                -4.462897077881773,
+                -0.8893697177763965,
+            ],
+            signed_vapor_to_canopy_air_kg_m2_s: [
+                0.0,
+                9.759529357804183e-10,
+                1.953428669293109e-6,
+                0.0,
+            ],
+        },
+        CoveredOccupancyEvaluation {
+            residuals: [
+                0.0,
+                1.494431499176608e-17,
+                0.0,
+                0.0,
+                -1.4944969084835458e-17,
+                1.5666800801754344e-21,
+                0.0,
+                1.3236681715989018e-12,
+                -6.394884621840902e-14,
+                1.8973711490843925e-13,
+            ],
+            tolerances: [
+                1e-6,
+                1.0000009724024184e-12,
+                1e-8,
+                1e-8,
+                1.0000009724024184e-12,
+                1.0000009724024184e-12,
+                1.0001e-6,
+                1.000612408685194e-6,
+                1.0009634954727084e-6,
+                1.0001824660401234e-6,
+            ],
+            source_water: [
+                SourceWaterFlux {
+                    occupancy_id: "stratum-a-lower::forest",
+                    layer_id: "soil-1",
+                    law_kg_m2_tile_s: 6.028894994499589e-10,
+                    final_kg_m2_tile_s: 6.028894994499589e-10,
+                    request_kg_m2_stand_ground: 4.123764176237719e-7,
+                    authorization_kg_m2_stand_ground: Some(
+                        4.123764176237719e-7,
+                    ),
+                    finalized_use_kg_m2_stand_ground: 4.123764176237719e-7,
+                    branch: AuthorizationActiveOrTie,
+                },
+                SourceWaterFlux {
+                    occupancy_id: "stratum-a-lower::forest",
+                    layer_id: "soil-2",
+                    law_kg_m2_tile_s: 3.695129190177168e-10,
+                    final_kg_m2_tile_s: 3.695129190177168e-10,
+                    request_kg_m2_stand_ground: 2.527468366081183e-7,
+                    authorization_kg_m2_stand_ground: Some(
+                        2.527468366081183e-7,
+                    ),
+                    finalized_use_kg_m2_stand_ground: 2.527468366081183e-7,
+                    branch: AuthorizationActiveOrTie,
+                },
+                SourceWaterFlux {
+                    occupancy_id: "stratum-a-lower::forest",
+                    layer_id: "soil-dry",
+                    law_kg_m2_tile_s: 0.0,
+                    final_kg_m2_tile_s: 0.0,
+                    request_kg_m2_stand_ground: 0.0,
+                    authorization_kg_m2_stand_ground: Some(
+                        0.0,
+                    ),
+                    finalized_use_kg_m2_stand_ground: 0.0,
+                    branch: AuthorizationActiveOrTie,
+                },
+                SourceWaterFlux {
+                    occupancy_id: "stratum-a-lower::forest",
+                    layer_id: "soil-frozen",
+                    law_kg_m2_tile_s: 0.0,
+                    final_kg_m2_tile_s: 0.0,
+                    request_kg_m2_stand_ground: 0.0,
+                    authorization_kg_m2_stand_ground: Some(
+                        0.0,
+                    ),
+                    finalized_use_kg_m2_stand_ground: 0.0,
+                    branch: AuthorizationActiveOrTie,
+                },
+            ],
+            canopy_sensible_w_m2: -8.393522905720165,
+            canopy_vapor_kg_m2_s: 1.927192859652668e-6,
+            wet_vapor_kg_m2_s: 1.9262204572341994e-6,
+            wet_branch: ConstitutiveLaw,
+            component_temperatures_k: [
+                295.11169874707656,
+                294.97778924325166,
+                294.00202261771517,
+                294.88370966081027,
+            ],
+            ci_pa: [
+                42.0,
+                3186.9447381837936,
+            ],
+            gross_assimilation_umol_co2_m2_leaf_s: [
+                0.0,
+                0.0,
+            ],
+            net_assimilation_umol_co2_m2_leaf_s: [
+                0.0,
+                -0.5607283848525673,
+            ],
+            dark_respiration_umol_co2_m2_leaf_s: [
+                0.0,
+                0.5607283848525673,
+            ],
+            emax_kg_m2_s: [
+                0.0,
+                9.724024184685883e-10,
+            ],
+            liquid: CoveredOccupancyLiquidLedger {
+                pass: FixedAuthorizationFinal,
+                beginning_store_kg_m2_tile: 0.018,
+                incident_rain_kg_m2_tile: 0.0,
+                ending_store_kg_m2_tile: 0.01453280317697844,
+                evaporation_kg_m2_tile: 0.003467196823021559,
+                condensation_kg_m2_tile: 0.0,
+                throughfall_kg_m2_tile: 0.0,
+                stemflow_kg_m2_tile: 0.0,
+                initial_drainage_kg_m2_tile: 0.0,
+                second_drainage_kg_m2_tile: 0.0,
+                wet_fraction: 0.1542922233230148,
+                wet_surface_temperature_k: 294.00202261771517,
+                wet_surface_specific_enthalpy_j_kg: 87953.83140152268,
+            },
+            absorbed_shortwave_w_m2: [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+            ],
+            net_longwave_w_m2: [
+                0.0,
+                -3.05961144752132,
+                0.3983280844108492,
+                -0.9123302006169212,
+            ],
+            sensible_to_canopy_air_w_m2: [
+                0.0,
+                -3.0620434259712335,
+                -4.41914927913182,
+                -0.9123302006171109,
+            ],
+            signed_vapor_to_canopy_air_kg_m2_s: [
+                0.0,
+                9.724024184685883e-10,
+                1.9262204572341994e-6,
+                0.0,
+            ],
+        },
+    ],
+    canopy_air_temperature_k: 295.11169874707656,
+    canopy_air_specific_humidity_kg_kg: 0.017198960976038263,
+    ground_temperature_k: 294.08893182170146,
+    soil_temperature_k: [
+        291.4793118127742,
+        290.1646498516718,
+        292.78731865247374,
+        292.93848485257615,
+        291.4492471213763,
+        271.6065992935437,
+    ],
+    ground_water: GroundWaterFlux {
+        law_kg_m2_tile_s: 6.848979983722899e-6,
+        final_kg_m2_tile_s: 6.848979983722899e-6,
+        request_kg_m2_stand_ground: 0.0046847023088664634,
+        authorization_kg_m2_stand_ground: Some(
+            0.0046847023088664634,
+        ),
+        finalized_use_kg_m2_stand_ground: 0.0046847023088664634,
+        condensation_credit_kg_m2_stand_ground: 0.0,
+        branch: ConstitutiveLaw,
+    },
+    ground_heat_cn_w_m2_tile: [
+        13.250764682455191,
+        14.6299771641733,
+        -21.835008003007204,
+        -0.5668732503840346,
+        5.584641491999491,
+        160.65992935437222,
+    ],
+    ground_storage_w_m2_tile: -10.782386632437799,
+    ending_surface_enthalpy_j_m2_tile: 419944.512061612,
+    whole_column_longwave: CanopyLongwaveResult {
+        transmissivities: [
+            0.33959552564493906,
+            0.33959552564493906,
+        ],
+        downward_boundaries_w_m2: [
+            424.5707255451944,
+            427.06368218976814,
+            427.89063720539764,
+        ],
+        upward_boundaries_w_m2: [
+            427.8558753219613,
+            426.9034804620583,
+            424.15682191396036,
+        ],
+        component_net_w_m2: [
+            [
+                0.0,
+                -2.9786098107205135,
+                0.4226280240201987,
+                -0.8893697177763329,
+            ],
+            [
+                0.0,
+                -3.05961144752132,
+                0.3983280844108492,
+                -0.9123302006169212,
+            ],
+        ],
+        ground_net_w_m2: 3.7338152914372813,
+        top_upward_w_m2: 427.8558753219613,
+    },
+    ground_canopy_release_kg_m2_tile: 0.0,
+    ground_stemflow_kg_m2_tile: 0.0,
+    ground_sensible_to_canopy_air_w_m2: -16.129027388663165,
+    sensible_to_reference_air_w_m2: -32.85586775905145,
+    vapor_to_reference_air_kg_m2_s: 1.073057746560462e-5,
+}
+V10_FIXED_FINAL_CAPS=Some(
+    CoveredWaterCaps {
+        root: {
+            (
+                "stratum-a-lower::forest",
+                "soil-1",
+            ): SourceWaterCap {
+                request_rate_kg_m2_tile_s: 6.028894994499589e-10,
+                authorization_rate_kg_m2_tile_s: 6.028894994499589e-10,
+            },
+            (
+                "stratum-a-lower::forest",
+                "soil-2",
+            ): SourceWaterCap {
+                request_rate_kg_m2_tile_s: 3.695129190177168e-10,
+                authorization_rate_kg_m2_tile_s: 3.695129190177168e-10,
+            },
+            (
+                "stratum-a-lower::forest",
+                "soil-dry",
+            ): SourceWaterCap {
+                request_rate_kg_m2_tile_s: 0.0,
+                authorization_rate_kg_m2_tile_s: 0.0,
+            },
+            (
+                "stratum-a-lower::forest",
+                "soil-frozen",
+            ): SourceWaterCap {
+                request_rate_kg_m2_tile_s: 0.0,
+                authorization_rate_kg_m2_tile_s: 0.0,
+            },
+            (
+                "stratum-z-upper::forest",
+                "soil-1",
+            ): SourceWaterCap {
+                request_rate_kg_m2_tile_s: 6.050908201839925e-10,
+                authorization_rate_kg_m2_tile_s: 6.050908201839925e-10,
+            },
+            (
+                "stratum-z-upper::forest",
+                "soil-2",
+            ): SourceWaterCap {
+                request_rate_kg_m2_tile_s: 3.7086211559664063e-10,
+                authorization_rate_kg_m2_tile_s: 3.7086211559664063e-10,
+            },
+            (
+                "stratum-z-upper::forest",
+                "soil-dry",
+            ): SourceWaterCap {
+                request_rate_kg_m2_tile_s: 0.0,
+                authorization_rate_kg_m2_tile_s: 0.0,
+            },
+            (
+                "stratum-z-upper::forest",
+                "soil-frozen",
+            ): SourceWaterCap {
+                request_rate_kg_m2_tile_s: 0.0,
+                authorization_rate_kg_m2_tile_s: 0.0,
+            },
+        },
+        ground: SourceWaterCap {
+            request_rate_kg_m2_tile_s: 6.8489799837229e-6,
+            authorization_rate_kg_m2_tile_s: 6.8489799837229e-6,
+        },
+    },
+)
+
+thread 'v9_real_consumer_shadow::tests::sealed_repository_receipts_project_into_real_child4_forcing_types' (1695196) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1376:14:
+real Child4 consumes provider forcing: Physical(Physical(LandSurface(NumericalSingular { pivot: 2.2158381900172497e-18, matrix_norm: 2.0244335994229328, diagnostics: NumericalDiagnostics { model_version: "OPENWEPP_SNOW_FREE_LSE_V1", canonical_contract: "SC-LANDSURFACEENERGY-001@3", model_definition_sha256: Sha256Digest("e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f"), configuration_sha256: Sha256Digest("1c1ab6d5c4a342e652ae7d6c4b24dbe35bd49659b8065f0d24eb85b7bd23b13d"), beginning_state_sha256: Sha256Digest("5e886ef224f0f2a06fc284692a6e0295848d28b387d25adbb948821dc6fa62c4"), transaction_id: TransactionId(41), ofe_id: OfeId("ofe-1"), tile_id: TileId("forest"), occupancy_id: None, pass: FinalFixedCap, solve: JointCanopyGround, accepted: false, failure_code: Some(LsebE034), failure_kind: Some(SingularPivot), iterations: 0, backtracking_count: 0, ordered_residuals: [NormalizedResidual { identity: "stratum-z-upper::forest:sun_gas_minus_q1", raw: 0.0, scale: 1.0, tolerance: 1e-6, normalized: 0.0, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-z-upper::forest:shade_gas_minus_q1", raw: 1.329456343741863e-17, scale: 1.0, tolerance: 1.0000009759529358e-12, normalized: 1.3294550462563076e-5, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-z-upper::forest:sun_gas_minus_vulnerability_demand", raw: 0.0, scale: 1.0, tolerance: 1e-8, normalized: 0.0, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-z-upper::forest:shade_gas_minus_vulnerability_demand", raw: 0.0, scale: 1.0, tolerance: 1e-8, normalized: 0.0, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-z-upper::forest:q1_sum_minus_q2", raw: -1.3295651179924138e-17, scale: 1.0, tolerance: 1.0000009759529358e-12, normalized: -1.3295638204006999e-5, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-z-upper::forest:q2_minus_root_source_sum", raw: 8.728823413965825e-22, scale: 1.0, tolerance: 1.0000009759529358e-12, normalized: 8.728814895053302e-10, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-z-upper::forest:sun_leaf_energy", raw: 0.0, scale: 1.0, tolerance: 1.0001e-6, normalized: 0.0, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "stratum-z-upper::forest:shade_leaf_energy", raw: 1.0215170723193445e-12, scale: 1.0, tolerance: 1.0005962101338026e-6, normalized: 1.020908396387734e-6, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "stratum-z-upper::forest:wet_surface_energy", raw: -9.414691248821327e-14, scale: 1.0, tolerance: 1.0009771050203803e-6, normalized: -9.405501086490525e-8, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "stratum-z-upper::forest:dry_stem_energy", raw: 6.361577931102147e-14, scale: 1.0, tolerance: 1.0001778739435552e-6, normalized: 6.360446573387367e-8, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "stratum-a-lower::forest:sun_gas_minus_q1", raw: 0.0, scale: 1.0, tolerance: 1e-6, normalized: 0.0, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-a-lower::forest:shade_gas_minus_q1", raw: 1.494431499176608e-17, scale: 1.0, tolerance: 1.0000009724024184e-12, normalized: 1.4944300459892173e-5, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-a-lower::forest:sun_gas_minus_vulnerability_demand", raw: 0.0, scale: 1.0, tolerance: 1e-8, normalized: 0.0, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-a-lower::forest:shade_gas_minus_vulnerability_demand", raw: 0.0, scale: 1.0, tolerance: 1e-8, normalized: 0.0, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-a-lower::forest:q1_sum_minus_q2", raw: -1.4944969084835458e-17, scale: 1.0, tolerance: 1.0000009724024184e-12, normalized: -1.4944954552325508e-5, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-a-lower::forest:q2_minus_root_source_sum", raw: 1.5666800801754344e-21, scale: 1.0, tolerance: 1.0000009724024184e-12, normalized: 1.566678556733417e-9, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "stratum-a-lower::forest:sun_leaf_energy", raw: 0.0, scale: 1.0, tolerance: 1.0001e-6, normalized: 0.0, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "stratum-a-lower::forest:shade_leaf_energy", raw: 1.3236681715989018e-12, scale: 1.0, tolerance: 1.000612408685194e-6, normalized: 1.3228580418447972e-6, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "stratum-a-lower::forest:wet_surface_energy", raw: -6.394884621840902e-14, scale: 1.0, tolerance: 1.0009634954727084e-6, normalized: -6.3887291102668e-8, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "stratum-a-lower::forest:dry_stem_energy", raw: 1.8973711490843925e-13, scale: 1.0, tolerance: 1.0001824660401234e-6, normalized: 1.8970250064434516e-7, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "shared_canopy_air_heat", raw: -3.97193389289896e-12, scale: 1.0, tolerance: 1.0065711735518106e-6, normalized: -3.946004015675813e-6, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "shared_canopy_air_vapor", raw: -1.6432439176733427e-19, scale: 1.0, tolerance: 1.0107305774656047e-12, normalized: -1.6257981645254642e-7, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "ground_surface_energy", raw: 1.3713474800169934e-12, scale: 1.0, tolerance: 1.0061290458625074e-6, normalized: 1.3629936295511688e-6, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "soil_thermal:thermal-1", raw: 1.9522161665008753e-12, scale: 1.0, tolerance: 1.0029259954328348e-6, normalized: 1.946520655951642e-6, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "soil_thermal:thermal-2", raw: 5.258016244624741e-13, scale: 1.0, tolerance: 1.007292997033436e-6, normalized: 5.219947185287746e-7, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "soil_thermal:soil-1", raw: 2.4868995751603507e-12, scale: 1.0, tolerance: 1.0043670016006017e-6, normalized: 2.4760865014453106e-6, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "soil_thermal:soil-2", raw: 1.2079226507921703e-12, scale: 1.0, tolerance: 1.0012303029484769e-6, normalized: 1.2064383661131857e-6, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "soil_thermal:soil-dry", raw: -1.5631940186722204e-12, scale: 1.0, tolerance: 1.0321319858708743e-6, normalized: -1.5145291881960774e-6, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "soil_thermal:soil-frozen", raw: 2.7000623958883807e-12, scale: 1.0, tolerance: 1.032131985870874e-6, normalized: 2.6160049614295886e-6, unit: WattsPerSquareMeter }], step_norms: StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: None }, active_bounds: ["stratum-z-upper::forest:beta_sun:upper", "stratum-z-upper::forest:beta_shade:upper", "stratum-a-lower::forest:beta_sun:upper", "stratum-a-lower::forest:beta_shade:upper"], active_water_caps: [GroundWaterKey { transaction_id: TransactionId(41), requesting_owner_id: ResourceOwnerId("vegetation-v8"), requesting_component: VegetationRoot, ofe_id: OfeId("ofe-1"), requesting_tile_id: TileId("forest"), occupancy_id: Some(ComponentId("stratum-z-upper::forest")), surface_id: None, surface_class: None, source_type: SoilLayerLiquid, source_id: SourceId("soil-1"), source_tile_id: None, soil_layer_id: Some(SoilLayerId("soil-1")), amount_basis: KgH2oM2StandGroundInterval }, GroundWaterKey { transaction_id: TransactionId(41), requesting_owner_id: ResourceOwnerId("vegetation-v8"), requesting_component: VegetationRoot, ofe_id: OfeId("ofe-1"), requesting_tile_id: TileId("forest"), occupancy_id: Some(ComponentId("stratum-z-upper::forest")), surface_id: None, surface_class: None, source_type: SoilLayerLiquid, source_id: SourceId("soil-2"), source_tile_id: None, soil_layer_id: Some(SoilLayerId("soil-2")), amount_basis: KgH2oM2StandGroundInterval }, GroundWaterKey { transaction_id: TransactionId(41), requesting_owner_id: ResourceOwnerId("vegetation-v8"), requesting_component: VegetationRoot, ofe_id: OfeId("ofe-1"), requesting_tile_id: TileId("forest"), occupancy_id: Some(ComponentId("stratum-z-upper::forest")), surface_id: None, surface_class: None, source_type: SoilLayerLiquid, source_id: SourceId("soil-dry"), source_tile_id: None, soil_layer_id: Some(SoilLayerId("soil-dry")), amount_basis: KgH2oM2StandGroundInterval }, GroundWaterKey { transaction_id: TransactionId(41), requesting_owner_id: ResourceOwnerId("vegetation-v8"), requesting_component: VegetationRoot, ofe_id: OfeId("ofe-1"), requesting_tile_id: TileId("forest"), occupancy_id: Some(ComponentId("stratum-z-upper::forest")), surface_id: None, surface_class: None, source_type: SoilLayerLiquid, source_id: SourceId("soil-frozen"), source_tile_id: None, soil_layer_id: Some(SoilLayerId("soil-frozen")), amount_basis: KgH2oM2StandGroundInterval }, GroundWaterKey { transaction_id: TransactionId(41), requesting_owner_id: ResourceOwnerId("vegetation-v8"), requesting_component: VegetationRoot, ofe_id: OfeId("ofe-1"), requesting_tile_id: TileId("forest"), occupancy_id: Some(ComponentId("stratum-a-lower::forest")), surface_id: None, surface_class: None, source_type: SoilLayerLiquid, source_id: SourceId("soil-1"), source_tile_id: None, soil_layer_id: Some(SoilLayerId("soil-1")), amount_basis: KgH2oM2StandGroundInterval }, GroundWaterKey { transaction_id: TransactionId(41), requesting_owner_id: ResourceOwnerId("vegetation-v8"), requesting_component: VegetationRoot, ofe_id: OfeId("ofe-1"), requesting_tile_id: TileId("forest"), occupancy_id: Some(ComponentId("stratum-a-lower::forest")), surface_id: None, surface_class: None, source_type: SoilLayerLiquid, source_id: SourceId("soil-2"), source_tile_id: None, soil_layer_id: Some(SoilLayerId("soil-2")), amount_basis: KgH2oM2StandGroundInterval }, GroundWaterKey { transaction_id: TransactionId(41), requesting_owner_id: ResourceOwnerId("vegetation-v8"), requesting_component: VegetationRoot, ofe_id: OfeId("ofe-1"), requesting_tile_id: TileId("forest"), occupancy_id: Some(ComponentId("stratum-a-lower::forest")), surface_id: None, surface_class: None, source_type: SoilLayerLiquid, source_id: SourceId("soil-dry"), source_tile_id: None, soil_layer_id: Some(SoilLayerId("soil-dry")), amount_basis: KgH2oM2StandGroundInterval }, GroundWaterKey { transaction_id: TransactionId(41), requesting_owner_id: ResourceOwnerId("vegetation-v8"), requesting_component: VegetationRoot, ofe_id: OfeId("ofe-1"), requesting_tile_id: TileId("forest"), occupancy_id: Some(ComponentId("stratum-a-lower::forest")), surface_id: None, surface_class: None, source_type: SoilLayerLiquid, source_id: SourceId("soil-frozen"), source_tile_id: None, soil_layer_id: Some(SoilLayerId("soil-frozen")), amount_basis: KgH2oM2StandGroundInterval }], bracket: None, pivot_magnitude: Some(2.2158381900172497e-18), matrix_infinity_norm: Some(2.0244335994229328), owner_rollback_hashes: [OwnerRollbackHash { owner_kind: LandSurfaceEnergy, owner_id: "land-surface-energy-v1", before_sha256: Sha256Digest("5e886ef224f0f2a06fc284692a6e0295848d28b387d25adbb948821dc6fa62c4"), after_sha256: Sha256Digest("5e886ef224f0f2a06fc284692a6e0295848d28b387d25adbb948821dc6fa62c4") }, OwnerRollbackHash { owner_kind: Hydrology, owner_id: "production-hydrology", before_sha256: Sha256Digest("24ceb67522907de70c86ccbc2882427ab8f8118332434cfa70c7f19a0d7f4f54"), after_sha256: Sha256Digest("24ceb67522907de70c86ccbc2882427ab8f8118332434cfa70c7f19a0d7f4f54") }, OwnerRollbackHash { owner_kind: SoilThermal, owner_id: "soil-thermal", before_sha256: Sha256Digest("4444444444444444444444444444444444444444444444444444444444444444"), after_sha256: Sha256Digest("4444444444444444444444444444444444444444444444444444444444444444") }, OwnerRollbackHash { owner_kind: Vegetation, owner_id: "vegetation-v8", before_sha256: Sha256Digest("a155d478091375697f6ccf7bc114b48351e82b55f29e7f624b1cc23a2c605344"), after_sha256: Sha256Digest("a155d478091375697f6ccf7bc114b48351e82b55f29e7f624b1cc23a2c605344") }, OwnerRollbackHash { owner_kind: Biogeochemistry, owner_id: "biogeochemistry", before_sha256: Sha256Digest("9bc6f550f7b137c8a8be1bc4fb012c539fea3528971653241834d0b56c40e0ce"), after_sha256: Sha256Digest("9bc6f550f7b137c8a8be1bc4fb012c539fea3528971653241834d0b56c40e0ce") }] } })))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test v9_real_consumer_shadow::tests::sealed_repository_receipts_project_into_real_child4_forcing_types ... FAILED
+
+failures:
+
+failures:
+    v9_real_consumer_shadow::tests::sealed_repository_receipts_project_into_real_child4_forcing_types
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 711 filtered out; finished in 0.11s
+
+error: test failed, to rerun pass `-p openwepp-hillslope-orchestrator --lib`

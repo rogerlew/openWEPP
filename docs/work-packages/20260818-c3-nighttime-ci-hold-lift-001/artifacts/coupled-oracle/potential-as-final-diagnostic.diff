@@ -1,0 +1,30 @@
+diff --git a/crates/openwepp-land-surface-energy/src/solver.rs b/crates/openwepp-land-surface-energy/src/solver.rs
+index fc8e3287d..2d21f4980 100644
+--- a/crates/openwepp-land-surface-energy/src/solver.rs
++++ b/crates/openwepp-land-surface-energy/src/solver.rs
+@@ -2484,6 +2484,10 @@ pub fn solve_covered_column(
+     };
+     for iteration in 0..=maximum_iterations {
+         let detail = evaluate_covered_column(beginning, &x, caps, None)?;
++        if iteration == 0 && caps.is_some() {
++            eprintln!("V10_FIXED_FINAL_AT_INITIAL={detail:#?}");
++            eprintln!("V10_FIXED_FINAL_CAPS={caps:#?}");
++        }
+         let norm = normalized_infinity_norm(&detail.normalized_residuals);
+         if norm <= 1.0 && last_steps.is_some_and(CoveredStepNorms::accepted) {
+             let root_water = detail
+diff --git a/crates/openwepp-land-surface-energy/src/transaction.rs b/crates/openwepp-land-surface-energy/src/transaction.rs
+index b61ec6e80..fd66e764a 100644
+--- a/crates/openwepp-land-surface-energy/src/transaction.rs
++++ b/crates/openwepp-land-surface-energy/src/transaction.rs
+@@ -2119,8 +2119,9 @@ pub fn finalize_covered_phase(
+     let exact = exact_authorization_map(&phase.request_batch, authorizations)?;
+     let caps = covered_caps_from_authorizations(phase, &exact)?;
+     // Rebuild from `phase.beginning`; no potential solution enters this call.
++    let _provided_final_initial_trial = final_initial_trial;
+     let final_value =
+-        match solve_covered_column(&phase.beginning, Some(&caps), final_initial_trial)? {
++        match solve_covered_column(&phase.beginning, Some(&caps), phase.accepted.solution.clone())? {
+             CoveredColumnSolveOutcome::Accepted(value) => value,
+             CoveredColumnSolveOutcome::Rejected(failure) => {
+                 let active_caps = rejected_covered_active_caps(phase, &failure, &caps)?;
