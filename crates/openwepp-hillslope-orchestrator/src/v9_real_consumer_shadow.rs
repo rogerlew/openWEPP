@@ -228,13 +228,13 @@ impl DirectV9RealConsumerShadow {
     }
 
     #[must_use]
-    pub const fn biogeochemistry(&self) -> &BiogeochemistryState {
-        &self.biogeochemistry
+    pub const fn hydrology_frame(&self) -> &DirectRunFrame {
+        &self.hydrology_frame
     }
 
     #[must_use]
-    pub const fn hydrology_frame(&self) -> &DirectRunFrame {
-        &self.hydrology_frame
+    pub const fn biogeochemistry(&self) -> &BiogeochemistryState {
+        &self.biogeochemistry
     }
 
     pub(crate) fn execute_day(
@@ -263,6 +263,7 @@ impl DirectV9RealConsumerShadow {
             projected_day_inputs,
             input,
             &self.lse_configuration,
+            &self.surface_configuration,
         )?;
         let beginning_shadow_diagnostic_fingerprint = self.diagnostic_fingerprint()?;
         let first_transaction_id = input.intervals[0].lse_forcing.transaction_id;
@@ -501,6 +502,7 @@ fn validate_repository_day_projection(
     projected_day_inputs: &[DirectPublicationDayInput],
     shadow_input: &DirectV9ShadowDayInput,
     lse_configuration: &LandSurfaceEnergyConfiguration,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
 ) -> Result<(), DirectV9RealConsumerError> {
     if projected_day_frames.len() != production_frame.identity.lane_count
         || projected_day_inputs.len() != production_frame.identity.lane_count
@@ -526,13 +528,20 @@ fn validate_repository_day_projection(
                 "repository day input/frame receipt",
             ));
         }
-        let ofe =
-            lse_configuration
-                .ofes
-                .get(lane_index)
-                .ok_or(DirectV9RealConsumerError::Identity(
-                    "repository LSE OFE/lane projection",
-                ))?;
+        let binding = surface_configuration
+            .ofe_bindings
+            .iter()
+            .find(|binding| binding.production_lane_index == lane_index)
+            .ok_or(DirectV9RealConsumerError::Identity(
+                "repository surface-owner OFE/lane projection",
+            ))?;
+        let ofe = lse_configuration
+            .ofes
+            .iter()
+            .find(|ofe| ofe.ofe_id == binding.ofe_id)
+            .ok_or(DirectV9RealConsumerError::Identity(
+                "repository LSE/surface-owner OFE projection",
+            ))?;
         let expected_precipitation_kg_m2 = day_input.precipitation_m * 1_000.0;
         for tile in &ofe.tiles {
             let tile_precipitation_kg_m2 = shadow_input
@@ -1220,7 +1229,7 @@ mod tests {
                 &mut observed,
                 metadata,
                 |_, _, _| Ok(production_input.clone()),
-                |_, _, _, _| Ok(shadow_input.clone()),
+                |_, _, _| Ok(shadow_input.clone()),
                 |row, _| {
                     observed_rows.push(row.clone());
                     Ok(())
@@ -1251,7 +1260,7 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(production_input.clone()),
-                |_, _, _, _| Ok(shadow_input.clone()),
+                |_, _, _| Ok(shadow_input.clone()),
                 |_, _| {
                     Err(crate::DirectRuntimeError::PublicationSinkFailure {
                         detail: "injected after shadow day".into(),
@@ -1303,7 +1312,7 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(production_input.clone()),
-                |_, _, _, _| Ok(shadow_input.clone()),
+                |_, _, _| Ok(shadow_input.clone()),
                 |_, _| Ok(()),
                 &mut shadow,
             )
@@ -1327,6 +1336,7 @@ mod tests {
         let shadow_input = day_input(&fixture);
         let mut actual_input = production_day_input();
         actual_input.precipitation_m = f64::from_bits(actual_input.precipitation_m.to_bits() ^ 1);
+        let mut published_row_count = 0_usize;
         let error = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
             .run_publication_stream_with_v9_real_consumer_shadow(
                 &mut production,
@@ -1336,8 +1346,11 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(actual_input.clone()),
-                |_, _, _, _| Ok(shadow_input.clone()),
-                |_, _| Ok(()),
+                |_, _, _| Ok(shadow_input.clone()),
+                |_, _| {
+                    published_row_count += 1;
+                    Ok(())
+                },
                 &mut shadow,
             )
             .expect_err("repository receipt mismatch");
@@ -1348,6 +1361,7 @@ mod tests {
                 ..
             }
         ));
+        assert_eq!(published_row_count, 0);
         assert_eq!(production, production_before);
         assert_eq!(shadow, shadow_before);
     }

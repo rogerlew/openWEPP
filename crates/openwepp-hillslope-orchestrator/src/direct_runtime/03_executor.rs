@@ -19,7 +19,6 @@ enum DirectPublicationDayHook<'a> {
         frame: &'a DirectDayFrame,
     },
     CompleteDay {
-        frame: &'a DirectRunFrame,
         day_index: usize,
     },
 }
@@ -338,7 +337,7 @@ impl DirectFrameExecutor {
         metadata: DirectPublicationRunMetadata,
         build_day_input: F,
         mut build_shadow_day_input: V,
-        consume_row: S,
+        mut consume_row: S,
         shadow: &mut crate::v9_real_consumer_shadow::DirectV9RealConsumerShadow,
     ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
     where
@@ -348,7 +347,6 @@ impl DirectFrameExecutor {
             usize,
         ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
         V: FnMut(
-            &DirectRunFrame,
             usize,
             &[DirectDayFrame],
             &[DirectPublicationDayInput],
@@ -364,11 +362,15 @@ impl DirectFrameExecutor {
         let mut shadow_candidate = shadow.clone();
         let mut projected_inputs = Vec::with_capacity(production_candidate.identity.lane_count);
         let mut projected_frames = Vec::with_capacity(production_candidate.identity.lane_count);
+        let mut buffered_rows = Vec::<(DirectPublicationDayRow, DirectDayFrame)>::new();
         let execution = self.run_publication_stream_with_day_hook(
             &mut production_candidate,
             metadata,
             build_day_input,
-            consume_row,
+            |row, frame| {
+                buffered_rows.push((row.clone(), frame.clone()));
+                Ok(())
+            },
             |event| match event {
                 DirectPublicationDayHook::ProjectedDay {
                     lane_index,
@@ -384,15 +386,20 @@ impl DirectFrameExecutor {
                     projected_frames.push(frame.clone());
                     Ok(())
                 }
-                DirectPublicationDayHook::CompleteDay { frame, day_index } => {
+                DirectPublicationDayHook::CompleteDay { day_index } => {
                     let shadow_input = build_shadow_day_input(
-                        frame,
                         day_index,
                         &projected_frames,
                         &projected_inputs,
                     )?;
+                    let immutable_shadow_frame = shadow_candidate.hydrology_frame().clone();
                     shadow_candidate
-                        .execute_day(frame, &projected_frames, &projected_inputs, &shadow_input)
+                        .execute_day(
+                            &immutable_shadow_frame,
+                            &projected_frames,
+                            &projected_inputs,
+                            &shadow_input,
+                        )
                         .map_err(|error| DirectRuntimeError::V9RealConsumerShadowFailure {
                             category: error.category(),
                             detail: error.to_string(),
@@ -403,6 +410,9 @@ impl DirectFrameExecutor {
                 }
             },
         )?;
+        for (row, day_frame) in &buffered_rows {
+            consume_row(row, day_frame)?;
+        }
         *frame = production_candidate;
         *shadow = shadow_candidate;
         Ok(execution)
@@ -510,7 +520,7 @@ impl DirectFrameExecutor {
                 frame.commit_day_frame(&day_frame)?;
                 counters.record_day_frame_commit();
             }
-            run_day_shadow(DirectPublicationDayHook::CompleteDay { frame, day_index })?;
+            run_day_shadow(DirectPublicationDayHook::CompleteDay { day_index })?;
         }
         if row_count != expected_row_count {
             return Err(DirectRuntimeError::PublicationRowCountMismatch {
