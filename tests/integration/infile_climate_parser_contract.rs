@@ -726,10 +726,18 @@ fn strict_mode_rejects_breakpoint_value_domains_and_missing_pairs() {
         }
     ));
 
-    for (pair, field) in [("25 0", "timem"), ("1 -1", "pptcum")] {
+    let next_day_carry = build_breakpoint_fixture(1).replace("0.0000 0.000", "25 0");
+    assert!(matches!(
+        parse_climate_from_str(&next_day_carry, ParserMode::Strict).unwrap_err(),
+        ClimateParseError::FieldRange { field: "timem", .. }
+    ));
+    parse_climate_from_str(&next_day_carry, ParserMode::SnowFreeHalfHourProvider)
+        .expect("explicit provider mode admits one-day cursor carry support");
+
+    for (pair, field) in [("49 0", "timem"), ("1 -1", "pptcum")] {
         let source = build_breakpoint_fixture(1).replace("0.0000 0.000", pair);
         assert!(matches!(
-            parse_climate_from_str(&source, ParserMode::Strict).unwrap_err(),
+            parse_climate_from_str(&source, ParserMode::SnowFreeHalfHourProvider).unwrap_err(),
             ClimateParseError::FieldRange { field: observed, .. } if observed == field
         ));
     }

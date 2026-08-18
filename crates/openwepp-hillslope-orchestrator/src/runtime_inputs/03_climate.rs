@@ -27,6 +27,9 @@ pub fn build_hillslope_climate_runtime_request(
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct HillslopeDirectClimateDayForcing {
+    pub day: i32,
+    pub month: i32,
+    pub year: i32,
     pub prcp_m: f64,
     pub tmax_c: f64,
     pub tmin_c: f64,
@@ -34,6 +37,7 @@ pub struct HillslopeDirectClimateDayForcing {
     pub vwind_m_s: f64,
     pub wind_deg: f64,
     pub tdpt_c: f64,
+    pub breakpoint_storm_start_h: Option<f64>,
     pub timem_s: Vec<f64>,
     pub intsty_m_s: Vec<f64>,
 }
@@ -53,6 +57,9 @@ impl HillslopeClimateRuntimeRequest {
         match select_day_forcing(&self.shared, day_index)? {
             HillslopeClimateDailyForcing::NoBreakpoint(day) => {
                 Ok(HillslopeDirectClimateDayForcing {
+                    day: day.day,
+                    month: day.mon,
+                    year: day.year,
                     prcp_m: day.prcp,
                     tmax_c: day.tmax,
                     tmin_c: day.tmin,
@@ -60,12 +67,16 @@ impl HillslopeClimateRuntimeRequest {
                     vwind_m_s: day.vwind,
                     wind_deg: day.wind,
                     tdpt_c: day.tdpt,
+                    breakpoint_storm_start_h: None,
                     timem_s: day.timem.clone(),
                     intsty_m_s: day.intsty.clone(),
                 })
             }
             HillslopeClimateDailyForcing::Breakpoint(day) => {
                 Ok(HillslopeDirectClimateDayForcing {
+                    day: day.day,
+                    month: day.mon,
+                    year: day.year,
                     prcp_m: day.prcp,
                     tmax_c: day.tmax,
                     tmin_c: day.tmin,
@@ -73,6 +84,7 @@ impl HillslopeClimateRuntimeRequest {
                     vwind_m_s: day.vwind,
                     wind_deg: day.wind,
                     tdpt_c: day.tdpt,
+                    breakpoint_storm_start_h: Some(day.stmstr),
                     timem_s: day.timem.clone(),
                     intsty_m_s: day.intsty.clone(),
                 })

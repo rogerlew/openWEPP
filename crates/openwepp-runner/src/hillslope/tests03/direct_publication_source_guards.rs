@@ -660,6 +660,9 @@ fn canopy_phenology_02_negative_vpd_fails_closed_without_tolerance() {
 
 fn r7g_snow_forcing(tmax_c: f64, tmin_c: f64) -> HillslopeDirectClimateDayForcing {
     HillslopeDirectClimateDayForcing {
+        day: 1,
+        month: 1,
+        year: 2000,
         prcp_m: 0.0,
         tmax_c,
         tmin_c,
@@ -667,6 +670,7 @@ fn r7g_snow_forcing(tmax_c: f64, tmin_c: f64) -> HillslopeDirectClimateDayForcin
         vwind_m_s: 0.0,
         wind_deg: 0.0,
         tdpt_c: 0.0,
+        breakpoint_storm_start_h: None,
         timem_s: Vec::new(),
         intsty_m_s: Vec::new(),
     }

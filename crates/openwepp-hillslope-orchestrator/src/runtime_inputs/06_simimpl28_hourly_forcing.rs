@@ -671,6 +671,40 @@ fn simimpl28_radcur(
     Ok(ratio)
 }
 
+fn simimpl28_parent_mean_mu(
+    day_of_year: i32,
+    hour: usize,
+    latitude_rad: f64,
+    declination: f64,
+) -> Result<f64, ClimateRuntimeInputError> {
+    let hour_u32 = u32::try_from(hour).map_err(|_| {
+        ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: "parent_hour".to_string(),
+            value: f64::from(u32::MAX),
+            allowed: "1..=24",
+        }
+    })?;
+    let day = f64::from(day_of_year);
+    let hour_f = f64::from(hour_u32);
+    let dfact = 2.0 * SIMIMPL28_PI * (day - 81.0) / 365.0;
+    let correction = 0.1645 * (2.0 * dfact).sin()
+        - 0.1255 * dfact.cos()
+        - 0.025 * dfact.sin();
+    let center = (hour_f + correction - 12.0) * SIMIMPL28_PI / 12.0;
+    let left = center - SIMIMPL28_PI / 24.0;
+    let right = center + SIMIMPL28_PI / 24.0;
+    let integral = latitude_rad.cos() * declination.cos() * (right.sin() - left.sin())
+        + (right - left) * latitude_rad.sin() * declination.sin();
+    let mean = (integral / (right - left)).max(0.0);
+    if !mean.is_finite() {
+        return Err(ClimateRuntimeInputError::NonFiniteField {
+            field: "parent_hour.mean_solar_zenith_cosine",
+            value: mean,
+        });
+    }
+    Ok(mean)
+}
+
 fn simimpl28_hrtmp(hour: usize, halfdy: f64, tmax: f64, tmin: f64) -> f64 {
     let sunris = 12.0 - halfdy;
     let tave = f64::midpoint(tmax, tmin);

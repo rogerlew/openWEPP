@@ -14,6 +14,10 @@ const FLOAT_EQ_TOLERANCE: f64 = 1e-9;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ParserMode {
     Strict,
+    /// Strict parsing plus the snow-free provider's explicit one-day
+    /// breakpoint-carry extension. Ordinary production strict parsing keeps
+    /// the historical 24-hour acceptance boundary.
+    SnowFreeHalfHourProvider,
     Compatibility(CompatibilityOptions),
 }
 
@@ -27,23 +31,27 @@ pub struct CompatibilityOptions {
 impl ParserMode {
     fn allow_single_storm(self) -> bool {
         match self {
-            Self::Strict => false,
+            Self::Strict | Self::SnowFreeHalfHourProvider => false,
             Self::Compatibility(options) => options.allow_single_storm,
         }
     }
 
     fn allow_breakpoint_cardinality_override(self) -> bool {
         match self {
-            Self::Strict => false,
+            Self::Strict | Self::SnowFreeHalfHourProvider => false,
             Self::Compatibility(options) => options.allow_breakpoint_cardinality_override,
         }
     }
 
     fn allow_legacy_zero_drain_non_positive_dtime(self) -> bool {
         match self {
-            Self::Strict => false,
+            Self::Strict | Self::SnowFreeHalfHourProvider => false,
             Self::Compatibility(options) => options.allow_legacy_zero_drain_non_positive_dtime,
         }
+    }
+
+    fn allow_next_day_breakpoint_support(self) -> bool {
+        matches!(self, Self::SnowFreeHalfHourProvider)
     }
 }
 
@@ -756,7 +764,16 @@ fn parse_breakpoint_points(
 
         let timem = parse_f64(point_tokens[0], point_line.number, "timem")?;
         let pptcum = parse_f64(point_tokens[1], point_line.number, "pptcum")?;
-        if !(0.0..=24.0).contains(&timem) {
+        // A breakpoint storm may begin late in the source day and retain an
+        // absolute end support in the following day.  Preserve that support
+        // through one provider-cursor carry day; later supports are outside
+        // the admitted snow-free forcing receipt domain.
+        let maximum_support_h = if mode.allow_next_day_breakpoint_support() {
+            48.0
+        } else {
+            24.0
+        };
+        if !(0.0..=maximum_support_h).contains(&timem) {
             return Err(ClimateParseError::FieldRange {
                 line: point_line.number,
                 field: "timem",

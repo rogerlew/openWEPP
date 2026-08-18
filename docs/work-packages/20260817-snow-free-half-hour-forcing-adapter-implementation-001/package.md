@@ -1,6 +1,6 @@
 # Implement Snow-Free Half-Hour Forcing Adapter
 
-Status: `queued / blocked on forcing authority release`
+Status: `HOLD / exact nighttime Ci contradiction requires prospective vegetation authority`
 
 Date: `2026-08-17`
 
@@ -22,6 +22,9 @@ winter-trigger behavior or existing output bytes. Callers may not inject
 completed closure-eligible interval physics. Live hydrology, thermal,
 surface-liquid, vegetation, and BGC state remain owner-read at each interval.
 
+The authority dependency completed in local commit `8ffc49aed`; implementation
+started only afterward.
+
 ## Intended write set
 
 The climate/runtime-input boundary, meteorology primitives, Child-4 provider
@@ -42,4 +45,3 @@ verification all pass. Close only as the requested default-off native provider.
 Subagent authorization: this package explicitly authorizes spawning/delegating
 to read-only forcing-science and Rust reviewers and two read-only terminal
 verifiers. Expected outputs are compact package-local artifacts.
-

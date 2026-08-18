@@ -7,3 +7,4 @@ include!("05_projection_helpers.rs");
 include!("06_simimpl28_hourly_forcing.rs");
 include!("07_series_helpers.rs");
 include!("08_forest_lanuse_reconciliation.rs");
+include!("09_snow_free_half_hour_forcing.rs");

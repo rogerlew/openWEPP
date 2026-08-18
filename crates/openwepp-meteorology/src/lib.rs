@@ -11,6 +11,7 @@
 pub mod error;
 pub mod phase;
 pub mod psychrometrics;
+pub mod snow_free_forcing;
 pub mod surface_energy;
 
 pub use error::MeteorologyError;

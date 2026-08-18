@@ -12,3 +12,4 @@ workspace = true
 
 [dependencies]
 openwepp-unit-boundary = { path = "../openwepp-unit-boundary", version = "0.1.0" }
+thiserror = "2"

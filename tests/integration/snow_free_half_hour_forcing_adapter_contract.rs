@@ -1,0 +1,390 @@
+use openwepp_hillslope_orchestrator::runtime_inputs::{
+    SnowFreeHalfHourDestination, SnowFreeHalfHourForcingError,
+    SnowFreeHalfHourProviderConfiguration, SnowFreeHalfHourProviderCursor,
+    build_hillslope_climate_runtime_request,
+};
+use openwepp_input_contract::parsers::climate::{ParserMode, parse_climate_from_str};
+use openwepp_meteorology::snow_free_forcing::{
+    atmospheric_longwave_dilley_unsworth, fao56_station_pressure_kpa, weiss_norman_partition,
+};
+
+const PACKAGE: &str =
+    "docs/work-packages/20260817-snow-free-half-hour-forcing-authority-001/artifacts";
+
+fn warm_breakpoint_climate(wind_m_s: f64, dew_point_c: f64) -> String {
+    format!(
+        "5.30\n1 1 0\nTEST STATION 1500\nDAY MON YEAR NBRKPT TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 3 28.0 22.0 420.0 {wind_m_s} 180.0 {dew_point_c}\n13.25 0.0\n13.75 3.6\n14.00 5.4\n"
+    )
+}
+
+fn warm_non_breakpoint_climate() -> String {
+    "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 5.4 1.5 0.5 3.6 28.0 22.0 420.0 2.5 180.0 20.0\n".to_string()
+}
+
+fn midnight_breakpoint_climate() -> String {
+    warm_breakpoint_climate(2.5, 20.0).replace(
+        "13.25 0.0\n13.75 3.6\n14.00 5.4",
+        "23.50 0.0\n24.00 3.6\n24.50 7.2",
+    )
+}
+
+fn supersaturated_non_breakpoint_climate() -> String {
+    warm_non_breakpoint_climate().replace(
+        "5.4 1.5 0.5 3.6 28.0 22.0 420.0 2.5 180.0 20.0",
+        "0.0 0.0 0.0 0.0 5.0 5.0 420.0 2.5 180.0 6.0",
+    )
+}
+
+fn cold_midnight_breakpoint_climate() -> String {
+    midnight_breakpoint_climate()
+        .replace(
+            "3 28.0 22.0 420.0 2.5 180.0 20",
+            "3 -5.0 -7.0 420.0 2.5 180.0 -8.0",
+        )
+        .replace(
+            "23.50 0.0\n24.00 3.6\n24.50 7.2",
+            "24.00 0.0\n24.25 3.6\n24.50 7.2",
+        )
+}
+
+fn two_day_midnight_carry_climate() -> String {
+    let first = midnight_breakpoint_climate().replace(
+        "41.1 -120.0 1225.0 30 2000 1",
+        "41.1 -120.0 1225.0 30 2000 2",
+    );
+    format!("{first}21 6 2000 0 28.0 22.0 420.0 2.5 180.0 20.0\n")
+}
+
+fn provider_configuration() -> SnowFreeHalfHourProviderConfiguration {
+    SnowFreeHalfHourProviderConfiguration {
+        run_id: "adapter-contract-run".to_string(),
+        co2_pa: 42.0,
+        reference_height_m: 2.0,
+        gsi: 0.75,
+        gsi_receipt_sha256: "c".repeat(64),
+        destinations: vec![
+            SnowFreeHalfHourDestination {
+                ofe_id: "ofe-1".to_string(),
+                tile_id: "forest-1".to_string(),
+                wb14_configuration_sha256: "d".repeat(64),
+            },
+            SnowFreeHalfHourDestination {
+                ofe_id: "ofe-2".to_string(),
+                tile_id: "open-1".to_string(),
+                wb14_configuration_sha256: "e".repeat(64),
+            },
+        ],
+    }
+}
+
+fn request(
+    source: &str,
+) -> openwepp_hillslope_orchestrator::runtime_inputs::HillslopeClimateRuntimeRequest {
+    let climate = parse_climate_from_str(source, ParserMode::SnowFreeHalfHourProvider)
+        .expect("explicit snow-free provider climate");
+    build_hillslope_climate_runtime_request(&climate).expect("hillslope climate request")
+}
+
+#[test]
+fn actual_breakpoint_climate_projects_complete_digest_bound_receipts() {
+    let receipts = request(&warm_breakpoint_climate(2.5, 20.0))
+        .snow_free_half_hour_forcing_receipts(
+            0,
+            &provider_configuration(),
+            &mut SnowFreeHalfHourProviderCursor::default(),
+        )
+        .expect("snow-free receipt projection");
+    assert_eq!(receipts.len(), 2);
+    for receipt in receipts.receipts() {
+        receipt.validate().expect("receipt closure");
+        assert_eq!(receipt.intervals.len(), 48);
+        assert_eq!(
+            receipt.provider_definition_sha256,
+            "4658de9f7590897633ffbfe0facedd52b5c9b9754f7d829f25869ef2c592f153"
+        );
+        assert!(
+            (receipt.daily_horizontal_energy_mj_m2 - 17.5728).abs()
+                <= 64.0 * f64::EPSILON * 17.5728
+        );
+        let rain = receipt
+            .intervals
+            .iter()
+            .flat_map(|interval| &interval.precipitation_parcels)
+            .map(|parcel| parcel.mass_kg_m2)
+            .sum::<f64>();
+        assert_eq!(rain.to_bits(), 5.4_f64.to_bits());
+        let late_rain = receipt
+            .intervals
+            .iter()
+            .find(|interval| {
+                interval.interval_index > 0 && !interval.precipitation_parcels.is_empty()
+            })
+            .expect("non-midnight rain receipt");
+        assert_eq!(
+            late_rain.precipitation_parcels[0].start_s.to_bits(),
+            (f64::from(u32::try_from(late_rain.interval_index).expect("bounded interval"))
+                * 1_800.0)
+                .to_bits()
+        );
+        for pair in receipt.intervals.chunks_exact(2) {
+            assert_eq!(
+                pair[0].air_temperature_c.to_bits(),
+                pair[1].air_temperature_c.to_bits()
+            );
+            assert_eq!(
+                pair[0].global_horizontal_shortwave_w_m2.to_bits(),
+                pair[1].global_horizontal_shortwave_w_m2.to_bits()
+            );
+        }
+    }
+    for index in 0..48 {
+        assert_eq!(
+            receipts[0].intervals[index]
+                .global_horizontal_shortwave_w_m2
+                .to_bits(),
+            receipts[1].intervals[index]
+                .global_horizontal_shortwave_w_m2
+                .to_bits()
+        );
+    }
+    let first_left = receipts[0]
+        .intervals
+        .iter()
+        .flat_map(|interval| &interval.precipitation_parcels)
+        .next()
+        .expect("left precipitation parcel");
+    let first_right = receipts[1]
+        .intervals
+        .iter()
+        .flat_map(|interval| &interval.precipitation_parcels)
+        .next()
+        .expect("right precipitation parcel");
+    assert_eq!(first_left.parcel_id, first_right.parcel_id);
+    assert_ne!(
+        first_left.destination_tile_id,
+        first_right.destination_tile_id
+    );
+
+    let schema: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(format!("{PACKAGE}/forcing-schema.json")).expect("forcing schema"),
+    )
+    .expect("schema JSON");
+    jsonschema::draft202012::new(&schema)
+        .expect("compile forcing schema")
+        .validate(&serde_json::to_value(&receipts[0]).expect("receipt JSON"))
+        .expect("production receipt satisfies authority schema");
+}
+
+#[test]
+fn provider_rejects_unsupported_domains_and_digest_mutation() {
+    let zero_wind = request(&warm_breakpoint_climate(0.0, 20.0))
+        .snow_free_half_hour_forcing_receipts(
+            0,
+            &provider_configuration(),
+            &mut SnowFreeHalfHourProviderCursor::default(),
+        )
+        .expect_err("zero wind must reject");
+    assert_eq!(
+        zero_wind,
+        SnowFreeHalfHourForcingError::Unsupported("nonpositive wind")
+    );
+
+    let saturated = request(&supersaturated_non_breakpoint_climate())
+        .snow_free_half_hour_forcing_receipts(
+            0,
+            &provider_configuration(),
+            &mut SnowFreeHalfHourProviderCursor::default(),
+        )
+        .expect("physical LSE receipt remains available");
+    assert!(saturated[0].intervals.iter().all(|interval| {
+        interval.vpd_kpa < 0.0
+            && interval.specific_humidity_kg_kg > 0.0
+            && interval.downward_longwave_w_m2 > 0.0
+    }));
+
+    let mut duplicate = provider_configuration();
+    duplicate
+        .destinations
+        .push(duplicate.destinations[0].clone());
+    assert_eq!(
+        request(&warm_breakpoint_climate(2.5, 20.0))
+            .snow_free_half_hour_forcing_receipts(
+                0,
+                &duplicate,
+                &mut SnowFreeHalfHourProviderCursor::default()
+            )
+            .expect_err("duplicate destination must reject"),
+        SnowFreeHalfHourForcingError::Identity("destination configuration")
+    );
+
+    let mut invalid_gsi = provider_configuration();
+    invalid_gsi.gsi = 2.0;
+    assert_eq!(
+        request(&warm_breakpoint_climate(2.5, 20.0))
+            .snow_free_half_hour_forcing_receipts(
+                0,
+                &invalid_gsi,
+                &mut SnowFreeHalfHourProviderCursor::default()
+            )
+            .expect_err("out-of-domain GSI must reject"),
+        SnowFreeHalfHourForcingError::Identity("provider configuration")
+    );
+    let mut invalid_digest = provider_configuration();
+    invalid_digest.gsi_receipt_sha256 = "z".repeat(64);
+    assert_eq!(
+        request(&warm_breakpoint_climate(2.5, 20.0))
+            .snow_free_half_hour_forcing_receipts(
+                0,
+                &invalid_digest,
+                &mut SnowFreeHalfHourProviderCursor::default()
+            )
+            .expect_err("nonhex digest must reject"),
+        SnowFreeHalfHourForcingError::Identity("provider configuration")
+    );
+
+    assert_eq!(
+        request(&cold_midnight_breakpoint_climate())
+            .snow_free_half_hour_forcing_receipts(
+                0,
+                &provider_configuration(),
+                &mut SnowFreeHalfHourProviderCursor::default()
+            )
+            .expect_err("cold carry cannot be relabeled liquid"),
+        SnowFreeHalfHourForcingError::Unsupported("snow or mixed precipitation carry")
+    );
+
+    let mut receipt = request(&warm_breakpoint_climate(2.5, 20.0))
+        .snow_free_half_hour_forcing_receipts(
+            0,
+            &provider_configuration(),
+            &mut SnowFreeHalfHourProviderCursor::default(),
+        )
+        .expect("valid receipt")
+        .receipts()[0]
+        .clone();
+    receipt.intervals[47].downward_longwave_w_m2 =
+        f64::from_bits(receipt.intervals[47].downward_longwave_w_m2.to_bits() + 1);
+    assert_eq!(
+        receipt.validate().expect_err("one-bit poison must reject"),
+        SnowFreeHalfHourForcingError::Identity("interval receipt")
+    );
+}
+
+#[test]
+fn parent_fallback_midnight_carry_and_authority_primitives_are_executable() {
+    let fallback = request(&warm_non_breakpoint_climate())
+        .snow_free_half_hour_forcing_receipts(
+            0,
+            &provider_configuration(),
+            &mut SnowFreeHalfHourProviderCursor::default(),
+        )
+        .expect("parent-hour fallback")
+        .receipts()[0]
+        .clone();
+    let rainy_pair = fallback
+        .intervals
+        .chunks_exact(2)
+        .find(|pair| !pair[0].precipitation_parcels.is_empty())
+        .expect("rainy parent hour");
+    assert_eq!(
+        rainy_pair[0].precipitation_parcels[0].mass_kg_m2.to_bits(),
+        rainy_pair[1].precipitation_parcels[0].mass_kg_m2.to_bits()
+    );
+    let changed_duration = request(&warm_non_breakpoint_climate().replace("5.4 1.5", "5.4 1.6"))
+        .snow_free_half_hour_forcing_receipts(
+            0,
+            &provider_configuration(),
+            &mut SnowFreeHalfHourProviderCursor::default(),
+        )
+        .expect("changed storm duration")
+        .receipts()[0]
+        .clone();
+    assert_ne!(
+        fallback.source_climate_sha256,
+        changed_duration.source_climate_sha256
+    );
+
+    let carry = request(&midnight_breakpoint_climate())
+        .snow_free_half_hour_forcing_receipts(
+            0,
+            &provider_configuration(),
+            &mut SnowFreeHalfHourProviderCursor::default(),
+        )
+        .expect("midnight carry")
+        .receipts()[0]
+        .clone()
+        .next_day_precipitation_carry;
+    assert_eq!(carry.len(), 1);
+    assert_eq!(carry[0].start_s.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(carry[0].end_s.to_bits(), 1_800.0_f64.to_bits());
+    assert!((carry[0].mass_kg_m2 - 3.6).abs() <= 4.0 * f64::EPSILON);
+
+    let sequential_request = request(&two_day_midnight_carry_climate());
+    let mut cursor = SnowFreeHalfHourProviderCursor::default();
+    let first_day = sequential_request
+        .snow_free_half_hour_forcing_receipts(0, &provider_configuration(), &mut cursor)
+        .expect("first cursor day");
+    let carried_source = first_day[0].next_day_precipitation_carry[0]
+        .source_owner_id
+        .clone();
+    first_day
+        .commit_cursor(&mut cursor)
+        .expect("commit accepted first provider day");
+    let mut second_day_configuration = provider_configuration();
+    second_day_configuration.gsi = 0.8;
+    second_day_configuration.gsi_receipt_sha256 = "f".repeat(64);
+    let second_day = sequential_request
+        .snow_free_half_hour_forcing_receipts(1, &second_day_configuration, &mut cursor)
+        .expect("second cursor day");
+    assert!(
+        second_day[0].intervals[0]
+            .precipitation_parcels
+            .iter()
+            .any(|parcel| parcel.source_owner_id == carried_source)
+    );
+
+    let vectors: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(format!(
+            "{PACKAGE}/openwepp_snow_free_half_hour_forcing_v1_vectors.json"
+        ))
+        .expect("authority vectors"),
+    )
+    .expect("authority vector JSON");
+    let clear = vectors["cases"]
+        .as_array()
+        .expect("cases")
+        .iter()
+        .find(|case| case["name"] == "dry_clear_summer")
+        .expect("clear vector");
+    let pressure = fao56_station_pressure_kpa(250.0).expect("pressure");
+    assert_eq!(
+        pressure.to_bits(),
+        clear["pressure_kpa"]
+            .as_f64()
+            .expect("vector pressure")
+            .to_bits()
+    );
+    let partition = weiss_norman_partition(700.0, 0.82, pressure).expect("shortwave");
+    assert_eq!(
+        partition.direct_visible_w_m2.to_bits(),
+        clear["shortwave"]["direct_visible_w_m2"]
+            .as_f64()
+            .expect("direct visible")
+            .to_bits()
+    );
+    let longwave = atmospheric_longwave_dilley_unsworth(
+        28.0 + 273.15,
+        clear["humidity"]["actual_vapor_pressure_kpa"]
+            .as_f64()
+            .expect("vapor pressure"),
+        0.05,
+    )
+    .expect("longwave");
+    assert_eq!(
+        longwave.to_bits(),
+        clear["downward_longwave_w_m2"]
+            .as_f64()
+            .expect("vector longwave")
+            .to_bits()
+    );
+}

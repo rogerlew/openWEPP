@@ -7,13 +7,17 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_biogeochemistry::{BiogeochemistryError, BiogeochemistryState, available_by_key};
 use openwepp_kernel_contract::{
-    MineralNitrogenKey, ResourceAmountBasis, ResourceOwnerId, TransactionId,
+    MineralNitrogenKey, ResourceAmountBasis, ResourceOwnerId, TileId, TransactionId,
     authorize_proportionally,
 };
 use openwepp_land_surface_energy::{
     LandSurfaceEnergyConfiguration, LandSurfaceEnergyError, LandSurfaceEnergyState,
-    LandSurfaceForcing, LiquidParcelKind, Sha256Digest, SoilThermalLayerSnapshot,
-    SoilThermalOfeSnapshot, SoilThermalSnapshot, SoilThermalTileCandidate, build_lse_ending_state,
+    LandSurfaceForcing, LiquidParcel, LiquidParcelKind, LiquidTemperatureProvider, OfeId, ParcelId,
+    Sha256Digest, SoilThermalLayerSnapshot, SoilThermalOfeSnapshot, SoilThermalSnapshot,
+    SoilThermalTileCandidate, build_lse_ending_state,
+};
+use openwepp_meteorology::snow_free_forcing::{
+    celsius_to_kelvin, kilopascals_to_pascals, liquid_specific_enthalpy_j_kg,
 };
 use openwepp_vegetation::{
     NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, SnowFreeForcing, V9CoupledOwnedState,
@@ -29,6 +33,11 @@ use crate::land_surface_energy_shadow::{
     LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError,
     UncommittedCoveredV8OwnerEnvelope, V8CanopyForcingReceipt, V8InputProjectionError,
     execute_v8_lse_runtime_shadow, unified_beginning_hydrology_snapshot_sha256,
+};
+use crate::runtime_inputs::{
+    SnowFreeHalfHourDestination, SnowFreeHalfHourIntervalReceipt,
+    SnowFreeHalfHourProviderConfiguration, SnowFreePrecipitationParcelReceipt,
+    ValidatedSnowFreeHalfHourForcingReceipts,
 };
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyShadowAdapter, RealHydrologyShadowError,
@@ -52,6 +61,303 @@ pub struct DirectV9ShadowIntervalInput {
 pub struct DirectV9ShadowDayInput {
     pub day_index: usize,
     pub intervals: Vec<DirectV9ShadowIntervalInput>,
+    precipitation_custody: Option<DirectV9PrecipitationCustody>,
+}
+
+impl DirectV9ShadowDayInput {
+    /// Construct a caller template. Repository precipitation custody remains
+    /// absent until a sealed provider projection is applied.
+    pub fn try_new(
+        day_index: usize,
+        intervals: Vec<DirectV9ShadowIntervalInput>,
+    ) -> Result<Self, DirectV9RealConsumerError> {
+        if intervals.len() != INTERVALS_PER_DAY {
+            return Err(DirectV9RealConsumerError::Unsupported(
+                "a shadow day requires exactly 48 intervals",
+            ));
+        }
+        Ok(Self {
+            day_index,
+            intervals,
+            precipitation_custody: None,
+        })
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct DirectV9PrecipitationCustody {
+    current_source_and_outgoing_mass: BTreeMap<(String, String), (String, f64)>,
+}
+
+/// Replace atmospheric/precipitation template operands with a sealed
+/// repository-provider receipt while retaining live-owner fields (soil,
+/// albedo, runon, snow guards, and transaction identity) from the template.
+fn project_repository_forcing_receipts_to_v9_day(
+    provider: &ValidatedSnowFreeHalfHourForcingReceipts,
+    mut template: DirectV9ShadowDayInput,
+    expected_run_id: u64,
+    expected_gsi_receipt_sha256: &str,
+    expected_destinations: &BTreeSet<(String, String)>,
+) -> Result<DirectV9ShadowDayInput, DirectV9RealConsumerError> {
+    let receipts = provider.receipts();
+    let first = receipts.first().ok_or(DirectV9RealConsumerError::Identity(
+        "repository forcing receipt set",
+    ))?;
+    if first.day_index != template.day_index
+        || first.run_id != expected_run_id.to_string()
+        || template.intervals.len() != INTERVALS_PER_DAY
+        || receipts.iter().any(|receipt| {
+            receipt.day_index != template.day_index || receipt.intervals.len() != INTERVALS_PER_DAY
+        })
+    {
+        return Err(DirectV9RealConsumerError::Identity(
+            "repository forcing day projection",
+        ));
+    }
+    let found_destinations = receipts
+        .iter()
+        .map(|receipt| {
+            (
+                receipt.intervals[0].ofe_id.clone(),
+                receipt.intervals[0].tile_id.clone(),
+            )
+        })
+        .collect::<BTreeSet<_>>();
+    if &found_destinations != expected_destinations {
+        return Err(DirectV9RealConsumerError::Identity(
+            "repository forcing destination topology",
+        ));
+    }
+    let mut current_source_and_outgoing_mass = BTreeMap::new();
+    for receipt in receipts {
+        let identity = (
+            receipt.intervals[0].ofe_id.clone(),
+            receipt.intervals[0].tile_id.clone(),
+        );
+        let outgoing_mass = receipt
+            .next_day_precipitation_carry
+            .iter()
+            .map(|parcel| parcel.mass_kg_m2)
+            .sum();
+        current_source_and_outgoing_mass.insert(
+            identity,
+            (receipt.source_climate_sha256.clone(), outgoing_mass),
+        );
+    }
+    for interval_index in 0..INTERVALS_PER_DAY {
+        let atmospheric = &first.intervals[interval_index];
+        if atmospheric.gsi_receipt_sha256 != expected_gsi_receipt_sha256 {
+            return Err(DirectV9RealConsumerError::Identity(
+                "repository GSI owner receipt",
+            ));
+        }
+        let live = &template.intervals[interval_index].vegetation_forcing;
+        if atmospheric.co2_pa.to_bits() != live.co2_pa.to_bits()
+            || atmospheric.reference_height_m.to_bits() != live.reference_height_m.to_bits()
+            || atmospheric.gsi.to_bits() != live.gsi.to_bits()
+        {
+            return Err(DirectV9RealConsumerError::Identity(
+                "repository forcing live-owner scalar join",
+            ));
+        }
+        validate_wb14_provider_bindings(
+            receipts,
+            interval_index,
+            &template.intervals[interval_index],
+        )?;
+        validate_global_provider_interval(receipts, interval_index, atmospheric)?;
+        let interval = &mut template.intervals[interval_index];
+        project_lse_atmosphere(
+            receipts,
+            interval_index,
+            atmospheric,
+            &mut interval.lse_forcing,
+        )?;
+        project_vegetation_atmosphere(atmospheric, &mut interval.vegetation_forcing);
+    }
+    template.precipitation_custody = Some(DirectV9PrecipitationCustody {
+        current_source_and_outgoing_mass,
+    });
+    Ok(template)
+}
+
+fn validate_wb14_provider_bindings(
+    receipts: &[crate::runtime_inputs::SnowFreeHalfHourDayReceipt],
+    interval_index: usize,
+    template: &DirectV9ShadowIntervalInput,
+) -> Result<(), DirectV9RealConsumerError> {
+    for receipt in receipts {
+        let provider = &receipt.intervals[interval_index];
+        let parameter = template
+            .wb14_parameters
+            .iter()
+            .find(|value| value.ofe_id.as_str() == provider.ofe_id)
+            .ok_or(DirectV9RealConsumerError::Identity(
+                "repository WB14 OFE binding",
+            ))?;
+        if provider.wb14_configuration_sha256 != wb14_parameter_sha256(parameter) {
+            return Err(DirectV9RealConsumerError::Identity(
+                "repository WB14 configuration receipt",
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn wb14_parameter_sha256(value: &DirectOfeWb14Parameters) -> String {
+    let mut digest = Sha256::new();
+    digest.update(value.ofe_id.as_str().as_bytes());
+    for operand in [
+        value.effective_conductivity_m_s,
+        value.matric_potential_m,
+        value.infiltration_storage_capacity_m,
+    ] {
+        digest.update(operand.to_bits().to_le_bytes());
+    }
+    format!("{:x}", digest.finalize())
+}
+
+fn validate_global_provider_interval(
+    receipts: &[crate::runtime_inputs::SnowFreeHalfHourDayReceipt],
+    interval_index: usize,
+    expected: &SnowFreeHalfHourIntervalReceipt,
+) -> Result<(), DirectV9RealConsumerError> {
+    let expected_values = provider_global_values(expected);
+    for receipt in receipts {
+        let candidate = &receipt.intervals[interval_index];
+        if provider_global_values(candidate)
+            .iter()
+            .zip(expected_values)
+            .any(|(left, right)| left.to_bits() != right.to_bits())
+            || candidate.co2_pa.to_bits() != expected.co2_pa.to_bits()
+            || candidate.reference_height_m.to_bits() != expected.reference_height_m.to_bits()
+            || candidate.gsi.to_bits() != expected.gsi.to_bits()
+            || candidate.gsi_receipt_sha256 != expected.gsi_receipt_sha256
+        {
+            return Err(DirectV9RealConsumerError::Unsupported(
+                "repository global atmospheric forcing heterogeneity",
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn provider_global_values(value: &SnowFreeHalfHourIntervalReceipt) -> [f64; 15] {
+    [
+        value.air_temperature_c,
+        value.dew_point_c,
+        value.wind_m_s,
+        value.pressure_kpa,
+        value.actual_vapor_pressure_kpa,
+        value.specific_humidity_kg_kg,
+        value.vpd_kpa,
+        value.cloud_fraction,
+        value.solar_zenith_cosine,
+        value.global_horizontal_shortwave_w_m2,
+        value.direct_visible_w_m2,
+        value.diffuse_visible_w_m2,
+        value.direct_nir_w_m2,
+        value.diffuse_nir_w_m2,
+        value.downward_longwave_w_m2,
+    ]
+}
+
+fn project_lse_atmosphere(
+    receipts: &[crate::runtime_inputs::SnowFreeHalfHourDayReceipt],
+    interval_index: usize,
+    atmospheric: &SnowFreeHalfHourIntervalReceipt,
+    forcing: &mut LandSurfaceForcing,
+) -> Result<(), DirectV9RealConsumerError> {
+    forcing.air_temperature_k = celsius_to_kelvin(atmospheric.air_temperature_c);
+    forcing.air_specific_humidity_kg_kg = atmospheric.specific_humidity_kg_kg;
+    forcing.air_pressure_pa = kilopascals_to_pascals(atmospheric.pressure_kpa);
+    forcing.reference_wind_m_s = atmospheric.wind_m_s;
+    forcing.direct_vis_w_m2 = atmospheric.direct_visible_w_m2;
+    forcing.diffuse_vis_w_m2 = atmospheric.diffuse_visible_w_m2;
+    forcing.direct_nir_w_m2 = atmospheric.direct_nir_w_m2;
+    forcing.diffuse_nir_w_m2 = atmospheric.diffuse_nir_w_m2;
+    forcing.atmospheric_downward_longwave_w_m2 = atmospheric.downward_longwave_w_m2;
+    forcing.precipitation_parcels.clear();
+    for receipt in receipts {
+        let source = &receipt.intervals[interval_index];
+        for parcel in &source.precipitation_parcels {
+            forcing.precipitation_parcels.push(project_lse_parcel(
+                source,
+                parcel,
+                forcing.interval_s,
+            )?);
+        }
+    }
+    forcing.forcing_sha256 = Sha256Digest::try_new("0".repeat(64))?;
+    forcing.forcing_sha256 = forcing.canonical_sha256()?;
+    forcing.validate(forcing.transaction_id)?;
+    Ok(())
+}
+
+fn project_lse_parcel(
+    interval: &SnowFreeHalfHourIntervalReceipt,
+    parcel: &SnowFreePrecipitationParcelReceipt,
+    interval_s: f64,
+) -> Result<LiquidParcel, DirectV9RealConsumerError> {
+    let interval_start = f64::from(
+        u32::try_from(interval.start_s)
+            .map_err(|_| DirectV9RealConsumerError::Identity("provider interval support"))?,
+    );
+    let start_s = parcel.start_s - interval_start;
+    let end_s = parcel.end_s - interval_start;
+    if start_s < 0.0 || end_s > interval_s {
+        return Err(DirectV9RealConsumerError::Identity(
+            "provider parcel interval support",
+        ));
+    }
+    let destination_ofe = OfeId::try_new(parcel.destination_ofe_id.clone())?;
+    let destination_tile = TileId::try_new(parcel.destination_tile_id.clone())
+        .map_err(|_| DirectV9RealConsumerError::Identity("provider parcel tile"))?;
+    Ok(LiquidParcel {
+        parcel_kind: LiquidParcelKind::Precipitation,
+        parcel_id: ParcelId::try_new(format!(
+            "{}:{}:{}",
+            parcel.parcel_id, parcel.destination_ofe_id, parcel.destination_tile_id
+        ))?,
+        source_owner_id: ResourceOwnerId::try_new(parcel.source_owner_id.clone())
+            .map_err(|_| DirectV9RealConsumerError::Identity("provider parcel owner"))?,
+        source_ofe_id: destination_ofe.clone(),
+        source_tile_id: destination_tile.clone(),
+        destination_ofe_id: destination_ofe,
+        destination_tile_id: destination_tile,
+        start_s,
+        end_s,
+        amount_kg_m2_destination_tile_ground: parcel.mass_kg_m2,
+        temperature_provider: LiquidTemperatureProvider::HarderPomeroyHourly,
+        temperature_k: Some(parcel.temperature_k),
+        specific_liquid_enthalpy_j_kg: Some(liquid_specific_enthalpy_j_kg(parcel.temperature_k)),
+        source_state_sha256: Some(Sha256Digest::try_new(parcel.source_owner_id.clone())?),
+    })
+}
+
+fn project_vegetation_atmosphere(
+    provider: &SnowFreeHalfHourIntervalReceipt,
+    forcing: &mut SnowFreeForcing,
+) {
+    forcing.air_temperature_k = celsius_to_kelvin(provider.air_temperature_c);
+    forcing.pressure_pa = kilopascals_to_pascals(provider.pressure_kpa);
+    forcing.co2_pa = provider.co2_pa;
+    forcing.vapor_pressure_deficit_kpa = provider.vpd_kpa;
+    forcing.wind_m_s = provider.wind_m_s;
+    forcing.rain_kg_m2 = provider
+        .precipitation_parcels
+        .iter()
+        .map(|parcel| parcel.mass_kg_m2)
+        .fold(0.0, |sum, value| sum + value);
+    forcing.direct_par_w_m2 = provider.direct_visible_w_m2;
+    forcing.diffuse_par_w_m2 = provider.diffuse_visible_w_m2;
+    forcing.direct_nir_w_m2 = provider.direct_nir_w_m2;
+    forcing.diffuse_nir_w_m2 = provider.diffuse_nir_w_m2;
+    forcing.solar_zenith_cosine = provider.solar_zenith_cosine;
+    forcing.longwave_down_w_m2 = provider.downward_longwave_w_m2;
+    forcing.specific_humidity = provider.specific_humidity_kg_kg;
+    forcing.reference_height_m = provider.reference_height_m;
+    forcing.gsi = provider.gsi;
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -138,6 +444,77 @@ impl DirectV9RealConsumerError {
 }
 
 impl DirectV9RealConsumerShadow {
+    /// Derive provider identity exclusively from canonical shadow owners and
+    /// the live interval template.
+    pub fn snow_free_provider_configuration(
+        &self,
+        template: &DirectV9ShadowDayInput,
+    ) -> Result<SnowFreeHalfHourProviderConfiguration, DirectV9RealConsumerError> {
+        let first = template
+            .intervals
+            .first()
+            .ok_or(DirectV9RealConsumerError::Identity("shadow day intervals"))?;
+        if template.intervals.len() != INTERVALS_PER_DAY {
+            return Err(DirectV9RealConsumerError::Identity(
+                "shadow day interval cardinality",
+            ));
+        }
+        let mut destinations = Vec::new();
+        for ofe in &self.lse_configuration.ofes {
+            let wb14 = first
+                .wb14_parameters
+                .iter()
+                .find(|value| value.ofe_id == ofe.ofe_id)
+                .ok_or(DirectV9RealConsumerError::Identity(
+                    "repository WB14 OFE binding",
+                ))?;
+            for tile in &ofe.tiles {
+                destinations.push(SnowFreeHalfHourDestination {
+                    ofe_id: ofe.ofe_id.as_str().to_string(),
+                    tile_id: tile.tile_id.as_str().to_string(),
+                    wb14_configuration_sha256: wb14_parameter_sha256(wb14),
+                });
+            }
+        }
+        Ok(SnowFreeHalfHourProviderConfiguration {
+            run_id: self.hydrology_frame.identity.run_id.to_string(),
+            co2_pa: first.vegetation_forcing.co2_pa,
+            reference_height_m: first.vegetation_forcing.reference_height_m,
+            gsi: first.vegetation_forcing.gsi,
+            gsi_receipt_sha256: self.vegetation_state.0.state_sha256.clone(),
+            destinations,
+        })
+    }
+
+    /// Project a sealed repository forcing receipt into real Child-4 interval
+    /// types while joining run, GSI-owner, and WB14-owner identity.
+    pub fn project_repository_forcing_receipts(
+        &self,
+        provider: &ValidatedSnowFreeHalfHourForcingReceipts,
+        template: DirectV9ShadowDayInput,
+    ) -> Result<DirectV9ShadowDayInput, DirectV9RealConsumerError> {
+        let expected_destinations = self
+            .lse_configuration
+            .ofes
+            .iter()
+            .flat_map(|ofe| {
+                ofe.tiles.iter().map(|tile| {
+                    (
+                        ofe.ofe_id.as_str().to_string(),
+                        tile.tile_id.as_str().to_string(),
+                    )
+                })
+            })
+            .collect();
+        project_repository_forcing_receipts_to_v9_day(
+            provider,
+            template,
+            self.hydrology_frame.identity.run_id,
+            &self.vegetation_state.0.state_sha256,
+            &expected_destinations,
+        )
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn try_new(
         vegetation_configuration: VegetationConfiguration,
@@ -543,6 +920,15 @@ fn validate_repository_day_projection(
             ))?;
         let expected_precipitation_kg_m2 = day_input.precipitation_m * 1_000.0;
         for tile in &ofe.tiles {
+            let custody = shadow_input
+                .precipitation_custody
+                .as_ref()
+                .and_then(|value| {
+                    value.current_source_and_outgoing_mass.get(&(
+                        ofe.ofe_id.as_str().to_string(),
+                        tile.tile_id.as_str().to_string(),
+                    ))
+                });
             let tile_precipitation_kg_m2 = shadow_input
                 .intervals
                 .iter()
@@ -552,9 +938,20 @@ fn validate_repository_day_projection(
                         && parcel.destination_ofe_id == ofe.ofe_id
                         && parcel.destination_tile_id == tile.tile_id
                 })
+                .filter(|parcel| {
+                    custody.is_none_or(|(source, _)| parcel.source_owner_id.as_str() == source)
+                })
                 .map(|parcel| parcel.amount_kg_m2_destination_tile_ground)
                 .fold(0.0, |sum, value| sum + value);
-            if tile_precipitation_kg_m2.to_bits() != expected_precipitation_kg_m2.to_bits() {
+            let reconstructed_source_mass =
+                tile_precipitation_kg_m2 + custody.map_or(0.0, |(_, outgoing_mass)| *outgoing_mass);
+            let matches = if custody.is_some() {
+                (reconstructed_source_mass - expected_precipitation_kg_m2).abs()
+                    <= 1.0e-12 * expected_precipitation_kg_m2.abs().max(1.0)
+            } else {
+                reconstructed_source_mass.to_bits() == expected_precipitation_kg_m2.to_bits()
+            };
+            if !matches {
                 return Err(DirectV9RealConsumerError::Identity(
                     "repository daily precipitation/subdaily LSE parcel mass",
                 ));
@@ -847,12 +1244,16 @@ fn digest_serialized<T: Serialize>(value: &T) -> Result<Sha256Digest, DirectV9Re
 
 #[cfg(test)]
 mod tests {
+    use openwepp_input_contract::parsers::climate::{ParserMode, parse_climate_from_str};
     use openwepp_kernel_contract::TileId;
     use openwepp_land_surface_energy::{OfeId, SoilThermalLayerCandidate};
     use openwepp_vegetation::{V9_MODEL_SHA256, V9CoupledOwnedState};
 
     use super::*;
     use crate::land_surface_energy_shadow::{EndpointFixture, endpoint_fixture};
+    use crate::runtime_inputs::{
+        SnowFreeHalfHourProviderCursor, build_hillslope_climate_runtime_request,
+    };
     use crate::{
         DirectExecutorMode, DirectFrameExecutor, DirectLanedActiveConfig,
         DirectLanedActiveLaneConfig, DirectLanedActiveMeshPolicy, DirectPublicationCalendarDay,
@@ -917,10 +1318,7 @@ mod tests {
                 }
             })
             .collect();
-        DirectV9ShadowDayInput {
-            day_index: 0,
-            intervals,
-        }
+        DirectV9ShadowDayInput::try_new(0, intervals).expect("shadow day input")
     }
 
     fn production_day_input() -> DirectPublicationDayInput {
@@ -934,6 +1332,49 @@ mod tests {
         input.precipitation_m = 0.0;
         input.effective_temperature_c = 7.5;
         input
+    }
+
+    #[test]
+    fn sealed_repository_receipts_project_into_real_child4_forcing_types() {
+        let (mut shadow, fixture) = shadow_fixture();
+        let template = day_input(&fixture);
+        let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 420.0 2.5 180.0 20.0\n";
+        let climate = parse_climate_from_str(source, ParserMode::Strict).expect("strict climate");
+        let request = build_hillslope_climate_runtime_request(&climate).expect("climate request");
+        let configuration = shadow
+            .snow_free_provider_configuration(&template)
+            .expect("owner-derived provider configuration");
+        let receipts = request
+            .snow_free_half_hour_forcing_receipts(
+                0,
+                &configuration,
+                &mut SnowFreeHalfHourProviderCursor::default(),
+            )
+            .expect("sealed provider receipts");
+        let projected = shadow
+            .project_repository_forcing_receipts(&receipts, template)
+            .expect("real Child4 forcing projection");
+        assert_eq!(projected.intervals.len(), 48);
+        assert_eq!(
+            projected.intervals[0]
+                .vegetation_forcing
+                .air_temperature_k
+                .to_bits(),
+            celsius_to_kelvin(receipts[0].intervals[0].air_temperature_c).to_bits()
+        );
+        for interval in &projected.intervals {
+            interval
+                .lse_forcing
+                .validate(interval.lse_forcing.transaction_id)
+                .expect("projected LSE forcing");
+        }
+        let production = fixture.hydrology.beginning_frame().clone();
+        let production_input = production_day_input();
+        let day_frame = projected_day(&production, &production_input);
+        let receipt = shadow
+            .execute_day(&production, &[day_frame], &[production_input], &projected)
+            .expect("real Child4 consumes provider forcing");
+        assert_eq!(receipt.accepted_interval_count, 48);
     }
 
     fn projected_day(

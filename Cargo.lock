@@ -1141,6 +1141,7 @@ name = "openwepp-meteorology"
 version = "0.1.0"
 dependencies = [
  "openwepp-unit-boundary",
+ "thiserror",
 ]
 
 [[package]]
