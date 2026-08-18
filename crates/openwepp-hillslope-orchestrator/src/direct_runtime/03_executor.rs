@@ -295,8 +295,8 @@ impl DirectFrameExecutor {
         &self,
         frame: &mut DirectRunFrame,
         metadata: DirectPublicationRunMetadata,
-        mut build_day_input: F,
-        mut consume_row: S,
+        build_day_input: F,
+        consume_row: S,
     ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
     where
         F: FnMut(
@@ -305,6 +305,83 @@ impl DirectFrameExecutor {
             usize,
         ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
         S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+    {
+        self.run_publication_stream_with_day_hook(
+            frame,
+            metadata,
+            build_day_input,
+            consume_row,
+            |_, _| Ok(()),
+        )
+    }
+
+    /// Runs the normal production stream while advancing an explicitly
+    /// supplied, isolated V9 shadow once per complete OFE day.
+    ///
+    /// This operation is not selected by the runner and does not publish or
+    /// commit shadow state into `frame`.
+    pub fn run_publication_stream_with_v9_real_consumer_shadow<F, V, S>(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        build_day_input: F,
+        mut build_shadow_day_input: V,
+        consume_row: S,
+        shadow: &mut crate::v9_real_consumer_shadow::DirectV9RealConsumerShadow,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        V: FnMut(
+            &DirectRunFrame,
+            usize,
+        ) -> Result<crate::v9_real_consumer_shadow::DirectV9ShadowDayInput, DirectRuntimeError>,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+    {
+        let mut production_candidate = frame.clone();
+        let mut shadow_candidate = shadow.clone();
+        let execution = self.run_publication_stream_with_day_hook(
+            &mut production_candidate,
+            metadata,
+            build_day_input,
+            consume_row,
+            |production, day_index| {
+                let input = build_shadow_day_input(production, day_index)?;
+                shadow_candidate
+                    .execute_day(production, &input)
+                    .map_err(|error| {
+                    DirectRuntimeError::V9RealConsumerShadowFailure {
+                        detail: error.to_string(),
+                    }
+                })?;
+                Ok(())
+            },
+        )?;
+        *frame = production_candidate;
+        *shadow = shadow_candidate;
+        Ok(execution)
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn run_publication_stream_with_day_hook<F, S, H>(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        mut build_day_input: F,
+        mut consume_row: S,
+        mut run_day_shadow: H,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+        H: FnMut(&DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
     {
         // D15A (rev 27): the opt-in ACTIVE owner takes the two-phase day
         // loop; the default path below is textually untouched
@@ -346,6 +423,9 @@ impl DirectFrameExecutor {
                 let day_input = build_day_input(frame, day_index, lane_index)?;
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
                 Self::apply_publication_day_input(&mut day_frame, &day_input)?;
+                if lane_index == 0 {
+                    run_day_shadow(frame, day_index)?;
+                }
                 Self::run_day_spans(
                     &mut day_frame,
                     &mut counters,

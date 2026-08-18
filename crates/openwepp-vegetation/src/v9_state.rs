@@ -210,6 +210,57 @@ pub fn migrate_v8_snapshot(
     })
 }
 
+/// Project a validated V9 runtime state onto the exact imported V8 physical
+/// payload. The returned configuration and state are transient adapter values;
+/// they do not alias or mutate either model identity.
+pub fn project_v9_runtime_to_v8(
+    configuration: &VegetationConfiguration,
+    state: &V9CoupledOwnedState,
+) -> Result<(VegetationConfiguration, V8CoupledOwnedState), V9StateError> {
+    state.validate(configuration)?;
+    let mut projected_configuration = configuration.clone();
+    projected_configuration.model_definition_sha256 = V8_MODEL_SHA256.into();
+    projected_configuration.configuration_sha256 = projected_configuration
+        .canonical_sha256()
+        .map_err(V9StateError::Configuration)?;
+    let mut projected_state = state.0.clone();
+    projected_state.model_definition_sha256 = V8_MODEL_SHA256.into();
+    projected_state
+        .configuration_sha256
+        .clone_from(&projected_configuration.configuration_sha256);
+    projected_state.state_sha256 = projected_state.canonical_sha256();
+    if projected_state.last_transaction_id == 0 {
+        projected_configuration
+            .initial_state_sha256
+            .clone_from(&projected_state.state_sha256);
+    }
+    projected_state
+        .validate(&projected_configuration)
+        .map_err(V9StateError::ImportedV8Payload)?;
+    Ok((projected_configuration, projected_state))
+}
+
+/// Rebind an accepted transient V8 runtime state to the prospective V9
+/// identity after proving the imported payload against the exact V9
+/// configuration. No physical field is transformed.
+pub fn project_v8_runtime_to_v9(
+    state: &V8CoupledOwnedState,
+    configuration: &VegetationConfiguration,
+) -> Result<V9CoupledOwnedState, V9StateError> {
+    configuration
+        .validate_v9()
+        .map_err(V9StateError::Configuration)?;
+    let mut projected = state.clone();
+    projected.model_definition_sha256 = V9_MODEL_SHA256.into();
+    projected
+        .configuration_sha256
+        .clone_from(&configuration.configuration_sha256);
+    projected.state_sha256 = projected.canonical_sha256();
+    let projected = V9CoupledOwnedState(projected);
+    projected.validate(configuration)?;
+    Ok(projected)
+}
+
 fn rebind_state(
     source: &V8CoupledOwnedState,
     target: &VegetationConfiguration,

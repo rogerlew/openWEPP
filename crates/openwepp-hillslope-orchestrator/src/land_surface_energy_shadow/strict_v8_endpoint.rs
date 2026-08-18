@@ -655,7 +655,7 @@ fn receiver_expectations(
 
 #[cfg(test)]
 #[path = "strict_v8_endpoint_tests.rs"]
-mod endpoint_rollback_tests;
+pub(crate) mod endpoint_rollback_tests;
 
 #[cfg(test)]
 mod tests {

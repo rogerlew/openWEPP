@@ -5,6 +5,7 @@ extern crate self as openwepp_hillslope_orchestrator;
 
 pub mod land_surface_energy_shadow;
 pub mod runtime_inputs;
+pub mod v9_real_consumer_shadow;
 pub mod vegetation_diagnostic;
 pub mod vegetation_energy_owner;
 pub mod vegetation_real_hydrology_shadow;

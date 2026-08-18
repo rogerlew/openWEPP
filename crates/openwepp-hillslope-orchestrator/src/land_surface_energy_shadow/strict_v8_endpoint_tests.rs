@@ -544,20 +544,20 @@ fn biogeochemistry() -> BiogeochemistryState {
     }
 }
 
-struct EndpointFixture {
-    vegetation_configuration: VegetationConfiguration,
-    vegetation_state: V8CoupledOwnedState,
-    surface_configuration: DirectSurfaceLiquidConfiguration,
-    hydrology: RealHydrologyShadowAdapter,
-    lse_configuration: LandSurfaceEnergyConfiguration,
-    lse_state: LandSurfaceEnergyState,
-    forcing: LandSurfaceForcing,
-    thermal: SoilThermalSnapshot,
-    receipt: V8CanopyForcingReceipt,
-    biogeochemistry: BiogeochemistryState,
+pub(crate) struct EndpointFixture {
+    pub(crate) vegetation_configuration: VegetationConfiguration,
+    pub(crate) vegetation_state: V8CoupledOwnedState,
+    pub(crate) surface_configuration: DirectSurfaceLiquidConfiguration,
+    pub(crate) hydrology: RealHydrologyShadowAdapter,
+    pub(crate) lse_configuration: LandSurfaceEnergyConfiguration,
+    pub(crate) lse_state: LandSurfaceEnergyState,
+    pub(crate) forcing: LandSurfaceForcing,
+    pub(crate) thermal: SoilThermalSnapshot,
+    pub(crate) receipt: V8CanopyForcingReceipt,
+    pub(crate) biogeochemistry: BiogeochemistryState,
 }
 
-fn endpoint_fixture() -> EndpointFixture {
+pub(crate) fn endpoint_fixture() -> EndpointFixture {
     let (vegetation_configuration, vegetation_state) = vegetation();
     let (surface_configuration, frame) = surface();
     let hydrology = hydrology(&frame);

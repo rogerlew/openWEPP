@@ -95,6 +95,8 @@ use receiver_validation::{
     validate_surface_production_binding, validate_surface_production_lane_domains,
     water_protocol_sha256, water_request_batch_sha256,
 };
+#[cfg(test)]
+pub(crate) use strict_v8_endpoint::endpoint_rollback_tests::{EndpointFixture, endpoint_fixture};
 pub use strict_v8_endpoint::{ExecuteV8LseRuntimeShadowError, execute_v8_lse_runtime_shadow};
 pub use v8_input_projection::{V8CanopyForcingReceipt, V8InputProjectionError};
 pub use v8_projection::V8ProjectionError;

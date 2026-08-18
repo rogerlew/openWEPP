@@ -327,11 +327,9 @@ pub fn construct_biogeochemistry_candidate(
             return Err(BiogeochemistryError::MaterialClosure);
         }
         validate_material_pool(proposal.amounts)?;
-        let pool = candidate
-            .receivers
-            .get_mut(&proposal.receiver)
-            .ok_or(BiogeochemistryError::MaterialClosure)?;
-        *pool = add_pool(*pool, proposal.amounts);
+        if !candidate.receivers.contains_key(&proposal.receiver) {
+            return Err(BiogeochemistryError::MaterialClosure);
+        }
         receipts.push(MaterialReceipt {
             transaction_id: proposal.transaction_id,
             owner_id: proposal.owner_id.clone(),
@@ -351,7 +349,7 @@ pub fn construct_biogeochemistry_candidate(
                 .fold(MaterialPool::default(), |total, receipt| {
                     add_pool(total, receipt.amounts)
                 });
-            let ending = candidate.receivers[&receiver];
+            let ending = add_pool(beginning_pool, incoming);
             MaterialReceiverOperand {
                 receiver,
                 beginning: beginning_pool,
@@ -359,7 +357,13 @@ pub fn construct_biogeochemistry_candidate(
                 ending,
             }
         })
-        .collect();
+        .collect::<Vec<_>>();
+    for operand in &receiver_operands {
+        candidate.receivers.insert(
+            operand.receiver,
+            add_pool(operand.beginning, operand.incoming),
+        );
+    }
     let owner_candidate = BiogeochemistryOwnerCandidate {
         transaction_id,
         beginning: beginning.clone(),
@@ -567,6 +571,50 @@ mod tests {
             ),
             Err(BiogeochemistryError::MaterialClosure)
         );
+    }
+
+    #[test]
+    fn continued_receiver_credit_uses_one_canonical_aggregation_order() {
+        let receiver = MaterialReceiverClass::Metabolic;
+        let beginning = BiogeochemistryState {
+            last_transaction_id: 1,
+            receivers: BTreeMap::from([(
+                receiver,
+                MaterialPool {
+                    carbon: 1.0e16,
+                    nitrogen: 1.0e16,
+                    dry_matter: 1.0e16,
+                },
+            )]),
+            ..BiogeochemistryState::default()
+        };
+        let proposals = [1_u64, 2].map(|proposal_id| MaterialProposal {
+            transaction_id: 2,
+            owner_id: ResourceOwnerId::try_new(format!("tree-{proposal_id}")).expect("owner"),
+            donor: MaterialDonorClass::Leaf,
+            receiver,
+            proposal_id,
+            amounts: MaterialPool {
+                carbon: 1.0,
+                nitrogen: 1.0,
+                dry_matter: 1.0,
+            },
+        });
+        let candidate = construct_biogeochemistry_candidate(
+            &beginning,
+            TransactionId(2),
+            &[],
+            &[],
+            &[],
+            &proposals,
+            TransformationsMode::Disabled,
+        )
+        .expect("continued candidate");
+        assert_eq!(
+            candidate.ending().receivers[&receiver].carbon.to_bits(),
+            (1.0e16_f64 + 2.0).to_bits()
+        );
+        candidate.validate().expect("canonical receiver closure");
     }
 
     #[test]

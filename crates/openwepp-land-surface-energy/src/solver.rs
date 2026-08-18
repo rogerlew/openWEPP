@@ -1476,6 +1476,17 @@ fn evaluate_covered_occupancy(
         * occupancy.gb_stem_m_s
         * dry_stem
         * (tstem - canopy_air_temperature_k);
+    let wet_energy_residual = if wet_area.to_bits() == 0.0_f64.to_bits() {
+        twet - canopy_air_temperature_k
+    } else {
+        wet_fraction
+            * (occupancy.sun.absorbed_shortwave_w_m2_tile
+                + occupancy.shade.absorbed_shortwave_w_m2_tile
+                + occupancy.stem_absorbed_shortwave_w_m2_tile)
+            + component_longwave_w_m2[2]
+            - wet_h
+            - column.latent_heat_j_kg * wet_e
+    };
     let residuals = vec![
         sun_e - q1sun,
         shade_e - q1shade,
@@ -1503,13 +1514,7 @@ fn evaluate_covered_occupancy(
             + component_longwave_w_m2[1]
             - shade_h
             - column.latent_heat_j_kg * shade_e,
-        wet_fraction
-            * (occupancy.sun.absorbed_shortwave_w_m2_tile
-                + occupancy.shade.absorbed_shortwave_w_m2_tile
-                + occupancy.stem_absorbed_shortwave_w_m2_tile)
-            + component_longwave_w_m2[2]
-            - wet_h
-            - column.latent_heat_j_kg * wet_e,
+        wet_energy_residual,
         (1.0 - wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile
             + component_longwave_w_m2[3]
             - stem_h,
@@ -1538,12 +1543,16 @@ fn evaluate_covered_occupancy(
     ];
     let mut tolerances = vec![crate::physics::water_tolerance(water_scale); 6];
     tolerances.extend((0..4).map(|index| {
-        crate::physics::energy_tolerance(
-            component_operands[index].abs()
-                + component_longwave_w_m2[index].abs()
-                + sensible[index].abs()
-                + latent[index].abs(),
-        )
+        if index == 2 && wet_area.to_bits() == 0.0_f64.to_bits() {
+            crate::physics::energy_tolerance(1.0)
+        } else {
+            crate::physics::energy_tolerance(
+                component_operands[index].abs()
+                    + component_longwave_w_m2[index].abs()
+                    + sensible[index].abs()
+                    + latent[index].abs(),
+            )
+        }
     }));
     let liquid = finalize_covered_liquid(
         context.liquid,

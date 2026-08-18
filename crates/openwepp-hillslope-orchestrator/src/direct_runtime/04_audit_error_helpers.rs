@@ -274,6 +274,9 @@ pub enum DirectRuntimeError {
     PublicationSinkFailure {
         detail: String,
     },
+    V9RealConsumerShadowFailure {
+        detail: String,
+    },
     DirectClosureToleranceExceeded {
         field: &'static str,
     },
@@ -377,6 +380,9 @@ impl DirectRuntimeError {
                 Guard::DayInputBuildFailure(detail.as_str()).into()
             }
             Self::PublicationSinkFailure { detail } => Guard::SinkFailure(detail.as_str()).into(),
+            Self::V9RealConsumerShadowFailure { detail } => {
+                Guard::V9RealConsumerShadowFailure(detail.as_str()).into()
+            }
             Self::DirectClosureToleranceExceeded { field } => Guard::ClosureTolerance(field).into(),
             Self::SnowMassTransitionLedger(source) => Guard::SnowMassTransitionLedger(source).into(),
             Self::DirectDayExecutionFailure {
@@ -580,6 +586,7 @@ enum DirectRuntimeGuardDisplay<'a> {
     },
     DayInputBuildFailure(&'a str),
     SinkFailure(&'a str),
+    V9RealConsumerShadowFailure(&'a str),
     ClosureTolerance(&'static str),
     SnowMassTransitionLedger(&'a DirectSnowMassTransitionLedgerError),
     DayExecutionFailure {
@@ -627,6 +634,9 @@ impl fmt::Display for DirectRuntimeGuardDisplay<'_> {
             }
             Self::SinkFailure(detail) => {
                 write!(formatter, "direct publication sink failed: {detail}")
+            }
+            Self::V9RealConsumerShadowFailure(detail) => {
+                write!(formatter, "default-off V9 real-consumer shadow failed: {detail}")
             }
             Self::ClosureTolerance(field) => {
                 write!(
