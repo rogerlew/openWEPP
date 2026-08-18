@@ -1,6 +1,6 @@
 # Admit Direct-Hydrology Persisted Restart Authority
 
-Status: `executing / activated by V10 owner-transaction directive`
+Status: `executing / authority authored; validation and independent review pending`
 
 Date: `2026-08-17`
 
