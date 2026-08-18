@@ -275,6 +275,7 @@ pub enum DirectRuntimeError {
         detail: String,
     },
     V9RealConsumerShadowFailure {
+        category: &'static str,
         detail: String,
     },
     DirectClosureToleranceExceeded {
@@ -380,8 +381,8 @@ impl DirectRuntimeError {
                 Guard::DayInputBuildFailure(detail.as_str()).into()
             }
             Self::PublicationSinkFailure { detail } => Guard::SinkFailure(detail.as_str()).into(),
-            Self::V9RealConsumerShadowFailure { detail } => {
-                Guard::V9RealConsumerShadowFailure(detail.as_str()).into()
+            Self::V9RealConsumerShadowFailure { category, detail } => {
+                Guard::V9RealConsumerShadowFailure { category, detail }.into()
             }
             Self::DirectClosureToleranceExceeded { field } => Guard::ClosureTolerance(field).into(),
             Self::SnowMassTransitionLedger(source) => Guard::SnowMassTransitionLedger(source).into(),
@@ -586,7 +587,10 @@ enum DirectRuntimeGuardDisplay<'a> {
     },
     DayInputBuildFailure(&'a str),
     SinkFailure(&'a str),
-    V9RealConsumerShadowFailure(&'a str),
+    V9RealConsumerShadowFailure {
+        category: &'static str,
+        detail: &'a str,
+    },
     ClosureTolerance(&'static str),
     SnowMassTransitionLedger(&'a DirectSnowMassTransitionLedgerError),
     DayExecutionFailure {
@@ -635,8 +639,11 @@ impl fmt::Display for DirectRuntimeGuardDisplay<'_> {
             Self::SinkFailure(detail) => {
                 write!(formatter, "direct publication sink failed: {detail}")
             }
-            Self::V9RealConsumerShadowFailure(detail) => {
-                write!(formatter, "default-off V9 real-consumer shadow failed: {detail}")
+            Self::V9RealConsumerShadowFailure { category, detail } => {
+                write!(
+                    formatter,
+                    "default-off V9 real-consumer shadow failed [{category}]: {detail}"
+                )
             }
             Self::ClosureTolerance(field) => {
                 write!(

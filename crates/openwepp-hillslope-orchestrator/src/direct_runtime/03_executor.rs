@@ -12,6 +12,18 @@ struct DirectExecutionCounters {
     phase_hold_counts: [u64; DIRECT_PHASE_COUNT],
 }
 
+enum DirectPublicationDayHook<'a> {
+    BeforeDay {
+        frame: &'a DirectRunFrame,
+        day_index: usize,
+    },
+    ProjectedInput {
+        day_index: usize,
+        lane_index: usize,
+        input: &'a DirectPublicationDayInput,
+    },
+}
+
 impl DirectExecutionCounters {
     fn record_span(
         &mut self,
@@ -311,7 +323,7 @@ impl DirectFrameExecutor {
             metadata,
             build_day_input,
             consume_row,
-            |_, _| Ok(()),
+            |_| Ok(()),
         )
     }
 
@@ -325,7 +337,7 @@ impl DirectFrameExecutor {
         frame: &mut DirectRunFrame,
         metadata: DirectPublicationRunMetadata,
         build_day_input: F,
-        build_shadow_day_input: V,
+        mut build_shadow_day_input: V,
         consume_row: S,
         shadow: &mut crate::v9_real_consumer_shadow::DirectV9RealConsumerShadow,
     ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
@@ -339,53 +351,7 @@ impl DirectFrameExecutor {
             &DirectRunFrame,
             usize,
         ) -> Result<
-            (
-                Vec<DirectPublicationDayInput>,
-                crate::v9_real_consumer_shadow::DirectV9ShadowDayInput,
-            ),
-            DirectRuntimeError,
-        >,
-        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
-    {
-        let mut production_candidate = frame.clone();
-        let mut shadow_candidate = shadow.clone();
-        let execution = self.run_publication_stream_with_v9_candidate(
-            &mut production_candidate,
-            metadata,
-            build_day_input,
-            build_shadow_day_input,
-            consume_row,
-            &mut shadow_candidate,
-        )?;
-        *frame = production_candidate;
-        *shadow = shadow_candidate;
-        Ok(execution)
-    }
-
-    #[allow(clippy::too_many_lines)]
-    fn run_publication_stream_with_v9_candidate<F, V, S>(
-        &self,
-        frame: &mut DirectRunFrame,
-        metadata: DirectPublicationRunMetadata,
-        mut build_day_input: F,
-        mut build_shadow_day_input: V,
-        mut consume_row: S,
-        shadow: &mut crate::v9_real_consumer_shadow::DirectV9RealConsumerShadow,
-    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
-    where
-        F: FnMut(
-            &DirectRunFrame,
-            usize,
-            usize,
-        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
-        V: FnMut(
-            &DirectRunFrame,
-            usize,
-        ) -> Result<
-            (
-                Vec<DirectPublicationDayInput>,
-                crate::v9_real_consumer_shadow::DirectV9ShadowDayInput,
-            ),
+            crate::v9_real_consumer_shadow::DirectV9RepositoryDayProjection,
             DirectRuntimeError,
         >,
         S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
@@ -395,120 +361,63 @@ impl DirectFrameExecutor {
                 field: "v9_shadow.laned_active_unsupported",
             });
         }
-        DIRECT_AUDIT.record_publication_capture_run();
-        let expected_row_count = frame
-            .identity
-            .lane_count
-            .checked_mul(frame.identity.day_count)
-            .ok_or(DirectRuntimeError::DirectDomainViolation {
-                field: "publication.expected_row_count",
-            })?;
-        let identity = frame.identity;
-        let mut phase_view_count = 0_u64;
-        let mut counters = DirectExecutionCounters::default();
-        let phase_plan = *frame.phase_plan.phases();
-        let mut row_count = 0_usize;
-        let transfer_span_report = frame.run_r3c_lane_transfer_span()?;
-        counters.record_span(
-            transfer_span_report.phase_entry_count,
-            transfer_span_report.direct_compute_count,
-            transfer_span_report.state_mutation_count,
-            transfer_span_report.downstream_operand_count,
-            transfer_span_report.shadow_projection_count,
-            transfer_span_report.compatibility_edge_invocation_count,
-        );
-        for day_index in 0..frame.identity.day_count {
-            let (projected_inputs, shadow_input) = build_shadow_day_input(frame, day_index)?;
-            if projected_inputs.len() != frame.identity.lane_count {
-                return Err(DirectRuntimeError::DirectDomainViolation {
-                    field: "v9_shadow.complete_repository_day_inputs",
-                });
-            }
-            let mut projected_days = Vec::with_capacity(frame.identity.lane_count);
-            for (lane_index, projected_input) in projected_inputs.iter().enumerate() {
-                let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
-                Self::apply_publication_day_input(&mut day_frame, projected_input)?;
-                projected_days.push(day_frame);
-            }
-            shadow
-                .execute_day(frame, &projected_days, &projected_inputs, &shadow_input)
-                .map_err(|error| DirectRuntimeError::V9RealConsumerShadowFailure {
-                    detail: error.to_string(),
-                })?;
-            for (lane_index, projected_input) in projected_inputs.iter().enumerate() {
-                let day_input = build_day_input(frame, day_index, lane_index)?;
-                if day_input != *projected_input {
-                    return Err(DirectRuntimeError::DirectDomainViolation {
-                        field: "v9_shadow.repository_day_input_join",
-                    });
-                }
-                let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
-                Self::apply_publication_day_input(&mut day_frame, &day_input)?;
-                Self::run_day_spans(
-                    &mut day_frame,
-                    &mut counters,
-                    day_input.winter_frost_compute_inputs.as_ref(),
-                )
-                .map_err(|source| {
-                    Self::day_execution_failure(&day_frame, lane_index, day_index, &source)
-                })?;
-                for phase in phase_plan {
-                    let view = day_frame.phase_view(phase);
-                    let _phase = view.phase();
-                    phase_view_count += 1;
-                    counters.record_phase_status(phase, Self::phase_lifecycle_status(phase));
-                }
-                let lane = frame.lanes.get(lane_index).ok_or(
-                    DirectRuntimeError::LaneIndexOutOfRange {
-                        lane_index,
-                        lane_count: frame.lanes.len(),
-                    },
-                )?;
-                let row = DirectPublicationDayRow::from_day_frame(&day_frame, &day_input, lane)?;
-                consume_row(&row, &day_frame)?;
-                row_count = row_count.checked_add(1).ok_or(
-                    DirectRuntimeError::DirectDomainViolation {
-                        field: "publication.row_count",
-                    },
-                )?;
-                if Self::publish_dynamic_transfer_to_downstream(frame, &day_frame)? {
-                    counters.record_dynamic_transfer_publication();
-                }
-                if Self::publish_erosion_inflow_to_downstream(frame, &day_frame)? {
-                    counters.record_dynamic_transfer_publication();
-                }
-                frame.commit_day_frame(&day_frame)?;
-                counters.record_day_frame_commit();
-            }
-        }
-        if row_count != expected_row_count {
-            return Err(DirectRuntimeError::PublicationRowCountMismatch {
-                expected_row_count,
-                actual_row_count: row_count,
-            });
-        }
-        Ok(DirectStreamingPublicationExecution {
-            report: DirectExecutionReport {
-                mode: self.mode,
-                lane_count: frame.lanes.len(),
-                day_count: frame.identity.day_count,
-                planned_phase_count: frame.phase_plan.len(),
-                canonical_phase_entry_count: phase_view_count,
-                phase_view_count,
-                phase_status_counts: counters.phase_status_counts(),
-                phase_span_run_count: counters.spans,
-                direct_phase_entry_count: counters.entries,
-                direct_compute_count: counters.computes,
-                state_mutation_count: counters.mutations,
-                downstream_operand_count: counters.downstream_operands,
-                shadow_projection_count: counters.shadows,
-                compatibility_edge_invocation_count: counters.compatibility_edges,
-                day_frame_commit_count: counters.day_frame_commits,
-            },
-            identity,
+        let mut production_candidate = frame.clone();
+        let mut shadow_candidate = shadow.clone();
+        let mut expected_inputs = None::<(usize, Vec<DirectPublicationDayInput>)>;
+        let execution = self.run_publication_stream_with_day_hook(
+            &mut production_candidate,
             metadata,
-            row_count,
-        })
+            build_day_input,
+            consume_row,
+            |event| match event {
+                DirectPublicationDayHook::BeforeDay { frame, day_index } => {
+                    let (projected_inputs, shadow_input) = build_shadow_day_input(
+                        frame,
+                        day_index,
+                    )?
+                    .into_parts();
+                    if projected_inputs.len() != frame.identity.lane_count {
+                        return Err(DirectRuntimeError::DirectDomainViolation {
+                            field: "v9_shadow.complete_repository_day_inputs",
+                        });
+                    }
+                    let mut projected_days = Vec::with_capacity(projected_inputs.len());
+                    for (lane_index, projected_input) in projected_inputs.iter().enumerate() {
+                        let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
+                        Self::apply_publication_day_input(&mut day_frame, projected_input)?;
+                        projected_days.push(day_frame);
+                    }
+                    shadow_candidate
+                        .execute_day(frame, &projected_days, &projected_inputs, &shadow_input)
+                        .map_err(|error| DirectRuntimeError::V9RealConsumerShadowFailure {
+                            category: error.category(),
+                            detail: error.to_string(),
+                        })?;
+                    expected_inputs = Some((day_index, projected_inputs));
+                    Ok(())
+                }
+                DirectPublicationDayHook::ProjectedInput {
+                    day_index,
+                    lane_index,
+                    input,
+                } => {
+                    let Some((expected_day, expected)) = &expected_inputs else {
+                        return Err(DirectRuntimeError::DirectDomainViolation {
+                            field: "v9_shadow.missing_repository_day_projection",
+                        });
+                    };
+                    if *expected_day != day_index || expected.get(lane_index) != Some(input) {
+                        return Err(DirectRuntimeError::DirectDomainViolation {
+                            field: "v9_shadow.repository_day_input_join",
+                        });
+                    }
+                    Ok(())
+                }
+            },
+        )?;
+        *frame = production_candidate;
+        *shadow = shadow_candidate;
+        Ok(execution)
     }
 
     #[allow(clippy::too_many_lines)]
@@ -527,7 +436,7 @@ impl DirectFrameExecutor {
             usize,
         ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
         S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
-        H: FnMut(&DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
+        H: FnMut(DirectPublicationDayHook<'_>) -> Result<(), DirectRuntimeError>,
     {
         // D15A (rev 27): the opt-in ACTIVE owner takes the two-phase day
         // loop; the default path below is textually untouched
@@ -565,13 +474,16 @@ impl DirectFrameExecutor {
         );
 
         for day_index in 0..frame.identity.day_count {
+            run_day_shadow(DirectPublicationDayHook::BeforeDay { frame, day_index })?;
             for lane_index in 0..frame.identity.lane_count {
                 let day_input = build_day_input(frame, day_index, lane_index)?;
+                run_day_shadow(DirectPublicationDayHook::ProjectedInput {
+                    day_index,
+                    lane_index,
+                    input: &day_input,
+                })?;
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
                 Self::apply_publication_day_input(&mut day_frame, &day_input)?;
-                if lane_index == 0 {
-                    run_day_shadow(frame, day_index)?;
-                }
                 Self::run_day_spans(
                     &mut day_frame,
                     &mut counters,

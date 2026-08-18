@@ -53,6 +53,36 @@ pub struct DirectV9ShadowDayInput {
     pub intervals: Vec<DirectV9ShadowIntervalInput>,
 }
 
+/// One immutable repository-provider record joining the native daily inputs
+/// to the retained subdaily forcing records consumed by the strict shadow.
+/// The interval records are forcing receipts, never caller solver trials.
+#[derive(Clone, Debug, PartialEq)]
+pub struct DirectV9RepositoryDayProjection {
+    publication_inputs: Vec<DirectPublicationDayInput>,
+    shadow_input: DirectV9ShadowDayInput,
+}
+
+impl DirectV9RepositoryDayProjection {
+    pub fn try_new(
+        publication_inputs: Vec<DirectPublicationDayInput>,
+        shadow_input: DirectV9ShadowDayInput,
+    ) -> Result<Self, DirectV9RealConsumerError> {
+        if publication_inputs.is_empty() || shadow_input.intervals.len() != INTERVALS_PER_DAY {
+            return Err(DirectV9RealConsumerError::Identity(
+                "repository day projection cardinality",
+            ));
+        }
+        Ok(Self {
+            publication_inputs,
+            shadow_input,
+        })
+    }
+
+    pub(crate) fn into_parts(self) -> (Vec<DirectPublicationDayInput>, DirectV9ShadowDayInput) {
+        (self.publication_inputs, self.shadow_input)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectV9RealConsumerShadow {
     vegetation_configuration: VegetationConfiguration,
@@ -69,14 +99,20 @@ pub struct DirectV9RealConsumerShadow {
     accepted_interval_count: u64,
 }
 
+/// Complete typed restart owner for the default-off V9 real-consumer shadow.
+#[derive(Clone, Debug, PartialEq)]
+pub struct DirectV9RealConsumerCheckpoint {
+    shadow: DirectV9RealConsumerShadow,
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DirectV9ShadowDayReceipt {
     pub day_index: usize,
     pub accepted_interval_count: usize,
     pub first_transaction_id: TransactionId,
     pub last_transaction_id: TransactionId,
-    pub beginning_shadow_sha256: String,
-    pub ending_shadow_sha256: String,
+    pub beginning_shadow_diagnostic_fingerprint: String,
+    pub ending_shadow_diagnostic_fingerprint: String,
 }
 
 #[derive(Debug, Error, PartialEq)]
@@ -95,6 +131,21 @@ pub enum DirectV9RealConsumerError {
     Physical(#[from] ExecuteV8LseRuntimeShadowError),
     #[error("V9 real-consumer adapter failure: {0}")]
     Adapter(String),
+}
+
+impl DirectV9RealConsumerError {
+    #[must_use]
+    pub const fn category(&self) -> &'static str {
+        match self {
+            Self::Identity(_) => "identity",
+            Self::Unsupported(_) => "unsupported",
+            Self::OwnerClosure(_) => "owner_closure",
+            Self::Vegetation(_) => "vegetation",
+            Self::V9(_) => "v9_identity",
+            Self::Physical(_) => "strict_v8_lse_runtime",
+            Self::Adapter(_) => "typed_adapter_boundary",
+        }
+    }
 }
 
 impl DirectV9RealConsumerShadow {
@@ -168,6 +219,20 @@ impl DirectV9RealConsumerShadow {
     }
 
     #[must_use]
+    pub fn checkpoint(&self) -> DirectV9RealConsumerCheckpoint {
+        DirectV9RealConsumerCheckpoint {
+            shadow: self.clone(),
+        }
+    }
+
+    pub fn restore(
+        checkpoint: DirectV9RealConsumerCheckpoint,
+    ) -> Result<Self, DirectV9RealConsumerError> {
+        checkpoint.shadow.validate_complete_owner_set()?;
+        Ok(checkpoint.shadow)
+    }
+
+    #[must_use]
     pub const fn next_day_index(&self) -> usize {
         self.next_day_index
     }
@@ -228,7 +293,7 @@ impl DirectV9RealConsumerShadow {
             projected_day_inputs,
             input,
         )?;
-        let beginning_shadow_sha256 = self.canonical_sha256()?;
+        let beginning_shadow_diagnostic_fingerprint = self.diagnostic_fingerprint()?;
         let first_transaction_id = input.intervals[0].lse_forcing.transaction_id;
         let last_transaction_id = input.intervals[INTERVALS_PER_DAY - 1]
             .lse_forcing
@@ -242,15 +307,15 @@ impl DirectV9RealConsumerShadow {
             .checked_add(1)
             .ok_or(DirectV9RealConsumerError::Identity("shadow day overflow"))?;
         candidate.validate_complete_owner_set()?;
-        let ending_shadow_sha256 = candidate.canonical_sha256()?;
+        let ending_shadow_diagnostic_fingerprint = candidate.diagnostic_fingerprint()?;
         *self = candidate;
         Ok(DirectV9ShadowDayReceipt {
             day_index: input.day_index,
             accepted_interval_count: INTERVALS_PER_DAY,
             first_transaction_id,
             last_transaction_id,
-            beginning_shadow_sha256,
-            ending_shadow_sha256,
+            beginning_shadow_diagnostic_fingerprint,
+            ending_shadow_diagnostic_fingerprint,
         })
     }
 
@@ -434,7 +499,7 @@ impl DirectV9RealConsumerShadow {
         Ok(())
     }
 
-    fn canonical_sha256(&self) -> Result<String, DirectV9RealConsumerError> {
+    fn diagnostic_fingerprint(&self) -> Result<String, DirectV9RealConsumerError> {
         #[derive(Serialize)]
         struct ShadowBytes<'a> {
             vegetation: &'a V9CoupledOwnedState,
@@ -489,38 +554,6 @@ fn validate_repository_day_projection(
                 "repository day input/frame receipt",
             ));
         }
-    }
-    let precipitation_m = common_provider_value(
-        &projected_day_inputs
-            .iter()
-            .map(|input| input.precipitation_m)
-            .collect::<Vec<_>>(),
-        "heterogeneous repository OFE precipitation",
-    )?;
-    let effective_temperature_c = common_provider_value(
-        &projected_day_inputs
-            .iter()
-            .map(|input| input.effective_temperature_c)
-            .collect::<Vec<_>>(),
-        "heterogeneous repository OFE effective temperature",
-    )?;
-    let shadow_rain_kg_m2 = shadow_input
-        .intervals
-        .iter()
-        .map(|interval| interval.vegetation_forcing.rain_kg_m2)
-        .sum::<f64>();
-    let shadow_mean_air_temperature_c = shadow_input
-        .intervals
-        .iter()
-        .map(|interval| interval.vegetation_forcing.air_temperature_k - 273.15)
-        .sum::<f64>()
-        / 48.0;
-    if shadow_rain_kg_m2.to_bits() != (precipitation_m * 1_000.0).to_bits()
-        || shadow_mean_air_temperature_c.to_bits() != effective_temperature_c.to_bits()
-    {
-        return Err(DirectV9RealConsumerError::Identity(
-            "repository daily forcing/subdaily shadow receipt",
-        ));
     }
     Ok(())
 }
@@ -739,9 +772,10 @@ fn aggregate_soil_thermal_ofe(
         for candidate in &tile_candidates {
             if candidate.owner_id != beginning.owner_id
                 || candidate.beginning_state_sha256 != beginning.state_sha256
+                || candidate.layers.len() != beginning_ofe.ordered_layers.len()
             {
                 return Err(DirectV9RealConsumerError::OwnerClosure(
-                    "soil-thermal candidate owner lineage",
+                    "soil-thermal candidate owner lineage or layer cardinality",
                 ));
             }
             let layer = candidate.layers.get(layer_index).ok_or(
@@ -887,7 +921,7 @@ mod tests {
         }
     }
 
-    fn production_day_input(shadow_input: &DirectV9ShadowDayInput) -> DirectPublicationDayInput {
+    fn production_day_input() -> DirectPublicationDayInput {
         let mut input = DirectPublicationDayInput::calendar_only(DirectPublicationCalendarDay {
             year: 2026,
             julian_day: 1,
@@ -895,18 +929,8 @@ mod tests {
             day_of_month: 1,
             water_year: 2026,
         });
-        input.precipitation_m = shadow_input
-            .intervals
-            .iter()
-            .map(|interval| interval.vegetation_forcing.rain_kg_m2)
-            .sum::<f64>()
-            / 1_000.0;
-        input.effective_temperature_c = shadow_input
-            .intervals
-            .iter()
-            .map(|interval| interval.vegetation_forcing.air_temperature_k - 273.15)
-            .sum::<f64>()
-            / 48.0;
+        input.precipitation_m = 0.0;
+        input.effective_temperature_c = 7.5;
         input
     }
 
@@ -972,7 +996,7 @@ mod tests {
         let production = fixture.hydrology.beginning_frame().clone();
         let production_before = production.clone();
         let input = day_input(&fixture);
-        let production_input = production_day_input(&input);
+        let production_input = production_day_input();
         let projected = projected_day(&production, &production_input);
         let receipt = shadow
             .execute_day(&production, &[projected], &[production_input], &input)
@@ -984,8 +1008,8 @@ mod tests {
         assert_eq!(shadow.vegetation_state().0.last_transaction_id, 88);
         assert_eq!(production, production_before);
         assert_ne!(
-            receipt.beginning_shadow_sha256,
-            receipt.ending_shadow_sha256
+            receipt.beginning_shadow_diagnostic_fingerprint,
+            receipt.ending_shadow_diagnostic_fingerprint
         );
     }
 
@@ -997,7 +1021,7 @@ mod tests {
         let shadow_before = shadow.clone();
         let mut input = day_input(&fixture);
         input.intervals[47].lse_forcing.snow_present_at_end = true;
-        let production_input = production_day_input(&input);
+        let production_input = production_day_input();
         let projected = projected_day(&production, &production_input);
         assert!(matches!(
             shadow.execute_day(&production, &[projected], &[production_input], &input),
@@ -1038,21 +1062,13 @@ mod tests {
             &serde_json::to_vec(&first_half.biogeochemistry).expect("BGC checkpoint"),
         )
         .expect("BGC reload");
-        let mut restarted = DirectV9RealConsumerShadow::try_new(
-            first_half.vegetation_configuration.clone(),
-            vegetation,
-            first_half.vegetation_owner_id.clone(),
-            first_half.lse_configuration.clone(),
-            lse,
-            first_half.surface_configuration.clone(),
-            first_half.layer_maps.clone(),
-            soil,
-            bgc,
-            first_half.hydrology_frame.clone(),
-            0,
-        )
-        .expect("restart owner reload");
-        restarted.accepted_interval_count = 24;
+        let mut checkpoint = first_half.checkpoint();
+        checkpoint.shadow.vegetation_state = vegetation;
+        checkpoint.shadow.lse_state = lse;
+        checkpoint.shadow.soil_thermal = soil;
+        checkpoint.shadow.biogeochemistry = bgc;
+        let mut restarted = DirectV9RealConsumerShadow::restore(checkpoint)
+            .expect("complete typed restart owner reload");
         for (index, interval) in input.intervals[24..].iter().enumerate() {
             restarted
                 .execute_interval(0, index + 24, interval)
@@ -1060,10 +1076,12 @@ mod tests {
         }
         assert_eq!(restarted, uninterrupted);
         assert_eq!(
-            restarted.canonical_sha256().expect("restarted bytes"),
+            restarted
+                .diagnostic_fingerprint()
+                .expect("restarted fingerprint"),
             uninterrupted
-                .canonical_sha256()
-                .expect("uninterrupted bytes")
+                .diagnostic_fingerprint()
+                .expect("uninterrupted fingerprint")
         );
     }
 
@@ -1146,6 +1164,18 @@ mod tests {
             )
             .is_err()
         );
+        let mut extra_layer = soil_candidates(&fixture);
+        let repeated_layer = extra_layer[0].layers[0].clone();
+        extra_layer[0].layers.push(repeated_layer);
+        assert!(
+            aggregate_soil_thermal_ending(
+                &fixture.thermal,
+                &fixture.lse_configuration,
+                TransactionId(41),
+                &extra_layer,
+            )
+            .is_err()
+        );
     }
 
     #[test]
@@ -1167,7 +1197,7 @@ mod tests {
         let mut baseline = fixture.hydrology.beginning_frame().clone();
         let mut observed = baseline.clone();
         let shadow_input = day_input(&fixture);
-        let production_input = production_day_input(&shadow_input);
+        let production_input = production_day_input();
         let metadata = DirectPublicationRunMetadata {
             run_name: "v9-real-consumer-shadow".into(),
             runtime_selection: "direct-default-off-shadow-test".into(),
@@ -1192,7 +1222,13 @@ mod tests {
                 &mut observed,
                 metadata,
                 |_, _, _| Ok(production_input.clone()),
-                |_, _| Ok((vec![production_input.clone()], shadow_input.clone())),
+                |_, _| {
+                    Ok(DirectV9RepositoryDayProjection::try_new(
+                        vec![production_input.clone()],
+                        shadow_input.clone(),
+                    )
+                    .expect("repository projection"))
+                },
                 |row, _| {
                     observed_rows.push(row.clone());
                     Ok(())
@@ -1213,7 +1249,7 @@ mod tests {
         let production_before = production.clone();
         let shadow_before = shadow.clone();
         let shadow_input = day_input(&fixture);
-        let production_input = production_day_input(&shadow_input);
+        let production_input = production_day_input();
         let error = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
             .run_publication_stream_with_v9_real_consumer_shadow(
                 &mut production,
@@ -1223,7 +1259,13 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(production_input.clone()),
-                |_, _| Ok((vec![production_input.clone()], shadow_input.clone())),
+                |_, _| {
+                    Ok(DirectV9RepositoryDayProjection::try_new(
+                        vec![production_input.clone()],
+                        shadow_input.clone(),
+                    )
+                    .expect("repository projection"))
+                },
                 |_, _| {
                     Err(crate::DirectRuntimeError::PublicationSinkFailure {
                         detail: "injected after shadow day".into(),
@@ -1265,7 +1307,7 @@ mod tests {
         let production_before = production.clone();
         let shadow_before = shadow.clone();
         let shadow_input = day_input(&fixture);
-        let production_input = production_day_input(&shadow_input);
+        let production_input = production_day_input();
         let error = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
             .run_publication_stream_with_v9_real_consumer_shadow(
                 &mut production,
@@ -1275,7 +1317,13 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(production_input.clone()),
-                |_, _| Ok((vec![production_input.clone()], shadow_input.clone())),
+                |_, _| {
+                    Ok(DirectV9RepositoryDayProjection::try_new(
+                        vec![production_input.clone()],
+                        shadow_input.clone(),
+                    )
+                    .expect("repository projection"))
+                },
                 |_, _| Ok(()),
                 &mut shadow,
             )
@@ -1297,7 +1345,7 @@ mod tests {
         let production_before = production.clone();
         let shadow_before = shadow.clone();
         let shadow_input = day_input(&fixture);
-        let projected_input = production_day_input(&shadow_input);
+        let projected_input = production_day_input();
         let mut actual_input = projected_input.clone();
         actual_input.precipitation_m = f64::from_bits(actual_input.precipitation_m.to_bits() ^ 1);
         let error = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
@@ -1309,7 +1357,13 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(actual_input.clone()),
-                |_, _| Ok((vec![projected_input.clone()], shadow_input.clone())),
+                |_, _| {
+                    Ok(DirectV9RepositoryDayProjection::try_new(
+                        vec![projected_input.clone()],
+                        shadow_input.clone(),
+                    )
+                    .expect("repository projection"))
+                },
                 |_, _| Ok(()),
                 &mut shadow,
             )

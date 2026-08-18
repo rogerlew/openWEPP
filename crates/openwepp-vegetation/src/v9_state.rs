@@ -255,6 +255,11 @@ pub fn project_v8_runtime_to_v9(
     source_configuration.configuration_sha256 = source_configuration
         .canonical_sha256()
         .map_err(V9StateError::Configuration)?;
+    if state.last_transaction_id == 0 {
+        source_configuration
+            .initial_state_sha256
+            .clone_from(&state.state_sha256);
+    }
     state
         .validate(&source_configuration)
         .map_err(V9StateError::ImportedV8Payload)?;
@@ -496,5 +501,25 @@ mod tests {
             project_v8_runtime_to_v9(&wrong_state, &target),
             Err(V9StateError::ImportedV8Payload(_))
         ));
+    }
+
+    #[test]
+    fn initial_v8_runtime_state_round_trips_through_v9_identity() {
+        let (source_configuration, source, migration) = migrated_fixture();
+        assert_eq!(source.last_transaction_id, 0);
+        source
+            .validate(&source_configuration)
+            .expect("valid initial V8 source");
+        let rebound = project_v8_runtime_to_v9(&source, &migration.configuration)
+            .expect("initial runtime rebind");
+        let (round_trip_configuration, round_trip) =
+            project_v9_runtime_to_v8(&migration.configuration, &rebound)
+                .expect("initial runtime round trip");
+        round_trip
+            .validate(&round_trip_configuration)
+            .expect("valid round-trip V8 source");
+        assert_eq!(round_trip.occupancies, source.occupancies);
+        assert_eq!(round_trip.strata, source.strata);
+        assert_eq!(round_trip.tile_canopy_air, source.tile_canopy_air);
     }
 }
