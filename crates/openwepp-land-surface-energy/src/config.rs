@@ -410,31 +410,55 @@ pub struct LandSurfaceEnergyConfiguration {
 
 impl LandSurfaceEnergyConfiguration {
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
-        if self.model_version != MODEL_VERSION {
+        self.validate_for_identity(
+            MODEL_VERSION,
+            MODEL_DEFINITION_SHA256,
+            VEGETATION_MODEL_VERSION,
+            VEGETATION_MODEL_DEFINITION_SHA256,
+        )
+    }
+
+    pub fn validate_v2(&self) -> Result<(), LandSurfaceEnergyError> {
+        self.validate_for_identity(
+            crate::V2_MODEL_VERSION,
+            crate::V2_MODEL_DEFINITION_SHA256,
+            crate::V2_VEGETATION_MODEL_VERSION,
+            crate::V2_VEGETATION_MODEL_DEFINITION_SHA256,
+        )
+    }
+
+    fn validate_for_identity(
+        &self,
+        model_version: &str,
+        model_definition_sha256: &str,
+        vegetation_model_version: &str,
+        vegetation_model_definition_sha256: &str,
+    ) -> Result<(), LandSurfaceEnergyError> {
+        if self.model_version != model_version {
             return Err(LandSurfaceEnergyError::Identity {
                 field: "model_version",
-                expected: MODEL_VERSION.into(),
+                expected: model_version.into(),
                 found: self.model_version.clone(),
             });
         }
-        if self.model_definition_sha256.as_str() != MODEL_DEFINITION_SHA256 {
+        if self.model_definition_sha256.as_str() != model_definition_sha256 {
             return Err(LandSurfaceEnergyError::Identity {
                 field: "model_definition_sha256",
-                expected: MODEL_DEFINITION_SHA256.into(),
+                expected: model_definition_sha256.into(),
                 found: self.model_definition_sha256.to_string(),
             });
         }
-        if self.vegetation_configuration.model_version != VEGETATION_MODEL_VERSION
+        if self.vegetation_configuration.model_version != vegetation_model_version
             || self
                 .vegetation_configuration
                 .model_definition_sha256
                 .as_str()
-                != VEGETATION_MODEL_DEFINITION_SHA256
+                != vegetation_model_definition_sha256
         {
             return Err(LandSurfaceEnergyError::Identity {
                 field: "vegetation_configuration",
                 expected: format!(
-                    "{VEGETATION_MODEL_VERSION}/{VEGETATION_MODEL_DEFINITION_SHA256}"
+                    "{vegetation_model_version}/{vegetation_model_definition_sha256}"
                 ),
                 found: format!(
                     "{}/{}",

@@ -18,6 +18,7 @@ pub mod physics;
 pub mod solver;
 pub mod state;
 pub mod transaction;
+pub mod v2_state;
 pub mod water;
 
 pub use closure::*;
@@ -33,6 +34,7 @@ pub use physics::*;
 pub use solver::*;
 pub use state::*;
 pub use transaction::*;
+pub use v2_state::*;
 pub use water::*;
 
 /// Immutable model name admitted by `SC-LANDSURFACEENERGY-001@3`.
@@ -45,6 +47,13 @@ pub const VEGETATION_MODEL_VERSION: &str = "OPENWEPP_C3_WOODY_V8";
 /// Required coupled vegetation model-definition digest.
 pub const VEGETATION_MODEL_DEFINITION_SHA256: &str =
     "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b";
+/// Prospective exact-zero-PAR coupled successor identity.
+pub const V2_MODEL_VERSION: &str = "OPENWEPP_SNOW_FREE_LSE_V2";
+pub const V2_MODEL_DEFINITION_SHA256: &str =
+    "409af8eb3577a9c1028f6b73a9be79ffa874e56efda70e30a105667448c7e812";
+pub const V2_VEGETATION_MODEL_VERSION: &str = "OPENWEPP_C3_WOODY_V10";
+pub const V2_VEGETATION_MODEL_DEFINITION_SHA256: &str =
+    "9133d41fa67c5a8e3d50690cbdc24ebe06b8647fcdd569c0f1646618fb9fa947";
 
 #[cfg(test)]
 mod covered_oracle_conformance_tests;

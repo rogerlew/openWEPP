@@ -4,14 +4,14 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
 consumer_scope:
   - Future soil-heat/frost boundary, evaporation, infiltration/runoff, and surface-water ledgers
 evidence_level: static+independent_oracle
-last_reviewed: 2026-08-14
+last_reviewed: 2026-08-18
 supersedes: []
 superseded_by: []
 ---
@@ -883,6 +883,58 @@ cutover.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-18 | 4 | Codex | Admitted `OPENWEPP_SNOW_FREE_LSE_V2`, binding V10 exact-zero-PAR physiology and deterministic FullSupply iteration-zero final reevaluation; V1 remains immutable. |
 | 2026-08-14 | 3 | Codex | Admitted `OPENWEPP_SNOW_FREE_LSE_V1`: explicit bare-soil and forest-litter thermal state, reciprocal V8 canopy-ground radiation/turbulence, hydrology-owned water mass, liquid enthalpy, coupled potential/final solve, strict numerics and independent closure; no runtime or cutover. |
 | 2026-08-08 | 2 | Codex | VEGETATION-BOUNDARY-AUTHORITY amendment: separated canopy/ground/litter/snow/soil radiation lineage and bound actual transpiration to one independently reconstructed latent-energy debit without admitting constitutive physics. |
 | 2026-08-08 | 1 | Codex | Initial control-volume, custody, conservation, ownership, guard, test-vector, and non-promotable authority-gap contract. |
+
+## `OPENWEPP_SNOW_FREE_LSE_V2` V10 Coupling Amendment
+
+V2 imports every V1 control volume, tolerance, owner, rollback rule, and
+positive-PAR accepted result. It requires the V10 vegetation identity and
+admits its exact-zero-PAR branch. It does not recompute, clamp, or relabel V10
+gas states.
+
+When every positive final water authorization is identity- and amount-equal to
+its potential request with `FullSupply`, and every canonical zero request
+retains its exact identity and zero amount, V2 uses the accepted potential
+coordinates as the deterministic fixed-final initial iterate. It rebuilds the
+complete fixed-final evaluation from immutable beginning owners and exact
+per-resource caps. No potential flux, candidate state, branch, receipt, or
+diagnostic is copied.
+
+If that initial evaluation satisfies every residual tolerance, active-branch
+inequality, domain and bound, `F<=A<=D`, identity, and owner check, V2 accepts
+at iteration zero with exact-zero step norms and zero backtracking without
+constructing a Jacobian. Every actual solver step retains V1 strict-decrease
+and convergence rules. Copying the potential candidate without complete final
+reevaluation is forbidden. A residual outside tolerance or any branch,
+identity, owner, or amount mismatch cannot use this acceptance path.
+
+Exact-zero-PAR partial positive root authorization is typed unsupported in V2.
+It does not invoke hydraulic attenuation, conductance or vulnerability floors,
+plant capacitance, or authorization donation.
+
+For the V10 exact-zero-PAR potential solve only, a coordinate at an admitted
+closed bound uses the inward one-sided binary64 finite difference when the
+opposite perturbation is outside the existing trial domain. Interior
+coordinates retain the V1 centered difference. Both perturbations outside the
+domain reject. This bound-aware derivative rule is prospective V2 numerics and
+does not alter any V1/V8/V9 execution.
+
+V1-to-V2 migration validates complete V1 and V10 owner identities, copies all
+LSE scientific values bit-identically, and changes only the LSE identity and
+transitively derived receipts. V1 remains immutable and is not a V2 alias.
+
+| ID | Binding rule |
+|---|---|
+| `INV-LANDSURFACEENERGY-109` | LSE-V2 imports exact LSE-V1 physics and accepts only the V10 vegetation owner at the coupled boundary. |
+| `INV-LANDSURFACEENERGY-110` | Exact FullSupply finalization seeds only coordinates, then reevaluates the complete fixed-final system from immutable beginning owners; a passing initial evaluation accepts at iteration zero without a Jacobian. |
+| `INV-LANDSURFACEENERGY-111` | V1-to-V2 migration copies every LSE scientific value bit-identically and derives only V2 identity receipts; partial zero-PAR root supply is unsupported. |
+| `LSE-E-109` | V8/V9 vegetation identity, mixed V1/V2 receipts, or any owner alias rejects before V2 physics. |
+| `LSE-E-110` | Missing, duplicated, mutated, or locally recomputed V10 nighttime gas state rejects the coupled owner envelope. |
+| `LSE-E-111` | Partial or value-mutating V1-to-V2 migration rejects without a V2 state. |
+
+This amendment remains default-off. It authorizes no production selector,
+default/output change, cutover, snow handoff, deployment, calibration, or
+empirical claim.

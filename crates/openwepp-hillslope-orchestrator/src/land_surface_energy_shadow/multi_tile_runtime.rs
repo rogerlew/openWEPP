@@ -108,14 +108,14 @@ impl PotentialTilePhase {
     fn identity(&self) -> &RuntimeTileIdentity {
         match self {
             Self::Open { phase, .. } => &phase.identity,
-            Self::Covered { phase, .. } => &phase.identity,
+            Self::Covered { phase, .. } => phase.identity(),
         }
     }
 
     fn request_batch(&self) -> &PotentialWaterRequestBatch {
         match self {
             Self::Open { phase, .. } => &phase.request_batch,
-            Self::Covered { phase, .. } => &phase.request_batch,
+            Self::Covered { phase, .. } => phase.request_batch(),
         }
     }
 
@@ -633,7 +633,7 @@ fn finalize_all_tiles(
                 } => Ok::<_, LandSurfaceEnergyShadowError>(FinalizedRuntimeTile::Covered(
                     finalize_covered_phase(
                         phase,
-                        &phase.identity.beginning_lse_state_sha256,
+                        &phase.identity().beginning_lse_state_sha256,
                         subset,
                         final_initial_trial.clone(),
                         soil_thermal,

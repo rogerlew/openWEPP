@@ -120,6 +120,7 @@ pub fn execute_v8_lse_runtime_shadow(
         nitrogen,
         biogeochemistry_beginning,
         None,
+        openwepp_land_surface_energy::CoveredColumnAuthority::HistoricalV8,
     )
 }
 
@@ -141,6 +142,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
     nitrogen: &dyn NitrogenArbiter,
     biogeochemistry_beginning: &BiogeochemistryState,
     injection: Option<V8EndpointFailureInjection>,
+    authority: openwepp_land_surface_energy::CoveredColumnAuthority,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let biogeochemistry_owner_id = ResourceOwnerId::try_new("biogeochemistry")
         .map_err(|_| ExecuteV8LseRuntimeShadowError::Identity("BGC rollback owner identity"))?;
@@ -177,6 +179,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
         nitrogen,
         biogeochemistry_beginning,
         injection,
+        authority,
         &pending,
     );
     if let Err(error) = &result {
@@ -271,6 +274,7 @@ fn execute_v8_lse_runtime_shadow_phases(
     nitrogen: &dyn NitrogenArbiter,
     biogeochemistry_beginning: &BiogeochemistryState,
     injection: Option<V8EndpointFailureInjection>,
+    authority: openwepp_land_surface_energy::CoveredColumnAuthority,
     pending: &RefCell<PendingEndpointEnvelopes>,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let projected = project_v8_runtime_inputs(
@@ -309,7 +313,8 @@ fn execute_v8_lse_runtime_shadow_phases(
         &projected.hydrology_snapshot_sha256,
         soil_thermal,
     )?;
-    let solver_ready = projected.solver_ready_tiles(vegetation_owner_id)?;
+    let solver_ready =
+        projected.solver_ready_tiles_with_authority(vegetation_owner_id, authority)?;
     injected(injection, V8EndpointFailureInjection::AfterSolverReady)?;
     let mut problems = Vec::with_capacity(solver_ready.len());
     let mut soil_sources = BTreeMap::<GroundWaterKey, RealHydrologySourceKey>::new();

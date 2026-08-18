@@ -80,11 +80,11 @@ pub(crate) fn execute_covered_forest_shadow(
 ) -> Result<CoveredForestShadowResult, LandSurfaceEnergyShadowError> {
     let potential =
         solve_covered_potential_phase(identity, beginning, roots, potential_initial_trial)?;
-    let mut submitted_requests = potential.request_batch.requests.clone();
+    let mut submitted_requests = potential.request_batch().requests.clone();
     submitted_requests.extend_from_slice(companion_potential_requests);
     let submitted_request_batch = PotentialWaterRequestBatch::try_new(
-        potential.request_batch.transaction_id,
-        potential.request_batch.beginning_lse_state_sha256.clone(),
+        potential.request_batch().transaction_id,
+        potential.request_batch().beginning_lse_state_sha256.clone(),
         submitted_requests,
     )?;
     let mut retained_final = None;
@@ -97,7 +97,7 @@ pub(crate) fn execute_covered_forest_shadow(
         ingress,
         |authorizations| {
             let covered_keys: BTreeSet<_> = potential
-                .request_batch
+                .request_batch()
                 .requests
                 .iter()
                 .map(|row| row.key.clone())
@@ -109,7 +109,7 @@ pub(crate) fn execute_covered_forest_shadow(
                 .collect();
             let mut final_tile = finalize_covered_phase(
                 &potential,
-                &potential.identity.beginning_lse_state_sha256,
+                &potential.identity().beginning_lse_state_sha256,
                 covered_authorizations,
                 final_initial_trial,
                 soil_thermal,
@@ -190,11 +190,11 @@ pub(crate) fn execute_covered_forest_shadow_derived_ingress(
 ) -> Result<CoveredForestShadowResult, LandSurfaceEnergyShadowError> {
     let potential =
         solve_covered_potential_phase(identity, beginning, roots, potential_initial_trial)?;
-    let mut submitted_requests = potential.request_batch.requests.clone();
+    let mut submitted_requests = potential.request_batch().requests.clone();
     submitted_requests.extend_from_slice(companion_potential_requests);
     let submitted_request_batch = PotentialWaterRequestBatch::try_new(
-        potential.request_batch.transaction_id,
-        potential.request_batch.beginning_lse_state_sha256.clone(),
+        potential.request_batch().transaction_id,
+        potential.request_batch().beginning_lse_state_sha256.clone(),
         submitted_requests,
     )?;
     let mut retained_final = None;
@@ -207,7 +207,7 @@ pub(crate) fn execute_covered_forest_shadow_derived_ingress(
         ingress_schedule,
         |authorizations| {
             let covered_keys: BTreeSet<_> = potential
-                .request_batch
+                .request_batch()
                 .requests
                 .iter()
                 .map(|row| row.key.clone())
@@ -219,7 +219,7 @@ pub(crate) fn execute_covered_forest_shadow_derived_ingress(
                 .collect();
             let mut final_tile = finalize_covered_phase(
                 &potential,
-                &potential.identity.beginning_lse_state_sha256,
+                &potential.identity().beginning_lse_state_sha256,
                 covered_authorizations,
                 final_initial_trial,
                 soil_thermal,

@@ -11,18 +11,21 @@ use openwepp_kernel_contract::{
     authorize_proportionally,
 };
 use openwepp_land_surface_energy::{
-    LandSurfaceEnergyConfiguration, LandSurfaceEnergyError, LandSurfaceEnergyState,
-    LandSurfaceForcing, LiquidParcel, LiquidParcelKind, LiquidTemperatureProvider, OfeId, ParcelId,
-    Sha256Digest, SoilThermalLayerSnapshot, SoilThermalOfeSnapshot, SoilThermalSnapshot,
-    SoilThermalTileCandidate, build_lse_ending_state,
+    CoveredColumnAuthority, LandSurfaceEnergyConfiguration, LandSurfaceEnergyError,
+    LandSurfaceEnergyState, LandSurfaceEnergyV2State, LandSurfaceForcing, LiquidParcel,
+    LiquidParcelKind, LiquidTemperatureProvider, LseV2StateError, OfeId, ParcelId, Sha256Digest,
+    SoilThermalLayerSnapshot, SoilThermalOfeSnapshot, SoilThermalSnapshot,
+    SoilThermalTileCandidate, build_lse_ending_state, project_v2_runtime_to_v1,
+    project_validated_v1_runtime_to_v2,
 };
 use openwepp_meteorology::snow_free_forcing::{
     celsius_to_kelvin, kilopascals_to_pascals, liquid_specific_enthalpy_j_kg,
 };
 use openwepp_vegetation::{
     NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, SnowFreeForcing, V9CoupledOwnedState,
-    V9StateError, VegetationConfiguration, VegetationError, project_v8_runtime_to_v9,
-    project_v9_runtime_to_v8,
+    V9StateError, V10CoupledOwnedState, V10StateError, VegetationConfiguration, VegetationError,
+    project_v8_runtime_to_v9, project_v9_runtime_to_v8, project_v9_runtime_to_v10,
+    project_v10_runtime_to_v9,
 };
 use serde::Serialize;
 use sha2::{Digest, Sha256};
@@ -32,7 +35,7 @@ use crate::land_surface_energy_shadow::{
     CoveredV8OwnerEnvelopeError, ExecuteV8LseRuntimeShadowError,
     LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError,
     UncommittedCoveredV8OwnerEnvelope, V8CanopyForcingReceipt, V8InputProjectionError,
-    execute_v8_lse_runtime_shadow, unified_beginning_hydrology_snapshot_sha256,
+    execute_v8_lse_runtime_shadow_internal, unified_beginning_hydrology_snapshot_sha256,
 };
 use crate::runtime_inputs::{
     SnowFreeHalfHourDestination, SnowFreeHalfHourIntervalReceipt,
@@ -362,6 +365,8 @@ fn project_vegetation_atmosphere(
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectV9RealConsumerShadow {
+    authority: CoveredColumnAuthority,
+    provider_gsi_receipt_sha256: String,
     vegetation_configuration: VegetationConfiguration,
     vegetation_state: V9CoupledOwnedState,
     vegetation_owner_id: ResourceOwnerId,
@@ -380,6 +385,189 @@ pub struct DirectV9RealConsumerShadow {
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectV9RealConsumerCheckpoint {
     shadow: DirectV9RealConsumerShadow,
+}
+
+/// Explicit default-off V10/LSE-V2 owner. It retains successor identities at
+/// the public boundary and uses transient V9/V1 projections only to reuse the
+/// unchanged positive-PAR and owner plumbing.
+#[derive(Clone, Debug, PartialEq)]
+pub struct DirectV10RealConsumerShadow {
+    inner: DirectV9RealConsumerShadow,
+    vegetation_configuration: VegetationConfiguration,
+    vegetation_state: V10CoupledOwnedState,
+    lse_configuration: LandSurfaceEnergyConfiguration,
+    lse_state: LandSurfaceEnergyV2State,
+}
+
+pub type DirectV10ShadowDayInput = DirectV9ShadowDayInput;
+pub type DirectV10ShadowDayReceipt = DirectV9ShadowDayReceipt;
+
+#[derive(Debug, Error, PartialEq)]
+pub enum DirectV10RealConsumerError {
+    #[error(transparent)]
+    V10(#[from] V10StateError),
+    #[error(transparent)]
+    LseV2(#[from] LseV2StateError),
+    #[error(transparent)]
+    LandSurface(#[from] LandSurfaceEnergyError),
+    #[error(transparent)]
+    Runtime(#[from] DirectV9RealConsumerError),
+}
+
+impl DirectV10RealConsumerShadow {
+    #[allow(clippy::too_many_arguments)]
+    pub fn try_new(
+        vegetation_configuration: VegetationConfiguration,
+        vegetation_state: V10CoupledOwnedState,
+        vegetation_owner_id: ResourceOwnerId,
+        lse_configuration: LandSurfaceEnergyConfiguration,
+        lse_state: LandSurfaceEnergyV2State,
+        surface_configuration: DirectSurfaceLiquidConfiguration,
+        layer_maps: Vec<RealHydrologyLaneLayerMap>,
+        soil_thermal: SoilThermalSnapshot,
+        biogeochemistry: BiogeochemistryState,
+        hydrology_frame: DirectRunFrame,
+        next_day_index: usize,
+    ) -> Result<Self, DirectV10RealConsumerError> {
+        vegetation_state.validate(&vegetation_configuration)?;
+        lse_state.validate(&lse_configuration)?;
+        let provider_gsi_receipt_sha256 = vegetation_state.0.state_sha256.clone();
+        let (v9_configuration, v9_state) =
+            project_v10_runtime_to_v9(&vegetation_configuration, &vegetation_state)?;
+        let (v8_configuration, _) = project_v9_runtime_to_v8(&v9_configuration, &v9_state)
+            .map_err(DirectV9RealConsumerError::V9)?;
+        let v10_configuration_sha256 = openwepp_land_surface_energy::Sha256Digest::try_new(
+            vegetation_configuration.configuration_sha256.clone(),
+        )?;
+        if lse_configuration
+            .vegetation_configuration
+            .configuration_sha256
+            != v10_configuration_sha256
+        {
+            return Err(DirectV10RealConsumerError::LseV2(
+                LseV2StateError::VegetationIdentity,
+            ));
+        }
+        let v8_configuration_sha256 = openwepp_land_surface_energy::Sha256Digest::try_new(
+            v8_configuration.configuration_sha256.clone(),
+        )?;
+        let (v1_configuration, v1_state) =
+            project_v2_runtime_to_v1(&lse_configuration, &lse_state, &v8_configuration_sha256)?;
+        let inner = DirectV9RealConsumerShadow::try_new_with_authority(
+            v9_configuration,
+            v9_state,
+            vegetation_owner_id,
+            v1_configuration,
+            v1_state,
+            surface_configuration,
+            layer_maps,
+            soil_thermal,
+            biogeochemistry,
+            hydrology_frame,
+            next_day_index,
+            CoveredColumnAuthority::V10ExactZeroPar,
+            provider_gsi_receipt_sha256,
+        )?;
+        Ok(Self {
+            inner,
+            vegetation_configuration,
+            vegetation_state,
+            lse_configuration,
+            lse_state,
+        })
+    }
+
+    pub fn snow_free_provider_configuration(
+        &self,
+        template: &DirectV10ShadowDayInput,
+    ) -> Result<SnowFreeHalfHourProviderConfiguration, DirectV10RealConsumerError> {
+        Ok(self.inner.snow_free_provider_configuration(template)?)
+    }
+
+    pub fn project_repository_forcing_receipts(
+        &self,
+        provider: &ValidatedSnowFreeHalfHourForcingReceipts,
+        template: DirectV10ShadowDayInput,
+    ) -> Result<DirectV10ShadowDayInput, DirectV10RealConsumerError> {
+        Ok(self
+            .inner
+            .project_repository_forcing_receipts(provider, template)?)
+    }
+
+    pub fn execute_day(
+        &mut self,
+        production_frame: &DirectRunFrame,
+        projected_day_frames: &[DirectDayFrame],
+        projected_day_inputs: &[DirectPublicationDayInput],
+        input: &DirectV10ShadowDayInput,
+    ) -> Result<DirectV10ShadowDayReceipt, DirectV10RealConsumerError> {
+        let mut candidate = self.clone();
+        let receipt = candidate.inner.execute_day(
+            production_frame,
+            projected_day_frames,
+            projected_day_inputs,
+            input,
+        )?;
+        candidate.vegetation_state = project_v9_runtime_to_v10(
+            candidate.inner.vegetation_state(),
+            &candidate.vegetation_configuration,
+        )?;
+        candidate.lse_state = project_validated_v1_runtime_to_v2(
+            &candidate.inner.lse_configuration,
+            candidate.inner.lse_state(),
+            &candidate.lse_configuration,
+            &openwepp_land_surface_energy::Sha256Digest::try_new(
+                candidate
+                    .vegetation_configuration
+                    .configuration_sha256
+                    .clone(),
+            )?,
+        )?;
+        candidate
+            .inner
+            .provider_gsi_receipt_sha256
+            .clone_from(&candidate.vegetation_state.0.state_sha256);
+        *self = candidate;
+        Ok(receipt)
+    }
+
+    #[must_use]
+    pub const fn vegetation_state(&self) -> &V10CoupledOwnedState {
+        &self.vegetation_state
+    }
+
+    #[must_use]
+    pub const fn lse_state(&self) -> &LandSurfaceEnergyV2State {
+        &self.lse_state
+    }
+
+    #[cfg(test)]
+    fn execute_first_interval_for_test(
+        &mut self,
+        input: &DirectV10ShadowDayInput,
+    ) -> Result<(), DirectV10RealConsumerError> {
+        let mut candidate = self.clone();
+        candidate
+            .inner
+            .execute_interval(0, 0, &input.intervals[0])?;
+        candidate.vegetation_state = project_v9_runtime_to_v10(
+            candidate.inner.vegetation_state(),
+            &candidate.vegetation_configuration,
+        )?;
+        candidate.lse_state = project_validated_v1_runtime_to_v2(
+            &candidate.inner.lse_configuration,
+            candidate.inner.lse_state(),
+            &candidate.lse_configuration,
+            &openwepp_land_surface_energy::Sha256Digest::try_new(
+                candidate
+                    .vegetation_configuration
+                    .configuration_sha256
+                    .clone(),
+            )?,
+        )?;
+        *self = candidate;
+        Ok(())
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -481,7 +669,7 @@ impl DirectV9RealConsumerShadow {
             co2_pa: first.vegetation_forcing.co2_pa,
             reference_height_m: first.vegetation_forcing.reference_height_m,
             gsi: first.vegetation_forcing.gsi,
-            gsi_receipt_sha256: self.vegetation_state.0.state_sha256.clone(),
+            gsi_receipt_sha256: self.provider_gsi_receipt_sha256.clone(),
             destinations,
         })
     }
@@ -510,7 +698,7 @@ impl DirectV9RealConsumerShadow {
             provider,
             template,
             self.hydrology_frame.identity.run_id,
-            &self.vegetation_state.0.state_sha256,
+            &self.provider_gsi_receipt_sha256,
             &expected_destinations,
         )
     }
@@ -528,6 +716,40 @@ impl DirectV9RealConsumerShadow {
         biogeochemistry: BiogeochemistryState,
         hydrology_frame: DirectRunFrame,
         next_day_index: usize,
+    ) -> Result<Self, DirectV9RealConsumerError> {
+        let provider_gsi_receipt_sha256 = vegetation_state.0.state_sha256.clone();
+        Self::try_new_with_authority(
+            vegetation_configuration,
+            vegetation_state,
+            vegetation_owner_id,
+            lse_configuration,
+            lse_state,
+            surface_configuration,
+            layer_maps,
+            soil_thermal,
+            biogeochemistry,
+            hydrology_frame,
+            next_day_index,
+            CoveredColumnAuthority::HistoricalV8,
+            provider_gsi_receipt_sha256,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn try_new_with_authority(
+        vegetation_configuration: VegetationConfiguration,
+        vegetation_state: V9CoupledOwnedState,
+        vegetation_owner_id: ResourceOwnerId,
+        lse_configuration: LandSurfaceEnergyConfiguration,
+        lse_state: LandSurfaceEnergyState,
+        surface_configuration: DirectSurfaceLiquidConfiguration,
+        layer_maps: Vec<RealHydrologyLaneLayerMap>,
+        soil_thermal: SoilThermalSnapshot,
+        biogeochemistry: BiogeochemistryState,
+        hydrology_frame: DirectRunFrame,
+        next_day_index: usize,
+        authority: CoveredColumnAuthority,
+        provider_gsi_receipt_sha256: String,
     ) -> Result<Self, DirectV9RealConsumerError> {
         vegetation_state.validate(&vegetation_configuration)?;
         let (v8_configuration, v8_state) =
@@ -561,6 +783,8 @@ impl DirectV9RealConsumerShadow {
             ));
         }
         let value = Self {
+            authority,
+            provider_gsi_receipt_sha256,
             vegetation_configuration,
             vegetation_state,
             vegetation_owner_id,
@@ -752,7 +976,7 @@ impl DirectV9RealConsumerShadow {
             vegetation_forcing,
         )?;
         let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
-        let envelope = execute_v8_lse_runtime_shadow(
+        let envelope = execute_v8_lse_runtime_shadow_internal(
             &v8_configuration,
             &v8_beginning,
             &self.vegetation_owner_id,
@@ -768,6 +992,8 @@ impl DirectV9RealConsumerShadow {
             &self.soil_thermal,
             &nitrogen,
             &self.biogeochemistry,
+            None,
+            self.authority,
         )?;
         self.accept_envelope(transaction_id, &envelope)
     }
@@ -1246,8 +1472,13 @@ fn digest_serialized<T: Serialize>(value: &T) -> Result<Sha256Digest, DirectV9Re
 mod tests {
     use openwepp_input_contract::parsers::climate::{ParserMode, parse_climate_from_str};
     use openwepp_kernel_contract::TileId;
-    use openwepp_land_surface_energy::{OfeId, SoilThermalLayerCandidate};
-    use openwepp_vegetation::{V9_MODEL_SHA256, V9CoupledOwnedState};
+    use openwepp_land_surface_energy::{
+        OfeId, SoilThermalLayerCandidate, V2_MODEL_DEFINITION_SHA256, V2_MODEL_VERSION,
+        V2_VEGETATION_MODEL_DEFINITION_SHA256, V2_VEGETATION_MODEL_VERSION,
+    };
+    use openwepp_vegetation::{
+        V9_MODEL_SHA256, V9CoupledOwnedState, V10_MODEL_SHA256, V10CoupledOwnedState,
+    };
 
     use super::*;
     use crate::land_surface_energy_shadow::{EndpointFixture, endpoint_fixture};
@@ -1299,6 +1530,66 @@ mod tests {
         (shadow, fixture)
     }
 
+    fn v10_shadow_fixture() -> (DirectV10RealConsumerShadow, EndpointFixture) {
+        let fixture = endpoint_fixture();
+        let (v9_configuration, v9_state) = v9_configuration_and_state(&fixture);
+        let mut vegetation_configuration = v9_configuration;
+        vegetation_configuration.model_definition_sha256 = V10_MODEL_SHA256.into();
+        vegetation_configuration.configuration_sha256 = vegetation_configuration
+            .canonical_sha256()
+            .expect("V10 configuration digest");
+        let mut vegetation_payload = v9_state.0;
+        vegetation_payload.model_definition_sha256 = V10_MODEL_SHA256.into();
+        vegetation_payload
+            .configuration_sha256
+            .clone_from(&vegetation_configuration.configuration_sha256);
+        vegetation_payload.state_sha256 = vegetation_payload.canonical_sha256();
+        let vegetation_state = V10CoupledOwnedState(vegetation_payload);
+
+        let mut lse_configuration = fixture.lse_configuration.clone();
+        lse_configuration.model_version = V2_MODEL_VERSION.into();
+        lse_configuration.model_definition_sha256 =
+            Sha256Digest::try_new(V2_MODEL_DEFINITION_SHA256).expect("LSE-V2 digest");
+        lse_configuration.vegetation_configuration.model_version =
+            V2_VEGETATION_MODEL_VERSION.into();
+        lse_configuration
+            .vegetation_configuration
+            .model_definition_sha256 = Sha256Digest::try_new(V2_VEGETATION_MODEL_DEFINITION_SHA256)
+            .expect("V10 vegetation digest");
+        lse_configuration
+            .vegetation_configuration
+            .configuration_sha256 =
+            Sha256Digest::try_new(vegetation_configuration.configuration_sha256.clone())
+                .expect("V10 configuration receipt");
+        lse_configuration.configuration_sha256 = lse_configuration
+            .canonical_sha256()
+            .expect("LSE-V2 configuration digest");
+        let mut lse_payload = fixture.lse_state.clone();
+        lse_payload.model_definition_sha256 =
+            Sha256Digest::try_new(V2_MODEL_DEFINITION_SHA256).expect("LSE-V2 state identity");
+        lse_payload
+            .configuration_sha256
+            .clone_from(&lse_configuration.configuration_sha256);
+        lse_payload.state_sha256 = lse_payload.canonical_sha256().expect("LSE-V2 state digest");
+        let lse_state = LandSurfaceEnergyV2State(lse_payload);
+
+        let shadow = DirectV10RealConsumerShadow::try_new(
+            vegetation_configuration,
+            vegetation_state,
+            ResourceOwnerId::try_new("vegetation-v8").expect("owner"),
+            lse_configuration,
+            lse_state,
+            fixture.surface_configuration.clone(),
+            fixture.hydrology.layer_maps().to_vec(),
+            fixture.thermal.clone(),
+            fixture.biogeochemistry.clone(),
+            fixture.hydrology.beginning_frame().clone(),
+            0,
+        )
+        .expect("V10/LSE-V2 shadow fixture");
+        (shadow, fixture)
+    }
+
     fn day_input(fixture: &EndpointFixture) -> DirectV9ShadowDayInput {
         let base_vegetation = fixture.receipt.forcing().clone();
         let intervals = (0..INTERVALS_PER_DAY)
@@ -1336,9 +1627,9 @@ mod tests {
 
     #[test]
     fn sealed_repository_receipts_project_into_real_child4_forcing_types() {
-        let (mut shadow, fixture) = shadow_fixture();
+        let (mut shadow, fixture) = v10_shadow_fixture();
         let template = day_input(&fixture);
-        let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 420.0 2.5 180.0 20.0\n";
+        let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 0.0 2.5 180.0 20.0\n";
         let climate = parse_climate_from_str(source, ParserMode::Strict).expect("strict climate");
         let request = build_hillslope_climate_runtime_request(&climate).expect("climate request");
         let configuration = shadow
@@ -1348,7 +1639,7 @@ mod tests {
             .snow_free_half_hour_forcing_receipts(
                 0,
                 &configuration,
-                &mut SnowFreeHalfHourProviderCursor::default(),
+                &SnowFreeHalfHourProviderCursor::default(),
             )
             .expect("sealed provider receipts");
         let projected = shadow
@@ -1368,13 +1659,63 @@ mod tests {
                 .validate(interval.lse_forcing.transaction_id)
                 .expect("projected LSE forcing");
         }
-        let production = fixture.hydrology.beginning_frame().clone();
-        let production_input = production_day_input();
-        let day_frame = projected_day(&production, &production_input);
-        let receipt = shadow
-            .execute_day(&production, &[day_frame], &[production_input], &projected)
-            .expect("real Child4 consumes provider forcing");
-        assert_eq!(receipt.accepted_interval_count, 48);
+        shadow
+            .execute_first_interval_for_test(&projected)
+            .expect("real Child4 consumes canonical midnight interval");
+        assert_eq!(shadow.inner.accepted_interval_count(), 1);
+    }
+
+    #[test]
+    fn v10_midnight_failure_rolls_back_every_shadow_owner_exactly() {
+        let (mut shadow, fixture) = v10_shadow_fixture();
+        let beginning = shadow.clone();
+        let mut input = day_input(&fixture);
+        input.intervals[0].lse_forcing.snow_present_at_beginning = true;
+        assert!(matches!(
+            shadow.execute_first_interval_for_test(&input),
+            Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Unsupported(
+                    "forcing transaction, cadence, or snow domain"
+                )
+            ))
+        ));
+        assert_eq!(shadow, beginning);
+    }
+
+    #[test]
+    fn v10_constructor_rejects_independently_valid_wrong_vegetation_receipt() {
+        let (shadow, _) = v10_shadow_fixture();
+        let mut lse_configuration = shadow.lse_configuration.clone();
+        lse_configuration
+            .vegetation_configuration
+            .configuration_sha256 = Sha256Digest::try_new("9".repeat(64)).expect("wrong receipt");
+        lse_configuration.configuration_sha256 = lse_configuration
+            .canonical_sha256()
+            .expect("altered LSE configuration");
+        let mut lse_state = shadow.lse_state.clone();
+        lse_state
+            .0
+            .configuration_sha256
+            .clone_from(&lse_configuration.configuration_sha256);
+        lse_state.0.state_sha256 = lse_state.0.canonical_sha256().expect("altered LSE state");
+        assert!(matches!(
+            DirectV10RealConsumerShadow::try_new(
+                shadow.vegetation_configuration.clone(),
+                shadow.vegetation_state.clone(),
+                shadow.inner.vegetation_owner_id.clone(),
+                lse_configuration,
+                lse_state,
+                shadow.inner.surface_configuration.clone(),
+                shadow.inner.layer_maps.clone(),
+                shadow.inner.soil_thermal.clone(),
+                shadow.inner.biogeochemistry.clone(),
+                shadow.inner.hydrology_frame.clone(),
+                shadow.inner.next_day_index,
+            ),
+            Err(DirectV10RealConsumerError::LseV2(
+                LseV2StateError::VegetationIdentity
+            ))
+        ));
     }
 
     fn projected_day(

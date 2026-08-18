@@ -225,7 +225,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "contract_version: 13",
+        "contract_version: 14",
         "Version 13 admits `OPENWEPP_C3_WOODY_V9`",
         "Version 7 admits the constitutive equations, topology inheritance, and V3",
         "Earlier-version statements limiting admission to",
@@ -669,7 +669,7 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 13",
+        "contract_version: 14",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
         "OPENWEPP_C3_WOODY_V3",

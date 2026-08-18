@@ -178,6 +178,12 @@ impl VegetationConfiguration {
         self.validate_for_model(crate::v9_state::V9_MODEL_SHA256, true)
     }
 
+    /// Validates the imported V9 configuration payload under the prospective
+    /// exact-zero-PAR V10 identity.
+    pub fn validate_v10(&self) -> Result<(), VegetationError> {
+        self.validate_for_model(crate::v10_state::V10_MODEL_SHA256, true)
+    }
+
     pub(crate) fn validate_historical(
         &self,
         expected_model_sha256: &str,

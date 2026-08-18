@@ -1,6 +1,6 @@
 # Admit and Implement the C3 Nighttime Leaf-CO2 Branch
 
-Status: `HOLD / provisional runtime contained / full coupled oracle required`
+Status: `EXECUTING / V10 and LSE-V2 authority admission`
 
 Date: `2026-08-18`
 
@@ -22,11 +22,10 @@ Child 4 or the campaign.
 
 ## Objective
 
-Admit and implement the complete V10 nighttime and respiration-dominated
-gas--hydraulic branch needed by canonical nighttime receipts. Preserve V3--V9
-historical definitions, runtime behavior, and bytes. Correct the provisional
-LSE-V2 authority only after an independent high-precision feasibility audit
-classifies the fixed-final midnight failure.
+Admit and implement the narrow V10 exact-zero-PAR gas--hydraulic branch needed
+by canonical nighttime receipts. Preserve V3--V9 historical definitions,
+runtime behavior, and bytes. Bind LSE-V2 iteration-zero FullSupply acceptance
+to complete fixed-final reevaluation from immutable beginning owners.
 
 ## Provisional derivation and independent-review disposition
 
@@ -40,9 +39,12 @@ contract successor (or an equally explicit reviewed versioned erratum), plus a
 signed-zero disposition. No vegetation production Rust may change before that
 authority is admitted.
 
-The WIP successor now admits Ci provisionally but does not release V10 or
-LSE-V2. Its numerical experiments are diagnostic evidence only and must be
-removed or independently reselected before authority admission.
+The prospective successor authority is now implemented for review. V10 owns
+the positive-area exact-zero-PAR branch; LSE-V2 owns deterministic
+iteration-zero FullSupply finalization after complete fixed-final
+reevaluation. The package remains executing because the provider-derived
+48-interval day still encounters a later potential-pass singularity and the
+persisted-restart, Child-4, and campaign gates have not closed.
 
 ## Current hydraulic HOLD
 
@@ -53,20 +55,23 @@ Jacobian evidence, and log-space vulnerability reconstruction and classifies
 whether a finite steady-state root exists. Newton inconvenience is not a hold
 boundary; only independently proven physical or ownership infeasibility is.
 
-The first 100-decimal calculation is retained only as a scalar feasibility
-envelope. Independent review found that it substitutes warm-start values and
-does not solve the complete two-occupancy energy, shared-air, soil, and
-per-layer-cap system. Production implementation is therefore paused at the
-contract-first boundary while the full coupled authority artifact is built.
+The repository complete fixed-final evaluator has demonstrated that the
+canonical FullSupply midnight potential coordinates satisfy all 29 final
+residual tolerances under exact caps rebuilt from immutable beginning owners.
+That direct evaluator evidence is sufficient root-existence and closure
+authority for the default-off V10/LSE-V2 shadow; no second full coupled oracle
+is required unless the final evaluator fails a case inside the declared V10
+supported domain.
 
-## Containment checkpoint
+## Current implementation checkpoint
 
-The active runtime and canonical authority were restored byte-for-byte to the
-pre-WIP `7bda42a5614feb3027b51dfced783eb39e7c37ad` posture. The provisional V14
-vegetation contract, V4 LSE contract, V10 definition, and V10 integration test
-are retained only as package-local artifacts. They are not active authority or
-an executable runtime identity. The committed WIP and its exact rejected diff
-remain preserved as evidence.
+V10 and LSE-V2 are distinct, default-off identities with explicit predecessor
+projection. Historical V8/V9 dispatch remains unchanged. The real-consumer
+adapter accepts the canonical midnight interval and rolls all owners back on a
+poisoned interval. A complete provider-derived zero-shortwave day presently
+rejects in the interval-15 uncapped potential pass (`TransactionId(56)`) with
+typed `NumericalSingular`; the failure precedes fixed-final authorization and
+therefore is not covered by the authorized iteration-zero finalization rule.
 
 ## Exact contradiction
 

@@ -348,6 +348,7 @@ fn covered_v8_block_matches_frozen_joint_solution() {
         ],
     };
     let mut column = CoveredColumnInputs {
+        authority: CoveredColumnAuthority::HistoricalV8,
         interval_s: 1_800.0,
         tile_fraction: 0.38,
         pressure_pa: 101_325.0,

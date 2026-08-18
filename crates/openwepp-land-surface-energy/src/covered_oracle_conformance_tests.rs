@@ -11,7 +11,8 @@ use crate::solver::{
     CoveredColumnShortwaveInputs, CoveredColumnSolveOutcome, CoveredOccupancyInputs,
     CoveredOccupancyShortwaveInputs, CoveredWaterCaps, LeafBiochemicalInputs, NumericalFailure,
     NumericalFailureKind, OpenSurfaceProblem, RootHydraulicLayer, SoilThermalNodeOperands,
-    SourceWaterCap, SurfaceClassKind, SurfaceStorageBranch, WaterBranch, solve_covered_column,
+    SourceWaterCap, SurfaceClassKind, SurfaceStorageBranch, WaterBranch, evaluate_covered_column,
+    solve_covered_column,
 };
 
 const VECTOR_BYTES: &[u8] = include_bytes!(concat!(
@@ -372,22 +373,16 @@ fn covered_primitive(fixture: &Value) -> &Value {
     &fixture["mandatory_exact_scenario_vectors"]["covered_column"]["primitive_input"]
 }
 
-fn column(fixture: &Value, rank_count: usize, expected: &Value) -> (CoveredColumnInputs, Vec<f64>) {
-    let primitive = covered_primitive(fixture);
-    let ground_config = &primitive["ground_config"];
-    let ground_state = &primitive["ground_state"];
-    let first_case = &primitive["occupancies"][0]["case"];
-    let gas = &first_case["gas_energy"];
-    let geometry = &ground_config["under_canopy_geometry"];
-    let mut occupancies = primitive["occupancies"]
-        .as_array()
-        .expect("occupancy inputs")[..rank_count]
-        .iter()
-        .map(occupancy)
-        .collect::<Vec<_>>();
-    let terminal = band(&ground_config["ground_terminal_shortwave_by_band_direction_w_m2_tile"]);
-    let shortwave = prepared_shortwave(&mut occupancies, terminal, ground_config, expected);
-    let ground = OpenSurfaceProblem {
+fn ground_problem(
+    first_case: &Value,
+    gas: &Value,
+    ground_config: &Value,
+    ground_state: &Value,
+    rank_count: usize,
+    terminal: BandDirectionalFluxes,
+    expected: &Value,
+) -> OpenSurfaceProblem {
+    OpenSurfaceProblem {
         interval_s: number(first_case, "dt_s"),
         tile_fraction: number(first_case, "tile_fraction"),
         class: SurfaceClassKind::ForestLitter,
@@ -442,10 +437,37 @@ fn column(fixture: &Value, rank_count: usize, expected: &Value) -> (CoveredColum
                 beginning_temperature_k: temperature.as_f64().expect("soil temperature"),
             })
             .collect(),
-    };
+    }
+}
+
+fn column(fixture: &Value, rank_count: usize, expected: &Value) -> (CoveredColumnInputs, Vec<f64>) {
+    let primitive = covered_primitive(fixture);
+    let ground_config = &primitive["ground_config"];
+    let ground_state = &primitive["ground_state"];
+    let first_case = &primitive["occupancies"][0]["case"];
+    let gas = &first_case["gas_energy"];
+    let geometry = &ground_config["under_canopy_geometry"];
+    let mut occupancies = primitive["occupancies"]
+        .as_array()
+        .expect("occupancy inputs")[..rank_count]
+        .iter()
+        .map(occupancy)
+        .collect::<Vec<_>>();
+    let terminal = band(&ground_config["ground_terminal_shortwave_by_band_direction_w_m2_tile"]);
+    let shortwave = prepared_shortwave(&mut occupancies, terminal, ground_config, expected);
+    let ground = ground_problem(
+        first_case,
+        gas,
+        ground_config,
+        ground_state,
+        rank_count,
+        terminal,
+        expected,
+    );
     let start = covered_start(primitive, rank_count, gas, ground_state);
     (
         CoveredColumnInputs {
+            authority: crate::CoveredColumnAuthority::HistoricalV8,
             interval_s: number(first_case, "dt_s"),
             tile_fraction: number(first_case, "tile_fraction"),
             pressure_pa: number(gas, "pressure_pa"),
@@ -846,6 +868,53 @@ fn accepted(outcome: CoveredColumnSolveOutcome) -> Box<CoveredColumnCandidate> {
 }
 
 #[test]
+fn v10_exact_zero_par_is_identity_gated_and_replaces_daytime_vulnerability_rows() {
+    let fixture = fixture();
+    let family = &fixture["exact_model_reductions"]["covered_single_rank"];
+    let (mut column, start) = column(&fixture, 1, &family["potential"]);
+    for occupancy in &mut column.occupancies {
+        occupancy.sun.absorbed_par_w_m2_leaf = 0.0;
+        occupancy.shade.absorbed_par_w_m2_leaf = -0.0;
+    }
+    let historical = evaluate_covered_column(&column, &start, None, None)
+        .expect_err("historical V8 zero-PAR bracket remains unchanged");
+    assert_eq!(
+        historical,
+        crate::LandSurfaceEnergyError::ConstitutiveDomain("ci_bracket")
+    );
+
+    column.authority = crate::CoveredColumnAuthority::V10ExactZeroPar;
+    let evaluation = evaluate_covered_column(&column, &start, None, None)
+        .expect("V10 analytic zero-PAR evaluation");
+    let occupancy = &evaluation.occupancies[0];
+    for class in 0..2 {
+        assert_eq!(
+            occupancy.gross_assimilation_umol_co2_m2_leaf_s[class].to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert_eq!(
+            occupancy.net_assimilation_umol_co2_m2_leaf_s[class].to_bits(),
+            (-occupancy.dark_respiration_umol_co2_m2_leaf_s[class]).to_bits()
+        );
+        assert!(occupancy.ci_pa[class] > column.ca_pa);
+    }
+    assert_eq!(occupancy.residuals[2].to_bits(), (start[4] - 1.0).to_bits());
+    assert_eq!(occupancy.residuals[3].to_bits(), (start[5] - 1.0).to_bits());
+    assert_eq!(occupancy.tolerances[2].to_bits(), 1.0e-8_f64.to_bits());
+    assert_eq!(occupancy.tolerances[3].to_bits(), 1.0e-8_f64.to_bits());
+}
+
+#[test]
+fn v10_iteration_zero_residual_boundary_rejects_one_ulp_outside() {
+    let boundary = 1.0_f64;
+    let outside = f64::from_bits(boundary.to_bits() + 1);
+    assert!(super::solver::v10_initial_final_residuals_pass(&[
+        -boundary, boundary
+    ]));
+    assert!(!super::solver::v10_initial_final_residuals_pass(&[outside]));
+}
+
+#[test]
 fn covered_single_rank_potential_fixed_cap_and_alternate_start_match_frozen_oracle() {
     let fixture = fixture();
     let family = &fixture["exact_model_reductions"]["covered_single_rank"];
@@ -1113,4 +1182,20 @@ fn covered_natural_iteration_limit_matches_declared_rust_outcome() {
         u32::try_from(expected["rust_expected_iterations"].as_u64().unwrap())
             .expect("bounded expected iteration count")
     );
+}
+
+#[test]
+fn v10_zero_par_branch_requires_positive_leaf_area() {
+    let fixture = fixture();
+    let single = &fixture["exact_model_reductions"]["covered_single_rank"]["potential"];
+    let (mut candidate, _) = column(&fixture, 1, single);
+    candidate.authority = crate::CoveredColumnAuthority::V10ExactZeroPar;
+    candidate.occupancies[0].sun.leaf_area_m2_m2_tile = 0.0;
+    candidate.occupancies[0].sun.absorbed_par_w_m2_leaf = 0.0;
+    candidate.occupancies[0].shade.leaf_area_m2_m2_tile = 1.0;
+    candidate.occupancies[0].shade.absorbed_par_w_m2_leaf = 1.0;
+    assert!(!crate::solver::v10_exact_zero_par_active(&candidate));
+
+    candidate.occupancies[0].shade.absorbed_par_w_m2_leaf = -0.0;
+    assert!(crate::solver::v10_exact_zero_par_active(&candidate));
 }

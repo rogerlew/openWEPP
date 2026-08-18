@@ -661,6 +661,7 @@ fn every_injected_phase_preserves_all_six_actual_owner_byte_records() {
             &n,
             &fixture.biogeochemistry,
             Some(phase),
+            openwepp_land_surface_energy::CoveredColumnAuthority::HistoricalV8,
         )
         .expect_err("injected endpoint failure");
         match phase {

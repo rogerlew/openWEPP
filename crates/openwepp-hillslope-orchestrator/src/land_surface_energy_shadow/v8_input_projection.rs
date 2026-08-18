@@ -276,13 +276,31 @@ pub(crate) struct V8SolverReadyTileInput {
 }
 
 impl ValidatedV8RuntimeInputProjection {
+    #[cfg(test)]
     pub(crate) fn solver_ready_tiles(
         &self,
         vegetation_owner_id: &ResourceOwnerId,
     ) -> Result<Vec<V8SolverReadyTileInput>, V8InputProjectionError> {
+        self.solver_ready_tiles_with_authority(
+            vegetation_owner_id,
+            openwepp_land_surface_energy::CoveredColumnAuthority::HistoricalV8,
+        )
+    }
+
+    pub(crate) fn solver_ready_tiles_with_authority(
+        &self,
+        vegetation_owner_id: &ResourceOwnerId,
+        authority: openwepp_land_surface_energy::CoveredColumnAuthority,
+    ) -> Result<Vec<V8SolverReadyTileInput>, V8InputProjectionError> {
         self.tiles
             .iter()
-            .map(|tile| tile.solver_ready(vegetation_owner_id))
+            .map(|tile| {
+                let mut ready = tile.solver_ready(vegetation_owner_id)?;
+                if let V8SolverReadyTilePhysics::Covered(column) = &mut ready.physics {
+                    column.authority = authority;
+                }
+                Ok(ready)
+            })
             .collect()
     }
 }
@@ -741,6 +759,7 @@ impl V8ProjectedTileRuntimeInput {
         };
         Ok((
             CoveredColumnInputs {
+                authority: openwepp_land_surface_energy::CoveredColumnAuthority::HistoricalV8,
                 interval_s: self.interval_s,
                 tile_fraction: self.tile_fraction,
                 pressure_pa: self.vegetation_forcing.pressure_pa,
