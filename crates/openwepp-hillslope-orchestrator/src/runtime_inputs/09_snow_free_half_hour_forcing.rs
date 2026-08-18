@@ -32,6 +32,15 @@ pub struct SnowFreeHalfHourProviderConfiguration {
     pub destinations: Vec<SnowFreeHalfHourDestination>,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct SnowFreeHalfHourStaticConfiguration {
+    pub run_id: String,
+    pub co2_pa: f64,
+    pub reference_height_m: f64,
+    pub gsi_owner_configuration_sha256: String,
+    pub destinations: Vec<SnowFreeHalfHourDestination>,
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DirectGsiStateV1 {
@@ -90,6 +99,12 @@ pub struct DirectGsiDailyReceiptV1 {
 }
 
 impl DirectGsiDailyReceiptV1 {
+    pub fn configuration_sha256(
+        parameters: GsiParameters,
+    ) -> Result<String, SnowFreeHalfHourForcingError> {
+        canonical_sha256(&direct_gsi_parameters(parameters))
+    }
+
     pub fn prepare(
         beginning: &GsiState,
         parameters: GsiParameters,
@@ -688,6 +703,38 @@ type PrecipitationSupport = (f64, f64, f64);
 type ChildMassesAndCarry = ([f64; 48], Vec<PrecipitationSupport>);
 
 impl HillslopeClimateRuntimeRequest {
+    /// Closure-eligible projection joining static provider configuration to an
+    /// accepted CP-GSI01 daily receipt. Daily GSI is never part of cursor
+    /// identity and cannot be supplied independently of its receipt.
+    pub fn snow_free_half_hour_forcing_receipts_with_gsi(
+        &self,
+        day_index: usize,
+        configuration: &SnowFreeHalfHourStaticConfiguration,
+        gsi_receipt: &DirectGsiDailyReceiptV1,
+        cursor: &SnowFreeHalfHourProviderCursor,
+    ) -> Result<ValidatedSnowFreeHalfHourForcingReceipts, SnowFreeHalfHourForcingError> {
+        gsi_receipt.validate()?;
+        if configuration.gsi_owner_configuration_sha256 != gsi_receipt.configuration_sha256 {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "provider GSI owner configuration",
+            ));
+        }
+        let daily = SnowFreeHalfHourProviderConfiguration {
+            run_id: configuration.run_id.clone(),
+            co2_pa: configuration.co2_pa,
+            reference_height_m: configuration.reference_height_m,
+            gsi: gsi_receipt.result.growing_season_index,
+            gsi_receipt_sha256: gsi_receipt.receipt_sha256.clone(),
+            destinations: configuration.destinations.clone(),
+        };
+        self.snow_free_half_hour_forcing_receipts_impl(
+            day_index,
+            &daily,
+            snow_free_static_configuration_sha256(configuration),
+            cursor,
+        )
+    }
+
     /// Project actual repository climate inputs into 48 digest-bound receipts
     /// for every configured destination. This API remains explicit/default-off.
     pub fn snow_free_half_hour_forcing_receipts(
@@ -696,13 +743,27 @@ impl HillslopeClimateRuntimeRequest {
         configuration: &SnowFreeHalfHourProviderConfiguration,
         cursor: &SnowFreeHalfHourProviderCursor,
     ) -> Result<ValidatedSnowFreeHalfHourForcingReceipts, SnowFreeHalfHourForcingError> {
+        self.snow_free_half_hour_forcing_receipts_impl(
+            day_index,
+            configuration,
+            snow_free_configuration_sha256(configuration),
+            cursor,
+        )
+    }
+
+    fn snow_free_half_hour_forcing_receipts_impl(
+        &self,
+        day_index: usize,
+        configuration: &SnowFreeHalfHourProviderConfiguration,
+        configuration_sha256: String,
+        cursor: &SnowFreeHalfHourProviderCursor,
+    ) -> Result<ValidatedSnowFreeHalfHourForcingReceipts, SnowFreeHalfHourForcingError> {
         if day_index != cursor.next_day_index {
             return Err(SnowFreeHalfHourForcingError::Identity(
                 "provider cursor day",
             ));
         }
         validate_snow_free_configuration(configuration)?;
-        let configuration_sha256 = snow_free_configuration_sha256(configuration);
         if cursor
             .configuration_sha256
             .as_ref()
@@ -756,6 +817,21 @@ fn snow_free_configuration_sha256(value: &SnowFreeHalfHourProviderConfiguration)
     let mut digest = Sha256::new();
     update_string_digest(&mut digest, &value.run_id);
     digest.update(value.reference_height_m.to_bits().to_le_bytes());
+    digest.update((value.destinations.len() as u64).to_le_bytes());
+    for destination in &value.destinations {
+        update_string_digest(&mut digest, &destination.ofe_id);
+        update_string_digest(&mut digest, &destination.tile_id);
+        update_string_digest(&mut digest, &destination.wb14_configuration_sha256);
+    }
+    format!("{:x}", digest.finalize())
+}
+
+fn snow_free_static_configuration_sha256(value: &SnowFreeHalfHourStaticConfiguration) -> String {
+    let mut digest = Sha256::new();
+    update_string_digest(&mut digest, &value.run_id);
+    digest.update(value.co2_pa.to_bits().to_le_bytes());
+    digest.update(value.reference_height_m.to_bits().to_le_bytes());
+    update_string_digest(&mut digest, &value.gsi_owner_configuration_sha256);
     digest.update((value.destinations.len() as u64).to_le_bytes());
     for destination in &value.destinations {
         update_string_digest(&mut digest, &destination.ofe_id);

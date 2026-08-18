@@ -1,7 +1,7 @@
 use openwepp_hillslope_orchestrator::runtime_inputs::{
     DirectGsiDailyReceiptV1, SnowFreeHalfHourDestination, SnowFreeHalfHourForcingError,
     SnowFreeHalfHourProviderConfiguration, SnowFreeHalfHourProviderCursor,
-    build_hillslope_climate_runtime_request,
+    SnowFreeHalfHourStaticConfiguration, build_hillslope_climate_runtime_request,
 };
 use openwepp_input_contract::parsers::climate::{ParserMode, parse_climate_from_str};
 use openwepp_meteorology::snow_free_forcing::{
@@ -37,6 +37,80 @@ fn direct_gsi_daily_receipt_reconstructs_cp_gsi01_state_and_rejects_poison() {
     assert!(matches!(
         poison.validate(),
         Err(SnowFreeHalfHourForcingError::Identity("daily GSI receipt"))
+    ));
+}
+
+#[test]
+fn static_provider_cursor_accepts_changing_daily_gsi_and_rejects_wrong_owner() {
+    let climate_source = format!(
+        "{}{}",
+        warm_non_breakpoint_climate(),
+        "21 6 2000 0.0 0.0 0.0 0.0 29.0 23.0 430.0 2.5 180.0 20.0\n"
+    );
+    let climate =
+        parse_climate_from_str(&climate_source, ParserMode::Strict).expect("two-day climate");
+    let request = build_hillslope_climate_runtime_request(&climate).expect("runtime request");
+    let parameters = GsiParameters::generalized();
+    let configuration_sha256 =
+        DirectGsiDailyReceiptV1::configuration_sha256(parameters).expect("GSI config digest");
+    let legacy = provider_configuration();
+    let configuration = SnowFreeHalfHourStaticConfiguration {
+        run_id: legacy.run_id,
+        co2_pa: legacy.co2_pa,
+        reference_height_m: legacy.reference_height_m,
+        gsi_owner_configuration_sha256: configuration_sha256,
+        destinations: legacy.destinations,
+    };
+    let mut gsi = GsiState::new();
+    let mut cursor = SnowFreeHalfHourProviderCursor::default();
+    for (day_index, ordinal_day) in [172, 173].into_iter().enumerate() {
+        let (receipt, ending) = DirectGsiDailyReceiptV1::prepare(
+            &gsi,
+            parameters,
+            GsiDailyForcing {
+                minimum_temperature_c: 4.0 + day_index as f64,
+                vapor_pressure_deficit_pa: 800.0,
+                latitude_degrees: 41.1,
+                date: GsiDate {
+                    year: 2000,
+                    ordinal_day,
+                },
+            },
+        )
+        .expect("daily GSI receipt");
+        let prepared = request
+            .snow_free_half_hour_forcing_receipts_with_gsi(
+                day_index,
+                &configuration,
+                &receipt,
+                &cursor,
+            )
+            .expect("static plus daily provider projection");
+        prepared.commit_cursor(&mut cursor).expect("cursor commit");
+        gsi = ending;
+    }
+
+    let mut wrong = configuration;
+    wrong.gsi_owner_configuration_sha256 = "f".repeat(64);
+    let (receipt, _) = DirectGsiDailyReceiptV1::prepare(
+        &gsi,
+        parameters,
+        GsiDailyForcing {
+            minimum_temperature_c: 6.0,
+            vapor_pressure_deficit_pa: 800.0,
+            latitude_degrees: 41.1,
+            date: GsiDate {
+                year: 2000,
+                ordinal_day: 174,
+            },
+        },
+    )
+    .expect("third GSI receipt");
+    assert!(matches!(
+        request.snow_free_half_hour_forcing_receipts_with_gsi(2, &wrong, &receipt, &cursor),
+        Err(SnowFreeHalfHourForcingError::Identity(
+            "provider GSI owner configuration"
+        ))
     ));
 }
 
