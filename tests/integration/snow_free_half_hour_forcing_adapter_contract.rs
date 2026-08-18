@@ -321,15 +321,25 @@ fn parent_fallback_midnight_carry_and_authority_primitives_are_executable() {
 
     let sequential_request = request(&two_day_midnight_carry_climate());
     let mut cursor = SnowFreeHalfHourProviderCursor::default();
+    let beginning_cursor = serde_json::to_vec(&cursor).expect("beginning cursor bytes");
     let first_day = sequential_request
         .snow_free_half_hour_forcing_receipts(0, &provider_configuration(), &mut cursor)
         .expect("first cursor day");
     let carried_source = first_day[0].next_day_precipitation_carry[0]
         .source_owner_id
         .clone();
+    assert_eq!(
+        serde_json::to_vec(&cursor).expect("uncommitted cursor bytes"),
+        beginning_cursor,
+        "receipt preparation must not advance provider custody"
+    );
     first_day
         .commit_cursor(&mut cursor)
         .expect("commit accepted first provider day");
+    let cursor_bytes = cursor.to_json_bytes().expect("persisted cursor");
+    cursor =
+        SnowFreeHalfHourProviderCursor::restore_json(&cursor_bytes, &provider_configuration(), 1)
+            .expect("validated cursor restart");
     let mut second_day_configuration = provider_configuration();
     second_day_configuration.gsi = 0.8;
     second_day_configuration.gsi_receipt_sha256 = "f".repeat(64);

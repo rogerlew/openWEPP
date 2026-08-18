@@ -37,6 +37,74 @@ pub struct SnowFreeHalfHourProviderCursor {
     pending_carry: Vec<SnowFreePrecipitationParcelReceipt>,
 }
 
+#[derive(Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct SnowFreeHalfHourProviderCursorSnapshot {
+    next_day_index: usize,
+    configuration_sha256: Option<String>,
+    pending_carry: Vec<SnowFreePrecipitationParcelReceipt>,
+}
+
+impl SnowFreeHalfHourProviderCursor {
+    /// Serialize the complete provider cursor for a persisted restart owner.
+    pub fn to_json_bytes(&self) -> Result<Vec<u8>, SnowFreeHalfHourForcingError> {
+        serde_json::to_vec(self)
+            .map_err(|error| SnowFreeHalfHourForcingError::Serialization(error.to_string()))
+    }
+
+    /// Restore and validate a cursor against the expected static provider
+    /// configuration and scheduler day.
+    pub fn restore_json(
+        bytes: &[u8],
+        configuration: &SnowFreeHalfHourProviderConfiguration,
+        expected_next_day_index: usize,
+    ) -> Result<Self, SnowFreeHalfHourForcingError> {
+        validate_snow_free_configuration(configuration)?;
+        let snapshot: SnowFreeHalfHourProviderCursorSnapshot = serde_json::from_slice(bytes)
+            .map_err(|error| SnowFreeHalfHourForcingError::Serialization(error.to_string()))?;
+        let value = Self {
+            next_day_index: snapshot.next_day_index,
+            configuration_sha256: snapshot.configuration_sha256,
+            pending_carry: snapshot.pending_carry,
+        };
+        let expected_configuration_sha256 = snow_free_configuration_sha256(configuration);
+        if value.next_day_index != expected_next_day_index
+            || value.configuration_sha256.as_deref()
+                != Some(expected_configuration_sha256.as_str())
+        {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "restored provider cursor",
+            ));
+        }
+        let destinations = configuration
+            .destinations
+            .iter()
+            .map(|destination| (&destination.ofe_id, &destination.tile_id))
+            .collect::<std::collections::BTreeSet<_>>();
+        let mut parcel_ids = std::collections::BTreeSet::new();
+        for parcel in &value.pending_carry {
+            validate_precipitation_parcel(parcel)?;
+            if !parcel_ids.insert((
+                &parcel.destination_ofe_id,
+                &parcel.destination_tile_id,
+                &parcel.parcel_id,
+            ))
+                || !destinations.contains(&(
+                    &parcel.destination_ofe_id,
+                    &parcel.destination_tile_id,
+                ))
+                || parcel.start_s < 0.0
+                || parcel.end_s > 86_400.0
+            {
+                return Err(SnowFreeHalfHourForcingError::Identity(
+                    "restored provider carry",
+                ));
+            }
+        }
+        Ok(value)
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct SnowFreePrecipitationParcelReceipt {

@@ -1,6 +1,6 @@
 # Admit and Implement the C3 Nighttime Leaf-CO2 Branch
 
-Status: `planning / exact consumer contradiction confirmed`
+Status: `HOLD / prospective successor authority required before implementation`
 
 Date: `2026-08-18`
 
@@ -22,11 +22,21 @@ Child 4 or the campaign.
 
 ## Objective
 
-Select, contract, independently reconstruct, and implement the physically
-defined zero-absorbed-PAR leaf CO2/dark-respiration branch needed by canonical
-nighttime receipts. Preserve V3--V9 historical definitions and bytes. If the
-new branch changes supported domain or runtime behavior, introduce an explicit
-prospective successor identity and migration rather than mutating V9 in place.
+Select, independently reconstruct, and implement the zero-absorbed-PAR leaf
+CO2/dark-respiration branch needed by canonical nighttime receipts. Preserve
+V3--V9 historical definitions and bytes.
+
+## Provisional derivation and independent-review disposition
+
+The physical equations give `Ag=0`, `An=-Rd`; nonpositive assimilation selects
+`gs=g0`; and the diffusion identities imply `ci>ca`. The independent
+calculator proves that derivation. Independent science review nevertheless
+rejected an in-place correction: Version 13 unconditionally binds Ci to Brent
+on `[Gamma*,ca]`, and V9 imports V8 supported-domain/runtime behavior unchanged.
+An analytic nighttime path therefore requires an explicit prospective
+contract successor (or an equally explicit reviewed versioned erratum), plus a
+signed-zero disposition. No vegetation production Rust may change before that
+authority is admitted.
 
 ## Exact contradiction
 
@@ -67,3 +77,8 @@ Freeze the failing provider receipt, failed V9 configuration/state, Ci residual
 at both existing bracket endpoints, and the relevant SC-VEGETATION equations;
 then adjudicate a nighttime branch before editing constitutive Rust.
 
+## Delegation
+
+This package authorizes one read-only vegetation/LSE science review and one
+read-only Rust review of the authority decision, implementation, and exact
+consumer evidence. No delegated implementation is authorized.
