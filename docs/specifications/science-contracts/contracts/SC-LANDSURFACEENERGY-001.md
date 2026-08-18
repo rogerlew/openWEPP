@@ -922,6 +922,29 @@ coordinates retain the V1 centered difference. Both perturbations outside the
 domain reject. This bound-aware derivative rule is prospective V2 numerics and
 does not alter any V1/V8/V9 execution.
 
+For that same uncapped active V10 exact-zero-PAR potential solve only, the
+Newton linear system is expressed in the declared coordinate units. With
+`x = D y`, where `D` is the exact finite-difference unit-scale diagonal, the
+solver forms `J_y[:,j] = J_x[:,j] * D[j]`, applies the canonical pivot test to
+`J_y`, solves `J_y delta_y = -r`, and maps
+`delta_x[j] = D[j] * delta_y[j]`. This deterministic nondimensionalization
+changes neither the residual equations nor the represented physical Newton
+direction. It is forbidden for V1, V8/V9-derived behavior, positive-PAR V10,
+and fixed-final solves. Reducing the pivot multiplier, accepting a rejected
+pivot, regularization, larger iteration/trust bounds, or physiological floors
+is not an equivalent implementation.
+
+When the uncapped V10 exact-zero-PAR potential evaluation selects the
+canopy-liquid store-cap branch and the preliminary store rate is no larger
+than the canonical water residual tolerance, the wet-surface temperature is a
+numerically inactive coordinate: the wet-energy residual is already below its
+admitted closure scale and cannot determine that temperature. V2 replaces
+that one row with the existing inactive-component anchor
+`T_wet - T_canopy = 0`. Liquid mass, enthalpy, longwave area, and every owner
+ledger remain evaluated normally; no liquid amount is clamped or discarded.
+The predicate is unavailable to V1, positive-PAR V10, condensation, or a
+constitutive-law wet flux.
+
 V1-to-V2 migration validates complete V1 and V10 owner identities, copies all
 LSE scientific values bit-identically, and changes only the LSE identity and
 transitively derived receipts. V1 remains immutable and is not a V2 alias.
@@ -931,6 +954,8 @@ transitively derived receipts. V1 remains immutable and is not a V2 alias.
 | `INV-LANDSURFACEENERGY-109` | LSE-V2 imports exact LSE-V1 physics and accepts only the V10 vegetation owner at the coupled boundary. |
 | `INV-LANDSURFACEENERGY-110` | Exact FullSupply finalization seeds only coordinates, then reevaluates the complete fixed-final system from immutable beginning owners; a passing initial evaluation accepts at iteration zero without a Jacobian. |
 | `INV-LANDSURFACEENERGY-111` | V1-to-V2 migration copies every LSE scientific value bit-identically and derives only V2 identity receipts; partial zero-PAR root supply is unsupported. |
+| `INV-LANDSURFACEENERGY-112` | Only the uncapped active V10 exact-zero-PAR potential solve uses the declared diagonal coordinate scaling for Jacobian pivot classification and dimensionless Newton solution; physical residuals and steps are unchanged. |
+| `INV-LANDSURFACEENERGY-113` | A store-cap-active V10 zero-PAR wet coordinate below the canonical water-rate tolerance uses the existing canopy-temperature inactive anchor without changing liquid or energy ledgers. |
 | `LSE-E-109` | V8/V9 vegetation identity, mixed V1/V2 receipts, or any owner alias rejects before V2 physics. |
 | `LSE-E-110` | Missing, duplicated, mutated, or locally recomputed V10 nighttime gas state rejects the coupled owner envelope. |
 | `LSE-E-111` | Partial or value-mutating V1-to-V2 migration rejects without a V2 state. |

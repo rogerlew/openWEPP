@@ -2,8 +2,8 @@
 
 Disposition: `CODE PASS / CAMPAIGN HOLD`.
 
-Reviewed exact working-tree bytes based on
-`d1f3094c22bbb2057bf1c8e0925574492be40d84`.
+Reviewed implementation bytes are committed as
+`40fa0c484881e560e2904ade51e3754b17436fb3`.
 
 The final review found no remaining material Rust defect. It verified that:
 

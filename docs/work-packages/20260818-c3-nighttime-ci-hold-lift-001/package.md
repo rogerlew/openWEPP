@@ -39,12 +39,13 @@ contract successor (or an equally explicit reviewed versioned erratum), plus a
 signed-zero disposition. No vegetation production Rust may change before that
 authority is admitted.
 
-The prospective successor authority is now implemented for review. V10 owns
-the positive-area exact-zero-PAR branch; LSE-V2 owns deterministic
-iteration-zero FullSupply finalization after complete fixed-final
-reevaluation. The package remains executing because the provider-derived
-48-interval day still encounters a later potential-pass singularity and the
-persisted-restart, Child-4, and campaign gates have not closed.
+The prospective successor authority is implemented. V10 owns the positive-area
+exact-zero-PAR branch; LSE-V2 owns deterministic iteration-zero FullSupply
+finalization after complete fixed-final reevaluation. The zero-radiation
+provider day now executes all 48 intervals after the bounded potential-solve
+classification below. A realistic positive-radiation day exposes a separate
+positive-PAR low-light `ci_bracket` HOLD before persisted restart, Child 4, or
+campaign gates may close.
 
 ## Current hydraulic HOLD
 
@@ -68,10 +69,13 @@ supported domain.
 V10 and LSE-V2 are distinct, default-off identities with explicit predecessor
 projection. Historical V8/V9 dispatch remains unchanged. The real-consumer
 adapter accepts the canonical midnight interval and rolls all owners back on a
-poisoned interval. A complete provider-derived zero-shortwave day presently
-rejects in the interval-15 uncapped potential pass (`TransactionId(56)`) with
-typed `NumericalSingular`; the failure precedes fixed-final authorization and
-therefore is not covered by the authorized iteration-zero finalization rule.
+poisoned interval. A complete provider-derived zero-shortwave day now passes
+all 48 intervals. The interval-15 uncapped potential failure was a rank-28
+scaled Jacobian whose null direction was the lower occupancy wet-surface
+temperature backed by a store-cap-active `6.776263578034403e-21 kg m^-2`
+liquid store. V2 anchors that coordinate only below the canonical water-rate
+tolerance and retains all liquid and energy ledgers. The remaining HOLD is the
+first positive-PAR, low-light interval in a realistic-radiation provider day.
 
 ## Exact contradiction
 
@@ -103,16 +107,21 @@ authorized.
 3. Obtain science review before production implementation.
 4. Implement under a prospective identity with explicit migration if required.
 5. Prove zero-PAR, dawn, ordinary daylight, signed-zero, and one-bit poisons.
-6. Independently prove fixed-final hydraulic feasibility at >=80 decimal
-   digits, including zero and insufficient authorization typed outcomes.
+6. Rebuild and reevaluate the complete fixed-final equations from immutable
+   beginning owners and exact caps. The accepted repository evaluator closure
+   is sufficient for the supported FullSupply branch; no second full coupled
+   high-precision oracle is required unless that evaluator fails an in-domain
+   case.
 7. Rerun historical authority immutability, vegetation/LSE gates, the native
    forcing real-consumer day, and exact-byte Rust/science reviews.
 
-## First actionable step
+## Current actionable step
 
-Freeze the failing provider receipt, failed V9 configuration/state, Ci residual
-at both existing bracket endpoints, and the relevant SC-VEGETATION equations;
-then adjudicate a nighttime branch before editing constitutive Rust.
+Adjudicate the newly reproduced positive-PAR low-light `ci_bracket` at provider
+interval 8 before persisted restart. The zero-radiation numerical failure is
+closed and must not be used to reopen hydraulics. Historical V8/V9 remain
+immutable; any expansion beyond V10's exact-zero-PAR domain requires explicit
+prospective authority rather than an inferred threshold or fallback.
 
 ## Delegation
 

@@ -1575,8 +1575,16 @@ fn evaluate_covered_occupancy(
             + component_longwave_w_m2[3]
             - stem_h,
     ];
+    let v10_inactive_wet = column.authority == CoveredColumnAuthority::V10ExactZeroPar
+        && context.caps.is_none()
+        && wet_branch == WaterBranch::AuthorizationActiveOrTie
+        && context.liquid.preliminary_store / column.interval_s
+            <= crate::physics::water_tolerance(
+                context.liquid.preliminary_store / column.interval_s,
+            );
     let energy_residuals: [f64; 4] = std::array::from_fn(|index| {
-        if component_areas[index].to_bits() == 0.0_f64.to_bits() {
+        if component_areas[index].to_bits() == 0.0_f64.to_bits() || (index == 2 && v10_inactive_wet)
+        {
             component_temperatures[index] - canopy_air_temperature_k
         } else {
             physical_energy_residuals[index]
@@ -2583,7 +2591,15 @@ fn solve_covered_column_impl(
             .iter()
             .map(|value| -value)
             .collect();
-        let (delta, current_pivot, current_matrix_norm) = match solve_linear(&jacobian, &rhs) {
+        let v10_scaled_potential = caps.is_none() && v10_exact_zero_par_active(beginning);
+        if v10_scaled_potential {
+            for row in &mut jacobian {
+                for (coefficient, unit) in row.iter_mut().zip(&units) {
+                    *coefficient *= unit;
+                }
+            }
+        }
+        let (mut delta, current_pivot, current_matrix_norm) = match solve_linear(&jacobian, &rhs) {
             Ok(value) => value,
             Err(evidence) => {
                 let (occupancy_id, active_bounds) =
@@ -2604,6 +2620,11 @@ fn solve_covered_column_impl(
                 }));
             }
         };
+        if v10_scaled_potential {
+            for (change, unit) in delta.iter_mut().zip(&units) {
+                *change *= unit;
+            }
+        }
         pivot = Some(current_pivot);
         matrix_norm = Some(current_matrix_norm);
         let prospective: Vec<f64> = x
