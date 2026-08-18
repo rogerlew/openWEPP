@@ -625,10 +625,16 @@ State as of `2026-08-14 UTC`:
     hydrology while preserving production bytes and legacy behavior.
 
 - `20260814-snow-free-land-surface-energy-runtime-shadow-001/`
-  - EXECUTING / SURFACE-LIQUID CUSTODY DEPENDENCY LIFTED / COVERED FOREST
-    RUNTIME ACTIVE: the historical HOLD remains preserved, the retained
-    default-off core and soil-layer bridge remain passing, and the real
-    covered forest/litter endpoint is now being connected.
+  - EXECUTED HOLD / BOUNDED LITTER-CONDUCTIVITY AND GROUND-OPTICS CORRECTION
+    IMPLEMENTED: the strict default-off endpoint now derives forest-litter
+    conductivity from immutable beginning litter water and admits per-tile LSE
+    ground optics. The V3/V5 frozen-authority contradiction remains terminal.
+
+- `20260817-c3-woody-v3-v5-oracle-reconciliation-001/`
+  - QUEUED / CONTRACT-FIRST AUTHORITY RECONCILIATION: resolve the isolated
+    V3/V5 calculator-versus-frozen-byte contradiction and its successor digest
+    chain without weakening exact regeneration. Child 3 remains HOLD until
+    this package and a clean full-workspace gate pass.
 
 - `20260814-vegetation-land-surface-real-consumer-shadow-001/`
   - NOT STARTED / BLOCKED ON COMPLETE CHILD 3 FOREST ENDPOINT. No package PASS,

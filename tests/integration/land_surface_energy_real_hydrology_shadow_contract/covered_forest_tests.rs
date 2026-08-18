@@ -363,6 +363,12 @@ fn biogeochemistry() -> BiogeochemistryState {
     }
 }
 
+#[derive(Clone, Copy)]
+struct PositiveExpectations<'a> {
+    tiles: &'a [&'a str],
+    canopy_forcing_ground_albedo: Option<(f64, f64)>,
+}
+
 fn execute_positive(
     veg_cfg: &VegetationConfiguration,
     veg_state: &V8CoupledOwnedState,
@@ -370,7 +376,7 @@ fn execute_positive(
     frame: &DirectRunFrame,
     cfg: &LandSurfaceEnergyConfiguration,
     state: &LandSurfaceEnergyState,
-    expected_tiles: &[&str],
+    expected: PositiveExpectations<'_>,
 ) {
     let hyd = RealHydrologyShadowAdapter::try_from_day_start(
         frame,
@@ -399,7 +405,11 @@ fn execute_positive(
     let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hyd);
     let forcing = lse_forcing();
     let th = full_thermal();
-    let snow = snow_forcing(&hyd);
+    let mut snow = snow_forcing(&hyd);
+    if let Some((visible, near_infrared)) = expected.canopy_forcing_ground_albedo {
+        snow.ground_albedo_vis = visible;
+        snow.ground_albedo_nir = near_infrared;
+    }
     let receipt = V8CanopyForcingReceipt::try_new(
         veg_cfg.configuration_sha256.clone(),
         veg_state.state_sha256.clone(),
@@ -441,7 +451,7 @@ fn execute_positive(
     assert_eq!(n.0.get(), u32::from(!veg_cfg.strata.is_empty()));
     envelope.validate().expect("sealed envelope");
     let requests = &envelope.hydrology().arbitration().requests;
-    for tile in expected_tiles {
+    for tile in expected.tiles {
         assert!(
             requests
                 .iter()
@@ -723,7 +733,10 @@ fn public_v8_endpoint_closes_mixed_open_and_covered_owners_once() {
         &frame,
         &cfg,
         &state,
-        &["open", "forest"],
+        PositiveExpectations {
+            tiles: &["open", "forest"],
+            canopy_forcing_ground_albedo: None,
+        },
     );
 }
 
@@ -740,7 +753,10 @@ fn public_v8_endpoint_closes_an_all_open_ofe() {
         &frame,
         &cfg,
         &state,
-        &["open"],
+        PositiveExpectations {
+            tiles: &["open"],
+            canopy_forcing_ground_albedo: None,
+        },
     );
 }
 
@@ -758,7 +774,36 @@ fn public_v8_endpoint_closes_one_shared_stratum_across_two_covered_tiles() {
         &frame,
         &cfg,
         &state,
-        &["forest-a", "forest-b"],
+        PositiveExpectations {
+            tiles: &["forest-a", "forest-b"],
+            canopy_forcing_ground_albedo: None,
+        },
+    );
+}
+
+#[test]
+fn per_tile_lse_ground_optics_are_the_sole_covered_lower_boundary_owner() {
+    let (veg_cfg, veg_state) = shared_stratum_two_covered();
+    let tiles = [("forest-a", 0.5, true), ("forest-b", 0.5, true)];
+    let (surface_cfg, frame) = surface_for_tiles(&tiles);
+    let mut cfg = select_lse_tiles(lse_cfg(&veg_cfg), &tiles);
+    cfg.ofes[0].tiles[1].surface_vis_albedo = 0.21;
+    cfg.ofes[0].tiles[1].surface_nir_albedo = 0.37;
+    cfg.configuration_sha256 = cfg.canonical_sha256().expect("LSE configuration digest");
+    cfg.validate().expect("heterogeneous covered optics");
+    let state = lse_state(&cfg);
+
+    execute_positive(
+        &veg_cfg,
+        &veg_state,
+        &surface_cfg,
+        &frame,
+        &cfg,
+        &state,
+        PositiveExpectations {
+            tiles: &["forest-a", "forest-b"],
+            canopy_forcing_ground_albedo: Some((0.63, 0.71)),
+        },
     );
 }
 
@@ -770,8 +815,6 @@ enum EndpointPoison {
     VegetationStateBit,
     HydrologySnapshotBit,
     SoilThermalSnapshotBit,
-    VisibleAlbedoBit,
-    NearInfraredAlbedoBit,
     DuplicateRank,
     MissingOccupancy,
     ExtraOccupancy,
@@ -852,9 +895,7 @@ fn execute_poison(poison: EndpointPoison) -> ExecuteV8LseRuntimeShadowError {
         EndpointPoison::SoilThermalSnapshotBit => {
             thermal.snapshot_sha256 = digest('7');
         }
-        EndpointPoison::HydrologySnapshotBit
-        | EndpointPoison::VisibleAlbedoBit
-        | EndpointPoison::NearInfraredAlbedoBit => {}
+        EndpointPoison::HydrologySnapshotBit => {}
     }
 
     let hyd = RealHydrologyShadowAdapter::try_from_day_start(
@@ -904,7 +945,7 @@ fn execute_poison(poison: EndpointPoison) -> ExecuteV8LseRuntimeShadowError {
     };
     forcing.forcing_sha256 = forcing.canonical_sha256().expect("forcing digest");
     let facts = hyd.layer_facts();
-    let mut snow = SnowFreeForcing {
+    let snow = SnowFreeForcing {
         air_temperature_k: 296.0,
         pressure_pa: 101_325.0,
         co2_pa: 42.0,
@@ -955,12 +996,6 @@ fn execute_poison(poison: EndpointPoison) -> ExecuteV8LseRuntimeShadowError {
         .collect(),
         gsi: 1.0,
     };
-    if matches!(poison, EndpointPoison::VisibleAlbedoBit) {
-        snow.ground_albedo_vis = f64::from_bits(snow.ground_albedo_vis.to_bits() + 1);
-    }
-    if matches!(poison, EndpointPoison::NearInfraredAlbedoBit) {
-        snow.ground_albedo_nir = f64::from_bits(snow.ground_albedo_nir.to_bits() + 1);
-    }
     let actual_hydrology =
         unified_beginning_hydrology_snapshot_sha256(&adapter, &surface_cfg).expect("snapshot");
     let receipt_hydrology = if matches!(poison, EndpointPoison::HydrologySnapshotBit) {
@@ -1043,8 +1078,6 @@ fn public_endpoint_rejects_canonical_seam_poisons_before_physics() {
         EndpointPoison::VegetationStateBit,
         EndpointPoison::HydrologySnapshotBit,
         EndpointPoison::SoilThermalSnapshotBit,
-        EndpointPoison::VisibleAlbedoBit,
-        EndpointPoison::NearInfraredAlbedoBit,
         EndpointPoison::DuplicateRank,
         EndpointPoison::MissingOccupancy,
         EndpointPoison::ExtraOccupancy,

@@ -1,6 +1,6 @@
 # Implement Snow-Free Land-Surface-Energy Runtime Shadow
 
-Status: `executed-hold / runtime implementation and focused gates complete / terminal authority regeneration contradiction`
+Status: `executed-hold / bounded runtime correction under review / terminal authority regeneration contradiction preserved`
 
 Date: `2026-08-14`
 
@@ -56,11 +56,20 @@ post-hoc energy proposals and meteorology helpers are not constitutive inputs.
   The envelope is uncommitted and the production frame remains byte-identical.
 - [x] Pass final exact-byte science review and execute the required benchmark
   surfaces after the custody hold was lifted and the complete endpoint existed.
+- [x] Correct the reopened forest-litter projection so immutable beginning
+  hydrology-owned litter liquid determines `lambda_l`, and select per-tile LSE
+  VIS/NIR optics as the sole E01--E03 ground lower-boundary owner.
 - [ ] Close the terminal full-workspace authority gate and dual verification.
   The immutable V3/V5 frozen bytes do not regenerate from their checked-in
   calculators in the available canonical Nix environments; this is recorded as
   a load-bearing authority contradiction rather than silently widening the
   gate or migrating the V3--V8 identity chain.
+
+The separate contract-first package
+`20260817-c3-woody-v3-v5-oracle-reconciliation-001` owns that authority
+contradiction. Child 3 remains incomplete until that package resolves the
+frozen-byte/calculator authority and a clean exact-head full-workspace gate
+passes.
 
 Fresh review at `dfc7cf971` rejected the first endpoint claim. The retained
 physical kernels and custody owner remain active implementation evidence, while

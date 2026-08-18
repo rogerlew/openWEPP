@@ -360,14 +360,6 @@ impl V8ProjectedTileRuntimeInput {
     #[allow(clippy::too_many_lines)]
     fn ground_problem(&self) -> Result<OpenSurfaceProblem, V8InputProjectionError> {
         let configuration = &self.ground.configuration;
-        if !self.occupancies.is_empty() {
-            validate_ground_albedo(
-                configuration.surface_vis_albedo,
-                configuration.surface_nir_albedo,
-                self.vegetation_forcing.ground_albedo_vis,
-                self.vegetation_forcing.ground_albedo_nir,
-            )?;
-        }
         let terminal_shortwave_w_m2_tile = BandDirectionalFluxes {
             direct_vis: self.radiation.visible_direct.terminal_direct
                 + self.radiation.visible_direct.terminal_diffuse,
@@ -443,7 +435,10 @@ impl V8ProjectedTileRuntimeInput {
                     SurfaceClassKind::ForestLitter,
                     1.0,
                     *thickness_m,
-                    self.ground.soil_interface_layers[0].thermal_conductivity_w_m_k,
+                    project_forest_litter_conductivity(
+                        self.ground.surface_liquid.liquid_kg_m2_tile,
+                        *thickness_m,
+                    )?,
                     thickness_m * dry_density_kg_m3 * dry_specific_heat_j_kg_k,
                     Some(*liquid_capacity_kg_m2_tile_ground),
                     None,
@@ -848,19 +843,24 @@ fn open_beginning_trial(problem: &OpenSurfaceProblem) -> Vec<f64> {
         .collect()
 }
 
-fn validate_ground_albedo(
-    configured_vis: f64,
-    configured_nir: f64,
-    forcing_vis: f64,
-    forcing_nir: f64,
-) -> Result<(), V8InputProjectionError> {
-    if configured_vis.to_bits() != forcing_vis.to_bits()
-        || configured_nir.to_bits() != forcing_nir.to_bits()
+fn project_forest_litter_conductivity(
+    beginning_litter_liquid_kg_m2_tile: f64,
+    litter_thickness_m: f64,
+) -> Result<f64, V8InputProjectionError> {
+    const WATER_DENSITY_KG_M3: f64 = 1_000.0;
+    if !beginning_litter_liquid_kg_m2_tile.is_finite()
+        || beginning_litter_liquid_kg_m2_tile < 0.0
+        || !litter_thickness_m.is_finite()
+        || litter_thickness_m <= 0.0
     {
-        Err(V8InputProjectionError::Identity("LSE tile ground albedo"))
-    } else {
-        Ok(())
+        return Err(V8InputProjectionError::Topology(
+            "forest-litter conductivity operands",
+        ));
     }
+    Ok(
+        0.1 + 0.03 * beginning_litter_liquid_kg_m2_tile
+            / (WATER_DENSITY_KG_M3 * litter_thickness_m),
+    )
 }
 
 fn covered_precipitation_for_tile(
@@ -1026,12 +1026,6 @@ pub(crate) fn project_v8_runtime_inputs(
                 .iter()
                 .any(|stratum| stratum.tile_ids.contains(&tile.vegetation_tile_id));
             if covered {
-                validate_ground_albedo(
-                    tile.surface_vis_albedo,
-                    tile.surface_nir_albedo,
-                    canopy_forcing.forcing().ground_albedo_vis,
-                    canopy_forcing.forcing().ground_albedo_nir,
-                )?;
                 validate_covered_precipitation_join(
                     lse_forcing,
                     &ofe.ofe_id,
@@ -1503,12 +1497,164 @@ mod tests {
     }
 
     #[test]
-    fn ground_albedo_join_rejects_one_bit_vis_and_nir_poisons() {
-        let vis = 0.12_f64;
-        let nir = 0.24_f64;
-        assert!(validate_ground_albedo(vis, nir, vis, nir).is_ok());
-        assert!(validate_ground_albedo(vis, nir, f64::from_bits(vis.to_bits() + 1), nir).is_err());
-        assert!(validate_ground_albedo(vis, nir, vis, f64::from_bits(nir.to_bits() + 1)).is_err());
+    #[allow(clippy::too_many_lines)]
+    fn litter_conductivity_uses_beginning_litter_water_not_top_soil_conductivity() {
+        use openwepp_kernel_contract::SoilLayerId;
+        use openwepp_land_surface_energy::{SoilThermalLayerSnapshot, SurfaceClass, SurfaceId};
+
+        let beginning_litter_water = 2.0_f64;
+        let litter_thickness = 0.04_f64;
+        let deliberately_distinct_top_soil_conductivity = 1.1_f64;
+        let digest = || Sha256Digest::try_new("a".repeat(64)).expect("digest");
+        let owner = |value: &str| ResourceOwnerId::try_new(value).expect("owner");
+        let ofe_id = OfeId::try_new("ofe-1").expect("OFE");
+        let tile_id = TileId::try_new("forest").expect("tile");
+        let surface_id = SurfaceId::try_new("surface:forest").expect("surface");
+        let source_id = SourceId::try_new("liquid:forest").expect("source");
+        let layer_id = SoilLayerId::try_new("soil-1").expect("layer");
+        let configuration: TileConfiguration = serde_json::from_value(serde_json::json!({
+            "tile_id": "forest",
+            "fraction_ofe_ground": 1.0,
+            "vegetation_tile_id": "forest",
+            "surface_vis_albedo": 0.12,
+            "surface_nir_albedo": 0.24,
+            "surface_heat_storage_mode": "finite_capacity",
+            "turbulence": {
+                "mode": "open_neutral",
+                "reference_height_m": 2.0,
+                "roughness_momentum_m": 0.1,
+                "roughness_heat_m": 0.01,
+                "roughness_vapor_m": 0.01
+            },
+            "surface": {
+                "surface_class": "forest_litter",
+                "liquid_capacity_kg_m2_tile_ground": 6.0,
+                "thickness_m": litter_thickness,
+                "dry_density_kg_m3": 24.0,
+                "dry_specific_heat_j_kg_k": 3370.5
+            }
+        }))
+        .expect("tile configuration");
+        let radiation = |band, incident| {
+            solve_mixed_column(&[], band, IncidentComponent::Direct, 0.67, 0.12, incident)
+                .expect("empty column radiation")
+        };
+        let identity = RuntimeTileIdentity {
+            transaction_id: TransactionId(1),
+            lse_owner_id: owner("lse"),
+            hydrology_owner_id: owner("hydrology"),
+            soil_thermal_owner_id: owner("soil-thermal"),
+            vegetation_owner_id: owner("vegetation"),
+            biogeochemistry_owner_id: owner("biogeochemistry"),
+            configuration_sha256: digest(),
+            beginning_lse_state_sha256: digest(),
+            beginning_hydrology_snapshot_sha256: digest(),
+            beginning_soil_thermal_state_sha256: digest(),
+            beginning_vegetation_state_sha256: digest(),
+            beginning_biogeochemistry_state_sha256: digest(),
+            ofe_id: ofe_id.clone(),
+            tile_id: tile_id.clone(),
+            surface_id: surface_id.clone(),
+            surface_class: SurfaceClass::ForestLitter,
+            ground_source_type: WaterSourceType::LitterLiquid,
+            ground_source_id: source_id.clone(),
+            ground_source_tile_id: Some(tile_id.clone()),
+            ground_soil_layer_id: None,
+            tile_fraction: 1.0,
+            interval_s: 1_800.0,
+        };
+        let tile = V8ProjectedTileRuntimeInput {
+            identity,
+            ofe_id: ofe_id.clone(),
+            tile_id: tile_id.clone(),
+            transaction_id: TransactionId(1),
+            interval_s: 1_800.0,
+            tile_fraction: 1.0,
+            forcing: lse_forcing(),
+            vegetation_forcing: vegetation_forcing(),
+            canopy_air_state: None,
+            radiation: V8ProjectedColumnRadiation {
+                visible_direct: radiation(RadiationBand::Visible, 410.0),
+                visible_diffuse: radiation(RadiationBand::Visible, 83.0),
+                near_infrared_direct: radiation(RadiationBand::NearInfrared, 355.0),
+                near_infrared_diffuse: radiation(RadiationBand::NearInfrared, 101.0),
+            },
+            ground: V8ProjectedGroundInput {
+                configuration,
+                soil_interface_layers: vec![SoilInterfaceLayer {
+                    layer_id: layer_id.clone(),
+                    thickness_m: 0.08,
+                    thermal_conductivity_w_m_k: deliberately_distinct_top_soil_conductivity,
+                    areal_heat_capacity_j_m2_k: 120_000.0,
+                }],
+                state: TileState {
+                    ofe_id: ofe_id.clone(),
+                    tile_id: tile_id.clone(),
+                    surface_enthalpy_j_m2_tile_ground: 439_352.808,
+                    surface_temperature_warm_start_k: 295.0,
+                },
+                surface_liquid: DirectSurfaceLiquidStateRecord {
+                    key: crate::DirectSurfaceLiquidStoreKey {
+                        run_id: 1,
+                        ofe_id: ofe_id.clone(),
+                        tile_id: tile_id.clone(),
+                        surface_id,
+                        surface_class: SurfaceClass::ForestLitter,
+                        source_type: WaterSourceType::LitterLiquid,
+                        source_id,
+                    },
+                    liquid_kg_m2_tile: beginning_litter_water,
+                    last_accepted_transaction_id: None,
+                },
+                soil_thermal: SoilThermalOfeSnapshot {
+                    ofe_id,
+                    ordered_layers: vec![SoilThermalLayerSnapshot {
+                        layer_id,
+                        temperature_k: 293.0,
+                        enthalpy_j_m2_ofe_ground: 1.0,
+                    }],
+                },
+            },
+            occupancies: Vec::new(),
+        };
+        let projection = |tile| ValidatedV8RuntimeInputProjection {
+            vegetation_configuration_sha256: "b".repeat(64),
+            vegetation_state_sha256: "c".repeat(64),
+            lse_configuration_sha256: digest(),
+            lse_state_sha256: digest(),
+            lse_forcing_sha256: digest(),
+            hydrology_snapshot_sha256: digest(),
+            soil_thermal_snapshot_sha256: digest(),
+            transaction_id: TransactionId(1),
+            tiles: vec![tile],
+        };
+        let conductivity = |tile| {
+            let ready = projection(tile)
+                .solver_ready_tiles(&owner("vegetation"))
+                .expect("solver-ready projection");
+            match &ready[0].physics {
+                V8SolverReadyTilePhysics::Open(problem) => (
+                    problem.surface_conductivity_w_m_k,
+                    problem.soil_nodes[0].conductivity_w_m_k,
+                ),
+                V8SolverReadyTilePhysics::Covered(_) => panic!("empty occupancy is open"),
+            }
+        };
+
+        let (projected, soil) = conductivity(tile.clone());
+        let expected = 0.1 + 0.03 * beginning_litter_water / (1_000.0 * litter_thickness);
+        assert_eq!(projected.to_bits(), expected.to_bits());
+        assert_eq!(
+            soil.to_bits(),
+            deliberately_distinct_top_soil_conductivity.to_bits()
+        );
+        assert_ne!(projected.to_bits(), soil.to_bits());
+
+        let mut changed_store = tile;
+        changed_store.ground.surface_liquid.liquid_kg_m2_tile += 0.25;
+        let (poisoned, unchanged_soil) = conductivity(changed_store);
+        assert_ne!(poisoned.to_bits(), projected.to_bits());
+        assert_eq!(unchanged_soil.to_bits(), soil.to_bits());
     }
 
     #[test]

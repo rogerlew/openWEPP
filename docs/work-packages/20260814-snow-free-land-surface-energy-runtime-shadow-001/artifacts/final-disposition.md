@@ -2,6 +2,17 @@
 
 Status: `HOLD / Child-3 runtime implementation complete but terminal authority gate unresolved`
 
+The package was reopened after commit `96c46c88e01e4faaecccd084e402ebb6dcb1e6cd`
+for a bounded implementation correction. Forest-litter conductivity now uses
+the immutable beginning hydrology-owned litter store under the canonical
+`0.1 + 0.03*W_l/(rho_w*dz_l)` equation instead of aliasing the top-soil
+conductivity. Per-tile LSE VIS/NIR ground optics are the sole E01--E03
+lower-boundary owner; the single vegetation forcing albedo pair is neither a
+heterogeneous-tile restriction nor a covered-ground optics input. Focused
+runtime gates and fresh independent science review pass. This disposition
+remains HOLD on the separate oracle-reconciliation package and the required
+clean full-workspace gate.
+
 The historical custody HOLD below remains immutable evidence of the dependency
 that blocked the first execution attempt. Commit `a7d692da4` lifted that
 dependency, and the existing Child-3 package resumed. All accepted material
