@@ -1,0 +1,4 @@
+{
+  "commands": [
+
+    {"label":"bench_strict_projection","command":"cargo test -p openwepp-hillslope-orchestrator all_open_topology_projects_empty_canonical_v8_passes --lib","exit_code":0,"status":"BLOCKER","list_count":0,"notes":"precheck list failed or zero-match"}

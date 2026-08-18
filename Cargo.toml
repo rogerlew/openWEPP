@@ -807,7 +807,7 @@ path = "tests/integration/vegetation_real_hydrology_shadow_contract.rs"
 
 [[test]]
 name = "land_surface_energy_real_hydrology_shadow_contract"
-path = "tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"
+path = "tests/integration/land_surface_energy_strict_v8_public_contract.rs"
 
 [[test]]
 name = "surface_liquid_hydrology_custody_authority_contract"

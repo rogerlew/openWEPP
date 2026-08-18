@@ -13,8 +13,9 @@ use openwepp_land_surface_energy::{
     CoveredTileEnergyOperandSet, FinalCoveredTileCandidate, FinalTileCandidate, GroundWaterKey,
     OfeId, OpenPotentialPhase, OpenSurfaceProblem, PotentialWaterRequestBatch, RootRuntimeIdentity,
     RuntimeTileIdentity, SoilThermalSnapshot, TileEnergyOperandSet, TileState, WaterAuthorization,
-    WaterProtocol, WeightedTileEnergyOperands, finalize_covered_phase, finalize_open_phase,
-    solve_covered_potential_phase, solve_open_potential_phase, validate_weighted_ofe_energy,
+    WaterProtocol, WeightedTileEnergyOperands, canonical_tile_fraction_sum_closes,
+    finalize_covered_phase, finalize_open_phase, solve_covered_potential_phase,
+    solve_open_potential_phase, validate_weighted_ofe_energy,
 };
 
 use super::{
@@ -26,31 +27,59 @@ use super::{
 
 /// Strictly projected open-tile problem and its numerical trials.
 #[derive(Clone, Debug, PartialEq)]
-pub struct StrictProjectedOpenTile {
-    pub identity: RuntimeTileIdentity,
-    pub beginning: OpenSurfaceProblem,
-    pub potential_initial_trial: Option<Vec<f64>>,
-    pub final_initial_trial: Option<Vec<f64>>,
-    pub soil_thermal: SoilThermalSnapshot,
+pub(crate) struct StrictProjectedOpenTile {
+    pub(crate) identity: RuntimeTileIdentity,
+    pub(crate) beginning: OpenSurfaceProblem,
+    pub(crate) potential_initial_trial: Option<Vec<f64>>,
+    pub(crate) final_initial_trial: Option<Vec<f64>>,
+    pub(crate) soil_thermal: SoilThermalSnapshot,
 }
 
 /// Strictly projected covered-tile problem and its numerical trials.
 #[derive(Clone, Debug, PartialEq)]
-pub struct StrictProjectedCoveredTile {
-    pub identity: RuntimeTileIdentity,
-    pub beginning: CoveredColumnInputs,
-    pub roots: Vec<RootRuntimeIdentity>,
-    pub potential_initial_trial: Vec<f64>,
-    pub final_initial_trial: Vec<f64>,
-    pub soil_thermal: SoilThermalSnapshot,
+pub(crate) struct StrictProjectedCoveredTile {
+    pub(crate) identity: RuntimeTileIdentity,
+    pub(crate) beginning: CoveredColumnInputs,
+    pub(crate) roots: Vec<RootRuntimeIdentity>,
+    pub(crate) potential_initial_trial: Vec<f64>,
+    pub(crate) final_initial_trial: Vec<f64>,
+    pub(crate) soil_thermal: SoilThermalSnapshot,
 }
 
 /// One member of the exact configured heterogeneous tile set.
 #[derive(Clone, Debug, PartialEq)]
-pub enum StrictProjectedTileProblem {
+#[allow(clippy::large_enum_variant)]
+pub(crate) enum StrictProjectedTileProblem {
     Open(StrictProjectedOpenTile),
     Covered(StrictProjectedCoveredTile),
 }
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum MultiTileFailurePhase {
+    PotentialTile(usize),
+    CombinedRequests,
+    Authorization,
+    FinalTile(usize),
+    E04Ingress,
+    OpenIngress,
+    UnifiedHydrology,
+    LocalEnergy,
+    OfeEnergy,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum PendingPayloadKind {
+    CombinedRequest,
+    Authorization,
+    FinalTileUse,
+    FinalProtocol,
+    Ingress,
+}
+
+type FailureHook<'a> =
+    Option<&'a dyn Fn(MultiTileFailurePhase) -> Result<(), LandSurfaceEnergyShadowError>>;
+type PendingEnvelopeHook<'a> =
+    Option<&'a dyn Fn(PendingPayloadKind, &[u8]) -> Result<(), LandSurfaceEnergyShadowError>>;
 
 impl StrictProjectedTileProblem {
     fn identity(&self) -> &RuntimeTileIdentity {
@@ -62,7 +91,7 @@ impl StrictProjectedTileProblem {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-enum PotentialTilePhase {
+pub(crate) enum PotentialTilePhase {
     Open {
         phase: OpenPotentialPhase,
         final_initial_trial: Option<Vec<f64>>,
@@ -89,26 +118,40 @@ impl PotentialTilePhase {
             Self::Covered { phase, .. } => &phase.request_batch,
         }
     }
+
+    pub(crate) fn covered(&self) -> Option<&CoveredPotentialPhase> {
+        match self {
+            Self::Open { .. } => None,
+            Self::Covered { phase, .. } => Some(phase),
+        }
+    }
 }
 
 /// Accepted fixed-cap candidate for one exact tile.
 #[derive(Clone, Debug, PartialEq)]
-pub enum FinalizedRuntimeTile {
+pub(crate) enum FinalizedRuntimeTile {
     Open(FinalTileCandidate<AcceptedOpenSurface>),
     Covered(FinalCoveredTileCandidate),
 }
 
 impl FinalizedRuntimeTile {
     #[must_use]
-    pub fn identity(&self) -> &RuntimeTileIdentity {
+    fn identity(&self) -> &RuntimeTileIdentity {
         match self {
             Self::Open(value) => &value.identity,
             Self::Covered(value) => &value.identity,
         }
     }
 
+    pub(crate) fn covered(&self) -> Option<&FinalCoveredTileCandidate> {
+        match self {
+            Self::Open(_) => None,
+            Self::Covered(value) => Some(value),
+        }
+    }
+
     #[must_use]
-    pub fn water_protocol(&self) -> &WaterProtocol {
+    fn water_protocol(&self) -> &WaterProtocol {
         match self {
             Self::Open(value) => &value.water_protocol,
             Self::Covered(value) => &value.water_protocol,
@@ -116,7 +159,7 @@ impl FinalizedRuntimeTile {
     }
 
     #[must_use]
-    pub fn ending_tile_state_pre_ingress(&self) -> &TileState {
+    fn ending_tile_state_pre_ingress(&self) -> &TileState {
         match self {
             Self::Open(value) => &value.ending_tile_state_pre_ingress,
             Self::Covered(value) => &value.ending_tile_state_pre_ingress,
@@ -124,7 +167,7 @@ impl FinalizedRuntimeTile {
     }
 
     #[must_use]
-    pub fn soil_thermal(&self) -> &SoilThermalTileCandidate {
+    fn soil_thermal(&self) -> &SoilThermalTileCandidate {
         match self {
             Self::Open(value) => &value.soil_thermal,
             Self::Covered(value) => &value.soil_thermal,
@@ -132,7 +175,7 @@ impl FinalizedRuntimeTile {
     }
 
     #[must_use]
-    pub fn energy_operands(&self) -> RuntimeTileEnergyOperands<'_> {
+    fn energy_operands(&self) -> RuntimeTileEnergyOperands<'_> {
         match self {
             Self::Open(value) => RuntimeTileEnergyOperands::Open(&value.energy_operands),
             Self::Covered(value) => RuntimeTileEnergyOperands::Covered(&value.energy_operands),
@@ -142,19 +185,12 @@ impl FinalizedRuntimeTile {
 
 /// Borrowed local energy operands retaining open/covered type identity.
 #[derive(Clone, Copy, Debug)]
-pub enum RuntimeTileEnergyOperands<'a> {
+enum RuntimeTileEnergyOperands<'a> {
     Open(&'a TileEnergyOperandSet),
     Covered(&'a CoveredTileEnergyOperandSet),
 }
 
 impl RuntimeTileEnergyOperands<'_> {
-    fn ground(&self) -> &TileEnergyOperandSet {
-        match self {
-            Self::Open(value) => value,
-            Self::Covered(value) => &value.ground,
-        }
-    }
-
     fn validate(&self) -> Result<(), LandSurfaceEnergyShadowError> {
         match self {
             Self::Open(value) => value.validate()?,
@@ -167,18 +203,19 @@ impl RuntimeTileEnergyOperands<'_> {
 /// Independently reconstructed weighted ground-control-volume join for one
 /// complete OFE tile set.
 #[derive(Clone, Debug, PartialEq)]
-pub struct WeightedOfeEnergyJoin {
-    pub ofe_id: OfeId,
-    pub ordered_tile_ids: Vec<TileId>,
-    pub operands: Vec<WeightedTileEnergyOperands>,
-    pub closure: ClosureValue,
+pub(crate) struct WeightedOfeEnergyJoin {
+    ofe_id: OfeId,
+    ordered_tile_ids: Vec<TileId>,
+    operands: Vec<WeightedTileEnergyOperands>,
+    closure: ClosureValue,
 }
 
 /// Complete multi-tile result. Final tiles are generated internally and are
 /// never accepted from the caller.
 #[derive(Clone, Debug, PartialEq)]
-pub struct MultiTileRuntimeResult {
+pub(crate) struct MultiTileRuntimeResult {
     potential_request_batch: PotentialWaterRequestBatch,
+    potential_tiles: Vec<PotentialTilePhase>,
     finalized_tiles: Vec<FinalizedRuntimeTile>,
     weighted_ofe_energy: Vec<WeightedOfeEnergyJoin>,
     hydrology_candidate: UnifiedRealHydrologyCandidate,
@@ -186,22 +223,29 @@ pub struct MultiTileRuntimeResult {
 
 impl MultiTileRuntimeResult {
     #[must_use]
-    pub const fn potential_request_batch(&self) -> &PotentialWaterRequestBatch {
+    #[allow(dead_code)]
+    pub(crate) const fn potential_request_batch(&self) -> &PotentialWaterRequestBatch {
         &self.potential_request_batch
     }
 
     #[must_use]
-    pub fn finalized_tiles(&self) -> &[FinalizedRuntimeTile] {
+    pub(crate) fn potential_tiles(&self) -> &[PotentialTilePhase] {
+        &self.potential_tiles
+    }
+
+    #[must_use]
+    pub(crate) fn finalized_tiles(&self) -> &[FinalizedRuntimeTile] {
         &self.finalized_tiles
     }
 
     #[must_use]
-    pub fn weighted_ofe_energy(&self) -> &[WeightedOfeEnergyJoin] {
+    #[allow(dead_code)]
+    pub(crate) fn weighted_ofe_energy(&self) -> &[WeightedOfeEnergyJoin] {
         &self.weighted_ofe_energy
     }
 
     #[must_use]
-    pub const fn hydrology_candidate(&self) -> &UnifiedRealHydrologyCandidate {
+    pub(crate) const fn hydrology_candidate(&self) -> &UnifiedRealHydrologyCandidate {
         &self.hydrology_candidate
     }
 }
@@ -210,18 +254,26 @@ impl MultiTileRuntimeResult {
 /// hydrology authorization. Covered ingress is constructed only from the
 /// accepted fixed-cap E04 ledgers by the derived-ingress owner boundary.
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-pub fn execute_multi_tile_runtime(
+pub(crate) fn execute_multi_tile_runtime(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
     receiver_expectations: &UnifiedReceiverExpectations,
     projected_tiles: Vec<StrictProjectedTileProblem>,
     soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
     ingress_schedule: &CoveredIngressSchedule,
+    failure_hook: FailureHook<'_>,
+    pending_hook: PendingEnvelopeHook<'_>,
 ) -> Result<MultiTileRuntimeResult, LandSurfaceEnergyShadowError> {
     let projected_tiles =
         validate_and_sort_projected_tiles(projected_tiles, surface_configuration)?;
-    let potential_phases = solve_all_potential(projected_tiles)?;
+    let potential_phases = solve_all_potential(projected_tiles, failure_hook)?;
     let request_batch = combined_request_batch(&potential_phases)?;
+    publish_pending_debug(
+        pending_hook,
+        PendingPayloadKind::CombinedRequest,
+        &request_batch,
+    )?;
+    run_failure_hook(failure_hook, MultiTileFailurePhase::CombinedRequests)?;
     let mut retained_final_tiles = None;
 
     let hydrology_candidate = super::covered_derived_ingress::execute_unified_with_derived_ingress(
@@ -232,8 +284,20 @@ pub fn execute_multi_tile_runtime(
         soil_sources,
         ingress_schedule,
         |authorizations| {
-            let final_tiles = finalize_all_tiles(&potential_phases, authorizations)?;
+            publish_pending(
+                pending_hook,
+                PendingPayloadKind::Authorization,
+                authorizations,
+            )?;
+            run_failure_hook(failure_hook, MultiTileFailurePhase::Authorization)?;
+            let final_tiles = finalize_all_tiles(
+                &potential_phases,
+                authorizations,
+                failure_hook,
+                pending_hook,
+            )?;
             let protocol = combined_protocol(&request_batch, authorizations, &final_tiles)?;
+            publish_pending(pending_hook, PendingPayloadKind::FinalProtocol, &protocol)?;
             let ending_tiles = final_tiles
                 .iter()
                 .map(|tile| tile.ending_tile_state_pre_ingress().clone())
@@ -245,7 +309,7 @@ pub fn execute_multi_tile_runtime(
             let rollback_hashes = common_owner_rollback_hashes(&final_tiles)?;
             let sealed = UnifiedLseFinalization::try_new(
                 receiver_expectations,
-                protocol,
+                protocol.clone(),
                 ending_tiles,
                 soil_thermal,
                 rollback_hashes,
@@ -262,17 +326,43 @@ pub fn execute_multi_tile_runtime(
                 &covered_final_tiles,
                 ingress_schedule,
             )?;
+            publish_pending(pending_hook, PendingPayloadKind::Ingress, &ingress)?;
+            if ingress.tile_ingress.iter().any(|row| {
+                matches!(
+                    row,
+                    crate::DirectTileGroundIngress::CoveredCanopyRelease { .. }
+                        | crate::DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { .. }
+                )
+            }) {
+                run_failure_hook(failure_hook, MultiTileFailurePhase::E04Ingress)?;
+            }
+            if ingress.tile_ingress.iter().any(|row| {
+                matches!(
+                    row,
+                    crate::DirectTileGroundIngress::OpenRawPrecipitation { .. }
+                        | crate::DirectTileGroundIngress::OpenLiquidParcels { .. }
+                )
+            }) {
+                run_failure_hook(failure_hook, MultiTileFailurePhase::OpenIngress)?;
+            }
             retained_final_tiles = Some(final_tiles);
             Ok((sealed, ingress))
         },
     )?;
+    run_failure_hook(failure_hook, MultiTileFailurePhase::UnifiedHydrology)?;
 
     let finalized_tiles = retained_final_tiles.ok_or(LandSurfaceEnergyShadowError::Identity(
         "multi-tile finalizer returned no tile candidates",
     ))?;
+    for tile in &finalized_tiles {
+        tile.energy_operands().validate()?;
+    }
+    run_failure_hook(failure_hook, MultiTileFailurePhase::LocalEnergy)?;
     let weighted_ofe_energy = reconstruct_weighted_ofe_energy(&finalized_tiles)?;
+    run_failure_hook(failure_hook, MultiTileFailurePhase::OfeEnergy)?;
     Ok(MultiTileRuntimeResult {
         potential_request_batch: request_batch,
+        potential_tiles: potential_phases,
         finalized_tiles,
         weighted_ofe_energy,
         hydrology_candidate,
@@ -283,15 +373,31 @@ fn validate_and_sort_projected_tiles(
     mut projected: Vec<StrictProjectedTileProblem>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
 ) -> Result<Vec<StrictProjectedTileProblem>, LandSurfaceEnergyShadowError> {
+    surface_configuration.validate()?;
     if projected.is_empty() {
         return Err(LandSurfaceEnergyShadowError::Identity(
             "empty projected tile set",
         ));
     }
-    projected.sort_by(|left, right| {
-        let left = left.identity();
-        let right = right.identity();
-        (&left.ofe_id, &left.tile_id).cmp(&(&right.ofe_id, &right.tile_id))
+    let configured_rank = surface_configuration
+        .records
+        .iter()
+        .enumerate()
+        .map(|(rank, record)| {
+            (
+                (record.key.ofe_id.clone(), record.key.tile_id.clone()),
+                rank,
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    projected.sort_by_key(|tile| {
+        configured_rank
+            .get(&(
+                tile.identity().ofe_id.clone(),
+                tile.identity().tile_id.clone(),
+            ))
+            .copied()
+            .unwrap_or(usize::MAX)
     });
     let first = projected[0].identity();
     let mut identities = BTreeSet::new();
@@ -315,11 +421,34 @@ fn validate_and_sort_projected_tiles(
                 "mixed or duplicate projected tile lineage",
             ));
         }
+        let configured = surface_configuration
+            .records
+            .iter()
+            .find(|record| {
+                record.key.ofe_id == identity.ofe_id && record.key.tile_id == identity.tile_id
+            })
+            .ok_or(LandSurfaceEnergyShadowError::Identity(
+                "projected tile absent from configured topology",
+            ))?;
+        if identity.hydrology_owner_id != surface_configuration.owner_id
+            || identity.tile_fraction.to_bits() != configured.tile_fraction.to_bits()
+            || identity.surface_id != configured.key.surface_id
+            || identity.surface_class != configured.key.surface_class
+            || identity.ground_source_type != configured.key.source_type
+            || identity.ground_source_id != configured.key.source_id
+            || identity.ground_source_tile_id.as_ref() != Some(&configured.key.tile_id)
+            || identity.ground_soil_layer_id.is_some()
+        {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "projected/configured tile operand mismatch",
+            ));
+        }
+        validate_projected_soil_order(tile, surface_configuration)?;
         *fractions.entry(identity.ofe_id.clone()).or_default() += identity.tile_fraction;
     }
     if fractions
         .values()
-        .any(|sum| sum.to_bits() != 1.0_f64.to_bits())
+        .any(|sum| !canonical_tile_fraction_sum_closes(*sum))
     {
         return Err(LandSurfaceEnergyShadowError::Bound(
             "projected OFE tile fractions do not sum to one",
@@ -338,37 +467,87 @@ fn validate_and_sort_projected_tiles(
     Ok(projected)
 }
 
+fn validate_projected_soil_order(
+    tile: &StrictProjectedTileProblem,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let identity = tile.identity();
+    let snapshot = match tile {
+        StrictProjectedTileProblem::Open(value) => &value.soil_thermal,
+        StrictProjectedTileProblem::Covered(value) => &value.soil_thermal,
+    };
+    snapshot.validate()?;
+    let binding = surface_configuration
+        .ofe_bindings
+        .iter()
+        .find(|binding| binding.ofe_id == identity.ofe_id)
+        .ok_or(LandSurfaceEnergyShadowError::Identity(
+            "missing configured soil ordering",
+        ))?;
+    let projected_ofes = snapshot
+        .ofes
+        .iter()
+        .map(|ofe| ofe.ofe_id.clone())
+        .collect::<Vec<_>>();
+    let layers = snapshot
+        .ofes
+        .iter()
+        .find(|ofe| ofe.ofe_id == identity.ofe_id)
+        .map(|ofe| {
+            ofe.ordered_layers
+                .iter()
+                .map(|layer| layer.layer_id.clone())
+                .collect::<Vec<_>>()
+        });
+    if snapshot.owner_id != identity.soil_thermal_owner_id
+        || snapshot.state_sha256 != identity.beginning_soil_thermal_state_sha256
+        || projected_ofes != surface_configuration.ofe_topology
+        || layers.as_ref() != Some(&binding.ordered_soil_layer_ids)
+    {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "projected/configured soil thermal ordering",
+        ));
+    }
+    Ok(())
+}
+
 fn solve_all_potential(
     projected: Vec<StrictProjectedTileProblem>,
+    failure_hook: FailureHook<'_>,
 ) -> Result<Vec<PotentialTilePhase>, LandSurfaceEnergyShadowError> {
     projected
         .into_iter()
-        .map(|tile| match tile {
-            StrictProjectedTileProblem::Open(value) => {
-                let phase = solve_open_potential_phase(
-                    value.identity,
-                    &value.beginning,
-                    value.potential_initial_trial,
-                )?;
-                Ok(PotentialTilePhase::Open {
-                    phase,
-                    final_initial_trial: value.final_initial_trial,
-                    soil_thermal: value.soil_thermal,
-                })
-            }
-            StrictProjectedTileProblem::Covered(value) => {
-                let phase = solve_covered_potential_phase(
-                    value.identity,
-                    &value.beginning,
-                    value.roots,
-                    value.potential_initial_trial,
-                )?;
-                Ok(PotentialTilePhase::Covered {
-                    phase,
-                    final_initial_trial: value.final_initial_trial,
-                    soil_thermal: value.soil_thermal,
-                })
-            }
+        .enumerate()
+        .map(|(index, tile)| {
+            let phase: PotentialTilePhase = match tile {
+                StrictProjectedTileProblem::Open(value) => {
+                    let phase = solve_open_potential_phase(
+                        value.identity,
+                        &value.beginning,
+                        value.potential_initial_trial,
+                    )?;
+                    Ok::<_, LandSurfaceEnergyShadowError>(PotentialTilePhase::Open {
+                        phase,
+                        final_initial_trial: value.final_initial_trial,
+                        soil_thermal: value.soil_thermal,
+                    })
+                }
+                StrictProjectedTileProblem::Covered(value) => {
+                    let phase = solve_covered_potential_phase(
+                        value.identity,
+                        &value.beginning,
+                        value.roots,
+                        value.potential_initial_trial,
+                    )?;
+                    Ok::<_, LandSurfaceEnergyShadowError>(PotentialTilePhase::Covered {
+                        phase,
+                        final_initial_trial: value.final_initial_trial,
+                        soil_thermal: value.soil_thermal,
+                    })
+                }
+            }?;
+            run_failure_hook(failure_hook, MultiTileFailurePhase::PotentialTile(index))?;
+            Ok(phase)
         })
         .collect()
 }
@@ -418,12 +597,15 @@ fn authorization_subset(
 fn finalize_all_tiles(
     phases: &[PotentialTilePhase],
     authorizations: &[WaterAuthorization],
+    failure_hook: FailureHook<'_>,
+    pending_hook: PendingEnvelopeHook<'_>,
 ) -> Result<Vec<FinalizedRuntimeTile>, LandSurfaceEnergyShadowError> {
     phases
         .iter()
-        .map(|phase| {
+        .enumerate()
+        .map(|(index, phase)| {
             let mut subset = authorization_subset(phase, authorizations)?;
-            match phase {
+            let finalized: FinalizedRuntimeTile = match phase {
                 PotentialTilePhase::Open {
                     phase,
                     final_initial_trial,
@@ -434,28 +616,75 @@ fn finalize_all_tiles(
                             "open tile authorization cardinality",
                         ));
                     }
-                    Ok(FinalizedRuntimeTile::Open(finalize_open_phase(
-                        phase,
-                        &phase.identity.beginning_lse_state_sha256,
-                        &subset.remove(0),
-                        final_initial_trial.clone(),
-                        soil_thermal,
-                    )?))
+                    Ok::<_, LandSurfaceEnergyShadowError>(FinalizedRuntimeTile::Open(
+                        finalize_open_phase(
+                            phase,
+                            &phase.identity.beginning_lse_state_sha256,
+                            &subset.remove(0),
+                            final_initial_trial.clone(),
+                            soil_thermal,
+                        )?,
+                    ))
                 }
                 PotentialTilePhase::Covered {
                     phase,
                     final_initial_trial,
                     soil_thermal,
-                } => Ok(FinalizedRuntimeTile::Covered(finalize_covered_phase(
-                    phase,
-                    &phase.identity.beginning_lse_state_sha256,
-                    subset,
-                    final_initial_trial.clone(),
-                    soil_thermal,
-                )?)),
-            }
+                } => Ok::<_, LandSurfaceEnergyShadowError>(FinalizedRuntimeTile::Covered(
+                    finalize_covered_phase(
+                        phase,
+                        &phase.identity.beginning_lse_state_sha256,
+                        subset,
+                        final_initial_trial.clone(),
+                        soil_thermal,
+                    )?,
+                )),
+            }?;
+            publish_pending(
+                pending_hook,
+                PendingPayloadKind::FinalTileUse,
+                finalized.water_protocol(),
+            )?;
+            run_failure_hook(failure_hook, MultiTileFailurePhase::FinalTile(index))?;
+            Ok(finalized)
         })
         .collect()
+}
+
+fn run_failure_hook(
+    hook: FailureHook<'_>,
+    phase: MultiTileFailurePhase,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    if let Some(hook) = hook {
+        hook(phase)?;
+    }
+    Ok(())
+}
+
+fn publish_pending<T: serde::Serialize + ?Sized>(
+    hook: PendingEnvelopeHook<'_>,
+    kind: PendingPayloadKind,
+    value: &T,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    if let Some(hook) = hook {
+        let bytes = serde_json::to_vec(value).map_err(|_| {
+            LandSurfaceEnergyShadowError::Identity("pending envelope serialization")
+        })?;
+        hook(kind, &bytes)?;
+    }
+    Ok(())
+}
+
+fn publish_pending_debug<T: std::fmt::Debug + ?Sized>(
+    hook: PendingEnvelopeHook<'_>,
+    kind: PendingPayloadKind,
+    value: &T,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    if let Some(hook) = hook {
+        let bytes = format!("{value:?}").into_bytes();
+        hook(kind, &bytes)?;
+    }
+    Ok(())
 }
 
 fn combined_protocol(
@@ -531,17 +760,111 @@ fn weighted_operand(
     energy: RuntimeTileEnergyOperands<'_>,
 ) -> Result<WeightedTileEnergyOperands, LandSurfaceEnergyShadowError> {
     energy.validate()?;
-    let ground = energy.ground();
-    let surface = ground.surface;
+    let (
+        local_input_j_m2_tile,
+        local_output_j_m2_tile,
+        local_storage_change_j_m2_tile,
+        local_sum_abs_integrated_components_j_m2_tile,
+    ) = match energy {
+        RuntimeTileEnergyOperands::Open(ground) => {
+            let surface = ground.surface;
+            (
+                (surface.absorbed_shortwave_w_m2 + surface.net_longwave_w_m2) * identity.interval_s,
+                surface.sensible_w_m2 * identity.interval_s
+                    + ground.latent.vapor_energy_j_m2
+                    + surface.ground_heat_w_m2 * identity.interval_s,
+                surface.storage_w_m2 * identity.interval_s,
+                (surface.absorbed_shortwave_w_m2.abs()
+                    + surface.net_longwave_w_m2.abs()
+                    + surface.sensible_w_m2.abs()
+                    + surface.ground_heat_w_m2.abs()
+                    + surface.storage_w_m2.abs())
+                    * identity.interval_s
+                    + ground.latent.vapor_energy_j_m2.abs(),
+            )
+        }
+        RuntimeTileEnergyOperands::Covered(covered) => {
+            let column = &covered.column;
+            let incident_shortwave = column.shortwave.incident_w_m2_tile.total();
+            let reflected_shortwave = column.shortwave.top_reflected_w_m2_tile.total();
+            let canopy_latent_terms = column
+                .occupancies
+                .iter()
+                .flat_map(|occupancy| {
+                    [
+                        occupancy.sun_leaf,
+                        occupancy.shade_leaf,
+                        occupancy.wet_surface,
+                        occupancy.dry_stem,
+                    ]
+                })
+                .map(|surface| {
+                    surface.signed_vapor_to_canopy_air_kg_m2_tile_s
+                        * surface.latent_heat_j_kg
+                        * identity.interval_s
+                })
+                .collect::<Vec<_>>();
+            let canopy_latent_j_m2 = canopy_latent_terms.iter().sum::<f64>();
+            let sum_abs_latent_j_m2 = canopy_latent_terms
+                .iter()
+                .map(|value| value.abs())
+                .sum::<f64>()
+                + covered.ground.latent.vapor_energy_j_m2.abs();
+            covered_external_energy(
+                identity.interval_s,
+                incident_shortwave,
+                reflected_shortwave,
+                column.longwave.atmospheric_downward_w_m2_tile,
+                column.longwave.top_upward_w_m2_tile,
+                column.canopy_air.sensible_to_reference_air_w_m2_tile,
+                canopy_latent_j_m2 + covered.ground.latent.vapor_energy_j_m2,
+                covered.ground.surface.ground_heat_w_m2,
+                covered.ground.surface.storage_w_m2,
+                sum_abs_latent_j_m2,
+            )
+        }
+    };
     Ok(WeightedTileEnergyOperands {
         tile_fraction: identity.tile_fraction,
-        local_input_j_m2_tile: (surface.absorbed_shortwave_w_m2 + surface.net_longwave_w_m2)
-            * identity.interval_s,
-        local_output_j_m2_tile: surface.sensible_w_m2 * identity.interval_s
-            + ground.latent.vapor_energy_j_m2
-            + surface.ground_heat_w_m2 * identity.interval_s,
-        local_storage_change_j_m2_tile: surface.storage_w_m2 * identity.interval_s,
+        local_input_j_m2_tile,
+        local_output_j_m2_tile,
+        local_storage_change_j_m2_tile,
+        local_sum_abs_integrated_components_j_m2_tile,
     })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn covered_external_energy(
+    interval_s: f64,
+    incident_shortwave_w_m2: f64,
+    top_reflected_shortwave_w_m2: f64,
+    atmospheric_downward_longwave_w_m2: f64,
+    top_upward_longwave_w_m2: f64,
+    sensible_to_reference_air_w_m2: f64,
+    latent_to_reference_air_j_m2: f64,
+    ground_heat_w_m2: f64,
+    storage_w_m2: f64,
+    sum_abs_latent_j_m2: f64,
+) -> (f64, f64, f64, f64) {
+    (
+        (incident_shortwave_w_m2 + atmospheric_downward_longwave_w_m2) * interval_s,
+        (top_reflected_shortwave_w_m2
+            + top_upward_longwave_w_m2
+            + sensible_to_reference_air_w_m2
+            + ground_heat_w_m2)
+            * interval_s
+            + latent_to_reference_air_j_m2,
+        storage_w_m2 * interval_s,
+        (incident_shortwave_w_m2.abs()
+            + top_reflected_shortwave_w_m2.abs()
+            + atmospheric_downward_longwave_w_m2.abs()
+            + top_upward_longwave_w_m2.abs()
+            + sensible_to_reference_air_w_m2.abs()
+            + ground_heat_w_m2.abs()
+            + storage_w_m2.abs())
+            * interval_s
+            + sum_abs_latent_j_m2,
+    )
 }
 
 fn reconstruct_weighted_ofe_energy(
@@ -557,6 +880,15 @@ fn reconstruct_weighted_ofe_energy(
     by_ofe
         .into_iter()
         .map(|(ofe_id, tiles)| {
+            let interval_s = tiles[0].identity().interval_s;
+            if tiles
+                .iter()
+                .any(|tile| tile.identity().interval_s.to_bits() != interval_s.to_bits())
+            {
+                return Err(LandSurfaceEnergyShadowError::Identity(
+                    "mixed OFE energy intervals",
+                ));
+            }
             let ordered_tile_ids = tiles
                 .iter()
                 .map(|tile| tile.identity().tile_id.clone())
@@ -565,7 +897,7 @@ fn reconstruct_weighted_ofe_energy(
                 .iter()
                 .map(|tile| weighted_operand(tile.identity(), tile.energy_operands()))
                 .collect::<Result<Vec<_>, _>>()?;
-            let closure = validate_weighted_ofe_energy(&operands)?;
+            let closure = validate_weighted_ofe_energy(interval_s, &operands)?;
             Ok(WeightedOfeEnergyJoin {
                 ofe_id,
                 ordered_tile_ids,
@@ -590,5 +922,68 @@ mod tests {
     #[test]
     fn finalized_tile_type_requires_real_open_or_covered_candidate() {
         assert!(std::mem::size_of::<FinalizedRuntimeTile>() > 0);
+    }
+
+    #[test]
+    fn topology_closure_uses_configured_tolerance_without_normalizing() {
+        let admitted = 1.0 + 32.0 * f64::EPSILON;
+        assert!(canonical_tile_fraction_sum_closes(admitted));
+        assert_eq!(admitted.to_bits(), (1.0 + 32.0 * f64::EPSILON).to_bits());
+        assert!(!canonical_tile_fraction_sum_closes(
+            1.0 + 65.0 * f64::EPSILON
+        ));
+        assert!(!canonical_tile_fraction_sum_closes(f64::NAN));
+    }
+
+    #[test]
+    fn covered_weighting_uses_every_external_column_boundary() {
+        let interval = 10.0;
+        let baseline = covered_external_energy(
+            interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0,
+        );
+        assert_eq!(baseline, (1_500.0, 850.0, 650.0, 3_000.0));
+        let closes = |terms: (f64, f64, f64, f64), fraction: f64| {
+            validate_weighted_ofe_energy(
+                interval,
+                &[WeightedTileEnergyOperands {
+                    tile_fraction: fraction,
+                    local_input_j_m2_tile: terms.0,
+                    local_output_j_m2_tile: terms.1,
+                    local_storage_change_j_m2_tile: terms.2,
+                    local_sum_abs_integrated_components_j_m2_tile: terms.3,
+                }],
+            )
+        };
+        assert!(closes(baseline, 1.0).is_ok());
+
+        // Every omitted external boundary fails the validator used by the runtime path.
+        for poisoned in [
+            covered_external_energy(
+                interval, 0.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0,
+            ),
+            covered_external_energy(
+                interval, 100.0, 0.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0,
+            ),
+            covered_external_energy(
+                interval, 100.0, 10.0, 0.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0,
+            ),
+            covered_external_energy(
+                interval, 100.0, 10.0, 50.0, 0.0, 30.0, 200.0, 5.0, 65.0, 200.0,
+            ),
+            covered_external_energy(
+                interval, 100.0, 10.0, 50.0, 20.0, 0.0, 200.0, 5.0, 65.0, 200.0,
+            ),
+            covered_external_energy(interval, 100.0, 10.0, 50.0, 20.0, 30.0, 0.0, 5.0, 65.0, 0.0),
+            covered_external_energy(
+                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 0.0, 65.0, 200.0,
+            ),
+            covered_external_energy(
+                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 0.0, 200.0,
+            ),
+        ] {
+            assert!(closes(poisoned, 1.0).is_err());
+        }
+        assert!(closes(baseline, 0.5).is_err());
+        assert!(closes(baseline, 2.0).is_err());
     }
 }

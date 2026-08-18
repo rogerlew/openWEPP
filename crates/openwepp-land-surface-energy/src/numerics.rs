@@ -1,7 +1,7 @@
 //! Deterministic nonlinear solve infrastructure shared by open and covered
 //! land-surface-energy systems.
 
-use crate::{LandSurfaceEnergyError, StepNorms};
+use crate::{LandSurfaceEnergyError, NormalizedResidual, StepNorms};
 
 pub(crate) const MAX_NEWTON_ITERATIONS: u32 = 50;
 pub(crate) const MAX_BACKTRACKING_HALVINGS: u32 = 20;
@@ -15,15 +15,37 @@ pub enum NumericalFailureKind {
     IterationLimit,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct NumericalFailure {
     pub kind: NumericalFailureKind,
     pub iterations: u32,
     pub normalized_residuals: Vec<f64>,
+    pub ordered_residuals: Vec<NormalizedResidual>,
+    pub(crate) failed_solution: Vec<f64>,
+    pub occupancy_id: Option<String>,
+    pub active_bounds: Vec<String>,
     pub backtracking_count: u32,
     pub step_norms: StepNorms,
     pub pivot_magnitude: Option<f64>,
     pub matrix_norm: Option<f64>,
+}
+
+impl std::fmt::Debug for NumericalFailure {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("NumericalFailure")
+            .field("kind", &self.kind)
+            .field("iterations", &self.iterations)
+            .field("normalized_residuals", &self.normalized_residuals)
+            .field("ordered_residuals", &self.ordered_residuals)
+            .field("occupancy_id", &self.occupancy_id)
+            .field("active_bounds", &self.active_bounds)
+            .field("backtracking_count", &self.backtracking_count)
+            .field("step_norms", &self.step_norms)
+            .field("pivot_magnitude", &self.pivot_magnitude)
+            .field("matrix_norm", &self.matrix_norm)
+            .finish_non_exhaustive()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -79,8 +101,9 @@ pub(crate) fn solve_linear(
         for row in column + 1..n {
             let factor = a[row][column] / a[column][column];
             a[row][column] = 0.0;
-            for inner in column + 1..n {
-                a[row][inner] -= factor * a[column][inner];
+            let pivot_tail = a[column][column + 1..].to_vec();
+            for (entry, pivot_entry) in a[row][column + 1..].iter_mut().zip(pivot_tail) {
+                *entry -= factor * pivot_entry;
             }
             b[row] -= factor * b[column];
         }
@@ -104,14 +127,126 @@ pub(crate) fn normalized_infinity_norm(residuals: &[f64]) -> f64 {
         .fold(0.0, f64::max)
 }
 
-pub(crate) fn is_strict_residual_decrease(
-    current_norm: f64,
-    trial_residuals: &[f64],
-) -> bool {
+pub(crate) fn is_strict_residual_decrease(current_norm: f64, trial_residuals: &[f64]) -> bool {
     normalized_infinity_norm(trial_residuals) < current_norm
 }
 
+fn backtracked_trial<D, B, E, V>(
+    evaluator: &mut E,
+    valid_trial: &mut V,
+    x: &[f64],
+    delta: &[f64],
+    current_norm: f64,
+    prospective_step: f64,
+) -> Option<(Vec<f64>, f64, u32)>
+where
+    E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
+    V: FnMut(&[f64]) -> bool,
+{
+    for exponent in 0..=MAX_BACKTRACKING_HALVINGS {
+        let factor = 0.5_f64.powf(f64::from(exponent));
+        let trial: Vec<f64> = x
+            .iter()
+            .zip(delta)
+            .map(|(value, change)| value + factor * change)
+            .collect();
+        if !valid_trial(&trial) {
+            continue;
+        }
+        let Ok((trial_residual, _)) = evaluator(&trial, None) else {
+            continue;
+        };
+        if is_strict_residual_decrease(current_norm, &trial_residual) {
+            return Some((trial, factor * prospective_step, exponent));
+        }
+    }
+    None
+}
+
+fn centered_jacobian<D, B, E>(
+    evaluator: &mut E,
+    x: &[f64],
+    unit_scales: &[f64],
+    frozen: &B,
+) -> Result<Vec<Vec<f64>>, LandSurfaceEnergyError>
+where
+    E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
+{
+    let perturbations: Vec<f64> = x
+        .iter()
+        .zip(unit_scales)
+        .map(|(value, scale)| f64::EPSILON.sqrt() * value.abs().max(*scale))
+        .collect();
+    let mut jacobian = vec![vec![0.0; x.len()]; x.len()];
+    for column in 0..x.len() {
+        let mut minus = x.to_vec();
+        let mut plus = x.to_vec();
+        minus[column] -= perturbations[column];
+        plus[column] += perturbations[column];
+        let (minus_residual, _) = evaluator(&minus, Some(frozen))?;
+        let (plus_residual, _) = evaluator(&plus, Some(frozen))?;
+        for row in 0..x.len() {
+            jacobian[row][column] =
+                (plus_residual[row] - minus_residual[row]) / (2.0 * perturbations[column]);
+        }
+    }
+    Ok(jacobian)
+}
+
+fn rejected<D>(
+    kind: NumericalFailureKind,
+    iterations: u32,
+    normalized_residuals: Vec<f64>,
+    backtracking_count: u32,
+    step: Option<f64>,
+    evidence: (Option<f64>, Option<f64>),
+    failed_solution: Vec<f64>,
+) -> NormalizedSolveOutcome<D> {
+    NormalizedSolveOutcome::Rejected(NumericalFailure {
+        kind,
+        iterations,
+        normalized_residuals,
+        ordered_residuals: Vec::new(),
+        failed_solution,
+        occupancy_id: None,
+        active_bounds: Vec::new(),
+        backtracking_count,
+        step_norms: StepNorms {
+            temperature_k: step,
+            humidity_kg_kg: None,
+            ci_pa: None,
+            hydraulic_mm: None,
+            beta: None,
+        },
+        pivot_magnitude: evidence.0,
+        matrix_norm: evidence.1,
+    })
+}
+
+fn validate_solver_shape(
+    initial: &[f64],
+    unit_scales: &[f64],
+) -> Result<(), LandSurfaceEnergyError> {
+    if initial.len() == unit_scales.len() && !initial.is_empty() {
+        Ok(())
+    } else {
+        Err(LandSurfaceEnergyError::topology_domain(
+            "normalized_solver_shape",
+        ))
+    }
+}
+
+fn unreachable_solver_state<D>() -> Result<NormalizedSolveOutcome<D>, LandSurfaceEnergyError> {
+    Err(LandSurfaceEnergyError::ConstitutiveDomain(
+        "unreachable_normalized_solver_state",
+    ))
+}
+
 /// Frozen centered-difference Newton algorithm shared by open and joint columns.
+///
+/// # Errors
+///
+/// Returns a typed domain error when shapes or residual evaluations are invalid.
 pub fn solve_normalized_system<D, B, E, V, F>(
     mut evaluator: E,
     initial: Vec<f64>,
@@ -126,11 +261,7 @@ where
     F: FnMut(&D) -> B,
     B: Clone,
 {
-    if initial.len() != unit_scales.len() || initial.is_empty() {
-        return Err(LandSurfaceEnergyError::topology_domain(
-            "normalized_solver_shape",
-        ));
-    }
+    validate_solver_shape(&initial, unit_scales)?;
     let mut x = initial;
     let mut last_step = None;
     let mut backtracking_count = 0;
@@ -159,109 +290,72 @@ where
             });
         }
         if iteration == MAX_NEWTON_ITERATIONS {
-            return Ok(NormalizedSolveOutcome::Rejected(NumericalFailure {
-                kind: NumericalFailureKind::IterationLimit,
-                iterations: iteration,
-                normalized_residuals: normalized,
+            return Ok(rejected(
+                NumericalFailureKind::IterationLimit,
+                iteration,
+                normalized,
                 backtracking_count,
-                step_norms: StepNorms {
-                    temperature_k: last_step,
-                    humidity_kg_kg: None,
-                    ci_pa: None,
-                    hydraulic_mm: None,
-                    beta: None,
-                },
-                pivot_magnitude: pivot,
-                matrix_norm,
-            }));
+                last_step,
+                (pivot, matrix_norm),
+                x,
+            ));
         }
         let frozen = freeze_branches(&detail);
-        let perturbations: Vec<f64> = x
-            .iter()
-            .zip(unit_scales.iter())
-            .map(|(value, scale)| f64::EPSILON.sqrt() * value.abs().max(*scale))
-            .collect();
-        let mut jacobian = vec![vec![0.0; x.len()]; x.len()];
-        for column in 0..x.len() {
-            let mut minus = x.clone();
-            let mut plus = x.clone();
-            minus[column] -= perturbations[column];
-            plus[column] += perturbations[column];
-            let (minus_residual, _) = evaluator(&minus, Some(&frozen))?;
-            let (plus_residual, _) = evaluator(&plus, Some(&frozen))?;
-            for row in 0..x.len() {
-                jacobian[row][column] =
-                    (plus_residual[row] - minus_residual[row]) / (2.0 * perturbations[column]);
-            }
-        }
+        let jacobian = centered_jacobian(&mut evaluator, &x, unit_scales, &frozen)?;
         let right_hand_side: Vec<f64> = normalized.iter().map(|value| -value).collect();
         let (delta, current_pivot, current_matrix_norm) =
             match solve_linear(&jacobian, &right_hand_side) {
                 Ok(value) => value,
                 Err(evidence) => {
-                    return Ok(NormalizedSolveOutcome::Rejected(NumericalFailure {
-                        kind: NumericalFailureKind::SingularPivot,
-                        iterations: iteration,
-                        normalized_residuals: normalized,
+                    return Ok(rejected(
+                        NumericalFailureKind::SingularPivot,
+                        iteration,
+                        normalized,
                         backtracking_count,
-                        step_norms: StepNorms {
-                            temperature_k: last_step,
-                            humidity_kg_kg: None,
-                            ci_pa: None,
-                            hydraulic_mm: None,
-                            beta: None,
-                        },
-                        pivot_magnitude: Some(evidence.pivot),
-                        matrix_norm: Some(evidence.matrix_norm),
-                    }));
+                        last_step,
+                        (Some(evidence.pivot), Some(evidence.matrix_norm)),
+                        x,
+                    ));
                 }
             };
         pivot = Some(current_pivot);
         matrix_norm = Some(current_matrix_norm);
         let prospective_step = delta.iter().map(|value| value.abs()).fold(0.0, f64::max);
-        let mut accepted = None;
-        for exponent in 0..=MAX_BACKTRACKING_HALVINGS {
-            let factor = 0.5_f64.powf(f64::from(exponent));
-            let trial: Vec<f64> = x
-                .iter()
-                .zip(delta.iter())
-                .map(|(value, change)| value + factor * change)
-                .collect();
-            if !valid_trial(&trial) {
-                continue;
-            }
-            let trial_result = evaluator(&trial, None);
-            let Ok((trial_residual, _)) = trial_result else {
-                continue;
-            };
-            if is_strict_residual_decrease(norm, &trial_residual) {
-                accepted = Some((trial, factor * prospective_step, exponent));
-                break;
-            }
+        if norm <= 1.0 && prospective_step <= TEMPERATURE_STEP_TOLERANCE_K {
+            return Ok(NormalizedSolveOutcome::Accepted {
+                solution: x,
+                detail,
+                iterations: iteration,
+                residual_norm_history: history,
+                backtracking_count,
+                step_norm: prospective_step,
+                pivot_magnitude: pivot,
+                matrix_norm,
+            });
         }
+        let accepted = backtracked_trial(
+            &mut evaluator,
+            &mut valid_trial,
+            &x,
+            &delta,
+            norm,
+            prospective_step,
+        );
         if let Some((trial, step, exponent)) = accepted {
             x = trial;
             last_step = Some(step);
             backtracking_count += exponent;
         } else {
-            return Ok(NormalizedSolveOutcome::Rejected(NumericalFailure {
-                kind: NumericalFailureKind::BacktrackingLimit,
-                iterations: iteration,
-                normalized_residuals: normalized,
-                backtracking_count: backtracking_count + MAX_BACKTRACKING_HALVINGS,
-                step_norms: StepNorms {
-                    temperature_k: Some(prospective_step),
-                    humidity_kg_kg: None,
-                    ci_pa: None,
-                    hydraulic_mm: None,
-                    beta: None,
-                },
-                pivot_magnitude: pivot,
-                matrix_norm,
-            }));
+            return Ok(rejected(
+                NumericalFailureKind::BacktrackingLimit,
+                iteration,
+                normalized,
+                backtracking_count + MAX_BACKTRACKING_HALVINGS,
+                Some(prospective_step),
+                (pivot, matrix_norm),
+                x,
+            ));
         }
     }
-    Err(LandSurfaceEnergyError::ConstitutiveDomain(
-        "unreachable_normalized_solver_state",
-    ))
+    unreachable_solver_state()
 }

@@ -2,6 +2,18 @@
 
 Status: accumulating; failures and retries will be preserved.
 
+## Quota-interruption exact-head intake — 2026-08-17
+
+- `Static: git identity` — working HEAD `099b15d2b13f52899e65b8d266a3c067cb9773c1`, clean branch. Child-3 source bytes equal required WIP checkpoint `70d855ff6ccc5f4387547f05969079c3db6b353f`; the merge-only delta is the separate Nix/devbox package.
+- `Ran: cargo check -p <four required crates>` outside the Nix shell — FAIL, exit 127 for each command because `cargo` is not on the host PATH. Preserved as environment intake evidence.
+- `Ran: OPENWEPP_TASK_ID=child3-resume nix develop -c cargo check -p openwepp-land-surface-energy` — PASS.
+- `Ran: OPENWEPP_TASK_ID=child3-resume nix develop -c cargo check -p openwepp-vegetation` — PASS.
+- `Ran: OPENWEPP_TASK_ID=child3-resume nix develop -c cargo check -p openwepp-biogeochemistry` — PASS.
+- `Ran: OPENWEPP_TASK_ID=child3-resume nix develop -c cargo check -p openwepp-hillslope-orchestrator` — FAIL with `E0599`: `V8ProjectedTileRuntimeInput::solver_ready` is called at `v8_input_projection.rs:282` but is not implemented. Five unused-import groups are retained in the compiler transcript and identify the interrupted implementation surface.
+- `Static: line-count governance` — changed Rust files recounted exactly; `solver.rs=3025` is closure-blocking above 3,000. Other large files include orchestrator shadow `mod.rs=2971`, LSE `transaction.rs=2787`, vegetation `transaction.rs=2082`, and the integration root `=2757`.
+- `Ran: post-repair four-crate cargo check matrix in pinned Nix shell` — PASS for land-surface-energy, vegetation, biogeochemistry, and hillslope-orchestrator. The orchestrator emitted dead-code warnings because the internal multi-tile executor was not yet connected to the public path; strict public integration remained active.
+- `Ran: cargo nextest run -p openwepp-land-surface-energy --profile quick --no-fail-fast` — FAIL, 34/41 passed. Seven retained failures cover alternate-start/fixed-cap convergence, frozen covered residual/oracle correspondence, three open/final transaction cases rejecting with typed backtracking limits under strict-decrease, and natural failure-kind correspondence. No tolerance, fixture, or acceptance predicate was weakened; numerical remediation is active.
+
 - `Static: predecessor gate` — historical PASS at `3f1cf8ee3`. Child 3 then
   exposed a canonical-JSON evidence defect; Child 1 is temporarily reopened
   for the bounded correction. Current candidate hashes are calculator
@@ -302,3 +314,46 @@ into a complete Child-3 release.
   evidence, heavy closure gates and dual terminal verification. This Child-3
   runtime package still makes no real scheduler-consumer or atomic shadow
   commit claim; those remain Child-4 responsibilities.
+
+## Quota-resumed exact-head terminal campaign
+
+- `Ran: strict public endpoint target` — PASS, 9/9, including open-only,
+  mixed open/covered, shared-stratum/two-covered, and thirteen canonical-owner
+  poison seams through `execute_v8_lse_runtime_shadow`.
+- `Ran: openwepp-land-surface-energy quick` — PASS, 54/54 after the final
+  canonical topology-predicate regression.
+- `Ran: openwepp-hillslope-orchestrator quick` — PASS, 702/702.
+- `Ran: openwepp-vegetation quick` — PASS, 252/252 with immutable historical
+  artifacts restored.
+- `Ran: fresh exact-byte science review` — PASS; no material science,
+  ownership, tolerance, ingress, energy, or activation findings remain.
+- `Ran: fresh exact-byte Rust review before terminal authority execution` —
+  PASS for production/runtime bytes, public API, rollback, diagnostics and
+  line governance. The later isolated authority regeneration exposed the
+  terminal contradiction below and correctly changed terminal disposition to
+  HOLD.
+- `Ran: seven required benchmark surfaces` — PASS with every selector
+  nonzero: strict projection, open-only, single-rank, two-rank, mixed
+  open/covered, complete public envelope, and actual-byte rollback. Raw logs:
+  `artifacts/comparator-heavy/20260817T231432Z-child3-v5/` and rerun evidence in
+  `artifacts/comparator-heavy/20260817T233050Z-child3-v6/`.
+- `Ran: cargo clippy --workspace --all-targets -- -D warnings` — PASS after
+  behavior-preserving workspace lint remediation. Final raw log:
+  `artifacts/comparator-heavy/20260818T001750Z-child3-v7/commands/gate_cargo_clippy.log`.
+- `Ran: cargo test --doc --workspace` — PASS.
+- `Ran: cargo deny check` — PASS.
+- `Ran: cargo fmt --all -- --check` and `git diff --check` — PASS.
+- `Ran: cargo nextest run --workspace --profile full` — FAIL/HOLD: 2,990
+  tests ran, 2,974 passed, 16 failed. Raw log:
+  `artifacts/comparator-heavy/20260817T233050Z-child3-v6/commands/gate_cargo_nextest.log`.
+  The raw run includes environment/tooling failures, stale lifecycle-path
+  failures later corrected, shared-artifact race failures later isolated, and
+  exact V3/V5 frozen-authority regeneration failures. It was not rerun, so all
+  16 remain terminal FAIL evidence. Independent isolated regeneration still
+  proves a load-bearing authority contradiction. No tolerance, hash assertion,
+  or successor identity was weakened or rewritten.
+- `Static: changed-Rust line governance` — PASS. Largest changed Rust file is
+  `transaction.rs` at 2,984 lines; every changed Rust file is below 3,000.
+
+Terminal disposition is HOLD. Full correctness is a current-scope required
+gate and is not deferred, waived, or relabeled PASS.

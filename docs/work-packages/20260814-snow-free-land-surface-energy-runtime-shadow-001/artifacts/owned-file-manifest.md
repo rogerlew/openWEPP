@@ -102,3 +102,11 @@ orchestrator additions are not hidden by aggregate directory ownership:
 This is an executing-remediation snapshot, not terminal reconciliation. The
 3,204-line solver prevents line-count closure until decomposition returns it
 below 3,000 and a fresh exact recount is recorded.
+
+## Terminal Superseding Reconciliation — 2026-08-18
+
+The dated inventory above is historical and superseded by
+`terminal-diff-reconciliation.md` and `line-count-governance.md`. The deleted
+`covered_v8_transaction.rs` is not current. Largest exact changed Rust counts
+are 2,984, 2,974, 2,973, 2,960 and 2,897; every changed Rust file is below
+3,000.

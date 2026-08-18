@@ -1,0 +1,11 @@
+{
+  "label": "gate_git_diff_check",
+  "command": "git diff --check",
+  "status": "PASS",
+  "exit_code": 0,
+  "start": "2026-08-18T00:18:04Z",
+  "end": "2026-08-18T00:18:04Z",
+  "duration_ms": 403973801,
+  "env_OPENWEPP_TASK_ID": "child3-20260817T233050Z",
+  "env_TMPDIR": "/tmp/ow-lse-v8"
+}

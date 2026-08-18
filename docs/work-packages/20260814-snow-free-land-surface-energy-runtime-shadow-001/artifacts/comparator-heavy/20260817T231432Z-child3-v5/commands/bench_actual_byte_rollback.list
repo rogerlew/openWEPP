@@ -1,0 +1,10 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-20260817T231432Z
+  scratch: /tmp/openwepp-roger-child3-20260817T231432Z
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/child3-20260817T231432Z/debug/deps/openwepp_hillslope_orchestrator-5e3e5ae75aef47d5)
+land_surface_energy_shadow::strict_v8_endpoint::endpoint_rollback_tests::every_injected_phase_preserves_all_six_actual_owner_byte_records: test
+
+1 test, 0 benchmarks

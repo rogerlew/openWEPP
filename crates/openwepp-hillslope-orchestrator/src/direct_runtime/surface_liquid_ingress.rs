@@ -4,8 +4,8 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_kernel_contract::{SoilLayerId, TileId, TransactionId};
-use openwepp_land_surface_energy::{OfeId, SurfaceId};
+use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
+use openwepp_land_surface_energy::{OfeId, ParcelId, Sha256Digest, SurfaceId};
 use serde::{Deserialize, Serialize};
 
 use super::runoff::{DirectWb14ContinuationIntervalInputs, advance_wb14_continuation_interval};
@@ -153,6 +153,23 @@ pub struct DirectCanopyLiquidRelease {
     pub stemflow: DirectIngressAmount,
 }
 
+/// One already-validated LSE forcing parcel admitted at an open ground
+/// boundary. Unlike `DirectIngressAmount`, this form deliberately retains the
+/// upstream identity needed to distinguish routed runon from precipitation.
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectOpenLiquidIngressParcel {
+    pub kind: DirectSurfaceLiquidParcelKind,
+    pub parcel_id: ParcelId,
+    pub source_owner_id: ResourceOwnerId,
+    pub source_ofe_id: OfeId,
+    pub source_tile_id: TileId,
+    pub destination_ofe_id: OfeId,
+    pub destination_tile_id: TileId,
+    pub accepted_source_state_sha256: Sha256Digest,
+    pub amount: DirectIngressAmount,
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case", tag = "ingress_mode", deny_unknown_fields)]
 pub enum DirectTileGroundIngress {
@@ -162,11 +179,24 @@ pub enum DirectTileGroundIngress {
         surface_id: SurfaceId,
         raw_precipitation: DirectIngressAmount,
     },
+    OpenLiquidParcels {
+        ofe_id: OfeId,
+        tile_id: TileId,
+        surface_id: SurfaceId,
+        parcels: Vec<DirectOpenLiquidIngressParcel>,
+    },
     CoveredCanopyRelease {
         ofe_id: OfeId,
         tile_id: TileId,
         surface_id: SurfaceId,
         release: DirectCanopyLiquidRelease,
+    },
+    CoveredCanopyReleaseAndRunon {
+        ofe_id: OfeId,
+        tile_id: TileId,
+        surface_id: SurfaceId,
+        release: DirectCanopyLiquidRelease,
+        runon_parcels: Vec<DirectOpenLiquidIngressParcel>,
     },
 }
 
@@ -179,7 +209,19 @@ impl DirectTileGroundIngress {
                 surface_id,
                 ..
             }
+            | Self::OpenLiquidParcels {
+                ofe_id,
+                tile_id,
+                surface_id,
+                ..
+            }
             | Self::CoveredCanopyRelease {
+                ofe_id,
+                tile_id,
+                surface_id,
+                ..
+            }
+            | Self::CoveredCanopyReleaseAndRunon {
                 ofe_id,
                 tile_id,
                 surface_id,
@@ -190,8 +232,12 @@ impl DirectTileGroundIngress {
 
     fn mode(&self) -> DirectGroundIngressMode {
         match self {
-            Self::OpenRawPrecipitation { .. } => DirectGroundIngressMode::OpenRawPrecipitation,
-            Self::CoveredCanopyRelease { .. } => DirectGroundIngressMode::CoveredCanopyRelease,
+            Self::OpenRawPrecipitation { .. } | Self::OpenLiquidParcels { .. } => {
+                DirectGroundIngressMode::OpenRawPrecipitation
+            }
+            Self::CoveredCanopyRelease { .. } | Self::CoveredCanopyReleaseAndRunon { .. } => {
+                DirectGroundIngressMode::CoveredCanopyRelease
+            }
         }
     }
 }
@@ -290,6 +336,7 @@ pub struct DirectSurfaceLiquidIngressCandidate {
     ledgers: Vec<DirectSurfaceLiquidIngressLedger>,
     wb14_calls_by_ofe: BTreeMap<OfeId, u8>,
     closure_operands: DirectSurfaceLiquidClosureOperands,
+    open_ingress_parcels: Vec<DirectOpenLiquidIngressParcel>,
 }
 
 impl DirectSurfaceLiquidIngressCandidate {
@@ -326,6 +373,14 @@ impl DirectSurfaceLiquidIngressCandidate {
     #[must_use]
     pub const fn closure_operands(&self) -> &DirectSurfaceLiquidClosureOperands {
         &self.closure_operands
+    }
+
+    /// Exact accepted LSE forcing lineage retained alongside the partition
+    /// receipts; this prevents routed runon from collapsing into a local-rain
+    /// scalar after admission.
+    #[must_use]
+    pub fn open_ingress_parcels(&self) -> &[DirectOpenLiquidIngressParcel] {
+        &self.open_ingress_parcels
     }
 
     pub fn validate(
@@ -398,9 +453,10 @@ impl DirectSurfaceLiquidIngressCandidate {
                 "ingress candidate does not reconstruct from immutable inputs",
             ));
         }
-        super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+        super::surface_liquid_closure::validate_surface_liquid_closure_operands_with_input(
             configuration,
             resource,
+            input,
             &self.closure_operands,
             &self.receipts,
             &self.ending_state,
@@ -491,6 +547,9 @@ impl DirectSurfaceLiquidIngressCandidate {
                     parcel_id: Some(row.parcel_id.clone()),
                 }),
             );
+        }
+        if self.open_ingress_parcels != expected.open_ingress_parcels {
+            return Some(base());
         }
         if self.ledgers != expected.ledgers {
             let ledger = first_identity_aware_mismatch(&self.ledgers, &expected.ledgers, |row| {
@@ -830,6 +889,21 @@ fn execute_surface_liquid_ingress_inner(
         ledgers,
         wb14_calls_by_ofe: call_count,
         closure_operands,
+        open_ingress_parcels: input
+            .tile_ingress
+            .iter()
+            .filter_map(|ingress| match ingress {
+                DirectTileGroundIngress::OpenLiquidParcels { parcels, .. } => {
+                    Some(parcels.as_slice())
+                }
+                DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { runon_parcels, .. } => {
+                    Some(runon_parcels.as_slice())
+                }
+                _ => None,
+            })
+            .flatten()
+            .cloned()
+            .collect(),
     })
 }
 
@@ -1162,12 +1236,28 @@ fn preflight_tile_ingress_domains(
             DirectTileGroundIngress::OpenRawPrecipitation {
                 raw_precipitation, ..
             } => invalid_amount(raw_precipitation, false),
+            DirectTileGroundIngress::OpenLiquidParcels { parcels, .. } => parcels
+                .iter()
+                .find_map(|parcel| invalid_amount(&parcel.amount, false)),
             DirectTileGroundIngress::CoveredCanopyRelease { release, .. } => {
                 invalid_amount(&release.throughfall, true)
                     .or_else(|| invalid_amount(&release.initial_drainage, true))
                     .or_else(|| invalid_amount(&release.second_drainage, true))
                     .or_else(|| invalid_amount(&release.stemflow, true))
             }
+            DirectTileGroundIngress::CoveredCanopyReleaseAndRunon {
+                release,
+                runon_parcels,
+                ..
+            } => invalid_amount(&release.throughfall, true)
+                .or_else(|| invalid_amount(&release.initial_drainage, true))
+                .or_else(|| invalid_amount(&release.second_drainage, true))
+                .or_else(|| invalid_amount(&release.stemflow, true))
+                .or_else(|| {
+                    runon_parcels
+                        .iter()
+                        .find_map(|parcel| invalid_amount(&parcel.amount, false))
+                }),
         };
         if let Some(detail) = detail {
             let (ofe_id, tile_id, surface_id) = ingress.identity();
@@ -1436,41 +1526,141 @@ fn append_tile_ingress(
             transaction_id,
             parcels,
         ),
+        DirectTileGroundIngress::OpenLiquidParcels {
+            ofe_id,
+            tile_id,
+            parcels: ingress_parcels,
+            ..
+        } => {
+            let mut identities = BTreeSet::new();
+            for parcel in ingress_parcels {
+                if !matches!(
+                    parcel.kind,
+                    DirectSurfaceLiquidParcelKind::RawPrecipitation
+                        | DirectSurfaceLiquidParcelKind::UpstreamRunon
+                ) || parcel.destination_ofe_id != *ofe_id
+                    || parcel.destination_tile_id != *tile_id
+                    || !identities.insert(parcel.parcel_id.clone())
+                {
+                    return Err(DirectSurfaceLiquidError::Identity(
+                        "invalid open liquid parcel kind, destination, or identity",
+                    ));
+                }
+                parcel.amount.validate(false)?;
+                let mass = checked_surface_liquid_mul(
+                    configured.tile_fraction,
+                    parcel.amount.mass_kg_m2_tile_ground,
+                )
+                .ok_or(DirectSurfaceLiquidError::Domain(
+                    "open liquid parcel mass conversion",
+                ))?;
+                let enthalpy =
+                    checked_surface_liquid_mul(mass, parcel.amount.specific_liquid_enthalpy_j_kg)
+                        .ok_or(DirectSurfaceLiquidError::Domain(
+                        "open liquid parcel enthalpy conversion",
+                    ))?;
+                parcels.push(TimedParcel {
+                    parcel_id: parcel.parcel_id.to_string(),
+                    origin_store_key: configured.key.clone(),
+                    recipient_store_key: configured.key.clone(),
+                    basis_ofe_id: configured.key.ofe_id.clone(),
+                    kind: parcel.kind,
+                    start_s: parcel.amount.start_s,
+                    end_s: parcel.amount.end_s,
+                    mass_kg_m2_basis_ofe_ground: mass,
+                    enthalpy_j_m2_basis_ofe_ground: enthalpy,
+                });
+            }
+            Ok(())
+        }
         DirectTileGroundIngress::CoveredCanopyRelease { release, .. } => {
-            append_amount(
-                configured,
-                DirectSurfaceLiquidParcelKind::CanopyThroughfall,
-                &release.throughfall,
-                true,
-                transaction_id,
-                parcels,
-            )?;
-            append_amount(
-                configured,
-                DirectSurfaceLiquidParcelKind::CanopyInitialDrainage,
-                &release.initial_drainage,
-                true,
-                transaction_id,
-                parcels,
-            )?;
-            append_amount(
-                configured,
-                DirectSurfaceLiquidParcelKind::CanopySecondDrainage,
-                &release.second_drainage,
-                true,
-                transaction_id,
-                parcels,
-            )?;
-            append_amount(
-                configured,
-                DirectSurfaceLiquidParcelKind::CanopyStemflow,
-                &release.stemflow,
-                true,
-                transaction_id,
-                parcels,
-            )
+            append_canopy_release(configured, release, transaction_id, parcels)
+        }
+        DirectTileGroundIngress::CoveredCanopyReleaseAndRunon {
+            ofe_id,
+            tile_id,
+            release,
+            runon_parcels,
+            ..
+        } => {
+            append_canopy_release(configured, release, transaction_id, parcels)?;
+            append_external_runon(configured, ofe_id, tile_id, runon_parcels, parcels)
         }
     }
+}
+
+fn append_canopy_release(
+    configured: &DirectSurfaceLiquidConfigurationRecord,
+    release: &DirectCanopyLiquidRelease,
+    transaction_id: TransactionId,
+    parcels: &mut Vec<TimedParcel>,
+) -> Result<(), DirectSurfaceLiquidError> {
+    for (kind, amount) in [
+        (
+            DirectSurfaceLiquidParcelKind::CanopyThroughfall,
+            &release.throughfall,
+        ),
+        (
+            DirectSurfaceLiquidParcelKind::CanopyInitialDrainage,
+            &release.initial_drainage,
+        ),
+        (
+            DirectSurfaceLiquidParcelKind::CanopySecondDrainage,
+            &release.second_drainage,
+        ),
+        (
+            DirectSurfaceLiquidParcelKind::CanopyStemflow,
+            &release.stemflow,
+        ),
+    ] {
+        append_amount(configured, kind, amount, true, transaction_id, parcels)?;
+    }
+    Ok(())
+}
+
+fn append_external_runon(
+    configured: &DirectSurfaceLiquidConfigurationRecord,
+    ofe_id: &OfeId,
+    tile_id: &TileId,
+    ingress_parcels: &[DirectOpenLiquidIngressParcel],
+    parcels: &mut Vec<TimedParcel>,
+) -> Result<(), DirectSurfaceLiquidError> {
+    let mut identities = BTreeSet::new();
+    for parcel in ingress_parcels {
+        if parcel.kind != DirectSurfaceLiquidParcelKind::UpstreamRunon
+            || parcel.destination_ofe_id != *ofe_id
+            || parcel.destination_tile_id != *tile_id
+            || !identities.insert(parcel.parcel_id.clone())
+        {
+            return Err(DirectSurfaceLiquidError::Identity(
+                "invalid covered runon kind, destination, or identity",
+            ));
+        }
+        parcel.amount.validate(false)?;
+        let mass = checked_surface_liquid_mul(
+            configured.tile_fraction,
+            parcel.amount.mass_kg_m2_tile_ground,
+        )
+        .ok_or(DirectSurfaceLiquidError::Domain(
+            "covered runon mass conversion",
+        ))?;
+        let enthalpy =
+            checked_surface_liquid_mul(mass, parcel.amount.specific_liquid_enthalpy_j_kg).ok_or(
+                DirectSurfaceLiquidError::Domain("covered runon enthalpy conversion"),
+            )?;
+        parcels.push(TimedParcel {
+            parcel_id: parcel.parcel_id.to_string(),
+            origin_store_key: configured.key.clone(),
+            recipient_store_key: configured.key.clone(),
+            basis_ofe_id: configured.key.ofe_id.clone(),
+            kind: parcel.kind,
+            start_s: parcel.amount.start_s,
+            end_s: parcel.amount.end_s,
+            mass_kg_m2_basis_ofe_ground: mass,
+            enthalpy_j_m2_basis_ofe_ground: enthalpy,
+        });
+    }
+    Ok(())
 }
 
 fn append_amount(

@@ -1,0 +1,1 @@
+{"label":"bench_complete_public_envelope","command":"cargo test --test land_surface_energy_real_hydrology_shadow_contract","status":"PASS","exit_code":0,"list_count":3,"start":"2026-08-17T23:16:05Z","end":"2026-08-17T23:16:06Z","duration_ms":639604657,"env_OPENWEPP_TASK_ID":"child3-20260817T231432Z","env_TMPDIR":"/tmp/ow-lse-v8"}

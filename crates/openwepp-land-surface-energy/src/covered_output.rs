@@ -21,6 +21,8 @@ pub struct CoveredSurfaceEnergyOperands {
 }
 
 impl CoveredSurfaceEnergyOperands {
+    /// # Errors
+    /// Returns a typed domain error when the operand is non-finite or invalid.
     pub fn validate(self) -> Result<(), LandSurfaceEnergyError> {
         let values = [
             self.absorbed_shortwave_w_m2_tile,
@@ -71,6 +73,8 @@ pub struct CoveredOccupancyEnergyOperands {
 }
 
 impl CoveredOccupancyEnergyOperands {
+    /// # Errors
+    /// Returns a typed domain error when an occupancy operand is invalid.
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
         if self.occupancy_id.is_empty() || self.occupancy_id.trim() != self.occupancy_id {
             return Err(LandSurfaceEnergyError::ComponentClosure(
@@ -119,6 +123,8 @@ pub struct CoveredColumnShortwaveOperands {
 }
 
 impl CoveredColumnShortwaveOperands {
+    /// # Errors
+    /// Returns a typed domain error when the column operands do not close.
     pub fn validate(
         &self,
         occupancies: &[CoveredOccupancyEnergyOperands],
@@ -192,10 +198,8 @@ impl CoveredColumnShortwaveOperands {
                         + directional(occupancy.stem_absorbed_w_m2_tile)[index]
                 })
                 .sum();
-            let residual = incident[index]
-                - top_reflected[index]
-                - canopy_absorbed
-                - ground_absorbed[index];
+            let residual =
+                incident[index] - top_reflected[index] - canopy_absorbed - ground_absorbed[index];
             if residual.abs()
                 > energy_tolerance(
                     incident[index].abs()
@@ -212,9 +216,7 @@ impl CoveredColumnShortwaveOperands {
         let physical_ground_absorbed = self.ground_absorbed_w_m2_tile.total();
         let attributed_ground_absorbed = self.ground_absorbed_by_incident_w_m2_tile.total();
         if (physical_ground_absorbed - attributed_ground_absorbed).abs()
-            > energy_tolerance(
-                physical_ground_absorbed.abs() + attributed_ground_absorbed.abs(),
-            )
+            > energy_tolerance(physical_ground_absorbed.abs() + attributed_ground_absorbed.abs())
         {
             return Err(LandSurfaceEnergyError::ComponentClosure(
                 "covered ground shortwave attribution",
@@ -352,6 +354,8 @@ pub struct CoveredColumnEnergyOperands {
 }
 
 impl CoveredColumnEnergyOperands {
+    /// # Errors
+    /// Returns a typed domain error when any published operand is invalid.
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
         if self.occupancies.is_empty() {
             return Err(LandSurfaceEnergyError::ComponentClosure(

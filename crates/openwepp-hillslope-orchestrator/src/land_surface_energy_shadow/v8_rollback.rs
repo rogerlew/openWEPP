@@ -57,6 +57,8 @@ pub enum V8RollbackError {
     Serialization { owner: &'static str, detail: String },
     #[error("V8 rollback owner identities are not distinct")]
     DuplicateOwnerIdentity,
+    #[error("V8 rollback owner classes are not exactly complete and distinct")]
+    OwnerKinds,
     #[error("V8 rollback owner hash aliases another owner")]
     DuplicateOwnerHash,
     #[error("V8 rollback owner set changed")]
@@ -137,6 +139,75 @@ impl V8RollbackSnapshot {
         ])
     }
 
+    /// Capture the six actual endpoint owners when pending protocol,
+    /// diagnostic, and ingress envelopes do not yet exist. Their absence is
+    /// itself represented as three framed zero-length byte strings.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn capture_endpoint_beginning(
+        vegetation_owner_id: &ResourceOwnerId,
+        vegetation: &V8CoupledOwnedState,
+        hydrology: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+        lse: &LandSurfaceEnergyState,
+        soil_thermal: &SoilThermalSnapshot,
+        biogeochemistry_owner_id: &ResourceOwnerId,
+        biogeochemistry: &BiogeochemistryState,
+        pending_envelope_owner_id: &ResourceOwnerId,
+        pending_water_protocol_bytes: &[u8],
+        pending_ingress_bytes: &[u8],
+        pending_diagnostic_bytes: &[u8],
+    ) -> Result<Self, V8RollbackError> {
+        let vegetation = json_bytes("vegetation", vegetation)?;
+        let hydrology_owner_id = hydrology.owner.hydrology_owner_id().clone();
+        let surface = hydrology
+            .owner
+            .beginning_frame()
+            .surface_liquid_shadow
+            .as_deref()
+            .ok_or(V8RollbackError::MissingSurfaceOwner)?;
+        let surface_bytes = surface_owner_bytes(surface)?;
+        let hydrology = framed_bytes(&[
+            ("production_frame", hydrology.owner.snapshot_bytes()),
+            ("surface_owner", &surface_bytes),
+        ]);
+        let pending = framed_bytes(&[
+            ("water_protocol", pending_water_protocol_bytes),
+            ("ingress", pending_ingress_bytes),
+            ("diagnostics", pending_diagnostic_bytes),
+        ]);
+        Self::from_components([
+            (
+                V8RollbackOwnerKind::Vegetation,
+                vegetation_owner_id.clone(),
+                vegetation,
+            ),
+            (
+                V8RollbackOwnerKind::UnifiedHydrology,
+                hydrology_owner_id,
+                hydrology,
+            ),
+            (
+                V8RollbackOwnerKind::LandSurfaceEnergy,
+                lse.owner_id.clone(),
+                json_bytes("land surface energy", lse)?,
+            ),
+            (
+                V8RollbackOwnerKind::SoilThermal,
+                soil_thermal.owner_id.clone(),
+                json_bytes("soil thermal", soil_thermal)?,
+            ),
+            (
+                V8RollbackOwnerKind::Biogeochemistry,
+                biogeochemistry_owner_id.clone(),
+                json_bytes("biogeochemistry", biogeochemistry)?,
+            ),
+            (
+                V8RollbackOwnerKind::PendingEnvelope,
+                pending_envelope_owner_id.clone(),
+                pending,
+            ),
+        ])
+    }
+
     /// Recapture actual post-failure bytes and require byte identity for every owner.
     pub fn check_post_failure(&self, actual: &V8RollbackInputs<'_>) -> Result<(), V8RollbackError> {
         let after = Self::capture(actual)?;
@@ -176,7 +247,11 @@ impl V8RollbackSnapshot {
     ) -> Result<Self, V8RollbackError> {
         let mut owners = BTreeMap::new();
         let mut hashes = BTreeSet::new();
+        let mut kinds = BTreeSet::new();
         for (kind, owner_id, bytes) in components {
+            if !kinds.insert(kind) {
+                return Err(V8RollbackError::OwnerKinds);
+            }
             let sha256 = owner_sha256(kind, &owner_id, &bytes);
             if !hashes.insert(sha256.clone()) {
                 return Err(V8RollbackError::DuplicateOwnerHash);
@@ -190,6 +265,17 @@ impl V8RollbackSnapshot {
             if owners.insert(owner_id, record).is_some() {
                 return Err(V8RollbackError::DuplicateOwnerIdentity);
             }
+        }
+        let required = BTreeSet::from([
+            V8RollbackOwnerKind::Vegetation,
+            V8RollbackOwnerKind::UnifiedHydrology,
+            V8RollbackOwnerKind::LandSurfaceEnergy,
+            V8RollbackOwnerKind::SoilThermal,
+            V8RollbackOwnerKind::Biogeochemistry,
+            V8RollbackOwnerKind::PendingEnvelope,
+        ]);
+        if kinds != required {
+            return Err(V8RollbackError::OwnerKinds);
         }
         Ok(Self { owners })
     }
@@ -410,7 +496,7 @@ mod tests {
         let left = framed_bytes(&[("a", b"bc"), ("d", b"e")]);
         let right = framed_bytes(&[("a", b"b"), ("c", b"de")]);
         assert_ne!(left, right);
-        assert!(left.windows(2).any(|window| window == [1, 2]));
+        assert!(left.windows(2).any(|window| window == b"bc"));
     }
 
     #[test]
@@ -460,6 +546,74 @@ mod tests {
                 ),
             ]),
             Err(V8RollbackError::DuplicateOwnerIdentity)
+        );
+    }
+
+    #[test]
+    fn omitted_owner_class_is_rejected() {
+        assert_eq!(
+            V8RollbackSnapshot::from_components([
+                (V8RollbackOwnerKind::Vegetation, owner("veg"), vec![1]),
+                (
+                    V8RollbackOwnerKind::UnifiedHydrology,
+                    owner("hydrology"),
+                    vec![2],
+                ),
+                (
+                    V8RollbackOwnerKind::LandSurfaceEnergy,
+                    owner("lse"),
+                    vec![3]
+                ),
+                (V8RollbackOwnerKind::SoilThermal, owner("thermal"), vec![4]),
+                (V8RollbackOwnerKind::Biogeochemistry, owner("bgc"), vec![5],),
+            ]),
+            Err(V8RollbackError::OwnerKinds)
+        );
+    }
+
+    #[test]
+    fn duplicate_owner_class_is_rejected_even_with_distinct_id_and_bytes() {
+        assert_eq!(
+            V8RollbackSnapshot::from_components([
+                (V8RollbackOwnerKind::Vegetation, owner("veg-a"), vec![1]),
+                (V8RollbackOwnerKind::Vegetation, owner("veg-b"), vec![2]),
+                (
+                    V8RollbackOwnerKind::UnifiedHydrology,
+                    owner("hydrology"),
+                    vec![3],
+                ),
+                (
+                    V8RollbackOwnerKind::LandSurfaceEnergy,
+                    owner("lse"),
+                    vec![4]
+                ),
+                (V8RollbackOwnerKind::SoilThermal, owner("thermal"), vec![5]),
+                (V8RollbackOwnerKind::Biogeochemistry, owner("bgc"), vec![6],),
+                (
+                    V8RollbackOwnerKind::PendingEnvelope,
+                    owner("pending"),
+                    vec![7],
+                ),
+            ]),
+            Err(V8RollbackError::OwnerKinds)
+        );
+    }
+
+    #[test]
+    fn copied_hash_from_another_owner_is_rejected() {
+        let beginning = snapshot();
+        let mut after = beginning.clone();
+        let copied = after.owners[&owner("lse")].sha256.clone();
+        after
+            .owners
+            .get_mut(&owner("veg"))
+            .expect("vegetation")
+            .sha256 = copied;
+        assert_eq!(
+            beginning.check_snapshot(&after),
+            Err(V8RollbackError::RecordHash {
+                owner_id: owner("veg")
+            })
         );
     }
 }

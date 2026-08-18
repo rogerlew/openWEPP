@@ -1,0 +1,15 @@
+command=env OPENWEPP_TASK_ID=child3-20260817T233050Z TMPDIR=/tmp/ow-lse-v8 nix develop -c cargo deny check
+env_OPENWEPP_TASK_ID=child3-20260817T233050Z
+env_TMPDIR=/tmp/ow-lse-v8
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-20260817T233050Z
+  scratch: /tmp/openwepp-roger-child3-20260817T233050Z
+  cache:   /workdir/.cache/openwepp
+warning[license-not-encountered]: license was not encountered
+   ┌─ /workdir/openWEPP/deny.toml:14:4
+   │
+14 │   "MIT-0",
+   │    ━━━━━ unmatched license allowance
+
+advisories ok, bans ok, licenses ok, sources ok

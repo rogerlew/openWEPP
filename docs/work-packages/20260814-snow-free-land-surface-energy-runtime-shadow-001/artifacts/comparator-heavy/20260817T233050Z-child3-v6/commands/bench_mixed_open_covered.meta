@@ -1,0 +1,14 @@
+{
+  "label": "bench_mixed_open_covered",
+  "command": "cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_mixed_open_and_covered_owners_once",
+  "status": "PASS",
+  "exit_code": 0,
+  "list_count": 1,
+  "start": "2026-08-17T23:32:22Z",
+  "end": "2026-08-17T23:32:23Z",
+  "duration_ms": 548,
+  "env_OPENWEPP_TASK_ID": "child3-20260817T233050Z",
+  "env_TMPDIR": "/tmp/ow-lse-v8",
+  "passed": 1,
+  "failed": 0
+}

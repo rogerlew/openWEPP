@@ -475,21 +475,6 @@ fn callback_lse_taxonomy_is_exhaustive_and_rebound_to_resource_candidate() {
             DirectSurfaceLiquidErrorCode::E011,
         ),
         (
-            LandSurfaceEnergyError::NumericalSingular {
-                pivot: 0.0,
-                matrix_norm: 1.0,
-            },
-            DirectSurfaceLiquidErrorCode::E003,
-        ),
-        (
-            LandSurfaceEnergyError::NumericalBacktrackingLimit,
-            DirectSurfaceLiquidErrorCode::E003,
-        ),
-        (
-            LandSurfaceEnergyError::NumericalIterationLimit,
-            DirectSurfaceLiquidErrorCode::E003,
-        ),
-        (
             LandSurfaceEnergyError::NumericalAcceptedResidual,
             DirectSurfaceLiquidErrorCode::E003,
         ),

@@ -191,6 +191,8 @@ fn ingress_identity_precedes_request_and_winter_e003_without_callback() {
                 batch.requests[0].amount_kg_m2_stand_ground = f64::NAN;
                 match &mut ingress.tile_ingress[0] {
                     DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+                    | DirectTileGroundIngress::OpenLiquidParcels { tile_id, .. }
+                    | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { tile_id, .. }
                     | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
                         *tile_id = TileId::try_new("unknown-tile").expect("unknown tile");
                     }
@@ -707,6 +709,8 @@ fn every_cross_input_e002_precedes_config_or_state_e003_without_callback() {
             match identity_poison {
                 0 => match &mut ingress.tile_ingress[0] {
                     DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+                    | DirectTileGroundIngress::OpenLiquidParcels { tile_id, .. }
+                    | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { tile_id, .. }
                     | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
                         *tile_id = TileId::try_new("unknown-tile").expect("tile");
                     }

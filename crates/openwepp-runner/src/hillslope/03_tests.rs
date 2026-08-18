@@ -1022,10 +1022,7 @@ mod tests {
         assert!(
             manifest_json
                 .pointer("/runtime_selection/fallback_reason")
-                .is_none()
-                || manifest_json
-                    .pointer("/runtime_selection/fallback_reason")
-                    .is_some_and(serde_json::Value::is_null),
+                .is_none_or(serde_json::Value::is_null),
             "default direct production should not report a fallback reason"
         );
         assert_json_i64(
@@ -1072,10 +1069,7 @@ mod tests {
         assert!(
             manifest_json
                 .pointer("/runtime_selection/fallback_reason")
-                .is_none()
-                || manifest_json
-                    .pointer("/runtime_selection/fallback_reason")
-                    .is_some_and(serde_json::Value::is_null),
+                .is_none_or(serde_json::Value::is_null),
             "activated default candidate should not report a fallback reason"
         );
         assert_eq!(
@@ -1130,10 +1124,7 @@ mod tests {
         assert!(
             manifest_json
                 .pointer("/runtime_selection/fallback_reason")
-                .is_none()
-                || manifest_json
-                    .pointer("/runtime_selection/fallback_reason")
-                    .is_some_and(serde_json::Value::is_null),
+                .is_none_or(serde_json::Value::is_null),
             "legacy sidecar discovery direct default must not report a fallback reason"
         );
         assert_eq!(

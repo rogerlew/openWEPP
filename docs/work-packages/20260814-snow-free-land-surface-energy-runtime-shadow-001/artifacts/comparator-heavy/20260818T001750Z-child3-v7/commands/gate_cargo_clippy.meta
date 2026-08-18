@@ -1,0 +1,11 @@
+{
+  "label": "gate_cargo_clippy",
+  "command": "cargo clippy --workspace --all-targets -- -D warnings",
+  "status": "PASS",
+  "exit_code": 0,
+  "start": "2026-08-18T00:18:04Z",
+  "end": "2026-08-18T00:18:08Z",
+  "duration_ms": 3746804605,
+  "env_OPENWEPP_TASK_ID": "child3-20260817T233050Z",
+  "env_TMPDIR": "/tmp/ow-lse-v8"
+}

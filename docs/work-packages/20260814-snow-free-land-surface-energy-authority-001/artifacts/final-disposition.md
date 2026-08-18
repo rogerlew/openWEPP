@@ -35,3 +35,15 @@ make an empirical-validation claim.
 
 The kickoff prompt is archived byte-for-byte at SHA-256
 `46d808629315c1d64cbf586c7ccb24213cc529318933e1cbb9752c94b9fec05d`.
+## 2026-08-17 Provenance-Isolation Correction
+
+The historical shared `reference_joint_canopy_core.py` is restored exactly to
+its immutable `c9555b2d...` bytes. The canonical internal-Emax, E04, and
+strict-decrease corrections are isolated in
+`reference_lse_v8_joint_canopy_core.py` at `525538f3...`, and only the LSE
+reference calculator imports that checksum-bound successor. The current
+calculator is `86aae7c5...`; full regeneration remains byte-identical at
+`3fb57d7c...`. Exact Rust failure diagnostics are separately bound at
+`bdf18078...`, so cross-runtime failures are not relabeled or compared through
+a widened envelope. Historical review and verification evidence remains
+unchanged.

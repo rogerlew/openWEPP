@@ -1,5 +1,7 @@
 //! Covered forest/litter potential/final orchestration over the real owners.
 
+#![allow(dead_code)]
+
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::{
@@ -19,7 +21,7 @@ use super::covered_derived_ingress::{
 /// Result of one covered forest/litter potential/final transaction against the
 /// persistent production hydrology owners.
 #[derive(Clone, Debug, PartialEq)]
-pub struct CoveredForestShadowResult {
+pub(crate) struct CoveredForestShadowResult {
     potential: CoveredPotentialPhase,
     submitted_request_batch: PotentialWaterRequestBatch,
     final_tile: FinalCoveredTileCandidate,
@@ -28,22 +30,22 @@ pub struct CoveredForestShadowResult {
 
 impl CoveredForestShadowResult {
     #[must_use]
-    pub const fn potential(&self) -> &CoveredPotentialPhase {
+    pub(crate) const fn potential(&self) -> &CoveredPotentialPhase {
         &self.potential
     }
 
     #[must_use]
-    pub const fn submitted_request_batch(&self) -> &PotentialWaterRequestBatch {
+    pub(crate) const fn submitted_request_batch(&self) -> &PotentialWaterRequestBatch {
         &self.submitted_request_batch
     }
 
     #[must_use]
-    pub const fn final_tile(&self) -> &FinalCoveredTileCandidate {
+    pub(crate) const fn final_tile(&self) -> &FinalCoveredTileCandidate {
         &self.final_tile
     }
 
     #[must_use]
-    pub const fn hydrology_candidate(&self) -> &UnifiedRealHydrologyCandidate {
+    pub(crate) const fn hydrology_candidate(&self) -> &UnifiedRealHydrologyCandidate {
         &self.hydrology_candidate
     }
 }
@@ -59,7 +61,7 @@ impl CoveredForestShadowResult {
 /// owner applies signed condensation credit and timed ingress only after the
 /// complete final protocol and receiver topology are sealed.
 #[allow(clippy::too_many_arguments)]
-pub fn execute_covered_forest_shadow(
+pub(crate) fn execute_covered_forest_shadow(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
     receiver_expectations: &UnifiedReceiverExpectations,
@@ -169,7 +171,7 @@ pub fn execute_covered_forest_shadow(
 /// coupled transaction: a caller cannot replace final throughfall, drainage,
 /// stemflow, temperature, or enthalpy.
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-pub fn execute_covered_forest_shadow_derived_ingress(
+pub(crate) fn execute_covered_forest_shadow_derived_ingress(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
     receiver_expectations: &UnifiedReceiverExpectations,

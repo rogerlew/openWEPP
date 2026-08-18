@@ -2,6 +2,7 @@ use std::fs;
 use std::io::Write;
 use std::process::Command;
 use std::process::Stdio;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use serde_json::Value;
 
@@ -23,6 +24,41 @@ const V7_AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260813-c3-woody-storage-transfer-phenology-authority-001";
 const V8_AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001";
+
+static ORACLE_TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+struct OracleTempRoot(std::path::PathBuf);
+
+impl OracleTempRoot {
+    fn new(label: &str) -> Self {
+        let sequence = ORACLE_TEMP_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-vegetation-oracle-{label}-{}-{sequence}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&path).expect("create isolated oracle root");
+        Self(path)
+    }
+
+    fn copy(&self, source: &str) -> std::path::PathBuf {
+        let destination = self.0.join(source);
+        fs::create_dir_all(destination.parent().expect("oracle artifact parent"))
+            .expect("create isolated oracle artifact parent");
+        fs::copy(source, &destination)
+            .unwrap_or_else(|error| panic!("copy {source} to isolated oracle root: {error}"));
+        destination
+    }
+
+    fn path(&self, relative: &str) -> std::path::PathBuf {
+        self.0.join(relative)
+    }
+}
+
+impl Drop for OracleTempRoot {
+    fn drop(&mut self) {
+        fs::remove_dir_all(&self.0).expect("remove isolated oracle root");
+    }
+}
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -855,10 +891,15 @@ fn v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated() {
         format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v3_vectors.json");
     let before = read(&fixture_path);
     let before_digest = sha256(&fixture_path);
+    let isolated = OracleTempRoot::new("v3");
+    let calculator = isolated.copy(&format!(
+        "{V3_AUTHORITY_PACKAGE}/artifacts/reference_calculator.py"
+    ));
+    let generated_fixture = isolated.path(&format!(
+        "{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v3_vectors.json"
+    ));
     let output = Command::new(".venv/bin/python")
-        .arg(format!(
-            "{V3_AUTHORITY_PACKAGE}/artifacts/reference_calculator.py"
-        ))
+        .arg(calculator)
         .output()
         .expect("run independent V3 oracle");
     assert!(
@@ -867,10 +908,11 @@ fn v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated() {
         String::from_utf8_lossy(&output.stderr)
     );
     assert_eq!(
-        read(&fixture_path),
+        fs::read_to_string(generated_fixture).expect("read isolated V3 regeneration"),
         before,
-        "oracle regeneration changed bytes"
+        "isolated oracle regeneration differs from frozen bytes"
     );
+    assert_eq!(read(&fixture_path), before, "oracle mutated frozen bytes");
     assert_eq!(sha256(&fixture_path), before_digest);
     assert_eq!(
         before_digest,
@@ -1721,10 +1763,33 @@ fn v5_independent_oracle_regenerates_exact_frozen_bytes() {
         format!("{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v5_definition.json");
     let before_fixture = read(&fixture_path);
     let before_definition = read(&definition_path);
+    let isolated = OracleTempRoot::new("v5");
+    let calculator = isolated.copy(&format!(
+        "{V3_AUTHORITY_PACKAGE}/artifacts/reference_calculator_v5.py"
+    ));
+    isolated.copy(&format!(
+        "{V3_AUTHORITY_PACKAGE}/artifacts/reference_calculator.py"
+    ));
+    isolated.copy(CONTRACT);
+    isolated.copy(&format!(
+        "{V4_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v4_definition.json"
+    ));
+    isolated.copy(&format!(
+        "{V4_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v4_vectors.json"
+    ));
+    fs::create_dir_all(isolated.path(&format!("{COUPLED_PACKAGE}/artifacts")))
+        .expect("create isolated coupled authority artifact directory");
+    let generated_fixture = isolated.path(&format!(
+        "{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v5_vectors.json"
+    ));
+    let generated_definition = isolated.path(&format!(
+        "{V3_AUTHORITY_PACKAGE}/artifacts/openwepp_c3_woody_v5_definition.json"
+    ));
+    let generated_stack_copy = isolated.path(&format!(
+        "{COUPLED_PACKAGE}/artifacts/openwepp_c3_woody_v5_definition.json"
+    ));
     let output = Command::new(".venv/bin/python")
-        .arg(format!(
-            "{V3_AUTHORITY_PACKAGE}/artifacts/reference_calculator_v5.py"
-        ))
+        .arg(calculator)
         .output()
         .expect("run independent V5 oracle");
     assert!(
@@ -1732,8 +1797,28 @@ fn v5_independent_oracle_regenerates_exact_frozen_bytes() {
         "V5 oracle failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    assert_eq!(read(&fixture_path), before_fixture);
-    assert_eq!(read(&definition_path), before_definition);
+    assert_eq!(
+        fs::read_to_string(generated_fixture).expect("read isolated V5 vectors"),
+        before_fixture
+    );
+    assert_eq!(
+        fs::read_to_string(generated_definition).expect("read isolated V5 definition"),
+        before_definition
+    );
+    assert_eq!(
+        fs::read_to_string(generated_stack_copy).expect("read isolated V5 stack definition"),
+        before_definition
+    );
+    assert_eq!(
+        read(&fixture_path),
+        before_fixture,
+        "oracle mutated V5 vectors"
+    );
+    assert_eq!(
+        read(&definition_path),
+        before_definition,
+        "oracle mutated V5 definition"
+    );
     assert_eq!(
         sha256(&fixture_path),
         "6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d"

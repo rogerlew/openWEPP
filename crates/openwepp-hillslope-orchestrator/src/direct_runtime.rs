@@ -392,10 +392,11 @@ pub use surface_liquid_closure::{
 pub(crate) use surface_liquid_ingress::preflight_surface_liquid_ingress_input_identities;
 pub use surface_liquid_ingress::{
     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
-    DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidIngressInput,
-    DirectSurfaceLiquidIngressLedger, DirectSurfaceLiquidParcelKind,
-    DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidReceiptDisposition,
-    DirectSurfaceLiquidReceiptRecipient, DirectTileGroundIngress, execute_surface_liquid_ingress,
+    DirectOpenLiquidIngressParcel, DirectSurfaceLiquidIngressCandidate,
+    DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidIngressLedger,
+    DirectSurfaceLiquidParcelKind, DirectSurfaceLiquidParcelReceipt,
+    DirectSurfaceLiquidReceiptDisposition, DirectSurfaceLiquidReceiptRecipient,
+    DirectTileGroundIngress, execute_surface_liquid_ingress,
 };
 pub use surface_liquid_owner::{
     DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,

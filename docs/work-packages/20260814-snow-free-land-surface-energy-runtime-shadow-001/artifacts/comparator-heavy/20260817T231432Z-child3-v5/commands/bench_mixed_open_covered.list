@@ -1,0 +1,10 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-20260817T231432Z
+  scratch: /tmp/openwepp-roger-child3-20260817T231432Z
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/integration/land_surface_energy_strict_v8_public_contract.rs (/workdir/.cache/openwepp/targets/child3-20260817T231432Z/debug/deps/land_surface_energy_real_hydrology_shadow_contract-f9e2bb0f84d6548e)
+covered_forest_tests::public_v8_endpoint_closes_mixed_open_and_covered_owners_once: test
+
+1 test, 0 benchmarks

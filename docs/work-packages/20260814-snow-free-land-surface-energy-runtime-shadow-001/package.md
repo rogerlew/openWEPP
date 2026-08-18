@@ -1,6 +1,6 @@
 # Implement Snow-Free Land-Surface-Energy Runtime Shadow
 
-Status: `executing / independent review remediation active / terminal gates withheld`
+Status: `executed-hold / runtime implementation and focused gates complete / terminal authority regeneration contradiction`
 
 Date: `2026-08-14`
 
@@ -54,8 +54,13 @@ post-hoc energy proposals and meteorology helpers are not constitutive inputs.
   WB14 overflow routing, exact root and ground `D/A/F`, and one aligned public
   physical-to-persistent-to-BGC envelope from immutable V8 beginning state.
   The envelope is uncommitted and the production frame remains byte-identical.
-- [ ] Pass terminal science/Rust reviews, benchmark and dual verification only
-  after the custody hold is lifted and the complete forest endpoint exists.
+- [x] Pass final exact-byte science review and execute the required benchmark
+  surfaces after the custody hold was lifted and the complete endpoint existed.
+- [ ] Close the terminal full-workspace authority gate and dual verification.
+  The immutable V3/V5 frozen bytes do not regenerate from their checked-in
+  calculators in the available canonical Nix environments; this is recorded as
+  a load-bearing authority contradiction rather than silently widening the
+  gate or migrating the V3--V8 identity chain.
 
 Fresh review at `dfc7cf971` rejected the first endpoint claim. The retained
 physical kernels and custody owner remain active implementation evidence, while

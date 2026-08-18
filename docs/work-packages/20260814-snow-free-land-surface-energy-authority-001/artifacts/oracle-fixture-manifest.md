@@ -2,7 +2,8 @@
 
 The authority oracle is independent Python and never calls Rust. The top-level
 `reference_calculator.py` composes the digest-verified inherited V3 canopy
-oracle with the exact V8 canopy-ground joint core, source-resolved
+oracle with the exact LSE-V8-only `reference_lse_v8_joint_canopy_core.py`,
+source-resolved
 arbitrary-rank longwave, immutable-snapshot source-keyed water arbitration,
 final fixed-cap rebuild, hydrology ingress/partition, liquid-advection
 receipts, ground-heat receipts, and local/OFE closure reconstruction. The
@@ -43,11 +44,15 @@ Terminal frozen and independently confirmed digests:
 - V8 model definition:
   `622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b`;
 - top-level generator:
-  `9278be79b1a74d4d609ab5857d00071b1e5717e036cc7323cbfcbf970795666c`;
-- joint canopy-ground core:
+  `86aae7c5d3c435e88170bae7b7ef838644242d790e56348a58bc9b587dc07c0c`;
+- historical shared joint canopy-ground core (immutable V3/V5/V6/V7 authority):
   `c9555b2dd02a5d6f11d71eb923fb60bc882e9638ec20eb79accc96cec9018be5`;
+- LSE-V8-only joint canopy-ground core:
+  `525538f32c91e2377f5d58f72fa4cfff2e81d46d5e12555e79792d92e1e81d6f`;
 - committed vectors:
-  `9f171b0fd0e9a9a2e40d6ea8773d120b961c343e2aad6ad951ae705c8d683f3b`;
+  `3fb57d7c637abba20659a59e6eb1487f9f4130f909e17b61c8a6f2eb70f4c711`;
+- exact Rust failure diagnostics:
+  `bdf18078cede6895d25146b6feb9fa7c90aadc436532d4485c43de7ae9b26211`;
 - configuration schema:
   `6499b98cc1e25f1379bc0ad6052a7536e20c4bfbb9335f9ba5c8de191ae2f009`;
 - coupled-transaction schema:
@@ -55,7 +60,7 @@ Terminal frozen and independently confirmed digests:
 - diagnostics schema:
   `41fb7909d073b4fdf4e59c9fa7da26b9a965ad916688b7867a56525d1bf1460c`;
 - forcing schema:
-  `f1fb785e9e582ae9e20eac4b5f44fa2b5f0651f8535d0972520dbfff3d926b55`;
+  `2138cfbfd69bb7561db6f8e8b995077cd87fa066b49387c18a0252abf820ab70`;
 - state schema:
   `91243e4087fa2c4775cb3629fe14c64379def4977d3c54a72348ac56d5fa4ee8`;
 - water-protocol schema:
@@ -67,12 +72,20 @@ failed and invalidated that candidate. The historical release regeneration was
 byte-identical at `7b6a303a...`, and both terminal reviews returned `PASS / GO`.
 The later canonical-JSON evidence correction binds the strict positive state
 after its final forest-tile projection; corrected vectors are `9f171b0f...`.
-The exact core
-executes 22 mandatory families. Its
-natural singular-pivot, iteration-limit, and backtracking-limit branches return
-no candidate and preserve the beginning-state rollback hash. The top-level
+The exact core executes 22 mandatory families. Python naturally executes the
+singular-pivot and backtracking-limit branches; the separately bound exact Rust
+record executes the iteration limit while Python reaches backtracking for that
+same authorized input. Every rejected branch returns no candidate and preserves
+the beginning-state rollback hash. The top-level
 transaction instantiates all six strict schemas, constructs five owner
 candidates, executes one shared-layer root/ground arbitration and one routed
 multi-OFE case with distinct 120 and 200 square-metre OFE areas, and
 reconstructs rather than asserts the single-authorization and
 rebuild-from-beginning invariants.
+
+Current provenance-isolation correction: the historical shared core remains
+byte-for-byte at `c9555b2d...`; LSE V8 alone consumes the checksum-bound
+`525538f3...` successor. Full regeneration remains byte-identical to the
+committed `3fb57d7c...` fixture. Cross-runtime numerical diagnostics retain
+separate exact Python and Rust records; neither runtime is relabeled or
+compared through a widened numeric envelope.

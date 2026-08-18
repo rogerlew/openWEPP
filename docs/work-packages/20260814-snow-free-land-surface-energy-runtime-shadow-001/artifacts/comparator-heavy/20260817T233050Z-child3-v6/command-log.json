@@ -1,0 +1,18 @@
+{
+  "verdict": "HOLD",
+  "commands_ran": 9,
+  "pass_count": 8,
+  "fail_or_hold_count": 1,
+  "note": "Exact commands, environments, timings and exit codes are preserved in the nine commands/*.meta files; stdout/stderr are in matching commands/*.log files.",
+  "commands": [
+    {"label":"bench_actual_byte_rollback","status":"PASS","exit_code":0,"list_count":1},
+    {"label":"bench_complete_public_envelope","status":"PASS","exit_code":0,"list_count":9},
+    {"label":"bench_mixed_open_covered","status":"PASS","exit_code":0,"list_count":1},
+    {"label":"bench_one_open_tile","status":"PASS","exit_code":0,"list_count":1},
+    {"label":"bench_single_rank_covered","status":"PASS","exit_code":0,"list_count":1},
+    {"label":"bench_strict_projection","status":"PASS","exit_code":0,"list_count":1},
+    {"label":"bench_two_rank_covered","status":"PASS","exit_code":0,"list_count":1},
+    {"label":"gate_cargo_clippy","status":"PASS","exit_code":0},
+    {"label":"gate_cargo_nextest","status":"FAIL","exit_code":100}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "label": "gate_cargo_deny_check",
+  "command": "cargo deny check",
+  "status": "PASS",
+  "exit_code": 0,
+  "start": "2026-08-18T00:17:58Z",
+  "end": "2026-08-18T00:18:01Z",
+  "duration_ms": 3625096061,
+  "env_OPENWEPP_TASK_ID": "child3-20260817T233050Z",
+  "env_TMPDIR": "/tmp/ow-lse-v8"
+}

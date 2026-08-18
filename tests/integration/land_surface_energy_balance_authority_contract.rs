@@ -140,7 +140,7 @@ fn immutable_definitions_and_independent_vectors_are_digest_bound() {
     );
     assert_eq!(
         format!("{:x}", Sha256::digest(vectors.as_bytes())),
-        "9f171b0fd0e9a9a2e40d6ea8773d120b961c343e2aad6ad951ae705c8d683f3b"
+        "3fb57d7c637abba20659a59e6eb1487f9f4130f909e17b61c8a6f2eb70f4c711"
     );
 
     let fixture: serde_json::Value = serde_json::from_str(&vectors).expect("LSE vectors");
@@ -228,8 +228,8 @@ fn immutable_definitions_and_independent_vectors_are_digest_bound() {
         (
             "iteration_limit",
             "LSEB-E-034",
-            "iteration_limit",
-            "iteration_limit",
+            "backtracking_limit",
+            "backtracking_limit",
         ),
         (
             "backtracking_limit",
@@ -254,6 +254,11 @@ fn immutable_definitions_and_independent_vectors_are_digest_bound() {
         assert_eq!(failures[name]["diagnostics"]["failure_kind"], kind);
         assert_eq!(failures[name]["typed_failure"], typed_failure);
     }
+    assert_eq!(
+        failures["iteration_limit"]["rust_expected_failure"],
+        "iteration_limit"
+    );
+    assert_eq!(failures["iteration_limit"]["rust_expected_iterations"], 50);
     for required in ["singular", "iteration_limit", "backtracking_limit"] {
         assert!(failures.contains_key(required), "missing {required}");
         assert_eq!(
@@ -327,7 +332,7 @@ fn immutable_definitions_and_independent_vectors_are_digest_bound() {
         ["temperatures_k"];
     let soil_candidate = &owner_candidates["soil_thermal"]["ending_state"];
     let soil_operands = &fixture["post_ingress_owner_candidates"]["joins"]["soil_thermal_operands"];
-    assert_eq!(soil_candidate["temperatures_k"][0], 292.283_549_961_068_84);
+    assert_eq!(soil_candidate["temperatures_k"][0], 292.283_849_300_950_35);
     let beginning_t1 = soil_beginning[0].as_f64().expect("beginning soil T1");
     let tile_fraction = soil_operands["layers"][0]["tile_fraction"]
         .as_f64()
@@ -470,11 +475,15 @@ fn immutable_definitions_and_independent_vectors_are_digest_bound() {
     for (path, expected) in [
         (
             "reference_calculator.py",
-            "9278be79b1a74d4d609ab5857d00071b1e5717e036cc7323cbfcbf970795666c",
+            "86aae7c5d3c435e88170bae7b7ef838644242d790e56348a58bc9b587dc07c0c",
         ),
         (
             "reference_joint_canopy_core.py",
             "c9555b2dd02a5d6f11d71eb923fb60bc882e9638ec20eb79accc96cec9018be5",
+        ),
+        (
+            "reference_lse_v8_joint_canopy_core.py",
+            "525538f32c91e2377f5d58f72fa4cfff2e81d46d5e12555e79792d92e1e81d6f",
         ),
         (
             "lse_v1_configuration_schema.json",
@@ -490,7 +499,7 @@ fn immutable_definitions_and_independent_vectors_are_digest_bound() {
         ),
         (
             "lse_v1_forcing_schema.json",
-            "f1fb785e9e582ae9e20eac4b5f44fa2b5f0651f8535d0972520dbfff3d926b55",
+            "2138cfbfd69bb7561db6f8e8b995077cd87fa066b49387c18a0252abf820ab70",
         ),
         (
             "lse_v1_state_schema.json",

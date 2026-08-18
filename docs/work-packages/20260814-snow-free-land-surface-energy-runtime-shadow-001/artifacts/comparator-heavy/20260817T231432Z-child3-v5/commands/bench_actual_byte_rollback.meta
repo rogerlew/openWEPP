@@ -1,0 +1,1 @@
+{"label":"bench_actual_byte_rollback","command":"cargo test -p openwepp-hillslope-orchestrator every_injected_phase_preserves_all_six_actual_owner_byte_records","status":"PASS","exit_code":0,"list_count":1,"start":"2026-08-17T23:16:06Z","end":"2026-08-17T23:16:08Z","duration_ms":1520021063,"env_OPENWEPP_TASK_ID":"child3-20260817T231432Z","env_TMPDIR":"/tmp/ow-lse-v8"}

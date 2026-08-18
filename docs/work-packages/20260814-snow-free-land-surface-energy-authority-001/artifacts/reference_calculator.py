@@ -26,14 +26,14 @@ DT = 1800.0
 ENERGY_TOL = 1.0e-7
 MASS_TOL = 1.0e-12
 INHERITED_V3_ORACLE_SHA256 = "7b137c1aa9ed0912caf4d14c779eca1819014b4217156d36f98619f06daabd1a"
-JOINT_CORE_SHA256 = "c9555b2dd02a5d6f11d71eb923fb60bc882e9638ec20eb79accc96cec9018be5"
+LSE_V8_JOINT_CORE_SHA256 = "525538f32c91e2377f5d58f72fa4cfff2e81d46d5e12555e79792d92e1e81d6f"
 LSE_MODEL_DEFINITION_SHA256 = "e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f"
 V8_MODEL_DEFINITION_SHA256 = "622bc900a08bd4c70e67c09e1fa113a9de24c48afce3b145a494bb76f6dcbe9b"
 SCHEMA_SHA256 = {
     "configuration": "6499b98cc1e25f1379bc0ad6052a7536e20c4bfbb9335f9ba5c8de191ae2f009",
     "coupled_transaction": "02dfa522b7d070df9a7d3e904d4f538a7f734eb6c8315fcbf033b7628b28e07f",
     "diagnostics": "41fb7909d073b4fdf4e59c9fa7da26b9a965ad916688b7867a56525d1bf1460c",
-    "forcing": "f1fb785e9e582ae9e20eac4b5f44fa2b5f0651f8535d0972520dbfff3d926b55",
+    "forcing": "2138cfbfd69bb7561db6f8e8b995077cd87fa066b49387c18a0252abf820ab70",
     "state": "91243e4087fa2c4775cb3629fe14c64379def4977d3c54a72348ac56d5fa4ee8",
     "water_protocol": "2e5ade752deb0751bb31222da5d8fe3f6a1e5fbee407e20780fa26242a7afd07",
 }
@@ -41,9 +41,9 @@ SCHEMA_SHA256 = {
 
 def load_joint_core() -> Any:
     """Load the checksum-bound independent joint core once."""
-    path = Path(__file__).resolve().parent / "reference_joint_canopy_core.py"
+    path = Path(__file__).resolve().parent / "reference_lse_v8_joint_canopy_core.py"
     actual = hashlib.sha256(path.read_bytes()).hexdigest()
-    if actual != JOINT_CORE_SHA256:
+    if actual != LSE_V8_JOINT_CORE_SHA256:
         raise RuntimeError("joint canopy-ground authority core checksum mismatch")
     spec = importlib.util.spec_from_file_location("openwepp_joint_canopy_ground_core", path)
     if spec is None or spec.loader is None:
@@ -86,7 +86,7 @@ def inherited_v3_oracle() -> dict[str, Any]:
 
 
 def joint_core_vectors() -> dict[str, Any]:
-    path = Path(__file__).resolve().parent / "reference_joint_canopy_core.py"
+    path = Path(__file__).resolve().parent / "reference_lse_v8_joint_canopy_core.py"
     actual = hashlib.sha256(path.read_bytes()).hexdigest()
     core = load_joint_core()
     vectors = core.build_joint_vectors()
@@ -1135,7 +1135,7 @@ def execute_covered_water_transaction(
         "cap_rate_kg_m2_tile_s": ground_authorization / (tile_fraction * dt),
         "request_rate_kg_m2_tile_s": next(request["amount_kg_m2_stand_ground"]
             for request in requests if request["key"] == ground_key) / (tile_fraction * dt)}}}
-    final = core.solve_covered_column(column, caps=caps)
+    final = core.solve_covered_column(column, caps=caps, start=potential["solution"])
     if not final["accepted"]:
         raise RuntimeError("covered_fixed_cap_rejected")
     finalized_uses = []
@@ -1344,8 +1344,10 @@ def execute_shared_layer_root_ground_competition(core: Any) -> dict[str, Any]:
     open_cap = {"cap_rate_kg_m2_tile_s": open_auth / (open_fraction * dt),
         "request_rate_kg_m2_tile_s": open_row["request_kg_m2_stand_ground"]
             / (open_fraction * dt)}
-    covered_final = core.solve_covered_column(covered, caps=covered_caps)
-    covered_second_final = core.solve_covered_column(covered_second, caps=second_caps)
+    covered_final = core.solve_covered_column(
+        covered, caps=covered_caps, start=covered_potential["solution"])
+    covered_second_final = core.solve_covered_column(
+        covered_second, caps=second_caps, start=covered_second_potential["solution"])
     open_final = core.solve_open_bare_soil(open_bundle, cap=open_cap)
     if not covered_final["accepted"] or not covered_second_final["accepted"] \
             or not open_final["accepted"]:
@@ -1581,7 +1583,8 @@ def executed_validation_failures(base_forcing: dict[str, Any]) -> dict[str, Any]
             "parcel_kind": "precipitation", "parcel_id": "bad-rain",
             "source_owner_id": "meteorology", "source_ofe_id": "atmosphere",
             "source_tile_id": "atmosphere", "destination_ofe_id": "ofe-1",
-            "destination_tile_id": "open", "amount_kg_m2_destination_tile_ground": 1.0,
+            "destination_tile_id": "open", "start_s": 0.0, "end_s": 1800.0,
+            "amount_kg_m2_destination_tile_ground": 1.0,
             "temperature_provider": "harder_pomeroy_hourly"}), {}),
     }
     beginning = {"vegetation": {"state": 1}, "hydrology": {"state": 1},
@@ -1738,7 +1741,8 @@ def executed_component_poisons(mandatory: dict[str, Any], ingress: dict[str, Any
             for row in shortwave["by_band"]["VIS"]["direct"]["occupancies"]}
         for source, result in zip(occupancies, solved, strict=True):
             case = source["case"]
-            wet = case["gas_energy"]["wet_fraction"]
+            wet = (min(case["gas_energy"]["canopy_liquid_kg_m2_tile"], 0.08) / 0.08) \
+                ** (2.0 / 3.0)
             sun_area, shade_area = executed_leaf_areas[source["occupancy_id"]]
             areas = [sun_area * (1.0 - wet), shade_area * (1.0 - wet),
                 wet * (sun_area + shade_area
@@ -2010,13 +2014,14 @@ def bind_failure_diagnostics(failures: dict[str, Any], owner_transaction: dict[s
     bound = {}
     for name, source in failures.items():
         record = copy.deepcopy(source)
-        natural = name in {"singular", "backtracking_limit", "iteration_limit"}
+        declared_failure = record.get("failure")
+        natural = declared_failure in {"singular", "backtracking_limit", "iteration_limit"}
         raw_diag = record.get("diagnostics", {}) if natural else {}
         if natural:
             failure_code, failure_kind = {
                 "singular": ("LSEB-E-034", "singular_pivot"),
                 "backtracking_limit": ("LSEB-E-034", "backtracking_limit"),
-                "iteration_limit": ("LSEB-E-034", "iteration_limit")}[name]
+                "iteration_limit": ("LSEB-E-034", "iteration_limit")}[declared_failure]
         else:
             failure_code, failure_kind = "LSEB-E-030", "unsupported_domain"
         residuals = []
@@ -2183,14 +2188,16 @@ def build_authority_vectors() -> dict[str, Any]:
     rain = {"parcel_kind": "precipitation", "parcel_id": "rain-1",
         "source_owner_id": "meteorology", "source_ofe_id": "atmosphere",
         "source_tile_id": "atmosphere", "destination_ofe_id": "ofe-1",
-        "destination_tile_id": "forest", "amount_kg_m2_destination_tile_ground": 1.2,
+        "destination_tile_id": "forest", "start_s": 0.0, "end_s": 1800.0,
+        "amount_kg_m2_destination_tile_ground": 1.2,
         "temperature_k": 281.2, "specific_liquid_enthalpy_j_kg": liquid_enthalpy(281.2),
         "temperature_provider": "harder_pomeroy_hourly",
         "source_state_sha256": digest({"meteorology": "rain-1"})}
     runon = {"parcel_kind": "routed_runon", "parcel_id": "runon-1",
         "source_owner_id": "hydrology-real-owner", "source_ofe_id": "ofe-0",
         "source_tile_id": "forest-upstream", "destination_ofe_id": "ofe-1",
-        "destination_tile_id": "forest", "amount_kg_m2_destination_tile_ground": 0.6,
+        "destination_tile_id": "forest", "start_s": 240.0, "end_s": 960.0,
+        "amount_kg_m2_destination_tile_ground": 0.6,
         "temperature_k": 289.6, "specific_liquid_enthalpy_j_kg": liquid_enthalpy(289.6),
         "temperature_provider": "accepted_upstream_outlet_parcel",
         "source_state_sha256": digest({"upstream": "accepted"})}
@@ -2320,6 +2327,7 @@ def build_authority_vectors() -> dict[str, Any]:
         "source_owner_id": "hydrology-real-owner", "source_ofe_id": "ofe-0",
         "source_tile_id": "upstream-forest", "destination_ofe_id": "ofe-1",
         "destination_tile_id": "forest", "interval_s": DT,
+        "start_s": 0.0, "end_s": DT,
         "source_transaction_id": upstream_outlet["accepted_transaction_id"],
         "destination_transaction_id": 20260814001,
         "source_ofe_area_m2": upstream_outlet["source_ofe_area_m2"],
@@ -2348,6 +2356,7 @@ def build_authority_vectors() -> dict[str, Any]:
     routed_forcing_parcel_fields = (
         "parcel_kind", "parcel_id", "source_owner_id", "source_ofe_id",
         "source_tile_id", "destination_ofe_id", "destination_tile_id",
+        "start_s", "end_s",
         "amount_kg_m2_destination_tile_ground", "temperature_k",
         "specific_liquid_enthalpy_j_kg", "temperature_provider",
         "source_state_sha256")
@@ -2476,7 +2485,7 @@ def build_authority_vectors() -> dict[str, Any]:
     return {"schema": "openwepp-snow-free-lse-v1-joint-authority-vectors-3",
         "model": "OPENWEPP_SNOW_FREE_LSE_V1",
         "model_definition_sha256": LSE_MODEL_DEFINITION_SHA256,
-        "source_checksums": {"joint_core_sha256": JOINT_CORE_SHA256,
+        "source_checksums": {"joint_core_sha256": LSE_V8_JOINT_CORE_SHA256,
             "inherited_v3_oracle_sha256": INHERITED_V3_ORACLE_SHA256,
             "schemas": SCHEMA_SHA256},
         "inherited_v8_canopy_authority_execution": inherited_v3_oracle(),

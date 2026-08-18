@@ -6,18 +6,20 @@
 
 use std::collections::BTreeMap;
 
-use openwepp_kernel_contract::{OccupancyId, ResourceOwnerId, SoilLayerId, TileId, TransactionId};
+use openwepp_kernel_contract::{OccupancyId, ResourceOwnerId, TileId, TransactionId};
+use openwepp_land_surface_energy::UnderCanopyGeometry;
 use openwepp_land_surface_energy::{
     BandDirectionalFluxes, BiochemicalConstants, ComponentId, CoveredColumnInputs,
     CoveredColumnShortwaveInputs, CoveredOccupancyInputs, CoveredOccupancyShortwaveInputs,
     LandSurfaceEnergyConfiguration, LandSurfaceEnergyError, LandSurfaceEnergyState,
     LandSurfaceForcing, LeafBiochemicalInputs, OfeId, OpenNeutralGeometry, OpenSurfaceProblem,
-    RootHydraulicLayer, RootRuntimeIdentity, RuntimeTileIdentity, SoilInterfaceLayer,
-    SoilThermalNodeOperands, SoilThermalOfeSnapshot, SoilThermalSnapshot, SourceId,
-    SurfaceClassKind, SurfaceConfiguration, SurfaceHeatStorageMode, SurfaceStorageBranch,
-    TileConfiguration, TileState, TurbulenceConfiguration,
+    RequestingComponent, RootHydraulicLayer, RootRuntimeIdentity, RuntimeTileIdentity,
+    SoilInterfaceLayer, SoilThermalNodeOperands, SoilThermalOfeSnapshot, SoilThermalSnapshot,
+    SourceId, StandGroundWaterAmountBasis, SurfaceClassKind, SurfaceConfiguration,
+    SurfaceHeatStorageMode, SurfaceStorageBranch, TileConfiguration, TileState,
+    TurbulenceConfiguration, WaterSourceType,
 };
-use openwepp_vegetation::carbon_nitrogen::{Tissue, atkin_rd25};
+use openwepp_vegetation::carbon_nitrogen::{Tissue, atkin_rd25, update_t10};
 use openwepp_vegetation::energy::{
     LATENT_HEAT_VAPORIZATION, canopy_surface_friction_velocity, leaf_boundary_conductance,
     neutral_resistance,
@@ -29,7 +31,7 @@ use openwepp_vegetation::radiation::{
 use openwepp_vegetation::{
     SnowFreeForcing, SoilLayerForcing, StratumConfiguration, StratumSharedState, V8_MODEL_SHA256,
     V8ComponentOccupancyBinding, V8CoupledOwnedState, V8LseComponentId, V8OccupancyState,
-    V8TileCanopyAirState, VegetationConfiguration, VegetationError,
+    V8TileCanopyAirState, VegetationConfiguration, VegetationError, validate_v8_component_bindings,
 };
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -182,7 +184,7 @@ fn hash_snow_free_forcing(digest: &mut Sha256, forcing: &SnowFreeForcing) {
 
 /// Four exact E01--E03 column solutions for one ground tile.
 #[derive(Clone, Debug, PartialEq)]
-pub struct V8ProjectedColumnRadiation {
+pub(crate) struct V8ProjectedColumnRadiation {
     pub visible_direct: ColumnRadiationResult,
     pub visible_diffuse: ColumnRadiationResult,
     pub near_infrared_direct: ColumnRadiationResult,
@@ -191,7 +193,7 @@ pub struct V8ProjectedColumnRadiation {
 
 /// One real production layer joined to the V8 hydraulic forcing lane.
 #[derive(Clone, Debug, PartialEq)]
-pub struct V8ProjectedRootLayer {
+pub(crate) struct V8ProjectedRootLayer {
     pub forcing: SoilLayerForcing,
     pub source: RealHydrologySourceKey,
     pub fact: RealHydrologyLayerFact,
@@ -199,61 +201,62 @@ pub struct V8ProjectedRootLayer {
 
 /// Immutable source operands for one ordered V8 occupancy.
 #[derive(Clone, Debug, PartialEq)]
-pub struct V8ProjectedOccupancyInput {
-    pub occupancy_id: OccupancyId,
-    pub vertical_rank: u32,
-    pub conditional_lai_m2_m2_tile_ground: f64,
-    pub conditional_sai_m2_m2_tile_ground: f64,
-    pub stratum_configuration: StratumConfiguration,
-    pub shared_state: StratumSharedState,
-    pub occupancy_state: V8OccupancyState,
-    pub root_layers: Vec<V8ProjectedRootLayer>,
+pub(crate) struct V8ProjectedOccupancyInput {
+    pub(crate) occupancy_id: OccupancyId,
+    pub(crate) vertical_rank: u32,
+    pub(crate) conditional_lai_m2_m2_tile_ground: f64,
+    pub(crate) conditional_sai_m2_m2_tile_ground: f64,
+    pub(crate) stratum_configuration: StratumConfiguration,
+    pub(crate) shared_state: StratumSharedState,
+    pub(crate) occupancy_state: V8OccupancyState,
+    pub(crate) root_layers: Vec<V8ProjectedRootLayer>,
 }
 
 /// Exact ground owner inputs for one LSE tile.
 #[derive(Clone, Debug, PartialEq)]
-pub struct V8ProjectedGroundInput {
-    pub configuration: TileConfiguration,
-    pub soil_interface_layers: Vec<SoilInterfaceLayer>,
-    pub state: TileState,
-    pub surface_liquid: DirectSurfaceLiquidStateRecord,
-    pub soil_thermal: SoilThermalOfeSnapshot,
+pub(crate) struct V8ProjectedGroundInput {
+    pub(crate) configuration: TileConfiguration,
+    pub(crate) soil_interface_layers: Vec<SoilInterfaceLayer>,
+    pub(crate) state: TileState,
+    pub(crate) surface_liquid: DirectSurfaceLiquidStateRecord,
+    pub(crate) soil_thermal: SoilThermalOfeSnapshot,
 }
 
 /// Fully projected, solve-free runtime input for one OFE/tile.
 #[derive(Clone, Debug, PartialEq)]
-pub struct V8ProjectedTileRuntimeInput {
-    pub identity: RuntimeTileIdentity,
-    pub ofe_id: OfeId,
-    pub tile_id: TileId,
-    pub transaction_id: TransactionId,
-    pub interval_s: f64,
-    pub tile_fraction: f64,
-    pub forcing: LandSurfaceForcing,
-    pub vegetation_forcing: SnowFreeForcing,
-    pub canopy_air_state: Option<V8TileCanopyAirState>,
-    pub radiation: V8ProjectedColumnRadiation,
-    pub ground: V8ProjectedGroundInput,
-    pub occupancies: Vec<V8ProjectedOccupancyInput>,
+pub(crate) struct V8ProjectedTileRuntimeInput {
+    pub(crate) identity: RuntimeTileIdentity,
+    pub(crate) ofe_id: OfeId,
+    pub(crate) tile_id: TileId,
+    pub(crate) transaction_id: TransactionId,
+    pub(crate) interval_s: f64,
+    pub(crate) tile_fraction: f64,
+    pub(crate) forcing: LandSurfaceForcing,
+    pub(crate) vegetation_forcing: SnowFreeForcing,
+    pub(crate) canopy_air_state: Option<V8TileCanopyAirState>,
+    pub(crate) radiation: V8ProjectedColumnRadiation,
+    pub(crate) ground: V8ProjectedGroundInput,
+    pub(crate) occupancies: Vec<V8ProjectedOccupancyInput>,
 }
 
 /// Cross-owner lineage plus every per-tile input. This type cannot solve or
 /// commit and contains no caller-provided numerical trial or Emax value.
 #[derive(Clone, Debug, PartialEq)]
-pub struct ValidatedV8RuntimeInputProjection {
-    pub vegetation_configuration_sha256: String,
-    pub vegetation_state_sha256: String,
-    pub lse_configuration_sha256: Sha256Digest,
-    pub lse_state_sha256: Sha256Digest,
-    pub lse_forcing_sha256: Sha256Digest,
-    pub hydrology_snapshot_sha256: Sha256Digest,
-    pub soil_thermal_snapshot_sha256: Sha256Digest,
-    pub transaction_id: TransactionId,
-    pub tiles: Vec<V8ProjectedTileRuntimeInput>,
+pub(crate) struct ValidatedV8RuntimeInputProjection {
+    pub(crate) vegetation_configuration_sha256: String,
+    pub(crate) vegetation_state_sha256: String,
+    pub(crate) lse_configuration_sha256: Sha256Digest,
+    pub(crate) lse_state_sha256: Sha256Digest,
+    pub(crate) lse_forcing_sha256: Sha256Digest,
+    pub(crate) hydrology_snapshot_sha256: Sha256Digest,
+    pub(crate) soil_thermal_snapshot_sha256: Sha256Digest,
+    pub(crate) transaction_id: TransactionId,
+    pub(crate) tiles: Vec<V8ProjectedTileRuntimeInput>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum V8SolverReadyTilePhysics {
+#[allow(clippy::large_enum_variant)]
+pub(crate) enum V8SolverReadyTilePhysics {
     Open(OpenSurfaceProblem),
     Covered(CoveredColumnInputs),
 }
@@ -261,19 +264,19 @@ pub enum V8SolverReadyTilePhysics {
 /// Opaque solver-ready tile. Every physical operand and numerical warm start
 /// is derived from the validated projection; consumers supply no raw arrays.
 #[derive(Clone, Debug, PartialEq)]
-pub struct V8SolverReadyTileInput {
-    pub identity: RuntimeTileIdentity,
-    pub physics: V8SolverReadyTilePhysics,
-    pub root_identities: Vec<RootRuntimeIdentity>,
-    pub soil_sources:
+pub(crate) struct V8SolverReadyTileInput {
+    pub(crate) identity: RuntimeTileIdentity,
+    pub(crate) physics: V8SolverReadyTilePhysics,
+    pub(crate) root_identities: Vec<RootRuntimeIdentity>,
+    pub(crate) soil_sources:
         BTreeMap<openwepp_land_surface_energy::GroundWaterKey, RealHydrologySourceKey>,
-    pub beginning_trial: Vec<f64>,
-    pub vegetation_bindings: Vec<V8ComponentOccupancyBinding>,
-    pub soil_thermal: SoilThermalOfeSnapshot,
+    pub(crate) beginning_trial: Vec<f64>,
+    pub(crate) vegetation_bindings: Vec<V8ComponentOccupancyBinding>,
+    pub(crate) soil_thermal: SoilThermalOfeSnapshot,
 }
 
 impl ValidatedV8RuntimeInputProjection {
-    pub fn solver_ready_tiles(
+    pub(crate) fn solver_ready_tiles(
         &self,
         vegetation_owner_id: &ResourceOwnerId,
     ) -> Result<Vec<V8SolverReadyTileInput>, V8InputProjectionError> {
@@ -284,13 +287,633 @@ impl ValidatedV8RuntimeInputProjection {
     }
 }
 
+impl V8ProjectedTileRuntimeInput {
+    fn solver_ready(
+        &self,
+        vegetation_owner_id: &ResourceOwnerId,
+    ) -> Result<V8SolverReadyTileInput, V8InputProjectionError> {
+        self.validate_preflight()?;
+        let ground = self.ground_problem()?;
+        if self.occupancies.is_empty() {
+            return Ok(V8SolverReadyTileInput {
+                identity: self.identity.clone(),
+                beginning_trial: open_beginning_trial(&ground),
+                physics: V8SolverReadyTilePhysics::Open(ground),
+                root_identities: Vec::new(),
+                soil_sources: BTreeMap::new(),
+                vegetation_bindings: Vec::new(),
+                soil_thermal: self.ground.soil_thermal.clone(),
+            });
+        }
+        let (column, roots, sources, bindings, trial) =
+            self.covered_problem(vegetation_owner_id, ground)?;
+        Ok(V8SolverReadyTileInput {
+            identity: self.identity.clone(),
+            physics: V8SolverReadyTilePhysics::Covered(column),
+            root_identities: roots,
+            soil_sources: sources,
+            beginning_trial: trial,
+            vegetation_bindings: bindings,
+            soil_thermal: self.ground.soil_thermal.clone(),
+        })
+    }
+
+    fn validate_preflight(&self) -> Result<(), V8InputProjectionError> {
+        if self.identity.ofe_id != self.ofe_id
+            || self.identity.tile_id != self.tile_id
+            || self.identity.transaction_id != self.transaction_id
+            || self.identity.interval_s.to_bits() != self.interval_s.to_bits()
+            || self.identity.tile_fraction.to_bits() != self.tile_fraction.to_bits()
+            || self.ground.configuration.tile_id != self.tile_id
+            || self.ground.state.ofe_id != self.ofe_id
+            || self.ground.state.tile_id != self.tile_id
+            || self.ground.soil_thermal.ofe_id != self.ofe_id
+        {
+            return Err(V8InputProjectionError::Identity("projected tile identity"));
+        }
+        if self.ground.soil_interface_layers.len() != self.ground.soil_thermal.ordered_layers.len()
+            || self
+                .ground
+                .soil_interface_layers
+                .iter()
+                .zip(&self.ground.soil_thermal.ordered_layers)
+                .any(|(configured, thermal)| configured.layer_id != thermal.layer_id)
+        {
+            return Err(V8InputProjectionError::Topology(
+                "soil-thermal configured ordering",
+            ));
+        }
+        for (index, occupancy) in self.occupancies.iter().enumerate() {
+            if occupancy.occupancy_id.tile_id != self.ground.configuration.vegetation_tile_id
+                || occupancy.occupancy_id.stratum_id != occupancy.stratum_configuration.stratum_id
+                || occupancy.vertical_rank != occupancy.stratum_configuration.vertical_rank
+                || index > 0 && self.occupancies[index - 1].vertical_rank >= occupancy.vertical_rank
+            {
+                return Err(V8InputProjectionError::Topology(
+                    "configured occupancy vertical ordering",
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn ground_problem(&self) -> Result<OpenSurfaceProblem, V8InputProjectionError> {
+        let configuration = &self.ground.configuration;
+        if !self.occupancies.is_empty() {
+            validate_ground_albedo(
+                configuration.surface_vis_albedo,
+                configuration.surface_nir_albedo,
+                self.vegetation_forcing.ground_albedo_vis,
+                self.vegetation_forcing.ground_albedo_nir,
+            )?;
+        }
+        let terminal_shortwave_w_m2_tile = BandDirectionalFluxes {
+            direct_vis: self.radiation.visible_direct.terminal_direct
+                + self.radiation.visible_direct.terminal_diffuse,
+            diffuse_vis: self.radiation.visible_diffuse.terminal_direct
+                + self.radiation.visible_diffuse.terminal_diffuse,
+            direct_nir: self.radiation.near_infrared_direct.terminal_direct
+                + self.radiation.near_infrared_direct.terminal_diffuse,
+            diffuse_nir: self.radiation.near_infrared_diffuse.terminal_direct
+                + self.radiation.near_infrared_diffuse.terminal_diffuse,
+        };
+        let soil_nodes = self
+            .ground
+            .soil_interface_layers
+            .iter()
+            .zip(&self.ground.soil_thermal.ordered_layers)
+            .map(|(layer, thermal)| SoilThermalNodeOperands {
+                layer_id: layer.layer_id.as_str().into(),
+                depth_m: layer.thickness_m,
+                conductivity_w_m_k: layer.thermal_conductivity_w_m_k,
+                heat_capacity_j_m2_k: layer.areal_heat_capacity_j_m2_k,
+                beginning_temperature_k: thermal.temperature_k,
+            })
+            .collect();
+        let (class, emissivity, depth, conductivity, heat_capacity, capacity, bare) =
+            match &configuration.surface {
+                SurfaceConfiguration::BareMineralSoil {
+                    dry_areal_heat_capacity_j_m2_k,
+                    mineral_skin_thickness_m,
+                    mineral_skin_thermal_conductivity_w_m_k,
+                    top_layer_porosity_m3_m3,
+                    top_layer_saturated_matric_potential_mm,
+                    top_layer_clapp_hornberger_b,
+                    top_layer_initial_water_content_m3_m3,
+                    ..
+                } => {
+                    let top_id = self.ground.soil_interface_layers[0].layer_id.clone();
+                    let top = self
+                        .vegetation_forcing
+                        .soil_layers
+                        .iter()
+                        .find(|layer| layer.layer_id == top_id)
+                        .ok_or(V8InputProjectionError::Topology(
+                            "missing top soil water owner",
+                        ))?;
+                    let (liquid, ice) = if top.frozen {
+                        (0.0, top.water_beginning_kg_m2)
+                    } else {
+                        (top.water_beginning_kg_m2, 0.0)
+                    };
+                    (
+                        SurfaceClassKind::BareMineralSoil,
+                        1.0,
+                        *mineral_skin_thickness_m,
+                        *mineral_skin_thermal_conductivity_w_m_k,
+                        *dry_areal_heat_capacity_j_m2_k,
+                        None,
+                        Some(openwepp_land_surface_energy::BareSoilParameters {
+                            top_layer_liquid_kg_m2: liquid,
+                            top_layer_ice_kg_m2: ice,
+                            porosity: *top_layer_porosity_m3_m3,
+                            saturated_matric_potential_mm: *top_layer_saturated_matric_potential_mm,
+                            clapp_hornberger_b: *top_layer_clapp_hornberger_b,
+                            theta_initial: *top_layer_initial_water_content_m3_m3,
+                        }),
+                    )
+                }
+                SurfaceConfiguration::ForestLitter {
+                    liquid_capacity_kg_m2_tile_ground,
+                    thickness_m,
+                    dry_density_kg_m3,
+                    dry_specific_heat_j_kg_k,
+                } => (
+                    SurfaceClassKind::ForestLitter,
+                    1.0,
+                    *thickness_m,
+                    self.ground.soil_interface_layers[0].thermal_conductivity_w_m_k,
+                    thickness_m * dry_density_kg_m3 * dry_specific_heat_j_kg_k,
+                    Some(*liquid_capacity_kg_m2_tile_ground),
+                    None,
+                ),
+            };
+        let open_geometry = match &configuration.turbulence {
+            TurbulenceConfiguration::OpenNeutral {
+                reference_height_m,
+                roughness_momentum_m,
+                roughness_heat_m,
+                roughness_vapor_m,
+            } => OpenNeutralGeometry {
+                reference_height_m: *reference_height_m,
+                roughness_momentum_m: *roughness_momentum_m,
+                roughness_heat_m: *roughness_heat_m,
+                roughness_vapor_m: *roughness_vapor_m,
+            },
+            TurbulenceConfiguration::CoveredNeutral {
+                ground_exchange_roughness_m,
+                canopy_to_reference,
+                ..
+            } => OpenNeutralGeometry {
+                reference_height_m: canopy_to_reference.reference_height_m,
+                roughness_momentum_m: *ground_exchange_roughness_m,
+                roughness_heat_m: *ground_exchange_roughness_m,
+                roughness_vapor_m: *ground_exchange_roughness_m,
+            },
+        };
+        Ok(OpenSurfaceProblem {
+            interval_s: self.interval_s,
+            tile_fraction: self.tile_fraction,
+            class,
+            storage_branch: match configuration.surface_heat_storage_mode {
+                SurfaceHeatStorageMode::FiniteCapacity => SurfaceStorageBranch::FiniteCapacity,
+                SurfaceHeatStorageMode::EquilibriumZero => SurfaceStorageBranch::EquilibriumZero,
+            },
+            terminal_shortwave_w_m2_tile,
+            surface_vis_albedo: configuration.surface_vis_albedo,
+            surface_nir_albedo: configuration.surface_nir_albedo,
+            surface_emissivity: emissivity,
+            surface_depth_m: depth,
+            surface_conductivity_w_m_k: conductivity,
+            surface_dry_heat_capacity_j_m2_k: heat_capacity,
+            litter_capacity_kg_m2_tile: capacity,
+            open_geometry,
+            air_temperature_k: self.forcing.air_temperature_k,
+            air_specific_humidity_kg_kg: self.forcing.air_specific_humidity_kg_kg,
+            air_pressure_pa: self.forcing.air_pressure_pa,
+            reference_wind_m_s: self.forcing.reference_wind_m_s,
+            atmospheric_downward_longwave_w_m2: self.forcing.atmospheric_downward_longwave_w_m2,
+            surface_liquid_kg_m2_tile: self.ground.surface_liquid.liquid_kg_m2_tile,
+            surface_enthalpy_j_m2_tile: self.ground.state.surface_enthalpy_j_m2_tile_ground,
+            surface_temperature_warm_start_k: self.ground.state.surface_temperature_warm_start_k,
+            bare_soil: bare,
+            soil_nodes,
+        })
+    }
+
+    #[allow(clippy::type_complexity, clippy::too_many_lines)]
+    fn covered_problem(
+        &self,
+        vegetation_owner_id: &ResourceOwnerId,
+        ground: OpenSurfaceProblem,
+    ) -> Result<
+        (
+            CoveredColumnInputs,
+            Vec<RootRuntimeIdentity>,
+            BTreeMap<openwepp_land_surface_energy::GroundWaterKey, RealHydrologySourceKey>,
+            Vec<V8ComponentOccupancyBinding>,
+            Vec<f64>,
+        ),
+        V8InputProjectionError,
+    > {
+        let canopy = self
+            .canopy_air_state
+            .as_ref()
+            .ok_or(V8InputProjectionError::Topology(
+                "missing covered canopy-air state",
+            ))?;
+        let mut rows = Vec::new();
+        let mut sw_rows = Vec::new();
+        let mut roots = Vec::new();
+        let mut sources = BTreeMap::new();
+        let mut bindings = Vec::new();
+        let mut trial = Vec::new();
+        for (index, occupancy) in self.occupancies.iter().enumerate() {
+            let config = &occupancy.stratum_configuration;
+            let component = tile_qualified_component_id(&occupancy.occupancy_id)?;
+            bindings.push(V8ComponentOccupancyBinding {
+                component_id: component.clone(),
+                occupancy_id: occupancy.occupancy_id.clone(),
+                vertical_rank: occupancy.vertical_rank,
+            });
+            let layers = [
+                &self.radiation.visible_direct.layers[index],
+                &self.radiation.visible_diffuse.layers[index],
+                &self.radiation.near_infrared_direct.layers[index],
+                &self.radiation.near_infrared_diffuse.layers[index],
+            ];
+            let bands =
+                |field: fn(&openwepp_vegetation::radiation::OwnedLayerAbsorption) -> f64| {
+                    BandDirectionalFluxes {
+                        direct_vis: field(layers[0]),
+                        diffuse_vis: field(layers[1]),
+                        direct_nir: field(layers[2]),
+                        diffuse_nir: field(layers[3]),
+                    }
+                };
+            let sun_bands = bands(|v| v.absorbed_leaf_sun);
+            let shade_bands = bands(|v| v.absorbed_leaf_shade);
+            let stem_bands = bands(|v| v.absorbed_stem);
+            // E01 owns the photosynthetic sun/shade leaf-class areas. The
+            // other directional/band solves retain their own absorption
+            // operands and are not alternate owners of this classification.
+            let sun_area = layers[0].leaf_sun_area;
+            let shade_area = layers[0].leaf_shade_area;
+            let leaf_n = occupancy
+                .shared_state
+                .tissues
+                .get(&Tissue::Leaf)
+                .ok_or(V8InputProjectionError::Topology("missing leaf tissue"))?
+                .display
+                .nitrogen;
+            let leaf_n_area = if occupancy.shared_state.leaf_area == 0.0 {
+                if leaf_n != 0.0 {
+                    return Err(V8InputProjectionError::Identity(
+                        "leaf nitrogen without area",
+                    ));
+                }
+                0.0
+            } else {
+                leaf_n / occupancy.shared_state.leaf_area
+            };
+            let rd25 = if occupancy.shared_state.leaf_area == 0.0 {
+                0.0
+            } else {
+                let advanced_t10_k = update_t10(
+                    occupancy.shared_state.t10_k,
+                    self.vegetation_forcing.air_temperature_k,
+                    self.interval_s,
+                )?;
+                atkin_rd25(
+                    leaf_n,
+                    occupancy.shared_state.leaf_area,
+                    advanced_t10_k,
+                    config.atkin_intercept,
+                )?
+            };
+            let leaf = |area: f64, flux: BandDirectionalFluxes| LeafBiochemicalInputs {
+                leaf_area_m2_m2_tile: area,
+                absorbed_shortwave_w_m2_tile: flux.total(),
+                absorbed_par_w_m2_leaf: if area == 0.0 {
+                    0.0
+                } else {
+                    (flux.direct_vis + flux.diffuse_vis) / area
+                },
+                vcmax25: if area == 0.0 {
+                    0.0
+                } else {
+                    leaf_n_area * config.rubisco_n_efficiency
+                },
+                jmax25: if area == 0.0 {
+                    0.0
+                } else {
+                    leaf_n_area * config.electron_n_efficiency
+                },
+                rd25: if area == 0.0 { 0.0 } else { rd25 },
+            };
+            let u_star = canopy_surface_friction_velocity(
+                self.vegetation_forcing.wind_m_s,
+                self.vegetation_forcing.reference_height_m,
+                config.displacement_m,
+                config.z0m_m,
+            )?;
+            let root_layers = occupancy
+                .root_layers
+                .iter()
+                .map(|root| {
+                    let configured = config
+                        .root_layers
+                        .iter()
+                        .find(|v| v.layer_id == root.forcing.layer_id)
+                        .ok_or(V8InputProjectionError::Topology("unconfigured root layer"))?;
+                    Ok(RootHydraulicLayer {
+                        layer_id: root.forcing.layer_id.as_str().into(),
+                        accessible: root.forcing.accessible,
+                        frozen: root.forcing.frozen,
+                        root_fraction: configured.root_fraction,
+                        soil_potential_mm: root.forcing.matric_potential_mm,
+                        gravity_head_mm: root.forcing.gravity_root_mm,
+                        z3_m: root.forcing.root_path_length_mm / 1000.0,
+                        dxroot_m: configured.lateral_root_length_m,
+                        ksoil_m2_s: root.forcing.hydraulic_conductivity_mm_s / 1000.0,
+                    })
+                })
+                .collect::<Result<Vec<_>, V8InputProjectionError>>()?;
+            for root in &occupancy.root_layers {
+                let source_id = SourceId::try_new(root.forcing.layer_id.as_str())?;
+                let identity = RootRuntimeIdentity {
+                    solver_occupancy_id: component.as_str().into(),
+                    requesting_owner_id: vegetation_owner_id.clone(),
+                    occupancy_id: ComponentId::try_new(component.as_str())?,
+                    layer_id: root.forcing.layer_id.clone(),
+                    source_id: source_id.clone(),
+                };
+                let key = openwepp_land_surface_energy::GroundWaterKey {
+                    transaction_id: self.transaction_id,
+                    requesting_owner_id: vegetation_owner_id.clone(),
+                    requesting_component: RequestingComponent::VegetationRoot,
+                    ofe_id: self.ofe_id.clone(),
+                    requesting_tile_id: self.tile_id.clone(),
+                    occupancy_id: Some(identity.occupancy_id.clone()),
+                    surface_id: None,
+                    surface_class: None,
+                    source_type: WaterSourceType::SoilLayerLiquid,
+                    source_id,
+                    source_tile_id: None,
+                    soil_layer_id: Some(root.forcing.layer_id.clone()),
+                    amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+                };
+                if sources.insert(key, root.source.clone()).is_some() {
+                    return Err(V8InputProjectionError::Topology("duplicate root source"));
+                }
+                roots.push(identity);
+            }
+            rows.push(CoveredOccupancyInputs {
+                occupancy_id: component.as_str().into(),
+                medlyn_g1_kpa_sqrt: config.g1_sqrt_kpa,
+                g0_umol_m2_s: config.g0_umol_h2o_m2_s,
+                sun: leaf(sun_area, sun_bands),
+                shade: leaf(shade_area, shade_bands),
+                biochemical: biochemical(config),
+                stem_area_m2_m2_tile: occupancy.conditional_sai_m2_m2_tile_ground,
+                stem_absorbed_shortwave_w_m2_tile: stem_bands.total(),
+                beginning_canopy_liquid_kg_m2_tile: occupancy
+                    .occupancy_state
+                    .canopy_liquid_kg_h2o_m2_tile_ground,
+                liquid_interception_fraction: config.alpha_liq,
+                liquid_capacity_kg_m2_plant: config.p_liq_kg_m2_plant,
+                stemflow_fraction: config.stemflow_fraction,
+                gb_leaf_m_s: leaf_boundary_conductance(u_star, config.leaf_dimension_m)?,
+                gb_wet_m_s: leaf_boundary_conductance(u_star, config.wet_surface_dimension_m)?,
+                gb_stem_m_s: leaf_boundary_conductance(u_star, config.stem_dimension_m)?,
+                lai: occupancy.conditional_lai_m2_m2_tile_ground,
+                sai: occupancy.conditional_sai_m2_m2_tile_ground,
+                clumping_index: config.clumping_index,
+                k1_sun_max_s1: config.k1a_max_s1,
+                k1_shade_max_s1: config.k1b_max_s1,
+                k2_max: config.k2_max_m_s,
+                k3_max_m_s: config.k3_max_m_s,
+                height_m: config.height_m,
+                root_to_leaf_area: config.root_to_leaf_area,
+                p50_leaf_mm: config.p50_leaf_mm,
+                p50_xylem_mm: config.p50_stem_mm,
+                p50_root_mm: config.p50_root_mm,
+                vulnerability_exponent: config.vulnerability_shape,
+                root_layers,
+            });
+            sw_rows.push(CoveredOccupancyShortwaveInputs {
+                occupancy_id: component.as_str().into(),
+                sun_leaf_absorbed_w_m2_tile: sun_bands,
+                shade_leaf_absorbed_w_m2_tile: shade_bands,
+                stem_absorbed_w_m2_tile: stem_bands,
+            });
+            let lane = &occupancy.occupancy_state;
+            trial.extend([
+                lane.sun_leaf_potential_mm,
+                lane.shade_leaf_potential_mm,
+                lane.stem_potential_mm,
+                lane.root_node_potential_mm,
+                lane.beta_hyd,
+                lane.beta_hyd,
+                lane.sun_leaf_temperature_k,
+                lane.shade_leaf_temperature_k,
+                lane.wet_surface_temperature_k,
+                lane.dry_stem_temperature_k,
+            ]);
+        }
+        trial.extend([
+            canopy.canopy_air_temperature_k,
+            canopy.canopy_air_specific_humidity_kg_kg,
+            ground.surface_temperature_warm_start_k,
+        ]);
+        trial.extend(ground.soil_nodes.iter().map(|v| v.beginning_temperature_k));
+        let (geometry, rah, raw) = covered_aerodynamics(
+            &self.ground.configuration.turbulence,
+            self.forcing.reference_wind_m_s,
+        )?;
+        let fluxes = |field: fn(&ColumnRadiationResult) -> f64| BandDirectionalFluxes {
+            direct_vis: field(&self.radiation.visible_direct),
+            diffuse_vis: field(&self.radiation.visible_diffuse),
+            direct_nir: field(&self.radiation.near_infrared_direct),
+            diffuse_nir: field(&self.radiation.near_infrared_diffuse),
+        };
+        let shortwave = CoveredColumnShortwaveInputs {
+            incident_w_m2_tile: fluxes(|v| v.incident),
+            top_reflected_w_m2_tile: fluxes(|v| v.top_reflected),
+            ground_absorbed_by_incident_w_m2_tile: fluxes(|v| v.ground_absorbed),
+            occupancies: sw_rows,
+        };
+        Ok((
+            CoveredColumnInputs {
+                interval_s: self.interval_s,
+                tile_fraction: self.tile_fraction,
+                pressure_pa: self.vegetation_forcing.pressure_pa,
+                air_temperature_k: self.vegetation_forcing.air_temperature_k,
+                air_specific_humidity_kg_kg: self.vegetation_forcing.specific_humidity,
+                reference_wind_m_s: self.vegetation_forcing.wind_m_s,
+                atmospheric_downward_longwave_w_m2: self.vegetation_forcing.longwave_down_w_m2,
+                ca_pa: self.vegetation_forcing.co2_pa,
+                canopy_to_atmosphere_heat_resistance_s_m: rah,
+                canopy_to_atmosphere_vapor_resistance_s_m: raw,
+                latent_heat_j_kg: LATENT_HEAT_VAPORIZATION,
+                top_rain_kg_m2_tile: covered_precipitation_for_tile(
+                    &self.forcing,
+                    &self.ofe_id,
+                    &self.tile_id,
+                ),
+                under_canopy_geometry: geometry,
+                ground,
+                occupancies: rows,
+                shortwave,
+            },
+            roots,
+            sources,
+            bindings,
+            trial,
+        ))
+    }
+}
+
+fn biochemical(c: &StratumConfiguration) -> BiochemicalConstants {
+    BiochemicalConstants {
+        ha_vcmax_j_mol: c.ha_vcmax,
+        hd_vcmax_j_mol: c.hd_vcmax,
+        entropy_vcmax_j_mol_k: c.entropy_vcmax,
+        ha_jmax_j_mol: c.ha_jmax,
+        hd_jmax_j_mol: c.hd_jmax,
+        entropy_jmax_j_mol_k: c.entropy_jmax,
+        kc25_pa: c.kc25_pa,
+        ha_kc_j_mol: c.ha_kc,
+        ko25_pa: c.ko25_pa,
+        ha_ko_j_mol: c.ha_ko,
+        gamma25_pa: c.gamma25_pa,
+        ha_gamma_j_mol: c.ha_gamma,
+        oxygen_partial_pressure_pa: 21_230.0,
+        tp_vcmax_ratio: c.tp_vcmax_ratio,
+        electron_quantum_yield: 0.3,
+        par_photon_umol_per_j: 4.6,
+        electron_curvature: 0.9,
+        ac_aj_curvature: 0.98,
+        ag_ap_curvature: 0.95,
+    }
+}
+
+fn covered_aerodynamics(
+    t: &TurbulenceConfiguration,
+    wind: f64,
+) -> Result<(UnderCanopyGeometry, f64, f64), V8InputProjectionError> {
+    match t {
+        TurbulenceConfiguration::CoveredNeutral {
+            canopy_height_m,
+            ground_exchange_roughness_m,
+            leaf_area_index_m2_m2_tile_ground,
+            canopy_to_reference,
+        } => Ok((
+            UnderCanopyGeometry {
+                canopy_height_m: *canopy_height_m,
+                canopy_roughness_m: *ground_exchange_roughness_m,
+                reference_height_m: canopy_to_reference.reference_height_m,
+                leaf_area_index: *leaf_area_index_m2_m2_tile_ground,
+            },
+            neutral_resistance(
+                canopy_to_reference.reference_height_m,
+                canopy_to_reference.displacement_m,
+                canopy_to_reference.roughness_momentum_m,
+                canopy_to_reference.roughness_heat_m,
+                wind,
+            )?,
+            neutral_resistance(
+                canopy_to_reference.reference_height_m,
+                canopy_to_reference.displacement_m,
+                canopy_to_reference.roughness_momentum_m,
+                canopy_to_reference.roughness_vapor_m,
+                wind,
+            )?,
+        )),
+        TurbulenceConfiguration::OpenNeutral { .. } => Err(V8InputProjectionError::Topology(
+            "covered occupancy with open turbulence",
+        )),
+    }
+}
+
+fn open_beginning_trial(problem: &OpenSurfaceProblem) -> Vec<f64> {
+    std::iter::once(problem.surface_temperature_warm_start_k)
+        .chain(
+            problem
+                .soil_nodes
+                .iter()
+                .map(|node| node.beginning_temperature_k),
+        )
+        .collect()
+}
+
+fn validate_ground_albedo(
+    configured_vis: f64,
+    configured_nir: f64,
+    forcing_vis: f64,
+    forcing_nir: f64,
+) -> Result<(), V8InputProjectionError> {
+    if configured_vis.to_bits() != forcing_vis.to_bits()
+        || configured_nir.to_bits() != forcing_nir.to_bits()
+    {
+        Err(V8InputProjectionError::Identity("LSE tile ground albedo"))
+    } else {
+        Ok(())
+    }
+}
+
+fn covered_precipitation_for_tile(
+    forcing: &LandSurfaceForcing,
+    ofe_id: &OfeId,
+    tile_id: &TileId,
+) -> f64 {
+    forcing
+        .precipitation_parcels
+        .iter()
+        .filter(|parcel| {
+            &parcel.destination_ofe_id == ofe_id && &parcel.destination_tile_id == tile_id
+        })
+        .map(|parcel| parcel.amount_kg_m2_destination_tile_ground)
+        .fold(0.0, |total, amount| total + amount)
+}
+
+fn validate_covered_precipitation_join(
+    forcing: &LandSurfaceForcing,
+    ofe_id: &OfeId,
+    tile_id: &TileId,
+    vegetation_rain_kg_m2: f64,
+) -> Result<(), V8InputProjectionError> {
+    let canonical = covered_precipitation_for_tile(forcing, ofe_id, tile_id);
+    if canonical.to_bits() == vegetation_rain_kg_m2.to_bits() {
+        Ok(())
+    } else {
+        Err(V8InputProjectionError::Identity(
+            "covered precipitation owner join",
+        ))
+    }
+}
+
+fn tile_qualified_component_id(
+    occupancy: &OccupancyId,
+) -> Result<V8LseComponentId, V8InputProjectionError> {
+    Ok(V8LseComponentId::try_new(format!(
+        "{}::{}",
+        occupancy.stratum_id.as_str(),
+        occupancy.tile_id.as_str()
+    ))?)
+}
+
 /// Derive all solve inputs from validated owner configuration/state and the
 /// canonical forcing DTOs. No LAI/SAI, rank, warm start, ground state, soil
 /// state, or hydraulic source operand is accepted independently.
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-pub fn project_v8_runtime_inputs(
+pub(crate) fn project_v8_runtime_inputs(
     vegetation_configuration: &VegetationConfiguration,
     vegetation_state: &V8CoupledOwnedState,
+    vegetation_owner_id: &ResourceOwnerId,
+    biogeochemistry_owner_id: &ResourceOwnerId,
+    beginning_biogeochemistry_state_sha256: &Sha256Digest,
     canopy_forcing: &V8CanopyForcingReceipt,
     lse_configuration: &LandSurfaceEnergyConfiguration,
     lse_state: &LandSurfaceEnergyState,
@@ -300,6 +923,24 @@ pub fn project_v8_runtime_inputs(
     soil_thermal: &SoilThermalSnapshot,
 ) -> Result<ValidatedV8RuntimeInputProjection, V8InputProjectionError> {
     vegetation_configuration.validate_v8()?;
+    let configured_bindings = vegetation_configuration
+        .strata
+        .iter()
+        .flat_map(|stratum| {
+            stratum.tile_ids.iter().map(|tile_id| {
+                let occupancy_id = OccupancyId {
+                    stratum_id: stratum.stratum_id.clone(),
+                    tile_id: tile_id.clone(),
+                };
+                Ok(V8ComponentOccupancyBinding {
+                    component_id: tile_qualified_component_id(&occupancy_id)?,
+                    occupancy_id,
+                    vertical_rank: stratum.vertical_rank,
+                })
+            })
+        })
+        .collect::<Result<Vec<_>, V8InputProjectionError>>()?;
+    validate_v8_component_bindings(&configured_bindings, vegetation_configuration)?;
     vegetation_state
         .validate(vegetation_configuration)
         .map_err(|_| V8InputProjectionError::Identity("invalid V8 vegetation state"))?;
@@ -380,11 +1021,31 @@ pub fn project_v8_runtime_inputs(
                 .ok_or(V8InputProjectionError::Topology(
                     "missing surface-liquid tile state",
                 ))?;
+            let covered = vegetation_configuration
+                .strata
+                .iter()
+                .any(|stratum| stratum.tile_ids.contains(&tile.vegetation_tile_id));
+            if covered {
+                validate_ground_albedo(
+                    tile.surface_vis_albedo,
+                    tile.surface_nir_albedo,
+                    canopy_forcing.forcing().ground_albedo_vis,
+                    canopy_forcing.forcing().ground_albedo_nir,
+                )?;
+                validate_covered_precipitation_join(
+                    lse_forcing,
+                    &ofe.ofe_id,
+                    &tile.tile_id,
+                    canopy_forcing.forcing().rain_kg_m2,
+                )?;
+            }
             let (radiation, occupancies) = project_column(
                 vegetation_configuration,
                 vegetation_state,
                 canopy_forcing.forcing(),
                 &tile.vegetation_tile_id,
+                tile.surface_vis_albedo,
+                tile.surface_nir_albedo,
                 lane.production_lane_index,
                 lane.production_lane_id,
                 soil_adapter,
@@ -407,10 +1068,18 @@ pub fn project_v8_runtime_inputs(
                         .soil_thermal_configuration
                         .owner_id
                         .clone(),
+                    vegetation_owner_id: vegetation_owner_id.clone(),
+                    biogeochemistry_owner_id: biogeochemistry_owner_id.clone(),
                     configuration_sha256: lse_configuration.configuration_sha256.clone(),
                     beginning_lse_state_sha256: lse_state.state_sha256.clone(),
                     beginning_hydrology_snapshot_sha256: hydrology_snapshot_sha256.clone(),
                     beginning_soil_thermal_state_sha256: soil_thermal.state_sha256.clone(),
+                    beginning_vegetation_state_sha256: Sha256Digest::try_new(
+                        vegetation_state.state_sha256.clone(),
+                    )
+                    .map_err(|_| V8InputProjectionError::Identity("vegetation state digest"))?,
+                    beginning_biogeochemistry_state_sha256: beginning_biogeochemistry_state_sha256
+                        .clone(),
                     ofe_id: ofe.ofe_id.clone(),
                     tile_id: tile.tile_id.clone(),
                     surface_id: surface_record.key.surface_id.clone(),
@@ -524,6 +1193,8 @@ fn project_column(
     state: &V8CoupledOwnedState,
     forcing: &SnowFreeForcing,
     tile_id: &TileId,
+    surface_vis_albedo: f64,
+    surface_nir_albedo: f64,
     lane_index: usize,
     lane_id: u32,
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
@@ -559,7 +1230,7 @@ fn project_column(
         RadiationBand::Visible,
         IncidentComponent::Direct,
         forcing.solar_zenith_cosine,
-        forcing.ground_albedo_vis,
+        surface_vis_albedo,
         forcing.direct_par_w_m2,
     )?;
     let visible_diffuse = solve_mixed_column(
@@ -567,7 +1238,7 @@ fn project_column(
         RadiationBand::Visible,
         IncidentComponent::Diffuse,
         forcing.solar_zenith_cosine,
-        forcing.ground_albedo_vis,
+        surface_vis_albedo,
         forcing.diffuse_par_w_m2,
     )?;
     let near_infrared_direct = solve_mixed_column(
@@ -575,7 +1246,7 @@ fn project_column(
         RadiationBand::NearInfrared,
         IncidentComponent::Direct,
         forcing.solar_zenith_cosine,
-        forcing.ground_albedo_nir,
+        surface_nir_albedo,
         forcing.direct_nir_w_m2,
     )?;
     let near_infrared_diffuse = solve_mixed_column(
@@ -583,7 +1254,7 @@ fn project_column(
         RadiationBand::NearInfrared,
         IncidentComponent::Diffuse,
         forcing.solar_zenith_cosine,
-        forcing.ground_albedo_nir,
+        surface_nir_albedo,
         forcing.diffuse_nir_w_m2,
     )?;
     let forcing_by_layer = forcing
@@ -686,6 +1357,32 @@ fn mixed_layer(stratum: &StratumConfiguration, lai: f64, sai: f64, visible: bool
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn precipitation_parcel(
+        id: &str,
+        destination_tile: &str,
+        amount: f64,
+    ) -> openwepp_land_surface_energy::LiquidParcel {
+        openwepp_land_surface_energy::LiquidParcel {
+            parcel_kind: openwepp_land_surface_energy::LiquidParcelKind::Precipitation,
+            parcel_id: openwepp_land_surface_energy::ParcelId::try_new(id).expect("parcel"),
+            source_owner_id: ResourceOwnerId::try_new("meteorology").expect("owner"),
+            source_ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+            source_tile_id: TileId::try_new("atmosphere").expect("tile"),
+            destination_ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+            destination_tile_id: TileId::try_new(destination_tile).expect("tile"),
+            start_s: 0.0,
+            end_s: 1_800.0,
+            amount_kg_m2_destination_tile_ground: amount,
+            temperature_provider:
+                openwepp_land_surface_energy::LiquidTemperatureProvider::HarderPomeroyHourly,
+            temperature_k: Some(280.0),
+            specific_liquid_enthalpy_j_kg: Some(28_770.0),
+            source_state_sha256: Some(
+                Sha256Digest::try_new("e".repeat(64)).expect("source digest"),
+            ),
+        }
+    }
 
     fn vegetation_forcing() -> SnowFreeForcing {
         SnowFreeForcing {
@@ -803,5 +1500,55 @@ mod tests {
             *field = f64::from_bits(field.to_bits() + 1);
             assert!(poison.validate_digest().is_err());
         }
+    }
+
+    #[test]
+    fn ground_albedo_join_rejects_one_bit_vis_and_nir_poisons() {
+        let vis = 0.12_f64;
+        let nir = 0.24_f64;
+        assert!(validate_ground_albedo(vis, nir, vis, nir).is_ok());
+        assert!(validate_ground_albedo(vis, nir, f64::from_bits(vis.to_bits() + 1), nir).is_err());
+        assert!(validate_ground_albedo(vis, nir, vis, f64::from_bits(nir.to_bits() + 1)).is_err());
+    }
+
+    #[test]
+    fn shared_stratum_component_identity_is_tile_qualified() {
+        let occupancy = |tile: &str| OccupancyId {
+            stratum_id: openwepp_kernel_contract::StratumId::try_new("shared").expect("stratum"),
+            tile_id: TileId::try_new(tile).expect("tile"),
+        };
+        let left = tile_qualified_component_id(&occupancy("left")).expect("left component");
+        let right = tile_qualified_component_id(&occupancy("right")).expect("right component");
+        assert_ne!(left, right);
+        assert_eq!(left.as_str(), "shared::left");
+        assert_eq!(right.as_str(), "shared::right");
+    }
+
+    #[test]
+    fn covered_precipitation_join_rejects_missing_extra_wrong_destination_and_one_bit() {
+        let ofe = OfeId::try_new("ofe-1").expect("OFE");
+        let forest = TileId::try_new("forest").expect("tile");
+        let mut forcing = lse_forcing();
+        let rain = 0.25_f64;
+
+        assert!(validate_covered_precipitation_join(&forcing, &ofe, &forest, rain).is_err());
+        forcing.precipitation_parcels = vec![precipitation_parcel("rain-1", "forest", rain)];
+        assert!(validate_covered_precipitation_join(&forcing, &ofe, &forest, rain).is_ok());
+
+        assert!(
+            validate_covered_precipitation_join(
+                &forcing,
+                &ofe,
+                &forest,
+                f64::from_bits(rain.to_bits() + 1),
+            )
+            .is_err()
+        );
+        forcing
+            .precipitation_parcels
+            .push(precipitation_parcel("rain-2", "forest", 0.01));
+        assert!(validate_covered_precipitation_join(&forcing, &ofe, &forest, rain).is_err());
+        forcing.precipitation_parcels = vec![precipitation_parcel("rain-1", "open", rain)];
+        assert!(validate_covered_precipitation_join(&forcing, &ofe, &forest, rain).is_err());
     }
 }

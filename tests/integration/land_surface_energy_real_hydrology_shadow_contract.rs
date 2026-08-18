@@ -47,8 +47,6 @@ mod finalization_test_support;
 #[path = "land_surface_energy_real_hydrology_shadow_contract/sealed_receiver_context_tests.rs"]
 mod sealed_receiver_context_tests;
 use finalization_test_support::finalization_expectations;
-#[path = "land_surface_energy_real_hydrology_shadow_contract/covered_forest_tests.rs"]
-mod covered_forest_tests;
 #[path = "land_surface_energy_real_hydrology_shadow_contract/source_binding_tests.rs"]
 mod source_binding_tests;
 #[path = "land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs"]
@@ -354,10 +352,16 @@ fn surface_potential_phase_with_snapshot(
             hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology")
                 .expect("hydrology owner"),
             soil_thermal_owner_id: ResourceOwnerId::try_new("soil-thermal").expect("soil owner"),
+            vegetation_owner_id: ResourceOwnerId::try_new("vegetation-v8")
+                .expect("vegetation owner"),
+            biogeochemistry_owner_id: ResourceOwnerId::try_new("biogeochemistry")
+                .expect("biogeochemistry owner"),
             configuration_sha256: digest('1'),
             beginning_lse_state_sha256: digest('2'),
             beginning_hydrology_snapshot_sha256,
             beginning_soil_thermal_state_sha256: digest('4'),
+            beginning_vegetation_state_sha256: digest('5'),
+            beginning_biogeochemistry_state_sha256: digest('6'),
             ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
             tile_id: TileId::try_new("open").expect("tile"),
             surface_id: SurfaceId::try_new("surface:ofe-1:open").expect("surface"),
@@ -2744,9 +2748,10 @@ fn rust_sources_below(path: &Path, sources: &mut Vec<std::path::PathBuf>) {
 #[test]
 fn lse_shadow_has_no_runner_or_production_dispatch_path() {
     let mut sources = Vec::new();
-    rust_sources_below(Path::new("crates/openwepp-runner/src"), &mut sources);
+    let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    rust_sources_below(&workspace.join("crates/openwepp-runner/src"), &mut sources);
     rust_sources_below(
-        Path::new("crates/openwepp-hillslope-orchestrator/src/direct_runtime"),
+        &workspace.join("crates/openwepp-hillslope-orchestrator/src/direct_runtime"),
         &mut sources,
     );
     for path in sources {

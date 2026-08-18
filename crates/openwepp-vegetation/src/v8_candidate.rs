@@ -120,7 +120,7 @@ pub struct ValidatedV8FinalStatePass {
 
 impl ValidatedV8FinalStatePass {
     pub fn try_new(
-        bindings: Vec<V8ComponentOccupancyBinding>,
+        bindings: &[V8ComponentOccupancyBinding],
         tiles: Vec<V8FinalTileReceipt>,
         configuration: &VegetationConfiguration,
         beginning: &V8CoupledOwnedState,
@@ -135,9 +135,8 @@ impl ValidatedV8FinalStatePass {
                 .checked_add(1)
                 .ok_or_else(|| VegetationError::Receipt("V8 transaction overflow".into()))?,
         );
+        let binding_map = validate_v8_component_bindings(bindings, configuration)?;
         let expected_occupancies = configuration.expected_occupancies();
-        let binding_map =
-            validate_component_bindings(bindings, configuration, &expected_occupancies)?;
         if tiles
             .windows(2)
             .any(|pair| pair[0].tile_id >= pair[1].tile_id)
@@ -230,11 +229,14 @@ impl ValidatedV8FinalStatePass {
     }
 }
 
-fn validate_component_bindings(
-    bindings: Vec<V8ComponentOccupancyBinding>,
+/// Validate the sole canonical component-to-occupancy binding contract used by
+/// both prephysics projection and final V8 receipt construction.
+pub fn validate_v8_component_bindings(
+    bindings: &[V8ComponentOccupancyBinding],
     configuration: &VegetationConfiguration,
-    expected_occupancies: &BTreeSet<OccupancyId>,
 ) -> Result<BTreeMap<V8LseComponentId, OccupancyId>, VegetationError> {
+    configuration.validate_v8()?;
+    let expected_occupancies = configuration.expected_occupancies();
     let configured_ranks = configuration
         .strata
         .iter()
@@ -254,16 +256,16 @@ fn validate_component_bindings(
             ));
         }
         if binding_map
-            .insert(binding.component_id, binding.occupancy_id.clone())
+            .insert(binding.component_id.clone(), binding.occupancy_id.clone())
             .is_some()
-            || !bound_occupancies.insert(binding.occupancy_id)
+            || !bound_occupancies.insert(binding.occupancy_id.clone())
         {
             return Err(VegetationError::Receipt(
                 "V8 component/occupancy mapping is not bijective".into(),
             ));
         }
     }
-    if bound_occupancies != *expected_occupancies {
+    if bound_occupancies != expected_occupancies {
         return Err(VegetationError::Receipt(
             "V8 component/occupancy mapping is incomplete".into(),
         ));
@@ -809,7 +811,7 @@ mod tests {
         let (configuration, beginning, potential, capped, persistent, bindings, tiles) = setup();
         let before = serde_json::to_vec(&beginning).expect("beginning bytes");
         let receipts =
-            ValidatedV8FinalStatePass::try_new(bindings, tiles, &configuration, &beginning)
+            ValidatedV8FinalStatePass::try_new(&bindings, tiles, &configuration, &beginning)
                 .expect("final receipts");
         let candidate = construct_uncommitted_v8_vegetation_candidate(
             &configuration,
@@ -852,7 +854,7 @@ mod tests {
         let (configuration, beginning, _, _, _, mut bindings, tiles) = setup();
         bindings.push(bindings[0].clone());
         assert!(matches!(
-            ValidatedV8FinalStatePass::try_new(bindings, tiles, &configuration, &beginning),
+            ValidatedV8FinalStatePass::try_new(&bindings, tiles, &configuration, &beginning),
             Err(VegetationError::Receipt(_))
         ));
     }
@@ -865,7 +867,12 @@ mod tests {
             .checked_add(1)
             .expect("fixture rank increment");
         assert!(matches!(
-            ValidatedV8FinalStatePass::try_new(bindings, tiles, &configuration, &beginning),
+            validate_v8_component_bindings(&bindings, &configuration),
+            Err(VegetationError::Receipt(message))
+                if message == "V8 component/occupancy vertical-rank mismatch"
+        ));
+        assert!(matches!(
+            ValidatedV8FinalStatePass::try_new(&bindings, tiles, &configuration, &beginning),
             Err(VegetationError::Receipt(message))
                 if message == "V8 component/occupancy vertical-rank mismatch"
         ));
@@ -880,7 +887,7 @@ mod tests {
             .carbon
             .sun_gross_assimilation_umol_co2_m2_leaf_s += 1.0;
         let receipts =
-            ValidatedV8FinalStatePass::try_new(bindings, tiles, &configuration, &beginning)
+            ValidatedV8FinalStatePass::try_new(&bindings, tiles, &configuration, &beginning)
                 .expect("structurally valid final receipt");
         assert!(matches!(
             construct_uncommitted_v8_vegetation_candidate(

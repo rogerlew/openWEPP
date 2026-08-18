@@ -1,0 +1,806 @@
+label=gate_cargo_nextest
+command=env TMPDIR=/tmp/ow-lse-v8 cargo nextest run --workspace --profile full
+env_TMPDIR=/tmp/ow-lse-v8
+env_OPENWEPP_TASK_ID=child3-20260817T233050Z
+start=2026-08-17T23:46:05Z
+start_ns=1787010365658797279
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-20260817T233050Z
+  scratch: /tmp/openwepp-roger-child3-20260817T233050Z
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openWEPP/crates/openwepp-vegetation)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.73s
+────────────
+ Nextest run ID 0d23e947-ec06-4eac-a6f5-5e1c4fc29aeb with nextest profile: full
+    Starting 2990 tests across 221 binaries (33 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        FAIL [   4.209s] (  63/2990) openwepp::assurance_v2_normalization_contract apply_rebinds_complete_graph_builds_and_is_idempotent
+  stdout ───
+
+    running 1 test
+    test apply_rebinds_complete_graph_builds_and_is_idempotent ... FAILED
+
+    failures:
+
+    failures:
+        apply_rebinds_complete_graph_builds_and_is_idempotent
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 4.20s
+
+  stderr ───
+
+    thread 'apply_rebinds_complete_graph_builds_and_is_idempotent' (531757) panicked at tests/integration/assurance_v2_normalization_contract.rs:62:10:
+    apply normalization transaction: Io { path: "uk2us", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.163s] (  64/2990) openwepp::assurance_v2_normalization_contract current_report_is_american_english_and_check_is_read_only
+  stdout ───
+
+    running 1 test
+    test current_report_is_american_english_and_check_is_read_only ... FAILED
+
+    failures:
+
+    failures:
+        current_report_is_american_english_and_check_is_read_only
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.16s
+
+  stderr ───
+
+    thread 'current_report_is_american_english_and_check_is_read_only' (531762) panicked at tests/integration/assurance_v2_normalization_contract.rs:28:10:
+    current production DRAFT is normalized: Io { path: "uk2us", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   4.527s] (  65/2990) openwepp::assurance_v2_normalization_contract check_detects_converter_diff_without_writing
+  stdout ───
+
+    running 1 test
+    test check_detects_converter_diff_without_writing ... FAILED
+
+    failures:
+
+    failures:
+        check_detects_converter_diff_without_writing
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 4.52s
+
+  stderr ───
+
+    thread 'check_detects_converter_diff_without_writing' (531759) panicked at tests/integration/assurance_v2_normalization_contract.rs:45:5:
+    assertion failed: matches!(error, AssuranceError::Drift(_))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   8.408s] (  69/2990) openwepp::assurance_v2_normalization_contract equivalent_inputs_emit_identical_receipts
+  stdout ───
+
+    running 1 test
+    test equivalent_inputs_emit_identical_receipts ... FAILED
+
+    failures:
+
+    failures:
+        equivalent_inputs_emit_identical_receipts
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 8.40s
+
+  stderr ───
+
+    thread 'equivalent_inputs_emit_identical_receipts' (531765) panicked at tests/integration/assurance_v2_normalization_contract.rs:128:10:
+    called `Result::unwrap()` on an `Err` value: Io { path: "uk2us", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract principal_and_lifecycle_checks_recalculate_identical_candidates
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+        FAIL [   0.266s] ( 246/2990) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+  stdout ───
+
+    running 1 test
+    test cqr_quality_evidence_self_test_passes ... FAILED
+
+    failures:
+
+    failures:
+        cqr_quality_evidence_self_test_passes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.26s
+
+  stderr ───
+
+    thread 'cqr_quality_evidence_self_test_passes' (537657) panicked at tests/integration/cqr_quality_evidence_handoff_contract.rs:31:5:
+    stdout:
+
+    stderr:
+    Traceback (most recent call last):
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1167, in <module>
+        raise SystemExit(main())
+                         ^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1160, in main
+        return args.function(args)
+               ^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1151, in <lambda>
+        test.set_defaults(function=lambda _args: self_test())
+                                                 ^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 953, in self_test
+        "toolchain": quality.identity_versions(repo),
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 315, in identity_versions
+        "llvm_cov": tool_output(["cargo", "llvm-cov", "--version"], repo),
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 143, in tool_output
+        return run(arguments, cwd=repo).strip()
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 119, in run
+        raise QualityError(
+    quality_observatory_self_test.QualityError: command failed (101): cargo llvm-cov --version
+    error: no such command: `llvm-cov`
+
+    help: view all installed commands with `cargo --list`
+    help: find a package to install `llvm-cov` with `cargo search cargo-llvm-cov`
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.127s] ( 340/2990) openwepp::hphys0298_paired_lineage_partition_contract hphys0298_harness_rejects_historical_hrsnow_water_equiv_pairing
+  stdout ───
+
+    running 1 test
+    test hphys0298_harness_rejects_historical_hrsnow_water_equiv_pairing ... FAILED
+
+    failures:
+
+    failures:
+        hphys0298_harness_rejects_historical_hrsnow_water_equiv_pairing
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.12s
+
+  stderr ───
+
+    thread 'hphys0298_harness_rejects_historical_hrsnow_water_equiv_pairing' (537822) panicked at tests/integration/hphys0298_paired_lineage_partition_contract.rs:181:5:
+    unit guard stderr must point to the bad water-equivalent field and corrected HPHYS0299 depth surface; stderr: Traceback (most recent call last):
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0298-paired-snow-rm-lineage-partition-closure-001/artifacts/hphys0298_paired_lineage_partition.py", line 117, in <module>
+        HPHYS0297 = load_module(HPHYS0297_SCRIPT, "hphys0297_defect_ledger")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0298-paired-snow-rm-lineage-partition-closure-001/artifacts/hphys0298_paired_lineage_partition.py", line 97, in load_module
+        spec.loader.exec_module(module)
+      File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+      File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0297-snow-rm-defect-ledger-reconstruction-closure-001/artifacts/hphys0297_defect_ledger.py", line 49, in <module>
+        HPHYS0296 = load_hphys0296_module()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0297-snow-rm-defect-ledger-reconstruction-closure-001/artifacts/hphys0297_defect_ledger.py", line 45, in load_hphys0296_module
+        spec.loader.exec_module(module)
+      File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+      File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0296-snow-rm-producer-acceptance-authority-closure-001/artifacts/hphys0296_diagnostics.py", line 61, in <module>
+        HPHYS0295 = load_hphys0295_module()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0296-snow-rm-producer-acceptance-authority-closure-001/artifacts/hphys0296_diagnostics.py", line 57, in load_hphys0295_module
+        spec.loader.exec_module(module)
+      File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+      File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0295-cumulative-storage-budget-ownership-closure-001/artifacts/hphys0295_diagnostics.py", line 62, in <module>
+        HPHYS0291 = load_hphys0291_module()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0295-cumulative-storage-budget-ownership-closure-001/artifacts/hphys0295_diagnostics.py", line 58, in load_hphys0291_module
+        spec.loader.exec_module(module)
+      File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+      File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0291-snow-publication-lifecycle-partition-localization-closure-001/artifacts/hphys0291_diagnostics.py", line 32, in <module>
+        HPHYS0265 = load_hphys0265_module()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0291-snow-publication-lifecycle-partition-localization-closure-001/artifacts/hphys0291_diagnostics.py", line 28, in load_hphys0265_module
+        spec.loader.exec_module(module)
+      File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+      File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+      File "/workdir/openWEPP/docs/work-packages/20260603-hphys0265-longer-season-ep-divergence-localization-closure-001/artifacts/hphys0265_diagnostics.py", line 18, in <module>
+        import pandas as pd
+    ModuleNotFoundError: No module named 'pandas'
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (1223/2990) openwepp::surface_liquid_hydrology_custody_authority_contract package_preserves_hold_and_preimplementation_prohibition
+  stdout ───
+
+    running 1 test
+    test package_preserves_hold_and_preimplementation_prohibition ... FAILED
+
+    failures:
+
+    failures:
+        package_preserves_hold_and_preimplementation_prohibition
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'package_preserves_hold_and_preimplementation_prohibition' (539884) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:17:53:
+    read docs/work-packages/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001/prompts/active/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001_kickoff_agent_prompt.md: No such file or directory (os error 2)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.008s] (1253/2990) openwepp::vegetation_boundary_authority_contract v5_capped_pass_authority_is_digest_bound_and_v1_through_v4_are_immutable
+  stdout ───
+
+    running 1 test
+    test v5_capped_pass_authority_is_digest_bound_and_v1_through_v4_are_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v5_capped_pass_authority_is_digest_bound_and_v1_through_v4_are_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'v5_capped_pass_authority_is_digest_bound_and_v1_through_v4_are_immutable' (539972) panicked at tests/integration/vegetation_boundary_authority_contract.rs:1643:5:
+    assertion `left == right` failed
+      left: "51e72707a9d1074af71b00459922873a97c81d7a7cede3297331175c58c52504"
+     right: "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.036s] (1257/2990) openwepp::vegetation_boundary_authority_contract v6_diagnostic_portability_authority_is_digest_bound_and_v1_through_v5_are_immutable
+  stdout ───
+
+    running 1 test
+    test v6_diagnostic_portability_authority_is_digest_bound_and_v1_through_v5_are_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v6_diagnostic_portability_authority_is_digest_bound_and_v1_through_v5_are_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'v6_diagnostic_portability_authority_is_digest_bound_and_v1_through_v5_are_immutable' (539986) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2033:9:
+    assertion `left == right` failed: historical model bytes changed: docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_definition.json
+      left: "51e72707a9d1074af71b00459922873a97c81d7a7cede3297331175c58c52504"
+     right: "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.027s] (1259/2990) openwepp::vegetation_boundary_authority_contract v7_storage_transfer_authority_is_digest_bound_and_predecessors_are_immutable
+  stdout ───
+
+    running 1 test
+    test v7_storage_transfer_authority_is_digest_bound_and_predecessors_are_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v7_storage_transfer_authority_is_digest_bound_and_predecessors_are_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'v7_storage_transfer_authority_is_digest_bound_and_predecessors_are_immutable' (540001) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2214:9:
+    assertion `left == right` failed: historical model bytes changed: docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_definition.json
+      left: "51e72707a9d1074af71b00459922873a97c81d7a7cede3297331175c58c52504"
+     right: "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   5.246s] (1346/2990) openwepp::vegetation_boundary_authority_contract v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated
+  stdout ───
+
+    running 1 test
+    test v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated ... FAILED
+
+    failures:
+
+    failures:
+        v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 5.24s
+
+  stderr ───
+
+    thread 'v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated' (539950) panicked at tests/integration/vegetation_boundary_authority_contract.rs:875:5:
+    assertion `left == right` failed
+      left: "7e64d63729b538ff5721ded768eb62be4be195a7903464a2ac7a3ab2083bff00"
+     right: "1210e41f13aeffd2e099f9c812b8c5da6109ee9e23c6f51f045af9684a7ae109"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [  25.937s] (2409/2990) openwepp::vegetation_boundary_authority_contract v5_independent_oracle_regenerates_exact_frozen_bytes
+  stdout ───
+
+    running 1 test
+    test v5_independent_oracle_regenerates_exact_frozen_bytes ... FAILED
+
+    failures:
+
+    failures:
+        v5_independent_oracle_regenerates_exact_frozen_bytes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 25.93s
+
+  stderr ───
+
+    thread 'v5_independent_oracle_regenerates_exact_frozen_bytes' (539982) panicked at tests/integration/vegetation_boundary_authority_contract.rs:1737:5:
+    assertion `left == right` failed
+      left: "327b349cac6dcb4793c61f2d211f20c0140bd27cbc45f180b0f49816accc1eb2"
+     right: "6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.120s] (2734/2990) openwepp-vegetation occupancy_solver::v5_capped_fixture_tests::fully_authorized_reduces_to_v3_value_with_exact_recomputed_branches
+  stdout ───
+
+    running 1 test
+    test occupancy_solver::v5_capped_fixture_tests::fully_authorized_reduces_to_v3_value_with_exact_recomputed_branches ... FAILED
+
+    failures:
+
+    failures:
+        occupancy_solver::v5_capped_fixture_tests::fully_authorized_reduces_to_v3_value_with_exact_recomputed_branches
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 0.12s
+
+  stderr ───
+
+    thread 'occupancy_solver::v5_capped_fixture_tests::fully_authorized_reduces_to_v3_value_with_exact_recomputed_branches' (543510) panicked at crates/openwepp-vegetation/src/occupancy_solver/v5_capped_fixture_tests.rs:793:5:
+    assertion `left == right` failed
+      left: [SoilLayerId("soil-1"), SoilLayerId("soil-2"), SoilLayerId("soil-dry"), SoilLayerId("soil-frozen"), SoilLayerId("soil-zero-root")]
+     right: [SoilLayerId("soil-dry"), SoilLayerId("soil-frozen"), SoilLayerId("soil-zero-root")]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.156s] (2736/2990) openwepp-vegetation occupancy_solver::v5_capped_fixture_tests::v6_runtime_record_rejects_poison_at_each_exact_firewall_seam
+  stdout ───
+
+    running 1 test
+    test occupancy_solver::v5_capped_fixture_tests::v6_runtime_record_rejects_poison_at_each_exact_firewall_seam ... FAILED
+
+    failures:
+
+    failures:
+        occupancy_solver::v5_capped_fixture_tests::v6_runtime_record_rejects_poison_at_each_exact_firewall_seam
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 0.15s
+
+  stderr ───
+
+    thread 'occupancy_solver::v5_capped_fixture_tests::v6_runtime_record_rejects_poison_at_each_exact_firewall_seam' (543536) panicked at crates/openwepp-vegetation/src/occupancy_solver/v5_capped_fixture_tests.rs:436:5:
+    assertion `left == right` failed
+      left: Number(3925.853296952497)
+     right: Number(3925.8545901008915)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.286s] (2737/2990) openwepp-vegetation occupancy_solver::v5_capped_fixture_tests::zero_caps_execute_twenty_halving_exhaustion_with_complete_failed_iterate
+  stdout ───
+
+    running 1 test
+    test occupancy_solver::v5_capped_fixture_tests::zero_caps_execute_twenty_halving_exhaustion_with_complete_failed_iterate ... FAILED
+
+    failures:
+
+    failures:
+        occupancy_solver::v5_capped_fixture_tests::zero_caps_execute_twenty_halving_exhaustion_with_complete_failed_iterate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 0.28s
+
+  stderr ───
+
+    thread 'occupancy_solver::v5_capped_fixture_tests::zero_caps_execute_twenty_halving_exhaustion_with_complete_failed_iterate' (543563) panicked at crates/openwepp-vegetation/src/occupancy_solver/v5_capped_fixture_tests.rs:436:5:
+    assertion `left == right` failed
+      left: Number(3925.853296952497)
+     right: Number(3925.8545901008915)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.835s] (2760/2990) openwepp-vegetation occupancy_solver::v5_capped_fixture_tests::valid_authorization_demand_branch_sweep_executes_every_frozen_case
+  stdout ───
+
+    running 1 test
+    test occupancy_solver::v5_capped_fixture_tests::valid_authorization_demand_branch_sweep_executes_every_frozen_case ... FAILED
+
+    failures:
+
+    failures:
+        occupancy_solver::v5_capped_fixture_tests::valid_authorization_demand_branch_sweep_executes_every_frozen_case
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 0.83s
+
+  stderr ───
+
+    thread 'occupancy_solver::v5_capped_fixture_tests::valid_authorization_demand_branch_sweep_executes_every_frozen_case' (543558) panicked at crates/openwepp-vegetation/src/occupancy_solver/v5_capped_fixture_tests.rs:853:9:
+    assertion `left == right` failed
+      left: ["authorization_active_or_tie", "authorization_active_or_tie"]
+     right: ["constitutive_law", "constitutive_law"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [ 659.152s] 2990 tests run: 2974 passed (7 slow), 16 failed, 33 skipped
+        FAIL [   4.209s] (  63/2990) openwepp::assurance_v2_normalization_contract apply_rebinds_complete_graph_builds_and_is_idempotent
+  stdout ───
+
+    running 1 test
+    test apply_rebinds_complete_graph_builds_and_is_idempotent ... FAILED
+
+    failures:
+
+    failures:
+        apply_rebinds_complete_graph_builds_and_is_idempotent
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 4.20s
+
+  stderr ───
+
+    thread 'apply_rebinds_complete_graph_builds_and_is_idempotent' (531757) panicked at tests/integration/assurance_v2_normalization_contract.rs:62:10:
+    apply normalization transaction: Io { path: "uk2us", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.163s] (  64/2990) openwepp::assurance_v2_normalization_contract current_report_is_american_english_and_check_is_read_only
+  stdout ───
+
+    running 1 test
+    test current_report_is_american_english_and_check_is_read_only ... FAILED
+
+    failures:
+
+    failures:
+        current_report_is_american_english_and_check_is_read_only
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.16s
+
+  stderr ───
+
+    thread 'current_report_is_american_english_and_check_is_read_only' (531762) panicked at tests/integration/assurance_v2_normalization_contract.rs:28:10:
+    current production DRAFT is normalized: Io { path: "uk2us", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   4.527s] (  65/2990) openwepp::assurance_v2_normalization_contract check_detects_converter_diff_without_writing
+  stdout ───
+
+    running 1 test
+    test check_detects_converter_diff_without_writing ... FAILED
+
+    failures:
+
+    failures:
+        check_detects_converter_diff_without_writing
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 4.52s
+
+  stderr ───
+
+    thread 'check_detects_converter_diff_without_writing' (531759) panicked at tests/integration/assurance_v2_normalization_contract.rs:45:5:
+    assertion failed: matches!(error, AssuranceError::Drift(_))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   8.408s] (  69/2990) openwepp::assurance_v2_normalization_contract equivalent_inputs_emit_identical_receipts
+  stdout ───
+
+    running 1 test
+    test equivalent_inputs_emit_identical_receipts ... FAILED
+
+    failures:
+
+    failures:
+        equivalent_inputs_emit_identical_receipts
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 8.40s
+
+  stderr ───
+
+    thread 'equivalent_inputs_emit_identical_receipts' (531765) panicked at tests/integration/assurance_v2_normalization_contract.rs:128:10:
+    called `Result::unwrap()` on an `Err` value: Io { path: "uk2us", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.266s] ( 246/2990) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+  stdout ───
+
+    running 1 test
+    test cqr_quality_evidence_self_test_passes ... FAILED
+
+    failures:
+
+    failures:
+        cqr_quality_evidence_self_test_passes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.26s
+
+  stderr ───
+
+    thread 'cqr_quality_evidence_self_test_passes' (537657) panicked at tests/integration/cqr_quality_evidence_handoff_contract.rs:31:5:
+    stdout:
+
+    stderr:
+    Traceback (most recent call last):
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1167, in <module>
+        raise SystemExit(main())
+                         ^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1160, in main
+        return args.function(args)
+               ^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 1151, in <lambda>
+        test.set_defaults(function=lambda _args: self_test())
+                                                 ^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/cqr_quality_evidence.py", line 953, in self_test
+        "toolchain": quality.identity_versions(repo),
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 315, in identity_versions
+        "llvm_cov": tool_output(["cargo", "llvm-cov", "--version"], repo),
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 143, in tool_output
+        return run(arguments, cwd=repo).strip()
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/tools/local_ci/quality_observatory.py", line 119, in run
+        raise QualityError(
+    quality_observatory_self_test.QualityError: command failed (101): cargo llvm-cov --version
+    error: no such command: `llvm-cov`
+
+    help: view all installed commands with `cargo --list`
+    help: find a package to install `llvm-cov` with `cargo search cargo-llvm-cov`
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.127s] ( 340/2990) openwepp::hphys0298_paired_lineage_partition_contract hphys0298_harness_rejects_historical_hrsnow_water_equiv_pairing
+  stdout ───
+
+    running 1 test
+    test hphys0298_harness_rejects_historical_hrsnow_water_equiv_pairing ... FAILED
+
+    failures:
+
+    failures:
+        hphys0298_harness_rejects_historical_hrsnow_water_equiv_pairing
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.12s
+
+  stderr ───
+
+    thread 'hphys0298_harness_rejects_historical_hrsnow_water_equiv_pairing' (537822) panicked at tests/integration/hphys0298_paired_lineage_partition_contract.rs:181:5:
+    unit guard stderr must point to the bad water-equivalent field and corrected HPHYS0299 depth surface; stderr: Traceback (most recent call last):
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0298-paired-snow-rm-lineage-partition-closure-001/artifacts/hphys0298_paired_lineage_partition.py", line 117, in <module>
+        HPHYS0297 = load_module(HPHYS0297_SCRIPT, "hphys0297_defect_ledger")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0298-paired-snow-rm-lineage-partition-closure-001/artifacts/hphys0298_paired_lineage_partition.py", line 97, in load_module
+        spec.loader.exec_module(module)
+      File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+      File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0297-snow-rm-defect-ledger-reconstruction-closure-001/artifacts/hphys0297_defect_ledger.py", line 49, in <module>
+        HPHYS0296 = load_hphys0296_module()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0297-snow-rm-defect-ledger-reconstruction-closure-001/artifacts/hphys0297_defect_ledger.py", line 45, in load_hphys0296_module
+        spec.loader.exec_module(module)
+      File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+      File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0296-snow-rm-producer-acceptance-authority-closure-001/artifacts/hphys0296_diagnostics.py", line 61, in <module>
+        HPHYS0295 = load_hphys0295_module()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0296-snow-rm-producer-acceptance-authority-closure-001/artifacts/hphys0296_diagnostics.py", line 57, in load_hphys0295_module
+        spec.loader.exec_module(module)
+      File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+      File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0295-cumulative-storage-budget-ownership-closure-001/artifacts/hphys0295_diagnostics.py", line 62, in <module>
+        HPHYS0291 = load_hphys0291_module()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0295-cumulative-storage-budget-ownership-closure-001/artifacts/hphys0295_diagnostics.py", line 58, in load_hphys0291_module
+        spec.loader.exec_module(module)
+      File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+      File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0291-snow-publication-lifecycle-partition-localization-closure-001/artifacts/hphys0291_diagnostics.py", line 32, in <module>
+        HPHYS0265 = load_hphys0265_module()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+      File "/workdir/openWEPP/docs/work-packages/20260605-hphys0291-snow-publication-lifecycle-partition-localization-closure-001/artifacts/hphys0291_diagnostics.py", line 28, in load_hphys0265_module
+        spec.loader.exec_module(module)
+      File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+      File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+      File "/workdir/openWEPP/docs/work-packages/20260603-hphys0265-longer-season-ep-divergence-localization-closure-001/artifacts/hphys0265_diagnostics.py", line 18, in <module>
+        import pandas as pd
+    ModuleNotFoundError: No module named 'pandas'
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (1223/2990) openwepp::surface_liquid_hydrology_custody_authority_contract package_preserves_hold_and_preimplementation_prohibition
+  stdout ───
+
+    running 1 test
+    test package_preserves_hold_and_preimplementation_prohibition ... FAILED
+
+    failures:
+
+    failures:
+        package_preserves_hold_and_preimplementation_prohibition
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'package_preserves_hold_and_preimplementation_prohibition' (539884) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:17:53:
+    read docs/work-packages/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001/prompts/active/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001_kickoff_agent_prompt.md: No such file or directory (os error 2)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.008s] (1253/2990) openwepp::vegetation_boundary_authority_contract v5_capped_pass_authority_is_digest_bound_and_v1_through_v4_are_immutable
+  stdout ───
+
+    running 1 test
+    test v5_capped_pass_authority_is_digest_bound_and_v1_through_v4_are_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v5_capped_pass_authority_is_digest_bound_and_v1_through_v4_are_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'v5_capped_pass_authority_is_digest_bound_and_v1_through_v4_are_immutable' (539972) panicked at tests/integration/vegetation_boundary_authority_contract.rs:1643:5:
+    assertion `left == right` failed
+      left: "51e72707a9d1074af71b00459922873a97c81d7a7cede3297331175c58c52504"
+     right: "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.036s] (1257/2990) openwepp::vegetation_boundary_authority_contract v6_diagnostic_portability_authority_is_digest_bound_and_v1_through_v5_are_immutable
+  stdout ───
+
+    running 1 test
+    test v6_diagnostic_portability_authority_is_digest_bound_and_v1_through_v5_are_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v6_diagnostic_portability_authority_is_digest_bound_and_v1_through_v5_are_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'v6_diagnostic_portability_authority_is_digest_bound_and_v1_through_v5_are_immutable' (539986) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2033:9:
+    assertion `left == right` failed: historical model bytes changed: docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_definition.json
+      left: "51e72707a9d1074af71b00459922873a97c81d7a7cede3297331175c58c52504"
+     right: "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.027s] (1259/2990) openwepp::vegetation_boundary_authority_contract v7_storage_transfer_authority_is_digest_bound_and_predecessors_are_immutable
+  stdout ───
+
+    running 1 test
+    test v7_storage_transfer_authority_is_digest_bound_and_predecessors_are_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v7_storage_transfer_authority_is_digest_bound_and_predecessors_are_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'v7_storage_transfer_authority_is_digest_bound_and_predecessors_are_immutable' (540001) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2214:9:
+    assertion `left == right` failed: historical model bytes changed: docs/work-packages/20260812-c3-woody-potential-pass-authority-001/artifacts/openwepp_c3_woody_v5_definition.json
+      left: "51e72707a9d1074af71b00459922873a97c81d7a7cede3297331175c58c52504"
+     right: "0ee6a50d5f72da0b9344d8bf1b77674e95a66ab196edc068851bb419eb7b36f3"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   5.246s] (1346/2990) openwepp::vegetation_boundary_authority_contract v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated
+  stdout ───
+
+    running 1 test
+    test v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated ... FAILED
+
+    failures:
+
+    failures:
+        v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 5.24s
+
+  stderr ───
+
+    thread 'v3_independent_oracle_is_deterministic_and_fixture_is_not_rust_generated' (539950) panicked at tests/integration/vegetation_boundary_authority_contract.rs:875:5:
+    assertion `left == right` failed
+      left: "7e64d63729b538ff5721ded768eb62be4be195a7903464a2ac7a3ab2083bff00"
+     right: "1210e41f13aeffd2e099f9c812b8c5da6109ee9e23c6f51f045af9684a7ae109"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [  25.937s] (2409/2990) openwepp::vegetation_boundary_authority_contract v5_independent_oracle_regenerates_exact_frozen_bytes
+  stdout ───
+
+    running 1 test
+    test v5_independent_oracle_regenerates_exact_frozen_bytes ... FAILED
+
+    failures:
+
+    failures:
+        v5_independent_oracle_regenerates_exact_frozen_bytes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 25.93s
+
+  stderr ───
+
+    thread 'v5_independent_oracle_regenerates_exact_frozen_bytes' (539982) panicked at tests/integration/vegetation_boundary_authority_contract.rs:1737:5:
+    assertion `left == right` failed
+      left: "327b349cac6dcb4793c61f2d211f20c0140bd27cbc45f180b0f49816accc1eb2"
+     right: "6f5e9554fe7b91b6fcb76e777b027fbeafcf4c2873a6060bd158b6a578c37f6d"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.120s] (2734/2990) openwepp-vegetation occupancy_solver::v5_capped_fixture_tests::fully_authorized_reduces_to_v3_value_with_exact_recomputed_branches
+  stdout ───
+
+    running 1 test
+    test occupancy_solver::v5_capped_fixture_tests::fully_authorized_reduces_to_v3_value_with_exact_recomputed_branches ... FAILED
+
+    failures:
+
+    failures:
+        occupancy_solver::v5_capped_fixture_tests::fully_authorized_reduces_to_v3_value_with_exact_recomputed_branches
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 0.12s
+
+  stderr ───
+
+    thread 'occupancy_solver::v5_capped_fixture_tests::fully_authorized_reduces_to_v3_value_with_exact_recomputed_branches' (543510) panicked at crates/openwepp-vegetation/src/occupancy_solver/v5_capped_fixture_tests.rs:793:5:
+    assertion `left == right` failed
+      left: [SoilLayerId("soil-1"), SoilLayerId("soil-2"), SoilLayerId("soil-dry"), SoilLayerId("soil-frozen"), SoilLayerId("soil-zero-root")]
+     right: [SoilLayerId("soil-dry"), SoilLayerId("soil-frozen"), SoilLayerId("soil-zero-root")]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.156s] (2736/2990) openwepp-vegetation occupancy_solver::v5_capped_fixture_tests::v6_runtime_record_rejects_poison_at_each_exact_firewall_seam
+  stdout ───
+
+    running 1 test
+    test occupancy_solver::v5_capped_fixture_tests::v6_runtime_record_rejects_poison_at_each_exact_firewall_seam ... FAILED
+
+    failures:
+
+    failures:
+        occupancy_solver::v5_capped_fixture_tests::v6_runtime_record_rejects_poison_at_each_exact_firewall_seam
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 0.15s
+
+  stderr ───
+
+    thread 'occupancy_solver::v5_capped_fixture_tests::v6_runtime_record_rejects_poison_at_each_exact_firewall_seam' (543536) panicked at crates/openwepp-vegetation/src/occupancy_solver/v5_capped_fixture_tests.rs:436:5:
+    assertion `left == right` failed
+      left: Number(3925.853296952497)
+     right: Number(3925.8545901008915)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.286s] (2737/2990) openwepp-vegetation occupancy_solver::v5_capped_fixture_tests::zero_caps_execute_twenty_halving_exhaustion_with_complete_failed_iterate
+  stdout ───
+
+    running 1 test
+    test occupancy_solver::v5_capped_fixture_tests::zero_caps_execute_twenty_halving_exhaustion_with_complete_failed_iterate ... FAILED
+
+    failures:
+
+    failures:
+        occupancy_solver::v5_capped_fixture_tests::zero_caps_execute_twenty_halving_exhaustion_with_complete_failed_iterate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 0.28s
+
+  stderr ───
+
+    thread 'occupancy_solver::v5_capped_fixture_tests::zero_caps_execute_twenty_halving_exhaustion_with_complete_failed_iterate' (543563) panicked at crates/openwepp-vegetation/src/occupancy_solver/v5_capped_fixture_tests.rs:436:5:
+    assertion `left == right` failed
+      left: Number(3925.853296952497)
+     right: Number(3925.8545901008915)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.835s] (2760/2990) openwepp-vegetation occupancy_solver::v5_capped_fixture_tests::valid_authorization_demand_branch_sweep_executes_every_frozen_case
+  stdout ───
+
+    running 1 test
+    test occupancy_solver::v5_capped_fixture_tests::valid_authorization_demand_branch_sweep_executes_every_frozen_case ... FAILED
+
+    failures:
+
+    failures:
+        occupancy_solver::v5_capped_fixture_tests::valid_authorization_demand_branch_sweep_executes_every_frozen_case
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 0.83s
+
+  stderr ───
+
+    thread 'occupancy_solver::v5_capped_fixture_tests::valid_authorization_demand_branch_sweep_executes_every_frozen_case' (543558) panicked at crates/openwepp-vegetation/src/occupancy_solver/v5_capped_fixture_tests.rs:853:9:
+    assertion `left == right` failed
+      left: ["authorization_active_or_tie", "authorization_active_or_tie"]
+     right: ["constitutive_law", "constitutive_law"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

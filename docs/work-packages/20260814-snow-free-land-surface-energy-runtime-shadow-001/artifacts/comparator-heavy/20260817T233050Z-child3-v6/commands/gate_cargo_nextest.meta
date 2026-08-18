@@ -1,0 +1,12 @@
+{
+  "label": "gate_cargo_nextest",
+  "command": "cargo nextest run --workspace --profile full",
+  "status": "FAIL",
+  "exit_code": 100,
+  "start": "2026-08-17T23:46:05Z",
+  "end": "2026-08-17T23:57:12Z",
+  "duration_ms": 666535,
+  "env_OPENWEPP_TASK_ID": "child3-20260817T233050Z",
+  "env_TMPDIR": "/tmp/ow-lse-v8",
+  "note": "nextest failed with failing tests / missing optional Python module in environment-dependent fixture"
+}

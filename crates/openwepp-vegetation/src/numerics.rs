@@ -60,7 +60,7 @@ where
     }
     let mut fa = function(lower)?;
     let mut fb = function(upper)?;
-    let mut evaluations = 2;
+    let evaluations = 2;
     if !fa.is_finite() || !fb.is_finite() {
         return Err(VegetationError::Domain("Brent residual"));
     }
@@ -77,7 +77,7 @@ where
     let mut fc = fa;
     let mut d = upper - lower;
     let mut e = d;
-    for iteration in 1..=max_evaluations.saturating_sub(2) {
+    for (evaluations, iteration) in (2..).zip(1..=max_evaluations.saturating_sub(2)) {
         if fb.signum() == fc.signum() {
             c = lower;
             fc = fa;
@@ -140,7 +140,6 @@ where
             tolerance.copysign(midpoint)
         };
         fb = function(upper)?;
-        evaluations += 1;
         if !fb.is_finite() {
             return Err(VegetationError::Domain("Brent residual"));
         }

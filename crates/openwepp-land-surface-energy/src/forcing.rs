@@ -35,6 +35,9 @@ pub struct LiquidParcel {
     pub source_tile_id: TileId,
     pub destination_ofe_id: OfeId,
     pub destination_tile_id: TileId,
+    /// Exact half-open support within the enclosing forcing interval.
+    pub start_s: f64,
+    pub end_s: f64,
     pub amount_kg_m2_destination_tile_ground: f64,
     pub temperature_provider: LiquidTemperatureProvider,
     pub temperature_k: Option<f64>,
@@ -43,7 +46,17 @@ pub struct LiquidParcel {
 }
 
 impl LiquidParcel {
-    fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+    fn validate(&self, interval_s: f64) -> Result<(), LandSurfaceEnergyError> {
+        if !self.start_s.is_finite()
+            || !self.end_s.is_finite()
+            || self.start_s < 0.0
+            || self.end_s <= self.start_s
+            || self.end_s > interval_s
+        {
+            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "liquid parcel support outside forcing interval",
+            ));
+        }
         require_finite_nonnegative(
             self.amount_kg_m2_destination_tile_ground,
             "parcel.amount_kg_m2_destination_tile_ground",
@@ -175,7 +188,7 @@ impl LandSurfaceForcing {
                     "duplicate liquid parcel",
                 ));
             }
-            parcel.validate()?;
+            parcel.validate(self.interval_s)?;
         }
         if self
             .precipitation_parcels
@@ -211,5 +224,50 @@ impl LandSurfaceForcing {
         )?;
         *digest = serde_json::Value::String(String::new());
         canonical_digest(&value)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn zero_parcel(start_s: f64, end_s: f64) -> LiquidParcel {
+        LiquidParcel {
+            parcel_kind: LiquidParcelKind::RoutedRunon,
+            parcel_id: ParcelId::try_new("support-test").expect("parcel"),
+            source_owner_id: ResourceOwnerId::try_new("surface-owner").expect("owner"),
+            source_ofe_id: OfeId::try_new("source").expect("source OFE"),
+            source_tile_id: TileId::try_new("source-tile").expect("source tile"),
+            destination_ofe_id: OfeId::try_new("destination").expect("destination OFE"),
+            destination_tile_id: TileId::try_new("destination-tile").expect("destination tile"),
+            start_s,
+            end_s,
+            amount_kg_m2_destination_tile_ground: 0.0,
+            temperature_provider: LiquidTemperatureProvider::AcceptedUpstreamOutletParcel,
+            temperature_k: None,
+            specific_liquid_enthalpy_j_kg: None,
+            source_state_sha256: None,
+        }
+    }
+
+    #[test]
+    fn non_full_liquid_parcel_support_is_admitted_exactly() {
+        zero_parcel(240.0, 960.0)
+            .validate(1800.0)
+            .expect("non-full exact support");
+    }
+
+    #[test]
+    fn invalid_liquid_parcel_support_rejects() {
+        for (start_s, end_s) in [
+            (-1.0, 1.0),
+            (1.0, 1.0),
+            (2.0, 1.0),
+            (0.0, 1800.1),
+            (f64::NAN, 1.0),
+            (0.0, f64::INFINITY),
+        ] {
+            assert!(zero_parcel(start_s, end_s).validate(1800.0).is_err());
+        }
     }
 }

@@ -14,21 +14,31 @@ use openwepp_kernel_contract::{
     ResourceOwnerId, SoilLayerId, TileId, TransactionId, canonical_resource_amount_sum,
 };
 pub use openwepp_land_surface_energy::{
-    BandDirectionalFluxes, BareSoilParameters, BiochemicalConstants, ComponentId,
-    CondensationCredit, CoveredColumnInputs, CoveredOccupancyInputs, CoveredPotentialPhase,
-    FinalCoveredTileCandidate, GroundWaterKey, LandSurfaceEnergyError, LandSurfaceEnergyErrorClass,
-    LeafBiochemicalInputs, OfeId, OpenNeutralGeometry, OpenPotentialPhase, OpenSurfaceProblem,
-    OwnerKind, OwnerRollbackHash, PotentialWaterRequestBatch, RequestingComponent,
-    RootHydraulicLayer, RootRuntimeIdentity, RuntimeTileIdentity, Sha256Digest,
+    BandDirectionalFluxes, BareSoilParameters, BiochemicalConstants, CanopyReferenceGeometry,
+    ComponentId, CondensationCredit, CoveredColumnInputs, CoveredOccupancyInputs,
+    CoveredPotentialPhase, FinalCoveredTileCandidate, GroundWaterKey,
+    LandSurfaceEnergyConfiguration, LandSurfaceEnergyError, LandSurfaceEnergyErrorClass,
+    LandSurfaceEnergyState, LandSurfaceForcing, LeafBiochemicalInputs, LiquidParcel,
+    LiquidParcelKind, LiquidTemperatureProvider, NumericalConfiguration, OfeConfiguration, OfeId,
+    OpenNeutralGeometry, OpenPotentialPhase, OpenSurfaceProblem, OwnerConfigurationRef, OwnerKind,
+    OwnerRollbackHash, PotentialWaterRequestBatch, RequestingComponent, RootHydraulicLayer,
+    RootRuntimeIdentity, RuntimeTileIdentity, Sha256Digest, SoilInterfaceLayer,
     SoilThermalLayerCandidate, SoilThermalLayerSnapshot, SoilThermalNodeOperands,
     SoilThermalOfeSnapshot, SoilThermalSnapshot, SoilThermalTileCandidate, SourceId,
-    StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceId, SurfaceStorageBranch,
-    TileState, UnderCanopyGeometry, WaterAmount, WaterAuthorization, WaterAuthorizationReason,
-    WaterProtocol, WaterProtocolRow, WaterProtocolViolation, WaterSourceType, WaterUseOperands,
-    evaluate_open_surface, finalize_covered_phase, finalize_open_phase,
-    solve_covered_potential_phase, solve_open_potential_phase, validate_water_use,
+    StandGroundWaterAmountBasis, SurfaceClass, SurfaceClassKind, SurfaceConfiguration,
+    SurfaceHeatStorageMode, SurfaceId, SurfaceStorageBranch, TileConfiguration, TileState,
+    TurbulenceConfiguration, UnderCanopyGeometry, WaterAmount, WaterAuthorization,
+    WaterAuthorizationReason, WaterProtocol, WaterProtocolRow, WaterProtocolViolation,
+    WaterSourceType, WaterUseOperands, validate_water_use,
 };
-use openwepp_land_surface_energy::{OpenSurfaceSolveOutcome, WaterBranch, solve_open_surface};
+#[cfg(test)]
+use openwepp_land_surface_energy::{
+    OpenSurfaceSolveOutcome, WaterBranch, evaluate_open_surface, finalize_open_phase,
+    solve_open_potential_phase, solve_open_surface,
+};
+pub(crate) use openwepp_land_surface_energy::{
+    finalize_covered_phase, solve_covered_potential_phase,
+};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 
@@ -56,28 +66,22 @@ use crate::{
 mod covered_derived_ingress;
 mod covered_forest;
 mod covered_v8_owner;
-mod covered_v8_transaction;
 mod finalization_sealing;
 mod multi_tile_runtime;
+#[cfg(test)]
+#[path = "../../../../tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs"]
+mod raw_boundary_contract_tests;
 mod receiver_failure;
 mod receiver_preflight;
 mod receiver_validation;
+mod strict_v8_endpoint;
 mod unified_entry_preflight;
 mod v8_input_projection;
 mod v8_projection;
 mod v8_rollback;
-pub use covered_derived_ingress::CoveredIngressSchedule;
-pub use covered_forest::{
-    CoveredForestShadowResult, execute_covered_forest_shadow,
-    execute_covered_forest_shadow_derived_ingress,
-};
-pub use covered_v8_owner::{
-    CoveredV8OwnerEnvelopeError, UncommittedCoveredV8OwnerEnvelope,
-    construct_covered_v8_owner_envelope,
-};
-pub use covered_v8_transaction::{
-    CoveredV8TransactionError, construct_v8_beginning_trial, execute_covered_v8_transaction,
-};
+pub(super) use covered_derived_ingress::CoveredIngressSchedule;
+pub(crate) use covered_forest::CoveredForestShadowResult;
+pub use covered_v8_owner::{CoveredV8OwnerEnvelopeError, UncommittedCoveredV8OwnerEnvelope};
 use finalization_sealing::first_sealed_finalization_violation;
 use receiver_failure::canonical_receiver_failure;
 use receiver_validation::{
@@ -91,12 +95,9 @@ use receiver_validation::{
     validate_surface_production_binding, validate_surface_production_lane_domains,
     water_protocol_sha256, water_request_batch_sha256,
 };
-pub use v8_input_projection::{
-    V8CanopyForcingReceipt, V8InputProjectionError, V8ProjectedColumnRadiation,
-    V8ProjectedGroundInput, V8ProjectedOccupancyInput, V8ProjectedRootLayer,
-    V8ProjectedTileRuntimeInput, ValidatedV8RuntimeInputProjection, project_v8_runtime_inputs,
-};
-pub use v8_projection::{V8CoveredProjection, V8ProjectionError, project_covered_forest_v8_passes};
+pub use strict_v8_endpoint::{ExecuteV8LseRuntimeShadowError, execute_v8_lse_runtime_shadow};
+pub use v8_input_projection::{V8CanopyForcingReceipt, V8InputProjectionError};
+pub use v8_projection::V8ProjectionError;
 pub use v8_rollback::{
     V8RollbackError, V8RollbackInputs, V8RollbackOwnerBytes, V8RollbackOwnerKind,
     V8RollbackSnapshot,
@@ -865,7 +866,7 @@ fn compose_unified_beginning_hydrology_snapshot_sha256(
 
 /// Join one immutable LSE request batch to both actual water owners.
 #[allow(clippy::too_many_lines)]
-pub fn execute_unified_real_hydrology_shadow<F>(
+pub(crate) fn execute_unified_real_hydrology_shadow<F>(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
     receiver_expectations: &UnifiedReceiverExpectations,
@@ -2882,7 +2883,8 @@ pub struct OpenBareSoilShadowResult {
 
 /// Execute one owner-uncapped solve, one real authorization, and one fixed-cap
 /// rebuild. The root finalizer represents the existing V8 capped root solve.
-pub fn execute_open_bare_soil_shadow<F>(
+#[cfg(test)]
+pub(crate) fn execute_open_bare_soil_shadow<F>(
     adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     beginning: &OpenSurfaceProblem,
     ground_key: GroundWaterKey,

@@ -219,6 +219,8 @@ fn ingress_identity_attempt_binds_differing_raw_invalid_configuration_bits() {
         let mut ingress = ingress_input();
         match &mut ingress.tile_ingress[0] {
             DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+            | DirectTileGroundIngress::OpenLiquidParcels { tile_id, .. }
+            | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { tile_id, .. }
             | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
                 *tile_id = TileId::try_new("unknown-tile").expect("tile");
             }

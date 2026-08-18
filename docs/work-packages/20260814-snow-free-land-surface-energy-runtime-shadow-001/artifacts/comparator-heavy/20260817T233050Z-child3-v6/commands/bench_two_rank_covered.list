@@ -1,0 +1,14 @@
+label=bench_two_rank_covered
+command=cargo test -p openwepp-land-surface-energy covered_multirank_potential_fixed_cap_and_alternate_start_match_frozen_oracle -- --list
+env_TMPDIR=/tmp/ow-lse-v8
+env_OPENWEPP_TASK_ID=child3-20260817T233050Z
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-20260817T233050Z
+  scratch: /tmp/openwepp-roger-child3-20260817T233050Z
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/child3-20260817T233050Z/debug/deps/openwepp_land_surface_energy-90ec5b504634e79f)
+covered_oracle_conformance_tests::covered_multirank_potential_fixed_cap_and_alternate_start_match_frozen_oracle: test
+
+1 test, 0 benchmarks

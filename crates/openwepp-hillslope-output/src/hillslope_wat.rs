@@ -63,7 +63,7 @@ fn stable_metadata_to_fb<'a>(
     metadata: &HashMap<String, String>,
 ) -> WIPOffset<Vector<'a, ForwardsUOffset<arrow_ipc::KeyValue<'a>>>> {
     let mut metadata_pairs = metadata.iter().collect::<Vec<_>>();
-    metadata_pairs.sort_unstable_by(|(left_key, _), (right_key, _)| left_key.cmp(right_key));
+    metadata_pairs.sort_unstable_by_key(|(key, _)| *key);
     let custom_metadata = metadata_pairs
         .into_iter()
         .map(|(key, value)| {

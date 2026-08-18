@@ -4,10 +4,21 @@
 
 #[path = "surface_liquid_closure_preflight.rs"]
 mod arithmetic_preflight;
+#[path = "surface_liquid_ending_validation.rs"]
+mod ending_validation;
 #[path = "surface_liquid_enthalpy_closure.rs"]
 mod enthalpy_reconstruction;
 #[path = "surface_liquid_raw_parent_closure.rs"]
 mod raw_parent_reconstruction;
+#[path = "surface_liquid_closure_comparison.rs"]
+mod terminal_comparison;
+
+use ending_validation::{
+    ending_aggregate_failure, first_membership_aware_mismatch, validate_projected_ending_digest,
+};
+use terminal_comparison::{
+    require_close_mass, validate_receipt_enthalpy, water_key_matches_record,
+};
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -16,8 +27,8 @@ use openwepp_land_surface_energy::OfeId;
 
 use super::runoff::{DirectWb14ContinuationIntervalInputs, advance_wb14_continuation_interval};
 use super::surface_liquid_ingress::{
-    CanonicalParcelOrderKey, CanonicalSurfaceLiquidSource, DirectIngressAmount,
-    DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidParcelKind,
+    CanonicalParcelOrderKey, CanonicalSurfaceLiquidSource, DirectCanopyLiquidRelease,
+    DirectIngressAmount, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidParcelKind,
     DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidReceiptDisposition,
     DirectSurfaceLiquidReceiptRecipient, DirectTileGroundIngress, INTERVAL_S,
     LIQUID_HEAT_CAPACITY_J_KG_K, REFERENCE_TEMPERATURE_K, WATER_DENSITY_KG_M3,
@@ -800,9 +811,10 @@ pub(super) fn capture_and_validate_surface_liquid_closure(
 ) -> Result<DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidError> {
     (|| {
         let operands = capture_operands(configuration, resource, input, ending, receipts)?;
-        validate_surface_liquid_closure_operands(
+        validate_surface_liquid_closure_operands_with_input(
             configuration,
             resource,
+            input,
             &operands,
             receipts,
             ending,
@@ -1007,26 +1019,44 @@ fn capture_source_parcels(
                 &mut result,
                 input.transaction_id,
             )?,
+            DirectTileGroundIngress::OpenLiquidParcels { parcels, .. } => {
+                for parcel in parcels {
+                    capture_amount(
+                        configured,
+                        parcel.kind,
+                        &parcel.amount,
+                        &mut result,
+                        input.transaction_id,
+                    )?;
+                    let captured = result.last_mut().ok_or(DirectSurfaceLiquidError::Closure(
+                        "missing captured open liquid parcel",
+                    ))?;
+                    captured.source_parcel_id = parcel.parcel_id.to_string();
+                }
+            }
             DirectTileGroundIngress::CoveredCanopyRelease { release, .. } => {
-                for (kind, amount) in [
-                    (
-                        DirectSurfaceLiquidParcelKind::CanopyThroughfall,
-                        &release.throughfall,
-                    ),
-                    (
-                        DirectSurfaceLiquidParcelKind::CanopyInitialDrainage,
-                        &release.initial_drainage,
-                    ),
-                    (
-                        DirectSurfaceLiquidParcelKind::CanopySecondDrainage,
-                        &release.second_drainage,
-                    ),
-                    (
-                        DirectSurfaceLiquidParcelKind::CanopyStemflow,
-                        &release.stemflow,
-                    ),
-                ] {
-                    capture_amount(configured, kind, amount, &mut result, input.transaction_id)?;
+                capture_canopy_release(configured, release, &mut result, input.transaction_id)?;
+            }
+            DirectTileGroundIngress::CoveredCanopyReleaseAndRunon {
+                release,
+                runon_parcels,
+                ..
+            } => {
+                capture_canopy_release(configured, release, &mut result, input.transaction_id)?;
+                for parcel in runon_parcels {
+                    capture_amount(
+                        configured,
+                        parcel.kind,
+                        &parcel.amount,
+                        &mut result,
+                        input.transaction_id,
+                    )?;
+                    result
+                        .last_mut()
+                        .ok_or(DirectSurfaceLiquidError::Closure(
+                            "missing captured covered runon parcel",
+                        ))?
+                        .source_parcel_id = parcel.parcel_id.to_string();
                 }
             }
         }
@@ -1036,6 +1066,35 @@ fn capture_source_parcels(
     }
     result.sort_by(frozen_parcel_order);
     Ok(result)
+}
+
+fn capture_canopy_release(
+    configured: &DirectSurfaceLiquidConfigurationRecord,
+    release: &DirectCanopyLiquidRelease,
+    result: &mut Vec<DirectSurfaceLiquidParcelClosureOperands>,
+    transaction_id: TransactionId,
+) -> Result<(), DirectSurfaceLiquidError> {
+    for (kind, amount) in [
+        (
+            DirectSurfaceLiquidParcelKind::CanopyThroughfall,
+            &release.throughfall,
+        ),
+        (
+            DirectSurfaceLiquidParcelKind::CanopyInitialDrainage,
+            &release.initial_drainage,
+        ),
+        (
+            DirectSurfaceLiquidParcelKind::CanopySecondDrainage,
+            &release.second_drainage,
+        ),
+        (
+            DirectSurfaceLiquidParcelKind::CanopyStemflow,
+            &release.stemflow,
+        ),
+    ] {
+        capture_amount(configured, kind, amount, result, transaction_id)?;
+    }
+    Ok(())
 }
 
 fn capture_amount(
@@ -1116,9 +1175,46 @@ fn capture_overflow(
     })
 }
 
+#[cfg_attr(not(test), allow(dead_code))]
 pub(super) fn validate_surface_liquid_closure_operands(
     configuration: &DirectSurfaceLiquidConfiguration,
     resource: &DirectSurfaceLiquidResourceCandidate,
+    operands: &DirectSurfaceLiquidClosureOperands,
+    receipts: &[DirectSurfaceLiquidParcelReceipt],
+    ending: &DirectSurfaceLiquidOwnedState,
+) -> Result<(), DirectSurfaceLiquidError> {
+    validate_surface_liquid_closure_operands_inner(
+        configuration,
+        resource,
+        None,
+        operands,
+        receipts,
+        ending,
+    )
+}
+
+pub(super) fn validate_surface_liquid_closure_operands_with_input(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    resource: &DirectSurfaceLiquidResourceCandidate,
+    input: &DirectSurfaceLiquidIngressInput,
+    operands: &DirectSurfaceLiquidClosureOperands,
+    receipts: &[DirectSurfaceLiquidParcelReceipt],
+    ending: &DirectSurfaceLiquidOwnedState,
+) -> Result<(), DirectSurfaceLiquidError> {
+    validate_surface_liquid_closure_operands_inner(
+        configuration,
+        resource,
+        Some(input),
+        operands,
+        receipts,
+        ending,
+    )
+}
+
+fn validate_surface_liquid_closure_operands_inner(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    resource: &DirectSurfaceLiquidResourceCandidate,
+    input: Option<&DirectSurfaceLiquidIngressInput>,
     operands: &DirectSurfaceLiquidClosureOperands,
     receipts: &[DirectSurfaceLiquidParcelReceipt],
     ending: &DirectSurfaceLiquidOwnedState,
@@ -1131,7 +1227,7 @@ pub(super) fn validate_surface_liquid_closure_operands(
         }
         preflight_surface_liquid_closure_arithmetic(configuration, resource, operands, receipts)?;
         arithmetic_preflight::validate_partition_input_identities(configuration, operands)?;
-        validate_frozen_source_identities(configuration, resource, operands)?;
+        validate_frozen_source_identities(configuration, resource, input, operands)?;
         validate_store_equations(configuration, resource, operands)?;
         validate_parcel_joins(configuration, operands, receipts, ending)
     })();
@@ -1154,36 +1250,12 @@ pub(super) fn validate_surface_liquid_closure_operands(
 fn validate_frozen_source_identities(
     configuration: &DirectSurfaceLiquidConfiguration,
     resource: &DirectSurfaceLiquidResourceCandidate,
+    input: Option<&DirectSurfaceLiquidIngressInput>,
     operands: &DirectSurfaceLiquidClosureOperands,
 ) -> Result<(), DirectSurfaceLiquidError> {
     let mut expected = Vec::new();
     for record in &configuration.records {
-        let kinds: &[DirectSurfaceLiquidParcelKind] = match record.ground_ingress_mode {
-            super::surface_liquid_owner::DirectGroundIngressMode::OpenRawPrecipitation => {
-                &[DirectSurfaceLiquidParcelKind::RawPrecipitation]
-            }
-            super::surface_liquid_owner::DirectGroundIngressMode::CoveredCanopyRelease => &[
-                DirectSurfaceLiquidParcelKind::CanopyThroughfall,
-                DirectSurfaceLiquidParcelKind::CanopyInitialDrainage,
-                DirectSurfaceLiquidParcelKind::CanopySecondDrainage,
-                DirectSurfaceLiquidParcelKind::CanopyStemflow,
-            ],
-        };
-        for kind in kinds {
-            expected.push(FrozenSourceIdentity {
-                source_parcel_id: canonical_surface_liquid_source_id(
-                    CanonicalSurfaceLiquidSource::Local {
-                        store_key: &record.key,
-                        kind: *kind,
-                    },
-                ),
-                kind: *kind,
-                origin_store_key: record.key.clone(),
-                basis_ofe_id: record.key.ofe_id.clone(),
-                start_s_bits: 0.0_f64.to_bits(),
-                end_s_bits: INTERVAL_S.to_bits(),
-            });
-        }
+        expected.extend(frozen_identities_for_record(record, input)?);
     }
     for overflow in resource.condensation_overflow() {
         expected.push(FrozenSourceIdentity {
@@ -1200,15 +1272,8 @@ fn validate_frozen_source_identities(
             end_s_bits: INTERVAL_S.to_bits(),
         });
     }
-    for expected_row in &mut expected {
-        if let Some(actual_row) = operands
-            .source_parcels
-            .iter()
-            .find(|row| row.source_parcel_id == expected_row.source_parcel_id)
-        {
-            expected_row.start_s_bits = actual_row.start_s.to_bits();
-            expected_row.end_s_bits = actual_row.end_s.to_bits();
-        }
+    if input.is_none() {
+        align_unfrozen_support(&mut expected, &operands.source_parcels);
     }
     expected.sort_by(frozen_source_identity_order);
     let actual = operands
@@ -1219,8 +1284,144 @@ fn validate_frozen_source_identities(
     if actual == expected {
         return Ok(());
     }
+    let offending = frozen_identity_mismatch(&actual, &expected)?;
+    Err(contextual_closure_failure(
+        operands.transaction_id,
+        &offending.origin_store_key,
+        Some(offending.source_parcel_id.clone()),
+        "frozen source parcel identity mismatch",
+    ))
+}
+
+fn frozen_identities_for_record(
+    record: &DirectSurfaceLiquidConfigurationRecord,
+    input: Option<&DirectSurfaceLiquidIngressInput>,
+) -> Result<Vec<FrozenSourceIdentity>, DirectSurfaceLiquidError> {
+    if let Some(input) = input {
+        let ingress = input
+            .tile_ingress
+            .iter()
+            .find(|ingress| {
+                ingress.identity()
+                    == (
+                        &record.key.ofe_id,
+                        &record.key.tile_id,
+                        &record.key.surface_id,
+                    )
+            })
+            .ok_or(DirectSurfaceLiquidError::Closure(
+                "missing ingress for frozen source identity",
+            ))?;
+        match ingress {
+            DirectTileGroundIngress::OpenRawPrecipitation {
+                raw_precipitation, ..
+            } => {
+                return Ok(vec![local_frozen_identity(
+                    record,
+                    DirectSurfaceLiquidParcelKind::RawPrecipitation,
+                    raw_precipitation.start_s,
+                    raw_precipitation.end_s,
+                )]);
+            }
+            DirectTileGroundIngress::OpenLiquidParcels { parcels, .. } => {
+                return Ok(parcels
+                    .iter()
+                    .map(|parcel| FrozenSourceIdentity {
+                        source_parcel_id: parcel.parcel_id.to_string(),
+                        kind: parcel.kind,
+                        origin_store_key: record.key.clone(),
+                        basis_ofe_id: record.key.ofe_id.clone(),
+                        start_s_bits: parcel.amount.start_s.to_bits(),
+                        end_s_bits: parcel.amount.end_s.to_bits(),
+                    })
+                    .collect());
+            }
+            DirectTileGroundIngress::CoveredCanopyRelease { .. } => {}
+            DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { runon_parcels, .. } => {
+                let mut identities = covered_canonical_frozen_identities(record);
+                identities.extend(runon_parcels.iter().map(|parcel| FrozenSourceIdentity {
+                    source_parcel_id: parcel.parcel_id.to_string(),
+                    kind: parcel.kind,
+                    origin_store_key: record.key.clone(),
+                    basis_ofe_id: record.key.ofe_id.clone(),
+                    start_s_bits: parcel.amount.start_s.to_bits(),
+                    end_s_bits: parcel.amount.end_s.to_bits(),
+                }));
+                return Ok(identities);
+            }
+        }
+    }
+    let kinds: &[DirectSurfaceLiquidParcelKind] = match record.ground_ingress_mode {
+        super::surface_liquid_owner::DirectGroundIngressMode::OpenRawPrecipitation => {
+            &[DirectSurfaceLiquidParcelKind::RawPrecipitation]
+        }
+        super::surface_liquid_owner::DirectGroundIngressMode::CoveredCanopyRelease => &[
+            DirectSurfaceLiquidParcelKind::CanopyThroughfall,
+            DirectSurfaceLiquidParcelKind::CanopyInitialDrainage,
+            DirectSurfaceLiquidParcelKind::CanopySecondDrainage,
+            DirectSurfaceLiquidParcelKind::CanopyStemflow,
+        ],
+    };
+    Ok(kinds
+        .iter()
+        .map(|kind| local_frozen_identity(record, *kind, 0.0, INTERVAL_S))
+        .collect())
+}
+
+fn covered_canonical_frozen_identities(
+    record: &DirectSurfaceLiquidConfigurationRecord,
+) -> Vec<FrozenSourceIdentity> {
+    [
+        DirectSurfaceLiquidParcelKind::CanopyThroughfall,
+        DirectSurfaceLiquidParcelKind::CanopyInitialDrainage,
+        DirectSurfaceLiquidParcelKind::CanopySecondDrainage,
+        DirectSurfaceLiquidParcelKind::CanopyStemflow,
+    ]
+    .into_iter()
+    .map(|kind| local_frozen_identity(record, kind, 0.0, INTERVAL_S))
+    .collect()
+}
+
+fn local_frozen_identity(
+    record: &DirectSurfaceLiquidConfigurationRecord,
+    kind: DirectSurfaceLiquidParcelKind,
+    start_s: f64,
+    end_s: f64,
+) -> FrozenSourceIdentity {
+    FrozenSourceIdentity {
+        source_parcel_id: canonical_surface_liquid_source_id(CanonicalSurfaceLiquidSource::Local {
+            store_key: &record.key,
+            kind,
+        }),
+        kind,
+        origin_store_key: record.key.clone(),
+        basis_ofe_id: record.key.ofe_id.clone(),
+        start_s_bits: start_s.to_bits(),
+        end_s_bits: end_s.to_bits(),
+    }
+}
+
+fn align_unfrozen_support(
+    expected: &mut [FrozenSourceIdentity],
+    actual: &[DirectSurfaceLiquidParcelClosureOperands],
+) {
+    for expected_row in expected {
+        if let Some(actual_row) = actual
+            .iter()
+            .find(|row| row.source_parcel_id == expected_row.source_parcel_id)
+        {
+            expected_row.start_s_bits = actual_row.start_s.to_bits();
+            expected_row.end_s_bits = actual_row.end_s.to_bits();
+        }
+    }
+}
+
+fn frozen_identity_mismatch<'a>(
+    actual: &'a [FrozenSourceIdentity],
+    expected: &'a [FrozenSourceIdentity],
+) -> Result<&'a FrozenSourceIdentity, DirectSurfaceLiquidError> {
     let actual_set = actual.iter().cloned().collect::<BTreeSet<_>>();
-    let offending = if actual.len() < expected.len() {
+    let mismatch = if actual.len() < expected.len() {
         expected
             .iter()
             .find(|row| !actual_set.contains(*row))
@@ -1228,20 +1429,14 @@ fn validate_frozen_source_identities(
     } else {
         actual
             .iter()
-            .zip(&expected)
+            .zip(expected)
             .find(|(actual_row, expected_row)| actual_row != expected_row)
             .map(|(actual_row, _)| actual_row)
             .or_else(|| actual.get(expected.len()))
             .or_else(|| expected.first())
-    }
-    .ok_or(DirectSurfaceLiquidError::Closure(
+    };
+    mismatch.ok_or(DirectSurfaceLiquidError::Closure(
         "empty frozen source identity mismatch",
-    ))?;
-    Err(contextual_closure_failure(
-        operands.transaction_id,
-        &offending.origin_store_key,
-        Some(offending.source_parcel_id.clone()),
-        "frozen source parcel identity mismatch",
     ))
 }
 
@@ -2589,73 +2784,6 @@ fn validate_parcel_joins(
     validate_projected_ending_state(configuration, operands, ending, &projection)
 }
 
-fn ending_aggregate_failure(
-    transaction_id: TransactionId,
-    owner_id: &ResourceOwnerId,
-    detail: &'static str,
-) -> DirectSurfaceLiquidError {
-    DirectSurfaceLiquidError::canonical_failure(
-        DirectSurfaceLiquidErrorCode::E010,
-        DirectSurfaceLiquidPhase::IndependentClosure,
-        DirectSurfaceLiquidErrorContext {
-            transaction_id: Some(transaction_id),
-            owner_id: Some(owner_id.clone()),
-            ..DirectSurfaceLiquidErrorContext::default()
-        },
-        DirectSurfaceLiquidRollbackHashes {
-            beginning_owner_sha256: None,
-            attempted_owner_sha256: None,
-        },
-        detail,
-    )
-}
-
-fn validate_projected_ending_digest(
-    configuration: &DirectSurfaceLiquidConfiguration,
-    operands: &DirectSurfaceLiquidClosureOperands,
-    ending: &DirectSurfaceLiquidOwnedState,
-) -> Result<(), DirectSurfaceLiquidError> {
-    let aggregate_failure =
-        |detail| ending_aggregate_failure(operands.transaction_id, &configuration.owner_id, detail);
-    let recomputed = ending
-        .recomputed_sha256()
-        .map_err(|_| aggregate_failure("projected ending-state digest reconstruction"))?;
-    if ending.state_sha256 != recomputed {
-        return Err(aggregate_failure("projected ending-state digest join"));
-    }
-    ending
-        .validate(configuration)
-        .map_err(|_| aggregate_failure("projected ending-state complete validation"))
-}
-
-fn first_membership_aware_mismatch<T: Clone + Ord>(actual: &[T], expected: &[T]) -> Option<T> {
-    match actual.len().cmp(&expected.len()) {
-        std::cmp::Ordering::Less => expected
-            .iter()
-            .find(|row| {
-                actual.iter().filter(|actual| *actual == *row).count()
-                    < expected.iter().filter(|expected| *expected == *row).count()
-            })
-            .cloned(),
-        std::cmp::Ordering::Greater => actual
-            .iter()
-            .enumerate()
-            .find(|(index, row)| {
-                actual[..=*index]
-                    .iter()
-                    .filter(|actual| *actual == *row)
-                    .count()
-                    > expected.iter().filter(|expected| *expected == *row).count()
-            })
-            .map(|(_, row)| row.clone()),
-        std::cmp::Ordering::Equal => actual
-            .iter()
-            .zip(expected)
-            .find(|(actual, expected)| actual != expected)
-            .map(|(actual, _)| actual.clone()),
-    }
-}
-
 fn validate_projected_ending_state(
     configuration: &DirectSurfaceLiquidConfiguration,
     operands: &DirectSurfaceLiquidClosureOperands,
@@ -2843,125 +2971,4 @@ fn route_destination<'a>(
             "routed receipt destination missing",
         ))?;
     Ok((destination_ofe, destination))
-}
-
-fn validate_receipt_enthalpy(
-    owner_id: &ResourceOwnerId,
-    receipt: &DirectSurfaceLiquidParcelReceipt,
-) -> Result<(), DirectSurfaceLiquidError> {
-    if !receipt.mass_kg_m2_basis_ofe_ground.is_finite()
-        || receipt.mass_kg_m2_basis_ofe_ground < 0.0
-        || !receipt.enthalpy_j_m2_basis_ofe_ground.is_finite()
-        || !receipt.temperature_k.is_finite()
-    {
-        return Err(DirectSurfaceLiquidError::Closure(
-            "nonfinite or negative parcel receipt",
-        ));
-    }
-    if receipt.mass_kg_m2_basis_ofe_ground == 0.0 {
-        if receipt.enthalpy_j_m2_basis_ofe_ground.to_bits() != 0.0_f64.to_bits() {
-            return Err(DirectSurfaceLiquidError::Closure(
-                "zero-mass parcel carries enthalpy",
-            ));
-        }
-        return Ok(());
-    }
-    let expected = checked_surface_liquid_sub(receipt.temperature_k, REFERENCE_TEMPERATURE_K)
-        .and_then(|delta| checked_surface_liquid_mul(LIQUID_HEAT_CAPACITY_J_KG_K, delta))
-        .and_then(|specific| {
-            checked_surface_liquid_mul(receipt.mass_kg_m2_basis_ofe_ground, specific)
-        })
-        .ok_or_else(|| {
-            contextual_closure_arithmetic_failure(
-                receipt.transaction_id,
-                &receipt.origin_store_key,
-                Some(receipt.parcel_id.clone()),
-                "parcel temperature/enthalpy arithmetic is nonfinite or underflowed",
-            )
-        })?;
-    require_close_enthalpy(
-        receipt.enthalpy_j_m2_basis_ofe_ground,
-        expected,
-        receipt.transaction_id,
-        owner_id,
-        &receipt.origin_store_key,
-        Some(receipt.parcel_id.clone()),
-        "parcel temperature/enthalpy join",
-    )
-}
-
-fn water_key_matches_record(
-    key: &openwepp_land_surface_energy::GroundWaterKey,
-    record: &DirectSurfaceLiquidConfigurationRecord,
-) -> bool {
-    key.ofe_id == record.key.ofe_id
-        && key.source_tile_id.as_ref() == Some(&record.key.tile_id)
-        && key.surface_id.as_ref() == Some(&record.key.surface_id)
-        && key.surface_class == Some(record.key.surface_class)
-        && key.source_type == record.key.source_type
-        && key.source_id == record.key.source_id
-}
-
-fn require_close_mass(
-    actual: f64,
-    expected: f64,
-    transaction_id: TransactionId,
-    owner_id: &ResourceOwnerId,
-    store_key: &DirectSurfaceLiquidStoreKey,
-    parcel_id: Option<String>,
-    detail: &'static str,
-) -> Result<(), DirectSurfaceLiquidError> {
-    match checked_surface_liquid_close(actual, expected, DirectSurfaceLiquidClosureUnit::MassKgM2) {
-        Some(true) => Ok(()),
-        Some(false) => Err(contextual_comparison_failure(
-            DirectSurfaceLiquidErrorCode::E010,
-            transaction_id,
-            owner_id,
-            store_key,
-            parcel_id,
-            detail,
-        )),
-        None => Err(contextual_comparison_failure(
-            DirectSurfaceLiquidErrorCode::E003,
-            transaction_id,
-            owner_id,
-            store_key,
-            parcel_id,
-            detail,
-        )),
-    }
-}
-
-fn require_close_enthalpy(
-    actual: f64,
-    expected: f64,
-    transaction_id: TransactionId,
-    owner_id: &ResourceOwnerId,
-    store_key: &DirectSurfaceLiquidStoreKey,
-    parcel_id: Option<String>,
-    detail: &'static str,
-) -> Result<(), DirectSurfaceLiquidError> {
-    match checked_surface_liquid_close(
-        actual,
-        expected,
-        DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
-    ) {
-        Some(true) => Ok(()),
-        Some(false) => Err(contextual_comparison_failure(
-            DirectSurfaceLiquidErrorCode::E010,
-            transaction_id,
-            owner_id,
-            store_key,
-            parcel_id,
-            detail,
-        )),
-        None => Err(contextual_comparison_failure(
-            DirectSurfaceLiquidErrorCode::E003,
-            transaction_id,
-            owner_id,
-            store_key,
-            parcel_id,
-            detail,
-        )),
-    }
 }

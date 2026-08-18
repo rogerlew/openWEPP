@@ -1,0 +1,1 @@
+{"label":"bench_strict_projection","command":"cargo test -p openwepp-hillslope-orchestrator all_open_topology_projects_empty_canonical_v8_passes","status":"FAIL","exit_code":127,"list_count":1,"start":"2026-08-17T23:09:55Z","end":"2026-08-17T23:10:33Z","duration_ms":14437368,"env_OPENWEPP_TASK_ID":"child3-20260817T230955Z","env_TMPDIR":"/tmp/ow-lse-v8"}

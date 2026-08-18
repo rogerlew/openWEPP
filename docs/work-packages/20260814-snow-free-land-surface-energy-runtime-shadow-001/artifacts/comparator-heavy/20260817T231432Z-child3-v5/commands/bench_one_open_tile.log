@@ -1,0 +1,30 @@
+label=bench_one_open_tile
+command=cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_an_all_open_ofe
+env_TMPDIR=/tmp/ow-lse-v8
+env_OPENWEPP_TASK_ID=child3-20260817T231432Z
+precheck_start=2026-08-17T23:15:11Z
+precheck_command=cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_an_all_open_ofe -- --list
+precheck_exit_code=0
+precheck_list_count=1
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-20260817T231432Z
+  scratch: /tmp/openwepp-roger-child3-20260817T231432Z
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/integration/land_surface_energy_strict_v8_public_contract.rs (/workdir/.cache/openwepp/targets/child3-20260817T231432Z/debug/deps/land_surface_energy_real_hydrology_shadow_contract-f9e2bb0f84d6548e)
+
+running 1 test
+test covered_forest_tests::public_v8_endpoint_closes_an_all_open_ofe ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.01s
+
+time_real_s=0.56
+time_user_s=0.40
+time_sys_s=0.17
+start=2026-08-17T23:15:11Z
+end=2026-08-17T23:15:56Z
+duration_ms=570209560
+exit_code=0
+run_list_count=1
+status=PASS

@@ -22,12 +22,14 @@ use crate::{
     LandSurfaceEnergyState, LatentJoinOperands, MODEL_DEFINITION_SHA256, MODEL_VERSION,
     NormalizedResidual, NumericalDiagnostics, NumericalFailure, NumericalFailureCode,
     NumericalFailureKind, OfeId, OpenSurfaceProblem, OpenSurfaceSolveOutcome,
-    OwnerEnvelopeIdentity, OwnerKind, OwnerRollbackHash, RequestingComponent, ResidualUnit,
-    Sha256Digest, SoilThermalSnapshot, SolveIdentity, SolvePass, SourceId, SourceWaterCap,
+    OwnerEnvelopeIdentity, OwnerKind, OwnerRollbackHash, RequestingComponent, Sha256Digest,
+    SoilThermalSnapshot, SolveIdentity, SolvePass, SourceId, SourceWaterCap,
     StandGroundWaterAmountBasis, StepNorms, SurfaceClass, SurfaceClassKind, SurfaceEnergyOperands,
     SurfaceId, TileState, VEGETATION_MODEL_DEFINITION_SHA256, VEGETATION_MODEL_VERSION,
     WaterAmount, WaterAuthorization, WaterProtocol, WaterSourceType, canonical_digest,
-    liquid_enthalpy_j_kg, solve_covered_column, solve_open_surface,
+    evaluate_covered_column, evaluate_open_surface, liquid_enthalpy_j_kg, solve_covered_column,
+    solve_open_surface,
+    solver::{covered_failure_residuals, open_failure_residuals},
     under_canopy_neutral_resistance, validate_ground_heat_join, validate_latent_join,
     validate_surface_energy,
 };
@@ -38,10 +40,14 @@ pub struct RuntimeTileIdentity {
     pub lse_owner_id: ResourceOwnerId,
     pub hydrology_owner_id: ResourceOwnerId,
     pub soil_thermal_owner_id: ResourceOwnerId,
+    pub vegetation_owner_id: ResourceOwnerId,
+    pub biogeochemistry_owner_id: ResourceOwnerId,
     pub configuration_sha256: Sha256Digest,
     pub beginning_lse_state_sha256: Sha256Digest,
     pub beginning_hydrology_snapshot_sha256: Sha256Digest,
     pub beginning_soil_thermal_state_sha256: Sha256Digest,
+    pub beginning_vegetation_state_sha256: Sha256Digest,
+    pub beginning_biogeochemistry_state_sha256: Sha256Digest,
     pub ofe_id: OfeId,
     pub tile_id: TileId,
     pub surface_id: SurfaceId,
@@ -788,13 +794,13 @@ fn rollback_hashes(identity: &RuntimeTileIdentity) -> Vec<OwnerRollbackHash> {
         ),
         (
             OwnerKind::Vegetation,
-            "vegetation",
-            &identity.beginning_lse_state_sha256,
+            identity.vegetation_owner_id.as_str(),
+            &identity.beginning_vegetation_state_sha256,
         ),
         (
             OwnerKind::Biogeochemistry,
-            "biogeochemistry",
-            &identity.beginning_lse_state_sha256,
+            identity.biogeochemistry_owner_id.as_str(),
+            &identity.beginning_biogeochemistry_state_sha256,
         ),
     ]
     .into_iter()
@@ -807,34 +813,12 @@ fn rollback_hashes(identity: &RuntimeTileIdentity) -> Vec<OwnerRollbackHash> {
     .collect()
 }
 
-fn residual_diagnostics(
-    raw: &[f64],
-    tolerances: &[f64],
-    normalized: &[f64],
-) -> Vec<NormalizedResidual> {
-    raw.iter()
-        .zip(tolerances)
-        .zip(normalized)
-        .enumerate()
-        .map(
-            |(index, ((raw, tolerance), normalized))| NormalizedResidual {
-                identity: format!("ordered_residual_{index}"),
-                raw: *raw,
-                scale: raw.abs().max(1.0),
-                tolerance: *tolerance,
-                normalized: *normalized,
-                unit: ResidualUnit::Dimensionless,
-            },
-        )
-        .collect()
-}
-
 fn accepted_diagnostics(
     identity: &RuntimeTileIdentity,
     solve: SolveIdentity,
     iterations: u32,
     backtracking_count: u32,
-    residuals: (&[f64], &[f64], &[f64]),
+    ordered_residuals: Vec<NormalizedResidual>,
     step_norms: StepNorms,
     active_caps: Vec<GroundWaterKey>,
 ) -> Result<NumericalDiagnostics, LandSurfaceEnergyError> {
@@ -855,7 +839,7 @@ fn accepted_diagnostics(
         failure_kind: None,
         iterations,
         backtracking_count,
-        ordered_residuals: residual_diagnostics(residuals.0, residuals.1, residuals.2),
+        ordered_residuals,
         step_norms,
         active_bounds: Vec::new(),
         active_water_caps: active_caps,
@@ -880,19 +864,11 @@ pub fn rejected_numerical_diagnostics(
         NumericalFailureKind::BacktrackingLimit => DiagnosticFailureKind::BacktrackingLimit,
         NumericalFailureKind::IterationLimit => DiagnosticFailureKind::IterationLimit,
     };
-    let normalized: Vec<_> = failure
-        .normalized_residuals
-        .iter()
-        .enumerate()
-        .map(|(index, value)| NormalizedResidual {
-            identity: format!("ordered_residual_{index}"),
-            raw: *value,
-            scale: 1.0,
-            tolerance: 1.0,
-            normalized: *value,
-            unit: ResidualUnit::Dimensionless,
-        })
-        .collect();
+    if failure.ordered_residuals.is_empty() {
+        return Err(LandSurfaceEnergyError::OwnerEnvelope(
+            "numerical failure missing typed residual diagnostics",
+        ));
+    }
     let diagnostics = NumericalDiagnostics {
         model_version: MODEL_VERSION.into(),
         canonical_contract: "SC-LANDSURFACEENERGY-001@3".into(),
@@ -902,7 +878,11 @@ pub fn rejected_numerical_diagnostics(
         transaction_id: identity.transaction_id,
         ofe_id: identity.ofe_id.clone(),
         tile_id: identity.tile_id.clone(),
-        occupancy_id: None,
+        occupancy_id: failure
+            .occupancy_id
+            .as_deref()
+            .map(ComponentId::try_new)
+            .transpose()?,
         pass,
         solve,
         accepted: false,
@@ -910,9 +890,9 @@ pub fn rejected_numerical_diagnostics(
         failure_kind: Some(failure_kind),
         iterations: failure.iterations,
         backtracking_count: failure.backtracking_count,
-        ordered_residuals: normalized,
+        ordered_residuals: failure.ordered_residuals.clone(),
         step_norms: failure.step_norms.clone(),
-        active_bounds: Vec::new(),
+        active_bounds: failure.active_bounds.clone(),
         active_water_caps,
         bracket: None,
         pivot_magnitude: failure.pivot_magnitude,
@@ -1065,6 +1045,22 @@ fn build_energy_and_soil(
     ))
 }
 
+fn exact_open_cap_rate(
+    phase: &OpenPotentialPhase,
+    authorization: &WaterAuthorization,
+) -> Result<(WaterAuthorization, f64), LandSurfaceEnergyError> {
+    let mut authorizations =
+        exact_authorization_map(&phase.request_batch, vec![authorization.clone()])?;
+    let fixed = authorizations
+        .remove(&phase.request_batch.requests[0].key)
+        .ok_or(LandSurfaceEnergyError::water_cardinality(
+            "missing exact ground authorization",
+        ))?;
+    let cap_rate = fixed.amount_kg_m2_stand_ground
+        / (phase.identity.tile_fraction * phase.identity.interval_s);
+    Ok((fixed, cap_rate))
+}
+
 pub fn finalize_open_phase(
     phase: &OpenPotentialPhase,
     expected_beginning_lse_state_sha256: &Sha256Digest,
@@ -1077,26 +1073,19 @@ pub fn finalize_open_phase(
             "stale potential beginning state",
         ));
     }
-    let mut authorizations =
-        exact_authorization_map(&phase.request_batch, vec![authorization.clone()])?;
-    let fixed = authorizations
-        .remove(&phase.request_batch.requests[0].key)
-        .ok_or(LandSurfaceEnergyError::water_cardinality(
-            "missing exact ground authorization",
-        ))?;
-    let cap_rate = fixed.amount_kg_m2_stand_ground
-        / (phase.identity.tile_fraction * phase.identity.interval_s);
+    let (fixed, cap_rate) = exact_open_cap_rate(phase, authorization)?;
     // The retained immutable `beginning` is the only solver input here.
     let final_value =
         match solve_open_surface(&phase.beginning, Some(cap_rate), final_initial_trial)? {
             OpenSurfaceSolveOutcome::Accepted(value) => value,
             OpenSurfaceSolveOutcome::Rejected(failure) => {
+                let active_caps = rejected_open_active_caps(phase, &failure, cap_rate)?;
                 return Err(numerical_failure_error(
                     &phase.identity,
                     SolvePass::FinalFixedCap,
                     SolveIdentity::SurfaceEnergy,
                     &failure,
-                    vec![fixed.key.clone()],
+                    active_caps,
                 )?);
             }
         };
@@ -1144,11 +1133,7 @@ pub fn finalize_open_phase(
         SolveIdentity::SurfaceEnergy,
         final_value.iterations,
         final_value.backtracking_count,
-        (
-            &final_value.evaluation.raw_residuals,
-            &final_value.evaluation.tolerances,
-            &final_value.evaluation.normalized_residuals,
-        ),
+        open_failure_residuals(&phase.beginning, &final_value.evaluation),
         StepNorms {
             temperature_k: Some(final_value.step_norm),
             humidity_kg_kg: None,
@@ -1557,6 +1542,41 @@ fn build_covered_soil_candidate(
     })
 }
 
+fn covered_occupancy_energy_operands(
+    phase: &CoveredPotentialPhase,
+    evaluation: &crate::covered_output::CoveredColumnEvaluation,
+) -> Result<Vec<CoveredOccupancyEnergyOperands>, LandSurfaceEnergyError> {
+    if evaluation.occupancies.len() != phase.beginning.occupancies.len() {
+        return Err(LandSurfaceEnergyError::ComponentClosure(
+            "covered energy occupancy cardinality",
+        ));
+    }
+    Ok(phase
+        .beginning
+        .occupancies
+        .iter()
+        .zip(&evaluation.occupancies)
+        .map(|(input, accepted)| {
+            let surface = |index| CoveredSurfaceEnergyOperands {
+                absorbed_shortwave_w_m2_tile: accepted.absorbed_shortwave_w_m2[index],
+                net_longwave_w_m2_tile: accepted.net_longwave_w_m2[index],
+                sensible_to_canopy_air_w_m2_tile: accepted.sensible_to_canopy_air_w_m2[index],
+                signed_vapor_to_canopy_air_kg_m2_tile_s: accepted
+                    .signed_vapor_to_canopy_air_kg_m2_s[index],
+                surface_temperature_k: accepted.component_temperatures_k[index],
+                latent_heat_j_kg: phase.beginning.latent_heat_j_kg,
+            };
+            CoveredOccupancyEnergyOperands {
+                occupancy_id: input.occupancy_id.clone(),
+                sun_leaf: surface(0),
+                shade_leaf: surface(1),
+                wet_surface: surface(2),
+                dry_stem: surface(3),
+            }
+        })
+        .collect())
+}
+
 fn build_covered_energy_operands(
     phase: &CoveredPotentialPhase,
     final_value: &CoveredColumnCandidate,
@@ -1591,35 +1611,7 @@ fn build_covered_energy_operands(
     };
     let ground_heat_amount =
         evaluation.ground_heat_cn_w_m2_tile[0] * identity.tile_fraction * identity.interval_s;
-    if evaluation.occupancies.len() != phase.beginning.occupancies.len() {
-        return Err(LandSurfaceEnergyError::ComponentClosure(
-            "covered energy occupancy cardinality",
-        ));
-    }
-    let occupancies = phase
-        .beginning
-        .occupancies
-        .iter()
-        .zip(&evaluation.occupancies)
-        .map(|(input, accepted)| {
-            let surface = |index| CoveredSurfaceEnergyOperands {
-                absorbed_shortwave_w_m2_tile: accepted.absorbed_shortwave_w_m2[index],
-                net_longwave_w_m2_tile: accepted.net_longwave_w_m2[index],
-                sensible_to_canopy_air_w_m2_tile: accepted.sensible_to_canopy_air_w_m2[index],
-                signed_vapor_to_canopy_air_kg_m2_tile_s: accepted
-                    .signed_vapor_to_canopy_air_kg_m2_s[index],
-                surface_temperature_k: accepted.component_temperatures_k[index],
-                latent_heat_j_kg: phase.beginning.latent_heat_j_kg,
-            };
-            CoveredOccupancyEnergyOperands {
-                occupancy_id: input.occupancy_id.clone(),
-                sun_leaf: surface(0),
-                shade_leaf: surface(1),
-                wet_surface: surface(2),
-                dry_stem: surface(3),
-            }
-        })
-        .collect::<Vec<_>>();
+    let occupancies = covered_occupancy_energy_operands(phase, evaluation)?;
     let ground_shortwave = crate::partition_ground_shortwave(
         phase.beginning.ground.terminal_shortwave_w_m2_tile,
         phase.beginning.ground.surface_vis_albedo,
@@ -2038,6 +2030,80 @@ fn active_cap_keys(protocol: &WaterProtocol) -> Vec<GroundWaterKey> {
         .collect()
 }
 
+fn rejected_open_active_caps(
+    phase: &OpenPotentialPhase,
+    failure: &NumericalFailure,
+    cap_rate: f64,
+) -> Result<Vec<GroundWaterKey>, LandSurfaceEnergyError> {
+    let detail = evaluate_open_surface(
+        &phase.beginning,
+        &failure.failed_solution,
+        Some(cap_rate),
+        None,
+    )?;
+    Ok(
+        if detail.water.branch == crate::WaterBranch::AuthorizationActiveOrTie {
+            vec![phase.request_batch.requests[0].key.clone()]
+        } else {
+            Vec::new()
+        },
+    )
+}
+
+fn rejected_covered_active_caps(
+    phase: &CoveredPotentialPhase,
+    failure: &NumericalFailure,
+    caps: &CoveredWaterCaps,
+) -> Result<Vec<GroundWaterKey>, LandSurfaceEnergyError> {
+    let detail =
+        evaluate_covered_column(&phase.beginning, &failure.failed_solution, Some(caps), None)?;
+    let mut active = BTreeSet::new();
+    if cap_is_active_or_tie(
+        detail.ground_water.law_kg_m2_tile_s,
+        caps.ground.authorization_rate_kg_m2_tile_s,
+    ) {
+        active.insert(phase.identity.ground_key());
+    }
+    for occupancy in &detail.occupancies {
+        for source in &occupancy.source_water {
+            let cap = caps
+                .root
+                .get(&(source.occupancy_id.clone(), source.layer_id.clone()))
+                .ok_or(LandSurfaceEnergyError::water_cardinality(
+                    "missing failed covered root authorization cap",
+                ))?;
+            if cap_is_active_or_tie(source.law_kg_m2_tile_s, cap.authorization_rate_kg_m2_tile_s) {
+                let runtime = phase
+                    .root_identities
+                    .get(&(source.occupancy_id.clone(), source.layer_id.clone()))
+                    .ok_or(LandSurfaceEnergyError::water_identity(
+                        "missing failed covered root runtime identity",
+                    ))?;
+                active.insert(root_key(&phase.identity, runtime));
+            }
+        }
+    }
+    Ok(ordered_active_cap_keys(
+        &phase.request_batch.requests,
+        &active,
+    ))
+}
+
+fn cap_is_active_or_tie(law_rate: f64, cap_rate: f64) -> bool {
+    cap_rate <= law_rate
+}
+
+fn ordered_active_cap_keys(
+    requests: &[WaterAmount],
+    active: &BTreeSet<GroundWaterKey>,
+) -> Vec<GroundWaterKey> {
+    requests
+        .iter()
+        .filter(|request| active.contains(&request.key))
+        .map(|request| request.key.clone())
+        .collect()
+}
+
 pub fn finalize_covered_phase(
     phase: &CoveredPotentialPhase,
     expected_beginning_lse_state_sha256: &Sha256Digest,
@@ -2057,12 +2123,13 @@ pub fn finalize_covered_phase(
         match solve_covered_column(&phase.beginning, Some(&caps), final_initial_trial)? {
             CoveredColumnSolveOutcome::Accepted(value) => value,
             CoveredColumnSolveOutcome::Rejected(failure) => {
+                let active_caps = rejected_covered_active_caps(phase, &failure, &caps)?;
                 return Err(numerical_failure_error(
                     &phase.identity,
                     SolvePass::FinalFixedCap,
                     SolveIdentity::JointCanopyGround,
                     &failure,
-                    exact.keys().cloned().collect(),
+                    active_caps,
                 )?);
             }
         };
@@ -2075,11 +2142,7 @@ pub fn finalize_covered_phase(
         SolveIdentity::JointCanopyGround,
         final_value.iterations,
         final_value.backtracking_count,
-        (
-            &final_value.evaluation.raw_residuals,
-            &final_value.evaluation.tolerances,
-            &final_value.evaluation.normalized_residuals,
-        ),
+        covered_failure_residuals(&phase.beginning, &final_value.evaluation),
         StepNorms {
             temperature_k: Some(final_value.step_norms.temperature_k),
             humidity_kg_kg: Some(final_value.step_norms.humidity_kg_kg),
@@ -2298,10 +2361,14 @@ mod tests {
             lse_owner_id: owner("lse"),
             hydrology_owner_id: owner("hydrology"),
             soil_thermal_owner_id: owner("soil-thermal"),
+            vegetation_owner_id: owner("vegetation-real-owner"),
+            biogeochemistry_owner_id: owner("bgc-real-owner"),
             configuration_sha256: digest('a'),
             beginning_lse_state_sha256: digest('b'),
             beginning_hydrology_snapshot_sha256: digest('c'),
             beginning_soil_thermal_state_sha256: digest('d'),
+            beginning_vegetation_state_sha256: digest('e'),
+            beginning_biogeochemistry_state_sha256: digest('f'),
             ofe_id: OfeId::try_new("ofe-1").expect("ofe"),
             tile_id: TileId::try_new("tile-open").expect("tile"),
             surface_id: SurfaceId::try_new("surface-open").expect("surface"),
@@ -2385,6 +2452,88 @@ mod tests {
             .energy_operands
             .validate()
             .expect("independent operands");
+    }
+
+    #[test]
+    fn rejected_open_cap_diagnostics_distinguish_active_inactive_and_tie() {
+        let phase = solve_open_potential_phase(identity(), &problem(), None).expect("potential");
+        let law = evaluate_open_surface(&phase.beginning, &phase.accepted.solution, None, None)
+            .expect("uncapped failed iterate")
+            .water
+            .law_kg_m2_tile_s;
+        assert!(law > 0.0);
+        let failure = NumericalFailure {
+            kind: NumericalFailureKind::IterationLimit,
+            iterations: 50,
+            normalized_residuals: vec![2.0],
+            ordered_residuals: vec![NormalizedResidual {
+                identity: "ground_surface_energy".into(),
+                raw: 2.0,
+                scale: 2.0,
+                tolerance: 1.0,
+                normalized: 2.0,
+                unit: crate::ResidualUnit::WattsPerSquareMeter,
+            }],
+            failed_solution: phase.accepted.solution.clone(),
+            occupancy_id: None,
+            active_bounds: Vec::new(),
+            backtracking_count: 0,
+            step_norms: StepNorms {
+                temperature_k: Some(1.0),
+                humidity_kg_kg: None,
+                ci_pa: None,
+                hydraulic_mm: None,
+                beta: None,
+            },
+            pivot_magnitude: Some(1.0),
+            matrix_norm: Some(1.0),
+        };
+        let key = phase.request_batch.requests[0].key.clone();
+        assert_eq!(
+            rejected_open_active_caps(&phase, &failure, law * 0.5).unwrap(),
+            vec![key.clone()]
+        );
+        assert_eq!(
+            rejected_open_active_caps(&phase, &failure, law).unwrap(),
+            vec![key]
+        );
+        assert!(
+            rejected_open_active_caps(&phase, &failure, law * 2.0)
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn rejected_covered_caps_distinguish_active_inactive_tie_and_request_order() {
+        assert!(cap_is_active_or_tie(10.0, 9.0));
+        assert!(cap_is_active_or_tie(10.0, 10.0));
+        assert!(!cap_is_active_or_tie(10.0, 11.0));
+        let mut active_key = identity().ground_key();
+        active_key.source_id = SourceId::try_new("active-source").unwrap();
+        let mut inactive_key = identity().ground_key();
+        inactive_key.source_id = SourceId::try_new("inactive-source").unwrap();
+        let mut tie_key = identity().ground_key();
+        tie_key.source_id = SourceId::try_new("tie-source").unwrap();
+        let requests = vec![
+            WaterAmount {
+                key: tie_key.clone(),
+                amount_kg_m2_stand_ground: 10.0,
+            },
+            WaterAmount {
+                key: inactive_key,
+                amount_kg_m2_stand_ground: 11.0,
+            },
+            WaterAmount {
+                key: active_key.clone(),
+                amount_kg_m2_stand_ground: 9.0,
+            },
+        ];
+        let active = BTreeSet::from([active_key.clone(), tie_key.clone()]);
+        assert_eq!(
+            ordered_active_cap_keys(&requests, &active),
+            vec![tie_key, active_key]
+        );
     }
 
     #[test]
@@ -2504,7 +2653,6 @@ mod tests {
     #[test]
     fn numerical_failure_errors_preserve_kind_diagnostics_and_rollback_lineage() {
         let identity = identity();
-        let cap = identity.ground_key();
         for (kind, diagnostic_kind) in [
             (
                 NumericalFailureKind::SingularPivot,
@@ -2523,6 +2671,27 @@ mod tests {
                 kind,
                 iterations: 7,
                 normalized_residuals: vec![2.0, -3.0],
+                ordered_residuals: vec![
+                    NormalizedResidual {
+                        identity: "ground_surface_energy".into(),
+                        raw: 4.0,
+                        scale: 4.0,
+                        tolerance: 2.0,
+                        normalized: 2.0,
+                        unit: crate::ResidualUnit::WattsPerSquareMeter,
+                    },
+                    NormalizedResidual {
+                        identity: "soil_thermal:thermal-1".into(),
+                        raw: -6.0,
+                        scale: 6.0,
+                        tolerance: 2.0,
+                        normalized: -3.0,
+                        unit: crate::ResidualUnit::WattsPerSquareMeter,
+                    },
+                ],
+                failed_solution: vec![295.0, 291.0],
+                occupancy_id: None,
+                active_bounds: vec!["surface_liquid_store_cap".into()],
                 backtracking_count: 20,
                 step_norms: StepNorms {
                     temperature_k: Some(1.0e-5),
@@ -2539,7 +2708,7 @@ mod tests {
                 SolvePass::Potential,
                 SolveIdentity::SurfaceEnergy,
                 &failure,
-                vec![cap.clone()],
+                Vec::new(),
             )
             .expect("typed numerical error");
             match (&kind, &error) {
@@ -2564,15 +2733,43 @@ mod tests {
             assert_eq!(diagnostics.pass, SolvePass::Potential);
             assert_eq!(diagnostics.failure_kind, Some(diagnostic_kind));
             assert_eq!(diagnostics.step_norms, failure.step_norms);
-            assert_eq!(diagnostics.active_water_caps, vec![cap.clone()]);
-            assert_eq!(diagnostics.owner_rollback_hashes.len(), 5);
-            assert!(
-                diagnostics
-                    .owner_rollback_hashes
-                    .iter()
-                    .all(|row| row.before_sha256 == row.after_sha256)
-            );
+            assert_eq!(diagnostics.ordered_residuals, failure.ordered_residuals);
+            assert!(diagnostics.active_water_caps.is_empty());
+            assert_truthful_rollback_hashes(diagnostics, &identity);
         }
+    }
+
+    fn assert_truthful_rollback_hashes(
+        diagnostics: &NumericalDiagnostics,
+        identity: &RuntimeTileIdentity,
+    ) {
+        assert_eq!(diagnostics.owner_rollback_hashes.len(), 5);
+        assert!(
+            diagnostics
+                .owner_rollback_hashes
+                .iter()
+                .all(|row| row.before_sha256 == row.after_sha256)
+        );
+        let vegetation = diagnostics
+            .owner_rollback_hashes
+            .iter()
+            .find(|row| row.owner_kind == OwnerKind::Vegetation)
+            .unwrap();
+        assert_eq!(vegetation.owner_id, identity.vegetation_owner_id.as_str());
+        assert_eq!(
+            vegetation.before_sha256,
+            identity.beginning_vegetation_state_sha256
+        );
+        let bgc = diagnostics
+            .owner_rollback_hashes
+            .iter()
+            .find(|row| row.owner_kind == OwnerKind::Biogeochemistry)
+            .unwrap();
+        assert_eq!(bgc.owner_id, identity.biogeochemistry_owner_id.as_str());
+        assert_eq!(
+            bgc.before_sha256,
+            identity.beginning_biogeochemistry_state_sha256
+        );
     }
 
     #[test]

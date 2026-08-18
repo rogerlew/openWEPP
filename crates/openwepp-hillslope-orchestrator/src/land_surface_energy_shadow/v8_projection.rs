@@ -5,6 +5,8 @@
 //! actual unified hydrology candidate, and caller-supplied typed component to
 //! occupancy bindings.
 
+#![allow(dead_code)]
+
 use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_kernel_contract::{OccupancyId, TransactionId};
@@ -19,6 +21,7 @@ use openwepp_vegetation::{
     V8FinalRootWaterReceipt, V8FinalTileReceipt, V8LseComponentId, V8OccupancyCarbonOperands,
     V8OccupancyCarbonReceipt, V8PhysicalReceiptPass, ValidatedV8CarbonPass,
     ValidatedV8FinalStatePass, VegetationConfiguration, VegetationError,
+    validate_v8_component_bindings,
 };
 use thiserror::Error;
 
@@ -38,7 +41,7 @@ pub enum V8ProjectionError {
 /// Complete dependency-neutral V8 receipts projected from one accepted
 /// covered-forest transaction.
 #[derive(Clone, Debug, PartialEq)]
-pub struct V8CoveredProjection {
+pub(crate) struct V8CoveredProjection {
     potential: ValidatedV8CarbonPass,
     capped: ValidatedV8CarbonPass,
     final_state: ValidatedV8FinalStatePass,
@@ -46,17 +49,17 @@ pub struct V8CoveredProjection {
 
 impl V8CoveredProjection {
     #[must_use]
-    pub const fn potential(&self) -> &ValidatedV8CarbonPass {
+    pub(crate) const fn potential(&self) -> &ValidatedV8CarbonPass {
         &self.potential
     }
 
     #[must_use]
-    pub const fn capped(&self) -> &ValidatedV8CarbonPass {
+    pub(crate) const fn capped(&self) -> &ValidatedV8CarbonPass {
         &self.capped
     }
 
     #[must_use]
-    pub const fn final_state(&self) -> &ValidatedV8FinalStatePass {
+    pub(crate) const fn final_state(&self) -> &ValidatedV8FinalStatePass {
         &self.final_state
     }
 }
@@ -67,9 +70,9 @@ impl V8CoveredProjection {
 /// Component IDs are never parsed. The caller supplies the exact typed
 /// component-to-occupancy bijection, and this function verifies it against the
 /// complete potential and fixed-final payloads.
-pub fn project_covered_forest_v8_passes(
+pub(crate) fn project_covered_forest_v8_passes(
     physical: &CoveredForestShadowResult,
-    bindings: Vec<V8ComponentOccupancyBinding>,
+    bindings: &[V8ComponentOccupancyBinding],
     configuration: &VegetationConfiguration,
     beginning: &V8CoupledOwnedState,
 ) -> Result<V8CoveredProjection, V8ProjectionError> {
@@ -91,7 +94,7 @@ pub fn project_covered_forest_v8_passes(
         beginning,
     )?;
 
-    let binding_map = validate_bindings(&bindings, configuration)?;
+    let binding_map = validate_v8_component_bindings(bindings, configuration)?;
     validate_component_sets(potential_source, final_source, &binding_map, beginning)?;
     validate_unified_root_protocol(final_source, physical.hydrology_candidate())?;
 
@@ -109,6 +112,255 @@ pub fn project_covered_forest_v8_passes(
         potential,
         capped,
         final_state,
+    })
+}
+
+/// Project the complete configured covered-tile set into one V8 receipt set.
+/// Open tiles are deliberately absent: V8 owner state exists only for the
+/// configured covered occupancies.
+#[allow(clippy::too_many_lines)]
+pub(crate) fn project_multi_tile_v8_passes(
+    potentials: &[&PotentialCoveredVegetationOperands],
+    finals: &[&AcceptedCoveredVegetationOperands],
+    bindings: &[V8ComponentOccupancyBinding],
+    hydrology: &UnifiedRealHydrologyCandidate,
+    configuration: &VegetationConfiguration,
+    beginning: &V8CoupledOwnedState,
+) -> Result<V8CoveredProjection, V8ProjectionError> {
+    configuration.validate_v8()?;
+    beginning
+        .validate(configuration)
+        .map_err(|_| V8ProjectionError::Identity("invalid V8 vegetation beginning state"))?;
+    if potentials.len() != finals.len() {
+        return Err(V8ProjectionError::Identity(
+            "incomplete covered potential/final tile set",
+        ));
+    }
+    if potentials.is_empty() {
+        if !configuration.expected_occupancies().is_empty() || !bindings.is_empty() {
+            return Err(V8ProjectionError::Identity(
+                "missing configured covered potential/final tile set",
+            ));
+        }
+        return project_empty_v8_passes(configuration, beginning);
+    }
+    let binding_map = validate_v8_component_bindings(bindings, configuration)?;
+    let mut potential_components = BTreeSet::new();
+    let mut final_components = BTreeSet::new();
+    let mut potential_receipts = Vec::new();
+    let mut capped_receipts = Vec::new();
+    let mut final_tiles = Vec::new();
+    let expected_transaction = TransactionId(
+        beginning
+            .last_transaction_id
+            .checked_add(1)
+            .ok_or(V8ProjectionError::Identity("V8 transaction overflow"))?,
+    );
+
+    for (potential, final_value) in potentials.iter().zip(finals) {
+        potential.validate()?;
+        final_value.validate()?;
+        if potential.pass != CoveredVegetationOperandPass::Potential
+            || final_value.pass != CoveredVegetationOperandPass::FixedAuthorizationFinal
+            || potential.transaction_id != expected_transaction
+            || final_value.transaction_id != expected_transaction
+            || hydrology.transaction_id() != expected_transaction
+            || potential.vegetation_model_definition_sha256
+                != final_value.vegetation_model_definition_sha256
+            || potential.lse_configuration_sha256 != final_value.lse_configuration_sha256
+            || potential.beginning_lse_state_sha256 != final_value.beginning_lse_state_sha256
+            || potential.vegetation_owner_id != final_value.vegetation_owner_id
+            || potential.ofe_id != final_value.ofe_id
+            || potential.tile_id != final_value.tile_id
+            || potential.tile_fraction.to_bits() != final_value.tile_fraction.to_bits()
+            || potential.interval_s.to_bits() != final_value.interval_s.to_bits()
+            || potential.interval_s.to_bits() != configuration.dt_s.to_bits()
+            || potential.top_rain_kg_m2_tile_ground.to_bits()
+                != final_value.top_rain_kg_m2_tile_ground.to_bits()
+        {
+            return Err(V8ProjectionError::Identity(
+                "multi-tile potential/final V8 lineage mismatch",
+            ));
+        }
+        validate_unified_root_protocol(final_value, hydrology)?;
+
+        for occupancy in &potential.occupancies {
+            let component = component_id(&occupancy.occupancy_id)?;
+            let occupancy_id = mapped_occupancy(&binding_map, &occupancy.occupancy_id)?;
+            if occupancy_id.tile_id != potential.tile_id
+                || occupancy.liquid.beginning_store_kg_m2_tile.to_bits()
+                    != beginning.occupancies[&occupancy_id]
+                        .canopy_liquid_kg_h2o_m2_tile_ground
+                        .to_bits()
+                || !potential_components.insert(component)
+            {
+                return Err(V8ProjectionError::Identity(
+                    "multi-tile potential component lineage",
+                ));
+            }
+            potential_receipts.push(V8OccupancyCarbonReceipt {
+                occupancy_id,
+                tile_fraction: potential.tile_fraction,
+                operands: V8OccupancyCarbonOperands {
+                    sun_leaf_area_m2_m2_tile_ground: occupancy.sun_leaf_area_m2_m2_tile_ground,
+                    shade_leaf_area_m2_m2_tile_ground: occupancy.shade_leaf_area_m2_m2_tile_ground,
+                    sun_gross_assimilation_umol_co2_m2_leaf_s: occupancy
+                        .sun_gross_assimilation_umol_co2_m2_leaf_s,
+                    shade_gross_assimilation_umol_co2_m2_leaf_s: occupancy
+                        .shade_gross_assimilation_umol_co2_m2_leaf_s,
+                    sun_dark_respiration_umol_co2_m2_leaf_s: occupancy
+                        .sun_dark_respiration_umol_co2_m2_leaf_s,
+                    shade_dark_respiration_umol_co2_m2_leaf_s: occupancy
+                        .shade_dark_respiration_umol_co2_m2_leaf_s,
+                },
+            });
+        }
+
+        let mut final_occupancies = Vec::new();
+        for occupancy in &final_value.occupancies {
+            let component = component_id(&occupancy.occupancy_id)?;
+            let occupancy_id = mapped_occupancy(&binding_map, &occupancy.occupancy_id)?;
+            if occupancy_id.tile_id != final_value.tile_id
+                || occupancy.liquid.beginning_store_kg_m2_tile.to_bits()
+                    != beginning.occupancies[&occupancy_id]
+                        .canopy_liquid_kg_h2o_m2_tile_ground
+                        .to_bits()
+                || !final_components.insert(component.clone())
+            {
+                return Err(V8ProjectionError::Identity(
+                    "multi-tile final component lineage",
+                ));
+            }
+            let carbon = carbon_operands(occupancy);
+            capped_receipts.push(V8OccupancyCarbonReceipt {
+                occupancy_id,
+                tile_fraction: final_value.tile_fraction,
+                operands: carbon,
+            });
+            final_occupancies.push(V8FinalOccupancyReceipt {
+                component_id: component,
+                beginning_canopy_liquid_kg_m2_tile_ground: occupancy
+                    .liquid
+                    .beginning_store_kg_m2_tile,
+                ending_canopy_liquid_kg_m2_tile_ground: occupancy.liquid.ending_store_kg_m2_tile,
+                dry_stem_temperature_k: occupancy.dry_stem_temperature_k,
+                root_node_potential_mm: occupancy.root_node_potential_mm,
+                shade_ci_pa: occupancy.shade_ci_pa,
+                shade_leaf_potential_mm: occupancy.shade_leaf_potential_mm,
+                shade_leaf_temperature_k: occupancy.shade_leaf_temperature_k,
+                stem_potential_mm: occupancy.stem_potential_mm,
+                sun_ci_pa: occupancy.sun_ci_pa,
+                sun_leaf_potential_mm: occupancy.sun_leaf_potential_mm,
+                sun_leaf_temperature_k: occupancy.sun_leaf_temperature_k,
+                wet_surface_temperature_k: occupancy.wet_surface_temperature_k,
+                beta_hyd: occupancy.beta_hyd,
+                carbon,
+                root_water: occupancy
+                    .root_water
+                    .iter()
+                    .map(|root| {
+                        Ok(V8FinalRootWaterReceipt {
+                            layer_id: root
+                                .key
+                                .soil_layer_id
+                                .clone()
+                                .ok_or(V8ProjectionError::Identity("root water layer identity"))?,
+                            request_kg_m2_stand_ground: root.request_kg_m2_stand_ground,
+                            authorization_kg_m2_stand_ground: root.authorization_kg_m2_stand_ground,
+                            finalized_use_kg_m2_stand_ground: root.finalized_use_kg_m2_stand_ground,
+                        })
+                    })
+                    .collect::<Result<Vec<_>, V8ProjectionError>>()?,
+            });
+        }
+        final_occupancies.sort_by(|left, right| left.component_id.cmp(&right.component_id));
+        final_tiles.push(V8FinalTileReceipt {
+            pass: V8PhysicalReceiptPass::FixedAuthorizationFinal,
+            transaction_id: final_value.transaction_id,
+            vegetation_model_definition_sha256: final_value
+                .vegetation_model_definition_sha256
+                .to_owned(),
+            vegetation_configuration_sha256: configuration.configuration_sha256.clone(),
+            vegetation_beginning_state_sha256: beginning.state_sha256.clone(),
+            lse_configuration_sha256: final_value.lse_configuration_sha256.as_str().to_owned(),
+            lse_beginning_state_sha256: final_value.beginning_lse_state_sha256.as_str().to_owned(),
+            tile_id: final_value.tile_id.clone(),
+            tile_fraction: final_value.tile_fraction,
+            interval_s: final_value.interval_s,
+            canopy_air_temperature_k: final_value.canopy_air_temperature_k,
+            canopy_air_specific_humidity_kg_kg: final_value.canopy_air_specific_humidity_kg_kg,
+            occupancies: final_occupancies,
+        });
+    }
+    if potential_components != final_components
+        || potential_components != binding_map.keys().cloned().collect()
+    {
+        return Err(V8ProjectionError::Identity(
+            "multi-tile potential/final component set mismatch",
+        ));
+    }
+    potential_receipts.sort_by(|left, right| left.occupancy_id.cmp(&right.occupancy_id));
+    capped_receipts.sort_by(|left, right| left.occupancy_id.cmp(&right.occupancy_id));
+    final_tiles.sort_by(|left, right| left.tile_id.cmp(&right.tile_id));
+    let first = potentials[0];
+    let potential = ValidatedV8CarbonPass::try_new(
+        first.vegetation_model_definition_sha256.to_owned(),
+        configuration.configuration_sha256.clone(),
+        expected_transaction,
+        beginning.state_sha256.clone(),
+        CoupledSolvePass::Potential,
+        first.interval_s,
+        potential_receipts,
+        configuration,
+        beginning,
+    )?;
+    let capped = ValidatedV8CarbonPass::try_new(
+        first.vegetation_model_definition_sha256.to_owned(),
+        configuration.configuration_sha256.clone(),
+        expected_transaction,
+        beginning.state_sha256.clone(),
+        CoupledSolvePass::Capped,
+        first.interval_s,
+        capped_receipts,
+        configuration,
+        beginning,
+    )?;
+    let final_state =
+        ValidatedV8FinalStatePass::try_new(bindings, final_tiles, configuration, beginning)?;
+    Ok(V8CoveredProjection {
+        potential,
+        capped,
+        final_state,
+    })
+}
+
+fn project_empty_v8_passes(
+    configuration: &VegetationConfiguration,
+    beginning: &V8CoupledOwnedState,
+) -> Result<V8CoveredProjection, V8ProjectionError> {
+    let transaction_id = TransactionId(
+        beginning
+            .last_transaction_id
+            .checked_add(1)
+            .ok_or(V8ProjectionError::Identity("V8 transaction overflow"))?,
+    );
+    let make_carbon = |pass| {
+        ValidatedV8CarbonPass::try_new(
+            openwepp_vegetation::V8_MODEL_SHA256.into(),
+            configuration.configuration_sha256.clone(),
+            transaction_id,
+            beginning.state_sha256.clone(),
+            pass,
+            configuration.dt_s,
+            Vec::new(),
+            configuration,
+            beginning,
+        )
+    };
+    Ok(V8CoveredProjection {
+        potential: make_carbon(CoupledSolvePass::Potential)?,
+        capped: make_carbon(CoupledSolvePass::Capped)?,
+        final_state: ValidatedV8FinalStatePass::try_new(&[], Vec::new(), configuration, beginning)?,
     })
 }
 
@@ -169,31 +421,6 @@ fn validate_shared_lineage(
         ));
     }
     Ok(())
-}
-
-fn validate_bindings(
-    bindings: &[V8ComponentOccupancyBinding],
-    configuration: &VegetationConfiguration,
-) -> Result<BTreeMap<V8LseComponentId, OccupancyId>, V8ProjectionError> {
-    let mut map = BTreeMap::new();
-    let mut occupancies = BTreeSet::new();
-    for binding in bindings {
-        if map
-            .insert(binding.component_id.clone(), binding.occupancy_id.clone())
-            .is_some()
-            || !occupancies.insert(binding.occupancy_id.clone())
-        {
-            return Err(V8ProjectionError::Identity(
-                "component/occupancy mapping is not bijective",
-            ));
-        }
-    }
-    if occupancies != configuration.expected_occupancies() {
-        return Err(V8ProjectionError::Identity(
-            "component/occupancy mapping is incomplete",
-        ));
-    }
-    Ok(map)
 }
 
 fn component_id(value: &ComponentId) -> Result<V8LseComponentId, V8ProjectionError> {
@@ -331,7 +558,7 @@ fn project_capped_carbon(
 
 fn project_final_state(
     source: &AcceptedCoveredVegetationOperands,
-    bindings: Vec<V8ComponentOccupancyBinding>,
+    bindings: &[V8ComponentOccupancyBinding],
     binding_map: &BTreeMap<V8LseComponentId, OccupancyId>,
     configuration: &VegetationConfiguration,
     beginning: &V8CoupledOwnedState,
@@ -517,12 +744,15 @@ fn authorization_rows_by_key(
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
+
     use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
     use openwepp_land_surface_energy::{
         OfeId, SourceId, StandGroundWaterAmountBasis, WaterSourceType,
     };
 
     use super::*;
+    use openwepp_vegetation::{TopologyTile, V8_MODEL_SHA256};
 
     fn root_key() -> GroundWaterKey {
         GroundWaterKey {
@@ -571,5 +801,36 @@ mod tests {
             component_id(&noncanonical),
             Err(V8ProjectionError::Vegetation(VegetationError::Receipt(_)))
         ));
+    }
+
+    #[test]
+    fn all_open_topology_projects_empty_canonical_v8_passes() {
+        let mut configuration = VegetationConfiguration {
+            model_definition_sha256: V8_MODEL_SHA256.into(),
+            configuration_sha256: String::new(),
+            initial_state_sha256: "0".repeat(64),
+            area_m2: 1.0,
+            timestamp: "2026-08-17T00:00:00Z".into(),
+            dt_s: 1_800.0,
+            topology_tiles: vec![TopologyTile {
+                tile_id: TileId::try_new("open").expect("tile"),
+                fraction: 1.0,
+            }],
+            strata: Vec::new(),
+        };
+        configuration.configuration_sha256 = configuration
+            .canonical_sha256()
+            .expect("configuration digest");
+        let mut beginning = V8CoupledOwnedState {
+            configuration_sha256: configuration.configuration_sha256.clone(),
+            last_transaction_id: 40,
+            model_definition_sha256: V8_MODEL_SHA256.into(),
+            occupancies: BTreeMap::new(),
+            state_sha256: String::new(),
+            strata: BTreeMap::new(),
+            tile_canopy_air: BTreeMap::new(),
+        };
+        beginning.state_sha256 = beginning.canonical_sha256();
+        project_empty_v8_passes(&configuration, &beginning).expect("empty projection");
     }
 }

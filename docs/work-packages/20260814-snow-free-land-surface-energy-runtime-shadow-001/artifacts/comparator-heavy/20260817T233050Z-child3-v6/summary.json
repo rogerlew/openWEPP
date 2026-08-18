@@ -1,0 +1,12 @@
+{
+  "run_root": "docs/work-packages/20260814-snow-free-land-surface-energy-runtime-shadow-001/artifacts/comparator-heavy/20260817T233050Z-child3-v6",
+  "verdict": "HOLD",
+  "commands_ran": 9,
+  "pass_count": 8,
+  "fail_or_hold_count": 1,
+  "canonical_metadata": "commands/*.meta",
+  "failed_command": "gate_cargo_nextest",
+  "workspace_tests_run": 2990,
+  "workspace_tests_passed": 2974,
+  "workspace_tests_failed": 16
+}

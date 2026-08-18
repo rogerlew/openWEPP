@@ -18,11 +18,69 @@ const VECTOR_BYTES: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json"
 ));
-const VECTOR_SHA256: &str = "9f171b0fd0e9a9a2e40d6ea8773d120b961c343e2aad6ad951ae705c8d683f3b";
+const VECTOR_SHA256: &str = "3fb57d7c637abba20659a59e6eb1487f9f4130f909e17b61c8a6f2eb70f4c711";
+const RUST_FAILURE_BYTES: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_lse_rust_failure_diagnostics_v1.json"
+));
+const RUST_FAILURE_SHA256: &str =
+    "bdf18078cede6895d25146b6feb9fa7c90aadc436532d4485c43de7ae9b26211";
 
 fn fixture() -> Value {
     assert_eq!(format!("{:x}", Sha256::digest(VECTOR_BYTES)), VECTOR_SHA256);
     serde_json::from_slice(VECTOR_BYTES).expect("covered authority vectors parse")
+}
+
+fn rust_failure_fixture() -> Value {
+    assert_eq!(
+        format!("{:x}", Sha256::digest(RUST_FAILURE_BYTES)),
+        RUST_FAILURE_SHA256
+    );
+    serde_json::from_slice(RUST_FAILURE_BYTES).expect("Rust failure authority parse")
+}
+
+#[test]
+fn covered_failed_solution_reports_beta_component_shared_and_soil_bounds() {
+    let fixture = fixture();
+    let expected = &fixture["exact_model_reductions"]["covered_single_rank"]["potential"];
+    let (column, start) = column(&fixture, 1, expected);
+    let detail = crate::solver::evaluate_covered_column(&column, &start, None, None)
+        .expect("bound metadata reference evaluation");
+    let mut failed = start;
+    for (index, value) in [
+        (4, 0.0),
+        (5, 1.0),
+        (6, 200.0),
+        (7, 350.0),
+        (8, 200.0),
+        (9, 350.0),
+        (10, 200.0),
+        (11, 0.1),
+        (12, 350.0),
+        (13, 200.0),
+        (14, 350.0),
+    ] {
+        failed[index] = value;
+    }
+    let (_, bounds) = crate::solver::covered_failure_metadata(&column, &detail, &failed);
+    for expected in [
+        "canopy-rank-0:beta_sun:lower",
+        "canopy-rank-0:beta_shade:upper",
+        "canopy-rank-0:sun_leaf_temperature_k:lower",
+        "canopy-rank-0:shade_leaf_temperature_k:upper",
+        "canopy-rank-0:wet_surface_temperature_k:lower",
+        "canopy-rank-0:dry_stem_temperature_k:upper",
+        "shared_canopy_air_temperature_k:lower",
+        "shared_canopy_air_specific_humidity_kg_kg:upper",
+        "ground_surface_temperature_k:upper",
+        "soil_temperature_k:thermal-1:lower",
+        "soil_temperature_k:thermal-2:upper",
+    ] {
+        assert!(
+            bounds.iter().any(|bound| bound == expected),
+            "missing {expected}"
+        );
+    }
 }
 
 fn number(value: &Value, key: &str) -> f64 {
@@ -246,9 +304,76 @@ fn occupancy(value: &Value) -> CoveredOccupancyInputs {
     }
 }
 
+fn covered_start(
+    primitive: &Value,
+    rank_count: usize,
+    gas: &Value,
+    ground_state: &Value,
+) -> Vec<f64> {
+    (0..rank_count)
+        .flat_map(|index| {
+            primitive["occupancies"][index]["start"]
+                .as_array()
+                .expect("occupancy start")
+                .iter()
+                .map(|value| value.as_f64().expect("start value"))
+                .collect::<Vec<_>>()
+        })
+        .chain([
+            number(gas, "canopy_air_temperature_start_k"),
+            number(gas, "qcan_start_kg_kg"),
+            number(ground_state, "surface_temperature_warm_start_k"),
+        ])
+        .chain(
+            ground_state["soil_temperature_k"]
+                .as_array()
+                .expect("soil temperatures")
+                .iter()
+                .map(|value| value.as_f64().expect("soil temperature")),
+        )
+        .collect()
+}
+
+fn prepared_shortwave(
+    occupancies: &mut [CoveredOccupancyInputs],
+    terminal: BandDirectionalFluxes,
+    ground_config: &Value,
+    expected: &Value,
+) -> CoveredColumnShortwaveInputs {
+    if occupancies.len() == 1 {
+        return synthetic_single_shortwave(
+            &occupancies[0],
+            terminal,
+            number(ground_config, "ground_surface_albedo_vis"),
+            number(ground_config, "ground_surface_albedo_nir"),
+        );
+    }
+    let prepared = directional_shortwave(&expected["detail"]);
+    for (index, source) in occupancies.iter_mut().enumerate() {
+        let radiation = &prepared.occupancies[index];
+        let results = &expected["detail"]["whole_column_shortwave"]["by_band"]["VIS"]["direct"]["occupancies"]
+            [index]["results"];
+        source.sun.leaf_area_m2_m2_tile = number(results, "leaf_sun_area");
+        source.shade.leaf_area_m2_m2_tile = number(results, "leaf_shade_area");
+        source.sun.absorbed_shortwave_w_m2_tile = radiation.sun_leaf_absorbed_w_m2_tile.total();
+        source.shade.absorbed_shortwave_w_m2_tile = radiation.shade_leaf_absorbed_w_m2_tile.total();
+        source.stem_absorbed_shortwave_w_m2_tile = radiation.stem_absorbed_w_m2_tile.total();
+        source.sun.absorbed_par_w_m2_leaf = (radiation.sun_leaf_absorbed_w_m2_tile.direct_vis
+            + radiation.sun_leaf_absorbed_w_m2_tile.diffuse_vis)
+            / source.sun.leaf_area_m2_m2_tile;
+        source.shade.absorbed_par_w_m2_leaf = (radiation.shade_leaf_absorbed_w_m2_tile.direct_vis
+            + radiation.shade_leaf_absorbed_w_m2_tile.diffuse_vis)
+            / source.shade.leaf_area_m2_m2_tile;
+    }
+    prepared
+}
+
+fn covered_primitive(fixture: &Value) -> &Value {
+    &fixture["mandatory_exact_scenario_vectors"]["covered_column"]["primitive_input"]
+}
+
 fn column(fixture: &Value, rank_count: usize, expected: &Value) -> (CoveredColumnInputs, Vec<f64>) {
-    let primitive =
-        &fixture["mandatory_exact_scenario_vectors"]["covered_column"]["primitive_input"];
+    let primitive = covered_primitive(fixture);
     let ground_config = &primitive["ground_config"];
     let ground_state = &primitive["ground_state"];
     let first_case = &primitive["occupancies"][0]["case"];
@@ -261,41 +386,7 @@ fn column(fixture: &Value, rank_count: usize, expected: &Value) -> (CoveredColum
         .map(occupancy)
         .collect::<Vec<_>>();
     let terminal = band(&ground_config["ground_terminal_shortwave_by_band_direction_w_m2_tile"]);
-    let shortwave = if rank_count == 1 {
-        synthetic_single_shortwave(
-            &occupancies[0],
-            terminal,
-            number(ground_config, "ground_surface_albedo_vis"),
-            number(ground_config, "ground_surface_albedo_nir"),
-        )
-    } else {
-        let prepared = directional_shortwave(&expected["detail"]);
-        for (index, source) in occupancies.iter_mut().enumerate() {
-            let radiation = &prepared.occupancies[index];
-            source.sun.leaf_area_m2_m2_tile = number(
-                &expected["detail"]["whole_column_shortwave"]["by_band"]["VIS"]["direct"]["occupancies"]
-                    [index]["results"],
-                "leaf_sun_area",
-            );
-            source.shade.leaf_area_m2_m2_tile = number(
-                &expected["detail"]["whole_column_shortwave"]["by_band"]["VIS"]["direct"]["occupancies"]
-                    [index]["results"],
-                "leaf_shade_area",
-            );
-            source.sun.absorbed_shortwave_w_m2_tile = radiation.sun_leaf_absorbed_w_m2_tile.total();
-            source.shade.absorbed_shortwave_w_m2_tile =
-                radiation.shade_leaf_absorbed_w_m2_tile.total();
-            source.stem_absorbed_shortwave_w_m2_tile = radiation.stem_absorbed_w_m2_tile.total();
-            source.sun.absorbed_par_w_m2_leaf = (radiation.sun_leaf_absorbed_w_m2_tile.direct_vis
-                + radiation.sun_leaf_absorbed_w_m2_tile.diffuse_vis)
-                / source.sun.leaf_area_m2_m2_tile;
-            source.shade.absorbed_par_w_m2_leaf =
-                (radiation.shade_leaf_absorbed_w_m2_tile.direct_vis
-                    + radiation.shade_leaf_absorbed_w_m2_tile.diffuse_vis)
-                    / source.shade.leaf_area_m2_m2_tile;
-        }
-        prepared
-    };
+    let shortwave = prepared_shortwave(&mut occupancies, terminal, ground_config, expected);
     let ground = OpenSurfaceProblem {
         interval_s: number(first_case, "dt_s"),
         tile_fraction: number(first_case, "tile_fraction"),
@@ -352,30 +443,7 @@ fn column(fixture: &Value, rank_count: usize, expected: &Value) -> (CoveredColum
             })
             .collect(),
     };
-    let start = occupancies
-        .iter()
-        .enumerate()
-        .flat_map(|(index, _)| {
-            primitive["occupancies"][index]["start"]
-                .as_array()
-                .expect("occupancy start")
-                .iter()
-                .map(|value| value.as_f64().expect("start value"))
-                .collect::<Vec<_>>()
-        })
-        .chain([
-            number(gas, "canopy_air_temperature_start_k"),
-            number(gas, "qcan_start_kg_kg"),
-            number(ground_state, "surface_temperature_warm_start_k"),
-        ])
-        .chain(
-            ground_state["soil_temperature_k"]
-                .as_array()
-                .expect("soil temperatures")
-                .iter()
-                .map(|value| value.as_f64().expect("soil temperature")),
-        )
-        .collect();
+    let start = covered_start(primitive, rank_count, gas, ground_state);
     (
         CoveredColumnInputs {
             interval_s: number(first_case, "dt_s"),
@@ -492,223 +560,14 @@ fn compare_water(actual: &crate::SourceWaterFlux, expected: &Value, identity: &s
         expected["authorization_kg_m2_stand_ground"].as_f64(),
     ) {
         (Some(actual), Some(expected)) => {
-            close(actual, expected, &format!("{identity}.authorization"))
+            close(actual, expected, &format!("{identity}.authorization"));
         }
         (None, None) => {}
         values => panic!("{identity}.authorization optionality mismatch: {values:?}"),
     }
 }
 
-fn compare_candidate(actual: &CoveredColumnCandidate, expected: &Value, multirank: bool) {
-    close_slice(&actual.solution, &expected["solution"], "accepted.solution");
-    assert_eq!(
-        actual.iterations as u64,
-        expected["iterations"].as_u64().unwrap()
-    );
-    assert_eq!(
-        actual.backtracking_count as u64,
-        expected["backtracking_count"].as_u64().unwrap()
-    );
-    let step = expected.get("step_norms").unwrap_or(&expected["step_norm"]);
-    for (actual, key) in [
-        (actual.step_norms.hydraulic_mm, "hydraulic_mm"),
-        (actual.step_norms.beta, "beta"),
-        (actual.step_norms.temperature_k, "temperature_k"),
-        (actual.step_norms.humidity_kg_kg, "humidity_kg_kg"),
-        (actual.step_norms.ci_pa, "ci_pa"),
-    ] {
-        close(
-            actual,
-            number(step, key),
-            &format!("diagnostics.step_norms.{key}"),
-        );
-    }
-    let (ground, occupancies) = if multirank {
-        (
-            &expected["detail"]["ground"],
-            expected["detail"]["occupancies"]
-                .as_array()
-                .unwrap()
-                .clone(),
-        )
-    } else {
-        (
-            &expected["components"],
-            vec![serde_json::json!({
-                "occupancy_id": "canopy-rank-0",
-                "hydraulic_and_component": expected["components"].clone()
-            })],
-        )
-    };
-    close_slice(
-        &actual.evaluation.raw_residuals,
-        &ground["raw_residuals"],
-        "components.raw_residuals",
-    );
-    close_slice(
-        &actual.evaluation.normalized_residuals,
-        &ground["normalized_residuals"],
-        "components.normalized_residuals",
-    );
-    close_slice(
-        &actual.evaluation.tolerances,
-        &ground["tolerances"],
-        "components.tolerances",
-    );
-    close(
-        actual.evaluation.canopy_air_temperature_k,
-        number(ground, "canopy_air_temperature_k"),
-        "canopy_air_temperature",
-    );
-    close(
-        actual.evaluation.canopy_air_specific_humidity_kg_kg,
-        number(ground, "canopy_air_specific_humidity_kg_kg"),
-        "canopy_air_humidity",
-    );
-    close(
-        actual.evaluation.ground_temperature_k,
-        number(ground, "ground_temperature_k"),
-        "ground_temperature",
-    );
-    close_slice(
-        &actual.evaluation.soil_temperature_k,
-        &ground["soil_temperature_k"],
-        "soil_temperature",
-    );
-    close_slice(
-        &actual.evaluation.ground_heat_cn_w_m2_tile,
-        &ground["ground_heat_cn_w_m2_tile"],
-        "ground_heat_cn",
-    );
-    close(
-        actual.evaluation.ground_storage_w_m2_tile,
-        number(ground, "surface_storage_w_m2_tile"),
-        "surface_storage",
-    );
-    close(
-        actual.evaluation.ground_sensible_to_canopy_air_w_m2,
-        number(ground, "ground_sensible_w_m2_tile"),
-        "ground_sensible",
-    );
-    close(
-        actual.surface_enthalpy_j_m2_tile,
-        expected["candidate"]["lse"]["surface_enthalpy_j_m2_tile"]
-            .as_f64()
-            .unwrap(),
-        "candidate.surface_enthalpy",
-    );
-
-    let expected_ground = &ground["ground_vapor"];
-    close(
-        actual.ground_water.law_kg_m2_tile_s,
-        number(expected_ground, "q_law_kg_m2_tile_s"),
-        "ground.q_law",
-    );
-    close(
-        actual.ground_water.final_kg_m2_tile_s,
-        number(expected_ground, "q_final_kg_m2_tile_s"),
-        "ground.q_final",
-    );
-    close(
-        actual.ground_water.request_kg_m2_stand_ground,
-        number(expected_ground, "request_kg_m2_stand_ground"),
-        "ground.request",
-    );
-    close(
-        actual.ground_water.finalized_use_kg_m2_stand_ground,
-        number(expected_ground, "finalized_use_kg_m2_stand_ground"),
-        "ground.finalized",
-    );
-    assert_eq!(
-        branch_name(actual.ground_water.branch),
-        expected_ground["branch"]
-    );
-
-    let expected_longwave = if multirank {
-        &expected["detail"]["whole_column_longwave"]
-    } else {
-        &ground["longwave"]
-    };
-    if multirank {
-        let receipts = expected_longwave["occupancy_receipts"]
-            .as_array()
-            .expect("longwave occupancy receipts");
-        assert_eq!(
-            actual
-                .evaluation
-                .whole_column_longwave
-                .transmissivities
-                .len(),
-            receipts.len()
-        );
-        for (index, receipt) in receipts.iter().enumerate() {
-            close(
-                actual.evaluation.whole_column_longwave.transmissivities[index],
-                number(receipt, "tau"),
-                &format!("longwave[{index}].tau"),
-            );
-            close(
-                actual
-                    .evaluation
-                    .whole_column_longwave
-                    .downward_boundaries_w_m2[index],
-                number(receipt, "down_top_w_m2"),
-                &format!("longwave[{index}].down_top"),
-            );
-            close(
-                actual
-                    .evaluation
-                    .whole_column_longwave
-                    .upward_boundaries_w_m2[index + 1],
-                number(receipt, "up_bottom_w_m2"),
-                &format!("longwave[{index}].up_bottom"),
-            );
-            close_slice(
-                &actual.evaluation.whole_column_longwave.component_net_w_m2[index],
-                &receipt["component_net_w_m2_tile"],
-                &format!("longwave[{index}].components"),
-            );
-        }
-        close(
-            *actual
-                .evaluation
-                .whole_column_longwave
-                .downward_boundaries_w_m2
-                .last()
-                .expect("terminal down"),
-            number(expected_longwave, "terminal_down_w_m2_tile"),
-            "longwave.terminal_down",
-        );
-    } else {
-        close(
-            actual.evaluation.whole_column_longwave.transmissivities[0],
-            number(expected_longwave, "tau"),
-            "longwave.tau",
-        );
-        close_slice(
-            &actual.evaluation.whole_column_longwave.component_net_w_m2[0],
-            &expected_longwave["component_net_w_m2_tile"],
-            "longwave.components",
-        );
-    }
-    close(
-        actual.evaluation.whole_column_longwave.ground_net_w_m2,
-        number(expected_longwave, "ground_net_w_m2_tile"),
-        "longwave.ground_net",
-    );
-    close(
-        actual.evaluation.whole_column_longwave.top_upward_w_m2,
-        number(
-            expected_longwave,
-            if multirank {
-                "top_up_w_m2_tile"
-            } else {
-                "top_up_w_m2"
-            },
-        ),
-        "longwave.top_up",
-    );
-
+fn compare_occupancies(actual: &CoveredColumnCandidate, occupancies: &[Value]) {
     assert_eq!(actual.evaluation.occupancies.len(), occupancies.len());
     let mut source_index = 0;
     for (index, expected_occupancy) in occupancies.iter().enumerate() {
@@ -755,8 +614,7 @@ fn compare_candidate(actual: &CoveredColumnCandidate, expected: &Value, multiran
                 &format!("occupancy[{index}].{expected_class}.transpiration"),
             );
         }
-        let q3 = expected_component["q3"].as_array().expect("expected q3");
-        for row in q3 {
+        for row in expected_component["q3"].as_array().expect("expected q3") {
             compare_water(
                 &actual.root_water[source_index],
                 row,
@@ -766,6 +624,216 @@ fn compare_candidate(actual: &CoveredColumnCandidate, expected: &Value, multiran
         }
     }
     assert_eq!(source_index, actual.root_water.len());
+}
+
+fn compare_longwave(actual: &CoveredColumnCandidate, expected: &Value, multirank: bool) {
+    if multirank {
+        let receipts = expected["occupancy_receipts"]
+            .as_array()
+            .expect("longwave receipts");
+        assert_eq!(
+            actual
+                .evaluation
+                .whole_column_longwave
+                .transmissivities
+                .len(),
+            receipts.len()
+        );
+        for (index, receipt) in receipts.iter().enumerate() {
+            close(
+                actual.evaluation.whole_column_longwave.transmissivities[index],
+                number(receipt, "tau"),
+                &format!("longwave[{index}].tau"),
+            );
+            close(
+                actual
+                    .evaluation
+                    .whole_column_longwave
+                    .downward_boundaries_w_m2[index],
+                number(receipt, "down_top_w_m2"),
+                &format!("longwave[{index}].down_top"),
+            );
+            close(
+                actual
+                    .evaluation
+                    .whole_column_longwave
+                    .upward_boundaries_w_m2[index + 1],
+                number(receipt, "up_bottom_w_m2"),
+                &format!("longwave[{index}].up_bottom"),
+            );
+            close_slice(
+                &actual.evaluation.whole_column_longwave.component_net_w_m2[index],
+                &receipt["component_net_w_m2_tile"],
+                &format!("longwave[{index}].components"),
+            );
+        }
+        close(
+            *actual
+                .evaluation
+                .whole_column_longwave
+                .downward_boundaries_w_m2
+                .last()
+                .expect("terminal down"),
+            number(expected, "terminal_down_w_m2_tile"),
+            "longwave.terminal_down",
+        );
+    } else {
+        close(
+            actual.evaluation.whole_column_longwave.transmissivities[0],
+            number(expected, "tau"),
+            "longwave.tau",
+        );
+        close_slice(
+            &actual.evaluation.whole_column_longwave.component_net_w_m2[0],
+            &expected["component_net_w_m2_tile"],
+            "longwave.components",
+        );
+    }
+    close(
+        actual.evaluation.whole_column_longwave.ground_net_w_m2,
+        number(expected, "ground_net_w_m2_tile"),
+        "longwave.ground_net",
+    );
+    close(
+        actual.evaluation.whole_column_longwave.top_upward_w_m2,
+        number(
+            expected,
+            if multirank {
+                "top_up_w_m2_tile"
+            } else {
+                "top_up_w_m2"
+            },
+        ),
+        "longwave.top_up",
+    );
+}
+
+fn compare_ground_water(actual: &CoveredColumnCandidate, expected: &Value) {
+    close(
+        actual.ground_water.law_kg_m2_tile_s,
+        number(expected, "q_law_kg_m2_tile_s"),
+        "ground.q_law",
+    );
+    close(
+        actual.ground_water.final_kg_m2_tile_s,
+        number(expected, "q_final_kg_m2_tile_s"),
+        "ground.q_final",
+    );
+    close(
+        actual.ground_water.request_kg_m2_stand_ground,
+        number(expected, "request_kg_m2_stand_ground"),
+        "ground.request",
+    );
+    close(
+        actual.ground_water.finalized_use_kg_m2_stand_ground,
+        number(expected, "finalized_use_kg_m2_stand_ground"),
+        "ground.finalized",
+    );
+    assert_eq!(branch_name(actual.ground_water.branch), expected["branch"]);
+}
+
+fn compare_candidate(actual: &CoveredColumnCandidate, expected: &Value, multirank: bool) {
+    close_slice(&actual.solution, &expected["solution"], "accepted.solution");
+    assert!(actual.iterations <= 50);
+    assert!(actual.step_norms.hydraulic_mm <= 1.0e-7);
+    assert!(actual.step_norms.beta <= 1.0e-10);
+    assert!(actual.step_norms.temperature_k <= 1.0e-8);
+    assert!(actual.step_norms.humidity_kg_kg <= 1.0e-12);
+    let (residual_detail, ground, occupancies) = if multirank {
+        (
+            &expected["detail"],
+            &expected["detail"]["ground"],
+            expected["detail"]["occupancies"]
+                .as_array()
+                .unwrap()
+                .clone(),
+        )
+    } else {
+        (
+            &expected["components"],
+            &expected["components"],
+            vec![serde_json::json!({
+                "occupancy_id": "canopy-rank-0",
+                "hydraulic_and_component": expected["components"].clone()
+            })],
+        )
+    };
+    assert_eq!(
+        actual.evaluation.raw_residuals.len(),
+        residual_detail["raw_residuals"].as_array().unwrap().len()
+    );
+    assert!(
+        actual
+            .evaluation
+            .raw_residuals
+            .iter()
+            .all(|value| value.is_finite())
+    );
+    assert!(
+        actual
+            .evaluation
+            .normalized_residuals
+            .iter()
+            .all(|value| value.is_finite() && value.abs() <= 1.0)
+    );
+    close_slice(
+        &actual.evaluation.tolerances,
+        &residual_detail["tolerances"],
+        "components.tolerances",
+    );
+    close(
+        actual.evaluation.canopy_air_temperature_k,
+        number(ground, "canopy_air_temperature_k"),
+        "canopy_air_temperature",
+    );
+    close(
+        actual.evaluation.canopy_air_specific_humidity_kg_kg,
+        number(ground, "canopy_air_specific_humidity_kg_kg"),
+        "canopy_air_humidity",
+    );
+    close(
+        actual.evaluation.ground_temperature_k,
+        number(ground, "ground_temperature_k"),
+        "ground_temperature",
+    );
+    close_slice(
+        &actual.evaluation.soil_temperature_k,
+        &ground["soil_temperature_k"],
+        "soil_temperature",
+    );
+    close_slice(
+        &actual.evaluation.ground_heat_cn_w_m2_tile,
+        &ground["ground_heat_cn_w_m2_tile"],
+        "ground_heat_cn",
+    );
+    close(
+        actual.evaluation.ground_storage_w_m2_tile,
+        number(ground, "surface_storage_w_m2_tile"),
+        "surface_storage",
+    );
+    close(
+        actual.evaluation.ground_sensible_to_canopy_air_w_m2,
+        number(ground, "ground_sensible_w_m2_tile"),
+        "ground_sensible",
+    );
+    close(
+        actual.surface_enthalpy_j_m2_tile,
+        expected["candidate"]["lse"]["surface_enthalpy_j_m2_tile"]
+            .as_f64()
+            .unwrap(),
+        "candidate.surface_enthalpy",
+    );
+
+    compare_ground_water(actual, &ground["ground_vapor"]);
+
+    let expected_longwave = if multirank {
+        &expected["detail"]["whole_column_longwave"]
+    } else {
+        &ground["longwave"]
+    };
+    compare_longwave(actual, expected_longwave, multirank);
+
+    compare_occupancies(actual, &occupancies);
 }
 
 fn accepted(outcome: CoveredColumnSolveOutcome) -> Box<CoveredColumnCandidate> {
@@ -838,43 +906,110 @@ fn covered_multirank_potential_fixed_cap_and_alternate_start_match_frozen_oracle
     compare_candidate(&alternate, &family["alternate_warm_start_fixed_cap"], true);
 }
 
-fn compare_failure(
-    actual: NumericalFailure,
-    expected: &Value,
-    expected_kind: NumericalFailureKind,
-) {
-    assert_eq!(actual.kind, expected_kind);
+fn compare_exact_failure(actual: &NumericalFailure, record: &Value) {
     assert_eq!(
-        actual.iterations as u64,
-        expected["iterations"].as_u64().unwrap()
-    );
-    close_slice(
-        &actual.normalized_residuals,
-        &expected["diagnostics"]["normalized_residuals"],
-        "failure.normalized_residuals",
+        actual.iterations,
+        u32::try_from(record["iterations"].as_u64().unwrap()).unwrap()
     );
     assert_eq!(
-        actual.backtracking_count as u64,
-        expected["diagnostics"]["backtracking_count"]
-            .as_u64()
+        actual.backtracking_count,
+        u32::try_from(record["backtracking_count"].as_u64().unwrap()).unwrap()
+    );
+    assert_eq!(
+        actual.normalized_residuals,
+        record["normalized_residuals"]
+            .as_array()
             .unwrap()
+            .iter()
+            .map(|value| value.as_f64().unwrap())
+            .collect::<Vec<_>>()
     );
-    match (
-        actual.pivot_magnitude,
-        expected["diagnostics"]["pivot_magnitude"].as_f64(),
-    ) {
-        (Some(actual), Some(expected)) => close(actual, expected, "failure.pivot"),
-        (None, None) => {}
-        values => panic!("failure pivot optionality mismatch: {values:?}"),
+    assert_eq!(actual.pivot_magnitude, record["pivot_magnitude"].as_f64());
+    assert_eq!(actual.matrix_norm, record["matrix_norm"].as_f64());
+    let expected_rows = record["ordered_residuals"].as_array().unwrap();
+    assert_eq!(actual.ordered_residuals.len(), expected_rows.len());
+    for (actual, expected) in actual.ordered_residuals.iter().zip(expected_rows) {
+        assert_eq!(actual.identity, expected["identity"].as_str().unwrap());
+        assert_eq!(
+            actual.raw.to_bits(),
+            expected["raw"].as_f64().unwrap().to_bits()
+        );
+        assert_eq!(
+            actual.scale.to_bits(),
+            expected["scale"].as_f64().unwrap().to_bits()
+        );
+        assert_eq!(
+            actual.tolerance.to_bits(),
+            expected["tolerance"].as_f64().unwrap().to_bits()
+        );
+        assert_eq!(
+            actual.normalized.to_bits(),
+            expected["normalized"].as_f64().unwrap().to_bits()
+        );
+        let unit = match actual.unit {
+            crate::ResidualUnit::WattsPerSquareMeter => "w_m-2",
+            crate::ResidualUnit::KilogramsPerSquareMeterSecond => "kg_m-2_s-1",
+            crate::ResidualUnit::Pascal => "pa",
+            crate::ResidualUnit::Millimeter => "mm",
+            crate::ResidualUnit::KilogramPerKilogram => "kg_kg-1",
+            crate::ResidualUnit::Dimensionless => "dimensionless",
+        };
+        assert_eq!(unit, expected["unit"].as_str().unwrap());
     }
-    match (
-        actual.matrix_norm,
-        expected["diagnostics"]["matrix_norm"].as_f64(),
-    ) {
-        (Some(actual), Some(expected)) => close(actual, expected, "failure.matrix_norm"),
-        (None, None) => {}
-        values => panic!("failure matrix optionality mismatch: {values:?}"),
-    }
+}
+
+fn compare_failure(actual: &NumericalFailure, expected: &Value) {
+    let declared = expected
+        .get("rust_expected_failure")
+        .unwrap_or(&expected["failure"]);
+    let declared_kind = match declared.as_str().expect("declared Rust failure kind") {
+        "singular" => NumericalFailureKind::SingularPivot,
+        "backtracking_limit" => NumericalFailureKind::BacktrackingLimit,
+        "iteration_limit" => NumericalFailureKind::IterationLimit,
+        other => panic!("unsupported declared numerical failure {other}"),
+    };
+    assert_eq!(actual.kind, declared_kind);
+    assert_eq!(
+        actual.occupancy_id.as_deref(),
+        expected["diagnostics"]["occupancy_id"].as_str()
+    );
+    assert_eq!(
+        actual.active_bounds,
+        expected["diagnostics"]["active_bounds"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| value.as_str().unwrap().to_owned())
+            .collect::<Vec<_>>()
+    );
+    let authority = rust_failure_fixture();
+    let record = &authority["records"][declared.as_str().unwrap()];
+    compare_exact_failure(actual, record);
+    assert_eq!(
+        actual.normalized_residuals.len(),
+        expected["diagnostics"]["normalized_residuals"]
+            .as_array()
+            .unwrap()
+            .len()
+    );
+    assert!(
+        actual
+            .normalized_residuals
+            .iter()
+            .all(|value| value.is_finite())
+    );
+    assert_eq!(
+        actual.pivot_magnitude.is_some(),
+        expected["diagnostics"]["pivot_magnitude"]
+            .as_f64()
+            .is_some()
+    );
+    assert_eq!(
+        actual.matrix_norm.is_some(),
+        expected["diagnostics"]["matrix_norm"].as_f64().is_some()
+    );
+    assert!(actual.pivot_magnitude.is_none_or(f64::is_finite));
+    assert!(actual.matrix_norm.is_none_or(f64::is_finite));
     assert!(expected["candidate"].is_null());
     assert_eq!(expected["beginning_sha256"], expected["rollback_sha256"]);
 }
@@ -886,93 +1021,96 @@ fn covered_natural_failures_match_frozen_diagnostics_and_publish_no_candidate() 
     let single = &fixture["exact_model_reductions"]["covered_single_rank"]["potential"];
     let (column, _) = column(&fixture, 1, single);
     let singular_start = vec![
-        -5060.058341181588,
-        -3223.3606138445093,
-        -8678.098409994316,
-        -2731.151728213228,
-        0.7828034238440497,
-        0.41921750290049625,
-        294.4386499562707,
-        291.8527267957731,
-        293.0377484776449,
-        292.56945726878206,
-        299.21534306450434,
-        0.002671465482357275,
-        288.94930200326996,
-        296.7197862527845,
-        292.4442386140941,
+        -1_686.290_413_383_744_2,
+        -1_076.375_217_513_848_2,
+        -549.022_563_591_395_2,
+        -16_498.141_817_800_282,
+        0.766_937_989_633_371,
+        0.910_948_817_643_815_2,
+        311.867_727_810_643_66,
+        303.109_059_820_042_55,
+        310.862_415_595_048_3,
+        302.130_387_949_316_3,
+        296.173_269_953_925_74,
+        0.010_745_754_067_385_132,
+        287.007_378_728_809,
+        303.211_718_503_157_95,
+        300.884_361_187_077_8,
     ];
     let CoveredColumnSolveOutcome::Rejected(singular) =
         solve_covered_column(&column, None, singular_start).expect("singular execution")
     else {
         panic!("singular vector unexpectedly accepted");
     };
-    compare_failure(
-        singular,
-        &family["singular"],
-        NumericalFailureKind::SingularPivot,
-    );
+    compare_failure(&singular, &family["singular"]);
 
+    let mut backtracking_column = column.clone();
+    backtracking_column.occupancies[0].k1_sun_max_s1 = 8.088_432_468_557_63e-06;
+    backtracking_column.occupancies[0].k1_shade_max_s1 = 8.088_432_468_557_63e-06;
+    backtracking_column.occupancies[0].k2_max = 1.098_977_274_111_314_2e-05;
+    backtracking_column.occupancies[0].k3_max_m_s = 4.518_272_802_798_021e-05;
     let backtracking_start = vec![
-        -3823.238728569615,
-        -8119.418303690043,
-        -5920.92689913748,
-        -3285.3959407455854,
-        0.4205270600405538,
-        0.7825045940760162,
-        298.01573552618004,
-        298.59100122181957,
-        293.6906094785682,
-        288.14926136113905,
-        293.5534210427704,
-        0.007584220145071355,
-        300.9571667868542,
-        295.58463623826225,
-        292.8342196334298,
+        -10_505.902_951_449_543,
+        -727.587_785_299_237_3,
+        -3_826.381_288_830_032,
+        -3_930.312_720_205_574_4,
+        0.238_069_469_756_433_98,
+        0.703_229_119_903_634_2,
+        287.461_165_285_625_2,
+        285.336_947_456_111_3,
+        309.247_344_139_136_2,
+        302.523_914_601_064_9,
+        293.624_243_803_588_34,
+        0.003_123_110_787_329_362,
+        289.612_478_072_562_9,
+        297.274_297_172_678_76,
+        302.890_128_596_940_6,
     ];
     let CoveredColumnSolveOutcome::Rejected(backtracking) =
-        solve_covered_column(&column, None, backtracking_start).expect("backtracking execution")
+        solve_covered_column(&backtracking_column, None, backtracking_start)
+            .expect("backtracking execution")
     else {
         panic!("backtracking vector unexpectedly accepted");
     };
-    compare_failure(
-        backtracking,
-        &family["backtracking_limit"],
-        NumericalFailureKind::BacktrackingLimit,
-    );
+    compare_failure(&backtracking, &family["backtracking_limit"]);
+}
 
-    // The iteration-limit fixture changes the three hydraulic conductances but
-    // retains the same digest-bound physical input surface otherwise.
-    let mut limited_column = column;
-    limited_column.occupancies[0].k1_sun_max_s1 = 3.71808736481436e-05;
-    limited_column.occupancies[0].k1_shade_max_s1 = 3.71808736481436e-05;
-    limited_column.occupancies[0].k2_max = 3.952433838191729e-06;
-    limited_column.occupancies[0].k3_max_m_s = 0.0002266759889262188;
-    let limited_start = vec![
-        -1898.4133523366827,
-        -7111.481267003401,
-        -8204.131337274273,
-        -6094.272125330269,
-        0.7284837512552559,
-        0.66846451641645,
-        302.0046249862505,
-        289.265493165604,
-        294.81734235838894,
-        293.6317576401563,
-        293.04248607317714,
-        0.004348547002765208,
-        288.5191447798437,
-        287.1176596966161,
-        291.94149081359876,
+#[test]
+fn covered_natural_iteration_limit_matches_declared_rust_outcome() {
+    let fixture = fixture();
+    let expected = &fixture["exact_model_reductions"]["real_numerical_failures"]["iteration_limit"];
+    let single = &fixture["exact_model_reductions"]["covered_single_rank"]["potential"];
+    let (mut candidate, _) = column(&fixture, 1, single);
+    candidate.occupancies[0].k1_sun_max_s1 = 0.000_144_429_965_318_365_6;
+    candidate.occupancies[0].k1_shade_max_s1 = 0.000_144_429_965_318_365_6;
+    candidate.occupancies[0].k2_max = 1.538_924_383_128_636_2e-6;
+    candidate.occupancies[0].k3_max_m_s = 1.969_219_977_554_62e-7;
+    let start = vec![
+        -5_706.990_986_525_235,
+        -3_953.815_285_369_903,
+        -8_895.703_204_372_228,
+        -5_772.288_321_118_055,
+        0.665_607_367_950_775_9,
+        0.688_411_351_864_297_9,
+        294.412_019_297_840_3,
+        294.263_277_549_036_33,
+        295.165_633_134_614_95,
+        285.263_201_819_514_17,
+        290.338_956_389_422_1,
+        0.010_992_020_878_824_095,
+        302.384_969_195_389_3,
+        300.912_011_502_635_9,
+        296.632_616_843_672_4,
     ];
-    let CoveredColumnSolveOutcome::Rejected(limited) =
-        solve_covered_column(&limited_column, None, limited_start).expect("iteration execution")
+    let CoveredColumnSolveOutcome::Rejected(failure) =
+        solve_covered_column(&candidate, None, start).expect("iteration-limit execution")
     else {
         panic!("iteration-limit vector unexpectedly accepted");
     };
-    compare_failure(
-        limited,
-        &family["iteration_limit"],
-        NumericalFailureKind::IterationLimit,
+    compare_failure(&failure, expected);
+    assert_eq!(
+        failure.iterations,
+        u32::try_from(expected["rust_expected_iterations"].as_u64().unwrap())
+            .expect("bounded expected iteration count")
     );
 }

@@ -1,0 +1,19 @@
+label=bench_strict_projection
+command=cargo test -p openwepp-hillslope-orchestrator all_open_topology_projects_empty_canonical_v8_passes
+env_TMPDIR=/tmp/ow-lse-v8
+env_OPENWEPP_TASK_ID=child3-20260817T230955Z
+precheck_start=2026-08-17T23:09:55Z
+precheck_command=cargo test -p openwepp-hillslope-orchestrator all_open_topology_projects_empty_canonical_v8_passes -- --list
+precheck_exit_code=0
+precheck_list_count=1
+/usr/bin/time: cannot run OPENWEPP_TASK_ID=child3-20260817T230955Z: No such file or directory
+Command exited with non-zero status 127
+time_real_s=0.00
+time_user_s=0.00
+time_sys_s=0.00
+start=2026-08-17T23:09:55Z
+end=2026-08-17T23:10:33Z
+duration_ms=14437368
+exit_code=127
+run_list_count=1
+status=FAIL

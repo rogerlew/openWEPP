@@ -1,0 +1,18 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-20260817T231432Z
+  scratch: /tmp/openwepp-roger-child3-20260817T231432Z
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/integration/land_surface_energy_strict_v8_public_contract.rs (/workdir/.cache/openwepp/targets/child3-20260817T231432Z/debug/deps/land_surface_energy_real_hydrology_shadow_contract-f9e2bb0f84d6548e)
+covered_forest_tests::canonical_configuration_and_state_bits_fail_closed: test
+covered_forest_tests::migrated_two_rank_fixture_preserves_stand_ground_leaf_owners: test
+covered_forest_tests::public_endpoint_rejects_canonical_seam_poisons_before_physics: test
+covered_forest_tests::public_endpoint_source_excludes_caller_derived_physics: test
+covered_forest_tests::public_v8_endpoint_closes_an_all_open_ofe: test
+covered_forest_tests::public_v8_endpoint_closes_mixed_open_and_covered_owners_once: test
+covered_forest_tests::public_v8_endpoint_closes_one_shared_stratum_across_two_covered_tiles: test
+covered_forest_tests::rank_and_tile_topology_poisons_are_rejected_by_canonical_owners: test
+raw_shadow_boundaries_remain_crate_private: test
+
+9 tests, 0 benchmarks

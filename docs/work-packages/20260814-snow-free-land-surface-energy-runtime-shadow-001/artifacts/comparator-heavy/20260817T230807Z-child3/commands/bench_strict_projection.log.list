@@ -1,0 +1,2 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+error: creating temporary file '/tmp/ow-lse-v8/nix-shell.4u6Rf9': No such file or directory

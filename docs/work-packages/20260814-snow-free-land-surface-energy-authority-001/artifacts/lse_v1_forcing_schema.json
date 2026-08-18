@@ -92,6 +92,8 @@
         "source_tile_id",
         "destination_ofe_id",
         "destination_tile_id",
+        "start_s",
+        "end_s",
         "amount_kg_m2_destination_tile_ground",
         "temperature_provider"
       ],
@@ -105,6 +107,8 @@
         "source_tile_id": { "$ref": "#/$defs/nonempty" },
         "destination_ofe_id": { "$ref": "#/$defs/nonempty" },
         "destination_tile_id": { "$ref": "#/$defs/nonempty" },
+        "start_s": { "type": "number", "minimum": 0 },
+        "end_s": { "type": "number", "exclusiveMinimum": 0 },
         "amount_kg_m2_destination_tile_ground": { "type": "number", "minimum": 0 },
         "temperature_k": { "type": "number", "exclusiveMinimum": 0 },
         "specific_liquid_enthalpy_j_kg": { "type": "number" },

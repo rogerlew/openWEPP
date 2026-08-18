@@ -12,6 +12,12 @@ use crate::{
     require_finite_nonnegative, require_finite_positive,
 };
 
+/// Canonical binary64 closure predicate for configured OFE tile fractions.
+#[must_use]
+pub fn canonical_tile_fraction_sum_closes(sum: f64) -> bool {
+    sum.is_finite() && (sum - 1.0).abs() <= 64.0 * f64::EPSILON * sum.abs().max(1.0)
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct OwnerConfigurationRef {
@@ -379,8 +385,7 @@ impl OfeConfiguration {
             tile.validate()?;
             fraction_sum += tile.fraction_ofe_ground;
         }
-        let tolerance = 64.0 * f64::EPSILON * fraction_sum.abs().max(1.0);
-        if (fraction_sum - 1.0).abs() > tolerance {
+        if !canonical_tile_fraction_sum_closes(fraction_sum) {
             return Err(LandSurfaceEnergyError::topology_domain(
                 "tile fractions do not sum to one",
             ));

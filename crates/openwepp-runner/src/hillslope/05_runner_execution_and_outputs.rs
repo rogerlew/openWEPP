@@ -954,7 +954,7 @@ fn direct_publication_has_only_zero_or_absent_operands(
         scalar_operands.iter().all(|value| *value == 0.0)
             && optional_operands
                 .iter()
-                .all(|value| value.map(|value| value == 0.0).unwrap_or(true))
+                .all(|value| value.is_none_or(|value| value == 0.0))
             && !sediment_material
     })
 }
@@ -1013,7 +1013,7 @@ fn direct_publication_row_lacks_parity_grade_output_producers(
     hydrology_scalars.iter().all(|value| *value == 0.0)
         && optional_hydrology_scalars
             .iter()
-            .all(|value| value.map(|value| value == 0.0).unwrap_or(true))
+            .all(|value| value.is_none_or(|value| value == 0.0))
         && !erosion_material
 }
 

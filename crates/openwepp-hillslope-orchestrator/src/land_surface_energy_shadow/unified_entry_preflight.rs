@@ -646,6 +646,30 @@ fn frame_tile_ingress(out: &mut FramedSha256, tile: &crate::DirectTileGroundIngr
             frame_ingress_identity(out, ofe_id, tile_id, surface_id);
             frame_ingress_amount(out, "raw_precipitation", raw_precipitation);
         }
+        crate::DirectTileGroundIngress::OpenLiquidParcels {
+            ofe_id,
+            tile_id,
+            surface_id,
+            parcels,
+        } => {
+            out.string("tile_ingress_mode", "open_liquid_parcels");
+            frame_ingress_identity(out, ofe_id, tile_id, surface_id);
+            out.count("open_liquid_parcel_count", parcels.len());
+            for parcel in parcels {
+                out.string("parcel_kind", &format!("{:?}", parcel.kind));
+                out.string("parcel_id", parcel.parcel_id.as_str());
+                out.string("source_owner_id", parcel.source_owner_id.as_str());
+                out.string("source_ofe_id", parcel.source_ofe_id.as_str());
+                out.string("source_tile_id", parcel.source_tile_id.as_str());
+                out.string("destination_ofe_id", parcel.destination_ofe_id.as_str());
+                out.string("destination_tile_id", parcel.destination_tile_id.as_str());
+                out.string(
+                    "accepted_source_state_sha256",
+                    parcel.accepted_source_state_sha256.as_str(),
+                );
+                frame_ingress_amount(out, "parcel_amount", &parcel.amount);
+            }
+        }
         crate::DirectTileGroundIngress::CoveredCanopyRelease {
             ofe_id,
             tile_id,
@@ -658,6 +682,32 @@ fn frame_tile_ingress(out: &mut FramedSha256, tile: &crate::DirectTileGroundIngr
             frame_ingress_amount(out, "initial_drainage", &release.initial_drainage);
             frame_ingress_amount(out, "second_drainage", &release.second_drainage);
             frame_ingress_amount(out, "stemflow", &release.stemflow);
+        }
+        crate::DirectTileGroundIngress::CoveredCanopyReleaseAndRunon {
+            ofe_id,
+            tile_id,
+            surface_id,
+            release,
+            runon_parcels,
+        } => {
+            out.string("tile_ingress_mode", "covered_canopy_release_and_runon");
+            frame_ingress_identity(out, ofe_id, tile_id, surface_id);
+            frame_ingress_amount(out, "throughfall", &release.throughfall);
+            frame_ingress_amount(out, "initial_drainage", &release.initial_drainage);
+            frame_ingress_amount(out, "second_drainage", &release.second_drainage);
+            frame_ingress_amount(out, "stemflow", &release.stemflow);
+            out.count("covered_runon_parcel_count", runon_parcels.len());
+            for parcel in runon_parcels {
+                out.string("runon_parcel_id", parcel.parcel_id.as_str());
+                out.string("runon_source_owner_id", parcel.source_owner_id.as_str());
+                out.string("runon_source_ofe_id", parcel.source_ofe_id.as_str());
+                out.string("runon_source_tile_id", parcel.source_tile_id.as_str());
+                out.string(
+                    "runon_source_state",
+                    parcel.accepted_source_state_sha256.as_str(),
+                );
+                frame_ingress_amount(out, "runon_amount", &parcel.amount);
+            }
         }
     }
 }

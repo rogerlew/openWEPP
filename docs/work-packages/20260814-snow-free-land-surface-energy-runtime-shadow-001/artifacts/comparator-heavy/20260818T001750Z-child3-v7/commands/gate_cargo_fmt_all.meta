@@ -1,0 +1,11 @@
+{
+  "label": "gate_cargo_fmt_all",
+  "command": "cargo fmt --all -- --check",
+  "status": "PASS",
+  "exit_code": 0,
+  "start": "2026-08-18T00:18:01Z",
+  "end": "2026-08-18T00:18:04Z",
+  "duration_ms": 2419785283,
+  "env_OPENWEPP_TASK_ID": "child3-20260817T233050Z",
+  "env_TMPDIR": "/tmp/ow-lse-v8"
+}

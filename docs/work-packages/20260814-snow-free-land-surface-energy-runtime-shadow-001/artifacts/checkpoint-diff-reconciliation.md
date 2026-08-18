@@ -97,3 +97,11 @@ closure, benchmark, heavy-gate, or verifier claims. After the accepted review
 findings are corrected, the solver is decomposed, and the worktree reaches
 stable bytes, replace this executing snapshot with a fresh exact terminal diff
 and line-count reconciliation.
+
+## Terminal Superseding Reconciliation — 2026-08-18
+
+Status: `executed-hold`. Dated sections above are historical. Current diff is
+reconciled in `terminal-diff-reconciliation.md`; exact counts are in
+`line-count-governance.md`. Seven nonzero benchmarks passed, while full
+workspace Nextest failed 2,974/2,990 and is not waived. The prompt remains
+active and disposition is HOLD.

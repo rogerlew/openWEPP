@@ -34,3 +34,15 @@ debt and will be reconciled against the terminal diff.
 No finding is deferred or rejected. No new authority package or model identity
 is required. Performance, broad heavy gates and terminal verification remain
 withheld until focused remediation gates and fresh reviews pass.
+
+## Terminal Update — 2026-08-18
+
+All original material findings were accepted and corrected. Fresh production
+Rust and science reviews returned PASS; summaries are preserved in
+`fresh-review-rust-final.md` and `fresh-review-science-final.md`.
+
+Heavy execution exposed a new authority finding: immutable V3/V5 fixtures do
+not regenerate from checked-in calculators. Disposition:
+`accepted / unresolved / HOLD`. Rewriting hashes would cascade through V3--V8
+authority identities and is not authorized in Child 3. Full workspace Nextest
+remains FAIL; no finding is deferred or rejected.

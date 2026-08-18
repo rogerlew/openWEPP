@@ -1,5 +1,8 @@
 #![allow(clippy::missing_errors_doc)]
 
+#[cfg(test)]
+extern crate self as openwepp_hillslope_orchestrator;
+
 pub mod land_surface_energy_shadow;
 pub mod runtime_inputs;
 pub mod vegetation_diagnostic;
@@ -137,12 +140,13 @@ pub use direct_runtime::{
 
 pub use direct_runtime::{
     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
-    DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidIngressCandidate,
-    DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidIngressLedger,
-    DirectSurfaceLiquidParcelClosureOperands, DirectSurfaceLiquidParcelKind,
-    DirectSurfaceLiquidParcelReceipt, DirectSurfaceLiquidReceiptDisposition,
-    DirectSurfaceLiquidReceiptRecipient, DirectSurfaceLiquidStoreClosureOperands,
-    DirectTileGroundIngress, execute_surface_liquid_ingress,
+    DirectOpenLiquidIngressParcel, DirectSurfaceLiquidClosureOperands,
+    DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidIngressInput,
+    DirectSurfaceLiquidIngressLedger, DirectSurfaceLiquidParcelClosureOperands,
+    DirectSurfaceLiquidParcelKind, DirectSurfaceLiquidParcelReceipt,
+    DirectSurfaceLiquidReceiptDisposition, DirectSurfaceLiquidReceiptRecipient,
+    DirectSurfaceLiquidStoreClosureOperands, DirectTileGroundIngress,
+    execute_surface_liquid_ingress,
 };
 pub use direct_runtime::{
     DirectErosionConsolidationCarry, ErosionAdjustmentFactors, ErosionAdjustmentInputs,

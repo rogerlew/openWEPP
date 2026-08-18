@@ -1,0 +1,99 @@
+{
+  "commands": [
+    {
+      "label": "bench_strict_projection",
+      "command": "cargo test -p openwepp-hillslope-orchestrator all_open_topology_projects_empty_canonical_v8_passes",
+      "status": "PASS",
+      "exit_code": 0,
+      "list_count": 1,
+      "start": "2026-08-17T23:14:32Z",
+      "end": "2026-08-17T23:15:11Z",
+      "duration_ms": 530634274,
+      "env_OPENWEPP_TASK_ID": "child3-20260817T231432Z",
+      "env_TMPDIR": "/tmp/ow-lse-v8"
+    },
+    {
+      "label": "bench_one_open_tile",
+      "command": "cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_an_all_open_ofe",
+      "status": "PASS",
+      "exit_code": 0,
+      "list_count": 1,
+      "start": "2026-08-17T23:15:11Z",
+      "end": "2026-08-17T23:15:56Z",
+      "duration_ms": 570209560,
+      "env_OPENWEPP_TASK_ID": "child3-20260817T231432Z",
+      "env_TMPDIR": "/tmp/ow-lse-v8"
+    },
+    {
+      "label": "bench_single_rank_covered",
+      "command": "cargo test -p openwepp-land-surface-energy covered_single_rank_potential_fixed_cap_and_alternate_start_match_frozen_oracle",
+      "status": "PASS",
+      "exit_code": 0,
+      "list_count": 1,
+      "start": "2026-08-17T23:15:56Z",
+      "end": "2026-08-17T23:16:02Z",
+      "duration_ms": 571714091,
+      "env_OPENWEPP_TASK_ID": "child3-20260817T231432Z",
+      "env_TMPDIR": "/tmp/ow-lse-v8"
+    },
+    {
+      "label": "bench_two_rank_covered",
+      "command": "cargo test -p openwepp-land-surface-energy covered_multirank_potential_fixed_cap_and_alternate_start_match_frozen_oracle",
+      "status": "PASS",
+      "exit_code": 0,
+      "list_count": 1,
+      "start": "2026-08-17T23:16:02Z",
+      "end": "2026-08-17T23:16:04Z",
+      "duration_ms": -1608307706975547424,
+      "env_OPENWEPP_TASK_ID": "child3-20260817T231432Z",
+      "env_TMPDIR": "/tmp/ow-lse-v8"
+    },
+    {
+      "label": "bench_mixed_open_covered",
+      "command": "cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_mixed_open_and_covered_owners_once",
+      "status": "PASS",
+      "exit_code": 0,
+      "list_count": 1,
+      "start": "2026-08-17T23:16:04Z",
+      "end": "2026-08-17T23:16:05Z",
+      "duration_ms": 595497767,
+      "env_OPENWEPP_TASK_ID": "child3-20260817T231432Z",
+      "env_TMPDIR": "/tmp/ow-lse-v8"
+    },
+    {
+      "label": "bench_complete_public_envelope",
+      "command": "cargo test --test land_surface_energy_real_hydrology_shadow_contract",
+      "status": "PASS",
+      "exit_code": 0,
+      "list_count": 3,
+      "start": "2026-08-17T23:16:05Z",
+      "end": "2026-08-17T23:16:06Z",
+      "duration_ms": 639604657,
+      "env_OPENWEPP_TASK_ID": "child3-20260817T231432Z",
+      "env_TMPDIR": "/tmp/ow-lse-v8"
+    },
+    {
+      "label": "bench_actual_byte_rollback",
+      "command": "cargo test -p openwepp-hillslope-orchestrator every_injected_phase_preserves_all_six_actual_owner_byte_records",
+      "status": "PASS",
+      "exit_code": 0,
+      "list_count": 1,
+      "start": "2026-08-17T23:16:06Z",
+      "end": "2026-08-17T23:16:08Z",
+      "duration_ms": 1520021063,
+      "env_OPENWEPP_TASK_ID": "child3-20260817T231432Z",
+      "env_TMPDIR": "/tmp/ow-lse-v8"
+    },
+    {
+      "label": "gate_cargo_clippy",
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "status": "FAIL",
+      "exit_code": 101,
+      "start": "2026-08-17T23:16:08Z",
+      "end": "2026-08-17T23:16:38Z",
+      "duration_ms": 29743456209,
+      "env_OPENWEPP_TASK_ID": "child3-20260817T231432Z",
+      "env_TMPDIR": "/tmp/ow-lse-v8"
+    }
+  ]
+}

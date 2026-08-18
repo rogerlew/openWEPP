@@ -141,7 +141,7 @@ fn assert_forcing_schema(lane_dir: &std::path::Path) {
                 && values
                     .iter()
                     .skip(1)
-                    .all(|value| value.parse::<f64>().map(f64::is_finite).unwrap_or(false))
+                    .all(|value| value.parse::<f64>().is_ok_and(f64::is_finite))
         }),
         "forcing rows must be complete finite numeric PySnobal inputs"
     );

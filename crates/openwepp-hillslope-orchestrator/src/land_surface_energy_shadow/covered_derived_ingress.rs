@@ -2,10 +2,10 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_kernel_contract::TransactionId;
+use openwepp_kernel_contract::{TileId, TransactionId};
 use openwepp_land_surface_energy::{
     CoveredLiquidPass, CoveredOccupancyLiquidLedger, FinalCoveredTileCandidate, GroundWaterKey,
-    Sha256Digest, liquid_enthalpy_j_kg,
+    OfeId, Sha256Digest, liquid_enthalpy_j_kg,
 };
 
 use crate::{
@@ -27,17 +27,18 @@ use super::{
     validate_surface_production_binding,
 };
 
-/// Cadence and caller-owned open-ground ingress. Covered-canopy release bytes
-/// are deliberately absent and can only be derived from accepted final E04
-/// ledgers.
+/// Canonical cadence plus WB14 receiver parameters. All tile ingress is
+/// derived inside the strict endpoint; covered-canopy release bytes can only
+/// come from accepted final E04 ledgers.
 #[derive(Clone, Debug, PartialEq)]
-pub struct CoveredIngressSchedule {
-    pub transaction_id: TransactionId,
-    pub day_index: usize,
-    pub interval_index: u8,
-    pub interval_s: f64,
-    pub open_tile_ingress: Vec<DirectTileGroundIngress>,
-    pub wb14_parameters: Vec<DirectOfeWb14Parameters>,
+pub(crate) struct CoveredIngressSchedule {
+    pub(super) transaction_id: TransactionId,
+    pub(super) day_index: usize,
+    pub(super) interval_index: u8,
+    pub(super) interval_s: f64,
+    pub(super) open_tile_ingress: Vec<DirectTileGroundIngress>,
+    pub(super) covered_runon: BTreeMap<(OfeId, TileId), Vec<crate::DirectOpenLiquidIngressParcel>>,
+    pub(super) wb14_parameters: Vec<DirectOfeWb14Parameters>,
 }
 
 fn ingress_amount(mass: f64, temperature_k: f64, interval_s: f64) -> DirectIngressAmount {
@@ -162,7 +163,19 @@ fn direct_identity(row: &DirectTileGroundIngress) -> (&str, &str, &str) {
             surface_id,
             ..
         }
+        | DirectTileGroundIngress::OpenLiquidParcels {
+            ofe_id,
+            tile_id,
+            surface_id,
+            ..
+        }
         | DirectTileGroundIngress::CoveredCanopyRelease {
+            ofe_id,
+            tile_id,
+            surface_id,
+            ..
+        }
+        | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon {
             ofe_id,
             tile_id,
             surface_id,
@@ -182,8 +195,11 @@ pub(super) fn derive_fixed_cap_canopy_ingress(
     let mut actual_identities = BTreeSet::new();
     let mut tile_ingress = schedule.open_tile_ingress.clone();
     for row in &schedule.open_tile_ingress {
-        if !matches!(row, DirectTileGroundIngress::OpenRawPrecipitation { .. })
-            || !actual_identities.insert(direct_identity(row))
+        if !matches!(
+            row,
+            DirectTileGroundIngress::OpenRawPrecipitation { .. }
+                | DirectTileGroundIngress::OpenLiquidParcels { .. }
+        ) || !actual_identities.insert(direct_identity(row))
         {
             return Err(LandSurfaceEnergyShadowError::Identity(
                 "duplicate or caller-supplied covered canopy ingress",
@@ -221,11 +237,26 @@ pub(super) fn derive_fixed_cap_canopy_ingress(
                 .ground_stemflow_kg_m2_tile_ground,
             schedule.interval_s,
         )?;
-        tile_ingress.push(DirectTileGroundIngress::CoveredCanopyRelease {
-            ofe_id: identity.ofe_id.clone(),
-            tile_id: identity.tile_id.clone(),
-            surface_id: identity.surface_id.clone(),
-            release,
+        let runon_parcels = schedule
+            .covered_runon
+            .get(&(identity.ofe_id.clone(), identity.tile_id.clone()))
+            .cloned()
+            .unwrap_or_default();
+        tile_ingress.push(if runon_parcels.is_empty() {
+            DirectTileGroundIngress::CoveredCanopyRelease {
+                ofe_id: identity.ofe_id.clone(),
+                tile_id: identity.tile_id.clone(),
+                surface_id: identity.surface_id.clone(),
+                release,
+            }
+        } else {
+            DirectTileGroundIngress::CoveredCanopyReleaseAndRunon {
+                ofe_id: identity.ofe_id.clone(),
+                tile_id: identity.tile_id.clone(),
+                surface_id: identity.surface_id.clone(),
+                release,
+                runon_parcels,
+            }
         });
     }
 

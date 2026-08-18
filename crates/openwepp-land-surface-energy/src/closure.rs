@@ -7,8 +7,8 @@
 // dimensional closure envelope is applied; every Result is a typed validator.
 #![allow(clippy::float_cmp, clippy::missing_errors_doc)]
 
-use crate::LandSurfaceEnergyError;
 use crate::physics::{energy_tolerance, liquid_enthalpy_j_kg, vapor_export_w_m2};
+use crate::{LandSurfaceEnergyError, canonical_tile_fraction_sum_closes};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct SurfaceEnergyOperands {
@@ -343,11 +343,20 @@ pub struct WeightedTileEnergyOperands {
     pub local_input_j_m2_tile: f64,
     pub local_output_j_m2_tile: f64,
     pub local_storage_change_j_m2_tile: f64,
+    /// Sum of absolute interval-integrated primitive boundary/storage terms,
+    /// before signed aggregation or cross-tile weighting.
+    pub local_sum_abs_integrated_components_j_m2_tile: f64,
 }
 
 pub fn validate_weighted_ofe_energy(
+    interval_s: f64,
     tiles: &[WeightedTileEnergyOperands],
 ) -> Result<ClosureValue, LandSurfaceEnergyError> {
+    if !interval_s.is_finite() || interval_s <= 0.0 {
+        return Err(LandSurfaceEnergyError::ControlVolumeClosure(
+            "weighted_ofe_interval",
+        ));
+    }
     if tiles.is_empty() {
         return Err(LandSurfaceEnergyError::ControlVolumeClosure(
             "empty_tile_set",
@@ -357,6 +366,7 @@ pub fn validate_weighted_ofe_energy(
     let mut inputs = 0.0;
     let mut outputs = 0.0;
     let mut storage = 0.0;
+    let mut sum_abs_integrated_components = 0.0;
     for tile in tiles {
         require_finite(&[
             (tile.tile_fraction, "tile_fraction"),
@@ -365,6 +375,10 @@ pub fn validate_weighted_ofe_energy(
             (
                 tile.local_storage_change_j_m2_tile,
                 "tile_storage_change_j_m2",
+            ),
+            (
+                tile.local_sum_abs_integrated_components_j_m2_tile,
+                "tile_sum_abs_integrated_components_j_m2",
             ),
         ])?;
         if tile.tile_fraction <= 0.0 || tile.tile_fraction > 1.0 {
@@ -376,15 +390,32 @@ pub fn validate_weighted_ofe_energy(
         inputs += tile.tile_fraction * tile.local_input_j_m2_tile;
         outputs += tile.tile_fraction * tile.local_output_j_m2_tile;
         storage += tile.tile_fraction * tile.local_storage_change_j_m2_tile;
+        if tile.local_sum_abs_integrated_components_j_m2_tile < 0.0 {
+            return Err(LandSurfaceEnergyError::ControlVolumeClosure(
+                "tile_sum_abs_integrated_components_domain",
+            ));
+        }
+        sum_abs_integrated_components +=
+            tile.tile_fraction * tile.local_sum_abs_integrated_components_j_m2_tile;
     }
-    if fraction_sum != 1.0 {
+    if !canonical_tile_fraction_sum_closes(fraction_sum) {
         return Err(LandSurfaceEnergyError::ControlVolumeClosure(
             "tile_fraction_sum",
         ));
     }
+    require_finite(&[
+        (inputs, "weighted_input_j_m2"),
+        (outputs, "weighted_output_j_m2"),
+        (storage, "weighted_storage_j_m2"),
+        (
+            sum_abs_integrated_components,
+            "weighted_sum_abs_integrated_components_j_m2",
+        ),
+    ])?;
     let residual = inputs - outputs - storage;
-    let tolerance =
-        1.0e-7 + 64.0 * f64::EPSILON * (inputs.abs() + outputs.abs() + storage.abs()).max(1.0);
+    // The authorized relative scale precedes signed aggregation so inward
+    // fluxes, condensation, and heterogeneous-tile cancellation cannot shrink it.
+    let tolerance = 1.0e-6 * interval_s + 1.0e-10 * interval_s.max(sum_abs_integrated_components);
     if residual.abs() > tolerance {
         return Err(LandSurfaceEnergyError::ControlVolumeClosure(
             "weighted_ofe_energy",
@@ -465,20 +496,129 @@ mod tests {
 
     #[test]
     fn tile_fraction_is_applied_once_after_local_closure() {
-        let result = validate_weighted_ofe_energy(&[
-            WeightedTileEnergyOperands {
-                tile_fraction: 0.4,
-                local_input_j_m2_tile: 10.0,
-                local_output_j_m2_tile: 8.0,
-                local_storage_change_j_m2_tile: 2.0,
-            },
-            WeightedTileEnergyOperands {
-                tile_fraction: 0.6,
-                local_input_j_m2_tile: 20.0,
-                local_output_j_m2_tile: 17.0,
-                local_storage_change_j_m2_tile: 3.0,
-            },
-        ]);
+        let result = validate_weighted_ofe_energy(
+            1.0,
+            &[
+                WeightedTileEnergyOperands {
+                    tile_fraction: 0.4,
+                    local_input_j_m2_tile: 10.0,
+                    local_output_j_m2_tile: 8.0,
+                    local_storage_change_j_m2_tile: 2.0,
+                    local_sum_abs_integrated_components_j_m2_tile: 20.0,
+                },
+                WeightedTileEnergyOperands {
+                    tile_fraction: 0.6,
+                    local_input_j_m2_tile: 20.0,
+                    local_output_j_m2_tile: 17.0,
+                    local_storage_change_j_m2_tile: 3.0,
+                    local_sum_abs_integrated_components_j_m2_tile: 40.0,
+                },
+            ],
+        );
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn weighted_energy_integrates_absolute_rate_tolerance_over_interval() {
+        let interval_s = 1_800.0;
+        let within = WeightedTileEnergyOperands {
+            tile_fraction: 1.0,
+            local_input_j_m2_tile: 100.0,
+            local_output_j_m2_tile: 100.0 - 0.999e-6 * interval_s,
+            local_storage_change_j_m2_tile: 0.0,
+            local_sum_abs_integrated_components_j_m2_tile: 200.0,
+        };
+        let accepted =
+            validate_weighted_ofe_energy(interval_s, &[within]).expect("within rate tolerance");
+        assert!(accepted.tolerance >= 1.0e-6 * interval_s);
+
+        let outside = WeightedTileEnergyOperands {
+            local_output_j_m2_tile: 100.0 - 1.001e-6 * interval_s,
+            ..within
+        };
+        assert!(validate_weighted_ofe_energy(interval_s, &[outside]).is_err());
+    }
+
+    #[test]
+    fn weighted_energy_rejects_invalid_interval() {
+        let tile = WeightedTileEnergyOperands {
+            tile_fraction: 1.0,
+            local_input_j_m2_tile: 1.0,
+            local_output_j_m2_tile: 1.0,
+            local_storage_change_j_m2_tile: 0.0,
+            local_sum_abs_integrated_components_j_m2_tile: 2.0,
+        };
+        for interval in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+            assert!(validate_weighted_ofe_energy(interval, &[tile]).is_err());
+        }
+    }
+
+    #[test]
+    fn weighted_energy_uses_canonical_tile_fraction_boundary() {
+        let tile = |tile_fraction| WeightedTileEnergyOperands {
+            tile_fraction,
+            local_input_j_m2_tile: 0.0,
+            local_output_j_m2_tile: 0.0,
+            local_storage_change_j_m2_tile: 0.0,
+            local_sum_abs_integrated_components_j_m2_tile: 0.0,
+        };
+        let admitted = [tile(0.5), tile(0.5 + 32.0 * f64::EPSILON)];
+        assert!(canonical_tile_fraction_sum_closes(
+            admitted.iter().map(|value| value.tile_fraction).sum()
+        ));
+        validate_weighted_ofe_energy(1.0, &admitted).expect("canonical admitted fraction sum");
+
+        let rejected = [tile(0.5), tile(0.5 + 128.0 * f64::EPSILON)];
+        assert!(!canonical_tile_fraction_sum_closes(
+            rejected.iter().map(|value| value.tile_fraction).sum()
+        ));
+        assert!(validate_weighted_ofe_energy(1.0, &rejected).is_err());
+    }
+
+    #[test]
+    fn weighted_energy_scale_precedes_signed_and_cross_tile_cancellation() {
+        let interval_s = 10.0;
+        let tiles = [
+            WeightedTileEnergyOperands {
+                tile_fraction: 0.5,
+                local_input_j_m2_tile: 1.0e12,
+                local_output_j_m2_tile: -1.0e12,
+                local_storage_change_j_m2_tile: 2.0e12,
+                local_sum_abs_integrated_components_j_m2_tile: 4.0e12,
+            },
+            WeightedTileEnergyOperands {
+                tile_fraction: 0.5,
+                local_input_j_m2_tile: -1.0e12,
+                local_output_j_m2_tile: 1.0e12,
+                local_storage_change_j_m2_tile: -2.0e12,
+                local_sum_abs_integrated_components_j_m2_tile: 4.0e12,
+            },
+        ];
+        let closure = validate_weighted_ofe_energy(interval_s, &tiles).expect("exact cancellation");
+        assert_eq!(closure.reconstructed_residual, 0.0);
+        assert_eq!(closure.tolerance, 1.0e-6 * interval_s + 1.0e-10 * 4.0e12);
+    }
+
+    #[test]
+    fn weighted_energy_relative_tolerance_has_exact_authorized_boundary() {
+        let interval_s = 10.0;
+        let scale = 1.0e8;
+        let tolerance = 1.0e-6 * interval_s + 1.0e-10 * scale;
+        let at_boundary = WeightedTileEnergyOperands {
+            tile_fraction: 1.0,
+            local_input_j_m2_tile: tolerance,
+            local_output_j_m2_tile: 0.0,
+            local_storage_change_j_m2_tile: 0.0,
+            // Represents large opposing inward/condensation component terms.
+            local_sum_abs_integrated_components_j_m2_tile: scale,
+        };
+        let accepted = validate_weighted_ofe_energy(interval_s, &[at_boundary])
+            .expect("exact authorized boundary");
+        assert_eq!(accepted.tolerance, tolerance);
+        let outside = WeightedTileEnergyOperands {
+            local_input_j_m2_tile: f64::from_bits(tolerance.to_bits() + 1),
+            ..at_boundary
+        };
+        assert!(validate_weighted_ofe_energy(interval_s, &[outside]).is_err());
     }
 }

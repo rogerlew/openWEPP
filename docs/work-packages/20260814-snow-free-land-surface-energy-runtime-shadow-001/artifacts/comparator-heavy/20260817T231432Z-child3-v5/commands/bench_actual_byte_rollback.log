@@ -1,0 +1,30 @@
+label=bench_actual_byte_rollback
+command=cargo test -p openwepp-hillslope-orchestrator every_injected_phase_preserves_all_six_actual_owner_byte_records
+env_TMPDIR=/tmp/ow-lse-v8
+env_OPENWEPP_TASK_ID=child3-20260817T231432Z
+precheck_start=2026-08-17T23:16:06Z
+precheck_command=cargo test -p openwepp-hillslope-orchestrator every_injected_phase_preserves_all_six_actual_owner_byte_records -- --list
+precheck_exit_code=0
+precheck_list_count=1
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child3-20260817T231432Z
+  scratch: /tmp/openwepp-roger-child3-20260817T231432Z
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/child3-20260817T231432Z/debug/deps/openwepp_hillslope_orchestrator-5e3e5ae75aef47d5)
+
+running 1 test
+test land_surface_energy_shadow::strict_v8_endpoint::endpoint_rollback_tests::every_injected_phase_preserves_all_six_actual_owner_byte_records ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 701 filtered out; finished in 1.04s
+
+time_real_s=1.51
+time_user_s=1.38
+time_sys_s=0.16
+start=2026-08-17T23:16:06Z
+end=2026-08-17T23:16:08Z
+duration_ms=1520021063
+exit_code=0
+run_list_count=1
+status=PASS

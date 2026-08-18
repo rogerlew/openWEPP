@@ -1,0 +1,1 @@
+{"label":"gate_cargo_clippy","command":"cargo clippy --workspace --all-targets -- -D warnings","status":"FAIL","exit_code":101,"start":"2026-08-17T23:16:08Z","end":"2026-08-17T23:16:38Z","duration_ms":29743456209,"env_OPENWEPP_TASK_ID":"child3-20260817T231432Z","env_TMPDIR":"/tmp/ow-lse-v8"}

@@ -1,0 +1,1 @@
+{"label":"bench_one_open_tile","command":"cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_an_all_open_ofe -- --exact","status":"BLOCKER","exit_code":0,"list_count":0,"start":"2026-08-17T23:12:22Z","env_OPENWEPP_TASK_ID":"child3-20260817T231143Z","env_TMPDIR":"/tmp/ow-lse-v8"}

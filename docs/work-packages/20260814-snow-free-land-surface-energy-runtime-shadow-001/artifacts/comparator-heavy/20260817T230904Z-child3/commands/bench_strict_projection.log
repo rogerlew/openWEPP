@@ -1,0 +1,8 @@
+label=bench_strict_projection
+command=cargo test -p openwepp-hillslope-orchestrator all_open_topology_projects_empty_canonical_v8_passes --lib
+env_TMPDIR=/tmp/ow-lse-v8
+env_OPENWEPP_TASK_ID=child3-20260817T230904Z
+precheck_start=2026-08-17T23:09:04Z
+precheck_exit_code=0
+precheck_list_count=0
+status=BLOCKER

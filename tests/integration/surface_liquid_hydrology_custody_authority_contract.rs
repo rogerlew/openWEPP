@@ -456,7 +456,7 @@ fn package_preserves_hold_and_preimplementation_prohibition() {
         assert!(
             package.contains(required)
                 || read(&format!(
-                    "{PACKAGE}/prompts/active/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001_kickoff_agent_prompt.md"
+                    "{PACKAGE}/prompts/archived/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001_kickoff_agent_prompt.md"
                 ))
                 .contains(required),
             "package surfaces missing {required}"

@@ -5,6 +5,8 @@
 //! actual real-hydrology owner, and lets BGC construct its own receipts. It
 //! exposes no partial or whole-owner commit API.
 
+#![allow(dead_code)]
+
 use std::collections::BTreeMap;
 
 use openwepp_biogeochemistry::{
@@ -23,8 +25,21 @@ use openwepp_vegetation::{
 use thiserror::Error;
 
 use super::{
-    CoveredForestShadowResult, UnifiedRealHydrologyCandidate, project_covered_forest_v8_passes,
+    CoveredForestShadowResult, UnifiedRealHydrologyCandidate,
+    multi_tile_runtime::MultiTileRuntimeResult,
+    v8_projection::{V8CoveredProjection, project_covered_forest_v8_passes},
 };
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum V8OwnerFailurePhase {
+    Persistent,
+    VegetationCandidate,
+    BiogeochemistryCandidate,
+    EnvelopeValidation,
+}
+
+type OwnerFailureHook<'a> =
+    Option<&'a dyn Fn(V8OwnerFailurePhase) -> Result<(), CoveredV8OwnerEnvelopeError>>;
 
 #[derive(Clone, Debug, Error, PartialEq)]
 pub enum CoveredV8OwnerEnvelopeError {
@@ -47,8 +62,24 @@ pub enum CoveredV8OwnerEnvelopeError {
 pub struct UncommittedCoveredV8OwnerEnvelope {
     transaction_id: TransactionId,
     vegetation: UncommittedV8VegetationCandidate,
-    physical: CoveredForestShadowResult,
+    physical: CoveredV8PhysicalOwner,
     biogeochemistry: BiogeochemistryOwnerCandidate,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+#[allow(clippy::large_enum_variant)]
+enum CoveredV8PhysicalOwner {
+    Legacy(CoveredForestShadowResult),
+    MultiTile(MultiTileRuntimeResult),
+}
+
+impl CoveredV8PhysicalOwner {
+    fn hydrology(&self) -> &UnifiedRealHydrologyCandidate {
+        match self {
+            Self::Legacy(value) => value.hydrology_candidate(),
+            Self::MultiTile(value) => value.hydrology_candidate(),
+        }
+    }
 }
 
 impl UncommittedCoveredV8OwnerEnvelope {
@@ -63,13 +94,8 @@ impl UncommittedCoveredV8OwnerEnvelope {
     }
 
     #[must_use]
-    pub const fn hydrology(&self) -> &UnifiedRealHydrologyCandidate {
-        self.physical.hydrology_candidate()
-    }
-
-    #[must_use]
-    pub const fn physical(&self) -> &CoveredForestShadowResult {
-        &self.physical
+    pub fn hydrology(&self) -> &UnifiedRealHydrologyCandidate {
+        self.physical.hydrology()
     }
 
     #[must_use]
@@ -79,24 +105,15 @@ impl UncommittedCoveredV8OwnerEnvelope {
 
     pub fn validate(&self) -> Result<(), CoveredV8OwnerEnvelopeError> {
         self.vegetation.validate_sealed()?;
-        self.physical
-            .potential()
-            .potential_vegetation_operands
-            .validate()?;
-        self.physical.final_tile().vegetation_operands.validate()?;
         self.biogeochemistry.validate()?;
         if self.transaction_id != self.vegetation.transaction_id()
-            || self.transaction_id != self.physical.hydrology_candidate().transaction_id()
+            || self.transaction_id != self.physical.hydrology().transaction_id()
             || self.transaction_id != self.biogeochemistry.transaction_id()
         {
             return Err(CoveredV8OwnerEnvelopeError::Identity(
                 "heterogeneous transaction identity",
             ));
         }
-        validate_actual_root_protocol(
-            &self.physical.final_tile().vegetation_operands,
-            self.physical.hydrology_candidate(),
-        )?;
         compare_material_receipts(&self.vegetation, &self.biogeochemistry)
     }
 }
@@ -105,9 +122,9 @@ impl UncommittedCoveredV8OwnerEnvelope {
 /// to the already executed physical owners. No water authorization, physical
 /// solve, vegetation persistence, or owner mutation is reachable here.
 #[allow(clippy::too_many_arguments)]
-pub fn construct_covered_v8_owner_envelope(
+pub(crate) fn construct_covered_v8_owner_envelope(
     physical: CoveredForestShadowResult,
-    bindings: Vec<V8ComponentOccupancyBinding>,
+    bindings: &[V8ComponentOccupancyBinding],
     vegetation_configuration: &VegetationConfiguration,
     vegetation_beginning: &V8CoupledOwnedState,
     persistent_forcing: &V8PersistentForcingReceipt,
@@ -136,21 +153,63 @@ pub fn construct_covered_v8_owner_envelope(
         projected.final_state(),
         &persistent,
     )?;
-    join_covered_v8_owner_envelope(physical, vegetation, biogeochemistry_beginning)
+    validate_actual_root_protocol(
+        &physical.final_tile().vegetation_operands,
+        physical.hydrology_candidate(),
+    )?;
+    join_covered_v8_owner_envelope(
+        CoveredV8PhysicalOwner::Legacy(physical),
+        vegetation,
+        biogeochemistry_beginning,
+        None,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn construct_multi_tile_v8_owner_envelope(
+    physical: MultiTileRuntimeResult,
+    projected: &V8CoveredProjection,
+    vegetation_configuration: &VegetationConfiguration,
+    vegetation_beginning: &V8CoupledOwnedState,
+    persistent_forcing: &V8PersistentForcingReceipt,
+    nitrogen: &dyn NitrogenArbiter,
+    biogeochemistry_beginning: &BiogeochemistryState,
+    failure_hook: OwnerFailureHook<'_>,
+) -> Result<UncommittedCoveredV8OwnerEnvelope, CoveredV8OwnerEnvelopeError> {
+    let persistent = execute_uncommitted_v8_persistent_phase(
+        vegetation_configuration,
+        vegetation_beginning,
+        projected.potential(),
+        projected.capped(),
+        persistent_forcing,
+        nitrogen,
+    )?;
+    run_owner_failure_hook(failure_hook, V8OwnerFailurePhase::Persistent)?;
+    let vegetation = construct_uncommitted_v8_vegetation_candidate(
+        vegetation_configuration,
+        vegetation_beginning,
+        projected.potential(),
+        projected.capped(),
+        projected.final_state(),
+        &persistent,
+    )?;
+    run_owner_failure_hook(failure_hook, V8OwnerFailurePhase::VegetationCandidate)?;
+    join_covered_v8_owner_envelope(
+        CoveredV8PhysicalOwner::MultiTile(physical),
+        vegetation,
+        biogeochemistry_beginning,
+        failure_hook,
+    )
 }
 
 fn join_covered_v8_owner_envelope(
-    physical: CoveredForestShadowResult,
+    physical: CoveredV8PhysicalOwner,
     vegetation: UncommittedV8VegetationCandidate,
     biogeochemistry_beginning: &BiogeochemistryState,
+    failure_hook: OwnerFailureHook<'_>,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, CoveredV8OwnerEnvelopeError> {
     vegetation.validate_sealed()?;
-    physical
-        .potential()
-        .potential_vegetation_operands
-        .validate()?;
-    physical.final_tile().vegetation_operands.validate()?;
-    if vegetation.transaction_id() != physical.hydrology_candidate().transaction_id()
+    if vegetation.transaction_id() != physical.hydrology().transaction_id()
         || biogeochemistry_beginning.last_transaction_id.checked_add(1)
             != Some(vegetation.transaction_id().0)
     {
@@ -158,10 +217,6 @@ fn join_covered_v8_owner_envelope(
             "beginning owner lineage",
         ));
     }
-    validate_actual_root_protocol(
-        &physical.final_tile().vegetation_operands,
-        physical.hydrology_candidate(),
-    )?;
     let proposals = vegetation
         .material_proposals()
         .iter()
@@ -188,6 +243,7 @@ fn join_covered_v8_owner_envelope(
         &proposals,
         TransformationsMode::Disabled,
     )?;
+    run_owner_failure_hook(failure_hook, V8OwnerFailurePhase::BiogeochemistryCandidate)?;
     compare_material_receipts(&vegetation, &biogeochemistry)?;
     let envelope = UncommittedCoveredV8OwnerEnvelope {
         transaction_id: vegetation.transaction_id(),
@@ -196,7 +252,18 @@ fn join_covered_v8_owner_envelope(
         biogeochemistry,
     };
     envelope.validate()?;
+    run_owner_failure_hook(failure_hook, V8OwnerFailurePhase::EnvelopeValidation)?;
     Ok(envelope)
+}
+
+fn run_owner_failure_hook(
+    hook: OwnerFailureHook<'_>,
+    phase: V8OwnerFailurePhase,
+) -> Result<(), CoveredV8OwnerEnvelopeError> {
+    if let Some(hook) = hook {
+        hook(phase)?;
+    }
+    Ok(())
 }
 
 fn validate_actual_root_protocol(
