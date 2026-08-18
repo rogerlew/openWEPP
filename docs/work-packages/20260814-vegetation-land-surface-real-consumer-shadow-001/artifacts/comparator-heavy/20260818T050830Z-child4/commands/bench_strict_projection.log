@@ -1,0 +1,71 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/child4-20260818T050830Z
+  scratch: /tmp/openwepp-roger-child4-20260818T050830Z
+  cache:   /workdir/.cache/openwepp
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling version_check v0.9.5
+   Compiling serde_core v1.0.228
+   Compiling typenum v1.20.0
+   Compiling serde v1.0.228
+   Compiling cfg-if v1.0.4
+   Compiling itoa v1.0.18
+   Compiling cpufeatures v0.2.17
+   Compiling zmij v1.0.21
+   Compiling hashbrown v0.17.1
+   Compiling crc32fast v1.5.0
+   Compiling openwepp-unit-boundary v0.1.0 (/workdir/openWEPP/crates/openwepp-unit-boundary)
+   Compiling thiserror v2.0.20
+   Compiling equivalent v1.0.2
+   Compiling openwepp-sim-contract v0.1.0 (/workdir/openWEPP/crates/openwepp-sim-contract)
+   Compiling unsafe-libyaml v0.2.11
+   Compiling ryu v1.0.23
+   Compiling simd-adler32 v0.3.9
+   Compiling adler2 v2.0.1
+   Compiling serde_json v1.0.150
+   Compiling memchr v2.8.0
+   Compiling miniz_oxide v0.8.9
+   Compiling generic-array v0.14.7
+   Compiling openwepp-meteorology v0.1.0 (/workdir/openWEPP/crates/openwepp-meteorology)
+   Compiling flate2 v1.1.9
+   Compiling indexmap v2.14.0
+   Compiling openwepp-topology v0.1.0 (/workdir/openWEPP/crates/openwepp-topology)
+   Compiling syn v2.0.117
+   Compiling syn v3.0.3
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling thiserror-impl v2.0.20
+   Compiling serde_derive v1.0.228
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling openwepp-kernel-contract v0.1.0 (/workdir/openWEPP/crates/openwepp-kernel-contract)
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openWEPP/crates/openwepp-vegetation)
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+   Compiling openwepp-biogeochemistry v0.1.0 (/workdir/openWEPP/crates/openwepp-biogeochemistry)
+   Compiling openwepp-management-schema v0.1.0 (/workdir/openWEPP/crates/openwepp-management-schema)
+   Compiling openwepp-input-contract v0.1.0 (/workdir/openWEPP/crates/openwepp-input-contract)
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+error[E0593]: closure is expected to take 4 arguments, but it takes 2 arguments
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:882:14
+    |
+882 |             .run_publication_stream_with_v9_real_consumer_shadow(
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected closure that takes 4 arguments
+...
+886 |                 |_, _| Ok(shadow_input.clone()),
+    |                 ------ takes 2 arguments
+
+error[E0593]: closure is expected to take 4 arguments, but it takes 2 arguments
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:915:14
+    |
+915 |             .run_publication_stream_with_v9_real_consumer_shadow(
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected closure that takes 4 arguments
+...
+923 |                 |_, _| Ok(day_input(&fixture)),
+    |                 ------ takes 2 arguments
+
+For more information about this error, try `rustc --explain E0593`.
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 2 previous errors

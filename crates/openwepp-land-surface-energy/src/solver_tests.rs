@@ -513,6 +513,29 @@ fn covered_v8_block_matches_frozen_joint_solution() {
     )
     .expect("joint block");
     assert!(residual.iter().all(|value| value.is_finite()));
+    let mut fully_wet = occupancy.clone();
+    fully_wet.beginning_canopy_liquid_kg_m2_tile =
+        fully_wet.liquid_capacity_kg_m2_plant * (fully_wet.lai + fully_wet.sai);
+    let fully_wet_residual = evaluate_covered_occupancy_block(
+        &column,
+        &fully_wet,
+        &block,
+        300.094_986_089_824,
+        0.013_930_509_809_668_333,
+        [
+            -24.324_096_100_383_827,
+            -34.563_785_686_988_41,
+            -56.025_633_011_908_55,
+            -29.747_436_870_633_067,
+        ],
+    )
+    .expect("fully wet inactive dry components");
+    for (index, temperature) in [(6, block[6]), (7, block[7]), (9, block[9])] {
+        assert_eq!(
+            fully_wet_residual[index].to_bits(),
+            (temperature - 300.094_986_089_824).to_bits()
+        );
+    }
     column.occupancies = vec![occupancy];
     column.shortwave = bound_shortwave(
         &column.occupancies,

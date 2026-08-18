@@ -6,10 +6,13 @@ Status: `executing / focused implementation gates pass`
 
 `DirectFrameExecutor::run_publication_stream_with_v9_real_consumer_shadow` is
 the sole explicit attachment. It clones the production frame and the complete
-shadow owner set, invokes the shadow once per complete OFE day after repository
-day-input application and before native hydrology, and publishes either both
-successful candidates or neither. The existing scheduler APIs call the same
-core with an inert day hook; the runner has no call to the V9 attachment.
+shadow owner set. At each day boundary it requires one complete repository day
+input set, applies those inputs to independently seeded immutable day frames,
+and executes the shadow before any native day span. The unchanged production
+builder then runs in its original lane-interleaved order and each actual input
+must equal the frozen repository receipt. Only a complete successful call
+replaces production and shadow candidates. The runner has no call to the V9
+attachment; laned-active routing is typed unsupported rather than skipped.
 
 Each shadow day executes exactly 48 retained 1800 s transactions. The adapter
 projects V9 to the byte-identical V8 physical payload, consumes the strict
@@ -36,11 +39,15 @@ change V3--V9 authority bytes, constitutive parameters, or supported physics.
 
 Ran in the repository Nix environment:
 
-- V9 real-consumer unit selection: 5/5 PASS. This covers 48 intervals, a late
+- V9 real-consumer unit selection: 9/9 PASS. This covers 48 intervals, a late
   interval rollback, retained half-day restart equality, explicit scheduler
-  production/output equivalence, and downstream failure rollback after a
-  complete shadow candidate exists.
+  production/output equivalence, repository receipt poisoning, active-routing
+  rejection, shared-soil candidate poisons, mixed owner lineage, and downstream
+  failure rollback after a complete shadow candidate exists.
 - BGC continued receiver aggregation regression: 1/1 PASS.
+- LSE fully-wet inactive sun/shade/stem node regression: PASS within the frozen
+  joint covered-column test.
+- V8-to-V9 wrong model/configuration/state receipt poisons: PASS.
 - affected four-crate all-target warnings-denied Clippy: PASS.
 - affected cargo check and rustfmt: PASS.
 

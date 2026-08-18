@@ -250,6 +250,14 @@ pub fn project_v8_runtime_to_v9(
     configuration
         .validate_v9()
         .map_err(V9StateError::Configuration)?;
+    let mut source_configuration = configuration.clone();
+    source_configuration.model_definition_sha256 = V8_MODEL_SHA256.into();
+    source_configuration.configuration_sha256 = source_configuration
+        .canonical_sha256()
+        .map_err(V9StateError::Configuration)?;
+    state
+        .validate(&source_configuration)
+        .map_err(V9StateError::ImportedV8Payload)?;
     let mut projected = state.clone();
     projected.model_definition_sha256 = V9_MODEL_SHA256.into();
     projected
@@ -463,5 +471,30 @@ mod tests {
                 .to_string()
                 .starts_with("VEG-E-116:")
         );
+    }
+
+    #[test]
+    fn runtime_rebinding_rejects_wrong_v8_identity_receipts() {
+        let (_, source, migration) = migrated_fixture();
+        let target = migration.configuration;
+        let mut wrong_model = source;
+        wrong_model.model_definition_sha256 = V9_MODEL_SHA256.into();
+        assert!(matches!(
+            project_v8_runtime_to_v9(&wrong_model, &target),
+            Err(V9StateError::ImportedV8Payload(_))
+        ));
+        let (source_configuration, mut wrong_configuration, _) = migrated_fixture();
+        wrong_configuration.configuration_sha256 = "f".repeat(64);
+        assert!(matches!(
+            project_v8_runtime_to_v9(&wrong_configuration, &target),
+            Err(V9StateError::ImportedV8Payload(_))
+        ));
+        let mut wrong_state = wrong_configuration;
+        wrong_state.configuration_sha256 = source_configuration.configuration_sha256;
+        wrong_state.state_sha256 = "e".repeat(64);
+        assert!(matches!(
+            project_v8_runtime_to_v9(&wrong_state, &target),
+            Err(V9StateError::ImportedV8Payload(_))
+        ));
     }
 }

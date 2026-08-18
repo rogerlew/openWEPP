@@ -5,10 +5,10 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_biogeochemistry::BiogeochemistryState;
+use openwepp_biogeochemistry::{BiogeochemistryState, available_by_key};
 use openwepp_kernel_contract::{
-    MineralNitrogenKey, MineralNitrogenSpecies, ResourceAmountBasis, ResourceOwnerId,
-    TransactionId, authorize_proportionally,
+    MineralNitrogenKey, ResourceAmountBasis, ResourceOwnerId, TransactionId,
+    authorize_proportionally,
 };
 use openwepp_land_surface_energy::{
     LandSurfaceEnergyConfiguration, LandSurfaceEnergyState, LandSurfaceForcing, Sha256Digest,
@@ -32,7 +32,10 @@ use crate::land_surface_energy_shadow::{
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyShadowAdapter,
 };
-use crate::{DirectOfeWb14Parameters, DirectRunFrame, DirectSurfaceLiquidConfiguration};
+use crate::{
+    DirectDayFrame, DirectOfeWb14Parameters, DirectPublicationDayInput, DirectRunFrame,
+    DirectSurfaceLiquidConfiguration,
+};
 
 const INTERVALS_PER_DAY: usize = 48;
 const INTERVAL_S: f64 = 1_800.0;
@@ -199,9 +202,11 @@ impl DirectV9RealConsumerShadow {
         &self.hydrology_frame
     }
 
-    pub fn execute_day(
+    pub(crate) fn execute_day(
         &mut self,
         production_frame: &DirectRunFrame,
+        projected_day_frames: &[DirectDayFrame],
+        projected_day_inputs: &[DirectPublicationDayInput],
         input: &DirectV9ShadowDayInput,
     ) -> Result<DirectV9ShadowDayReceipt, DirectV9RealConsumerError> {
         if input.day_index != self.next_day_index
@@ -217,6 +222,12 @@ impl DirectV9RealConsumerShadow {
                 "a shadow day requires exactly 48 intervals",
             ));
         }
+        validate_repository_day_projection(
+            production_frame,
+            projected_day_frames,
+            projected_day_inputs,
+            input,
+        )?;
         let beginning_shadow_sha256 = self.canonical_sha256()?;
         let first_transaction_id = input.intervals[0].lse_forcing.transaction_id;
         let last_transaction_id = input.intervals[INTERVALS_PER_DAY - 1]
@@ -320,7 +331,7 @@ impl DirectV9RealConsumerShadow {
             vegetation_forcing,
         )
         .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
-        let nitrogen = BiogeochemistryNitrogenArbiter::new(&self.biogeochemistry);
+        let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
         let envelope = execute_v8_lse_runtime_shadow(
             &v8_configuration,
             &v8_beginning,
@@ -385,10 +396,36 @@ impl DirectV9RealConsumerShadow {
         self.soil_thermal
             .validate()
             .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
+        let transaction_id = TransactionId(self.vegetation_state.0.last_transaction_id);
+        let lse_transaction_matches = self
+            .lse_state
+            .last_accepted_transaction_id
+            .is_none_or(|value| value == transaction_id);
+        let soil_transaction_matches = self
+            .soil_thermal
+            .last_accepted_transaction_id
+            .is_none_or(|value| value == transaction_id);
+        let complete_accepted_lineage = self.accepted_interval_count == 0
+            || (self.lse_state.last_accepted_transaction_id == Some(transaction_id)
+                && self.soil_thermal.last_accepted_transaction_id == Some(transaction_id));
+        let mapping_matches = self
+            .surface_configuration
+            .ofe_bindings
+            .iter()
+            .zip(&self.layer_maps)
+            .all(|(binding, map)| {
+                binding.production_lane_index == map.ofe_lane.lane_index
+                    && binding.production_lane_id == map.ofe_lane.lane_id
+                    && binding.ordered_soil_layer_ids == map.layer_ids
+            });
         if self.surface_configuration.ofe_bindings.len() != self.hydrology_frame.lanes.len()
             || self.layer_maps.len() != self.hydrology_frame.lanes.len()
             || self.biogeochemistry.last_transaction_id
                 != self.vegetation_state.0.last_transaction_id
+            || !lse_transaction_matches
+            || !soil_transaction_matches
+            || !complete_accepted_lineage
+            || !mapping_matches
         {
             return Err(DirectV9RealConsumerError::Identity(
                 "incomplete or mixed complete-owner state",
@@ -420,6 +457,72 @@ impl DirectV9RealConsumerShadow {
         .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?;
         Ok(format!("{:x}", Sha256::digest(bytes)))
     }
+}
+
+fn validate_repository_day_projection(
+    production_frame: &DirectRunFrame,
+    projected_day_frames: &[DirectDayFrame],
+    projected_day_inputs: &[DirectPublicationDayInput],
+    shadow_input: &DirectV9ShadowDayInput,
+) -> Result<(), DirectV9RealConsumerError> {
+    if projected_day_frames.len() != production_frame.identity.lane_count
+        || projected_day_inputs.len() != production_frame.identity.lane_count
+        || projected_day_frames.len() != projected_day_inputs.len()
+    {
+        return Err(DirectV9RealConsumerError::Identity(
+            "complete repository day projection",
+        ));
+    }
+    for (lane_index, (day_frame, day_input)) in projected_day_frames
+        .iter()
+        .zip(projected_day_inputs)
+        .enumerate()
+    {
+        if day_frame.identity != production_frame.identity
+            || day_frame.lane_index != lane_index
+            || day_frame.day_index != shadow_input.day_index
+            || day_frame.forcing.precipitation_m.to_bits() != day_input.precipitation_m.to_bits()
+            || day_frame.forcing.effective_temperature_c.to_bits()
+                != day_input.effective_temperature_c.to_bits()
+        {
+            return Err(DirectV9RealConsumerError::Identity(
+                "repository day input/frame receipt",
+            ));
+        }
+    }
+    let precipitation_m = common_provider_value(
+        &projected_day_inputs
+            .iter()
+            .map(|input| input.precipitation_m)
+            .collect::<Vec<_>>(),
+        "heterogeneous repository OFE precipitation",
+    )?;
+    let effective_temperature_c = common_provider_value(
+        &projected_day_inputs
+            .iter()
+            .map(|input| input.effective_temperature_c)
+            .collect::<Vec<_>>(),
+        "heterogeneous repository OFE effective temperature",
+    )?;
+    let shadow_rain_kg_m2 = shadow_input
+        .intervals
+        .iter()
+        .map(|interval| interval.vegetation_forcing.rain_kg_m2)
+        .sum::<f64>();
+    let shadow_mean_air_temperature_c = shadow_input
+        .intervals
+        .iter()
+        .map(|interval| interval.vegetation_forcing.air_temperature_k - 273.15)
+        .sum::<f64>()
+        / 48.0;
+    if shadow_rain_kg_m2.to_bits() != (precipitation_m * 1_000.0).to_bits()
+        || shadow_mean_air_temperature_c.to_bits() != effective_temperature_c.to_bits()
+    {
+        return Err(DirectV9RealConsumerError::Identity(
+            "repository daily forcing/subdaily shadow receipt",
+        ));
+    }
+    Ok(())
 }
 
 fn project_live_vegetation_forcing(
@@ -478,27 +581,11 @@ struct BiogeochemistryNitrogenArbiter {
 }
 
 impl BiogeochemistryNitrogenArbiter {
-    fn new(state: &BiogeochemistryState) -> Self {
-        let mut available = BTreeMap::new();
-        for (layer_id, layer) in &state.layers {
-            if let Ok(layer_id) = openwepp_kernel_contract::SoilLayerId::try_new(layer_id.clone()) {
-                available.insert(
-                    MineralNitrogenKey {
-                        layer_id: layer_id.clone(),
-                        species: MineralNitrogenSpecies::Ammonium,
-                    },
-                    layer.ammonium_n,
-                );
-                available.insert(
-                    MineralNitrogenKey {
-                        layer_id,
-                        species: MineralNitrogenSpecies::Nitrate,
-                    },
-                    layer.nitrate_n,
-                );
-            }
-        }
-        Self { available }
+    fn try_new(state: &BiogeochemistryState) -> Result<Self, DirectV9RealConsumerError> {
+        Ok(Self {
+            available: available_by_key(state)
+                .map_err(|error| DirectV9RealConsumerError::Adapter(error.to_string()))?,
+        })
     }
 }
 
@@ -529,7 +616,7 @@ fn aggregate_soil_thermal_ending(
     transaction_id: TransactionId,
     candidates: &[SoilThermalTileCandidate],
 ) -> Result<SoilThermalSnapshot, DirectV9RealConsumerError> {
-    validate_soil_thermal_candidate_set(configuration, candidates)?;
+    validate_soil_thermal_candidate_set(beginning, configuration, candidates)?;
     let mut ofes = Vec::with_capacity(beginning.ofes.len());
     for beginning_ofe in &beginning.ofes {
         ofes.push(aggregate_soil_thermal_ofe(
@@ -562,6 +649,7 @@ fn aggregate_soil_thermal_ending(
 }
 
 fn validate_soil_thermal_candidate_set(
+    beginning: &SoilThermalSnapshot,
     configuration: &LandSurfaceEnergyConfiguration,
     candidates: &[SoilThermalTileCandidate],
 ) -> Result<(), DirectV9RealConsumerError> {
@@ -581,8 +669,20 @@ fn validate_soil_thermal_candidate_set(
         .iter()
         .map(|candidate| (candidate.ofe_id.clone(), candidate.tile_id.clone()))
         .collect::<BTreeSet<_>>();
+    let configured_ofes = configuration
+        .ofes
+        .iter()
+        .map(|ofe| ofe.ofe_id.clone())
+        .collect::<BTreeSet<_>>();
+    let beginning_ofes = beginning
+        .ofes
+        .iter()
+        .map(|ofe| ofe.ofe_id.clone())
+        .collect::<BTreeSet<_>>();
     if actual_tiles.len() != candidates.len()
         || actual_tiles != configured_tiles.keys().cloned().collect()
+        || beginning_ofes.len() != beginning.ofes.len()
+        || beginning_ofes != configured_ofes
     {
         return Err(DirectV9RealConsumerError::OwnerClosure(
             "soil-thermal tile candidate set",
@@ -604,13 +704,19 @@ fn aggregate_soil_thermal_ofe(
         .ok_or(DirectV9RealConsumerError::OwnerClosure(
             "soil-thermal OFE configuration",
         ))?;
-    let tile_candidates = candidates
+    let mut tile_candidates = candidates
         .iter()
         .filter(|candidate| candidate.ofe_id == beginning_ofe.ofe_id)
         .collect::<Vec<_>>();
+    tile_candidates.sort_unstable_by(|left, right| left.tile_id.cmp(&right.tile_id));
     if tile_candidates.len() != configured_ofe.tiles.len() {
         return Err(DirectV9RealConsumerError::OwnerClosure(
             "soil-thermal OFE tile cardinality",
+        ));
+    }
+    if beginning_ofe.ordered_layers.len() != configured_ofe.soil_interface_layers.len() {
+        return Err(DirectV9RealConsumerError::OwnerClosure(
+            "soil-thermal beginning/configured layer cardinality",
         ));
     }
     let mut ordered_layers = Vec::with_capacity(beginning_ofe.ordered_layers.len());
@@ -705,13 +811,15 @@ fn digest_serialized<T: Serialize>(value: &T) -> Result<Sha256Digest, DirectV9Re
 
 #[cfg(test)]
 mod tests {
-    use openwepp_land_surface_energy::OfeId;
+    use openwepp_kernel_contract::TileId;
+    use openwepp_land_surface_energy::{OfeId, SoilThermalLayerCandidate};
     use openwepp_vegetation::{V9_MODEL_SHA256, V9CoupledOwnedState};
 
     use super::*;
     use crate::land_surface_energy_shadow::{EndpointFixture, endpoint_fixture};
     use crate::{
-        DirectExecutorMode, DirectFrameExecutor, DirectPublicationCalendarDay,
+        DirectExecutorMode, DirectFrameExecutor, DirectLanedActiveConfig,
+        DirectLanedActiveLaneConfig, DirectLanedActiveMeshPolicy, DirectPublicationCalendarDay,
         DirectPublicationDayInput, DirectPublicationRunMetadata,
     };
 
@@ -779,13 +887,95 @@ mod tests {
         }
     }
 
+    fn production_day_input(shadow_input: &DirectV9ShadowDayInput) -> DirectPublicationDayInput {
+        let mut input = DirectPublicationDayInput::calendar_only(DirectPublicationCalendarDay {
+            year: 2026,
+            julian_day: 1,
+            month: 1,
+            day_of_month: 1,
+            water_year: 2026,
+        });
+        input.precipitation_m = shadow_input
+            .intervals
+            .iter()
+            .map(|interval| interval.vegetation_forcing.rain_kg_m2)
+            .sum::<f64>()
+            / 1_000.0;
+        input.effective_temperature_c = shadow_input
+            .intervals
+            .iter()
+            .map(|interval| interval.vegetation_forcing.air_temperature_k - 273.15)
+            .sum::<f64>()
+            / 48.0;
+        input
+    }
+
+    fn projected_day(
+        production: &DirectRunFrame,
+        input: &DirectPublicationDayInput,
+    ) -> DirectDayFrame {
+        let mut day = production.seed_day_frame(0, 0).expect("repository day");
+        day.forcing.precipitation_m = input.precipitation_m;
+        day.forcing.effective_temperature_c = input.effective_temperature_c;
+        day
+    }
+
+    fn soil_candidates(fixture: &EndpointFixture) -> Vec<SoilThermalTileCandidate> {
+        fixture
+            .lse_configuration
+            .ofes
+            .iter()
+            .flat_map(|ofe| {
+                let beginning = fixture
+                    .thermal
+                    .ofes
+                    .iter()
+                    .find(|value| value.ofe_id == ofe.ofe_id)
+                    .expect("beginning OFE");
+                ofe.tiles.iter().enumerate().map(move |(tile_index, tile)| {
+                    SoilThermalTileCandidate {
+                        owner_id: fixture.thermal.owner_id.clone(),
+                        beginning_state_sha256: fixture.thermal.state_sha256.clone(),
+                        ofe_id: ofe.ofe_id.clone(),
+                        tile_id: tile.tile_id.clone(),
+                        layers: beginning
+                            .ordered_layers
+                            .iter()
+                            .enumerate()
+                            .map(|(layer_index, layer)| {
+                                let credit = if layer_index == 0 {
+                                    if tile_index == 0 { 10.0 } else { 20.0 }
+                                } else {
+                                    0.0
+                                };
+                                SoilThermalLayerCandidate {
+                                    layer_id: layer.layer_id.clone(),
+                                    beginning_enthalpy_j_m2_ofe_ground: layer
+                                        .enthalpy_j_m2_ofe_ground,
+                                    ground_heat_credit_j_m2_ofe_ground: credit,
+                                    infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
+                                    ending_enthalpy_j_m2_ofe_ground: layer.enthalpy_j_m2_ofe_ground
+                                        + credit,
+                                    ending_temperature_k: layer.temperature_k,
+                                }
+                            })
+                            .collect(),
+                    }
+                })
+            })
+            .collect()
+    }
+
     #[test]
     fn forty_eight_interval_day_replaces_only_complete_shadow_state() {
         let (mut shadow, fixture) = shadow_fixture();
         let production = fixture.hydrology.beginning_frame().clone();
         let production_before = production.clone();
+        let input = day_input(&fixture);
+        let production_input = production_day_input(&input);
+        let projected = projected_day(&production, &production_input);
         let receipt = shadow
-            .execute_day(&production, &day_input(&fixture))
+            .execute_day(&production, &[projected], &[production_input], &input)
             .expect("complete shadow day");
         assert_eq!(receipt.accepted_interval_count, 48);
         assert_eq!(receipt.first_transaction_id, TransactionId(41));
@@ -807,8 +997,10 @@ mod tests {
         let shadow_before = shadow.clone();
         let mut input = day_input(&fixture);
         input.intervals[47].lse_forcing.snow_present_at_end = true;
+        let production_input = production_day_input(&input);
+        let projected = projected_day(&production, &production_input);
         assert!(matches!(
-            shadow.execute_day(&production, &input),
+            shadow.execute_day(&production, &[projected], &[production_input], &input),
             Err(DirectV9RealConsumerError::Unsupported(_))
         ));
         assert_eq!(shadow, shadow_before);
@@ -830,7 +1022,37 @@ mod tests {
                 .execute_interval(0, index, interval)
                 .expect("first restart half");
         }
-        let mut restarted = first_half.clone();
+        let vegetation: V9CoupledOwnedState = serde_json::from_slice(
+            &serde_json::to_vec(&first_half.vegetation_state).expect("vegetation checkpoint"),
+        )
+        .expect("vegetation reload");
+        let lse: LandSurfaceEnergyState = serde_json::from_slice(
+            &serde_json::to_vec(&first_half.lse_state).expect("LSE checkpoint"),
+        )
+        .expect("LSE reload");
+        let soil: SoilThermalSnapshot = serde_json::from_slice(
+            &serde_json::to_vec(&first_half.soil_thermal).expect("soil checkpoint"),
+        )
+        .expect("soil reload");
+        let bgc: BiogeochemistryState = serde_json::from_slice(
+            &serde_json::to_vec(&first_half.biogeochemistry).expect("BGC checkpoint"),
+        )
+        .expect("BGC reload");
+        let mut restarted = DirectV9RealConsumerShadow::try_new(
+            first_half.vegetation_configuration.clone(),
+            vegetation,
+            first_half.vegetation_owner_id.clone(),
+            first_half.lse_configuration.clone(),
+            lse,
+            first_half.surface_configuration.clone(),
+            first_half.layer_maps.clone(),
+            soil,
+            bgc,
+            first_half.hydrology_frame.clone(),
+            0,
+        )
+        .expect("restart owner reload");
+        restarted.accepted_interval_count = 24;
         for (index, interval) in input.intervals[24..].iter().enumerate() {
             restarted
                 .execute_interval(0, index + 24, interval)
@@ -846,18 +1068,106 @@ mod tests {
     }
 
     #[test]
+    fn shared_soil_thermal_aggregation_is_ordered_complete_and_owner_bound() {
+        let (_, fixture) = shadow_fixture();
+        let candidates = soil_candidates(&fixture);
+        let ending = aggregate_soil_thermal_ending(
+            &fixture.thermal,
+            &fixture.lse_configuration,
+            TransactionId(41),
+            &candidates,
+        )
+        .expect("complete shared aggregate");
+        let expected_credit = candidates
+            .iter()
+            .map(|candidate| candidate.layers[0].ground_heat_credit_j_m2_ofe_ground)
+            .sum::<f64>();
+        assert_eq!(
+            ending.ofes[0].ordered_layers[0]
+                .enthalpy_j_m2_ofe_ground
+                .to_bits(),
+            (fixture.thermal.ofes[0].ordered_layers[0].enthalpy_j_m2_ofe_ground + expected_credit)
+                .to_bits()
+        );
+        let mut reversed = candidates.clone();
+        reversed.reverse();
+        assert_eq!(
+            aggregate_soil_thermal_ending(
+                &fixture.thermal,
+                &fixture.lse_configuration,
+                TransactionId(41),
+                &reversed,
+            )
+            .expect("canonical tile order"),
+            ending
+        );
+        let mut omitted = candidates.clone();
+        omitted.pop();
+        assert!(
+            aggregate_soil_thermal_ending(
+                &fixture.thermal,
+                &fixture.lse_configuration,
+                TransactionId(41),
+                &omitted,
+            )
+            .is_err()
+        );
+        let mut duplicate = candidates.clone();
+        duplicate.push(candidates[0].clone());
+        assert!(
+            aggregate_soil_thermal_ending(
+                &fixture.thermal,
+                &fixture.lse_configuration,
+                TransactionId(41),
+                &duplicate,
+            )
+            .is_err()
+        );
+        let mut wrong_owner = candidates;
+        wrong_owner[0].owner_id = ResourceOwnerId::try_new("wrong-soil-owner").expect("owner");
+        assert!(
+            aggregate_soil_thermal_ending(
+                &fixture.thermal,
+                &fixture.lse_configuration,
+                TransactionId(41),
+                &wrong_owner,
+            )
+            .is_err()
+        );
+        let mut extra_tile = wrong_owner;
+        extra_tile[0].owner_id = fixture.thermal.owner_id.clone();
+        extra_tile[0].tile_id = TileId::try_new("nonexistent-extra-tile").expect("tile");
+        assert!(
+            aggregate_soil_thermal_ending(
+                &fixture.thermal,
+                &fixture.lse_configuration,
+                TransactionId(41),
+                &extra_tile,
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn mixed_complete_owner_lineage_is_rejected_before_execution() {
+        let (mut shadow, _) = shadow_fixture();
+        shadow.lse_state.last_accepted_transaction_id = Some(TransactionId(39));
+        assert!(shadow.validate_complete_owner_set().is_err());
+        let (mut shadow, _) = shadow_fixture();
+        shadow.soil_thermal.last_accepted_transaction_id = Some(TransactionId(39));
+        assert!(shadow.validate_complete_owner_set().is_err());
+        let (mut shadow, _) = shadow_fixture();
+        shadow.layer_maps[0].ofe_lane.lane_id = u32::MAX;
+        assert!(shadow.validate_complete_owner_set().is_err());
+    }
+
+    #[test]
     fn explicit_scheduler_consumer_advances_shadow_without_changing_production() {
         let (mut shadow, fixture) = shadow_fixture();
         let mut baseline = fixture.hydrology.beginning_frame().clone();
         let mut observed = baseline.clone();
-        let production_input =
-            DirectPublicationDayInput::calendar_only(DirectPublicationCalendarDay {
-                year: 2026,
-                julian_day: 1,
-                month: 1,
-                day_of_month: 1,
-                water_year: 2026,
-            });
+        let shadow_input = day_input(&fixture);
+        let production_input = production_day_input(&shadow_input);
         let metadata = DirectPublicationRunMetadata {
             run_name: "v9-real-consumer-shadow".into(),
             runtime_selection: "direct-default-off-shadow-test".into(),
@@ -876,14 +1186,13 @@ mod tests {
                 },
             )
             .expect("baseline production run");
-        let shadow_input = day_input(&fixture);
         let mut observed_rows = Vec::new();
         let observed_report = executor
             .run_publication_stream_with_v9_real_consumer_shadow(
                 &mut observed,
                 metadata,
                 |_, _, _| Ok(production_input.clone()),
-                |_, _| Ok(shadow_input.clone()),
+                |_, _| Ok((vec![production_input.clone()], shadow_input.clone())),
                 |row, _| {
                     observed_rows.push(row.clone());
                     Ok(())
@@ -903,14 +1212,8 @@ mod tests {
         let mut production = fixture.hydrology.beginning_frame().clone();
         let production_before = production.clone();
         let shadow_before = shadow.clone();
-        let production_input =
-            DirectPublicationDayInput::calendar_only(DirectPublicationCalendarDay {
-                year: 2026,
-                julian_day: 1,
-                month: 1,
-                day_of_month: 1,
-                water_year: 2026,
-            });
+        let shadow_input = day_input(&fixture);
+        let production_input = production_day_input(&shadow_input);
         let error = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
             .run_publication_stream_with_v9_real_consumer_shadow(
                 &mut production,
@@ -920,7 +1223,7 @@ mod tests {
                     output_policy: "test-only".into(),
                 },
                 |_, _, _| Ok(production_input.clone()),
-                |_, _| Ok(day_input(&fixture)),
+                |_, _| Ok((vec![production_input.clone()], shadow_input.clone())),
                 |_, _| {
                     Err(crate::DirectRuntimeError::PublicationSinkFailure {
                         detail: "injected after shadow day".into(),
@@ -932,6 +1235,90 @@ mod tests {
         assert!(matches!(
             error,
             crate::DirectRuntimeError::PublicationSinkFailure { .. }
+        ));
+        assert_eq!(production, production_before);
+        assert_eq!(shadow, shadow_before);
+    }
+
+    #[test]
+    fn active_routing_is_typed_unsupported_before_any_shadow_or_production_change() {
+        let (mut shadow, fixture) = shadow_fixture();
+        let mut production = fixture.hydrology.beginning_frame().clone();
+        production.laned_active = Some(Box::new(DirectLanedActiveConfig {
+            lanes: vec![DirectLanedActiveLaneConfig {
+                slplen_m: 10.0,
+                width_m: 10.0,
+                mean_gradient: 0.01,
+                skin_friction_coefficient_ko: 500.0,
+                form_drag_coefficient: 0.0,
+                roughness_element_height_m: 0.0,
+                roughness_concentration: 0.0,
+                vegetation_drag_coefficient: 0.0,
+                canopy_height_m: None,
+            }],
+            mesh_policy: DirectLanedActiveMeshPolicy::FixedCells { cells: 10 },
+            max_dt_s: 300.0,
+            trace_enabled: false,
+            trace_detail_filter: None,
+            step_trace_enabled: false,
+        }));
+        let production_before = production.clone();
+        let shadow_before = shadow.clone();
+        let shadow_input = day_input(&fixture);
+        let production_input = production_day_input(&shadow_input);
+        let error = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+            .run_publication_stream_with_v9_real_consumer_shadow(
+                &mut production,
+                DirectPublicationRunMetadata {
+                    run_name: "v9-active-unsupported".into(),
+                    runtime_selection: "direct-default-off-shadow-test".into(),
+                    output_policy: "test-only".into(),
+                },
+                |_, _, _| Ok(production_input.clone()),
+                |_, _| Ok((vec![production_input.clone()], shadow_input.clone())),
+                |_, _| Ok(()),
+                &mut shadow,
+            )
+            .expect_err("active routing must reject");
+        assert!(matches!(
+            error,
+            crate::DirectRuntimeError::DirectDomainViolation {
+                field: "v9_shadow.laned_active_unsupported"
+            }
+        ));
+        assert_eq!(production, production_before);
+        assert_eq!(shadow, shadow_before);
+    }
+
+    #[test]
+    fn repository_day_receipt_mismatch_discards_both_candidates() {
+        let (mut shadow, fixture) = shadow_fixture();
+        let mut production = fixture.hydrology.beginning_frame().clone();
+        let production_before = production.clone();
+        let shadow_before = shadow.clone();
+        let shadow_input = day_input(&fixture);
+        let projected_input = production_day_input(&shadow_input);
+        let mut actual_input = projected_input.clone();
+        actual_input.precipitation_m = f64::from_bits(actual_input.precipitation_m.to_bits() ^ 1);
+        let error = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+            .run_publication_stream_with_v9_real_consumer_shadow(
+                &mut production,
+                DirectPublicationRunMetadata {
+                    run_name: "v9-provider-poison".into(),
+                    runtime_selection: "direct-default-off-shadow-test".into(),
+                    output_policy: "test-only".into(),
+                },
+                |_, _, _| Ok(actual_input.clone()),
+                |_, _| Ok((vec![projected_input.clone()], shadow_input.clone())),
+                |_, _| Ok(()),
+                &mut shadow,
+            )
+            .expect_err("repository receipt mismatch");
+        assert!(matches!(
+            error,
+            crate::DirectRuntimeError::DirectDomainViolation {
+                field: "v9_shadow.repository_day_input_join"
+            }
         ));
         assert_eq!(production, production_before);
         assert_eq!(shadow, shadow_before);

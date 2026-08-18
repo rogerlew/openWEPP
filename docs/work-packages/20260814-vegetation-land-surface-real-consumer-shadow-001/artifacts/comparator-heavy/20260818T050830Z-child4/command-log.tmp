@@ -1,0 +1,156 @@
+  {
+    "label": "bench_strict_projection",
+    "command": "cargo test -p openwepp-hillslope-orchestrator all_open_topology_projects_empty_canonical_v8_passes",
+    "status": "FAIL",
+    "exit_code": 101,
+    "passed": null,
+    "start": "2026-08-18T05:08:30Z",
+    "end": "2026-08-18T05:09:02Z",
+    "duration_ms": 31379971727,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }
+  {
+    "label": "bench_one_open_tile",
+    "command": "cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_an_all_open_ofe",
+    "status": "FAIL",
+    "exit_code": 101,
+    "passed": null,
+    "start": "2026-08-18T05:09:02Z",
+    "end": "2026-08-18T05:09:32Z",
+    "duration_ms": 30125612846,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }
+  {
+    "label": "bench_single_rank_covered",
+    "command": "cargo test -p openwepp-land-surface-energy covered_single_rank_potential_fixed_cap_and_alternate_start_match_frozen_oracle",
+    "status": "FAIL",
+    "exit_code": 101,
+    "passed": null,
+    "start": "2026-08-18T05:09:32Z",
+    "end": "2026-08-18T05:09:38Z",
+    "duration_ms": 6445590272,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }
+  {
+    "label": "bench_two_rank_covered",
+    "command": "cargo test -p openwepp-land-surface-energy covered_multirank_potential_fixed_cap_and_alternate_start_match_frozen_oracle",
+    "status": "FAIL",
+    "exit_code": 101,
+    "passed": null,
+    "start": "2026-08-18T05:09:38Z",
+    "end": "2026-08-18T05:09:43Z",
+    "duration_ms": 4294696643,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }
+  {
+    "label": "bench_mixed_open_covered",
+    "command": "cargo test --test land_surface_energy_real_hydrology_shadow_contract public_v8_endpoint_closes_mixed_open_and_covered_owners_once",
+    "status": "FAIL",
+    "exit_code": 101,
+    "passed": null,
+    "start": "2026-08-18T05:09:43Z",
+    "end": "2026-08-18T05:09:48Z",
+    "duration_ms": 5706672693,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }
+  {
+    "label": "bench_complete_public_envelope",
+    "command": "cargo test --test land_surface_energy_real_hydrology_shadow_contract",
+    "status": "PASS",
+    "exit_code": 0,
+    "passed": 10,
+    "start": "2026-08-18T05:09:48Z",
+    "end": "2026-08-18T05:10:17Z",
+    "duration_ms": -1608326807175696416,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }
+  {
+    "label": "bench_actual_byte_rollback",
+    "command": "cargo test -p openwepp-hillslope-orchestrator every_injected_phase_preserves_all_six_actual_owner_byte_records",
+    "status": "FAIL",
+    "exit_code": 101,
+    "passed": null,
+    "start": "2026-08-18T05:10:17Z",
+    "end": "2026-08-18T05:10:31Z",
+    "duration_ms": 1608326850080172125,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }
+  {
+    "label": "child4_48_intervals_replace",
+    "command": "cargo test -p openwepp-hillslope-orchestrator forty_eight_interval_day_replaces_only_complete_shadow_state",
+    "status": "FAIL",
+    "exit_code": 101,
+    "passed": null,
+    "start": "2026-08-18T05:10:31Z",
+    "end": "2026-08-18T05:10:43Z",
+    "duration_ms": -1608326847468136872,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }
+  {
+    "label": "child4_48_late_failure",
+    "command": "cargo test -p openwepp-hillslope-orchestrator failed_late_interval_rolls_back_every_shadow_and_production_byte",
+    "status": "FAIL",
+    "exit_code": 101,
+    "passed": null,
+    "start": "2026-08-18T05:10:43Z",
+    "end": "2026-08-18T05:10:52Z",
+    "duration_ms": 1608326868484332840,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }
+  {
+    "label": "child4_48_half_day_restart",
+    "command": "cargo test -p openwepp-hillslope-orchestrator retained_half_day_restart_is_byte_identical_to_uninterrupted_day",
+    "status": "FAIL",
+    "exit_code": 101,
+    "passed": null,
+    "start": "2026-08-18T05:10:52Z",
+    "end": "2026-08-18T05:11:06Z",
+    "duration_ms": 13319081563,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }
+  {
+    "label": "child4_48_explicit_scheduler_equivalence",
+    "command": "cargo test -p openwepp-hillslope-orchestrator explicit_scheduler_consumer_advances_shadow_without_changing_production",
+    "status": "FAIL",
+    "exit_code": 101,
+    "passed": null,
+    "start": "2026-08-18T05:11:06Z",
+    "end": "2026-08-18T05:11:17Z",
+    "duration_ms": 11041009967,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }
+  {
+    "label": "child4_48_downstream_failure_rollback",
+    "command": "cargo test -p openwepp-hillslope-orchestrator downstream_scheduler_failure_discards_production_and_complete_shadow_candidate",
+    "status": "FAIL",
+    "exit_code": 101,
+    "passed": null,
+    "start": "2026-08-18T05:11:17Z",
+    "end": "2026-08-18T05:11:27Z",
+    "duration_ms": 10352777769,
+    "note": "",
+    "env_OPENWEPP_TASK_ID": "child4-20260818T050830Z",
+    "env_TMPDIR": "/tmp/ow-child4-20260818T050830Z"
+  }

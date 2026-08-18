@@ -1476,17 +1476,35 @@ fn evaluate_covered_occupancy(
         * occupancy.gb_stem_m_s
         * dry_stem
         * (tstem - canopy_air_temperature_k);
-    let wet_energy_residual = if wet_area.to_bits() == 0.0_f64.to_bits() {
-        twet - canopy_air_temperature_k
-    } else {
+    let component_areas = [dry_sun, dry_shade, wet_area, dry_stem];
+    let component_temperatures = [tsun, tshade, twet, tstem];
+    let physical_energy_residuals = [
+        occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction)
+            + component_longwave_w_m2[0]
+            - sun_h
+            - column.latent_heat_j_kg * sun_e,
+        occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction)
+            + component_longwave_w_m2[1]
+            - shade_h
+            - column.latent_heat_j_kg * shade_e,
         wet_fraction
             * (occupancy.sun.absorbed_shortwave_w_m2_tile
                 + occupancy.shade.absorbed_shortwave_w_m2_tile
                 + occupancy.stem_absorbed_shortwave_w_m2_tile)
             + component_longwave_w_m2[2]
             - wet_h
-            - column.latent_heat_j_kg * wet_e
-    };
+            - column.latent_heat_j_kg * wet_e,
+        (1.0 - wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile
+            + component_longwave_w_m2[3]
+            - stem_h,
+    ];
+    let energy_residuals: [f64; 4] = std::array::from_fn(|index| {
+        if component_areas[index].to_bits() == 0.0_f64.to_bits() {
+            component_temperatures[index] - canopy_air_temperature_k
+        } else {
+            physical_energy_residuals[index]
+        }
+    });
     let residuals = vec![
         sun_e - q1sun,
         shade_e - q1shade,
@@ -1506,18 +1524,10 @@ fn evaluate_covered_occupancy(
                 ),
         q1sun + q1shade - q2,
         q2 - root_source_sum,
-        occupancy.sun.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction)
-            + component_longwave_w_m2[0]
-            - sun_h
-            - column.latent_heat_j_kg * sun_e,
-        occupancy.shade.absorbed_shortwave_w_m2_tile * (1.0 - wet_fraction)
-            + component_longwave_w_m2[1]
-            - shade_h
-            - column.latent_heat_j_kg * shade_e,
-        wet_energy_residual,
-        (1.0 - wet_fraction) * occupancy.stem_absorbed_shortwave_w_m2_tile
-            + component_longwave_w_m2[3]
-            - stem_h,
+        energy_residuals[0],
+        energy_residuals[1],
+        energy_residuals[2],
+        energy_residuals[3],
     ];
     let water_scale = emax_sun_kg_m2_s
         .max(emax_shade_kg_m2_s)
@@ -1543,7 +1553,7 @@ fn evaluate_covered_occupancy(
     ];
     let mut tolerances = vec![crate::physics::water_tolerance(water_scale); 6];
     tolerances.extend((0..4).map(|index| {
-        if index == 2 && wet_area.to_bits() == 0.0_f64.to_bits() {
+        if component_areas[index].to_bits() == 0.0_f64.to_bits() {
             crate::physics::energy_tolerance(1.0)
         } else {
             crate::physics::energy_tolerance(
