@@ -2,6 +2,10 @@ use openwepp_meteorology::snow_free_forcing::{
     SnowFreeAtmosphericError, atmospheric_longwave_dilley_unsworth, celsius_to_kelvin,
     fao56_station_pressure_kpa, liquid_specific_enthalpy_j_kg, weiss_norman_partition,
 };
+use openwepp_plant_phenology::{
+    GsiDailyForcing, GsiDailyIndicators, GsiDailyResult, GsiDate, GsiError, GsiParameters,
+    GsiState,
+};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -26,6 +30,215 @@ pub struct SnowFreeHalfHourProviderConfiguration {
     pub gsi: f64,
     pub gsi_receipt_sha256: String,
     pub destinations: Vec<SnowFreeHalfHourDestination>,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectGsiStateV1 {
+    pub history: Vec<f64>,
+    pub last_year: Option<i32>,
+    pub last_ordinal_day: Option<u16>,
+    pub state_sha256: String,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectGsiParametersV1 {
+    pub minimum_temperature_inactive_c: f64,
+    pub minimum_temperature_unconstrained_c: f64,
+    pub vapor_pressure_deficit_unconstrained_pa: f64,
+    pub vapor_pressure_deficit_inactive_pa: f64,
+    pub photoperiod_inactive_hours: f64,
+    pub photoperiod_unconstrained_hours: f64,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectGsiForcingV1 {
+    pub minimum_temperature_c: f64,
+    pub vapor_pressure_deficit_pa: f64,
+    pub latitude_degrees: f64,
+    pub year: i32,
+    pub ordinal_day: u16,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectGsiResultV1 {
+    pub minimum_temperature_indicator: f64,
+    pub vapor_pressure_deficit_indicator: f64,
+    pub photoperiod_indicator: f64,
+    pub instantaneous_gsi: f64,
+    pub photoperiod_hours: f64,
+    pub growing_season_index: f64,
+    pub sample_count: usize,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectGsiDailyReceiptV1 {
+    pub schema_version: String,
+    pub beginning_state: DirectGsiStateV1,
+    pub ending_state: DirectGsiStateV1,
+    pub parameters: DirectGsiParametersV1,
+    pub forcing: DirectGsiForcingV1,
+    pub result: DirectGsiResultV1,
+    pub configuration_sha256: String,
+    pub forcing_sha256: String,
+    pub result_sha256: String,
+    pub receipt_sha256: String,
+}
+
+impl DirectGsiDailyReceiptV1 {
+    pub fn prepare(
+        beginning: &GsiState,
+        parameters: GsiParameters,
+        forcing: GsiDailyForcing,
+    ) -> Result<(Self, GsiState), SnowFreeHalfHourForcingError> {
+        let mut ending = beginning.clone();
+        let result = ending.advance(parameters, forcing)?;
+        let beginning_state = direct_gsi_state(beginning)?;
+        let ending_state = direct_gsi_state(&ending)?;
+        let parameters = direct_gsi_parameters(parameters);
+        let forcing = direct_gsi_forcing(forcing);
+        let result = direct_gsi_result(result);
+        let mut receipt = Self {
+            schema_version: "DIRECT_GSI_DAILY_RECEIPT_V1".into(),
+            beginning_state,
+            ending_state,
+            configuration_sha256: canonical_sha256(&parameters)?,
+            forcing_sha256: canonical_sha256(&forcing)?,
+            result_sha256: canonical_sha256(&result)?,
+            parameters,
+            forcing,
+            result,
+            receipt_sha256: String::new(),
+        };
+        receipt.receipt_sha256 = canonical_sha256(&receipt)?;
+        receipt.validate()?;
+        Ok((receipt, ending))
+    }
+
+    pub fn validate(&self) -> Result<(), SnowFreeHalfHourForcingError> {
+        if self.schema_version != "DIRECT_GSI_DAILY_RECEIPT_V1"
+            || self.configuration_sha256 != canonical_sha256(&self.parameters)?
+            || self.forcing_sha256 != canonical_sha256(&self.forcing)?
+            || self.result_sha256 != canonical_sha256(&self.result)?
+        {
+            return Err(SnowFreeHalfHourForcingError::Identity("daily GSI receipt"));
+        }
+        let beginning = restore_direct_gsi_state(&self.beginning_state)?;
+        let mut ending = beginning;
+        let result = direct_gsi_result(
+            ending.advance(gsi_parameters(self.parameters), gsi_forcing(self.forcing))?,
+        );
+        if direct_gsi_state(&ending)? != self.ending_state
+            || result != self.result
+            || self.receipt_sha256 != canonical_sha256_without_receipt(self)?
+        {
+            return Err(SnowFreeHalfHourForcingError::Identity("daily GSI closure"));
+        }
+        Ok(())
+    }
+}
+
+fn direct_gsi_state(state: &GsiState) -> Result<DirectGsiStateV1, SnowFreeHalfHourForcingError> {
+    let mut value = DirectGsiStateV1 {
+        history: state.history(),
+        last_year: state.last_date().map(|date| date.year),
+        last_ordinal_day: state.last_date().map(|date| date.ordinal_day),
+        state_sha256: String::new(),
+    };
+    value.state_sha256 = canonical_sha256(&value)?;
+    Ok(value)
+}
+
+fn restore_direct_gsi_state(
+    value: &DirectGsiStateV1,
+) -> Result<GsiState, SnowFreeHalfHourForcingError> {
+    let mut canonical = value.clone();
+    canonical.state_sha256.clear();
+    if value.state_sha256 != canonical_sha256(&canonical)?
+        || value.last_year.is_some() != value.last_ordinal_day.is_some()
+    {
+        return Err(SnowFreeHalfHourForcingError::Identity("GSI state digest"));
+    }
+    let last_date = value
+        .last_year
+        .zip(value.last_ordinal_day)
+        .map(|(year, ordinal_day)| GsiDate { year, ordinal_day });
+    Ok(GsiState::try_from_history(&value.history, last_date)?)
+}
+
+const fn direct_gsi_parameters(value: GsiParameters) -> DirectGsiParametersV1 {
+    DirectGsiParametersV1 {
+        minimum_temperature_inactive_c: value.minimum_temperature_inactive_c,
+        minimum_temperature_unconstrained_c: value.minimum_temperature_unconstrained_c,
+        vapor_pressure_deficit_unconstrained_pa: value.vapor_pressure_deficit_unconstrained_pa,
+        vapor_pressure_deficit_inactive_pa: value.vapor_pressure_deficit_inactive_pa,
+        photoperiod_inactive_hours: value.photoperiod_inactive_hours,
+        photoperiod_unconstrained_hours: value.photoperiod_unconstrained_hours,
+    }
+}
+
+const fn gsi_parameters(value: DirectGsiParametersV1) -> GsiParameters {
+    GsiParameters {
+        minimum_temperature_inactive_c: value.minimum_temperature_inactive_c,
+        minimum_temperature_unconstrained_c: value.minimum_temperature_unconstrained_c,
+        vapor_pressure_deficit_unconstrained_pa: value.vapor_pressure_deficit_unconstrained_pa,
+        vapor_pressure_deficit_inactive_pa: value.vapor_pressure_deficit_inactive_pa,
+        photoperiod_inactive_hours: value.photoperiod_inactive_hours,
+        photoperiod_unconstrained_hours: value.photoperiod_unconstrained_hours,
+    }
+}
+
+const fn direct_gsi_forcing(value: GsiDailyForcing) -> DirectGsiForcingV1 {
+    DirectGsiForcingV1 {
+        minimum_temperature_c: value.minimum_temperature_c,
+        vapor_pressure_deficit_pa: value.vapor_pressure_deficit_pa,
+        latitude_degrees: value.latitude_degrees,
+        year: value.date.year,
+        ordinal_day: value.date.ordinal_day,
+    }
+}
+
+const fn gsi_forcing(value: DirectGsiForcingV1) -> GsiDailyForcing {
+    GsiDailyForcing {
+        minimum_temperature_c: value.minimum_temperature_c,
+        vapor_pressure_deficit_pa: value.vapor_pressure_deficit_pa,
+        latitude_degrees: value.latitude_degrees,
+        date: GsiDate {
+            year: value.year,
+            ordinal_day: value.ordinal_day,
+        },
+    }
+}
+
+const fn direct_gsi_result(value: GsiDailyResult) -> DirectGsiResultV1 {
+    let GsiDailyIndicators {
+        minimum_temperature,
+        vapor_pressure_deficit,
+        photoperiod,
+        instantaneous_gsi,
+        photoperiod_hours,
+    } = value.indicators;
+    DirectGsiResultV1 {
+        minimum_temperature_indicator: minimum_temperature,
+        vapor_pressure_deficit_indicator: vapor_pressure_deficit,
+        photoperiod_indicator: photoperiod,
+        instantaneous_gsi,
+        photoperiod_hours,
+        growing_season_index: value.growing_season_index,
+        sample_count: value.sample_count,
+    }
+}
+
+fn canonical_sha256_without_receipt(
+    value: &DirectGsiDailyReceiptV1,
+) -> Result<String, SnowFreeHalfHourForcingError> {
+    let mut canonical = value.clone();
+    canonical.receipt_sha256.clear();
+    canonical_sha256(&canonical)
 }
 
 /// Sequential provider cursor retaining exact next-day precipitation parcels.
@@ -424,6 +637,8 @@ pub enum SnowFreeHalfHourForcingError {
     Climate(#[from] ClimateRuntimeInputError),
     #[error(transparent)]
     Atmospheric(#[from] SnowFreeAtmosphericError),
+    #[error(transparent)]
+    Gsi(#[from] GsiError),
     #[error("forcing provider identity failure: {0}")]
     Identity(&'static str),
     #[error("forcing provider unsupported domain: {0}")]

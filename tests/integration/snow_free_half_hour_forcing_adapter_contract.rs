@@ -1,5 +1,5 @@
 use openwepp_hillslope_orchestrator::runtime_inputs::{
-    SnowFreeHalfHourDestination, SnowFreeHalfHourForcingError,
+    DirectGsiDailyReceiptV1, SnowFreeHalfHourDestination, SnowFreeHalfHourForcingError,
     SnowFreeHalfHourProviderConfiguration, SnowFreeHalfHourProviderCursor,
     build_hillslope_climate_runtime_request,
 };
@@ -7,9 +7,38 @@ use openwepp_input_contract::parsers::climate::{ParserMode, parse_climate_from_s
 use openwepp_meteorology::snow_free_forcing::{
     atmospheric_longwave_dilley_unsworth, fao56_station_pressure_kpa, weiss_norman_partition,
 };
+use openwepp_plant_phenology::{GsiDailyForcing, GsiDate, GsiParameters, GsiState};
 
 const PACKAGE: &str =
     "docs/work-packages/20260817-snow-free-half-hour-forcing-authority-001/artifacts";
+
+#[test]
+fn direct_gsi_daily_receipt_reconstructs_cp_gsi01_state_and_rejects_poison() {
+    let beginning = GsiState::new();
+    let forcing = GsiDailyForcing {
+        minimum_temperature_c: 4.0,
+        vapor_pressure_deficit_pa: 800.0,
+        latitude_degrees: 41.1,
+        date: GsiDate {
+            year: 2000,
+            ordinal_day: 172,
+        },
+    };
+    let (receipt, ending) =
+        DirectGsiDailyReceiptV1::prepare(&beginning, GsiParameters::generalized(), forcing)
+            .expect("accepted CP-GSI01 daily receipt");
+    receipt.validate().expect("reconstructed receipt");
+    assert_eq!(receipt.ending_state.history, ending.history());
+    assert_eq!(receipt.result.sample_count, 1);
+
+    let mut poison = receipt;
+    poison.result.growing_season_index =
+        f64::from_bits(poison.result.growing_season_index.to_bits() + 1);
+    assert!(matches!(
+        poison.validate(),
+        Err(SnowFreeHalfHourForcingError::Identity("daily GSI receipt"))
+    ));
+}
 
 fn warm_breakpoint_climate(wind_m_s: f64, dew_point_c: f64) -> String {
     format!(

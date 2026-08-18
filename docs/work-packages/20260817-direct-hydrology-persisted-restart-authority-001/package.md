@@ -1,6 +1,6 @@
 # Admit Direct-Hydrology Persisted Restart Authority
 
-Status: `queued / follows forcing adapter`
+Status: `executing / activated by V10 owner-transaction directive`
 
 Date: `2026-08-17`
 
@@ -14,6 +14,13 @@ Define versioned, deterministic, layout-independent
 `DirectHydrologyRestartV1` and `DirectV10RealConsumerCheckpointV1` authority,
 including complete field classification, identities, cursor, owner state,
 canonical serialization, and fail-closed restoration.
+
+The forcing adapter is held on the same cursor/checkpoint transaction, so this
+authority executes concurrently with its remaining ownership closure rather
+than waiting behind it. Canonical persisted owners are V10 vegetation,
+LSE-V2, CP-GSI01 state/receipt, provider cursor, direct hydrology, surface
+liquid, soil thermal, BGC, and scheduler position. Transient V9/LSE-V1
+projections are reconstructed and identity-checked after restoration.
 
 ## Protected boundary and write set
 
