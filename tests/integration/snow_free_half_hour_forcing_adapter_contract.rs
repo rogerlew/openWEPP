@@ -114,6 +114,66 @@ fn static_provider_cursor_accepts_changing_daily_gsi_and_rejects_wrong_owner() {
     ));
 }
 
+#[test]
+fn prepared_gsi_provider_day_commits_both_owners_or_neither() {
+    let climate = parse_climate_from_str(&warm_non_breakpoint_climate(), ParserMode::Strict)
+        .expect("climate");
+    let request = build_hillslope_climate_runtime_request(&climate).expect("runtime request");
+    let parameters = GsiParameters::generalized();
+    let legacy = provider_configuration();
+    let configuration = SnowFreeHalfHourStaticConfiguration {
+        run_id: legacy.run_id,
+        co2_pa: legacy.co2_pa,
+        reference_height_m: legacy.reference_height_m,
+        gsi_owner_configuration_sha256: DirectGsiDailyReceiptV1::configuration_sha256(parameters)
+            .expect("GSI configuration"),
+        destinations: legacy.destinations,
+    };
+    let forcing = GsiDailyForcing {
+        minimum_temperature_c: 4.0,
+        vapor_pressure_deficit_pa: 800.0,
+        latitude_degrees: 41.1,
+        date: GsiDate {
+            year: 2000,
+            ordinal_day: 172,
+        },
+    };
+    let beginning_gsi = GsiState::new();
+    let beginning_cursor = SnowFreeHalfHourProviderCursor::default();
+    let prepared = request
+        .prepare_snow_free_gsi_day(
+            0,
+            &configuration,
+            &beginning_gsi,
+            parameters,
+            forcing,
+            &beginning_cursor,
+        )
+        .expect("prepared atomic owners");
+    let mut wrong_gsi = GsiState::new();
+    wrong_gsi
+        .advance(parameters, forcing)
+        .expect("different beginning owner");
+    let wrong_before = wrong_gsi.clone();
+    let mut cursor = beginning_cursor.clone();
+    let cursor_before = cursor.clone();
+    assert!(matches!(
+        prepared.clone().commit(&mut wrong_gsi, &mut cursor),
+        Err(SnowFreeHalfHourForcingError::Identity(
+            "GSI/provider atomic commit beginning"
+        ))
+    ));
+    assert_eq!(wrong_gsi, wrong_before);
+    assert_eq!(cursor, cursor_before);
+
+    let mut gsi = beginning_gsi;
+    prepared
+        .commit(&mut gsi, &mut cursor)
+        .expect("atomic commit");
+    assert_eq!(gsi.sample_count(), 1);
+    assert_ne!(cursor, beginning_cursor);
+}
+
 fn warm_breakpoint_climate(wind_m_s: f64, dew_point_c: f64) -> String {
     format!(
         "5.30\n1 1 0\nTEST STATION 1500\nDAY MON YEAR NBRKPT TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 3 28.0 22.0 420.0 {wind_m_s} 180.0 {dew_point_c}\n13.25 0.0\n13.75 3.6\n14.00 5.4\n"

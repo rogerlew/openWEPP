@@ -21,6 +21,7 @@ use openwepp_land_surface_energy::{
 use openwepp_meteorology::snow_free_forcing::{
     celsius_to_kelvin, kilopascals_to_pascals, liquid_specific_enthalpy_j_kg,
 };
+use openwepp_plant_phenology::{GsiParameters, GsiState};
 use openwepp_vegetation::{
     NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, SnowFreeForcing, V9CoupledOwnedState,
     V9StateError, V10CoupledOwnedState, V10StateError, VegetationConfiguration, VegetationError,
@@ -38,8 +39,9 @@ use crate::land_surface_energy_shadow::{
     execute_v8_lse_runtime_shadow_internal, unified_beginning_hydrology_snapshot_sha256,
 };
 use crate::runtime_inputs::{
-    SnowFreeHalfHourDestination, SnowFreeHalfHourIntervalReceipt,
-    SnowFreeHalfHourProviderConfiguration, SnowFreePrecipitationParcelReceipt,
+    PreparedSnowFreeGsiDayV1, SnowFreeHalfHourDestination, SnowFreeHalfHourForcingError,
+    SnowFreeHalfHourIntervalReceipt, SnowFreeHalfHourProviderConfiguration,
+    SnowFreeHalfHourProviderCursor, SnowFreePrecipitationParcelReceipt,
     ValidatedSnowFreeHalfHourForcingReceipts,
 };
 use crate::vegetation_real_hydrology_shadow::{
@@ -397,6 +399,9 @@ pub struct DirectV10RealConsumerShadow {
     vegetation_state: V10CoupledOwnedState,
     lse_configuration: LandSurfaceEnergyConfiguration,
     lse_state: LandSurfaceEnergyV2State,
+    gsi_parameters: GsiParameters,
+    gsi_state: GsiState,
+    provider_cursor: SnowFreeHalfHourProviderCursor,
 }
 
 pub type DirectV10ShadowDayInput = DirectV9ShadowDayInput;
@@ -410,6 +415,8 @@ pub enum DirectV10RealConsumerError {
     LseV2(#[from] LseV2StateError),
     #[error(transparent)]
     LandSurface(#[from] LandSurfaceEnergyError),
+    #[error(transparent)]
+    ForcingProvider(#[from] SnowFreeHalfHourForcingError),
     #[error(transparent)]
     Runtime(#[from] DirectV9RealConsumerError),
 }
@@ -474,7 +481,45 @@ impl DirectV10RealConsumerShadow {
             vegetation_state,
             lse_configuration,
             lse_state,
+            gsi_parameters: GsiParameters::generalized(),
+            gsi_state: GsiState::new(),
+            provider_cursor: SnowFreeHalfHourProviderCursor::default(),
         })
+    }
+
+    /// Execute and commit one complete provider/owner day atomically. Every
+    /// fallible projection, physical solve, successor reconstruction, and
+    /// GSI/cursor guard completes on `candidate` before the single assignment.
+    pub fn execute_prepared_gsi_day(
+        &mut self,
+        production_frame: &DirectRunFrame,
+        projected_day_frames: &[DirectDayFrame],
+        projected_day_inputs: &[DirectPublicationDayInput],
+        prepared: PreparedSnowFreeGsiDayV1,
+        mut template: DirectV10ShadowDayInput,
+    ) -> Result<DirectV10ShadowDayReceipt, DirectV10RealConsumerError> {
+        let mut candidate = self.clone();
+        let gsi_receipt = prepared.gsi_receipt();
+        let accepted_gsi_receipt_sha256 = gsi_receipt.receipt_sha256.clone();
+        for interval in &mut template.intervals {
+            interval.vegetation_forcing.gsi = gsi_receipt.result.growing_season_index;
+        }
+        candidate
+            .inner
+            .provider_gsi_receipt_sha256
+            .clone_from(&gsi_receipt.receipt_sha256);
+        let projected =
+            candidate.project_repository_forcing_receipts(prepared.forcing_receipts(), template)?;
+        let receipt = candidate.execute_day(
+            production_frame,
+            projected_day_frames,
+            projected_day_inputs,
+            &projected,
+        )?;
+        candidate.inner.provider_gsi_receipt_sha256 = accepted_gsi_receipt_sha256;
+        prepared.commit(&mut candidate.gsi_state, &mut candidate.provider_cursor)?;
+        *self = candidate;
+        Ok(receipt)
     }
 
     pub fn snow_free_provider_configuration(
@@ -539,6 +584,21 @@ impl DirectV10RealConsumerShadow {
     #[must_use]
     pub const fn lse_state(&self) -> &LandSurfaceEnergyV2State {
         &self.lse_state
+    }
+
+    #[must_use]
+    pub const fn gsi_parameters(&self) -> GsiParameters {
+        self.gsi_parameters
+    }
+
+    #[must_use]
+    pub const fn gsi_state(&self) -> &GsiState {
+        &self.gsi_state
+    }
+
+    #[must_use]
+    pub const fn provider_cursor(&self) -> &SnowFreeHalfHourProviderCursor {
+        &self.provider_cursor
     }
 
     #[cfg(test)]
@@ -1493,6 +1553,7 @@ mod tests {
         OfeId, SoilThermalLayerCandidate, V2_MODEL_DEFINITION_SHA256, V2_MODEL_VERSION,
         V2_VEGETATION_MODEL_DEFINITION_SHA256, V2_VEGETATION_MODEL_VERSION,
     };
+    use openwepp_plant_phenology::{GsiDailyForcing, GsiDate};
     use openwepp_vegetation::{
         V9_MODEL_SHA256, V9CoupledOwnedState, V10_MODEL_SHA256, V10CoupledOwnedState,
     };
@@ -1500,7 +1561,8 @@ mod tests {
     use super::*;
     use crate::land_surface_energy_shadow::{EndpointFixture, endpoint_fixture};
     use crate::runtime_inputs::{
-        SnowFreeHalfHourProviderCursor, build_hillslope_climate_runtime_request,
+        DirectGsiDailyReceiptV1, SnowFreeHalfHourProviderCursor,
+        SnowFreeHalfHourStaticConfiguration, build_hillslope_climate_runtime_request,
     };
     use crate::{
         DirectExecutorMode, DirectFrameExecutor, DirectLanedActiveConfig,
@@ -1649,18 +1711,40 @@ mod tests {
         let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 0.0 2.5 180.0 20.0\n";
         let climate = parse_climate_from_str(source, ParserMode::Strict).expect("strict climate");
         let request = build_hillslope_climate_runtime_request(&climate).expect("climate request");
-        let configuration = shadow
+        let legacy_configuration = shadow
             .snow_free_provider_configuration(&template)
             .expect("owner-derived provider configuration");
-        let receipts = request
-            .snow_free_half_hour_forcing_receipts(
+        let configuration = SnowFreeHalfHourStaticConfiguration {
+            run_id: legacy_configuration.run_id,
+            co2_pa: legacy_configuration.co2_pa,
+            reference_height_m: legacy_configuration.reference_height_m,
+            gsi_owner_configuration_sha256: DirectGsiDailyReceiptV1::configuration_sha256(
+                shadow.gsi_parameters(),
+            )
+            .expect("GSI owner configuration"),
+            destinations: legacy_configuration.destinations,
+        };
+        let prepared = request
+            .prepare_snow_free_gsi_day(
                 0,
                 &configuration,
-                &SnowFreeHalfHourProviderCursor::default(),
+                shadow.gsi_state(),
+                shadow.gsi_parameters(),
+                GsiDailyForcing {
+                    minimum_temperature_c: 22.0,
+                    vapor_pressure_deficit_pa: 800.0,
+                    latitude_degrees: 41.1,
+                    date: GsiDate {
+                        year: 2000,
+                        ordinal_day: 172,
+                    },
+                },
+                shadow.provider_cursor(),
             )
-            .expect("sealed provider receipts");
+            .expect("staged GSI/provider owners");
+        let receipts = prepared.forcing_receipts();
         let projected = shadow
-            .project_repository_forcing_receipts(&receipts, template)
+            .project_repository_forcing_receipts(receipts, template)
             .expect("real Child4 forcing projection");
         assert_eq!(projected.intervals.len(), 48);
         assert_eq!(
@@ -1689,24 +1773,48 @@ mod tests {
         let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 0.0 2.5 180.0 20.0\n";
         let climate = parse_climate_from_str(source, ParserMode::Strict).expect("strict climate");
         let request = build_hillslope_climate_runtime_request(&climate).expect("climate request");
-        let configuration = shadow
+        let legacy_configuration = shadow
             .snow_free_provider_configuration(&template)
             .expect("owner-derived provider configuration");
-        let receipts = request
-            .snow_free_half_hour_forcing_receipts(
+        let configuration = SnowFreeHalfHourStaticConfiguration {
+            run_id: legacy_configuration.run_id,
+            co2_pa: legacy_configuration.co2_pa,
+            reference_height_m: legacy_configuration.reference_height_m,
+            gsi_owner_configuration_sha256: DirectGsiDailyReceiptV1::configuration_sha256(
+                shadow.gsi_parameters(),
+            )
+            .expect("GSI owner configuration"),
+            destinations: legacy_configuration.destinations,
+        };
+        let prepared = request
+            .prepare_snow_free_gsi_day(
                 0,
                 &configuration,
-                &SnowFreeHalfHourProviderCursor::default(),
+                shadow.gsi_state(),
+                shadow.gsi_parameters(),
+                GsiDailyForcing {
+                    minimum_temperature_c: 22.0,
+                    vapor_pressure_deficit_pa: 800.0,
+                    latitude_degrees: 41.1,
+                    date: GsiDate {
+                        year: 2000,
+                        ordinal_day: 172,
+                    },
+                },
+                shadow.provider_cursor(),
             )
-            .expect("sealed provider receipts");
-        let projected = shadow
-            .project_repository_forcing_receipts(&receipts, template)
-            .expect("real Child4 forcing projection");
+            .expect("staged GSI/provider owners");
         let production = fixture.hydrology.beginning_frame().clone();
         let production_input = production_day_input();
         let day_frame = projected_day(&production, &production_input);
         let receipt = shadow
-            .execute_day(&production, &[day_frame], &[production_input], &projected)
+            .execute_prepared_gsi_day(
+                &production,
+                &[day_frame],
+                &[production_input],
+                prepared,
+                template,
+            )
             .expect("complete zero-radiation provider day");
         assert_eq!(receipt.accepted_interval_count, 48);
         assert_eq!(shadow.vegetation_state.0.last_transaction_id, 88);
@@ -1714,6 +1822,68 @@ mod tests {
             shadow.lse_state.0.last_accepted_transaction_id,
             Some(TransactionId(88))
         );
+        assert_eq!(shadow.gsi_state().sample_count(), 1);
+        assert_ne!(
+            shadow.provider_cursor(),
+            &SnowFreeHalfHourProviderCursor::default()
+        );
+    }
+
+    #[test]
+    fn prepared_gsi_provider_day_rolls_back_every_owner_on_downstream_failure() {
+        let (mut shadow, fixture) = v10_shadow_fixture();
+        let beginning = shadow.clone();
+        let mut template = day_input(&fixture);
+        template.intervals[47].lse_forcing.snow_present_at_beginning = true;
+        let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 0.0 2.5 180.0 20.0\n";
+        let climate = parse_climate_from_str(source, ParserMode::Strict).expect("strict climate");
+        let request = build_hillslope_climate_runtime_request(&climate).expect("climate request");
+        let legacy = shadow
+            .snow_free_provider_configuration(&template)
+            .expect("owner-derived provider configuration");
+        let configuration = SnowFreeHalfHourStaticConfiguration {
+            run_id: legacy.run_id,
+            co2_pa: legacy.co2_pa,
+            reference_height_m: legacy.reference_height_m,
+            gsi_owner_configuration_sha256: DirectGsiDailyReceiptV1::configuration_sha256(
+                shadow.gsi_parameters(),
+            )
+            .expect("GSI owner configuration"),
+            destinations: legacy.destinations,
+        };
+        let prepared = request
+            .prepare_snow_free_gsi_day(
+                0,
+                &configuration,
+                shadow.gsi_state(),
+                shadow.gsi_parameters(),
+                GsiDailyForcing {
+                    minimum_temperature_c: 22.0,
+                    vapor_pressure_deficit_pa: 800.0,
+                    latitude_degrees: 41.1,
+                    date: GsiDate {
+                        year: 2000,
+                        ordinal_day: 172,
+                    },
+                },
+                shadow.provider_cursor(),
+            )
+            .expect("staged GSI/provider owners");
+        let production = fixture.hydrology.beginning_frame().clone();
+        let production_input = production_day_input();
+        let day_frame = projected_day(&production, &production_input);
+        assert!(
+            shadow
+                .execute_prepared_gsi_day(
+                    &production,
+                    &[day_frame],
+                    &[production_input],
+                    prepared,
+                    template,
+                )
+                .is_err()
+        );
+        assert_eq!(shadow, beginning);
     }
 
     #[test]

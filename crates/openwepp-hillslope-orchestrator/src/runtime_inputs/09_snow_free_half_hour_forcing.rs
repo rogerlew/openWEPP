@@ -409,6 +409,46 @@ pub struct ValidatedSnowFreeHalfHourForcingReceipts {
     ending_cursor: SnowFreeHalfHourProviderCursor,
 }
 
+#[derive(Clone, Debug)]
+pub struct PreparedSnowFreeGsiDayV1 {
+    gsi_receipt: DirectGsiDailyReceiptV1,
+    ending_gsi_state: GsiState,
+    forcing_receipts: ValidatedSnowFreeHalfHourForcingReceipts,
+}
+
+impl PreparedSnowFreeGsiDayV1 {
+    #[must_use]
+    pub const fn gsi_receipt(&self) -> &DirectGsiDailyReceiptV1 {
+        &self.gsi_receipt
+    }
+
+    #[must_use]
+    pub const fn forcing_receipts(&self) -> &ValidatedSnowFreeHalfHourForcingReceipts {
+        &self.forcing_receipts
+    }
+
+    /// Commit both stateful provider owners after every fallible guard. The
+    /// final replacement is deliberately assignment-only and cannot fail.
+    pub fn commit(
+        self,
+        gsi_state: &mut GsiState,
+        cursor: &mut SnowFreeHalfHourProviderCursor,
+    ) -> Result<(), SnowFreeHalfHourForcingError> {
+        self.gsi_receipt.validate()?;
+        if direct_gsi_state(gsi_state)? != self.gsi_receipt.beginning_state
+            || cursor != &self.forcing_receipts.beginning_cursor
+        {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "GSI/provider atomic commit beginning",
+            ));
+        }
+        let ending_cursor = self.forcing_receipts.ending_cursor;
+        *gsi_state = self.ending_gsi_state;
+        *cursor = ending_cursor;
+        Ok(())
+    }
+}
+
 impl ValidatedSnowFreeHalfHourForcingReceipts {
     #[must_use]
     pub fn receipts(&self) -> &[SnowFreeHalfHourDayReceipt] {
@@ -703,6 +743,30 @@ type PrecipitationSupport = (f64, f64, f64);
 type ChildMassesAndCarry = ([f64; 48], Vec<PrecipitationSupport>);
 
 impl HillslopeClimateRuntimeRequest {
+    pub fn prepare_snow_free_gsi_day(
+        &self,
+        day_index: usize,
+        configuration: &SnowFreeHalfHourStaticConfiguration,
+        gsi_state: &GsiState,
+        gsi_parameters: GsiParameters,
+        gsi_forcing: GsiDailyForcing,
+        cursor: &SnowFreeHalfHourProviderCursor,
+    ) -> Result<PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError> {
+        let (gsi_receipt, ending_gsi_state) =
+            DirectGsiDailyReceiptV1::prepare(gsi_state, gsi_parameters, gsi_forcing)?;
+        let forcing_receipts = self.snow_free_half_hour_forcing_receipts_with_gsi(
+            day_index,
+            configuration,
+            &gsi_receipt,
+            cursor,
+        )?;
+        Ok(PreparedSnowFreeGsiDayV1 {
+            gsi_receipt,
+            ending_gsi_state,
+            forcing_receipts,
+        })
+    }
+
     /// Closure-eligible projection joining static provider configuration to an
     /// accepted CP-GSI01 daily receipt. Daily GSI is never part of cursor
     /// identity and cannot be supplied independently of its receipt.
