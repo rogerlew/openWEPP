@@ -629,11 +629,26 @@ pub fn restart_authority_prepare_from_restored_receipts(
                 "restart ending cursor day overflow",
             ))?,
     )?;
-    for receipt in &receipts {
+    if receipts.len() != configuration.destinations.len() {
+        return Err(SnowFreeHalfHourForcingError::Identity(
+            "restart forcing destination cardinality",
+        ));
+    }
+    for (receipt, destination) in receipts.iter().zip(&configuration.destinations) {
         receipt.validate()?;
         if receipt.run_id != gsi_receipt.run_id
             || receipt.day_index != gsi_day_index
             || receipt.source_climate_sha256 != gsi_receipt.source_climate_sha256
+            || receipt.intervals.len() != 48
+            || receipt.intervals.iter().any(|interval| {
+                interval.ofe_id != destination.ofe_id
+                    || interval.tile_id != destination.tile_id
+                    || interval.wb14_configuration_sha256
+                        != destination.wb14_configuration_sha256
+                    || interval.co2_pa.to_bits() != configuration.co2_pa.to_bits()
+                    || interval.reference_height_m.to_bits()
+                        != configuration.reference_height_m.to_bits()
+            })
             || receipt.intervals.iter().any(|interval| {
                 interval.gsi_receipt_sha256 != gsi_receipt.receipt_sha256
             })
