@@ -1,6 +1,6 @@
 # Implement Snow-Free Half-Hour Forcing Adapter
 
-Status: `executing / physics PASS / stateful GSI, cursor and persisted restart integration active`
+Status: `executing / implementation and dual review PASS / terminal verification pending`
 
 Date: `2026-08-17`
 

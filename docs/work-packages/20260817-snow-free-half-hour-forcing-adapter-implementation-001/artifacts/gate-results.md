@@ -1,5 +1,20 @@
 # Gate Results
 
+## Exact terminal candidate
+
+Implementation commit `97d789bc7a6378a2ab85f7f42c3e055944500547`:
+
+- standalone released-authority reference: PASS, 28/28;
+- persisted restart production crate with fixtures: PASS, 30/30;
+- snow-free half-hour forcing adapter contract: PASS, 7/7, Nextest run
+  `8adc7b18-c3a1-4146-9416-592624ea931a`;
+- warnings-denied Clippy for the hillslope orchestrator and persisted restart
+  crate, all targets: PASS;
+- canonical formatting and delta diff hygiene: PASS.
+
+Both required independent reviews PASS on this exact implementation commit.
+Terminal verification remains pending; no activation is claimed.
+
 ## Explicit owner-boundary increment
 
 The GSI/forcing boundary increment passes the focused 7/7 forcing contract,

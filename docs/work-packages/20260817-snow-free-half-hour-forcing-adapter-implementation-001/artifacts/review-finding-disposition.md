@@ -1,6 +1,6 @@
 # Review Finding Disposition
 
-Status: `HOLD / material Rust and real-consumer findings remain`.
+Status: `PASS / no material finding remains on 97d789bc7`.
 
 Accepted findings and dispositions:
 
@@ -17,16 +17,16 @@ Accepted findings and dispositions:
 - real-consumer forcing-type evidence: provider output is projected into and
   validated as actual Child-4 LSE/vegetation forcing types.
 
-Open material findings:
+Closed terminal findings:
 
 - canonical midnight and positive-low-light forcing now execute through the
   public V10/LSE-V2 day transaction for all 48 intervals;
-- daily GSI custody is not yet joined to the actual stateful GSI owner result;
+- daily GSI custody is joined to the actual stateful GSI owner result;
 - provider cursor persistence and atomic commit with the shadow checkpoint are
-  not yet proved;
-- combined provider-cursor plus complete V10/LSE-V2 persisted restart remains
-  required before lifecycle closure.
+  proved by the released persisted restart transaction;
+- the restored capability validates exact configuration, destination,
+  interval, scalar, GSI, and carry joins before construction;
+- complete V10/LSE-V2 persisted continuation and poison atomicity pass.
 
-No finding is waived. Earlier climate/radiation and vegetation/LSE PASS results
-cover the provider science before the real-kernel contradiction was exposed;
-they are not terminal package closure evidence.
+No finding is waived. Independent forcing-science and Rust/ownership reviews
+both PASS the same exact implementation commit.

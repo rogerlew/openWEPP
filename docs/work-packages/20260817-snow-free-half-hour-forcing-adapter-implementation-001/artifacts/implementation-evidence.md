@@ -16,20 +16,19 @@ duplicate destinations, invalid identity, and closure failures reject through
 typed errors.
 
 A run-bound provider cursor splits next-day support at child boundaries and
-preserves upstream parcel/source identity. Receipt preparation no longer
-mutates the cursor; an explicit commit applies the candidate transition only
-after downstream acceptance. Validated persisted restore and combined
-shadow/cursor checkpoint ownership remain open requirements.
+preserves upstream parcel/source identity. Receipt preparation does not mutate
+the cursor; an explicit commit applies the candidate transition only after
+downstream acceptance. Validated persisted restore atomically owns the combined
+shadow, GSI, and provider-cursor checkpoint.
 
 The public provider returns an opaque validated wrapper. The real Child-4
 adapter accepts that sealed wrapper (not raw caller DTOs), reconstructs actual
 `LandSurfaceForcing` and `SnowFreeForcing`, scopes parcel IDs only at the LSE
 aggregation boundary, retains live-owner template fields, recomputes LSE
-forcing digests, and validates the resulting real consumer types. A focused
-unit test executes the explicit provider parser -> provider -> sealed wrapper
--> Child-4 forcing path. The real kernel then rejects the canonical midnight
-interval with `ci_bracket`; this is recorded in the named hold-lift package and
-prevents completion.
+forcing digests, and validates the resulting real consumer types. Focused
+tests execute the explicit provider parser -> provider -> sealed wrapper ->
+Child-4 forcing path and complete both zero-radiation and realistic
+positive-radiation 48-step days through the public V10/LSE-V2 transaction.
 
 Ordinary strict climate parsing retains its historical 24-hour bound.
 `ParserMode::SnowFreeHalfHourProvider` is the explicit, default-off opt-in that
@@ -40,3 +39,9 @@ provider API. It covers two destinations, 48 receipts, zero-order hold,
 horizontal daily-energy closure, breakpoint rainfall, schema validation,
 fallback rainfall, midnight carry, authority-vector primitive parity, and
 one-bit/unsupported-domain poisons.
+
+The released persisted-restart path now reconstructs the opaque prepared-day
+capability only after exact static run/GSI identity, cursor day/configuration,
+destination order/cardinality, 48-step WB14/CO2/reference-height, GSI receipt,
+and both carry-direction joins. Empty, reordered, wrong-static, and stale-ending
+poisons reject before any live-owner mutation.
