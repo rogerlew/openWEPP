@@ -182,7 +182,6 @@ def main() -> None:
         "vegetation_configuration_sha256": "2" * 64,
         "lse_configuration_sha256": "3" * 64,
     }
-    write("expected-static-context-vector.json", expected_static_context)
 
     write("runtime-descriptor.json", {"model": MODEL, "construction": "private_per_interval",
         "inputs": ["current staged hydrology", "immutable root-zone configuration", "V10/LSE identities"],
@@ -235,18 +234,20 @@ def main() -> None:
     root_bindings = [
         {"occupancy_id": "occupancy-1", "stratum_id": "stratum-1", "ofe_id": "ofe-1",
          "production_lane_index": 0, "production_lane_id": "lane-1", "layer_id": "layer-1",
-         "soil_root_interface_distance_m": inp["dxroot_m"], "accessible": True},
+         "lateral_root_length_m": inp["dxroot_m"], "accessible": True},
         {"occupancy_id": "occupancy-2", "stratum_id": "stratum-2", "ofe_id": "ofe-1",
          "production_lane_index": 0, "production_lane_id": "lane-1", "layer_id": "layer-2",
-         "soil_root_interface_distance_m": bits(second_input["dxroot_m"]), "accessible": True},
+         "lateral_root_length_m": bits(second_input["dxroot_m"]), "accessible": True},
         {"occupancy_id": "occupancy-3", "stratum_id": "stratum-2", "ofe_id": "ofe-1",
          "production_lane_index": 0, "production_lane_id": "lane-1", "layer_id": "layer-1",
-         "soil_root_interface_distance_m": bits(0.06), "accessible": True},
+         "lateral_root_length_m": bits(0.06), "accessible": True},
         {"occupancy_id": "occupancy-4", "stratum_id": "stratum-2", "ofe_id": "ofe-1",
          "production_lane_index": 0, "production_lane_id": "lane-1", "layer_id": "layer-1",
-         "soil_root_interface_distance_m": bits(0.07), "accessible": False}]
+         "lateral_root_length_m": bits(0.07), "accessible": False}]
     hydrology_state_sha = sha({"schema": "root-zone-hydrology-source-v1", "layers": hydrology_layers})
     root_bindings_sha = sha({"schema": "root-zone-vegetation-bindings-v1", "bindings": root_bindings})
+    expected_static_context["vegetation_root_bindings_sha256"] = root_bindings_sha
+    write("expected-static-context-vector.json", expected_static_context)
     receipt = {"transaction_id": "0" * 31 + "1", "day_index": 0, "interval_index": 0,
         "owner_id": "root-zone-hydraulic-owner-v1", "model_definition_sha256": model["model_definition_sha256"],
         "configuration_sha256": configuration["configuration_sha256"], "hydrology_beginning_state_sha256": hydrology_state_sha,
@@ -285,6 +286,32 @@ def main() -> None:
         "lse_configuration_sha256": configuration["lse_configuration_sha256"],
         "hydrology_layers": hydrology_layers, "root_bindings": root_bindings}
     write("source-owner-vector.json", source)
+    identity_fields = {"ofe_id": {"type": "string", "minLength": 1},
+        "production_lane_index": {"type": "integer", "minimum": 0},
+        "production_lane_id": {"type": "string", "minLength": 1},
+        "layer_id": {"type": "string", "minLength": 1}}
+    hydrology_source_fields = dict(identity_fields)
+    hydrology_source_fields.update({name: {"type": "string", "pattern": "^[0-9a-f]{16}$"}
+        for name in ["liquid_water_depth_m", "layer_thickness_m", "porosity", "saturated_conductivity_m_s"]})
+    hydrology_source_fields["frozen"] = {"type": "boolean"}
+    root_source_fields = dict(identity_fields)
+    root_source_fields.update({"occupancy_id": {"type": "string", "minLength": 1},
+        "stratum_id": {"type": "string", "minLength": 1},
+        "lateral_root_length_m": {"type": "string", "pattern": "^[0-9a-f]{16}$"},
+        "accessible": {"type": "boolean"}})
+    source_properties = {name: digest for name in ["model_definition_sha256", "configuration_sha256",
+        "hydrology_beginning_state_sha256", "vegetation_configuration_sha256",
+        "vegetation_root_bindings_sha256", "lse_configuration_sha256"]}
+    source_properties.update({"transaction_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "day_index": {"type": "integer", "minimum": 0}, "interval_index": {"type": "integer", "minimum": 0},
+        "owner_id": {"type": "string", "minLength": 1},
+        "hydrology_layers": {"type": "array", "minItems": 1, "items": {"type": "object",
+            "additionalProperties": False, "required": list(hydrology_source_fields), "properties": hydrology_source_fields}},
+        "root_bindings": {"type": "array", "minItems": 1, "items": {"type": "object",
+            "additionalProperties": False, "required": list(root_source_fields), "properties": root_source_fields}}})
+    write("source-owner-schema.json", {"$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object", "additionalProperties": False, "required": list(source_properties),
+        "properties": source_properties})
     poisons = ["WB14 suction substitution", "WB14 conductivity substitution", "Ksat used directly as current K",
         "S_psi used for K", "wrong conductivity exponent", "wrong clamp order", "positive psi_sat",
         "zero or negative B", "missing root-tissue path", "CLM default injected", "root path aliased to dxroot",
@@ -321,7 +348,7 @@ def main() -> None:
         f"- `{v['name']}`: {v['disposition']}" for v in vectors + rejects) + "\n")
     (ARTIFACTS / "reference-calculator.py").write_bytes((Path(__file__).parent / "reference_calculator.py").read_bytes())
     manifest_names = ["model-definition.json", "configuration-schema.json", "configuration-vector.json", "receipt-schema.json", "receipt-vector.json",
-        "receipt-second-layer-vector.json", "source-owner-vector.json",
+        "receipt-second-layer-vector.json", "source-owner-vector.json", "source-owner-schema.json",
         "expected-static-context-vector.json",
         "root-zone-hydraulic-vectors.json", "runtime-descriptor.json", "equation-and-operation-order.md",
         "test-vector-ledger.md", "poison-matrix.md", "reference-calculator.py"]

@@ -28,14 +28,18 @@ def main() -> None:
 
     config_schema = json.loads((ART / "configuration-schema.json").read_text())
     receipt_schema = json.loads((ART / "receipt-schema.json").read_text())
+    source_schema = json.loads((ART / "source-owner-schema.json").read_text())
     config = json.loads((ART / "configuration-vector.json").read_text())
     receipt = json.loads((ART / "receipt-vector.json").read_text())
     second_receipt = json.loads((ART / "receipt-second-layer-vector.json").read_text())
+    source = json.loads((ART / "source-owner-vector.json").read_text())
     jsonschema.Draft202012Validator.check_schema(config_schema)
     jsonschema.Draft202012Validator.check_schema(receipt_schema)
+    jsonschema.Draft202012Validator.check_schema(source_schema)
     jsonschema.Draft202012Validator(config_schema).validate(config)
     jsonschema.Draft202012Validator(receipt_schema).validate(receipt)
     jsonschema.Draft202012Validator(receipt_schema).validate(second_receipt)
+    jsonschema.Draft202012Validator(source_schema).validate(source)
     for schema, value in ((config_schema, config), (receipt_schema, receipt)):
         poisoned = dict(value)
         poisoned["invented"] = True
@@ -45,6 +49,10 @@ def main() -> None:
         poisoned = dict(config)
         poisoned[forbidden] = 1.0
         assert list(jsonschema.Draft202012Validator(config_schema).iter_errors(poisoned)), forbidden
+    for forbidden in ("wb14_suction_mm", "wb14_conductivity_m_s"):
+        poisoned = json.loads(json.dumps(source))
+        poisoned["hydrology_layers"][0][forbidden] = 1.0
+        assert list(jsonschema.Draft202012Validator(source_schema).iter_errors(poisoned)), forbidden
     missing = json.loads(json.dumps(config))
     del missing["ordered_stratum_geometry"][0]["root_tissue_lateral_path_m"]
     assert list(jsonschema.Draft202012Validator(config_schema).iter_errors(missing))

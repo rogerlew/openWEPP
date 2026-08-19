@@ -218,6 +218,7 @@ fn validate_receipt(
     mut receipt: Value,
     configuration: &Value,
     source: &Value,
+    expected: &Value,
 ) -> Result<Value, &'static str> {
     let found = receipt["receipt_sha256"]
         .as_str()
@@ -262,11 +263,30 @@ fn validate_receipt(
         return Err("OwnerJoin");
     }
     let root_bindings = source["root_bindings"].as_array().ok_or("OwnerJoin")?;
+    let root_keys = root_bindings
+        .iter()
+        .map(|v| {
+            (
+                v["occupancy_id"].as_str(),
+                v["stratum_id"].as_str(),
+                v["ofe_id"].as_str(),
+                v["production_lane_index"].as_u64(),
+                v["production_lane_id"].as_str(),
+                v["layer_id"].as_str(),
+            )
+        })
+        .collect::<Vec<_>>();
+    if root_keys.windows(2).any(|w| w[0] >= w[1]) {
+        return Err("OwnerJoin");
+    }
     let root_projection = serde_json::json!({
         "schema": "root-zone-vegetation-bindings-v1",
         "bindings": root_bindings,
     });
     if receipt["vegetation_root_bindings_sha256"] != digest(&root_projection) {
+        return Err("OwnerJoin");
+    }
+    if source["vegetation_root_bindings_sha256"] != expected["vegetation_root_bindings_sha256"] {
         return Err("OwnerJoin");
     }
     let source_keys = source_layers
@@ -330,13 +350,19 @@ fn validate_receipt(
                 && receipt["layer_id"] == v["layer_id"]
         })
         .ok_or("OwnerJoin")?;
+    if receipt["accessible"] != root_binding["accessible"] {
+        return Err("OwnerJoin");
+    }
     if root_binding["accessible"] != true {
         return Err("InaccessibleRootedLayer");
     }
-    if receipt["frozen"] == true || source_layer["frozen"] == true {
+    if receipt["frozen"] != source_layer["frozen"] {
+        return Err("OwnerJoin");
+    }
+    if source_layer["frozen"] == true {
         return Err("FrozenRootedLayerUnsupported");
     }
-    if receipt["soil_root_interface_distance_m"] != root_binding["soil_root_interface_distance_m"] {
+    if receipt["soil_root_interface_distance_m"] != root_binding["lateral_root_length_m"] {
         return Err("OwnerJoin");
     }
     let geometry = configuration["ordered_stratum_geometry"]
@@ -473,6 +499,17 @@ fn generated_vectors_are_exact_bit_complete_and_separate_z3_dxroot_and_gravity()
         Value::String(hx(1000.0 * f(&input["dxroot_m"])))
     );
     assert_ne!(expected["root_path_length_mm"], expected["gravity_root_mm"]);
+    let above_capacity = accepted
+        .iter()
+        .find(|v| v["name"] == "one_bit_above_pore_capacity_roundoff")
+        .unwrap();
+    let raw_s = f(&above_capacity["expected"]["relative_saturation_raw"]);
+    let wrong_preclamp_psi = f(&above_capacity["inputs"]["psi_sat_mm"])
+        * libm::pow(raw_s.max(0.01), -f(&above_capacity["inputs"]["b"]));
+    assert_ne!(
+        above_capacity["expected"]["matric_potential_mm"],
+        Value::String(hx(wrong_preclamp_psi))
+    );
     let lower = accepted
         .iter()
         .find(|v| v["name"] == "exact_s_psi_lower_clamp")
@@ -578,8 +615,20 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
         "{PACKAGE}/artifacts/source-owner-vector.json"
     )))
     .unwrap();
-    validate_receipt(receipt.clone(), &configuration, &source).unwrap();
-    validate_receipt(second_receipt.clone(), &configuration, &source).unwrap();
+    validate_receipt(
+        receipt.clone(),
+        &configuration,
+        &source,
+        &expected_configuration,
+    )
+    .unwrap();
+    validate_receipt(
+        second_receipt.clone(),
+        &configuration,
+        &source,
+        &expected_configuration,
+    )
+    .unwrap();
     let shared_input = serde_json::json!({
         "liquid_m": receipt["liquid_water_depth_m"],
         "thickness_m": receipt["layer_thickness_m"],
@@ -607,11 +656,17 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
     }
     shared_receipt["receipt_sha256"] = Value::String(String::new());
     shared_receipt["receipt_sha256"] = Value::String(digest(&shared_receipt));
-    validate_receipt(shared_receipt, &configuration, &source).unwrap();
+    validate_receipt(
+        shared_receipt,
+        &configuration,
+        &source,
+        &expected_configuration,
+    )
+    .unwrap();
     let live = serde_json::to_vec(&(&receipt, &configuration, &source)).unwrap();
     let check = |mutated: Value, expected| {
         assert_eq!(
-            validate_receipt(mutated, &configuration, &source),
+            validate_receipt(mutated, &configuration, &source, &expected_configuration),
             Err(expected)
         );
         assert_eq!(
@@ -642,12 +697,18 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
     bad["frozen"] = Value::Bool(true);
     bad["receipt_sha256"] = Value::String(String::new());
     bad["receipt_sha256"] = Value::String(digest(&bad));
-    check(bad, "FrozenRootedLayerUnsupported");
+    check(bad, "OwnerJoin");
+    let mut bad = receipt.clone();
+    bad["accessible"] = Value::Bool(false);
+    bad["receipt_sha256"] = Value::String(String::new());
+    bad["receipt_sha256"] = Value::String(digest(&bad));
+    check(bad, "OwnerJoin");
 
     for field in [
         "hydrology_beginning_state_sha256",
         "model_definition_sha256",
         "vegetation_configuration_sha256",
+        "vegetation_root_bindings_sha256",
         "lse_configuration_sha256",
     ] {
         let mut bad = receipt.clone();
@@ -735,6 +796,14 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
             "{field} substitution"
         );
     }
+    let mut defaulted_path = configuration.clone();
+    defaulted_path["ordered_stratum_geometry"][0]["root_tissue_lateral_path_m"] = Value::from(0.5);
+    defaulted_path["configuration_sha256"] = Value::String(String::new());
+    defaulted_path["configuration_sha256"] = Value::String(digest(&defaulted_path));
+    assert_eq!(
+        validate_configuration(defaulted_path, &expected_configuration),
+        Err("ConfigurationIdentity")
+    );
     for field in [
         "model_definition_sha256",
         "owner_id",
@@ -773,7 +842,12 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
         .unwrap()
         .reverse();
     assert_eq!(
-        validate_receipt(second_receipt.clone(), &configuration, &reordered_source),
+        validate_receipt(
+            second_receipt.clone(),
+            &configuration,
+            &reordered_source,
+            &expected_configuration
+        ),
         Err("OwnerJoin")
     );
     let mut wrong_predecessor = source.clone();
@@ -792,7 +866,8 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
         validate_receipt(
             wrong_predecessor_receipt,
             &configuration,
-            &wrong_predecessor
+            &wrong_predecessor,
+            &expected_configuration
         ),
         Err("ReceiptScientificMismatch")
     );
@@ -810,18 +885,65 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
     frozen_receipt["receipt_sha256"] = Value::String(String::new());
     frozen_receipt["receipt_sha256"] = Value::String(digest(&frozen_receipt));
     assert_eq!(
-        validate_receipt(frozen_receipt, &configuration, &frozen_source),
+        validate_receipt(
+            frozen_receipt,
+            &configuration,
+            &frozen_source,
+            &expected_configuration
+        ),
         Err("FrozenRootedLayerUnsupported")
     );
     let mut inaccessible_receipt = receipt.clone();
     inaccessible_receipt["occupancy_id"] = Value::String("occupancy-4".into());
     inaccessible_receipt["stratum_id"] = Value::String("stratum-2".into());
     inaccessible_receipt["soil_root_interface_distance_m"] = Value::String(hx(0.07));
+    inaccessible_receipt["accessible"] = Value::Bool(false);
     inaccessible_receipt["receipt_sha256"] = Value::String(String::new());
     inaccessible_receipt["receipt_sha256"] = Value::String(digest(&inaccessible_receipt));
     assert_eq!(
-        validate_receipt(inaccessible_receipt, &configuration, &source),
+        validate_receipt(
+            inaccessible_receipt,
+            &configuration,
+            &source,
+            &expected_configuration
+        ),
         Err("InaccessibleRootedLayer")
+    );
+    let mut forged_root_source = source.clone();
+    forged_root_source["root_bindings"][0]["lateral_root_length_m"] = Value::String(hx(0.09));
+    let forged_root_projection = serde_json::json!({
+        "schema": "root-zone-vegetation-bindings-v1",
+        "bindings": forged_root_source["root_bindings"].clone(),
+    });
+    let forged_root_sha = digest(&forged_root_projection);
+    forged_root_source["vegetation_root_bindings_sha256"] = Value::String(forged_root_sha.clone());
+    let mut forged_root_receipt = receipt.clone();
+    forged_root_receipt["vegetation_root_bindings_sha256"] = Value::String(forged_root_sha);
+    forged_root_receipt["soil_root_interface_distance_m"] = Value::String(hx(0.09));
+    forged_root_receipt["receipt_sha256"] = Value::String(String::new());
+    forged_root_receipt["receipt_sha256"] = Value::String(digest(&forged_root_receipt));
+    assert_eq!(
+        validate_receipt(
+            forged_root_receipt,
+            &configuration,
+            &forged_root_source,
+            &expected_configuration
+        ),
+        Err("OwnerJoin")
+    );
+    let mut reordered_roots = source.clone();
+    reordered_roots["root_bindings"]
+        .as_array_mut()
+        .unwrap()
+        .reverse();
+    assert_eq!(
+        validate_receipt(
+            receipt.clone(),
+            &configuration,
+            &reordered_roots,
+            &expected_configuration
+        ),
+        Err("OwnerJoin")
     );
     assert_eq!(
         serde_json::to_vec(&(&receipt, &configuration, &source)).unwrap(),
@@ -847,6 +969,7 @@ fn generator_is_byte_reproducible_and_poison_inventory_is_complete() {
         "receipt-vector.json",
         "receipt-second-layer-vector.json",
         "source-owner-vector.json",
+        "source-owner-schema.json",
         "expected-static-context-vector.json",
     ];
     let before = names
