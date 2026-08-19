@@ -338,6 +338,8 @@ pub fn admit_checkpoint_v1(
             accepted_interval_count,
             committed,
         } => {
+            verify_embedded_identities(committed, &checkpoint)?;
+            require_between_days_surface_position(&committed.scientific, next_day_index.0)?;
             if next_day_index
                 .0
                 .checked_mul(48)
@@ -363,6 +365,12 @@ pub fn admit_checkpoint_v1(
             validated_forcing_day_receipts,
             continuation_template,
         } => {
+            verify_embedded_identities(committed_day_beginning, &checkpoint)?;
+            let mut staged_identity_source = committed_day_beginning.clone();
+            staged_identity_source
+                .scientific
+                .clone_from(staged_scientific);
+            verify_embedded_identities(&staged_identity_source, &checkpoint)?;
             if day_index
                 .0
                 .checked_mul(48)
@@ -432,6 +440,11 @@ pub fn admit_checkpoint_v1(
                 .checked_add(u128::from(next_interval_index.get()))
                 .ok_or(RestartAdmissionFailureV1::TransactionLineage)?;
             require_lineage(staged_scientific, Some(expected_transaction))?;
+            require_staged_surface_position(
+                staged_scientific,
+                day_index.0,
+                next_interval_index.get(),
+            )?;
             if continuation_template.day_index != day_index.0 {
                 return Err(RestartAdmissionFailureV1::SchedulerPosition);
             }
@@ -462,6 +475,67 @@ pub fn admit_checkpoint_v1(
             })
         }
     }
+}
+
+fn verify_embedded_identities(
+    value: &CompleteCommittedOwnerStateV1,
+    checkpoint: &DirectV10RealConsumerCheckpointV1,
+) -> Result<(), RestartAdmissionFailureV1> {
+    let (run, topology) = crate::restart_authority_identities(value);
+    if run != checkpoint.run_identity_sha256 {
+        return Err(RestartAdmissionFailureV1::RunIdentity);
+    }
+    if topology != checkpoint.topology_sha256 {
+        return Err(RestartAdmissionFailureV1::TopologyIdentity);
+    }
+    Ok(())
+}
+
+fn require_staged_surface_position(
+    value: &ScientificOwnerStateSetV1,
+    day_index: u64,
+    next_interval_index: u8,
+) -> Result<(), RestartAdmissionFailureV1> {
+    if value
+        .direct_hydrology
+        .surface_liquid_owned_state
+        .as_deref()
+        .is_none_or(|state| {
+            state.continuations.is_empty()
+                || state.continuations.iter().any(|continuation| {
+                    continuation.day_index != day_index
+                        || continuation.next_interval_index != next_interval_index
+                })
+        })
+    {
+        return Err(RestartAdmissionFailureV1::TransactionLineage);
+    }
+    Ok(())
+}
+
+fn require_between_days_surface_position(
+    value: &ScientificOwnerStateSetV1,
+    next_day_index: u64,
+) -> Result<(), RestartAdmissionFailureV1> {
+    let (expected_day, expected_interval) = if next_day_index == 0 {
+        (0, 0)
+    } else {
+        (next_day_index - 1, 48)
+    };
+    if value
+        .direct_hydrology
+        .surface_liquid_owned_state
+        .as_deref()
+        .is_some_and(|state| {
+            state.continuations.iter().any(|continuation| {
+                continuation.day_index != expected_day
+                    || continuation.next_interval_index != expected_interval
+            })
+        })
+    {
+        return Err(RestartAdmissionFailureV1::TransactionLineage);
+    }
+    Ok(())
 }
 
 fn restore_committed(
@@ -514,6 +588,53 @@ fn restore_scientific(
     value: &ScientificOwnerStateSetV1,
     context: &ExpectedRestartStaticContext<'_>,
 ) -> Result<RestoredScientificOwnerStateSetV1, RestartAdmissionFailureV1> {
+    let expected_lse_order = context
+        .lse_configuration
+        .ofes
+        .iter()
+        .flat_map(|ofe| {
+            ofe.tiles
+                .iter()
+                .map(move |tile| (ofe.ofe_id.as_str(), tile.tile_id.as_str()))
+        })
+        .collect::<Vec<_>>();
+    let actual_lse_order = value
+        .lse_v2
+        .tiles
+        .iter()
+        .map(|tile| (tile.ofe_id.as_str(), tile.tile_id.as_str()))
+        .collect::<Vec<_>>();
+    let expected_soil_order = context
+        .lse_configuration
+        .ofes
+        .iter()
+        .map(|ofe| {
+            (
+                ofe.ofe_id.as_str(),
+                ofe.soil_interface_layers
+                    .iter()
+                    .map(|layer| layer.layer_id.as_str())
+                    .collect::<Vec<_>>(),
+            )
+        })
+        .collect::<Vec<_>>();
+    let actual_soil_order = value
+        .soil_thermal
+        .ofes
+        .iter()
+        .map(|ofe| {
+            (
+                ofe.ofe_id.as_str(),
+                ofe.ordered_layers
+                    .iter()
+                    .map(|layer| layer.layer_id.as_str())
+                    .collect::<Vec<_>>(),
+            )
+        })
+        .collect::<Vec<_>>();
+    if actual_lse_order != expected_lse_order || actual_soil_order != expected_soil_order {
+        return Err(RestartAdmissionFailureV1::CanonicalOrder);
+    }
     if value.vegetation_v10.owner_id != context.vegetation_owner_id.as_str() {
         return Err(RestartAdmissionFailureV1::OwnerIdentity);
     }
@@ -906,6 +1027,9 @@ mod poison_tests {
         p.topology_sha256 = Sha256Hex::try_new("1".repeat(64)).unwrap();
         check(sealed(p), RestartAdmissionFailureV1::TopologyIdentity);
         let mut p = baseline.clone();
+        phase(&mut p).1.direct_hydrology.hillslope_id += 1;
+        check(sealed(p), RestartAdmissionFailureV1::RunIdentity);
+        let mut p = baseline.clone();
         phase(&mut p).0.gsi_configuration.configuration_sha256 =
             Sha256Hex::try_new("1".repeat(64)).unwrap();
         check(sealed(p), RestartAdmissionFailureV1::ConfigurationIdentity);
@@ -933,6 +1057,26 @@ mod poison_tests {
             p.into_bytes(),
             RestartAdmissionFailureV1::TransactionLineage,
         );
+        let mut p = baseline.clone();
+        phase(&mut p)
+            .1
+            .direct_hydrology
+            .surface_liquid_owned_state
+            .as_mut()
+            .unwrap()
+            .continuations[0]
+            .day_index = 1;
+        check(sealed(p), RestartAdmissionFailureV1::TransactionLineage);
+        let mut p = baseline.clone();
+        phase(&mut p)
+            .1
+            .direct_hydrology
+            .surface_liquid_owned_state
+            .as_mut()
+            .unwrap()
+            .continuations[0]
+            .next_interval_index = 23;
+        check(sealed(p), RestartAdmissionFailureV1::TransactionLineage);
         let mut p = baseline.clone();
         *phase(&mut p).5 = AcceptedIntervalCount::try_new(25).unwrap();
         check(sealed(p), RestartAdmissionFailureV1::SchedulerPosition);
@@ -1038,6 +1182,14 @@ mod poison_tests {
         phase(&mut p).1.biogeochemistry.layers.reverse();
         phase(&mut p).1.biogeochemistry.seal().unwrap();
         check(sealed(p), RestartAdmissionFailureV1::CanonicalOrder);
+        let mut p = baseline.clone();
+        phase(&mut p).1.lse_v2.tiles.reverse();
+        check(sealed(p), RestartAdmissionFailureV1::TopologyIdentity);
+        let mut p = baseline.clone();
+        phase(&mut p).1.soil_thermal.ofes[0]
+            .ordered_layers
+            .reverse();
+        check(sealed(p), RestartAdmissionFailureV1::TopologyIdentity);
         let mut p = serde_json::to_value(&baseline).unwrap();
         p["phase"]["staged_scientific"]
             .as_object_mut()

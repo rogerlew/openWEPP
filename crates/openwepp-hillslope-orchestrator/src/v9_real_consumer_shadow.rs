@@ -718,6 +718,12 @@ impl DirectV10RealConsumerShadow {
     }
 
     #[cfg(feature = "restart-authority-evidence")]
+    #[must_use]
+    pub const fn restart_authority_next_day_index(&self) -> usize {
+        self.inner.next_day_index()
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
     pub fn restart_authority_advance_staged_intervals(
         &mut self,
         prepared: &PreparedSnowFreeGsiDayV1,
@@ -739,6 +745,7 @@ impl DirectV10RealConsumerShadow {
             .inner
             .provider_gsi_receipt_sha256
             .clone_from(&receipt.receipt_sha256);
+        let template_day_index = template.day_index;
         let projected =
             candidate.project_repository_forcing_receipts(prepared.forcing_receipts(), template)?;
         let day_index =
@@ -748,6 +755,11 @@ impl DirectV10RealConsumerShadow {
                         "restart evidence day index overflow",
                     ))
                 })?;
+        if template_day_index != day_index || candidate.inner.next_day_index != day_index {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Identity("restart evidence continuation day"),
+            ));
+        }
         for interval_index in start_interval..end_interval_exclusive {
             candidate.inner.execute_interval(
                 day_index,
@@ -770,6 +782,15 @@ impl DirectV10RealConsumerShadow {
                     .clone(),
             )?,
         )?;
+        if end_interval_exclusive == INTERVALS_PER_DAY {
+            candidate.inner.next_day_index =
+                day_index
+                    .checked_add(1)
+                    .ok_or(DirectV10RealConsumerError::Runtime(
+                        DirectV9RealConsumerError::Identity("restart evidence next day overflow"),
+                    ))?;
+            candidate.inner.validate_complete_owner_set()?;
+        }
         *self = candidate;
         Ok(())
     }

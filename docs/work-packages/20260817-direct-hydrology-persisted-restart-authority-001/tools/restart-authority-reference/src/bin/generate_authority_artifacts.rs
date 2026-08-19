@@ -112,7 +112,31 @@ fn write(path: &Path, value: &impl Serialize) {
     fs::write(path, to_canonical_bytes(value).unwrap()).unwrap()
 }
 
-const SOURCES: [(&str, &str); 56] = [
+const SOURCES: [(&str, &str); 62] = [
+    (
+        "DirectRunIdentity",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs",
+    ),
+    (
+        "DirectPublicationFrame",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs",
+    ),
+    (
+        "SnowAlbedoState",
+        "crates/openwepp-hillslope-orchestrator/src/hydrology/08_snow_albedo.rs",
+    ),
+    (
+        "DirectWinterFrostComputeInputs",
+        "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    ),
+    (
+        "DirectWinterFrostPartitionOutcome",
+        "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    ),
+    (
+        "DirectFrostLayerCarryProjection",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs",
+    ),
     (
         "DirectV10ContinuationTemplateRestartV1",
         "docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/continuation_template.rs",
@@ -901,6 +925,11 @@ fn generate_poison_matrix(root: &Path) {
         ("run_identity", "run_identity_sha256", "RunIdentity"),
         ("topology_identity", "topology_sha256", "TopologyIdentity"),
         (
+            "staged_run_identity",
+            "phase.staged_scientific.direct_hydrology.hillslope_id",
+            "RunIdentity",
+        ),
+        (
             "configuration_identity",
             "phase.committed_day_beginning.gsi_configuration.configuration_sha256",
             "ConfigurationIdentity",
@@ -913,6 +942,16 @@ fn generate_poison_matrix(root: &Path) {
         (
             "transaction_lineage",
             "phase.staged_scientific.biogeochemistry.last_transaction_id",
+            "TransactionLineage",
+        ),
+        (
+            "surface_phase_day",
+            "phase.staged_scientific.direct_hydrology.surface_liquid_owned_state.continuations[0].day_index",
+            "TransactionLineage",
+        ),
+        (
+            "surface_phase_interval",
+            "phase.staged_scientific.direct_hydrology.surface_liquid_owned_state.continuations[0].next_interval_index",
             "TransactionLineage",
         ),
         (
@@ -1036,6 +1075,16 @@ fn generate_poison_matrix(root: &Path) {
             "CanonicalOrder",
         ),
         (
+            "lse_canonical_order",
+            "phase.staged_scientific.lse_v2.tiles",
+            "TopologyIdentity",
+        ),
+        (
+            "soil_canonical_order",
+            "phase.staged_scientific.soil_thermal.ofes[0].ordered_layers",
+            "TopologyIdentity",
+        ),
+        (
             "owner_omission",
             "phase.staged_scientific.direct_hydrology",
             "OwnerOmission",
@@ -1082,10 +1131,10 @@ fn generate_poison_matrix(root: &Path) {
         ),
     ];
     let mut output = String::from(
-        "# Restart V1 executable poison matrix\n\nGenerated from the checkpoint admission test inventory. Every row executes in `complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes`; semantic DTO mutations are resealed before admission.\n\n| category | test function | mutated path | expected error | observed error | live bytes unchanged |\n|---|---|---|---|---|---|\n",
+        "# Restart V1 executable poison matrix\n\nGenerated from the checkpoint admission test inventory. Every row maps to a mutation executed by `complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes`; semantic DTO mutations are resealed before admission. The gate result, rather than this generated inventory, is the observation record.\n\n| category | test function | mutated path | asserted error and isolation |\n|---|---|---|---|\n",
     );
     for (category, path, error) in rows {
-        output.push_str(&format!("| `{category}` | `complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes` | `{path}` | `{error}` | `{error}` | yes, exact canonical bytes |\n"));
+        output.push_str(&format!("| `{category}` | `complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes` | `{path}` | `{error}` and exact canonical live bytes unchanged |\n"));
     }
     fs::write(root.join("poison-matrix.md"), output).unwrap();
 }

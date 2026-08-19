@@ -986,6 +986,15 @@ mod tests {
                 .shadow
                 .restart_authority_accepted_interval_count()
         );
+        assert_eq!(resumed.restart_authority_next_day_index(), 1);
+        assert_eq!(
+            resumed.restart_authority_next_day_index(),
+            continuous
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_next_day_index()
+        );
         assert_eq!(
             resumed.gsi_state(),
             &openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_restore_gsi_state(
