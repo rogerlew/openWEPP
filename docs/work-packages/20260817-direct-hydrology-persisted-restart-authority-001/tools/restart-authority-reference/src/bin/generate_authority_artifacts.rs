@@ -373,7 +373,9 @@ fn rust_sources(root: &Path, output: &mut Vec<PathBuf>) {
     }
 }
 
-fn recursive_mapping_sources(repo: &Path) -> Vec<(String, String)> {
+type FieldDisposition = (&'static str, &'static str, &'static str, &'static str);
+
+fn recursive_mapping_sources(repo: &Path) -> Vec<(String, String, Option<FieldDisposition>)> {
     let mut files = Vec::new();
     rust_sources(
         &repo.join("crates/openwepp-hillslope-orchestrator/src"),
@@ -389,8 +391,12 @@ fn recursive_mapping_sources(repo: &Path) -> Vec<(String, String)> {
         for line in source.lines() {
             let line = line.trim_start();
             if let Some(tail) = line.strip_prefix("pub struct ")
-                && tail.contains('{')
-                && !tail.split('{').next().unwrap().contains('<')
+                && (tail.contains('{') || tail.contains('('))
+                && !tail
+                    .split(['{', '('])
+                    .next()
+                    .unwrap()
+                    .contains('<')
                 && let Some(name) = tail
                     .split(|c: char| !c.is_ascii_alphanumeric() && c != '_')
                     .next()
@@ -406,32 +412,56 @@ fn recursive_mapping_sources(repo: &Path) -> Vec<(String, String)> {
     }
     let mut queue = ROOT_MAPPINGS
         .iter()
-        .map(|(name, path)| ((*name).to_owned(), (*path).to_owned()))
+        .map(|(name, path)| ((*name).to_owned(), (*path).to_owned(), None))
         .collect::<std::collections::VecDeque<_>>();
     let mut found = std::collections::BTreeMap::new();
-    while let Some((name, path)) = queue.pop_front() {
+    while let Some((name, path, inherited)) = queue.pop_front() {
         if found.contains_key(&name) {
             continue;
         }
         let source = fs::read_to_string(repo.join(&path)).unwrap();
         let members = fields(&source, &name);
-        found.insert(name, path);
-        for (_, ty) in members {
+        found.insert(name.clone(), (path, inherited));
+        for (field, ty) in members {
+            let intrinsic = disposition(&name, &field);
+            let own = if intrinsic.0.starts_with("persisted") {
+                inherited.unwrap_or(intrinsic)
+            } else {
+                intrinsic
+            };
+            let child_inherited = (!own.0.starts_with("persisted")).then_some(own);
             for token in ty.split(|c: char| !c.is_ascii_alphanumeric() && c != '_') {
                 if token.chars().next().is_some_and(char::is_uppercase)
                     && let Some(path) = index.get(token)
                     && !found.contains_key(token)
                 {
-                    queue.push_back((token.to_owned(), path.clone()));
+                    queue.push_back((token.to_owned(), path.clone(), child_inherited));
                 }
             }
         }
     }
-    found.into_iter().collect()
+    found
+        .into_iter()
+        .map(|(name, (path, inherited))| (name, path, inherited))
+        .collect()
 }
 fn fields(source: &str, name: &str) -> Vec<(String, String)> {
     let marker = format!("pub struct {name} {{");
-    let tail = source.split_once(&marker).unwrap().1;
+    let Some((_, tail)) = source.split_once(&marker) else {
+        let tuple_marker = format!("pub struct {name}(");
+        let tail = source.split_once(&tuple_marker).unwrap().1;
+        let tuple = tail.split_once(");").unwrap().0;
+        return tuple
+            .split(',')
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .enumerate()
+            .map(|(index, value)| {
+                let ty = value.strip_prefix("pub ").unwrap_or(value);
+                (index.to_string(), ty.to_owned())
+            })
+            .collect();
+    };
     let mut output = Vec::new();
     let mut current = String::new();
     for line in tail.lines() {
@@ -462,10 +492,7 @@ fn fields(source: &str, name: &str) -> Vec<(String, String)> {
     }
     output
 }
-fn disposition(
-    source_type: &str,
-    field: &str,
-) -> (&'static str, &'static str, &'static str, &'static str) {
+fn disposition(source_type: &str, field: &str) -> FieldDisposition {
     if source_type == "DirectPublicationFrame" {
         return (
             "excluded scratch",
@@ -476,7 +503,12 @@ fn disposition(
     }
     if matches!(
         source_type,
-        "DirectWinterFrostPartitionOutcome" | "DirectFrostLayerCarryProjection"
+        "DirectWinterFrostPartitionOutcome"
+            | "DirectFrostLayerCarryProjection"
+            | "DirectSnowMassTransitionLedgers"
+            | "DirectSnowSolidToLiquidLedger"
+            | "DirectSnowLiquidDispositionLedger"
+            | "DirectSnowStage3Outcome"
     ) {
         return (
             "reconstructed cache",
@@ -562,11 +594,16 @@ fn generate_metadata_and_ledger(root: &Path) {
     let mut ledger = String::from(
         "# Exhaustive direct-hydrology restart field classification\n\nStatus: `GENERATED / authority input`\n\nGenerated by `generate_authority_artifacts` from source mapping metadata; do not edit manually.\n\n",
     );
-    for (name, path) in recursive_mapping_sources(&repo) {
+    for (name, path, inherited) in recursive_mapping_sources(&repo) {
         ledger.push_str(&format!("## `{name}`\n\n| Source field | Rust type | Classification | Source operands | Reconstruction operation | Exact comparison | Mismatch poison | Omission consequence |\n|---|---|---|---|---|---|---|---|\n"));
         let source = fs::read_to_string(repo.join(path)).unwrap();
         for (field, ty) in fields(&source, &name) {
-            let (class, operands, operation, poison) = disposition(&name, &field);
+            let intrinsic = disposition(&name, &field);
+            let (class, operands, operation, poison) = if intrinsic.0.starts_with("persisted") {
+                inherited.unwrap_or(intrinsic)
+            } else {
+                intrinsic
+            };
             let comparison = if class.starts_with("persisted") {
                 "exact identity and binary64 bit equality"
             } else {

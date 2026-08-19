@@ -188,6 +188,10 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
     for reconstructed in [
         "DirectWinterFrostPartitionOutcome",
         "DirectFrostLayerCarryProjection",
+        "DirectSnowMassTransitionLedgers",
+        "DirectSnowSolidToLiquidLedger",
+        "DirectSnowLiquidDispositionLedger",
+        "DirectSnowStage3Outcome",
     ] {
         let section = ledger
             .split(&format!("## `{reconstructed}`"))
