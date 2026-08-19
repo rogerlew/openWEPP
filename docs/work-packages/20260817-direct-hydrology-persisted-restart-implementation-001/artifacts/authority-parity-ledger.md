@@ -8,4 +8,3 @@ Production crate: `openwepp-persisted-restart-v1`.
 - Canonical JSON, fixed-width wrappers, `HexF64`, `HexU128`, phase union,
   nested digests, owner joins, and all released poison categories are retained.
 - The immutable released package and its eight manifest-bound artifacts were not modified.
-

@@ -82,3 +82,41 @@ pub fn project_complete_owner_state_v1(
         )?,
     })
 }
+
+/// Derive the released run and topology identities from a complete owner set.
+pub fn checkpoint_identities_v1(
+    committed: &CompleteCommittedOwnerStateV1,
+) -> Result<(Sha256Hex, Sha256Hex), &'static str> {
+    let hydrology = &committed.scientific.direct_hydrology;
+    let run = Sha256Hex::try_new(
+        crate::canonical_sha256(&(
+            hydrology.run_id,
+            hydrology.hillslope_id,
+            hydrology.lane_count,
+            hydrology.day_count,
+        ))
+        .map_err(|_| "run identity projection")?,
+    )
+    .map_err(|_| "run identity projection")?;
+    let topology = serde_json::json!({
+        "ordered_lanes": hydrology.lanes.iter().map(|lane| serde_json::json!({
+            "lane_id": lane.lane_id,
+            "upstream_lane_id": lane.upstream_lane_id,
+            "downstream_lane_id": lane.downstream_lane_id,
+            "soil_layer_count": lane.subsurface_layers.len(),
+        })).collect::<Vec<_>>(),
+        "ordered_ofe_tiles": committed.static_forcing_configuration.destinations.iter().map(|destination| (
+            &destination.ofe_id, &destination.tile_id, &destination.wb14_configuration_sha256,
+        )).collect::<Vec<_>>(),
+        "lse_tiles": committed.scientific.lse_v2.tiles.iter().map(|tile| (&tile.ofe_id, &tile.tile_id)).collect::<Vec<_>>(),
+        "soil_thermal_layer_maps": committed.scientific.soil_thermal.ofes.iter().map(|ofe| (
+            &ofe.ofe_id,
+            ofe.ordered_layers.iter().map(|layer| &layer.layer_id).collect::<Vec<_>>(),
+        )).collect::<Vec<_>>(),
+    });
+    let topology = Sha256Hex::try_new(
+        crate::canonical_sha256(&topology).map_err(|_| "topology identity projection")?,
+    )
+    .map_err(|_| "topology identity projection")?;
+    Ok((run, topology))
+}

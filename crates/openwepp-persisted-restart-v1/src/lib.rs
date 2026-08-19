@@ -42,6 +42,7 @@ mod projection;
 mod scientific_owners;
 mod subsurface;
 mod surface_liquid;
+mod transaction;
 mod transfer;
 mod winter;
 
@@ -84,13 +85,16 @@ pub use primitives::{
     AcceptedIntervalCount, DestinationCount, HexF64, HexU128, InProgressIntervalIndex, LaneCount,
     OptionalLaneLink, Sha256Hex, WireDayIndex, WireIntervalIndex, WireLaneId, WirePrimitiveError,
 };
-pub use projection::{project_complete_owner_state_v1, project_scientific_owner_state_v1};
+pub use projection::{
+    checkpoint_identities_v1, project_complete_owner_state_v1, project_scientific_owner_state_v1,
+};
 pub use scientific_owners::*;
 pub use subsurface::{DirectSubsurfaceLayerRestartV1, SubsurfaceRestartError};
 pub use surface_liquid::{
     DirectSurfaceLiquidConfigurationRestartV1, DirectSurfaceLiquidOwnedStateRestartV1,
     GroundIngressModeWireV1, SurfaceClassWireV1, SurfaceLiquidRestartError, WaterSourceWireV1,
 };
+pub use transaction::{DirectV10PreparedDayTransactionV1, RestartTransactionError};
 pub use transfer::{
     DirectLaneTransferLedgerRestartV1, DirectRunTransferDownstreamOperandsRestartV1,
     DirectTransferBuffersRestartV1, TransferRestartError,

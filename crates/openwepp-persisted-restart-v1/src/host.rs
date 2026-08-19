@@ -20,10 +20,12 @@ use crate::{
 /// Construction is fallible, installation is one assignment, and this type
 /// has no selector, production-frame mutation, or publication API.
 pub enum DirectV10RestartHost {
+    #[non_exhaustive]
     BetweenDays {
         shadow: DirectV10RealConsumerShadow,
         accepted_interval_count: u64,
     },
+    #[non_exhaustive]
     InProgressDay {
         shadow: DirectV10RealConsumerShadow,
         day_index: u64,

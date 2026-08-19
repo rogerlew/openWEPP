@@ -12,9 +12,9 @@ use openwepp_hillslope_orchestrator::land_surface_energy_shadow::{
     EndpointFixture, endpoint_fixture,
 };
 use openwepp_hillslope_orchestrator::runtime_inputs::{
-    DirectGsiOwnerConfigurationV1, PreparedSnowFreeGsiDayV1, SnowFreeHalfHourDestination,
-    SnowFreeHalfHourProviderCursor, SnowFreeHalfHourStaticConfiguration,
-    build_hillslope_climate_runtime_request,
+    DirectGsiOwnerConfigurationV1, HillslopeClimateRuntimeRequest, PreparedSnowFreeGsiDayV1,
+    SnowFreeHalfHourDestination, SnowFreeHalfHourProviderCursor,
+    SnowFreeHalfHourStaticConfiguration, build_hillslope_climate_runtime_request,
 };
 use openwepp_hillslope_orchestrator::v9_real_consumer_shadow::{
     DirectV9ShadowIntervalInput, DirectV10RealConsumerShadow, DirectV10ShadowDayInput,
@@ -52,6 +52,7 @@ pub struct RestartAuthorityPreparedDayFixture {
     pub ending_cursor: SnowFreeHalfHourProviderCursorRestartV1,
     pub forcing_receipts: Vec<crate::SnowFreeHalfHourDayReceiptRestartV1>,
     pub prepared: PreparedSnowFreeGsiDayV1,
+    pub request: HillslopeClimateRuntimeRequest,
     pub template: DirectV10ShadowDayInput,
 }
 
@@ -289,6 +290,7 @@ fn restart_authority_prepared_day_fixture_from_source(
         ending_cursor,
         forcing_receipts,
         prepared,
+        request,
         template,
     }
 }

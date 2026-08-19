@@ -182,11 +182,13 @@ pub struct RestoredCompleteCommittedOwnerStateV1 {
 // construction, not a latency-sensitive runtime API.
 #[allow(clippy::large_enum_variant)]
 pub enum IsolatedRestoredCheckpointV1 {
+    #[non_exhaustive]
     BetweenDays {
         next_day_index: u64,
         accepted_interval_count: u64,
         committed: RestoredCompleteCommittedOwnerStateV1,
     },
+    #[non_exhaustive]
     InProgressDay {
         day_index: u64,
         next_interval_index: u8,
@@ -318,14 +320,14 @@ pub fn admit_checkpoint_v1(
             }
             _ => RestartAdmissionFailureV1::NoncanonicalBytes,
         })?;
+    if checkpoint.compute_digest()? != checkpoint.payload_sha256 {
+        return Err(RestartAdmissionFailureV1::PayloadDigest);
+    }
     if checkpoint.schema != "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1" {
         return Err(RestartAdmissionFailureV1::Schema);
     }
     if checkpoint.version != 1 {
         return Err(RestartAdmissionFailureV1::UnsupportedVersion);
-    }
-    if checkpoint.compute_digest()? != checkpoint.payload_sha256 {
-        return Err(RestartAdmissionFailureV1::PayloadDigest);
     }
     if &checkpoint.run_identity_sha256 != context.run_identity_sha256 {
         return Err(RestartAdmissionFailureV1::RunIdentity);
@@ -1002,6 +1004,12 @@ mod poison_tests {
             );
             assert_eq!(to_canonical_bytes(&live).unwrap(), before)
         };
+        let mut p = baseline.clone();
+        p.schema = "wrong".into();
+        check(
+            to_canonical_bytes(&p).unwrap(),
+            RestartAdmissionFailureV1::PayloadDigest,
+        );
         let mut p = baseline.clone();
         p.schema = "wrong".into();
         check(sealed(p), RestartAdmissionFailureV1::Schema);

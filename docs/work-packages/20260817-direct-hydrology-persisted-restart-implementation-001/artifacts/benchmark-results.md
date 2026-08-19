@@ -17,4 +17,3 @@ the real interval-24, two-destination, 48-interval repository fixture.
 Checkpoint size is 264,895 bytes. These are observational default-off budgets;
 no wire compression or authority change was needed. Peak allocation was not
 instrumented and is recorded as a nonblocking measurement limitation.
-
