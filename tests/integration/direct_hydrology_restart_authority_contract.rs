@@ -166,8 +166,39 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
         "DirectErosionRuntimeCarry",
         "DirectGroundwaterRunState",
         "DirectSurfaceLiquidOwnedState",
+        "DirectFrostControlInputs",
+        "DirectFrostThermalInputs",
+        "DirectFrostHourlyForcing",
+        "DirectEvapotranspirationPmetInputs",
+        "DirectEvapotranspirationPmetComputeInputs",
+        "DirectWave1ContinuityInputs",
+        "DirectWinterFrostPartitionOutcome",
+        "DirectFrostLayerCarryProjection",
+        "DirectPublicationFrame",
     ] {
         assert!(ledger.contains(&format!("## `{owner}`")), "missing {owner}")
+    }
+    let publication = ledger.split("## `DirectPublicationFrame`").nth(1).unwrap();
+    assert!(
+        publication
+            .lines()
+            .take(15)
+            .any(|line| line.contains("excluded scratch"))
+    );
+    for reconstructed in [
+        "DirectWinterFrostPartitionOutcome",
+        "DirectFrostLayerCarryProjection",
+    ] {
+        let section = ledger
+            .split(&format!("## `{reconstructed}`"))
+            .nth(1)
+            .unwrap();
+        assert!(
+            section
+                .lines()
+                .take(15)
+                .any(|line| line.contains("reconstructed cache"))
+        );
     }
     let metadata =
         fs::read_to_string(root().join(PACKAGE).join("generated-field-metadata.json")).unwrap();
