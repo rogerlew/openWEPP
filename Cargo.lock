@@ -988,6 +988,7 @@ dependencies = [
  "arrow-schema",
  "flate2",
  "jsonschema",
+ "libm",
  "openwepp-assurance",
  "openwepp-biogeochemistry",
  "openwepp-climate-runtime-adapter",

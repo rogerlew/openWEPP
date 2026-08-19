@@ -92,6 +92,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
 sha2 = "0.10"
+libm = "=0.2.16"
 openwepp-hillslope-output = { path = "crates/openwepp-hillslope-output", version = "0.1.0" }
 openwepp-landuse-migrate = { path = "crates/openwepp-landuse-migrate", version = "0.1.0" }
 openwepp-assurance = { path = "crates/openwepp-assurance", version = "0.1.0" }

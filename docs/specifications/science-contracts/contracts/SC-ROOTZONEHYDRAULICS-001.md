@@ -32,7 +32,8 @@ frozen rooted layer.
 | Source | Binding use | Evidence |
 |---|---|---|
 | CTSM CLM5 Plant Hydraulics, release-clm5.0, 2.11.2.1.3, eqs. 2.11.14--18 | distinct `z3`/`dxroot`, series resistances, gravity, layer-local current K | `[DIRECT]` retrieved 2026-08-19; HTML SHA-256 `4228822c94293f6673adf12b0fbb7d4e3a78f72e5c268eecb9cefef75ba36cee` |
-| CTSM CLM5 Hydrology, release-clm5.0, 2.7.3.1, eqs. 2.7.49--55 | node geometry, retention, `-1e8 mm` floor, conductivity exponent `2B+3` | `[DIRECT]` retrieved 2026-08-19; HTML SHA-256 `fff5080f4b9285bfa19bca4f7913b17e93c341138249f70d515c6706b5cced09` |
+| CTSM CLM5 Hydrology, release-clm5.0, 2.7.3.1, eqs. 2.7.47 and 2.7.49--55 | Brooks--Corey intrinsic `2B+3` factor, node geometry, retention, and `-1e8 mm` floor; the vertical-interface averaging/ice operator is not imported | `[DIRECT]` retrieved 2026-08-19; HTML SHA-256 `fff5080f4b9285bfa19bca4f7913b17e93c341138249f70d515c6706b5cced09` |
+| ESCOMP/CTSM `8e1309ab0db671d884b80746cbae9bbaafbe78a7`, `PhotosynthesisMod.F90` lines 2608--2629 and 4405--4449 | layer-local current `hk_l`, distinct coarse-root lateral path plus node depth, and signed `smp-root-1000*z` gravitational gradient | `[DIRECT]` immutable source inspected 2026-08-19 |
 | Clapp & Hornberger (1978), WRR 14(4), DOI `10.1029/WR014i004p00601` | retention/conductivity power-law lineage | `[DIRECT]` citation metadata; source bytes not vendored |
 
 CLM PFT/root defaults, hardcoded coarse-root length, WB14 suction/K, and
@@ -53,11 +54,24 @@ vegetation and LSE configuration identities; strictly ordered OFE/lane/layer
 `root_tissue_lateral_path_m >= 0` for every rooted stratum, including explicit
 zero. There is no default.
 
+Canonical configuration bytes are UTF-8 JSON with object keys sorted
+lexicographically, arrays retained in authority order, no insignificant
+whitespace, and one terminal LF. `configuration_sha256` is empty while hashing
+and is then filled with lowercase SHA-256. Validation requires unique strictly
+increasing OFE/lane/layer tuples and unique strictly increasing stratum IDs.
+The rooted stratum set must equal the bound vegetation configuration; layer
+order must equal bound hydrology and LSE topology.
+
 Every interval reads current staged `DirectSubsurfaceLayerState.theta_m` as
 liquid depth, `depth_m` as thickness, `porosity`, and `conductivity_m_s` as
 audited saturated/base `Ksat`. A private immutable receipt binds transaction,
 day, interval, occupancy/stratum/OFE/lane/layer, current hydrology digest and
 vegetation/LSE/configuration identities. No scientific state is mutated.
+
+Required domains are: finite `liquid_water_depth_m >= 0`, finite
+`layer_thickness_m > 0`, finite `0 < porosity <= 1`, finite `Ksat > 0`, finite
+`psi_sat < 0`, finite `B > 0`, finite `layer_top_depth_m >= 0`, finite
+`root_tissue_lateral_path_m >= 0`, and finite `dxroot > 0`.
 
 ## Algorithm specification
 
@@ -76,14 +90,24 @@ soil_conductivity_mm_s = 1000.0 * Ksoil
 layer_top[0] = 0.0
 layer_top[i] = ordered_sum(thickness[j], j < i)
 z_node = layer_top[i] + 0.5 * thickness[i]
-gravity_root = 1000.0 * z_node
+gravity_root = -1000.0 * z_node
 z3 = 1000.0 * (z_node + root_tissue_lateral_path_m[stratum])
 dxroot = RootLayer.lateral_root_length_m
 ```
 
+Precondition priority is canonical configuration/digest, cross-configuration
+topology, transaction/cadence, current hydrology digest, scalar domains,
+frozen/accessibility posture, pore capacity, equations, then receipt digest.
+The postcondition is one fully validated immutable receipt or a typed error
+with no owner mutation. Inaccessible/unrooted layers emit no receipt; frozen
+accessible rooted layers fail.
+
 At exact `S=0`, current K is positive zero. `S_psi` is never used for K.
-Material water above pore capacity rejects before the upper clamp; only the
-specified one-bit binary64 roundoff case is admitted.
+Before division, compute `capacity = porosity * layer_thickness_m` in that
+order and `capacity_one_bit = f64::from_bits(capacity.to_bits() + 1)` (capacity
+is finite and positive). Reject when `liquid_water_depth_m > capacity_one_bit`.
+Thus exact capacity and its immediate next representable f64 are admitted; any
+larger value rejects before the upper clamp.
 
 ## Branch and guard table
 
@@ -100,7 +124,9 @@ specified one-bit binary64 roundoff case is admitted.
 
 - `INV-RZH-001`: `0<=S<=1`, `0.01<=S_psi<=1`.
 - `INV-RZH-002`: `-1e8<=psi<0`, `0<=Ksoil<=Ksat`.
-- `INV-RZH-003`: `gravity_root>=0`, `z3>0`, `z3>=gravity_root`.
+- `INV-RZH-003`: `gravity_root<=0`, `z3>0`, and
+  `z3>=abs(gravity_root)`. Positive-down node depth is converted to the signed
+  CLM gravitational-potential change because existing V10 adds this operand.
 - `INV-RZH-004`: `z3` uses required `z_lateral`; `dxroot` uses only existing
   `lateral_root_length_m`; they are never aliased.
 - `INV-RZH-005`: WB14 suction/K never enter the owner.
@@ -125,7 +151,16 @@ explicit `1000.0`. No publication surface is added.
 zero; NaN/inf reject. Vectors compare every f64 with exact `to_bits`; the
 independent calculator emits 16-digit hexadecimal bits. The pore-capacity
 tolerance admits exactly the specified one-bit-above-capacity vector and no
-larger excess.
+larger excess. Python's independent semantic calculator is not the exact-bit
+oracle: emitted bits must also pass the Rust `libm` evaluator for every vector.
+
+| Constant/parameter | Domain/provenance | Custody |
+|---|---|---|
+| `0.01`, `-1e8 mm`, `2B+3` | cited CLM5 constitutive relations | model definition |
+| `1000 mm/m` | exact SI conversion | model definition |
+| `psi_sat < 0`, `B > 0` | external site/OFE/layer input | configuration |
+| `root_tissue_lateral_path_m >= 0` | external stratum geometry; no default | configuration |
+| `Ksat > 0`, liquid/thickness/porosity | current hydrology | interval source |
 
 ## Calibration and identifiability posture
 
@@ -133,6 +168,15 @@ larger excess.
 `calibration_evidence_status=NOT_CALIBRATION_READY`;
 `identifiability_status=NOT_ASSESSED`. External `psi_sat`, `B`, and path values
 have no universal default or calibrated/validated/transferable claim.
+
+| Readiness obligation | Disposition | Evidence/rationale |
+|---|---|---|
+| constitutive equations | PASS | anchors and exact algorithm |
+| typed/enumerable parameters | PASS | closed schema/configuration vector |
+| deterministic execution | PASS | Python semantic + Rust exact-bit evaluators |
+| observation operator | NOT_APPLICABLE | no empirical-calibration intent |
+| empirical calibration/validation | NOT_APPLICABLE | explicitly excluded |
+| identifiability/synthetic recovery | NOT_APPLICABLE | not a readiness package |
 
 ## Test-vector obligations
 
@@ -150,6 +194,13 @@ path and cited layer-local Brooks--Corey operator. Release remains blocked on
 independent calculator artifacts, contract-derived tests, three independent
 reviews and two terminal verifiers on one commit. Production implementation
 remains forbidden until release.
+
+## Binding Exposure Index
+
+Historical HOLD artifacts are `superseded` as blockers but retained as
+provenance. The active binding set is `INV-RZH-001..007`, the typed guard table,
+numeric identity, and test-vector obligations above. No package-local addendum
+adds hidden executable authority.
 
 ## Change log
 

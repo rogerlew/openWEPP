@@ -9,7 +9,7 @@
 7. `K=min(Ksat,Ksat*pow(S,exponent))`
 8. `K_mm_s=1000*K`
 9. `node=ordered_top+0.5*thickness`
-10. `gravity_mm=1000*node`
+10. `gravity_mm=-1000*node`
 11. `z3_mm=1000*(node+required_stratum_lateral_path)`
 
 `libm 0.2.16::pow`; exact binary64-bit comparison; positive-zero normalization.
