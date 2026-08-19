@@ -10,7 +10,7 @@ Exact implementation commit `81c2a910c4c47eadd71649959d145d2f82125b9c`:
 - warnings-denied affected Clippy: PASS;
 - exact Child-4 comparator rerun: PASS, seven benchmark surfaces and ten
   Child-4 selectors, under
-  `artifacts/comparator-heavy/20260819T172811Z-child4-rerun/`;
+  `artifacts/comparator-heavy/20260819T225707Z-child4-pre-root-owner-rerun/`;
 - rustfmt and diff hygiene: PASS.
 
 The actual direct scheduler now consumes the opaque native repository-prepared

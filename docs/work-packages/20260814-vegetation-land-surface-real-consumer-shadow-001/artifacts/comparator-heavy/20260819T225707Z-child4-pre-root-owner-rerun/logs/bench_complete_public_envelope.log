@@ -1,0 +1,21 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/integration/land_surface_energy_strict_v8_public_contract.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/debug/deps/land_surface_energy_real_hydrology_shadow_contract-b87b6eb3aefee15c)
+
+running 10 tests
+test covered_forest_tests::public_endpoint_source_excludes_caller_derived_physics ... ok
+test raw_shadow_boundaries_remain_crate_private ... ok
+test covered_forest_tests::migrated_two_rank_fixture_preserves_stand_ground_leaf_owners ... ok
+test covered_forest_tests::canonical_configuration_and_state_bits_fail_closed ... ok
+test covered_forest_tests::rank_and_tile_topology_poisons_are_rejected_by_canonical_owners ... ok
+test covered_forest_tests::public_v8_endpoint_closes_an_all_open_ofe ... ok
+test covered_forest_tests::per_tile_lse_ground_optics_are_the_sole_covered_lower_boundary_owner ... ok
+test covered_forest_tests::public_v8_endpoint_closes_one_shared_stratum_across_two_covered_tiles ... ok
+test covered_forest_tests::public_v8_endpoint_closes_mixed_open_and_covered_owners_once ... ok
+test covered_forest_tests::public_endpoint_rejects_canonical_seam_poisons_before_physics ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s

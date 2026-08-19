@@ -1,0 +1,39 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+warning: unused imports: `EndpointFixture` and `endpoint_fixture`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs:101:62
+    |
+101 | pub(crate) use strict_v8_endpoint::endpoint_rollback_tests::{EndpointFixture, endpoint_fixture};
+    |                                                              ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `snow_free_provider_configuration`, `execute_first_interval_for_test`, and `execute_intervals_for_test` are never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:778:8
+     |
+ 555 | impl DirectV10RealConsumerShadow {
+     | -------------------------------- methods in this implementation
+...
+ 778 |     fn snow_free_provider_configuration(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1065 |     fn execute_first_interval_for_test(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1093 |     fn execute_intervals_for_test(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 2 warnings (run `cargo fix --lib -p openwepp-hillslope-orchestrator --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 22.26s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/debug/deps/openwepp_hillslope_orchestrator-d64570e693057fa3)
+
+running 1 test
+test land_surface_energy_shadow::strict_v8_endpoint::endpoint_rollback_tests::every_injected_phase_preserves_all_six_actual_owner_byte_records ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 701 filtered out; finished in 1.27s
