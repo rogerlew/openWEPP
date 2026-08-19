@@ -895,12 +895,41 @@ mod tests {
                 &committed_day_beginning.gsi_state,
             )
             .unwrap();
+        let live_before = to_canonical_bytes(&project_evidence_complete_live_owners(
+            &fixture.owners.runtime.shadow,
+            &fixture.owners.phase_plan_sha256,
+            &fixture.owners.day_input_digests,
+            0,
+        ))
+        .unwrap();
+        assert!(
+            openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_prepare_from_restored_receipts(
+                accepted_gsi_daily_receipt.clone(),
+                staged_gsi_ending_state.clone(),
+                validated_forcing_day_receipts.clone(),
+                committed_provider_cursor.clone(),
+                committed_provider_cursor.clone(),
+                fixture.owners.runtime.shadow.provider_static_configuration(),
+            )
+            .is_err()
+        );
+        assert_eq!(
+            to_canonical_bytes(&project_evidence_complete_live_owners(
+                &fixture.owners.runtime.shadow,
+                &fixture.owners.phase_plan_sha256,
+                &fixture.owners.day_input_digests,
+                0,
+            ))
+            .unwrap(),
+            live_before
+        );
         let restored_prepared = openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_prepare_from_restored_receipts(
             accepted_gsi_daily_receipt,
             staged_gsi_ending_state.clone(),
             validated_forcing_day_receipts,
             committed_provider_cursor.clone(),
             ending_provider_cursor.clone(),
+            fixture.owners.runtime.shadow.provider_static_configuration(),
         )
         .unwrap();
         let restored_layer_maps = staged_scientific

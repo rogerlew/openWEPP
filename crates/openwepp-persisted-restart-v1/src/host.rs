@@ -117,6 +117,7 @@ impl DirectV10RestartHost {
                     validated_forcing_day_receipts.clone(),
                     beginning_cursor,
                     ending_provider_cursor.clone(),
+                    context.forcing_static_configuration,
                 )
                 .map_err(DirectV10RealConsumerError::from)?;
                 let committed = RestoredCompleteCommittedOwnerStateV1 {

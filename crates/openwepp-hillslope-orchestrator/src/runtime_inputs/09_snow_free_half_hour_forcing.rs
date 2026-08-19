@@ -601,6 +601,7 @@ pub fn restart_authority_prepare_from_restored_receipts(
     receipts: Vec<SnowFreeHalfHourDayReceipt>,
     beginning_cursor: SnowFreeHalfHourProviderCursor,
     ending_cursor: SnowFreeHalfHourProviderCursor,
+    configuration: &SnowFreeHalfHourStaticConfiguration,
 ) -> Result<PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError> {
     gsi_receipt.validate()?;
     let direct_ending = direct_gsi_state(&ending_gsi_state)?;
@@ -612,6 +613,15 @@ pub fn restart_authority_prepare_from_restored_receipts(
             "restart staged GSI ending state",
         ));
     }
+    beginning_cursor.validate_for_configuration(configuration, gsi_day_index)?;
+    ending_cursor.validate_for_configuration(
+        configuration,
+        gsi_day_index
+            .checked_add(1)
+            .ok_or(SnowFreeHalfHourForcingError::Identity(
+                "restart ending cursor day overflow",
+            ))?,
+    )?;
     for receipt in &receipts {
         receipt.validate()?;
         if receipt.run_id != gsi_receipt.run_id
@@ -625,6 +635,15 @@ pub fn restart_authority_prepare_from_restored_receipts(
                 "restart forcing/GSI receipt join",
             ));
         }
+    }
+    let expected_carry = receipts
+        .iter()
+        .flat_map(|receipt| receipt.next_day_precipitation_carry.iter().cloned())
+        .collect::<Vec<_>>();
+    if expected_carry != ending_cursor.pending_carry {
+        return Err(SnowFreeHalfHourForcingError::Identity(
+            "restart ending cursor carry",
+        ));
     }
     Ok(PreparedSnowFreeGsiDayV1 {
         gsi_receipt,
