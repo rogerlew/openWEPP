@@ -11,6 +11,14 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260819-root-zone-hydraulic-owner-authority-001/` — HOLD / candidate
+  `OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1` not released: primary-source and
+  repository audits prove that required rooted scenarios have no admitted
+  explicit `z3` input and current subsurface conductivity is saturated/base,
+  not current unsaturated soil-root conductivity. No production code started.
+- `20260819-root-zone-hydraulic-owner-implementation-001/` — QUEUED / blocked
+  on root-zone owner authority release; future default-off implementation only.
+
 - `20260814-nix-agent-devbox-feasibility-001/` — ACTIVE / BRANCH SCAFFOLDED:
   establish a pinned Nix development shell and concurrency-safe Cargo cache,
   target, worktree, and scratch layout on `ow-dev-01`; benchmark the same landed
