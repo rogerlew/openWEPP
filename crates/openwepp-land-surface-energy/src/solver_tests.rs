@@ -2,6 +2,128 @@
 
 use super::*;
 
+fn v10_vector_close(actual: f64, expected: f64) {
+    assert!(
+        (actual - expected).abs() <= 1.0e-12 * expected.abs().max(1.0),
+        "actual={actual:?} expected={expected:?}"
+    );
+}
+
+#[test]
+fn actual_v10_leaf_gas_matches_frozen_nighttime_vectors() {
+    let vectors: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/nighttime-ci-vectors.json"
+    )))
+    .expect("frozen V10 leaf-gas vectors");
+    let temperature = 296.0;
+    let pressure = 101_325.0;
+    let vcmax_factor =
+        peaked(temperature, 65_330.0, 200_000.0, 650.0).expect("finite Vcmax response");
+    let jmax_factor =
+        peaked(temperature, 43_540.0, 200_000.0, 650.0).expect("finite Jmax response");
+    let rd_factor = peaked(temperature, 46_390.0, 150_650.0, 490.0).expect("finite Rd response");
+    let biochemical = BiochemicalConstants {
+        ha_vcmax_j_mol: 65_330.0,
+        hd_vcmax_j_mol: 200_000.0,
+        entropy_vcmax_j_mol_k: 650.0,
+        ha_jmax_j_mol: 43_540.0,
+        hd_jmax_j_mol: 200_000.0,
+        entropy_jmax_j_mol_k: 650.0,
+        kc25_pa: 40.0 / arrhenius(temperature, 79_430.0).expect("Kc response"),
+        ha_kc_j_mol: 79_430.0,
+        ko25_pa: 30_000.0 / arrhenius(temperature, 36_380.0).expect("Ko response"),
+        ha_ko_j_mol: 36_380.0,
+        gamma25_pa: 5.0 / arrhenius(temperature, 37_830.0).expect("gamma response"),
+        ha_gamma_j_mol: 37_830.0,
+        oxygen_partial_pressure_pa: 20_265.0,
+        tp_vcmax_ratio: 0.1,
+        electron_quantum_yield: 0.85,
+        par_photon_umol_per_j: 4.6,
+        electron_curvature: 0.7,
+        ac_aj_curvature: 0.98,
+        ag_ap_curvature: 0.95,
+    };
+    let qsurface = canopy_saturation_q(temperature, pressure).expect("leaf saturation");
+    let es_leaf = qsurface * pressure / (0.622 + 0.378 * qsurface);
+    let e_can = es_leaf - 1_200.0;
+    let qcan = 0.622 * e_can / (pressure - 0.378 * e_can);
+    let environment = LeafGasEnvironment {
+        authority: CoveredColumnAuthority::V10NonpositiveAssimilation,
+        pressure_pa: pressure,
+        ca_pa: 42.0,
+    };
+    let expected_branches = [
+        V10LeafGasBranch::ExactZeroPar,
+        V10LeafGasBranch::ExactZeroPar,
+        V10LeafGasBranch::RespirationDominated,
+        V10LeafGasBranch::RespirationDominated,
+        V10LeafGasBranch::PositiveAssimilation,
+    ];
+    let cases = vectors["cases"].as_array().expect("V10 vector cases");
+    assert_eq!(cases.len(), expected_branches.len());
+    for (case, expected_branch) in cases.iter().zip(expected_branches) {
+        let par = case["par_abs"].as_f64().expect("PAR");
+        let actual = leaf_trial_state(
+            LeafBiochemicalInputs {
+                leaf_area_m2_m2_tile: 1.0,
+                absorbed_shortwave_w_m2_tile: par,
+                absorbed_par_w_m2_leaf: par,
+                vcmax25: 60.0 / vcmax_factor,
+                jmax25: 100.0 / jmax_factor,
+                rd25: 1.2 / rd_factor,
+            },
+            biochemical,
+            temperature,
+            qcan,
+            1.0,
+            environment,
+            0.02,
+            100.0,
+            4.0,
+        )
+        .expect("actual Rust V10 leaf-gas path");
+        assert_eq!(actual.gas_branch, expected_branch);
+        let expected = &case["result"];
+        v10_vector_close(actual.ci_pa, expected["ci"].as_f64().expect("Ci"));
+        v10_vector_close(
+            actual.gross_assimilation_umol_co2_m2_leaf_s,
+            expected["state"]["ag"].as_f64().expect("Ag"),
+        );
+        v10_vector_close(
+            actual.net_assimilation_umol_co2_m2_leaf_s,
+            expected["state"]["an"].as_f64().expect("An"),
+        );
+        v10_vector_close(
+            actual.dark_respiration_umol_co2_m2_leaf_s,
+            expected["state"]["ag"].as_f64().expect("Ag")
+                - expected["state"]["an"].as_f64().expect("An"),
+        );
+        v10_vector_close(actual.rs_s_m, expected["state"]["rs"].as_f64().expect("rs"));
+    }
+
+    let inactive = leaf_trial_state(
+        LeafBiochemicalInputs {
+            leaf_area_m2_m2_tile: 0.0,
+            absorbed_shortwave_w_m2_tile: 0.0,
+            absorbed_par_w_m2_leaf: 0.0,
+            vcmax25: 60.0 / vcmax_factor,
+            jmax25: 100.0 / jmax_factor,
+            rd25: 1.2 / rd_factor,
+        },
+        biochemical,
+        temperature,
+        qcan,
+        1.0,
+        environment,
+        0.02,
+        100.0,
+        4.0,
+    )
+    .expect("zero-area V10 leaf class");
+    assert_eq!(inactive.gas_branch, V10LeafGasBranch::Inactive);
+}
+
 #[test]
 fn numerical_failure_debug_excludes_failed_iterate() {
     let failure = NumericalFailure {

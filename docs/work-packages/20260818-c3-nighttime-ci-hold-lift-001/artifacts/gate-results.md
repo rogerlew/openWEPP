@@ -2,6 +2,16 @@
 
 Status: `V10/LSE-V2 IMPLEMENTATION PASS / RESTART AND CHILD-4 PENDING`
 
+Resumed direct Rust-to-frozen parity increment:
+
+- actual Rust V10 leaf-gas path against all five committed frozen PAR vectors:
+  PASS, 1/1;
+- V10 authority integration target (including independent Python
+  regeneration): PASS, 3/3, Nextest run
+  `4d959066-609e-47d7-90e8-68129a799be5`;
+- detailed evidence: `artifacts/rust-frozen-vector-parity.md`;
+- exact-current Rust review and terminal verification remain pending.
+
 No completion gate is claimed before the complete 48-interval provider day,
 persisted restart, Child 4, and campaign gates pass.
 

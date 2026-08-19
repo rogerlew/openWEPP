@@ -985,6 +985,13 @@ struct LeafTrialState {
     gas_branch: V10LeafGasBranch,
 }
 
+#[derive(Clone, Copy)]
+struct LeafGasEnvironment {
+    authority: CoveredColumnAuthority,
+    pressure_pa: f64,
+    ca_pa: f64,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct LeafCarbonState {
     ag: f64,
@@ -1110,7 +1117,7 @@ fn leaf_trial_state(
     temperature: f64,
     qcan: f64,
     beta: f64,
-    column: &CoveredColumnInputs,
+    environment: LeafGasEnvironment,
     gb_leaf: f64,
     g0_umol_m2_s: f64,
     medlyn_g1_kpa_sqrt: f64,
@@ -1134,11 +1141,12 @@ fn leaf_trial_state(
     let gamma = p.gamma25_pa * arrhenius(temperature, p.ha_gamma_j_mol)?;
     let tp = p.tp_vcmax_ratio * inputs.vcmax25 * vcmax_factor;
     let rd = inputs.rd25 * peaked(temperature, 46_390.0, 150_650.0, 490.0)?;
-    let qsurface = canopy_saturation_q(temperature, column.pressure_pa)?;
-    if column.authority == CoveredColumnAuthority::V10NonpositiveAssimilation
+    let qsurface = canopy_saturation_q(temperature, environment.pressure_pa)?;
+    if environment.authority == CoveredColumnAuthority::V10NonpositiveAssimilation
         && inputs.leaf_area_m2_m2_tile == 0.0
     {
-        let gs_ms = g0_umol_m2_s * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature / column.pressure_pa;
+        let gs_ms =
+            g0_umol_m2_s * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature / environment.pressure_pa;
         if !gs_ms.is_finite() || gs_ms <= 0.0 {
             return Err(LandSurfaceEnergyError::ConstitutiveDomain(
                 "v10_zero_area_stomatal_conductance",
@@ -1147,23 +1155,24 @@ fn leaf_trial_state(
         return Ok(LeafTrialState {
             surface_q: qsurface,
             rs_s_m: 1.0 / gs_ms,
-            ci_pa: column.ca_pa,
+            ci_pa: environment.ca_pa,
             gross_assimilation_umol_co2_m2_leaf_s: 0.0,
             net_assimilation_umol_co2_m2_leaf_s: 0.0,
             dark_respiration_umol_co2_m2_leaf_s: 0.0,
             gas_branch: V10LeafGasBranch::Inactive,
         });
     }
-    let es_leaf = qsurface * column.pressure_pa / (0.622 + 0.378 * qsurface);
-    let e_can = qcan * column.pressure_pa / (0.622 + 0.378 * qcan);
+    let es_leaf = qsurface * environment.pressure_pa / (0.622 + 0.378 * qsurface);
+    let e_can = qcan * environment.pressure_pa / (0.622 + 0.378 * qcan);
     let vpd = (es_leaf - e_can) / 1000.0;
     if vpd <= 0.0 {
         return Err(LandSurfaceEnergyError::ConstitutiveDomain("surface_vpd"));
     }
-    if column.authority == CoveredColumnAuthority::V10NonpositiveAssimilation
+    if environment.authority == CoveredColumnAuthority::V10NonpositiveAssimilation
         && inputs.absorbed_par_w_m2_leaf == 0.0
     {
-        let gs_ms = g0_umol_m2_s * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature / column.pressure_pa;
+        let gs_ms =
+            g0_umol_m2_s * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature / environment.pressure_pa;
         if !gs_ms.is_finite() || gs_ms <= 0.0 {
             return Err(LandSurfaceEnergyError::ConstitutiveDomain(
                 "v10_zero_par_stomatal_conductance",
@@ -1172,14 +1181,14 @@ fn leaf_trial_state(
         let rs = 1.0 / gs_ms;
         let an = -rd;
         let rb = 1.0 / gb_leaf;
-        let cs = column.ca_pa - 1.4 * rb * MOLAR_GAS_CONSTANT * temperature * an * 1.0e-6;
-        let ci =
-            column.ca_pa - (1.4 * rb + 1.6 * rs) * MOLAR_GAS_CONSTANT * temperature * an * 1.0e-6;
+        let cs = environment.ca_pa - 1.4 * rb * MOLAR_GAS_CONSTANT * temperature * an * 1.0e-6;
+        let ci = environment.ca_pa
+            - (1.4 * rb + 1.6 * rs) * MOLAR_GAS_CONSTANT * temperature * an * 1.0e-6;
         if !cs.is_finite()
             || cs <= 0.0
             || !ci.is_finite()
-            || ci <= column.ca_pa
-            || ci >= column.pressure_pa
+            || ci <= environment.ca_pa
+            || ci >= environment.pressure_pa
         {
             return Err(LandSurfaceEnergyError::ConstitutiveDomain(
                 "v10_zero_par_ci",
@@ -1221,7 +1230,7 @@ fn leaf_trial_state(
         let carbon = carbon_at_ci(ci)?;
         let an = carbon.an;
         let rb = 1.0 / gb_leaf;
-        let cs = column.ca_pa - 1.4 * rb * MOLAR_GAS_CONSTANT * temperature * an * 1.0e-6;
+        let cs = environment.ca_pa - 1.4 * rb * MOLAR_GAS_CONSTANT * temperature * an * 1.0e-6;
         if cs <= 0.0 {
             return Err(LandSurfaceEnergyError::ConstitutiveDomain("surface_co2"));
         }
@@ -1229,22 +1238,23 @@ fn leaf_trial_state(
             g0_umol_m2_s
         } else {
             g0_umol_m2_s
-                + 1.6 * (1.0 + medlyn_g1_kpa_sqrt / vpd.sqrt()) * an / (cs / column.pressure_pa)
+                + 1.6 * (1.0 + medlyn_g1_kpa_sqrt / vpd.sqrt()) * an
+                    / (cs / environment.pressure_pa)
         };
         let gs = g0_umol_m2_s + beta * (potential - g0_umol_m2_s);
-        let gs_ms = gs * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature / column.pressure_pa;
+        let gs_ms = gs * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature / environment.pressure_pa;
         if gs_ms <= 0.0 {
             return Err(LandSurfaceEnergyError::ConstitutiveDomain(
                 "stomatal_conductance",
             ));
         }
         let rs = 1.0 / gs_ms;
-        let predicted =
-            column.ca_pa - (1.4 * rb + 1.6 * rs) * MOLAR_GAS_CONSTANT * temperature * an * 1.0e-6;
+        let predicted = environment.ca_pa
+            - (1.4 * rb + 1.6 * rs) * MOLAR_GAS_CONSTANT * temperature * an * 1.0e-6;
         Ok((ci - predicted, rs))
     };
     let mut a = gamma;
-    let mut b = column.ca_pa;
+    let mut b = environment.ca_pa;
     let (mut fa, _) = residual(a)?;
     let (mut fb, mut rs) = residual(b)?;
     if fa == 0.0 {
@@ -1264,7 +1274,7 @@ fn leaf_trial_state(
             },
         });
     }
-    if column.authority == CoveredColumnAuthority::V10NonpositiveAssimilation && fb == 0.0 {
+    if environment.authority == CoveredColumnAuthority::V10NonpositiveAssimilation && fb == 0.0 {
         let carbon = carbon_at_ci(b)?;
         return Ok(LeafTrialState {
             surface_q: qsurface,
@@ -1282,19 +1292,24 @@ fn leaf_trial_state(
     }
     let mut gas_branch = V10LeafGasBranch::PositiveAssimilation;
     if fa * fb > 0.0 {
-        if column.authority != CoveredColumnAuthority::V10NonpositiveAssimilation || fb >= 0.0 {
+        if environment.authority != CoveredColumnAuthority::V10NonpositiveAssimilation || fb >= 0.0
+        {
             return Err(LandSurfaceEnergyError::ConstitutiveDomain("ci_bracket"));
         }
-        let gs0_m_s = g0_umol_m2_s * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature / column.pressure_pa;
+        let gs0_m_s =
+            g0_umol_m2_s * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature / environment.pressure_pa;
         if !gs0_m_s.is_finite() || gs0_m_s <= 0.0 {
             return Err(LandSurfaceEnergyError::ConstitutiveDomain(
                 "v10_low_light_stomatal_conductance",
             ));
         }
         let rb = 1.0 / gb_leaf;
-        let ci_dark = column.ca_pa
+        let ci_dark = environment.ca_pa
             + (1.4 * rb + 1.6 / gs0_m_s) * MOLAR_GAS_CONSTANT * temperature * rd * 1.0e-6;
-        if !ci_dark.is_finite() || ci_dark <= column.ca_pa || ci_dark >= column.pressure_pa {
+        if !ci_dark.is_finite()
+            || ci_dark <= environment.ca_pa
+            || ci_dark >= environment.pressure_pa
+        {
             return Err(LandSurfaceEnergyError::ConstitutiveDomain(
                 "v10_low_light_ci_dark",
             ));
@@ -1305,7 +1320,7 @@ fn leaf_trial_state(
                 "v10_low_light_dark_bracket",
             ));
         }
-        a = column.ca_pa;
+        a = environment.ca_pa;
         fa = fb;
         b = ci_dark;
         fb = f_dark;
@@ -1363,11 +1378,11 @@ fn leaf_trial_state(
     if gas_branch == V10LeafGasBranch::RespirationDominated
         && (carbon.ag.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater)
             || carbon.an > 0.0
-            || b < column.ca_pa
+            || b < environment.ca_pa
             || rs.to_bits()
                 != (1.0
                     / (g0_umol_m2_s * 1.0e-6 * MOLAR_GAS_CONSTANT * temperature
-                        / column.pressure_pa))
+                        / environment.pressure_pa))
                     .to_bits())
     {
         return Err(LandSurfaceEnergyError::ConstitutiveDomain(
@@ -1465,13 +1480,18 @@ fn evaluate_covered_occupancy(
             + occupancy.shade.leaf_area_m2_m2_tile
             + occupancy.stem_area_m2_m2_tile);
     let dry_stem = (1.0 - wet_fraction) * occupancy.stem_area_m2_m2_tile;
+    let leaf_gas_environment = LeafGasEnvironment {
+        authority: column.authority,
+        pressure_pa: column.pressure_pa,
+        ca_pa: column.ca_pa,
+    };
     let sun = leaf_trial_state(
         occupancy.sun,
         occupancy.biochemical,
         tsun,
         canopy_air_q,
         beta_sun,
-        column,
+        leaf_gas_environment,
         occupancy.gb_leaf_m_s,
         occupancy.g0_umol_m2_s,
         occupancy.medlyn_g1_kpa_sqrt,
@@ -1482,7 +1502,7 @@ fn evaluate_covered_occupancy(
         tshade,
         canopy_air_q,
         beta_shade,
-        column,
+        leaf_gas_environment,
         occupancy.gb_leaf_m_s,
         occupancy.g0_umol_m2_s,
         occupancy.medlyn_g1_kpa_sqrt,
@@ -1495,7 +1515,7 @@ fn evaluate_covered_occupancy(
         tsun,
         canopy_air_q,
         1.0,
-        column,
+        leaf_gas_environment,
         occupancy.gb_leaf_m_s,
         occupancy.g0_umol_m2_s,
         occupancy.medlyn_g1_kpa_sqrt,
@@ -1506,7 +1526,7 @@ fn evaluate_covered_occupancy(
         tshade,
         canopy_air_q,
         1.0,
-        column,
+        leaf_gas_environment,
         occupancy.gb_leaf_m_s,
         occupancy.g0_umol_m2_s,
         occupancy.medlyn_g1_kpa_sqrt,
