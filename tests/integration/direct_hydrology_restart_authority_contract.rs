@@ -196,11 +196,13 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
         let section = ledger
             .split(&format!("## `{reconstruction_operand}`"))
             .nth(1)
+            .unwrap()
+            .split("\n## ")
+            .next()
             .unwrap();
         assert!(
             section
                 .lines()
-                .take(15)
                 .any(|line| line.contains("reconstruction source operand"))
         );
     }
@@ -210,6 +212,14 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
             section.lines().any(|line| line.starts_with("| `")),
             "empty recursively reached ledger section: {name}"
         );
+    }
+    for path in [
+        "DirectSnowCouplingInputs.snow_albedo_state_after.model",
+        "DirectSnowLaneState.snow_albedo_state.model",
+        "DirectLaneFrame.snow_runtime_carry.runtime_swe_m",
+        "DirectDayConstructorInputs.snow_runtime_carry.runtime_swe_m",
+    ] {
+        assert!(ledger.contains(path), "missing authority path {path}");
     }
     let metadata =
         fs::read_to_string(root().join(PACKAGE).join("generated-field-metadata.json")).unwrap();
