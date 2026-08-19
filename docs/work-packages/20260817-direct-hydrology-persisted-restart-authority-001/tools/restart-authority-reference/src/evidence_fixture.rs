@@ -55,6 +55,44 @@ pub struct RestartAuthorityPreparedDayFixture {
     pub template: DirectV10ShadowDayInput,
 }
 
+pub fn restart_authority_identities(
+    committed: &CompleteCommittedOwnerStateV1,
+) -> (Sha256Hex, Sha256Hex) {
+    let hydrology = &committed.scientific.direct_hydrology;
+    let run = Sha256Hex::try_new(
+        canonical_sha256(&(
+            hydrology.run_id,
+            hydrology.hillslope_id,
+            hydrology.lane_count,
+            hydrology.day_count,
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    let topology = serde_json::json!({
+        "ordered_lanes": hydrology.lanes.iter().map(|lane| serde_json::json!({
+            "lane_id": lane.lane_id,
+            "upstream_lane_id": lane.upstream_lane_id,
+            "downstream_lane_id": lane.downstream_lane_id,
+            "soil_layer_count": lane.subsurface_layers.len(),
+        })).collect::<Vec<_>>(),
+        "ordered_ofe_tiles": committed.static_forcing_configuration.destinations.iter().map(|destination| (
+            &destination.ofe_id,
+            &destination.tile_id,
+            &destination.wb14_configuration_sha256,
+        )).collect::<Vec<_>>(),
+        "lse_tiles": committed.scientific.lse_v2.tiles.iter().map(|tile| (&tile.ofe_id, &tile.tile_id)).collect::<Vec<_>>(),
+        "soil_thermal_layer_maps": committed.scientific.soil_thermal.ofes.iter().map(|ofe| (
+            &ofe.ofe_id,
+            ofe.ordered_layers.iter().map(|layer| &layer.layer_id).collect::<Vec<_>>(),
+        )).collect::<Vec<_>>(),
+    });
+    (
+        run,
+        Sha256Hex::try_new(canonical_sha256(&topology).unwrap()).unwrap(),
+    )
+}
+
 pub fn project_evidence_scientific_owners(
     shadow: &DirectV10RealConsumerShadow,
     phase_plan_sha256: &Sha256Hex,
@@ -86,6 +124,45 @@ pub fn project_evidence_scientific_owners(
     }
 }
 
+pub fn project_evidence_complete_live_owners(
+    shadow: &DirectV10RealConsumerShadow,
+    phase_plan_sha256: &Sha256Hex,
+    day_input_digests: &[Sha256Hex],
+    expected_next_day_index: usize,
+) -> CompleteCommittedOwnerStateV1 {
+    let native_gsi_state =
+        openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_project_gsi_state(
+            shadow.gsi_state(),
+        )
+        .unwrap();
+    CompleteCommittedOwnerStateV1 {
+        gsi_configuration: DirectGsiOwnerConfigurationRestartV1::project(
+            shadow.gsi_owner_configuration(),
+        )
+        .unwrap(),
+        gsi_state: DirectGsiOwnerStateRestartV1::project(&native_gsi_state).unwrap(),
+        static_forcing_configuration: SnowFreeHalfHourStaticConfigurationRestartV1::project(
+            shadow.provider_static_configuration(),
+        )
+        .unwrap(),
+        provider_cursor: SnowFreeHalfHourProviderCursorRestartV1::project(
+            shadow.provider_cursor(),
+            shadow.provider_static_configuration(),
+            expected_next_day_index,
+        )
+        .unwrap(),
+        surface_liquid_configuration: DirectSurfaceLiquidConfigurationRestartV1::project(
+            shadow.restart_authority_surface_configuration(),
+        )
+        .unwrap(),
+        scientific: project_evidence_scientific_owners(
+            shadow,
+            phase_plan_sha256,
+            day_input_digests,
+        ),
+    }
+}
+
 pub fn restart_authority_in_progress_checkpoint_fixture(
     through: u8,
 ) -> (
@@ -111,21 +188,7 @@ pub fn restart_authority_in_progress_checkpoint_fixture(
         &fixture.owners.phase_plan_sha256,
         &fixture.owners.day_input_digests,
     );
-    let h = &fixture.owners.committed.scientific.direct_hydrology;
-    let run = Sha256Hex::try_new(
-        canonical_sha256(&(h.run_id, h.hillslope_id, h.lane_count, h.day_count)).unwrap(),
-    )
-    .unwrap();
-    let topology = Sha256Hex::try_new(
-        canonical_sha256(
-            &h.lanes
-                .iter()
-                .map(|lane| (lane.lane_id, lane.upstream_lane_id, lane.downstream_lane_id))
-                .collect::<Vec<_>>(),
-        )
-        .unwrap(),
-    )
-    .unwrap();
+    let (run, topology) = restart_authority_identities(&fixture.owners.committed);
     let mut checkpoint = DirectV10RealConsumerCheckpointV1 {
         schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
         version: 1,
@@ -149,9 +212,20 @@ pub fn restart_authority_in_progress_checkpoint_fixture(
 }
 
 pub fn restart_authority_prepared_day_fixture() -> RestartAuthorityPreparedDayFixture {
-    let mut owners = restart_authority_owner_fixture();
     let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 0.0 2.5 180.0 20.0\n";
-    let climate = parse_climate_from_str(source, ParserMode::Strict).unwrap();
+    restart_authority_prepared_day_fixture_from_source(source)
+}
+
+pub fn restart_authority_cross_midnight_carry_fixture() -> RestartAuthorityPreparedDayFixture {
+    let source = "5.30\n1 1 0\nTEST STATION 1500\nDAY MON YEAR NBRKPT TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 3 28.0 22.0 420.0 2.5 180.0 20.0\n23.50 0.0\n24.00 3.6\n24.50 7.2\n";
+    restart_authority_prepared_day_fixture_from_source(source)
+}
+
+fn restart_authority_prepared_day_fixture_from_source(
+    source: &str,
+) -> RestartAuthorityPreparedDayFixture {
+    let mut owners = restart_authority_owner_fixture();
+    let climate = parse_climate_from_str(source, ParserMode::SnowFreeHalfHourProvider).unwrap();
     let request = build_hillslope_climate_runtime_request(&climate).unwrap();
     let shadow = &owners.runtime.shadow;
     let prepared = request
@@ -452,6 +526,19 @@ pub fn restart_authority_evidence_fixture() -> RestartAuthorityEvidenceFixture {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cross_midnight_fixture_has_real_outgoing_and_cursor_carry() {
+        let fixture = restart_authority_cross_midnight_carry_fixture();
+        let outgoing = fixture
+            .forcing_receipts
+            .iter()
+            .flat_map(|receipt| &receipt.next_day_precipitation_carry)
+            .collect::<Vec<_>>();
+        assert!(!outgoing.is_empty());
+        assert_eq!(outgoing.len(), fixture.ending_cursor.pending_carry.len());
+        assert_eq!(outgoing, fixture.ending_cursor.pending_carry.iter().collect::<Vec<_>>());
+    }
     use crate::{
         AcceptedIntervalCount, DirectV10CheckpointPhaseV1, DirectV10RealConsumerCheckpointV1,
         ExpectedRestartStaticContext, WireDayIndex, admit_checkpoint_v1, to_canonical_bytes,
@@ -474,35 +561,7 @@ mod tests {
     #[test]
     fn complete_repository_owner_set_is_admitted_into_fresh_objects() {
         let fixture = restart_authority_owner_fixture();
-        let identity = &fixture
-            .runtime
-            .shadow
-            .restart_authority_hydrology_frame()
-            .identity;
-        let run = Sha256Hex::try_new(
-            canonical_sha256(&(
-                identity.run_id,
-                identity.hillslope_id,
-                identity.lane_count,
-                identity.day_count,
-            ))
-            .unwrap(),
-        )
-        .unwrap();
-        let topology = Sha256Hex::try_new(
-            canonical_sha256(
-                &fixture
-                    .committed
-                    .scientific
-                    .direct_hydrology
-                    .lanes
-                    .iter()
-                    .map(|lane| (lane.lane_id, lane.upstream_lane_id, lane.downstream_lane_id))
-                    .collect::<Vec<_>>(),
-            )
-            .unwrap(),
-        )
-        .unwrap();
+        let (run, topology) = restart_authority_identities(&fixture.committed);
         let mut checkpoint = DirectV10RealConsumerCheckpointV1 {
             schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
             version: 1,
@@ -578,37 +637,7 @@ mod tests {
             &fixture.owners.phase_plan_sha256,
             &fixture.owners.day_input_digests,
         );
-        let identity = &fixture
-            .owners
-            .runtime
-            .shadow
-            .restart_authority_hydrology_frame()
-            .identity;
-        let run = Sha256Hex::try_new(
-            canonical_sha256(&(
-                identity.run_id,
-                identity.hillslope_id,
-                identity.lane_count,
-                identity.day_count,
-            ))
-            .unwrap(),
-        )
-        .unwrap();
-        let topology = Sha256Hex::try_new(
-            canonical_sha256(
-                &fixture
-                    .owners
-                    .committed
-                    .scientific
-                    .direct_hydrology
-                    .lanes
-                    .iter()
-                    .map(|lane| (lane.lane_id, lane.upstream_lane_id, lane.downstream_lane_id))
-                    .collect::<Vec<_>>(),
-            )
-            .unwrap(),
-        )
-        .unwrap();
+        let (run, topology) = restart_authority_identities(&fixture.owners.committed);
         let mut checkpoint = DirectV10RealConsumerCheckpointV1 {
             schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
             version: 1,
@@ -748,16 +777,35 @@ mod tests {
         let crate::IsolatedRestoredCheckpointV1::InProgressDay {
             committed_day_beginning,
             staged_scientific,
+            staged_gsi_ending_state,
+            accepted_gsi_daily_receipt,
+            validated_forcing_day_receipts,
+            ending_provider_cursor,
             ..
         } = admitted
         else {
             unreachable!()
         };
-        let gsi_state =
+        let staged_gsi_ending_state =
             openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_restore_gsi_state(
-                &fixture.gsi_receipt.restore().unwrap().beginning_state,
+                &staged_gsi_ending_state,
             )
             .unwrap();
+        let expected_ending_provider_cursor = ending_provider_cursor.clone();
+        let committed_provider_cursor = committed_day_beginning.provider_cursor.clone();
+        let committed_gsi_state =
+            openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_restore_gsi_state(
+                &committed_day_beginning.gsi_state,
+            )
+            .unwrap();
+        let restored_prepared = openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_prepare_from_restored_receipts(
+            accepted_gsi_daily_receipt,
+            staged_gsi_ending_state.clone(),
+            validated_forcing_day_receipts,
+            committed_provider_cursor.clone(),
+            ending_provider_cursor.clone(),
+        )
+        .unwrap();
         let mut resumed = DirectV10RealConsumerShadow::try_new(
             context.vegetation_configuration.clone(),
             staged_scientific.vegetation_v10,
@@ -777,14 +825,21 @@ mod tests {
             staged_scientific.direct_hydrology,
             0,
             context.gsi_configuration.clone(),
-            gsi_state,
+            committed_gsi_state,
             context.forcing_static_configuration.clone(),
-            committed_day_beginning.provider_cursor,
+            committed_provider_cursor,
         )
         .unwrap();
         resumed
+            .restart_authority_install_staged_daily_owners(
+                staged_gsi_ending_state,
+                ending_provider_cursor,
+                1,
+            )
+            .unwrap();
+        resumed
             .restart_authority_advance_staged_intervals(
-                &fixture.prepared,
+                &restored_prepared,
                 fixture.template.clone(),
                 24,
                 48,
@@ -813,5 +868,13 @@ mod tests {
             &continuous.owners.day_input_digests,
         );
         assert_eq!(resumed_projection, continuous_projection);
+        assert_eq!(
+            resumed.gsi_state(),
+            &openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_restore_gsi_state(
+                &fixture.gsi_receipt.restore().unwrap().ending_state,
+            )
+            .unwrap()
+        );
+        assert_eq!(resumed.provider_cursor(), &expected_ending_provider_cursor);
     }
 }

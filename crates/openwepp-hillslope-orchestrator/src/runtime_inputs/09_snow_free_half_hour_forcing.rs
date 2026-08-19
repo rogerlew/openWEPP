@@ -298,6 +298,14 @@ pub fn restart_authority_restore_gsi_state(
     restore_direct_gsi_state(value)
 }
 
+/// Project the actual live GSI state for restart-authority evidence.
+#[cfg(feature = "restart-authority-evidence")]
+pub fn restart_authority_project_gsi_state(
+    state: &GsiState,
+) -> Result<DirectGsiOwnerStateV1, SnowFreeHalfHourForcingError> {
+    direct_gsi_state(state)
+}
+
 const fn direct_gsi_parameters(value: GsiParameters) -> DirectGsiParametersV1 {
     DirectGsiParametersV1 {
         minimum_temperature_inactive_c: value.minimum_temperature_inactive_c,
@@ -583,6 +591,50 @@ impl PreparedSnowFreeGsiDayV1 {
         *cursor = ending_cursor;
         Ok(())
     }
+}
+
+/// Reconstruct a prepared day exclusively from admitted restart owners.
+#[cfg(feature = "restart-authority-evidence")]
+pub fn restart_authority_prepare_from_restored_receipts(
+    gsi_receipt: DirectGsiDailyReceiptV1,
+    ending_gsi_state: GsiState,
+    receipts: Vec<SnowFreeHalfHourDayReceipt>,
+    beginning_cursor: SnowFreeHalfHourProviderCursor,
+    ending_cursor: SnowFreeHalfHourProviderCursor,
+) -> Result<PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError> {
+    gsi_receipt.validate()?;
+    let direct_ending = direct_gsi_state(&ending_gsi_state)?;
+    let gsi_day_index = usize::try_from(gsi_receipt.day_index).map_err(|_| {
+        SnowFreeHalfHourForcingError::Identity("restart GSI day index width")
+    })?;
+    if direct_ending != gsi_receipt.ending_state {
+        return Err(SnowFreeHalfHourForcingError::Identity(
+            "restart staged GSI ending state",
+        ));
+    }
+    for receipt in &receipts {
+        receipt.validate()?;
+        if receipt.run_id != gsi_receipt.run_id
+            || receipt.day_index != gsi_day_index
+            || receipt.source_climate_sha256 != gsi_receipt.source_climate_sha256
+            || receipt.intervals.iter().any(|interval| {
+                interval.gsi_receipt_sha256 != gsi_receipt.receipt_sha256
+            })
+        {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "restart forcing/GSI receipt join",
+            ));
+        }
+    }
+    Ok(PreparedSnowFreeGsiDayV1 {
+        gsi_receipt,
+        ending_gsi_state,
+        forcing_receipts: ValidatedSnowFreeHalfHourForcingReceipts {
+            receipts,
+            beginning_cursor,
+            ending_cursor,
+        },
+    })
 }
 
 impl ValidatedSnowFreeHalfHourForcingReceipts {

@@ -7,22 +7,7 @@ use std::{
 };
 
 fn identities(committed: &CompleteCommittedOwnerStateV1) -> (Sha256Hex, Sha256Hex) {
-    let h = &committed.scientific.direct_hydrology;
-    let run = Sha256Hex::try_new(
-        canonical_sha256(&(h.run_id, h.hillslope_id, h.lane_count, h.day_count)).unwrap(),
-    )
-    .unwrap();
-    let topology = Sha256Hex::try_new(
-        canonical_sha256(
-            &h.lanes
-                .iter()
-                .map(|lane| (lane.lane_id, lane.upstream_lane_id, lane.downstream_lane_id))
-                .collect::<Vec<_>>(),
-        )
-        .unwrap(),
-    )
-    .unwrap();
-    (run, topology)
+    restart_authority_identities(committed)
 }
 fn checkpoint(
     phase: DirectV10CheckpointPhaseV1,
@@ -85,7 +70,7 @@ fn in_progress(through: u8) -> DirectV10RealConsumerCheckpointV1 {
     )
 }
 fn cross_midnight() -> DirectV10RealConsumerCheckpointV1 {
-    let mut fixture = restart_authority_prepared_day_fixture();
+    let mut fixture = restart_authority_cross_midnight_carry_fixture();
     fixture
         .owners
         .runtime
@@ -94,25 +79,27 @@ fn cross_midnight() -> DirectV10RealConsumerCheckpointV1 {
             &fixture.prepared,
             fixture.template.clone(),
             0,
-            48,
+            47,
         )
         .unwrap();
-    let scientific = project_evidence_scientific_owners(
+    let staged = project_evidence_scientific_owners(
         &fixture.owners.runtime.shadow,
         &fixture.owners.phase_plan_sha256,
         &fixture.owners.day_input_digests,
     );
-    let mut committed = fixture.owners.committed;
-    committed.scientific = scientific;
-    committed.gsi_state = fixture.ending_gsi_state;
-    committed.provider_cursor = fixture.ending_cursor;
     checkpoint(
-        DirectV10CheckpointPhaseV1::BetweenDays {
-            next_day_index: WireDayIndex(1),
-            accepted_interval_count: AcceptedIntervalCount::try_new(48).unwrap(),
-            committed: committed.clone(),
+        DirectV10CheckpointPhaseV1::InProgressDay {
+            day_index: WireDayIndex(0),
+            next_interval_index: InProgressIntervalIndex::try_new(47).unwrap(),
+            accepted_interval_count: AcceptedIntervalCount::try_new(47).unwrap(),
+            committed_day_beginning: fixture.owners.committed.clone(),
+            staged_scientific: staged,
+            accepted_gsi_daily_receipt: fixture.gsi_receipt,
+            staged_gsi_ending_state: fixture.ending_gsi_state,
+            ending_provider_cursor: fixture.ending_cursor,
+            validated_forcing_day_receipts: fixture.forcing_receipts,
         },
-        &committed,
+        &fixture.owners.committed,
     )
 }
 fn write(path: &Path, value: &impl Serialize) {
@@ -382,6 +369,51 @@ fn schema_for(values: &[serde_json::Value]) -> serde_json::Value {
     }
 }
 
+fn bind_wire_schema(node: &mut serde_json::Value, property_name: Option<&str>) {
+    if let Some(name) = property_name {
+        match name {
+            "schema" => node["const"] = serde_json::json!("OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1"),
+            "version" => node["const"] = serde_json::json!(1),
+            "kind" => node["enum"] = serde_json::json!(["between_days", "in_progress_day"]),
+            "runtime_posture" => node["enum"] = serde_json::json!(["standard", "unsupported_laned_active"]),
+            "surface_class" => node["enum"] = serde_json::json!(["bare_mineral_soil", "forest_litter"]),
+            "source_type" => node["enum"] = serde_json::json!(["surface_liquid", "litter_liquid", "soil_layer_liquid"]),
+            "next_interval_index" => {
+                node["minimum"] = serde_json::json!(0);
+                node["maximum"] = serde_json::json!(47);
+            }
+            "interval_index" => {
+                node["minimum"] = serde_json::json!(0);
+                node["maximum"] = serde_json::json!(47);
+            }
+            "parent_hour_index" => {
+                node["minimum"] = serde_json::json!(0);
+                node["maximum"] = serde_json::json!(23);
+            }
+            "day_index" | "next_day_index" | "accepted_interval_count" => {
+                node["minimum"] = serde_json::json!(0);
+                node["maximum"] = serde_json::json!(u64::MAX);
+            }
+            _ => {}
+        }
+    }
+    if let Some(properties) = node.get_mut("properties").and_then(serde_json::Value::as_object_mut) {
+        for (name, child) in properties {
+            bind_wire_schema(child, Some(name));
+        }
+    }
+    for keyword in ["oneOf", "anyOf"] {
+        if let Some(children) = node.get_mut(keyword).and_then(serde_json::Value::as_array_mut) {
+            for child in children {
+                bind_wire_schema(child, property_name);
+            }
+        }
+    }
+    if let Some(items) = node.get_mut("items") {
+        bind_wire_schema(items, None);
+    }
+}
+
 fn generate_poison_matrix(root: &Path) {
     let rows = [
         ("schema", "schema", "Schema"),
@@ -411,7 +443,8 @@ fn generate_poison_matrix(root: &Path) {
         ("interval_duplication", "phase.validated_forcing_day_receipts[0].intervals[0]", "ForcingReceiptCardinality"),
         ("forcing_receipt_order", "phase.validated_forcing_day_receipts", "ForcingReceiptOrder"),
         ("forcing_receipt_digest", "phase.validated_forcing_day_receipts[0].receipt_sha256", "ForcingReceiptDigest"),
-        ("parcel_carry_omission", "phase.validated_forcing_day_receipts[0].next_day_precipitation_carry", "MissingField"),
+        ("carry_field_omission", "phase.validated_forcing_day_receipts[0].next_day_precipitation_carry", "MissingField"),
+        ("parcel_carry_omission", "phase.ending_provider_cursor.pending_carry[last] with cursor and outer digests recomputed", "ProviderCursor"),
         ("v10_v9_projection", "phase.staged_scientific.vegetation_v10.state_sha256", "V10V9Projection"),
         ("lse_v2_v1_projection", "phase.staged_scientific.lse_v2.state_sha256", "LseV2V1Projection"),
         ("owner_validation", "phase.staged_scientific.biogeochemistry.layers[0].ammonium_n", "OwnerValidation"),
@@ -454,6 +487,7 @@ fn main() {
         .map(|(_, value)| serde_json::to_value(value).unwrap())
         .collect::<Vec<_>>();
     let mut schema = schema_for(&values);
+    bind_wire_schema(&mut schema, None);
     schema.as_object_mut().unwrap().insert(
         "$schema".into(),
         serde_json::Value::String("https://json-schema.org/draft/2020-12/schema".into()),

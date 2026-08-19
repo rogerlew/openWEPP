@@ -38,6 +38,32 @@ fn authority_binds_canonical_phase_union_atomicity_and_typed_failures() {
 }
 
 #[test]
+fn restart_evidence_access_is_nondefault_and_has_no_production_selector() {
+    let cargo =
+        fs::read_to_string(root().join("crates/openwepp-hillslope-orchestrator/Cargo.toml"))
+            .unwrap();
+    assert!(cargo.contains("default = []"));
+    assert!(cargo.contains("restart-authority-evidence = []"));
+    let shadow = fs::read_to_string(
+        root().join("crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs"),
+    )
+    .unwrap();
+    assert!(
+        shadow
+            .matches("#[cfg(feature = \"restart-authority-evidence\")]")
+            .count()
+            >= 10
+    );
+    for forbidden in [
+        "restart_selector",
+        "restart_checkpoint_path",
+        "resume_from_checkpoint",
+    ] {
+        assert!(!shadow.contains(forbidden));
+    }
+}
+
+#[test]
 fn all_real_vectors_are_canonical_digest_bound_typed_checkpoints() {
     for name in [
         "checkpoint-vector.json",
@@ -202,4 +228,43 @@ fn manifest_binds_every_schema_and_vector_byte_for_byte() {
             entry["sha256"].as_str().unwrap()
         )
     }
+}
+
+#[test]
+fn generated_schema_accepts_every_frozen_vector_and_rejects_wire_bounds() {
+    let schema = value("checkpoint-schema.json");
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    for name in [
+        "checkpoint-vector.json",
+        "checkpoint-in-progress-vector.json",
+        "checkpoint-cross-midnight-vector.json",
+        "checkpoint-multi-destination-vector.json",
+    ] {
+        let candidate = value(name);
+        let errors = validator
+            .iter_errors(&candidate)
+            .map(|error| error.to_string())
+            .collect::<Vec<_>>();
+        if !errors.is_empty() {
+            let phase_errors = schema["properties"]["phase"]["oneOf"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|branch| {
+                    jsonschema::validator_for(branch)
+                        .unwrap()
+                        .iter_errors(&candidate["phase"])
+                        .map(|error| format!("{} @ {}", error, error.instance_path()))
+                        .collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>();
+            panic!("schema rejects {name}: {errors:?}; phase={phase_errors:?}");
+        }
+    }
+    let mut invalid = value("checkpoint-in-progress-vector.json");
+    invalid["phase"]["next_interval_index"] = Value::from(48);
+    assert!(!validator.is_valid(&invalid));
+    invalid = value("checkpoint-in-progress-vector.json");
+    invalid["phase"]["kind"] = Value::from("invented_phase");
+    assert!(!validator.is_valid(&invalid));
 }

@@ -188,6 +188,9 @@ pub enum IsolatedRestoredCheckpointV1 {
         committed_day_beginning: RestoredCompleteCommittedOwnerStateV1,
         staged_scientific: RestoredScientificOwnerStateSetV1,
         staged_gsi_ending_state: DirectGsiOwnerStateV1,
+        accepted_gsi_daily_receipt: openwepp_hillslope_orchestrator::runtime_inputs::DirectGsiDailyReceiptV1,
+        validated_forcing_day_receipts:
+            Vec<openwepp_hillslope_orchestrator::runtime_inputs::SnowFreeHalfHourDayReceipt>,
         ending_provider_cursor: SnowFreeHalfHourProviderCursor,
     },
 }
@@ -237,6 +240,11 @@ pub fn admit_checkpoint_v1(
                     "direct_hydrology",
                     "soil_thermal",
                     "biogeochemistry",
+                    "gsi_configuration",
+                    "gsi_state",
+                    "static_forcing_configuration",
+                    "provider_cursor",
+                    "surface_liquid_configuration",
                 ]
                 .iter()
                 .any(|field| message.contains(field))
@@ -304,7 +312,7 @@ pub fn admit_checkpoint_v1(
             staged_scientific,
             accepted_gsi_daily_receipt,
             staged_gsi_ending_state,
-            ending_provider_cursor,
+            ending_provider_cursor: ending_provider_cursor_dto,
             validated_forcing_day_receipts,
         } => {
             if accepted_interval_count.get() % 48 != u64::from(next_interval_index.get()) {
@@ -322,14 +330,41 @@ pub fn admit_checkpoint_v1(
             {
                 return Err(RestartAdmissionFailureV1::GsiReceipt);
             }
-            validate_forcing(
+            let validated_forcing_day_receipts = validate_forcing(
                 validated_forcing_day_receipts,
                 context,
                 day_index.0,
                 accepted_gsi_daily_receipt.receipt_sha256.as_str(),
                 &receipt.source_climate_sha256,
             )?;
-            let ending_provider_cursor = ending_provider_cursor
+            let outgoing_carry = validated_forcing_day_receipts
+                .iter()
+                .flat_map(|receipt| receipt.next_day_precipitation_carry.iter())
+                .collect::<Vec<_>>();
+            let ending_carry = ending_provider_cursor_dto
+                .pending_carry
+                .iter()
+                .map(crate::SnowFreePrecipitationParcelRestartV1::restore)
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|_| RestartAdmissionFailureV1::ProviderCursor)?;
+            if outgoing_carry != ending_carry.iter().collect::<Vec<_>>() {
+                return Err(RestartAdmissionFailureV1::ProviderCursor);
+            }
+            for pending in &committed_day_beginning.provider_cursor.pending_carry {
+                let native_pending = pending
+                    .restore()
+                    .map_err(|_| RestartAdmissionFailureV1::ProviderCursor)?;
+                let found = validated_forcing_day_receipts
+                    .iter()
+                    .flat_map(|receipt| &receipt.intervals)
+                    .flat_map(|interval| &interval.precipitation_parcels)
+                    .filter(|parcel| *parcel == &native_pending)
+                    .count();
+                if found != 1 {
+                    return Err(RestartAdmissionFailureV1::ProviderCursor);
+                }
+            }
+            let ending_provider_cursor = ending_provider_cursor_dto
                 .restore(
                     context.forcing_static_configuration,
                     usize::try_from(day_index.0 + 1)
@@ -352,6 +387,8 @@ pub fn admit_checkpoint_v1(
                 staged_gsi_ending_state: staged_gsi_ending_state
                     .restore()
                     .map_err(|_| RestartAdmissionFailureV1::GsiReceipt)?,
+                accepted_gsi_daily_receipt: receipt,
+                validated_forcing_day_receipts,
                 ending_provider_cursor,
             })
         }
@@ -491,6 +528,19 @@ fn require_lineage(
             .map(crate::HexU128::to_u128)
             != Some(expected)
         || value.biogeochemistry.last_transaction_id.to_u128() != expected
+        || required.is_some_and(|_| value
+            .direct_hydrology
+            .surface_liquid_owned_state
+            .as_deref()
+            .is_some_and(|state| {
+                state.continuations.iter().any(|continuation| {
+                    continuation
+                        .last_accepted_transaction_id
+                        .as_ref()
+                        .map(crate::HexU128::to_u128)
+                        != Some(expected)
+                })
+            }))
     {
         return Err(RestartAdmissionFailureV1::TransactionLineage);
     }
@@ -503,7 +553,10 @@ fn validate_forcing(
     day: u64,
     gsi_sha: &str,
     climate_sha: &str,
-) -> Result<(), RestartAdmissionFailureV1> {
+) -> Result<
+    Vec<openwepp_hillslope_orchestrator::runtime_inputs::SnowFreeHalfHourDayReceipt>,
+    RestartAdmissionFailureV1,
+> {
     if receipts.len() != context.forcing_static_configuration.destinations.len() {
         return Err(RestartAdmissionFailureV1::ForcingReceiptCardinality);
     }
@@ -521,7 +574,11 @@ fn validate_forcing(
     if actual != expected {
         return Err(RestartAdmissionFailureV1::ForcingReceiptOrder);
     }
-    for value in receipts {
+    let mut restored = Vec::with_capacity(receipts.len());
+    for (value, destination) in receipts
+        .iter()
+        .zip(&context.forcing_static_configuration.destinations)
+    {
         if value.intervals.len() != 48 {
             return Err(RestartAdmissionFailureV1::ForcingReceiptCardinality);
         }
@@ -537,7 +594,19 @@ fn validate_forcing(
             .restore()
             .map_err(|_| RestartAdmissionFailureV1::ForcingReceiptDigest)?;
         if receipt.day_index as u64 != day
+            || receipt.run_id != context.forcing_static_configuration.run_id
             || receipt.source_climate_sha256 != climate_sha
+            || receipt.intervals.iter().any(|interval| {
+                interval.wb14_configuration_sha256
+                    != destination.wb14_configuration_sha256
+                    || interval.co2_pa.to_bits()
+                        != context.forcing_static_configuration.co2_pa.to_bits()
+                    || interval.reference_height_m.to_bits()
+                        != context
+                            .forcing_static_configuration
+                            .reference_height_m
+                            .to_bits()
+            })
             || receipt
                 .intervals
                 .iter()
@@ -545,8 +614,9 @@ fn validate_forcing(
         {
             return Err(RestartAdmissionFailureV1::ForcingReceiptDigest);
         }
+        restored.push(receipt);
     }
-    Ok(())
+    Ok(restored)
 }
 
 #[cfg(test)]
@@ -554,7 +624,8 @@ mod poison_tests {
     use super::*;
     use crate::groundwater::GroundwaterAuthorityRestartV1;
     use crate::{
-        DirectRuntimePostureV1, HexF64, HexU128, project_evidence_scientific_owners,
+        DirectRuntimePostureV1, HexF64, HexU128, project_evidence_complete_live_owners,
+        restart_authority_cross_midnight_carry_fixture,
         restart_authority_in_progress_checkpoint_fixture, to_canonical_bytes,
     };
     fn phase(
@@ -631,10 +702,11 @@ mod poison_tests {
             day_input_digests: &fixture.owners.day_input_digests,
         };
         let live = || {
-            to_canonical_bytes(&project_evidence_scientific_owners(
+            to_canonical_bytes(&project_evidence_complete_live_owners(
                 &fixture.owners.runtime.shadow,
                 &fixture.owners.phase_plan_sha256,
                 &fixture.owners.day_input_digests,
+                0,
             ))
             .unwrap()
         };
@@ -664,6 +736,27 @@ mod poison_tests {
         check(
             serde_json::to_vec(&p).unwrap(),
             RestartAdmissionFailureV1::MissingField,
+        );
+        let carry = restart_authority_cross_midnight_carry_fixture();
+        let mut carry_checkpoint = baseline.clone();
+        *phase(&mut carry_checkpoint).2 = carry.gsi_receipt;
+        *phase(&mut carry_checkpoint).3 = carry.ending_cursor;
+        *phase(&mut carry_checkpoint).4 = carry.forcing_receipts;
+        if let DirectV10CheckpointPhaseV1::InProgressDay {
+            staged_gsi_ending_state,
+            ..
+        } = &mut carry_checkpoint.phase
+        {
+            *staged_gsi_ending_state = carry.ending_gsi_state;
+        }
+        let carry_bytes = sealed(carry_checkpoint.clone());
+        assert!(admit_checkpoint_v1(&carry_bytes, &context).is_ok());
+        assert_eq!(live(), before);
+        phase(&mut carry_checkpoint).3.pending_carry.pop().unwrap();
+        phase(&mut carry_checkpoint).3.seal().unwrap();
+        check(
+            sealed(carry_checkpoint),
+            RestartAdmissionFailureV1::ProviderCursor,
         );
         let mut p = value.clone();
         p["extra"] = serde_json::json!(true);
@@ -697,6 +790,7 @@ mod poison_tests {
         check(sealed(p), RestartAdmissionFailureV1::OwnerIdentity);
         let mut p = baseline.clone();
         phase(&mut p).1.biogeochemistry.last_transaction_id = HexU128::from_u128(999);
+        phase(&mut p).1.biogeochemistry.seal().unwrap();
         check(sealed(p), RestartAdmissionFailureV1::TransactionLineage);
         let mut p = String::from_utf8(to_canonical_bytes(&baseline).unwrap()).unwrap();
         p = p.replacen("0x00000000000000000000000000000040", "0x40", 1);
@@ -775,6 +869,14 @@ mod poison_tests {
         phase(&mut p).1.lse_v2.state_sha256 = Sha256Hex::try_new("1".repeat(64)).unwrap();
         check(sealed(p), RestartAdmissionFailureV1::LseV2V1Projection);
         let mut p = baseline.clone();
+        phase(&mut p).1.soil_thermal.restart_payload_sha256 =
+            Sha256Hex::try_new("1".repeat(64)).unwrap();
+        check(sealed(p), RestartAdmissionFailureV1::OwnerValidation);
+        let mut p = baseline.clone();
+        phase(&mut p).1.biogeochemistry.state_sha256 =
+            Sha256Hex::try_new("1".repeat(64)).unwrap();
+        check(sealed(p), RestartAdmissionFailureV1::OwnerValidation);
+        let mut p = baseline.clone();
         phase(&mut p).1.biogeochemistry.layers[0].ammonium_n = HexF64::from_f64(-1.0);
         check(sealed(p), RestartAdmissionFailureV1::OwnerValidation);
         let mut p = baseline.clone();
@@ -786,6 +888,7 @@ mod poison_tests {
         check(sealed(p), RestartAdmissionFailureV1::OwnerValidation);
         let mut p = baseline.clone();
         phase(&mut p).1.biogeochemistry.layers.reverse();
+        phase(&mut p).1.biogeochemistry.seal().unwrap();
         check(sealed(p), RestartAdmissionFailureV1::CanonicalOrder);
         let mut p = serde_json::to_value(&baseline).unwrap();
         p["phase"]["staged_scientific"]
@@ -796,6 +899,39 @@ mod poison_tests {
             serde_json::to_vec(&p).unwrap(),
             RestartAdmissionFailureV1::OwnerOmission,
         );
+        for field in [
+            "vegetation_v10",
+            "lse_v2",
+            "soil_thermal",
+            "biogeochemistry",
+        ] {
+            let mut p = serde_json::to_value(&baseline).unwrap();
+            p["phase"]["staged_scientific"]
+                .as_object_mut()
+                .unwrap()
+                .remove(field);
+            check(
+                serde_json::to_vec(&p).unwrap(),
+                RestartAdmissionFailureV1::OwnerOmission,
+            );
+        }
+        for field in [
+            "gsi_configuration",
+            "gsi_state",
+            "static_forcing_configuration",
+            "provider_cursor",
+            "surface_liquid_configuration",
+        ] {
+            let mut p = serde_json::to_value(&baseline).unwrap();
+            p["phase"]["committed_day_beginning"]
+                .as_object_mut()
+                .unwrap()
+                .remove(field);
+            check(
+                serde_json::to_vec(&p).unwrap(),
+                RestartAdmissionFailureV1::OwnerOmission,
+            );
+        }
         let mut p = baseline.clone();
         phase(&mut p).1.direct_hydrology.lanes[0]
             .winter_column

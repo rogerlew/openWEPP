@@ -233,6 +233,7 @@ impl DirectLaneRestartV1 {
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum DirectRuntimePostureV1 {
     Standard,
     UnsupportedLanedActive,

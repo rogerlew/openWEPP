@@ -1,6 +1,6 @@
 //! Explicit, layout-independent projections of every persisted scientific owner.
 
-use crate::{HexF64, HexU128, Sha256Hex};
+use crate::{HexF64, HexU128, Sha256Hex, canonical_sha256};
 use openwepp_biogeochemistry::{
     BiogeochemistryState, MaterialPool, MineralLayer, available_by_key,
 };
@@ -521,6 +521,23 @@ impl VegetationV10StateRestartV1 {
         &self,
         configuration: &VegetationConfiguration,
     ) -> Result<V10CoupledOwnedState, ScientificOwnerRestartError> {
+        if self.strata.windows(2).any(|pair| pair[0].stratum_id >= pair[1].stratum_id)
+            || self
+                .occupancies
+                .windows(2)
+                .any(|pair| {
+                    (&pair[0].stratum_id, &pair[0].tile_id)
+                        >= (&pair[1].stratum_id, &pair[1].tile_id)
+                })
+            || self
+                .tile_canopy_air
+                .windows(2)
+                .any(|pair| pair[0].tile_id >= pair[1].tile_id)
+        {
+            return Err(ScientificOwnerRestartError::Ordering(
+                "vegetation canonical order",
+            ));
+        }
         let strata = self
             .strata
             .iter()
@@ -699,12 +716,13 @@ pub struct SoilThermalStateRestartV1 {
     pub snapshot_sha256: Sha256Hex,
     pub last_accepted_transaction_id: Option<HexU128>,
     pub ofes: Vec<SoilThermalOfeRestartV1>,
+    pub restart_payload_sha256: Sha256Hex,
 }
 impl SoilThermalStateRestartV1 {
     pub fn project(v: &SoilThermalSnapshot) -> Result<Self, ScientificOwnerRestartError> {
         v.validate()
             .map_err(|_| ScientificOwnerRestartError::Domain("soil thermal"))?;
-        Ok(Self {
+        let mut projected = Self {
             owner_id: v.owner_id.as_str().into(),
             configuration_sha256: sha(v.configuration_sha256.as_str())?,
             state_sha256: sha(v.state_sha256.as_str())?,
@@ -728,9 +746,18 @@ impl SoilThermalStateRestartV1 {
                         .collect(),
                 })
                 .collect(),
-        })
+            restart_payload_sha256: Sha256Hex::try_new("0".repeat(64)).unwrap(),
+        };
+        projected.restart_payload_sha256 =
+            Sha256Hex::try_new(projected.compute_restart_sha256()?).unwrap();
+        Ok(projected)
     }
     pub fn restore(&self) -> Result<SoilThermalSnapshot, ScientificOwnerRestartError> {
+        if self.restart_payload_sha256.as_str() != self.compute_restart_sha256()? {
+            return Err(ScientificOwnerRestartError::Identity(
+                "soil thermal restart digest",
+            ));
+        }
         let v = SoilThermalSnapshot {
             owner_id: owner(&self.owner_id)?,
             configuration_sha256: digest(&self.configuration_sha256)?,
@@ -771,6 +798,18 @@ impl SoilThermalStateRestartV1 {
             .map_err(|_| ScientificOwnerRestartError::Domain("soil thermal"))?;
         Ok(v)
     }
+
+    fn compute_restart_sha256(&self) -> Result<String, ScientificOwnerRestartError> {
+        canonical_sha256(&(
+            &self.owner_id,
+            &self.configuration_sha256,
+            &self.state_sha256,
+            &self.snapshot_sha256,
+            &self.last_accepted_transaction_id,
+            &self.ofes,
+        ))
+        .map_err(|_| ScientificOwnerRestartError::Identity("soil thermal restart digest"))
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -791,14 +830,28 @@ pub struct MaterialPoolRestartV1 {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct BiogeochemistryStateRestartV1 {
+    pub owner_id: String,
+    pub configuration_sha256: Sha256Hex,
     pub layers: Vec<MineralLayerRestartV1>,
     pub receivers: Vec<MaterialPoolRestartV1>,
     pub last_transaction_id: HexU128,
+    pub state_sha256: Sha256Hex,
 }
 impl BiogeochemistryStateRestartV1 {
+    pub fn seal(&mut self) -> Result<(), ScientificOwnerRestartError> {
+        self.state_sha256 = Sha256Hex::try_new(self.compute_state_sha256()?)
+            .map_err(|_| ScientificOwnerRestartError::Identity("BGC state digest"))?;
+        Ok(())
+    }
     pub fn project(v: &BiogeochemistryState) -> Result<Self, ScientificOwnerRestartError> {
         validate_bgc(v)?;
-        Ok(Self {
+        let configuration_sha256 = Sha256Hex::try_new(
+            canonical_sha256(&("biogeochemistry", "OPENWEPP_BGC_OWNER_V1")).unwrap(),
+        )
+        .unwrap();
+        let mut projected = Self {
+            owner_id: "biogeochemistry".into(),
+            configuration_sha256,
             layers: v
                 .layers
                 .iter()
@@ -819,9 +872,19 @@ impl BiogeochemistryStateRestartV1 {
                 })
                 .collect(),
             last_transaction_id: HexU128::from_u128(v.last_transaction_id),
-        })
+            state_sha256: Sha256Hex::try_new("0".repeat(64)).unwrap(),
+        };
+        projected.seal()?;
+        Ok(projected)
     }
     pub fn restore(&self) -> Result<BiogeochemistryState, ScientificOwnerRestartError> {
+        if self.owner_id != "biogeochemistry"
+            || self.configuration_sha256.as_str()
+                != canonical_sha256(&("biogeochemistry", "OPENWEPP_BGC_OWNER_V1")).unwrap()
+            || self.state_sha256.as_str() != self.compute_state_sha256()?
+        {
+            return Err(ScientificOwnerRestartError::Identity("BGC owner/digest"));
+        }
         if self
             .layers
             .windows(2)
@@ -872,6 +935,17 @@ impl BiogeochemistryStateRestartV1 {
         };
         validate_bgc(&v)?;
         Ok(v)
+    }
+
+    fn compute_state_sha256(&self) -> Result<String, ScientificOwnerRestartError> {
+        canonical_sha256(&(
+            &self.owner_id,
+            &self.configuration_sha256,
+            &self.layers,
+            &self.receivers,
+            &self.last_transaction_id,
+        ))
+        .map_err(|_| ScientificOwnerRestartError::Identity("BGC state digest"))
     }
 }
 fn validate_bgc(v: &BiogeochemistryState) -> Result<(), ScientificOwnerRestartError> {

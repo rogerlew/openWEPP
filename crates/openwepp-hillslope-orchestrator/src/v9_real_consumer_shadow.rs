@@ -674,6 +674,22 @@ impl DirectV10RealConsumerShadow {
     }
 
     #[cfg(feature = "restart-authority-evidence")]
+    pub fn restart_authority_install_staged_daily_owners(
+        &mut self,
+        gsi_state: GsiState,
+        provider_cursor: SnowFreeHalfHourProviderCursor,
+        expected_next_day_index: usize,
+    ) -> Result<(), DirectV10RealConsumerError> {
+        provider_cursor.validate_for_configuration(
+            &self.provider_static_configuration,
+            expected_next_day_index,
+        )?;
+        self.gsi_state = gsi_state;
+        self.provider_cursor = provider_cursor;
+        Ok(())
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
     pub fn restart_authority_advance_staged_intervals(
         &mut self,
         prepared: &PreparedSnowFreeGsiDayV1,

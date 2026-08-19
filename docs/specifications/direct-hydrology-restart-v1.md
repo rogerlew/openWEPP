@@ -15,30 +15,34 @@ as JSON integers, booleans as JSON booleans, and every binary64 value as the
 lowercase string `0x` followed by exactly sixteen hexadecimal digits containing
 the IEEE-754 bits. Thus `+0.0` and `-0.0` remain distinct.
 
-The top-level member order is `schema`, `version`, `run_identity`, `topology`,
-`configuration_identities`, `transaction_lineage`, `phase`,
-`payload_sha256`. `payload_sha256` is the lowercase SHA-256
+The top-level member order is `schema`, `version`, `run_identity_sha256`,
+`topology_sha256`, `phase`, `payload_sha256`. Immutable scientific
+configuration identities and interval transaction lineages are carried by
+their named owner DTOs inside the phase rather than duplicated at the top
+level. `payload_sha256` is the lowercase SHA-256
 of the canonical prefix object with that member omitted. Parsers reject
 unknown, missing, duplicate, or reordered members and noncanonical bytes.
 
 ## Canonical owners
 
-`committed_owners` and `staged_candidate_owners` use the same named owner DTO
-object in this order:
+The complete committed owner object is ordered as follows:
 
 1. `gsi_configuration` and `gsi_state` under CP-GSI01;
 2. `static_forcing_configuration` and `forcing_provider_cursor`;
-3. `vegetation_v10_configuration` and `vegetation_v10_state`;
-4. `lse_v2_configuration` and `lse_v2_state`;
-5. `direct_hydrology`;
-6. `surface_liquid_configuration`; the state exists exactly once inside
-   `direct_hydrology`;
-7. `soil_thermal_configuration` and `soil_thermal_state`;
-8. `biogeochemistry_configuration` and `biogeochemistry_state`.
+3. `surface_liquid_configuration`; its state exists exactly once inside
+   direct hydrology;
+4. `scientific`, containing typed V10, LSE-V2, direct-hydrology,
+   soil-thermal, and BGC state DTOs.
+
+Large immutable V10 and LSE configuration objects and hydrology layer maps
+are supplied by `ExpectedRestartStaticContext`; every state DTO persists the
+exact owner/model/configuration identity required to validate those supplied
+objects. GSI, forcing, and surface-liquid configurations are compact typed
+owners and are persisted directly. No opaque configuration bytes are used.
 
 Each owner is an explicitly projected DTO, not an embedded Rust debug or raw
 memory representation. Every owner carries its canonical identity/digest.
-Topology contains ordered lanes, OFEs, tiles, and soil-layer maps. The direct
+The topology digest binds ordered lanes, OFEs, tiles, and soil-layer maps. The direct
 hydrology DTO persists lane water and soil continuation, ordered transfer
 custody, downstream operands, and groundwater. It binds the phase-plan digest
 but does not persist the plan. Publication, transient diagnostics, and the
@@ -55,11 +59,11 @@ a third or duplicated owner set.
 0 and after interval 48 has finalized.
 
 `InProgressDay` contains, in order: `day_index`, `next_interval_index`,
-`committed_beginning_owners`,
-`staged_candidate_owners`, `accepted_gsi_daily_receipt`,
-`staged_gsi_ending_state`, `beginning_provider_cursor`,
-`ending_provider_cursor`, `validated_forcing_receipts`, and
-`accepted_interval_count`. `next_interval_index` is a bounded `u8` in `1..47`.
+`accepted_interval_count`, `committed_day_beginning`, `staged_scientific`,
+`accepted_gsi_daily_receipt`, `staged_gsi_ending_state`,
+`ending_provider_cursor`, and `validated_forcing_day_receipts`. The beginning
+GSI state and provider cursor exist exactly once inside
+`committed_day_beginning`. `next_interval_index` is a bounded `u8` in `1..47`.
 The forcing receipt vector is ordered by `(ofe_id,tile_id)` and every
 destination record has exactly 48 canonically ordered interval receipts even
 when only a prefix has executed. Interval zero uses `BetweenDays`; interval 48

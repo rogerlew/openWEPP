@@ -95,3 +95,31 @@ repository-backed vectors; generated field metadata/ledger; real interval-24
 fresh-object continuation; exact day-beginning abort; and typed poison
 admission with actual live bytes unchanged. Independent exact-commit reviews
 remain intentionally undispatched until the remediation commit is frozen.
+
+## First frozen-review correction pass (2026-08-19)
+
+The three reviews of `ae52487c099c5816a4bd2df2ea0d40af3a53d39e`
+returned FAIL. Accepted findings were corrected before a new freeze:
+
+- fresh interval-24 continuation now reconstructs the prepared day only from
+  admitted GSI/forcing receipts and installs admitted staged GSI/cursor owners;
+- complete live committed-owner canonical bytes, including configurations,
+  GSI, and cursor, are checked unchanged on every poison;
+- forcing admission joins run, destination, WB14, CO2, reference height, GSI,
+  source climate, and receipt digests;
+- real nonempty outgoing cross-midnight carry is custody-joined to the ending
+  cursor and has a recomputed-digest parcel-omission poison;
+- topology identity now binds ordered lanes, OFE/tile/WB14 destinations,
+  LSE tiles, and soil-thermal layer maps;
+- GSI history domains/equivalence, scientific surface lineage, BGC identity
+  and nested digest, soil restart payload digest, and per-owner omissions are
+  executable;
+- the governing draft contract was reconciled to the user-required phase
+  architecture: beginning GSI/cursor exist only in committed day-beginning;
+- generated schema validation accepts all four vectors and rejects phase enum
+  and interval-width substitutions.
+
+Ran after correction: reference tests PASS 28/28, warnings-denied Clippy PASS,
+direct authority PASS 7/7, forcing PASS 7/7, V10 PASS 3/3, AUTH11 PASS 3/3,
+anti-evasion PASS, formatting PASS, and diff hygiene PASS. Exact-current
+reviews remain undispatched until the replacement commit is frozen.

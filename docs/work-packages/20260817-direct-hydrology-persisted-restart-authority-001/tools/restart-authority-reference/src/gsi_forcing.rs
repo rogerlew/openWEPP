@@ -83,6 +83,13 @@ impl SnowFreeHalfHourStaticConfigurationRestartV1 {
     }
 
     pub fn restore(&self) -> Result<SnowFreeHalfHourStaticConfiguration, GsiForcingRestartError> {
+        if self.destinations.windows(2).any(|pair| {
+            (&pair[0].ofe_id, &pair[0].tile_id) >= (&pair[1].ofe_id, &pair[1].tile_id)
+        }) {
+            return Err(GsiForcingRestartError::Ordering(
+                "forcing destination canonical order",
+            ));
+        }
         let value = SnowFreeHalfHourStaticConfiguration {
             run_id: self.run_id.clone(),
             co2_pa: f("forcing.co2_pa", &self.co2_pa)?,
@@ -250,11 +257,22 @@ impl DirectGsiOwnerStateRestartV1 {
         if self.history_oldest_first.len() > 21 {
             return Err(GsiForcingRestartError::Ordering("gsi history cardinality"));
         }
+        if self.history_oldest_first.is_empty() != self.last_date.is_none() {
+            return Err(GsiForcingRestartError::Ordering(
+                "gsi history/date equivalence",
+            ));
+        }
         let v = DirectGsiOwnerStateV1 {
             history_oldest_first: self
                 .history_oldest_first
                 .iter()
-                .map(|x| f("gsi.history", x))
+                .map(|x| {
+                    let value = f("gsi.history", x)?;
+                    if !(0.0..=1.0).contains(&value) {
+                        return Err(GsiForcingRestartError::Domain("gsi.history"));
+                    }
+                    Ok(value)
+                })
                 .collect::<Result<_, _>>()?,
             last_date: self
                 .last_date
@@ -448,7 +466,7 @@ impl SnowFreePrecipitationParcelRestartV1 {
             enthalpy_j_m2: HexF64::from_f64(v.enthalpy_j_m2),
         }
     }
-    fn restore(&self) -> Result<SnowFreePrecipitationParcelReceipt, GsiForcingRestartError> {
+    pub fn restore(&self) -> Result<SnowFreePrecipitationParcelReceipt, GsiForcingRestartError> {
         Ok(SnowFreePrecipitationParcelReceipt {
             parcel_id: self.parcel_id.clone(),
             source_owner_id: self.source_owner_id.clone(),
@@ -698,6 +716,15 @@ struct CursorDigestInput<'a> {
     pending_carry: &'a [SnowFreePrecipitationParcelRestartV1],
 }
 impl SnowFreeHalfHourProviderCursorRestartV1 {
+    pub fn seal(&mut self) -> Result<(), GsiForcingRestartError> {
+        self.cursor_sha256 = sha(canonical_sha256(&CursorDigestInput {
+            next_day_index: &self.next_day_index,
+            static_configuration_sha256: &self.static_configuration_sha256,
+            pending_carry: &self.pending_carry,
+        })
+        .map_err(|_| GsiForcingRestartError::Identity("cursor digest"))?)?;
+        Ok(())
+    }
     pub fn project(
         v: &SnowFreeHalfHourProviderCursor,
         configuration: &SnowFreeHalfHourStaticConfiguration,
@@ -731,12 +758,7 @@ impl SnowFreeHalfHourProviderCursorRestartV1 {
                 .collect(),
             cursor_sha256: sha("0".repeat(64))?,
         };
-        dto.cursor_sha256 = sha(canonical_sha256(&CursorDigestInput {
-            next_day_index: &dto.next_day_index,
-            static_configuration_sha256: &dto.static_configuration_sha256,
-            pending_carry: &dto.pending_carry,
-        })
-        .map_err(|_| GsiForcingRestartError::Identity("cursor digest"))?)?;
+        dto.seal()?;
         Ok(dto)
     }
     pub fn restore(

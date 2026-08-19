@@ -20,3 +20,12 @@ Status: `CORRECTED PENDING EXACT-COMMIT INDEPENDENT REVIEW`
 | RA-SURFACE-001 | blocker | hydrology restore | Surface-liquid state restoration is configuration-bound | Restore through expected configuration and invoke owner validation/digest comparison | configuration, record/OFE/layer/lineage poisons | hydrology review | OPEN |
 | RA-CONT-001 | blocker | synthetic `advance()` fixture | Continuation executes real V10/LSE/hydrology/surface/soil/BGC owners | Replace byte arithmetic with repository-backed interval execution | fresh-object interval 24→47 equivalence and real late-failure abort | all reviews, release | OPEN |
 | RA-SCHEMA-001 | blocker | descriptor schema | Complete derivative JSON Schema covers every nested DTO and bound | Generate schema from typed hierarchy and test drift/cardinality | schema validation plus deterministic regeneration | serialization review | OPEN |
+
+## Superseding exact-current dispositions
+
+The OPEN rows above preserve the intake state and are historical. The first
+frozen review at `ae52487c` found additional seams; the subsequent correction
+pass supersedes every implementation finding as `CORRECTED / EXACT-COMMIT
+RE-REVIEW PENDING`. `RA-REVIEW-001` alone remains `OPEN` until all three
+authority reviews and both terminal verifiers PASS the replacement frozen
+commit. No finding is released by this disposition prose alone.
