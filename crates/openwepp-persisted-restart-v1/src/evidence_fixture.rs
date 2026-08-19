@@ -902,6 +902,34 @@ mod tests {
             0,
         ))
         .unwrap();
+        let mut wrong_static_configuration = fixture
+            .owners
+            .runtime
+            .shadow
+            .provider_static_configuration()
+            .clone();
+        wrong_static_configuration.run_id.push_str("-wrong");
+        assert!(
+            openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_prepare_from_restored_receipts(
+                accepted_gsi_daily_receipt.clone(),
+                staged_gsi_ending_state.clone(),
+                validated_forcing_day_receipts.clone(),
+                committed_provider_cursor.clone(),
+                ending_provider_cursor.clone(),
+                &wrong_static_configuration,
+            )
+            .is_err()
+        );
+        assert_eq!(
+            to_canonical_bytes(&project_evidence_complete_live_owners(
+                &fixture.owners.runtime.shadow,
+                &fixture.owners.phase_plan_sha256,
+                &fixture.owners.day_input_digests,
+                0,
+            ))
+            .unwrap(),
+            live_before
+        );
         assert!(
             openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_prepare_from_restored_receipts(
                 accepted_gsi_daily_receipt.clone(),

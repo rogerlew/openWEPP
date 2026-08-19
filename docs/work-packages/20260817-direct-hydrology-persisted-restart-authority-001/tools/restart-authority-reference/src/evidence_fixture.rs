@@ -898,6 +898,7 @@ mod tests {
             validated_forcing_day_receipts,
             committed_provider_cursor.clone(),
             ending_provider_cursor.clone(),
+            &context.forcing_static_configuration,
         )
         .unwrap();
         let restored_layer_maps = staged_scientific

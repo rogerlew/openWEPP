@@ -613,6 +613,13 @@ pub fn restart_authority_prepare_from_restored_receipts(
             "restart staged GSI ending state",
         ));
     }
+    if configuration.run_id != gsi_receipt.run_id
+        || configuration.gsi_owner_configuration_sha256 != gsi_receipt.configuration_sha256
+    {
+        return Err(SnowFreeHalfHourForcingError::Identity(
+            "restart static/GSI configuration join",
+        ));
+    }
     beginning_cursor.validate_for_configuration(configuration, gsi_day_index)?;
     ending_cursor.validate_for_configuration(
         configuration,
@@ -644,6 +651,19 @@ pub fn restart_authority_prepare_from_restored_receipts(
         return Err(SnowFreeHalfHourForcingError::Identity(
             "restart ending cursor carry",
         ));
+    }
+    for pending in &beginning_cursor.pending_carry {
+        let found = receipts
+            .iter()
+            .flat_map(|receipt| &receipt.intervals)
+            .flat_map(|interval| &interval.precipitation_parcels)
+            .filter(|parcel| *parcel == pending)
+            .count();
+        if found != 1 {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "restart beginning cursor carry consumption",
+            ));
+        }
     }
     Ok(PreparedSnowFreeGsiDayV1 {
         gsi_receipt,
