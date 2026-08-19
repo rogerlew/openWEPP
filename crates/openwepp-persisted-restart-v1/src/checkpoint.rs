@@ -192,6 +192,7 @@ pub enum IsolatedRestoredCheckpointV1 {
         next_interval_index: u8,
         accepted_interval_count: u64,
         committed_day_beginning: RestoredCompleteCommittedOwnerStateV1,
+        committed_day_beginning_wire: CompleteCommittedOwnerStateV1,
         staged_scientific: RestoredScientificOwnerStateSetV1,
         staged_gsi_ending_state: DirectGsiOwnerStateV1,
         accepted_gsi_daily_receipt:
@@ -464,6 +465,7 @@ pub fn admit_checkpoint_v1(
                 next_interval_index: next_interval_index.get(),
                 accepted_interval_count: accepted_interval_count.get(),
                 committed_day_beginning: committed,
+                committed_day_beginning_wire: committed_day_beginning.clone(),
                 staged_scientific: restore_scientific(staged_scientific, context)?,
                 staged_gsi_ending_state: staged_gsi_ending_state
                     .restore()

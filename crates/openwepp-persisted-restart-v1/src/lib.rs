@@ -37,6 +37,7 @@ mod host;
 mod hydrology_core;
 mod hydrology_restart;
 mod primitives;
+mod projection;
 mod scientific_owners;
 mod subsurface;
 mod surface_liquid;
@@ -82,6 +83,7 @@ pub use primitives::{
     AcceptedIntervalCount, DestinationCount, HexF64, HexU128, InProgressIntervalIndex, LaneCount,
     OptionalLaneLink, Sha256Hex, WireDayIndex, WireIntervalIndex, WireLaneId, WirePrimitiveError,
 };
+pub use projection::{project_complete_owner_state_v1, project_scientific_owner_state_v1};
 pub use scientific_owners::*;
 pub use subsurface::{DirectSubsurfaceLayerRestartV1, SubsurfaceRestartError};
 pub use surface_liquid::{

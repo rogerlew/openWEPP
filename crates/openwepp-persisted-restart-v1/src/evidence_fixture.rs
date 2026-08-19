@@ -876,6 +876,7 @@ mod tests {
             validated_forcing_day_receipts,
             ending_provider_cursor,
             continuation_template,
+            committed_day_beginning_wire: _,
         } = admitted
         else {
             unreachable!()

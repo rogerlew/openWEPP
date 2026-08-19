@@ -1,6 +1,7 @@
 use openwepp_hillslope_orchestrator::{
     runtime_inputs::{
-        DirectGsiDailyReceiptV1, SnowFreeHalfHourDayReceipt, restart_authority_restore_gsi_state,
+        DirectGsiDailyReceiptV1, PreparedSnowFreeGsiDayV1, SnowFreeHalfHourDayReceipt,
+        restart_authority_prepare_from_restored_receipts, restart_authority_restore_gsi_state,
     },
     v9_real_consumer_shadow::{
         DirectV10RealConsumerError, DirectV10RealConsumerShadow, DirectV10ShadowDayInput,
@@ -28,9 +29,11 @@ pub enum DirectV10RestartHost {
         day_index: u64,
         next_interval_index: u8,
         accepted_interval_count: u64,
+        committed_day_beginning: Box<crate::CompleteCommittedOwnerStateV1>,
         accepted_gsi_daily_receipt: DirectGsiDailyReceiptV1,
         validated_forcing_day_receipts: Vec<SnowFreeHalfHourDayReceipt>,
         continuation_template: DirectV10ShadowDayInput,
+        prepared: PreparedSnowFreeGsiDayV1,
     },
 }
 
@@ -83,6 +86,7 @@ impl DirectV10RestartHost {
                 next_interval_index,
                 accepted_interval_count,
                 committed_day_beginning,
+                committed_day_beginning_wire,
                 staged_scientific,
                 staged_gsi_ending_state,
                 accepted_gsi_daily_receipt,
@@ -95,6 +99,18 @@ impl DirectV10RestartHost {
                     provider_cursor,
                     scientific: _,
                 } = committed_day_beginning;
+                let beginning_cursor = provider_cursor.clone();
+                let native_ending_gsi =
+                    restart_authority_restore_gsi_state(&staged_gsi_ending_state)
+                        .map_err(DirectV10RealConsumerError::from)?;
+                let prepared = restart_authority_prepare_from_restored_receipts(
+                    accepted_gsi_daily_receipt.clone(),
+                    native_ending_gsi.clone(),
+                    validated_forcing_day_receipts.clone(),
+                    beginning_cursor,
+                    ending_provider_cursor.clone(),
+                )
+                .map_err(DirectV10RealConsumerError::from)?;
                 let committed = RestoredCompleteCommittedOwnerStateV1 {
                     gsi_state,
                     provider_cursor,
@@ -103,8 +119,7 @@ impl DirectV10RestartHost {
                 let mut shadow = build_shadow(committed, day_index, context)?;
                 shadow.restart_authority_install_scheduler_position(accepted_interval_count)?;
                 shadow.restart_authority_install_staged_daily_owners(
-                    restart_authority_restore_gsi_state(&staged_gsi_ending_state)
-                        .map_err(DirectV10RealConsumerError::from)?,
+                    native_ending_gsi,
                     ending_provider_cursor,
                     usize::try_from(day_index.checked_add(1).ok_or(
                         RestartInstallError::OwnerValidation("ending provider day overflow"),
@@ -118,9 +133,11 @@ impl DirectV10RestartHost {
                     day_index,
                     next_interval_index,
                     accepted_interval_count,
+                    committed_day_beginning: Box::new(committed_day_beginning_wire),
                     accepted_gsi_daily_receipt,
                     validated_forcing_day_receipts,
                     continuation_template,
+                    prepared,
                 })
             }
         }
@@ -130,6 +147,71 @@ impl DirectV10RestartHost {
     pub const fn shadow(&self) -> &DirectV10RealConsumerShadow {
         match self {
             Self::BetweenDays { shadow, .. } | Self::InProgressDay { shadow, .. } => shadow,
+        }
+    }
+
+    /// Advance an admitted in-progress transaction over the existing physical path.
+    pub fn advance_to(&mut self, end_interval_exclusive: u8) -> Result<(), RestartInstallError> {
+        let Self::InProgressDay {
+            shadow,
+            day_index,
+            next_interval_index,
+            accepted_interval_count,
+            continuation_template,
+            prepared,
+            ..
+        } = self
+        else {
+            return Err(RestartInstallError::OwnerValidation(
+                "advance requires in-progress checkpoint",
+            ));
+        };
+        let start = usize::from(*next_interval_index);
+        let end = usize::from(end_interval_exclusive);
+        shadow.restart_authority_advance_staged_intervals(
+            prepared,
+            continuation_template.clone(),
+            start,
+            end,
+        )?;
+        *accepted_interval_count = shadow.restart_authority_accepted_interval_count();
+        *next_interval_index = end_interval_exclusive;
+        if u64::try_from(start / 48).unwrap_or(0) > *day_index {
+            return Err(RestartInstallError::OwnerValidation("scheduler day drift"));
+        }
+        Ok(())
+    }
+
+    /// Abort an in-progress transaction to the exact admitted day-beginning bytes.
+    #[must_use]
+    pub fn abort_to_day_beginning(&self) -> Option<&crate::CompleteCommittedOwnerStateV1> {
+        match self {
+            Self::InProgressDay {
+                committed_day_beginning,
+                ..
+            } => Some(committed_day_beginning),
+            Self::BetweenDays { .. } => None,
+        }
+    }
+
+    /// Finish a fully accepted day with one host replacement.
+    pub fn finish(self) -> Result<Self, RestartInstallError> {
+        match self {
+            Self::InProgressDay {
+                shadow,
+                accepted_interval_count,
+                next_interval_index: 48,
+                ..
+            } => Ok(Self::BetweenDays {
+                shadow,
+                accepted_interval_count,
+            }),
+            Self::InProgressDay { .. } => Err(RestartInstallError::OwnerValidation(
+                "finish requires 48 accepted intervals",
+            )),
+            Self::BetweenDays { .. } => Err(RestartInstallError::OwnerValidation(
+                "finish requires in-progress checkpoint",
+            )),
         }
     }
 }
@@ -192,4 +274,140 @@ fn build_shadow(
         context.forcing_static_configuration.clone(),
         provider_cursor,
     )?)
+}
+
+#[cfg(all(test, feature = "fixtures"))]
+mod tests {
+    use crate::{
+        ExpectedRestartStaticContext, Sha256Hex, admit_and_install_checkpoint_v1,
+        project_complete_owner_state_v1, restart_authority_identities,
+        restart_authority_in_progress_checkpoint_fixture, to_canonical_bytes,
+    };
+
+    use super::DirectV10RestartHost;
+
+    #[test]
+    fn install_is_atomic_and_targets_the_actual_consumer_host() {
+        let (fixture, checkpoint, run, topology) =
+            restart_authority_in_progress_checkpoint_fixture(24);
+        let context = ExpectedRestartStaticContext {
+            run_identity_sha256: &run,
+            topology_sha256: &topology,
+            vegetation_configuration: fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_vegetation_configuration(),
+            vegetation_owner_id: fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_vegetation_owner_id(),
+            soil_thermal_owner_id: &fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_soil_thermal()
+                .owner_id,
+            soil_thermal_configuration_sha256: &fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_soil_thermal()
+                .configuration_sha256,
+            lse_configuration: fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_lse_configuration(),
+            surface_liquid_configuration: fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_surface_configuration(),
+            gsi_configuration: fixture.owners.runtime.shadow.gsi_owner_configuration(),
+            forcing_static_configuration: fixture
+                .owners
+                .runtime
+                .shadow
+                .provider_static_configuration(),
+            phase_plan: &fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_hydrology_frame()
+                .phase_plan,
+            phase_plan_sha256: &fixture.owners.phase_plan_sha256,
+            day_inputs: &fixture.owners.day_inputs,
+            day_input_digests: &fixture.owners.day_input_digests,
+        };
+        let mut target = DirectV10RestartHost::BetweenDays {
+            shadow: fixture.owners.runtime.shadow.clone(),
+            accepted_interval_count: 0,
+        };
+        let before = to_canonical_bytes(
+            &project_complete_owner_state_v1(
+                target.shadow(),
+                &fixture.owners.phase_plan_sha256,
+                &fixture.owners.day_input_digests,
+                0,
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+        let mut poisoned = checkpoint.clone();
+        poisoned.payload_sha256 = Sha256Hex::try_new("f".repeat(64)).unwrap();
+        assert!(
+            admit_and_install_checkpoint_v1(
+                &mut target,
+                &to_canonical_bytes(&poisoned).unwrap(),
+                &context,
+            )
+            .is_err()
+        );
+        let after_failure = to_canonical_bytes(
+            &project_complete_owner_state_v1(
+                target.shadow(),
+                &fixture.owners.phase_plan_sha256,
+                &fixture.owners.day_input_digests,
+                0,
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(after_failure, before);
+
+        admit_and_install_checkpoint_v1(
+            &mut target,
+            &to_canonical_bytes(&checkpoint).unwrap(),
+            &context,
+        )
+        .unwrap();
+        assert!(matches!(
+            target,
+            DirectV10RestartHost::InProgressDay {
+                next_interval_index: 24,
+                accepted_interval_count: 24,
+                ..
+            }
+        ));
+        assert_eq!(
+            to_canonical_bytes(target.abort_to_day_beginning().unwrap()).unwrap(),
+            to_canonical_bytes(&fixture.owners.committed).unwrap()
+        );
+        target.advance_to(48).unwrap();
+        let finished = target.finish().unwrap();
+        assert!(matches!(
+            finished,
+            DirectV10RestartHost::BetweenDays {
+                accepted_interval_count: 48,
+                ..
+            }
+        ));
+        let (expected_run, expected_topology) =
+            restart_authority_identities(&fixture.owners.committed);
+        assert_eq!(run, expected_run);
+        assert_eq!(topology, expected_topology);
+    }
 }
