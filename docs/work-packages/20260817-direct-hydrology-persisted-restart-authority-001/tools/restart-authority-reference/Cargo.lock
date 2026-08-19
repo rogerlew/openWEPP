@@ -221,9 +221,13 @@ version = "0.1.0"
 name = "openwepp-restart-authority-reference"
 version = "0.1.0"
 dependencies = [
+ "openwepp-biogeochemistry",
  "openwepp-hillslope-orchestrator",
+ "openwepp-input-contract",
  "openwepp-kernel-contract",
  "openwepp-land-surface-energy",
+ "openwepp-plant-phenology",
+ "openwepp-vegetation",
  "serde",
  "serde_json",
  "sha2",

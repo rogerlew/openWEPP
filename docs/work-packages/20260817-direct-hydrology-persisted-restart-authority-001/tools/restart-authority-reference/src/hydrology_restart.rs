@@ -10,6 +10,7 @@ use crate::{
 use openwepp_hillslope_orchestrator::{
     DirectDayConstructorInputs, DirectLaneFrame, DirectLaneTransferLedger, DirectPhasePlan,
     DirectPublicationFrame, DirectRunFrame, DirectRunIdentity, DirectRunTransferShadowProjection,
+    DirectSurfaceLiquidConfiguration,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -232,8 +233,15 @@ impl DirectLaneRestartV1 {
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub enum DirectRuntimePostureV1 {
+    Standard,
+    UnsupportedLanedActive,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DirectHydrologyRestartV1 {
+    pub runtime_posture: DirectRuntimePostureV1,
     pub run_id: u64,
     pub hillslope_id: u32,
     pub lane_count: u64,
@@ -244,6 +252,14 @@ pub struct DirectHydrologyRestartV1 {
     pub lane_transfer_downstream_operands: DirectRunTransferDownstreamOperandsRestartV1,
     pub groundwater: DirectGroundwaterRunStateRestartV1,
     pub surface_liquid_owned_state: Option<Box<DirectSurfaceLiquidOwnedStateRestartV1>>,
+}
+
+pub struct ExpectedDirectHydrologyRestartContext<'a> {
+    pub phase_plan: &'a DirectPhasePlan,
+    pub phase_plan_sha256: &'a Sha256Hex,
+    pub day_inputs: &'a [Vec<DirectDayConstructorInputs>],
+    pub day_input_digests: &'a [Sha256Hex],
+    pub surface_liquid_configuration: &'a DirectSurfaceLiquidConfiguration,
 }
 
 impl DirectHydrologyRestartV1 {
@@ -305,6 +321,7 @@ impl DirectHydrologyRestartV1 {
             ));
         }
         Ok(Self {
+            runtime_posture: DirectRuntimePostureV1::Standard,
             run_id: identity.run_id,
             hillslope_id: identity.hillslope_id,
             lane_count: u64::try_from(identity.lane_count)
@@ -339,13 +356,14 @@ impl DirectHydrologyRestartV1 {
 
     pub fn restore(
         &self,
-        phase_plan_sha256: &Sha256Hex,
-        day_inputs: Vec<Vec<DirectDayConstructorInputs>>,
-        day_input_digests: &[Sha256Hex],
+        context: &ExpectedDirectHydrologyRestartContext<'_>,
     ) -> Result<DirectRunFrame, HydrologyRestartError> {
-        if &self.phase_plan_sha256 != phase_plan_sha256
-            || self.lanes.len() != day_inputs.len()
-            || self.lanes.len() != day_input_digests.len()
+        if self.runtime_posture != DirectRuntimePostureV1::Standard {
+            return Err(HydrologyRestartError::Unsupported("laned_active"));
+        }
+        if &self.phase_plan_sha256 != context.phase_plan_sha256
+            || self.lanes.len() != context.day_inputs.len()
+            || self.lanes.len() != context.day_input_digests.len()
             || self.lane_count != self.lanes.len() as u64
         {
             return Err(HydrologyRestartError::Join("run configuration/cardinality"));
@@ -353,9 +371,9 @@ impl DirectHydrologyRestartV1 {
         let lanes = self
             .lanes
             .iter()
-            .zip(day_inputs)
-            .zip(day_input_digests)
-            .map(|((lane, inputs), digest)| lane.restore(inputs, digest))
+            .zip(context.day_inputs)
+            .zip(context.day_input_digests)
+            .map(|((lane, inputs), digest)| lane.restore(inputs.clone(), digest))
             .collect::<Result<Vec<_>, _>>()?;
         for (index, lane) in lanes.iter().enumerate() {
             let expected_id =
@@ -422,7 +440,7 @@ impl DirectHydrologyRestartV1 {
             )
             .map_err(nested)?,
             lanes,
-            phase_plan: DirectPhasePlan::default(),
+            phase_plan: context.phase_plan.clone(),
             publication: DirectPublicationFrame::empty(),
             lane_transfer_ledger,
             lane_transfer_downstream_operands: downstream,
@@ -434,7 +452,7 @@ impl DirectHydrologyRestartV1 {
             surface_liquid_shadow: self
                 .surface_liquid_owned_state
                 .as_deref()
-                .map(DirectSurfaceLiquidOwnedStateRestartV1::restore)
+                .map(|state| state.restore_with_configuration(context.surface_liquid_configuration))
                 .transpose()
                 .map_err(nested)?
                 .map(Box::new),
@@ -448,8 +466,9 @@ impl DirectHydrologyRestartV1 {
 mod tests {
     use super::*;
     use openwepp_hillslope_orchestrator::{
-        DirectLaneConstructorInputs, DirectRunConstructorInputs,
+        DirectLaneConstructorInputs, DirectRunConstructorInputs, DirectSurfaceLiquidConfiguration,
     };
+    use openwepp_kernel_contract::ResourceOwnerId;
 
     fn sha(byte: char) -> Sha256Hex {
         Sha256Hex::try_new(byte.to_string().repeat(64)).unwrap()
@@ -493,6 +512,16 @@ mod tests {
         ];
         frame
     }
+    fn surface_configuration() -> DirectSurfaceLiquidConfiguration {
+        DirectSurfaceLiquidConfiguration {
+            owner_id: ResourceOwnerId::try_new("surface").unwrap(),
+            run_id: 9,
+            configuration_sha256: "a".repeat(64),
+            ofe_topology: vec![],
+            ofe_bindings: vec![],
+            records: vec![],
+        }
+    }
 
     #[test]
     fn complete_projection_restoration_equivalence_and_cache_reconstruction() {
@@ -500,17 +529,20 @@ mod tests {
         let phase = sha('a');
         let days = vec![sha('b'), sha('c')];
         let dto = DirectHydrologyRestartV1::project(&source, phase.clone(), &days).unwrap();
-        let restored = dto
-            .restore(
-                &phase,
-                source
-                    .lanes
-                    .iter()
-                    .map(|lane| lane.day_inputs.clone())
-                    .collect(),
-                &days,
-            )
-            .unwrap();
+        let day_inputs = source
+            .lanes
+            .iter()
+            .map(|lane| lane.day_inputs.clone())
+            .collect::<Vec<_>>();
+        let surface = surface_configuration();
+        let context = ExpectedDirectHydrologyRestartContext {
+            phase_plan: &source.phase_plan,
+            phase_plan_sha256: &phase,
+            day_inputs: &day_inputs,
+            day_input_digests: &days,
+            surface_liquid_configuration: &surface,
+        };
+        let restored = dto.restore(&context).unwrap();
         assert_eq!(
             DirectHydrologyRestartV1::project(&restored, phase, &days).unwrap(),
             dto
@@ -527,33 +559,24 @@ mod tests {
         let days = vec![sha('b'), sha('c')];
         let mut dto = DirectHydrologyRestartV1::project(&source, phase.clone(), &days).unwrap();
         dto.lanes[1].lane_id = 99;
-        assert!(
-            dto.restore(
-                &phase,
-                source
-                    .lanes
-                    .iter()
-                    .map(|lane| lane.day_inputs.clone())
-                    .collect(),
-                &days
-            )
-            .is_err()
-        );
+        let day_inputs = source
+            .lanes
+            .iter()
+            .map(|lane| lane.day_inputs.clone())
+            .collect::<Vec<_>>();
+        let surface = surface_configuration();
+        let context = ExpectedDirectHydrologyRestartContext {
+            phase_plan: &source.phase_plan,
+            phase_plan_sha256: &phase,
+            day_inputs: &day_inputs,
+            day_input_digests: &days,
+            surface_liquid_configuration: &surface,
+        };
+        assert!(dto.restore(&context).is_err());
         assert_eq!(format!("{source:?}"), beginning);
         let mut dto = DirectHydrologyRestartV1::project(&source, phase.clone(), &days).unwrap();
         dto.lanes[0].area_m2 = HexF64::from_f64(f64::NAN);
-        assert!(
-            dto.restore(
-                &phase,
-                source
-                    .lanes
-                    .iter()
-                    .map(|lane| lane.day_inputs.clone())
-                    .collect(),
-                &days
-            )
-            .is_err()
-        );
+        assert!(dto.restore(&context).is_err());
         assert_eq!(format!("{source:?}"), beginning);
     }
 }

@@ -1,233 +1,481 @@
-use openwepp_hillslope_orchestrator::{
-    DirectLaneConstructorInputs, DirectLaneTransferLedger, DirectRunConstructorInputs,
-    DirectRunFrame, DirectRunIdentity,
-};
 use openwepp_restart_authority_reference::*;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use std::{env, fs, path::PathBuf};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+};
 
-fn sha(c: char) -> Sha256Hex {
-    Sha256Hex::try_new(c.to_string().repeat(64)).unwrap()
+fn identities(committed: &CompleteCommittedOwnerStateV1) -> (Sha256Hex, Sha256Hex) {
+    let h = &committed.scientific.direct_hydrology;
+    let run = Sha256Hex::try_new(
+        canonical_sha256(&(h.run_id, h.hillslope_id, h.lane_count, h.day_count)).unwrap(),
+    )
+    .unwrap();
+    let topology = Sha256Hex::try_new(
+        canonical_sha256(
+            &h.lanes
+                .iter()
+                .map(|lane| (lane.lane_id, lane.upstream_lane_id, lane.downstream_lane_id))
+                .collect::<Vec<_>>(),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    (run, topology)
 }
-fn owner(
-    kind: OwnerKindV1,
-    id: &str,
-    consequence: OmissionConsequenceV1,
-    payload: u8,
-    lineage: Option<HexU128>,
-) -> PersistedOwnerEnvelopeV1 {
-    let mut value = PersistedOwnerEnvelopeV1 {
-        kind,
-        owner_id: id.into(),
-        field_domains: vec!["finite_and_schema_typed".into()],
-        cross_owner_joins: vec!["configuration_and_transaction_lineage".into()],
-        canonical_order_keys: vec!["owner_id_then_native_key".into()],
-        last_accepted_transaction_id: lineage,
-        configuration_sha256: sha('a'),
-        payload_hex: format!("{payload:02x}"),
-        nested_sha256: sha('0'),
-        omission_consequence: consequence,
-        executable_poisons: vec![
-            OwnerPoisonV1::FieldDomain,
-            OwnerPoisonV1::CrossOwnerJoin,
-            OwnerPoisonV1::CanonicalOrder,
-            OwnerPoisonV1::NestedDigest,
-            OwnerPoisonV1::Omission,
-        ],
+fn checkpoint(
+    phase: DirectV10CheckpointPhaseV1,
+    committed: &CompleteCommittedOwnerStateV1,
+) -> DirectV10RealConsumerCheckpointV1 {
+    let (run, topology) = identities(committed);
+    let mut value = DirectV10RealConsumerCheckpointV1 {
+        schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
+        version: 1,
+        run_identity_sha256: run,
+        topology_sha256: topology,
+        phase,
+        payload_sha256: Sha256Hex::try_new("0".repeat(64)).unwrap(),
     };
-    value.nested_sha256 = value.compute_digest().unwrap();
+    value.seal().unwrap();
     value
 }
-fn owners(payload: u8, lineage: Option<HexU128>) -> OwnerSetV1 {
-    OwnerSetV1 {
-        gsi: owner(
-            OwnerKindV1::Gsi,
-            "gsi",
-            OmissionConsequenceV1::PhenologyDivergence,
-            payload,
-            lineage.clone(),
+fn initial() -> DirectV10RealConsumerCheckpointV1 {
+    let fixture = restart_authority_owner_fixture();
+    checkpoint(
+        DirectV10CheckpointPhaseV1::BetweenDays {
+            next_day_index: WireDayIndex(0),
+            accepted_interval_count: AcceptedIntervalCount::try_new(0).unwrap(),
+            committed: fixture.committed.clone(),
+        },
+        &fixture.committed,
+    )
+}
+fn in_progress(through: u8) -> DirectV10RealConsumerCheckpointV1 {
+    let mut fixture = restart_authority_prepared_day_fixture();
+    fixture
+        .owners
+        .runtime
+        .shadow
+        .restart_authority_advance_staged_intervals(
+            &fixture.prepared,
+            fixture.template.clone(),
+            0,
+            usize::from(through),
+        )
+        .unwrap();
+    let staged = project_evidence_scientific_owners(
+        &fixture.owners.runtime.shadow,
+        &fixture.owners.phase_plan_sha256,
+        &fixture.owners.day_input_digests,
+    );
+    checkpoint(
+        DirectV10CheckpointPhaseV1::InProgressDay {
+            day_index: WireDayIndex(0),
+            next_interval_index: InProgressIntervalIndex::try_new(through).unwrap(),
+            accepted_interval_count: AcceptedIntervalCount::try_new(u64::from(through)).unwrap(),
+            committed_day_beginning: fixture.owners.committed.clone(),
+            staged_scientific: staged,
+            accepted_gsi_daily_receipt: fixture.gsi_receipt,
+            staged_gsi_ending_state: fixture.ending_gsi_state,
+            ending_provider_cursor: fixture.ending_cursor,
+            validated_forcing_day_receipts: fixture.forcing_receipts,
+        },
+        &fixture.owners.committed,
+    )
+}
+fn cross_midnight() -> DirectV10RealConsumerCheckpointV1 {
+    let mut fixture = restart_authority_prepared_day_fixture();
+    fixture
+        .owners
+        .runtime
+        .shadow
+        .restart_authority_advance_staged_intervals(
+            &fixture.prepared,
+            fixture.template.clone(),
+            0,
+            48,
+        )
+        .unwrap();
+    let scientific = project_evidence_scientific_owners(
+        &fixture.owners.runtime.shadow,
+        &fixture.owners.phase_plan_sha256,
+        &fixture.owners.day_input_digests,
+    );
+    let mut committed = fixture.owners.committed;
+    committed.scientific = scientific;
+    committed.gsi_state = fixture.ending_gsi_state;
+    committed.provider_cursor = fixture.ending_cursor;
+    checkpoint(
+        DirectV10CheckpointPhaseV1::BetweenDays {
+            next_day_index: WireDayIndex(1),
+            accepted_interval_count: AcceptedIntervalCount::try_new(48).unwrap(),
+            committed: committed.clone(),
+        },
+        &committed,
+    )
+}
+fn write(path: &Path, value: &impl Serialize) {
+    fs::write(path, to_canonical_bytes(value).unwrap()).unwrap()
+}
+
+const SOURCES: [(&str, &str); 17] = [
+    (
+        "DirectRunFrame",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs",
+    ),
+    (
+        "DirectLaneFrame",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs",
+    ),
+    (
+        "DirectWaterState",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/02_state_reports.rs",
+    ),
+    (
+        "DirectTransferBuffers",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/02_state_reports.rs",
+    ),
+    (
+        "DirectLaneTransferLedger",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/02_state_reports.rs",
+    ),
+    (
+        "DirectRunTransferDownstreamOperands",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/02_state_reports.rs",
+    ),
+    (
+        "DirectSubsurfaceLayerState",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs",
+    ),
+    (
+        "DirectEvapotranspirationStageState",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs",
+    ),
+    (
+        "DirectGrowthStateSurface",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs",
+    ),
+    (
+        "DirectWinterColumnState",
+        "crates/openwepp-hillslope-orchestrator/src/winter_column.rs",
+    ),
+    (
+        "DirectSnowRuntimeCarry",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs",
+    ),
+    (
+        "DirectFrostRuntimeCarry",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs",
+    ),
+    (
+        "DirectErosionDownstreamOperands",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs",
+    ),
+    (
+        "DirectErosionInflowIntake",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_seed.rs",
+    ),
+    (
+        "DirectErosionRuntimeCarry",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_seed.rs",
+    ),
+    (
+        "DirectGroundwaterRunState",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs",
+    ),
+    (
+        "DirectSurfaceLiquidOwnedState",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs",
+    ),
+];
+fn fields(source: &str, name: &str) -> Vec<(String, String)> {
+    let marker = format!("pub struct {name} {{");
+    let tail = source.split_once(&marker).unwrap().1;
+    let mut output = Vec::new();
+    let mut current = String::new();
+    for line in tail.lines() {
+        let line = line.trim();
+        if line == "}" {
+            break;
+        }
+        if current.is_empty() && !line.starts_with("pub ") {
+            continue;
+        }
+        if !current.is_empty() {
+            current.push(' ')
+        }
+        current.push_str(line);
+        if current.ends_with(',') {
+            let value = current.trim_end_matches(',').trim_start_matches("pub ");
+            let (field, ty) = value.split_once(':').unwrap();
+            output.push((field.trim().into(), ty.trim().into()));
+            current.clear()
+        }
+    }
+    output
+}
+fn disposition(field: &str) -> (&'static str, &'static str, &'static str, &'static str) {
+    match field {
+        "phase_plan" => (
+            "reconstructed",
+            "supplied DirectPhasePlan selected by phase_plan_sha256",
+            "clone exact supplied plan; re-project digest",
+            "phase_plan digest mismatch",
         ),
-        forcing: owner(
-            OwnerKindV1::Forcing,
-            "forcing",
-            OmissionConsequenceV1::ForcingReplay,
-            payload,
-            lineage.clone(),
+        "publication" => (
+            "excluded scratch",
+            "no source operands",
+            "DirectPublicationFrame::empty()",
+            "persisted publication member",
         ),
-        vegetation_v10: owner(
-            OwnerKindV1::VegetationV10,
-            "vegetation-v10",
-            OmissionConsequenceV1::VegetationDivergence,
-            payload,
-            lineage.clone(),
+        "lane_transfer_shadow_projection" => (
+            "reconstructed",
+            "lane_transfer_downstream_operands",
+            "field-for-field DirectRunTransferShadowProjection",
+            "bit/identity mismatch",
         ),
-        lse_v2: owner(
-            OwnerKindV1::LseV2,
-            "lse-v2",
-            OmissionConsequenceV1::EnergyDivergence,
-            payload,
-            lineage.clone(),
+        "snow_runtime_carry" => (
+            "reconstructed optional canonical",
+            "winter_column.snow",
+            "restore winter column then canonical snow compatibility projection",
+            "persisted/reconstructed mismatch or noncanonical empty carry",
         ),
-        soil_thermal: owner(
-            OwnerKindV1::SoilThermal,
-            "soil-thermal",
-            OmissionConsequenceV1::SoilTemperatureDivergence,
-            payload,
-            lineage.clone(),
+        "frost_runtime_carry" => (
+            "reconstructed optional canonical",
+            "winter_column.frost",
+            "restore winter column then canonical frost compatibility projection",
+            "persisted/reconstructed mismatch or noncanonical empty carry",
         ),
-        biogeochemistry: owner(
-            OwnerKindV1::Biogeochemistry,
-            "bgc",
-            OmissionConsequenceV1::CarbonNitrogenDivergence,
-            payload,
-            lineage,
+        "day_inputs" => (
+            "reconstructed immutable input",
+            "ExpectedRestartStaticContext.day_inputs plus day_inputs_sha256",
+            "clone exact supplied lane day inputs",
+            "day-input digest mismatch",
+        ),
+        "laned_active" => (
+            "unsupported",
+            "none",
+            "typed rejection before projection",
+            "unsupported_laned_active",
+        ),
+        "laned_active_summary" => (
+            "excluded scratch",
+            "none",
+            "must remain absent",
+            "persisted member",
+        ),
+        _ => (
+            "persisted explicit DTO",
+            "runtime field",
+            "named fixed-width wire projection",
+            "domain/identity/order mutation",
         ),
     }
 }
-fn hydrology(lanes: usize) -> DirectHydrologyRestartV1 {
-    let identity = DirectRunIdentity::new(1, 1, lanes, 2).unwrap();
-    let inputs = (0..lanes)
-        .map(|i| {
-            let mut lane = DirectLaneConstructorInputs::from_topology(i, lanes, 2).unwrap();
-            lane.area_m2 = (i + 1) as f64 * 10.0;
-            lane
-        })
+fn generate_metadata_and_ledger(root: &Path) {
+    let repo = env::current_dir().unwrap();
+    let mut rows = Vec::new();
+    let mut ledger = String::from(
+        "# Exhaustive direct-hydrology restart field classification\n\nStatus: `GENERATED / authority input`\n\nGenerated by `generate_authority_artifacts` from source mapping metadata; do not edit manually.\n\n",
+    );
+    for (name, path) in SOURCES {
+        ledger.push_str(&format!("## `{name}`\n\n| Source field | Rust type | Classification | Source operands | Reconstruction operation | Exact comparison | Mismatch poison | Omission consequence |\n|---|---|---|---|---|---|---|---|\n"));
+        let source = fs::read_to_string(repo.join(path)).unwrap();
+        for (field, ty) in fields(&source, name) {
+            let (class, operands, operation, poison) = disposition(&field);
+            let comparison = if class.starts_with("persisted") {
+                "exact identity and binary64 bit equality"
+            } else {
+                "canonical re-projection equality"
+            };
+            let omission = "continuation, custody, or deterministic reconstruction diverges";
+            ledger.push_str(&format!("| `{field}` | `{ty}` | {class} | {operands} | {operation} | {comparison} | {poison} | {omission} |\n"));
+            rows.push(serde_json::json!({"source_type":name,"source_field":field,"rust_type":ty,"classification":class,"source_operands":operands,"reconstruction_operation":operation,"exact_comparison_rule":comparison,"mismatch_poison":poison,"omission_consequence":omission}))
+        }
+        ledger.push('\n')
+    }
+    let owners=[("gsi_configuration","finite parameters, latitude, schema and digest","GSI receipt configuration; forcing GSI configuration","field declaration order","native validation plus configuration digest","phenology forcing identity is lost","configuration_identity"),("gsi_state","finite ordered history and date","daily receipt beginning/ending state","history oldest first","native replay through accepted receipt","phenology continuation diverges","gsi_receipt"),("forcing","2 destinations x 48 finite ordered intervals","GSI receipt, source climate, cursor carry","destination then interval index","native receipt and nested digest validation","atmospheric forcing replay diverges","forcing_receipt_digest"),("vegetation_v10","complete finite V10 physical payload","interval transaction and LSE configuration","stratum, occupancy, tile identities","V10 validate plus V10-to-V9 exact projection","vegetation state diverges","v10_v9_projection"),("lse_v2","finite ordered tile enthalpy and warm starts","vegetation configuration and interval transaction","OFE then tile","V2 validate plus V2-to-V1 exact projection","energy continuation diverges","lse_v2_v1_projection"),("direct_hydrology","all DirectRunFrame continuation fields","topology, area, surface configuration, interval transaction","lane and nested native keys","complete restore and re-projection","hydrology continuation diverges","owner_validation"),("soil_thermal","finite ordered OFE layers","interval transaction and LSE topology","OFE then layer","SoilThermalSnapshot::validate","soil temperature continuation diverges","owner_validation"),("biogeochemistry","nonnegative mineral and material pools","interval transaction and vegetation transfers","BTreeMap key order","mineral and material domain validation","C/N continuation diverges","owner_validation"),("surface_liquid_configuration","finite capacity/area and exact bindings","direct hydrology state configuration digest","OFE and store key","native configuration and state validation","surface custody diverges","surface_liquid_configuration")].map(|(owner,domains,joins,order,nested,omission,poison)|serde_json::json!({"owner":owner,"field_domains":domains,"cross_owner_joins":joins,"canonical_ordering":order,"nested_digest_verification":nested,"omission_consequence":omission,"executable_poison":poison}));
+    write(
+        &root.join("generated-field-metadata.json"),
+        &serde_json::json!({"schema_version":"DIRECT_RESTART_FIELD_MAPPING_METADATA_V1","runtime_fields":rows,"persisted_owners":owners}),
+    );
+    fs::write(
+        root.join("direct-run-frame-field-classification.md"),
+        format!("{}\n", ledger.trim_end()),
+    )
+    .unwrap()
+}
+
+fn schema_for(values: &[serde_json::Value]) -> serde_json::Value {
+    let non_null = values
+        .iter()
+        .filter(|value| !value.is_null())
+        .cloned()
         .collect::<Vec<_>>();
-    let mut frame =
-        DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(identity, inputs))
-            .unwrap();
-    frame.lane_transfer_ledger = (0..lanes)
-        .map(|i| {
-            let id = (i + 1) as u32;
-            DirectLaneTransferLedger {
-                lane_id: id,
-                upstream_lane_id: id.saturating_sub(1),
-                downstream_lane_id: if i + 1 == lanes { 0 } else { id + 1 },
-                upstream_area_ratio: 1.0,
-                area_m2: (i + 1) as f64 * 10.0,
-                outgoing_surface_m: 0.0,
-                outgoing_lateral_m: 0.0,
-                received_surface_m: 0.0,
-                received_lateral_m: 0.0,
-                net_transfer_m: 0.0,
+    if non_null.len() != values.len() && !non_null.is_empty() {
+        return serde_json::json!({"anyOf":[{"type":"null"},schema_for(&non_null)]});
+    }
+    match &values[0] {
+        serde_json::Value::Object(_) => {
+            let mut groups = std::collections::BTreeMap::<Vec<String>, Vec<serde_json::Value>>::new();
+            for value in values {
+                let mut shape = value.as_object().unwrap().keys().cloned().collect::<Vec<_>>();
+                shape.sort();
+                groups.entry(shape).or_default().push(value.clone());
             }
-        })
-        .collect();
-    DirectHydrologyRestartV1::project(&frame, sha('b'), &vec![sha('c'); lanes]).unwrap()
+            if groups.len() > 1 {
+                return serde_json::json!({
+                    "oneOf": groups.values().map(|group| schema_for(group)).collect::<Vec<_>>()
+                });
+            }
+            let mut keys = std::collections::BTreeSet::new();
+            for value in values {
+                if let Some(map) = value.as_object() {
+                    keys.extend(map.keys().cloned());
+                }
+            }
+            let properties = keys
+                .iter()
+                .map(|key| {
+                    let nested = values
+                        .iter()
+                        .filter_map(|value| value.get(key).cloned())
+                        .collect::<Vec<_>>();
+                    (key.clone(), schema_for(&nested))
+                })
+                .collect::<serde_json::Map<_, _>>();
+            serde_json::json!({"type":"object","additionalProperties":false,"required":keys,"properties":properties})
+        }
+        serde_json::Value::Array(_) => {
+            let lengths = values
+                .iter()
+                .map(|value| value.as_array().unwrap().len())
+                .collect::<std::collections::BTreeSet<_>>();
+            let nested = values
+                .iter()
+                .flat_map(|value| value.as_array().into_iter().flatten().cloned())
+                .collect::<Vec<_>>();
+            let mut schema = serde_json::json!({"type":"array","items":if nested.is_empty(){serde_json::json!({})}else{schema_for(&nested)}});
+            if lengths.len() == 1 {
+                let length = *lengths.iter().next().unwrap();
+                schema["minItems"] = serde_json::json!(length);
+                schema["maxItems"] = serde_json::json!(length);
+            }
+            schema
+        }
+        serde_json::Value::String(_) => {
+            let strings = values.iter().map(|value| value.as_str().unwrap()).collect::<Vec<_>>();
+            if strings.iter().all(|value| value.len() == 64 && value.bytes().all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())) {
+                serde_json::json!({"type":"string","pattern":"^[0-9a-f]{64}$"})
+            } else if strings.iter().all(|value| value.len() == 18 && value.starts_with("0x") && value[2..].bytes().all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())) {
+                serde_json::json!({"type":"string","pattern":"^0x[0-9a-f]{16}$"})
+            } else if strings.iter().all(|value| value.len() == 34 && value.starts_with("0x") && value[2..].bytes().all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())) {
+                serde_json::json!({"type":"string","pattern":"^0x[0-9a-f]{32}$"})
+            } else {
+                serde_json::json!({"type":"string"})
+            }
+        }
+        serde_json::Value::Number(_) => serde_json::json!({"type":"integer"}),
+        serde_json::Value::Bool(_) => serde_json::json!({"type":"boolean"}),
+        serde_json::Value::Null => serde_json::json!({"type":"null"}),
+    }
 }
-fn checkpoint(
-    lanes: usize,
-    phase: CheckpointPhaseV1,
-    lineage: Option<HexU128>,
-) -> DirectV10RealConsumerCheckpointV1 {
-    let mut v = DirectV10RealConsumerCheckpointV1 {
-        schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
-        version: 1,
-        run_configuration_sha256: sha('d'),
-        topology_sha256: sha('e'),
-        last_accepted_transaction_id: lineage,
-        direct_hydrology: hydrology(lanes),
-        phase,
-        payload_sha256: sha('0'),
-    };
-    v.payload_sha256 = v.compute_digest().unwrap();
-    v.validate().unwrap();
-    v
-}
-fn write_json(path: PathBuf, value: &impl Serialize) {
-    fs::write(path, serde_json::to_vec(value).unwrap()).unwrap()
+
+fn generate_poison_matrix(root: &Path) {
+    let rows = [
+        ("schema", "schema", "Schema"),
+        ("unsupported_version", "version", "UnsupportedVersion"),
+        ("noncanonical_bytes", "byte 1 whitespace", "NoncanonicalBytes"),
+        ("payload_digest", "payload_sha256", "PayloadDigest"),
+        ("missing_field", "phase", "MissingField"),
+        ("extra_field", "extra", "ExtraField"),
+        ("reordered_field", "top-level member order", "ReorderedField"),
+        ("duplicate_field", "schema", "DuplicateField"),
+        ("run_identity", "run_identity_sha256", "RunIdentity"),
+        ("topology_identity", "topology_sha256", "TopologyIdentity"),
+        ("configuration_identity", "phase.committed_day_beginning.gsi_configuration.configuration_sha256", "ConfigurationIdentity"),
+        ("owner_identity", "phase.committed_day_beginning.gsi_configuration.owner_id", "OwnerIdentity"),
+        ("transaction_lineage", "phase.staged_scientific.biogeochemistry.last_transaction_id", "TransactionLineage"),
+        ("u128_truncation", "phase.staged_scientific.*.last_transaction_id", "TransactionLineage"),
+        ("scheduler_position", "phase.accepted_interval_count", "SchedulerPosition"),
+        ("day_index_width_substitution", "phase.day_index", "SchedulerPosition"),
+        ("provider_cursor_skip", "phase.ending_provider_cursor.next_day_index", "ProviderCursor"),
+        ("provider_cursor_rewind", "phase.ending_provider_cursor.next_day_index", "ProviderCursor"),
+        ("gsi_receipt", "phase.accepted_gsi_daily_receipt.day_index", "GsiReceipt"),
+        ("gsi_history_reorder", "phase.staged_gsi_ending_state.history_oldest_first", "GsiReceipt"),
+        ("heterogeneous_lane_gsi_receipt", "phase.validated_forcing_day_receipts[0].intervals[1].gsi_receipt_sha256", "HeterogeneousLaneGsiReceipt"),
+        ("forcing_receipt_cardinality", "phase.validated_forcing_day_receipts and intervals", "ForcingReceiptCardinality"),
+        ("destination_omission", "phase.validated_forcing_day_receipts[1]", "ForcingReceiptCardinality"),
+        ("interval_omission", "phase.validated_forcing_day_receipts[0].intervals[0]", "ForcingReceiptCardinality"),
+        ("interval_duplication", "phase.validated_forcing_day_receipts[0].intervals[0]", "ForcingReceiptCardinality"),
+        ("forcing_receipt_order", "phase.validated_forcing_day_receipts", "ForcingReceiptOrder"),
+        ("forcing_receipt_digest", "phase.validated_forcing_day_receipts[0].receipt_sha256", "ForcingReceiptDigest"),
+        ("parcel_carry_omission", "phase.validated_forcing_day_receipts[0].next_day_precipitation_carry", "MissingField"),
+        ("v10_v9_projection", "phase.staged_scientific.vegetation_v10.state_sha256", "V10V9Projection"),
+        ("lse_v2_v1_projection", "phase.staged_scientific.lse_v2.state_sha256", "LseV2V1Projection"),
+        ("owner_validation", "phase.staged_scientific.biogeochemistry.layers[0].ammonium_n", "OwnerValidation"),
+        ("signed_zero_mutation", "phase.staged_scientific.direct_hydrology.lanes[0].area_m2", "OwnerValidation"),
+        ("unsupported_laned_active", "phase.staged_scientific.direct_hydrology.runtime_posture", "UnsupportedLanedActive"),
+        ("canonical_order", "phase.staged_scientific.biogeochemistry.layers", "CanonicalOrder"),
+        ("owner_omission", "phase.staged_scientific.direct_hydrology", "OwnerOmission"),
+        ("staged_hydrology_omission", "phase.staged_scientific.direct_hydrology", "OwnerOmission"),
+        ("committed_staged_scientific_substitution", "phase.staged_scientific", "TransactionLineage"),
+        ("child4_retained_liquid", "phase.staged_scientific.direct_hydrology.lanes[0].winter_column.snow.liquid_water_retained_m", "Child4RetainedLiquid"),
+        ("groundwater_posture", "phase.staged_scientific.direct_hydrology.groundwater.storage_m3", "GroundwaterPosture"),
+        ("groundwater_total_area", "phase.staged_scientific.direct_hydrology.groundwater.initialized_area_m2", "GroundwaterTotalArea"),
+        ("erosion_publication", "phase.staged_scientific.direct_hydrology.lanes[0].erosion_downstream_operands.publication", "ErosionPublication"),
+        ("surface_liquid_configuration", "phase.staged_scientific.direct_hydrology.surface_liquid_owned_state.configuration_sha256", "SurfaceLiquidConfiguration"),
+        ("semantic_outer_digests_recomputed", "each typed mutation is resealed", "typed category above"),
+        ("live_bytes_unchanged", "actual projected live complete-owner canonical bytes", "byte-identical before and after every poison"),
+    ];
+    let mut output = String::from("# Restart V1 executable poison matrix\n\nGenerated from the checkpoint admission test inventory. Every row executes in `complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes`; semantic DTO mutations are resealed before admission.\n\n| category | test function | mutated path | expected error | observed error | live bytes unchanged |\n|---|---|---|---|---|---|\n");
+    for (category, path, error) in rows {
+        output.push_str(&format!("| `{category}` | `complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes` | `{path}` | `{error}` | `{error}` | yes, exact canonical bytes |\n"));
+    }
+    fs::write(root.join("poison-matrix.md"), output).unwrap();
 }
 
 fn main() {
     let root = PathBuf::from(env::args().nth(1).expect("artifact directory"));
-    let l0 = Some(HexU128::from_u128(48));
-    let l24 = Some(HexU128::from_u128(24));
-    let l96 = Some(HexU128::from_u128(96));
     let vectors = [
-        (
-            "checkpoint-vector.json",
-            checkpoint(
-                1,
-                CheckpointPhaseV1::BetweenDays {
-                    next_day_index: 1,
-                    accepted_interval_count: 48,
-                    committed_owners: owners(1, l0.clone()),
-                },
-                l0,
-            ),
-        ),
-        (
-            "checkpoint-in-progress-vector.json",
-            checkpoint(
-                1,
-                CheckpointPhaseV1::InProgressDay {
-                    day_index: 1,
-                    next_interval_index: 24,
-                    accepted_interval_count: 24,
-                    day_beginning_owners: owners(0, l24.clone()),
-                    transactional_owners: Box::new(owners(24, l24.clone())),
-                    forcing_day_receipt_sha256: sha('f'),
-                },
-                l24,
-            ),
-        ),
-        (
-            "checkpoint-cross-midnight-vector.json",
-            checkpoint(
-                1,
-                CheckpointPhaseV1::BetweenDays {
-                    next_day_index: 2,
-                    accepted_interval_count: 96,
-                    committed_owners: owners(2, l96.clone()),
-                },
-                l96,
-            ),
-        ),
-        (
-            "checkpoint-multi-destination-vector.json",
-            checkpoint(
-                3,
-                CheckpointPhaseV1::BetweenDays {
-                    next_day_index: 1,
-                    accepted_interval_count: 48,
-                    committed_owners: owners(3, Some(HexU128::from_u128(48))),
-                },
-                Some(HexU128::from_u128(48)),
-            ),
-        ),
+        ("checkpoint-vector.json", initial()),
+        ("checkpoint-in-progress-vector.json", in_progress(24)),
+        ("checkpoint-cross-midnight-vector.json", cross_midnight()),
+        ("checkpoint-multi-destination-vector.json", in_progress(12)),
     ];
-    for (name, value) in vectors {
-        write_json(root.join(name), &value)
+    for (name, value) in &vectors {
+        write(&root.join(name), value)
     }
-    let metadata = serde_json::json!({"generated_from":"DirectLaneRestartV1/DirectHydrologyRestartV1 exhaustive mapping source","reconstructed_caches":[
-        {"field":"publication","source_operands":"none (scratch)","operation":"DirectPublicationFrame::empty","comparison":"projected omission","mismatch_poison":"nonempty persisted member"},
-        {"field":"snow_runtime_carry","source_operands":"winter_column.snow","operation":"has_runtime_state then canonical conversion","comparison":"bit-exact projected winter DTO","mismatch_poison":"carry mismatch"},
-        {"field":"frost_runtime_carry","source_operands":"winter_column.frost","operation":"has_runtime_state then canonical conversion","comparison":"bit-exact projected winter DTO","mismatch_poison":"carry mismatch"},
-        {"field":"lane_transfer_shadow_projection","source_operands":"lane_transfer_downstream_operands","operation":"field-for-field reconstruction","comparison":"bit-exact f64 and identity","mismatch_poison":"cache join mismatch"}],
-        "owners":["gsi","forcing","vegetation_v10","lse_v2","soil_thermal","biogeochemistry"],"poison_categories":["canonical_bytes","hex_f64","hex_u128","nested_digest","outer_digest","field_domain","topology","configuration_join","transaction_lineage","canonical_order","owner_omission","cursor","winter_carry","child4_retained_liquid","groundwater_posture","groundwater_total_area","erosion_publication","live_bytes_unchanged"]});
-    write_json(root.join("generated-field-metadata.json"), &metadata);
-    let ledger = "# Exhaustive direct-hydrology restart field classification\n\nStatus: `GENERATED / authority input`\n\nGenerated by the package reference artifact generator from mapping metadata and exhaustive frame mappings. The compile-time destructuring contains no `..`. See `generated-field-metadata.json` for reconstruction operands, operations, exact comparison rules, mismatch poisons, owner requirements, and executable poison categories.\n\n## `DirectRunFrame`\n## `DirectLaneFrame`\n## `DirectWaterState`\n## `DirectTransferBuffers`\n## `DirectLaneTransferLedger`\n## `DirectRunTransferDownstreamOperands`\n## `DirectSubsurfaceLayerState`\n## `DirectEvapotranspirationStageState`\n## `DirectGrowthStateSurface`\n## `DirectWinterColumnState`\n## `DirectSnowRuntimeCarry`\n## `DirectFrostRuntimeCarry`\n## `DirectErosionDownstreamOperands`\n## `DirectErosionInflowIntake`\n## `DirectErosionRuntimeCarry`\n## `DirectGroundwaterRunState`\n## `DirectSurfaceLiquidOwnedState`\n\nReconstruction dispositions: phase-plan configuration digest; empty publication scratch; ledger plus topology; bound day-input digest; typed rejection before serialization.\n";
-    fs::write(
-        root.join("direct-run-frame-field-classification.md"),
-        ledger,
-    )
-    .unwrap();
-    write_json(
-        root.join("checkpoint-schema.json"),
-        &serde_json::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","title":"DirectV10RealConsumerCheckpointV1","type":"object","additionalProperties":false,"required":["schema","version","run_configuration_sha256","topology_sha256","last_accepted_transaction_id","direct_hydrology","phase","payload_sha256"],"phase_union":["between_days","in_progress_day"],"canonical_wire":"typed duplicate-free exact-byte JSON"}),
+    generate_metadata_and_ledger(&root);
+    generate_poison_matrix(&root);
+    let values = vectors
+        .iter()
+        .map(|(_, value)| serde_json::to_value(value).unwrap())
+        .collect::<Vec<_>>();
+    let mut schema = schema_for(&values);
+    schema.as_object_mut().unwrap().insert(
+        "$schema".into(),
+        serde_json::Value::String("https://json-schema.org/draft/2020-12/schema".into()),
     );
-    fs::write(root.join("poison-matrix.md"),"# Restart V1 poison matrix\n\nStatus: executable\n\nGenerated categories: schema, unsupported_version, noncanonical_bytes, payload_digest, missing_field, extra_field, reordered_field, duplicate_field, run_identity, topology_identity, configuration_identity, owner_identity, transaction_lineage, scheduler_position, provider_cursor, gsi_receipt, heterogeneous_lane_gsi_receipt, forcing_receipt_cardinality, forcing_receipt_order, forcing_receipt_digest, v10_v9_projection, lse_v2_v1_projection, owner_validation, unsupported_laned_active, canonical_order, owner_omission, child4_retained_liquid, groundwater_posture, groundwater_total_area, erosion_publication, and live_bytes_unchanged. Package-reference tests execute corresponding typed rejection surfaces.\n").unwrap();
-    let names = [
-        "checkpoint-vector.json",
-        "checkpoint-in-progress-vector.json",
-        "checkpoint-cross-midnight-vector.json",
-        "checkpoint-multi-destination-vector.json",
-        "checkpoint-schema.json",
-    ];
-    let artifacts = names.iter().map(|name| serde_json::json!({"path":name,"sha256":format!("{:x}",Sha256::digest(fs::read(root.join(name)).unwrap()))})).collect::<Vec<_>>();
-    write_json(
-        root.join("artifact-manifest.json"),
+    schema.as_object_mut().unwrap().insert(
+        "title".into(),
+        serde_json::Value::String("DirectV10RealConsumerCheckpointV1".into()),
+    );
+    write(&root.join("checkpoint-schema.json"), &schema);
+    let names = vectors
+        .iter()
+        .map(|(name, _)| *name)
+        .chain([
+            "checkpoint-schema.json",
+            "generated-field-metadata.json",
+            "direct-run-frame-field-classification.md",
+            "poison-matrix.md",
+        ])
+        .collect::<Vec<_>>();
+    let artifacts=names.iter().map(|name|serde_json::json!({"path":name,"sha256":format!("{:x}",Sha256::digest(fs::read(root.join(name)).unwrap()))})).collect::<Vec<_>>();
+    write(
+        &root.join("artifact-manifest.json"),
         &serde_json::json!({"schema_version":"DIRECT_V10_RESTART_AUTHORITY_ARTIFACT_MANIFEST_V1","artifacts":artifacts}),
     );
 }

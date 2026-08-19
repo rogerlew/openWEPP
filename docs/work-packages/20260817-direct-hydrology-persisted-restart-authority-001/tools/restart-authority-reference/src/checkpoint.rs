@@ -1,513 +1,842 @@
-use crate::{DirectHydrologyRestartV1, HexU128, Sha256Hex, canonical_sha256};
+use crate::{
+    AcceptedIntervalCount, BiogeochemistryStateRestartV1, DirectGsiDailyReceiptRestartV1,
+    DirectGsiOwnerConfigurationRestartV1, DirectGsiOwnerStateRestartV1, DirectHydrologyRestartV1,
+    DirectSurfaceLiquidConfigurationRestartV1, ExpectedDirectHydrologyRestartContext,
+    InProgressIntervalIndex, LseV2StateRestartV1, Sha256Hex, SnowFreeHalfHourDayReceiptRestartV1,
+    SnowFreeHalfHourProviderCursorRestartV1, SnowFreeHalfHourStaticConfigurationRestartV1,
+    SoilThermalStateRestartV1, VegetationV10StateRestartV1, WireDayIndex, canonical_sha256,
+    from_canonical_bytes,
+};
+use openwepp_biogeochemistry::BiogeochemistryState;
+use openwepp_hillslope_orchestrator::runtime_inputs::{
+    DirectGsiOwnerConfigurationV1, DirectGsiOwnerStateV1, SnowFreeHalfHourProviderCursor,
+    SnowFreeHalfHourStaticConfiguration,
+};
+use openwepp_hillslope_orchestrator::{
+    DirectDayConstructorInputs, DirectPhasePlan, DirectRunFrame, DirectSurfaceLiquidConfiguration,
+};
+use openwepp_land_surface_energy::{
+    LandSurfaceEnergyConfiguration, LandSurfaceEnergyV2State, SoilThermalSnapshot,
+};
+use openwepp_vegetation::{V10CoupledOwnedState, VegetationConfiguration};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
 use thiserror::Error;
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum OwnerKindV1 {
-    Gsi,
-    Forcing,
-    VegetationV10,
-    LseV2,
-    SoilThermal,
-    Biogeochemistry,
-}
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum OmissionConsequenceV1 {
-    PhenologyDivergence,
-    ForcingReplay,
-    VegetationDivergence,
-    EnergyDivergence,
-    SoilTemperatureDivergence,
-    CarbonNitrogenDivergence,
-}
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum OwnerPoisonV1 {
-    FieldDomain,
-    CrossOwnerJoin,
-    CanonicalOrder,
-    NestedDigest,
-    Omission,
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct PersistedOwnerEnvelopeV1 {
-    pub kind: OwnerKindV1,
-    pub owner_id: String,
-    pub field_domains: Vec<String>,
-    pub cross_owner_joins: Vec<String>,
-    pub canonical_order_keys: Vec<String>,
-    pub last_accepted_transaction_id: Option<HexU128>,
-    pub configuration_sha256: Sha256Hex,
-    pub payload_hex: String,
-    pub nested_sha256: Sha256Hex,
-    pub omission_consequence: OmissionConsequenceV1,
-    pub executable_poisons: Vec<OwnerPoisonV1>,
+pub struct ScientificOwnerStateSetV1 {
+    pub vegetation_v10: VegetationV10StateRestartV1,
+    pub lse_v2: LseV2StateRestartV1,
+    pub direct_hydrology: DirectHydrologyRestartV1,
+    pub soil_thermal: SoilThermalStateRestartV1,
+    pub biogeochemistry: BiogeochemistryStateRestartV1,
 }
-
-#[derive(Serialize)]
-struct OwnerDigestInput<'a> {
-    kind: OwnerKindV1,
-    owner_id: &'a str,
-    field_domains: &'a [String],
-    cross_owner_joins: &'a [String],
-    canonical_order_keys: &'a [String],
-    last_accepted_transaction_id: &'a Option<HexU128>,
-    configuration_sha256: &'a Sha256Hex,
-    payload_hex: &'a str,
-    omission_consequence: OmissionConsequenceV1,
-    executable_poisons: &'a [OwnerPoisonV1],
-}
-impl PersistedOwnerEnvelopeV1 {
-    pub fn compute_digest(&self) -> Result<Sha256Hex, CheckpointError> {
-        Sha256Hex::try_new(
-            canonical_sha256(&OwnerDigestInput {
-                kind: self.kind,
-                owner_id: &self.owner_id,
-                field_domains: &self.field_domains,
-                cross_owner_joins: &self.cross_owner_joins,
-                canonical_order_keys: &self.canonical_order_keys,
-                last_accepted_transaction_id: &self.last_accepted_transaction_id,
-                configuration_sha256: &self.configuration_sha256,
-                payload_hex: &self.payload_hex,
-                omission_consequence: self.omission_consequence,
-                executable_poisons: &self.executable_poisons,
-            })
-            .map_err(|_| CheckpointError::Canonical)?,
-        )
-        .map_err(|_| CheckpointError::Digest)
-    }
-    pub fn validate(&self) -> Result<(), CheckpointError> {
-        if self.owner_id.is_empty()
-            || self.field_domains.is_empty()
-            || self.cross_owner_joins.is_empty()
-            || self.canonical_order_keys.is_empty()
-            || self.executable_poisons.len() != 5
-            || !self.payload_hex.len().is_multiple_of(2)
-            || !self
-                .payload_hex
-                .bytes()
-                .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
-        {
-            return Err(CheckpointError::Owner);
-        }
-        for values in [
-            &self.field_domains,
-            &self.cross_owner_joins,
-            &self.canonical_order_keys,
-        ] {
-            if values.windows(2).any(|pair| pair[0] >= pair[1]) {
-                return Err(CheckpointError::Ordering);
-            }
-        }
-        if self.compute_digest()? != self.nested_sha256 {
-            return Err(CheckpointError::Digest);
-        }
-        Ok(())
-    }
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct OwnerSetV1 {
-    pub gsi: PersistedOwnerEnvelopeV1,
-    pub forcing: PersistedOwnerEnvelopeV1,
-    pub vegetation_v10: PersistedOwnerEnvelopeV1,
-    pub lse_v2: PersistedOwnerEnvelopeV1,
-    pub soil_thermal: PersistedOwnerEnvelopeV1,
-    pub biogeochemistry: PersistedOwnerEnvelopeV1,
+pub struct CompleteCommittedOwnerStateV1 {
+    pub gsi_configuration: DirectGsiOwnerConfigurationRestartV1,
+    pub gsi_state: DirectGsiOwnerStateRestartV1,
+    pub static_forcing_configuration: SnowFreeHalfHourStaticConfigurationRestartV1,
+    pub provider_cursor: SnowFreeHalfHourProviderCursorRestartV1,
+    pub surface_liquid_configuration: DirectSurfaceLiquidConfigurationRestartV1,
+    pub scientific: ScientificOwnerStateSetV1,
 }
-impl OwnerSetV1 {
-    fn ordered(&self) -> [&PersistedOwnerEnvelopeV1; 6] {
-        [
-            &self.gsi,
-            &self.forcing,
-            &self.vegetation_v10,
-            &self.lse_v2,
-            &self.soil_thermal,
-            &self.biogeochemistry,
-        ]
-    }
-    pub fn validate(&self, lineage: &Option<HexU128>) -> Result<(), CheckpointError> {
-        let expected = [
-            OwnerKindV1::Gsi,
-            OwnerKindV1::Forcing,
-            OwnerKindV1::VegetationV10,
-            OwnerKindV1::LseV2,
-            OwnerKindV1::SoilThermal,
-            OwnerKindV1::Biogeochemistry,
-        ];
-        let mut ids = BTreeSet::new();
-        for (owner, kind) in self.ordered().into_iter().zip(expected) {
-            owner.validate()?;
-            if owner.kind != kind
-                || !ids.insert(&owner.owner_id)
-                || &owner.last_accepted_transaction_id != lineage
-            {
-                return Err(CheckpointError::Join);
-            }
-        }
-        if self.forcing.configuration_sha256 != self.gsi.configuration_sha256 {
-            return Err(CheckpointError::Join);
-        }
-        Ok(())
-    }
-}
-
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
-pub enum CheckpointPhaseV1 {
+// The wire variants remain structurally explicit; Rust heap indirection is not
+// checkpoint authority and must not leak into this evidence DTO.
+#[allow(clippy::large_enum_variant)]
+pub enum DirectV10CheckpointPhaseV1 {
     BetweenDays {
-        next_day_index: u64,
-        accepted_interval_count: u64,
-        committed_owners: OwnerSetV1,
+        next_day_index: WireDayIndex,
+        accepted_interval_count: AcceptedIntervalCount,
+        committed: CompleteCommittedOwnerStateV1,
     },
     InProgressDay {
-        day_index: u64,
-        next_interval_index: u8,
-        accepted_interval_count: u64,
-        day_beginning_owners: OwnerSetV1,
-        transactional_owners: Box<OwnerSetV1>,
-        forcing_day_receipt_sha256: Sha256Hex,
+        day_index: WireDayIndex,
+        next_interval_index: InProgressIntervalIndex,
+        accepted_interval_count: AcceptedIntervalCount,
+        committed_day_beginning: CompleteCommittedOwnerStateV1,
+        staged_scientific: ScientificOwnerStateSetV1,
+        accepted_gsi_daily_receipt: DirectGsiDailyReceiptRestartV1,
+        staged_gsi_ending_state: DirectGsiOwnerStateRestartV1,
+        ending_provider_cursor: SnowFreeHalfHourProviderCursorRestartV1,
+        validated_forcing_day_receipts: Vec<SnowFreeHalfHourDayReceiptRestartV1>,
     },
 }
-
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DirectV10RealConsumerCheckpointV1 {
     pub schema: String,
     pub version: u16,
-    pub run_configuration_sha256: Sha256Hex,
+    pub run_identity_sha256: Sha256Hex,
     pub topology_sha256: Sha256Hex,
-    pub last_accepted_transaction_id: Option<HexU128>,
-    pub direct_hydrology: DirectHydrologyRestartV1,
-    pub phase: CheckpointPhaseV1,
+    pub phase: DirectV10CheckpointPhaseV1,
     pub payload_sha256: Sha256Hex,
 }
 #[derive(Serialize)]
-struct CheckpointDigestInput<'a> {
+struct DigestInput<'a> {
     schema: &'a str,
     version: u16,
-    run_configuration_sha256: &'a Sha256Hex,
+    run_identity_sha256: &'a Sha256Hex,
     topology_sha256: &'a Sha256Hex,
-    last_accepted_transaction_id: &'a Option<HexU128>,
-    direct_hydrology: &'a DirectHydrologyRestartV1,
-    phase: &'a CheckpointPhaseV1,
+    phase: &'a DirectV10CheckpointPhaseV1,
 }
 
-#[derive(Debug, Error, PartialEq, Eq)]
-pub enum CheckpointError {
-    #[error("canonical serialization failed")]
-    Canonical,
-    #[error("digest mismatch")]
-    Digest,
-    #[error("owner envelope invalid")]
-    Owner,
-    #[error("canonical ordering invalid")]
-    Ordering,
-    #[error("cross-owner join invalid")]
-    Join,
-    #[error("checkpoint phase/cursor invalid")]
-    Cursor,
+#[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
+pub enum RestartAdmissionFailureV1 {
+    #[error("schema")]
+    Schema,
+    #[error("unsupported_version")]
+    UnsupportedVersion,
+    #[error("noncanonical_bytes")]
+    NoncanonicalBytes,
+    #[error("missing_field")]
+    MissingField,
+    #[error("extra_field")]
+    ExtraField,
+    #[error("reordered_field")]
+    ReorderedField,
+    #[error("duplicate_field")]
+    DuplicateField,
+    #[error("payload_digest")]
+    PayloadDigest,
+    #[error("run_identity")]
+    RunIdentity,
+    #[error("topology_identity")]
+    TopologyIdentity,
+    #[error("configuration_identity")]
+    ConfigurationIdentity,
+    #[error("owner_identity")]
+    OwnerIdentity,
+    #[error("owner_validation")]
+    OwnerValidation,
+    #[error("transaction_lineage")]
+    TransactionLineage,
+    #[error("scheduler_position")]
+    SchedulerPosition,
+    #[error("provider_cursor")]
+    ProviderCursor,
+    #[error("gsi_receipt")]
+    GsiReceipt,
+    #[error("heterogeneous_lane_gsi_receipt")]
+    HeterogeneousLaneGsiReceipt,
+    #[error("forcing_receipt_cardinality")]
+    ForcingReceiptCardinality,
+    #[error("forcing_receipt_order")]
+    ForcingReceiptOrder,
+    #[error("forcing_receipt_digest")]
+    ForcingReceiptDigest,
+    #[error("surface_liquid_configuration")]
+    SurfaceLiquidConfiguration,
+    #[error("v10_v9_projection")]
+    V10V9Projection,
+    #[error("lse_v2_v1_projection")]
+    LseV2V1Projection,
+    #[error("unsupported_laned_active")]
+    UnsupportedLanedActive,
+    #[error("canonical_order")]
+    CanonicalOrder,
+    #[error("owner_omission")]
+    OwnerOmission,
+    #[error("child4_retained_liquid")]
+    Child4RetainedLiquid,
+    #[error("groundwater_posture")]
+    GroundwaterPosture,
+    #[error("groundwater_total_area")]
+    GroundwaterTotalArea,
+    #[error("erosion_publication")]
+    ErosionPublication,
 }
+
+pub struct ExpectedRestartStaticContext<'a> {
+    pub run_identity_sha256: &'a Sha256Hex,
+    pub topology_sha256: &'a Sha256Hex,
+    pub vegetation_configuration: &'a VegetationConfiguration,
+    pub lse_configuration: &'a LandSurfaceEnergyConfiguration,
+    pub surface_liquid_configuration: &'a DirectSurfaceLiquidConfiguration,
+    pub gsi_configuration: &'a DirectGsiOwnerConfigurationV1,
+    pub forcing_static_configuration: &'a SnowFreeHalfHourStaticConfiguration,
+    pub phase_plan: &'a DirectPhasePlan,
+    pub phase_plan_sha256: &'a Sha256Hex,
+    pub day_inputs: &'a [Vec<DirectDayConstructorInputs>],
+    pub day_input_digests: &'a [Sha256Hex],
+}
+pub struct RestoredScientificOwnerStateSetV1 {
+    pub vegetation_v10: V10CoupledOwnedState,
+    pub lse_v2: LandSurfaceEnergyV2State,
+    pub direct_hydrology: DirectRunFrame,
+    pub soil_thermal: SoilThermalSnapshot,
+    pub biogeochemistry: BiogeochemistryState,
+}
+pub struct RestoredCompleteCommittedOwnerStateV1 {
+    pub gsi_state: DirectGsiOwnerStateV1,
+    pub provider_cursor: SnowFreeHalfHourProviderCursor,
+    pub scientific: RestoredScientificOwnerStateSetV1,
+}
+// Admission returns complete isolated owners by value. This is evidence-path
+// construction, not a latency-sensitive runtime API.
+#[allow(clippy::large_enum_variant)]
+pub enum IsolatedRestoredCheckpointV1 {
+    BetweenDays {
+        next_day_index: u64,
+        committed: RestoredCompleteCommittedOwnerStateV1,
+    },
+    InProgressDay {
+        day_index: u64,
+        next_interval_index: u8,
+        committed_day_beginning: RestoredCompleteCommittedOwnerStateV1,
+        staged_scientific: RestoredScientificOwnerStateSetV1,
+        staged_gsi_ending_state: DirectGsiOwnerStateV1,
+        ending_provider_cursor: SnowFreeHalfHourProviderCursor,
+    },
+}
+
 impl DirectV10RealConsumerCheckpointV1 {
-    pub fn compute_digest(&self) -> Result<Sha256Hex, CheckpointError> {
+    pub fn compute_digest(&self) -> Result<Sha256Hex, RestartAdmissionFailureV1> {
         Sha256Hex::try_new(
-            canonical_sha256(&CheckpointDigestInput {
+            canonical_sha256(&DigestInput {
                 schema: &self.schema,
                 version: self.version,
-                run_configuration_sha256: &self.run_configuration_sha256,
+                run_identity_sha256: &self.run_identity_sha256,
                 topology_sha256: &self.topology_sha256,
-                last_accepted_transaction_id: &self.last_accepted_transaction_id,
-                direct_hydrology: &self.direct_hydrology,
                 phase: &self.phase,
             })
-            .map_err(|_| CheckpointError::Canonical)?,
+            .map_err(|_| RestartAdmissionFailureV1::PayloadDigest)?,
         )
-        .map_err(|_| CheckpointError::Digest)
+        .map_err(|_| RestartAdmissionFailureV1::PayloadDigest)
     }
-    pub fn validate(&self) -> Result<(), CheckpointError> {
-        if self.schema != "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1" || self.version != 1 {
-            return Err(CheckpointError::Join);
-        }
-        match &self.phase {
-            CheckpointPhaseV1::BetweenDays {
-                accepted_interval_count,
-                committed_owners,
-                ..
-            } => {
-                if accepted_interval_count % 48 != 0 {
-                    return Err(CheckpointError::Cursor);
-                }
-                committed_owners.validate(&self.last_accepted_transaction_id)?;
-            }
-            CheckpointPhaseV1::InProgressDay {
-                next_interval_index,
-                accepted_interval_count,
-                day_beginning_owners,
-                transactional_owners,
-                ..
-            } => {
-                if !(1..=47).contains(next_interval_index)
-                    || accepted_interval_count % 48 != u64::from(*next_interval_index)
-                {
-                    return Err(CheckpointError::Cursor);
-                }
-                day_beginning_owners.validate(&self.last_accepted_transaction_id)?;
-                transactional_owners.validate(&self.last_accepted_transaction_id)?;
-            }
-        }
-        if self.compute_digest()? != self.payload_sha256 {
-            return Err(CheckpointError::Digest);
-        }
+    pub fn seal(&mut self) -> Result<(), RestartAdmissionFailureV1> {
+        self.payload_sha256 = self.compute_digest()?;
         Ok(())
     }
-    pub fn abort_to_day_beginning(&self) -> Result<OwnerSetV1, CheckpointError> {
-        self.validate()?;
+    pub fn abort_to_day_beginning(&self) -> CompleteCommittedOwnerStateV1 {
         match &self.phase {
-            CheckpointPhaseV1::InProgressDay {
-                day_beginning_owners,
+            DirectV10CheckpointPhaseV1::BetweenDays { committed, .. } => committed.clone(),
+            DirectV10CheckpointPhaseV1::InProgressDay {
+                committed_day_beginning,
                 ..
-            } => Ok(day_beginning_owners.clone()),
-            CheckpointPhaseV1::BetweenDays {
-                committed_owners, ..
-            } => Ok(committed_owners.clone()),
+            } => committed_day_beginning.clone(),
         }
     }
+}
+
+pub fn admit_checkpoint_v1(
+    bytes: &[u8],
+    context: &ExpectedRestartStaticContext<'_>,
+) -> Result<IsolatedRestoredCheckpointV1, RestartAdmissionFailureV1> {
+    let checkpoint: DirectV10RealConsumerCheckpointV1 =
+        from_canonical_bytes(bytes).map_err(|error| match error {
+            crate::CanonicalJsonError::Parse(message) if message.contains("duplicate field") => {
+                RestartAdmissionFailureV1::DuplicateField
+            }
+            crate::CanonicalJsonError::Typed(message) if message.contains("missing field") => {
+                if [
+                    "vegetation_v10",
+                    "lse_v2",
+                    "direct_hydrology",
+                    "soil_thermal",
+                    "biogeochemistry",
+                ]
+                .iter()
+                .any(|field| message.contains(field))
+                {
+                    RestartAdmissionFailureV1::OwnerOmission
+                } else {
+                    RestartAdmissionFailureV1::MissingField
+                }
+            }
+            crate::CanonicalJsonError::Typed(message) if message.contains("unknown field") => {
+                RestartAdmissionFailureV1::ExtraField
+            }
+            crate::CanonicalJsonError::Typed(message) if message.contains("HexU128") => {
+                RestartAdmissionFailureV1::TransactionLineage
+            }
+            crate::CanonicalJsonError::Typed(message)
+                if message.contains("u64") || message.contains("day index") =>
+            {
+                RestartAdmissionFailureV1::SchedulerPosition
+            }
+            crate::CanonicalJsonError::NoncanonicalBytes
+                if bytes.iter().any(u8::is_ascii_whitespace) =>
+            {
+                RestartAdmissionFailureV1::NoncanonicalBytes
+            }
+            crate::CanonicalJsonError::NoncanonicalBytes => {
+                RestartAdmissionFailureV1::ReorderedField
+            }
+            _ => RestartAdmissionFailureV1::NoncanonicalBytes,
+        })?;
+    if checkpoint.schema != "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1" {
+        return Err(RestartAdmissionFailureV1::Schema);
+    }
+    if checkpoint.version != 1 {
+        return Err(RestartAdmissionFailureV1::UnsupportedVersion);
+    }
+    if checkpoint.compute_digest()? != checkpoint.payload_sha256 {
+        return Err(RestartAdmissionFailureV1::PayloadDigest);
+    }
+    if &checkpoint.run_identity_sha256 != context.run_identity_sha256 {
+        return Err(RestartAdmissionFailureV1::RunIdentity);
+    }
+    if &checkpoint.topology_sha256 != context.topology_sha256 {
+        return Err(RestartAdmissionFailureV1::TopologyIdentity);
+    }
+    match &checkpoint.phase {
+        DirectV10CheckpointPhaseV1::BetweenDays {
+            next_day_index,
+            accepted_interval_count,
+            committed,
+        } => {
+            if accepted_interval_count.get() % 48 != 0 {
+                return Err(RestartAdmissionFailureV1::SchedulerPosition);
+            }
+            Ok(IsolatedRestoredCheckpointV1::BetweenDays {
+                next_day_index: next_day_index.0,
+                committed: restore_committed(committed, context, next_day_index.0)?,
+            })
+        }
+        DirectV10CheckpointPhaseV1::InProgressDay {
+            day_index,
+            next_interval_index,
+            accepted_interval_count,
+            committed_day_beginning,
+            staged_scientific,
+            accepted_gsi_daily_receipt,
+            staged_gsi_ending_state,
+            ending_provider_cursor,
+            validated_forcing_day_receipts,
+        } => {
+            if accepted_interval_count.get() % 48 != u64::from(next_interval_index.get()) {
+                return Err(RestartAdmissionFailureV1::SchedulerPosition);
+            }
+            let committed = restore_committed(committed_day_beginning, context, day_index.0)?;
+            let receipt = accepted_gsi_daily_receipt
+                .restore()
+                .map_err(|_| RestartAdmissionFailureV1::GsiReceipt)?;
+            if receipt.run_id != context.forcing_static_configuration.run_id
+                || receipt.day_index != day_index.0
+                || accepted_gsi_daily_receipt.beginning_state != committed_day_beginning.gsi_state
+                || accepted_gsi_daily_receipt.ending_state != *staged_gsi_ending_state
+                || receipt.configuration_sha256 != context.gsi_configuration.configuration_sha256
+            {
+                return Err(RestartAdmissionFailureV1::GsiReceipt);
+            }
+            validate_forcing(
+                validated_forcing_day_receipts,
+                context,
+                day_index.0,
+                accepted_gsi_daily_receipt.receipt_sha256.as_str(),
+                &receipt.source_climate_sha256,
+            )?;
+            let ending_provider_cursor = ending_provider_cursor
+                .restore(
+                    context.forcing_static_configuration,
+                    usize::try_from(day_index.0 + 1)
+                        .map_err(|_| RestartAdmissionFailureV1::ProviderCursor)?,
+                )
+                .map_err(|_| RestartAdmissionFailureV1::ProviderCursor)?;
+            let expected_transaction = committed_day_beginning
+                .scientific
+                .vegetation_v10
+                .last_transaction_id
+                .to_u128()
+                .checked_add(u128::from(next_interval_index.get()))
+                .ok_or(RestartAdmissionFailureV1::TransactionLineage)?;
+            require_lineage(staged_scientific, Some(expected_transaction))?;
+            Ok(IsolatedRestoredCheckpointV1::InProgressDay {
+                day_index: day_index.0,
+                next_interval_index: next_interval_index.get(),
+                committed_day_beginning: committed,
+                staged_scientific: restore_scientific(staged_scientific, context)?,
+                staged_gsi_ending_state: staged_gsi_ending_state
+                    .restore()
+                    .map_err(|_| RestartAdmissionFailureV1::GsiReceipt)?,
+                ending_provider_cursor,
+            })
+        }
+    }
+}
+
+fn restore_committed(
+    value: &CompleteCommittedOwnerStateV1,
+    context: &ExpectedRestartStaticContext<'_>,
+    next_day: u64,
+) -> Result<RestoredCompleteCommittedOwnerStateV1, RestartAdmissionFailureV1> {
+    if value.gsi_configuration.owner_id.trim().is_empty() {
+        return Err(RestartAdmissionFailureV1::OwnerIdentity);
+    }
+    let gsi = value
+        .gsi_configuration
+        .restore()
+        .map_err(|_| RestartAdmissionFailureV1::ConfigurationIdentity)?;
+    if &gsi != context.gsi_configuration {
+        return Err(RestartAdmissionFailureV1::ConfigurationIdentity);
+    }
+    let forcing = value
+        .static_forcing_configuration
+        .restore()
+        .map_err(|_| RestartAdmissionFailureV1::ConfigurationIdentity)?;
+    if &forcing != context.forcing_static_configuration {
+        return Err(RestartAdmissionFailureV1::ConfigurationIdentity);
+    }
+    let surface = value
+        .surface_liquid_configuration
+        .restore()
+        .map_err(|_| RestartAdmissionFailureV1::SurfaceLiquidConfiguration)?;
+    if &surface != context.surface_liquid_configuration {
+        return Err(RestartAdmissionFailureV1::SurfaceLiquidConfiguration);
+    }
+    require_lineage(&value.scientific, None)?;
+    Ok(RestoredCompleteCommittedOwnerStateV1 {
+        gsi_state: value
+            .gsi_state
+            .restore()
+            .map_err(|_| RestartAdmissionFailureV1::OwnerValidation)?,
+        provider_cursor: value
+            .provider_cursor
+            .restore(
+                context.forcing_static_configuration,
+                usize::try_from(next_day).map_err(|_| RestartAdmissionFailureV1::ProviderCursor)?,
+            )
+            .map_err(|_| RestartAdmissionFailureV1::ProviderCursor)?,
+        scientific: restore_scientific(&value.scientific, context)?,
+    })
+}
+
+fn restore_scientific(
+    value: &ScientificOwnerStateSetV1,
+    context: &ExpectedRestartStaticContext<'_>,
+) -> Result<RestoredScientificOwnerStateSetV1, RestartAdmissionFailureV1> {
+    if value
+        .direct_hydrology
+        .surface_liquid_owned_state
+        .as_deref()
+        .is_some_and(|state| {
+            state.configuration_sha256.as_str()
+                != context.surface_liquid_configuration.configuration_sha256
+        })
+    {
+        return Err(RestartAdmissionFailureV1::SurfaceLiquidConfiguration);
+    }
+    let hydrology_context = ExpectedDirectHydrologyRestartContext {
+        phase_plan: context.phase_plan,
+        phase_plan_sha256: context.phase_plan_sha256,
+        day_inputs: context.day_inputs,
+        day_input_digests: context.day_input_digests,
+        surface_liquid_configuration: context.surface_liquid_configuration,
+    };
+    Ok(RestoredScientificOwnerStateSetV1 {
+        vegetation_v10: value
+            .vegetation_v10
+            .restore(context.vegetation_configuration)
+            .map_err(|_| RestartAdmissionFailureV1::V10V9Projection)?,
+        lse_v2: value
+            .lse_v2
+            .restore(context.lse_configuration)
+            .map_err(|_| RestartAdmissionFailureV1::LseV2V1Projection)?,
+        direct_hydrology: value
+            .direct_hydrology
+            .restore(&hydrology_context)
+            .map_err(classify_hydrology)?,
+        soil_thermal: value
+            .soil_thermal
+            .restore()
+            .map_err(|_| RestartAdmissionFailureV1::OwnerValidation)?,
+        biogeochemistry: value.biogeochemistry.restore().map_err(|error| {
+            if matches!(error, crate::ScientificOwnerRestartError::Ordering(_)) {
+                RestartAdmissionFailureV1::CanonicalOrder
+            } else {
+                RestartAdmissionFailureV1::OwnerValidation
+            }
+        })?,
+    })
+}
+
+fn classify_hydrology(error: crate::HydrologyRestartError) -> RestartAdmissionFailureV1 {
+    let message = error.to_string();
+    if message.contains("laned_active") {
+        RestartAdmissionFailureV1::UnsupportedLanedActive
+    } else if message.contains("retained") || message.contains("snow-free") {
+        RestartAdmissionFailureV1::Child4RetainedLiquid
+    } else if message.contains("canonical lane-area sum") {
+        RestartAdmissionFailureV1::GroundwaterTotalArea
+    } else if message.contains("groundwater") {
+        RestartAdmissionFailureV1::GroundwaterPosture
+    } else if message.contains("erosion") || message.contains("publication") {
+        RestartAdmissionFailureV1::ErosionPublication
+    } else if message.contains("order") {
+        RestartAdmissionFailureV1::CanonicalOrder
+    } else {
+        RestartAdmissionFailureV1::OwnerValidation
+    }
+}
+
+fn require_lineage(
+    value: &ScientificOwnerStateSetV1,
+    required: Option<u128>,
+) -> Result<(), RestartAdmissionFailureV1> {
+    let expected = value.vegetation_v10.last_transaction_id.to_u128();
+    if required.is_some_and(|value| value != expected)
+        || value
+            .lse_v2
+            .last_accepted_transaction_id
+            .as_ref()
+            .map(crate::HexU128::to_u128)
+            != Some(expected)
+        || value
+            .soil_thermal
+            .last_accepted_transaction_id
+            .as_ref()
+            .map(crate::HexU128::to_u128)
+            != Some(expected)
+        || value.biogeochemistry.last_transaction_id.to_u128() != expected
+    {
+        return Err(RestartAdmissionFailureV1::TransactionLineage);
+    }
+    Ok(())
+}
+
+fn validate_forcing(
+    receipts: &[SnowFreeHalfHourDayReceiptRestartV1],
+    context: &ExpectedRestartStaticContext<'_>,
+    day: u64,
+    gsi_sha: &str,
+    climate_sha: &str,
+) -> Result<(), RestartAdmissionFailureV1> {
+    if receipts.len() != context.forcing_static_configuration.destinations.len() {
+        return Err(RestartAdmissionFailureV1::ForcingReceiptCardinality);
+    }
+    let expected = context
+        .forcing_static_configuration
+        .destinations
+        .iter()
+        .map(|v| (&v.ofe_id, &v.tile_id))
+        .collect::<Vec<_>>();
+    let actual = receipts
+        .iter()
+        .map(|v| v.intervals.first().map(|i| (&i.ofe_id, &i.tile_id)))
+        .collect::<Option<Vec<_>>>()
+        .ok_or(RestartAdmissionFailureV1::ForcingReceiptCardinality)?;
+    if actual != expected {
+        return Err(RestartAdmissionFailureV1::ForcingReceiptOrder);
+    }
+    for value in receipts {
+        if value.intervals.len() != 48 {
+            return Err(RestartAdmissionFailureV1::ForcingReceiptCardinality);
+        }
+        let found = value
+            .intervals
+            .iter()
+            .map(|interval| interval.gsi_receipt_sha256.as_str())
+            .collect::<std::collections::BTreeSet<_>>();
+        if found.len() != 1 || found.first().copied() != Some(gsi_sha) {
+            return Err(RestartAdmissionFailureV1::HeterogeneousLaneGsiReceipt);
+        }
+        let receipt = value
+            .restore()
+            .map_err(|_| RestartAdmissionFailureV1::ForcingReceiptDigest)?;
+        if receipt.day_index as u64 != day
+            || receipt.source_climate_sha256 != climate_sha
+            || receipt
+                .intervals
+                .iter()
+                .any(|interval| interval.gsi_receipt_sha256 != gsi_sha)
+        {
+            return Err(RestartAdmissionFailureV1::ForcingReceiptDigest);
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]
-mod tests {
+mod poison_tests {
     use super::*;
-    use crate::DirectHydrologyRestartV1;
-    use openwepp_hillslope_orchestrator::{
-        DirectLaneConstructorInputs, DirectLaneTransferLedger, DirectRunConstructorInputs,
-        DirectRunFrame, DirectRunIdentity,
+    use crate::groundwater::GroundwaterAuthorityRestartV1;
+    use crate::{
+        DirectRuntimePostureV1, HexF64, HexU128, project_evidence_scientific_owners,
+        restart_authority_in_progress_checkpoint_fixture, to_canonical_bytes,
     };
-
-    fn sha(c: char) -> Sha256Hex {
-        Sha256Hex::try_new(c.to_string().repeat(64)).unwrap()
-    }
-    fn owner(
-        kind: OwnerKindV1,
-        id: &str,
-        consequence: OmissionConsequenceV1,
-        payload: u8,
-        lineage: Option<HexU128>,
-    ) -> PersistedOwnerEnvelopeV1 {
-        let mut value = PersistedOwnerEnvelopeV1 {
-            kind,
-            owner_id: id.into(),
-            field_domains: vec!["finite".into()],
-            cross_owner_joins: vec!["transaction_lineage".into()],
-            canonical_order_keys: vec!["owner_id".into()],
-            last_accepted_transaction_id: lineage,
-            configuration_sha256: sha('a'),
-            payload_hex: format!("{payload:02x}"),
-            nested_sha256: sha('0'),
-            omission_consequence: consequence,
-            executable_poisons: vec![
-                OwnerPoisonV1::FieldDomain,
-                OwnerPoisonV1::CrossOwnerJoin,
-                OwnerPoisonV1::CanonicalOrder,
-                OwnerPoisonV1::NestedDigest,
-                OwnerPoisonV1::Omission,
-            ],
+    fn phase(
+        value: &mut DirectV10RealConsumerCheckpointV1,
+    ) -> (
+        &mut CompleteCommittedOwnerStateV1,
+        &mut ScientificOwnerStateSetV1,
+        &mut DirectGsiDailyReceiptRestartV1,
+        &mut SnowFreeHalfHourProviderCursorRestartV1,
+        &mut Vec<SnowFreeHalfHourDayReceiptRestartV1>,
+        &mut AcceptedIntervalCount,
+    ) {
+        let DirectV10CheckpointPhaseV1::InProgressDay {
+            committed_day_beginning,
+            staged_scientific,
+            accepted_gsi_daily_receipt,
+            ending_provider_cursor,
+            validated_forcing_day_receipts,
+            accepted_interval_count,
+            ..
+        } = &mut value.phase
+        else {
+            unreachable!()
         };
-        value.nested_sha256 = value.compute_digest().unwrap();
-        value
+        (
+            committed_day_beginning,
+            staged_scientific,
+            accepted_gsi_daily_receipt,
+            ending_provider_cursor,
+            validated_forcing_day_receipts,
+            accepted_interval_count,
+        )
     }
-    fn owners(payload: u8, lineage: Option<HexU128>) -> OwnerSetV1 {
-        OwnerSetV1 {
-            gsi: owner(
-                OwnerKindV1::Gsi,
-                "gsi",
-                OmissionConsequenceV1::PhenologyDivergence,
-                payload,
-                lineage.clone(),
-            ),
-            forcing: owner(
-                OwnerKindV1::Forcing,
-                "forcing",
-                OmissionConsequenceV1::ForcingReplay,
-                payload,
-                lineage.clone(),
-            ),
-            vegetation_v10: owner(
-                OwnerKindV1::VegetationV10,
-                "vegetation",
-                OmissionConsequenceV1::VegetationDivergence,
-                payload,
-                lineage.clone(),
-            ),
-            lse_v2: owner(
-                OwnerKindV1::LseV2,
-                "lse",
-                OmissionConsequenceV1::EnergyDivergence,
-                payload,
-                lineage.clone(),
-            ),
-            soil_thermal: owner(
-                OwnerKindV1::SoilThermal,
-                "soil",
-                OmissionConsequenceV1::SoilTemperatureDivergence,
-                payload,
-                lineage.clone(),
-            ),
-            biogeochemistry: owner(
-                OwnerKindV1::Biogeochemistry,
-                "bgc",
-                OmissionConsequenceV1::CarbonNitrogenDivergence,
-                payload,
-                lineage,
-            ),
-        }
-    }
-    fn hydrology() -> DirectHydrologyRestartV1 {
-        let identity = DirectRunIdentity::new(1, 1, 1, 1).unwrap();
-        let mut lane = DirectLaneConstructorInputs::from_topology(0, 1, 1).unwrap();
-        lane.area_m2 = 1.0;
-        let mut frame = DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(
-            identity,
-            vec![lane],
-        ))
-        .unwrap();
-        frame.lane_transfer_ledger = vec![DirectLaneTransferLedger {
-            lane_id: 1,
-            upstream_lane_id: 0,
-            downstream_lane_id: 0,
-            upstream_area_ratio: 1.0,
-            area_m2: 1.0,
-            outgoing_surface_m: 0.0,
-            outgoing_lateral_m: 0.0,
-            received_surface_m: 0.0,
-            received_lateral_m: 0.0,
-            net_transfer_m: 0.0,
-        }];
-        DirectHydrologyRestartV1::project(&frame, sha('b'), &[sha('c')]).unwrap()
-    }
-    fn checkpoint(
-        phase: CheckpointPhaseV1,
-        lineage: Option<HexU128>,
-    ) -> DirectV10RealConsumerCheckpointV1 {
-        let mut value = DirectV10RealConsumerCheckpointV1 {
-            schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
-            version: 1,
-            run_configuration_sha256: sha('d'),
-            topology_sha256: sha('e'),
-            last_accepted_transaction_id: lineage,
-            direct_hydrology: hydrology(),
-            phase,
-            payload_sha256: sha('0'),
-        };
-        value.payload_sha256 = value.compute_digest().unwrap();
-        value
-    }
-    fn advance(mut state: OwnerSetV1, from: u8, through: u8) -> OwnerSetV1 {
-        for interval in from..through {
-            for owner in [
-                &mut state.gsi,
-                &mut state.forcing,
-                &mut state.vegetation_v10,
-                &mut state.lse_v2,
-                &mut state.soil_thermal,
-                &mut state.biogeochemistry,
-            ] {
-                let value = u8::from_str_radix(&owner.payload_hex, 16)
-                    .unwrap()
-                    .wrapping_add(interval)
-                    .wrapping_add(1);
-                owner.payload_hex = format!("{value:02x}");
-                owner.nested_sha256 = owner.compute_digest().unwrap();
-            }
-        }
-        state
+    fn sealed(mut value: DirectV10RealConsumerCheckpointV1) -> Vec<u8> {
+        value.seal().unwrap();
+        to_canonical_bytes(&value).unwrap()
     }
     #[test]
-    fn interval_24_fresh_object_continuation_and_exact_abort() {
-        let lineage = Some(HexU128::from_u128(24));
-        let beginning = owners(0, lineage.clone());
-        let at_24 = advance(beginning.clone(), 0, 24);
-        let continuous = advance(at_24.clone(), 24, 48);
-        let cp = checkpoint(
-            CheckpointPhaseV1::InProgressDay {
-                day_index: 3,
-                next_interval_index: 24,
-                accepted_interval_count: 24,
-                day_beginning_owners: beginning.clone(),
-                transactional_owners: Box::new(at_24.clone()),
-                forcing_day_receipt_sha256: sha('f'),
-            },
-            lineage,
-        );
-        cp.validate().unwrap();
-        let serialized = crate::to_canonical_bytes(&cp).unwrap();
-        let fresh: DirectV10RealConsumerCheckpointV1 =
-            crate::from_canonical_bytes(&serialized).unwrap();
-        let resumed = match fresh.phase {
-            CheckpointPhaseV1::InProgressDay {
-                transactional_owners,
-                ..
-            } => advance(*transactional_owners, 24, 48),
-            _ => unreachable!(),
+    fn complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes() {
+        let (fixture, baseline, run, topology) =
+            restart_authority_in_progress_checkpoint_fixture(24);
+        let context = ExpectedRestartStaticContext {
+            run_identity_sha256: &run,
+            topology_sha256: &topology,
+            vegetation_configuration: fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_vegetation_configuration(),
+            lse_configuration: fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_lse_configuration(),
+            surface_liquid_configuration: fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_surface_configuration(),
+            gsi_configuration: fixture.owners.runtime.shadow.gsi_owner_configuration(),
+            forcing_static_configuration: fixture
+                .owners
+                .runtime
+                .shadow
+                .provider_static_configuration(),
+            phase_plan: &fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_hydrology_frame()
+                .phase_plan,
+            phase_plan_sha256: &fixture.owners.phase_plan_sha256,
+            day_inputs: &fixture.owners.day_inputs,
+            day_input_digests: &fixture.owners.day_input_digests,
         };
-        assert_eq!(resumed, continuous);
-        assert_eq!(cp.abort_to_day_beginning().unwrap(), beginning);
-    }
-    #[test]
-    fn nested_digest_cursor_join_and_omission_poisons_preserve_live_bytes() {
-        let lineage = Some(HexU128::from_u128(24));
-        let beginning = owners(0, lineage.clone());
-        let cp = checkpoint(
-            CheckpointPhaseV1::InProgressDay {
-                day_index: 3,
-                next_interval_index: 24,
-                accepted_interval_count: 24,
-                day_beginning_owners: beginning.clone(),
-                transactional_owners: Box::new(advance(beginning, 0, 24)),
-                forcing_day_receipt_sha256: sha('f'),
-            },
-            lineage,
+        let live = || {
+            to_canonical_bytes(&project_evidence_scientific_owners(
+                &fixture.owners.runtime.shadow,
+                &fixture.owners.phase_plan_sha256,
+                &fixture.owners.day_input_digests,
+            ))
+            .unwrap()
+        };
+        let before = live();
+        let check = |bytes: Vec<u8>, expected| {
+            assert_eq!(admit_checkpoint_v1(&bytes, &context).err(), Some(expected));
+            assert_eq!(live(), before)
+        };
+        let mut p = baseline.clone();
+        p.schema = "wrong".into();
+        check(sealed(p), RestartAdmissionFailureV1::Schema);
+        let mut p = baseline.clone();
+        p.version = 2;
+        check(sealed(p), RestartAdmissionFailureV1::UnsupportedVersion);
+        let mut p = to_canonical_bytes(&baseline).unwrap();
+        p.insert(1, b' ');
+        check(p, RestartAdmissionFailureV1::NoncanonicalBytes);
+        let mut p = baseline.clone();
+        p.payload_sha256 = Sha256Hex::try_new("1".repeat(64)).unwrap();
+        check(
+            to_canonical_bytes(&p).unwrap(),
+            RestartAdmissionFailureV1::PayloadDigest,
         );
-        let live = crate::to_canonical_bytes(&cp).unwrap();
-        let mut poison = cp.clone();
-        if let CheckpointPhaseV1::InProgressDay {
-            transactional_owners,
-            ..
-        } = &mut poison.phase
+        let value = serde_json::to_value(&baseline).unwrap();
+        let mut p = value.clone();
+        p.as_object_mut().unwrap().remove("phase");
+        check(
+            serde_json::to_vec(&p).unwrap(),
+            RestartAdmissionFailureV1::MissingField,
+        );
+        let mut p = value.clone();
+        p["extra"] = serde_json::json!(true);
+        check(
+            serde_json::to_vec(&p).unwrap(),
+            RestartAdmissionFailureV1::ExtraField,
+        );
+        check(
+            serde_json::to_vec(&value).unwrap(),
+            RestartAdmissionFailureV1::ReorderedField,
+        );
+        let raw = String::from_utf8(to_canonical_bytes(&baseline).unwrap()).unwrap();
+        let p = raw.replacen(
+            "\"schema\":",
+            "\"schema\":\"OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1\",\"schema\":",
+            1,
+        );
+        check(p.into_bytes(), RestartAdmissionFailureV1::DuplicateField);
+        let mut p = baseline.clone();
+        p.run_identity_sha256 = Sha256Hex::try_new("1".repeat(64)).unwrap();
+        check(sealed(p), RestartAdmissionFailureV1::RunIdentity);
+        let mut p = baseline.clone();
+        p.topology_sha256 = Sha256Hex::try_new("1".repeat(64)).unwrap();
+        check(sealed(p), RestartAdmissionFailureV1::TopologyIdentity);
+        let mut p = baseline.clone();
+        phase(&mut p).0.gsi_configuration.configuration_sha256 =
+            Sha256Hex::try_new("1".repeat(64)).unwrap();
+        check(sealed(p), RestartAdmissionFailureV1::ConfigurationIdentity);
+        let mut p = baseline.clone();
+        phase(&mut p).0.gsi_configuration.owner_id.clear();
+        check(sealed(p), RestartAdmissionFailureV1::OwnerIdentity);
+        let mut p = baseline.clone();
+        phase(&mut p).1.biogeochemistry.last_transaction_id = HexU128::from_u128(999);
+        check(sealed(p), RestartAdmissionFailureV1::TransactionLineage);
+        let mut p = String::from_utf8(to_canonical_bytes(&baseline).unwrap()).unwrap();
+        p = p.replacen("0x00000000000000000000000000000040", "0x40", 1);
+        check(
+            p.into_bytes(),
+            RestartAdmissionFailureV1::TransactionLineage,
+        );
+        let mut p = baseline.clone();
+        *phase(&mut p).5 = AcceptedIntervalCount::try_new(25).unwrap();
+        check(sealed(p), RestartAdmissionFailureV1::SchedulerPosition);
+        let p = String::from_utf8(to_canonical_bytes(&baseline).unwrap())
+            .unwrap()
+            .replacen("\"day_index\":0", "\"day_index\":-1", 1);
+        check(p.into_bytes(), RestartAdmissionFailureV1::SchedulerPosition);
+        let mut p = baseline.clone();
+        phase(&mut p).3.next_day_index = WireDayIndex(2);
+        check(sealed(p), RestartAdmissionFailureV1::ProviderCursor);
+        let mut p = baseline.clone();
+        phase(&mut p).3.next_day_index = WireDayIndex(0);
+        check(sealed(p), RestartAdmissionFailureV1::ProviderCursor);
+        let mut p = baseline.clone();
+        phase(&mut p).2.day_index = WireDayIndex(1);
+        check(sealed(p), RestartAdmissionFailureV1::GsiReceipt);
+        let mut p = baseline.clone();
+        phase(&mut p)
+            .2
+            .ending_state
+            .history_oldest_first
+            .insert(0, HexF64::from_f64(2.0));
+        check(sealed(p), RestartAdmissionFailureV1::GsiReceipt);
+        let mut p = baseline.clone();
+        phase(&mut p).4[0].intervals[1].gsi_receipt_sha256 =
+            Sha256Hex::try_new("1".repeat(64)).unwrap();
+        check(
+            sealed(p),
+            RestartAdmissionFailureV1::HeterogeneousLaneGsiReceipt,
+        );
+        let mut p = baseline.clone();
+        phase(&mut p).4.pop();
+        check(
+            sealed(p),
+            RestartAdmissionFailureV1::ForcingReceiptCardinality,
+        );
+        let mut p = baseline.clone();
+        phase(&mut p).4[0].intervals.remove(0);
+        check(
+            sealed(p),
+            RestartAdmissionFailureV1::ForcingReceiptCardinality,
+        );
+        let mut p = baseline.clone();
+        let interval = phase(&mut p).4[0].intervals[0].clone();
+        phase(&mut p).4[0].intervals.insert(0, interval);
+        check(
+            sealed(p),
+            RestartAdmissionFailureV1::ForcingReceiptCardinality,
+        );
+        let mut p = baseline.clone();
+        phase(&mut p).4.swap(0, 1);
+        check(sealed(p), RestartAdmissionFailureV1::ForcingReceiptOrder);
+        let mut p = baseline.clone();
+        phase(&mut p).4[0].receipt_sha256 = Sha256Hex::try_new("1".repeat(64)).unwrap();
+        check(sealed(p), RestartAdmissionFailureV1::ForcingReceiptDigest);
+        let mut p = serde_json::to_value(&baseline).unwrap();
+        p["phase"]["validated_forcing_day_receipts"][0]
+            .as_object_mut()
+            .unwrap()
+            .remove("next_day_precipitation_carry");
+        check(
+            serde_json::to_vec(&p).unwrap(),
+            RestartAdmissionFailureV1::MissingField,
+        );
+        let mut p = baseline.clone();
+        phase(&mut p).1.vegetation_v10.state_sha256 = Sha256Hex::try_new("1".repeat(64)).unwrap();
+        check(sealed(p), RestartAdmissionFailureV1::V10V9Projection);
+        let mut p = baseline.clone();
+        phase(&mut p).1.lse_v2.state_sha256 = Sha256Hex::try_new("1".repeat(64)).unwrap();
+        check(sealed(p), RestartAdmissionFailureV1::LseV2V1Projection);
+        let mut p = baseline.clone();
+        phase(&mut p).1.biogeochemistry.layers[0].ammonium_n = HexF64::from_f64(-1.0);
+        check(sealed(p), RestartAdmissionFailureV1::OwnerValidation);
+        let mut p = baseline.clone();
+        phase(&mut p).1.direct_hydrology.runtime_posture =
+            DirectRuntimePostureV1::UnsupportedLanedActive;
+        check(sealed(p), RestartAdmissionFailureV1::UnsupportedLanedActive);
+        let mut p = baseline.clone();
+        phase(&mut p).1.direct_hydrology.lanes[0].area_m2 = HexF64::from_f64(-0.0);
+        check(sealed(p), RestartAdmissionFailureV1::OwnerValidation);
+        let mut p = baseline.clone();
+        phase(&mut p).1.biogeochemistry.layers.reverse();
+        check(sealed(p), RestartAdmissionFailureV1::CanonicalOrder);
+        let mut p = serde_json::to_value(&baseline).unwrap();
+        p["phase"]["staged_scientific"]
+            .as_object_mut()
+            .unwrap()
+            .remove("direct_hydrology");
+        check(
+            serde_json::to_vec(&p).unwrap(),
+            RestartAdmissionFailureV1::OwnerOmission,
+        );
+        let mut p = baseline.clone();
+        phase(&mut p).1.direct_hydrology.lanes[0]
+            .winter_column
+            .snow
+            .liquid_water_retained_m = HexF64::from_f64(1.0);
+        check(sealed(p), RestartAdmissionFailureV1::Child4RetainedLiquid);
+        let mut p = baseline.clone();
+        phase(&mut p).1.direct_hydrology.groundwater.storage_m3 = HexF64::from_f64(1.0);
+        check(sealed(p), RestartAdmissionFailureV1::GroundwaterPosture);
+        let mut p = baseline.clone();
+        let groundwater = &mut phase(&mut p).1.direct_hydrology.groundwater;
+        groundwater.authority = GroundwaterAuthorityRestartV1::LinearReservoir {
+            initial_storage_depth_m: HexF64::from_f64(0.0),
+            baseflow_coeff_per_day: HexF64::from_f64(0.0),
+            deep_seepage_coeff_per_day: HexF64::from_f64(0.0),
+            baseflow_threshold_area_ha: HexF64::from_f64(0.0),
+        };
+        groundwater.initialized_area_m2 = Some(HexF64::from_f64(999.0));
+        check(sealed(p), RestartAdmissionFailureV1::GroundwaterTotalArea);
+        let mut p = baseline.clone();
+        let committed = phase(&mut p).0.scientific.clone();
+        *phase(&mut p).1 = committed;
+        check(sealed(p), RestartAdmissionFailureV1::TransactionLineage);
+        let mut p = baseline.clone();
+        phase(&mut p).1.direct_hydrology.lanes[0]
+            .erosion_downstream_operands
+            .publication
+            .peak_runoff_rate_m_s = Some(HexF64::from_f64(1.0));
+        check(sealed(p), RestartAdmissionFailureV1::ErosionPublication);
+        let mut p = baseline.clone();
+        if let Some(state) = phase(&mut p)
+            .1
+            .direct_hydrology
+            .surface_liquid_owned_state
+            .as_deref_mut()
         {
-            transactional_owners.gsi.payload_hex = "ff".into();
+            state.configuration_sha256 = Sha256Hex::try_new("1".repeat(64)).unwrap()
         }
-        poison.payload_sha256 = poison.compute_digest().unwrap();
-        assert_eq!(poison.validate(), Err(CheckpointError::Digest));
-        assert_eq!(crate::to_canonical_bytes(&cp).unwrap(), live);
-        let mut poison = cp.clone();
-        if let CheckpointPhaseV1::InProgressDay {
-            next_interval_index,
-            ..
-        } = &mut poison.phase
-        {
-            *next_interval_index = 0;
-        }
-        poison.payload_sha256 = poison.compute_digest().unwrap();
-        assert_eq!(poison.validate(), Err(CheckpointError::Cursor));
-        assert_eq!(crate::to_canonical_bytes(&cp).unwrap(), live);
-        let mut poison = cp.clone();
-        if let CheckpointPhaseV1::InProgressDay {
-            transactional_owners,
-            ..
-        } = &mut poison.phase
-        {
-            transactional_owners.gsi.owner_id = transactional_owners.forcing.owner_id.clone();
-            transactional_owners.gsi.nested_sha256 =
-                transactional_owners.gsi.compute_digest().unwrap();
-        }
-        poison.payload_sha256 = poison.compute_digest().unwrap();
-        assert_eq!(poison.validate(), Err(CheckpointError::Join));
-        assert_eq!(crate::to_canonical_bytes(&cp).unwrap(), live);
+        check(
+            sealed(p),
+            RestartAdmissionFailureV1::SurfaceLiquidConfiguration,
+        );
     }
 }

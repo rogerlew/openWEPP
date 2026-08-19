@@ -223,6 +223,12 @@ fn wb14_parameter_sha256(value: &DirectOfeWb14Parameters) -> String {
     format!("{:x}", digest.finalize())
 }
 
+#[cfg(feature = "restart-authority-evidence")]
+#[must_use]
+pub fn restart_authority_wb14_parameter_sha256(value: &DirectOfeWb14Parameters) -> String {
+    wb14_parameter_sha256(value)
+}
+
 fn validate_global_provider_interval(
     receipts: &[crate::runtime_inputs::SnowFreeHalfHourDayReceipt],
     interval_index: usize,
@@ -629,6 +635,94 @@ impl DirectV10RealConsumerShadow {
         &self.provider_static_configuration
     }
 
+    #[cfg(feature = "restart-authority-evidence")]
+    #[must_use]
+    pub const fn restart_authority_vegetation_configuration(&self) -> &VegetationConfiguration {
+        &self.vegetation_configuration
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
+    #[must_use]
+    pub const fn restart_authority_lse_configuration(&self) -> &LandSurfaceEnergyConfiguration {
+        &self.lse_configuration
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
+    #[must_use]
+    pub const fn restart_authority_hydrology_frame(&self) -> &DirectRunFrame {
+        self.inner.hydrology_frame()
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
+    #[must_use]
+    pub const fn restart_authority_soil_thermal(&self) -> &SoilThermalSnapshot {
+        self.inner.soil_thermal()
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
+    #[must_use]
+    pub const fn restart_authority_biogeochemistry(&self) -> &BiogeochemistryState {
+        self.inner.biogeochemistry()
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
+    #[must_use]
+    pub const fn restart_authority_surface_configuration(
+        &self,
+    ) -> &DirectSurfaceLiquidConfiguration {
+        self.inner.restart_authority_surface_configuration()
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
+    pub fn restart_authority_advance_staged_intervals(
+        &mut self,
+        prepared: &PreparedSnowFreeGsiDayV1,
+        mut template: DirectV10ShadowDayInput,
+        start_interval: usize,
+        end_interval_exclusive: usize,
+    ) -> Result<(), DirectV10RealConsumerError> {
+        if start_interval >= end_interval_exclusive || end_interval_exclusive > INTERVALS_PER_DAY {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Unsupported("restart evidence interval range"),
+            ));
+        }
+        let mut candidate = self.clone();
+        let receipt = prepared.gsi_receipt();
+        for interval in &mut template.intervals {
+            interval.vegetation_forcing.gsi = receipt.result.growing_season_index;
+        }
+        candidate
+            .inner
+            .provider_gsi_receipt_sha256
+            .clone_from(&receipt.receipt_sha256);
+        let projected =
+            candidate.project_repository_forcing_receipts(prepared.forcing_receipts(), template)?;
+        for interval_index in start_interval..end_interval_exclusive {
+            candidate.inner.execute_interval(
+                0,
+                interval_index,
+                &projected.intervals[interval_index],
+            )?;
+        }
+        candidate.vegetation_state = project_v9_runtime_to_v10(
+            candidate.inner.vegetation_state(),
+            &candidate.vegetation_configuration,
+        )?;
+        candidate.lse_state = project_validated_v1_runtime_to_v2(
+            &candidate.inner.lse_configuration,
+            candidate.inner.lse_state(),
+            &candidate.lse_configuration,
+            &openwepp_land_surface_energy::Sha256Digest::try_new(
+                candidate
+                    .vegetation_configuration
+                    .configuration_sha256
+                    .clone(),
+            )?,
+        )?;
+        *self = candidate;
+        Ok(())
+    }
+
     #[cfg(test)]
     fn execute_first_interval_for_test(
         &mut self,
@@ -954,6 +1048,14 @@ impl DirectV9RealConsumerShadow {
     #[must_use]
     pub const fn biogeochemistry(&self) -> &BiogeochemistryState {
         &self.biogeochemistry
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
+    #[must_use]
+    pub const fn restart_authority_surface_configuration(
+        &self,
+    ) -> &DirectSurfaceLiquidConfiguration {
+        &self.surface_configuration
     }
 
     pub(crate) fn execute_day(

@@ -1,5 +1,6 @@
 //! Exact-owner rollback tests for `SC-LANDSURFACEENERGY-001` and
 //! `SC-SURFACELIQUID-001`.
+#![cfg_attr(not(test), allow(dead_code, unused_imports))]
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -544,20 +545,20 @@ fn biogeochemistry() -> BiogeochemistryState {
     }
 }
 
-pub(crate) struct EndpointFixture {
-    pub(crate) vegetation_configuration: VegetationConfiguration,
-    pub(crate) vegetation_state: V8CoupledOwnedState,
-    pub(crate) surface_configuration: DirectSurfaceLiquidConfiguration,
-    pub(crate) hydrology: RealHydrologyShadowAdapter,
-    pub(crate) lse_configuration: LandSurfaceEnergyConfiguration,
-    pub(crate) lse_state: LandSurfaceEnergyState,
-    pub(crate) forcing: LandSurfaceForcing,
-    pub(crate) thermal: SoilThermalSnapshot,
-    pub(crate) receipt: V8CanopyForcingReceipt,
-    pub(crate) biogeochemistry: BiogeochemistryState,
+pub struct EndpointFixture {
+    pub vegetation_configuration: VegetationConfiguration,
+    pub vegetation_state: V8CoupledOwnedState,
+    pub surface_configuration: DirectSurfaceLiquidConfiguration,
+    pub hydrology: RealHydrologyShadowAdapter,
+    pub lse_configuration: LandSurfaceEnergyConfiguration,
+    pub lse_state: LandSurfaceEnergyState,
+    pub forcing: LandSurfaceForcing,
+    pub thermal: SoilThermalSnapshot,
+    pub receipt: V8CanopyForcingReceipt,
+    pub biogeochemistry: BiogeochemistryState,
 }
 
-pub(crate) fn endpoint_fixture() -> EndpointFixture {
+pub fn endpoint_fixture() -> EndpointFixture {
     let (vegetation_configuration, vegetation_state) = vegetation();
     let (surface_configuration, frame) = surface();
     let hydrology = hydrology(&frame);

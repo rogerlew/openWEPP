@@ -7,6 +7,10 @@ rust-version = "1.85"
 repository = "https://github.com/rogerlew/openWEPP"
 publish = false
 
+[features]
+default = []
+restart-authority-evidence = []
+
 [lints.rust]
 unsafe_op_in_unsafe_fn = "warn"
 unreachable_pub = "warn"

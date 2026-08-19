@@ -658,7 +658,7 @@ fn receiver_expectations(
     )
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "restart-authority-evidence"))]
 #[path = "strict_v8_endpoint_tests.rs"]
 pub(crate) mod endpoint_rollback_tests;
 

@@ -291,6 +291,13 @@ fn restore_direct_gsi_state(
     )?)
 }
 
+#[cfg(feature = "restart-authority-evidence")]
+pub fn restart_authority_restore_gsi_state(
+    value: &DirectGsiOwnerStateV1,
+) -> Result<GsiState, SnowFreeHalfHourForcingError> {
+    restore_direct_gsi_state(value)
+}
+
 const fn direct_gsi_parameters(value: GsiParameters) -> DirectGsiParametersV1 {
     DirectGsiParametersV1 {
         minimum_temperature_inactive_c: value.minimum_temperature_inactive_c,

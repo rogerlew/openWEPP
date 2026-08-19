@@ -7,9 +7,13 @@ publish = false
 [workspace]
 
 [dependencies]
-openwepp-hillslope-orchestrator = { path = "../../../../../crates/openwepp-hillslope-orchestrator" }
+openwepp-hillslope-orchestrator = { path = "../../../../../crates/openwepp-hillslope-orchestrator", features = ["restart-authority-evidence"] }
 openwepp-kernel-contract = { path = "../../../../../crates/openwepp-kernel-contract" }
 openwepp-land-surface-energy = { path = "../../../../../crates/openwepp-land-surface-energy" }
+openwepp-vegetation = { path = "../../../../../crates/openwepp-vegetation" }
+openwepp-biogeochemistry = { path = "../../../../../crates/openwepp-biogeochemistry" }
+openwepp-plant-phenology = { path = "../../../../../crates/openwepp-plant-phenology" }
+openwepp-input-contract = { path = "../../../../../crates/openwepp-input-contract" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"

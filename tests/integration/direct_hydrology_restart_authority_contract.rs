@@ -54,11 +54,25 @@ fn all_real_vectors_are_canonical_digest_bound_typed_checkpoints() {
         );
         assert_eq!(parsed["version"], 1);
         assert_eq!(payload_digest(&raw), parsed["payload_sha256"]);
+        let scientific = if parsed["phase"]["kind"] == "between_days" {
+            &parsed["phase"]["committed"]["scientific"]
+        } else {
+            &parsed["phase"]["staged_scientific"]
+        };
         assert!(
-            parsed["direct_hydrology"]["lanes"]
+            scientific["direct_hydrology"]["lanes"]
                 .as_array()
                 .is_some_and(|v| !v.is_empty())
-        )
+        );
+        for owner in [
+            "vegetation_v10",
+            "lse_v2",
+            "direct_hydrology",
+            "soil_thermal",
+            "biogeochemistry",
+        ] {
+            assert!(!scientific[owner].is_null(), "{name} omits {owner}");
+        }
     }
     assert_eq!(
         value("checkpoint-in-progress-vector.json")["phase"]["next_interval_index"],
@@ -72,34 +86,32 @@ fn all_real_vectors_are_canonical_digest_bound_typed_checkpoints() {
         value("checkpoint-in-progress-vector.json")["phase"]["kind"],
         "in_progress_day"
     );
-    assert_eq!(
-        value("checkpoint-multi-destination-vector.json")["direct_hydrology"]["lanes"]
-            .as_array()
-            .unwrap()
-            .len(),
-        3
-    )
+    let multi = value("checkpoint-multi-destination-vector.json");
+    let receipts = multi["phase"]["validated_forcing_day_receipts"]
+        .as_array()
+        .unwrap();
+    assert_eq!(receipts.len(), 2);
+    assert!(
+        receipts
+            .iter()
+            .all(|receipt| receipt["intervals"].as_array().unwrap().len() == 48)
+    );
 }
 
 #[test]
-fn structural_representation_poisons_are_executable() {
-    let raw = artifact("checkpoint-in-progress-vector.json");
-    let parsed: Value = serde_json::from_slice(&raw).unwrap();
-    let mut missing = parsed.clone();
-    missing.as_object_mut().unwrap().remove("phase");
-    assert_ne!(serde_json::to_vec(&missing).unwrap(), raw);
-    let mut extra = parsed.clone();
-    extra["unexpected"] = Value::Bool(true);
-    assert_ne!(serde_json::to_vec(&extra).unwrap(), raw);
-    let mut wrong = parsed;
-    wrong["version"] = Value::from(2);
-    assert_ne!(wrong["version"], 1);
-    let mut whitespace = raw;
-    whitespace.insert(1, b' ');
-    assert_ne!(
-        serde_json::to_vec(&serde_json::from_slice::<Value>(&whitespace).unwrap()).unwrap(),
-        whitespace
-    )
+fn poison_inventory_is_bound_to_typed_admission_and_live_byte_evidence() {
+    let source = fs::read_to_string(root().join(
+        "docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/\
+         tools/restart-authority-reference/src/checkpoint.rs",
+    ))
+    .unwrap();
+    assert!(
+        source
+            .contains("complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes")
+    );
+    assert!(source.contains("admit_checkpoint_v1(&bytes, &context)"));
+    assert!(source.contains("let before = live();"));
+    assert!(source.contains("assert_eq!(live(), before)"));
 }
 
 #[test]
@@ -182,7 +194,7 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
 fn manifest_binds_every_schema_and_vector_byte_for_byte() {
     let manifest = value("artifact-manifest.json");
     let entries = manifest["artifacts"].as_array().unwrap();
-    assert_eq!(entries.len(), 5);
+    assert_eq!(entries.len(), 8);
     for entry in entries {
         let path = entry["path"].as_str().unwrap();
         assert_eq!(

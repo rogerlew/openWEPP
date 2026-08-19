@@ -63,3 +63,35 @@ several named poison categories are inventory strings rather than typed
 admission executions. These are closure blockers and supersede the preliminary
 PASS labels above. Terminal verification remains blocked pending correction
 and exact-current re-review.
+
+## Exact `89410d7d` continuation intake
+
+Ran: required HEAD, branch/origin synchronization, clean-tree, diff-hygiene,
+and complete instruction-discovery checks PASS. See
+`exact-89410d7d-intake.md`.
+
+Static: prior failed reviews are accepted as remediation requirements. Owner
+lineages are separated in `owner-lineage-domains.md`. No prior finding is
+marked corrected by this prose reconciliation; all remain OPEN until their
+named executable evidence passes. Production restart remains forbidden.
+
+## Exact-current typed-owner remediation (2026-08-18)
+
+Ran on the uncommitted remediation diff based on `89410d7d`:
+
+- package-local reference tests: PASS, 27/27;
+- package-local all-target warnings-denied Clippy: PASS;
+- deterministic typed artifact generator: PASS;
+- focused direct-hydrology restart authority: PASS, 5/5;
+- focused snow-free half-hour forcing adapter: PASS, 7/7;
+- focused V10 nighttime authority: PASS, 3/3;
+- authority-suite anti-evasion guard: PASS;
+- AUTH11 required-suite obligation guards: PASS, 3/3;
+- workspace formatting and diff hygiene: PASS.
+
+The regenerated authority contains typed GSI, forcing, V10, LSE-V2,
+direct-hydrology, soil-thermal, and BGC owners; a true phase-union schema; four
+repository-backed vectors; generated field metadata/ledger; real interval-24
+fresh-object continuation; exact day-beginning abort; and typed poison
+admission with actual live bytes unchanged. Independent exact-commit reviews
+remain intentionally undispatched until the remediation commit is frozen.

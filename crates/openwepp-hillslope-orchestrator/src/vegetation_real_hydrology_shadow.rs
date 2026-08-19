@@ -359,6 +359,12 @@ impl RealHydrologyShadowAdapter {
         &self.layer_maps
     }
 
+    #[cfg(feature = "restart-authority-evidence")]
+    #[must_use]
+    pub fn restart_authority_layer_maps(&self) -> &[RealHydrologyLaneLayerMap] {
+        &self.layer_maps
+    }
+
     #[must_use]
     pub fn snapshot_bytes(&self) -> &[u8] {
         &self.snapshot_bytes
