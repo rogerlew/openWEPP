@@ -4,7 +4,7 @@ use openwepp_hillslope_orchestrator::{
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::HexF64;
+use crate::{HexF64, LaneCount, WireLaneId, WirePrimitiveError};
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum TransferRestartError {
@@ -14,6 +14,8 @@ pub enum TransferRestartError {
     Nonnegative { field: &'static str },
     #[error("lane count does not fit the runtime usize")]
     LaneCountWidth,
+    #[error(transparent)]
+    Wire(#[from] WirePrimitiveError),
 }
 
 fn finite(field: &'static str, value: &HexF64) -> Result<f64, TransferRestartError> {
@@ -82,9 +84,9 @@ impl DirectTransferBuffersRestartV1 {
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DirectLaneTransferLedgerRestartV1 {
-    pub lane_id: u32,
-    pub upstream_lane_id: u32,
-    pub downstream_lane_id: u32,
+    pub lane_id: WireLaneId,
+    pub upstream_lane_id: WireLaneId,
+    pub downstream_lane_id: WireLaneId,
     pub upstream_area_ratio: HexF64,
     pub area_m2: HexF64,
     pub outgoing_surface_m: HexF64,
@@ -108,9 +110,9 @@ impl DirectLaneTransferLedgerRestartV1 {
             net_transfer_m,
         } = *value;
         Self {
-            lane_id,
-            upstream_lane_id,
-            downstream_lane_id,
+            lane_id: WireLaneId(lane_id),
+            upstream_lane_id: WireLaneId(upstream_lane_id),
+            downstream_lane_id: WireLaneId(downstream_lane_id),
             upstream_area_ratio: HexF64::from_f64(upstream_area_ratio),
             area_m2: HexF64::from_f64(area_m2),
             outgoing_surface_m: HexF64::from_f64(outgoing_surface_m),
@@ -122,9 +124,9 @@ impl DirectLaneTransferLedgerRestartV1 {
     }
     pub fn restore(&self) -> Result<DirectLaneTransferLedger, TransferRestartError> {
         Ok(DirectLaneTransferLedger {
-            lane_id: self.lane_id,
-            upstream_lane_id: self.upstream_lane_id,
-            downstream_lane_id: self.downstream_lane_id,
+            lane_id: self.lane_id.0,
+            upstream_lane_id: self.upstream_lane_id.0,
+            downstream_lane_id: self.downstream_lane_id.0,
             upstream_area_ratio: nonnegative("upstream_area_ratio", &self.upstream_area_ratio)?,
             area_m2: nonnegative("area_m2", &self.area_m2)?,
             outgoing_surface_m: nonnegative("outgoing_surface_m", &self.outgoing_surface_m)?,
@@ -139,8 +141,8 @@ impl DirectLaneTransferLedgerRestartV1 {
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DirectRunTransferDownstreamOperandsRestartV1 {
-    pub lane_count: u64,
-    pub outlet_lane_id: u32,
+    pub lane_count: LaneCount,
+    pub outlet_lane_id: WireLaneId,
     pub total_outgoing_surface_m: HexF64,
     pub total_outgoing_lateral_m: HexF64,
     pub total_received_surface_m: HexF64,
@@ -148,7 +150,9 @@ pub struct DirectRunTransferDownstreamOperandsRestartV1 {
     pub total_net_transfer_m: HexF64,
 }
 impl DirectRunTransferDownstreamOperandsRestartV1 {
-    pub fn project(value: &DirectRunTransferDownstreamOperands) -> Self {
+    pub fn project(
+        value: &DirectRunTransferDownstreamOperands,
+    ) -> Result<Self, TransferRestartError> {
         let DirectRunTransferDownstreamOperands {
             lane_count,
             outlet_lane_id,
@@ -158,21 +162,22 @@ impl DirectRunTransferDownstreamOperandsRestartV1 {
             total_received_lateral_m,
             total_net_transfer_m,
         } = *value;
-        Self {
-            lane_count: lane_count as u64,
-            outlet_lane_id,
+        let lane_count =
+            u32::try_from(lane_count).map_err(|_| TransferRestartError::LaneCountWidth)?;
+        Ok(Self {
+            lane_count: LaneCount::try_new(lane_count)?,
+            outlet_lane_id: WireLaneId(outlet_lane_id),
             total_outgoing_surface_m: HexF64::from_f64(total_outgoing_surface_m),
             total_outgoing_lateral_m: HexF64::from_f64(total_outgoing_lateral_m),
             total_received_surface_m: HexF64::from_f64(total_received_surface_m),
             total_received_lateral_m: HexF64::from_f64(total_received_lateral_m),
             total_net_transfer_m: HexF64::from_f64(total_net_transfer_m),
-        }
+        })
     }
     pub fn restore(&self) -> Result<DirectRunTransferDownstreamOperands, TransferRestartError> {
         Ok(DirectRunTransferDownstreamOperands {
-            lane_count: usize::try_from(self.lane_count)
-                .map_err(|_| TransferRestartError::LaneCountWidth)?,
-            outlet_lane_id: self.outlet_lane_id,
+            lane_count: self.lane_count.get() as usize,
+            outlet_lane_id: self.outlet_lane_id.0,
             total_outgoing_surface_m: nonnegative(
                 "total_outgoing_surface_m",
                 &self.total_outgoing_surface_m,
@@ -191,5 +196,78 @@ impl DirectRunTransferDownstreamOperandsRestartV1 {
             )?,
             total_net_transfer_m: finite("total_net_transfer_m", &self.total_net_transfer_m)?,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn all_transfer_types_round_trip_every_field_bit_exactly() {
+        let buffers = DirectTransferBuffers {
+            surface_carry_m: std::array::from_fn(|i| i as f64 / 1000.0),
+            surface_hourly_weights: [1.0 / 24.0; 24],
+            lateral_carry_m: std::array::from_fn(|i| (23 - i) as f64 / 2000.0),
+            upstream_flow_m: -0.0,
+            subsurface_input_m: 0.04,
+        };
+        let dto = DirectTransferBuffersRestartV1::project(&buffers);
+        assert_eq!(
+            DirectTransferBuffersRestartV1::project(&dto.restore().expect("valid buffers")),
+            dto
+        );
+        let ledger = DirectLaneTransferLedger {
+            lane_id: 2,
+            upstream_lane_id: 1,
+            downstream_lane_id: 3,
+            upstream_area_ratio: 0.75,
+            area_m2: 120.0,
+            outgoing_surface_m: 0.1,
+            outgoing_lateral_m: 0.2,
+            received_surface_m: -0.0,
+            received_lateral_m: 0.3,
+            net_transfer_m: -0.1,
+        };
+        let dto = DirectLaneTransferLedgerRestartV1::project(&ledger);
+        assert_eq!(
+            DirectLaneTransferLedgerRestartV1::project(&dto.restore().expect("valid ledger")),
+            dto
+        );
+        let run = DirectRunTransferDownstreamOperands {
+            lane_count: 3,
+            outlet_lane_id: 3,
+            total_outgoing_surface_m: 0.1,
+            total_outgoing_lateral_m: 0.2,
+            total_received_surface_m: -0.0,
+            total_received_lateral_m: 0.3,
+            total_net_transfer_m: -0.1,
+        };
+        let dto =
+            DirectRunTransferDownstreamOperandsRestartV1::project(&run).expect("valid projection");
+        assert_eq!(
+            DirectRunTransferDownstreamOperandsRestartV1::project(
+                &dto.restore().expect("valid run")
+            )
+            .expect("valid projection"),
+            dto
+        );
+    }
+    #[test]
+    fn transfer_domain_and_lane_count_poisons_reject() {
+        let mut buffers = DirectTransferBuffersRestartV1::project(&DirectTransferBuffers::zero());
+        buffers.surface_carry_m[7] = HexF64::from_f64(-0.1);
+        assert_eq!(
+            buffers.restore(),
+            Err(TransferRestartError::Nonnegative {
+                field: "surface_carry_m"
+            })
+        );
+        let zero = DirectRunTransferDownstreamOperands::zero();
+        assert_eq!(
+            DirectRunTransferDownstreamOperandsRestartV1::project(&zero),
+            Err(TransferRestartError::Wire(WirePrimitiveError::ZeroCount {
+                kind: "lane"
+            }))
+        );
     }
 }

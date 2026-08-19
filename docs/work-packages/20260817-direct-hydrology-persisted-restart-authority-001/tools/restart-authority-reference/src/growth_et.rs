@@ -11,6 +11,13 @@ pub enum GrowthEtRestartError {
     Nonnegative { field: &'static str },
     #[error("{field} must be within 0..=1")]
     Fraction { field: &'static str },
+    #[error("{field} must be finite and positive")]
+    Positive { field: &'static str },
+    #[error("{field} must be within 0..={maximum}")]
+    Bounded {
+        field: &'static str,
+        maximum: &'static str,
+    },
 }
 fn nn(field: &'static str, v: &HexF64) -> Result<f64, GrowthEtRestartError> {
     let x = v.to_f64();
@@ -23,6 +30,22 @@ fn frac(field: &'static str, v: &HexF64) -> Result<f64, GrowthEtRestartError> {
     (x.is_finite() && (0.0..=1.0).contains(&x))
         .then_some(x)
         .ok_or(GrowthEtRestartError::Fraction { field })
+}
+fn positive(field: &'static str, v: &HexF64) -> Result<f64, GrowthEtRestartError> {
+    let x = v.to_f64();
+    (x.is_finite() && x > 0.0)
+        .then_some(x)
+        .ok_or(GrowthEtRestartError::Positive { field })
+}
+fn canopy_cover(v: &HexF64) -> Result<f64, GrowthEtRestartError> {
+    const PL_GROWTH_CANCOV_MAX: f64 = 0.999;
+    let x = v.to_f64();
+    (x.is_finite() && (0.0..=PL_GROWTH_CANCOV_MAX).contains(&x))
+        .then_some(x)
+        .ok_or(GrowthEtRestartError::Bounded {
+            field: "canopy_cover_fraction",
+            maximum: "PL_GROWTH_CANCOV_MAX (0.999)",
+        })
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -52,7 +75,7 @@ impl DirectEvapotranspirationStageRestartV1 {
         Ok(DirectEvapotranspirationStageState {
             s1_m: nn("s1_m", &self.s1_m)?,
             s2_m: nn("s2_m", &self.s2_m)?,
-            threshold_m: nn("threshold_m", &self.threshold_m)?,
+            threshold_m: positive("threshold_m", &self.threshold_m)?,
             counter: nn("counter", &self.counter)?,
         })
     }
@@ -105,7 +128,7 @@ impl DirectGrowthStateSurfaceRestartV1 {
                 &self.interception_live_biomass_kg_m2,
             )?,
             canopy_height_m: nn("canopy_height_m", &self.canopy_height_m)?,
-            canopy_cover_fraction: frac("canopy_cover_fraction", &self.canopy_cover_fraction)?,
+            canopy_cover_fraction: canopy_cover(&self.canopy_cover_fraction)?,
             leaf_area_index: nn("leaf_area_index", &self.leaf_area_index)?,
             root_mass_kg_m2: nn("root_mass_kg_m2", &self.root_mass_kg_m2)?,
             root_depth_m: nn("root_depth_m", &self.root_depth_m)?,
@@ -124,21 +147,63 @@ mod tests {
         growth.canopy_cover_fraction = HexF64::from_f64(1.01);
         assert_eq!(
             growth.restore(),
-            Err(GrowthEtRestartError::Fraction {
-                field: "canopy_cover_fraction"
+            Err(GrowthEtRestartError::Bounded {
+                field: "canopy_cover_fraction",
+                maximum: "PL_GROWTH_CANCOV_MAX (0.999)"
             })
         );
         let mut et =
             DirectEvapotranspirationStageRestartV1::project(&DirectEvapotranspirationStageState {
                 s1_m: 0.0,
                 s2_m: 0.0,
-                threshold_m: 0.0,
+                threshold_m: 0.1,
                 counter: 0.0,
             });
         et.counter = HexF64::from_f64(f64::NAN);
         assert_eq!(
             et.restore(),
             Err(GrowthEtRestartError::Nonnegative { field: "counter" })
+        );
+        et.counter = HexF64::from_f64(0.0);
+        et.threshold_m = HexF64::from_f64(0.0);
+        assert_eq!(
+            et.restore(),
+            Err(GrowthEtRestartError::Positive {
+                field: "threshold_m"
+            })
+        );
+    }
+
+    #[test]
+    fn et_and_growth_round_trip_every_field_bit_exactly() {
+        let et = DirectEvapotranspirationStageState {
+            s1_m: -0.0,
+            s2_m: 0.02,
+            threshold_m: 0.03,
+            counter: 4.0,
+        };
+        let et_dto = DirectEvapotranspirationStageRestartV1::project(&et);
+        assert_eq!(
+            DirectEvapotranspirationStageRestartV1::project(&et_dto.restore().expect("valid ET")),
+            et_dto
+        );
+        let growth = DirectGrowthStateSurface {
+            sumgdd: -0.0,
+            live_biomass_kg_m2: 0.1,
+            interception_live_biomass_kg_m2: 0.2,
+            canopy_height_m: 0.3,
+            canopy_cover_fraction: 0.5,
+            leaf_area_index: 1.2,
+            root_mass_kg_m2: 0.4,
+            root_depth_m: 0.7,
+            harvest_index: 0.6,
+        };
+        let growth_dto = DirectGrowthStateSurfaceRestartV1::project(&growth);
+        assert_eq!(
+            DirectGrowthStateSurfaceRestartV1::project(
+                &growth_dto.restore().expect("valid growth")
+            ),
+            growth_dto
         );
     }
 }

@@ -120,7 +120,7 @@ macro_rules! integer_wire {
     };
 }
 integer_wire!(WireDayIndex, u64);
-integer_wire!(WireLaneIndex, u32);
+integer_wire!(WireLaneId, u32);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(transparent)]

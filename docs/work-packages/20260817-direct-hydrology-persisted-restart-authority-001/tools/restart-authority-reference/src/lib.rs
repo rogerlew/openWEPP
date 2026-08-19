@@ -17,7 +17,7 @@ pub use growth_et::{
 pub use hydrology_core::{DirectHydrologyCoreError, DirectWaterStateRestartV1};
 pub use primitives::{
     AcceptedIntervalCount, DestinationCount, HexF64, HexU128, InProgressIntervalIndex, LaneCount,
-    Sha256Hex, WireDayIndex, WireIntervalIndex, WireLaneIndex, WirePrimitiveError,
+    Sha256Hex, WireDayIndex, WireIntervalIndex, WireLaneId, WirePrimitiveError,
 };
 pub use subsurface::{DirectSubsurfaceLayerRestartV1, SubsurfaceRestartError};
 pub use transfer::{
