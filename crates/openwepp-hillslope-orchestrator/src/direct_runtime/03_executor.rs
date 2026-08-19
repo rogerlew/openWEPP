@@ -418,6 +418,105 @@ impl DirectFrameExecutor {
         Ok(execution)
     }
 
+    /// Runs the production stream while advancing an isolated V10 owner set
+    /// from the repository-sealed GSI/forcing capability once per complete day.
+    /// The runner has no selector for this default-off evidence seam.
+    pub fn run_publication_stream_with_v10_prepared_shadow<F, V, S>(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        build_day_input: F,
+        mut prepare_shadow_day: V,
+        mut consume_row: S,
+        shadow: &mut crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        V: FnMut(
+            usize,
+            &[DirectDayFrame],
+            &[DirectPublicationDayInput],
+            &crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow,
+        ) -> Result<
+            (
+                crate::runtime_inputs::PreparedSnowFreeGsiDayV1,
+                crate::v9_real_consumer_shadow::DirectV10ShadowDayInput,
+            ),
+            DirectRuntimeError,
+        >,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+    {
+        if frame.laned_active.is_some() {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "v10_shadow.laned_active_unsupported",
+            });
+        }
+        let mut production_candidate = frame.clone();
+        let mut shadow_candidate = shadow.clone();
+        let mut projected_inputs = Vec::with_capacity(production_candidate.identity.lane_count);
+        let mut projected_frames = Vec::with_capacity(production_candidate.identity.lane_count);
+        let mut buffered_rows = Vec::<(DirectPublicationDayRow, DirectDayFrame)>::new();
+        let execution = self.run_publication_stream_with_day_hook(
+            &mut production_candidate,
+            metadata,
+            build_day_input,
+            |row, day_frame| {
+                buffered_rows.push((row.clone(), day_frame.clone()));
+                Ok(())
+            },
+            |event| match event {
+                DirectPublicationDayHook::ProjectedDay {
+                    lane_index,
+                    input,
+                    frame,
+                } => {
+                    if lane_index != projected_inputs.len() {
+                        return Err(DirectRuntimeError::DirectDomainViolation {
+                            field: "v10_shadow.repository_day_input_order",
+                        });
+                    }
+                    projected_inputs.push(input.clone());
+                    projected_frames.push(frame.clone());
+                    Ok(())
+                }
+                DirectPublicationDayHook::CompleteDay { day_index } => {
+                    let (prepared, template) = prepare_shadow_day(
+                        day_index,
+                        &projected_frames,
+                        &projected_inputs,
+                        &shadow_candidate,
+                    )?;
+                    let immutable_shadow_frame = shadow_candidate.hydrology_frame().clone();
+                    shadow_candidate
+                        .execute_prepared_gsi_day(
+                            &immutable_shadow_frame,
+                            &projected_frames,
+                            &projected_inputs,
+                            prepared,
+                            template,
+                        )
+                        .map_err(|error| DirectRuntimeError::V9RealConsumerShadowFailure {
+                            category: error.category(),
+                            detail: error.to_string(),
+                        })?;
+                    projected_inputs.clear();
+                    projected_frames.clear();
+                    Ok(())
+                }
+            },
+        )?;
+        for (row, day_frame) in &buffered_rows {
+            consume_row(row, day_frame)?;
+        }
+        *frame = production_candidate;
+        *shadow = shadow_candidate;
+        Ok(execution)
+    }
+
     #[allow(clippy::too_many_lines)]
     fn run_publication_stream_with_day_hook<F, S, H>(
         &self,

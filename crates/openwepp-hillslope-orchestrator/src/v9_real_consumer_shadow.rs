@@ -432,7 +432,25 @@ pub enum DirectV10RealConsumerError {
     Runtime(#[from] DirectV9RealConsumerError),
 }
 
+impl DirectV10RealConsumerError {
+    #[must_use]
+    pub const fn category(&self) -> &'static str {
+        match self {
+            Self::V10(_) => "vegetation_v10",
+            Self::LseV2(_) => "land_surface_energy_v2",
+            Self::LandSurface(_) => "land_surface_energy",
+            Self::ForcingProvider(_) => "forcing_provider",
+            Self::Runtime(error) => error.category(),
+        }
+    }
+}
+
 impl DirectV10RealConsumerShadow {
+    #[must_use]
+    pub const fn hydrology_frame(&self) -> &DirectRunFrame {
+        self.inner.hydrology_frame()
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn try_new(
         vegetation_configuration: VegetationConfiguration,
@@ -453,6 +471,25 @@ impl DirectV10RealConsumerShadow {
     ) -> Result<Self, DirectV10RealConsumerError> {
         gsi_owner_configuration.validate()?;
         provider_static_configuration.validate()?;
+        let expected_provider_destinations = lse_configuration
+            .ofes
+            .iter()
+            .flat_map(|ofe| {
+                ofe.tiles
+                    .iter()
+                    .map(move |tile| (ofe.ofe_id.as_str(), tile.tile_id.as_str()))
+            })
+            .collect::<Vec<_>>();
+        let actual_provider_destinations = provider_static_configuration
+            .destinations
+            .iter()
+            .map(|destination| (destination.ofe_id.as_str(), destination.tile_id.as_str()))
+            .collect::<Vec<_>>();
+        if actual_provider_destinations != expected_provider_destinations {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Identity("provider/LSE destination topology"),
+            ));
+        }
         if provider_static_configuration.gsi_owner_configuration_sha256
             != gsi_owner_configuration.configuration_sha256
             || provider_static_configuration.run_id != hydrology_frame.identity.run_id.to_string()
@@ -528,9 +565,39 @@ impl DirectV10RealConsumerShadow {
         prepared: PreparedSnowFreeGsiDayV1,
         mut template: DirectV10ShadowDayInput,
     ) -> Result<DirectV10ShadowDayReceipt, DirectV10RealConsumerError> {
-        let mut candidate = self.clone();
         let gsi_receipt = prepared.gsi_receipt();
+        if gsi_receipt.run_id != self.provider_static_configuration.run_id
+            || gsi_receipt.configuration_sha256 != self.gsi_owner_configuration.configuration_sha256
+            || prepared.forcing_receipts().len()
+                != self.provider_static_configuration.destinations.len()
+            || prepared
+                .forcing_receipts()
+                .iter()
+                .zip(&self.provider_static_configuration.destinations)
+                .any(|(receipt, destination)| {
+                    receipt.intervals.len() != INTERVALS_PER_DAY
+                        || receipt.intervals.iter().any(|interval| {
+                            interval.ofe_id != destination.ofe_id
+                                || interval.tile_id != destination.tile_id
+                                || interval.wb14_configuration_sha256
+                                    != destination.wb14_configuration_sha256
+                                || interval.co2_pa.to_bits()
+                                    != self.provider_static_configuration.co2_pa.to_bits()
+                                || interval.reference_height_m.to_bits()
+                                    != self
+                                        .provider_static_configuration
+                                        .reference_height_m
+                                        .to_bits()
+                        })
+                })
+        {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Identity("prepared provider static owner"),
+            ));
+        }
+        let mut candidate = self.clone();
         let accepted_gsi_receipt_sha256 = gsi_receipt.receipt_sha256.clone();
+        let accepted_gsi_day_index = gsi_receipt.day_index;
         for interval in &mut template.intervals {
             interval.vegetation_forcing.gsi = gsi_receipt.result.growing_season_index;
         }
@@ -548,6 +615,13 @@ impl DirectV10RealConsumerShadow {
         )?;
         candidate.inner.provider_gsi_receipt_sha256 = accepted_gsi_receipt_sha256;
         prepared.commit(&mut candidate.gsi_state, &mut candidate.provider_cursor)?;
+        candidate.provider_cursor.validate_for_configuration(
+            &candidate.provider_static_configuration,
+            usize::try_from(accepted_gsi_day_index)
+                .map_err(|_| DirectV9RealConsumerError::Identity("provider day width"))?
+                .checked_add(1)
+                .ok_or(DirectV9RealConsumerError::Identity("provider day overflow"))?,
+        )?;
         *self = candidate;
         Ok(receipt)
     }
@@ -1963,14 +2037,28 @@ mod tests {
                 .identity
                 .run_id
                 .to_string(),
-            co2_pa: 42.0,
-            reference_height_m: 20.0,
+            co2_pa: fixture.receipt.forcing().co2_pa,
+            reference_height_m: fixture.receipt.forcing().reference_height_m,
             gsi_owner_configuration_sha256: gsi_owner_configuration.configuration_sha256.clone(),
-            destinations: vec![SnowFreeHalfHourDestination {
-                ofe_id: "ofe-1".into(),
-                tile_id: "tile-covered".into(),
-                wb14_configuration_sha256: "7".repeat(64),
-            }],
+            destinations: lse_configuration
+                .ofes
+                .iter()
+                .flat_map(|ofe| {
+                    let wb14 = DirectOfeWb14Parameters {
+                        ofe_id: ofe.ofe_id.clone(),
+                        effective_conductivity_m_s: 1e-6,
+                        matric_potential_m: 0.1,
+                        infiltration_storage_capacity_m: 0.04,
+                    };
+                    ofe.tiles
+                        .iter()
+                        .map(move |tile| SnowFreeHalfHourDestination {
+                            ofe_id: ofe.ofe_id.as_str().to_string(),
+                            tile_id: tile.tile_id.as_str().to_string(),
+                            wb14_configuration_sha256: wb14_parameter_sha256(&wb14),
+                        })
+                })
+                .collect(),
         };
 
         let shadow = DirectV10RealConsumerShadow::try_new(
@@ -2607,6 +2695,67 @@ mod tests {
         assert_eq!(observed_rows, baseline_rows);
         assert_eq!(observed_report, baseline_report);
         assert_eq!(shadow.accepted_interval_count(), INTERVALS_PER_DAY as u64);
+    }
+
+    #[test]
+    fn scheduler_consumes_repository_prepared_v10_day_without_changing_production() {
+        let (mut shadow, fixture) = v10_shadow_fixture();
+        let mut production = fixture.hydrology.beginning_frame().clone();
+        let mut baseline = production.clone();
+        let template = day_input(&fixture);
+        let production_input = production_day_input();
+        let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 0.0 2.5 180.0 20.0\n";
+        let climate = parse_climate_from_str(source, ParserMode::Strict).expect("strict climate");
+        let request = build_hillslope_climate_runtime_request(&climate).expect("climate request");
+        let executor = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly);
+        executor
+            .run_publication_stream_with_interleaved_day_inputs_and_day_frames(
+                &mut baseline,
+                DirectPublicationRunMetadata {
+                    run_name: "v10-repository-scheduler-baseline".into(),
+                    runtime_selection: "direct-baseline".into(),
+                    output_policy: "test-only".into(),
+                },
+                |_, _, _| Ok(production_input.clone()),
+                |_, _| Ok(()),
+            )
+            .expect("baseline scheduler day");
+        executor
+            .run_publication_stream_with_v10_prepared_shadow(
+                &mut production,
+                DirectPublicationRunMetadata {
+                    run_name: "v10-repository-scheduler-shadow".into(),
+                    runtime_selection: "direct-default-off-shadow-test".into(),
+                    output_policy: "test-only".into(),
+                },
+                |_, _, _| Ok(production_input.clone()),
+                |day_index, _, _, candidate| {
+                    let prepared = request
+                        .prepare_snow_free_gsi_day_from_repository(
+                            day_index,
+                            candidate.provider_static_configuration(),
+                            candidate.gsi_owner_configuration(),
+                            candidate.gsi_state(),
+                            candidate.provider_cursor(),
+                        )
+                        .map_err(|error| {
+                            crate::DirectRuntimeError::V9RealConsumerShadowFailure {
+                                category: "forcing_provider",
+                                detail: error.to_string(),
+                            }
+                        })?;
+                    Ok((prepared, template.clone()))
+                },
+                |_, _| Ok(()),
+                &mut shadow,
+            )
+            .expect("scheduler consumes sealed repository day");
+        assert_eq!(production, baseline);
+        assert_eq!(shadow.inner.accepted_interval_count(), 48);
+        shadow
+            .provider_cursor()
+            .validate_for_configuration(shadow.provider_static_configuration(), 1)
+            .expect("provider cursor advances exactly once");
     }
 
     #[test]
