@@ -1,11 +1,103 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use serde::de::{MapAccess, SeqAccess, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use sha2::{Digest, Sha256};
 
 const AUTHORITY: &str = "docs/specifications/direct-hydrology-restart-v1.md";
 const PACKAGE: &str =
     "docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts";
+
+#[derive(Clone, Debug)]
+enum CanonicalJson {
+    Null,
+    Bool(bool),
+    Number(serde_json::Number),
+    String(String),
+    Array(Vec<Self>),
+    Object(Vec<(String, Self)>),
+}
+
+impl Serialize for CanonicalJson {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            Self::Null => serializer.serialize_none(),
+            Self::Bool(value) => serializer.serialize_bool(*value),
+            Self::Number(value) => value.serialize(serializer),
+            Self::String(value) => serializer.serialize_str(value),
+            Self::Array(values) => values.serialize(serializer),
+            Self::Object(entries) => {
+                use serde::ser::SerializeMap;
+                let mut map = serializer.serialize_map(Some(entries.len()))?;
+                for (key, value) in entries {
+                    map.serialize_entry(key, value)?;
+                }
+                map.end()
+            }
+        }
+    }
+}
+
+struct CanonicalJsonVisitor;
+
+impl<'de> Visitor<'de> for CanonicalJsonVisitor {
+    type Value = CanonicalJson;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("a canonical JSON value without duplicate object members")
+    }
+    fn visit_unit<E>(self) -> Result<Self::Value, E> {
+        Ok(CanonicalJson::Null)
+    }
+    fn visit_none<E>(self) -> Result<Self::Value, E> {
+        Ok(CanonicalJson::Null)
+    }
+    fn visit_bool<E>(self, value: bool) -> Result<Self::Value, E> {
+        Ok(CanonicalJson::Bool(value))
+    }
+    fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E> {
+        Ok(CanonicalJson::Number(value.into()))
+    }
+    fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E> {
+        Ok(CanonicalJson::Number(value.into()))
+    }
+    fn visit_f64<E: serde::de::Error>(self, value: f64) -> Result<Self::Value, E> {
+        serde_json::Number::from_f64(value)
+            .map(CanonicalJson::Number)
+            .ok_or_else(|| E::custom("non-finite JSON number"))
+    }
+    fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
+        Ok(CanonicalJson::String(value.to_owned()))
+    }
+    fn visit_string<E>(self, value: String) -> Result<Self::Value, E> {
+        Ok(CanonicalJson::String(value))
+    }
+    fn visit_seq<A: SeqAccess<'de>>(self, mut sequence: A) -> Result<Self::Value, A::Error> {
+        let mut values = Vec::new();
+        while let Some(value) = sequence.next_element()? {
+            values.push(value);
+        }
+        Ok(CanonicalJson::Array(values))
+    }
+    fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+        let mut values = Vec::new();
+        let mut names = std::collections::BTreeSet::new();
+        while let Some((key, value)) = map.next_entry::<String, CanonicalJson>()? {
+            if !names.insert(key.clone()) {
+                return Err(serde::de::Error::custom(format!("duplicate field {key}")));
+            }
+            values.push((key, value));
+        }
+        Ok(CanonicalJson::Object(values))
+    }
+}
+
+impl<'de> Deserialize<'de> for CanonicalJson {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        deserializer.deserialize_any(CanonicalJsonVisitor)
+    }
+}
 
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).to_path_buf()
@@ -21,6 +113,24 @@ fn artifact(name: &str) -> Vec<u8> {
 }
 fn schema() -> serde_json::Value {
     serde_json::from_slice(&artifact("checkpoint-schema.json")).expect("checkpoint schema")
+}
+
+fn canonical_parse(raw: &[u8]) -> Result<CanonicalJson, String> {
+    if raw.last() != Some(&b'\n') || raw[..raw.len().saturating_sub(1)].contains(&b'\n') {
+        return Err("noncanonical line ending".into());
+    }
+    let parsed: CanonicalJson =
+        serde_json::from_slice(&raw[..raw.len() - 1]).map_err(|error| error.to_string())?;
+    let mut canonical = serde_json::to_vec(&parsed).map_err(|error| error.to_string())?;
+    canonical.push(b'\n');
+    if raw != canonical {
+        return Err("input bytes differ from canonical serialization".into());
+    }
+    let required_prefix = b"{\"schema\":\"OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1\",\"version\":1,\"run_identity\":";
+    if !raw.starts_with(required_prefix) {
+        return Err("noncanonical top-level member order".into());
+    }
+    Ok(parsed)
 }
 
 fn assert_payload_digest(raw: &[u8], value: &serde_json::Value) {
@@ -41,6 +151,7 @@ fn validate_semantics(raw: &[u8]) -> serde_json::Value {
     assert_eq!(raw.last(), Some(&b'\n'), "canonical artifact has one LF");
     assert!(!raw[..raw.len() - 1].contains(&b'\n'));
     assert!(!raw.contains(&b' '));
+    canonical_parse(raw).expect("strict canonical typed JSON tree");
     let value: serde_json::Value = serde_json::from_slice(raw).expect("strict JSON syntax");
     jsonschema::draft202012::new(&schema())
         .expect("compile schema")
@@ -64,15 +175,15 @@ fn validate_semantics(raw: &[u8]) -> serde_json::Value {
             assert!(!receipts.is_empty());
             let mut previous: Option<(&str, &str)> = None;
             for destination in receipts {
+                let intervals = destination["intervals"].as_array().expect("intervals");
                 let identity = (
-                    destination["ofe_id"].as_str().expect("OFE"),
-                    destination["tile_id"].as_str().expect("tile"),
+                    intervals[0]["ofe_id"].as_str().expect("OFE"),
+                    intervals[0]["tile_id"].as_str().expect("tile"),
                 );
                 if let Some(prior) = previous {
                     assert!(prior < identity);
                 }
                 previous = Some(identity);
-                let intervals = destination["intervals"].as_array().expect("intervals");
                 assert_eq!(intervals.len(), 48);
                 for (index, interval) in intervals.iter().enumerate() {
                     assert_eq!(interval["interval_index"], index);
@@ -186,6 +297,25 @@ fn structural_and_representation_poisons_are_executable() {
     native_float["phase"]["staged_candidate_owners"]["direct_hydrology"]["lanes"][0]["water"]["surface_runoff_kg_m2"] =
         serde_json::json!(1.375);
     assert!(compiled.validate(&native_float).is_err());
+
+    let canonical = artifact("checkpoint-vector.json");
+    let mut whitespace = canonical.clone();
+    whitespace.insert(1, b' ');
+    assert!(canonical_parse(&whitespace).is_err());
+    let reordered = String::from_utf8(canonical.clone())
+        .expect("UTF-8")
+        .replacen(
+            "{\"schema\":\"OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1\",\"version\":1",
+            "{\"version\":1,\"schema\":\"OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1\"",
+            1,
+        );
+    assert!(canonical_parse(reordered.as_bytes()).is_err());
+    let duplicate = String::from_utf8(canonical).expect("UTF-8").replacen(
+        "{\"schema\":",
+        "{\"version\":1,\"schema\":",
+        1,
+    );
+    assert!(canonical_parse(duplicate.as_bytes()).is_err());
 
     let matrix = text(&format!("{PACKAGE}/poison-matrix.md"));
     for category in [

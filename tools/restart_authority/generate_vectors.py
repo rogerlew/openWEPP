@@ -21,6 +21,18 @@ def sha(label: str) -> str:
     return hashlib.sha256(label.encode()).hexdigest()
 
 
+def content_sha256(value: dict, digest_field: str) -> str:
+    canonical = copy.deepcopy(value)
+    canonical.pop(digest_field, None)
+    return hashlib.sha256(
+        json.dumps(canonical, separators=(",", ":"), ensure_ascii=False).encode()
+    ).hexdigest()
+
+
+def seal(value: dict, digest_field: str) -> None:
+    value[digest_field] = content_sha256(value, digest_field)
+
+
 def parcel(label: str, mass: float) -> dict:
     return {
         "parcel_id": label,
@@ -50,23 +62,54 @@ def forcing_dest(ofe: str, tile: str, covered: bool) -> dict:
     intervals = []
     for index in range(48):
         par = 0.0 if index < 12 or index > 36 else (25.0 if index == 12 else 350.0)
-        intervals.append({
+        interval = {
+            "provider_definition_sha256": sha("snow-free-provider-definition"),
+            "source_climate_sha256": sha("climate-day-12"),
+            "run_id": "restart-authority-run",
+            "day_index": 12,
+            "ofe_id": ofe,
+            "tile_id": tile,
             "interval_index": index,
+            "transaction_id": f"restart-authority-run:12:{index}",
             "start_s": index * 1800,
             "end_s": (index + 1) * 1800,
+            "parent_hour_index": index // 2,
             "air_temperature_c": h64(4.0 + index / 4.0),
+            "dew_point_c": h64(2.0),
+            "wind_m_s": h64(2.5),
+            "pressure_kpa": h64(87.65),
+            "actual_vapor_pressure_kpa": h64(0.7056),
+            "specific_humidity_kg_kg": h64(0.005),
             "vpd_kpa": h64(0.4 + index / 100.0),
+            "cloud_fraction": h64(0.2),
+            "solar_zenith_cosine": h64(0.0 if par == 0.0 else 0.6),
             "global_horizontal_shortwave_w_m2": h64(par),
+            "direct_visible_w_m2": h64(par * 0.25),
+            "diffuse_visible_w_m2": h64(par * 0.25),
+            "direct_nir_w_m2": h64(par * 0.25),
+            "diffuse_nir_w_m2": h64(par * 0.25),
+            "downward_longwave_w_m2": h64(310.0),
+            "co2_pa": h64(42.0),
+            "reference_height_m": h64(20.0),
+            "gsi": h64(0.55),
+            "gsi_receipt_sha256": sha("gsi-receipt"),
+            "wb14_configuration_sha256": sha(f"wb14-{ofe}-{tile}"),
             "precipitation_parcels": [],
-            "interval_receipt_sha256": sha(f"{ofe}-{tile}-{index}"),
-        })
+        }
+        interval["interval_receipt_sha256"] = sha(
+            json.dumps(interval, separators=(",", ":"), ensure_ascii=False)
+        )
+        intervals.append(interval)
     return {
-        "ofe_id": ofe,
-        "tile_id": tile,
-        "covered": covered,
-        "wb14_configuration_sha256": sha(f"wb14-{ofe}-{tile}"),
+        "provider_version": "OPENWEPP_SNOW_FREE_HALF_HOUR_FORCING_V1",
+        "provider_definition_sha256": sha("snow-free-provider-definition"),
+        "source_climate_sha256": sha("climate-day-12"),
+        "run_id": "restart-authority-run",
+        "day_index": 12,
+        "daily_horizontal_energy_mj_m2": h64(17.5728),
         "intervals": intervals,
-        "receipt_sha256": sha(f"day-{ofe}-{tile}"),
+        "next_day_precipitation_carry": [],
+        "receipt_sha256": sha(json.dumps(intervals, separators=(",", ":"))),
     }
 
 
@@ -137,6 +180,127 @@ def owners(tag: str, state_shift: float = 0.0) -> dict:
     }
 
 
+def gsi_state(tag: str, ordinal_day: int) -> dict:
+    value = {
+        "history_oldest_first": [h64(0.05 + index / 40.0) for index in range(21)],
+        "last_date": {"year": 2000, "ordinal_day": ordinal_day},
+        "state_sha256": "",
+    }
+    seal(value, "state_sha256")
+    return value
+
+
+def normalize_owners(value: dict) -> None:
+    seal(value["gsi_configuration"], "configuration_sha256")
+    seal(value["gsi_state"], "state_sha256")
+    value["static_forcing_configuration"]["gsi_owner_configuration_sha256"] = value[
+        "gsi_configuration"
+    ]["configuration_sha256"]
+    seal(value["static_forcing_configuration"], "configuration_sha256")
+    cursor_value = value["forcing_provider_cursor"]
+    cursor_value["static_configuration_sha256"] = value["static_forcing_configuration"][
+        "configuration_sha256"
+    ]
+    seal(cursor_value, "cursor_sha256")
+    for key, digest_field in [
+        ("vegetation_v10_configuration", "configuration_sha256"),
+        ("vegetation_v10_state", "state_sha256"),
+        ("lse_v2_configuration", "configuration_sha256"),
+        ("lse_v2_state", "state_sha256"),
+        ("surface_liquid_configuration", "configuration_sha256"),
+        ("soil_thermal_configuration", "configuration_sha256"),
+        ("soil_thermal_state", "state_sha256"),
+        ("biogeochemistry_configuration", "configuration_sha256"),
+        ("biogeochemistry_state", "state_sha256"),
+    ]:
+        seal(value[key], digest_field)
+    hydrology = value["direct_hydrology"]
+    for lane in hydrology["lanes"]:
+        seal(lane["transfer"], "custody_sha256")
+        seal(lane["erosion_runtime"], "receipt_sha256")
+    for ledger in hydrology["lane_transfer_ledger"]:
+        seal(ledger, "receipt_sha256")
+    seal(hydrology["lane_transfer_downstream_operands"], "receipt_sha256")
+    seal(hydrology["groundwater"], "state_sha256")
+    seal(hydrology["surface_liquid_owned_state"], "state_sha256")
+    seal(hydrology, "state_sha256")
+
+
+def normalize_checkpoint(value: dict) -> dict:
+    phase = value["phase"]
+    owner_keys = (
+        ["committed_owners"]
+        if phase["kind"] == "between_days"
+        else ["committed_beginning_owners", "staged_candidate_owners"]
+    )
+    for key in owner_keys:
+        normalize_owners(phase[key])
+    if phase["kind"] == "in_progress_day":
+        beginning_owners = phase["committed_beginning_owners"]
+        staged_owners = phase["staged_candidate_owners"]
+        beginning_state = copy.deepcopy(beginning_owners.pop("gsi_state"))
+        staged_owners.pop("gsi_state")
+        beginning_cursor = copy.deepcopy(beginning_owners.pop("forcing_provider_cursor"))
+        staged_owners.pop("forcing_provider_cursor")
+        ending_state = gsi_state("ending", 172)
+        phase["beginning_provider_cursor"] = beginning_cursor
+        phase["staged_gsi_ending_state"] = ending_state
+        ending_cursor = phase["ending_provider_cursor"]
+        ending_cursor["static_configuration_sha256"] = staged_owners[
+            "static_forcing_configuration"
+        ]["configuration_sha256"]
+        seal(ending_cursor, "cursor_sha256")
+        receipt = phase["accepted_gsi_daily_receipt"]
+        receipt["beginning_state"] = beginning_state
+        receipt["ending_state"] = ending_state
+        receipt["parameters"] = copy.deepcopy(beginning_owners["gsi_configuration"])
+        for field in ["schema_version", "owner_id", "latitude_degrees", "configuration_sha256"]:
+            receipt["parameters"].pop(field, None)
+        receipt["forcing"] = {
+            "minimum_temperature_c": h64(4.0),
+            "vapor_pressure_deficit_pa": h64(800.0),
+            "latitude_degrees": beginning_owners["gsi_configuration"]["latitude_degrees"],
+            "year": 2000,
+            "ordinal_day": 172,
+        }
+        receipt["result"] = {
+            "minimum_temperature_indicator": h64(0.75),
+            "vapor_pressure_deficit_indicator": h64(1.0),
+            "photoperiod_indicator": h64(0.8),
+            "instantaneous_gsi": h64(0.6),
+            "photoperiod_hours": h64(14.9),
+            "growing_season_index": h64(0.55),
+            "sample_count": 21,
+        }
+        receipt["configuration_sha256"] = beginning_owners["gsi_configuration"][
+            "configuration_sha256"
+        ]
+        receipt["beginning_state_sha256"] = beginning_state["state_sha256"]
+        receipt["ending_state_sha256"] = ending_state["state_sha256"]
+        receipt["forcing_sha256"] = sha(
+            json.dumps(receipt["forcing"], separators=(",", ":"))
+        )
+        receipt["result_sha256"] = sha(
+            json.dumps(receipt["result"], separators=(",", ":"))
+        )
+        seal(receipt, "receipt_sha256")
+        for day in phase["validated_forcing_day_receipts"]:
+            for interval in day["intervals"]:
+                interval["gsi_receipt_sha256"] = receipt["receipt_sha256"]
+                seal(interval, "interval_receipt_sha256")
+            seal(day, "receipt_sha256")
+    primary = phase[owner_keys[0]]
+    destinations = primary["static_forcing_configuration"]["destinations"]
+    value["topology"]["destinations"] = [
+        {"ofe_id": item["ofe_id"], "tile_id": item["tile_id"]} for item in destinations
+    ]
+    seal(value["topology"], "topology_sha256")
+    seal(value["configuration_identities"], "configuration_set_sha256")
+    seal(value["transaction_lineage"], "lineage_sha256")
+    value["payload_sha256"] = content_sha256(value, "payload_sha256")
+    return value
+
+
 def base(phase: dict) -> dict:
     value = {
         "schema": "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1",
@@ -177,6 +341,11 @@ multi["phase"]["committed_owners"]["static_forcing_configuration"]["destinations
     {"ofe_id": "ofe-3", "tile_id": "forest-2", "wb14_configuration_sha256": sha("wb14-ofe-3-forest-2")}
 )
 multi = base(multi["phase"])
+
+boundary = normalize_checkpoint(boundary)
+in_progress = normalize_checkpoint(in_progress)
+cross = normalize_checkpoint(cross)
+multi = normalize_checkpoint(multi)
 
 
 def schema_for(value, field=""):
