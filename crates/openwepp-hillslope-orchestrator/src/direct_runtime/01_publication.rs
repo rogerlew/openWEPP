@@ -96,7 +96,7 @@ impl DirectPublicationDayInput {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
 pub struct DirectFrostLayerCarryProjection {
     pub layer_index: usize,
     pub fine_layer_count: usize,

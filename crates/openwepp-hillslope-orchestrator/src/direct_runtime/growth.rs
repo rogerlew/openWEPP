@@ -243,9 +243,18 @@ enum DirectGrowthManagementClass {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 #[cfg_attr(
-    feature = "restart-authority-evidence",
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
     serde(rename_all = "snake_case")
 )]
 pub enum DirectGrowthActiveContext {
@@ -291,9 +300,18 @@ impl DirectGrowthActiveContext {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 #[cfg_attr(
-    feature = "restart-authority-evidence",
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
     serde(rename_all = "snake_case")
 )]
 pub enum DirectGrowthAction {
@@ -333,7 +351,13 @@ impl DirectGrowthAction {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectGrowthStateSurface {
     pub sumgdd: f64,
     pub live_biomass_kg_m2: f64,
@@ -381,7 +405,13 @@ impl DirectGrowthStateSurface {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectGrowthInputs {
     pub active_context: DirectGrowthActiveContext,
     pub active_action: DirectGrowthAction,

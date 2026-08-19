@@ -68,7 +68,13 @@ impl DirectErosionRuntimeCarry {
 /// vary day to day. Built once at seed time from the parsed soil / slope /
 /// management surfaces.
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectWave1OperandSeed {
     /// Gate: when false the whole Wave-1 continuity path is inactive
     /// (production seed stays disabled until this is set).

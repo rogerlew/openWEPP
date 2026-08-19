@@ -595,7 +595,13 @@ fn validate_surface_shadow_storage_return(
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectEvapotranspirationStageState {
     pub s1_m: f64,
     pub s2_m: f64,
@@ -604,7 +610,13 @@ pub struct DirectEvapotranspirationStageState {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectEvapotranspirationPmetInputs {
     pub soil_evaporation_m: f64,
     pub plant_transpiration_m: f64,
@@ -612,7 +624,13 @@ pub struct DirectEvapotranspirationPmetInputs {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectEvapotranspirationPmetComputeInputs {
     pub runtime_day_of_year: u16,
     pub radiation_ly: f64,
@@ -630,7 +648,13 @@ pub struct DirectEvapotranspirationPmetComputeInputs {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectEvapotranspirationComputeInputs {
     pub et_demand_m: f64,
     pub leaf_area_index: f64,

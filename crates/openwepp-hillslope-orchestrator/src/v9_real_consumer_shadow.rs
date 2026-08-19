@@ -223,7 +223,10 @@ fn wb14_parameter_sha256(value: &DirectOfeWb14Parameters) -> String {
     format!("{:x}", digest.finalize())
 }
 
-#[cfg(feature = "restart-authority-evidence")]
+#[cfg(any(
+    feature = "restart-authority-evidence",
+    feature = "persisted-restart-v1"
+))]
 #[must_use]
 pub fn restart_authority_wb14_parameter_sha256(value: &DirectOfeWb14Parameters) -> String {
     wb14_parameter_sha256(value)
@@ -635,43 +638,64 @@ impl DirectV10RealConsumerShadow {
         &self.provider_static_configuration
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     #[must_use]
     pub const fn restart_authority_vegetation_configuration(&self) -> &VegetationConfiguration {
         &self.vegetation_configuration
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     #[must_use]
     pub const fn restart_authority_lse_configuration(&self) -> &LandSurfaceEnergyConfiguration {
         &self.lse_configuration
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     #[must_use]
     pub const fn restart_authority_hydrology_frame(&self) -> &DirectRunFrame {
         self.inner.hydrology_frame()
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     #[must_use]
     pub const fn restart_authority_soil_thermal(&self) -> &SoilThermalSnapshot {
         self.inner.soil_thermal()
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     #[must_use]
     pub const fn restart_authority_biogeochemistry(&self) -> &BiogeochemistryState {
         self.inner.biogeochemistry()
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     #[must_use]
     pub const fn restart_authority_vegetation_owner_id(&self) -> &ResourceOwnerId {
         &self.inner.vegetation_owner_id
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     #[must_use]
     pub const fn restart_authority_surface_configuration(
         &self,
@@ -679,7 +703,10 @@ impl DirectV10RealConsumerShadow {
         self.inner.restart_authority_surface_configuration()
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     pub fn restart_authority_install_staged_daily_owners(
         &mut self,
         gsi_state: GsiState,
@@ -695,7 +722,10 @@ impl DirectV10RealConsumerShadow {
         Ok(())
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     pub fn restart_authority_install_scheduler_position(
         &mut self,
         accepted_interval_count: u64,
@@ -711,19 +741,28 @@ impl DirectV10RealConsumerShadow {
         Ok(())
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     #[must_use]
     pub const fn restart_authority_accepted_interval_count(&self) -> u64 {
         self.inner.accepted_interval_count()
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     #[must_use]
     pub const fn restart_authority_next_day_index(&self) -> usize {
         self.inner.next_day_index()
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     pub fn restart_authority_advance_staged_intervals(
         &mut self,
         prepared: &PreparedSnowFreeGsiDayV1,
@@ -1122,7 +1161,10 @@ impl DirectV9RealConsumerShadow {
         &self.biogeochemistry
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     #[must_use]
     pub const fn restart_authority_surface_configuration(
         &self,
@@ -1744,7 +1786,10 @@ fn digest_soil_snapshot(
 /// Verify both nested soil-owner digests using the real consumer's exact
 /// digest recipes. This is exposed only to the package-local authority
 /// evidence feature.
-#[cfg(feature = "restart-authority-evidence")]
+#[cfg(any(
+    feature = "restart-authority-evidence",
+    feature = "persisted-restart-v1"
+))]
 pub fn restart_authority_validate_soil_thermal_digests(
     snapshot: &SoilThermalSnapshot,
 ) -> Result<(), DirectV9RealConsumerError> {
@@ -1770,7 +1815,10 @@ pub fn restart_authority_validate_soil_thermal_digests(
     Ok(())
 }
 
-#[cfg(feature = "restart-authority-evidence")]
+#[cfg(any(
+    feature = "restart-authority-evidence",
+    feature = "persisted-restart-v1"
+))]
 pub fn restart_authority_seal_soil_thermal_digests(
     snapshot: &mut SoilThermalSnapshot,
 ) -> Result<(), DirectV9RealConsumerError> {

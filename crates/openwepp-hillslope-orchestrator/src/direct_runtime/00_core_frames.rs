@@ -162,7 +162,7 @@ pub struct DirectLaneConstructorInputs {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
 pub struct DirectSnowRuntimeCarry {
     pub runtime_swe_m: f64,
     pub runtime_depth_m: f64,
@@ -236,7 +236,7 @@ fn direct_snow_runtime_carry_from_winter_state(
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
 pub struct DirectFrostRuntimeCarry {
     pub active_frost_coupling: bool,
     pub dfrost_m: f64,
@@ -271,7 +271,7 @@ pub struct DirectFrostRuntimeCarry {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
 pub struct DirectFrostLayerShadowCarry {
     pub layer_index: usize,
     pub st_m: f64,
@@ -284,7 +284,7 @@ pub struct DirectFrostLayerShadowCarry {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
 pub struct DirectFrostFineLayerCarry {
     pub layer_index: usize,
     pub fine_index: usize,
@@ -474,7 +474,7 @@ impl DirectLaneConstructorInputs {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
 pub struct DirectDayConstructorInputs {
     pub forcing: DirectDayForcing,
     pub normalization_inputs: DirectNormalizationInputs,

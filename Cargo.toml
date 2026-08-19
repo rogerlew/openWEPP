@@ -28,6 +28,7 @@ members = [
     "crates/openwepp-legacy-bridge",
     "crates/openwepp-meteorology",
     "crates/openwepp-plant-phenology",
+    "crates/openwepp-persisted-restart-v1",
     "crates/openwepp-unit-boundary",
     "crates/openwepp-summary-accumulator",
     "crates/openwepp-comparator-metadata",
@@ -98,11 +99,20 @@ openwepp-vegetation = { path = "crates/openwepp-vegetation", version = "0.1.0" }
 openwepp-biogeochemistry = { path = "crates/openwepp-biogeochemistry", version = "0.1.0" }
 openwepp-meteorology = { path = "crates/openwepp-meteorology", version = "0.1.0" }
 openwepp-plant-phenology = { path = "crates/openwepp-plant-phenology", version = "0.1.0" }
+openwepp-persisted-restart-v1 = { path = "crates/openwepp-persisted-restart-v1", version = "0.1.0" }
 openwepp-unit-boundary = { path = "crates/openwepp-unit-boundary", version = "0.1.0" }
 
 [[test]]
 name = "infile_slope_parser_contract"
 path = "tests/integration/infile_slope_parser_contract.rs"
+
+[[test]]
+name = "direct_hydrology_persisted_restart_implementation_contract"
+path = "tests/integration/direct_hydrology_persisted_restart_implementation_contract.rs"
+
+[[test]]
+name = "direct_v10_real_consumer_checkpoint_v1_contract"
+path = "tests/integration/direct_v10_real_consumer_checkpoint_v1_contract.rs"
 
 [[test]]
 name = "infile_soil_parser_contract"

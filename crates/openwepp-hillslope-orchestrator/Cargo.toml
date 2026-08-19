@@ -10,6 +10,7 @@ publish = false
 [features]
 default = []
 restart-authority-evidence = []
+persisted-restart-v1 = []
 
 [lints.rust]
 unsafe_op_in_unsafe_fn = "warn"

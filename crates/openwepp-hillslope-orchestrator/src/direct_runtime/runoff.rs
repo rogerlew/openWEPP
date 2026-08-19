@@ -2185,7 +2185,13 @@ fn validate_positive_direct(field: &'static str, value: f64) -> Result<(), Direc
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectLiquidInputInputs {
     pub liquid_input_handoff_m: f64,
 }
@@ -2243,7 +2249,13 @@ pub struct DirectLiquidInputShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectRunonCarryInputs {
     pub surface_runon_handoff_m: f64,
     pub subsurface_carry_handoff_m: f64,
@@ -2309,7 +2321,13 @@ pub struct DirectRunonCarryShadowProjection {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectInfiltrationDepressionInputs {
     pub cumulative_infiltration_handoff_m: f64,
     pub depression_storage_delta_handoff_m: f64,
@@ -2368,7 +2386,13 @@ impl DirectCanopyInterceptionState {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectWb14InfiltrationProducerInputs {
     pub hyetograph: Vec<DirectWb14HyetographInterval>,
     /// Producer-owned hourly liquid supplied in addition to direct rain.
@@ -2475,7 +2499,13 @@ fn validate_direct_canopy_interception_inputs(
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectWb14HyetographInterval {
     pub start_s: f64,
     pub end_s: f64,
@@ -2532,7 +2562,13 @@ pub struct DirectInfiltrationDepressionShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectSaturationAddbackInputs {
     pub surface_saturation_runoff_handoff_m: f64,
 }
@@ -2590,7 +2626,13 @@ pub struct DirectSaturationAddbackShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectRunoffPartitionInputs {
     pub liquid_input_m: f64,
     pub runon_input_m: f64,

@@ -80,7 +80,13 @@ const DIRECT_EROD13_DURATION_CUSTODY_TOLERANCE_S: f64 = 1.001e-9;
 const DIRECT_EROD13_MIN_TCADJF: f64 = 0.30;
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectErosionInputs {
     pub wave1_enabled: bool,
     pub wave1: DirectErod13Inputs,
@@ -121,9 +127,18 @@ impl DirectErosionInputs {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 #[cfg_attr(
-    feature = "restart-authority-evidence",
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
     serde(rename_all = "snake_case")
 )]
 pub enum DirectErosionHydrographShapeAuthority {
@@ -132,7 +147,13 @@ pub enum DirectErosionHydrographShapeAuthority {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectErod13Inputs {
     pub ie_m_s: f64,
     pub te_s: f64,

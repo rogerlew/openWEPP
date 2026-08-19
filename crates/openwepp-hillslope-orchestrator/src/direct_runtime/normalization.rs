@@ -163,7 +163,13 @@ impl DirectDayFrame {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectNormalizationInputs {
     pub precipitation_m: f64,
     pub effective_temperature_c: f64,
@@ -371,7 +377,13 @@ pub struct DirectNormalizationSpanReport {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectStorageBoundsInputs {
     pub storage_initial_m: f64,
     pub total_accounted_input_m: f64,

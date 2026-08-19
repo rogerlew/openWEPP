@@ -1,0 +1,28 @@
+[package]
+name = "openwepp-persisted-restart-v1"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = false
+
+[features]
+default = []
+fixtures = ["openwepp-hillslope-orchestrator/restart-authority-evidence"]
+
+[lints]
+workspace = true
+
+[dependencies]
+openwepp-hillslope-orchestrator = { path = "../openwepp-hillslope-orchestrator", version = "0.1.0", features = ["persisted-restart-v1"] }
+openwepp-kernel-contract = { path = "../openwepp-kernel-contract", version = "0.1.0" }
+openwepp-land-surface-energy = { path = "../openwepp-land-surface-energy", version = "0.1.0" }
+openwepp-vegetation = { path = "../openwepp-vegetation", version = "0.1.0" }
+openwepp-biogeochemistry = { path = "../openwepp-biogeochemistry", version = "0.1.0" }
+openwepp-plant-phenology = { path = "../openwepp-plant-phenology", version = "0.1.0" }
+openwepp-input-contract = { path = "../openwepp-input-contract", version = "0.1.0" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "2"

@@ -134,7 +134,13 @@ pub fn erosion_effective_intensity(
 
 /// One erosion particle-size class (`prtcmp.for` surface).
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct ErosionParticleClass {
     /// Equivalent particle diameter (m).
     pub dia_m: f64,

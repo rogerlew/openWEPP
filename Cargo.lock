@@ -1000,6 +1000,7 @@ dependencies = [
  "openwepp-legacy-bridge",
  "openwepp-management-schema",
  "openwepp-meteorology",
+ "openwepp-persisted-restart-v1",
  "openwepp-plant-phenology",
  "openwepp-runner",
  "openwepp-sim-contract",
@@ -1143,6 +1144,23 @@ name = "openwepp-meteorology"
 version = "0.1.0"
 dependencies = [
  "openwepp-unit-boundary",
+ "thiserror",
+]
+
+[[package]]
+name = "openwepp-persisted-restart-v1"
+version = "0.1.0"
+dependencies = [
+ "openwepp-biogeochemistry",
+ "openwepp-hillslope-orchestrator",
+ "openwepp-input-contract",
+ "openwepp-kernel-contract",
+ "openwepp-land-surface-energy",
+ "openwepp-plant-phenology",
+ "openwepp-vegetation",
+ "serde",
+ "serde_json",
+ "sha2",
  "thiserror",
 ]
 

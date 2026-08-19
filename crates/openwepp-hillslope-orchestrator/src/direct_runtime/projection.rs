@@ -311,7 +311,13 @@ struct R4pqzStorageProjectionTerms {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectHydrologyProjectionInputs {
     pub aggregate_storage_tolerance_m: f64,
     pub snow_water_m: f64,

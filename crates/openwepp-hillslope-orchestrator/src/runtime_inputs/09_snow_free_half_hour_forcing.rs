@@ -291,7 +291,7 @@ fn restore_direct_gsi_state(
     )?)
 }
 
-#[cfg(feature = "restart-authority-evidence")]
+#[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
 pub fn restart_authority_restore_gsi_state(
     value: &DirectGsiOwnerStateV1,
 ) -> Result<GsiState, SnowFreeHalfHourForcingError> {
@@ -299,7 +299,7 @@ pub fn restart_authority_restore_gsi_state(
 }
 
 /// Project the actual live GSI state for restart-authority evidence.
-#[cfg(feature = "restart-authority-evidence")]
+#[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
 pub fn restart_authority_project_gsi_state(
     state: &GsiState,
 ) -> Result<DirectGsiOwnerStateV1, SnowFreeHalfHourForcingError> {
@@ -594,7 +594,7 @@ impl PreparedSnowFreeGsiDayV1 {
 }
 
 /// Reconstruct a prepared day exclusively from admitted restart owners.
-#[cfg(feature = "restart-authority-evidence")]
+#[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
 pub fn restart_authority_prepare_from_restored_receipts(
     gsi_receipt: DirectGsiDailyReceiptV1,
     ending_gsi_state: GsiState,

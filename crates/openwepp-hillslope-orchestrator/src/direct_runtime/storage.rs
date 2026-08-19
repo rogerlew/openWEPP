@@ -1083,7 +1083,13 @@ impl DirectDayFrame {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectStorageInputInputs {
     pub precip_input_handoff_m: Option<f64>,
 }
@@ -1147,7 +1153,13 @@ pub struct DirectStorageInputShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectDeepSeepageInputs {
     pub deep_seepage_handoff_m: f64,
 }
@@ -1205,7 +1217,13 @@ pub struct DirectDeepSeepageShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectSubsurfaceLossInputs {
     pub subsurface_loss_handoff_m: f64,
 }
@@ -1263,7 +1281,13 @@ pub struct DirectSubsurfaceLossShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectEvapotranspirationInputs {
     pub evapotranspiration_handoff_m: f64,
 }
@@ -1321,7 +1345,13 @@ pub struct DirectEvapotranspirationShadowProjection {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectSnowCouplingInputs {
     pub snow_coupling_handoff_m: f64,
     pub snow_state_projected: bool,
@@ -1562,7 +1592,13 @@ impl DirectSnowCouplingShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectStorageReconciliationInputs {
     pub storage_initial_m: f64,
     pub precip_input_m: f64,

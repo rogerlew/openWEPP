@@ -341,9 +341,18 @@ fn validate_unit_fraction(field: &'static str, value: f64) -> Result<(), DirectR
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 #[cfg_attr(
-    feature = "restart-authority-evidence",
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
     serde(rename_all = "snake_case")
 )]
 pub enum DirectDecompositionActiveContext {
@@ -363,9 +372,18 @@ pub enum DirectDecompositionActiveContext {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 #[cfg_attr(
-    feature = "restart-authority-evidence",
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
     serde(rename_all = "snake_case")
 )]
 pub enum DirectDecompositionAction {
@@ -379,7 +397,13 @@ pub enum DirectDecompositionAction {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectDecompositionInputs {
     pub active_context: DirectDecompositionActiveContext,
     pub active_action: DirectDecompositionAction,
@@ -808,7 +832,13 @@ pub struct DirectDecompositionSpanReport {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectResiduePartitionInputs {
     pub standing_residue_kg_m2: f64,
     pub flat_residue_offset_kg_m2: f64,

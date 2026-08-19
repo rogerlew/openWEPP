@@ -359,7 +359,10 @@ impl RealHydrologyShadowAdapter {
         &self.layer_maps
     }
 
-    #[cfg(feature = "restart-authority-evidence")]
+    #[cfg(any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ))]
     #[must_use]
     pub fn restart_authority_layer_maps(&self) -> &[RealHydrologyLaneLayerMap] {
         &self.layer_maps
