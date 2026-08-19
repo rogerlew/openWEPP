@@ -1,0 +1,9 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-kernel-contract v0.1.0 (/workdir/openWEPP/crates/openwepp-kernel-contract)
+   Compiling openwepp-biogeochemistry v0.1.0 (/workdir/openWEPP/crates/openwepp-biogeochemistry)
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openWEPP/crates/openwepp-vegetation)
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)

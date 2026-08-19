@@ -1,6 +1,6 @@
 # Execute Snow-Free Land-Surface and Real-Hydrology Integration
 
-Status: `executing HOLD / Children 1-3 complete / Child 4 provider closure open`
+Status: `executing / Children 1-3 complete / Child 4 terminal closure pending`
 
 Date: `2026-08-14`
 
@@ -57,7 +57,8 @@ default, publication, or deployment path is in scope.
 - [x] Retain Child 3's exact LSE runtime and soil-layer real-owner bridge as a
   bounded passing checkpoint.
 - [x] Complete Child 3 LSE runtime shadow.
-- [ ] Complete Child 4 real hillslope consumer shadow.
+- [x] Implement Child 4 real hillslope consumer shadow and close its former
+  provider/restart/root-owner blockers.
 - [ ] Run campaign-wide reviews, heavy gates, terminal verification, archive
   prompts, and reconcile lifecycle documentation.
 

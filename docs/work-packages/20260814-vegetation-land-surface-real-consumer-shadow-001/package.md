@@ -1,6 +1,6 @@
 # Execute Vegetation And Land Surface Through A Real Shadow Consumer
 
-Status: `HOLD / exact root-hydraulic owner authority missing`
+Status: `EXECUTING / root-hydraulic owner implemented; terminal closure pending`
 
 Date: `2026-08-14`
 
@@ -21,8 +21,10 @@ domain coverage and performance without activation.
 - [x] Freeze real input providers, scheduler point and complete owner set.
 - [x] Implement explicit shadow API and atomic whole-state transaction.
 - [x] Run repository-backed scenarios, coverage audit and legacy comparison.
-- [ ] Admit exact root-zone matric-potential and root path/gravity ownership,
-  then close live-owner template reconstruction and terminal verification.
+- [x] Admit and implement exact root-zone matric-potential and root
+  path/gravity ownership; remove caller-controlled ground optics and unowned
+  runon from the V10 seam.
+- [ ] Complete comparator, independent reviews and terminal verification.
 
 ## Implementation Intent
 
