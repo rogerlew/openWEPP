@@ -1,7 +1,8 @@
 use openwepp_hillslope_orchestrator::runtime_inputs::{
-    DirectGsiDailyReceiptV1, SnowFreeHalfHourDestination, SnowFreeHalfHourForcingError,
-    SnowFreeHalfHourProviderConfiguration, SnowFreeHalfHourProviderCursor,
-    SnowFreeHalfHourStaticConfiguration, build_hillslope_climate_runtime_request,
+    DirectGsiDailyReceiptV1, DirectGsiOwnerConfigurationV1, SnowFreeHalfHourDestination,
+    SnowFreeHalfHourForcingError, SnowFreeHalfHourProviderConfiguration,
+    SnowFreeHalfHourProviderCursor, SnowFreeHalfHourStaticConfiguration,
+    ValidatedSnowFreeHalfHourForcingReceipts, build_hillslope_climate_runtime_request,
 };
 use openwepp_input_contract::parsers::climate::{ParserMode, parse_climate_from_str};
 use openwepp_meteorology::snow_free_forcing::{
@@ -11,6 +12,91 @@ use openwepp_plant_phenology::{GsiDailyForcing, GsiDate, GsiParameters, GsiState
 
 const PACKAGE: &str =
     "docs/work-packages/20260817-snow-free-half-hour-forcing-authority-001/artifacts";
+
+#[test]
+fn closure_eligible_v10_api_has_no_raw_or_defaulted_execution_escape() {
+    let forcing_source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/crates/openwepp-hillslope-orchestrator/src/runtime_inputs/09_snow_free_half_hour_forcing.rs"
+    ));
+    assert!(!forcing_source.contains("pub fn snow_free_half_hour_forcing_receipts("));
+    assert!(!forcing_source.contains("pub fn prepare_snow_free_gsi_day("));
+
+    let consumer_source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs"
+    ));
+    let v10_start = consumer_source
+        .find("impl DirectV10RealConsumerShadow")
+        .expect("V10 implementation");
+    let v10_end = consumer_source[v10_start..]
+        .find("impl DirectV9RealConsumerShadow")
+        .map(|offset| v10_start + offset)
+        .expect("following V9 implementation");
+    let v10_api = &consumer_source[v10_start..v10_end];
+    assert!(!v10_api.contains("pub fn execute_day("));
+    assert!(!v10_api.contains("pub fn project_repository_forcing_receipts("));
+    assert!(!v10_api.contains("GsiParameters::generalized()"));
+    assert!(!v10_api.contains("GsiState::new()"));
+    assert!(!v10_api.contains("SnowFreeHalfHourProviderCursor::default()"));
+    assert!(v10_api.contains("pub fn execute_prepared_gsi_day("));
+}
+
+/// Integration-test-only adapter retaining legacy forcing-focused assertions
+/// after the production legacy entry point became crate-private.
+trait LegacySnowFreeProjectionTestOnly {
+    fn snow_free_half_hour_forcing_receipts(
+        &self,
+        day_index: usize,
+        configuration: &SnowFreeHalfHourProviderConfiguration,
+        cursor: &SnowFreeHalfHourProviderCursor,
+    ) -> Result<ValidatedSnowFreeHalfHourForcingReceipts, SnowFreeHalfHourForcingError>;
+}
+
+impl LegacySnowFreeProjectionTestOnly
+    for openwepp_hillslope_orchestrator::runtime_inputs::HillslopeClimateRuntimeRequest
+{
+    fn snow_free_half_hour_forcing_receipts(
+        &self,
+        day_index: usize,
+        configuration: &SnowFreeHalfHourProviderConfiguration,
+        cursor: &SnowFreeHalfHourProviderCursor,
+    ) -> Result<ValidatedSnowFreeHalfHourForcingReceipts, SnowFreeHalfHourForcingError> {
+        if !(0.0..=1.0).contains(&configuration.gsi)
+            || configuration.gsi_receipt_sha256.len() != 64
+            || !configuration
+                .gsi_receipt_sha256
+                .bytes()
+                .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+        {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "provider configuration",
+            ));
+        }
+        let owner = DirectGsiOwnerConfigurationV1::try_new(
+            "legacy-test-only-gsi-owner".into(),
+            GsiParameters::generalized(),
+            41.1,
+        )?;
+        let static_configuration = SnowFreeHalfHourStaticConfiguration {
+            run_id: configuration.run_id.clone(),
+            co2_pa: configuration.co2_pa,
+            reference_height_m: configuration.reference_height_m,
+            gsi_owner_configuration_sha256: owner.configuration_sha256.clone(),
+            destinations: configuration.destinations.clone(),
+        };
+        Ok(self
+            .prepare_snow_free_gsi_day_from_repository(
+                day_index,
+                &static_configuration,
+                &owner,
+                &GsiState::new(),
+                cursor,
+            )?
+            .forcing_receipts()
+            .clone())
+    }
+}
 
 #[test]
 fn direct_gsi_daily_receipt_reconstructs_cp_gsi01_state_and_rejects_poison() {
@@ -24,11 +110,23 @@ fn direct_gsi_daily_receipt_reconstructs_cp_gsi01_state_and_rejects_poison() {
             ordinal_day: 172,
         },
     };
-    let (receipt, ending) =
-        DirectGsiDailyReceiptV1::prepare(&beginning, GsiParameters::generalized(), forcing)
-            .expect("accepted CP-GSI01 daily receipt");
+    let owner = DirectGsiOwnerConfigurationV1::try_new(
+        "gsi-owner".into(),
+        GsiParameters::generalized(),
+        41.1,
+    )
+    .expect("GSI owner");
+    let (receipt, ending) = DirectGsiDailyReceiptV1::prepare_owned(
+        &beginning,
+        &owner,
+        "test-run",
+        0,
+        &"a".repeat(64),
+        forcing,
+    )
+    .expect("accepted CP-GSI01 daily receipt");
     receipt.validate().expect("reconstructed receipt");
-    assert_eq!(receipt.ending_state.history, ending.history());
+    assert_eq!(receipt.ending_state.history_oldest_first, ending.history());
     assert_eq!(receipt.result.sample_count, 1);
 
     let mut poison = receipt;
@@ -51,65 +149,39 @@ fn static_provider_cursor_accepts_changing_daily_gsi_and_rejects_wrong_owner() {
         parse_climate_from_str(&climate_source, ParserMode::Strict).expect("two-day climate");
     let request = build_hillslope_climate_runtime_request(&climate).expect("runtime request");
     let parameters = GsiParameters::generalized();
-    let configuration_sha256 =
-        DirectGsiDailyReceiptV1::configuration_sha256(parameters).expect("GSI config digest");
+    let owner = DirectGsiOwnerConfigurationV1::try_new("gsi-owner".into(), parameters, 41.1)
+        .expect("GSI owner");
     let legacy = provider_configuration();
     let configuration = SnowFreeHalfHourStaticConfiguration {
         run_id: legacy.run_id,
         co2_pa: legacy.co2_pa,
         reference_height_m: legacy.reference_height_m,
-        gsi_owner_configuration_sha256: configuration_sha256,
+        gsi_owner_configuration_sha256: owner.configuration_sha256.clone(),
         destinations: legacy.destinations,
     };
     let mut gsi = GsiState::new();
     let mut cursor = SnowFreeHalfHourProviderCursor::default();
-    for (day_index, ordinal_day) in [172, 173].into_iter().enumerate() {
-        let (receipt, ending) = DirectGsiDailyReceiptV1::prepare(
-            &gsi,
-            parameters,
-            GsiDailyForcing {
-                minimum_temperature_c: 4.0 + day_index as f64,
-                vapor_pressure_deficit_pa: 800.0,
-                latitude_degrees: 41.1,
-                date: GsiDate {
-                    year: 2000,
-                    ordinal_day,
-                },
-            },
-        )
-        .expect("daily GSI receipt");
+    for day_index in 0..2 {
         let prepared = request
-            .snow_free_half_hour_forcing_receipts_with_gsi(
+            .prepare_snow_free_gsi_day_from_repository(
                 day_index,
                 &configuration,
-                &receipt,
+                &owner,
+                &gsi,
                 &cursor,
             )
             .expect("static plus daily provider projection");
-        prepared.commit_cursor(&mut cursor).expect("cursor commit");
-        gsi = ending;
+        prepared
+            .commit(&mut gsi, &mut cursor)
+            .expect("owner commit");
     }
 
     let mut wrong = configuration;
     wrong.gsi_owner_configuration_sha256 = "f".repeat(64);
-    let (receipt, _) = DirectGsiDailyReceiptV1::prepare(
-        &gsi,
-        parameters,
-        GsiDailyForcing {
-            minimum_temperature_c: 6.0,
-            vapor_pressure_deficit_pa: 800.0,
-            latitude_degrees: 41.1,
-            date: GsiDate {
-                year: 2000,
-                ordinal_day: 174,
-            },
-        },
-    )
-    .expect("third GSI receipt");
     assert!(matches!(
-        request.snow_free_half_hour_forcing_receipts_with_gsi(2, &wrong, &receipt, &cursor),
+        request.prepare_snow_free_gsi_day_from_repository(2, &wrong, &owner, &gsi, &cursor),
         Err(SnowFreeHalfHourForcingError::Identity(
-            "provider GSI owner configuration"
+            "repository GSI owner join"
         ))
     ));
 }
@@ -120,17 +192,30 @@ fn prepared_gsi_provider_day_commits_both_owners_or_neither() {
         .expect("climate");
     let request = build_hillslope_climate_runtime_request(&climate).expect("runtime request");
     let parameters = GsiParameters::generalized();
+    let owner = DirectGsiOwnerConfigurationV1::try_new("gsi-owner".into(), parameters, 41.1)
+        .expect("GSI owner");
     let legacy = provider_configuration();
     let configuration = SnowFreeHalfHourStaticConfiguration {
         run_id: legacy.run_id,
         co2_pa: legacy.co2_pa,
         reference_height_m: legacy.reference_height_m,
-        gsi_owner_configuration_sha256: DirectGsiDailyReceiptV1::configuration_sha256(parameters)
-            .expect("GSI configuration"),
+        gsi_owner_configuration_sha256: owner.configuration_sha256.clone(),
         destinations: legacy.destinations,
     };
+    let beginning_gsi = GsiState::new();
+    let beginning_cursor = SnowFreeHalfHourProviderCursor::default();
+    let prepared = request
+        .prepare_snow_free_gsi_day_from_repository(
+            0,
+            &configuration,
+            &owner,
+            &beginning_gsi,
+            &beginning_cursor,
+        )
+        .expect("prepared atomic owners");
+    let mut wrong_gsi = GsiState::new();
     let forcing = GsiDailyForcing {
-        minimum_temperature_c: 4.0,
+        minimum_temperature_c: 22.0,
         vapor_pressure_deficit_pa: 800.0,
         latitude_degrees: 41.1,
         date: GsiDate {
@@ -138,19 +223,6 @@ fn prepared_gsi_provider_day_commits_both_owners_or_neither() {
             ordinal_day: 172,
         },
     };
-    let beginning_gsi = GsiState::new();
-    let beginning_cursor = SnowFreeHalfHourProviderCursor::default();
-    let prepared = request
-        .prepare_snow_free_gsi_day(
-            0,
-            &configuration,
-            &beginning_gsi,
-            parameters,
-            forcing,
-            &beginning_cursor,
-        )
-        .expect("prepared atomic owners");
-    let mut wrong_gsi = GsiState::new();
     wrong_gsi
         .advance(parameters, forcing)
         .expect("different beginning owner");
@@ -358,12 +430,11 @@ fn provider_rejects_unsupported_domains_and_digest_mutation() {
             &provider_configuration(),
             &mut SnowFreeHalfHourProviderCursor::default(),
         )
-        .expect("physical LSE receipt remains available");
-    assert!(saturated[0].intervals.iter().all(|interval| {
-        interval.vpd_kpa < 0.0
-            && interval.specific_humidity_kg_kg > 0.0
-            && interval.downward_longwave_w_m2 > 0.0
-    }));
+        .expect_err("closure owner rejects negative daily GSI VPD");
+    assert_eq!(
+        saturated,
+        SnowFreeHalfHourForcingError::Unsupported("GSI daily VPD")
+    );
 
     let mut duplicate = provider_configuration();
     duplicate
@@ -483,12 +554,27 @@ fn parent_fallback_midnight_carry_and_authority_primitives_are_executable() {
     assert!((carry[0].mass_kg_m2 - 3.6).abs() <= 4.0 * f64::EPSILON);
 
     let sequential_request = request(&two_day_midnight_carry_climate());
+    let owner = DirectGsiOwnerConfigurationV1::try_new(
+        "carry-gsi-owner".into(),
+        GsiParameters::generalized(),
+        41.1,
+    )
+    .expect("carry GSI owner");
+    let legacy_configuration = provider_configuration();
+    let static_configuration = SnowFreeHalfHourStaticConfiguration {
+        run_id: legacy_configuration.run_id,
+        co2_pa: legacy_configuration.co2_pa,
+        reference_height_m: legacy_configuration.reference_height_m,
+        gsi_owner_configuration_sha256: owner.configuration_sha256.clone(),
+        destinations: legacy_configuration.destinations,
+    };
+    let mut gsi = GsiState::new();
     let mut cursor = SnowFreeHalfHourProviderCursor::default();
     let beginning_cursor = serde_json::to_vec(&cursor).expect("beginning cursor bytes");
     let first_day = sequential_request
-        .snow_free_half_hour_forcing_receipts(0, &provider_configuration(), &mut cursor)
+        .prepare_snow_free_gsi_day_from_repository(0, &static_configuration, &owner, &gsi, &cursor)
         .expect("first cursor day");
-    let carried_source = first_day[0].next_day_precipitation_carry[0]
+    let carried_source = first_day.forcing_receipts()[0].next_day_precipitation_carry[0]
         .source_owner_id
         .clone();
     assert_eq!(
@@ -497,20 +583,16 @@ fn parent_fallback_midnight_carry_and_authority_primitives_are_executable() {
         "receipt preparation must not advance provider custody"
     );
     first_day
-        .commit_cursor(&mut cursor)
-        .expect("commit accepted first provider day");
+        .commit(&mut gsi, &mut cursor)
+        .expect("commit first day");
     let cursor_bytes = cursor.to_json_bytes().expect("persisted cursor");
-    cursor =
-        SnowFreeHalfHourProviderCursor::restore_json(&cursor_bytes, &provider_configuration(), 1)
-            .expect("validated cursor restart");
-    let mut second_day_configuration = provider_configuration();
-    second_day_configuration.gsi = 0.8;
-    second_day_configuration.gsi_receipt_sha256 = "f".repeat(64);
+    cursor = SnowFreeHalfHourProviderCursor::restore_json(&cursor_bytes, &static_configuration, 1)
+        .expect("validated cursor restart");
     let second_day = sequential_request
-        .snow_free_half_hour_forcing_receipts(1, &second_day_configuration, &mut cursor)
+        .prepare_snow_free_gsi_day_from_repository(1, &static_configuration, &owner, &gsi, &cursor)
         .expect("second cursor day");
     assert!(
-        second_day[0].intervals[0]
+        second_day.forcing_receipts()[0].intervals[0]
             .precipitation_parcels
             .iter()
             .any(|parcel| parcel.source_owner_id == carried_source)

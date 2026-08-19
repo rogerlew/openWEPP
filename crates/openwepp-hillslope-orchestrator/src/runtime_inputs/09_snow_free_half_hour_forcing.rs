@@ -41,12 +41,30 @@ pub struct SnowFreeHalfHourStaticConfiguration {
     pub destinations: Vec<SnowFreeHalfHourDestination>,
 }
 
+impl SnowFreeHalfHourStaticConfiguration {
+    /// Validate static provider identity independently of any daily GSI value.
+    pub fn validate(&self) -> Result<(), SnowFreeHalfHourForcingError> {
+        validate_snow_free_static_configuration(self)
+    }
+
+    #[must_use]
+    pub fn configuration_sha256(&self) -> String {
+        snow_free_static_configuration_sha256(self)
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct DirectGsiStateV1 {
-    pub history: Vec<f64>,
-    pub last_year: Option<i32>,
-    pub last_ordinal_day: Option<u16>,
+pub struct DirectGsiDateV1 {
+    pub year: i32,
+    pub ordinal_day: u16,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectGsiOwnerStateV1 {
+    pub history_oldest_first: Vec<f64>,
+    pub last_date: Option<DirectGsiDateV1>,
     pub state_sha256: String,
 }
 
@@ -59,6 +77,57 @@ pub struct DirectGsiParametersV1 {
     pub vapor_pressure_deficit_inactive_pa: f64,
     pub photoperiod_inactive_hours: f64,
     pub photoperiod_unconstrained_hours: f64,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectGsiOwnerConfigurationV1 {
+    pub schema_version: String,
+    pub owner_id: String,
+    pub parameters: DirectGsiParametersV1,
+    pub latitude_degrees: f64,
+    pub configuration_sha256: String,
+}
+
+impl DirectGsiOwnerConfigurationV1 {
+    #[must_use]
+    pub const fn parameters(&self) -> GsiParameters {
+        gsi_parameters(self.parameters)
+    }
+
+    pub fn try_new(
+        owner_id: String,
+        parameters: GsiParameters,
+        latitude_degrees: f64,
+    ) -> Result<Self, SnowFreeHalfHourForcingError> {
+        let mut value = Self {
+            schema_version: "DIRECT_GSI_OWNER_CONFIGURATION_V1".into(),
+            owner_id,
+            parameters: direct_gsi_parameters(parameters),
+            latitude_degrees,
+            configuration_sha256: String::new(),
+        };
+        value.configuration_sha256 = canonical_sha256(&value)?;
+        value.validate()?;
+        Ok(value)
+    }
+
+    pub fn validate(&self) -> Result<(), SnowFreeHalfHourForcingError> {
+        self.parameters().validate()?;
+        let mut canonical = self.clone();
+        canonical.configuration_sha256.clear();
+        if self.schema_version != "DIRECT_GSI_OWNER_CONFIGURATION_V1"
+            || self.owner_id.is_empty()
+            || !self.latitude_degrees.is_finite()
+            || !(-90.0..=90.0).contains(&self.latitude_degrees)
+            || self.configuration_sha256 != canonical_sha256(&canonical)?
+        {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "GSI owner configuration",
+            ));
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
@@ -80,48 +149,67 @@ pub struct DirectGsiResultV1 {
     pub instantaneous_gsi: f64,
     pub photoperiod_hours: f64,
     pub growing_season_index: f64,
-    pub sample_count: usize,
+    pub sample_count: u32,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DirectGsiDailyReceiptV1 {
     pub schema_version: String,
-    pub beginning_state: DirectGsiStateV1,
-    pub ending_state: DirectGsiStateV1,
+    pub owner_id: String,
+    pub run_id: String,
+    pub day_index: u64,
+    pub source_climate_sha256: String,
+    pub beginning_state: DirectGsiOwnerStateV1,
+    pub ending_state: DirectGsiOwnerStateV1,
     pub parameters: DirectGsiParametersV1,
     pub forcing: DirectGsiForcingV1,
     pub result: DirectGsiResultV1,
     pub configuration_sha256: String,
+    pub beginning_state_sha256: String,
+    pub ending_state_sha256: String,
     pub forcing_sha256: String,
     pub result_sha256: String,
     pub receipt_sha256: String,
 }
 
 impl DirectGsiDailyReceiptV1 {
-    pub fn configuration_sha256(
-        parameters: GsiParameters,
-    ) -> Result<String, SnowFreeHalfHourForcingError> {
-        canonical_sha256(&direct_gsi_parameters(parameters))
-    }
-
-    pub fn prepare(
+    pub fn prepare_owned(
         beginning: &GsiState,
-        parameters: GsiParameters,
+        owner_configuration: &DirectGsiOwnerConfigurationV1,
+        run_id: &str,
+        day_index: u64,
+        source_climate_sha256: &str,
         forcing: GsiDailyForcing,
     ) -> Result<(Self, GsiState), SnowFreeHalfHourForcingError> {
+        owner_configuration.validate()?;
+        if run_id.is_empty()
+            || !is_sha256(source_climate_sha256)
+            || forcing.latitude_degrees.to_bits() != owner_configuration.latitude_degrees.to_bits()
+        {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "daily GSI source join",
+            ));
+        }
+        let parameters = gsi_parameters(owner_configuration.parameters);
         let mut ending = beginning.clone();
         let result = ending.advance(parameters, forcing)?;
         let beginning_state = direct_gsi_state(beginning)?;
         let ending_state = direct_gsi_state(&ending)?;
         let parameters = direct_gsi_parameters(parameters);
         let forcing = direct_gsi_forcing(forcing);
-        let result = direct_gsi_result(result);
+        let result = direct_gsi_result(result)?;
         let mut receipt = Self {
             schema_version: "DIRECT_GSI_DAILY_RECEIPT_V1".into(),
+            owner_id: owner_configuration.owner_id.clone(),
+            run_id: run_id.into(),
+            day_index,
+            source_climate_sha256: source_climate_sha256.into(),
+            beginning_state_sha256: beginning_state.state_sha256.clone(),
+            ending_state_sha256: ending_state.state_sha256.clone(),
             beginning_state,
             ending_state,
-            configuration_sha256: canonical_sha256(&parameters)?,
+            configuration_sha256: owner_configuration.configuration_sha256.clone(),
             forcing_sha256: canonical_sha256(&forcing)?,
             result_sha256: canonical_sha256(&result)?,
             parameters,
@@ -135,8 +223,21 @@ impl DirectGsiDailyReceiptV1 {
     }
 
     pub fn validate(&self) -> Result<(), SnowFreeHalfHourForcingError> {
+        let owner_configuration = DirectGsiOwnerConfigurationV1 {
+            schema_version: "DIRECT_GSI_OWNER_CONFIGURATION_V1".into(),
+            owner_id: self.owner_id.clone(),
+            parameters: self.parameters,
+            latitude_degrees: self.forcing.latitude_degrees,
+            configuration_sha256: self.configuration_sha256.clone(),
+        };
+        owner_configuration.validate()?;
         if self.schema_version != "DIRECT_GSI_DAILY_RECEIPT_V1"
-            || self.configuration_sha256 != canonical_sha256(&self.parameters)?
+            || self.owner_id.is_empty()
+            || self.run_id.is_empty()
+            || !is_sha256(&self.source_climate_sha256)
+            || !is_sha256(&self.configuration_sha256)
+            || self.beginning_state_sha256 != self.beginning_state.state_sha256
+            || self.ending_state_sha256 != self.ending_state.state_sha256
             || self.forcing_sha256 != canonical_sha256(&self.forcing)?
             || self.result_sha256 != canonical_sha256(&self.result)?
         {
@@ -146,7 +247,7 @@ impl DirectGsiDailyReceiptV1 {
         let mut ending = beginning;
         let result = direct_gsi_result(
             ending.advance(gsi_parameters(self.parameters), gsi_forcing(self.forcing))?,
-        );
+        )?;
         if direct_gsi_state(&ending)? != self.ending_state
             || result != self.result
             || self.receipt_sha256 != canonical_sha256_without_receipt(self)?
@@ -157,11 +258,15 @@ impl DirectGsiDailyReceiptV1 {
     }
 }
 
-fn direct_gsi_state(state: &GsiState) -> Result<DirectGsiStateV1, SnowFreeHalfHourForcingError> {
-    let mut value = DirectGsiStateV1 {
-        history: state.history(),
-        last_year: state.last_date().map(|date| date.year),
-        last_ordinal_day: state.last_date().map(|date| date.ordinal_day),
+fn direct_gsi_state(
+    state: &GsiState,
+) -> Result<DirectGsiOwnerStateV1, SnowFreeHalfHourForcingError> {
+    let mut value = DirectGsiOwnerStateV1 {
+        history_oldest_first: state.history(),
+        last_date: state.last_date().map(|date| DirectGsiDateV1 {
+            year: date.year,
+            ordinal_day: date.ordinal_day,
+        }),
         state_sha256: String::new(),
     };
     value.state_sha256 = canonical_sha256(&value)?;
@@ -169,20 +274,21 @@ fn direct_gsi_state(state: &GsiState) -> Result<DirectGsiStateV1, SnowFreeHalfHo
 }
 
 fn restore_direct_gsi_state(
-    value: &DirectGsiStateV1,
+    value: &DirectGsiOwnerStateV1,
 ) -> Result<GsiState, SnowFreeHalfHourForcingError> {
     let mut canonical = value.clone();
     canonical.state_sha256.clear();
-    if value.state_sha256 != canonical_sha256(&canonical)?
-        || value.last_year.is_some() != value.last_ordinal_day.is_some()
-    {
+    if value.state_sha256 != canonical_sha256(&canonical)? {
         return Err(SnowFreeHalfHourForcingError::Identity("GSI state digest"));
     }
-    let last_date = value
-        .last_year
-        .zip(value.last_ordinal_day)
-        .map(|(year, ordinal_day)| GsiDate { year, ordinal_day });
-    Ok(GsiState::try_from_history(&value.history, last_date)?)
+    let last_date = value.last_date.as_ref().map(|date| GsiDate {
+        year: date.year,
+        ordinal_day: date.ordinal_day,
+    });
+    Ok(GsiState::try_from_history(
+        &value.history_oldest_first,
+        last_date,
+    )?)
 }
 
 const fn direct_gsi_parameters(value: GsiParameters) -> DirectGsiParametersV1 {
@@ -229,7 +335,9 @@ const fn gsi_forcing(value: DirectGsiForcingV1) -> GsiDailyForcing {
     }
 }
 
-const fn direct_gsi_result(value: GsiDailyResult) -> DirectGsiResultV1 {
+fn direct_gsi_result(
+    value: GsiDailyResult,
+) -> Result<DirectGsiResultV1, SnowFreeHalfHourForcingError> {
     let GsiDailyIndicators {
         minimum_temperature,
         vapor_pressure_deficit,
@@ -237,15 +345,16 @@ const fn direct_gsi_result(value: GsiDailyResult) -> DirectGsiResultV1 {
         instantaneous_gsi,
         photoperiod_hours,
     } = value.indicators;
-    DirectGsiResultV1 {
+    Ok(DirectGsiResultV1 {
         minimum_temperature_indicator: minimum_temperature,
         vapor_pressure_deficit_indicator: vapor_pressure_deficit,
         photoperiod_indicator: photoperiod,
         instantaneous_gsi,
         photoperiod_hours,
         growing_season_index: value.growing_season_index,
-        sample_count: value.sample_count,
-    }
+        sample_count: u32::try_from(value.sample_count)
+            .map_err(|_| SnowFreeHalfHourForcingError::Identity("GSI sample count"))?,
+    })
 }
 
 fn canonical_sha256_without_receipt(
@@ -274,6 +383,26 @@ struct SnowFreeHalfHourProviderCursorSnapshot {
 }
 
 impl SnowFreeHalfHourProviderCursor {
+    /// Validate this live cursor against its static owner and scheduler position.
+    pub fn validate_for_configuration(
+        &self,
+        configuration: &SnowFreeHalfHourStaticConfiguration,
+        expected_next_day_index: usize,
+    ) -> Result<(), SnowFreeHalfHourForcingError> {
+        configuration.validate()?;
+        if self.next_day_index != expected_next_day_index
+            || self.configuration_sha256.as_ref().is_some_and(|digest| {
+                digest != &configuration.configuration_sha256()
+            })
+            || (self.configuration_sha256.is_none() && !self.pending_carry.is_empty())
+        {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "provider cursor configuration",
+            ));
+        }
+        Ok(())
+    }
+
     /// Serialize the complete provider cursor for a persisted restart owner.
     pub fn to_json_bytes(&self) -> Result<Vec<u8>, SnowFreeHalfHourForcingError> {
         serde_json::to_vec(self)
@@ -284,10 +413,10 @@ impl SnowFreeHalfHourProviderCursor {
     /// configuration and scheduler day.
     pub fn restore_json(
         bytes: &[u8],
-        configuration: &SnowFreeHalfHourProviderConfiguration,
+        configuration: &SnowFreeHalfHourStaticConfiguration,
         expected_next_day_index: usize,
     ) -> Result<Self, SnowFreeHalfHourForcingError> {
-        validate_snow_free_configuration(configuration)?;
+        validate_snow_free_static_configuration(configuration)?;
         let snapshot: SnowFreeHalfHourProviderCursorSnapshot = serde_json::from_slice(bytes)
             .map_err(|error| SnowFreeHalfHourForcingError::Serialization(error.to_string()))?;
         let value = Self {
@@ -295,7 +424,7 @@ impl SnowFreeHalfHourProviderCursor {
             configuration_sha256: snapshot.configuration_sha256,
             pending_carry: snapshot.pending_carry,
         };
-        let expected_configuration_sha256 = snow_free_configuration_sha256(configuration);
+        let expected_configuration_sha256 = snow_free_static_configuration_sha256(configuration);
         if value.next_day_index != expected_next_day_index
             || value.configuration_sha256.as_deref()
                 != Some(expected_configuration_sha256.as_str())
@@ -743,17 +872,75 @@ type PrecipitationSupport = (f64, f64, f64);
 type ChildMassesAndCarry = ([f64; 48], Vec<PrecipitationSupport>);
 
 impl HillslopeClimateRuntimeRequest {
-    pub fn prepare_snow_free_gsi_day(
+    pub fn prepare_snow_free_gsi_day_from_repository(
         &self,
         day_index: usize,
         configuration: &SnowFreeHalfHourStaticConfiguration,
+        gsi_owner_configuration: &DirectGsiOwnerConfigurationV1,
         gsi_state: &GsiState,
-        gsi_parameters: GsiParameters,
-        gsi_forcing: GsiDailyForcing,
         cursor: &SnowFreeHalfHourProviderCursor,
     ) -> Result<PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError> {
-        let (gsi_receipt, ending_gsi_state) =
-            DirectGsiDailyReceiptV1::prepare(gsi_state, gsi_parameters, gsi_forcing)?;
+        gsi_owner_configuration.validate()?;
+        if configuration.run_id.is_empty()
+            || configuration.gsi_owner_configuration_sha256
+                != gsi_owner_configuration.configuration_sha256
+            || self.metadata.deglat.to_bits()
+                != gsi_owner_configuration.latitude_degrees.to_bits()
+        {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "repository GSI owner join",
+            ));
+        }
+        let selected = select_day_forcing(&self.shared, day_index)?;
+        let source_climate_sha256 = source_climate_sha256(self, day_index, selected);
+        let (day, month, year, tmin, tmax, dew_point) = match selected {
+            HillslopeClimateDailyForcing::NoBreakpoint(value) => (
+                value.day, value.mon, value.year, value.tmin, value.tmax, value.tdpt,
+            ),
+            HillslopeClimateDailyForcing::Breakpoint(value) => (
+                value.day, value.mon, value.year, value.tmin, value.tmax, value.tdpt,
+            ),
+        };
+        let ordinal_day = u16::try_from(simimpl28_day_of_year(day, month, year)?)
+            .map_err(|_| SnowFreeHalfHourForcingError::Identity("repository GSI date"))?;
+        let saturation_kpa = |temperature_c| {
+            saturation_vapor_pressure_water_kpa(
+                TemperatureCelsius::try_new(temperature_c)
+                    .map_err(|_| SnowFreeHalfHourForcingError::Unsupported("GSI daily VPD"))?,
+            )
+            .map(
+                openwepp_meteorology::psychrometrics::VaporPressureKilopascals::as_kilopascals,
+            )
+            .map_err(|_| SnowFreeHalfHourForcingError::Unsupported("GSI daily VPD"))
+        };
+        let mean_saturation_kpa =
+            f64::midpoint(saturation_kpa(tmax)?, saturation_kpa(tmin)?);
+        let actual_vapor_pressure_kpa = saturation_kpa(dew_point)?;
+        let vapor_pressure_deficit_pa =
+            (mean_saturation_kpa - actual_vapor_pressure_kpa) * 1_000.0;
+        if !vapor_pressure_deficit_pa.is_finite() || vapor_pressure_deficit_pa < 0.0 {
+            return Err(SnowFreeHalfHourForcingError::Unsupported(
+                "GSI daily VPD",
+            ));
+        }
+        let forcing = GsiDailyForcing {
+            minimum_temperature_c: tmin,
+            vapor_pressure_deficit_pa,
+            latitude_degrees: self.metadata.deglat,
+            date: GsiDate {
+                year,
+                ordinal_day,
+            },
+        };
+        let (gsi_receipt, ending_gsi_state) = DirectGsiDailyReceiptV1::prepare_owned(
+            gsi_state,
+            gsi_owner_configuration,
+            &configuration.run_id,
+            u64::try_from(day_index)
+                .map_err(|_| SnowFreeHalfHourForcingError::Identity("GSI day index"))?,
+            &source_climate_sha256,
+            forcing,
+        )?;
         let forcing_receipts = self.snow_free_half_hour_forcing_receipts_with_gsi(
             day_index,
             configuration,
@@ -770,7 +957,7 @@ impl HillslopeClimateRuntimeRequest {
     /// Closure-eligible projection joining static provider configuration to an
     /// accepted CP-GSI01 daily receipt. Daily GSI is never part of cursor
     /// identity and cannot be supplied independently of its receipt.
-    pub fn snow_free_half_hour_forcing_receipts_with_gsi(
+    fn snow_free_half_hour_forcing_receipts_with_gsi(
         &self,
         day_index: usize,
         configuration: &SnowFreeHalfHourStaticConfiguration,
@@ -778,7 +965,17 @@ impl HillslopeClimateRuntimeRequest {
         cursor: &SnowFreeHalfHourProviderCursor,
     ) -> Result<ValidatedSnowFreeHalfHourForcingReceipts, SnowFreeHalfHourForcingError> {
         gsi_receipt.validate()?;
-        if configuration.gsi_owner_configuration_sha256 != gsi_receipt.configuration_sha256 {
+        let selected = select_day_forcing(&self.shared, day_index)?;
+        let expected_source_climate_sha256 = source_climate_sha256(self, day_index, selected);
+        if configuration.gsi_owner_configuration_sha256 != gsi_receipt.configuration_sha256
+            || configuration.run_id != gsi_receipt.run_id
+            || gsi_receipt.day_index
+                != u64::try_from(day_index)
+                    .map_err(|_| SnowFreeHalfHourForcingError::Identity("GSI day index"))?
+            || gsi_receipt.source_climate_sha256 != expected_source_climate_sha256
+            || gsi_receipt.forcing.latitude_degrees.to_bits()
+                != self.metadata.deglat.to_bits()
+        {
             return Err(SnowFreeHalfHourForcingError::Identity(
                 "provider GSI owner configuration",
             ));
@@ -795,22 +992,6 @@ impl HillslopeClimateRuntimeRequest {
             day_index,
             &daily,
             snow_free_static_configuration_sha256(configuration),
-            cursor,
-        )
-    }
-
-    /// Project actual repository climate inputs into 48 digest-bound receipts
-    /// for every configured destination. This API remains explicit/default-off.
-    pub fn snow_free_half_hour_forcing_receipts(
-        &self,
-        day_index: usize,
-        configuration: &SnowFreeHalfHourProviderConfiguration,
-        cursor: &SnowFreeHalfHourProviderCursor,
-    ) -> Result<ValidatedSnowFreeHalfHourForcingReceipts, SnowFreeHalfHourForcingError> {
-        self.snow_free_half_hour_forcing_receipts_impl(
-            day_index,
-            configuration,
-            snow_free_configuration_sha256(configuration),
             cursor,
         )
     }
@@ -875,19 +1056,6 @@ impl HillslopeClimateRuntimeRequest {
             ending_cursor,
         })
     }
-}
-
-fn snow_free_configuration_sha256(value: &SnowFreeHalfHourProviderConfiguration) -> String {
-    let mut digest = Sha256::new();
-    update_string_digest(&mut digest, &value.run_id);
-    digest.update(value.reference_height_m.to_bits().to_le_bytes());
-    digest.update((value.destinations.len() as u64).to_le_bytes());
-    for destination in &value.destinations {
-        update_string_digest(&mut digest, &destination.ofe_id);
-        update_string_digest(&mut digest, &destination.tile_id);
-        update_string_digest(&mut digest, &destination.wb14_configuration_sha256);
-    }
-    format!("{:x}", digest.finalize())
 }
 
 fn snow_free_static_configuration_sha256(value: &SnowFreeHalfHourStaticConfiguration) -> String {
@@ -961,6 +1129,36 @@ fn validate_snow_free_configuration(
     {
         return Err(SnowFreeHalfHourForcingError::Identity(
             "provider configuration",
+        ));
+    }
+    let mut identities = std::collections::BTreeSet::new();
+    for destination in &value.destinations {
+        if destination.ofe_id.is_empty()
+            || destination.tile_id.is_empty()
+            || !is_sha256(&destination.wb14_configuration_sha256)
+            || !identities.insert((&destination.ofe_id, &destination.tile_id))
+        {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "destination configuration",
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn validate_snow_free_static_configuration(
+    value: &SnowFreeHalfHourStaticConfiguration,
+) -> Result<(), SnowFreeHalfHourForcingError> {
+    if value.run_id.is_empty()
+        || !is_sha256(&value.gsi_owner_configuration_sha256)
+        || value.destinations.is_empty()
+        || !value.co2_pa.is_finite()
+        || value.co2_pa <= 0.0
+        || !value.reference_height_m.is_finite()
+        || value.reference_height_m <= 0.0
+    {
+        return Err(SnowFreeHalfHourForcingError::Identity(
+            "static provider configuration",
         ));
     }
     let mut identities = std::collections::BTreeSet::new();

@@ -1,5 +1,18 @@
 # Gate Results
 
+## Exact-commit review and terminal verification
+
+Commit `646e95b40` received an independent Rust review and two independent
+terminal-verifier PASS verdicts. Verifier A ran focused Rust parity 1/1, V10
+authority/regeneration 3/3 (Nextest `233f34d6-945a-4ad2-9858-e9e80a1d05bc`),
+strict LSE Clippy, and exact diff checks. Verifier B ran in a clean detached
+copy: focused parity 1/1, authority/regeneration 3/3 (Nextest
+`d7c54cfa-1cf7-4051-984f-e255baac7578`), and exact diff checks. Both found no
+blocking issue and confirmed actual five-vector production-path execution.
+
+Disposition: `PASS` for the frozen-vector parity increment. The 2,924-line
+`solver.rs` remains a nonblocking WARN with retained split intent.
+
 Status: `V10/LSE-V2 IMPLEMENTATION PASS / RESTART AND CHILD-4 PENDING`
 
 Resumed direct Rust-to-frozen parity increment:
@@ -10,7 +23,8 @@ Resumed direct Rust-to-frozen parity increment:
   regeneration): PASS, 3/3, Nextest run
   `4d959066-609e-47d7-90e8-68129a799be5`;
 - detailed evidence: `artifacts/rust-frozen-vector-parity.md`;
-- exact-current Rust review and terminal verification remain pending.
+- exact-current independent Rust review: PASS with no findings at
+  `646e95b40`; terminal verification remains pending.
 
 No completion gate is claimed before the complete 48-interval provider day,
 persisted restart, Child 4, and campaign gates pass.

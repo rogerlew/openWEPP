@@ -1,5 +1,24 @@
 # Gate Results
 
+## Explicit owner-boundary increment
+
+The GSI/forcing boundary increment passes the focused 7/7 forcing contract,
+both complete 48-interval repository-derived V10 provider days, explicit
+static cursor restoration, and exact downstream rollback. See
+`artifacts/gsi-owner-boundary.md`. Persisted restart and package terminal review
+remain pending and no package-complete claim is made.
+
+Latest exact-tree rerun after sealing the raw provider entry point and adding
+constructor-time owner validation:
+
+- forcing contract: PASS, 7/7, Nextest run
+  `db7e472b-79c2-4243-8745-9555d14b42f8`;
+- repository projection, zero-radiation day, positive-radiation day, and
+  downstream rollback: PASS, 4/4, Nextest run
+  `c12a6798-b717-42e9-99ab-788c0a8ed2b0`;
+- affected five-crate all-target Clippy with warnings denied: PASS;
+- canonical formatting and `git diff --check`: PASS.
+
 Disposition: `PHYSICS PASS / OWNERSHIP-RESTART HOLD`. Earlier green evidence
 below is retained as increment evidence, not terminal proof.
 

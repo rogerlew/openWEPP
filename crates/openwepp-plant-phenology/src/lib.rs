@@ -270,7 +270,13 @@ impl GsiParameters {
         }
     }
 
-    fn validate(self) -> Result<(), GsiError> {
+    /// Validate the complete CP-GSI01 parameter domain without advancing state.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GsiError`] when thresholds are non-finite, unordered, or
+    /// outside the canonical photoperiod domain.
+    pub fn validate(self) -> Result<(), GsiError> {
         validate_threshold_pair(
             "minimum_temperature_c",
             self.minimum_temperature_inactive_c,
