@@ -33,7 +33,7 @@ frozen rooted layer.
 |---|---|---|
 | CTSM CLM5 Plant Hydraulics, release-clm5.0, 2.11.2.1.3, eqs. 2.11.14--18 | distinct `z3`/`dxroot`, series resistances, gravity, layer-local current K | `[DIRECT]` retrieved 2026-08-19; HTML SHA-256 `4228822c94293f6673adf12b0fbb7d4e3a78f72e5c268eecb9cefef75ba36cee` |
 | CTSM CLM5 Hydrology, release-clm5.0, 2.7.3.1, eqs. 2.7.47 and 2.7.49--55 | Brooks--Corey intrinsic `2B+3` factor, node geometry, retention, and `-1e8 mm` floor; the vertical-interface averaging/ice operator is not imported | `[DIRECT]` retrieved 2026-08-19; HTML SHA-256 `fff5080f4b9285bfa19bca4f7913b17e93c341138249f70d515c6706b5cced09` |
-| ESCOMP/CTSM `8e1309ab0db671d884b80746cbae9bbaafbe78a7`, `PhotosynthesisMod.F90` lines 2608--2629 and 4405--4449 | layer-local current `hk_l`, distinct coarse-root lateral path plus node depth, and signed `smp-root-1000*z` gravitational gradient | `[DIRECT]` immutable source inspected 2026-08-19 |
+| ESCOMP/CTSM `fdfc03a0abec838ec0b66663a6a2f5e619cd2611`, `PhotosynthesisMod.F90` lines 2671, 2680, 2835, 2841, 2847, 4644--4663, 4732--4771 | layer-local current `hk_l`, distinct root lateral path plus node depth, positive-down node depth, and signed `smp-root-1000*z` gradient | `[DIRECT]` immutable source inspected 2026-08-19 |
 | Clapp & Hornberger (1978), WRR 14(4), DOI `10.1029/WR014i004p00601` | retention/conductivity power-law lineage | `[DIRECT]` citation metadata; source bytes not vendored |
 
 CLM PFT/root defaults, hardcoded coarse-root length, WB14 suction/K, and

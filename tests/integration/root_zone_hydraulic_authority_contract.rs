@@ -67,6 +67,63 @@ fn rust_libm_expected(input: &Value) -> serde_json::Map<String, Value> {
     .collect()
 }
 
+fn authority_evaluate(
+    input: &Value,
+    frozen: bool,
+    path_present: bool,
+) -> Result<serde_json::Map<String, Value>, &'static str> {
+    if !path_present {
+        return Err("ConfigurationIdentity");
+    }
+    if frozen {
+        return Err("FrozenRootedLayerUnsupported");
+    }
+    let fields = [
+        "liquid_m",
+        "thickness_m",
+        "porosity",
+        "ksat_m_s",
+        "psi_sat_mm",
+        "b",
+        "top_m",
+        "lateral_m",
+        "dxroot_m",
+    ];
+    if fields.iter().any(|name| input.get(name).is_none()) {
+        return Err("ConfigurationIdentity");
+    }
+    let liquid = f(&input["liquid_m"]);
+    let thickness = f(&input["thickness_m"]);
+    let porosity = f(&input["porosity"]);
+    let ksat = f(&input["ksat_m_s"]);
+    let psi_sat = f(&input["psi_sat_mm"]);
+    let b = f(&input["b"]);
+    let top = f(&input["top_m"]);
+    let lateral = f(&input["lateral_m"]);
+    let dxroot = f(&input["dxroot_m"]);
+    if ![
+        liquid, thickness, porosity, ksat, psi_sat, b, top, lateral, dxroot,
+    ]
+    .iter()
+    .all(|v| v.is_finite())
+        || liquid < 0.0
+        || thickness <= 0.0
+        || !(0.0 < porosity && porosity <= 1.0)
+        || ksat <= 0.0
+        || psi_sat >= 0.0
+        || b <= 0.0
+        || top < 0.0
+        || lateral < 0.0
+        || dxroot <= 0.0
+    {
+        return Err("Domain");
+    }
+    if liquid > capacity_one_bit_limit(porosity * thickness) {
+        return Err("WaterAbovePoreCapacity");
+    }
+    Ok(rust_libm_expected(input))
+}
+
 fn capacity_one_bit_limit(capacity: f64) -> f64 {
     f64::from_bits(capacity.to_bits() + 1)
 }
@@ -75,6 +132,93 @@ fn digest(value: &Value) -> String {
     let mut bytes = serde_json::to_vec(value).unwrap();
     bytes.push(b'\n');
     format!("{:x}", Sha256::digest(bytes))
+}
+
+fn validate_configuration(mut value: Value) -> Result<Value, &'static str> {
+    let found = value["configuration_sha256"]
+        .as_str()
+        .ok_or("ConfigurationIdentity")?
+        .to_owned();
+    value["configuration_sha256"] = Value::String(String::new());
+    if digest(&value) != found {
+        return Err("ConfigurationDigest");
+    }
+    value["configuration_sha256"] = Value::String(found);
+    let layers = value["ordered_layers"]
+        .as_array()
+        .ok_or("ConfigurationIdentity")?;
+    if layers.is_empty() {
+        return Err("ConfigurationIdentity");
+    }
+    let keys = layers
+        .iter()
+        .map(|v| {
+            (
+                v["ofe_id"].as_str(),
+                v["production_lane_index"].as_u64(),
+                v["production_lane_id"].as_str(),
+                v["layer_id"].as_str(),
+            )
+        })
+        .collect::<Vec<_>>();
+    if keys.windows(2).any(|w| w[0] >= w[1]) {
+        return Err("ConfigurationIdentity");
+    }
+    if keys != vec![(Some("ofe-1"), Some(0), Some("lane-1"), Some("layer-1"))] {
+        return Err("ConfigurationIdentity");
+    }
+    let strata = value["ordered_stratum_geometry"]
+        .as_array()
+        .ok_or("ConfigurationIdentity")?;
+    let ids = strata
+        .iter()
+        .map(|v| v["stratum_id"].as_str())
+        .collect::<Vec<_>>();
+    if ids != vec![Some("stratum-1")] {
+        return Err("ConfigurationIdentity");
+    }
+    if strata.iter().any(|v| {
+        v["root_tissue_lateral_path_m"]
+            .as_f64()
+            .is_none_or(|x| !x.is_finite() || x < 0.0)
+    }) {
+        return Err("Domain");
+    }
+    Ok(value)
+}
+
+fn validate_receipt(mut receipt: Value, configuration: &Value) -> Result<Value, &'static str> {
+    let found = receipt["receipt_sha256"]
+        .as_str()
+        .ok_or("ReceiptDigest")?
+        .to_owned();
+    receipt["receipt_sha256"] = Value::String(String::new());
+    if digest(&receipt) != found {
+        return Err("ReceiptDigest");
+    }
+    receipt["receipt_sha256"] = Value::String(found);
+    if receipt["configuration_sha256"] != configuration["configuration_sha256"]
+        || receipt["vegetation_configuration_sha256"]
+            != configuration["vegetation_configuration_sha256"]
+        || receipt["lse_configuration_sha256"] != configuration["lse_configuration_sha256"]
+        || receipt["ofe_id"] != "ofe-1"
+        || receipt["production_lane_index"] != 0
+        || receipt["production_lane_id"] != "lane-1"
+        || receipt["layer_id"] != "layer-1"
+        || receipt["stratum_id"] != "stratum-1"
+        || receipt["hydrology_beginning_state_sha256"] != "4".repeat(64)
+    {
+        return Err("OwnerJoin");
+    }
+    if receipt["frozen"] == true {
+        return Err("FrozenRootedLayerUnsupported");
+    }
+    if f(&receipt["gravity_root_mm"]) > 0.0
+        || f(&receipt["root_path_length_mm"]) < f(&receipt["gravity_root_mm"]).abs()
+    {
+        return Err("Domain");
+    }
+    Ok(receipt)
 }
 
 #[test]
@@ -205,6 +349,113 @@ fn configuration_schema_and_digest_are_canonical_and_closed() {
 }
 
 #[test]
+fn every_rejected_vector_executes_its_typed_guard() {
+    let vectors: Value = serde_json::from_str(&text(&format!(
+        "{PACKAGE}/artifacts/root-zone-hydraulic-vectors.json"
+    )))
+    .unwrap();
+    let base = vectors["accepted"][0]["inputs"].clone();
+    for rejected in vectors["rejected"].as_array().unwrap() {
+        let name = rejected["name"].as_str().unwrap();
+        let mut input = base.clone();
+        let (frozen, path_present) = match name {
+            "material_pore_capacity_violation" => {
+                input = rejected["inputs"].clone();
+                (false, true)
+            }
+            "frozen_rooted_layer" => (true, true),
+            "missing_root_tissue_path" => (false, false),
+            "positive_psi_sat" => {
+                input["psi_sat_mm"] = rejected["inputs"]["psi_sat_mm"].clone();
+                (false, true)
+            }
+            "zero_b" => {
+                input["b"] = rejected["inputs"]["b"].clone();
+                (false, true)
+            }
+            other => panic!("unmapped rejected vector {other}"),
+        };
+        assert_eq!(
+            authority_evaluate(&input, frozen, path_present),
+            Err(rejected["error"].as_str().unwrap()),
+            "{name}"
+        );
+    }
+}
+
+#[test]
+fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically() {
+    let configuration: Value = serde_json::from_str(&text(&format!(
+        "{PACKAGE}/artifacts/configuration-vector.json"
+    )))
+    .unwrap();
+    let configuration = validate_configuration(configuration).unwrap();
+    let receipt: Value =
+        serde_json::from_str(&text(&format!("{PACKAGE}/artifacts/receipt-vector.json"))).unwrap();
+    validate_receipt(receipt.clone(), &configuration).unwrap();
+    let live = serde_json::to_vec(&receipt).unwrap();
+    let check = |mutated: Value, expected| {
+        assert_eq!(validate_receipt(mutated, &configuration), Err(expected));
+        assert_eq!(serde_json::to_vec(&receipt).unwrap(), live);
+    };
+    let mut bad = receipt.clone();
+    bad["receipt_sha256"] = Value::String("0".repeat(64));
+    check(bad, "ReceiptDigest");
+    let mut bad = receipt.clone();
+    bad["layer_id"] = Value::String("layer-x".into());
+    bad["receipt_sha256"] = Value::String(String::new());
+    bad["receipt_sha256"] = Value::String(digest(&bad));
+    check(bad, "OwnerJoin");
+    let mut bad = receipt.clone();
+    bad["stratum_id"] = Value::String("stratum-x".into());
+    bad["receipt_sha256"] = Value::String(String::new());
+    bad["receipt_sha256"] = Value::String(digest(&bad));
+    check(bad, "OwnerJoin");
+    let mut bad = receipt.clone();
+    bad["gravity_root_mm"] = Value::String(hx(f(&receipt["gravity_root_mm"]).abs()));
+    bad["receipt_sha256"] = Value::String(String::new());
+    bad["receipt_sha256"] = Value::String(digest(&bad));
+    check(bad, "Domain");
+    let mut bad = receipt.clone();
+    bad["frozen"] = Value::Bool(true);
+    bad["receipt_sha256"] = Value::String(String::new());
+    bad["receipt_sha256"] = Value::String(digest(&bad));
+    check(bad, "FrozenRootedLayerUnsupported");
+
+    for field in [
+        "hydrology_beginning_state_sha256",
+        "vegetation_configuration_sha256",
+        "lse_configuration_sha256",
+    ] {
+        let mut bad = receipt.clone();
+        bad[field] = Value::String("9".repeat(64));
+        bad["receipt_sha256"] = Value::String(String::new());
+        bad["receipt_sha256"] = Value::String(digest(&bad));
+        check(bad, "OwnerJoin");
+    }
+
+    let mut bad_config = configuration.clone();
+    bad_config["ordered_layers"] = Value::Array(vec![
+        configuration["ordered_layers"][0].clone(),
+        configuration["ordered_layers"][0].clone(),
+    ]);
+    bad_config["configuration_sha256"] = Value::String(String::new());
+    bad_config["configuration_sha256"] = Value::String(digest(&bad_config));
+    assert_eq!(
+        validate_configuration(bad_config),
+        Err("ConfigurationIdentity")
+    );
+    let mut missing = configuration.clone();
+    missing["ordered_stratum_geometry"][0]
+        .as_object_mut()
+        .unwrap()
+        .remove("root_tissue_lateral_path_m");
+    missing["configuration_sha256"] = Value::String(String::new());
+    missing["configuration_sha256"] = Value::String(digest(&missing));
+    assert_eq!(validate_configuration(missing), Err("Domain"));
+}
+
+#[test]
 fn generator_is_byte_reproducible_and_poison_inventory_is_complete() {
     let artifacts = root().join(PACKAGE).join("artifacts");
     let names = [
@@ -219,6 +470,7 @@ fn generator_is_byte_reproducible_and_poison_inventory_is_complete() {
         "configuration-vector.json",
         "artifact-manifest.json",
         "receipt-schema.json",
+        "receipt-vector.json",
     ];
     let before = names
         .iter()
@@ -247,4 +499,17 @@ fn generator_is_byte_reproducible_and_poison_inventory_is_complete() {
     ] {
         assert!(poison.contains(required), "missing poison {required}");
     }
+}
+
+#[test]
+fn independent_calculator_schemas_and_manifest_execute() {
+    let status = Command::new(root().join(".venv/bin/python"))
+        .arg(
+            root()
+                .join(PACKAGE)
+                .join("tools/validate_authority_artifacts.py"),
+        )
+        .status()
+        .unwrap();
+    assert!(status.success());
 }

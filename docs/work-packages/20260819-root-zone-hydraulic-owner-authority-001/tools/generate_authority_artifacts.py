@@ -199,6 +199,24 @@ def main() -> None:
     write("receipt-schema.json", {"$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object", "additionalProperties": False, "required": receipt_fields,
         "properties": receipt_properties})
+    expected = vectors[0]["expected"]
+    inp = vectors[0]["inputs"]
+    receipt = {"transaction_id": "0" * 31 + "1", "day_index": 0, "interval_index": 0,
+        "owner_id": "root-zone-hydraulic-owner-v1", "model_definition_sha256": model["model_definition_sha256"],
+        "configuration_sha256": configuration["configuration_sha256"], "hydrology_beginning_state_sha256": "4" * 64,
+        "vegetation_configuration_sha256": configuration["vegetation_configuration_sha256"],
+        "lse_configuration_sha256": configuration["lse_configuration_sha256"], "occupancy_id": "occupancy-1",
+        "stratum_id": "stratum-1", "ofe_id": "ofe-1", "production_lane_index": 0,
+        "production_lane_id": "lane-1", "layer_id": "layer-1", "liquid_water_depth_m": inp["liquid_m"],
+        "layer_thickness_m": inp["thickness_m"], "porosity": inp["porosity"],
+        "saturated_conductivity_m_s": inp["ksat_m_s"], "relative_saturation": expected["relative_saturation"],
+        "matric_potential_mm": expected["matric_potential_mm"], "soil_conductivity_mm_s": expected["soil_conductivity_mm_s"],
+        "layer_node_depth_m": expected["layer_node_depth_m"], "gravity_root_mm": expected["gravity_root_mm"],
+        "root_tissue_lateral_path_m": inp["lateral_m"], "root_path_length_mm": expected["root_path_length_mm"],
+        "soil_root_interface_distance_m": inp["dxroot_m"], "accessible": True, "frozen": False,
+        "receipt_sha256": ""}
+    receipt["receipt_sha256"] = sha(receipt)
+    write("receipt-vector.json", receipt)
     poisons = ["WB14 suction substitution", "WB14 conductivity substitution", "Ksat used directly as current K",
         "S_psi used for K", "wrong conductivity exponent", "wrong clamp order", "positive psi_sat",
         "zero or negative B", "missing root-tissue path", "CLM default injected", "root path aliased to dxroot",
@@ -213,7 +231,7 @@ def main() -> None:
     (ARTIFACTS / "test-vector-ledger.md").write_text("# Test-vector ledger\n\n" + "\n".join(
         f"- `{v['name']}`: {v['disposition']}" for v in vectors + rejects) + "\n")
     (ARTIFACTS / "reference-calculator.py").write_bytes((Path(__file__).parent / "reference_calculator.py").read_bytes())
-    manifest_names = ["model-definition.json", "configuration-schema.json", "configuration-vector.json", "receipt-schema.json",
+    manifest_names = ["model-definition.json", "configuration-schema.json", "configuration-vector.json", "receipt-schema.json", "receipt-vector.json",
         "root-zone-hydraulic-vectors.json", "runtime-descriptor.json", "equation-and-operation-order.md",
         "test-vector-ledger.md", "poison-matrix.md", "reference-calculator.py"]
     write("artifact-manifest.json", {name: hashlib.sha256((ARTIFACTS / name).read_bytes()).hexdigest()
