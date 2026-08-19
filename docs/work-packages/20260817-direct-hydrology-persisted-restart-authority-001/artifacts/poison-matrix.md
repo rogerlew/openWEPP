@@ -20,6 +20,18 @@ Status: draft; executable poison coverage pending
 | transient LSE-V1 differs from LSE-V2 projection | `lse_v2_v1_projection` | no |
 | invalid owner domain | `owner_validation` | no |
 | `laned_active` present | `unsupported_laned_active` | no |
+| duplicated outer surface-liquid state | `schema` | no |
+| wrong soil/subsurface layer order | `topology_identity` | no |
+| wrong forcing destination order | `forcing_receipt_order` | no |
+| truncated or alternate-width transaction u128 | `transaction_lineage` | no |
+| platform-width integer substitution | `noncanonical_bytes` | no |
+| `+0.0` / `-0.0` bit-string mutation | `owner_validation` | no |
+| GSI date gap or replay | `gsi_receipt` | no |
+| staged owner substituted for committed beginning owner | `owner_identity` | no |
+| in-progress interval 0 or 48 | `scheduler_position` | no |
+| cross-midnight carry omitted | `provider_cursor` | no |
+| changed inner bytes with recomputed outer digest | typed inner category, never `payload_digest` alone | no |
+| any failed restore mutation of live owner | original live bytes must remain exact | no |
 
 Every row must be tested against an isolated candidate before release. The live
 owner bytes must remain identical until every row has passed and final
