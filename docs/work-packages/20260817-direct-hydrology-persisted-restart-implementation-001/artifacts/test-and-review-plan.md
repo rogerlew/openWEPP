@@ -1,0 +1,3 @@
+# Test and review plan
+
+Risk is critical because restart serialization and cross-owner orchestration are introduced. Edit loops use production/reference parity, focused canonical/hydrology/checkpoint/forcing tests, formatting, and Clippy. Increment closure adds every released vector and poison, fresh-object between-day/interval-24/day-boundary/multi-day/cross-midnight/multi-destination equivalence, failure injection with exact live bytes, and line counts. Package closure requires two fresh reviews, two terminal verifiers, exact-head full workspace Nextest, workspace Clippy, doctests, cargo-deny, anti-evasion, AUTH11, Markdown lint, documentation links, benchmarks, and diff hygiene.

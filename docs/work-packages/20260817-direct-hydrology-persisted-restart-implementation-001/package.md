@@ -1,6 +1,6 @@
 # Implement Direct-Hydrology Persisted Restart
 
-Status: `queued / restart authority released / execution not started`
+Status: `executing / released restart authority bound / production implementation active`
 
 Date: `2026-08-17`
 
@@ -16,6 +16,8 @@ The blocking authority prerequisite is satisfied by
 `f95395597fe434dbc853c1b947b16fd434f013c1`. This package is eligible for a
 separate implementation kickoff; no production restart implementation has
 started.
+
+Implementation base: `dea2d60d4d8a618b9a775f28e47a477c5ee85fe9`.
 
 ## Objective
 
