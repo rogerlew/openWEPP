@@ -1,6 +1,6 @@
 # Implement Direct-Hydrology Persisted Restart
 
-Status: `executing / implementation and reviews PASS / terminal verification active`
+Status: `COMPLETE / DirectHydrologyRestartV1 and DirectV10RealConsumerCheckpointV1 persisted restart implemented / default-off only`
 
 Date: `2026-08-17`
 
