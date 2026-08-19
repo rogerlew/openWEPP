@@ -1,5 +1,19 @@
 # Review Finding Disposition
 
+## Live-owner intake reconciliation
+
+Status: `HOLD / exact authority contradiction` on the required starting commit
+`09bbd5d844456c3c11b3bd9c88909dbe0d5f8ae3`.
+
+The prior caller-template finding is refined, not waived. Exhaustive field
+classification found implementable owners for meteorology/GSI, water,
+temperature, conductivity, optics, longwave coupling, WB14, and internal runon.
+It found no admitted owner for vegetation root-zone matric potential or the
+explicit soil-to-root path and layer gravitational head required by
+`SC-VEGETATION-001`. Those exact missing fields prevent removal of the physical
+template without inventing science. Fresh terminal review is therefore
+withheld until a narrow contract-first authority lift lands.
+
 ## Exact-current material finding
 
 Status: `HOLD` on `81c2a910c4c47eadd71649959d145d2f82125b9c`.

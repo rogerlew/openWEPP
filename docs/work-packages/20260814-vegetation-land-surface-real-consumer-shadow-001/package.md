@@ -1,6 +1,6 @@
 # Execute Vegetation And Land Surface Through A Real Shadow Consumer
 
-Status: `HOLD / newly demonstrated live-owner template contradiction`
+Status: `HOLD / exact root-hydraulic owner authority missing`
 
 Date: `2026-08-14`
 
@@ -21,7 +21,8 @@ domain coverage and performance without activation.
 - [x] Freeze real input providers, scheduler point and complete owner set.
 - [x] Implement explicit shadow API and atomic whole-state transaction.
 - [x] Run repository-backed scenarios, coverage audit and legacy comparison.
-- [ ] Close live-owner template reconstruction, then pass terminal verification.
+- [ ] Admit exact root-zone matric-potential and root path/gravity ownership,
+  then close live-owner template reconstruction and terminal verification.
 
 ## Implementation Intent
 

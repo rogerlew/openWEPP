@@ -40,3 +40,20 @@ An attempted full-workspace run was interrupted after source bytes changed and
 is invalid for disposition. A clean exact-head full workspace was not run
 because the real-provider and persisted-restart exit criteria remain open. No
 gate is waived or relabeled.
+# Live-owner correction intake (2026-08-19)
+
+Evidence class: `Ran + Static`.
+
+- exact HEAD and `origin/main` at required
+  `09bbd5d844456c3c11b3bd9c88909dbe0d5f8ae3`: PASS before edits;
+- clean tree and intake `git diff --check`: PASS;
+- instruction discovery and required governance reading: PASS;
+- exhaustive interval field-authority ledger: PASS (pre-implementation);
+- exact root-zone matric-potential owner: BLOCKED / authority absent;
+- exact soil-to-root path and layer gravity owner: BLOCKED / authority absent;
+- production implementation, focused gates, heavy gates, reviews, comparator,
+  and terminal verification: NOT RUN because Phase 1 forbids implementation
+  before every field has an authority-preserving disposition.
+
+The package remains HOLD. No execution result from the prior implementation is
+reclassified or erased below.
