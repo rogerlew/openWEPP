@@ -1,3 +1,4 @@
+use openwepp_hillslope_orchestrator::v9_real_consumer_shadow::DirectRootZoneHydraulicConfiguration;
 use openwepp_restart_authority_reference::*;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
@@ -6,14 +7,18 @@ use std::{
     path::{Path, PathBuf},
 };
 
-fn identities(committed: &CompleteCommittedOwnerStateV1) -> (Sha256Hex, Sha256Hex) {
-    restart_authority_identities(committed)
+fn identities(
+    committed: &CompleteCommittedOwnerStateV1,
+    root_zone: &DirectRootZoneHydraulicConfiguration,
+) -> (Sha256Hex, Sha256Hex) {
+    restart_authority_identities(committed, root_zone)
 }
 fn checkpoint(
     phase: DirectV10CheckpointPhaseV1,
     committed: &CompleteCommittedOwnerStateV1,
+    root_zone: &DirectRootZoneHydraulicConfiguration,
 ) -> DirectV10RealConsumerCheckpointV1 {
-    let (run, topology) = identities(committed);
+    let (run, topology) = identities(committed, root_zone);
     let mut value = DirectV10RealConsumerCheckpointV1 {
         schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
         version: 1,
@@ -34,6 +39,7 @@ fn initial() -> DirectV10RealConsumerCheckpointV1 {
             committed: fixture.committed.clone(),
         },
         &fixture.committed,
+        fixture.runtime.shadow.root_zone_hydraulic_configuration(),
     )
 }
 fn in_progress(through: u8) -> DirectV10RealConsumerCheckpointV1 {
@@ -70,6 +76,11 @@ fn in_progress(through: u8) -> DirectV10RealConsumerCheckpointV1 {
             ),
         },
         &fixture.owners.committed,
+        fixture
+            .owners
+            .runtime
+            .shadow
+            .root_zone_hydraulic_configuration(),
     )
 }
 fn cross_midnight() -> DirectV10RealConsumerCheckpointV1 {
@@ -106,6 +117,11 @@ fn cross_midnight() -> DirectV10RealConsumerCheckpointV1 {
             ),
         },
         &fixture.owners.committed,
+        fixture
+            .owners
+            .runtime
+            .shadow
+            .root_zone_hydraulic_configuration(),
     )
 }
 fn write(path: &Path, value: &impl Serialize) {

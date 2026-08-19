@@ -71,7 +71,8 @@ impl DirectV10PreparedDayTransactionV1 {
         let committed = project_complete_owner_state_v1(shadow, &phase_plan, &day_inputs, day)
             .map_err(RestartTransactionError::Projection)?;
         let (run, topology) =
-            checkpoint_identities_v1(&committed).map_err(RestartTransactionError::Projection)?;
+            checkpoint_identities_v1(&committed, shadow.root_zone_hydraulic_configuration())
+                .map_err(RestartTransactionError::Projection)?;
         let mut ending_gsi = shadow.gsi_state().clone();
         let mut ending_cursor = shadow.provider_cursor().clone();
         prepared
@@ -323,7 +324,9 @@ mod tests {
             .restart_authority_hydrology_frame()
             .phase_plan
             .clone();
-        let (run, topology) = crate::checkpoint_identities_v1(&committed).unwrap();
+        let (run, topology) =
+            crate::checkpoint_identities_v1(&committed, &root_zone_hydraulic_configuration)
+                .unwrap();
         drop(fixture);
         let context = ExpectedRestartStaticContext {
             run_identity_sha256: &run,

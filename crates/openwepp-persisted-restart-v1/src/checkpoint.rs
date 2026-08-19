@@ -150,6 +150,7 @@ pub enum RestartAdmissionFailureV1 {
     ErosionPublication,
 }
 
+#[derive(Clone, Copy)]
 pub struct ExpectedRestartStaticContext<'a> {
     pub run_identity_sha256: &'a Sha256Hex,
     pub topology_sha256: &'a Sha256Hex,
@@ -342,7 +343,7 @@ pub fn admit_checkpoint_v1(
             accepted_interval_count,
             committed,
         } => {
-            verify_embedded_identities(committed, &checkpoint)?;
+            verify_embedded_identities(committed, &checkpoint, context)?;
             require_between_days_surface_position(&committed.scientific, next_day_index.0)?;
             if next_day_index
                 .0
@@ -369,12 +370,12 @@ pub fn admit_checkpoint_v1(
             validated_forcing_day_receipts,
             continuation_template,
         } => {
-            verify_embedded_identities(committed_day_beginning, &checkpoint)?;
+            verify_embedded_identities(committed_day_beginning, &checkpoint, context)?;
             let mut staged_identity_source = committed_day_beginning.clone();
             staged_identity_source
                 .scientific
                 .clone_from(staged_scientific);
-            verify_embedded_identities(&staged_identity_source, &checkpoint)?;
+            verify_embedded_identities(&staged_identity_source, &checkpoint, context)?;
             if day_index
                 .0
                 .checked_mul(48)
@@ -485,8 +486,9 @@ pub fn admit_checkpoint_v1(
 fn verify_embedded_identities(
     value: &CompleteCommittedOwnerStateV1,
     checkpoint: &DirectV10RealConsumerCheckpointV1,
+    context: &ExpectedRestartStaticContext<'_>,
 ) -> Result<(), RestartAdmissionFailureV1> {
-    let (run, topology) = checkpoint_identities(value)?;
+    let (run, topology) = checkpoint_identities(value, context.root_zone_hydraulic_configuration)?;
     if run != checkpoint.run_identity_sha256 {
         return Err(RestartAdmissionFailureV1::RunIdentity);
     }
@@ -498,6 +500,7 @@ fn verify_embedded_identities(
 
 fn checkpoint_identities(
     committed: &CompleteCommittedOwnerStateV1,
+    root_zone_hydraulic_configuration: &openwepp_hillslope_orchestrator::v9_real_consumer_shadow::DirectRootZoneHydraulicConfiguration,
 ) -> Result<(Sha256Hex, Sha256Hex), RestartAdmissionFailureV1> {
     let hydrology = &committed.scientific.direct_hydrology;
     let run = Sha256Hex::try_new(
@@ -527,6 +530,9 @@ fn checkpoint_identities(
             &ofe.ofe_id,
             ofe.ordered_layers.iter().map(|layer| &layer.layer_id).collect::<Vec<_>>(),
         )).collect::<Vec<_>>(),
+        "root_zone_hydraulic_configuration_sha256": root_zone_hydraulic_configuration
+            .restart_identity_sha256()
+            .map_err(|_| RestartAdmissionFailureV1::TopologyIdentity)?,
     });
     let topology = Sha256Hex::try_new(
         canonical_sha256(&topology).map_err(|_| RestartAdmissionFailureV1::TopologyIdentity)?,

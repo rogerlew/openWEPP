@@ -288,6 +288,11 @@ fn build_shadow(
 
 #[cfg(all(test, feature = "fixtures"))]
 mod tests {
+    use openwepp_hillslope_orchestrator::v9_real_consumer_shadow::{
+        DirectRootZoneHydraulicConfiguration, DirectRootZoneLayerConfiguration,
+        DirectRootZoneStratumGeometry,
+    };
+
     use crate::{
         ExpectedRestartStaticContext, Sha256Hex, admit_and_install_checkpoint_v1,
         project_complete_owner_state_v1, restart_authority_identities,
@@ -393,6 +398,60 @@ mod tests {
         .unwrap();
         assert_eq!(after_failure, before);
 
+        let original_root = context.root_zone_hydraulic_configuration;
+        let changed_layers = original_root
+            .ordered_layers()
+            .iter()
+            .enumerate()
+            .map(|(index, layer)| {
+                let (lane_index, lane_id, layer_id, psi_sat, b) = layer.restart_identity_fields();
+                DirectRootZoneLayerConfiguration::try_new(
+                    lane_index,
+                    lane_id,
+                    layer_id.clone(),
+                    psi_sat,
+                    if index == 0 { b + 1.0 } else { b },
+                )
+                .unwrap()
+            })
+            .collect();
+        let changed_strata = original_root
+            .ordered_strata()
+            .iter()
+            .map(|stratum| {
+                let (stratum_id, path_m) = stratum.restart_identity_fields();
+                DirectRootZoneStratumGeometry::try_new(stratum_id.clone(), path_m).unwrap()
+            })
+            .collect();
+        let changed_root =
+            DirectRootZoneHydraulicConfiguration::try_new(changed_layers, changed_strata).unwrap();
+        let changed_context = ExpectedRestartStaticContext {
+            root_zone_hydraulic_configuration: &changed_root,
+            ..context
+        };
+        assert!(matches!(
+            admit_and_install_checkpoint_v1(
+                &mut target,
+                &to_canonical_bytes(&checkpoint).unwrap(),
+                &changed_context,
+            )
+            .unwrap_err(),
+            crate::RestartInstallError::Admission(
+                crate::RestartAdmissionFailureV1::TopologyIdentity
+            )
+        ));
+        let after_root_identity_failure = to_canonical_bytes(
+            &project_complete_owner_state_v1(
+                target.shadow(),
+                &fixture.owners.phase_plan_sha256,
+                &fixture.owners.day_input_digests,
+                0,
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(after_root_identity_failure, before);
+
         admit_and_install_checkpoint_v1(
             &mut target,
             &to_canonical_bytes(&checkpoint).unwrap(),
@@ -420,8 +479,14 @@ mod tests {
                 ..
             }
         ));
-        let (expected_run, expected_topology) =
-            restart_authority_identities(&fixture.owners.committed);
+        let (expected_run, expected_topology) = restart_authority_identities(
+            &fixture.owners.committed,
+            fixture
+                .owners
+                .runtime
+                .shadow
+                .root_zone_hydraulic_configuration(),
+        );
         assert_eq!(run, expected_run);
         assert_eq!(topology, expected_topology);
     }

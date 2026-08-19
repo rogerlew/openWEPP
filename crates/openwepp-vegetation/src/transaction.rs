@@ -563,45 +563,86 @@ pub struct RootZoneHydraulicLayerReceipt {
     pub(crate) frozen: bool,
 }
 
+/// Primitive owner operands from which the canonical root-zone receipt is
+/// derived. Callers cannot supply the constitutive outputs independently.
+#[derive(Clone, Debug, PartialEq)]
+pub struct RootZoneHydraulicLayerSource {
+    pub occupancy_id: OccupancyId,
+    pub stratum_id: StratumId,
+    pub layer_id: SoilLayerId,
+    pub liquid_water_depth_m: f64,
+    pub layer_thickness_m: f64,
+    pub porosity: f64,
+    pub saturated_conductivity_m_s: f64,
+    pub saturated_matric_potential_mm: f64,
+    pub clapp_hornberger_b: f64,
+    pub layer_top_m: f64,
+    pub root_tissue_lateral_path_m: f64,
+    pub lateral_root_length_m: f64,
+    pub accessible: bool,
+    pub frozen: bool,
+}
+
 impl RootZoneHydraulicLayerReceipt {
-    #[allow(clippy::too_many_arguments)]
-    pub fn try_new(
-        occupancy_id: OccupancyId,
-        stratum_id: StratumId,
-        layer_id: SoilLayerId,
-        matric_potential_mm: f64,
-        hydraulic_conductivity_mm_s: f64,
-        root_path_length_mm: f64,
-        gravity_root_mm: f64,
-        lateral_root_length_m: f64,
-        accessible: bool,
-        frozen: bool,
-    ) -> Result<Self, VegetationError> {
-        if occupancy_id.stratum_id != stratum_id
-            || !matric_potential_mm.is_finite()
-            || matric_potential_mm >= 0.0
-            || !hydraulic_conductivity_mm_s.is_finite()
-            || hydraulic_conductivity_mm_s < 0.0
-            || !root_path_length_mm.is_finite()
-            || root_path_length_mm <= 0.0
-            || !gravity_root_mm.is_finite()
-            || gravity_root_mm > 0.0
-            || !lateral_root_length_m.is_finite()
-            || lateral_root_length_m <= 0.0
+    pub fn try_from_source(source: RootZoneHydraulicLayerSource) -> Result<Self, VegetationError> {
+        let values = [
+            source.liquid_water_depth_m,
+            source.layer_thickness_m,
+            source.porosity,
+            source.saturated_conductivity_m_s,
+            source.saturated_matric_potential_mm,
+            source.clapp_hornberger_b,
+            source.layer_top_m,
+            source.root_tissue_lateral_path_m,
+            source.lateral_root_length_m,
+        ];
+        if source.occupancy_id.stratum_id != source.stratum_id
+            || values.iter().any(|value| !value.is_finite())
+            || source.liquid_water_depth_m < 0.0
+            || source.layer_thickness_m <= 0.0
+            || !(0.0 < source.porosity && source.porosity <= 1.0)
+            || source.saturated_conductivity_m_s <= 0.0
+            || source.saturated_matric_potential_mm >= 0.0
+            || source.clapp_hornberger_b <= 0.0
+            || source.layer_top_m < 0.0
+            || source.root_tissue_lateral_path_m < 0.0
+            || source.lateral_root_length_m <= 0.0
+            || !source.accessible
+            || source.frozen
         {
             return Err(VegetationError::Domain("root-zone hydraulic receipt"));
         }
+        let capacity = source.porosity * source.layer_thickness_m;
+        let capacity_one_bit = f64::from_bits(capacity.to_bits() + 1);
+        if source.liquid_water_depth_m > capacity_one_bit {
+            return Err(VegetationError::Domain("root-zone pore capacity"));
+        }
+        let mut saturation =
+            (source.liquid_water_depth_m / source.layer_thickness_m / source.porosity)
+                .clamp(0.0, 1.0);
+        if saturation == 0.0 {
+            saturation = 0.0;
+        }
+        let matric_potential_mm = (source.saturated_matric_potential_mm
+            * libm::pow(saturation.max(0.01), -source.clapp_hornberger_b))
+        .max(-1.0e8);
+        let hydraulic_conductivity_mm_s = 1_000.0
+            * source.saturated_conductivity_m_s.min(
+                source.saturated_conductivity_m_s
+                    * libm::pow(saturation, 2.0 * source.clapp_hornberger_b + 3.0),
+            );
+        let node_m = source.layer_top_m + 0.5 * source.layer_thickness_m;
         Ok(Self {
-            occupancy_id,
-            stratum_id,
-            layer_id,
+            occupancy_id: source.occupancy_id,
+            stratum_id: source.stratum_id,
+            layer_id: source.layer_id,
             matric_potential_mm,
             hydraulic_conductivity_mm_s,
-            root_path_length_mm,
-            gravity_root_mm,
-            lateral_root_length_m,
-            accessible,
-            frozen,
+            root_path_length_mm: 1_000.0 * (node_m + source.root_tissue_lateral_path_m),
+            gravity_root_mm: -1_000.0 * node_m,
+            lateral_root_length_m: source.lateral_root_length_m,
+            accessible: source.accessible,
+            frozen: source.frozen,
         })
     }
 }
@@ -640,6 +681,37 @@ impl RootZoneHydraulicReceiptSet {
             .ok_or(VegetationError::Receipt(
                 "missing root-zone hydraulic receipt".into(),
             ))
+    }
+
+    #[must_use]
+    pub fn canonical_sha256(&self) -> String {
+        use sha2::{Digest, Sha256};
+
+        let mut digest = Sha256::new();
+        digest.update(b"OPENWEPP_ROOT_ZONE_HYDRAULIC_RECEIPT_SET_V1\0");
+        digest.update((self.receipts.len() as u64).to_le_bytes());
+        for ((occupancy_id, stratum_id, layer_id), receipt) in &self.receipts {
+            for identity in [
+                occupancy_id.tile_id.as_str(),
+                occupancy_id.stratum_id.as_str(),
+                stratum_id.as_str(),
+                layer_id.as_str(),
+            ] {
+                digest.update((identity.len() as u64).to_le_bytes());
+                digest.update(identity.as_bytes());
+            }
+            for value in [
+                receipt.matric_potential_mm,
+                receipt.hydraulic_conductivity_mm_s,
+                receipt.root_path_length_mm,
+                receipt.gravity_root_mm,
+                receipt.lateral_root_length_m,
+            ] {
+                digest.update(value.to_bits().to_le_bytes());
+            }
+            digest.update([u8::from(receipt.accessible), u8::from(receipt.frozen)]);
+        }
+        format!("{:x}", digest.finalize())
     }
 }
 

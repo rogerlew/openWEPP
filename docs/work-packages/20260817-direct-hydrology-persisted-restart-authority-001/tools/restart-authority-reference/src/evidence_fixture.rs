@@ -97,6 +97,7 @@ fn root_zone_configuration(
 
 pub fn restart_authority_identities(
     committed: &CompleteCommittedOwnerStateV1,
+    root_zone_hydraulic_configuration: &DirectRootZoneHydraulicConfiguration,
 ) -> (Sha256Hex, Sha256Hex) {
     let hydrology = &committed.scientific.direct_hydrology;
     let run = Sha256Hex::try_new(
@@ -126,6 +127,9 @@ pub fn restart_authority_identities(
             &ofe.ofe_id,
             ofe.ordered_layers.iter().map(|layer| &layer.layer_id).collect::<Vec<_>>(),
         )).collect::<Vec<_>>(),
+        "root_zone_hydraulic_configuration_sha256": root_zone_hydraulic_configuration
+            .restart_identity_sha256()
+            .unwrap(),
     });
     (
         run,
@@ -229,7 +233,14 @@ pub fn restart_authority_in_progress_checkpoint_fixture(
         &fixture.owners.phase_plan_sha256,
         &fixture.owners.day_input_digests,
     );
-    let (run, topology) = restart_authority_identities(&fixture.owners.committed);
+    let (run, topology) = restart_authority_identities(
+        &fixture.owners.committed,
+        fixture
+            .owners
+            .runtime
+            .shadow
+            .root_zone_hydraulic_configuration(),
+    );
     let mut checkpoint = DirectV10RealConsumerCheckpointV1 {
         schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
         version: 1,
@@ -654,7 +665,10 @@ mod tests {
     #[test]
     fn complete_repository_owner_set_is_admitted_into_fresh_objects() {
         let fixture = restart_authority_owner_fixture();
-        let (run, topology) = restart_authority_identities(&fixture.committed);
+        let (run, topology) = restart_authority_identities(
+            &fixture.committed,
+            fixture.runtime.shadow.root_zone_hydraulic_configuration(),
+        );
         let mut checkpoint = DirectV10RealConsumerCheckpointV1 {
             schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
             version: 1,
@@ -748,7 +762,14 @@ mod tests {
             &fixture.owners.phase_plan_sha256,
             &fixture.owners.day_input_digests,
         );
-        let (run, topology) = restart_authority_identities(&fixture.owners.committed);
+        let (run, topology) = restart_authority_identities(
+            &fixture.owners.committed,
+            fixture
+                .owners
+                .runtime
+                .shadow
+                .root_zone_hydraulic_configuration(),
+        );
         let mut checkpoint = DirectV10RealConsumerCheckpointV1 {
             schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
             version: 1,

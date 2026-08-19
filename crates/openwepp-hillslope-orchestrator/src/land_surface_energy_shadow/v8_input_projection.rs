@@ -180,6 +180,15 @@ fn hash_snow_free_forcing(digest: &mut Sha256, forcing: &SnowFreeForcing) {
         }
         digest.update([u8::from(layer.accessible), u8::from(layer.frozen)]);
     }
+    match &forcing.root_zone_hydraulics {
+        None => digest.update([0]),
+        Some(receipts) => {
+            digest.update([1]);
+            let receipt_sha256 = receipts.canonical_sha256();
+            digest.update((receipt_sha256.len() as u64).to_le_bytes());
+            digest.update(receipt_sha256.as_bytes());
+        }
+    }
 }
 
 /// Four exact E01--E03 column solutions for one ground tile.

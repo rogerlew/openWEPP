@@ -261,6 +261,7 @@ version = "0.1.0"
 name = "openwepp-vegetation"
 version = "0.1.0"
 dependencies = [
+ "libm",
  "openwepp-kernel-contract",
  "serde",
  "serde_json",

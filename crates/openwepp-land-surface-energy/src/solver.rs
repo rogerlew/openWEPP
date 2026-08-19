@@ -2622,35 +2622,14 @@ fn solve_covered_column_impl(
         if norm <= 1.0
             && (last_steps.is_some_and(CoveredStepNorms::accepted) || v10_initial_final_acceptance)
         {
-            if beginning.authority == CoveredColumnAuthority::V10NonpositiveAssimilation
-                && detail
-                    .occupancies
-                    .iter()
-                    .flat_map(|occupancy| &occupancy.source_water)
-                    .any(|source| source.law_kg_m2_tile_s < 0.0 || source.final_kg_m2_tile_s < 0.0)
-            {
-                return Err(LandSurfaceEnergyError::UnsupportedDomain(
-                    "hydraulic_redistribution",
-                ));
-            }
-            let root_water = detail
-                .occupancies
-                .iter()
-                .flat_map(|value| value.source_water.clone())
-                .collect();
-            return Ok(CoveredColumnSolveOutcome::Accepted(Box::new(
-                CoveredColumnCandidate {
-                    solution: x,
-                    surface_enthalpy_j_m2_tile: detail.ending_surface_enthalpy_j_m2_tile,
-                    soil_temperature_k: detail.soil_temperature_k.clone(),
-                    root_water,
-                    ground_water: detail.ground_water,
-                    iterations: iteration,
-                    backtracking_count,
-                    step_norms: last_steps.unwrap_or_default(),
-                    evaluation: detail,
-                },
-            )));
+            return accept_covered_candidate(
+                beginning,
+                x,
+                detail,
+                iteration,
+                backtracking_count,
+                last_steps.unwrap_or_default(),
+            );
         }
         if iteration == MAX_NEWTON_ITERATIONS {
             let (occupancy_id, active_bounds) = covered_failure_metadata(beginning, &detail, &x);
@@ -2778,24 +2757,14 @@ fn solve_covered_column_impl(
                 &prospective_detail,
             );
             if prospective_steps.accepted() {
-                let root_water = detail
-                    .occupancies
-                    .iter()
-                    .flat_map(|value| value.source_water.clone())
-                    .collect();
-                return Ok(CoveredColumnSolveOutcome::Accepted(Box::new(
-                    CoveredColumnCandidate {
-                        solution: x,
-                        surface_enthalpy_j_m2_tile: detail.ending_surface_enthalpy_j_m2_tile,
-                        soil_temperature_k: detail.soil_temperature_k.clone(),
-                        root_water,
-                        ground_water: detail.ground_water,
-                        iterations: iteration,
-                        backtracking_count,
-                        step_norms: prospective_steps,
-                        evaluation: detail,
-                    },
-                )));
+                return accept_covered_candidate(
+                    beginning,
+                    x,
+                    detail,
+                    iteration,
+                    backtracking_count,
+                    prospective_steps,
+                );
             }
         }
         let mut accepted = None;
@@ -2850,6 +2819,45 @@ fn solve_covered_column_impl(
         }
     }
     Err(LandSurfaceEnergyError::NumericalAcceptedResidual)
+}
+
+fn accept_covered_candidate(
+    beginning: &CoveredColumnInputs,
+    solution: Vec<f64>,
+    detail: CoveredColumnEvaluation,
+    iterations: u32,
+    backtracking_count: u32,
+    step_norms: CoveredStepNorms,
+) -> Result<CoveredColumnSolveOutcome, LandSurfaceEnergyError> {
+    if beginning.authority == CoveredColumnAuthority::V10NonpositiveAssimilation
+        && detail
+            .occupancies
+            .iter()
+            .flat_map(|occupancy| &occupancy.source_water)
+            .any(|source| source.law_kg_m2_tile_s < 0.0 || source.final_kg_m2_tile_s < 0.0)
+    {
+        return Err(LandSurfaceEnergyError::UnsupportedDomain(
+            "hydraulic_redistribution",
+        ));
+    }
+    let root_water = detail
+        .occupancies
+        .iter()
+        .flat_map(|value| value.source_water.clone())
+        .collect();
+    Ok(CoveredColumnSolveOutcome::Accepted(Box::new(
+        CoveredColumnCandidate {
+            solution,
+            surface_enthalpy_j_m2_tile: detail.ending_surface_enthalpy_j_m2_tile,
+            soil_temperature_k: detail.soil_temperature_k.clone(),
+            root_water,
+            ground_water: detail.ground_water,
+            iterations,
+            backtracking_count,
+            step_norms,
+            evaluation: detail,
+        },
+    )))
 }
 
 #[derive(Clone, Debug, PartialEq)]

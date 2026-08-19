@@ -339,7 +339,7 @@ pub fn admit_checkpoint_v1(
             accepted_interval_count,
             committed,
         } => {
-            verify_embedded_identities(committed, &checkpoint)?;
+            verify_embedded_identities(committed, &checkpoint, context)?;
             require_between_days_surface_position(&committed.scientific, next_day_index.0)?;
             if next_day_index
                 .0
@@ -366,12 +366,12 @@ pub fn admit_checkpoint_v1(
             validated_forcing_day_receipts,
             continuation_template,
         } => {
-            verify_embedded_identities(committed_day_beginning, &checkpoint)?;
+            verify_embedded_identities(committed_day_beginning, &checkpoint, context)?;
             let mut staged_identity_source = committed_day_beginning.clone();
             staged_identity_source
                 .scientific
                 .clone_from(staged_scientific);
-            verify_embedded_identities(&staged_identity_source, &checkpoint)?;
+            verify_embedded_identities(&staged_identity_source, &checkpoint, context)?;
             if day_index
                 .0
                 .checked_mul(48)
@@ -481,8 +481,10 @@ pub fn admit_checkpoint_v1(
 fn verify_embedded_identities(
     value: &CompleteCommittedOwnerStateV1,
     checkpoint: &DirectV10RealConsumerCheckpointV1,
+    context: &ExpectedRestartStaticContext<'_>,
 ) -> Result<(), RestartAdmissionFailureV1> {
-    let (run, topology) = crate::restart_authority_identities(value);
+    let (run, topology) =
+        crate::restart_authority_identities(value, context.root_zone_hydraulic_configuration);
     if run != checkpoint.run_identity_sha256 {
         return Err(RestartAdmissionFailureV1::RunIdentity);
     }

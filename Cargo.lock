@@ -1225,6 +1225,7 @@ name = "openwepp-vegetation"
 version = "0.1.0"
 dependencies = [
  "approx",
+ "libm",
  "openwepp-biogeochemistry",
  "openwepp-kernel-contract",
  "serde",

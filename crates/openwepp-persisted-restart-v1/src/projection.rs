@@ -86,6 +86,7 @@ pub fn project_complete_owner_state_v1(
 /// Derive the released run and topology identities from a complete owner set.
 pub fn checkpoint_identities_v1(
     committed: &CompleteCommittedOwnerStateV1,
+    root_zone_hydraulic_configuration: &openwepp_hillslope_orchestrator::v9_real_consumer_shadow::DirectRootZoneHydraulicConfiguration,
 ) -> Result<(Sha256Hex, Sha256Hex), &'static str> {
     let hydrology = &committed.scientific.direct_hydrology;
     let run = Sha256Hex::try_new(
@@ -113,6 +114,9 @@ pub fn checkpoint_identities_v1(
             &ofe.ofe_id,
             ofe.ordered_layers.iter().map(|layer| &layer.layer_id).collect::<Vec<_>>(),
         )).collect::<Vec<_>>(),
+        "root_zone_hydraulic_configuration_sha256": root_zone_hydraulic_configuration
+            .restart_identity_sha256()
+            .map_err(|_| "root-zone configuration identity projection")?,
     });
     let topology = Sha256Hex::try_new(
         crate::canonical_sha256(&topology).map_err(|_| "topology identity projection")?,

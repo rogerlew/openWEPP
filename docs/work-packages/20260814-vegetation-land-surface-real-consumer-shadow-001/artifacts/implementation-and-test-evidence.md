@@ -1,6 +1,19 @@
 # Implementation And Test Evidence
 
-Status: `executing HOLD / focused implementation gates pass`
+Status: `implementation and exact-current gates PASS / independent review pending`
+
+Reviewed code commit: `443fc274439bc216cd8cad7e421da8fd9a52b25a`.
+
+The prior HOLD narrative below is retained as historical evidence. The missing
+provider, complete persisted-restart, and caller-controlled root/optics/runon
+boundaries are now closed by the repository-prepared V10 owner, released
+restart transaction, and root-zone owner implementation. The exact-current
+producer evidence is 722/722 orchestrator, 30/30 persisted restart, 28/28
+reference, 38/38 focused authority/integration, 3,134/3,134 workspace, and
+17/17 comparator PASS. Required independent reviews and terminal verification
+remain pending.
+
+## Superseded historical implementation record
 
 ## Runtime Path
 

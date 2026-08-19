@@ -2,8 +2,9 @@
 
 Evidence class: `Ran + Static`.
 
+Reviewed code commit: `443fc274439bc216cd8cad7e421da8fd9a52b25a`.
 Implementation commit: `cec1f9768`; authority-byte preservation correction:
-`85f1efd15`.
+`85f1efd15`; mechanical test split: `443fc2744`.
 
 The V10 scheduler now constructs opaque per-root hydraulic receipts from the
 current hydrology frame and immutable root-zone configuration on every
@@ -33,13 +34,15 @@ Ran on the exact implementation tree:
 - authority anti-evasion: PASS;
 - AUTH11 obligation guards: 3/3 PASS;
 - affected warnings-denied Clippy: PASS;
-- workspace Nextest: 3,133/3,134 PASS in one run, with the sole missing-tool
-  CQR self-test then 1/1 PASS after installing its pinned cargo-crap and LLVM
-  tools; no implementation test failed;
+- exact post-split workspace Nextest: 3,134/3,134 PASS, 5 skipped;
 - workspace doctests: PASS;
 - cargo-deny: advisories/bans/licenses/sources PASS (one unmatched allowance
   warning only);
 - rustfmt and diff hygiene: PASS.
+
+The exact-current comparator ran seven benchmark surfaces and ten Child-4
+selectors: 17/17 PASS. Its logs and manifest are retained in the Child-4
+package under `artifacts/comparator-heavy/20260819T230206Z-child4-root-owner-final/`.
 
 The scheduler attachment remains explicit and default-off. No runner,
 selector, default, publication, output or cutover path changed.
