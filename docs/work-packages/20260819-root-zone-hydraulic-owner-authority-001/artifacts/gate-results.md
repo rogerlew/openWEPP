@@ -1,20 +1,20 @@
 # Gate Results
 
-Evidence class: `Ran + Static`
+Evidence class: `Ran + Static`; base `2465849c9e0eed83c4e3aec11caa8b27cf7597ad`.
 
 | Gate | Result | Evidence |
 |---|---|---|
-| Exact intake | PASS | HEAD/origin `71bde1682`; clean tree; initial diff hygiene PASS. |
-| Primary-source retrieval | PASS | CTSM release-clm5.0 pages retrieved and hashed; DOI metadata recorded without vendoring copyrighted PDF. |
-| Root-path source closure | FAIL | No production input/configuration source exists for distinct `z3`; only caller/test values exist. |
-| Conductivity semantic closure | FAIL | State field is saturated/base `ksat` lineage, not current unsaturated conductivity. |
-| Contract authority release | BLOCKED | Releasing would invent material hydraulic operands. |
-| Kernel contract profile | BLOCKED | Draft records the contradiction but cannot freeze executable variable/guard/vector authority. |
-| Science-contract admission | FAIL (expected HOLD) | Ran `check_science_contract_admission.sh --base-ref 71bde1682... --worktree`; it rejected the changed contract because metadata remains truthfully `open`/`draft`, not `approved`/`active`. |
-| Production implementation/tests/reviews | NOT RUN | Forbidden before authority release. |
-| Child-4/campaign gates | NOT RUN | Dependency authority remains HOLD. |
+| Exact intake | PASS | HEAD/origin required base; clean; diff hygiene PASS. |
+| Primary sources | PASS (Static) | CTSM release-clm5.0 sections/hashes and Clapp--Hornberger DOI; explicit non-use list. |
+| Root path/current K authority | PASS (Static) | Required non-defaulted stratum path; live `Ksat*S^(2B+3)`; no aliases/defaults. |
+| Artifact regeneration | PASS (Ran) | Independent Python generator; contract test byte-compares eight artifacts. |
+| Root-zone authority test | PASS (Ran) | Nix shell Nextest quick, 3/3. |
+| Anti-evasion | PASS (Ran) | `check_authority_suite_antievasion.sh`. |
+| AUTH11 | PASS (Ran) | Nextest quick, 3/3. |
+| Format/diff hygiene | PASS (Ran) | `cargo fmt --all`; `git diff --check`. |
+| Science-contract admission | PENDING | Candidate is intentionally not yet approved; rerun after review/promotion. |
+| Reviews/verifiers | PENDING | Dispatch against frozen candidate commit. |
+| Production implementation | NOT RUN | Contract-first sequencing. |
 
-Attempted `cargo nextest run --test advisory_linter_authority_contract`; this
-environment has no `cargo` executable, so the test is `NOT RUN`. No test or
-Clippy PASS is claimed. The increment changes documentation and stops at a
-pre-implementation authority contradiction.
+Rust commands used `nix-shell -p cargo rustc cargo-nextest`; ambient Cargo absence
+is infrastructure, not a science HOLD.

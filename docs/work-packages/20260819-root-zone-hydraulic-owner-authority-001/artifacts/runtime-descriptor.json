@@ -1,0 +1,1 @@
+{"construction":"private_per_interval","inputs":["current staged hydrology","immutable root-zone configuration","V10/LSE identities"],"model":"OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1","output":"sealed RootZoneHydraulicLayerReceiptV1","state_mutation":"none"}

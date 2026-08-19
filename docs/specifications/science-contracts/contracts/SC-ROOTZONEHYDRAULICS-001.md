@@ -1,101 +1,159 @@
 ---
 contract_id: SC-ROOTZONEHYDRAULICS-001
-title: Root-Zone Hydraulic Boundary Contract
-status: open
-maturity: draft
+title: Root-Zone Hydraulic Owner Contract
+status: active
+maturity: candidate
 owner: openWEPP maintainers + soil/plant hydraulics reviewers
-contract_version: 0.1.0-hold
-producer_scope:
-  - Prospective per-layer retention and root-path owner
-consumer_scope:
-  - Default-off V10 vegetation and LSE-V2 real-consumer shadow
-evidence_level: static
+contract_version: 1.0.0-rc1
+producer_scope: [OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1]
+consumer_scope: [Default-off V10 vegetation and LSE-V2 real-consumer shadow]
+evidence_level: primary-source constitutive authority + contract vectors
 last_reviewed: 2026-08-19
 supersedes: []
 superseded_by: []
 ---
 
-# Root-Zone Hydraulic Boundary Contract
+# Root-Zone Hydraulic Owner Contract
 
-Status: `open / draft / HOLD`
+Status: `active / candidate / implementation not started`
 
 Authority identity: `OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1`
 
-## Scope
+## Purpose and scientific scope
 
-This contract reserves the narrow owner boundary needed to replace caller-built
-`SoilLayerForcing` hydraulic operands. It does not release an executable model.
-The boundary owns per-OFE/layer retention configuration, live-state projection,
-and per-occupancy root-tissue paths. V10 equations remain unchanged.
+This contract defines the immutable configuration and interval-local sealed
+receipt that replace caller-built root-zone hydraulic operands in the
+default-off V10 consumer. It does not change V10 plant-hydraulic equations,
+activate a selector, or authorize calibration. V1 is snow-free and rejects a
+frozen rooted layer.
 
-## Candidate V1 equations
+## Authority anchors
 
-For an unfrozen layer, in the written operation order:
+| Source | Binding use | Evidence |
+|---|---|---|
+| CTSM CLM5 Plant Hydraulics, release-clm5.0, 2.11.2.1.3, eqs. 2.11.14--18 | distinct `z3`/`dxroot`, series resistances, gravity, layer-local current K | `[DIRECT]` retrieved 2026-08-19; HTML SHA-256 `4228822c94293f6673adf12b0fbb7d4e3a78f72e5c268eecb9cefef75ba36cee` |
+| CTSM CLM5 Hydrology, release-clm5.0, 2.7.3.1, eqs. 2.7.49--55 | node geometry, retention, `-1e8 mm` floor, conductivity exponent `2B+3` | `[DIRECT]` retrieved 2026-08-19; HTML SHA-256 `fff5080f4b9285bfa19bca4f7913b17e93c341138249f70d515c6706b5cced09` |
+| Clapp & Hornberger (1978), WRR 14(4), DOI `10.1029/WR014i004p00601` | retention/conductivity power-law lineage | `[DIRECT]` citation metadata; source bytes not vendored |
+
+CLM PFT/root defaults, hardcoded coarse-root length, WB14 suction/K, and
+vertical-interface K averaging are explicitly not used.
+
+## Variables and units
+
+`theta_liq` (m3/m3) is live volumetric liquid; `S_raw`, `S`, `S_psi` are
+dimensionless saturation; `psi_sat` and `psi` are mm; `B` is dimensionless;
+`Ksat`/`Ksoil` are m/s; `z_node` and required stratum `z_lateral` are m;
+`gravity_root` and root-tissue path `z3` are mm; soil-interface `dxroot` is m.
+
+## Algorithm state surfaces
+
+Configuration binds schema/model/configuration/owner identities; hydrology,
+vegetation and LSE configuration identities; strictly ordered OFE/lane/layer
+`(psi_sat,B)` records; and exactly one required
+`root_tissue_lateral_path_m >= 0` for every rooted stratum, including explicit
+zero. There is no default.
+
+Every interval reads current staged `DirectSubsurfaceLayerState.theta_m` as
+liquid depth, `depth_m` as thickness, `porosity`, and `conductivity_m_s` as
+audited saturated/base `Ksat`. A private immutable receipt binds transaction,
+day, interval, occupancy/stratum/OFE/lane/layer, current hydrology digest and
+vegetation/LSE/configuration identities. No scientific state is mutated.
+
+## Algorithm specification
+
+In exact written grouping/order for each exact ordered OFE/layer:
 
 ```text
-theta_liq = live_liquid_water_depth_m / layer_thickness_m
-raw_relative_saturation = theta_liq / porosity
-relative_saturation = min(1, max(0.01, raw_relative_saturation))
-matric_potential_mm =
-    max(psi_sat_mm * relative_saturation^(-B), -1e8)
+theta_liq = liquid_water_depth_m / layer_thickness_m
+S_raw = theta_liq / porosity
+S = min(1.0, max(0.0, S_raw))
+S_psi = max(0.01, S)
+psi = max(psi_sat * libm::pow(S_psi, -B), -1.0e8)
+conductivity_exponent = 2.0 * B + 3.0
+raw_Ksoil = Ksat * libm::pow(S, conductivity_exponent)
+Ksoil = min(Ksat, raw_Ksoil)
+soil_conductivity_mm_s = 1000.0 * Ksoil
+layer_top[0] = 0.0
+layer_top[i] = ordered_sum(thickness[j], j < i)
+z_node = layer_top[i] + 0.5 * thickness[i]
+gravity_root = 1000.0 * z_node
+z3 = 1000.0 * (z_node + root_tissue_lateral_path_m[stratum])
+dxroot = RootLayer.lateral_root_length_m
 ```
 
-Layer-node gravity is:
+At exact `S=0`, current K is positive zero. `S_psi` is never used for K.
+Material water above pore capacity rejects before the upper clamp; only the
+specified one-bit binary64 roundoff case is admitted.
 
-```text
-top_depth_m[0] = 0
-top_depth_m[i] = sum(thickness_m[j], j < i)
-node_depth_m[i] = top_depth_m[i] + 0.5 * thickness_m[i]
-gravity_root_mm[i] = 1000 * node_depth_m[i]
-```
+## Branch and guard table
 
-Required immutable domains are `psi_sat_mm < 0`, `B > 0`, and an explicit
-per-occupancy/per-layer `root_path_length_mm > 0` satisfying
-`root_path_length_mm >= gravity_root_mm`. No default or geometry alias is
-admitted. In particular, WB14 wetting-front suction and
-`RootLayer.lateral_root_length_m` are forbidden substitutes.
+| Trigger | Typed failure |
+|---|---|
+| missing/duplicate/out-of-order identity or rooted stratum | `ConfigurationIdentity` |
+| nonfinite or invalid thickness/porosity/Ksat/psi_sat/B/path | `Domain` |
+| material liquid water above pore capacity | `WaterAbovePoreCapacity` |
+| accessible rooted frozen layer | `FrozenRootedLayerUnsupported` |
+| source/configuration/transaction/cadence mismatch | `OwnerJoin` |
+| digest mismatch or caller receipt construction | `ReceiptDigest` / impossible API |
 
-## Ownership boundary
+## Invariants and invariant guard map
 
-The prospective configuration binds ordered OFE/layer identity, production
-lane identity, vegetation/LSE/hydrology configuration identities, retention
-parameters, and explicit occupancy root paths. A private interval receipt must
-bind current hydrology state, soil thermal state, transaction/day/interval,
-configuration digests, and independently reconstructed operands before V10 may
-consume it.
+- `INV-RZH-001`: `0<=S<=1`, `0.01<=S_psi<=1`.
+- `INV-RZH-002`: `-1e8<=psi<0`, `0<=Ksoil<=Ksat`.
+- `INV-RZH-003`: `gravity_root>=0`, `z3>0`, `z3>=gravity_root`.
+- `INV-RZH-004`: `z3` uses required `z_lateral`; `dxroot` uses only existing
+  `lateral_root_length_m`; they are never aliased.
+- `INV-RZH-005`: WB14 suction/K never enter the owner.
+- `INV-RZH-006`: receipts bind current staged hydrology and are rebuilt every interval.
+- `INV-RZH-007`: ordering and explicit canonical fields bind digests; no `Debug` bytes.
 
-## Provenance
+Each invariant maps to the typed table, exact-bit vectors, and poison matrix;
+any missing executable mapping blocks release.
 
-| Source | Version / locator | Exact use | Evidence |
-|---|---|---|---|
-| Community Terrestrial Systems Model, *CLM5.0 Technical Note: Plant Hydraulics* | release-clm5.0, section 2.11.2.1.3, equations 2.11.14--2.11.18; https://escomp.github.io/CTSM/release-clm5.0/tech_note/Plant_Hydraulics/CLM50_Tech_Note_Plant_Hydraulics.html | Parallel soil-to-root flow, two series resistances, distinct `z3` and `dxroot`, gravity and soil/root potential gradient | Retrieved 2026-08-19; HTML SHA-256 `4228822c94293f6673adf12b0fbb7d4e3a78f72e5c268eecb9cefef75ba36cee` |
-| Community Terrestrial Systems Model, *CLM5.0 Technical Note: Hydrology* | release-clm5.0, section 2.7.3.1, equations 2.7.49--2.7.55 | Porosity, B, node-depth matric potential, relative-saturation bounds and `-1e8 mm` floor | Retrieved 2026-08-19; HTML SHA-256 `fff5080f4b9285bfa19bca4f7913b17e93c341138249f70d515c6706b5cced09` |
-| Clapp, R. B. and Hornberger, G. M. (1978), *Empirical equations for some soil hydraulic properties* | Water Resources Research 14(4), 601--604; DOI `10.1029/WR014i004p00601` | Retention and conductivity power functions; wetting-front suction is a derived Green-Ampt quantity, not matric-potential identity | Citation/DOI metadata only; copyrighted source bytes are not vendored |
+## Symbol alias and unit-governance map
 
-The claim ceiling is boundary and equation lineage only. It is not calibration,
-validation, transferability, or parameter-value authority for openWEPP sites.
+`theta_m -> liquid depth`; `depth_m -> thickness`; `conductivity_m_s -> Ksat`;
+`root_tissue_lateral_path_m -> z_lateral`; `root_path_length_mm -> z3`;
+`RootLayer.lateral_root_length_m -> dxroot`; `matric_potential_mm -> psi`;
+`hydraulic_conductivity_mm_s -> current Ksoil`. Metre-to-mm conversions use
+explicit `1000.0`. No publication surface is added.
 
-## Blocking authority contradiction
+## Constants, tolerances, and numerical identity
 
-`RootLayer.lateral_root_length_m` is already the soil-interface distance
-`dxroot`. No repository input, immutable vegetation configuration field,
-hydrology configuration field, or admitted builder supplies the distinct
-root-tissue path `z3` for required rooted scenarios. Existing positive
-`root_path_length_mm`/`z3_m` values are caller-owned templates or tests.
+`0.01`, `-1e8 mm`, and `2B+3` follow cited CLM5. Power is pinned to
+`libm 0.2.16` `libm::pow`. Inputs normalize admitted signed zero to positive
+zero; NaN/inf reject. Vectors compare every f64 with exact `to_bits`; the
+independent calculator emits 16-digit hexadecimal bits. The pore-capacity
+tolerance admits exactly the specified one-bit-above-capacity vector and no
+larger excess.
 
-Additionally, `DirectSubsurfaceLayerState.conductivity_m_s` is copied from the
-immutable subsurface layer input and used as a saturated/base conductivity;
-the runtime applies a moisture-dependent factor separately. It is not an
-admitted current unsaturated soil-root conductivity.
+## Calibration and identifiability posture
 
-Therefore the owner cannot be released without inventing at least one material
-operand. The first lift action is to admit a real input/configuration source for
-explicit per-occupancy/per-layer root-tissue path values and independently
-admit the unsaturated conductivity relation and its parameters. Production
-implementation is forbidden while this HOLD remains.
+`science_implementation_status=NOT_IMPLEMENTED`;
+`calibration_evidence_status=NOT_CALIBRATION_READY`;
+`identifiability_status=NOT_ASSESSED`. External `psi_sat`, `B`, and path values
+have no universal default or calibrated/validated/transferable claim.
+
+## Test-vector obligations
+
+Accepted and rejected vectors cover saturation/clamps/dryness/pore roundoff,
+multiple depths/OFE parameters/strata, explicit zero/positive paths, z3/gravity
+and z3/dxroot separation, K below/equal Ksat, signed zero, one-bit boundaries,
+frozen/inaccessible posture, WB14 substitution, Ksat-as-current-K, S_psi-for-K,
+wrong exponent/order/domains/identities/digests, missing/defaulted/aliased path,
+wrong geometry order, and caller-created receipts.
+
+## Gap register and promotability
+
+The former contradictions are resolved by the required non-defaulted stratum
+path and cited layer-local Brooks--Corey operator. Release remains blocked on
+independent calculator artifacts, contract-derived tests, three independent
+reviews and two terminal verifiers on one commit. Production implementation
+remains forbidden until release.
 
 ## Change log
 
 | Date | Version | Change |
 |---|---|---|
-| 2026-08-19 | `0.1.0-hold` | Reserved the narrow owner and recorded the exact root-path and conductivity authority blockers; no executable authority released. |
+| 2026-08-19 | `0.1.0-hold` | Recorded missing root-path/current-K authority. |
+| 2026-08-19 | `1.0.0-rc1` | Admitted required stratum geometry, live Brooks--Corey relations, exact operation order and sealed receipt custody; candidate pending vectors/review. |

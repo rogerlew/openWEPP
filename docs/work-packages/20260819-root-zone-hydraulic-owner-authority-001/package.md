@@ -1,6 +1,6 @@
 # Admit Root-Zone Hydraulic Owner V1
 
-Status: `HOLD / explicit root-path source and unsaturated conductivity authority missing`
+Status: `executing / selected authority admitted; vectors and review pending`
 
 Date: `2026-08-19`
 
@@ -19,7 +19,7 @@ This package, its implementation successor scaffold, the draft root-zone
 contract and lifecycle registries. Production Rust is excluded until authority
 release.
 
-## Exact disposition
+## Prior disposition and lift
 
 The requested candidate design is scientifically coherent, but the repository
 cannot supply the required explicit per-occupancy/per-layer root-tissue path.
@@ -28,8 +28,10 @@ as `dxroot`; aliasing it to `z3` is forbidden. The current subsurface
 `conductivity_m_s` is also saturated/base conductivity rather than the required
 current unsaturated soil-root conductivity.
 
-This is a prompt-authorized authority contradiction, not a package-size or
-implementation-effort HOLD. See `artifacts/final-disposition.md`.
+That HOLD remains historical evidence. User-selected authority now supplies a
+required, non-defaulted stratum path and current layer-local Brooks--Corey
+conductivity from live saturation. Release still requires deterministic
+vectors, contract gates, three reviews, and two terminal verifiers.
 
 ## Lift criteria
 

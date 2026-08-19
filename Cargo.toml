@@ -850,6 +850,10 @@ path = "tests/integration/snow_free_half_hour_forcing_adapter_contract.rs"
 name = "direct_hydrology_restart_authority_contract"
 path = "tests/integration/direct_hydrology_restart_authority_contract.rs"
 
+[[test]]
+name = "root_zone_hydraulic_authority_contract"
+path = "tests/integration/root_zone_hydraulic_authority_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

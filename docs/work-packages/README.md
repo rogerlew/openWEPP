@@ -11,7 +11,7 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260819-root-zone-hydraulic-owner-authority-001/` — HOLD / candidate
+- `20260819-root-zone-hydraulic-owner-authority-001/` — EXECUTING / candidate authority and vectors authored; independent review pending
   `OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1` not released: primary-source and
   repository audits prove that required rooted scenarios have no admitted
   explicit `z3` input and current subsurface conductivity is saturated/base,

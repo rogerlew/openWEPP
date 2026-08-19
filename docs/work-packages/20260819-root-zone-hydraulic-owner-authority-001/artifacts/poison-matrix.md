@@ -1,0 +1,21 @@
+# Root-zone poison matrix
+
+- `WB14 suction substitution`: reject before receipt construction; live owners unchanged.
+- `WB14 conductivity substitution`: reject before receipt construction; live owners unchanged.
+- `Ksat used directly as current K`: reject before receipt construction; live owners unchanged.
+- `S_psi used for K`: reject before receipt construction; live owners unchanged.
+- `wrong conductivity exponent`: reject before receipt construction; live owners unchanged.
+- `wrong clamp order`: reject before receipt construction; live owners unchanged.
+- `positive psi_sat`: reject before receipt construction; live owners unchanged.
+- `zero or negative B`: reject before receipt construction; live owners unchanged.
+- `missing root-tissue path`: reject before receipt construction; live owners unchanged.
+- `CLM default injected`: reject before receipt construction; live owners unchanged.
+- `root path aliased to dxroot`: reject before receipt construction; live owners unchanged.
+- `root path aliased to layer depth`: reject before receipt construction; live owners unchanged.
+- `gravity sign reversal`: reject before receipt construction; live owners unchanged.
+- `wrong layer order`: reject before receipt construction; live owners unchanged.
+- `wrong OFE/lane/layer/stratum`: reject before receipt construction; live owners unchanged.
+- `wrong hydrology state digest`: reject before receipt construction; live owners unchanged.
+- `wrong V10 configuration digest`: reject before receipt construction; live owners unchanged.
+- `wrong LSE configuration digest`: reject before receipt construction; live owners unchanged.
+- `caller-created receipt`: reject before receipt construction; live owners unchanged.
