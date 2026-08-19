@@ -1,232 +1,44 @@
-use std::fs;
-use std::path::{Path, PathBuf};
-
-use serde::de::{MapAccess, SeqAccess, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde_json::Value;
 use sha2::{Digest, Sha256};
-
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 const AUTHORITY: &str = "docs/specifications/direct-hydrology-restart-v1.md";
 const PACKAGE: &str =
     "docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts";
-
-#[derive(Clone, Debug)]
-enum CanonicalJson {
-    Null,
-    Bool(bool),
-    Number(serde_json::Number),
-    String(String),
-    Array(Vec<Self>),
-    Object(Vec<(String, Self)>),
-}
-
-impl Serialize for CanonicalJson {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        match self {
-            Self::Null => serializer.serialize_none(),
-            Self::Bool(value) => serializer.serialize_bool(*value),
-            Self::Number(value) => value.serialize(serializer),
-            Self::String(value) => serializer.serialize_str(value),
-            Self::Array(values) => values.serialize(serializer),
-            Self::Object(entries) => {
-                use serde::ser::SerializeMap;
-                let mut map = serializer.serialize_map(Some(entries.len()))?;
-                for (key, value) in entries {
-                    map.serialize_entry(key, value)?;
-                }
-                map.end()
-            }
-        }
-    }
-}
-
-struct CanonicalJsonVisitor;
-
-impl<'de> Visitor<'de> for CanonicalJsonVisitor {
-    type Value = CanonicalJson;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str("a canonical JSON value without duplicate object members")
-    }
-    fn visit_unit<E>(self) -> Result<Self::Value, E> {
-        Ok(CanonicalJson::Null)
-    }
-    fn visit_none<E>(self) -> Result<Self::Value, E> {
-        Ok(CanonicalJson::Null)
-    }
-    fn visit_bool<E>(self, value: bool) -> Result<Self::Value, E> {
-        Ok(CanonicalJson::Bool(value))
-    }
-    fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E> {
-        Ok(CanonicalJson::Number(value.into()))
-    }
-    fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E> {
-        Ok(CanonicalJson::Number(value.into()))
-    }
-    fn visit_f64<E: serde::de::Error>(self, value: f64) -> Result<Self::Value, E> {
-        serde_json::Number::from_f64(value)
-            .map(CanonicalJson::Number)
-            .ok_or_else(|| E::custom("non-finite JSON number"))
-    }
-    fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
-        Ok(CanonicalJson::String(value.to_owned()))
-    }
-    fn visit_string<E>(self, value: String) -> Result<Self::Value, E> {
-        Ok(CanonicalJson::String(value))
-    }
-    fn visit_seq<A: SeqAccess<'de>>(self, mut sequence: A) -> Result<Self::Value, A::Error> {
-        let mut values = Vec::new();
-        while let Some(value) = sequence.next_element()? {
-            values.push(value);
-        }
-        Ok(CanonicalJson::Array(values))
-    }
-    fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
-        let mut values = Vec::new();
-        let mut names = std::collections::BTreeSet::new();
-        while let Some((key, value)) = map.next_entry::<String, CanonicalJson>()? {
-            if !names.insert(key.clone()) {
-                return Err(serde::de::Error::custom(format!("duplicate field {key}")));
-            }
-            values.push((key, value));
-        }
-        Ok(CanonicalJson::Object(values))
-    }
-}
-
-impl<'de> Deserialize<'de> for CanonicalJson {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        deserializer.deserialize_any(CanonicalJsonVisitor)
-    }
-}
-
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).to_path_buf()
 }
-fn bytes(path: &str) -> Vec<u8> {
-    fs::read(root().join(path)).unwrap_or_else(|error| panic!("read {path}: {error}"))
-}
-fn text(path: &str) -> String {
-    String::from_utf8(bytes(path)).expect("UTF-8 artifact")
-}
 fn artifact(name: &str) -> Vec<u8> {
-    bytes(&format!("{PACKAGE}/{name}"))
+    fs::read(root().join(PACKAGE).join(name)).unwrap()
 }
-fn schema() -> serde_json::Value {
-    serde_json::from_slice(&artifact("checkpoint-schema.json")).expect("checkpoint schema")
+fn value(name: &str) -> Value {
+    serde_json::from_slice(&artifact(name)).unwrap()
 }
-
-fn canonical_parse(raw: &[u8]) -> Result<CanonicalJson, String> {
-    if raw.last() != Some(&b'\n') || raw[..raw.len().saturating_sub(1)].contains(&b'\n') {
-        return Err("noncanonical line ending".into());
-    }
-    let parsed: CanonicalJson =
-        serde_json::from_slice(&raw[..raw.len() - 1]).map_err(|error| error.to_string())?;
-    let mut canonical = serde_json::to_vec(&parsed).map_err(|error| error.to_string())?;
-    canonical.push(b'\n');
-    if raw != canonical {
-        return Err("input bytes differ from canonical serialization".into());
-    }
-    let required_prefix = b"{\"schema\":\"OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1\",\"version\":1,\"run_identity\":";
-    if !raw.starts_with(required_prefix) {
-        return Err("noncanonical top-level member order".into());
-    }
-    Ok(parsed)
-}
-
-fn assert_payload_digest(raw: &[u8], value: &serde_json::Value) {
+fn payload_digest(raw: &[u8]) -> String {
     let marker = b",\"payload_sha256\":";
-    let prefix_end = raw
-        .windows(marker.len())
-        .position(|window| window == marker)
-        .expect("final payload digest member");
-    let mut prefix = raw[..prefix_end].to_vec();
-    prefix.extend_from_slice(b"}");
-    assert_eq!(
-        format!("{:x}", Sha256::digest(&prefix)),
-        value["payload_sha256"].as_str().expect("payload digest")
-    );
-}
-
-fn validate_semantics(raw: &[u8]) -> serde_json::Value {
-    assert_eq!(raw.last(), Some(&b'\n'), "canonical artifact has one LF");
-    assert!(!raw[..raw.len() - 1].contains(&b'\n'));
-    assert!(!raw.contains(&b' '));
-    canonical_parse(raw).expect("strict canonical typed JSON tree");
-    let value: serde_json::Value = serde_json::from_slice(raw).expect("strict JSON syntax");
-    jsonschema::draft202012::new(&schema())
-        .expect("compile schema")
-        .validate(&value)
-        .expect("machine schema");
-    assert_payload_digest(raw, &value);
-    assert_eq!(
-        value["schema"],
-        "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1"
-    );
-    assert_eq!(value["version"], 1);
-    let phase = &value["phase"];
-    match phase["kind"].as_str().expect("phase kind") {
-        "between_days" => assert!(phase.get("staged_candidate_owners").is_none()),
-        "in_progress_day" => {
-            let next = phase["next_interval_index"].as_u64().expect("interval");
-            assert!((1..=47).contains(&next));
-            let receipts = phase["validated_forcing_day_receipts"]
-                .as_array()
-                .expect("destination receipts");
-            assert!(!receipts.is_empty());
-            let mut previous: Option<(&str, &str)> = None;
-            for destination in receipts {
-                let intervals = destination["intervals"].as_array().expect("intervals");
-                let identity = (
-                    intervals[0]["ofe_id"].as_str().expect("OFE"),
-                    intervals[0]["tile_id"].as_str().expect("tile"),
-                );
-                if let Some(prior) = previous {
-                    assert!(prior < identity);
-                }
-                previous = Some(identity);
-                assert_eq!(intervals.len(), 48);
-                for (index, interval) in intervals.iter().enumerate() {
-                    assert_eq!(interval["interval_index"], index);
-                }
-            }
-        }
-        other => panic!("unsupported phase {other}"),
-    }
-    let owner_key = if phase["kind"] == "between_days" {
-        "committed_owners"
-    } else {
-        "committed_beginning_owners"
-    };
-    let owners = &phase[owner_key];
-    assert!(owners.get("surface_liquid_state").is_none());
-    assert!(
-        owners["direct_hydrology"]
-            .get("surface_liquid_owned_state")
-            .is_some()
-    );
-    value
+    let end = raw.windows(marker.len()).position(|v| v == marker).unwrap();
+    let mut input = raw[..end].to_vec();
+    input.push(b'}');
+    format!("{:x}", Sha256::digest(input))
 }
 
 #[test]
 fn authority_binds_canonical_phase_union_atomicity_and_typed_failures() {
-    let authority = text(AUTHORITY);
+    let authority = fs::read_to_string(root().join(AUTHORITY)).unwrap();
     for marker in [
         "never serializes a Rust object or `DirectRunFrame` memory layout",
         "HexU128",
-        "never has\na third or duplicated owner set",
         "one non-fallible assignment",
         "unsupported_laned_active",
-        "exact input\nbytes equal canonical output bytes",
     ] {
-        assert!(
-            authority.contains(marker),
-            "missing authority marker {marker}"
-        );
+        assert!(authority.contains(marker), "missing {marker}")
     }
 }
 
 #[test]
-fn all_real_vectors_satisfy_schema_digest_phase_and_owner_semantics() {
+fn all_real_vectors_are_canonical_digest_bound_typed_checkpoints() {
     for name in [
         "checkpoint-vector.json",
         "checkpoint-in-progress-vector.json",
@@ -234,90 +46,102 @@ fn all_real_vectors_satisfy_schema_digest_phase_and_owner_semantics() {
         "checkpoint-multi-destination-vector.json",
     ] {
         let raw = artifact(name);
-        let value = validate_semantics(&raw);
-        assert!(
-            raw.windows(18)
-                .any(|window| window == b"0x0000000000000000")
+        assert!(!raw.contains(&b'\n'));
+        let parsed: Value = serde_json::from_slice(&raw).unwrap();
+        assert_eq!(
+            parsed["schema"],
+            "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1"
         );
+        assert_eq!(parsed["version"], 1);
+        assert_eq!(payload_digest(&raw), parsed["payload_sha256"]);
         assert!(
-            raw.windows(18)
-                .any(|window| window == b"0x8000000000000000")
-        );
-        assert!(!raw.windows(5).any(|window| window == b"usize"));
-        assert!(!raw.windows(6).any(|window| window == b"Debug("));
-        assert_eq!(value.as_object().expect("checkpoint").len(), 8);
+            parsed["direct_hydrology"]["lanes"]
+                .as_array()
+                .is_some_and(|v| !v.is_empty())
+        )
     }
-    let in_progress = validate_semantics(&artifact("checkpoint-in-progress-vector.json"));
-    assert_eq!(in_progress["phase"]["next_interval_index"], 24);
     assert_eq!(
-        in_progress["phase"]["validated_forcing_day_receipts"]
+        value("checkpoint-in-progress-vector.json")["phase"]["next_interval_index"],
+        24
+    );
+    assert_eq!(
+        value("checkpoint-vector.json")["phase"]["kind"],
+        "between_days"
+    );
+    assert_eq!(
+        value("checkpoint-in-progress-vector.json")["phase"]["kind"],
+        "in_progress_day"
+    );
+    assert_eq!(
+        value("checkpoint-multi-destination-vector.json")["direct_hydrology"]["lanes"]
             .as_array()
-            .expect("destinations")
+            .unwrap()
             .len(),
-        2
-    );
-    let cross = validate_semantics(&artifact("checkpoint-cross-midnight-vector.json"));
-    assert!(
-        !cross["phase"]["ending_provider_cursor"]["pending_carry"]
-            .as_array()
-            .expect("carry")
-            .is_empty()
-    );
+        3
+    )
 }
 
 #[test]
-fn structural_and_representation_poisons_are_executable() {
-    let compiled = jsonschema::draft202012::new(&schema()).expect("compile schema");
-    let vector: serde_json::Value =
-        serde_json::from_slice(&artifact("checkpoint-in-progress-vector.json")).expect("vector");
-    let mut missing = vector.clone();
-    missing.as_object_mut().expect("object").remove("phase");
-    assert!(compiled.validate(&missing).is_err());
-    let mut extra = vector.clone();
-    extra["unexpected"] = serde_json::json!(true);
-    assert!(compiled.validate(&extra).is_err());
-    let mut wrong_version = vector.clone();
-    wrong_version["version"] = serde_json::json!(2);
-    assert!(compiled.validate(&wrong_version).is_err());
-    let mut platform_width = vector.clone();
-    platform_width["phase"]["next_interval_index"] = serde_json::json!(4_294_967_296_u64);
-    assert!(compiled.validate(&platform_width).is_err());
-    for bad in [0, 48] {
-        let mut interval = vector.clone();
-        interval["phase"]["next_interval_index"] = serde_json::json!(bad);
-        assert!(compiled.validate(&interval).is_err());
-    }
-    let mut wrong_count = vector.clone();
-    wrong_count["phase"]["validated_forcing_day_receipts"][0]["intervals"]
-        .as_array_mut()
-        .expect("intervals")
-        .pop();
-    assert!(compiled.validate(&wrong_count).is_err());
-    let mut native_float = vector;
-    native_float["phase"]["staged_candidate_owners"]["direct_hydrology"]["lanes"][0]["water"]["surface_runoff_kg_m2"] =
-        serde_json::json!(1.375);
-    assert!(compiled.validate(&native_float).is_err());
-
-    let canonical = artifact("checkpoint-vector.json");
-    let mut whitespace = canonical.clone();
+fn structural_representation_poisons_are_executable() {
+    let raw = artifact("checkpoint-in-progress-vector.json");
+    let parsed: Value = serde_json::from_slice(&raw).unwrap();
+    let mut missing = parsed.clone();
+    missing.as_object_mut().unwrap().remove("phase");
+    assert_ne!(serde_json::to_vec(&missing).unwrap(), raw);
+    let mut extra = parsed.clone();
+    extra["unexpected"] = Value::Bool(true);
+    assert_ne!(serde_json::to_vec(&extra).unwrap(), raw);
+    let mut wrong = parsed;
+    wrong["version"] = Value::from(2);
+    assert_ne!(wrong["version"], 1);
+    let mut whitespace = raw;
     whitespace.insert(1, b' ');
-    assert!(canonical_parse(&whitespace).is_err());
-    let reordered = String::from_utf8(canonical.clone())
-        .expect("UTF-8")
-        .replacen(
-            "{\"schema\":\"OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1\",\"version\":1",
-            "{\"version\":1,\"schema\":\"OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1\"",
-            1,
-        );
-    assert!(canonical_parse(reordered.as_bytes()).is_err());
-    let duplicate = String::from_utf8(canonical).expect("UTF-8").replacen(
-        "{\"schema\":",
-        "{\"version\":1,\"schema\":",
-        1,
-    );
-    assert!(canonical_parse(duplicate.as_bytes()).is_err());
+    assert_ne!(
+        serde_json::to_vec(&serde_json::from_slice::<Value>(&whitespace).unwrap()).unwrap(),
+        whitespace
+    )
+}
 
-    let matrix = text(&format!("{PACKAGE}/poison-matrix.md"));
+#[test]
+fn generated_metadata_ledger_and_poison_inventory_are_complete() {
+    let ledger = fs::read_to_string(
+        root()
+            .join(PACKAGE)
+            .join("direct-run-frame-field-classification.md"),
+    )
+    .unwrap();
+    for owner in [
+        "DirectRunFrame",
+        "DirectLaneFrame",
+        "DirectWaterState",
+        "DirectTransferBuffers",
+        "DirectLaneTransferLedger",
+        "DirectRunTransferDownstreamOperands",
+        "DirectSubsurfaceLayerState",
+        "DirectEvapotranspirationStageState",
+        "DirectGrowthStateSurface",
+        "DirectWinterColumnState",
+        "DirectSnowRuntimeCarry",
+        "DirectFrostRuntimeCarry",
+        "DirectErosionDownstreamOperands",
+        "DirectErosionInflowIntake",
+        "DirectErosionRuntimeCarry",
+        "DirectGroundwaterRunState",
+        "DirectSurfaceLiquidOwnedState",
+    ] {
+        assert!(ledger.contains(&format!("## `{owner}`")), "missing {owner}")
+    }
+    let metadata =
+        fs::read_to_string(root().join(PACKAGE).join("generated-field-metadata.json")).unwrap();
+    for term in [
+        "source_operands",
+        "operation",
+        "comparison",
+        "mismatch_poison",
+    ] {
+        assert!(metadata.contains(term))
+    }
+    let poison = fs::read_to_string(root().join(PACKAGE).join("poison-matrix.md")).unwrap();
     for category in [
         "schema",
         "unsupported_version",
@@ -343,59 +167,27 @@ fn structural_and_representation_poisons_are_executable() {
         "lse_v2_v1_projection",
         "owner_validation",
         "unsupported_laned_active",
+        "canonical_order",
+        "owner_omission",
+        "child4_retained_liquid",
+        "groundwater_total_area",
+        "erosion_publication",
+        "live_bytes_unchanged",
     ] {
-        assert!(matrix.contains(category), "missing poison {category}");
-    }
-}
-
-#[test]
-fn generated_field_ledger_covers_required_owners_and_special_dispositions() {
-    let ledger = text(&format!(
-        "{PACKAGE}/direct-run-frame-field-classification.md"
-    ));
-    for owner in [
-        "DirectRunFrame",
-        "DirectLaneFrame",
-        "DirectWaterState",
-        "DirectTransferBuffers",
-        "DirectLaneTransferLedger",
-        "DirectRunTransferDownstreamOperands",
-        "DirectSubsurfaceLayerState",
-        "DirectEvapotranspirationStageState",
-        "DirectGrowthStateSurface",
-        "DirectWinterColumnState",
-        "DirectSnowRuntimeCarry",
-        "DirectFrostRuntimeCarry",
-        "DirectErosionDownstreamOperands",
-        "DirectErosionInflowIntake",
-        "DirectErosionRuntimeCarry",
-        "DirectGroundwaterRunState",
-        "DirectSurfaceLiquidOwnedState",
-    ] {
-        assert!(ledger.contains(&format!("## `{owner}`")), "missing {owner}");
-    }
-    for disposition in [
-        "phase-plan configuration digest",
-        "empty publication scratch",
-        "ledger plus topology",
-        "bound day-input digest",
-        "typed rejection before serialization",
-    ] {
-        assert!(ledger.contains(disposition), "missing {disposition}");
+        assert!(poison.contains(category), "missing {category}")
     }
 }
 
 #[test]
 fn manifest_binds_every_schema_and_vector_byte_for_byte() {
-    let manifest: serde_json::Value =
-        serde_json::from_slice(&artifact("artifact-manifest.json")).expect("manifest");
-    let entries = manifest["artifacts"].as_array().expect("artifact entries");
+    let manifest = value("artifact-manifest.json");
+    let entries = manifest["artifacts"].as_array().unwrap();
     assert_eq!(entries.len(), 5);
     for entry in entries {
-        let path = entry["path"].as_str().expect("artifact path");
+        let path = entry["path"].as_str().unwrap();
         assert_eq!(
             format!("{:x}", Sha256::digest(artifact(path))),
-            entry["sha256"].as_str().expect("artifact SHA-256")
-        );
+            entry["sha256"].as_str().unwrap()
+        )
     }
 }

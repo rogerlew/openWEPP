@@ -11,6 +11,8 @@ pub enum ErosionRestartError {
     Domain { field: &'static str },
     #[error("ifrost must be 0..=2")]
     Ifrost,
+    #[error("erosion publication authority and payload posture disagree")]
+    PublicationAuthority,
 }
 fn nn(field: &'static str, v: &HexF64) -> Result<f64, ErosionRestartError> {
     let x = v.to_f64();
@@ -230,6 +232,44 @@ impl DirectErosionDownstreamRestartV1 {
         }
     }
     pub fn restore(&self) -> Result<DirectErosionDownstreamOperands, ErosionRestartError> {
+        let core = [
+            self.publication.peak_runoff_rate_m_s.as_ref(),
+            self.publication.runoff_duration_s.as_ref(),
+            self.publication.total_detachment_kg.as_ref(),
+            self.publication.total_deposition_kg.as_ref(),
+            self.publication.hbp_total_detachment_kg.as_ref(),
+            self.publication.hbp_total_deposition_kg.as_ref(),
+            self.publication.hbp_sediment_concentration_kg_m3.as_ref(),
+        ];
+        if self.publication_authority {
+            if core.iter().any(|value| value.is_none())
+                || self.publication.sediment_concentration_kg_m3.is_none()
+            {
+                return Err(ErosionRestartError::PublicationAuthority);
+            }
+            if self.publication.hourly_runoff_fraction.is_some()
+                != self.publication.hourly_sediment_mass_kg.is_some()
+            {
+                return Err(ErosionRestartError::PublicationAuthority);
+            }
+        } else {
+            let core_is_zero = core
+                .iter()
+                .all(|value| value.is_some_and(|value| value.to_f64() == 0.0));
+            let classes_are_zero = self
+                .publication
+                .sediment_concentration_kg_m3
+                .as_ref()
+                .is_some_and(|values| values.iter().all(|value| value.to_f64() == 0.0));
+            if !core_is_zero
+                || !classes_are_zero
+                || self.publication.hourly_runoff_fraction.is_some()
+                || self.publication.hourly_sediment_mass_kg.is_some()
+                || self.publication.enrichment_ratio.is_some()
+            {
+                return Err(ErosionRestartError::PublicationAuthority);
+            }
+        }
         Ok(DirectErosionDownstreamOperands {
             publication_authority: self.publication_authority,
             publication: self.publication.restore()?,
@@ -303,6 +343,14 @@ mod tests {
             Err(ErosionRestartError::Domain {
                 field: "erosion.exit_fractions"
             })
-        )
+        );
+        let mut publication =
+            DirectErosionDownstreamRestartV1::project(&DirectErosionDownstreamOperands::zero());
+        publication.publication_authority = true;
+        publication.publication.total_detachment_kg = None;
+        assert_eq!(
+            publication.restore(),
+            Err(ErosionRestartError::PublicationAuthority)
+        );
     }
 }

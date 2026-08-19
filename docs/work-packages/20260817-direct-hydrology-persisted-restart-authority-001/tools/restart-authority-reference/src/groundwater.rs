@@ -8,6 +8,10 @@ pub enum GroundwaterRestartError {
     Domain { field: &'static str },
     #[error("enabled groundwater requires a positive initialized area")]
     Area,
+    #[error("disabled groundwater must have zero state and no initialized area")]
+    DisabledState,
+    #[error("groundwater initialized area does not equal the canonical lane-area sum")]
+    TotalAreaJoin,
 }
 fn nn(field: &'static str, v: &HexF64) -> Result<f64, GroundwaterRestartError> {
     let x = v.to_f64();
@@ -99,26 +103,50 @@ impl DirectGroundwaterRunStateRestartV1 {
         }
     }
     pub fn restore(&self) -> Result<DirectGroundwaterRunState, GroundwaterRestartError> {
+        self.restore_for_total_area(None)
+    }
+    pub fn restore_for_total_area(
+        &self,
+        expected_total_area_m2: Option<f64>,
+    ) -> Result<DirectGroundwaterRunState, GroundwaterRestartError> {
         let authority = self.authority.restore()?;
         let initialized_area_m2 = self
             .initialized_area_m2
             .as_ref()
             .map(|v| nn("groundwater.initialized_area_m2", v))
             .transpose()?;
+        let storage_m3 = nn("groundwater.storage_m3", &self.storage_m3)?;
+        let previous_baseflow_m3 = nn(
+            "groundwater.previous_baseflow_m3",
+            &self.previous_baseflow_m3,
+        )?;
+        let previous_deep_seepage_m3 = nn(
+            "groundwater.previous_deep_seepage_m3",
+            &self.previous_deep_seepage_m3,
+        )?;
         if authority.is_enabled() && !initialized_area_m2.is_some_and(|v| v > 0.0) {
             return Err(GroundwaterRestartError::Area);
         }
+        if !authority.is_enabled()
+            && (initialized_area_m2.is_some()
+                || storage_m3 != 0.0
+                || previous_baseflow_m3 != 0.0
+                || previous_deep_seepage_m3 != 0.0)
+        {
+            return Err(GroundwaterRestartError::DisabledState);
+        }
+        if let Some(expected) = expected_total_area_m2
+            && (!expected.is_finite()
+                || expected <= 0.0
+                || authority.is_enabled() && initialized_area_m2 != Some(expected))
+        {
+            return Err(GroundwaterRestartError::TotalAreaJoin);
+        }
         Ok(DirectGroundwaterRunState {
             authority,
-            storage_m3: nn("groundwater.storage_m3", &self.storage_m3)?,
-            previous_baseflow_m3: nn(
-                "groundwater.previous_baseflow_m3",
-                &self.previous_baseflow_m3,
-            )?,
-            previous_deep_seepage_m3: nn(
-                "groundwater.previous_deep_seepage_m3",
-                &self.previous_deep_seepage_m3,
-            )?,
+            storage_m3,
+            previous_baseflow_m3,
+            previous_deep_seepage_m3,
             initialized_area_m2,
         })
     }
@@ -144,5 +172,21 @@ mod tests {
         let mut bad = dto;
         bad.initialized_area_m2 = None;
         assert_eq!(bad.restore(), Err(GroundwaterRestartError::Area));
+        let disabled = DirectGroundwaterRunState {
+            authority: DirectGroundwaterAuthority::Disabled,
+            storage_m3: 1.0,
+            previous_baseflow_m3: 0.0,
+            previous_deep_seepage_m3: 0.0,
+            initialized_area_m2: None,
+        };
+        assert_eq!(
+            DirectGroundwaterRunStateRestartV1::project(&disabled).restore(),
+            Err(GroundwaterRestartError::DisabledState)
+        );
+        let enabled = DirectGroundwaterRunStateRestartV1::project(&state);
+        assert_eq!(
+            enabled.restore_for_total_area(Some(101.0)),
+            Err(GroundwaterRestartError::TotalAreaJoin)
+        );
     }
 }

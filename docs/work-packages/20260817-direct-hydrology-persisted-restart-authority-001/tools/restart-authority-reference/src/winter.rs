@@ -505,8 +505,8 @@ pub struct DirectWinterColumnRestartV1 {
 #[derive(Debug)]
 pub struct RestoredWinterCompatibility {
     pub winter_column: DirectWinterColumnState,
-    pub snow_runtime_carry: DirectSnowRuntimeCarry,
-    pub frost_runtime_carry: DirectFrostRuntimeCarry,
+    pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
+    pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
 }
 impl DirectWinterColumnRestartV1 {
     pub fn project(
@@ -538,8 +538,14 @@ impl DirectWinterColumnRestartV1 {
             snow: self.snow.restore()?,
             frost: self.frost.restore()?,
         };
-        let snow_runtime_carry = DirectSnowRuntimeCarry::from(&winter_column.snow);
-        let frost_runtime_carry = DirectFrostRuntimeCarry::from(winter_column.frost.clone());
+        let snow_runtime_carry = winter_column
+            .snow
+            .has_runtime_state()
+            .then(|| DirectSnowRuntimeCarry::from(&winter_column.snow));
+        let frost_runtime_carry = winter_column
+            .frost
+            .has_runtime_state()
+            .then(|| DirectFrostRuntimeCarry::from(winter_column.frost.clone()));
         Ok(RestoredWinterCompatibility {
             winter_column,
             snow_runtime_carry,
@@ -564,6 +570,7 @@ impl DirectWinterColumnRestartV1 {
     pub fn validate_child4_snow_free(&self) -> Result<(), WinterRestartError> {
         let restored = self.restore()?;
         if restored.winter_column.snow.has_runtime_state()
+            || restored.winter_column.snow.liquid_water_retained_m != 0.0
             || restored.winter_column.frost.has_runtime_state()
         {
             return Err(WinterRestartError::UnsupportedChild4ActiveWinter);
@@ -708,8 +715,8 @@ mod tests {
         assert_eq!(
             DirectWinterColumnRestartV1::project(
                 &restored.winter_column,
-                Some(&restored.snow_runtime_carry),
-                Some(&restored.frost_runtime_carry)
+                restored.snow_runtime_carry.as_ref(),
+                restored.frost_runtime_carry.as_ref()
             )
             .expect("reconstructed carries"),
             dto
@@ -743,11 +750,14 @@ mod tests {
         let restored = dto.restore().expect("carry reconstruction");
         assert_eq!(
             SnowLaneRestartV1::project(&DirectSnowLaneState::from(
-                restored.snow_runtime_carry.clone()
+                restored
+                    .snow_runtime_carry
+                    .clone()
+                    .expect("active snow carry")
             )),
             dto.snow
         );
-        let mut bad = restored.snow_runtime_carry;
+        let mut bad = restored.snow_runtime_carry.expect("active snow carry");
         bad.runtime_swe_m += 0.001;
         assert_eq!(
             DirectWinterColumnRestartV1::project(&column, Some(&bad), None),
@@ -867,6 +877,12 @@ mod tests {
         .unwrap();
         assert_eq!(
             active.validate_child4_snow_free(),
+            Err(WinterRestartError::UnsupportedChild4ActiveWinter)
+        );
+        let mut retained = zero;
+        retained.snow.liquid_water_retained_m = HexF64::from_f64(f64::from_bits(1));
+        assert_eq!(
+            retained.validate_child4_snow_free(),
             Err(WinterRestartError::UnsupportedChild4ActiveWinter)
         );
     }

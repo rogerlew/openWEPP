@@ -3,6 +3,7 @@ use std::collections::BTreeSet;
 use serde::de::{MapAccess, SeqAccess, Visitor};
 use serde::ser::SerializeMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use sha2::{Digest, Sha256};
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -108,6 +109,10 @@ impl<'de> Deserialize<'de> for StrictJson {
 
 pub fn to_canonical_bytes<T: Serialize>(value: &T) -> Result<Vec<u8>, CanonicalJsonError> {
     serde_json::to_vec(value).map_err(|error| CanonicalJsonError::Serialize(error.to_string()))
+}
+
+pub fn canonical_sha256<T: Serialize>(value: &T) -> Result<String, CanonicalJsonError> {
+    Ok(format!("{:x}", Sha256::digest(to_canonical_bytes(value)?)))
 }
 
 pub fn from_canonical_bytes<T>(bytes: &[u8]) -> Result<T, CanonicalJsonError>
