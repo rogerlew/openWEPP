@@ -7,7 +7,7 @@ Evidence class: `Ran + Static`; base `2465849c9e0eed83c4e3aec11caa8b27cf7597ad`.
 | Exact intake | PASS | HEAD/origin required base; clean; diff hygiene PASS. |
 | Primary sources | PASS (Static) | CTSM release-clm5.0 sections/hashes and Clapp--Hornberger DOI; explicit non-use list. |
 | Root path/current K authority | PASS (Static) | Required non-defaulted stratum path; live `Ksat*S^(2B+3)`; no aliases/defaults. |
-| Artifact regeneration | PASS (Ran) | Independent Python generator; contract test byte-compares twelve generated artifacts and independently verifies the eleven-entry payload manifest. |
+| Artifact regeneration | PASS (Ran) | Independent Python generator; contract test byte-compares fifteen generated artifacts and independently verifies the fourteen-entry payload manifest. |
 | Root-zone authority test | PASS (Ran) | Nix shell Nextest quick, 7/7; every accepted vector exact-bit checked with `libm`; every rejected vector executes typed guards; configuration/receipt joins, atomic poisons, schemas, manifest, and independent calculator execute. |
 | Anti-evasion | PASS (Ran) | `check_authority_suite_antievasion.sh`. |
 | AUTH11 | PASS (Ran) | Nextest quick, 3/3. |

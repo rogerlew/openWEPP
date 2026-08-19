@@ -30,10 +30,12 @@ def main() -> None:
     receipt_schema = json.loads((ART / "receipt-schema.json").read_text())
     config = json.loads((ART / "configuration-vector.json").read_text())
     receipt = json.loads((ART / "receipt-vector.json").read_text())
+    second_receipt = json.loads((ART / "receipt-second-layer-vector.json").read_text())
     jsonschema.Draft202012Validator.check_schema(config_schema)
     jsonschema.Draft202012Validator.check_schema(receipt_schema)
     jsonschema.Draft202012Validator(config_schema).validate(config)
     jsonschema.Draft202012Validator(receipt_schema).validate(receipt)
+    jsonschema.Draft202012Validator(receipt_schema).validate(second_receipt)
     for schema, value in ((config_schema, config), (receipt_schema, receipt)):
         poisoned = dict(value)
         poisoned["invented"] = True

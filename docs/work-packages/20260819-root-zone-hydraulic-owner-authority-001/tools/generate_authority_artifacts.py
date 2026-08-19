@@ -163,12 +163,21 @@ def main() -> None:
         "vegetation_configuration_sha256": "2" * 64, "lse_configuration_sha256": "3" * 64,
         "ordered_layers": [{"ofe_id": "ofe-1", "production_lane_index": 0,
             "production_lane_id": "lane-1", "layer_id": "layer-1",
-            "saturated_matric_potential_mm": -120.0, "clapp_hornberger_b": 4.05}],
-        "ordered_stratum_geometry": [{"stratum_id": "stratum-1", "root_tissue_lateral_path_m": 0.2}]}
+            "saturated_matric_potential_mm": -120.0, "clapp_hornberger_b": 4.05},
+            {"ofe_id": "ofe-1", "production_lane_index": 0, "production_lane_id": "lane-1",
+             "layer_id": "layer-2", "saturated_matric_potential_mm": -300.0,
+             "clapp_hornberger_b": 6.2}],
+        "ordered_stratum_geometry": [{"stratum_id": "stratum-1", "root_tissue_lateral_path_m": 0.2},
+            {"stratum_id": "stratum-2", "root_tissue_lateral_path_m": 0.35}]}
     digest_input = dict(configuration)
     digest_input["configuration_sha256"] = ""
     configuration["configuration_sha256"] = sha(digest_input)
     write("configuration-vector.json", configuration)
+    expected_static_context = {field: configuration[field] for field in [
+        "schema_version", "model_definition_sha256", "owner_id",
+        "hydrology_configuration_sha256", "vegetation_configuration_sha256",
+        "lse_configuration_sha256"]}
+    write("expected-static-context-vector.json", expected_static_context)
 
     write("runtime-descriptor.json", {"model": MODEL, "construction": "private_per_interval",
         "inputs": ["current staged hydrology", "immutable root-zone configuration", "V10/LSE identities"],
@@ -218,6 +227,34 @@ def main() -> None:
         "receipt_sha256": ""}
     receipt["receipt_sha256"] = sha(receipt)
     write("receipt-vector.json", receipt)
+    second_input = dict(liquid_m=0.0625, thickness_m=0.25, porosity=0.5, ksat_m_s=2e-6,
+                        psi_sat_mm=-300.0, b=6.2, top_m=0.125, lateral_m=0.35, dxroot_m=0.08)
+    second_expected = calculate(**second_input)
+    second_receipt = dict(receipt)
+    second_receipt.update({"occupancy_id": "occupancy-2", "stratum_id": "stratum-2", "layer_id": "layer-2",
+        "liquid_water_depth_m": bits(second_input["liquid_m"]), "layer_thickness_m": bits(second_input["thickness_m"]),
+        "porosity": bits(second_input["porosity"]), "saturated_conductivity_m_s": bits(second_input["ksat_m_s"]),
+        "relative_saturation": second_expected["relative_saturation"], "matric_potential_mm": second_expected["matric_potential_mm"],
+        "soil_conductivity_mm_s": second_expected["soil_conductivity_mm_s"], "layer_node_depth_m": second_expected["layer_node_depth_m"],
+        "gravity_root_mm": second_expected["gravity_root_mm"], "root_tissue_lateral_path_m": bits(second_input["lateral_m"]),
+        "root_path_length_mm": second_expected["root_path_length_mm"],
+        "soil_root_interface_distance_m": bits(second_input["dxroot_m"]), "receipt_sha256": ""})
+    second_receipt["receipt_sha256"] = sha(second_receipt)
+    write("receipt-second-layer-vector.json", second_receipt)
+    source = {"transaction_id": receipt["transaction_id"], "day_index": 0, "interval_index": 0,
+        "owner_id": receipt["owner_id"], "model_definition_sha256": model["model_definition_sha256"],
+        "configuration_sha256": configuration["configuration_sha256"],
+        "hydrology_beginning_state_sha256": receipt["hydrology_beginning_state_sha256"],
+        "vegetation_configuration_sha256": configuration["vegetation_configuration_sha256"],
+        "lse_configuration_sha256": configuration["lse_configuration_sha256"],
+        "layers": [
+            {k: receipt[k] for k in ["occupancy_id", "stratum_id", "ofe_id", "production_lane_index",
+                "production_lane_id", "layer_id", "liquid_water_depth_m", "layer_thickness_m", "porosity",
+                "saturated_conductivity_m_s", "soil_root_interface_distance_m", "accessible", "frozen"]},
+            {k: second_receipt[k] for k in ["occupancy_id", "stratum_id", "ofe_id", "production_lane_index",
+                "production_lane_id", "layer_id", "liquid_water_depth_m", "layer_thickness_m", "porosity",
+                "saturated_conductivity_m_s", "soil_root_interface_distance_m", "accessible", "frozen"]}]}
+    write("source-owner-vector.json", source)
     poisons = ["WB14 suction substitution", "WB14 conductivity substitution", "Ksat used directly as current K",
         "S_psi used for K", "wrong conductivity exponent", "wrong clamp order", "positive psi_sat",
         "zero or negative B", "missing root-tissue path", "CLM default injected", "root path aliased to dxroot",
@@ -233,6 +270,8 @@ def main() -> None:
         f"- `{v['name']}`: {v['disposition']}" for v in vectors + rejects) + "\n")
     (ARTIFACTS / "reference-calculator.py").write_bytes((Path(__file__).parent / "reference_calculator.py").read_bytes())
     manifest_names = ["model-definition.json", "configuration-schema.json", "configuration-vector.json", "receipt-schema.json", "receipt-vector.json",
+        "receipt-second-layer-vector.json", "source-owner-vector.json",
+        "expected-static-context-vector.json",
         "root-zone-hydraulic-vectors.json", "runtime-descriptor.json", "equation-and-operation-order.md",
         "test-vector-ledger.md", "poison-matrix.md", "reference-calculator.py"]
     write("artifact-manifest.json", {name: hashlib.sha256((ARTIFACTS / name).read_bytes()).hexdigest()

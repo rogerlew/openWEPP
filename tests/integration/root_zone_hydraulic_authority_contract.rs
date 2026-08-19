@@ -176,7 +176,12 @@ fn validate_configuration(mut value: Value, expected: &Value) -> Result<Value, &
     if keys.windows(2).any(|w| w[0] >= w[1]) {
         return Err("ConfigurationIdentity");
     }
-    if keys != vec![(Some("ofe-1"), Some(0), Some("lane-1"), Some("layer-1"))] {
+    if keys
+        != vec![
+            (Some("ofe-1"), Some(0), Some("lane-1"), Some("layer-1")),
+            (Some("ofe-1"), Some(0), Some("lane-1"), Some("layer-2")),
+        ]
+    {
         return Err("ConfigurationIdentity");
     }
     let strata = value["ordered_stratum_geometry"]
@@ -186,7 +191,7 @@ fn validate_configuration(mut value: Value, expected: &Value) -> Result<Value, &
         .iter()
         .map(|v| v["stratum_id"].as_str())
         .collect::<Vec<_>>();
-    if ids != vec![Some("stratum-1")] {
+    if ids != vec![Some("stratum-1"), Some("stratum-2")] {
         return Err("ConfigurationIdentity");
     }
     if strata
@@ -205,6 +210,7 @@ fn validate_configuration(mut value: Value, expected: &Value) -> Result<Value, &
     Ok(value)
 }
 
+#[allow(clippy::too_many_lines)]
 fn validate_receipt(
     mut receipt: Value,
     configuration: &Value,
@@ -229,18 +235,6 @@ fn validate_receipt(
         "hydrology_beginning_state_sha256",
         "vegetation_configuration_sha256",
         "lse_configuration_sha256",
-        "occupancy_id",
-        "stratum_id",
-        "ofe_id",
-        "production_lane_index",
-        "production_lane_id",
-        "layer_id",
-        "liquid_water_depth_m",
-        "layer_thickness_m",
-        "porosity",
-        "saturated_conductivity_m_s",
-        "soil_root_interface_distance_m",
-        "accessible",
     ] {
         if receipt[field] != source[field] {
             return Err("OwnerJoin");
@@ -257,8 +251,71 @@ fn validate_receipt(
     if receipt["frozen"] == true {
         return Err("FrozenRootedLayerUnsupported");
     }
-    let layer = &configuration["ordered_layers"][0];
-    let geometry = &configuration["ordered_stratum_geometry"][0];
+    let configured_layers = configuration["ordered_layers"]
+        .as_array()
+        .ok_or("ConfigurationIdentity")?;
+    let source_layers = source["layers"].as_array().ok_or("OwnerJoin")?;
+    let source_keys = source_layers
+        .iter()
+        .map(|v| {
+            (
+                &v["ofe_id"],
+                &v["production_lane_index"],
+                &v["production_lane_id"],
+                &v["layer_id"],
+            )
+        })
+        .collect::<Vec<_>>();
+    let configured_keys = configured_layers
+        .iter()
+        .map(|v| {
+            (
+                &v["ofe_id"],
+                &v["production_lane_index"],
+                &v["production_lane_id"],
+                &v["layer_id"],
+            )
+        })
+        .collect::<Vec<_>>();
+    if source_keys != configured_keys {
+        return Err("OwnerJoin");
+    }
+    let layer_index = configured_layers
+        .iter()
+        .position(|v| {
+            receipt["ofe_id"] == v["ofe_id"]
+                && receipt["production_lane_index"] == v["production_lane_index"]
+                && receipt["production_lane_id"] == v["production_lane_id"]
+                && receipt["layer_id"] == v["layer_id"]
+        })
+        .ok_or("OwnerJoin")?;
+    let layer = &configured_layers[layer_index];
+    let source_layer = &source_layers[layer_index];
+    for field in [
+        "occupancy_id",
+        "stratum_id",
+        "ofe_id",
+        "production_lane_index",
+        "production_lane_id",
+        "layer_id",
+        "liquid_water_depth_m",
+        "layer_thickness_m",
+        "porosity",
+        "saturated_conductivity_m_s",
+        "soil_root_interface_distance_m",
+        "accessible",
+        "frozen",
+    ] {
+        if receipt[field] != source_layer[field] {
+            return Err("OwnerJoin");
+        }
+    }
+    let geometry = configuration["ordered_stratum_geometry"]
+        .as_array()
+        .ok_or("ConfigurationIdentity")?
+        .iter()
+        .find(|v| receipt["stratum_id"] == v["stratum_id"])
+        .ok_or("OwnerJoin")?;
     if receipt["ofe_id"] != layer["ofe_id"]
         || receipt["production_lane_index"] != layer["production_lane_index"]
         || receipt["production_lane_id"] != layer["production_lane_id"]
@@ -272,11 +329,20 @@ fn validate_receipt(
     {
         return Err("OwnerJoin");
     }
+    let top_m = source_layers[..layer_index]
+        .iter()
+        .filter(|v| {
+            v["ofe_id"] == receipt["ofe_id"]
+                && v["production_lane_index"] == receipt["production_lane_index"]
+                && v["production_lane_id"] == receipt["production_lane_id"]
+        })
+        .map(|v| f(&v["layer_thickness_m"]))
+        .sum::<f64>();
     let input = serde_json::json!({
         "liquid_m": receipt["liquid_water_depth_m"], "thickness_m": receipt["layer_thickness_m"],
         "porosity": receipt["porosity"], "ksat_m_s": receipt["saturated_conductivity_m_s"],
         "psi_sat_mm": hx(layer["saturated_matric_potential_mm"].as_f64().unwrap()),
-        "b": hx(layer["clapp_hornberger_b"].as_f64().unwrap()), "top_m": hx(0.0),
+        "b": hx(layer["clapp_hornberger_b"].as_f64().unwrap()), "top_m": hx(top_m),
         "lateral_m": receipt["root_tissue_lateral_path_m"],
         "dxroot_m": receipt["soil_root_interface_distance_m"]
     });
@@ -465,15 +531,27 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
         "{PACKAGE}/artifacts/configuration-vector.json"
     )))
     .unwrap();
-    let expected_configuration = configuration.clone();
+    let expected_configuration: Value = serde_json::from_str(&text(&format!(
+        "{PACKAGE}/artifacts/expected-static-context-vector.json"
+    )))
+    .unwrap();
     let configuration = validate_configuration(configuration, &expected_configuration).unwrap();
     let receipt: Value =
         serde_json::from_str(&text(&format!("{PACKAGE}/artifacts/receipt-vector.json"))).unwrap();
-    validate_receipt(receipt.clone(), &configuration, &receipt).unwrap();
+    let second_receipt: Value = serde_json::from_str(&text(&format!(
+        "{PACKAGE}/artifacts/receipt-second-layer-vector.json"
+    )))
+    .unwrap();
+    let source: Value = serde_json::from_str(&text(&format!(
+        "{PACKAGE}/artifacts/source-owner-vector.json"
+    )))
+    .unwrap();
+    validate_receipt(receipt.clone(), &configuration, &source).unwrap();
+    validate_receipt(second_receipt.clone(), &configuration, &source).unwrap();
     let live = serde_json::to_vec(&receipt).unwrap();
     let check = |mutated: Value, expected| {
         assert_eq!(
-            validate_receipt(mutated, &configuration, &receipt),
+            validate_receipt(mutated, &configuration, &source),
             Err(expected)
         );
         assert_eq!(serde_json::to_vec(&receipt).unwrap(), live);
@@ -568,6 +646,17 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
         validate_configuration(bad_config, &expected_configuration),
         Err("ConfigurationIdentity")
     );
+    let mut reordered_config = configuration.clone();
+    reordered_config["ordered_layers"]
+        .as_array_mut()
+        .unwrap()
+        .reverse();
+    reordered_config["configuration_sha256"] = Value::String(String::new());
+    reordered_config["configuration_sha256"] = Value::String(digest(&reordered_config));
+    assert_eq!(
+        validate_configuration(reordered_config, &expected_configuration),
+        Err("ConfigurationIdentity")
+    );
     for field in [
         "model_definition_sha256",
         "owner_id",
@@ -600,6 +689,18 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
         validate_configuration(missing, &expected_configuration),
         Err("ConfigurationIdentity")
     );
+    let mut reordered_source = source.clone();
+    reordered_source["layers"].as_array_mut().unwrap().reverse();
+    assert_eq!(
+        validate_receipt(second_receipt.clone(), &configuration, &reordered_source),
+        Err("OwnerJoin")
+    );
+    let mut wrong_predecessor = source.clone();
+    wrong_predecessor["layers"][0]["layer_thickness_m"] = Value::String(hx(0.25));
+    assert_eq!(
+        validate_receipt(second_receipt, &configuration, &wrong_predecessor),
+        Err("ReceiptScientificMismatch")
+    );
 }
 
 #[test]
@@ -618,6 +719,9 @@ fn generator_is_byte_reproducible_and_poison_inventory_is_complete() {
         "artifact-manifest.json",
         "receipt-schema.json",
         "receipt-vector.json",
+        "receipt-second-layer-vector.json",
+        "source-owner-vector.json",
+        "expected-static-context-vector.json",
     ];
     let before = names
         .iter()
