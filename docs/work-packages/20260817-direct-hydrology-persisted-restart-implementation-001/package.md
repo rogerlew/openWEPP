@@ -1,6 +1,6 @@
 # Implement Direct-Hydrology Persisted Restart
 
-Status: `executing / released restart authority bound / production implementation active`
+Status: `executing / implementation and reviews PASS / terminal verification active`
 
 Date: `2026-08-17`
 
@@ -14,8 +14,8 @@ The blocking authority prerequisite is satisfied by
 `OPENWEPP_DIRECT_HYDROLOGY_RESTART_V1` and
 `OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1`, released in commit
 `f95395597fe434dbc853c1b947b16fd434f013c1`. This package is eligible for a
-separate implementation kickoff; no production restart implementation has
-started.
+separate implementation kickoff. Production implementation is complete on the
+default-off path; activation remains unauthorized.
 
 Implementation base: `dea2d60d4d8a618b9a775f28e47a477c5ee85fe9`.
 
