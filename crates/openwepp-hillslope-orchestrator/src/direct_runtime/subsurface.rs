@@ -641,6 +641,7 @@ impl DirectDayFrame {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectSubsurfaceLayerInputs {
     pub theta_m: f64,
     pub field_capacity_m: f64,
@@ -696,6 +697,7 @@ impl From<DirectSubsurfaceLayerState> for DirectSubsurfaceLayerInputs {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectSubsurfaceLayerState {
     pub theta_m: f64,
     pub field_capacity_m: f64,
@@ -760,6 +762,7 @@ impl From<DirectSubsurfaceLayerInputs> for DirectSubsurfaceLayerState {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectPercolationInputs {
     pub soil_water_initial_m: f64,
     pub reconcile_legacy_soil_water_from_layers: bool,
@@ -867,6 +870,7 @@ pub struct DirectPercolationShadowProjection {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectSubsurfaceComputeInputs {
     pub avg_slope: f64,
     pub slope_length_m: f64,

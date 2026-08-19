@@ -1041,6 +1041,7 @@ pub struct DirectActiveSnowPartitionInputs {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectFrostHourlyForcing {
     pub radiation_mj_m2: f64,
     pub air_temperature_c: f64,
@@ -1059,6 +1060,7 @@ impl DirectFrostHourlyForcing {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectFrostControlInputs {
     pub frost_file_present: bool,
     pub wint_red_enabled: bool,
@@ -1074,6 +1076,7 @@ pub struct DirectFrostControlInputs {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectFrostThermalInputs {
     pub snow_depth_m: f64,
     pub snow_density_kg_m3: f64,
@@ -1091,6 +1094,7 @@ pub struct DirectFrostThermalInputs {
 // via `Wb11HydrologyKernel::fit_seasonal_temperature_curve`, and carried as
 // the single authority so the kernel never re-fits per solve.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct FrostSeasonalTemperatureCurve {
     pub annual_mean_c: f64,
     pub amplitude_c: f64,
@@ -1196,6 +1200,7 @@ pub struct DirectActiveFrostPartitionInputs {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectWinterFrostComputeInputs {
     pub controls: DirectFrostControlInputs,
     pub thermal: DirectFrostThermalInputs,
@@ -1207,6 +1212,7 @@ pub struct DirectWinterFrostComputeInputs {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectFrostLayerProjection {
     pub layer_index: usize,
     pub theta_after_m: f64,
@@ -1215,6 +1221,7 @@ pub struct DirectFrostLayerProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectFrostLayerShadowProjection {
     pub layer_index: usize,
     pub st_m: f64,
@@ -1227,6 +1234,7 @@ pub struct DirectFrostLayerShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectFrostFineLayerProjection {
     pub layer_index: usize,
     pub fine_index: usize,
@@ -1238,6 +1246,7 @@ pub struct DirectFrostFineLayerProjection {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectWinterFrostPartitionOutcome {
     pub active_frost_coupling: bool,
     pub dthaw_after_m: f64,

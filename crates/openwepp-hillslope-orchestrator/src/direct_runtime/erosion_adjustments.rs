@@ -62,6 +62,7 @@ const SLOPE_FACTOR_ANGLE_CAP: f64 = 0.7854;
 /// ratios the daily chain relaxes toward. Pure function of surface-layer
 /// texture and the (scon-corrected) field capacity.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct ErosionConsolidationBaselines {
     /// `kicrat` — interrill consolidation ratio (`scon.for:651`).
     pub kicrat: f64,

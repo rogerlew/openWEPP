@@ -46,6 +46,8 @@ impl SnowMeltModel {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(feature = "restart-authority-evidence", serde(rename_all = "snake_case"))]
 pub enum SnowAlbedoModel {
     Brock2000TemperatureAgeV1,
 }
@@ -60,6 +62,7 @@ impl SnowAlbedoModel {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct SnowAlbedoState {
     pub model: SnowAlbedoModel,
     pub albedo: f64,

@@ -1,11 +1,11 @@
 use crate::{
     AcceptedIntervalCount, BiogeochemistryStateRestartV1, DirectGsiDailyReceiptRestartV1,
     DirectGsiOwnerConfigurationRestartV1, DirectGsiOwnerStateRestartV1, DirectHydrologyRestartV1,
-    DirectSurfaceLiquidConfigurationRestartV1, ExpectedDirectHydrologyRestartContext,
-    InProgressIntervalIndex, LseV2StateRestartV1, Sha256Hex, SnowFreeHalfHourDayReceiptRestartV1,
-    SnowFreeHalfHourProviderCursorRestartV1, SnowFreeHalfHourStaticConfigurationRestartV1,
-    SoilThermalStateRestartV1, VegetationV10StateRestartV1, WireDayIndex, canonical_sha256,
-    from_canonical_bytes,
+    DirectSurfaceLiquidConfigurationRestartV1, DirectV10ContinuationTemplateRestartV1,
+    ExpectedDirectHydrologyRestartContext, InProgressIntervalIndex, LseV2StateRestartV1, Sha256Hex,
+    SnowFreeHalfHourDayReceiptRestartV1, SnowFreeHalfHourProviderCursorRestartV1,
+    SnowFreeHalfHourStaticConfigurationRestartV1, SoilThermalStateRestartV1,
+    VegetationV10StateRestartV1, WireDayIndex, canonical_sha256, from_canonical_bytes,
 };
 use openwepp_biogeochemistry::BiogeochemistryState;
 use openwepp_hillslope_orchestrator::runtime_inputs::{
@@ -62,6 +62,7 @@ pub enum DirectV10CheckpointPhaseV1 {
         staged_gsi_ending_state: DirectGsiOwnerStateRestartV1,
         ending_provider_cursor: SnowFreeHalfHourProviderCursorRestartV1,
         validated_forcing_day_receipts: Vec<SnowFreeHalfHourDayReceiptRestartV1>,
+        continuation_template: DirectV10ContinuationTemplateRestartV1,
     },
 }
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -183,6 +184,7 @@ pub struct RestoredCompleteCommittedOwnerStateV1 {
 pub enum IsolatedRestoredCheckpointV1 {
     BetweenDays {
         next_day_index: u64,
+        accepted_interval_count: u64,
         committed: RestoredCompleteCommittedOwnerStateV1,
     },
     InProgressDay {
@@ -192,10 +194,13 @@ pub enum IsolatedRestoredCheckpointV1 {
         committed_day_beginning: RestoredCompleteCommittedOwnerStateV1,
         staged_scientific: RestoredScientificOwnerStateSetV1,
         staged_gsi_ending_state: DirectGsiOwnerStateV1,
-        accepted_gsi_daily_receipt: openwepp_hillslope_orchestrator::runtime_inputs::DirectGsiDailyReceiptV1,
+        accepted_gsi_daily_receipt:
+            openwepp_hillslope_orchestrator::runtime_inputs::DirectGsiDailyReceiptV1,
         validated_forcing_day_receipts:
             Vec<openwepp_hillslope_orchestrator::runtime_inputs::SnowFreeHalfHourDayReceipt>,
         ending_provider_cursor: SnowFreeHalfHourProviderCursor,
+        continuation_template:
+            openwepp_hillslope_orchestrator::v9_real_consumer_shadow::DirectV10ShadowDayInput,
     },
 }
 
@@ -226,10 +231,7 @@ impl DirectV10RealConsumerCheckpointV1 {
             } => committed_day_beginning.clone(),
         }
     }
-    pub fn abort_owner_store_to_day_beginning(
-        &self,
-        live: &mut CompleteCommittedOwnerStateV1,
-    ) {
+    pub fn abort_owner_store_to_day_beginning(&self, live: &mut CompleteCommittedOwnerStateV1) {
         *live = self.abort_to_day_beginning();
     }
 }
@@ -336,11 +338,16 @@ pub fn admit_checkpoint_v1(
             accepted_interval_count,
             committed,
         } => {
-            if accepted_interval_count.get() % 48 != 0 {
+            if next_day_index
+                .0
+                .checked_mul(48)
+                .is_none_or(|expected| accepted_interval_count.get() != expected)
+            {
                 return Err(RestartAdmissionFailureV1::SchedulerPosition);
             }
             Ok(IsolatedRestoredCheckpointV1::BetweenDays {
                 next_day_index: next_day_index.0,
+                accepted_interval_count: accepted_interval_count.get(),
                 committed: restore_committed(committed, context, next_day_index.0)?,
             })
         }
@@ -354,8 +361,14 @@ pub fn admit_checkpoint_v1(
             staged_gsi_ending_state,
             ending_provider_cursor: ending_provider_cursor_dto,
             validated_forcing_day_receipts,
+            continuation_template,
         } => {
-            if accepted_interval_count.get() % 48 != u64::from(next_interval_index.get()) {
+            if day_index
+                .0
+                .checked_mul(48)
+                .and_then(|value| value.checked_add(u64::from(next_interval_index.get())))
+                .is_none_or(|expected| accepted_interval_count.get() != expected)
+            {
                 return Err(RestartAdmissionFailureV1::SchedulerPosition);
             }
             let committed = restore_committed(committed_day_beginning, context, day_index.0)?;
@@ -419,6 +432,20 @@ pub fn admit_checkpoint_v1(
                 .checked_add(u128::from(next_interval_index.get()))
                 .ok_or(RestartAdmissionFailureV1::TransactionLineage)?;
             require_lineage(staged_scientific, Some(expected_transaction))?;
+            if continuation_template.day_index != day_index.0 {
+                return Err(RestartAdmissionFailureV1::SchedulerPosition);
+            }
+            let restored_continuation_template = continuation_template
+                .restore(
+                    committed_day_beginning
+                        .scientific
+                        .vegetation_v10
+                        .last_transaction_id
+                        .to_u128()
+                        .checked_add(1)
+                        .ok_or(RestartAdmissionFailureV1::TransactionLineage)?,
+                )
+                .map_err(|_| RestartAdmissionFailureV1::OwnerValidation)?;
             Ok(IsolatedRestoredCheckpointV1::InProgressDay {
                 day_index: day_index.0,
                 next_interval_index: next_interval_index.get(),
@@ -431,6 +458,7 @@ pub fn admit_checkpoint_v1(
                 accepted_gsi_daily_receipt: receipt,
                 validated_forcing_day_receipts,
                 ending_provider_cursor,
+                continuation_template: restored_continuation_template,
             })
         }
     }
@@ -507,33 +535,66 @@ fn restore_scientific(
         day_input_digests: context.day_input_digests,
         surface_liquid_configuration: context.surface_liquid_configuration,
     };
+    let vegetation_v10 = value
+        .vegetation_v10
+        .restore(
+            context.vegetation_configuration,
+            context.vegetation_owner_id,
+        )
+        .map_err(|_| RestartAdmissionFailureV1::V10V9Projection)?;
+    let lse_v2 = value
+        .lse_v2
+        .restore(context.lse_configuration)
+        .map_err(|_| RestartAdmissionFailureV1::LseV2V1Projection)?;
+    let direct_hydrology = value
+        .direct_hydrology
+        .restore(&hydrology_context)
+        .map_err(classify_hydrology)?;
+    let soil_thermal = value
+        .soil_thermal
+        .restore(
+            context.soil_thermal_owner_id,
+            context.soil_thermal_configuration_sha256,
+        )
+        .map_err(|_| RestartAdmissionFailureV1::OwnerValidation)?;
+    let biogeochemistry = value.biogeochemistry.restore().map_err(|error| {
+        if matches!(error, crate::ScientificOwnerRestartError::Ordering(_)) {
+            RestartAdmissionFailureV1::CanonicalOrder
+        } else {
+            RestartAdmissionFailureV1::OwnerValidation
+        }
+    })?;
+    if direct_hydrology.identity.run_id.to_string() != context.forcing_static_configuration.run_id
+        || direct_hydrology.lanes.len() != soil_thermal.ofes.len()
+        || context.lse_configuration.ofes.len() != soil_thermal.ofes.len()
+        || direct_hydrology
+            .lanes
+            .iter()
+            .zip(&soil_thermal.ofes)
+            .any(|(lane, ofe)| lane.subsurface_layers.len() != ofe.ordered_layers.len())
+        || context
+            .lse_configuration
+            .ofes
+            .iter()
+            .zip(&soil_thermal.ofes)
+            .any(|(configured, restored)| {
+                configured.ofe_id != restored.ofe_id
+                    || configured.soil_interface_layers.len() != restored.ordered_layers.len()
+                    || configured
+                        .soil_interface_layers
+                        .iter()
+                        .zip(&restored.ordered_layers)
+                        .any(|(configured, restored)| configured.layer_id != restored.layer_id)
+            })
+    {
+        return Err(RestartAdmissionFailureV1::TopologyIdentity);
+    }
     Ok(RestoredScientificOwnerStateSetV1 {
-        vegetation_v10: value
-            .vegetation_v10
-            .restore(context.vegetation_configuration, context.vegetation_owner_id)
-            .map_err(|_| RestartAdmissionFailureV1::V10V9Projection)?,
-        lse_v2: value
-            .lse_v2
-            .restore(context.lse_configuration)
-            .map_err(|_| RestartAdmissionFailureV1::LseV2V1Projection)?,
-        direct_hydrology: value
-            .direct_hydrology
-            .restore(&hydrology_context)
-            .map_err(classify_hydrology)?,
-        soil_thermal: value
-            .soil_thermal
-            .restore(
-                context.soil_thermal_owner_id,
-                context.soil_thermal_configuration_sha256,
-            )
-            .map_err(|_| RestartAdmissionFailureV1::OwnerValidation)?,
-        biogeochemistry: value.biogeochemistry.restore().map_err(|error| {
-            if matches!(error, crate::ScientificOwnerRestartError::Ordering(_)) {
-                RestartAdmissionFailureV1::CanonicalOrder
-            } else {
-                RestartAdmissionFailureV1::OwnerValidation
-            }
-        })?,
+        vegetation_v10,
+        lse_v2,
+        direct_hydrology,
+        soil_thermal,
+        biogeochemistry,
     })
 }
 
@@ -575,22 +636,25 @@ fn require_lineage(
             .map(crate::HexU128::to_u128)
             != Some(expected)
         || value.biogeochemistry.last_transaction_id.to_u128() != expected
-        || required.is_some_and(|_| {
-            value
-                .direct_hydrology
-                .surface_liquid_owned_state
-                .as_deref()
-                .is_none_or(|state| {
-                    state.continuations.is_empty()
-                        || state.continuations.iter().any(|continuation| {
-                            continuation
-                                .last_accepted_transaction_id
-                                .as_ref()
-                                .map(crate::HexU128::to_u128)
-                                != Some(expected)
-                        })
-                })
-        })
+        || value
+            .direct_hydrology
+            .surface_liquid_owned_state
+            .as_deref()
+            .is_some_and(|state| {
+                (required.is_some() && state.continuations.is_empty())
+                    || state.continuations.iter().any(|continuation| {
+                        let lineage = continuation
+                            .last_accepted_transaction_id
+                            .as_ref()
+                            .map(crate::HexU128::to_u128);
+                        if required.is_some() {
+                            lineage != Some(expected)
+                        } else {
+                            lineage.is_some_and(|lineage| lineage != expected)
+                        }
+                    })
+            })
+        || (required.is_some() && value.direct_hydrology.surface_liquid_owned_state.is_none())
     {
         return Err(RestartAdmissionFailureV1::TransactionLineage);
     }
@@ -647,8 +711,7 @@ fn validate_forcing(
             || receipt.run_id != context.forcing_static_configuration.run_id
             || receipt.source_climate_sha256 != climate_sha
             || receipt.intervals.iter().any(|interval| {
-                interval.wb14_configuration_sha256
-                    != destination.wb14_configuration_sha256
+                interval.wb14_configuration_sha256 != destination.wb14_configuration_sha256
                     || interval.co2_pa.to_bits()
                         != context.forcing_static_configuration.co2_pa.to_bits()
                     || interval.reference_height_m.to_bits()
@@ -674,7 +737,7 @@ mod poison_tests {
     use super::*;
     use crate::groundwater::GroundwaterAuthorityRestartV1;
     use crate::{
-        DirectRuntimePostureV1, HexF64, HexU128,
+        DirectGsiDateRestartV1, DirectRuntimePostureV1, HexF64, HexU128,
         restart_authority_cross_midnight_carry_fixture,
         restart_authority_in_progress_checkpoint_fixture, to_canonical_bytes,
     };
@@ -850,6 +913,14 @@ mod poison_tests {
         phase(&mut p).0.gsi_configuration.owner_id.clear();
         check(sealed(p), RestartAdmissionFailureV1::OwnerIdentity);
         let mut p = baseline.clone();
+        phase(&mut p).0.gsi_state.history_oldest_first = vec![HexF64::from_f64(0.5)];
+        phase(&mut p).0.gsi_state.last_date = Some(DirectGsiDateRestartV1 {
+            year: 2025,
+            ordinal_day: 366,
+        });
+        phase(&mut p).0.gsi_state.seal_wire_digest().unwrap();
+        check(sealed(p), RestartAdmissionFailureV1::OwnerValidation);
+        let mut p = baseline.clone();
         phase(&mut p).1.vegetation_v10.owner_id = "wrong-vegetation-owner".into();
         check(sealed(p), RestartAdmissionFailureV1::OwnerIdentity);
         let mut p = baseline.clone();
@@ -938,8 +1009,20 @@ mod poison_tests {
             Sha256Hex::try_new("1".repeat(64)).unwrap();
         check(sealed(p), RestartAdmissionFailureV1::OwnerValidation);
         let mut p = baseline.clone();
-        phase(&mut p).1.biogeochemistry.state_sha256 =
-            Sha256Hex::try_new("1".repeat(64)).unwrap();
+        phase(&mut p).1.soil_thermal.state_sha256 = Sha256Hex::try_new("1".repeat(64)).unwrap();
+        phase(&mut p).1.soil_thermal.seal_restart_payload().unwrap();
+        check(sealed(p), RestartAdmissionFailureV1::OwnerValidation);
+        let mut p = baseline.clone();
+        if let DirectV10CheckpointPhaseV1::InProgressDay {
+            continuation_template,
+            ..
+        } = &mut p.phase
+        {
+            continuation_template.day_index = 1;
+        }
+        check(sealed(p), RestartAdmissionFailureV1::SchedulerPosition);
+        let mut p = baseline.clone();
+        phase(&mut p).1.biogeochemistry.state_sha256 = Sha256Hex::try_new("1".repeat(64)).unwrap();
         check(sealed(p), RestartAdmissionFailureV1::OwnerValidation);
         let mut p = baseline.clone();
         phase(&mut p).1.biogeochemistry.layers[0].ammonium_n = HexF64::from_f64(-1.0);
@@ -1042,12 +1125,14 @@ mod poison_tests {
             sealed(p),
             RestartAdmissionFailureV1::SurfaceLiquidConfiguration,
         );
-        assert!(admit_checkpoint_into_owner_store_v1(
-            &to_canonical_bytes(&baseline).unwrap(),
-            &context,
-            &mut live,
-        )
-        .is_ok());
+        assert!(
+            admit_checkpoint_into_owner_store_v1(
+                &to_canonical_bytes(&baseline).unwrap(),
+                &context,
+                &mut live,
+            )
+            .is_ok()
+        );
         assert_ne!(to_canonical_bytes(&live).unwrap(), before);
     }
 }

@@ -1,5 +1,23 @@
 # Gate results
 
+## Exact-current owner/state closure correction (2026-08-19)
+
+Ran on the terminal remediation diff: package-local reference tests PASS
+28/28; all-target warnings-denied Clippy PASS; direct restart authority PASS
+7/7; forcing adapter PASS 7/7; V10 nighttime PASS 3/3; AUTH11 PASS 3/3;
+anti-evasion and diff hygiene PASS. Artifacts were regenerated from mapping
+metadata after the final code change.
+
+Static/executable corrections since `400e826b` replace Rust `Debug` operand
+hashing with canonical named-field/HexF64 projections; bind cumulative
+day/interval scheduler position; verify native GSI calendar rules and both
+soil nested digests; bind surface lineage and scientific topology; complete
+legal schema optionals and bounds; and persist a typed continuation-template
+operand set. The interval-24 fresh object now consumes the admitted template
+instead of the original live fixture template. Exact-current independent
+reviews remain pending for the frozen commit below; production restart
+implementation has not started.
+
 Status: `intake only / no restart validation yet`
 
 Ran at the original draft checkpoint: the existing

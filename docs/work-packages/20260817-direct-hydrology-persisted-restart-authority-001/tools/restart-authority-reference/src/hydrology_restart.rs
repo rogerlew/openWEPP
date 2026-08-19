@@ -8,9 +8,9 @@ use crate::{
     Sha256Hex,
 };
 use openwepp_hillslope_orchestrator::{
-    DirectDayConstructorInputs, DirectLaneFrame, DirectLaneTransferLedger, DirectPhasePlan,
-    DirectPublicationFrame, DirectRunFrame, DirectRunIdentity, DirectRunTransferShadowProjection,
-    DirectSurfaceLiquidConfiguration,
+    DirectDayConstructorInputs, DirectLaneFrame, DirectLaneTransferLedger, DirectPhaseKind,
+    DirectPhasePlan, DirectPublicationFrame, DirectRunFrame, DirectRunIdentity,
+    DirectRunTransferShadowProjection, DirectSurfaceLiquidConfiguration,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -31,13 +31,54 @@ pub enum HydrologyRestartError {
 fn nested(error: impl std::fmt::Display) -> HydrologyRestartError {
     HydrologyRestartError::Nested(error.to_string())
 }
-pub(crate) fn immutable_operand_sha256(
+fn hexify_floats(value: &mut serde_json::Value) {
+    match value {
+        serde_json::Value::Number(number) if number.is_f64() => {
+            if let Some(float) = number.as_f64() {
+                *value = serde_json::Value::String(format!("0x{:016x}", float.to_bits()));
+            }
+        }
+        serde_json::Value::Array(values) => values.iter_mut().for_each(hexify_floats),
+        serde_json::Value::Object(values) => values.values_mut().for_each(hexify_floats),
+        _ => {}
+    }
+}
+pub(crate) fn canonical_operand_sha256(
     domain: &str,
-    value: &impl std::fmt::Debug,
+    value: &impl Serialize,
 ) -> Result<Sha256Hex, HydrologyRestartError> {
-    let bytes = format!("{domain}\0{value:?}");
-    Sha256Hex::try_new(format!("{:x}", Sha256::digest(bytes.as_bytes())))
+    let mut projected = serde_json::to_value(value)
+        .map_err(|_| HydrologyRestartError::Join("immutable operand projection"))?;
+    hexify_floats(&mut projected);
+    let bytes = crate::to_canonical_bytes(&(domain, projected))
+        .map_err(|_| HydrologyRestartError::Join("immutable operand canonical bytes"))?;
+    Sha256Hex::try_new(format!("{:x}", Sha256::digest(bytes)))
         .map_err(|_| HydrologyRestartError::Join("immutable operand digest"))
+}
+pub(crate) fn canonical_phase_plan_sha256(
+    value: &DirectPhasePlan,
+) -> Result<Sha256Hex, HydrologyRestartError> {
+    let phases = value
+        .phases()
+        .iter()
+        .map(|phase| match phase {
+            DirectPhaseKind::Normalization => "normalization",
+            DirectPhaseKind::StorageBounds => "storage_bounds",
+            DirectPhaseKind::DecompositionTransition => "decomposition_transition",
+            DirectPhaseKind::ResiduePartitionTransition => "residue_partition_transition",
+            DirectPhaseKind::AnnualGrowthTransition => "annual_growth_transition",
+            DirectPhaseKind::PerennialGrowthTransition => "perennial_growth_transition",
+            DirectPhaseKind::PercolationDeepSeepage => "percolation_deep_seepage",
+            DirectPhaseKind::Evapotranspiration => "evapotranspiration",
+            DirectPhaseKind::Drainage => "drainage",
+            DirectPhaseKind::LateralTransfer => "lateral_transfer",
+            DirectPhaseKind::PlantRootUptake => "plant_root_uptake",
+            DirectPhaseKind::RunoffReconciliation => "runoff_reconciliation",
+            DirectPhaseKind::StorageReconciliation => "storage_reconciliation",
+            DirectPhaseKind::ClosureDiagnostics => "closure_diagnostics",
+        })
+        .collect::<Vec<_>>();
+    canonical_operand_sha256("DirectPhasePlanV1", &phases)
 }
 fn finite(field: &'static str, value: &HexF64) -> Result<f64, HydrologyRestartError> {
     let value = value.to_f64();
@@ -166,9 +207,8 @@ impl DirectLaneRestartV1 {
         day_inputs: Vec<DirectDayConstructorInputs>,
         expected_day_inputs_sha256: &Sha256Hex,
     ) -> Result<DirectLaneFrame, HydrologyRestartError> {
-        let actual = immutable_operand_sha256("DirectDayConstructorInputsV1", &day_inputs)?;
-        if &self.day_inputs_sha256 != expected_day_inputs_sha256
-            || self.day_inputs_sha256 != actual
+        let actual = canonical_operand_sha256("DirectDayConstructorInputsV1", &day_inputs)?;
+        if &self.day_inputs_sha256 != expected_day_inputs_sha256 || self.day_inputs_sha256 != actual
         {
             return Err(HydrologyRestartError::Join("day_inputs_sha256"));
         }
@@ -294,10 +334,10 @@ impl DirectHydrologyRestartV1 {
             laned_active,
             laned_active_summary,
         } = value;
-        if phase_plan_sha256 != immutable_operand_sha256("DirectPhasePlanV1", phase_plan)?
+        if phase_plan_sha256 != canonical_phase_plan_sha256(phase_plan)?
             || lanes.len() != day_input_digests.len()
             || lanes.iter().zip(day_input_digests).any(|(lane, digest)| {
-                immutable_operand_sha256("DirectDayConstructorInputsV1", &lane.day_inputs)
+                canonical_operand_sha256("DirectDayConstructorInputsV1", &lane.day_inputs)
                     .map_or(true, |actual| &actual != digest)
             })
         {
@@ -384,8 +424,7 @@ impl DirectHydrologyRestartV1 {
             return Err(HydrologyRestartError::Unsupported("laned_active"));
         }
         if &self.phase_plan_sha256 != context.phase_plan_sha256
-            || self.phase_plan_sha256
-                != immutable_operand_sha256("DirectPhasePlanV1", context.phase_plan)?
+            || self.phase_plan_sha256 != canonical_phase_plan_sha256(context.phase_plan)?
             || self.lanes.len() != context.day_inputs.len()
             || self.lanes.len() != context.day_input_digests.len()
             || self.lane_count != self.lanes.len() as u64
@@ -544,10 +583,14 @@ mod tests {
         }
     }
     fn cache_digests(source: &DirectRunFrame) -> (Sha256Hex, Vec<Sha256Hex>) {
-        let phase = immutable_operand_sha256("DirectPhasePlanV1", &source.phase_plan).unwrap();
-        let days = source.lanes.iter().map(|lane| {
-            immutable_operand_sha256("DirectDayConstructorInputsV1", &lane.day_inputs).unwrap()
-        }).collect();
+        let phase = canonical_phase_plan_sha256(&source.phase_plan).unwrap();
+        let days = source
+            .lanes
+            .iter()
+            .map(|lane| {
+                canonical_operand_sha256("DirectDayConstructorInputsV1", &lane.day_inputs).unwrap()
+            })
+            .collect();
         (phase, days)
     }
 

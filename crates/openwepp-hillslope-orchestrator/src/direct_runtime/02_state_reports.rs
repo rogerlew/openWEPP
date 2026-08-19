@@ -53,6 +53,7 @@ impl DirectWaterState {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectDayForcing {
     pub precipitation_m: f64,
     pub effective_temperature_c: f64,

@@ -5,6 +5,7 @@
 
 mod canonical;
 mod checkpoint;
+mod continuation_template;
 mod erosion;
 mod evidence_fixture;
 mod groundwater;
@@ -27,6 +28,7 @@ pub use checkpoint::{
     ExpectedRestartStaticContext, IsolatedRestoredCheckpointV1, RestartAdmissionFailureV1,
     ScientificOwnerStateSetV1, admit_checkpoint_v1,
 };
+pub use continuation_template::*;
 pub use erosion::{
     DirectErosionDownstreamRestartV1, DirectErosionInflowIntakeRestartV1,
     DirectErosionRuntimeCarryRestartV1, ErosionRestartError,
@@ -37,7 +39,7 @@ pub use growth_et::{
     DirectEvapotranspirationStageRestartV1, DirectGrowthStateSurfaceRestartV1, GrowthEtRestartError,
 };
 pub use gsi_forcing::{
-    DirectGsiDailyReceiptRestartV1, DirectGsiOwnerConfigurationRestartV1,
+    DirectGsiDailyReceiptRestartV1, DirectGsiDateRestartV1, DirectGsiOwnerConfigurationRestartV1,
     DirectGsiOwnerStateRestartV1, GsiForcingRestartError, SnowFreeHalfHourDayReceiptRestartV1,
     SnowFreeHalfHourDestinationRestartV1, SnowFreeHalfHourProviderCursorRestartV1,
     SnowFreeHalfHourStaticConfigurationRestartV1, SnowFreePrecipitationParcelRestartV1,

@@ -102,6 +102,7 @@ const WAVE1_CLOSURE_ABS_FLOOR: f64 = 1.0e-9;
 /// the local slope normalized by `avgslp` is `s*(x) = a*x + b` on
 /// `x in [xu, xl]` (nondimensional distances).
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectWave1SlopeSegment {
     pub xu: f64,
     pub xl: f64,
@@ -117,6 +118,7 @@ pub struct DirectWave1SlopeSegment {
 /// the `*lst` coefficient sets are the prior lane's solve-final values
 /// (the legacy Fortran-`save` state).
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct Wave1InterOfeContinuity {
     /// Shear at the inflow discharge on the prior OFE's AVERAGE slope
     /// (`sheart(qin·rspace, cnslp_{i-1})`, floored 1e-6 Pa).
@@ -137,6 +139,7 @@ pub struct Wave1InterOfeContinuity {
 /// required operand with a legacy lineage (`param.for`/`xinflo.for`); absent
 /// or invalid operands are typed hard errors (no defaults, no proxies).
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectWave1ContinuityInputs {
     pub enabled: bool,
     /// Inter-OFE continuity operands; `None` on OFE-1 / single-OFE lanes

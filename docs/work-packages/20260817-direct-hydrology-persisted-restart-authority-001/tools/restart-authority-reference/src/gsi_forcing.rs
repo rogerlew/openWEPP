@@ -83,9 +83,11 @@ impl SnowFreeHalfHourStaticConfigurationRestartV1 {
     }
 
     pub fn restore(&self) -> Result<SnowFreeHalfHourStaticConfiguration, GsiForcingRestartError> {
-        if self.destinations.windows(2).any(|pair| {
-            (&pair[0].ofe_id, &pair[0].tile_id) >= (&pair[1].ofe_id, &pair[1].tile_id)
-        }) {
+        if self
+            .destinations
+            .windows(2)
+            .any(|pair| (&pair[0].ofe_id, &pair[0].tile_id) >= (&pair[1].ofe_id, &pair[1].tile_id))
+        {
             return Err(GsiForcingRestartError::Ordering(
                 "forcing destination canonical order",
             ));
@@ -292,7 +294,32 @@ impl DirectGsiOwnerStateRestartV1 {
         if computed != v.state_sha256 {
             return Err(GsiForcingRestartError::Identity("gsi state digest"));
         }
+        openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_restore_gsi_state(&v)
+            .map_err(|_| GsiForcingRestartError::Domain("native GSI state"))?;
         Ok(v)
+    }
+
+    pub fn seal_wire_digest(&mut self) -> Result<(), GsiForcingRestartError> {
+        let value = DirectGsiOwnerStateV1 {
+            history_oldest_first: self
+                .history_oldest_first
+                .iter()
+                .map(|value| f("gsi.history", value))
+                .collect::<Result<_, _>>()?,
+            last_date: self
+                .last_date
+                .as_ref()
+                .map(DirectGsiDateRestartV1::restore)
+                .transpose()?,
+            state_sha256: String::new(),
+        };
+        let json = serde_json::to_value(&value)
+            .map_err(|_| GsiForcingRestartError::Identity("gsi state digest"))?;
+        let mut bytes = serde_json::to_vec(&json)
+            .map_err(|_| GsiForcingRestartError::Identity("gsi state digest"))?;
+        bytes.push(b'\n');
+        self.state_sha256 = sha(format!("{:x}", Sha256::digest(bytes)))?;
+        Ok(())
     }
 }
 

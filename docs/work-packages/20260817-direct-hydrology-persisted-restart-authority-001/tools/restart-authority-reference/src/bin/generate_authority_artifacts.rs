@@ -65,6 +65,9 @@ fn in_progress(through: u8) -> DirectV10RealConsumerCheckpointV1 {
             staged_gsi_ending_state: fixture.ending_gsi_state,
             ending_provider_cursor: fixture.ending_cursor,
             validated_forcing_day_receipts: fixture.forcing_receipts,
+            continuation_template: DirectV10ContinuationTemplateRestartV1::project(
+                &fixture.template,
+            ),
         },
         &fixture.owners.committed,
     )
@@ -98,6 +101,9 @@ fn cross_midnight() -> DirectV10RealConsumerCheckpointV1 {
             staged_gsi_ending_state: fixture.ending_gsi_state,
             ending_provider_cursor: fixture.ending_cursor,
             validated_forcing_day_receipts: fixture.forcing_receipts,
+            continuation_template: DirectV10ContinuationTemplateRestartV1::project(
+                &fixture.template,
+            ),
         },
         &fixture.owners.committed,
     )
@@ -106,7 +112,27 @@ fn write(path: &Path, value: &impl Serialize) {
     fs::write(path, to_canonical_bytes(value).unwrap()).unwrap()
 }
 
-const SOURCES: [(&str, &str); 28] = [
+const SOURCES: [(&str, &str); 56] = [
+    (
+        "DirectV10ContinuationTemplateRestartV1",
+        "docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/continuation_template.rs",
+    ),
+    (
+        "ContinuationIntervalTemplateRestartV1",
+        "docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/continuation_template.rs",
+    ),
+    (
+        "LiquidParcelTemplateRestartV1",
+        "docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/continuation_template.rs",
+    ),
+    (
+        "SoilLayerTemplateRestartV1",
+        "docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/continuation_template.rs",
+    ),
+    (
+        "Wb14TemplateRestartV1",
+        "docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/continuation_template.rs",
+    ),
     (
         "DirectRunFrame",
         "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs",
@@ -175,17 +201,142 @@ const SOURCES: [(&str, &str); 28] = [
         "DirectSurfaceLiquidOwnedState",
         "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs",
     ),
-    ("DirectSnowLaneState", "crates/openwepp-hillslope-orchestrator/src/winter_column.rs"),
-    ("DirectSnowLayerState", "crates/openwepp-hillslope-orchestrator/src/winter_column.rs"),
-    ("DirectFrostLaneState", "crates/openwepp-hillslope-orchestrator/src/winter_column.rs"),
-    ("DirectFrostLayerShadowState", "crates/openwepp-hillslope-orchestrator/src/winter_column.rs"),
-    ("DirectFrostFineLayerState", "crates/openwepp-hillslope-orchestrator/src/winter_column.rs"),
-    ("DirectPublicationErosionOperands", "crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs"),
-    ("DirectSurfaceLiquidStoreKey", "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs"),
-    ("DirectSurfaceLiquidConfigurationRecord", "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs"),
-    ("DirectSurfaceLiquidOfeBinding", "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs"),
-    ("DirectSurfaceLiquidStateRecord", "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs"),
-    ("DirectSurfaceLiquidContinuationState", "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs"),
+    (
+        "DirectSnowLaneState",
+        "crates/openwepp-hillslope-orchestrator/src/winter_column.rs",
+    ),
+    (
+        "DirectSnowLayerState",
+        "crates/openwepp-hillslope-orchestrator/src/winter_column.rs",
+    ),
+    (
+        "DirectFrostLaneState",
+        "crates/openwepp-hillslope-orchestrator/src/winter_column.rs",
+    ),
+    (
+        "DirectFrostLayerShadowState",
+        "crates/openwepp-hillslope-orchestrator/src/winter_column.rs",
+    ),
+    (
+        "DirectFrostFineLayerState",
+        "crates/openwepp-hillslope-orchestrator/src/winter_column.rs",
+    ),
+    (
+        "DirectPublicationErosionOperands",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs",
+    ),
+    (
+        "DirectSurfaceLiquidStoreKey",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs",
+    ),
+    (
+        "DirectSurfaceLiquidConfigurationRecord",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs",
+    ),
+    (
+        "DirectSurfaceLiquidOfeBinding",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs",
+    ),
+    (
+        "DirectSurfaceLiquidStateRecord",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs",
+    ),
+    (
+        "DirectSurfaceLiquidContinuationState",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs",
+    ),
+    (
+        "DirectDayConstructorInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs",
+    ),
+    (
+        "DirectDayForcing",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/02_state_reports.rs",
+    ),
+    (
+        "DirectNormalizationInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/normalization.rs",
+    ),
+    (
+        "DirectStorageBoundsInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/normalization.rs",
+    ),
+    (
+        "DirectDecompositionInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/decomposition.rs",
+    ),
+    (
+        "DirectResiduePartitionInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/decomposition.rs",
+    ),
+    (
+        "DirectGrowthInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs",
+    ),
+    (
+        "DirectStorageInputInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs",
+    ),
+    (
+        "DirectLiquidInputInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
+    ),
+    (
+        "DirectRunonCarryInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
+    ),
+    (
+        "DirectInfiltrationDepressionInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
+    ),
+    (
+        "DirectSaturationAddbackInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
+    ),
+    (
+        "DirectRunoffPartitionInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
+    ),
+    (
+        "DirectPercolationInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs",
+    ),
+    (
+        "DirectSubsurfaceComputeInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs",
+    ),
+    (
+        "DirectDeepSeepageInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs",
+    ),
+    (
+        "DirectSubsurfaceLossInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs",
+    ),
+    (
+        "DirectEvapotranspirationComputeInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs",
+    ),
+    (
+        "DirectEvapotranspirationInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs",
+    ),
+    (
+        "DirectSnowCouplingInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs",
+    ),
+    (
+        "DirectStorageReconciliationInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs",
+    ),
+    (
+        "DirectHydrologyProjectionInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/projection.rs",
+    ),
+    (
+        "DirectErosionInputs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs",
+    ),
 ];
 fn fields(source: &str, name: &str) -> Vec<(String, String)> {
     let marker = format!("pub struct {name} {{");
@@ -213,7 +364,18 @@ fn fields(source: &str, name: &str) -> Vec<(String, String)> {
     }
     output
 }
-fn disposition(source_type: &str, field: &str) -> (&'static str, &'static str, &'static str, &'static str) {
+fn disposition(
+    source_type: &str,
+    field: &str,
+) -> (&'static str, &'static str, &'static str, &'static str) {
+    if source_type.ends_with("Inputs") || source_type == "DirectDayForcing" {
+        return (
+            "reconstruction source operand",
+            "external immutable DirectDayConstructorInputsV1 projection",
+            "named serde field projection; binary64 converted to lowercase HexF64; canonical JSON SHA-256",
+            "day-input canonical digest mismatch",
+        );
+    }
     match (source_type, field) {
         ("DirectErosionDownstreamOperands", "publication") => (
             "persisted explicit DTO",
@@ -322,9 +484,15 @@ fn schema_for(values: &[serde_json::Value]) -> serde_json::Value {
     }
     match &values[0] {
         serde_json::Value::Object(_) => {
-            let mut groups = std::collections::BTreeMap::<Vec<String>, Vec<serde_json::Value>>::new();
+            let mut groups =
+                std::collections::BTreeMap::<Vec<String>, Vec<serde_json::Value>>::new();
             for value in values {
-                let mut shape = value.as_object().unwrap().keys().cloned().collect::<Vec<_>>();
+                let mut shape = value
+                    .as_object()
+                    .unwrap()
+                    .keys()
+                    .cloned()
+                    .collect::<Vec<_>>();
                 shape.sort();
                 groups.entry(shape).or_default().push(value.clone());
             }
@@ -359,12 +527,32 @@ fn schema_for(values: &[serde_json::Value]) -> serde_json::Value {
             serde_json::json!({"type":"array","items":if nested.is_empty(){serde_json::json!({})}else{schema_for(&nested)}})
         }
         serde_json::Value::String(_) => {
-            let strings = values.iter().map(|value| value.as_str().unwrap()).collect::<Vec<_>>();
-            if strings.iter().all(|value| value.len() == 64 && value.bytes().all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())) {
+            let strings = values
+                .iter()
+                .map(|value| value.as_str().unwrap())
+                .collect::<Vec<_>>();
+            if strings.iter().all(|value| {
+                value.len() == 64
+                    && value
+                        .bytes()
+                        .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+            }) {
                 serde_json::json!({"type":"string","pattern":"^[0-9a-f]{64}$"})
-            } else if strings.iter().all(|value| value.len() == 18 && value.starts_with("0x") && value[2..].bytes().all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())) {
+            } else if strings.iter().all(|value| {
+                value.len() == 18
+                    && value.starts_with("0x")
+                    && value[2..]
+                        .bytes()
+                        .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+            }) {
                 serde_json::json!({"type":"string","pattern":"^0x[0-9a-f]{16}$"})
-            } else if strings.iter().all(|value| value.len() == 34 && value.starts_with("0x") && value[2..].bytes().all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())) {
+            } else if strings.iter().all(|value| {
+                value.len() == 34
+                    && value.starts_with("0x")
+                    && value[2..]
+                        .bytes()
+                        .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+            }) {
                 serde_json::json!({"type":"string","pattern":"^0x[0-9a-f]{32}$"})
             } else {
                 serde_json::json!({"type":"string"})
@@ -379,15 +567,24 @@ fn schema_for(values: &[serde_json::Value]) -> serde_json::Value {
 fn bind_wire_schema(node: &mut serde_json::Value, property_name: Option<&str>) {
     if let Some(name) = property_name {
         match name {
-            "schema" => node["const"] = serde_json::json!("OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1"),
+            "schema" => {
+                node["const"] = serde_json::json!("OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1")
+            }
             "version" => node["const"] = serde_json::json!(1),
             "kind" => node["enum"] = serde_json::json!(["between_days", "in_progress_day"]),
-            "runtime_posture" => node["enum"] = serde_json::json!(["standard", "unsupported_laned_active"]),
-            "surface_class" => node["enum"] = serde_json::json!(["bare_mineral_soil", "forest_litter"]),
-            "source_type" => node["enum"] = serde_json::json!(["surface_liquid", "litter_liquid", "soil_layer_liquid"]),
+            "runtime_posture" => {
+                node["enum"] = serde_json::json!(["standard", "unsupported_laned_active"])
+            }
+            "surface_class" => {
+                node["enum"] = serde_json::json!(["bare_mineral_soil", "forest_litter"])
+            }
+            "source_type" => {
+                node["enum"] =
+                    serde_json::json!(["surface_liquid", "litter_liquid", "soil_layer_liquid"])
+            }
             "next_interval_index" => {
                 node["minimum"] = serde_json::json!(0);
-                node["maximum"] = serde_json::json!(47);
+                node["maximum"] = serde_json::json!(48);
             }
             "intervals" => {
                 node["minItems"] = serde_json::json!(48);
@@ -401,20 +598,30 @@ fn bind_wire_schema(node: &mut serde_json::Value, property_name: Option<&str>) {
                 node["minimum"] = serde_json::json!(0);
                 node["maximum"] = serde_json::json!(23);
             }
-            "day_index" | "next_day_index" | "accepted_interval_count" => {
+            "day_index" | "next_day_index" => {
                 node["minimum"] = serde_json::json!(0);
                 node["maximum"] = serde_json::json!(u64::MAX);
+            }
+            "accepted_interval_count" => {
+                node["minimum"] = serde_json::json!(0);
+                node["maximum"] = serde_json::json!((u32::MAX as u64) * 48);
             }
             _ => {}
         }
     }
-    if let Some(properties) = node.get_mut("properties").and_then(serde_json::Value::as_object_mut) {
+    if let Some(properties) = node
+        .get_mut("properties")
+        .and_then(serde_json::Value::as_object_mut)
+    {
         for (name, child) in properties {
             bind_wire_schema(child, Some(name));
         }
     }
     for keyword in ["oneOf", "anyOf"] {
-        if let Some(children) = node.get_mut(keyword).and_then(serde_json::Value::as_array_mut) {
+        if let Some(children) = node
+            .get_mut(keyword)
+            .and_then(serde_json::Value::as_array_mut)
+        {
             for child in children {
                 bind_wire_schema(child, property_name);
             }
@@ -448,27 +655,57 @@ fn complete_typed_wire_schema(node: &mut serde_json::Value, property_name: Optio
     let hex_u128 = || serde_json::json!({"type":"string","pattern":"^0x[0-9a-f]{32}$"});
     let object = |fields: Vec<(&str, serde_json::Value)>| {
         let required = fields.iter().map(|(name, _)| *name).collect::<Vec<_>>();
-        let properties = fields.into_iter().map(|(name, value)| (name.to_owned(), value)).collect::<serde_json::Map<_, _>>();
+        let properties = fields
+            .into_iter()
+            .map(|(name, value)| (name.to_owned(), value))
+            .collect::<serde_json::Map<_, _>>();
         serde_json::json!({"type":"object","additionalProperties":false,"required":required,"properties":properties})
     };
+    if matches!(
+        property_name,
+        Some(
+            "peak_runoff_rate_m_s"
+                | "runoff_duration_s"
+                | "total_detachment_kg"
+                | "total_deposition_kg"
+                | "hbp_total_detachment_kg"
+                | "hbp_total_deposition_kg"
+                | "hbp_sediment_concentration_kg_m3"
+                | "enrichment_ratio"
+        )
+    ) && node.get("anyOf").is_none()
+    {
+        *node = serde_json::json!({"anyOf":[{"type":"null"},hex_f64()]});
+    }
+    if property_name == Some("sediment_concentration_kg_m3") && node.get("anyOf").is_none() {
+        *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"array","minItems":5,"maxItems":5,"items":hex_f64()}]});
+    }
     if node.get("type") == Some(&serde_json::json!("null")) {
         match property_name {
-            Some("last_date") =>
-                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"object","additionalProperties":false,"required":["year","ordinal_day"],"properties":{"year":{"type":"integer","minimum":i32::MIN,"maximum":i32::MAX},"ordinal_day":{"type":"integer","minimum":1,"maximum":366}}}]}),
-            Some("runon_destination_ofe_id") | Some("runon_destination_tile_id") =>
-                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"string"}]}),
-            Some("initialized_area_m2") | Some("enrichment_ratio") =>
-                *node = serde_json::json!({"anyOf":[{"type":"null"},hex_f64()]}),
-            Some("last_accepted_transaction_id") =>
-                *node = serde_json::json!({"anyOf":[{"type":"null"},hex_u128()]}),
-            Some("hourly_runoff_fraction") | Some("hourly_sediment_mass_kg") =>
-                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"array","minItems":24,"maxItems":24,"items":hex_f64()}]}),
-            Some("erosion_inflow_intake") =>
-                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"object","additionalProperties":false,"required":["hourly_qout_m2_s","hourly_qsout_kg_m_s","prior_slpend","prior_cnslp","prior_end_shear","prior_end_transport","exit_fractions"],"properties":{"hourly_qout_m2_s":{"type":"array","minItems":24,"maxItems":24,"items":hex_f64()},"hourly_qsout_kg_m_s":{"type":"array","minItems":24,"maxItems":24,"items":hex_f64()},"prior_slpend":hex_f64(),"prior_cnslp":hex_f64(),"prior_end_shear":{"type":"array","minItems":3,"maxItems":3,"items":hex_f64()},"prior_end_transport":{"type":"array","minItems":3,"maxItems":3,"items":hex_f64()},"exit_fractions":{"type":"array","minItems":5,"maxItems":5,"items":hex_f64()}}}]}),
-            Some("evapotranspiration_stage_state") =>
-                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"object","additionalProperties":false,"required":["s1_m","s2_m","threshold_m","counter"],"properties":{"s1_m":hex_f64(),"s2_m":hex_f64(),"threshold_m":hex_f64(),"counter":hex_f64()}}]}),
-            Some("snow_albedo_state") =>
-                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"object","additionalProperties":false,"required":["model","albedo","accumulated_positive_temperature_c_day"],"properties":{"model":{"type":"string","const":"brock_2000_temperature_age_v1"},"albedo":hex_f64(),"accumulated_positive_temperature_c_day":hex_f64()}}]}),
+            Some("last_date") => {
+                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"object","additionalProperties":false,"required":["year","ordinal_day"],"properties":{"year":{"type":"integer","minimum":i32::MIN,"maximum":i32::MAX},"ordinal_day":{"type":"integer","minimum":1,"maximum":366}}}]})
+            }
+            Some("runon_destination_ofe_id") | Some("runon_destination_tile_id") => {
+                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"string"}]})
+            }
+            Some("initialized_area_m2") | Some("enrichment_ratio") => {
+                *node = serde_json::json!({"anyOf":[{"type":"null"},hex_f64()]})
+            }
+            Some("last_accepted_transaction_id") => {
+                *node = serde_json::json!({"anyOf":[{"type":"null"},hex_u128()]})
+            }
+            Some("hourly_runoff_fraction") | Some("hourly_sediment_mass_kg") => {
+                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"array","minItems":24,"maxItems":24,"items":hex_f64()}]})
+            }
+            Some("erosion_inflow_intake") => {
+                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"object","additionalProperties":false,"required":["hourly_qout_m2_s","hourly_qsout_kg_m_s","prior_slpend","prior_cnslp","prior_end_shear","prior_end_transport","exit_fractions"],"properties":{"hourly_qout_m2_s":{"type":"array","minItems":24,"maxItems":24,"items":hex_f64()},"hourly_qsout_kg_m_s":{"type":"array","minItems":24,"maxItems":24,"items":hex_f64()},"prior_slpend":hex_f64(),"prior_cnslp":hex_f64(),"prior_end_shear":{"type":"array","minItems":3,"maxItems":3,"items":hex_f64()},"prior_end_transport":{"type":"array","minItems":3,"maxItems":3,"items":hex_f64()},"exit_fractions":{"type":"array","minItems":5,"maxItems":5,"items":hex_f64()}}}]})
+            }
+            Some("evapotranspiration_stage_state") => {
+                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"object","additionalProperties":false,"required":["s1_m","s2_m","threshold_m","counter"],"properties":{"s1_m":hex_f64(),"s2_m":hex_f64(),"threshold_m":hex_f64(),"counter":hex_f64()}}]})
+            }
+            Some("snow_albedo_state") => {
+                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"object","additionalProperties":false,"required":["model","albedo","accumulated_positive_temperature_c_day"],"properties":{"model":{"type":"string","const":"brock_2000_temperature_age_v1"},"albedo":hex_f64(),"accumulated_positive_temperature_c_day":hex_f64()}}]})
+            }
             _ => {}
         }
     }
@@ -477,14 +714,26 @@ fn complete_typed_wire_schema(node: &mut serde_json::Value, property_name: Optio
             let typed = node.take();
             *node = serde_json::json!({"anyOf":[{"type":"null"},typed]});
         }
-        Some("phase") if node.get("type") == Some(&serde_json::json!("string")) =>
-            node["enum"] = serde_json::json!(["dormant","onset","active","offset"]),
-        Some("tissue") | Some("donor") =>
-            node["enum"] = serde_json::json!(["leaf","fine_root","live_stem","dead_stem","live_coarse_root","dead_coarse_root"]),
-        Some("receiver") =>
-            node["enum"] = serde_json::json!(["metabolic","cellulose","lignin","coarse_woody_debris"]),
-        Some("ground_ingress_mode") =>
-            node["enum"] = serde_json::json!(["open_raw_precipitation","covered_canopy_release"]),
+        Some("phase") if node.get("type") == Some(&serde_json::json!("string")) => {
+            node["enum"] = serde_json::json!(["dormant", "onset", "active", "offset"])
+        }
+        Some("tissue") | Some("donor") => {
+            node["enum"] = serde_json::json!([
+                "leaf",
+                "fine_root",
+                "live_stem",
+                "dead_stem",
+                "live_coarse_root",
+                "dead_coarse_root"
+            ])
+        }
+        Some("receiver") => {
+            node["enum"] =
+                serde_json::json!(["metabolic", "cellulose", "lignin", "coarse_woody_debris"])
+        }
+        Some("ground_ingress_mode") => {
+            node["enum"] = serde_json::json!(["open_raw_precipitation", "covered_canopy_release"])
+        }
         Some("groundwater") => {
             node["properties"]["authority"] = serde_json::json!({"oneOf":[
                 {"type":"object","additionalProperties":false,"required":["authority"],"properties":{"authority":{"const":"disabled"}}},
@@ -511,44 +760,116 @@ fn complete_typed_wire_schema(node: &mut serde_json::Value, property_name: Optio
                 ("source_owner_id", serde_json::json!({"type":"string"})),
                 ("destination_ofe_id", serde_json::json!({"type":"string"})),
                 ("destination_tile_id", serde_json::json!({"type":"string"})),
-                ("start_s", hex_f64()), ("end_s", hex_f64()), ("mass_kg_m2", hex_f64()),
-                ("temperature_k", hex_f64()), ("enthalpy_j_m2", hex_f64()),
+                ("start_s", hex_f64()),
+                ("end_s", hex_f64()),
+                ("mass_kg_m2", hex_f64()),
+                ("temperature_k", hex_f64()),
+                ("enthalpy_j_m2", hex_f64()),
             ]),
             Some("layers") => object(vec![
-                ("mass_swe_m", hex_f64()), ("thickness_m", hex_f64()),
-                ("density_kg_m3", hex_f64()), ("settle_day_count", hex_f64()),
-                ("temperature_c", hex_f64()), ("liquid_water_m", hex_f64()),
-                ("cold_content_j_m2", hex_f64()), ("refrozen_liquid_m", hex_f64()),
+                ("mass_swe_m", hex_f64()),
+                ("thickness_m", hex_f64()),
+                ("density_kg_m3", hex_f64()),
+                ("settle_day_count", hex_f64()),
+                ("temperature_c", hex_f64()),
+                ("liquid_water_m", hex_f64()),
+                ("cold_content_j_m2", hex_f64()),
+                ("refrozen_liquid_m", hex_f64()),
             ]),
             Some("layer_shadows") => object(vec![
-                ("layer_index", serde_json::json!({"type":"integer","minimum":0,"maximum":u64::MAX})),
-                ("st_m", hex_f64()), ("soil_water_m", hex_f64()), ("frozen_depth_m", hex_f64()),
-                ("frozen_water_m", hex_f64()), ("soilf_m", hex_f64()), ("yst_m", hex_f64()),
+                (
+                    "layer_index",
+                    serde_json::json!({"type":"integer","minimum":0,"maximum":u64::MAX}),
+                ),
+                ("st_m", hex_f64()),
+                ("soil_water_m", hex_f64()),
+                ("frozen_depth_m", hex_f64()),
+                ("frozen_water_m", hex_f64()),
+                ("soilf_m", hex_f64()),
+                ("yst_m", hex_f64()),
                 ("nwfrzz_m", hex_f64()),
             ]),
             Some("fine_layers") => object(vec![
-                ("layer_index", serde_json::json!({"type":"integer","minimum":0,"maximum":u64::MAX})),
-                ("fine_index", serde_json::json!({"type":"integer","minimum":0,"maximum":u64::MAX})),
-                ("fgfrst", hex_f64()), ("slfsd_m", hex_f64()), ("slsic_m", hex_f64()),
-                ("slsw_theta", hex_f64()), ("sltime_s", hex_f64()),
+                (
+                    "layer_index",
+                    serde_json::json!({"type":"integer","minimum":0,"maximum":u64::MAX}),
+                ),
+                (
+                    "fine_index",
+                    serde_json::json!({"type":"integer","minimum":0,"maximum":u64::MAX}),
+                ),
+                ("fgfrst", hex_f64()),
+                ("slfsd_m", hex_f64()),
+                ("slsic_m", hex_f64()),
+                ("slsw_theta", hex_f64()),
+                ("sltime_s", hex_f64()),
             ]),
             Some("pending_transfers") => object(vec![
-                ("transaction_id", hex_u128()), ("owner_id", serde_json::json!({"type":"string"})),
-                ("proposal_id", serde_json::json!({"type":"integer","minimum":0,"maximum":u64::MAX})),
-                ("donor", serde_json::json!({"type":"string","enum":["leaf","fine_root","live_stem","dead_stem","live_coarse_root","dead_coarse_root"]})),
-                ("receiver", serde_json::json!({"type":"string","enum":["metabolic","cellulose","lignin","coarse_woody_debris"]})),
-                ("carbon", hex_f64()), ("nitrogen", hex_f64()), ("dry_matter", hex_f64()),
+                ("transaction_id", hex_u128()),
+                ("owner_id", serde_json::json!({"type":"string"})),
+                (
+                    "proposal_id",
+                    serde_json::json!({"type":"integer","minimum":0,"maximum":u64::MAX}),
+                ),
+                (
+                    "donor",
+                    serde_json::json!({"type":"string","enum":["leaf","fine_root","live_stem","dead_stem","live_coarse_root","dead_coarse_root"]}),
+                ),
+                (
+                    "receiver",
+                    serde_json::json!({"type":"string","enum":["metabolic","cellulose","lignin","coarse_woody_debris"]}),
+                ),
+                ("carbon", hex_f64()),
+                ("nitrogen", hex_f64()),
+                ("dry_matter", hex_f64()),
+            ]),
+            Some("runon_parcels") => object(vec![
+                (
+                    "parcel_kind",
+                    serde_json::json!({"type":"string","enum":["precipitation","routed_runon"]}),
+                ),
+                ("parcel_id", serde_json::json!({"type":"string"})),
+                ("source_owner_id", serde_json::json!({"type":"string"})),
+                ("source_ofe_id", serde_json::json!({"type":"string"})),
+                ("source_tile_id", serde_json::json!({"type":"string"})),
+                ("destination_ofe_id", serde_json::json!({"type":"string"})),
+                ("destination_tile_id", serde_json::json!({"type":"string"})),
+                ("start_s", hex_f64()),
+                ("end_s", hex_f64()),
+                ("amount_kg_m2_destination_tile_ground", hex_f64()),
+                (
+                    "temperature_provider",
+                    serde_json::json!({"type":"string","enum":["harder_pomeroy_hourly","accepted_upstream_outlet_parcel"]}),
+                ),
+                (
+                    "temperature_k",
+                    serde_json::json!({"anyOf":[{"type":"null"},hex_f64()]}),
+                ),
+                (
+                    "specific_liquid_enthalpy_j_kg",
+                    serde_json::json!({"anyOf":[{"type":"null"},hex_f64()]}),
+                ),
+                (
+                    "source_state_sha256",
+                    serde_json::json!({"anyOf":[{"type":"null"},{"type":"string","pattern":"^[0-9a-f]{64}$"}]}),
+                ),
             ]),
             _ => serde_json::json!({}),
         };
     }
-    if let Some(properties) = node.get_mut("properties").and_then(serde_json::Value::as_object_mut) {
+    if let Some(properties) = node
+        .get_mut("properties")
+        .and_then(serde_json::Value::as_object_mut)
+    {
         for (name, child) in properties {
             complete_typed_wire_schema(child, Some(name));
         }
     }
     for keyword in ["oneOf", "anyOf"] {
-        if let Some(children) = node.get_mut(keyword).and_then(serde_json::Value::as_array_mut) {
+        if let Some(children) = node
+            .get_mut(keyword)
+            .and_then(serde_json::Value::as_array_mut)
+        {
             for child in children {
                 complete_typed_wire_schema(child, None);
             }
@@ -563,50 +884,206 @@ fn generate_poison_matrix(root: &Path) {
     let rows = [
         ("schema", "schema", "Schema"),
         ("unsupported_version", "version", "UnsupportedVersion"),
-        ("noncanonical_bytes", "byte 1 whitespace", "NoncanonicalBytes"),
+        (
+            "noncanonical_bytes",
+            "byte 1 whitespace",
+            "NoncanonicalBytes",
+        ),
         ("payload_digest", "payload_sha256", "PayloadDigest"),
         ("missing_field", "phase", "MissingField"),
         ("extra_field", "extra", "ExtraField"),
-        ("reordered_field", "top-level member order", "ReorderedField"),
+        (
+            "reordered_field",
+            "top-level member order",
+            "ReorderedField",
+        ),
         ("duplicate_field", "schema", "DuplicateField"),
         ("run_identity", "run_identity_sha256", "RunIdentity"),
         ("topology_identity", "topology_sha256", "TopologyIdentity"),
-        ("configuration_identity", "phase.committed_day_beginning.gsi_configuration.configuration_sha256", "ConfigurationIdentity"),
-        ("owner_identity", "phase.committed_day_beginning.gsi_configuration.owner_id", "OwnerIdentity"),
-        ("transaction_lineage", "phase.staged_scientific.biogeochemistry.last_transaction_id", "TransactionLineage"),
-        ("u128_truncation", "phase.staged_scientific.*.last_transaction_id", "TransactionLineage"),
-        ("scheduler_position", "phase.accepted_interval_count", "SchedulerPosition"),
-        ("day_index_width_substitution", "phase.day_index", "SchedulerPosition"),
-        ("provider_cursor_skip", "phase.ending_provider_cursor.next_day_index", "ProviderCursor"),
-        ("provider_cursor_rewind", "phase.ending_provider_cursor.next_day_index", "ProviderCursor"),
-        ("gsi_receipt", "phase.accepted_gsi_daily_receipt.day_index", "GsiReceipt"),
-        ("gsi_history_reorder", "phase.staged_gsi_ending_state.history_oldest_first", "GsiReceipt"),
-        ("heterogeneous_lane_gsi_receipt", "phase.validated_forcing_day_receipts[0].intervals[1].gsi_receipt_sha256", "HeterogeneousLaneGsiReceipt"),
-        ("forcing_receipt_cardinality", "phase.validated_forcing_day_receipts and intervals", "ForcingReceiptCardinality"),
-        ("destination_omission", "phase.validated_forcing_day_receipts[1]", "ForcingReceiptCardinality"),
-        ("interval_omission", "phase.validated_forcing_day_receipts[0].intervals[0]", "ForcingReceiptCardinality"),
-        ("interval_duplication", "phase.validated_forcing_day_receipts[0].intervals[0]", "ForcingReceiptCardinality"),
-        ("forcing_receipt_order", "phase.validated_forcing_day_receipts", "ForcingReceiptOrder"),
-        ("forcing_receipt_digest", "phase.validated_forcing_day_receipts[0].receipt_sha256", "ForcingReceiptDigest"),
-        ("carry_field_omission", "phase.validated_forcing_day_receipts[0].next_day_precipitation_carry", "MissingField"),
-        ("parcel_carry_omission", "phase.ending_provider_cursor.pending_carry[last] with cursor and outer digests recomputed", "ProviderCursor"),
-        ("v10_v9_projection", "phase.staged_scientific.vegetation_v10.state_sha256", "V10V9Projection"),
-        ("lse_v2_v1_projection", "phase.staged_scientific.lse_v2.state_sha256", "LseV2V1Projection"),
-        ("owner_validation", "phase.staged_scientific.biogeochemistry.layers[0].ammonium_n", "OwnerValidation"),
-        ("signed_zero_mutation", "phase.staged_scientific.direct_hydrology.lanes[0].area_m2", "OwnerValidation"),
-        ("unsupported_laned_active", "phase.staged_scientific.direct_hydrology.runtime_posture", "UnsupportedLanedActive"),
-        ("canonical_order", "phase.staged_scientific.biogeochemistry.layers", "CanonicalOrder"),
-        ("owner_omission", "phase.staged_scientific.direct_hydrology", "OwnerOmission"),
-        ("staged_hydrology_omission", "phase.staged_scientific.direct_hydrology", "OwnerOmission"),
-        ("committed_staged_scientific_substitution", "phase.staged_scientific", "TransactionLineage"),
-        ("staged_surface_lineage_omission", "phase.staged_scientific.direct_hydrology.surface_liquid_owned_state", "TransactionLineage"),
-        ("child4_retained_liquid", "phase.staged_scientific.direct_hydrology.lanes[0].winter_column.snow.liquid_water_retained_m", "Child4RetainedLiquid"),
-        ("groundwater_posture", "phase.staged_scientific.direct_hydrology.groundwater.storage_m3", "GroundwaterPosture"),
-        ("groundwater_total_area", "phase.staged_scientific.direct_hydrology.groundwater.initialized_area_m2", "GroundwaterTotalArea"),
-        ("erosion_publication", "phase.staged_scientific.direct_hydrology.lanes[0].erosion_downstream_operands.publication", "ErosionPublication"),
-        ("surface_liquid_configuration", "phase.staged_scientific.direct_hydrology.surface_liquid_owned_state.configuration_sha256", "SurfaceLiquidConfiguration"),
+        (
+            "configuration_identity",
+            "phase.committed_day_beginning.gsi_configuration.configuration_sha256",
+            "ConfigurationIdentity",
+        ),
+        (
+            "owner_identity",
+            "phase.committed_day_beginning.gsi_configuration.owner_id",
+            "OwnerIdentity",
+        ),
+        (
+            "transaction_lineage",
+            "phase.staged_scientific.biogeochemistry.last_transaction_id",
+            "TransactionLineage",
+        ),
+        (
+            "u128_truncation",
+            "phase.staged_scientific.*.last_transaction_id",
+            "TransactionLineage",
+        ),
+        (
+            "scheduler_position",
+            "phase.accepted_interval_count",
+            "SchedulerPosition",
+        ),
+        (
+            "continuation_template_day",
+            "phase.continuation_template.day_index",
+            "SchedulerPosition",
+        ),
+        (
+            "day_index_width_substitution",
+            "phase.day_index",
+            "SchedulerPosition",
+        ),
+        (
+            "provider_cursor_skip",
+            "phase.ending_provider_cursor.next_day_index",
+            "ProviderCursor",
+        ),
+        (
+            "provider_cursor_rewind",
+            "phase.ending_provider_cursor.next_day_index",
+            "ProviderCursor",
+        ),
+        (
+            "gsi_receipt",
+            "phase.accepted_gsi_daily_receipt.day_index",
+            "GsiReceipt",
+        ),
+        (
+            "gsi_history_reorder",
+            "phase.staged_gsi_ending_state.history_oldest_first",
+            "GsiReceipt",
+        ),
+        (
+            "heterogeneous_lane_gsi_receipt",
+            "phase.validated_forcing_day_receipts[0].intervals[1].gsi_receipt_sha256",
+            "HeterogeneousLaneGsiReceipt",
+        ),
+        (
+            "forcing_receipt_cardinality",
+            "phase.validated_forcing_day_receipts and intervals",
+            "ForcingReceiptCardinality",
+        ),
+        (
+            "destination_omission",
+            "phase.validated_forcing_day_receipts[1]",
+            "ForcingReceiptCardinality",
+        ),
+        (
+            "interval_omission",
+            "phase.validated_forcing_day_receipts[0].intervals[0]",
+            "ForcingReceiptCardinality",
+        ),
+        (
+            "interval_duplication",
+            "phase.validated_forcing_day_receipts[0].intervals[0]",
+            "ForcingReceiptCardinality",
+        ),
+        (
+            "forcing_receipt_order",
+            "phase.validated_forcing_day_receipts",
+            "ForcingReceiptOrder",
+        ),
+        (
+            "forcing_receipt_digest",
+            "phase.validated_forcing_day_receipts[0].receipt_sha256",
+            "ForcingReceiptDigest",
+        ),
+        (
+            "carry_field_omission",
+            "phase.validated_forcing_day_receipts[0].next_day_precipitation_carry",
+            "MissingField",
+        ),
+        (
+            "parcel_carry_omission",
+            "phase.ending_provider_cursor.pending_carry[last] with cursor and outer digests recomputed",
+            "ProviderCursor",
+        ),
+        (
+            "v10_v9_projection",
+            "phase.staged_scientific.vegetation_v10.state_sha256",
+            "V10V9Projection",
+        ),
+        (
+            "lse_v2_v1_projection",
+            "phase.staged_scientific.lse_v2.state_sha256",
+            "LseV2V1Projection",
+        ),
+        (
+            "owner_validation",
+            "phase.staged_scientific.biogeochemistry.layers[0].ammonium_n",
+            "OwnerValidation",
+        ),
+        (
+            "soil_nested_digest",
+            "phase.staged_scientific.soil_thermal.state_sha256 with restart payload resealed",
+            "OwnerValidation",
+        ),
+        (
+            "signed_zero_mutation",
+            "phase.staged_scientific.direct_hydrology.lanes[0].area_m2",
+            "OwnerValidation",
+        ),
+        (
+            "unsupported_laned_active",
+            "phase.staged_scientific.direct_hydrology.runtime_posture",
+            "UnsupportedLanedActive",
+        ),
+        (
+            "canonical_order",
+            "phase.staged_scientific.biogeochemistry.layers",
+            "CanonicalOrder",
+        ),
+        (
+            "owner_omission",
+            "phase.staged_scientific.direct_hydrology",
+            "OwnerOmission",
+        ),
+        (
+            "staged_hydrology_omission",
+            "phase.staged_scientific.direct_hydrology",
+            "OwnerOmission",
+        ),
+        (
+            "committed_staged_scientific_substitution",
+            "phase.staged_scientific",
+            "TransactionLineage",
+        ),
+        (
+            "staged_surface_lineage_omission",
+            "phase.staged_scientific.direct_hydrology.surface_liquid_owned_state",
+            "TransactionLineage",
+        ),
+        (
+            "child4_retained_liquid",
+            "phase.staged_scientific.direct_hydrology.lanes[0].winter_column.snow.liquid_water_retained_m",
+            "Child4RetainedLiquid",
+        ),
+        (
+            "groundwater_posture",
+            "phase.staged_scientific.direct_hydrology.groundwater.storage_m3",
+            "GroundwaterPosture",
+        ),
+        (
+            "groundwater_total_area",
+            "phase.staged_scientific.direct_hydrology.groundwater.initialized_area_m2",
+            "GroundwaterTotalArea",
+        ),
+        (
+            "erosion_publication",
+            "phase.staged_scientific.direct_hydrology.lanes[0].erosion_downstream_operands.publication",
+            "ErosionPublication",
+        ),
+        (
+            "surface_liquid_configuration",
+            "phase.staged_scientific.direct_hydrology.surface_liquid_owned_state.configuration_sha256",
+            "SurfaceLiquidConfiguration",
+        ),
     ];
-    let mut output = String::from("# Restart V1 executable poison matrix\n\nGenerated from the checkpoint admission test inventory. Every row executes in `complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes`; semantic DTO mutations are resealed before admission.\n\n| category | test function | mutated path | expected error | observed error | live bytes unchanged |\n|---|---|---|---|---|---|\n");
+    let mut output = String::from(
+        "# Restart V1 executable poison matrix\n\nGenerated from the checkpoint admission test inventory. Every row executes in `complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes`; semantic DTO mutations are resealed before admission.\n\n| category | test function | mutated path | expected error | observed error | live bytes unchanged |\n|---|---|---|---|---|---|\n",
+    );
     for (category, path, error) in rows {
         output.push_str(&format!("| `{category}` | `complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes` | `{path}` | `{error}` | `{error}` | yes, exact canonical bytes |\n"));
     }

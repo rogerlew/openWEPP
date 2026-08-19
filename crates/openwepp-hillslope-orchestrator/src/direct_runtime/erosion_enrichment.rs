@@ -35,6 +35,7 @@ const SSA_ORG: f64 = 1000.0;
 
 /// Static per-quantum enrichment operands (assembled with the quantum).
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct Wave1EnrichmentInputs {
     /// The five classes with mineralogy (`prtcmp` per-OFE lineage).
     pub classes: [ErosionParticleClass; CLASS_COUNT],

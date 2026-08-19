@@ -276,8 +276,7 @@ fn generated_schema_accepts_every_frozen_vector_and_rejects_wire_bounds() {
     // Topology-bound owner cardinalities are not inferred from the four
     // examples. Typed admission, not the wire schema, validates their joins.
     let mut flexible = value("checkpoint-in-progress-vector.json");
-    let lane = flexible["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]
-        .clone();
+    let lane = flexible["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0].clone();
     flexible["phase"]["staged_scientific"]["direct_hydrology"]["lanes"]
         .as_array_mut()
         .unwrap()
@@ -290,8 +289,8 @@ fn generated_schema_accepts_every_frozen_vector_and_rejects_wire_bounds() {
     assert!(validator.is_valid(&flexible));
 
     let hex = Value::from("0x3ff0000000000000");
-    let groundwater = &mut flexible["phase"]["staged_scientific"]["direct_hydrology"]
-        ["groundwater"];
+    let groundwater =
+        &mut flexible["phase"]["staged_scientific"]["direct_hydrology"]["groundwater"];
     groundwater["authority"] = serde_json::json!({
         "authority":"linear_reservoir",
         "initial_storage_depth_m":hex,
@@ -309,9 +308,15 @@ fn generated_schema_accepts_every_frozen_vector_and_rejects_wire_bounds() {
         serde_json::json!({"year":2026,"ordinal_day":231});
     assert!(validator.is_valid(&later_day));
 
+    let mut legal_optionals = value("checkpoint-in-progress-vector.json");
+    legal_optionals["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]["erosion_downstream_operands"]
+        ["publication"]["peak_runoff_rate_m_s"] = Value::Null;
+    legal_optionals["phase"]["staged_scientific"]["direct_hydrology"]["surface_liquid_owned_state"]
+        ["continuations"][0]["next_interval_index"] = Value::from(48);
+    assert!(validator.is_valid(&legal_optionals));
+
     let mut typed_optionals = value("checkpoint-in-progress-vector.json");
-    let lane = &mut typed_optionals["phase"]["staged_scientific"]["direct_hydrology"]
-        ["lanes"][0];
+    let lane = &mut typed_optionals["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0];
     lane["evapotranspiration_stage_state"] = serde_json::json!({
         "s1_m":"0x0000000000000000","s2_m":"0x0000000000000000",
         "threshold_m":"0x3ff0000000000000","counter":"0x0000000000000000"
@@ -321,19 +326,19 @@ fn generated_schema_accepts_every_frozen_vector_and_rejects_wire_bounds() {
         "accumulated_positive_temperature_c_day":"0x0000000000000000"
     });
     assert!(validator.is_valid(&typed_optionals));
-    typed_optionals["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]
-        ["evapotranspiration_stage_state"] = serde_json::json!({});
+    typed_optionals["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]["evapotranspiration_stage_state"] =
+        serde_json::json!({});
     assert!(!validator.is_valid(&typed_optionals));
     let mut nested_arrays = value("checkpoint-in-progress-vector.json");
-    nested_arrays["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]
-        ["winter_column"]["snow"]["layers"] = serde_json::json!([{}]);
+    nested_arrays["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]["winter_column"]
+        ["snow"]["layers"] = serde_json::json!([{}]);
     assert!(!validator.is_valid(&nested_arrays));
-    nested_arrays["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]
-        ["winter_column"]["snow"]["layers"] = serde_json::json!([{
-            "mass_swe_m":"0x0000000000000000","thickness_m":"0x0000000000000000",
-            "density_kg_m3":"0x0000000000000000","settle_day_count":"0x0000000000000000",
-            "temperature_c":"0x0000000000000000","liquid_water_m":"0x0000000000000000",
-            "cold_content_j_m2":"0x0000000000000000","refrozen_liquid_m":"0x0000000000000000"
-        }]);
+    nested_arrays["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]["winter_column"]
+        ["snow"]["layers"] = serde_json::json!([{
+        "mass_swe_m":"0x0000000000000000","thickness_m":"0x0000000000000000",
+        "density_kg_m3":"0x0000000000000000","settle_day_count":"0x0000000000000000",
+        "temperature_c":"0x0000000000000000","liquid_water_m":"0x0000000000000000",
+        "cold_content_j_m2":"0x0000000000000000","refrozen_liquid_m":"0x0000000000000000"
+    }]);
     assert!(validator.is_valid(&nested_arrays));
 }

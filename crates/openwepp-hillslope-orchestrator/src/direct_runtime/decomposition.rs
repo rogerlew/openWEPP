@@ -341,6 +341,11 @@ fn validate_unit_fraction(field: &'static str, value: f64) -> Result<(), DirectR
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    feature = "restart-authority-evidence",
+    serde(rename_all = "snake_case")
+)]
 pub enum DirectDecompositionActiveContext {
     Inactive,
     AnnualOrFallow {
@@ -358,6 +363,11 @@ pub enum DirectDecompositionActiveContext {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    feature = "restart-authority-evidence",
+    serde(rename_all = "snake_case")
+)]
 pub enum DirectDecompositionAction {
     None,
     Herbicide,
@@ -369,6 +379,7 @@ pub enum DirectDecompositionAction {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectDecompositionInputs {
     pub active_context: DirectDecompositionActiveContext,
     pub active_action: DirectDecompositionAction,
@@ -797,6 +808,7 @@ pub struct DirectDecompositionSpanReport {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectResiduePartitionInputs {
     pub standing_residue_kg_m2: f64,
     pub flat_residue_offset_kg_m2: f64,

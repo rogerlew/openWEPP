@@ -23,6 +23,7 @@ impl DirectSnowDiagnosticCapture {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectSnowSolidToLiquidLedger {
     pub raw_signed_melt_m: f64,
     pub redistributed_positive_melt_m: f64,
@@ -32,6 +33,7 @@ pub struct DirectSnowSolidToLiquidLedger {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectSnowLiquidDispositionLedger {
     pub incoming_liquid_m: f64,
     pub routed_liquid_m: f64,
@@ -41,10 +43,29 @@ pub struct DirectSnowLiquidDispositionLedger {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectSnowStage3Outcome {
     pub enabled: bool,
+    #[cfg_attr(
+        feature = "restart-authority-evidence",
+        serde(serialize_with = "serialize_optional_temperature_celsius")
+    )]
     pub meltwater_temperature_c: Option<TemperatureCelsius>,
     pub sublimation_m: f64,
+}
+
+#[cfg(feature = "restart-authority-evidence")]
+fn serialize_optional_temperature_celsius<S>(
+    value: &Option<TemperatureCelsius>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    match value {
+        Some(value) => serializer.serialize_some(&value.as_celsius()),
+        None => serializer.serialize_none(),
+    }
 }
 
 /// Immutable, linked view of the two durable snow mass-transition ledgers and
@@ -55,6 +76,7 @@ pub struct DirectSnowStage3Outcome {
 /// duplicated upstream handoff / downstream incoming operands from diverging
 /// after the authoritative solve.
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectSnowMassTransitionLedgers {
     solid_to_liquid: DirectSnowSolidToLiquidLedger,
     liquid_disposition: DirectSnowLiquidDispositionLedger,

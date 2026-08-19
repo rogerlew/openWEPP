@@ -700,7 +700,9 @@ impl DirectV10RealConsumerShadow {
         &mut self,
         accepted_interval_count: u64,
     ) -> Result<(), DirectV10RealConsumerError> {
-        if accepted_interval_count == 0 || accepted_interval_count >= INTERVALS_PER_DAY as u64 {
+        if accepted_interval_count == 0
+            || accepted_interval_count > u64::from(u32::MAX) * INTERVALS_PER_DAY as u64
+        {
             return Err(DirectV10RealConsumerError::Runtime(
                 DirectV9RealConsumerError::Unsupported("restart evidence scheduler position"),
             ));
@@ -739,9 +741,16 @@ impl DirectV10RealConsumerShadow {
             .clone_from(&receipt.receipt_sha256);
         let projected =
             candidate.project_repository_forcing_receipts(prepared.forcing_receipts(), template)?;
+        let day_index =
+            usize::try_from(candidate.inner.accepted_interval_count / INTERVALS_PER_DAY as u64)
+                .map_err(|_| {
+                    DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(
+                        "restart evidence day index overflow",
+                    ))
+                })?;
         for interval_index in start_interval..end_interval_exclusive {
             candidate.inner.execute_interval(
-                0,
+                day_index,
                 interval_index,
                 &projected.intervals[interval_index],
             )?;
@@ -1709,6 +1718,56 @@ fn digest_soil_snapshot(
         transaction_id,
         ofes,
     ))
+}
+
+/// Verify both nested soil-owner digests using the real consumer's exact
+/// digest recipes. This is exposed only to the package-local authority
+/// evidence feature.
+#[cfg(feature = "restart-authority-evidence")]
+pub fn restart_authority_validate_soil_thermal_digests(
+    snapshot: &SoilThermalSnapshot,
+) -> Result<(), DirectV9RealConsumerError> {
+    let transaction_id =
+        snapshot
+            .last_accepted_transaction_id
+            .ok_or(DirectV9RealConsumerError::Identity(
+                "soil-thermal transaction lineage",
+            ))?;
+    let state = digest_soil_state(&snapshot.owner_id, transaction_id, &snapshot.ofes)?;
+    let outer = digest_soil_snapshot(
+        &snapshot.owner_id,
+        &snapshot.configuration_sha256,
+        &state,
+        transaction_id,
+        &snapshot.ofes,
+    )?;
+    if state != snapshot.state_sha256 || outer != snapshot.snapshot_sha256 {
+        return Err(DirectV9RealConsumerError::Identity(
+            "soil-thermal nested digest",
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(feature = "restart-authority-evidence")]
+pub fn restart_authority_seal_soil_thermal_digests(
+    snapshot: &mut SoilThermalSnapshot,
+) -> Result<(), DirectV9RealConsumerError> {
+    let transaction_id =
+        snapshot
+            .last_accepted_transaction_id
+            .ok_or(DirectV9RealConsumerError::Identity(
+                "soil-thermal transaction lineage",
+            ))?;
+    snapshot.state_sha256 = digest_soil_state(&snapshot.owner_id, transaction_id, &snapshot.ofes)?;
+    snapshot.snapshot_sha256 = digest_soil_snapshot(
+        &snapshot.owner_id,
+        &snapshot.configuration_sha256,
+        &snapshot.state_sha256,
+        transaction_id,
+        &snapshot.ofes,
+    )?;
+    Ok(())
 }
 
 fn digest_serialized<T: Serialize>(value: &T) -> Result<Sha256Digest, DirectV9RealConsumerError> {

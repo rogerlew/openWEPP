@@ -243,6 +243,11 @@ enum DirectGrowthManagementClass {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    feature = "restart-authority-evidence",
+    serde(rename_all = "snake_case")
+)]
 pub enum DirectGrowthActiveContext {
     Inactive,
     AnnualOrFallow {
@@ -286,6 +291,11 @@ impl DirectGrowthActiveContext {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
+#[cfg_attr(
+    feature = "restart-authority-evidence",
+    serde(rename_all = "snake_case")
+)]
 pub enum DirectGrowthAction {
     None,
     PrePlantSkip,
@@ -323,6 +333,7 @@ impl DirectGrowthAction {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectGrowthStateSurface {
     pub sumgdd: f64,
     pub live_biomass_kg_m2: f64,
@@ -370,6 +381,7 @@ impl DirectGrowthStateSurface {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "restart-authority-evidence", derive(serde::Serialize))]
 pub struct DirectGrowthInputs {
     pub active_context: DirectGrowthActiveContext,
     pub active_action: DirectGrowthAction,

@@ -328,6 +328,15 @@ impl StratumStateRestartV1 {
     fn restore(&self) -> Result<(StratumId, StratumSharedState), ScientificOwnerRestartError> {
         let id = StratumId::try_new(self.stratum_id.clone())
             .map_err(|_| ScientificOwnerRestartError::Identity("stratum"))?;
+        if self
+            .tissues
+            .windows(2)
+            .any(|pair| pair[0].tissue >= pair[1].tissue)
+        {
+            return Err(ScientificOwnerRestartError::Ordering(
+                "tissue canonical order",
+            ));
+        }
         let tissues = self
             .tissues
             .iter()
@@ -528,14 +537,13 @@ impl VegetationV10StateRestartV1 {
         if self.owner_id != expected_owner_id.as_str() {
             return Err(ScientificOwnerRestartError::Identity("vegetation owner"));
         }
-        if self.strata.windows(2).any(|pair| pair[0].stratum_id >= pair[1].stratum_id)
-            || self
-                .occupancies
-                .windows(2)
-                .any(|pair| {
-                    (&pair[0].stratum_id, &pair[0].tile_id)
-                        >= (&pair[1].stratum_id, &pair[1].tile_id)
-                })
+        if self
+            .strata
+            .windows(2)
+            .any(|pair| pair[0].stratum_id >= pair[1].stratum_id)
+            || self.occupancies.windows(2).any(|pair| {
+                (&pair[0].stratum_id, &pair[0].tile_id) >= (&pair[1].stratum_id, &pair[1].tile_id)
+            })
             || self
                 .tile_canopy_air
                 .windows(2)
@@ -767,7 +775,9 @@ impl SoilThermalStateRestartV1 {
         if self.owner_id != expected_owner_id.as_str()
             || self.configuration_sha256.as_str() != expected_configuration_sha256.as_str()
         {
-            return Err(ScientificOwnerRestartError::Identity("soil thermal owner/configuration"));
+            return Err(ScientificOwnerRestartError::Identity(
+                "soil thermal owner/configuration",
+            ));
         }
         if self.restart_payload_sha256.as_str() != self.compute_restart_sha256()? {
             return Err(ScientificOwnerRestartError::Identity(
@@ -810,6 +820,8 @@ impl SoilThermalStateRestartV1 {
                 })
                 .collect::<Result<_, ScientificOwnerRestartError>>()?,
         };
+        openwepp_hillslope_orchestrator::v9_real_consumer_shadow::restart_authority_validate_soil_thermal_digests(&v)
+            .map_err(|_| ScientificOwnerRestartError::Identity("soil thermal nested digest"))?;
         v.validate()
             .map_err(|_| ScientificOwnerRestartError::Domain("soil thermal"))?;
         Ok(v)
@@ -825,6 +837,12 @@ impl SoilThermalStateRestartV1 {
             &self.ofes,
         ))
         .map_err(|_| ScientificOwnerRestartError::Identity("soil thermal restart digest"))
+    }
+
+    pub fn seal_restart_payload(&mut self) -> Result<(), ScientificOwnerRestartError> {
+        self.restart_payload_sha256 = Sha256Hex::try_new(self.compute_restart_sha256()?)
+            .map_err(|_| ScientificOwnerRestartError::Identity("soil thermal restart digest"))?;
+        Ok(())
     }
 }
 
