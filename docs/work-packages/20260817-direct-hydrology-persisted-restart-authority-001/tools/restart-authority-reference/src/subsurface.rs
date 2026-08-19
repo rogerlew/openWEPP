@@ -23,12 +23,6 @@ fn nonnegative(field: &'static str, v: &HexF64) -> Result<f64, SubsurfaceRestart
         .then_some(x)
         .ok_or(SubsurfaceRestartError::Nonnegative { field })
 }
-fn fraction(field: &'static str, v: &HexF64) -> Result<f64, SubsurfaceRestartError> {
-    let x = v.to_f64();
-    (x.is_finite() && (0.0..=1.0).contains(&x))
-        .then_some(x)
-        .ok_or(SubsurfaceRestartError::Fraction { field })
-}
 fn positive(field: &'static str, v: &HexF64) -> Result<f64, SubsurfaceRestartError> {
     let x = v.to_f64();
     (x.is_finite() && x > 0.0)
@@ -97,7 +91,7 @@ impl DirectSubsurfaceLayerRestartV1 {
             upper_limit_m: positive("upper_limit_m", &self.upper_limit_m)?,
             conductivity_m_s: positive("conductivity_m_s", &self.conductivity_m_s)?,
             depth_m: positive("depth_m", &self.depth_m)?,
-            residual_theta: fraction("residual_theta", &self.residual_theta)?,
+            residual_theta: nonnegative("residual_theta", &self.residual_theta)?,
             frozen_depth_m: nonnegative("frozen_depth_m", &self.frozen_depth_m)?,
             frozen_water_m: nonnegative("frozen_water_m", &self.frozen_water_m)?,
             porosity: positive_fraction("porosity", &self.porosity)?,

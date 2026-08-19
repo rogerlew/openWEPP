@@ -15,6 +15,8 @@ pub enum WirePrimitiveError {
     AcceptedIntervalCount { value: u64 },
     #[error("{kind} count must be nonzero")]
     ZeroCount { kind: &'static str },
+    #[error("lane identity must be nonzero")]
+    ZeroLaneIdentity,
 }
 
 fn validate_hex(value: &str, digits: usize, kind: &'static str) -> Result<(), WirePrimitiveError> {
@@ -120,7 +122,27 @@ macro_rules! integer_wire {
     };
 }
 integer_wire!(WireDayIndex, u64);
-integer_wire!(WireLaneId, u32);
+integer_wire!(OptionalLaneLink, u32);
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(transparent)]
+pub struct WireLaneId(u32);
+impl WireLaneId {
+    pub fn try_new(value: u32) -> Result<Self, WirePrimitiveError> {
+        (value != 0)
+            .then_some(Self(value))
+            .ok_or(WirePrimitiveError::ZeroLaneIdentity)
+    }
+    #[must_use]
+    pub const fn get(self) -> u32 {
+        self.0
+    }
+}
+impl<'de> Deserialize<'de> for WireLaneId {
+    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        Self::try_new(u32::deserialize(d)?).map_err(serde::de::Error::custom)
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(transparent)]
@@ -259,6 +281,9 @@ mod tests {
         assert!(AcceptedIntervalCount::try_new(MAX_ACCEPTED_INTERVAL_COUNT + 1).is_err());
         assert!(serde_json::from_str::<DestinationCount>("0").is_err());
         assert!(serde_json::from_str::<LaneCount>("4294967296").is_err());
+        assert!(serde_json::from_str::<WireLaneId>("0").is_err());
+        assert_eq!(serde_json::from_str::<WireLaneId>("1").unwrap().get(), 1);
+        assert_eq!(serde_json::from_str::<OptionalLaneLink>("0").unwrap().0, 0);
         assert!(serde_json::from_str::<WireDayIndex>("-1").is_err());
     }
 }
