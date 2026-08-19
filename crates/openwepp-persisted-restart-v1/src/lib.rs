@@ -11,6 +11,7 @@
 #![allow(
     clippy::cast_lossless,
     clippy::cast_precision_loss,
+    clippy::cast_sign_loss,
     clippy::implicit_clone,
     clippy::large_enum_variant,
     clippy::missing_errors_doc,

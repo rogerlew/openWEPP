@@ -1,6 +1,11 @@
 //! Exact-owner rollback tests for `SC-LANDSURFACEENERGY-001` and
 //! `SC-SURFACELIQUID-001`.
 #![cfg_attr(not(test), allow(dead_code, unused_imports))]
+#![allow(
+    clippy::missing_panics_doc,
+    clippy::must_use_candidate,
+    clippy::wildcard_imports
+)]
 
 use std::collections::BTreeMap;
 use std::fs;

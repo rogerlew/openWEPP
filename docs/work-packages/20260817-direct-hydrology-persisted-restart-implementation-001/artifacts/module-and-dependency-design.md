@@ -1,5 +1,17 @@
 # Module and dependency design
 
-The orchestrator owns restart composition because it already owns the direct frame, V10/LSE-V2 shadow, GSI/provider owners, soil thermal, BGC, and scheduler position. Production modules depend only on workspace crates and never on `docs/work-packages`.
+The production implementation is the bounded workspace crate
+`openwepp-persisted-restart-v1`. This avoids an orchestrator dependency cycle:
+the crate depends one-way on the orchestrator and scientific-owner crates, and
+no existing owner crate depends on it. It composes but does not duplicate owner
+authority. The released package remains outside the production dependency
+graph.
 
-Wire DTOs and canonical admission are public only where callers must persist or admit bytes; owner-specific projectors and static-context construction remain sealed. Admission constructs isolated owners, performs all fallible checks, and exposes one atomic replacement boundary. Failure precedence follows the released parser, outer digest, identities, phase, nested owners, joins, reconstruction, then installation order. No new file may reach 3000 lines; 2000 lines triggers a split or recorded WARN rationale.
+Wire DTOs, canonical admission, explicit projection, and the default-off host
+are public where a persistence caller needs them. Orchestrator accessors are
+sealed behind its nondefault `persisted-restart-v1` feature. Admission
+constructs isolated owners, performs all fallible checks, and exposes one
+atomic replacement boundary. Failure precedence follows released parse,
+canonical bytes, outer digest, identities, phase, nested owners, joins,
+reconstruction, then installation order. Evidence fixtures are separately
+feature-gated. No new file reaches 2,000 lines.
