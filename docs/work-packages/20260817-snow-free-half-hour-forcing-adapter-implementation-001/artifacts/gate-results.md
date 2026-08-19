@@ -51,5 +51,7 @@ Fresh exact consumer evidence:
 - actual sealed realistic positive-radiation provider day entering the same
   public transaction: PASS, 48/48 including respiration-dominated interval 8.
 
-Live GSI custody and provider-cursor persisted atomic restart remain
-load-bearing HOLDs. No terminal PASS is claimed.
+Live GSI custody and provider-cursor persistence are now implemented by the
+released default-off restart capability. Exact-current forcing contract 7/7,
+checkpoint codec 2/2, and orchestrator warnings-denied Clippy PASS on
+`94d79adaa`. Terminal review is active; no production activation is claimed.

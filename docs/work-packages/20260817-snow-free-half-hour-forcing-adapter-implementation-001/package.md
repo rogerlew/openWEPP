@@ -1,6 +1,6 @@
 # Implement Snow-Free Half-Hour Forcing Adapter
 
-Status: `IMPLEMENTATION PHYSICS PASS / OWNERSHIP-RESTART HOLD`
+Status: `executing / physics PASS / stateful GSI, cursor and persisted restart integration active`
 
 Date: `2026-08-17`
 
