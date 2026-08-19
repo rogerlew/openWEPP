@@ -470,6 +470,7 @@ pub struct TileCanopyAirRestartV1 {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct VegetationV10StateRestartV1 {
+    pub owner_id: String,
     pub model_definition_sha256: Sha256Hex,
     pub configuration_sha256: Sha256Hex,
     pub state_sha256: Sha256Hex,
@@ -482,11 +483,13 @@ impl VegetationV10StateRestartV1 {
     pub fn project(
         value: &V10CoupledOwnedState,
         configuration: &VegetationConfiguration,
+        owner_id: &ResourceOwnerId,
     ) -> Result<Self, ScientificOwnerRestartError> {
         value
             .validate(configuration)
             .map_err(|_| ScientificOwnerRestartError::Identity("vegetation V10"))?;
         Ok(Self {
+            owner_id: owner_id.as_str().to_owned(),
             model_definition_sha256: sha(&value.0.model_definition_sha256)?,
             configuration_sha256: sha(&value.0.configuration_sha256)?,
             state_sha256: sha(&value.0.state_sha256)?,
@@ -520,7 +523,11 @@ impl VegetationV10StateRestartV1 {
     pub fn restore(
         &self,
         configuration: &VegetationConfiguration,
+        expected_owner_id: &ResourceOwnerId,
     ) -> Result<V10CoupledOwnedState, ScientificOwnerRestartError> {
+        if self.owner_id != expected_owner_id.as_str() {
+            return Err(ScientificOwnerRestartError::Identity("vegetation owner"));
+        }
         if self.strata.windows(2).any(|pair| pair[0].stratum_id >= pair[1].stratum_id)
             || self
                 .occupancies
@@ -752,7 +759,16 @@ impl SoilThermalStateRestartV1 {
             Sha256Hex::try_new(projected.compute_restart_sha256()?).unwrap();
         Ok(projected)
     }
-    pub fn restore(&self) -> Result<SoilThermalSnapshot, ScientificOwnerRestartError> {
+    pub fn restore(
+        &self,
+        expected_owner_id: &ResourceOwnerId,
+        expected_configuration_sha256: &Sha256Digest,
+    ) -> Result<SoilThermalSnapshot, ScientificOwnerRestartError> {
+        if self.owner_id != expected_owner_id.as_str()
+            || self.configuration_sha256.as_str() != expected_configuration_sha256.as_str()
+        {
+            return Err(ScientificOwnerRestartError::Identity("soil thermal owner/configuration"));
+        }
         if self.restart_payload_sha256.as_str() != self.compute_restart_sha256()? {
             return Err(ScientificOwnerRestartError::Identity(
                 "soil thermal restart digest",

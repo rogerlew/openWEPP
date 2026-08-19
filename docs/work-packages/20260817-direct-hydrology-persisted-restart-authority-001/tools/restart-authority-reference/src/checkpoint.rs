@@ -153,6 +153,9 @@ pub struct ExpectedRestartStaticContext<'a> {
     pub run_identity_sha256: &'a Sha256Hex,
     pub topology_sha256: &'a Sha256Hex,
     pub vegetation_configuration: &'a VegetationConfiguration,
+    pub vegetation_owner_id: &'a openwepp_kernel_contract::ResourceOwnerId,
+    pub soil_thermal_owner_id: &'a openwepp_kernel_contract::ResourceOwnerId,
+    pub soil_thermal_configuration_sha256: &'a openwepp_land_surface_energy::Sha256Digest,
     pub lse_configuration: &'a LandSurfaceEnergyConfiguration,
     pub surface_liquid_configuration: &'a DirectSurfaceLiquidConfiguration,
     pub gsi_configuration: &'a DirectGsiOwnerConfigurationV1,
@@ -185,6 +188,7 @@ pub enum IsolatedRestoredCheckpointV1 {
     InProgressDay {
         day_index: u64,
         next_interval_index: u8,
+        accepted_interval_count: u64,
         committed_day_beginning: RestoredCompleteCommittedOwnerStateV1,
         staged_scientific: RestoredScientificOwnerStateSetV1,
         staged_gsi_ending_state: DirectGsiOwnerStateV1,
@@ -222,6 +226,42 @@ impl DirectV10RealConsumerCheckpointV1 {
             } => committed_day_beginning.clone(),
         }
     }
+    pub fn abort_owner_store_to_day_beginning(
+        &self,
+        live: &mut CompleteCommittedOwnerStateV1,
+    ) {
+        *live = self.abort_to_day_beginning();
+    }
+}
+
+#[cfg_attr(not(test), allow(dead_code))]
+pub fn admit_checkpoint_into_owner_store_v1(
+    bytes: &[u8],
+    context: &ExpectedRestartStaticContext<'_>,
+    live: &mut CompleteCommittedOwnerStateV1,
+) -> Result<IsolatedRestoredCheckpointV1, RestartAdmissionFailureV1> {
+    let admitted = admit_checkpoint_v1(bytes, context)?;
+    let checkpoint: DirectV10RealConsumerCheckpointV1 =
+        serde_json::from_slice(bytes).map_err(|_| RestartAdmissionFailureV1::Schema)?;
+    let replacement = match checkpoint.phase {
+        DirectV10CheckpointPhaseV1::BetweenDays { committed, .. } => committed,
+        DirectV10CheckpointPhaseV1::InProgressDay {
+            committed_day_beginning,
+            staged_scientific,
+            staged_gsi_ending_state,
+            ending_provider_cursor,
+            ..
+        } => CompleteCommittedOwnerStateV1 {
+            gsi_configuration: committed_day_beginning.gsi_configuration,
+            static_forcing_configuration: committed_day_beginning.static_forcing_configuration,
+            surface_liquid_configuration: committed_day_beginning.surface_liquid_configuration,
+            gsi_state: staged_gsi_ending_state,
+            provider_cursor: ending_provider_cursor,
+            scientific: staged_scientific,
+        },
+    };
+    *live = replacement;
+    Ok(admitted)
 }
 
 pub fn admit_checkpoint_v1(
@@ -382,6 +422,7 @@ pub fn admit_checkpoint_v1(
             Ok(IsolatedRestoredCheckpointV1::InProgressDay {
                 day_index: day_index.0,
                 next_interval_index: next_interval_index.get(),
+                accepted_interval_count: accepted_interval_count.get(),
                 committed_day_beginning: committed,
                 staged_scientific: restore_scientific(staged_scientific, context)?,
                 staged_gsi_ending_state: staged_gsi_ending_state
@@ -445,6 +486,9 @@ fn restore_scientific(
     value: &ScientificOwnerStateSetV1,
     context: &ExpectedRestartStaticContext<'_>,
 ) -> Result<RestoredScientificOwnerStateSetV1, RestartAdmissionFailureV1> {
+    if value.vegetation_v10.owner_id != context.vegetation_owner_id.as_str() {
+        return Err(RestartAdmissionFailureV1::OwnerIdentity);
+    }
     if value
         .direct_hydrology
         .surface_liquid_owned_state
@@ -466,7 +510,7 @@ fn restore_scientific(
     Ok(RestoredScientificOwnerStateSetV1 {
         vegetation_v10: value
             .vegetation_v10
-            .restore(context.vegetation_configuration)
+            .restore(context.vegetation_configuration, context.vegetation_owner_id)
             .map_err(|_| RestartAdmissionFailureV1::V10V9Projection)?,
         lse_v2: value
             .lse_v2
@@ -478,7 +522,10 @@ fn restore_scientific(
             .map_err(classify_hydrology)?,
         soil_thermal: value
             .soil_thermal
-            .restore()
+            .restore(
+                context.soil_thermal_owner_id,
+                context.soil_thermal_configuration_sha256,
+            )
             .map_err(|_| RestartAdmissionFailureV1::OwnerValidation)?,
         biogeochemistry: value.biogeochemistry.restore().map_err(|error| {
             if matches!(error, crate::ScientificOwnerRestartError::Ordering(_)) {
@@ -528,19 +575,22 @@ fn require_lineage(
             .map(crate::HexU128::to_u128)
             != Some(expected)
         || value.biogeochemistry.last_transaction_id.to_u128() != expected
-        || required.is_some_and(|_| value
-            .direct_hydrology
-            .surface_liquid_owned_state
-            .as_deref()
-            .is_some_and(|state| {
-                state.continuations.iter().any(|continuation| {
-                    continuation
-                        .last_accepted_transaction_id
-                        .as_ref()
-                        .map(crate::HexU128::to_u128)
-                        != Some(expected)
+        || required.is_some_and(|_| {
+            value
+                .direct_hydrology
+                .surface_liquid_owned_state
+                .as_deref()
+                .is_none_or(|state| {
+                    state.continuations.is_empty()
+                        || state.continuations.iter().any(|continuation| {
+                            continuation
+                                .last_accepted_transaction_id
+                                .as_ref()
+                                .map(crate::HexU128::to_u128)
+                                != Some(expected)
+                        })
                 })
-            }))
+        })
     {
         return Err(RestartAdmissionFailureV1::TransactionLineage);
     }
@@ -624,7 +674,7 @@ mod poison_tests {
     use super::*;
     use crate::groundwater::GroundwaterAuthorityRestartV1;
     use crate::{
-        DirectRuntimePostureV1, HexF64, HexU128, project_evidence_complete_live_owners,
+        DirectRuntimePostureV1, HexF64, HexU128,
         restart_authority_cross_midnight_carry_fixture,
         restart_authority_in_progress_checkpoint_fixture, to_canonical_bytes,
     };
@@ -675,6 +725,23 @@ mod poison_tests {
                 .runtime
                 .shadow
                 .restart_authority_vegetation_configuration(),
+            vegetation_owner_id: fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_vegetation_owner_id(),
+            soil_thermal_owner_id: &fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_soil_thermal()
+                .owner_id,
+            soil_thermal_configuration_sha256: &fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_soil_thermal()
+                .configuration_sha256,
             lse_configuration: fixture
                 .owners
                 .runtime
@@ -701,19 +768,14 @@ mod poison_tests {
             day_inputs: &fixture.owners.day_inputs,
             day_input_digests: &fixture.owners.day_input_digests,
         };
-        let live = || {
-            to_canonical_bytes(&project_evidence_complete_live_owners(
-                &fixture.owners.runtime.shadow,
-                &fixture.owners.phase_plan_sha256,
-                &fixture.owners.day_input_digests,
-                0,
-            ))
-            .unwrap()
-        };
-        let before = live();
-        let check = |bytes: Vec<u8>, expected| {
-            assert_eq!(admit_checkpoint_v1(&bytes, &context).err(), Some(expected));
-            assert_eq!(live(), before)
+        let mut live = fixture.owners.committed.clone();
+        let before = to_canonical_bytes(&live).unwrap();
+        let mut check = |bytes: Vec<u8>, expected| {
+            assert_eq!(
+                admit_checkpoint_into_owner_store_v1(&bytes, &context, &mut live).err(),
+                Some(expected)
+            );
+            assert_eq!(to_canonical_bytes(&live).unwrap(), before)
         };
         let mut p = baseline.clone();
         p.schema = "wrong".into();
@@ -751,7 +813,6 @@ mod poison_tests {
         }
         let carry_bytes = sealed(carry_checkpoint.clone());
         assert!(admit_checkpoint_v1(&carry_bytes, &context).is_ok());
-        assert_eq!(live(), before);
         phase(&mut carry_checkpoint).3.pending_carry.pop().unwrap();
         phase(&mut carry_checkpoint).3.seal().unwrap();
         check(
@@ -789,6 +850,9 @@ mod poison_tests {
         phase(&mut p).0.gsi_configuration.owner_id.clear();
         check(sealed(p), RestartAdmissionFailureV1::OwnerIdentity);
         let mut p = baseline.clone();
+        phase(&mut p).1.vegetation_v10.owner_id = "wrong-vegetation-owner".into();
+        check(sealed(p), RestartAdmissionFailureV1::OwnerIdentity);
+        let mut p = baseline.clone();
         phase(&mut p).1.biogeochemistry.last_transaction_id = HexU128::from_u128(999);
         phase(&mut p).1.biogeochemistry.seal().unwrap();
         check(sealed(p), RestartAdmissionFailureV1::TransactionLineage);
@@ -819,7 +883,8 @@ mod poison_tests {
             .2
             .ending_state
             .history_oldest_first
-            .insert(0, HexF64::from_f64(2.0));
+            .push(HexF64::from_f64(2.0));
+        phase(&mut p).2.ending_state.history_oldest_first.swap(0, 1);
         check(sealed(p), RestartAdmissionFailureV1::GsiReceipt);
         let mut p = baseline.clone();
         phase(&mut p).4[0].intervals[1].gsi_receipt_sha256 =
@@ -956,6 +1021,9 @@ mod poison_tests {
         *phase(&mut p).1 = committed;
         check(sealed(p), RestartAdmissionFailureV1::TransactionLineage);
         let mut p = baseline.clone();
+        phase(&mut p).1.direct_hydrology.surface_liquid_owned_state = None;
+        check(sealed(p), RestartAdmissionFailureV1::TransactionLineage);
+        let mut p = baseline.clone();
         phase(&mut p).1.direct_hydrology.lanes[0]
             .erosion_downstream_operands
             .publication
@@ -974,5 +1042,12 @@ mod poison_tests {
             sealed(p),
             RestartAdmissionFailureV1::SurfaceLiquidConfiguration,
         );
+        assert!(admit_checkpoint_into_owner_store_v1(
+            &to_canonical_bytes(&baseline).unwrap(),
+            &context,
+            &mut live,
+        )
+        .is_ok());
+        assert_ne!(to_canonical_bytes(&live).unwrap(), before);
     }
 }

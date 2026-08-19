@@ -135,9 +135,9 @@ fn poison_inventory_is_bound_to_typed_admission_and_live_byte_evidence() {
         source
             .contains("complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes")
     );
-    assert!(source.contains("admit_checkpoint_v1(&bytes, &context)"));
-    assert!(source.contains("let before = live();"));
-    assert!(source.contains("assert_eq!(live(), before)"));
+    assert!(source.contains("admit_checkpoint_into_owner_store_v1(&bytes, &context, &mut live)"));
+    assert!(source.contains("let before = to_canonical_bytes(&live).unwrap();"));
+    assert!(source.contains("assert_eq!(to_canonical_bytes(&live).unwrap(), before)"));
 }
 
 #[test]
@@ -210,7 +210,6 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
         "child4_retained_liquid",
         "groundwater_total_area",
         "erosion_publication",
-        "live_bytes_unchanged",
     ] {
         assert!(poison.contains(category), "missing {category}")
     }
@@ -302,4 +301,39 @@ fn generated_schema_accepts_every_frozen_vector_and_rejects_wire_bounds() {
     });
     groundwater["initialized_area_m2"] = Value::from("0x4059000000000000");
     assert!(validator.is_valid(&flexible));
+
+    let mut later_day = value("checkpoint-vector.json");
+    later_day["phase"]["committed"]["gsi_state"]["history_oldest_first"] =
+        serde_json::json!(["0x3ff0000000000000"]);
+    later_day["phase"]["committed"]["gsi_state"]["last_date"] =
+        serde_json::json!({"year":2026,"ordinal_day":231});
+    assert!(validator.is_valid(&later_day));
+
+    let mut typed_optionals = value("checkpoint-in-progress-vector.json");
+    let lane = &mut typed_optionals["phase"]["staged_scientific"]["direct_hydrology"]
+        ["lanes"][0];
+    lane["evapotranspiration_stage_state"] = serde_json::json!({
+        "s1_m":"0x0000000000000000","s2_m":"0x0000000000000000",
+        "threshold_m":"0x3ff0000000000000","counter":"0x0000000000000000"
+    });
+    lane["winter_column"]["snow"]["snow_albedo_state"] = serde_json::json!({
+        "model":"brock_2000_temperature_age_v1","albedo":"0x3fe0000000000000",
+        "accumulated_positive_temperature_c_day":"0x0000000000000000"
+    });
+    assert!(validator.is_valid(&typed_optionals));
+    typed_optionals["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]
+        ["evapotranspiration_stage_state"] = serde_json::json!({});
+    assert!(!validator.is_valid(&typed_optionals));
+    let mut nested_arrays = value("checkpoint-in-progress-vector.json");
+    nested_arrays["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]
+        ["winter_column"]["snow"]["layers"] = serde_json::json!([{}]);
+    assert!(!validator.is_valid(&nested_arrays));
+    nested_arrays["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]
+        ["winter_column"]["snow"]["layers"] = serde_json::json!([{
+            "mass_swe_m":"0x0000000000000000","thickness_m":"0x0000000000000000",
+            "density_kg_m3":"0x0000000000000000","settle_day_count":"0x0000000000000000",
+            "temperature_c":"0x0000000000000000","liquid_water_m":"0x0000000000000000",
+            "cold_content_j_m2":"0x0000000000000000","refrozen_liquid_m":"0x0000000000000000"
+        }]);
+    assert!(validator.is_valid(&nested_arrays));
 }

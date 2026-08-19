@@ -667,6 +667,12 @@ impl DirectV10RealConsumerShadow {
 
     #[cfg(feature = "restart-authority-evidence")]
     #[must_use]
+    pub const fn restart_authority_vegetation_owner_id(&self) -> &ResourceOwnerId {
+        &self.inner.vegetation_owner_id
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
+    #[must_use]
     pub const fn restart_authority_surface_configuration(
         &self,
     ) -> &DirectSurfaceLiquidConfiguration {
@@ -687,6 +693,26 @@ impl DirectV10RealConsumerShadow {
         self.gsi_state = gsi_state;
         self.provider_cursor = provider_cursor;
         Ok(())
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
+    pub fn restart_authority_install_scheduler_position(
+        &mut self,
+        accepted_interval_count: u64,
+    ) -> Result<(), DirectV10RealConsumerError> {
+        if accepted_interval_count == 0 || accepted_interval_count >= INTERVALS_PER_DAY as u64 {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Unsupported("restart evidence scheduler position"),
+            ));
+        }
+        self.inner.accepted_interval_count = accepted_interval_count;
+        Ok(())
+    }
+
+    #[cfg(feature = "restart-authority-evidence")]
+    #[must_use]
+    pub const fn restart_authority_accepted_interval_count(&self) -> u64 {
+        self.inner.accepted_interval_count()
     }
 
     #[cfg(feature = "restart-authority-evidence")]

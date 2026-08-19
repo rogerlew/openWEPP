@@ -13,6 +13,7 @@ use openwepp_hillslope_orchestrator::{
     DirectSurfaceLiquidConfiguration,
 };
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -29,6 +30,14 @@ pub enum HydrologyRestartError {
 
 fn nested(error: impl std::fmt::Display) -> HydrologyRestartError {
     HydrologyRestartError::Nested(error.to_string())
+}
+pub(crate) fn immutable_operand_sha256(
+    domain: &str,
+    value: &impl std::fmt::Debug,
+) -> Result<Sha256Hex, HydrologyRestartError> {
+    let bytes = format!("{domain}\0{value:?}");
+    Sha256Hex::try_new(format!("{:x}", Sha256::digest(bytes.as_bytes())))
+        .map_err(|_| HydrologyRestartError::Join("immutable operand digest"))
 }
 fn finite(field: &'static str, value: &HexF64) -> Result<f64, HydrologyRestartError> {
     let value = value.to_f64();
@@ -157,7 +166,10 @@ impl DirectLaneRestartV1 {
         day_inputs: Vec<DirectDayConstructorInputs>,
         expected_day_inputs_sha256: &Sha256Hex,
     ) -> Result<DirectLaneFrame, HydrologyRestartError> {
-        if &self.day_inputs_sha256 != expected_day_inputs_sha256 {
+        let actual = immutable_operand_sha256("DirectDayConstructorInputsV1", &day_inputs)?;
+        if &self.day_inputs_sha256 != expected_day_inputs_sha256
+            || self.day_inputs_sha256 != actual
+        {
             return Err(HydrologyRestartError::Join("day_inputs_sha256"));
         }
         self.winter_column
@@ -282,6 +294,15 @@ impl DirectHydrologyRestartV1 {
             laned_active,
             laned_active_summary,
         } = value;
+        if phase_plan_sha256 != immutable_operand_sha256("DirectPhasePlanV1", phase_plan)?
+            || lanes.len() != day_input_digests.len()
+            || lanes.iter().zip(day_input_digests).any(|(lane, digest)| {
+                immutable_operand_sha256("DirectDayConstructorInputsV1", &lane.day_inputs)
+                    .map_or(true, |actual| &actual != digest)
+            })
+        {
+            return Err(HydrologyRestartError::Join("immutable operand digest"));
+        }
         if laned_active.is_some() || laned_active_summary.is_some() {
             return Err(HydrologyRestartError::Unsupported("laned_active"));
         }
@@ -363,6 +384,8 @@ impl DirectHydrologyRestartV1 {
             return Err(HydrologyRestartError::Unsupported("laned_active"));
         }
         if &self.phase_plan_sha256 != context.phase_plan_sha256
+            || self.phase_plan_sha256
+                != immutable_operand_sha256("DirectPhasePlanV1", context.phase_plan)?
             || self.lanes.len() != context.day_inputs.len()
             || self.lanes.len() != context.day_input_digests.len()
             || self.lane_count != self.lanes.len() as u64
@@ -471,9 +494,6 @@ mod tests {
     };
     use openwepp_kernel_contract::ResourceOwnerId;
 
-    fn sha(byte: char) -> Sha256Hex {
-        Sha256Hex::try_new(byte.to_string().repeat(64)).unwrap()
-    }
     fn frame() -> DirectRunFrame {
         let identity = DirectRunIdentity::new(9, 4, 2, 1).unwrap();
         let mut first = DirectLaneConstructorInputs::from_topology(0, 2, 1).unwrap();
@@ -523,12 +543,18 @@ mod tests {
             records: vec![],
         }
     }
+    fn cache_digests(source: &DirectRunFrame) -> (Sha256Hex, Vec<Sha256Hex>) {
+        let phase = immutable_operand_sha256("DirectPhasePlanV1", &source.phase_plan).unwrap();
+        let days = source.lanes.iter().map(|lane| {
+            immutable_operand_sha256("DirectDayConstructorInputsV1", &lane.day_inputs).unwrap()
+        }).collect();
+        (phase, days)
+    }
 
     #[test]
     fn complete_projection_restoration_equivalence_and_cache_reconstruction() {
         let source = frame();
-        let phase = sha('a');
-        let days = vec![sha('b'), sha('c')];
+        let (phase, days) = cache_digests(&source);
         let dto = DirectHydrologyRestartV1::project(&source, phase.clone(), &days).unwrap();
         let day_inputs = source
             .lanes
@@ -550,14 +576,26 @@ mod tests {
         );
         assert!(restored.lane_transfer_shadow_projection.is_none());
         assert!(restored.lanes.iter().all(|lane| lane.snow_runtime_carry.is_none() && lane.frost_runtime_carry.is_none()));
+        let mut wrong_inputs = day_inputs.clone();
+        wrong_inputs[0][0].interception_m = 1.0;
+        let poisoned_context = ExpectedDirectHydrologyRestartContext {
+            phase_plan: &source.phase_plan,
+            phase_plan_sha256: &dto.phase_plan_sha256,
+            day_inputs: &wrong_inputs,
+            day_input_digests: &days,
+            surface_liquid_configuration: &surface,
+        };
+        assert!(matches!(
+            dto.restore(&poisoned_context),
+            Err(HydrologyRestartError::Join("day_inputs_sha256"))
+        ));
     }
 
     #[test]
     fn configuration_topology_and_numeric_poisons_reject_without_touching_source() {
         let source = frame();
         let beginning = format!("{source:?}");
-        let phase = sha('a');
-        let days = vec![sha('b'), sha('c')];
+        let (phase, days) = cache_digests(&source);
         let mut dto = DirectHydrologyRestartV1::project(&source, phase.clone(), &days).unwrap();
         dto.lanes[1].lane_id = 99;
         let day_inputs = source

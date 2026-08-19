@@ -102,6 +102,7 @@ pub fn project_evidence_scientific_owners(
         vegetation_v10: VegetationV10StateRestartV1::project(
             shadow.vegetation_state(),
             shadow.restart_authority_vegetation_configuration(),
+            shadow.restart_authority_vegetation_owner_id(),
         )
         .unwrap(),
         lse_v2: LseV2StateRestartV1::project(
@@ -321,12 +322,9 @@ pub fn restart_authority_owner_fixture() -> RestartAuthorityOwnerFixture {
         serde_json::to_vec(&serde_json::to_value(&native_gsi_state).unwrap()).unwrap();
     gsi_bytes.push(b'\n');
     native_gsi_state.state_sha256 = format!("{:x}", Sha256::digest(gsi_bytes));
-    let phase_plan_sha256 = Sha256Hex::try_new(
-        canonical_sha256(&format!(
-            "{:?}",
-            shadow.restart_authority_hydrology_frame().phase_plan
-        ))
-        .unwrap(),
+    let phase_plan_sha256 = crate::hydrology_restart::immutable_operand_sha256(
+        "DirectPhasePlanV1",
+        &shadow.restart_authority_hydrology_frame().phase_plan,
     )
     .unwrap();
     let day_inputs = shadow
@@ -337,10 +335,10 @@ pub fn restart_authority_owner_fixture() -> RestartAuthorityOwnerFixture {
         .collect::<Vec<_>>();
     let day_input_digests = day_inputs
         .iter()
-        .enumerate()
-        .map(|(index, _)| {
-            Sha256Hex::try_new(canonical_sha256(&("DIRECT_DAY_INPUTS_V1", index)).unwrap()).unwrap()
-        })
+        .map(|inputs| crate::hydrology_restart::immutable_operand_sha256(
+            "DirectDayConstructorInputsV1",
+            inputs,
+        ).unwrap())
         .collect::<Vec<_>>();
     let lineage = shadow.vegetation_state().0.last_transaction_id;
     let mut lse_state = shadow.lse_state().clone();
@@ -354,6 +352,7 @@ pub fn restart_authority_owner_fixture() -> RestartAuthorityOwnerFixture {
         vegetation_v10: VegetationV10StateRestartV1::project(
             shadow.vegetation_state(),
             shadow.restart_authority_vegetation_configuration(),
+            shadow.restart_authority_vegetation_owner_id(),
         )
         .unwrap(),
         lse_v2: LseV2StateRestartV1::project(
@@ -526,6 +525,9 @@ pub fn restart_authority_evidence_fixture() -> RestartAuthorityEvidenceFixture {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use openwepp_hillslope_orchestrator::vegetation_real_hydrology_shadow::{
+        RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId,
+    };
 
     #[test]
     fn cross_midnight_fixture_has_real_outgoing_and_cursor_carry() {
@@ -586,6 +588,16 @@ mod tests {
                 .runtime
                 .shadow
                 .restart_authority_vegetation_configuration(),
+            vegetation_owner_id: fixture
+                .runtime
+                .shadow
+                .restart_authority_vegetation_owner_id(),
+            soil_thermal_owner_id: &fixture.runtime.shadow.restart_authority_soil_thermal().owner_id,
+            soil_thermal_configuration_sha256: &fixture
+                .runtime
+                .shadow
+                .restart_authority_soil_thermal()
+                .configuration_sha256,
             lse_configuration: fixture.runtime.shadow.restart_authority_lse_configuration(),
             surface_liquid_configuration: fixture
                 .runtime
@@ -657,8 +669,33 @@ mod tests {
             payload_sha256: Sha256Hex::try_new("0".repeat(64)).unwrap(),
         };
         checkpoint.seal().unwrap();
+        let mut live_owner_store = CompleteCommittedOwnerStateV1 {
+            gsi_configuration: fixture.owners.committed.gsi_configuration.clone(),
+            static_forcing_configuration: fixture
+                .owners
+                .committed
+                .static_forcing_configuration
+                .clone(),
+            surface_liquid_configuration: fixture
+                .owners
+                .committed
+                .surface_liquid_configuration
+                .clone(),
+            gsi_state: fixture.ending_gsi_state.clone(),
+            provider_cursor: fixture.ending_cursor.clone(),
+            scientific: match &checkpoint.phase {
+                DirectV10CheckpointPhaseV1::InProgressDay { staged_scientific, .. } =>
+                    staged_scientific.clone(),
+                DirectV10CheckpointPhaseV1::BetweenDays { .. } => unreachable!(),
+            },
+        };
+        assert_ne!(
+            to_canonical_bytes(&live_owner_store).unwrap(),
+            to_canonical_bytes(&fixture.owners.committed).unwrap()
+        );
+        checkpoint.abort_owner_store_to_day_beginning(&mut live_owner_store);
         assert_eq!(
-            to_canonical_bytes(&checkpoint.abort_to_day_beginning()).unwrap(),
+            to_canonical_bytes(&live_owner_store).unwrap(),
             to_canonical_bytes(&fixture.owners.committed).unwrap()
         );
         let context = ExpectedRestartStaticContext {
@@ -669,6 +706,23 @@ mod tests {
                 .runtime
                 .shadow
                 .restart_authority_vegetation_configuration(),
+            vegetation_owner_id: fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_vegetation_owner_id(),
+            soil_thermal_owner_id: &fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_soil_thermal()
+                .owner_id,
+            soil_thermal_configuration_sha256: &fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_soil_thermal()
+                .configuration_sha256,
             lse_configuration: fixture
                 .owners
                 .runtime
@@ -712,13 +766,19 @@ mod tests {
                 .unwrap();
             staged_scientific
                 .vegetation_v10
-                .restore(context.vegetation_configuration)
+                .restore(context.vegetation_configuration, context.vegetation_owner_id)
                 .unwrap();
             staged_scientific
                 .lse_v2
                 .restore(context.lse_configuration)
                 .unwrap();
-            staged_scientific.soil_thermal.restore().unwrap();
+            staged_scientific
+                .soil_thermal
+                .restore(
+                    context.soil_thermal_owner_id,
+                    context.soil_thermal_configuration_sha256,
+                )
+                .unwrap();
             staged_scientific.biogeochemistry.restore().unwrap();
         }
         fixture.owners.committed.gsi_state.restore().unwrap();
@@ -742,7 +802,7 @@ mod tests {
             .committed
             .scientific
             .vegetation_v10
-            .restore(context.vegetation_configuration)
+            .restore(context.vegetation_configuration, context.vegetation_owner_id)
             .unwrap();
         fixture
             .owners
@@ -763,7 +823,10 @@ mod tests {
             .committed
             .scientific
             .soil_thermal
-            .restore()
+            .restore(
+                context.soil_thermal_owner_id,
+                context.soil_thermal_configuration_sha256,
+            )
             .unwrap();
         fixture
             .owners
@@ -775,13 +838,15 @@ mod tests {
         let admitted =
             admit_checkpoint_v1(&to_canonical_bytes(&checkpoint).unwrap(), &context).unwrap();
         let crate::IsolatedRestoredCheckpointV1::InProgressDay {
+            day_index,
+            next_interval_index,
+            accepted_interval_count,
             committed_day_beginning,
             staged_scientific,
             staged_gsi_ending_state,
             accepted_gsi_daily_receipt,
             validated_forcing_day_receipts,
             ending_provider_cursor,
-            ..
         } = admitted
         else {
             unreachable!()
@@ -806,20 +871,32 @@ mod tests {
             ending_provider_cursor.clone(),
         )
         .unwrap();
+        let restored_layer_maps = staged_scientific
+            .direct_hydrology
+            .lanes
+            .iter()
+            .zip(&staged_scientific.soil_thermal.ofes)
+            .enumerate()
+            .map(|(lane_index, (lane, ofe))| RealHydrologyLaneLayerMap {
+                ofe_lane: RealHydrologyOfeLaneId {
+                    lane_index,
+                    lane_id: lane.lane_id,
+                },
+                layer_ids: ofe
+                    .ordered_layers
+                    .iter()
+                    .map(|layer| layer.layer_id.clone())
+                    .collect(),
+            })
+            .collect();
         let mut resumed = DirectV10RealConsumerShadow::try_new(
             context.vegetation_configuration.clone(),
             staged_scientific.vegetation_v10,
-            ResourceOwnerId::try_new("vegetation-v10").unwrap(),
+            context.vegetation_owner_id.clone(),
             context.lse_configuration.clone(),
             staged_scientific.lse_v2,
             context.surface_liquid_configuration.clone(),
-            fixture
-                .owners
-                .runtime
-                .endpoint
-                .hydrology
-                .restart_authority_layer_maps()
-                .to_vec(),
+            restored_layer_maps,
             staged_scientific.soil_thermal,
             staged_scientific.biogeochemistry,
             staged_scientific.direct_hydrology,
@@ -831,6 +908,9 @@ mod tests {
         )
         .unwrap();
         resumed
+            .restart_authority_install_scheduler_position(accepted_interval_count)
+            .unwrap();
+        resumed
             .restart_authority_install_staged_daily_owners(
                 staged_gsi_ending_state,
                 ending_provider_cursor,
@@ -841,7 +921,7 @@ mod tests {
             .restart_authority_advance_staged_intervals(
                 &restored_prepared,
                 fixture.template.clone(),
-                24,
+                usize::from(next_interval_index),
                 48,
             )
             .unwrap();
@@ -868,6 +948,15 @@ mod tests {
             &continuous.owners.day_input_digests,
         );
         assert_eq!(resumed_projection, continuous_projection);
+        assert_eq!(day_index, 0);
+        assert_eq!(
+            resumed.restart_authority_accepted_interval_count(),
+            continuous
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_accepted_interval_count()
+        );
         assert_eq!(
             resumed.gsi_state(),
             &openwepp_hillslope_orchestrator::runtime_inputs::restart_authority_restore_gsi_state(

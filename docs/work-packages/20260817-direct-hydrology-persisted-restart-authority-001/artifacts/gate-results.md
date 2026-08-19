@@ -156,3 +156,33 @@ Ran after correction: reference tests PASS 28/28, warnings-denied Clippy PASS,
 direct authority PASS 7/7, forcing PASS 7/7, V10 PASS 3/3, AUTH11 PASS 3/3,
 anti-evasion PASS, and diff hygiene PASS. A new exact commit and all three
 exact-current reviews remain required before terminal verification.
+
+## Complete state-review correction pass (2026-08-19)
+
+The state review of `32dc59f78beaacd8dcbe27272c80f677ff728b94`
+identified material cache-binding, scheduler-restoration, mutation-evidence,
+recursive-ledger, schema, owner-identity, and staged-lineage gaps. Corrections:
+
+- immutable phase-plan and lane day-input digests are recomputed from the
+  supplied operands during both projection and restoration, with a mutated
+  day-input poison;
+- admitted scheduler count and interval position are restored before the
+  24..48 continuation, reconstructed layer maps come from admitted hydrology
+  and soil owners, and resumed/continuous scheduler counts are compared;
+- poison admission now targets a mutation-capable complete-owner store and
+  proves exact bytes unchanged on every rejection plus mutation on success;
+- abort mutates a staged complete-owner store back to the sole committed
+  day-beginning state and compares exact canonical bytes;
+- vegetation owner identity and soil owner/configuration identity are explicit
+  cross-owner joins; an omitted staged surface-lineage owner rejects;
+- the schema now contains complete typed nonempty alternatives for GSI dates,
+  optional erosion/ET/snow-albedo/surface owners, and empty-sampled snow,
+  frost, carry, GSI-history, and pending-transfer arrays;
+- generated recursive field mapping now includes snow/frost payloads,
+  publication erosion payloads, and surface configuration/state/continuation
+  records; the separately claimed aggregate poison rows were removed.
+
+Ran after correction: reference tests PASS 28/28, warnings-denied Clippy PASS,
+direct authority PASS 7/7, forcing PASS 7/7, V10 PASS 3/3, AUTH11 PASS 3/3,
+anti-evasion PASS, and diff hygiene PASS. All three reviews must restart on the
+next exact frozen commit; terminal verification remains blocked until they pass.
