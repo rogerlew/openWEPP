@@ -1548,11 +1548,11 @@ impl DirectV9RealConsumerShadow {
                 "forcing transaction, cadence, or snow domain",
             ));
         }
-        validate_routed_runon_authority(
-            &input.lse_forcing,
-            &self.hydrology_frame,
-            &self.surface_configuration,
-        )?;
+        if !input.lse_forcing.runon_parcels.is_empty() {
+            return Err(DirectV9RealConsumerError::Unsupported(
+                "runon requires an accepted routing publication owner",
+            ));
+        }
         input.lse_forcing.validate(transaction_id)?;
         let (v8_configuration, v8_beginning) =
             project_v9_runtime_to_v8(&self.vegetation_configuration, &self.vegetation_state)?;
@@ -1720,56 +1720,6 @@ impl DirectV9RealConsumerShadow {
         .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
         Ok(format!("{:x}", Sha256::digest(bytes)))
     }
-}
-
-fn validate_routed_runon_authority(
-    forcing: &LandSurfaceForcing,
-    hydrology: &DirectRunFrame,
-    surface_configuration: &DirectSurfaceLiquidConfiguration,
-) -> Result<(), DirectV9RealConsumerError> {
-    if forcing.runon_parcels.is_empty() {
-        return Ok(());
-    }
-    let state = hydrology.surface_liquid_shadow.as_deref().ok_or(
-        DirectV9RealConsumerError::Unsupported("external runon lacks an accepted routing owner"),
-    )?;
-    if state.owner_id != surface_configuration.owner_id
-        || state.configuration_sha256 != surface_configuration.configuration_sha256
-    {
-        return Err(DirectV9RealConsumerError::Identity(
-            "routed runon surface owner/configuration",
-        ));
-    }
-    for parcel in &forcing.runon_parcels {
-        if parcel.source_owner_id != state.owner_id {
-            return Err(DirectV9RealConsumerError::Unsupported(
-                "external runon lacks an accepted routing owner",
-            ));
-        }
-        let source_is_configured = surface_configuration.records.iter().any(|record| {
-            record.key.ofe_id == parcel.source_ofe_id && record.key.tile_id == parcel.source_tile_id
-        });
-        let destination_is_configured = surface_configuration.records.iter().any(|record| {
-            record.key.ofe_id == parcel.destination_ofe_id
-                && record.key.tile_id == parcel.destination_tile_id
-        });
-        if parcel.parcel_kind != LiquidParcelKind::RoutedRunon
-            || parcel.temperature_provider
-                != LiquidTemperatureProvider::AcceptedUpstreamOutletParcel
-            || parcel
-                .source_state_sha256
-                .as_ref()
-                .map(Sha256Digest::as_str)
-                != Some(state.state_sha256.as_str())
-            || !source_is_configured
-            || !destination_is_configured
-        {
-            return Err(DirectV9RealConsumerError::Identity(
-                "routed runon owner, lineage, or topology",
-            ));
-        }
-    }
-    Ok(())
 }
 
 fn validate_repository_day_projection(

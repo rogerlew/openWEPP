@@ -461,68 +461,10 @@ mod tests {
         assert_eq!(
             error,
             DirectV9RealConsumerError::Unsupported(
-                "external runon lacks an accepted routing owner"
+                "runon requires an accepted routing publication owner"
             )
         );
         assert_eq!(shadow, beginning);
-    }
-
-    #[test]
-    fn v10_admits_only_surface_owner_bound_routed_runon() {
-        let (shadow, fixture) = v10_shadow_fixture();
-        let state = shadow
-            .inner
-            .hydrology_frame
-            .surface_liquid_shadow
-            .as_deref()
-            .expect("surface owner");
-        let record = shadow
-            .inner
-            .surface_configuration
-            .records
-            .first()
-            .expect("configured surface");
-        let mut forcing = day_input(&fixture).intervals.remove(0).lse_forcing;
-        let temperature_k = 285.0;
-        forcing.runon_parcels.push(openwepp_land_surface_energy::LiquidParcel {
-            parcel_kind: openwepp_land_surface_energy::LiquidParcelKind::RoutedRunon,
-            parcel_id: openwepp_land_surface_energy::ParcelId::try_new("accepted-runon")
-                .expect("parcel id"),
-            source_owner_id: state.owner_id.clone(),
-            source_ofe_id: record.key.ofe_id.clone(),
-            source_tile_id: record.key.tile_id.clone(),
-            destination_ofe_id: record.key.ofe_id.clone(),
-            destination_tile_id: record.key.tile_id.clone(),
-            start_s: 0.0,
-            end_s: INTERVAL_S,
-            amount_kg_m2_destination_tile_ground: 0.01,
-            temperature_provider:
-                openwepp_land_surface_energy::LiquidTemperatureProvider::AcceptedUpstreamOutletParcel,
-            temperature_k: Some(temperature_k),
-            specific_liquid_enthalpy_j_kg: Some(4218.0 * (temperature_k - 273.15)),
-            source_state_sha256: Some(
-                Sha256Digest::try_new(state.state_sha256.clone()).expect("state digest"),
-            ),
-        });
-        validate_routed_runon_authority(
-            &forcing,
-            &shadow.inner.hydrology_frame,
-            &shadow.inner.surface_configuration,
-        )
-        .expect("owner-bound routed runon");
-
-        forcing.runon_parcels[0].source_state_sha256 =
-            Some(Sha256Digest::try_new("f".repeat(64)).expect("poison digest"));
-        assert!(matches!(
-            validate_routed_runon_authority(
-                &forcing,
-                &shadow.inner.hydrology_frame,
-                &shadow.inner.surface_configuration,
-            ),
-            Err(DirectV9RealConsumerError::Identity(
-                "routed runon owner, lineage, or topology"
-            ))
-        ));
     }
 
     #[test]
