@@ -1,6 +1,27 @@
 # Gate Results
 
-Status: `exact implementation and comparator PASS / owner contradiction HOLD`
+Status: `exact implementation and comparator PASS / independent review pending`
+
+Exact reviewed code commit `443fc274439bc216cd8cad7e421da8fd9a52b25a`:
+
+- orchestrator all-features: 722/722 PASS before the mechanical test split;
+- post-split focused V10 owner suite: 9/9 PASS;
+- persisted restart production crate: 30/30 PASS;
+- released restart reference: 28/28 PASS;
+- focused authority/integration gates: 38/38 PASS;
+- exact post-split workspace: 3,134/3,134 PASS, 5 skipped;
+- warnings-denied affected Clippy, doctests, cargo-deny, anti-evasion, AUTH11,
+  rustfmt and diff hygiene: PASS;
+- exact Child-4 comparator: 17/17 PASS (seven benchmark surfaces and ten
+  current Child-4 selectors), under
+  `artifacts/comparator-heavy/20260819T230206Z-child4-root-owner-final/`.
+
+The root-zone hydraulic, optics, longwave and runon owner contradiction that
+previously held this package is corrected by the live-owner projection at the
+reviewed commit. Required independent reviews and terminal verification remain
+pending; no production selector/default/output activation is claimed.
+
+## Superseded historical evidence
 
 Exact implementation commit `81c2a910c4c47eadd71649959d145d2f82125b9c`:
 
@@ -10,7 +31,7 @@ Exact implementation commit `81c2a910c4c47eadd71649959d145d2f82125b9c`:
 - warnings-denied affected Clippy: PASS;
 - exact Child-4 comparator rerun: PASS, seven benchmark surfaces and ten
   Child-4 selectors, under
-  `artifacts/comparator-heavy/20260819T225707Z-child4-pre-root-owner-rerun/`;
+  `artifacts/comparator-heavy/20260819T230206Z-child4-root-owner-final/`;
 - rustfmt and diff hygiene: PASS.
 
 The actual direct scheduler now consumes the opaque native repository-prepared

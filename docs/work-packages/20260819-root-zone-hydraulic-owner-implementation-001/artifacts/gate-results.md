@@ -2,7 +2,9 @@
 
 Status: `implementation PASS / independent review pending`.
 
-Exact code commit `cec1f9768`, authority-byte correction `85f1efd15`.
+Exact reviewed code commit `443fc274439bc216cd8cad7e421da8fd9a52b25a`
+(implementation `cec1f9768`, authority-byte correction `85f1efd15`, mechanical
+test split `443fc2744`).
 
 - orchestrator: 722/722 PASS;
 - persisted restart: 30/30 PASS;
@@ -10,12 +12,13 @@ Exact code commit `cec1f9768`, authority-byte correction `85f1efd15`.
 - focused authority/integration: 38/38 PASS;
 - anti-evasion and AUTH11: PASS, 3/3;
 - affected warnings-denied Clippy: PASS;
-- workspace: 3,133/3,134 in one exact run plus the missing-tool CQR case
-  1/1 after provisioning pinned tooling; effective complete set 3,134/3,134;
+- exact post-split workspace: 3,134/3,134 PASS, 5 skipped;
 - doctests: PASS;
 - cargo-deny: PASS with one non-blocking unmatched-license allowance warning;
 - formatting and diff hygiene: PASS;
-- comparator: pending exact-current rerun;
+- exact-current Child-4 comparator: 17/17 PASS (seven benchmark surfaces and
+  ten Child-4 selectors), recorded at
+  `../../20260814-vegetation-land-surface-real-consumer-shadow-001/artifacts/comparator-heavy/20260819T230206Z-child4-root-owner-final/`;
 - required reviews and terminal verification: pending.
 
 No production activation or output claim is made.
