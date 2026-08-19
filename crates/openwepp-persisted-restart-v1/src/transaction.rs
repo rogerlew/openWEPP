@@ -300,25 +300,45 @@ mod tests {
         {
             lane.day_inputs_sha256 = digest.clone();
         }
-        let (run, topology) = crate::checkpoint_identities_v1(&fixture.owners.committed).unwrap();
+        let request = fixture.request.clone();
+        let template = fixture.template.clone();
+        let committed = fixture.owners.committed.clone();
+        let phase_plan_sha256 = fixture.owners.phase_plan_sha256.clone();
+        let day_input_digests = fixture.owners.day_input_digests.clone();
+        let day_inputs = fixture.owners.day_inputs.clone();
         let source = &fixture.owners.runtime.shadow;
+        let vegetation_configuration = source.restart_authority_vegetation_configuration().clone();
+        let vegetation_owner_id = source.restart_authority_vegetation_owner_id().clone();
+        let soil_thermal_owner_id = source.restart_authority_soil_thermal().owner_id.clone();
+        let soil_thermal_configuration_sha256 = source
+            .restart_authority_soil_thermal()
+            .configuration_sha256
+            .clone();
+        let lse_configuration = source.restart_authority_lse_configuration().clone();
+        let surface_liquid_configuration = source.restart_authority_surface_configuration().clone();
+        let gsi_configuration = source.gsi_owner_configuration().clone();
+        let forcing_static_configuration = source.provider_static_configuration().clone();
+        let phase_plan = source
+            .restart_authority_hydrology_frame()
+            .phase_plan
+            .clone();
+        let (run, topology) = crate::checkpoint_identities_v1(&committed).unwrap();
+        drop(fixture);
         let context = ExpectedRestartStaticContext {
             run_identity_sha256: &run,
             topology_sha256: &topology,
-            vegetation_configuration: source.restart_authority_vegetation_configuration(),
-            vegetation_owner_id: source.restart_authority_vegetation_owner_id(),
-            soil_thermal_owner_id: &source.restart_authority_soil_thermal().owner_id,
-            soil_thermal_configuration_sha256: &source
-                .restart_authority_soil_thermal()
-                .configuration_sha256,
-            lse_configuration: source.restart_authority_lse_configuration(),
-            surface_liquid_configuration: source.restart_authority_surface_configuration(),
-            gsi_configuration: source.gsi_owner_configuration(),
-            forcing_static_configuration: source.provider_static_configuration(),
-            phase_plan: &source.restart_authority_hydrology_frame().phase_plan,
-            phase_plan_sha256: &fixture.owners.phase_plan_sha256,
-            day_inputs: &fixture.owners.day_inputs,
-            day_input_digests: &fixture.owners.day_input_digests,
+            vegetation_configuration: &vegetation_configuration,
+            vegetation_owner_id: &vegetation_owner_id,
+            soil_thermal_owner_id: &soil_thermal_owner_id,
+            soil_thermal_configuration_sha256: &soil_thermal_configuration_sha256,
+            lse_configuration: &lse_configuration,
+            surface_liquid_configuration: &surface_liquid_configuration,
+            gsi_configuration: &gsi_configuration,
+            forcing_static_configuration: &forcing_static_configuration,
+            phase_plan: &phase_plan,
+            phase_plan_sha256: &phase_plan_sha256,
+            day_inputs: &day_inputs,
+            day_input_digests: &day_input_digests,
         };
         let mut seed = crate::DirectV10RealConsumerCheckpointV1 {
             schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
@@ -328,7 +348,7 @@ mod tests {
             phase: crate::DirectV10CheckpointPhaseV1::BetweenDays {
                 next_day_index: crate::WireDayIndex(0),
                 accepted_interval_count: crate::AcceptedIntervalCount::try_new(0).unwrap(),
-                committed: fixture.owners.committed.clone(),
+                committed: committed.clone(),
             },
             payload_sha256: crate::Sha256Hex::try_new("0".repeat(64)).unwrap(),
         };
@@ -336,29 +356,32 @@ mod tests {
         let restored =
             crate::admit_checkpoint_v1(&to_canonical_bytes(&seed).unwrap(), &context).unwrap();
         let valid_host = crate::DirectV10RestartHost::from_isolated(restored, &context).unwrap();
-        for stop in [0, 1, 15, 24, 47] {
+        for stop in [0, 1, 15, 24, 47, 48] {
             let mut candidate = DirectV10PreparedDayTransactionV1::prepare(
                 valid_host.shadow(),
-                &fixture.request,
-                fixture.template.clone(),
-                fixture.owners.phase_plan_sha256.clone(),
-                fixture.owners.day_input_digests.clone(),
+                &request,
+                template.clone(),
+                phase_plan_sha256.clone(),
+                day_input_digests.clone(),
             )
             .unwrap();
             for _ in 0..stop {
                 candidate.advance_one_interval().unwrap();
             }
+            if stop == 48 {
+                assert!(candidate.advance_one_interval().is_err());
+            }
             assert_eq!(
                 to_canonical_bytes(&candidate.abort()).unwrap(),
-                to_canonical_bytes(&fixture.owners.committed).unwrap()
+                to_canonical_bytes(&committed).unwrap()
             );
         }
         let mut continuous = DirectV10PreparedDayTransactionV1::prepare(
             valid_host.shadow(),
-            &fixture.request,
-            fixture.template.clone(),
-            fixture.owners.phase_plan_sha256.clone(),
-            fixture.owners.day_input_digests.clone(),
+            &request,
+            template.clone(),
+            phase_plan_sha256.clone(),
+            day_input_digests.clone(),
         )
         .unwrap();
         for _ in 0..48 {
@@ -367,10 +390,10 @@ mod tests {
         let continuous_ending = continuous.checkpoint().unwrap();
         let mut transaction = DirectV10PreparedDayTransactionV1::prepare(
             valid_host.shadow(),
-            &fixture.request,
-            fixture.template.clone(),
-            fixture.owners.phase_plan_sha256.clone(),
-            fixture.owners.day_input_digests.clone(),
+            &request,
+            template.clone(),
+            phase_plan_sha256.clone(),
+            day_input_digests.clone(),
         )
         .unwrap();
         let beginning = transaction.checkpoint().unwrap();
@@ -381,7 +404,7 @@ mod tests {
         let abort = transaction.abort();
         assert_eq!(
             to_canonical_bytes(&abort).unwrap(),
-            to_canonical_bytes(&fixture.owners.committed).unwrap()
+            to_canonical_bytes(&committed).unwrap()
         );
         assert!(matches!(
             crate::from_canonical_bytes::<crate::DirectV10RealConsumerCheckpointV1>(&beginning)
@@ -389,6 +412,8 @@ mod tests {
                 .phase,
             crate::DirectV10CheckpointPhaseV1::BetweenDays { .. }
         ));
+        drop(continuous);
+        drop(valid_host);
         let mut resumed =
             DirectV10PreparedDayTransactionV1::restore(&interval_24, &context).unwrap();
         let restored_abort = DirectV10PreparedDayTransactionV1::restore(&interval_24, &context)
@@ -396,7 +421,7 @@ mod tests {
             .abort();
         assert_eq!(
             to_canonical_bytes(&restored_abort).unwrap(),
-            to_canonical_bytes(&fixture.owners.committed).unwrap()
+            to_canonical_bytes(&committed).unwrap()
         );
         for _ in 24..48 {
             resumed.advance_one_interval().unwrap();
@@ -414,7 +439,7 @@ mod tests {
         ));
         let host = resumed.finish().unwrap();
         assert_eq!(host.shadow().restart_authority_next_day_index(), 1);
-        let mut day_one_template = fixture.template.clone();
+        let mut day_one_template = template.clone();
         day_one_template.day_index = 1;
         for (index, interval) in day_one_template.intervals.iter_mut().enumerate() {
             interval.lse_forcing.transaction_id =
@@ -423,10 +448,10 @@ mod tests {
         }
         let mut day_one = DirectV10PreparedDayTransactionV1::prepare(
             host.shadow(),
-            &fixture.request,
+            &request,
             day_one_template,
-            fixture.owners.phase_plan_sha256.clone(),
-            fixture.owners.day_input_digests.clone(),
+            phase_plan_sha256.clone(),
+            day_input_digests.clone(),
         )
         .unwrap();
         day_one.advance_one_interval().unwrap();
