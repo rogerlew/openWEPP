@@ -763,7 +763,7 @@ fn wave1_decreasing_flow_quantum_deposits_on_falling_limb() {
         .expect("decreasing-flow quantum must assemble routed operands");
     // theta-suppressed regime (`qout <= qin`, param.for:540): the interrill
     // supply operands are legitimately zero.
-    assert!(inputs.detinr_kg_s_m2 == 0.0);
+    assert_eq!(inputs.detinr_kg_s_m2, 0.0);
     let state = compute_direct_wave1_continuity_quantum(&inputs, true)
         .expect("decreasing-flow quantum must solve fail-closed-clean");
     assert!(state.active);

@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 14
+contract_version: 15
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -538,7 +538,11 @@ every owner state byte-identical.
    mismatch allowance or one-pass diagnostic flux is admitted.
    Version 5 does not admit hydraulic redistribution: any accessible-layer
    `q3_i<0` rejects the candidate with `VEG-E-063`; it is never silently
-   projected to zero. Nonnegative `q3_i*dt` are Stage-A requests. Stage-C imposes
+   projected to zero. For the V10 coupled solve, Newton trial evaluations may
+   cross `q3_i<0` because trials are not candidates and are needed to construct
+   the canonical residual/Jacobian; every converged potential or final
+   candidate still rejects negative `q3_i` before request, publication, or
+   commit. Nonnegative `q3_i*dt` are Stage-A requests. Stage-C imposes
    `0<=q3_i*dt<=A_W,i` with hydraulic-law equality unless capped and cap equality
    when constrained. Frozen, dry/inaccessible and zero-root layers have zero
    flux. Finalized `F_W=q3_i*dt` alone is debited and transpiration is its sum.
@@ -2227,6 +2231,7 @@ calibration, identifiability, empirical validity, or transferability.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-19 | 15 | Codex | Bound the existing no-hydraulic-redistribution rule to accepted V10 candidates: Newton trials may cross negative layer flux, but no negative converged potential/final flux may be requested, published, finalized, or committed. Historical V8 evaluation behavior is byte-preserved. |
 | 2026-08-17 | 13 | Codex | Admitted prospective `OPENWEPP_C3_WOODY_V9` with exact V8 science/runtime import, exact identity-only migration, and content-addressed non-Rust oracle runtime and serialization; preserved V1--V8 bytes. |
 | 2026-08-14 | 12 | Codex | Admitted `OPENWEPP_C3_WOODY_V8` reciprocal multirank ground longwave, shared tile canopy-air ground H/E coupling, joint potential/final transaction, strict migration and independent LSE coupling; preserved V1--V7. |
 | 2026-08-13 | 11 | Codex | Admitted `OPENWEPP_C3_WOODY_V7` exact six-tissue seasonal storage-to-transfer preparation, onset deployment, immutable-beginning ordering, evergreen zero-pool posture, conservation, failure, migration, and independent fixtures; preserved V1--V6 bytes. |

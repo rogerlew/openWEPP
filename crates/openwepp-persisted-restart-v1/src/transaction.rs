@@ -318,6 +318,7 @@ mod tests {
         let surface_liquid_configuration = source.restart_authority_surface_configuration().clone();
         let gsi_configuration = source.gsi_owner_configuration().clone();
         let forcing_static_configuration = source.provider_static_configuration().clone();
+        let root_zone_hydraulic_configuration = source.root_zone_hydraulic_configuration().clone();
         let phase_plan = source
             .restart_authority_hydrology_frame()
             .phase_plan
@@ -335,6 +336,7 @@ mod tests {
             surface_liquid_configuration: &surface_liquid_configuration,
             gsi_configuration: &gsi_configuration,
             forcing_static_configuration: &forcing_static_configuration,
+            root_zone_hydraulic_configuration: &root_zone_hydraulic_configuration,
             phase_plan: &phase_plan,
             phase_plan_sha256: &phase_plan_sha256,
             day_inputs: &day_inputs,

@@ -543,7 +543,135 @@ pub struct SnowFreeForcing {
     pub specific_humidity: f64,
     pub reference_height_m: f64,
     pub soil_layers: Vec<SoilLayerForcing>,
+    /// Opaque per-occupancy root-zone authority installed by the strict V10
+    /// orchestrator. Legacy V9 callers retain `None` and their existing path.
+    pub root_zone_hydraulics: Option<RootZoneHydraulicReceiptSet>,
     pub gsi: f64,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct RootZoneHydraulicLayerReceipt {
+    occupancy_id: OccupancyId,
+    stratum_id: StratumId,
+    layer_id: SoilLayerId,
+    pub(crate) matric_potential_mm: f64,
+    pub(crate) hydraulic_conductivity_mm_s: f64,
+    pub(crate) root_path_length_mm: f64,
+    pub(crate) gravity_root_mm: f64,
+    pub(crate) lateral_root_length_m: f64,
+    pub(crate) accessible: bool,
+    pub(crate) frozen: bool,
+}
+
+impl RootZoneHydraulicLayerReceipt {
+    #[allow(clippy::too_many_arguments)]
+    pub fn try_new(
+        occupancy_id: OccupancyId,
+        stratum_id: StratumId,
+        layer_id: SoilLayerId,
+        matric_potential_mm: f64,
+        hydraulic_conductivity_mm_s: f64,
+        root_path_length_mm: f64,
+        gravity_root_mm: f64,
+        lateral_root_length_m: f64,
+        accessible: bool,
+        frozen: bool,
+    ) -> Result<Self, VegetationError> {
+        if occupancy_id.stratum_id != stratum_id
+            || !matric_potential_mm.is_finite()
+            || matric_potential_mm >= 0.0
+            || !hydraulic_conductivity_mm_s.is_finite()
+            || hydraulic_conductivity_mm_s < 0.0
+            || !root_path_length_mm.is_finite()
+            || root_path_length_mm <= 0.0
+            || !gravity_root_mm.is_finite()
+            || gravity_root_mm > 0.0
+            || !lateral_root_length_m.is_finite()
+            || lateral_root_length_m <= 0.0
+        {
+            return Err(VegetationError::Domain("root-zone hydraulic receipt"));
+        }
+        Ok(Self {
+            occupancy_id,
+            stratum_id,
+            layer_id,
+            matric_potential_mm,
+            hydraulic_conductivity_mm_s,
+            root_path_length_mm,
+            gravity_root_mm,
+            lateral_root_length_m,
+            accessible,
+            frozen,
+        })
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct RootZoneHydraulicReceiptSet {
+    receipts: BTreeMap<(OccupancyId, StratumId, SoilLayerId), RootZoneHydraulicLayerReceipt>,
+}
+
+impl RootZoneHydraulicReceiptSet {
+    pub fn try_new(receipts: Vec<RootZoneHydraulicLayerReceipt>) -> Result<Self, VegetationError> {
+        let mut indexed = BTreeMap::new();
+        for receipt in receipts {
+            let key = (
+                receipt.occupancy_id.clone(),
+                receipt.stratum_id.clone(),
+                receipt.layer_id.clone(),
+            );
+            if indexed.insert(key, receipt).is_some() {
+                return Err(VegetationError::Receipt(
+                    "duplicate root-zone hydraulic receipt".into(),
+                ));
+            }
+        }
+        Ok(Self { receipts: indexed })
+    }
+
+    pub fn get(
+        &self,
+        occupancy_id: &OccupancyId,
+        stratum_id: &StratumId,
+        layer_id: &SoilLayerId,
+    ) -> Result<&RootZoneHydraulicLayerReceipt, VegetationError> {
+        self.receipts
+            .get(&(occupancy_id.clone(), stratum_id.clone(), layer_id.clone()))
+            .ok_or(VegetationError::Receipt(
+                "missing root-zone hydraulic receipt".into(),
+            ))
+    }
+}
+
+impl RootZoneHydraulicLayerReceipt {
+    #[must_use]
+    pub const fn matric_potential_mm(&self) -> f64 {
+        self.matric_potential_mm
+    }
+    #[must_use]
+    pub const fn hydraulic_conductivity_mm_s(&self) -> f64 {
+        self.hydraulic_conductivity_mm_s
+    }
+    #[must_use]
+    pub const fn root_path_length_mm(&self) -> f64 {
+        self.root_path_length_mm
+    }
+    #[must_use]
+    pub const fn gravity_root_mm(&self) -> f64 {
+        self.gravity_root_mm
+    }
+    #[must_use]
+    pub const fn lateral_root_length_m(&self) -> f64 {
+        self.lateral_root_length_m
+    }
+    #[must_use]
+    pub const fn accessible(&self) -> bool {
+        self.accessible
+    }
+    #[must_use]
+    pub const fn frozen(&self) -> bool {
+        self.frozen
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -1749,6 +1877,7 @@ mod milestone_one_tests {
                 accessible: true,
                 frozen: false,
             }],
+            root_zone_hydraulics: None,
             gsi: 1.0,
         };
         let beginning_bytes = serde_json::to_vec(&state).expect("beginning bytes");

@@ -161,6 +161,7 @@ pub struct ExpectedRestartStaticContext<'a> {
     pub surface_liquid_configuration: &'a DirectSurfaceLiquidConfiguration,
     pub gsi_configuration: &'a DirectGsiOwnerConfigurationV1,
     pub forcing_static_configuration: &'a SnowFreeHalfHourStaticConfiguration,
+    pub root_zone_hydraulic_configuration: &'a openwepp_hillslope_orchestrator::v9_real_consumer_shadow::DirectRootZoneHydraulicConfiguration,
     pub phase_plan: &'a DirectPhasePlan,
     pub phase_plan_sha256: &'a Sha256Hex,
     pub day_inputs: &'a [Vec<DirectDayConstructorInputs>],
@@ -985,6 +986,11 @@ mod poison_tests {
                 .runtime
                 .shadow
                 .provider_static_configuration(),
+            root_zone_hydraulic_configuration: fixture
+                .owners
+                .runtime
+                .shadow
+                .root_zone_hydraulic_configuration(),
             phase_plan: &fixture
                 .owners
                 .runtime

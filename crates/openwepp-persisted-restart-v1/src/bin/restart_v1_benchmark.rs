@@ -10,6 +10,7 @@ fn median(mut samples: Vec<Duration>) -> Duration {
     samples[samples.len() / 2]
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() {
     let (fixture, checkpoint, run, topology) = restart_authority_in_progress_checkpoint_fixture(24);
     let context = ExpectedRestartStaticContext {
@@ -53,6 +54,11 @@ fn main() {
             .runtime
             .shadow
             .provider_static_configuration(),
+        root_zone_hydraulic_configuration: fixture
+            .owners
+            .runtime
+            .shadow
+            .root_zone_hydraulic_configuration(),
         phase_plan: &fixture
             .owners
             .runtime

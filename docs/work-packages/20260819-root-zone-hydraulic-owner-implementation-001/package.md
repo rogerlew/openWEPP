@@ -1,6 +1,6 @@
 # Implement Root-Zone Hydraulic Owner V1
 
-Status: `queued / blocked on root-zone owner authority release`
+Status: `executing / released authority implementation active`
 
 Date: `2026-08-19`
 
@@ -14,12 +14,14 @@ Implement the released `OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1` as an opaque,
 orchestrator-owned configuration and interval receipt, then remove caller-owned
 root hydraulic physics from the V10 scheduler seam.
 
-## Blocker
+## Authority release
 
-The authority package is on HOLD because explicit root-tissue path values
-cannot be supplied for required rooted scenarios and current subsurface
-conductivity has saturated/base semantics. Production implementation is not
-authorized until both are resolved and authority terminal verification passes.
+Authority package `20260819-root-zone-hydraulic-owner-authority-001` released
+`OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1` at local commit `de2b078fa`. The
+required non-defaulted stratum path, live-saturation Brooks--Corey operator,
+typed guards, exact vectors, three reviews, and two terminal verifiers passed.
+Production implementation is now authorized within this package's bounded
+write set.
 
 ## Intended future write set
 

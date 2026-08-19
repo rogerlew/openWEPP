@@ -640,16 +640,63 @@ impl V8ProjectedTileRuntimeInput {
                         .iter()
                         .find(|v| v.layer_id == root.forcing.layer_id)
                         .ok_or(V8InputProjectionError::Topology("unconfigured root layer"))?;
+                    let authority = if configured.root_fraction > 0.0 {
+                        self.vegetation_forcing
+                            .root_zone_hydraulics
+                            .as_ref()
+                            .map(|receipts| {
+                                receipts.get(
+                                    &occupancy.occupancy_id,
+                                    &config.stratum_id,
+                                    &root.forcing.layer_id,
+                                )
+                            })
+                            .transpose()?
+                    } else {
+                        None
+                    };
+                    if authority.is_some_and(|receipt| {
+                        receipt.lateral_root_length_m().to_bits()
+                            != configured.lateral_root_length_m.to_bits()
+                    }) {
+                        return Err(V8InputProjectionError::Identity(
+                            "root-zone lateral-root identity",
+                        ));
+                    }
                     Ok(RootHydraulicLayer {
                         layer_id: root.forcing.layer_id.as_str().into(),
-                        accessible: root.forcing.accessible,
-                        frozen: root.forcing.frozen,
+                        accessible: authority.map_or_else(
+                            || {
+                                self.vegetation_forcing.root_zone_hydraulics.is_none()
+                                    && root.forcing.accessible
+                            },
+                            openwepp_vegetation::RootZoneHydraulicLayerReceipt::accessible,
+                        ),
+                        frozen: authority.map_or_else(
+                            || {
+                                self.vegetation_forcing.root_zone_hydraulics.is_none()
+                                    && root.forcing.frozen
+                            },
+                            openwepp_vegetation::RootZoneHydraulicLayerReceipt::frozen,
+                        ),
                         root_fraction: configured.root_fraction,
-                        soil_potential_mm: root.forcing.matric_potential_mm,
-                        gravity_head_mm: root.forcing.gravity_root_mm,
-                        z3_m: root.forcing.root_path_length_mm / 1000.0,
+                        soil_potential_mm: authority.map_or_else(
+                            || root.forcing.matric_potential_mm,
+                            openwepp_vegetation::RootZoneHydraulicLayerReceipt::matric_potential_mm,
+                        ),
+                        gravity_head_mm: authority.map_or_else(
+                            || root.forcing.gravity_root_mm,
+                            openwepp_vegetation::RootZoneHydraulicLayerReceipt::gravity_root_mm,
+                        ),
+                        z3_m: authority.map_or_else(
+                            || root.forcing.root_path_length_mm / 1000.0,
+                            |v| v.root_path_length_mm() / 1000.0,
+                        ),
                         dxroot_m: configured.lateral_root_length_m,
-                        ksoil_m2_s: root.forcing.hydraulic_conductivity_mm_s / 1000.0,
+                        ksoil_m2_s: authority.map_or_else(
+                            || root.forcing.hydraulic_conductivity_mm_s / 1000.0,
+                            |v| v.hydraulic_conductivity_mm_s() / 1000.0,
+                        ),
                     })
                 })
                 .collect::<Result<Vec<_>, V8InputProjectionError>>()?;
@@ -1417,6 +1464,7 @@ mod tests {
             specific_humidity: 0.0102,
             reference_height_m: 24.0,
             soil_layers: Vec::new(),
+            root_zone_hydraulics: None,
             gsi: 1.0,
         }
     }

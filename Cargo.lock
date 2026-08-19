@@ -1055,6 +1055,7 @@ version = "0.1.0"
 name = "openwepp-hillslope-orchestrator"
 version = "0.1.0"
 dependencies = [
+ "libm",
  "openwepp-biogeochemistry",
  "openwepp-climate-runtime-adapter",
  "openwepp-input-contract",
@@ -1152,6 +1153,7 @@ dependencies = [
 name = "openwepp-persisted-restart-v1"
 version = "0.1.0"
 dependencies = [
+ "libm",
  "openwepp-biogeochemistry",
  "openwepp-hillslope-orchestrator",
  "openwepp-input-contract",

@@ -84,6 +84,10 @@ pub struct RealHydrologyWaterUse {
 #[derive(Clone, Debug, PartialEq)]
 pub struct RealHydrologyLayerFact {
     pub source: RealHydrologySourceKey,
+    pub liquid_water_depth_m: f64,
+    pub layer_thickness_m: f64,
+    pub porosity: f64,
+    pub saturated_conductivity_m_s: f64,
     pub liquid_supply_kg_m2: f64,
     pub frozen: bool,
 }
@@ -1095,6 +1099,10 @@ fn extract_layer_facts(
             }
             let fact = RealHydrologyLayerFact {
                 source: source.clone(),
+                liquid_water_depth_m: layer.theta_m,
+                layer_thickness_m: layer.depth_m,
+                porosity: layer.porosity,
+                saturated_conductivity_m_s: layer.conductivity_m_s,
                 liquid_supply_kg_m2: layer.theta_m * WATER_DENSITY_KG_M3,
                 frozen: fully_frozen,
             };

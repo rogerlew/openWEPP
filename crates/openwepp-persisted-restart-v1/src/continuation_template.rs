@@ -262,6 +262,7 @@ impl DirectV10ContinuationTemplateRestartV1 {
                     specific_humidity: 0.0,
                     reference_height_m: f("reference height", &i.reference_height_m)?,
                     soil_layers: soil,
+                    root_zone_hydraulics: None,
                     gsi: 0.0,
                 };
                 let wb = i

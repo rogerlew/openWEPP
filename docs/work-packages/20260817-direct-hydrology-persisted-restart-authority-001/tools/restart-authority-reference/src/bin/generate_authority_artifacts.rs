@@ -391,11 +391,7 @@ fn recursive_mapping_sources(repo: &Path) -> Vec<(String, String, Vec<AuthorityC
             let line = line.trim_start();
             if let Some(tail) = line.strip_prefix("pub struct ")
                 && (tail.contains('{') || tail.contains('('))
-                && !tail
-                    .split(['{', '('])
-                    .next()
-                    .unwrap()
-                    .contains('<')
+                && !tail.split(['{', '(']).next().unwrap().contains('<')
                 && let Some(name) = tail
                     .split(|c: char| !c.is_ascii_alphanumeric() && c != '_')
                     .next()
@@ -421,8 +417,7 @@ fn recursive_mapping_sources(repo: &Path) -> Vec<(String, String, Vec<AuthorityC
             )
         })
         .collect::<std::collections::VecDeque<_>>();
-    let mut found: std::collections::BTreeMap<_, (_, Vec<_>)> =
-        std::collections::BTreeMap::new();
+    let mut found: std::collections::BTreeMap<_, (_, Vec<_>)> = std::collections::BTreeMap::new();
     let mut seen = std::collections::BTreeSet::new();
     while let Some((name, path, inherited, authority_path, ancestry)) = queue.pop_front() {
         if !seen.insert(authority_path.clone()) {

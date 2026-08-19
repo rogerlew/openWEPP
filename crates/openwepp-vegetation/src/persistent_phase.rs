@@ -718,6 +718,7 @@ mod tests {
                     frozen: false,
                 },
             ],
+            root_zone_hydraulics: None,
             gsi: 1.0,
         };
         let operands = root_respiration_operands(&stratum, &forcing).expect("root-N operands");

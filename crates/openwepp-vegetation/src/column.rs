@@ -1159,6 +1159,7 @@ mod tests {
                     frozen: false,
                 },
             ],
+            root_zone_hydraulics: None,
             gsi: 0.5,
         }
     }

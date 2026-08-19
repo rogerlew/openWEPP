@@ -1590,7 +1590,7 @@ fn evaluate_covered_occupancy(
             let rai =
                 (occupancy.lai + occupancy.sai) * layer.root_fraction * occupancy.root_to_leaf_area;
             let flux = series * rai * (layer.soil_potential_mm - psi_root + layer.gravity_head_mm);
-            if flux < 0.0 {
+            if flux < 0.0 && column.authority == CoveredColumnAuthority::HistoricalV8 {
                 return Err(LandSurfaceEnergyError::UnsupportedDomain(
                     "hydraulic_redistribution",
                 ));
@@ -2622,6 +2622,17 @@ fn solve_covered_column_impl(
         if norm <= 1.0
             && (last_steps.is_some_and(CoveredStepNorms::accepted) || v10_initial_final_acceptance)
         {
+            if beginning.authority == CoveredColumnAuthority::V10NonpositiveAssimilation
+                && detail
+                    .occupancies
+                    .iter()
+                    .flat_map(|occupancy| &occupancy.source_water)
+                    .any(|source| source.law_kg_m2_tile_s < 0.0 || source.final_kg_m2_tile_s < 0.0)
+            {
+                return Err(LandSurfaceEnergyError::UnsupportedDomain(
+                    "hydraulic_redistribution",
+                ));
+            }
             let root_water = detail
                 .occupancies
                 .iter()

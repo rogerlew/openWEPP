@@ -519,6 +519,7 @@ fn snow_forcing(hydrology: &RealHydrologyShadowAdapter) -> SnowFreeForcing {
             }
         })
         .collect(),
+        root_zone_hydraulics: None,
         gsi: 1.0,
     }
 }

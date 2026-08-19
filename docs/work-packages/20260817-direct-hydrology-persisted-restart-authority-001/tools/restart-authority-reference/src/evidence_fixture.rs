@@ -17,8 +17,9 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
     build_hillslope_climate_runtime_request,
 };
 use openwepp_hillslope_orchestrator::v9_real_consumer_shadow::{
-    DirectV9ShadowIntervalInput, DirectV10RealConsumerShadow, DirectV10ShadowDayInput,
-    restart_authority_wb14_parameter_sha256,
+    DirectRootZoneHydraulicConfiguration, DirectRootZoneLayerConfiguration,
+    DirectRootZoneStratumGeometry, DirectV9ShadowIntervalInput, DirectV10RealConsumerShadow,
+    DirectV10ShadowDayInput, restart_authority_wb14_parameter_sha256,
 };
 use openwepp_input_contract::parsers::climate::{ParserMode, parse_climate_from_str};
 use openwepp_kernel_contract::{ResourceOwnerId, TransactionId};
@@ -53,6 +54,45 @@ pub struct RestartAuthorityPreparedDayFixture {
     pub forcing_receipts: Vec<crate::SnowFreeHalfHourDayReceiptRestartV1>,
     pub prepared: PreparedSnowFreeGsiDayV1,
     pub template: DirectV10ShadowDayInput,
+}
+
+fn root_zone_configuration(
+    vegetation: &openwepp_vegetation::VegetationConfiguration,
+    maps: &[openwepp_hillslope_orchestrator::vegetation_real_hydrology_shadow::RealHydrologyLaneLayerMap],
+    hydrology: &openwepp_hillslope_orchestrator::DirectRunFrame,
+) -> DirectRootZoneHydraulicConfiguration {
+    let mut layers = Vec::new();
+    for map in maps {
+        let lane = &hydrology.lanes[map.ofe_lane.lane_index];
+        let mut top_m = 0.0;
+        for (layer_id, layer) in map.layer_ids.iter().zip(&lane.subsurface_layers) {
+            let saturation = layer.theta_m / layer.depth_m / layer.porosity;
+            let factor = libm::pow(saturation.max(0.01), -4.05);
+            let node_m = top_m + 0.5 * layer.depth_m;
+            layers.push(
+                DirectRootZoneLayerConfiguration::try_new(
+                    map.ofe_lane.lane_index,
+                    map.ofe_lane.lane_id,
+                    layer_id.clone(),
+                    (-2_200.0 + 1_000.0 * node_m) / factor,
+                    4.05,
+                )
+                .unwrap(),
+            );
+            top_m += layer.depth_m;
+        }
+    }
+    DirectRootZoneHydraulicConfiguration::try_new(
+        layers,
+        vegetation
+            .strata
+            .iter()
+            .map(|stratum| {
+                DirectRootZoneStratumGeometry::try_new(stratum.stratum_id.clone(), 0.2).unwrap()
+            })
+            .collect(),
+    )
+    .unwrap()
 }
 
 pub fn restart_authority_identities(
@@ -411,7 +451,28 @@ pub fn restart_authority_owner_fixture() -> RestartAuthorityOwnerFixture {
 }
 
 pub fn restart_authority_evidence_fixture() -> RestartAuthorityEvidenceFixture {
-    let endpoint = endpoint_fixture();
+    let mut endpoint = endpoint_fixture();
+    let mut wet_frame = endpoint.hydrology.beginning_frame().clone();
+    for lane in &mut wet_frame.lanes {
+        for layer in &mut lane.subsurface_layers {
+            layer.theta_m = 0.95 * layer.porosity * layer.depth_m;
+            layer.conductivity_m_s = 1.0e-10;
+        }
+        lane.water.soil_water_m = lane
+            .subsurface_layers
+            .iter()
+            .map(|layer| layer.theta_m)
+            .sum();
+    }
+    endpoint.hydrology = openwepp_hillslope_orchestrator::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter::try_from_day_start(
+        &wet_frame,
+        0,
+        TransactionId(41),
+        1_800.0,
+        ResourceOwnerId::try_new("production-hydrology").unwrap(),
+        endpoint.hydrology.restart_authority_layer_maps(),
+    )
+    .unwrap();
     let mut v9_configuration = endpoint.vegetation_configuration.clone();
     v9_configuration.model_definition_sha256 = V9_MODEL_SHA256.into();
     v9_configuration.configuration_sha256 = v9_configuration.canonical_sha256().unwrap();
@@ -431,6 +492,18 @@ pub fn restart_authority_evidence_fixture() -> RestartAuthorityEvidenceFixture {
     vegetation_payload
         .configuration_sha256
         .clone_from(&vegetation_configuration.configuration_sha256);
+    for (occupancy_id, occupancy) in &mut vegetation_payload.occupancies {
+        let height_m = vegetation_configuration
+            .strata
+            .iter()
+            .find(|stratum| stratum.stratum_id == occupancy_id.stratum_id)
+            .unwrap()
+            .height_m;
+        occupancy.root_node_potential_mm = -1_900.0;
+        occupancy.stem_potential_mm = -1_900.0 - 1_000.0 * height_m;
+        occupancy.sun_leaf_potential_mm = occupancy.stem_potential_mm - 100.0;
+        occupancy.shade_leaf_potential_mm = occupancy.stem_potential_mm - 100.0;
+    }
     vegetation_payload.state_sha256 = vegetation_payload.canonical_sha256();
     vegetation_configuration
         .initial_state_sha256
@@ -508,6 +581,9 @@ pub fn restart_authority_evidence_fixture() -> RestartAuthorityEvidenceFixture {
             },
         )
         .collect();
+    let layer_maps = endpoint.hydrology.restart_authority_layer_maps().to_vec();
+    let root_zone =
+        root_zone_configuration(&vegetation_configuration, &layer_maps, &hydrology_frame);
     let shadow = DirectV10RealConsumerShadow::try_new(
         vegetation_configuration,
         vegetation_state,
@@ -515,7 +591,7 @@ pub fn restart_authority_evidence_fixture() -> RestartAuthorityEvidenceFixture {
         lse_configuration,
         lse_state,
         endpoint.surface_configuration.clone(),
-        endpoint.hydrology.restart_authority_layer_maps().to_vec(),
+        layer_maps,
         endpoint.thermal.clone(),
         endpoint.biogeochemistry.clone(),
         hydrology_frame,
@@ -524,6 +600,7 @@ pub fn restart_authority_evidence_fixture() -> RestartAuthorityEvidenceFixture {
         GsiState::new(),
         forcing,
         SnowFreeHalfHourProviderCursor::default(),
+        root_zone,
     )
     .unwrap();
     RestartAuthorityEvidenceFixture { shadow, endpoint }
@@ -623,6 +700,10 @@ mod tests {
                 .restart_authority_surface_configuration(),
             gsi_configuration: fixture.runtime.shadow.gsi_owner_configuration(),
             forcing_static_configuration: fixture.runtime.shadow.provider_static_configuration(),
+            root_zone_hydraulic_configuration: fixture
+                .runtime
+                .shadow
+                .root_zone_hydraulic_configuration(),
             phase_plan: &fixture
                 .runtime
                 .shadow
@@ -761,6 +842,11 @@ mod tests {
                 .runtime
                 .shadow
                 .provider_static_configuration(),
+            root_zone_hydraulic_configuration: fixture
+                .owners
+                .runtime
+                .shadow
+                .root_zone_hydraulic_configuration(),
             phase_plan: &fixture
                 .owners
                 .runtime
@@ -935,6 +1021,7 @@ mod tests {
             committed_gsi_state,
             context.forcing_static_configuration.clone(),
             committed_provider_cursor,
+            context.root_zone_hydraulic_configuration.clone(),
         )
         .unwrap();
         resumed

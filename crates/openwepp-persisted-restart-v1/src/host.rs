@@ -282,6 +282,7 @@ fn build_shadow(
             .map_err(DirectV10RealConsumerError::from)?,
         context.forcing_static_configuration.clone(),
         provider_cursor,
+        context.root_zone_hydraulic_configuration.clone(),
     )?)
 }
 
@@ -340,6 +341,11 @@ mod tests {
                 .runtime
                 .shadow
                 .provider_static_configuration(),
+            root_zone_hydraulic_configuration: fixture
+                .owners
+                .runtime
+                .shadow
+                .root_zone_hydraulic_configuration(),
             phase_plan: &fixture
                 .owners
                 .runtime
