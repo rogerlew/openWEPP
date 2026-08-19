@@ -439,7 +439,9 @@ fn fields(source: &str, name: &str) -> Vec<(String, String)> {
         if line == "}" {
             break;
         }
-        if current.is_empty() && !line.starts_with("pub ") {
+        if current.is_empty()
+            && (line.starts_with("#") || line.starts_with("//") || !line.contains(':'))
+        {
             continue;
         }
         if !current.is_empty() {
@@ -447,7 +449,12 @@ fn fields(source: &str, name: &str) -> Vec<(String, String)> {
         }
         current.push_str(line);
         if current.ends_with(',') {
-            let value = current.trim_end_matches(',').trim_start_matches("pub ");
+            let mut value = current.trim_end_matches(',');
+            if value.starts_with("pub")
+                && let Some((_, remainder)) = value.split_once(' ')
+            {
+                value = remainder;
+            }
             let (field, ty) = value.split_once(':').unwrap();
             output.push((field.trim().into(), ty.trim().into()));
             current.clear()

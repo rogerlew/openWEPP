@@ -200,6 +200,13 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
                 .any(|line| line.contains("reconstructed cache"))
         );
     }
+    for section in ledger.split("## `").skip(1) {
+        let name = section.split('`').next().unwrap();
+        assert!(
+            section.lines().any(|line| line.starts_with("| `")),
+            "empty recursively reached ledger section: {name}"
+        );
+    }
     let metadata =
         fs::read_to_string(root().join(PACKAGE).join("generated-field-metadata.json")).unwrap();
     for term in [
