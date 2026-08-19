@@ -33,7 +33,7 @@ fn authority_binds_canonical_phase_union_atomicity_and_typed_failures() {
         "one non-fallible assignment",
         "unsupported_laned_active",
     ] {
-        assert!(authority.contains(marker), "missing {marker}")
+        assert!(authority.contains(marker), "missing {marker}");
     }
 }
 
@@ -44,16 +44,12 @@ fn restart_evidence_access_is_nondefault_and_has_no_production_selector() {
             .unwrap();
     assert!(cargo.contains("default = []"));
     assert!(cargo.contains("restart-authority-evidence = []"));
+    assert!(cargo.contains("persisted-restart-v1 = []"));
     let shadow = fs::read_to_string(
         root().join("crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs"),
     )
     .unwrap();
-    assert!(
-        shadow
-            .matches("#[cfg(feature = \"restart-authority-evidence\")]")
-            .count()
-            >= 10
-    );
+    assert!(shadow.matches("feature = \"persisted-restart-v1\"").count() >= 10);
     for forbidden in [
         "restart_selector",
         "restart_checkpoint_path",
@@ -141,6 +137,7 @@ fn poison_inventory_is_bound_to_typed_admission_and_live_byte_evidence() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn generated_metadata_ledger_and_poison_inventory_are_complete() {
     let ledger = fs::read_to_string(
         root()
@@ -176,7 +173,7 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
         "DirectFrostLayerCarryProjection",
         "DirectPublicationFrame",
     ] {
-        assert!(ledger.contains(&format!("## `{owner}`")), "missing {owner}")
+        assert!(ledger.contains(&format!("## `{owner}`")), "missing {owner}");
     }
     let publication = ledger.split("## `DirectPublicationFrame`").nth(1).unwrap();
     assert!(
@@ -229,7 +226,7 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
         "comparison",
         "mismatch_poison",
     ] {
-        assert!(metadata.contains(term))
+        assert!(metadata.contains(term));
     }
     let poison = fs::read_to_string(root().join(PACKAGE).join("poison-matrix.md")).unwrap();
     for category in [
@@ -263,7 +260,7 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
         "groundwater_total_area",
         "erosion_publication",
     ] {
-        assert!(poison.contains(category), "missing {category}")
+        assert!(poison.contains(category), "missing {category}");
     }
 }
 
@@ -277,11 +274,12 @@ fn manifest_binds_every_schema_and_vector_byte_for_byte() {
         assert_eq!(
             format!("{:x}", Sha256::digest(artifact(path))),
             entry["sha256"].as_str().unwrap()
-        )
+        );
     }
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn generated_schema_accepts_every_frozen_vector_and_rejects_wire_bounds() {
     let schema = value("checkpoint-schema.json");
     let validator = jsonschema::validator_for(&schema).unwrap();

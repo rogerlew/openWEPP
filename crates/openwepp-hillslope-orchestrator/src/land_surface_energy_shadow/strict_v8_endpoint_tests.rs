@@ -545,6 +545,7 @@ fn biogeochemistry() -> BiogeochemistryState {
     }
 }
 
+#[cfg_attr(test, allow(unreachable_pub))]
 pub struct EndpointFixture {
     pub vegetation_configuration: VegetationConfiguration,
     pub vegetation_state: V8CoupledOwnedState,
@@ -558,6 +559,7 @@ pub struct EndpointFixture {
     pub biogeochemistry: BiogeochemistryState,
 }
 
+#[cfg_attr(test, allow(unreachable_pub))]
 pub fn endpoint_fixture() -> EndpointFixture {
     let (vegetation_configuration, vegetation_state) = vegetation();
     let (surface_configuration, frame) = surface();

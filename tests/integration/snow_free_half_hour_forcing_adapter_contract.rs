@@ -326,7 +326,7 @@ fn actual_breakpoint_climate_projects_complete_digest_bound_receipts() {
         .snow_free_half_hour_forcing_receipts(
             0,
             &provider_configuration(),
-            &mut SnowFreeHalfHourProviderCursor::default(),
+            &SnowFreeHalfHourProviderCursor::default(),
         )
         .expect("snow-free receipt projection");
     assert_eq!(receipts.len(), 2);
@@ -416,7 +416,7 @@ fn provider_rejects_unsupported_domains_and_digest_mutation() {
         .snow_free_half_hour_forcing_receipts(
             0,
             &provider_configuration(),
-            &mut SnowFreeHalfHourProviderCursor::default(),
+            &SnowFreeHalfHourProviderCursor::default(),
         )
         .expect_err("zero wind must reject");
     assert_eq!(
@@ -428,7 +428,7 @@ fn provider_rejects_unsupported_domains_and_digest_mutation() {
         .snow_free_half_hour_forcing_receipts(
             0,
             &provider_configuration(),
-            &mut SnowFreeHalfHourProviderCursor::default(),
+            &SnowFreeHalfHourProviderCursor::default(),
         )
         .expect_err("closure owner rejects negative daily GSI VPD");
     assert_eq!(
@@ -445,7 +445,7 @@ fn provider_rejects_unsupported_domains_and_digest_mutation() {
             .snow_free_half_hour_forcing_receipts(
                 0,
                 &duplicate,
-                &mut SnowFreeHalfHourProviderCursor::default()
+                &SnowFreeHalfHourProviderCursor::default()
             )
             .expect_err("duplicate destination must reject"),
         SnowFreeHalfHourForcingError::Identity("destination configuration")
@@ -458,7 +458,7 @@ fn provider_rejects_unsupported_domains_and_digest_mutation() {
             .snow_free_half_hour_forcing_receipts(
                 0,
                 &invalid_gsi,
-                &mut SnowFreeHalfHourProviderCursor::default()
+                &SnowFreeHalfHourProviderCursor::default()
             )
             .expect_err("out-of-domain GSI must reject"),
         SnowFreeHalfHourForcingError::Identity("provider configuration")
@@ -470,7 +470,7 @@ fn provider_rejects_unsupported_domains_and_digest_mutation() {
             .snow_free_half_hour_forcing_receipts(
                 0,
                 &invalid_digest,
-                &mut SnowFreeHalfHourProviderCursor::default()
+                &SnowFreeHalfHourProviderCursor::default()
             )
             .expect_err("nonhex digest must reject"),
         SnowFreeHalfHourForcingError::Identity("provider configuration")
@@ -481,7 +481,7 @@ fn provider_rejects_unsupported_domains_and_digest_mutation() {
             .snow_free_half_hour_forcing_receipts(
                 0,
                 &provider_configuration(),
-                &mut SnowFreeHalfHourProviderCursor::default()
+                &SnowFreeHalfHourProviderCursor::default()
             )
             .expect_err("cold carry cannot be relabeled liquid"),
         SnowFreeHalfHourForcingError::Unsupported("snow or mixed precipitation carry")
@@ -491,7 +491,7 @@ fn provider_rejects_unsupported_domains_and_digest_mutation() {
         .snow_free_half_hour_forcing_receipts(
             0,
             &provider_configuration(),
-            &mut SnowFreeHalfHourProviderCursor::default(),
+            &SnowFreeHalfHourProviderCursor::default(),
         )
         .expect("valid receipt")
         .receipts()[0]
@@ -505,12 +505,13 @@ fn provider_rejects_unsupported_domains_and_digest_mutation() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn parent_fallback_midnight_carry_and_authority_primitives_are_executable() {
     let fallback = request(&warm_non_breakpoint_climate())
         .snow_free_half_hour_forcing_receipts(
             0,
             &provider_configuration(),
-            &mut SnowFreeHalfHourProviderCursor::default(),
+            &SnowFreeHalfHourProviderCursor::default(),
         )
         .expect("parent-hour fallback")
         .receipts()[0]
@@ -528,7 +529,7 @@ fn parent_fallback_midnight_carry_and_authority_primitives_are_executable() {
         .snow_free_half_hour_forcing_receipts(
             0,
             &provider_configuration(),
-            &mut SnowFreeHalfHourProviderCursor::default(),
+            &SnowFreeHalfHourProviderCursor::default(),
         )
         .expect("changed storm duration")
         .receipts()[0]
@@ -542,7 +543,7 @@ fn parent_fallback_midnight_carry_and_authority_primitives_are_executable() {
         .snow_free_half_hour_forcing_receipts(
             0,
             &provider_configuration(),
-            &mut SnowFreeHalfHourProviderCursor::default(),
+            &SnowFreeHalfHourProviderCursor::default(),
         )
         .expect("midnight carry")
         .receipts()[0]
