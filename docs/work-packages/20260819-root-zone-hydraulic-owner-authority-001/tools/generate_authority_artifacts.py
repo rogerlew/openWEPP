@@ -196,6 +196,7 @@ def main() -> None:
             receipt_properties[field] = {"type": "string", "pattern": "^[0-9a-f]{16}$"}
         else:
             receipt_properties[field] = {"type": "string", "minLength": 1}
+    receipt_properties["model_definition_sha256"] = {"const": model["model_definition_sha256"]}
     write("receipt-schema.json", {"$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object", "additionalProperties": False, "required": receipt_fields,
         "properties": receipt_properties})

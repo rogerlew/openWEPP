@@ -134,7 +134,7 @@ fn digest(value: &Value) -> String {
     format!("{:x}", Sha256::digest(bytes))
 }
 
-fn validate_configuration(mut value: Value) -> Result<Value, &'static str> {
+fn validate_configuration(mut value: Value, expected: &Value) -> Result<Value, &'static str> {
     let found = value["configuration_sha256"]
         .as_str()
         .ok_or("ConfigurationIdentity")?
@@ -144,6 +144,18 @@ fn validate_configuration(mut value: Value) -> Result<Value, &'static str> {
         return Err("ConfigurationDigest");
     }
     value["configuration_sha256"] = Value::String(found);
+    for field in [
+        "schema_version",
+        "model_definition_sha256",
+        "owner_id",
+        "hydrology_configuration_sha256",
+        "vegetation_configuration_sha256",
+        "lse_configuration_sha256",
+    ] {
+        if value[field] != expected[field] {
+            return Err("ConfigurationIdentity");
+        }
+    }
     let layers = value["ordered_layers"]
         .as_array()
         .ok_or("ConfigurationIdentity")?;
@@ -177,6 +189,12 @@ fn validate_configuration(mut value: Value) -> Result<Value, &'static str> {
     if ids != vec![Some("stratum-1")] {
         return Err("ConfigurationIdentity");
     }
+    if strata
+        .iter()
+        .any(|v| v.get("root_tissue_lateral_path_m").is_none())
+    {
+        return Err("ConfigurationIdentity");
+    }
     if strata.iter().any(|v| {
         v["root_tissue_lateral_path_m"]
             .as_f64()
@@ -187,7 +205,11 @@ fn validate_configuration(mut value: Value) -> Result<Value, &'static str> {
     Ok(value)
 }
 
-fn validate_receipt(mut receipt: Value, configuration: &Value) -> Result<Value, &'static str> {
+fn validate_receipt(
+    mut receipt: Value,
+    configuration: &Value,
+    source: &Value,
+) -> Result<Value, &'static str> {
     let found = receipt["receipt_sha256"]
         .as_str()
         .ok_or("ReceiptDigest")?
@@ -197,26 +219,79 @@ fn validate_receipt(mut receipt: Value, configuration: &Value) -> Result<Value, 
         return Err("ReceiptDigest");
     }
     receipt["receipt_sha256"] = Value::String(found);
+    for field in [
+        "transaction_id",
+        "day_index",
+        "interval_index",
+        "owner_id",
+        "model_definition_sha256",
+        "configuration_sha256",
+        "hydrology_beginning_state_sha256",
+        "vegetation_configuration_sha256",
+        "lse_configuration_sha256",
+        "occupancy_id",
+        "stratum_id",
+        "ofe_id",
+        "production_lane_index",
+        "production_lane_id",
+        "layer_id",
+        "liquid_water_depth_m",
+        "layer_thickness_m",
+        "porosity",
+        "saturated_conductivity_m_s",
+        "soil_root_interface_distance_m",
+        "accessible",
+    ] {
+        if receipt[field] != source[field] {
+            return Err("OwnerJoin");
+        }
+    }
     if receipt["configuration_sha256"] != configuration["configuration_sha256"]
+        || receipt["model_definition_sha256"] != configuration["model_definition_sha256"]
         || receipt["vegetation_configuration_sha256"]
             != configuration["vegetation_configuration_sha256"]
         || receipt["lse_configuration_sha256"] != configuration["lse_configuration_sha256"]
-        || receipt["ofe_id"] != "ofe-1"
-        || receipt["production_lane_index"] != 0
-        || receipt["production_lane_id"] != "lane-1"
-        || receipt["layer_id"] != "layer-1"
-        || receipt["stratum_id"] != "stratum-1"
-        || receipt["hydrology_beginning_state_sha256"] != "4".repeat(64)
     {
         return Err("OwnerJoin");
     }
     if receipt["frozen"] == true {
         return Err("FrozenRootedLayerUnsupported");
     }
-    if f(&receipt["gravity_root_mm"]) > 0.0
-        || f(&receipt["root_path_length_mm"]) < f(&receipt["gravity_root_mm"]).abs()
+    let layer = &configuration["ordered_layers"][0];
+    let geometry = &configuration["ordered_stratum_geometry"][0];
+    if receipt["ofe_id"] != layer["ofe_id"]
+        || receipt["production_lane_index"] != layer["production_lane_index"]
+        || receipt["production_lane_id"] != layer["production_lane_id"]
+        || receipt["layer_id"] != layer["layer_id"]
+        || receipt["stratum_id"] != geometry["stratum_id"]
+        || f(&receipt["root_tissue_lateral_path_m"]).to_bits()
+            != geometry["root_tissue_lateral_path_m"]
+                .as_f64()
+                .unwrap()
+                .to_bits()
     {
-        return Err("Domain");
+        return Err("OwnerJoin");
+    }
+    let input = serde_json::json!({
+        "liquid_m": receipt["liquid_water_depth_m"], "thickness_m": receipt["layer_thickness_m"],
+        "porosity": receipt["porosity"], "ksat_m_s": receipt["saturated_conductivity_m_s"],
+        "psi_sat_mm": hx(layer["saturated_matric_potential_mm"].as_f64().unwrap()),
+        "b": hx(layer["clapp_hornberger_b"].as_f64().unwrap()), "top_m": hx(0.0),
+        "lateral_m": receipt["root_tissue_lateral_path_m"],
+        "dxroot_m": receipt["soil_root_interface_distance_m"]
+    });
+    let reconstructed = authority_evaluate(&input, false, true)?;
+    for (receipt_field, expected_field) in [
+        ("relative_saturation", "relative_saturation"),
+        ("matric_potential_mm", "matric_potential_mm"),
+        ("soil_conductivity_mm_s", "soil_conductivity_mm_s"),
+        ("layer_node_depth_m", "layer_node_depth_m"),
+        ("gravity_root_mm", "gravity_root_mm"),
+        ("root_path_length_mm", "root_path_length_mm"),
+    ] {
+        if receipt[receipt_field] != reconstructed[expected_field] {
+            return Err("ReceiptScientificMismatch");
+        }
     }
     Ok(receipt)
 }
@@ -384,18 +459,23 @@ fn every_rejected_vector_executes_its_typed_guard() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically() {
     let configuration: Value = serde_json::from_str(&text(&format!(
         "{PACKAGE}/artifacts/configuration-vector.json"
     )))
     .unwrap();
-    let configuration = validate_configuration(configuration).unwrap();
+    let expected_configuration = configuration.clone();
+    let configuration = validate_configuration(configuration, &expected_configuration).unwrap();
     let receipt: Value =
         serde_json::from_str(&text(&format!("{PACKAGE}/artifacts/receipt-vector.json"))).unwrap();
-    validate_receipt(receipt.clone(), &configuration).unwrap();
+    validate_receipt(receipt.clone(), &configuration, &receipt).unwrap();
     let live = serde_json::to_vec(&receipt).unwrap();
     let check = |mutated: Value, expected| {
-        assert_eq!(validate_receipt(mutated, &configuration), Err(expected));
+        assert_eq!(
+            validate_receipt(mutated, &configuration, &receipt),
+            Err(expected)
+        );
         assert_eq!(serde_json::to_vec(&receipt).unwrap(), live);
     };
     let mut bad = receipt.clone();
@@ -415,7 +495,7 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
     bad["gravity_root_mm"] = Value::String(hx(f(&receipt["gravity_root_mm"]).abs()));
     bad["receipt_sha256"] = Value::String(String::new());
     bad["receipt_sha256"] = Value::String(digest(&bad));
-    check(bad, "Domain");
+    check(bad, "ReceiptScientificMismatch");
     let mut bad = receipt.clone();
     bad["frozen"] = Value::Bool(true);
     bad["receipt_sha256"] = Value::String(String::new());
@@ -424,6 +504,7 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
 
     for field in [
         "hydrology_beginning_state_sha256",
+        "model_definition_sha256",
         "vegetation_configuration_sha256",
         "lse_configuration_sha256",
     ] {
@@ -432,6 +513,48 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
         bad["receipt_sha256"] = Value::String(String::new());
         bad["receipt_sha256"] = Value::String(digest(&bad));
         check(bad, "OwnerJoin");
+    }
+    for field in [
+        "transaction_id",
+        "day_index",
+        "interval_index",
+        "owner_id",
+        "occupancy_id",
+        "ofe_id",
+        "production_lane_index",
+        "production_lane_id",
+    ] {
+        let mut bad = receipt.clone();
+        bad[field] = match field {
+            "day_index" | "interval_index" | "production_lane_index" => Value::from(9),
+            _ => Value::String("wrong".into()),
+        };
+        bad["receipt_sha256"] = Value::String(String::new());
+        bad["receipt_sha256"] = Value::String(digest(&bad));
+        check(bad, "OwnerJoin");
+    }
+    for field in [
+        "relative_saturation",
+        "matric_potential_mm",
+        "soil_conductivity_mm_s",
+        "layer_node_depth_m",
+        "root_tissue_lateral_path_m",
+        "root_path_length_mm",
+        "soil_root_interface_distance_m",
+    ] {
+        let mut bad = receipt.clone();
+        bad[field] = Value::String(hx(42.0));
+        bad["receipt_sha256"] = Value::String(String::new());
+        bad["receipt_sha256"] = Value::String(digest(&bad));
+        let expected = if matches!(
+            field,
+            "root_tissue_lateral_path_m" | "soil_root_interface_distance_m"
+        ) {
+            "OwnerJoin"
+        } else {
+            "ReceiptScientificMismatch"
+        };
+        check(bad, expected);
     }
 
     let mut bad_config = configuration.clone();
@@ -442,9 +565,30 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
     bad_config["configuration_sha256"] = Value::String(String::new());
     bad_config["configuration_sha256"] = Value::String(digest(&bad_config));
     assert_eq!(
-        validate_configuration(bad_config),
+        validate_configuration(bad_config, &expected_configuration),
         Err("ConfigurationIdentity")
     );
+    for field in [
+        "model_definition_sha256",
+        "owner_id",
+        "hydrology_configuration_sha256",
+        "vegetation_configuration_sha256",
+        "lse_configuration_sha256",
+    ] {
+        let mut bad = configuration.clone();
+        bad[field] = Value::String(if field == "owner_id" {
+            "wrong".into()
+        } else {
+            "9".repeat(64)
+        });
+        bad["configuration_sha256"] = Value::String(String::new());
+        bad["configuration_sha256"] = Value::String(digest(&bad));
+        assert_eq!(
+            validate_configuration(bad, &expected_configuration),
+            Err("ConfigurationIdentity"),
+            "{field}"
+        );
+    }
     let mut missing = configuration.clone();
     missing["ordered_stratum_geometry"][0]
         .as_object_mut()
@@ -452,7 +596,10 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
         .remove("root_tissue_lateral_path_m");
     missing["configuration_sha256"] = Value::String(String::new());
     missing["configuration_sha256"] = Value::String(digest(&missing));
-    assert_eq!(validate_configuration(missing), Err("Domain"));
+    assert_eq!(
+        validate_configuration(missing, &expected_configuration),
+        Err("ConfigurationIdentity")
+    );
 }
 
 #[test]

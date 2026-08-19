@@ -1,5 +1,9 @@
 # Conductivity Semantics Audit
 
+Historical HOLD intake evidence. The audited `Ksat` lineage remains binding;
+the missing current-conductivity disposition is superseded by the selected
+Brooks--Corey operator in `SC-ROOTZONEHYDRAULICS-001@1.0.0-rc1`.
+
 Evidence class: `Static`
 
 Verdict: `DirectSubsurfaceLayerState.conductivity_m_s` is not an admitted

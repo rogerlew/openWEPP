@@ -1,5 +1,8 @@
 # Root Hydraulic Field Map
 
+Historical HOLD intake evidence. Its blocker dispositions are superseded by
+`SC-ROOTZONEHYDRAULICS-001@1.0.0-rc1`; the source census remains retained.
+
 Evidence class: `Static`
 
 | V10 operand | Current repository source | Disposition |

@@ -1,5 +1,8 @@
 # HOLD Legitimacy Audit
 
+Historical evidence for commit `2465849c9`; the HOLD was subsequently lifted
+by explicit non-defaulted stratum geometry and constitutive authority.
+
 Evidence class: `Static`
 
 ## Named boundary
