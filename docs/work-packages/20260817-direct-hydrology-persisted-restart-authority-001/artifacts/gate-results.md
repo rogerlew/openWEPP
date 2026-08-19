@@ -123,3 +123,20 @@ Ran after correction: reference tests PASS 28/28, warnings-denied Clippy PASS,
 direct authority PASS 7/7, forcing PASS 7/7, V10 PASS 3/3, AUTH11 PASS 3/3,
 anti-evasion PASS, formatting PASS, and diff hygiene PASS. Exact-current
 reviews remain undispatched until the replacement commit is frozen.
+
+## Second frozen-review correction pass (2026-08-19)
+
+The serialization/GSI-forcing review of
+`e4e6d32cfb546c4db8a2fd18a2f980bf5a9e17d5` returned FAIL on three generated
+artifact defects. The generator now constrains only the checkpoint phase's
+`next_interval_index` to 1..47 while retaining the nested surface-continuation
+0..47 domain, does not infer topology/configuration array cardinalities from
+the four examples, explicitly retains 48 forcing intervals, and classifies
+`DirectErosionDownstreamOperands.publication` as a persisted explicit DTO.
+The ledger and schema were regenerated; the focused schema test now executes
+interval-zero rejection and non-fixture lane/destination cardinality acceptance.
+
+Ran after correction: reference tests PASS 28/28, warnings-denied Clippy PASS,
+direct authority PASS 7/7, forcing PASS 7/7, V10 PASS 3/3, AUTH11 PASS 3/3,
+anti-evasion PASS, and diff hygiene PASS. A new exact commit and all three
+exact-current authority reviews are required before terminal verification.

@@ -202,57 +202,63 @@ fn fields(source: &str, name: &str) -> Vec<(String, String)> {
     }
     output
 }
-fn disposition(field: &str) -> (&'static str, &'static str, &'static str, &'static str) {
-    match field {
-        "phase_plan" => (
+fn disposition(source_type: &str, field: &str) -> (&'static str, &'static str, &'static str, &'static str) {
+    match (source_type, field) {
+        ("DirectErosionDownstreamOperands", "publication") => (
+            "persisted explicit DTO",
+            "DirectErosionDownstreamOperands.publication",
+            "field-for-field PublicationErosionRestartV1 projection",
+            "publication authority/payload invariant mutation",
+        ),
+        (_, "phase_plan") => (
             "reconstructed",
             "supplied DirectPhasePlan selected by phase_plan_sha256",
             "clone exact supplied plan; re-project digest",
             "phase_plan digest mismatch",
         ),
-        "publication" => (
+        (_, "publication") => (
             "excluded scratch",
             "no source operands",
             "DirectPublicationFrame::empty()",
             "persisted publication member",
         ),
-        "lane_transfer_shadow_projection" => (
+        (_, "lane_transfer_shadow_projection") => (
             "reconstructed",
             "lane_transfer_downstream_operands",
             "field-for-field DirectRunTransferShadowProjection",
             "bit/identity mismatch",
         ),
-        "snow_runtime_carry" => (
+        (_, "snow_runtime_carry") => (
             "reconstructed optional canonical",
             "winter_column.snow",
             "restore winter column then canonical snow compatibility projection",
             "persisted/reconstructed mismatch or noncanonical empty carry",
         ),
-        "frost_runtime_carry" => (
+        (_, "frost_runtime_carry") => (
             "reconstructed optional canonical",
             "winter_column.frost",
             "restore winter column then canonical frost compatibility projection",
             "persisted/reconstructed mismatch or noncanonical empty carry",
         ),
-        "day_inputs" => (
+        (_, "day_inputs") => (
             "reconstructed immutable input",
             "ExpectedRestartStaticContext.day_inputs plus day_inputs_sha256",
             "clone exact supplied lane day inputs",
             "day-input digest mismatch",
         ),
-        "laned_active" => (
+        (_, "laned_active") => (
             "unsupported",
             "none",
             "typed rejection before projection",
             "unsupported_laned_active",
         ),
-        "laned_active_summary" => (
+        (_, "laned_active_summary") => (
             "excluded scratch",
             "none",
             "must remain absent",
             "persisted member",
         ),
-        _ => (
+        (_, _) => (
             "persisted explicit DTO",
             "runtime field",
             "named fixed-width wire projection",
@@ -270,7 +276,7 @@ fn generate_metadata_and_ledger(root: &Path) {
         ledger.push_str(&format!("## `{name}`\n\n| Source field | Rust type | Classification | Source operands | Reconstruction operation | Exact comparison | Mismatch poison | Omission consequence |\n|---|---|---|---|---|---|---|---|\n"));
         let source = fs::read_to_string(repo.join(path)).unwrap();
         for (field, ty) in fields(&source, name) {
-            let (class, operands, operation, poison) = disposition(&field);
+            let (class, operands, operation, poison) = disposition(name, &field);
             let comparison = if class.starts_with("persisted") {
                 "exact identity and binary64 bit equality"
             } else {
@@ -335,21 +341,11 @@ fn schema_for(values: &[serde_json::Value]) -> serde_json::Value {
             serde_json::json!({"type":"object","additionalProperties":false,"required":keys,"properties":properties})
         }
         serde_json::Value::Array(_) => {
-            let lengths = values
-                .iter()
-                .map(|value| value.as_array().unwrap().len())
-                .collect::<std::collections::BTreeSet<_>>();
             let nested = values
                 .iter()
                 .flat_map(|value| value.as_array().into_iter().flatten().cloned())
                 .collect::<Vec<_>>();
-            let mut schema = serde_json::json!({"type":"array","items":if nested.is_empty(){serde_json::json!({})}else{schema_for(&nested)}});
-            if lengths.len() == 1 {
-                let length = *lengths.iter().next().unwrap();
-                schema["minItems"] = serde_json::json!(length);
-                schema["maxItems"] = serde_json::json!(length);
-            }
-            schema
+            serde_json::json!({"type":"array","items":if nested.is_empty(){serde_json::json!({})}else{schema_for(&nested)}})
         }
         serde_json::Value::String(_) => {
             let strings = values.iter().map(|value| value.as_str().unwrap()).collect::<Vec<_>>();
@@ -382,6 +378,10 @@ fn bind_wire_schema(node: &mut serde_json::Value, property_name: Option<&str>) {
                 node["minimum"] = serde_json::json!(0);
                 node["maximum"] = serde_json::json!(47);
             }
+            "intervals" => {
+                node["minItems"] = serde_json::json!(48);
+                node["maxItems"] = serde_json::json!(48);
+            }
             "interval_index" => {
                 node["minimum"] = serde_json::json!(0);
                 node["maximum"] = serde_json::json!(47);
@@ -411,6 +411,18 @@ fn bind_wire_schema(node: &mut serde_json::Value, property_name: Option<&str>) {
     }
     if let Some(items) = node.get_mut("items") {
         bind_wire_schema(items, None);
+    }
+}
+
+fn bind_checkpoint_phase_bounds(schema: &mut serde_json::Value) {
+    let branches = schema["properties"]["phase"]["oneOf"]
+        .as_array_mut()
+        .expect("checkpoint phase union");
+    for branch in branches {
+        if let Some(next_interval) = branch["properties"].get_mut("next_interval_index") {
+            next_interval["minimum"] = serde_json::json!(1);
+            next_interval["maximum"] = serde_json::json!(47);
+        }
     }
 }
 
@@ -488,6 +500,7 @@ fn main() {
         .collect::<Vec<_>>();
     let mut schema = schema_for(&values);
     bind_wire_schema(&mut schema, None);
+    bind_checkpoint_phase_bounds(&mut schema);
     schema.as_object_mut().unwrap().insert(
         "$schema".into(),
         serde_json::Value::String("https://json-schema.org/draft/2020-12/schema".into()),

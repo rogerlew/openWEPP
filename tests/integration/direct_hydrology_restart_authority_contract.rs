@@ -265,6 +265,25 @@ fn generated_schema_accepts_every_frozen_vector_and_rejects_wire_bounds() {
     invalid["phase"]["next_interval_index"] = Value::from(48);
     assert!(!validator.is_valid(&invalid));
     invalid = value("checkpoint-in-progress-vector.json");
+    invalid["phase"]["next_interval_index"] = Value::from(0);
+    assert!(!validator.is_valid(&invalid));
+    invalid = value("checkpoint-in-progress-vector.json");
     invalid["phase"]["kind"] = Value::from("invented_phase");
     assert!(!validator.is_valid(&invalid));
+
+    // Topology-bound owner cardinalities are not inferred from the four
+    // examples. Typed admission, not the wire schema, validates their joins.
+    let mut flexible = value("checkpoint-in-progress-vector.json");
+    let lane = flexible["phase"]["staged_scientific"]["direct_hydrology"]["lanes"][0]
+        .clone();
+    flexible["phase"]["staged_scientific"]["direct_hydrology"]["lanes"]
+        .as_array_mut()
+        .unwrap()
+        .push(lane);
+    let forcing = flexible["phase"]["validated_forcing_day_receipts"][0].clone();
+    flexible["phase"]["validated_forcing_day_receipts"]
+        .as_array_mut()
+        .unwrap()
+        .push(forcing);
+    assert!(validator.is_valid(&flexible));
 }
