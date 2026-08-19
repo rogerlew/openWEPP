@@ -1,6 +1,6 @@
 # Admit Direct-Hydrology Persisted Restart Authority
 
-Status: `executing / authority authored; validation and independent review pending`
+Status: `COMPLETE / authority released; production restart implementation not started`
 
 Date: `2026-08-17`
 
@@ -36,6 +36,11 @@ carry, identity, topology, configuration, interval/day cursor, and forcing
 provider receipt is bound; deterministic binary64-safe serialization and typed
 poisons are specified; independent state/restart and hydrology reviews plus
 dual verification pass.
+
+Disposition: all exit criteria passed on the frozen authority bytes. Three
+independent authority reviews and two terminal verifiers passed; the authority
+prompt is archived. Any production restart implementation or downstream
+forcing/Child-4 campaign closure is separate future work.
 
 ## Delegation
 
