@@ -1,6 +1,6 @@
 # Execute Vegetation And Land Surface Through A Real Shadow Consumer
 
-Status: `executing / implementation HOLD on real provider and persisted restart`
+Status: `HOLD / newly demonstrated live-owner template contradiction`
 
 Date: `2026-08-14`
 
@@ -20,8 +20,8 @@ domain coverage and performance without activation.
 - [x] Start after Children 1--3 close.
 - [x] Freeze real input providers, scheduler point and complete owner set.
 - [x] Implement explicit shadow API and atomic whole-state transaction.
-- [ ] Run repository-backed scenarios, coverage audit and legacy comparison.
-- [ ] Pass reviews, heavy gates, benchmark and dual verification.
+- [x] Run repository-backed scenarios, coverage audit and legacy comparison.
+- [ ] Close live-owner template reconstruction, then pass terminal verification.
 
 ## Implementation Intent
 

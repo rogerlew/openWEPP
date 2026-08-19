@@ -1,5 +1,15 @@
 # Review Finding Disposition
 
+## Exact-current material finding
+
+Status: `HOLD` on `81c2a910c4c47eadd71649959d145d2f82125b9c`.
+
+The scheduler/native-provider and provider-static contradictions are fixed.
+The remaining V10 template can still inject soil hydraulic/root, albedo and
+runon operands not reconstructed from live owners. This newly demonstrated
+owner contradiction is accepted and not waived. Terminal verification and
+campaign closure are withheld.
+
 Status: `all findings accepted / two material closure findings unresolved`
 
 The first independent land-surface, hydrology/ownership, and Rust reviews all

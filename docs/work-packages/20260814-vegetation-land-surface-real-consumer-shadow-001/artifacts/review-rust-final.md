@@ -1,5 +1,13 @@
 # Independent Rust Review
 
+## Exact implementation re-review
+
+Evidence class: `Static` plus reviewer-run diff hygiene. Verdict: `PASS` on
+`81c2a910c4c47eadd71649959d145d2f82125b9c`. The default-off scheduler seam
+accepts only the opaque prepared capability and typed template, executes on
+isolated candidates, buffers output, and assigns production plus the complete
+V10 owner only after all fallible work succeeds. No material finding remains.
+
 Reviewer: `child4_rust_review` (Anscombe)
 
 Evidence class: `Static + Ran` at `a7e481022593bd2c00eeaec7346a06e816aa4b3c`.

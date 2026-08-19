@@ -1,5 +1,17 @@
 # Independent Science Review
 
+## Exact implementation re-review
+
+Evidence class: `Static` plus reviewer-run focused tests. Verdict: `FAIL` on
+`81c2a910c4c47eadd71649959d145d2f82125b9c`.
+
+The scheduler now consumes the native opaque meteorological/GSI owner, and its
+static provider mismatch is closed. Material owner authority remains missing
+for retained template soil hydraulics/root accessibility, ground albedo and
+runon. The consumer reconstructs live water and temperature only. No terminal
+closure is permitted until those operands are re-read from authoritative
+owners or bound to explicit immutable configuration.
+
 Reviewer: `child4_science_review` (Newton)
 
 Evidence class: `Static + Ran` at `a7e481022593bd2c00eeaec7346a06e816aa4b3c`.

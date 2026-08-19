@@ -1,0 +1,12 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running unittests src/lib.rs (/workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9/debug/deps/openwepp_hillslope_orchestrator-4dda300dac09e6d3)
+
+running 1 test
+test v9_real_consumer_shadow::tests::retained_half_day_restart_is_byte_identical_to_uninterrupted_day ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 718 filtered out; finished in 6.25s
+
