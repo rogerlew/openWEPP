@@ -1,0 +1,14 @@
+[package]
+name = "openwepp-restart-authority-reference"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+openwepp-hillslope-orchestrator = { path = "../../../../../crates/openwepp-hillslope-orchestrator" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "2"
