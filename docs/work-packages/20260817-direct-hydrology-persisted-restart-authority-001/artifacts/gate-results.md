@@ -140,3 +140,19 @@ Ran after correction: reference tests PASS 28/28, warnings-denied Clippy PASS,
 direct authority PASS 7/7, forcing PASS 7/7, V10 PASS 3/3, AUTH11 PASS 3/3,
 anti-evasion PASS, and diff hygiene PASS. A new exact commit and all three
 exact-current authority reviews are required before terminal verification.
+
+## Third frozen-review correction pass (2026-08-19)
+
+Reviews of `f7b475f44eea22e5ef389e9d4a8545d32b65daa2` found that the example-derived
+schema did not bind each phase discriminator to its branch and omitted valid
+typed shapes not exercised by the four vectors, notably enabled groundwater.
+The generator now binds phase tags with branch-local constants and completes
+typed enum, optional-owner, enabled/disabled groundwater, and evaluated/not-yet
+evaluated transfer shapes after deriving common structure. Schema execution
+now rejects cross-variant phase tags and accepts enabled groundwater while
+retaining typed-admission authority for semantic joins.
+
+Ran after correction: reference tests PASS 28/28, warnings-denied Clippy PASS,
+direct authority PASS 7/7, forcing PASS 7/7, V10 PASS 3/3, AUTH11 PASS 3/3,
+anti-evasion PASS, and diff hygiene PASS. A new exact commit and all three
+exact-current reviews remain required before terminal verification.

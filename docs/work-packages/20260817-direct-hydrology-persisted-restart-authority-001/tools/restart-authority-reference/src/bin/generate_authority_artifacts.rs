@@ -419,10 +419,76 @@ fn bind_checkpoint_phase_bounds(schema: &mut serde_json::Value) {
         .as_array_mut()
         .expect("checkpoint phase union");
     for branch in branches {
+        let kind = if branch["properties"].get("committed").is_some() {
+            "between_days"
+        } else {
+            "in_progress_day"
+        };
+        branch["properties"]["kind"] = serde_json::json!({"type":"string","const":kind});
         if let Some(next_interval) = branch["properties"].get_mut("next_interval_index") {
             next_interval["minimum"] = serde_json::json!(1);
             next_interval["maximum"] = serde_json::json!(47);
         }
+    }
+}
+
+fn complete_typed_wire_schema(node: &mut serde_json::Value, property_name: Option<&str>) {
+    let hex_f64 = || serde_json::json!({"type":"string","pattern":"^0x[0-9a-f]{16}$"});
+    let hex_u128 = || serde_json::json!({"type":"string","pattern":"^0x[0-9a-f]{32}$"});
+    if node.get("type") == Some(&serde_json::json!("null")) {
+        match property_name {
+            Some("last_date") | Some("runon_destination_ofe_id") | Some("runon_destination_tile_id") =>
+                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"string"}]}),
+            Some("initialized_area_m2") | Some("enrichment_ratio") =>
+                *node = serde_json::json!({"anyOf":[{"type":"null"},hex_f64()]}),
+            Some("last_accepted_transaction_id") =>
+                *node = serde_json::json!({"anyOf":[{"type":"null"},hex_u128()]}),
+            Some("hourly_runoff_fraction") | Some("hourly_sediment_mass_kg") =>
+                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"array","minItems":24,"maxItems":24,"items":hex_f64()}]}),
+            Some("erosion_inflow_intake") | Some("evapotranspiration_stage_state") | Some("snow_albedo_state") =>
+                *node = serde_json::json!({"anyOf":[{"type":"null"},{"type":"object"}]}),
+            _ => {}
+        }
+    }
+    match property_name {
+        Some("phase") if node.get("type") == Some(&serde_json::json!("string")) =>
+            node["enum"] = serde_json::json!(["dormant","onset","active","offset"]),
+        Some("tissue") | Some("donor") =>
+            node["enum"] = serde_json::json!(["leaf","fine_root","live_stem","dead_stem","live_coarse_root","dead_coarse_root"]),
+        Some("receiver") =>
+            node["enum"] = serde_json::json!(["metabolic","cellulose","lignin","coarse_woody_debris"]),
+        Some("ground_ingress_mode") =>
+            node["enum"] = serde_json::json!(["open_raw_precipitation","covered_canopy_release"]),
+        Some("groundwater") => {
+            node["properties"]["authority"] = serde_json::json!({"oneOf":[
+                {"type":"object","additionalProperties":false,"required":["authority"],"properties":{"authority":{"const":"disabled"}}},
+                {"type":"object","additionalProperties":false,"required":["authority","initial_storage_depth_m","baseflow_coeff_per_day","deep_seepage_coeff_per_day","baseflow_threshold_area_ha"],"properties":{"authority":{"const":"linear_reservoir"},"initial_storage_depth_m":hex_f64(),"baseflow_coeff_per_day":hex_f64(),"deep_seepage_coeff_per_day":hex_f64(),"baseflow_threshold_area_ha":hex_f64()}}
+            ]});
+            node["properties"]["initialized_area_m2"] =
+                serde_json::json!({"anyOf":[{"type":"null"},hex_f64()]});
+        }
+        Some("lane_transfer_downstream_operands") => {
+            *node = serde_json::json!({"oneOf":[
+                {"type":"object","additionalProperties":false,"required":["evaluation"],"properties":{"evaluation":{"const":"not_yet_evaluated"}}},
+                {"type":"object","additionalProperties":false,"required":["evaluation","lane_count","outlet_lane_id","total_outgoing_surface_m","total_outgoing_lateral_m","total_received_surface_m","total_received_lateral_m","total_net_transfer_m"],"properties":{"evaluation":{"const":"evaluated"},"lane_count":{"type":"integer","minimum":1,"maximum":4294967295u64},"outlet_lane_id":{"type":"integer","minimum":0,"maximum":4294967295u64},"total_outgoing_surface_m":hex_f64(),"total_outgoing_lateral_m":hex_f64(),"total_received_surface_m":hex_f64(),"total_received_lateral_m":hex_f64(),"total_net_transfer_m":hex_f64()}}
+            ]});
+        }
+        _ => {}
+    }
+    if let Some(properties) = node.get_mut("properties").and_then(serde_json::Value::as_object_mut) {
+        for (name, child) in properties {
+            complete_typed_wire_schema(child, Some(name));
+        }
+    }
+    for keyword in ["oneOf", "anyOf"] {
+        if let Some(children) = node.get_mut(keyword).and_then(serde_json::Value::as_array_mut) {
+            for child in children {
+                complete_typed_wire_schema(child, None);
+            }
+        }
+    }
+    if let Some(items) = node.get_mut("items") {
+        complete_typed_wire_schema(items, None);
     }
 }
 
@@ -501,6 +567,7 @@ fn main() {
     let mut schema = schema_for(&values);
     bind_wire_schema(&mut schema, None);
     bind_checkpoint_phase_bounds(&mut schema);
+    complete_typed_wire_schema(&mut schema, None);
     schema.as_object_mut().unwrap().insert(
         "$schema".into(),
         serde_json::Value::String("https://json-schema.org/draft/2020-12/schema".into()),

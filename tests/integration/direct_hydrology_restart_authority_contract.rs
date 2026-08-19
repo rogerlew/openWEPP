@@ -270,6 +270,9 @@ fn generated_schema_accepts_every_frozen_vector_and_rejects_wire_bounds() {
     invalid = value("checkpoint-in-progress-vector.json");
     invalid["phase"]["kind"] = Value::from("invented_phase");
     assert!(!validator.is_valid(&invalid));
+    invalid = value("checkpoint-in-progress-vector.json");
+    invalid["phase"]["kind"] = Value::from("between_days");
+    assert!(!validator.is_valid(&invalid));
 
     // Topology-bound owner cardinalities are not inferred from the four
     // examples. Typed admission, not the wire schema, validates their joins.
@@ -285,5 +288,18 @@ fn generated_schema_accepts_every_frozen_vector_and_rejects_wire_bounds() {
         .as_array_mut()
         .unwrap()
         .push(forcing);
+    assert!(validator.is_valid(&flexible));
+
+    let hex = Value::from("0x3ff0000000000000");
+    let groundwater = &mut flexible["phase"]["staged_scientific"]["direct_hydrology"]
+        ["groundwater"];
+    groundwater["authority"] = serde_json::json!({
+        "authority":"linear_reservoir",
+        "initial_storage_depth_m":hex,
+        "baseflow_coeff_per_day":"0x3ff0000000000000",
+        "deep_seepage_coeff_per_day":"0x3ff0000000000000",
+        "baseflow_threshold_area_ha":"0x3ff0000000000000"
+    });
+    groundwater["initialized_area_m2"] = Value::from("0x4059000000000000");
     assert!(validator.is_valid(&flexible));
 }
