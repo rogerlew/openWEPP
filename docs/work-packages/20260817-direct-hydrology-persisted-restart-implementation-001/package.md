@@ -1,12 +1,21 @@
 # Implement Direct-Hydrology Persisted Restart
 
-Status: `queued / blocked on restart authority release`
+Status: `queued / restart authority released / execution not started`
 
 Date: `2026-08-17`
 
 Package ID: `20260817-direct-hydrology-persisted-restart-implementation-001`
 
 Plan class: `Critical persisted-state implementation`
+
+## Prerequisite disposition
+
+The blocking authority prerequisite is satisfied by
+`OPENWEPP_DIRECT_HYDROLOGY_RESTART_V1` and
+`OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1`, released in commit
+`f95395597fe434dbc853c1b947b16fd434f013c1`. This package is eligible for a
+separate implementation kickoff; no production restart implementation has
+started.
 
 ## Objective
 
