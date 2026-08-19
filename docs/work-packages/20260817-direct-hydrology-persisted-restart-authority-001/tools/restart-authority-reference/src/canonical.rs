@@ -107,25 +107,19 @@ impl<'de> Deserialize<'de> for StrictJson {
 }
 
 pub fn to_canonical_bytes<T: Serialize>(value: &T) -> Result<Vec<u8>, CanonicalJsonError> {
-    let mut bytes = serde_json::to_vec(value)
-        .map_err(|error| CanonicalJsonError::Serialize(error.to_string()))?;
-    bytes.push(b'\n');
-    Ok(bytes)
+    serde_json::to_vec(value).map_err(|error| CanonicalJsonError::Serialize(error.to_string()))
 }
 
 pub fn from_canonical_bytes<T>(bytes: &[u8]) -> Result<T, CanonicalJsonError>
 where
     T: for<'de> Deserialize<'de> + Serialize,
 {
-    if bytes.last() != Some(&b'\n') || bytes[..bytes.len().saturating_sub(1)].contains(&b'\n') {
-        return Err(CanonicalJsonError::NoncanonicalBytes);
-    }
-    let strict: StrictJson = serde_json::from_slice(&bytes[..bytes.len() - 1])
+    let strict: StrictJson = serde_json::from_slice(bytes)
         .map_err(|error| CanonicalJsonError::Parse(error.to_string()))?;
     if to_canonical_bytes(&strict)? != bytes {
         return Err(CanonicalJsonError::NoncanonicalBytes);
     }
-    let typed: T = serde_json::from_slice(&bytes[..bytes.len() - 1])
+    let typed: T = serde_json::from_slice(bytes)
         .map_err(|error| CanonicalJsonError::Typed(error.to_string()))?;
     if to_canonical_bytes(&typed)? != bytes {
         return Err(CanonicalJsonError::NoncanonicalBytes);
@@ -151,21 +145,19 @@ mod tests {
             second: "x".into(),
         };
         let bytes = to_canonical_bytes(&value).unwrap();
-        assert_eq!(bytes, b"{\"first\":1,\"second\":\"x\"}\n");
+        assert_eq!(bytes, b"{\"first\":1,\"second\":\"x\"}");
         assert_eq!(from_canonical_bytes::<Example>(&bytes).unwrap(), value);
-        assert!(from_canonical_bytes::<Example>(b"{\"second\":\"x\",\"first\":1}\n").is_err());
-        assert!(from_canonical_bytes::<Example>(b"{ \"first\":1,\"second\":\"x\"}\n").is_err());
+        assert!(from_canonical_bytes::<Example>(b"{\"second\":\"x\",\"first\":1}").is_err());
+        assert!(from_canonical_bytes::<Example>(b"{ \"first\":1,\"second\":\"x\"}").is_err());
     }
 
     #[test]
     fn duplicate_and_unknown_members_reject_before_admission() {
         assert!(
-            from_canonical_bytes::<Example>(b"{\"first\":1,\"first\":1,\"second\":\"x\"}\n")
-                .is_err()
+            from_canonical_bytes::<Example>(b"{\"first\":1,\"first\":1,\"second\":\"x\"}").is_err()
         );
         assert!(
-            from_canonical_bytes::<Example>(b"{\"first\":1,\"second\":\"x\",\"third\":0}\n")
-                .is_err()
+            from_canonical_bytes::<Example>(b"{\"first\":1,\"second\":\"x\",\"third\":0}").is_err()
         );
     }
 }
