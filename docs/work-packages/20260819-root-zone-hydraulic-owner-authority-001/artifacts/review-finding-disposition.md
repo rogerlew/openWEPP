@@ -21,6 +21,7 @@ independent `FAIL` reviews. No finding was waived or deferred.
 | Root-binding digest was not bound to immutable vegetation authority | accepted/corrected | The expected static context binds the canonical vegetation root-binding digest; source admission recomputes it, enforces canonical unique order, and rejects a coordinated source/receipt/digest mutation. Root operands use the native `lateral_root_length_m` name. |
 | Receipt accessibility/frozen posture could diverge from source | accepted/corrected | Both fields are joined exactly before posture disposition; receipt-only mutations return `OwnerJoin`, independently frozen sources return `FrozenRootedLayerUnsupported`, and matching inaccessible sources return `InaccessibleRootedLayer`. |
 | Source shape and named poison execution were insufficiently bound | accepted/corrected | A closed source-owner schema rejects unknown/WB14 fields; explicit wrong-clamp, lawful-path default, coordinated caller-reseal, root-order, and complete digest poisons execute. |
+| Scalar-domain precedence was behind frozen/accessibility posture | accepted/corrected | Source fields join first, scalar domains execute next, posture follows, then pore/equations and receipt digest; a synchronized invalid-thickness plus frozen-source case proves `Domain` precedence. |
 
 All three reviewers must re-review the next frozen candidate commit. This file
 does not convert the failed reviews into PASS.

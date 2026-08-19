@@ -67,16 +67,9 @@ fn rust_libm_expected(input: &Value) -> serde_json::Map<String, Value> {
     .collect()
 }
 
-fn authority_evaluate(
-    input: &Value,
-    frozen: bool,
-    path_present: bool,
-) -> Result<serde_json::Map<String, Value>, &'static str> {
+fn validate_scalar_domains(input: &Value, path_present: bool) -> Result<(), &'static str> {
     if !path_present {
         return Err("ConfigurationIdentity");
-    }
-    if frozen {
-        return Err("FrozenRootedLayerUnsupported");
     }
     let fields = [
         "liquid_m",
@@ -118,6 +111,21 @@ fn authority_evaluate(
     {
         return Err("Domain");
     }
+    Ok(())
+}
+
+fn authority_evaluate(
+    input: &Value,
+    frozen: bool,
+    path_present: bool,
+) -> Result<serde_json::Map<String, Value>, &'static str> {
+    validate_scalar_domains(input, path_present)?;
+    if frozen {
+        return Err("FrozenRootedLayerUnsupported");
+    }
+    let liquid = f(&input["liquid_m"]);
+    let thickness = f(&input["thickness_m"]);
+    let porosity = f(&input["porosity"]);
     if liquid > capacity_one_bit_limit(porosity * thickness) {
         return Err("WaterAbovePoreCapacity");
     }
@@ -353,14 +361,8 @@ fn validate_receipt(
     if receipt["accessible"] != root_binding["accessible"] {
         return Err("OwnerJoin");
     }
-    if root_binding["accessible"] != true {
-        return Err("InaccessibleRootedLayer");
-    }
     if receipt["frozen"] != source_layer["frozen"] {
         return Err("OwnerJoin");
-    }
-    if source_layer["frozen"] == true {
-        return Err("FrozenRootedLayerUnsupported");
     }
     if receipt["soil_root_interface_distance_m"] != root_binding["lateral_root_length_m"] {
         return Err("OwnerJoin");
@@ -401,6 +403,13 @@ fn validate_receipt(
         "lateral_m": receipt["root_tissue_lateral_path_m"],
         "dxroot_m": receipt["soil_root_interface_distance_m"]
     });
+    validate_scalar_domains(&input, true)?;
+    if root_binding["accessible"] != true {
+        return Err("InaccessibleRootedLayer");
+    }
+    if source_layer["frozen"] == true {
+        return Err("FrozenRootedLayerUnsupported");
+    }
     let reconstructed = authority_evaluate(&input, false, true)?;
     for (receipt_field, expected_field) in [
         ("relative_saturation", "relative_saturation"),
@@ -893,9 +902,34 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
         ),
         Err("FrozenRootedLayerUnsupported")
     );
+    let mut invalid_frozen_source = frozen_source.clone();
+    invalid_frozen_source["hydrology_layers"][0]["layer_thickness_m"] = Value::String(hx(0.0));
+    let invalid_frozen_projection = serde_json::json!({
+        "schema": "root-zone-hydrology-source-v1",
+        "layers": invalid_frozen_source["hydrology_layers"].clone(),
+    });
+    let invalid_frozen_sha = digest(&invalid_frozen_projection);
+    invalid_frozen_source["hydrology_beginning_state_sha256"] =
+        Value::String(invalid_frozen_sha.clone());
+    let mut invalid_frozen_receipt = receipt.clone();
+    invalid_frozen_receipt["hydrology_beginning_state_sha256"] = Value::String(invalid_frozen_sha);
+    invalid_frozen_receipt["layer_thickness_m"] = Value::String(hx(0.0));
+    invalid_frozen_receipt["frozen"] = Value::Bool(true);
+    invalid_frozen_receipt["receipt_sha256"] = Value::String(String::new());
+    invalid_frozen_receipt["receipt_sha256"] = Value::String(digest(&invalid_frozen_receipt));
+    assert_eq!(
+        validate_receipt(
+            invalid_frozen_receipt,
+            &configuration,
+            &invalid_frozen_source,
+            &expected_configuration
+        ),
+        Err("Domain")
+    );
     let mut inaccessible_receipt = receipt.clone();
     inaccessible_receipt["occupancy_id"] = Value::String("occupancy-4".into());
     inaccessible_receipt["stratum_id"] = Value::String("stratum-2".into());
+    inaccessible_receipt["root_tissue_lateral_path_m"] = Value::String(hx(0.35));
     inaccessible_receipt["soil_root_interface_distance_m"] = Value::String(hx(0.07));
     inaccessible_receipt["accessible"] = Value::Bool(false);
     inaccessible_receipt["receipt_sha256"] = Value::String(String::new());
