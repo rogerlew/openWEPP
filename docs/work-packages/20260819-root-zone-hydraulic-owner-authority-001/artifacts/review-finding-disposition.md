@@ -23,5 +23,6 @@ independent `FAIL` reviews. No finding was waived or deferred.
 | Source shape and named poison execution were insufficiently bound | accepted/corrected | A closed source-owner schema rejects unknown/WB14 fields; explicit wrong-clamp, lawful-path default, coordinated caller-reseal, root-order, and complete digest poisons execute. |
 | Scalar-domain precedence was behind frozen/accessibility posture | accepted/corrected | Source fields join first, scalar domains execute next, posture follows, then pore/equations and receipt digest; a synchronized invalid-thickness plus frozen-source case proves `Domain` precedence. |
 
-All three reviewers must re-review the next frozen candidate commit. This file
-does not convert the failed reviews into PASS.
+All three required reviewers independently returned PASS with no material
+finding on exact frozen authority commit
+`b30f42de67136bca37f888fa62e8f1145537a230`. No finding was waived or deferred.

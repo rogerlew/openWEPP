@@ -13,8 +13,9 @@ Evidence class: `Ran + Static`; base `2465849c9e0eed83c4e3aec11caa8b27cf7597ad`.
 | AUTH11 | PASS (Ran) | Nextest quick, 3/3. |
 | Format/diff hygiene | PASS (Ran) | `cargo fmt --all`; `git diff --check`. |
 | Warnings-denied focused Clippy | PASS (Ran) | `cargo clippy --test root_zone_hydraulic_authority_contract -- -D warnings`. |
-| Science-contract admission | PENDING | Candidate is intentionally not yet approved; rerun after review/promotion. |
-| Reviews/verifiers | PENDING | Dispatch against frozen candidate commit. |
+| Science-contract admission | PASS (Ran) | `A0_ADMITTED`; 48 contracts, zero production science surfaces in this authority-only package. |
+| Independent authority reviews | PASS (Static + Ran) | Soil hydraulics, geometry/ownership, and Rust/numeric/schema reviews all bind PASS to exact authority commit `b30f42de67136bca37f888fa62e8f1145537a230`; no finding waived or deferred. |
+| Terminal verifiers | PENDING | Dispatch against the frozen promoted release candidate. |
 | Production implementation | NOT RUN | Contract-first sequencing. |
 
 Rust commands used `nix-shell -p cargo rustc cargo-nextest`; ambient Cargo absence

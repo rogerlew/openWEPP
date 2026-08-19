@@ -1,10 +1,10 @@
 ---
 contract_id: SC-ROOTZONEHYDRAULICS-001
 title: Root-Zone Hydraulic Owner Contract
-status: active
-maturity: candidate
+status: approved
+maturity: active
 owner: openWEPP maintainers + soil/plant hydraulics reviewers
-contract_version: 1.0.0-rc1
+contract_version: 1.0.0
 producer_scope: [OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1]
 consumer_scope: [Default-off V10 vegetation and LSE-V2 real-consumer shadow]
 evidence_level: primary-source constitutive authority + contract vectors
@@ -15,7 +15,7 @@ superseded_by: []
 
 # Root-Zone Hydraulic Owner Contract
 
-Status: `active / candidate / implementation not started`
+Status: `approved / active / implementation not started`
 
 Authority identity: `OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1`
 
@@ -195,10 +195,10 @@ wrong geometry order, and caller-created receipts.
 ## Gap register and promotability
 
 The former contradictions are resolved by the required non-defaulted stratum
-path and cited layer-local Brooks--Corey operator. Release remains blocked on
-independent calculator artifacts, contract-derived tests, three independent
-reviews and two terminal verifiers on one commit. Production implementation
-remains forbidden until release.
+path and cited layer-local Brooks--Corey operator. Independent calculators,
+contract-derived tests, and three independent reviews passed exact authority
+commit `b30f42de67136bca37f888fa62e8f1145537a230`. Production implementation
+remains forbidden until terminal authority release.
 
 ## Binding Exposure Index
 
@@ -213,3 +213,4 @@ adds hidden executable authority.
 |---|---|---|
 | 2026-08-19 | `0.1.0-hold` | Recorded missing root-path/current-K authority. |
 | 2026-08-19 | `1.0.0-rc1` | Admitted required stratum geometry, live Brooks--Corey relations, exact operation order and sealed receipt custody; candidate pending vectors/review. |
+| 2026-08-19 | `1.0.0` | Approved after exact-bit vectors, executable owner/poison authority, and three independent PASS reviews on `b30f42de67136bca37f888fa62e8f1145537a230`. |

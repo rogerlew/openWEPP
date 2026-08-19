@@ -1,6 +1,6 @@
 # Admit Root-Zone Hydraulic Owner V1
 
-Status: `executing / selected authority admitted; vectors and review pending`
+Status: `executing / authority approved / terminal verification pending`
 
 Date: `2026-08-19`
 
