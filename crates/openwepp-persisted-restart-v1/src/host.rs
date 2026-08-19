@@ -79,10 +79,16 @@ impl DirectV10RestartHost {
                 next_day_index,
                 accepted_interval_count,
                 committed,
-            } => Ok(Self::BetweenDays {
-                shadow: build_shadow(committed, next_day_index, context)?,
-                accepted_interval_count,
-            }),
+            } => {
+                let mut shadow = build_shadow(committed, next_day_index, context)?;
+                if accepted_interval_count != 0 {
+                    shadow.restart_authority_install_scheduler_position(accepted_interval_count)?;
+                }
+                Ok(Self::BetweenDays {
+                    shadow,
+                    accepted_interval_count,
+                })
+            }
             IsolatedRestoredCheckpointV1::InProgressDay {
                 day_index,
                 next_interval_index,

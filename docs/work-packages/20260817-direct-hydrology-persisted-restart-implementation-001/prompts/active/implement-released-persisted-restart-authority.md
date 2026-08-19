@@ -95,7 +95,6 @@ Released authority package:
 docs/work-packages/
   20260817-direct-hydrology-persisted-restart-authority-001/
 ```
-
 Released reference implementation:
 
 ```text
@@ -2088,4 +2087,3 @@ new exact released-authority, owner, continuation, or production-invariance
 contradiction remains after all safe implementation routes are exhausted.
 
 ```
-

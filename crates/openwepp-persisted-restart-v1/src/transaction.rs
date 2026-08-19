@@ -265,7 +265,41 @@ mod tests {
 
     #[test]
     fn production_transaction_originates_restores_finishes_and_aborts() {
-        let fixture = restart_authority_prepared_day_fixture();
+        let mut fixture = restart_authority_prepared_day_fixture();
+        for inputs in &mut fixture.owners.day_inputs {
+            if let Some(first) = inputs.first().cloned() {
+                inputs.push(first);
+            }
+        }
+        fixture.owners.day_input_digests = fixture
+            .owners
+            .day_inputs
+            .iter()
+            .map(|inputs| {
+                crate::hydrology_restart::canonical_operand_sha256(
+                    "DirectDayConstructorInputsV1",
+                    inputs,
+                )
+                .unwrap()
+            })
+            .collect();
+        fixture
+            .owners
+            .committed
+            .scientific
+            .direct_hydrology
+            .day_count = 2;
+        for (lane, digest) in fixture
+            .owners
+            .committed
+            .scientific
+            .direct_hydrology
+            .lanes
+            .iter_mut()
+            .zip(&fixture.owners.day_input_digests)
+        {
+            lane.day_inputs_sha256 = digest.clone();
+        }
         let (run, topology) = crate::checkpoint_identities_v1(&fixture.owners.committed).unwrap();
         let source = &fixture.owners.runtime.shadow;
         let context = ExpectedRestartStaticContext {
@@ -302,6 +336,23 @@ mod tests {
         let restored =
             crate::admit_checkpoint_v1(&to_canonical_bytes(&seed).unwrap(), &context).unwrap();
         let valid_host = crate::DirectV10RestartHost::from_isolated(restored, &context).unwrap();
+        for stop in [0, 1, 15, 24, 47] {
+            let mut candidate = DirectV10PreparedDayTransactionV1::prepare(
+                valid_host.shadow(),
+                &fixture.request,
+                fixture.template.clone(),
+                fixture.owners.phase_plan_sha256.clone(),
+                fixture.owners.day_input_digests.clone(),
+            )
+            .unwrap();
+            for _ in 0..stop {
+                candidate.advance_one_interval().unwrap();
+            }
+            assert_eq!(
+                to_canonical_bytes(&candidate.abort()).unwrap(),
+                to_canonical_bytes(&fixture.owners.committed).unwrap()
+            );
+        }
         let mut continuous = DirectV10PreparedDayTransactionV1::prepare(
             valid_host.shadow(),
             &fixture.request,
@@ -340,6 +391,13 @@ mod tests {
         ));
         let mut resumed =
             DirectV10PreparedDayTransactionV1::restore(&interval_24, &context).unwrap();
+        let restored_abort = DirectV10PreparedDayTransactionV1::restore(&interval_24, &context)
+            .unwrap()
+            .abort();
+        assert_eq!(
+            to_canonical_bytes(&restored_abort).unwrap(),
+            to_canonical_bytes(&fixture.owners.committed).unwrap()
+        );
         for _ in 24..48 {
             resumed.advance_one_interval().unwrap();
         }
@@ -356,5 +414,33 @@ mod tests {
         ));
         let host = resumed.finish().unwrap();
         assert_eq!(host.shadow().restart_authority_next_day_index(), 1);
+        let mut day_one_template = fixture.template.clone();
+        day_one_template.day_index = 1;
+        for (index, interval) in day_one_template.intervals.iter_mut().enumerate() {
+            interval.lse_forcing.transaction_id =
+                openwepp_kernel_contract::TransactionId(89 + index as u128);
+            interval.lse_forcing.forcing_sha256 = interval.lse_forcing.canonical_sha256().unwrap();
+        }
+        let mut day_one = DirectV10PreparedDayTransactionV1::prepare(
+            host.shadow(),
+            &fixture.request,
+            day_one_template,
+            fixture.owners.phase_plan_sha256.clone(),
+            fixture.owners.day_input_digests.clone(),
+        )
+        .unwrap();
+        day_one.advance_one_interval().unwrap();
+        let day_one_checkpoint = crate::from_canonical_bytes::<
+            crate::DirectV10RealConsumerCheckpointV1,
+        >(&day_one.checkpoint().unwrap())
+        .unwrap();
+        assert!(matches!(
+            day_one_checkpoint.phase,
+            crate::DirectV10CheckpointPhaseV1::InProgressDay {
+                day_index: crate::WireDayIndex(1),
+                accepted_interval_count,
+                ..
+            } if accepted_interval_count.get() == 49
+        ));
     }
 }
