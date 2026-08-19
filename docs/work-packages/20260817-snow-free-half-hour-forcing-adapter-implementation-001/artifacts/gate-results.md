@@ -13,7 +13,8 @@ Implementation commit `97d789bc7a6378a2ab85f7f42c3e055944500547`:
 - canonical formatting and delta diff hygiene: PASS.
 
 Both required independent reviews PASS on this exact implementation commit.
-Terminal verification remains pending; no activation is claimed.
+Terminal verifiers A and B PASS exact evidence commit
+`b3cd8520f26b14e38c41e24296d6fbbbf5795d4f`; no activation is claimed.
 
 ## Explicit owner-boundary increment
 

@@ -1,6 +1,6 @@
 # Implement Snow-Free Half-Hour Forcing Adapter
 
-Status: `executing / implementation and dual review PASS / terminal verification pending`
+Status: `COMPLETE / default-off native provider released`
 
 Date: `2026-08-17`
 
