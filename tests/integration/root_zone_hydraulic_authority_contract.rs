@@ -144,6 +144,9 @@ fn validate_configuration(mut value: Value, expected: &Value) -> Result<Value, &
         return Err("ConfigurationDigest");
     }
     value["configuration_sha256"] = Value::String(found);
+    if value["configuration_sha256"] != expected["configuration_sha256"] {
+        return Err("ConfigurationIdentity");
+    }
     for field in [
         "schema_version",
         "model_definition_sha256",
@@ -221,9 +224,7 @@ fn validate_receipt(
         .ok_or("ReceiptDigest")?
         .to_owned();
     receipt["receipt_sha256"] = Value::String(String::new());
-    if digest(&receipt) != found {
-        return Err("ReceiptDigest");
-    }
+    let digest_matches = digest(&receipt) == found;
     receipt["receipt_sha256"] = Value::String(found);
     for field in [
         "transaction_id",
@@ -234,6 +235,7 @@ fn validate_receipt(
         "configuration_sha256",
         "hydrology_beginning_state_sha256",
         "vegetation_configuration_sha256",
+        "vegetation_root_bindings_sha256",
         "lse_configuration_sha256",
     ] {
         if receipt[field] != source[field] {
@@ -248,13 +250,25 @@ fn validate_receipt(
     {
         return Err("OwnerJoin");
     }
-    if receipt["frozen"] == true {
-        return Err("FrozenRootedLayerUnsupported");
-    }
     let configured_layers = configuration["ordered_layers"]
         .as_array()
         .ok_or("ConfigurationIdentity")?;
-    let source_layers = source["layers"].as_array().ok_or("OwnerJoin")?;
+    let source_layers = source["hydrology_layers"].as_array().ok_or("OwnerJoin")?;
+    let hydrology_projection = serde_json::json!({
+        "schema": "root-zone-hydrology-source-v1",
+        "layers": source_layers,
+    });
+    if receipt["hydrology_beginning_state_sha256"] != digest(&hydrology_projection) {
+        return Err("OwnerJoin");
+    }
+    let root_bindings = source["root_bindings"].as_array().ok_or("OwnerJoin")?;
+    let root_projection = serde_json::json!({
+        "schema": "root-zone-vegetation-bindings-v1",
+        "bindings": root_bindings,
+    });
+    if receipt["vegetation_root_bindings_sha256"] != digest(&root_projection) {
+        return Err("OwnerJoin");
+    }
     let source_keys = source_layers
         .iter()
         .map(|v| {
@@ -292,8 +306,6 @@ fn validate_receipt(
     let layer = &configured_layers[layer_index];
     let source_layer = &source_layers[layer_index];
     for field in [
-        "occupancy_id",
-        "stratum_id",
         "ofe_id",
         "production_lane_index",
         "production_lane_id",
@@ -302,13 +314,30 @@ fn validate_receipt(
         "layer_thickness_m",
         "porosity",
         "saturated_conductivity_m_s",
-        "soil_root_interface_distance_m",
-        "accessible",
-        "frozen",
     ] {
         if receipt[field] != source_layer[field] {
             return Err("OwnerJoin");
         }
+    }
+    let root_binding = root_bindings
+        .iter()
+        .find(|v| {
+            receipt["occupancy_id"] == v["occupancy_id"]
+                && receipt["stratum_id"] == v["stratum_id"]
+                && receipt["ofe_id"] == v["ofe_id"]
+                && receipt["production_lane_index"] == v["production_lane_index"]
+                && receipt["production_lane_id"] == v["production_lane_id"]
+                && receipt["layer_id"] == v["layer_id"]
+        })
+        .ok_or("OwnerJoin")?;
+    if root_binding["accessible"] != true {
+        return Err("InaccessibleRootedLayer");
+    }
+    if receipt["frozen"] == true || source_layer["frozen"] == true {
+        return Err("FrozenRootedLayerUnsupported");
+    }
+    if receipt["soil_root_interface_distance_m"] != root_binding["soil_root_interface_distance_m"] {
+        return Err("OwnerJoin");
     }
     let geometry = configuration["ordered_stratum_geometry"]
         .as_array()
@@ -358,6 +387,9 @@ fn validate_receipt(
         if receipt[receipt_field] != reconstructed[expected_field] {
             return Err("ReceiptScientificMismatch");
         }
+    }
+    if !digest_matches {
+        return Err("ReceiptDigest");
     }
     Ok(receipt)
 }
@@ -548,19 +580,51 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
     .unwrap();
     validate_receipt(receipt.clone(), &configuration, &source).unwrap();
     validate_receipt(second_receipt.clone(), &configuration, &source).unwrap();
-    let live = serde_json::to_vec(&receipt).unwrap();
+    let shared_input = serde_json::json!({
+        "liquid_m": receipt["liquid_water_depth_m"],
+        "thickness_m": receipt["layer_thickness_m"],
+        "porosity": receipt["porosity"],
+        "ksat_m_s": receipt["saturated_conductivity_m_s"],
+        "psi_sat_mm": hx(configuration["ordered_layers"][0]["saturated_matric_potential_mm"].as_f64().unwrap()),
+        "b": hx(configuration["ordered_layers"][0]["clapp_hornberger_b"].as_f64().unwrap()),
+        "top_m": hx(0.0), "lateral_m": hx(0.35), "dxroot_m": hx(0.06),
+    });
+    let shared_expected = authority_evaluate(&shared_input, false, true).unwrap();
+    let mut shared_receipt = receipt.clone();
+    shared_receipt["occupancy_id"] = Value::String("occupancy-3".into());
+    shared_receipt["stratum_id"] = Value::String("stratum-2".into());
+    shared_receipt["root_tissue_lateral_path_m"] = Value::String(hx(0.35));
+    shared_receipt["soil_root_interface_distance_m"] = Value::String(hx(0.06));
+    for (receipt_field, expected_field) in [
+        ("relative_saturation", "relative_saturation"),
+        ("matric_potential_mm", "matric_potential_mm"),
+        ("soil_conductivity_mm_s", "soil_conductivity_mm_s"),
+        ("layer_node_depth_m", "layer_node_depth_m"),
+        ("gravity_root_mm", "gravity_root_mm"),
+        ("root_path_length_mm", "root_path_length_mm"),
+    ] {
+        shared_receipt[receipt_field] = shared_expected[expected_field].clone();
+    }
+    shared_receipt["receipt_sha256"] = Value::String(String::new());
+    shared_receipt["receipt_sha256"] = Value::String(digest(&shared_receipt));
+    validate_receipt(shared_receipt, &configuration, &source).unwrap();
+    let live = serde_json::to_vec(&(&receipt, &configuration, &source)).unwrap();
     let check = |mutated: Value, expected| {
         assert_eq!(
             validate_receipt(mutated, &configuration, &source),
             Err(expected)
         );
-        assert_eq!(serde_json::to_vec(&receipt).unwrap(), live);
+        assert_eq!(
+            serde_json::to_vec(&(&receipt, &configuration, &source)).unwrap(),
+            live
+        );
     };
     let mut bad = receipt.clone();
     bad["receipt_sha256"] = Value::String("0".repeat(64));
     check(bad, "ReceiptDigest");
     let mut bad = receipt.clone();
     bad["layer_id"] = Value::String("layer-x".into());
+    check(bad.clone(), "OwnerJoin");
     bad["receipt_sha256"] = Value::String(String::new());
     bad["receipt_sha256"] = Value::String(digest(&bad));
     check(bad, "OwnerJoin");
@@ -657,6 +721,20 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
         validate_configuration(reordered_config, &expected_configuration),
         Err("ConfigurationIdentity")
     );
+    for (field, substituted) in [
+        ("saturated_matric_potential_mm", -75.0),
+        ("clapp_hornberger_b", 3.5),
+    ] {
+        let mut substituted_config = configuration.clone();
+        substituted_config["ordered_layers"][0][field] = Value::from(substituted);
+        substituted_config["configuration_sha256"] = Value::String(String::new());
+        substituted_config["configuration_sha256"] = Value::String(digest(&substituted_config));
+        assert_eq!(
+            validate_configuration(substituted_config, &expected_configuration),
+            Err("ConfigurationIdentity"),
+            "{field} substitution"
+        );
+    }
     for field in [
         "model_definition_sha256",
         "owner_id",
@@ -690,16 +768,64 @@ fn configuration_and_receipt_joins_digests_order_and_poisons_execute_atomically(
         Err("ConfigurationIdentity")
     );
     let mut reordered_source = source.clone();
-    reordered_source["layers"].as_array_mut().unwrap().reverse();
+    reordered_source["hydrology_layers"]
+        .as_array_mut()
+        .unwrap()
+        .reverse();
     assert_eq!(
         validate_receipt(second_receipt.clone(), &configuration, &reordered_source),
         Err("OwnerJoin")
     );
     let mut wrong_predecessor = source.clone();
-    wrong_predecessor["layers"][0]["layer_thickness_m"] = Value::String(hx(0.25));
+    wrong_predecessor["hydrology_layers"][0]["layer_thickness_m"] = Value::String(hx(0.25));
+    let hydrology_projection = serde_json::json!({
+        "schema": "root-zone-hydrology-source-v1",
+        "layers": wrong_predecessor["hydrology_layers"].clone(),
+    });
+    let hydrology_sha = digest(&hydrology_projection);
+    wrong_predecessor["hydrology_beginning_state_sha256"] = Value::String(hydrology_sha.clone());
+    let mut wrong_predecessor_receipt = second_receipt.clone();
+    wrong_predecessor_receipt["hydrology_beginning_state_sha256"] = Value::String(hydrology_sha);
+    wrong_predecessor_receipt["receipt_sha256"] = Value::String(String::new());
+    wrong_predecessor_receipt["receipt_sha256"] = Value::String(digest(&wrong_predecessor_receipt));
     assert_eq!(
-        validate_receipt(second_receipt, &configuration, &wrong_predecessor),
+        validate_receipt(
+            wrong_predecessor_receipt,
+            &configuration,
+            &wrong_predecessor
+        ),
         Err("ReceiptScientificMismatch")
+    );
+    let mut frozen_source = source.clone();
+    frozen_source["hydrology_layers"][0]["frozen"] = Value::Bool(true);
+    let frozen_projection = serde_json::json!({
+        "schema": "root-zone-hydrology-source-v1",
+        "layers": frozen_source["hydrology_layers"].clone(),
+    });
+    let frozen_sha = digest(&frozen_projection);
+    frozen_source["hydrology_beginning_state_sha256"] = Value::String(frozen_sha.clone());
+    let mut frozen_receipt = receipt.clone();
+    frozen_receipt["hydrology_beginning_state_sha256"] = Value::String(frozen_sha);
+    frozen_receipt["frozen"] = Value::Bool(true);
+    frozen_receipt["receipt_sha256"] = Value::String(String::new());
+    frozen_receipt["receipt_sha256"] = Value::String(digest(&frozen_receipt));
+    assert_eq!(
+        validate_receipt(frozen_receipt, &configuration, &frozen_source),
+        Err("FrozenRootedLayerUnsupported")
+    );
+    let mut inaccessible_receipt = receipt.clone();
+    inaccessible_receipt["occupancy_id"] = Value::String("occupancy-4".into());
+    inaccessible_receipt["stratum_id"] = Value::String("stratum-2".into());
+    inaccessible_receipt["soil_root_interface_distance_m"] = Value::String(hx(0.07));
+    inaccessible_receipt["receipt_sha256"] = Value::String(String::new());
+    inaccessible_receipt["receipt_sha256"] = Value::String(digest(&inaccessible_receipt));
+    assert_eq!(
+        validate_receipt(inaccessible_receipt, &configuration, &source),
+        Err("InaccessibleRootedLayer")
+    );
+    assert_eq!(
+        serde_json::to_vec(&(&receipt, &configuration, &source)).unwrap(),
+        live
     );
 }
 
@@ -742,10 +868,23 @@ fn generator_is_byte_reproducible_and_poison_inventory_is_complete() {
     let poison = text(&format!("{PACKAGE}/artifacts/poison-matrix.md"));
     for required in [
         "WB14 suction substitution",
+        "WB14 conductivity substitution",
         "Ksat used directly as current K",
         "S_psi used for K",
+        "wrong conductivity exponent",
+        "wrong clamp order",
+        "positive psi_sat",
+        "zero or negative B",
         "missing root-tissue path",
+        "CLM default injected",
         "root path aliased to dxroot",
+        "root path aliased to layer depth",
+        "positive gravity head substitution",
+        "wrong layer order",
+        "wrong OFE/lane/layer/stratum",
+        "wrong hydrology state digest",
+        "wrong V10 configuration digest",
+        "wrong LSE configuration digest",
         "caller-created receipt",
     ] {
         assert!(poison.contains(required), "missing poison {required}");

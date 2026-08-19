@@ -1,21 +1,21 @@
 # Root-zone poison matrix
 
-- `WB14 suction substitution`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `WB14 conductivity substitution`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `Ksat used directly as current K`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `S_psi used for K`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `wrong conductivity exponent`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `wrong clamp order`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `positive psi_sat`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `zero or negative B`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `missing root-tissue path`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `CLM default injected`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `root path aliased to dxroot`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `root path aliased to layer depth`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `positive gravity head substitution`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `wrong layer order`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `wrong OFE/lane/layer/stratum`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `wrong hydrology state digest`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `wrong V10 configuration digest`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `wrong LSE configuration digest`: authority test must reject or prove exact-bit inequality before receipt construction.
-- `caller-created receipt`: authority test must reject or prove exact-bit inequality before receipt construction.
+- `WB14 suction substitution`: resealed configuration substitution + forbidden-key schema rejection.
+- `WB14 conductivity substitution`: resealed configuration/source separation + forbidden-key schema rejection.
+- `Ksat used directly as current K`: Rust exact-bit inequality.
+- `S_psi used for K`: Rust exact-bit inequality at lower clamp.
+- `wrong conductivity exponent`: Rust exact-bit inequality.
+- `wrong clamp order`: accepted clamp-boundary vectors + exact-bit reconstruction.
+- `positive psi_sat`: typed rejected vector + schema rejection.
+- `zero or negative B`: typed rejected vector + schema rejection.
+- `missing root-tissue path`: typed rejected vector + schema rejection.
+- `CLM default injected`: forbidden-key schema rejection + required path guard.
+- `root path aliased to dxroot`: Rust exact-bit inequality + resealed receipt poison.
+- `root path aliased to layer depth`: Rust exact-bit inequality + resealed receipt poison.
+- `positive gravity head substitution`: resealed receipt scientific mismatch.
+- `wrong layer order`: resealed configuration + source-order rejection.
+- `wrong OFE/lane/layer/stratum`: resealed receipt owner-join poisons.
+- `wrong hydrology state digest`: receipt/source digest join poison.
+- `wrong V10 configuration digest`: receipt/static identity poison.
+- `wrong LSE configuration digest`: receipt/static identity poison.
+- `caller-created receipt`: unsealed digest poison + resealed scientific mismatch.

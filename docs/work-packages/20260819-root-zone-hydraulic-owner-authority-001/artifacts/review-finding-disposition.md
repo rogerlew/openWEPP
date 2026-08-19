@@ -15,6 +15,9 @@ independent `FAIL` reviews. No finding was waived or deferred.
 | Gravity sign opposite cited CLM | accepted/corrected | Receipt now stores signed `-1000*z_node`, which existing V10 adds; `z3` remains independently positive. Exact source anchor added. |
 | Conductivity source locator inaccurate | accepted/corrected | Hydrology equation 2.7.47 is named for the intrinsic factor; vertical-interface averaging is explicitly excluded; immutable CTSM source anchors layer-local current `hk_l` consumption. |
 | Contract profile/readiness incomplete | accepted/corrected | Canonical serialization, topology joins, precondition priority, parameters, readiness matrix, and Binding Exposure Index added. |
+| Source-owner projection copied receipt fields and coupled one occupancy to one hydrology layer | accepted/corrected | Independent hydrology-layer and vegetation-root-binding projections now have separate canonical digests; multiple occupancies/strata can bind one layer and executable evidence validates that topology. |
+| `dxroot`, predecessor depth, frozen, and accessibility were not independently source-owned | accepted/corrected | `dxroot` comes from the exact root binding, predecessor depth from ordered hydrology rows, an independently frozen source rejects, and inaccessible bindings cannot mint receipts. |
+| Poison atomicity snapshotted only the receipt and matrix evidence was generic prose | accepted/corrected | Rejections preserve the combined receipt/configuration/source byte snapshot; every generated matrix category names its executable Rust or schema gate, and the integration test requires the complete inventory. |
 
 All three reviewers must re-review the next frozen candidate commit. This file
 does not convert the failed reviews into PASS.

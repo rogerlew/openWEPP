@@ -62,11 +62,15 @@ increasing OFE/lane/layer tuples and unique strictly increasing stratum IDs.
 The rooted stratum set must equal the bound vegetation configuration; layer
 order must equal bound hydrology and LSE topology.
 
-Every interval reads current staged `DirectSubsurfaceLayerState.theta_m` as
-liquid depth, `depth_m` as thickness, `porosity`, and `conductivity_m_s` as
-audited saturated/base `Ksat`. A private immutable receipt binds transaction,
-day, interval, occupancy/stratum/OFE/lane/layer, current hydrology digest and
-vegetation/LSE/configuration identities. No scientific state is mutated.
+Every interval independently projects ordered current staged hydrology layers
+(`DirectSubsurfaceLayerState.theta_m`, `depth_m`, `porosity`, and
+`conductivity_m_s`) and vegetation root bindings keyed by
+occupancy/stratum/OFE/lane/layer (`RootLayer.lateral_root_length_m` and
+accessibility). Their canonical projections have separate SHA-256 identities;
+multiple occupancy/stratum bindings may reference one hydrology layer. A
+private immutable receipt binds both source digests, transaction, day,
+interval, occupancy/stratum/OFE/lane/layer, and vegetation/LSE/configuration
+identities. No scientific state is mutated.
 
 Required domains are: finite `liquid_water_depth_m >= 0`, finite
 `layer_thickness_m > 0`, finite `0 < porosity <= 1`, finite `Ksat > 0`, finite
@@ -117,6 +121,7 @@ larger value rejects before the upper clamp.
 | nonfinite or invalid thickness/porosity/Ksat/psi_sat/B/path | `Domain` |
 | material liquid water above pore capacity | `WaterAbovePoreCapacity` |
 | accessible rooted frozen layer | `FrozenRootedLayerUnsupported` |
+| attempted receipt for inaccessible/unrooted binding | `InaccessibleRootedLayer` |
 | source/configuration/transaction/cadence mismatch | `OwnerJoin` |
 | digest mismatch or caller receipt construction | `ReceiptDigest` / impossible API |
 
