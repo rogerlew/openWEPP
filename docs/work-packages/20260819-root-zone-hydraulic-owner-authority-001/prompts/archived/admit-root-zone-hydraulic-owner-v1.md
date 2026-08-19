@@ -14,3 +14,7 @@ for a required declared-domain scenario.
 Current execution found the first and third conditions. The exact evidence is
 in this package's artifacts. Keep this prompt active until the blockers are
 lifted and terminal authority verification passes.
+
+Archived 2026-08-19 after all blockers were corrected, three exact-commit
+reviews passed, the contract was admitted as approved/active, and both terminal
+authority verifiers passed. Production implementation remained unstarted.
