@@ -222,6 +222,8 @@ name = "openwepp-restart-authority-reference"
 version = "0.1.0"
 dependencies = [
  "openwepp-hillslope-orchestrator",
+ "openwepp-kernel-contract",
+ "openwepp-land-surface-energy",
  "serde",
  "serde_json",
  "sha2",

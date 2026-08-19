@@ -8,6 +8,8 @@ publish = false
 
 [dependencies]
 openwepp-hillslope-orchestrator = { path = "../../../../../crates/openwepp-hillslope-orchestrator" }
+openwepp-kernel-contract = { path = "../../../../../crates/openwepp-kernel-contract" }
+openwepp-land-surface-energy = { path = "../../../../../crates/openwepp-land-surface-energy" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
