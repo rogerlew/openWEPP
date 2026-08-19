@@ -1,5 +1,17 @@
 # Gate results
 
+## Authority release (2026-08-19)
+
+Exact authority commit `684477022b1a801a405c0ddd23c6166673339e75`:
+reference tests PASS 28/28; warnings-denied all-target Clippy PASS; direct
+restart authority PASS 7/7; forcing adapter PASS 7/7; V10 nighttime PASS 3/3;
+AUTH11 PASS 3/3; anti-evasion, deterministic artifact regeneration, all eight
+manifest hashes, schema/vector validation, and diff hygiene PASS.
+
+Three independent authority reviewers and two terminal verifiers returned PASS
+with no material findings on the exact commit. Production restart
+implementation has not started.
+
 ## Exact-current owner/state closure correction (2026-08-19)
 
 Ran on the terminal remediation diff: package-local reference tests PASS
