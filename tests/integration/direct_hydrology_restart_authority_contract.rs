@@ -185,7 +185,7 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
             .take(15)
             .any(|line| line.contains("excluded scratch"))
     );
-    for reconstructed in [
+    for reconstruction_operand in [
         "DirectWinterFrostPartitionOutcome",
         "DirectFrostLayerCarryProjection",
         "DirectSnowMassTransitionLedgers",
@@ -194,14 +194,14 @@ fn generated_metadata_ledger_and_poison_inventory_are_complete() {
         "DirectSnowStage3Outcome",
     ] {
         let section = ledger
-            .split(&format!("## `{reconstructed}`"))
+            .split(&format!("## `{reconstruction_operand}`"))
             .nth(1)
             .unwrap();
         assert!(
             section
                 .lines()
                 .take(15)
-                .any(|line| line.contains("reconstructed cache"))
+                .any(|line| line.contains("reconstruction source operand"))
         );
     }
     for section in ledger.split("## `").skip(1) {
