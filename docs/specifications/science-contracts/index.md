@@ -1,7 +1,7 @@
 # Science Contract Registry
 
 Status: Active
-Last updated: 2026-08-19
+Last updated: 2026-08-20
 
 This is the canonical lifecycle registry for openWEPP science contracts.
 
@@ -47,6 +47,7 @@ Unit governance remains mandatory for science contracts, runtime boundary symbol
 |---|---|---|---|---|---|---|---|---|---|
 | `SC-BIOGEOCHEM-001` | Vegetation Biogeochemistry Exchange and Receiving-State Contract | `approved` | `active` | openWEPP maintainers + forest biogeochemistry reviewer | `docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md` | `static` | `2026-08-11` |  | Mineral-N arbitration and litter/CWD C/N/dry-material receiving boundary; transformations remain an explicit dependency. |
 | `SC-CLIMATE-001` | Climate Forcing Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md` | `static` | `2026-06-03` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
+| `SC-COUPLEDTIME-001` | Coupled Time Support, Event, and Atomic Chronology Contract | `in_review` | `draft` | openWEPP maintainers + time/numerics + transaction/restart reviewers | `docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md` | `static+contract_vectors_pending` | `pending` |  | V1 candidate authority; production Rust is forbidden until dual review, disposition, and verification release. |
 | `SC-EVAP-001` | Evapotranspiration Stress Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-EVAP-001.md` | `static` | `2026-08-08` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-GWBASEFLOW-001` | Groundwater Reservoir Baseflow Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md` | `static` | `2026-07-08` |  | M-T2A linear groundwater-reservoir baseflow authority; implementation follows in M-T2B. |
 | `SC-HYDRAULICS-001` | Overland Hydraulics Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-HYDRAULICS-001.md` | `static` | `2026-05-25` |  | Lifecycle-only row; amendment history lives in the canonical contract. |

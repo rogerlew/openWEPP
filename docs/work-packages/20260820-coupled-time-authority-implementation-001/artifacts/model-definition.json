@@ -1,1 +1,22 @@
-{"status":"queued","evidence_mode":"not-run"}
+{
+  "schema": "OPENWEPP_COUPLED_TIME_MODEL_DEFINITION_V1",
+  "model_time_origin": "run_relative_zero_bound_to_calendar_and_forcing_receipts",
+  "tick_unit": "ns",
+  "wire_integer": "u128_decimal_string",
+  "maximum_tick": "340282366920938463463374607431768211455",
+  "support": "half_open",
+  "duration_conversion": "checked u128 subtraction; correctly-rounded u128-to-binary64; binary64 division by exact 1000000000.0; store to_bits once",
+  "event_quantization": "decode finite binary64 exactly as m*2^e; exact rational m*1000000000*2^e; nearest integer ties-even; checked u128/add/parent bounds",
+  "canonical_hash": "OPENWEPP_CANONICAL_FRAMED_SHA256_V1",
+  "hash_frame": "OPENWEPP\\0 || be_u16(1) || framed domain || ordered tagged framed values",
+  "parent_transaction_sequence": "checked u128; starts zero; increments only at parent commit",
+  "constraint_order": ["end_tick", "class", "source_owner_id", "digest"],
+  "constraint_class_order": ["HardBoundary", "EventBoundary", "OutputBoundary", "RestartBoundary", "AdaptiveUpperBound"],
+  "constraint_coincidence": "all boundary classes coalesce; adaptive bounds retain ordered sources; events require compatible custody preconditions",
+  "event_class_order": ["OwnershipTransfer", "BoundaryModeTransition", "RegimeTransition", "ScheduledBoundary", "DiagnosticMarker"],
+  "same_tick_event_budget": 256,
+  "reference_controller_policy": "deterministic_halving_v1",
+  "science_implementation_status": "AUTHORITY_CANDIDATE",
+  "calibration_evidence_status": "NOT_APPLICABLE",
+  "identifiability_status": "NOT_APPLICABLE"
+}

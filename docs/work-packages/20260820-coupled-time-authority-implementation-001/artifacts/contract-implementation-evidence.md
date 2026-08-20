@@ -1,9 +1,11 @@
 # Contract Implementation Evidence
 
-Status: queued
+Status: complete / review candidate
 
-Evidence mode: not-run
+Evidence mode: Static
 
-Populate during the owning package phase. Preserve failed attempts and label
-claims as Static or Ran. Final review findings require explicit accepted,
-rejected, deferred, or follow-up disposition with rationale and evidence.
+Canonical candidate `SC-COUPLEDTIME-001` version `1-rc1` and sorted `in_review /
+draft` registry row exist. The contract defines 16 invariants, 7 obligations,
+20 typed error families, complete schema/profile sections, three fully exposed
+binding rows, and all package-required identity, event, participant, controller,
+restart, atomicity and publication decisions. Production Rust remains absent.

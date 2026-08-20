@@ -1,1 +1,10 @@
-{"status":"queued","evidence_mode":"not-run"}
+{
+  "schema": "OPENWEPP_COUPLED_TIME_ERROR_PRECEDENCE_V1",
+  "order": [
+    "InvalidWireIdentity", "InvalidParentSupport", "IdentityMismatch",
+    "InvalidSegmentPartition", "InvalidParticipantSet", "InvalidConstraint",
+    "ZeroStepWithoutEvent", "EventPrecedenceConflict", "EventNoProgressCycle",
+    "ControllerPolicyMismatch", "BeginningOwnerSetMismatch", "SupportMismatch",
+    "LedgerNotClosed", "EndingOwnerSetMismatch", "PublicationBeforeParentCommit"
+  ]
+}

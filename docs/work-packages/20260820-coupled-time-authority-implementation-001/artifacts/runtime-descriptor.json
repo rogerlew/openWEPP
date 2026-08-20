@@ -1,1 +1,8 @@
-{"status":"queued","evidence_mode":"not-run"}
+{
+  "authority": "OPENWEPP_COUPLED_TIME_SUPPORT_V1",
+  "crate": "openwepp-coupled-time",
+  "mode": "default_off_reference_consumer",
+  "production_adopters": [],
+  "legacy_fixed_schedule_unchanged": true,
+  "richards_requires": "CoupledAdaptiveSupportV1"
+}

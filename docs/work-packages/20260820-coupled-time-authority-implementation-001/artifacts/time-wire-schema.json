@@ -1,1 +1,15 @@
-{"status":"queued","evidence_mode":"not-run"}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "OPENWEPP_COUPLED_TIME_SUPPORT_V1",
+  "type": "object",
+  "additionalProperties": false,
+  "x-semantic-validation": ["decimal value <= 340282366920938463463374607431768211455", "start_ns < end_ns", "canonical reserialization equals admitted bytes"],
+  "required": ["start_ns", "end_ns"],
+  "properties": {
+    "start_ns": {"$ref": "#/$defs/u128"},
+    "end_ns": {"$ref": "#/$defs/u128"}
+  },
+  "$defs": {
+    "u128": {"type": "string", "pattern": "^(0|[1-9][0-9]{0,38})$", "maxLength": 39}
+  }
+}

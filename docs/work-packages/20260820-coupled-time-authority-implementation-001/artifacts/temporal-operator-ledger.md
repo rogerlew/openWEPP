@@ -1,7 +1,14 @@
 # Temporal Operator Ledger.md
 
-Status: queued
+Status: authority candidate
 
-Evidence mode: not-run
+Evidence mode: Static
 
-Populate during the owning package phase with truthfully labeled evidence.
+| Class | Slab/event behavior | Retry behavior |
+| --- | --- | --- |
+| `AlgebraicRate` | recompute from staged state/support | discard |
+| `SupportIntegral` | rate times exact derived slab seconds | discard |
+| `SequentialStateTransition` | ending accepted state begins next slab | discard candidate |
+| `ThresholdEvent` | localize; accept zero-duration transition once | failed event changes nothing |
+| `ScheduledOnce` | receipt keyed to named parent/calendar boundary | receipt prevents replay |
+| `DiagnosticReduction` | fold accepted slabs only | ignore rejected attempt |

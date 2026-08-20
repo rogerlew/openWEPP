@@ -1,7 +1,12 @@
 # Constraint Arbitration.md
 
-Status: queued
+Status: authority candidate
 
-Evidence mode: not-run
+Evidence mode: Static
 
-Populate during the owning package phase with truthfully labeled evidence.
+Reduction key is `(end_ns, class_precedence, source_owner_id, digest)`.
+Classes, in order, are hard, event, output, restart, and adaptive upper bound.
+The clock validates/reduces constraints; adopter policy generates proposals and
+owns its configuration/history digest. Behind-cursor, past-parent, zero-step
+without event, irreconcilable equal-time, exhaustion, policy mismatch, and
+direct-clock-advance inputs fail typed.
