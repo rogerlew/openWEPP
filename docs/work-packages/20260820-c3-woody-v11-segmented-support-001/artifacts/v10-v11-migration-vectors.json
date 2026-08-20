@@ -1,1 +1,13 @@
-{"schema":"OPENWEPP_C3_WOODY_V10_V11_MIGRATION_VECTORS_DRAFT","cases":[]}
+{
+  "schema": "OPENWEPP_C3_WOODY_V10_V11_MIGRATION_VECTORS_V1",
+  "cases": [
+    {"id":"nominal_1800","duration_bits":"409c200000000000","expected":{"status":"accepted","nominal_cadence_ns":"1800000000000"}},
+    {"id":"nominal_600","duration_bits":"4082c00000000000","expected":{"status":"accepted","nominal_cadence_ns":"600000000000"}},
+    {"id":"one_ns","duration_bits":"3e112e0be826d695","expected":{"status":"accepted","nominal_cadence_ns":"1"}},
+    {"id":"sub_ns_nonroundtrip","duration_bits":"3e012e0be826d695","expected":{"status":"rejected","error":"VEG-E-121"}},
+    {"id":"zero","duration_bits":"0000000000000000","expected":{"status":"rejected","error":"VEG-E-121"}},
+    {"id":"negative","duration_bits":"bff0000000000000","expected":{"status":"rejected","error":"VEG-E-121"}},
+    {"id":"infinity","duration_bits":"7ff0000000000000","expected":{"status":"rejected","error":"VEG-E-121"}},
+    {"id":"nan","duration_bits":"7ff8000000000000","expected":{"status":"rejected","error":"VEG-E-121"}}
+  ]
+}

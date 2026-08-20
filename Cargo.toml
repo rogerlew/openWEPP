@@ -114,6 +114,10 @@ name = "coupled_time_authority_contract"
 path = "tests/integration/coupled_time_authority_contract.rs"
 
 [[test]]
+name = "c3_woody_v11_authority_contract"
+path = "tests/integration/c3_woody_v11_authority_contract.rs"
+
+[[test]]
 name = "direct_hydrology_persisted_restart_implementation_contract"
 path = "tests/integration/direct_hydrology_persisted_restart_implementation_contract.rs"
 

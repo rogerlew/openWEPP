@@ -1,1 +1,26 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"OPENWEPP_C3_WOODY_V11_RESTART_V1 placeholder","status":"queued"}
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"OPENWEPP_C3_WOODY_V11_RESTART_V1",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["schema","authority_sha256","configuration_sha256","coupled_time_v2_base64","coupled_time_v2_sha256","parent_beginning_owner_set_sha256","staged_owner_set_sha256","staged_v11_state","staged_owner_candidates","accepted_resource_receipts","accepted_material_receipts","scheduled_once_receipts"],
+  "properties":{
+    "schema":{"const":"OPENWEPP_C3_WOODY_V11_RESTART_V1"},
+    "authority_sha256":{"$ref":"#/$defs/sha"},
+    "configuration_sha256":{"$ref":"#/$defs/sha"},
+    "coupled_time_v2_base64":{"$ref":"#/$defs/b64"},
+    "coupled_time_v2_sha256":{"$ref":"#/$defs/sha"},
+    "parent_beginning_owner_set_sha256":{"$ref":"#/$defs/sha"},
+    "staged_owner_set_sha256":{"$ref":"#/$defs/sha"},
+    "staged_v11_state":{"$ref":"v11-state-schema.json"},
+    "staged_owner_candidates":{"type":"array","items":{"$ref":"#/$defs/blob"}},
+    "accepted_resource_receipts":{"type":"array","items":{"$ref":"#/$defs/blob"}},
+    "accepted_material_receipts":{"type":"array","items":{"$ref":"#/$defs/blob"}},
+    "scheduled_once_receipts":{"type":"array","items":{"$ref":"#/$defs/blob"}}
+  },
+  "$defs":{
+    "sha":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "b64":{"type":"string","pattern":"^[A-Za-z0-9+/]*={0,2}$"},
+    "blob":{"type":"object","additionalProperties":false,"required":["identity_sha256","canonical_base64","canonical_sha256"],"properties":{"identity_sha256":{"$ref":"#/$defs/sha"},"canonical_base64":{"$ref":"#/$defs/b64"},"canonical_sha256":{"$ref":"#/$defs/sha"}}}
+  }
+}

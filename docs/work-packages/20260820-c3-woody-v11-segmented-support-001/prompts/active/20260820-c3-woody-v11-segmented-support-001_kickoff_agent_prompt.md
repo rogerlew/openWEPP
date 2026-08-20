@@ -36,19 +36,25 @@ dual terminal verification; and Child 2C handoff, in that order.
 
 ## Required reading
 
-Core: root/crates/work-package/science-contract/test `AGENTS.md`; this package;
-Child 2A handoff; `SC-COUPLEDTIME-001`; `SC-VEGETATION-001`;
-`SC-VEGETATIONTRANSACTION-001`; science-contract authoring procedure; kernel
-package preparation; prompt wording; and testing/gate strategy.
+Core: `/workdir/openWEPP/AGENTS.md`, `docs/codex_exec_plans.md`,
+`docs/work-packages/AGENTS.md`, `docs/work-packages/README.md`, this package,
+crates/test/science-contract `AGENTS.md`, Child 2A handoff,
+`SC-COUPLEDTIME-001`, `SC-VEGETATION-001`,
+`SC-VEGETATIONTRANSACTION-001`, kernel package preparation, prompt wording,
+and testing/gate strategy.
 
-Conditional: persisted-restart authority before restart design; unit governance
-for wire/unit exposure; orchestrator and vegetation source maps before edits.
+Conditional (triggered by this contract/kernel package): science-contract
+authoring procedure, kernel-process profile, and science-contract index.
+Persisted-restart authority is required before restart design; unit governance
+before wire/unit exposure; orchestrator and vegetation source maps before edits.
 On-demand: snow/LSE authority only to preserve Child 2C; baseline legacy sources
 only where V10 provenance requires confirmation.
 
-Required-reading budget: `390554` bytes, `WARN / REQUIRES-JUSTIFICATION` because
-the 203590-byte canonical vegetation contract must be read completely for an
-immutable successor. Record launch bytes in `artifacts/required-reading-map.md`.
+Required-reading budget: `831002` bytes, `REQUIRES-JUSTIFICATION`. The mandatory
+400289-byte work-package catalog cannot be deferred under package governance;
+the 203590-byte vegetation contract and coupled-time/transaction authorities
+must be complete pre-reads for an immutable cross-contract successor. Record
+launch bytes in `artifacts/required-reading-map.md`.
 
 ## Files
 

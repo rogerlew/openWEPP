@@ -1,10 +1,10 @@
 ---
 contract_id: SC-VEGETATION-001
 title: Native Vegetation State and Cross-Domain Boundary Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 14
+contract_version: 15
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-08-18
+last_reviewed: pending
 supersedes: []
 superseded_by: []
 ---
@@ -1416,6 +1416,25 @@ soil, ponded-water, layer, dry-matter, carbon, and nitrogen operands so wrong
 aliases cannot equal the expected result. Producer self-consistency alone is
 insufficient; both owners reconstruct from independent state/output surfaces.
 
+Canonical successor bindings detailed in the amendment sections below are
+indexed here so the Binding Exposure Index has one complete contract-level
+declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
+`INV-VEGETATION-089`, `INV-VEGETATION-090`, `INV-VEGETATION-091`,
+`INV-VEGETATION-093`, `INV-VEGETATION-094`, `INV-VEGETATION-095`,
+`INV-VEGETATION-096`, `INV-VEGETATION-097`, `INV-VEGETATION-098`,
+`INV-VEGETATION-099`, `INV-VEGETATION-100`, `INV-VEGETATION-101`,
+`INV-VEGETATION-102`, `INV-VEGETATION-103`, `INV-VEGETATION-104`,
+`INV-VEGETATION-105`, `INV-VEGETATION-106`, `INV-VEGETATION-107`,
+`INV-VEGETATION-108`, `INV-VEGETATION-109`, `INV-VEGETATION-110`,
+`INV-VEGETATION-111`, `INV-VEGETATION-112`, `INV-VEGETATION-113`,
+`INV-VEGETATION-114`, `INV-VEGETATION-115`, `INV-VEGETATION-116`,
+`INV-VEGETATION-117`, `INV-VEGETATION-118`, `INV-VEGETATION-119`,
+`INV-VEGETATION-120`, `INV-VEGETATION-121`, `INV-VEGETATION-122`,
+`INV-VEGETATION-123`, `INV-VEGETATION-124`, `INV-VEGETATION-125`,
+`INV-VEGETATION-126`, `INV-VEGETATION-127`, `INV-VEGETATION-128`,
+`VEG-E-095`, `VEG-E-096`, `VEG-E-097`, `VEG-E-098`, `VEG-E-099`,
+and `VEG-E-100`.
+
 ## Binding Exposure Index
 
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
@@ -1429,8 +1448,12 @@ insufficient; both owners reconstruct from independent state/output surfaces.
 | `BEI-VEGETATION-007` | `20260812-c3-woody-potential-pass-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-080, INV-VEGETATION-081, INV-VEGETATION-082, INV-VEGETATION-083, INV-VEGETATION-084, INV-VEGETATION-085, INV-VEGETATION-086` | `flagged-binding-addition` | Version 7 releases immutable V3 radiation preparation/ownership, surface wind, hydraulic geometry/common-root state, uncapped coupled potential semantics, exact leaf respiration, diagnostics, and independent fixture authority while preserving V1/V2 historical bytes. |
 | `BEI-VEGETATION-008` | `20260812-c3-woody-shared-state-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-069, INV-VEGETATION-087, INV-VEGETATION-088, INV-VEGETATION-089, INV-VEGETATION-090, INV-VEGETATION-091` | `flagged-binding-addition` | Version 8 releases immutable V4 exact shared-state schema, displayed-leaf C/N area/capacity ownership, derived area caches, and exact V3-to-V4 removal migration while preserving V1/V2/V3 historical bytes. |
 | `BEI-VEGETATION-009` | `20260812-c3-woody-potential-pass-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-093, INV-VEGETATION-094, INV-VEGETATION-095, INV-VEGETATION-096, INV-VEGETATION-097, INV-VEGETATION-098, INV-VEGETATION-099` | `flagged-binding-addition` | Version 9 releases immutable V5 fixed-authorization E11--E15 complementarity, generalized-Jacobian, diagnostic/operand, rollback, identity-transition, and independent fixture authority while preserving V1--V4 historical bytes. |
-| `BEI-VEGETATION-010` | `20260813-c3-woody-failure-diagnostic-portability-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-100, INV-VEGETATION-101, INV-VEGETATION-102, INV-VEGETATION-103, VEG-E-095, VEG-E-096` | `flagged-binding-addition` | Version 10 releases only V6 rejected-backtracking `step_norm` evidence portability and exact V5-to-V6 identity transition; accepted numerical and physical authority remains unchanged. |
-| `BEI-VEGETATION-011` | `20260813-c3-woody-storage-transfer-phenology-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-104, INV-VEGETATION-105, INV-VEGETATION-106, INV-VEGETATION-107, INV-VEGETATION-108, INV-VEGETATION-109, VEG-E-097, VEG-E-098, VEG-E-099, VEG-E-100` | `flagged-binding-addition` | Version 11 admits the V7 six-tissue seasonal storage-to-transfer preparation, onset deployment, immutable-beginning ordering, evergreen posture, conservation, failure, migration, and independent fixture authority; implementation remains separate. |
+| `BEI-VEGETATION-010` | `20260813-c3-woody-failure-diagnostic-portability-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-100, INV-VEGETATION-101, INV-VEGETATION-102, INV-VEGETATION-103` | `flagged-binding-addition` | Version 10 releases only V6 rejected-backtracking `step_norm` evidence portability and exact V5-to-V6 identity transition; accepted numerical and physical authority remains unchanged. |
+| `BEI-VEGETATION-011` | `20260813-c3-woody-storage-transfer-phenology-authority-001` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-104, INV-VEGETATION-105, INV-VEGETATION-106, INV-VEGETATION-107, INV-VEGETATION-108, INV-VEGETATION-109` | `flagged-binding-addition` | Version 11 admits the V7 six-tissue seasonal storage-to-transfer preparation, onset deployment, immutable-beginning ordering, evergreen posture, conservation, failure, migration, and independent fixture authority; implementation remains separate. |
+| `BEI-VEGETATION-012` | V8 coupled ground-energy amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-110, INV-VEGETATION-111, INV-VEGETATION-112, INV-VEGETATION-113, INV-VEGETATION-114` | `flagged-binding-addition` | Reciprocal longwave, shared tile canopy air, coupled transaction, migration, and release enthalpy. |
+| `BEI-VEGETATION-013` | V9 reproducible oracle identity amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-115, INV-VEGETATION-116, INV-VEGETATION-117` | `flagged-binding-addition` | Reproducible oracle identity and exact V8-to-V9 migration. |
+| `BEI-VEGETATION-014` | V10 nonpositive-assimilation amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-118, INV-VEGETATION-119, INV-VEGETATION-120` | `flagged-binding-addition` | Exact dark/low-light behavior and immutable V9-to-V10 migration. |
+| `BEI-VEGETATION-015` | V11 segmented-support amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-121, INV-VEGETATION-122, INV-VEGETATION-123, INV-VEGETATION-124, INV-VEGETATION-125, INV-VEGETATION-126, INV-VEGETATION-127, INV-VEGETATION-128` | `flagged-binding-addition` | Immutable V10 import, common slab duration, staged resources/materials, additive restart, exact compatibility, and atomic parent finalization. |
 
 ## Gap Register and Promotability Labels
 
@@ -2477,3 +2500,154 @@ V10; no historical identity is a V10 alias.
 This amendment is default-off and authorizes no selector, default/output
 change, cutover, deployment, calibration, empirical-validation claim, canopy
 snow, terminal snow handoff, or soil-biogeochemical transformation.
+
+## `OPENWEPP_C3_WOODY_V11` Segmented-Support Amendment
+
+V11 imports the complete immutable V10 constitutive equations, parameters,
+branches, numerical algorithms, state fields, conservation rules, and supported
+domain. It supersedes only configuration-owned transaction duration, segment
+chronology, staged resource custody, restart, and parent receipt/finalization.
+V10 configuration/state/model/vector bytes remain immutable and are never V11
+aliases. V11 is default-off.
+
+### Configuration and exact migration
+
+`VegetationConfigurationV11` contains V11 model/configuration/initial-state
+digests, `nominal_cadence_ns:u128`, `area_m2`, `timestamp`, topology tiles, and
+strata. It contains no executable `dt_s`. Migration accepts a complete valid
+V10 configuration/state only. Convert V10 `dt_s` to nanoseconds by the exact
+finite binary64 rational and round-to-nearest ties-to-even rule from
+`SC-COUPLEDTIME-001`; require a positive result and require converting those
+ticks back through the coupled-time tick-to-seconds algorithm to reproduce the
+original `dt_s.to_bits()` exactly. Otherwise fail typed without output.
+
+All physical state values migrate bit-identically: six-tissue C/N pools,
+canopy liquid, occupancy and tile warm starts, T10, NSC/XS/retranslocation,
+phenology phase/timers/GSI, topology, derived areas, pending-transfer posture,
+and accepted transaction sequence. Only model/configuration/state identities
+are recomputed under closed V11 framing. Unknown fields, V9-or-earlier direct
+migration, duration override, or copied V10 digest fails typed.
+
+### Admitted segment input and chronology
+
+`execute_v11_segment` accepts a validated V11 configuration, staged beginning
+V11 state, `AcceptedSlabSupportV1`, segment forcing, and a staged parent resource
+transaction. The support capability binds parent transaction, segment/slab
+identity, active participant set, `[start_ns,end_ns)`, and the one
+`duration_s_bits` derived by coupled time. Vegetation must be active. Every V10
+equation uses those exact bits; independent conversion and nominal cadence are
+unavailable.
+
+The physical sequence is the imported V10 potential solve, resource requests,
+fixed authorization, capped solve, persistent C/N advance, and candidate/ledger
+construction, rooted in the current staged beginning. The segment retains the
+parent transaction identity and does not update its persistent sequence.
+Rejection changes no accepted staged or committed byte.
+
+| Temporal class | V11 operations |
+|---|---|
+| Algebraic rate | radiation, gas exchange, respiration rate, vapor, energy, hydraulic flux |
+| Support integral | carbon gain/loss, transpiration, interception/release, turnover/mortality, material and mineral-N amounts |
+| Sequential state | canopy liquid, warm starts, T10, phase/timers/GSI, tissue/NSC/XS/retranslocation pools |
+| Scheduled once | named calendar/management inputs, parent material finalization, parent receipt/publication, transaction increment |
+| Event transition | regime/participant and admitted custody change only; no rate integration |
+| Diagnostic reduction | accepted-only totals/maxima; never physical acceptance authority |
+
+GSI/forcing values are segment inputs, but named daily/calendar GSI receipts,
+management events, initialization, and calendar transitions are consumed once
+by scheduled-boundary receipt. Phenology edge selection uses the current staged
+phase/previous accepted GSI per physical segment; retry cannot repeat it because
+only acceptance installs state. Parent finalization/increment execute once.
+
+### Sequential resource custody
+
+Water requests are computed from current staged state and authorized against
+current staged hydrology. Finalized uses form the next hydrology candidate.
+Ordered segment receipts independently reconstruct cumulative parent debit; no
+later segment reuses parent-beginning inventory and no segment commits live.
+
+Mineral-N demand is recomputed per segment after water-limited carbon. NH4/NO3,
+layer, stratum, owner, basis, parent, segment, and slab identity remain exact.
+Authorization uses current staged BGC inventory; cumulative debits equal parent
+beginning minus final candidate and cannot overbook.
+
+Vegetation, water, BGC, energy, and applicable soil-thermal candidates advance
+together. Segment ending canopy/T10/C/N/phenology/warm-start state is the next
+beginning. Inactive owners carry exact bytes.
+
+Phenology, turnover, and mortality transfers are constructed from each accepted
+segment's staged beginning and exact support. Typed transfers are retained in
+accepted order and accumulated into one parent material batch. Parent
+finalization assigns stable parent-scoped proposal IDs without recomputing
+amounts from final state. Receiving owners independently reconstruct segment
+and cumulative C/N/dry-matter debits.
+
+### Parent finalization and atomic commit
+
+After slabs/events cover the parent, validate support, participants,
+predecessors, resource joins, cumulative debits, material ledgers, and
+accepted-only reductions. Construct one ending V11 state whose transaction is
+the checked parent successor, one complete owner candidate, and one parent
+receipt. Coupled time installs every owner atomically and increments once.
+Second finalization, segment commit, partial owners, or stale receipt fails
+byte-identically.
+
+### Additive restart
+
+`OPENWEPP_C3_WOODY_V11_RESTART_V1` is a new closed wire binding coupled-time
+parent/checkpoint/cursor; current segment/slab/event/participants;
+parent-beginning owners; staged V11, water, BGC, energy, and applicable thermal
+candidates; accepted resource/material/scheduled receipts; publication/
+reduction state; and next parent sequence. Rejected attempts are absent.
+
+Restore requires expected V11 authority/configuration and the exact coupled-
+time V2 checkpoint, then reconstructs identity, predecessor, owner debit, and
+receipt chains before returning a closed continuation. Fresh-object,
+mid-parent, event-boundary, abort, and consecutive-parent continuations equal
+uninterrupted bytes; replay fails. DirectV10 V1 and coupled-time V2 bytes remain
+unchanged.
+
+### Full-support compatibility and segmented population
+
+For a migrated V10 state and one V11 slab equal to nominal cadence, identical
+forcing/owners must reproduce V10 bit-for-bit for every non-identity physical
+payload: potential/final requests and amounts; radiation, gas, hydraulics,
+energy; canopy/warm starts; C/N/T10/phenology/material state; owner amounts;
+diagnostics; and branches. Only successor identities/receipts may differ. A
+closed generated ledger enumerates all fields; omission is failure.
+
+Segmented acceptance includes 600+1200, 1200+600, 1 ns+remainder, remainder+
+1 ns, three unequal supports, start/end events, zero-remainder receiver skip,
+mid-parent restart, and consecutive parents with different forcing. Scaling a
+V10 result, shortening V10 configuration, starting segment 2 from parent
+beginning, or aliasing parent/segment identity is rejected.
+
+### V11 invariants and guards
+
+| ID | Binding rule |
+|---|---|
+| `INV-VEGETATION-121` | Migration is physical-bit-identical and cadence admits only when tick/binary64 roundtrip preserves V10 bits. |
+| `INV-VEGETATION-122` | Every duration-sensitive operation consumes admitted slab duration bits; nominal cadence is identity only. |
+| `INV-VEGETATION-123` | Accepted segment endings are next beginnings; rejected work changes nothing. |
+| `INV-VEGETATION-124` | Water and NH4/NO3 use staged inventory and cumulative parent debits close without overbooking. |
+| `INV-VEGETATION-125` | Segment material transfers accumulate in order into one parent batch and are not recomputed. |
+| `INV-VEGETATION-126` | One parent finalization increments once and atomically installs complete owners. |
+| `INV-VEGETATION-127` | Additive restart reconstructs chronology/custody and prevents replay. |
+| `INV-VEGETATION-128` | One full-support V11 segment matches every V10 non-identity payload and branch. |
+| `VEG-E-121` | Invalid source, nonexact cadence, changed migration value, or alias rejects. |
+| `VEG-E-122` | Wrong slab/participant/support/duration or local conversion rejects before solve. |
+| `VEG-E-123` | Stale beginning, gap/overlap, retry mutation, or predecessor mismatch rejects. |
+| `VEG-E-124` | Wrong resource identity, stale inventory, overbooking, or debit mismatch rejects all candidates. |
+| `VEG-E-125` | Repeated scheduled work, wrong material chronology, event rate integration, or rejected reduction fails. |
+| `VEG-E-126` | Segment/duplicate/partial/stale finalization or increment rejects atomically. |
+| `VEG-E-127` | Restart schema/authority/receipt/cursor/owner mismatch or replay rejects. |
+| `VEG-E-128` | Any unexplained full-support physical/branch mismatch keeps V11 non-promotable. |
+
+V11 introduces no constitutive or calibration claim. It authorizes no canopy-
+snow carrier, selector/default, activation, publication, deployment, or cutover.
+
+## V11 amendment change log
+
+| Date | Version | Author | Change |
+|---|---:|---|---|
+| 2026-08-20 | 15 | Codex | Drafted immutable-V10 V11 segmented support, staged custody, additive restart, exact compatibility, and one atomic parent finalization. |

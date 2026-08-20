@@ -1,1 +1,20 @@
-{"schema":"OPENWEPP_C3_WOODY_V11_SEGMENTED_SUPPORT_VECTORS_DRAFT","cases":[]}
+{
+  "schema": "OPENWEPP_C3_WOODY_V11_SEGMENTED_SUPPORT_VECTORS_V1",
+  "parent_end_ns": "1800000000000",
+  "cases": [
+    {"id":"single_full","supports":[["0","1800000000000"]],"debits":[3.0],"expected":{"status":"accepted","total_debit":3.0,"increments":1}},
+    {"id":"600_1200","supports":[["0","600000000000"],["600000000000","1800000000000"]],"debits":[1.0,2.0],"expected":{"status":"accepted","total_debit":3.0,"increments":1}},
+    {"id":"1200_600","supports":[["0","1200000000000"],["1200000000000","1800000000000"]],"debits":[2.0,1.0],"expected":{"status":"accepted","total_debit":3.0,"increments":1}},
+    {"id":"one_ns_first","supports":[["0","1"],["1","1800000000000"]],"debits":[0.0,3.0],"expected":{"status":"accepted","total_debit":3.0,"increments":1}},
+    {"id":"one_ns_last","supports":[["0","1799999999999"],["1799999999999","1800000000000"]],"debits":[3.0,0.0],"expected":{"status":"accepted","total_debit":3.0,"increments":1}},
+    {"id":"three_unequal","supports":[["0","100000000000"],["100000000000","700000000000"],["700000000000","1800000000000"]],"debits":[0.25,1.0,1.75],"expected":{"status":"accepted","total_debit":3.0,"increments":1}},
+    {"id":"gap","supports":[["0","600000000000"],["600000000001","1800000000000"]],"debits":[1.0,2.0],"expected":{"status":"rejected","error":"VEG-E-123"}},
+    {"id":"overlap","supports":[["0","600000000000"],["599999999999","1800000000000"]],"debits":[1.0,2.0],"expected":{"status":"rejected","error":"VEG-E-123"}},
+    {"id":"zero_slab","supports":[["0","0"],["0","1800000000000"]],"debits":[0.0,3.0],"expected":{"status":"rejected","error":"VEG-E-122"}},
+    {"id":"overbook","supports":[["0","600000000000"],["600000000000","1800000000000"]],"debits":[2.0,2.0],"inventory":3.0,"expected":{"status":"rejected","error":"VEG-E-124"}},
+    {"id":"two_increments","supports":[["0","600000000000"],["600000000000","1800000000000"]],"debits":[1.0,2.0],"requested_increments":2,"expected":{"status":"rejected","error":"VEG-E-126"}},
+    {"id":"rejected_attempt_noop","supports":[["0","1800000000000"]],"debits":[3.0],"attempt_rejected":true,"expected":{"status":"rejected","error":"VEG-E-123","state_unchanged":true}},
+    {"id":"scheduled_twice","supports":[["0","600000000000"],["600000000000","1800000000000"]],"debits":[1.0,2.0],"scheduled_receipts":["daily-gsi","daily-gsi"],"expected":{"status":"rejected","error":"VEG-E-125"}},
+    {"id":"restart_replay","supports":[["0","600000000000"],["600000000000","1800000000000"]],"debits":[1.0,2.0],"replayed_slab":0,"expected":{"status":"rejected","error":"VEG-E-127"}}
+  ]
+}

@@ -1,1 +1,18 @@
-{"schema":"OPENWEPP_C3_WOODY_V11_MODEL_DEFINITION_DRAFT","status":"queued"}
+{
+  "schema": "OPENWEPP_C3_WOODY_V11_MODEL_DEFINITION_V1",
+  "model": "OPENWEPP_C3_WOODY_V11",
+  "imports": ["OPENWEPP_C3_WOODY_V10", "OPENWEPP_COUPLED_TIME_SUPPORT_V1"],
+  "supersedes_only": ["transaction_time_integration", "receipt_chronology"],
+  "configuration_fields": ["model_definition_sha256", "configuration_sha256", "initial_state_sha256", "nominal_cadence_ns", "area_m2", "timestamp", "topology_tiles", "strata"],
+  "temporal_classes": {
+    "algebraic_rate": ["radiation", "gas_exchange", "respiration_rate", "vapor", "energy", "hydraulic_flux"],
+    "support_integral": ["carbon", "water", "nitrogen", "turnover", "mortality", "material"],
+    "sequential_state": ["canopy_liquid", "warm_starts", "t10", "phenology", "carbon_nitrogen_pools"],
+    "scheduled_once": ["calendar_management_receipt", "parent_material_finalization", "parent_receipt", "transaction_increment"],
+    "event_transition": ["regime", "participant_set", "custody"],
+    "diagnostic_reduction": ["accepted_totals", "accepted_maxima"]
+  },
+  "resource_identity_suffix": ["parent_transaction_id", "segment_id", "accepted_slab_id"],
+  "restart": "OPENWEPP_C3_WOODY_V11_RESTART_V1",
+  "errors": ["VEG-E-121", "VEG-E-122", "VEG-E-123", "VEG-E-124", "VEG-E-125", "VEG-E-126", "VEG-E-127", "VEG-E-128"]
+}

@@ -1,16 +1,16 @@
 ---
 contract_id: SC-VEGETATIONTRANSACTION-001
 title: Coupled Vegetation Occupancy Owner-Transaction Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - OPENWEPP_C3_WOODY_V8 occupancy and ground resource/energy candidates
 consumer_scope:
   - Default-off real-hydrology, LSE, BGC, and soil-thermal shadow owners
 evidence_level: static+independent_oracle
-last_reviewed: 2026-08-19
+last_reviewed: pending
 supersedes: []
 superseded_by: []
 ---
@@ -123,6 +123,11 @@ set.
 | `INV-VEGTRANSACTION-006` | Signed condensation has one hydrology mass credit and one paired energy credit; evaporation alone produces a withdrawal. | REF-003/004 | `[INFERENCE][Static]` | dual owner | `VEGTXN-E-009` |
 | `INV-VEGTRANSACTION-007` | Surface `-G`, soil `+G`, infiltration energy and routed runoff enthalpy preserve exact OFE/tile/source identity. | REF-003/004 | `[INFERENCE][Static]` | LSE/soil thermal/hydrology | `VEGTXN-E-010` |
 | `INV-VEGTRANSACTION-008` | The terminal receiver binds snow and receiver halves by one predecessor chain while preserving independent absolute support, total error precedence, restart custody, atomic commit/rollback, and CoE production invariance. | REF-001/004 + terminal contracts | `[INFERENCE][Static]` | orchestrator | `VEGTXN-E-007` |
+| `INV-VEGTRANSACTION-009` | Segment resource identity extends, never replaces, parent/owner/OFE/tile/occupancy/layer/species/basis identity. | SC-COUPLEDTIME-001 + V11 amendment | `[INFERENCE][Static]` | orchestrator | `VEGTXN-E-011` |
+| `INV-VEGTRANSACTION-010` | Each segment authorizes against current staged inventory and the parent independently closes cumulative debits. | V11 amendment | `[INFERENCE][Static]` | resource owners | `VEGTXN-E-012` |
+| `INV-VEGTRANSACTION-011` | Ordered segment material receipts form one parent batch without final-state recomputation. | V11 amendment | `[INFERENCE][Static]` | vegetation/material owner | `VEGTXN-E-013` |
+| `INV-VEGTRANSACTION-012` | Exactly one complete parent commit installs all owners and increments once. | SC-COUPLEDTIME-001 + V11 amendment | `[INFERENCE][Static]` | orchestrator | `VEGTXN-E-014` |
+| `INV-VEGTRANSACTION-013` | Restart reconstructs the staged owner/receipt chain and cannot replay accepted work. | SC-COUPLEDTIME-001 + V11 amendment | `[INFERENCE][Static]` | restart owner | `VEGTXN-E-014` |
 
 ### Invariant Guard Map
 
@@ -186,7 +191,12 @@ rate/amount aliases; producer-residual poison; and phase-injection rollback.
 
 ## Binding Exposure Index
 
-No earlier sidecar exists; all binding authority is in this contract.
+| Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
+|---|---|---|---|---|---|---|
+| `BEI-VEGTRANSACTION-001` | Native transaction authority | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-001, INV-VEGTRANSACTION-002, INV-VEGTRANSACTION-003, INV-VEGTRANSACTION-004` | `flagged-binding-addition` | Typed water, energy, and atomic owner transaction authority. |
+| `BEI-VEGTRANSACTION-002` | V8/LSE shared-hydrology amendment | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-005, INV-VEGTRANSACTION-006, INV-VEGTRANSACTION-007` | `flagged-binding-addition` | Immutable shared hydrology snapshots and reciprocal mass/energy joins. |
+| `BEI-VEGTRANSACTION-003` | Terminal receiver amendment | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-008` | `flagged-binding-addition` | Phase-aware predecessor chain, restart, and rollback authority. |
+| `BEI-VEGTRANSACTION-004` | V11 segmented parent-transaction amendment | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-009, INV-VEGTRANSACTION-010, INV-VEGTRANSACTION-011, INV-VEGTRANSACTION-012, INV-VEGTRANSACTION-013` | `flagged-binding-addition` | Segment resource identities, staged custody, ordered material accumulation, atomic parent commit, and restart. |
 
 ## Gap Register and Promotability Labels
 
@@ -251,6 +261,52 @@ qualification, assurance approval, production activation, or cutover.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-20 | 4 | Codex | Drafted V11 accepted-segment staging, cumulative resource/material custody, additive restart, and one atomic parent commit. |
 | 2026-08-19 | 3 | Codex | Added default-off terminal receiver all-owner transaction authority (`INV-VEGTRANSACTION-008`) with phase-aware error precedence, exact rollback, restart membership, and CoE production invariance. |
 | 2026-08-14 | 2 | Codex | Extended the transaction to V8/LSE source-keyed ground water, one real-hydrology authorization, coupled final solve, LSE/soil-thermal owner joins and production-isolated atomic shadow commit. |
 | 2026-08-12 | 1 | Codex | Initial shared V2 occupancy water/energy owner identity, reconstruction, and atomicity authority. |
+
+## V11 segmented parent-transaction amendment
+
+Version 4 imports every V3 single-support owner identity and adds a parent /
+accepted-segment hierarchy under `SC-COUPLEDTIME-001@2`. The complete parent
+owner set is fixed. Each admitted vegetation slab carries parent transaction,
+segment, slab, participant, support, duration bits, beginning/ending owner-set
+digests, and typed water/N/energy/material receipts. Segment candidates are
+staged only and cannot increment or commit the persistent parent transaction.
+
+For each resource identity, extend the existing tuple with parent transaction,
+segment ID, and accepted slab ID. Water and NH4/NO3 requests authorize against
+the current staged owner snapshot. The parent validator orders receipts by
+accepted chronology, checks every ending digest is the next beginning digest,
+and independently reconstructs cumulative debits from parent beginning to
+final candidate. Missing/duplicate receipts, stale parent beginnings, or a
+later segment using an earlier inventory rejects the complete parent.
+
+Material transfers are amount-bearing segment receipts whose source chronology
+is immutable. Parent finalization concatenates accepted transfers in slab and
+within-segment canonical order, assigns stable parent-scoped proposal IDs, and
+validates receiving BGC/residue candidates. It may not rerun turnover or derive
+transfers from only the final vegetation state.
+
+The V11 parent commit candidate contains exactly one ending candidate for every
+complete owner, one successor V11 state, ordered accepted slab/event/scheduled
+receipts, cumulative ledgers, and one parent receipt. A consuming atomic commit
+checks the live parent clock and beginning owner set, installs all candidates,
+increments once, and releases buffered publication. No public segment commit or
+vegetation-only finalize capability exists.
+
+`OPENWEPP_C3_WOODY_V11_RESTART_V1` retains the parent beginning set, current
+staged complete owner set, accepted receipt chronology, and scheduled/material
+state. Restore reauthenticates the hierarchy and returns only a continuation
+capability; rejected attempts and live-owner partial installs are impossible.
+
+| Failure ID | Typed failure |
+|---|---|
+| `VEGTXN-E-011` | Wrong parent/segment/slab/participant/support/resource identity rejects before staging. |
+| `VEGTXN-E-012` | Cross-segment predecessor, inventory, overbooking, or cumulative-ledger mismatch rejects atomically. |
+| `VEGTXN-E-013` | Per-segment commit, duplicate finalization/increment, incomplete owner set, or stale live clock rejects. |
+| `VEGTXN-E-014` | Restart hierarchy, receipt, scheduled-once, material, or replay mismatch rejects continuation. |
+
+Version 4 is default-off and adds no snow-carrier, constitutive, selector,
+publication, deployment, or production-cutover authority.
