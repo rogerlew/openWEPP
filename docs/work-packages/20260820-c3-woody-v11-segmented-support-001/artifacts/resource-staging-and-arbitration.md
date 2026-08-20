@@ -18,6 +18,15 @@ left-fold for receipt diagnostics. Nonassociativity is expected: regrouped
 `parent_beginning - cumulative` bits need not equal the sequential ending and
 must never replace it. Both independent chronicles are authenticated.
 
+Occupancy-scoped debit receipts are not shared-owner inventory rows. They bind
+request, authorization, final vegetation use, and occupancy/layer/source
+identity. A separate shared transition keyed by owner/OFE/layer/source binds
+the complete staged beginning and ending, ordered debit-receipt links, other
+admitted flux links, and the canonical complete-owner candidate digest. Shared
+transition endings—not occupancy post-use fields—form cross-segment
+predecessors. Every debit is linked exactly once and authorized against the
+current shared beginning.
+
 Material amounts are computed per accepted segment by imported V10 phenology,
 turnover, and mortality, retained with support/source lineage, concatenated in
 accepted order, and assigned parent-scoped proposal IDs once. Recomputing only

@@ -1,0 +1,37 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"OPENWEPP_C3_WOODY_V11_RESOURCE_CUSTODY_V1",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["resource_debit_receipts","shared_owner_transitions"],
+  "properties":{
+    "resource_debit_receipts":{"type":"array","items":{"$ref":"#/$defs/debit"}},
+    "shared_owner_transitions":{"type":"array","items":{"$ref":"#/$defs/transition"}}
+  },
+  "$defs":{
+    "amount":{"type":"string","pattern":"^[0-9a-f]{16}$"},
+    "sha":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "identity":{"type":"string","minLength":1},
+    "debit":{
+      "type":"object","additionalProperties":false,
+      "required":["receipt_id","parent_transaction_id","segment_id","accepted_slab_id","resource","occupancy_id","layer_id","source_id","request_bits","authorization_bits","final_use_bits","vegetation_post_use_bits"],
+      "properties":{
+        "receipt_id":{"$ref":"#/$defs/sha"},"parent_transaction_id":{"$ref":"#/$defs/sha"},"segment_id":{"$ref":"#/$defs/sha"},"accepted_slab_id":{"$ref":"#/$defs/sha"},
+        "resource":{"enum":["water","nh4","no3"]},"occupancy_id":{"$ref":"#/$defs/identity"},"layer_id":{"$ref":"#/$defs/identity"},"source_id":{"$ref":"#/$defs/identity"},
+        "request_bits":{"$ref":"#/$defs/amount"},"authorization_bits":{"$ref":"#/$defs/amount"},"final_use_bits":{"$ref":"#/$defs/amount"},"vegetation_post_use_bits":{"$ref":"#/$defs/amount"}
+      }
+    },
+    "transition":{
+      "type":"object","additionalProperties":false,
+      "required":["transition_id","parent_transaction_id","segment_id","accepted_slab_id","resource","owner_id","ofe_id","layer_id","source_id","beginning_bits","ending_bits","ordered_debit_receipt_ids","other_flux_receipt_ids","owner_candidate_sha256"],
+      "properties":{
+        "transition_id":{"$ref":"#/$defs/sha"},"parent_transaction_id":{"$ref":"#/$defs/sha"},"segment_id":{"$ref":"#/$defs/sha"},"accepted_slab_id":{"$ref":"#/$defs/sha"},
+        "resource":{"enum":["water","nh4","no3"]},"owner_id":{"$ref":"#/$defs/identity"},"ofe_id":{"$ref":"#/$defs/identity"},"layer_id":{"$ref":"#/$defs/identity"},"source_id":{"$ref":"#/$defs/identity"},
+        "beginning_bits":{"$ref":"#/$defs/amount"},"ending_bits":{"$ref":"#/$defs/amount"},
+        "ordered_debit_receipt_ids":{"type":"array","items":{"$ref":"#/$defs/sha"},"uniqueItems":true},
+        "other_flux_receipt_ids":{"type":"array","items":{"$ref":"#/$defs/sha"},"uniqueItems":true},
+        "owner_candidate_sha256":{"$ref":"#/$defs/sha"}
+      }
+    }
+  }
+}

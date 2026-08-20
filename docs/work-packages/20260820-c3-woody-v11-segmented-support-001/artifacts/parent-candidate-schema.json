@@ -2,7 +2,7 @@
   "$schema":"https://json-schema.org/draft/2020-12/schema",
   "$id":"OPENWEPP_C3_WOODY_V11_PARENT_CANDIDATE_V1",
   "type":"object","additionalProperties":false,
-  "required":["schema","parent_id","owner_manifest","clock_begin_sha256","clock_end_sha256","complete_owner_manifest","beginning_owner_sha256","ending_owner_sha256","slab_receipts","event_receipts","scheduled_receipts","resource_receipts","material_receipts","publication_receipts","parent_receipt_sha256"],
+  "required":["schema","parent_id","owner_manifest","clock_begin_sha256","clock_end_sha256","complete_owner_manifest","beginning_owner_sha256","ending_owner_sha256","slab_receipts","event_receipts","scheduled_receipts","resource_receipts","shared_resource_transition_receipts","material_receipts","publication_receipts","parent_receipt_sha256"],
   "properties":{
     "schema":{"const":"OPENWEPP_C3_WOODY_V11_PARENT_CANDIDATE_V1"},
     "parent_id":{"type":"string","pattern":"^[0-9a-f]{64}$"},
@@ -15,9 +15,10 @@
     "event_receipts":{"type":"array","items":{"$ref":"#/$defs/receipt"}},
     "scheduled_receipts":{"type":"array","items":{"$ref":"#/$defs/receipt"}},
     "resource_receipts":{"type":"array","items":{"$ref":"#/$defs/receipt"}},
+    "shared_resource_transition_receipts":{"type":"array","items":{"$ref":"#/$defs/receipt"}},
     "material_receipts":{"type":"array","items":{"$ref":"#/$defs/receipt"}},
     "publication_receipts":{"type":"array","items":{"$ref":"#/$defs/receipt"}},
     "parent_receipt_sha256":{"$ref":"#/$defs/sha"}
   },
-  "$defs":{"sha":{"type":"string","pattern":"^[0-9a-f]{64}$"},"receipt":{"type":"object","additionalProperties":false,"required":["kind","ordinal","identity_sha256","payload","payload_sha256"],"properties":{"kind":{"enum":["slab","event","scheduled","resource","material","publication"]},"ordinal":{"type":"integer","minimum":0},"identity_sha256":{"$ref":"#/$defs/sha"},"payload":{"type":"string","contentEncoding":"base64"},"payload_sha256":{"$ref":"#/$defs/sha"}}}}
+  "$defs":{"sha":{"type":"string","pattern":"^[0-9a-f]{64}$"},"receipt":{"type":"object","additionalProperties":false,"required":["kind","ordinal","identity_sha256","payload","payload_sha256"],"properties":{"kind":{"enum":["slab","event","scheduled","resource","shared_resource_transition","material","publication"]},"ordinal":{"type":"integer","minimum":0},"identity_sha256":{"$ref":"#/$defs/sha"},"payload":{"type":"string","contentEncoding":"base64"},"payload_sha256":{"$ref":"#/$defs/sha"}}}}
 }

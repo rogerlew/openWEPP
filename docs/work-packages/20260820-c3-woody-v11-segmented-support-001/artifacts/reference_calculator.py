@@ -15,6 +15,37 @@ def migrate(bits):
  n=q+int(2*r>(Fraction.from_float(v)*1_000_000_000).denominator or (2*r==(Fraction.from_float(v)*1_000_000_000).denominator and q&1))
  if n<=0 or n>U128_MAX or f2b(float(n)/1e9)!=bits:return reject("VEG-E-121")
  return {"status":"accepted","nominal_cadence_ns":str(n)}
+def shared_resource_custody(c):
+ receipts=c.get("resource_debit_receipts",[]); transitions=c.get("shared_owner_transitions",[])
+ if not receipts and not transitions:return None
+ by_id={}; identities=set()
+ for r in receipts:
+  required=("id","slab","resource","occupancy","layer","source","request","authorization","final_use","vegetation_post_use")
+  if any(k not in r for k in required) or r["id"] in by_id:return reject("VEG-E-124")
+  identity=(r["slab"],r["resource"],r["occupancy"],r["layer"],r["source"])
+  if identity in identities:return reject("VEG-E-124",resource=r["resource"])
+  identities.add(identity);by_id[r["id"]]=r
+  request,authorization,use=map(float,(r["request"],r["authorization"],r["final_use"]))
+  if not all(math.isfinite(x) for x in (request,authorization,use)) or not 0<=use<=authorization<=request:return reject("VEG-E-124",resource=r["resource"])
+ seen_links=set(); prior={}; endings={}
+ for t in transitions:
+  required=("id","slab","resource","owner","ofe","layer","source","beginning","ending","debit_receipt_ids","owner_candidate_sha256")
+  if any(k not in t for k in required):return reject("VEG-E-124")
+  digest=t["owner_candidate_sha256"]
+  if len(digest)!=64 or any(x not in "0123456789abcdef" for x in digest):return reject("VEG-E-124",resource=t["resource"])
+  key=(t["resource"],t["owner"],t["ofe"],t["layer"],t["source"]);begin=float(t["beginning"]);end=float(t["ending"])
+  if not math.isfinite(begin) or not math.isfinite(end) or begin<0 or end<0:return reject("VEG-E-124",resource=t["resource"])
+  if key in prior and f2b(begin)!=f2b(prior[key]):return reject("VEG-E-124",resource=t["resource"])
+  authorization=0.0
+  for receipt_id in t["debit_receipt_ids"]:
+   if receipt_id in seen_links or receipt_id not in by_id:return reject("VEG-E-124",resource=t["resource"])
+   r=by_id[receipt_id]
+   if (r["slab"],r["resource"],r["layer"],r["source"])!=(t["slab"],t["resource"],t["layer"],t["source"]):return reject("VEG-E-124",resource=t["resource"])
+   authorization+=float(r["authorization"]);seen_links.add(receipt_id)
+  if authorization>begin:return reject("VEG-E-124",resource=t["resource"])
+  prior[key]=end;endings["|".join(key)]=str(end)
+ if seen_links!=set(by_id):return reject("VEG-E-124")
+ return endings
 def chronology(c,parent_end):
  if c.get("attempt_rejected"):return reject("VEG-E-123",state_unchanged=True,publication_visible=False)
  cursor=0
@@ -38,6 +69,8 @@ def chronology(c,parent_end):
   seen.add(e["id"])
   if e.get("integrates_rate"):return reject("VEG-E-122")
  if c.get("zero_remainder_skip") and events and int(events[-1]["tick"])!=parent_end:return reject("VEG-E-123")
+ shared_endings=shared_resource_custody(c)
+ if isinstance(shared_endings,dict) and shared_endings.get("status")=="rejected":return shared_endings
  inv=c.get("inventories",{}); debits=c.get("resource_debits",{}); totals={}; endings={}
  for resource in ("water","nh4","no3"):
   total=0.0; available=inv.get(resource,"Infinity")
@@ -69,6 +102,7 @@ def chronology(c,parent_end):
  pub=hashlib.sha256(json.dumps(c.get("accepted_publications",[]),separators=(",",":")).encode()).hexdigest()
  result={"status":"accepted","resource_totals":totals,"ending_state":str(float(state)),"event_count":len(events),"increments":1,"atomic_commits":1,"publication_sha256":pub}
  if endings:result["resource_endings"]=endings
+ if shared_endings is not None:result["shared_owner_endings"]=shared_endings
  return result
 def main():
  m=json.loads((ROOT/"v10-v11-migration-vectors.json").read_text());s=json.loads((ROOT/"segmented-support-vectors.json").read_text());out=[]
@@ -80,5 +114,5 @@ def main():
   a=chronology(c,int(s["parent_end_ns"]))
   if a!=c["expected"]:raise SystemExit(f"chronology mismatch {c['id']}: {a} != {c['expected']}")
   out.append({"id":c["id"],"actual":a})
- print(json.dumps({"schema":"OPENWEPP_C3_WOODY_V11_REFERENCE_RESULTS_V3","results":out},sort_keys=True,separators=(",",":")))
+ print(json.dumps({"schema":"OPENWEPP_C3_WOODY_V11_REFERENCE_RESULTS_V4","results":out},sort_keys=True,separators=(",",":")))
 if __name__=="__main__":main()

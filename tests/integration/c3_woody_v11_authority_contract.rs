@@ -24,8 +24,8 @@ fn canonical_contracts_bind_v11_without_mutating_v10() {
         "OPENWEPP_C3_WOODY_V11_RESTART_V1",
         "duration_s_bits",
         "one parent material batch",
-        "Authoritative owner custody is a",
-        "MUST NOT require regrouped",
+        "occupancy-scoped debit receipt",
+        "shared-resource owner transition",
     ] {
         assert!(vegetation.contains(required), "missing {required}");
     }
@@ -34,7 +34,7 @@ fn canonical_contracts_bind_v11_without_mutating_v10() {
         "INV-VEGTRANSACTION-013",
         "accepted-segment hierarchy",
         "one complete parent commit",
-        "diagnostic/receipt identity",
+        "shared owner predecessor records",
     ] {
         assert!(transaction.contains(required), "missing {required}");
     }
@@ -91,6 +91,11 @@ fn frozen_vectors_are_executable_and_cover_required_aliases() {
         "nonassociative_three_resource_chain",
         "wrong_regrouped_water_ending",
         "regrouped_owner_alias",
+        "two_occupancy_shared_water_owner_chain",
+        "shared_water_wrong_occupancy_alias",
+        "shared_water_missing_debit_link",
+        "shared_water_forged_owner_transition",
+        "shared_water_authorization_overbook",
     ] {
         assert!(ids.contains(&id), "missing {id}");
     }
@@ -111,7 +116,7 @@ fn independent_reference_accepts_frozen_population() {
         String::from_utf8_lossy(&output.stderr)
     );
     let result: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(result["results"].as_array().unwrap().len(), 49);
+    assert_eq!(result["results"].as_array().unwrap().len(), 54);
     let control = result["results"]
         .as_array()
         .unwrap()
@@ -122,6 +127,16 @@ fn independent_reference_accepts_frozen_population() {
     assert_eq!(
         control["actual"]["resource_endings"]["water"],
         "241296780.79251432"
+    );
+    let shared = result["results"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["id"] == "two_occupancy_shared_water_owner_chain")
+        .expect("shared owner control");
+    assert_eq!(
+        shared["actual"]["shared_owner_endings"]["water|hydrology|ofe-1|layer-1|soil"],
+        "6.5"
     );
 }
 
@@ -150,6 +165,7 @@ fn successor_schemas_are_closed_and_do_not_hide_v10_physics_in_blobs() {
         "v11-configuration-schema.json",
         "v11-state-schema.json",
         "v11-restart-schema.json",
+        "v11-resource-custody-schema.json",
     ] {
         let source = read(&format!("{base}/{name}"));
         let _: Value = serde_json::from_str(&source).unwrap();

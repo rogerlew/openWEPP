@@ -1,10 +1,10 @@
 ---
 contract_id: SC-VEGETATIONTRANSACTION-001
 title: Coupled Vegetation Occupancy Owner-Transaction Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - OPENWEPP_C3_WOODY_V8 occupancy and ground resource/energy candidates
   - OPENWEPP_C3_WOODY_V11 accepted-segment and parent candidates
@@ -19,8 +19,8 @@ superseded_by: []
 
 # SC-VEGETATIONTRANSACTION-001 Coupled Vegetation Occupancy Owner-Transaction Contract
 
-Status: `approved`
-Maturity: `active`
+Status: `in_review`
+Maturity: `draft`
 Evidence mode: `Static + independent oracle`
 
 ## Purpose
@@ -149,7 +149,7 @@ current/next parent sequence. None is a live-owner mutation before commit.
 | `INV-VEGTRANSACTION-007` | Surface `-G`, soil `+G`, infiltration energy and routed runoff enthalpy preserve exact OFE/tile/source identity. | REF-003/004 | `[INFERENCE][Static]` | LSE/soil thermal/hydrology | `VEGTXN-E-010` |
 | `INV-VEGTRANSACTION-008` | The terminal receiver binds snow and receiver halves by one predecessor chain while preserving independent absolute support, total error precedence, restart custody, atomic commit/rollback, and CoE production invariance. | REF-001/004 + terminal contracts | `[INFERENCE][Static]` | orchestrator | `VEGTXN-E-007` |
 | `INV-VEGTRANSACTION-009` | Segment resource identity extends, never replaces, parent/owner/OFE/tile/occupancy/layer/species/basis identity. | SC-COUPLEDTIME-001 + V11 amendment | `[INFERENCE][Static]` | orchestrator | `VEGTXN-E-011` |
-| `INV-VEGTRANSACTION-010` | Each segment authorizes against current staged inventory and the parent independently reconstructs exact ordered water, NH4, and NO3 debits and ending owner bytes. | V11 amendment | `[INFERENCE][Static]` | resource owners | `VEGTXN-E-012` |
+| `INV-VEGTRANSACTION-010` | Each occupancy debit authorizes against current staged shared inventory; the parent independently reconstructs ordered debit receipts and typed shared-owner transitions whose endings—not occupancy post-use fields—form cross-segment predecessors. | V11 amendment | `[INFERENCE][Static]` | resource owners | `VEGTXN-E-012` |
 | `INV-VEGTRANSACTION-011` | Ordered segment material receipts form one parent batch without final-state recomputation. | V11 amendment | `[INFERENCE][Static]` | vegetation/material owner | `VEGTXN-E-013` |
 | `INV-VEGTRANSACTION-012` | Exactly one complete parent commit installs all owners and increments once. | SC-COUPLEDTIME-001 + V11 amendment | `[INFERENCE][Static]` | orchestrator | `VEGTXN-E-014` |
 | `INV-VEGTRANSACTION-013` | Restart reconstructs the staged owner/receipt chain and cannot replay accepted work. | SC-COUPLEDTIME-001 + V11 amendment | `[INFERENCE][Static]` | restart owner | `VEGTXN-E-014` |
@@ -167,7 +167,7 @@ current/next parent sequence. None is a live-owner mutation before commit.
 | `INV-VEGTRANSACTION-007` | ground/advection cross-owner joins | runtime/test | reject | V8/LSE implementation package |
 | `INV-VEGTRANSACTION-008` | terminal all-owner state machine, precedence, and rollback poisons | default-off runtime/test | reject/rollback | terminal handoff package |
 | `INV-VEGTRANSACTION-009` | parent/segment/slab/resource identity reconstruction | default-off runtime/test | reject | V11 segmented-support package |
-| `INV-VEGTRANSACTION-010` | sequential staged inventory and cumulative fold aliases | default-off runtime/test | reject/rollback | V11 segmented-support package |
+| `INV-VEGTRANSACTION-010` | occupancy/shared-owner alias, missing debit link, forged transition, overbooking, or broken shared predecessor | default-off runtime/test | reject/rollback | V11 segmented-support package |
 | `INV-VEGTRANSACTION-011` | ordered material receipt/proposal reconstruction | default-off runtime/test | reject/rollback | V11 segmented-support package |
 | `INV-VEGTRANSACTION-012` | consuming complete-owner parent commit and late-failure injection | default-off runtime/test | rollback | V11 segmented-support package |
 | `INV-VEGTRANSACTION-013` | fresh restore, event boundary, replay, reduction and publication poisons | default-off runtime/test | reject/rollback | V11 segmented-support package |
@@ -314,17 +314,24 @@ segment, slab, participant, support, duration bits, beginning/ending owner-set
 digests, and typed water/N/energy/material receipts. Segment candidates are
 staged only and cannot increment or commit the persistent parent transaction.
 
-For each resource identity, extend the existing tuple with parent transaction,
-segment ID, and accepted slab ID. Water and NH4/NO3 requests authorize against
-the current staged owner snapshot. The parent validator orders receipts by
-accepted chronology, checks every ending digest is the next beginning digest,
-and independently reconstructs (1) each sequential staged ending by subtracting
-the admitted amount from the current staged beginning in accepted order and
-(2) the ordinary `+0.0`-seeded ordered cumulative-debit fold. The second is a
-diagnostic/receipt identity, not an alternative owner-state calculation;
-`parent_beginning - cumulative` may differ in binary64 bits from the chained
-ending and MUST NOT replace or gate it. Missing/duplicate receipts, stale parent beginnings, or a
+For each occupancy debit identity, extend the existing tuple with parent transaction,
+segment ID, accepted slab ID, occupancy, layer, and source. Water and NH4/NO3
+requests authorize against the current staged shared-owner snapshot. Debit
+receipts bind request, authorization, and final vegetation use but are not
+shared owner predecessor records. The parent validator orders receipts by
+accepted chronology and independently reconstructs the ordinary `+0.0`-seeded
+ordered vegetation-use fold. It authenticates receipt chronology, not shared
+owner state. Missing/duplicate receipts, stale parent beginnings, or a
 later segment using an earlier inventory rejects the complete parent.
+
+A distinct shared-resource transition is keyed by owner/OFE/layer/source and
+binds segment beginning/ending shared inventory, ordered admitted debit receipt
+IDs, and either complete other-flux lineage or a canonical complete-owner
+candidate digest. Transition ending is the next segment transition beginning.
+Every debit is linked exactly once, unknown/missing/duplicate links reject, and
+the sum of admitted authorizations/final uses cannot exceed the current staged
+owner authorization. Occupancy post-use amounts cannot be substituted for the
+shared hydrology or BGC ending.
 
 Material transfers are amount-bearing segment receipts whose source chronology
 is immutable. Parent finalization concatenates accepted transfers in slab and
@@ -435,6 +442,7 @@ publication, deployment, or production-cutover authority.
 | 2026-08-20 | 6 | Codex | Required owner-specific V2 state admission, full seven-owner suffix equality, authenticated event custody, canonical collections, and reconstructed durable outbox identity. |
 | 2026-08-20 | 7 | Codex | Added exact accepted-segment predecessor chaining and terminal complete-owner equality across restart V2 layers. |
 | 2026-08-20 | 8 | Codex | Separated authoritative sequential resource-owner subtraction from the nonassociative ordered cumulative diagnostic fold and rejected regrouped ending aliases. |
+| 2026-08-20 | 9 | Codex | Split occupancy-scoped vegetation debit receipts from typed shared-owner transitions and required exact debit links, owner-candidate lineage, authorization, and shared predecessor continuity. |
 | 2026-08-19 | 3 | Codex | Added default-off terminal receiver all-owner transaction authority (`INV-VEGTRANSACTION-008`) with phase-aware error precedence, exact rollback, restart membership, and CoE production invariance. |
 | 2026-08-14 | 2 | Codex | Extended the transaction to V8/LSE source-keyed ground water, one real-hydrology authorization, coupled final solve, LSE/soil-thermal owner joins and production-isolated atomic shadow commit. |
 | 2026-08-12 | 1 | Codex | Initial shared V2 occupancy water/energy owner identity, reconstruction, and atomicity authority. |
