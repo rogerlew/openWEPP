@@ -10,7 +10,9 @@
       "calendar_receipt_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
       "forcing_receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
       "parent_interval_id": "4c2867b938e47aedbb319d2c18164b37f4e69a1b588d57649c7fd84890e5b796",
+      "checkpoint_phase": "CommittedParent",
       "parent_transaction_sequence": "1",
+      "next_parent_transaction_sequence": "2",
       "parent_transaction_id": "a8055f3e61f32fab370a36add80685a899a7e12ee6ec346b244e1883bae7abd9",
       "parent_support": {
         "start_ns": "0",
@@ -103,8 +105,8 @@
       "pending_publication_buffer": [],
       "publication_outbox": [
         {
-          "publication_receipt_id": "9999999999999999999999999999999999999999999999999999999999999999",
-          "parent_receipt_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "publication_receipt_id": "843ba70edc177b57783085f070363c7451280ce433c03526ab65bf4c063f826b",
+          "parent_receipt_id": "bbc0355db053832004faef27102baa1042bf57eb55b08b03d4cbb406fe113aaf",
           "outbox_sequence": "1",
           "state": "CommittedUndelivered",
           "records": [],
@@ -241,6 +243,15 @@
     {"id":"active_segment_id_well_formed_wrong","target":"restart","path":"/active_segment/segment_id","mutation":"set","value":"3333333333333333333333333333333333333333333333333333333333333333","expected":"rejected"},
     {"id":"last_accepted_step_wrong","target":"restart","path":"/last_accepted_step_ns","mutation":"set","value":"4","expected":"rejected"},
     {"id":"next_segment_ordinal_wrong","target":"restart","path":"/next_segment_ordinal","mutation":"set","value":2,"expected":"rejected"},
+    {"id":"committed_next_sequence_not_successor","target":"restart","path":"/next_parent_transaction_sequence","mutation":"set","value":"1","expected":"rejected"},
+    {"id":"committed_phase_cursor_incomplete","target":"restart","path":"/accepted_until_ns","mutation":"set","value":"4","expected":"rejected"},
+    {"id":"active_phase_with_committed_outbox","target":"restart","path":"/checkpoint_phase","mutation":"set","value":"ActiveParent","expected":"rejected"},
+    {"id":"active_phase_outbox_isolated","target":"restart","path":"/checkpoint_phase","mutation":"set_many","value":{"/checkpoint_phase":"ActiveParent","/next_parent_transaction_sequence":"1"},"expected":"rejected"},
+    {"id":"committed_missing_outbox","target":"restart","path":"/publication_outbox/0","mutation":"delete","expected":"rejected"},
+    {"id":"committed_parent_receipt_well_formed_wrong","target":"restart","path":"/publication_outbox/0/parent_receipt_id","mutation":"set","value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","expected":"rejected"},
+    {"id":"committed_publication_receipt_well_formed_wrong","target":"restart","path":"/publication_outbox/0/publication_receipt_id","mutation":"set","value":"9999999999999999999999999999999999999999999999999999999999999999","expected":"rejected"},
+    {"id":"committed_outbox_sequence_wrong","target":"restart","path":"/publication_outbox/0/outbox_sequence","mutation":"set","value":"2","expected":"rejected"},
+    {"id":"committed_pending_buffer_forbidden","target":"restart","path":"/pending_publication_buffer","mutation":"append","value":{"record_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","source_owner_id":"A","accepted_receipt_id":"fac79dde85dfe9c56f7de05113868cbfb981b884f29dd8359a0bead3563b1a65","support":{"start_ns":"0","end_ns":"5"},"units":"u","value_encoding":"canonical-binary","value_bytes_base64":"YQ==","value_sha256":"ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"},"expected":"rejected"},
     {
       "id": "missing_accepted_slab_receipts",
       "target": "restart",
@@ -316,7 +327,7 @@
     {"id":"scheduled_operation_wrong","target":"restart","path":"/scheduled_once_receipts/0/operation_id","mutation":"set","value":"hourly","expected":"rejected"},
     {"id":"scheduled_result_well_formed_wrong","target":"restart","path":"/scheduled_once_receipts/0/result_sha256","mutation":"set","value":"8989898989898989898989898989898989898989898989898989898989898989","expected":"rejected"},
     {"id":"scheduled_duplicate_execution_key_recomputed_id","target":"restart","path":"/scheduled_once_receipts","mutation":"append","value":{"receipt_id":"c5de429f59f8c9e4c9def7b76f68857ca32af1186c4d15273323d25348ea0708","parent_transaction_id":"a8055f3e61f32fab370a36add80685a899a7e12ee6ec346b244e1883bae7abd9","operation_id":"daily","boundary_id":"cb03ab51408516a9abc254dcb30350de9bf05af2ffee3d5eb3e2e597a3aa64f7","tick_ns":"5","result_sha256":"0101010101010101010101010101010101010101010101010101010101010101"},"expected":"rejected"},
-    {"id":"scheduled_distinct_boundary_control","target":"restart","path":"/scheduled_once_receipts","mutation":"append","value":{"receipt_id":"53e1379c71621fad199f48d5219510023a152e6c76c4fcbd0756554d8e7f7ac8","parent_transaction_id":"a8055f3e61f32fab370a36add80685a899a7e12ee6ec346b244e1883bae7abd9","operation_id":"hourly","boundary_id":"b7bfbf90789afbe41eca8e5eef98328deda2c390ec924116026905f2610a0d0a","tick_ns":"4","result_sha256":"8888888888888888888888888888888888888888888888888888888888888888"},"expected":"accepted"},
+    {"id":"scheduled_distinct_boundary_control","target":"restart","path":"/scheduled_once_receipts","mutation":"append_and_set","value":{"append":{"receipt_id":"53e1379c71621fad199f48d5219510023a152e6c76c4fcbd0756554d8e7f7ac8","parent_transaction_id":"a8055f3e61f32fab370a36add80685a899a7e12ee6ec346b244e1883bae7abd9","operation_id":"hourly","boundary_id":"b7bfbf90789afbe41eca8e5eef98328deda2c390ec924116026905f2610a0d0a","tick_ns":"4","result_sha256":"8888888888888888888888888888888888888888888888888888888888888888"},"sets":{"/publication_outbox/0/parent_receipt_id":"c8db3026efd18147dace411b72d53295e4f1ab3cad32e0e626e2cf40b13690e3","/publication_outbox/0/publication_receipt_id":"1a42870ccc5b4de08b45ca2ae6c92da91f70712dbfffe45d229a8c94f42c1e02"}},"expected":"accepted"},
     {
       "id": "event_id_well_formed_wrong",
       "target": "restart",

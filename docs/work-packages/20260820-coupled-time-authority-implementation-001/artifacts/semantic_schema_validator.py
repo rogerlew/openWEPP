@@ -98,6 +98,7 @@ def validate_restart(doc):
     if not p0 <= cursor <= p1:
         raise Invalid("accepted_until:outside-parent")
     sequence = u128(doc["parent_transaction_sequence"], "parent_transaction_sequence")
+    next_sequence = u128(doc["next_parent_transaction_sequence"], "next_parent_transaction_sequence")
     for field in ["begin_complete_owner_set_sha256", "begin_clock_sha256"]:
         sha(doc[field], field)
     expected_parent_interval = framed_identity("parent-interval", [
@@ -116,6 +117,14 @@ def validate_restart(doc):
     ])
     if doc["parent_transaction_id"] != expected_parent_transaction:
         raise Invalid("restart:parent-transaction-id-mismatch")
+    if doc["checkpoint_phase"] == "ActiveParent":
+        if next_sequence != sequence or doc["publication_outbox"]:
+            raise Invalid("restart:active-phase-sequence-or-outbox")
+    elif doc["checkpoint_phase"] == "CommittedParent":
+        if cursor != p1 or sequence == U128_MAX or next_sequence != sequence + 1 or len(doc["publication_outbox"]) != 1 or doc["pending_publication_buffer"]:
+            raise Invalid("restart:committed-phase-sequence-or-cursor")
+    else:
+        raise Invalid("restart:checkpoint-phase")
     owners = doc["complete_owner_state"]
     ordered_unique(owners, lambda x: x["owner_id"], MAX_OWNERS, "owners")
     owner_digests = []
@@ -300,6 +309,27 @@ def validate_restart(doc):
         ordered_unique(row["records"], lambda x: x["record_id"], MAX_RECEIPTS, "outbox.records")
         if digest(canonical(row["records"])) != row["records_sha256"]:
             raise Invalid("outbox:records-digest")
+    if doc["checkpoint_phase"] == "CommittedParent":
+        row = outbox[0]
+        parent_receipt_id = framed_identity("parent-receipt-v2", [
+            ("parent_transaction_id", bytes.fromhex(doc["parent_transaction_id"])),
+            ("parent_interval_id", bytes.fromhex(doc["parent_interval_id"])),
+            ("begin_owner_set", bytes.fromhex(doc["begin_complete_owner_set_sha256"])),
+            ("end_owner_set", bytes.fromhex(doc["accepted_complete_owner_set_sha256"])),
+            ("ordered_slab_receipts", b"".join(bytes.fromhex(x["receipt_id"]) for x in slabs)),
+            ("ordered_event_receipts", b"".join(bytes.fromhex(x["receipt_id"]) for x in sorted(doc["accepted_event_receipts"], key=lambda x: x["event_ordinal"]))),
+            ("ordered_scheduled_receipts", b"".join(bytes.fromhex(x["receipt_id"]) for x in doc["scheduled_once_receipts"])),
+        ])
+        if row["parent_receipt_id"] != parent_receipt_id or u128(row["outbox_sequence"], "outbox.sequence") != sequence:
+            raise Invalid("outbox:parent-or-sequence-join")
+        publication_receipt_id = framed_identity("publication-receipt-v2", [
+            ("parent_receipt_id", bytes.fromhex(parent_receipt_id)),
+            ("ordered_output_record_ids", b"".join(bytes.fromhex(x["record_id"]) for x in row["records"])),
+            ("outbox_sequence", sequence.to_bytes(16, "big")),
+            ("outbox_state", b"CommittedUndelivered"),
+        ])
+        if row["publication_receipt_id"] != publication_receipt_id:
+            raise Invalid("outbox:publication-receipt-join")
 
 
 def validate_receipt(doc):
@@ -368,6 +398,27 @@ def run_poison(path):
                 del cursor[leaf]
         elif case["mutation"] == "append":
             cursor[leaf].append(case["value"])
+        elif case["mutation"] == "append_and_set":
+            cursor[leaf].append(case["value"]["append"])
+            for pointer, value in case["value"]["sets"].items():
+                target = document
+                path = pointer.split("/")[1:]
+                for part in path[:-1]:
+                    target = target[int(part)] if isinstance(target, list) else target[part]
+                if isinstance(target, list):
+                    target[int(path[-1])] = value
+                else:
+                    target[path[-1]] = value
+        elif case["mutation"] == "set_many":
+            for pointer, value in case["value"].items():
+                target = document
+                path = pointer.split("/")[1:]
+                for part in path[:-1]:
+                    target = target[int(part)] if isinstance(target, list) else target[part]
+                if isinstance(target, list):
+                    target[int(path[-1])] = value
+                else:
+                    target[path[-1]] = value
         try:
             (validate_restart if case["target"] == "restart" else validate_receipt)(document)
             actual = "accepted"

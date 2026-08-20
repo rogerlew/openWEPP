@@ -23,7 +23,9 @@
     "slab-receipt": ["accepted_slab_id:sha256","begin_clock:sha256","end_clock:sha256","owner_set:sha256","ledger_digest:sha256"],
     "slab-receipt-v2": ["parent_transaction_id:sha256","accepted_slab_id:sha256","slab_ordinal:u32","segment_id:sha256","start_ns:u128","end_ns:u128","duration_bits:bytes","constraint_digest:sha256","begin_clock:sha256","end_clock:sha256","begin_owner_set:sha256","end_owner_set:sha256","owner_candidate_set:sha256","ledger_digest:sha256"],
     "parent-receipt": ["parent_transaction_id:sha256","parent_interval_id:sha256","begin_owner_set:sha256","end_owner_set:sha256","ordered_slab_receipts:bytes","ordered_event_receipts:bytes"],
+    "parent-receipt-v2": ["parent_transaction_id:sha256","parent_interval_id:sha256","begin_owner_set:sha256","end_owner_set:sha256","ordered_slab_receipts:bytes","ordered_event_receipts:bytes","ordered_scheduled_receipts:bytes"],
     "publication-receipt": ["parent_receipt_id:sha256","ordered_output_records:bytes","outbox_state:utf8"]
+    ,"publication-receipt-v2": ["parent_receipt_id:sha256","ordered_output_record_ids:bytes","outbox_sequence:u128","outbox_state:utf8"]
     ,"constraint": ["parent_transaction_id:sha256","cursor_ns:u128","end_ns:u128","class:utf8","source_owner_id:utf8","compatibility_group:sha256"]
     ,"owner-set": ["owner_count:u32","ordered_owner_records:bytes"]
   },

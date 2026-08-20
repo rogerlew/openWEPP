@@ -376,6 +376,33 @@ noncontiguous support, ordinal gap, cursor mismatch, or digest/lineage mismatch.
 Parent finalization after restore consumes this authenticated chronology exactly
 as uninterrupted execution does.
 
+V2 restart distinguishes `ActiveParent` and `CommittedParent`. The
+`parent_transaction_sequence` always remains the sequence used to derive the
+retained `parent_transaction_id`. `next_parent_transaction_sequence` equals it
+while active and equals its checked successor after the atomic parent commit.
+Thus a committed crash checkpoint preserves both the immutable committed-parent
+identity and the already-consumed persistent increment; restore must not derive
+the retained parent ID from the next sequence or increment it again.
+
+`CommittedParent` contains exactly one durable outbox row and no pending
+publication buffer. Its `parent_receipt_id` is reconstructed with the
+`parent-receipt-v2` domain over the ordered accepted slab, event, and
+scheduled-once receipt IDs. Its `publication_receipt_id` is reconstructed with
+`publication-receipt-v2` over that parent receipt, ordered output record IDs,
+outbox sequence, and `CommittedUndelivered` identity state. The outbox sequence
+equals the committed parent sequence. Delivery state and attempt count may
+advance without changing publication identity. An `ActiveParent` has no durable
+outbox row and may retain a pending buffer.
+
+After committed restore, the only outbox transitions are
+`CommittedUndelivered -> DeliveredUnacknowledged -> Acknowledged`; crash or
+restart preserves the current state, redelivery is permitted only from
+`DeliveredUnacknowledged`, and acknowledged rows cannot redeliver. These
+operations preserve parent/publication receipt identity and never increment the
+parent sequence. Beginning the next parent consumes exactly the persisted
+`next_parent_transaction_sequence`; the committed checkpoint itself cannot be
+committed again.
+
 V2 scheduled-once receipts use the closed `scheduled-receipt-v2` framed
 identity over parent transaction, operation ID, boundary ID, tick, and result
 digest. Event ordinal is not an input: scheduled execution and event-transition

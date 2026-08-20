@@ -12,6 +12,7 @@
     "decoded owner/controller/publication bytes match their digests; owner bytes reconstruct owner-set digest",
     "event, scheduled-once and reduction receipt chronology ends no later than accepted_until; no duplicate or future receipt",
     "scheduled boundary_id reconstructs from parent transaction, operation and tick; execution keys (parent transaction, operation, boundary) are unique independently of receipt_id",
+    "ActiveParent requires next sequence equal parent sequence and no durable committed outbox; CommittedParent requires complete cursor and checked next sequence = parent sequence + 1",
     "accepted slab receipts are ordinal ordered, support-contiguous from parent start through accepted_until, and bind segment, constraint, clock, owner-candidate and coupled-ledger lineage",
     "reduction operands are accepted receipt IDs only and reconstruct value_bits in declared order",
     "pending publication records bind accepted receipts and are invisible; outbox records bind exactly one committed parent receipt",
@@ -27,7 +28,9 @@
     "calendar_receipt_sha256",
     "forcing_receipt_sha256",
     "parent_interval_id",
+    "checkpoint_phase",
     "parent_transaction_sequence",
+    "next_parent_transaction_sequence",
     "parent_transaction_id",
     "parent_support",
     "accepted_until_ns",
@@ -76,9 +79,11 @@
     "parent_interval_id": {
       "$ref": "#/$defs/sha"
     },
+    "checkpoint_phase": { "enum": ["ActiveParent", "CommittedParent"] },
     "parent_transaction_sequence": {
       "$ref": "#/$defs/u128"
     },
+    "next_parent_transaction_sequence": { "$ref": "#/$defs/u128" },
     "parent_transaction_id": {
       "$ref": "#/$defs/sha"
     },
