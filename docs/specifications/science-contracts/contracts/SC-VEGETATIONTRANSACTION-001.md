@@ -1,10 +1,10 @@
 ---
 contract_id: SC-VEGETATIONTRANSACTION-001
 title: Coupled Vegetation Occupancy Owner-Transaction Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - OPENWEPP_C3_WOODY_V8 occupancy and ground resource/energy candidates
   - OPENWEPP_C3_WOODY_V11 accepted-segment and parent candidates
@@ -19,8 +19,8 @@ superseded_by: []
 
 # SC-VEGETATIONTRANSACTION-001 Coupled Vegetation Occupancy Owner-Transaction Contract
 
-Status: `approved`
-Maturity: `active`
+Status: `in_review`
+Maturity: `draft`
 Evidence mode: `Static + independent oracle`
 
 ## Purpose
@@ -318,8 +318,12 @@ For each resource identity, extend the existing tuple with parent transaction,
 segment ID, and accepted slab ID. Water and NH4/NO3 requests authorize against
 the current staged owner snapshot. The parent validator orders receipts by
 accepted chronology, checks every ending digest is the next beginning digest,
-and independently reconstructs cumulative debits from parent beginning to
-final candidate. Missing/duplicate receipts, stale parent beginnings, or a
+and independently reconstructs (1) each sequential staged ending by subtracting
+the admitted amount from the current staged beginning in accepted order and
+(2) the ordinary `+0.0`-seeded ordered cumulative-debit fold. The second is a
+diagnostic/receipt identity, not an alternative owner-state calculation;
+`parent_beginning - cumulative` may differ in binary64 bits from the chained
+ending and MUST NOT replace or gate it. Missing/duplicate receipts, stale parent beginnings, or a
 later segment using an earlier inventory rejects the complete parent.
 
 Material transfers are amount-bearing segment receipts whose source chronology
@@ -430,6 +434,7 @@ publication, deployment, or production-cutover authority.
 | 2026-08-20 | 5 | Codex | Added production V11 restart V2 complete typed checkpoint/owner custody after implementation inventory proved reviewed V1 insufficient. |
 | 2026-08-20 | 6 | Codex | Required owner-specific V2 state admission, full seven-owner suffix equality, authenticated event custody, canonical collections, and reconstructed durable outbox identity. |
 | 2026-08-20 | 7 | Codex | Added exact accepted-segment predecessor chaining and terminal complete-owner equality across restart V2 layers. |
+| 2026-08-20 | 8 | Codex | Separated authoritative sequential resource-owner subtraction from the nonassociative ordered cumulative diagnostic fold and rejected regrouped ending aliases. |
 | 2026-08-19 | 3 | Codex | Added default-off terminal receiver all-owner transaction authority (`INV-VEGTRANSACTION-008`) with phase-aware error precedence, exact rollback, restart membership, and CoE production invariance. |
 | 2026-08-14 | 2 | Codex | Extended the transaction to V8/LSE source-keyed ground water, one real-hydrology authorization, coupled final solve, LSE/soil-thermal owner joins and production-isolated atomic shadow commit. |
 | 2026-08-12 | 1 | Codex | Initial shared V2 occupancy water/energy owner identity, reconstruction, and atomicity authority. |

@@ -13,7 +13,7 @@
     "diagnostic_reduction": ["accepted_totals", "accepted_maxima"]
   },
   "resource_identity_suffix": ["parent_transaction_id", "segment_id", "accepted_slab_id"],
-  "ordered_resource_arithmetic": "finite nonnegative binary64 amount bits; accepted slab order; ordinary IEEE-754 left fold seeded +0.0 with finite intermediates; water, NH4 and NO3 remain distinct; bit-exact cumulative debit and parent-beginning-minus-ending reconstruction",
+  "ordered_resource_arithmetic": "finite nonnegative binary64 amount bits; authoritative accepted-order staged subtraction where each ending becomes the next beginning; independent ordinary IEEE-754 cumulative debit left fold seeded +0.0; water, NH4 and NO3 remain distinct; regrouped parent-beginning-minus-cumulative must not replace or gate the sequential ending",
   "event_semantics": "zero-duration custody/participant transition; never rate integration; receipt prevents replay",
   "commit_semantics": "one complete-owner atomic replacement and one parent increment; publication after commit only",
   "duration_operand": "the coupled-time supplied duration_s_bits is used unchanged by every duration-sensitive operation",

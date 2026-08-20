@@ -38,17 +38,24 @@ def chronology(c,parent_end):
   seen.add(e["id"])
   if e.get("integrates_rate"):return reject("VEG-E-122")
  if c.get("zero_remainder_skip") and events and int(events[-1]["tick"])!=parent_end:return reject("VEG-E-123")
- inv=c.get("inventories",{}); debits=c.get("resource_debits",{}); totals={}
+ inv=c.get("inventories",{}); debits=c.get("resource_debits",{}); totals={}; endings={}
  for resource in ("water","nh4","no3"):
-  total=0.0
-  for encoded in debits.get(resource,[]):
+  total=0.0; available=inv.get(resource,"Infinity")
+  staged=float(available) if available!="Infinity" else math.inf
+  declared_endings=c.get("resource_endings",{}).get(resource,[])
+  for ordinal,encoded in enumerate(debits.get(resource,[])):
    value=float(encoded)
    if not math.isfinite(value) or value<0:return reject("VEG-E-124",resource=resource)
+   if value>staged:return reject("VEG-E-124",resource=resource)
+   staged=staged-value
+   if ordinal<len(declared_endings) and f2b(staged)!=f2b(float(declared_endings[ordinal])):return reject("VEG-E-124",resource=resource)
    total+=value
    if not math.isfinite(total):return reject("VEG-E-124",resource=resource)
-  available=inv.get(resource,"Infinity")
   if available!="Infinity" and total>float(available):return reject("VEG-E-124",resource=resource)
+  if declared_endings and len(declared_endings)!=len(debits.get(resource,[])):return reject("VEG-E-124",resource=resource)
+  if c.get("regrouped_ending_alias") and available!="Infinity" and f2b(float(available)-total)!=f2b(staged):return reject("VEG-E-124",resource=resource)
   totals[resource]=str(total)
+  if declared_endings:endings[resource]=str(staged)
  forcing=c.get("forcing",[]); state=Fraction(c.get("beginning_state","0"))
  if forcing:
   if len(forcing)!=len(c["supports"]):return reject("VEG-E-123")
@@ -60,7 +67,9 @@ def chronology(c,parent_end):
  if c.get("abort_parent"):return {"status":"aborted","owner_unchanged":True,"publication_visible":False}
  if c.get("publish_before_commit"):return reject("VEG-E-126")
  pub=hashlib.sha256(json.dumps(c.get("accepted_publications",[]),separators=(",",":")).encode()).hexdigest()
- return {"status":"accepted","resource_totals":totals,"ending_state":str(float(state)),"event_count":len(events),"increments":1,"atomic_commits":1,"publication_sha256":pub}
+ result={"status":"accepted","resource_totals":totals,"ending_state":str(float(state)),"event_count":len(events),"increments":1,"atomic_commits":1,"publication_sha256":pub}
+ if endings:result["resource_endings"]=endings
+ return result
 def main():
  m=json.loads((ROOT/"v10-v11-migration-vectors.json").read_text());s=json.loads((ROOT/"segmented-support-vectors.json").read_text());out=[]
  for c in m["cases"]:
@@ -71,5 +80,5 @@ def main():
   a=chronology(c,int(s["parent_end_ns"]))
   if a!=c["expected"]:raise SystemExit(f"chronology mismatch {c['id']}: {a} != {c['expected']}")
   out.append({"id":c["id"],"actual":a})
- print(json.dumps({"schema":"OPENWEPP_C3_WOODY_V11_REFERENCE_RESULTS_V2","results":out},sort_keys=True,separators=(",",":")))
+ print(json.dumps({"schema":"OPENWEPP_C3_WOODY_V11_REFERENCE_RESULTS_V3","results":out},sort_keys=True,separators=(",",":")))
 if __name__=="__main__":main()

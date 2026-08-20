@@ -24,6 +24,8 @@ fn canonical_contracts_bind_v11_without_mutating_v10() {
         "OPENWEPP_C3_WOODY_V11_RESTART_V1",
         "duration_s_bits",
         "one parent material batch",
+        "Authoritative owner custody is a",
+        "MUST NOT require regrouped",
     ] {
         assert!(vegetation.contains(required), "missing {required}");
     }
@@ -32,6 +34,7 @@ fn canonical_contracts_bind_v11_without_mutating_v10() {
         "INV-VEGTRANSACTION-013",
         "accepted-segment hierarchy",
         "one complete parent commit",
+        "diagnostic/receipt identity",
     ] {
         assert!(transaction.contains(required), "missing {required}");
     }
@@ -85,6 +88,9 @@ fn frozen_vectors_are_executable_and_cover_required_aliases() {
         "event_replay",
         "publish_before_commit",
         "parent_abort_rollback",
+        "nonassociative_three_resource_chain",
+        "wrong_regrouped_water_ending",
+        "regrouped_owner_alias",
     ] {
         assert!(ids.contains(&id), "missing {id}");
     }
@@ -105,7 +111,36 @@ fn independent_reference_accepts_frozen_population() {
         String::from_utf8_lossy(&output.stderr)
     );
     let result: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(result["results"].as_array().unwrap().len(), 46);
+    assert_eq!(result["results"].as_array().unwrap().len(), 49);
+    let control = result["results"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["id"] == "nonassociative_three_resource_chain")
+        .expect("nonassociative control");
+    assert_eq!(control["actual"]["status"], "accepted");
+    assert_eq!(
+        control["actual"]["resource_endings"]["water"],
+        "241296780.79251432"
+    );
+}
+
+#[test]
+fn binary64_sequential_owner_ending_is_not_the_regrouped_alias() {
+    let beginning = 497_355_953.965_941_8_f64;
+    let amounts = [
+        108_987_197.969_511_36_f64,
+        119_731_815.493_540_45_f64,
+        27_340_159.710_375_622_f64,
+    ];
+    let sequential = amounts
+        .iter()
+        .fold(beginning, |staged, amount| staged - amount);
+    let cumulative = amounts.iter().fold(0.0_f64, |total, amount| total + amount);
+    let regrouped = beginning - cumulative;
+    assert_eq!(sequential.to_bits(), 241_296_780.792_514_32_f64.to_bits());
+    assert_eq!(regrouped.to_bits(), 241_296_780.792_514_38_f64.to_bits());
+    assert_ne!(sequential.to_bits(), regrouped.to_bits());
 }
 
 #[test]

@@ -1,10 +1,10 @@
 ---
 contract_id: SC-VEGETATION-001
 title: Native Vegetation State and Cross-Domain Boundary Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 18
+contract_version: 19
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -20,8 +20,8 @@ superseded_by: []
 
 # SC-VEGETATION-001 Native Vegetation State and Cross-Domain Boundary Contract
 
-Status: `approved`
-Maturity: `active`
+Status: `in_review`
+Maturity: `draft`
 Evidence mode: `Static + Ran`
 
 ## Purpose
@@ -2599,18 +2599,22 @@ later segment reuses parent-beginning inventory and no segment commits live.
 
 Mineral-N demand is recomputed per segment after water-limited carbon. NH4/NO3,
 layer, stratum, owner, basis, parent, segment, and slab identity remain exact.
-Authorization uses current staged BGC inventory; cumulative debits equal parent
-beginning minus final candidate and cannot overbook.
+Authorization uses current staged BGC inventory and cannot overbook.
 
 All resource amount bits are finite binary64 values in their contract-declared
 basis. For each exact resource key, receipts are ordered by accepted chronology
 and cumulative debit is an ordinary IEEE-754 binary64 left fold seeded by exact
-`+0.0`; every intermediate must be finite. Parent closure independently repeats
-that exact order and requires bit-identical cumulative debit plus bit-identical
-`parent_beginning - cumulative_debit == final_candidate`. Water, NH4, and NO3
-are three separate keyed folds; reassociation, sorting by magnitude,
-compensated/`fsum` arithmetic, tolerance closure, and aggregate mineral-N
-substitution are forbidden.
+`+0.0`; every intermediate must be finite. Authoritative owner custody is a
+second, independent sequential fold: for each accepted segment in chronology,
+`ending_bits = current_staged_beginning - admitted_amount` in that exact
+binary64 operation order, and the next segment beginning is bit-identical to
+that ending. Parent closure reconstructs both folds. Because binary64
+subtraction and addition are not associative, it MUST NOT require regrouped
+`parent_beginning - cumulative_debit` bits to equal the final sequential owner
+ending. Substituting that regrouped value for the chained ending is an alias and
+rejects. Water, NH4, and NO3 are three separate keyed folds; reassociation,
+sorting by magnitude, compensated/`fsum` arithmetic, tolerance closure, and
+aggregate mineral-N substitution are forbidden.
 
 Vegetation, water, BGC, energy, and applicable soil-thermal candidates advance
 together. Segment ending canopy/T10/C/N/phenology/warm-start state is the next
@@ -2735,7 +2739,7 @@ beginning, or aliasing parent/segment identity is rejected.
 | `INV-VEGETATION-121` | Migration is physical-bit-identical and cadence admits only when tick/binary64 roundtrip preserves V10 bits. |
 | `INV-VEGETATION-122` | Every duration-sensitive operation consumes admitted slab duration bits; nominal cadence is identity only. |
 | `INV-VEGETATION-123` | Accepted segment endings are next beginnings; rejected work changes nothing. |
-| `INV-VEGETATION-124` | Water and NH4/NO3 use staged inventory and cumulative parent debits close without overbooking. |
+| `INV-VEGETATION-124` | Water and NH4/NO3 endings follow exact sequential staged subtraction without overbooking; ordered cumulative `+0.0` folds are independent receipt diagnostics and are never regrouped into owner endings. |
 | `INV-VEGETATION-125` | Segment material transfers accumulate in order into one parent batch and are not recomputed. |
 | `INV-VEGETATION-126` | One parent finalization increments once and atomically installs complete owners. |
 | `INV-VEGETATION-127` | Additive restart reconstructs chronology/custody and prevents replay. |
@@ -2760,3 +2764,4 @@ snow carrier, selector/default, activation, publication, deployment, or cutover.
 | 2026-08-20 | 16 | Codex | Superseded nonimplementable V11 restart V1 with additive V2 complete typed checkpoint/owner/reduction/publication authority after implementation inventory exposed the closed-schema contradiction. |
 | 2026-08-20 | 17 | Codex | Closed restart V2 seven-owner canonical state, complete-suffix equality, event custody, ordered collection, and durable outbox identity findings. |
 | 2026-08-20 | 18 | Codex | Bound restart V2 segments to predecessor V11 state and terminal complete-owner equality across segment, checkpoint, and outer wire. |
+| 2026-08-20 | 19 | Codex | Made sequential staged subtraction authoritative and separated it from the ordered cumulative-debit diagnostic fold; prohibited regrouped owner-ending aliases. |
