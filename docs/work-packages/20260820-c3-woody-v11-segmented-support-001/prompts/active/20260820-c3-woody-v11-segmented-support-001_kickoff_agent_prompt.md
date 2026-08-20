@@ -1,6 +1,8 @@
 # Execute C3 Woody V11 segmented support end to end
 
-Required starting commit: `d59ba76f7f514a98ba0f67f764b289206f9f94b9`.
+Required starting commit: `3bc8562bff700722e928e631280cf13a8b171ee9`.
+
+Package execution/diff base: `d59ba76f7f514a98ba0f67f764b289206f9f94b9`.
 
 Before edits, verify clean synchronized `main`, exact HEAD and `origin/main`,
 then record status and required-reading bytes. Do not pull, reset, rebase, merge,
