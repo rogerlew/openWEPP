@@ -111,3 +111,24 @@ gate-non-deferral rules, this is not a terminal PASS.
    identity lineage must be stated.
 
 No production file, commit, or remote was modified by this verifier.
+
+---
+
+## Superseding exact-tree verification — `f0f05800c`
+
+Status: **PASS**
+
+The historical FAIL above is superseded. At exact
+`f0f05800ca35058d4de231030e316a7f408ef4c9`, the package-owned broad-Clippy
+findings and stale lifecycle/disposition artifacts are corrected. Independent
+exact-tree reruns pass formatting, focused and contract-test warnings-denied
+Clippy, coupled-time crate tests 13/13, orchestrator consumer tests 3/3,
+contract tests 5/5, the 114-case frozen oracle, the 76-case semantic population,
+and diff hygiene. DirectV10 restart V1 remains byte-identical, and no
+package-local bypass or line-count blocker remains.
+
+The full evidence and exact classification are recorded in
+`terminal_verification_agent_b.md`. Workspace quick remains FAIL/incomplete on
+unrelated snow assurance identity drift, and broad workspace Clippy remains
+FAIL only on unrelated snow/WB14 warnings; neither is represented as a passing
+workspace command or as deferred coupled-time work.

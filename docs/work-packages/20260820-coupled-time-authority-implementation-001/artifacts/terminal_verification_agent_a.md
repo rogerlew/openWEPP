@@ -122,3 +122,68 @@ warnings-denied lint is closed on the terminal identity.
    identity.
 
 Until those items close, terminal verification A is **FAIL**.
+
+---
+
+# Exact-tree re-verification — `f0f05800c`
+
+Status: **PASS**
+
+Evidence mode: **Independent static review + Ran**
+
+Verified source identity: `f0f05800ca35058d4de231030e316a7f408ef4c9`
+
+The corrections close every terminal-A blocker recorded above. The package-owned
+`too_many_lines` contract-test lint is removed, finding/diff/gate/line-count and
+lifecycle records are populated, package progress is complete, and the exact
+tree retains the reviewed coupled-time implementation without a semantic
+production change after the A/B/C PASS candidate.
+
+## Exact-tree results
+
+| Gate/audit | Result |
+| --- | --- |
+| `cargo fmt --all -- --check` | PASS |
+| coupled-time Nextest | PASS, 13/13 |
+| orchestrator reference consumer | PASS, 3/3 |
+| mandatory coupled-time contract test | PASS, 5/5 |
+| `cargo deny check` | PASS; unmatched `MIT-0` allowance warning only |
+| broad workspace Clippy | FAIL only in snow terminal and WB14 test code outside the package diff; no coupled-time finding |
+| workspace quick profile | 44 passed, 9 failed, 40 skipped, 3017 not run; all nine failures are exact-tree assurance drift for `SC-SNOWENERGY-001` or `SC-SNOWFREEZE-001`, outside the coupled-time diff |
+| `git diff --check` | PASS |
+| DirectV10 persisted-restart V1 base-to-HEAD diff | empty / PASS |
+| touched Rust line counts | PASS; maximum 1072, below 2000 WARN |
+
+The external broad failures are supported by an exact-HEAD rerun. Broad Clippy
+reaches the coupled-time targets and reports only
+`snow_stage3_terminal_receiver_authority_contract.rs` and the pre-existing WB14
+test assertion. Workspace quick reports only snow assurance identity drift.
+Neither source family is in the package production write set, and no failure
+names the new authority crate, bounded consumer, or coupled-time contract test.
+They remain visible as external workspace debt and are not recast as coupled-time
+acceptance evidence.
+
+## Final audit
+
+- Authority and all amendment cycles retain dual review, disposition, and dual
+  verification PASS evidence.
+- Implementation reviewers A/B/C retain exact reviewed PASS at `9dadbe426`.
+  Later production change is limited to the consumer's lint-only slice
+  expression; `f0f05800c` changes the package contract test structurally to
+  satisfy Clippy and updates lifecycle evidence. Exact-tree focused execution
+  passes.
+- `review-finding-disposition.md`, `exact-diff-reconciliation.md`,
+  `gate-results.md`, `line-count-governance.md`, package progress, roadmap, and
+  `final-disposition.md` now state the corrected terminal posture.
+- Static bypass and write-set conclusions from the first verification remain
+  unchanged: no direct clock/event/commit/publication bypass was found; no
+  protected physical kernel or DirectV10 persisted-restart source changed.
+
+Terminal verification A therefore reports **PASS** at exact `f0f05800c` with no
+remaining package-local implementation, authority, wire, gate, diff, bypass, or
+line-count blocker in A scope.
+
+The separate `verification_agent_b.md` still contains its historical FAIL bound
+to `317e7d273`; package-level dual-terminal-verification closure requires B to
+rerun and record its own exact-tree verdict. That is an outstanding independent
+verification record, not a failure of terminal verification A.
