@@ -1,3 +1,63 @@
-# Authority Verification B
+# Authority Verification B — Parent Custody And Restart
 
-Status: queued.
+Status: **FAIL**
+
+Date: 2026-08-20
+
+Verified exact commit: `cf1fc326d76e9e4c0cbd4c6e1b94febf263878e0`
+
+Reviewed authority commit:
+`c53adab0a91c0ecbe853c884bfe05591826441c5`
+
+Evidence class: `Static + Ran + independent adversarial execution`
+
+## Verification summary
+
+The canonical seven-owner aggregate manifest, typed water/NH4/NO3 custody,
+complete-owner reconstruction, consuming atomic commit, receipt-body closure,
+full V10 source binding, 46-case chronology oracle, and the package's 36
+semantic poisons all pass their declared gates. Both contract BEI and unit
+lints, all package JSON parsing, the 5/5 Rust authority test, and diff hygiene
+also pass. DirectV10 V1 artifacts and coupled-time restart V2 remain
+byte-identical to the protected base.
+
+All prior Review B findings are recorded as accepted and corrected in the
+review/disposition history. Independent verification nevertheless found one
+new release-blocking restart-custody defect.
+
+## Finding
+
+### `V11-TXN-VERIFY-B-001` — BLOCKER — restart does not authenticate the accepted slab prefix
+
+A direct forgery deleted `accepted_slab_receipts[0]` from a canonical
+`after_event` `OPENWEPP_C3_WOODY_V11_RESTART_V1` checkpoint while retaining
+`next_slab_ordinal == 1`, `accepted_until_ns == 600000000000`, the event and
+resource prefixes, and staged owners. `restore_and_continue` accepted it and
+committed the uninterrupted ending.
+
+The validator checks event count and resource/material counts against the
+cursor, but has no equivalent slab-count join. It then rebuilds the staged
+vegetation transition from slab 0 in the supplied complete candidate, allowing
+the absent persisted receipt to be silently replaced by external candidate
+state. This violates the transaction contract's accepted-prefix authentication
+and equivalent-continuation requirements and can conceal lost or contradictory
+accepted support chronology.
+
+Required correction: enforce exact slab prefix cardinality, uniqueness, order,
+receipt authentication, support continuity, and cursor/ordinal joins; derive
+replay from that authenticated prefix; add omission/duplicate/reorder/payload
+restart poisons; and rerun the invalidated review/verification cycle.
+
+An additional 28 direct restart forgeries were rejected as required, covering
+authority, configuration, sequences, cursor, ordinals, phase, participants,
+coupled-time digest, owner manifest, parent/staged owners, staged state,
+event/resource/material receipts, scheduled-once state, resources, reduction,
+publication/outbox, and parent receipt. The isolated successful omission is
+sufficient to fail release.
+
+## Verdict
+
+**FAIL.** Version 4 is not releasable transaction authority at
+`cf1fc326d76e9e4c0cbd4c6e1b94febf263878e0`. Production implementation and
+authority promotion remain prohibited until the accepted slab-prefix defect is
+closed and dual verification passes at an exact corrected checkpoint.

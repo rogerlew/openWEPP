@@ -167,6 +167,7 @@ def restore_and_continue(cp,c):
     physical_digest=sha(canonical(physical))
     if set(state)!=state_keys or physical!=imported["state"] or physical_digest!=state["physical_state_sha256"] or state["state_sha256"]!=framed("v11-state",physical_digest,24) or state["model_definition_sha256"]!=framed("v11-model") or state["configuration_sha256"]!=restored["configuration_sha256"] or restored["configuration_sha256"]!=imported["configuration"]["configuration_sha256"] or state["last_parent_transaction_sequence"]!="23": raise ValueError("V11-RESTART")
     if len(restored["accepted_event_receipts"])!=restored["next_event_ordinal"] or len({x["identity_sha256"] for x in restored["accepted_event_receipts"]})!=len(restored["accepted_event_receipts"]): raise ValueError("V11-REPLAY")
+    if len(restored["accepted_slab_receipts"])!=restored["next_slab_ordinal"]: raise ValueError("V11-RESTART")
     if len(restored["accepted_resource_receipts"])!=3*restored["next_slab_ordinal"]: raise ValueError("V11-REJECTED-LEAKAGE")
     if len(restored["accepted_material_receipts"])!=restored["next_slab_ordinal"] or restored["scheduled_once_receipts"] or restored["reduction_state"]!={"peak_bits":bits(.2),"operand_count":1} or restored["pending_publication_records"] or restored["publication_outbox"]: raise ValueError("V11-RESTART")
     for group in ("slab","event","resource","material"):
@@ -294,6 +295,8 @@ def main():
                 cp,_=checkpoint(altered,"after_event"); cp["parent_beginning_owner_sha256"][0]="0"*64; restore_and_continue(cp,altered)
             elif case["mutation"]=="checkpoint_forged_material_payload":
                 cp,_=checkpoint(altered,"after_event"); cp["accepted_material_receipts"][0]["payload_sha256"]="0"*64; restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_missing_slab":
+                cp,_=checkpoint(altered,"after_event"); cp["accepted_slab_receipts"]=[]; restore_and_continue(cp,altered)
             else: validate(altered)
         except (ValueError,base64.binascii.Error,json.JSONDecodeError) as exc:
             actual=str(exc)
