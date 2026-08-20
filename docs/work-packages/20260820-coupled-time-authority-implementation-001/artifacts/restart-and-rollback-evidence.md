@@ -1,9 +1,15 @@
 # Restart And Rollback Evidence
 
-Status: queued
+Status: implementation candidate complete
 
-Evidence mode: not-run
+Evidence mode: Static + Ran
 
-Populate during the owning package phase. Preserve failed attempts and label
-claims as Static or Ran. Final review findings require explicit accepted,
-rejected, deferred, or follow-up disposition with rationale and evidence.
+The reference chronology serializes additive `CoupledTimeRestartV1` mid-parent,
+restores its accepted clock, active regime/participants, accepted event and
+scheduled receipts, reduction state, and staged outbox, then completes with the
+same owner/receipt/maximum result. A ledger-rejected attempt compares the full
+clock/reduction/outbox candidate byte-for-byte before reduced retry. Event replay
+and premature publication fail without state change.
+
+DirectV10 V1 production restart source and released schema/vector/manifest bytes
+were not edited; authority gates recomputed their live protected hashes.

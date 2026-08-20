@@ -32,6 +32,7 @@ members = [
     "crates/openwepp-unit-boundary",
     "crates/openwepp-summary-accumulator",
     "crates/openwepp-comparator-metadata",
+    "crates/openwepp-coupled-time",
     "crates/openwepp-runner",
 ]
 
@@ -80,6 +81,7 @@ openwepp-legacy-bridge = { path = "crates/openwepp-legacy-bridge", version = "0.
 openwepp-unit-boundary = { path = "crates/openwepp-unit-boundary", version = "0.1.0" }
 openwepp-summary-accumulator = { path = "crates/openwepp-summary-accumulator", version = "0.1.0" }
 openwepp-comparator-metadata = { path = "crates/openwepp-comparator-metadata", version = "0.1.0" }
+openwepp-coupled-time = { path = "crates/openwepp-coupled-time", version = "0.1.0" }
 openwepp-runner = { path = "crates/openwepp-runner", version = "0.1.0" }
 
 [dev-dependencies]

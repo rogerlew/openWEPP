@@ -1,9 +1,13 @@
 # Calibration Readiness Matrix
 
-Status: queued
+Status: PASS / NOT_APPLICABLE
 
-Evidence mode: not-run
+Evidence mode: Static
 
-Populate during the owning package phase. Preserve failed attempts and label
-claims as Static or Ran. Final review findings require explicit accepted,
-rejected, deferred, or follow-up disposition with rationale and evidence.
+All ADR-0042 readiness rows are `NOT_APPLICABLE`: this subsystem has no
+empirically fitted process parameter, observation operator, calibration
+objective, sensitivity/identifiability surface, equifinality, or synthetic
+recovery claim. Adopter controller constants and physical calibration remain in
+their owning contracts. `science_implementation_status=IMPLEMENTED_CANDIDATE`,
+`calibration_evidence_status=NOT_APPLICABLE`,
+`identifiability_status=NOT_APPLICABLE`.

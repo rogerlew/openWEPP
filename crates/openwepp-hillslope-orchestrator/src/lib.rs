@@ -3,6 +3,7 @@
 #[cfg(test)]
 extern crate self as openwepp_hillslope_orchestrator;
 
+pub mod coupled_time_reference;
 pub mod land_surface_energy_shadow;
 pub mod runtime_inputs;
 pub mod v9_real_consumer_shadow;

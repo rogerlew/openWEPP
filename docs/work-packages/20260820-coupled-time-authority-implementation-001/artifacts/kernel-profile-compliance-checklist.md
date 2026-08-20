@@ -1,9 +1,12 @@
 # Kernel Profile Compliance Checklist
 
-Status: queued
+Status: PASS candidate
 
-Evidence mode: not-run
+Evidence mode: Static + Ran
 
-Populate during the owning package phase. Preserve failed attempts and label
-claims as Static or Ran. Final review findings require explicit accepted,
-rejected, deferred, or follow-up disposition with rationale and evidence.
+Canonical contract is approved/active and contains all required profile
+sections, algorithm steps, branches, guard/error map, units/aliases, numeric
+notes, calibration-not-applicable posture, vectors, binding exposure, gaps and
+change log. Strict binding-exposure and unit-compliance gates pass. Production
+errors and tests map to `ERR-CT-*`/`INV-COUPLEDTIME-*`; final reviews must verify
+semantic conformance.

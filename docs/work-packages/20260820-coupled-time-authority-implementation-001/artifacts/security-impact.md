@@ -1,9 +1,11 @@
 # Security Impact
 
-Status: queued
+Status: PASS candidate
 
-Evidence mode: not-run
+Evidence mode: Static
 
-Populate during the owning package phase. Preserve failed attempts and label
-claims as Static or Ran. Final review findings require explicit accepted,
-rejected, deferred, or follow-up disposition with rationale and evidence.
+No network, credential, external message, deployment, publication, selector, or
+default action occurred. Wire inputs use closed serde structures, checked u128
+arithmetic, bounded/ordered identity sets, digest validation, typed failures,
+and independent semantic poisons. Rejected attempt bytes never enter accepted
+restart/publication state. Dependency policy remains subject to cargo-deny.
