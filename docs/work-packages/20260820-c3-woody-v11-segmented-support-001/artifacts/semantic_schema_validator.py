@@ -155,11 +155,20 @@ def restore_and_continue(cp,c):
     if set(restored)!=required or restored["schema"]!="OPENWEPP_C3_WOODY_V11_RESTART_V1" or restored["parent_transaction_id"]!=c["parent_id"] or restored["parent_receipt_sha256"]!=c["parent_receipt_sha256"]: raise ValueError("V11-RESTART")
     coupled=base64.b64decode(restored["coupled_time_v2_base64"],validate=True)
     if sha(coupled)!=restored["coupled_time_v2_sha256"] or canonical(json.loads(coupled))!=coupled: raise ValueError("V11-RESTART")
+    coupled_state=json.loads(coupled)
+    expected_phase="before_event" if restored["next_event_ordinal"]==0 else "after_event"
+    expected_participants=PARTICIPANTS[0 if restored["next_event_ordinal"]==0 else 1]
+    if restored["authority_sha256"]!=framed("v11-authority") or restored["parent_transaction_sequence"]!="24" or restored["next_parent_transaction_sequence"]!="25" or restored["accepted_until_ns"]!="600000000000" or restored["next_slab_ordinal"]!=1 or restored["checkpoint_phase"]!=expected_phase or restored["active_participant_ids"]!=expected_participants or restored["complete_owner_manifest"]!=OWNERS: raise ValueError("V11-RESTART")
+    if coupled_state!={"schema":"OPENWEPP_COUPLED_TIME_RESTART_V2","accepted_until_ns":restored["accepted_until_ns"],"next_slab_ordinal":restored["next_slab_ordinal"],"next_event_ordinal":restored["next_event_ordinal"]}: raise ValueError("V11-RESTART")
     state=restored["staged_v11_state"]; state_keys={"schema","model_definition_sha256","configuration_sha256","state_sha256","v10_physical_state_canonical_json","physical_state_sha256","last_parent_transaction_sequence"}
-    if set(state)!=state_keys or set(state["v10_physical_state_canonical_json"])!={"schema","state_sha256","transaction_sequence","canopy_liquid_bits","t10_k_bits"} or sha(canonical(state["v10_physical_state_canonical_json"]))!=state["physical_state_sha256"] or state["configuration_sha256"]!=restored["configuration_sha256"]: raise ValueError("V11-RESTART")
+    imported=json.loads((ROOT/"imported-canonical-fixtures.json").read_text())
+    physical=state.get("v10_physical_state_canonical_json",{})
+    physical_digest=sha(canonical(physical))
+    if set(state)!=state_keys or physical!=imported["state"] or physical_digest!=state["physical_state_sha256"] or state["state_sha256"]!=framed("v11-state",physical_digest,24) or state["model_definition_sha256"]!=framed("v11-model") or state["configuration_sha256"]!=restored["configuration_sha256"] or restored["configuration_sha256"]!=imported["configuration"]["configuration_sha256"] or state["last_parent_transaction_sequence"]!="23": raise ValueError("V11-RESTART")
     if len(restored["accepted_event_receipts"])!=restored["next_event_ordinal"] or len({x["identity_sha256"] for x in restored["accepted_event_receipts"]})!=len(restored["accepted_event_receipts"]): raise ValueError("V11-REPLAY")
     if len(restored["accepted_resource_receipts"])!=3*restored["next_slab_ordinal"]: raise ValueError("V11-REJECTED-LEAKAGE")
-    for group in ("slab","event","resource"):
+    if len(restored["accepted_material_receipts"])!=restored["next_slab_ordinal"] or restored["scheduled_once_receipts"] or restored["reduction_state"]!={"peak_bits":bits(.2),"operand_count":1} or restored["pending_publication_records"] or restored["publication_outbox"]: raise ValueError("V11-RESTART")
+    for group in ("slab","event","resource","material"):
         accepted=restored[f"accepted_{group}_receipts"]
         full=c[f"{group}_receipts"]
         if [x["identity_sha256"] for x in accepted]!=[x["identity_sha256"] for x in full[:len(accepted)]]: raise ValueError("V11-RESTART")
@@ -223,7 +232,7 @@ def mutate(base,name):
             body=payload(c["slab_receipts"][0]); body["unknown"]=1; c["slab_receipts"][0]=receipt("slab",0,c["parent_id"],body)
         elif name=="forged_hydrology_ending": c["ending_owner_sha256"][OWNERS.index("hydrology")]=framed("forged-hydrology")
         elif name=="forged_live_beginning": return c
-        elif name in ("checkpoint_rejected_leakage","checkpoint_event_replay"): return c
+        elif name.startswith("checkpoint_"): return c
     if name not in ("wrong_digest","wrong_schema","invalid_base64","reordered_owner_manifest","duplicate_owner"):
         c["parent_receipt_sha256"]=framed("parent-receipt",c["parent_id"],sha(canonical({**c,"parent_receipt_sha256":""})))
     return c
@@ -259,6 +268,22 @@ def main():
                 cp,_=checkpoint(altered,"after_event"); cp["accepted_resource_receipts"].append(altered["resource_receipts"][3]); restore_and_continue(cp,altered)
             elif case["mutation"]=="checkpoint_event_replay":
                 cp,_=checkpoint(altered,"after_event"); cp["accepted_event_receipts"].append(altered["event_receipts"][0]); restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_bad_participants":
+                cp,_=checkpoint(altered,"after_event"); cp["active_participant_ids"]=["bogus"]; restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_missing_material":
+                cp,_=checkpoint(altered,"after_event"); cp["accepted_material_receipts"]=[]; restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_forged_reduction":
+                cp,_=checkpoint(altered,"after_event"); cp["reduction_state"]={"peak_bits":bits(99.0),"operand_count":1}; restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_cursor_mismatch":
+                cp,_=checkpoint(altered,"after_event"); cp["accepted_until_ns"]="42"; restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_forged_state":
+                cp,_=checkpoint(altered,"after_event"); physical=cp["staged_v11_state"]["v10_physical_state_canonical_json"]; physical["canopy_liquid_bits"]=bits(999.0); cp["staged_v11_state"]["physical_state_sha256"]=sha(canonical(physical)); restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_bad_successor":
+                cp,_=checkpoint(altered,"after_event"); cp["next_parent_transaction_sequence"]="26"; restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_scheduled_replay":
+                cp,_=checkpoint(altered,"after_event"); cp["scheduled_once_receipts"]=altered["scheduled_receipts"]; restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_outbox_forgery":
+                cp,_=checkpoint(altered,"after_event"); cp["publication_outbox"]=[{"outbox_id":"0"*64,"state":"Acknowledged","delivery_count":0}]; restore_and_continue(cp,altered)
             else: validate(altered)
         except (ValueError,base64.binascii.Error,json.JSONDecodeError) as exc:
             actual=str(exc)

@@ -190,6 +190,55 @@ Re-review gates run at the corrected commit:
   above;
 - `git diff --check`: PASS.
 
+## Terminal authority re-review
+
+Reviewed exact commit: `205e0ad4e628044093e42eb99388fbbac6942d2c`
+
+Evidence class: `Static + Ran + adversarial execution`
+
+Verdict: `HOLD`.
+
+All exact prior transaction probes now reject: receipt bodies are closed,
+hydrology ending is joined to its ledger, and the live store is independently
+supplied. The manifest, owner-ending recurrence, consuming commit, rollback,
+and five added semantic poisons close `FA-TXN-001`, `FA-TXN-002`, and
+`FA-TXN-003`.
+
+### TA-TXN-001 — Blocker — Checkpoint suffix does not consume the complete persisted transaction
+
+The restored suffix now replays slab 1, the event when required, and the final
+three resource receipts. It does not authenticate or consume the complete
+restart transaction. Restore accepted independently corrupted:
+
+- active participant set;
+- accepted material-receipt prefix;
+- reduction operands/value;
+- V11 cursor inconsistent with embedded coupled-time cursor;
+- staged V11 physical state (with only the inner physical digest updated).
+
+This proves that the result is still partly reconstructed from the prebuilt
+uninterrupted candidate rather than from all persisted owner/receipt/reduction/
+publication state. The material, scheduled-once, reduction, publication/outbox,
+sequence, active-participant, staged-state, and cross-wire joins required by
+`INV-VEGTRANSACTION-013` remain unenforced. `checkpoint_rejected_leakage` and
+`checkpoint_event_replay` are useful but cover only two members of that larger
+restart surface.
+
+Required disposition: require exact prefix equivalence and independent
+reconstruction for every retained receipt and buffer, validate all duplicated
+coupled-time joins, use authenticated staged vegetation/owner state to execute
+the suffix, and add one semantic poison for every retained field family.
+
+Terminal gates:
+
+- strict BEI/unit lint: PASS both contracts;
+- authority contract test: 5/5 PASS;
+- chronology oracle: 46/46 PASS;
+- semantic validator: 26/26 listed poisons PASS;
+- former unknown-body/forged-ending/forged-live-beginning probes: reject;
+- five checkpoint-field corruption probes: accepted;
+- `git diff --check`: PASS.
+
 ## Final re-review at typed-validator candidate
 
 Reviewed exact commit: `c7ec8e73096f9816ffbe812ac15deeba1d2b8574`

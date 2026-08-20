@@ -211,3 +211,53 @@ wire before claiming equivalent continuation.
 actual restart continuation remain open at c7ec8e730`.
 
 No production Rust may begin from this checkpoint.
+
+---
+
+## Terminal review — candidate `205e0ad4e628044093e42eb99388fbbac6942d2c`
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + adversarial restart probes`
+
+BEI, unit compliance, semantic validator 26/26, authority tests 5/5, and diff
+hygiene pass. `INV-VEGTRANSACTION-010` is restored and the independent live-
+owner/clock/ending-owner/consuming-commit paths now execute correctly.
+
+### `V11-TXN-B-001` — CLOSED
+
+Lifecycle surfaces, producer/consumer scope, symbol/unit maps, guard map, and
+the normative staged-custody invariant are now internally present.
+
+### `V11-TXN-B-003` — PARTIAL
+
+The live beginning-owner and clock joins now reject independently forged state;
+ending owners are reconstructed from authenticated receipts; one-shot commit,
+publication ordering, and rollback execute. The typed manifest still fixes
+exactly one owner ID per seven classes, while canonical prose permits multiple
+owners within a class and requires within-class ID order/count. Either freeze
+one aggregate owner per class normatively or encode the actual variable owner
+set before promotion.
+
+### `V11-TXN-B-004` — OPEN — restart wire fields are not fully authenticated
+
+The exact V11 restart schema is now constructed and a suffix is executed, but
+restore accepts independently forged reduction value, outer staged-state
+digest, active participant set, and next parent transaction sequence. These
+were direct probes, not inferred gaps. Scheduled/material prefixes,
+publication/outbox, phase/cursor, authority/config identity, and current
+sequence are likewise not reconstructed by the restore path. Add complete
+field-by-field admission and poisons before claiming restart custody.
+
+### Remaining transaction disposition
+
+`V11-TXN-B-002` is closed for the reference water/NH4/NO3 fold and
+`V11-TXN-B-005` is closed for the declared non-restart parent poison surface.
+Neither supersedes the restart owner-chronology blocker.
+
+### Terminal verdict
+
+`HOLD / Version 4 cannot release while its restart continuation accepts forged
+accepted chronology and publication/reduction state`.
+
+Do not begin production Rust.

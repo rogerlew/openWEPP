@@ -330,3 +330,93 @@ missing/extra ID, and late-failure rollback poisons.
 `HOLD / B001, B002, and B005 remain release-blocking at c7ec8e730`.
 
 Do not promote the authority or begin production Rust.
+
+---
+
+## Terminal review — candidate `205e0ad4e628044093e42eb99388fbbac6942d2c`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + adversarial restart probes`
+
+Ran at the exact checkpoint:
+
+- strict BEI checks => PASS for both contracts;
+- science-contract unit-compliance => PASS for both contracts;
+- semantic validator => PASS, 26/26 declared poisons and reported restart
+  equivalence;
+- V11 authority contract test => PASS, 5/5;
+- `git diff --check` => PASS before this append.
+
+The candidate closes the prior live-owner forgery, restores
+`INV-VEGTRANSACTION-010`, constructs the actual V11 restart tag, closes receipt
+body keys, reconstructs ending owner digests, and introduces typed owner
+descriptors. Those are material corrections. Two release blockers remain.
+
+### `V11-AUTH-B-001` — OPEN — restart admits unauthenticated continuation facts
+
+`checkpoint` now emits `OPENWEPP_C3_WOODY_V11_RESTART_V1` and
+`restore_and_continue` executes the remaining event/slab/resource suffix. But
+restore validates only selected receipt prefixes, staged owners/resources,
+coupled blob digest/canonical JSON, and the inner physical-state digest. It does
+not authenticate or reconstruct several required fields.
+
+Four independent read-only probes mutated one field at a time and were all
+accepted through terminal commit:
+
+- `reduction_state.peak_bits = bits(999.0)`;
+- `staged_v11_state.state_sha256 = "00" * 32`;
+- `active_participant_ids = ["wrong"]`;
+- `next_parent_transaction_sequence = "999"`.
+
+The same code does not validate checkpoint phase/cursor consistency,
+parent/current sequence, authority identity, scheduled/material receipt
+prefixes, pending publication records, or outbox joins. The 26-poison set has
+only rejected-resource leakage and event replay restart mutations, so reported
+equivalence does not cover these fields.
+
+Required closure: reconstruct and compare every required restart field and
+cross-wire join, derive active participants/ordinals/sequences from accepted
+chronology, authenticate outer V11 state identity, rebuild reductions and
+publication/outbox, validate scheduled/material prefixes, and add one-field
+poisons for every retained continuation fact.
+
+### `V11-AUTH-B-002` — OPEN — configuration/state admission is a reduced surrogate
+
+The new imported schemas are closed syntactically, but they define a five-field
+V10 configuration and five-field V10 state fixture rather than the complete
+immutable V10 configuration/state named by the contract. The real V10 surface
+includes topology/strata and the full C/N, canopy, hydraulic warm-start, T10,
+phenology, NSC/XS/retranslocation, occupancy, and pending-transfer state. A
+reduced fixture cannot establish bit-identical migration or reject unknown/
+omitted real V10 fields.
+
+Moreover the executable validator never constructs/admit-checks a complete V11
+configuration object, and restart checks `physical_state_sha256` but not the
+outer `state_sha256` framing, as the accepted forgery probe demonstrates.
+
+Required closure: bind/import the complete released V10 canonical schemas or a
+lossless generated exhaustive projection, execute V11 configuration/state
+digest reconstruction and migration, and poison every omitted/unknown/changed
+physical field plus outer identity joins.
+
+### Prior findings otherwise
+
+- `V11-AUTH-B-003`: closed for staged water/NH4/NO3 fold authority in this
+  reference transaction.
+- `V11-AUTH-B-004`: closed for the declared parent/event/material/publication/
+  atomicity population, but cannot close restart while B001 remains.
+- `V11-AUTH-B-005`: live beginning owners, clock, ending-owner reconstruction,
+  consuming commit, and seven typed descriptors now execute. Multiple owners
+  within a class remain unrepresented despite the contract's within-class
+  ordering language; reconcile that wording/schema before promotion if the
+  complete parent owner set can contain more than one owner per class.
+
+### Terminal verdict
+
+`HOLD / actual restart authentication and complete V10 config/state admission
+remain release-blocking at 205e0ad4e`.
+
+No production Rust may begin from this checkpoint.

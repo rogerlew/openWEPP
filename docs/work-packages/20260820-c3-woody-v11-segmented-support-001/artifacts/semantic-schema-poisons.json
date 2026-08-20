@@ -27,5 +27,13 @@
     ,{"id":"forged_live_beginning","mutation":"forged_live_beginning","error":"V11-BEGINNING-OWNER"}
     ,{"id":"checkpoint_rejected_leakage","mutation":"checkpoint_rejected_leakage","error":"V11-REJECTED-LEAKAGE"}
     ,{"id":"checkpoint_event_replay","mutation":"checkpoint_event_replay","error":"V11-REPLAY"}
+    ,{"id":"checkpoint_bad_participants","mutation":"checkpoint_bad_participants","error":"V11-RESTART"}
+    ,{"id":"checkpoint_missing_material","mutation":"checkpoint_missing_material","error":"V11-RESTART"}
+    ,{"id":"checkpoint_forged_reduction","mutation":"checkpoint_forged_reduction","error":"V11-RESTART"}
+    ,{"id":"checkpoint_cursor_mismatch","mutation":"checkpoint_cursor_mismatch","error":"V11-RESTART"}
+    ,{"id":"checkpoint_forged_state","mutation":"checkpoint_forged_state","error":"V11-RESTART"}
+    ,{"id":"checkpoint_bad_successor","mutation":"checkpoint_bad_successor","error":"V11-RESTART"}
+    ,{"id":"checkpoint_scheduled_replay","mutation":"checkpoint_scheduled_replay","error":"V11-RESTART"}
+    ,{"id":"checkpoint_outbox_forgery","mutation":"checkpoint_outbox_forgery","error":"V11-RESTART"}
   ]
 }

@@ -228,6 +228,66 @@ Re-review gates run at the corrected commit:
 - independent calculator: 46/46 reported PASS, subject to RA-001/003/004;
 - `git diff --check`: PASS.
 
+## Terminal authority re-review
+
+Reviewed exact commit: `205e0ad4e628044093e42eb99388fbbac6942d2c`
+
+Evidence class: `Static + Ran + adversarial execution`
+
+Verdict: `HOLD`.
+
+The exact three prior adversarial probes now fail correctly:
+
+- unknown receipt field -> `V11-SCHEMA-BODY`;
+- forged hydrology ending -> `V11-OWNER-ENDING`;
+- independently forged live beginning -> `V11-BEGINNING-OWNER`.
+
+Closed receipt bodies, imported canonical fixtures, the owner descriptor
+manifest, complete owner-ending reconstruction, independently supplied live
+store, actual suffix resource/event/slab replay, and the five new poisons close
+`FA-001`, `FA-002`, and the self-seeded-store portion of `FA-003`.
+
+### TA-001 — Blocker — Restart admission ignores authoritative persisted fields
+
+The restart object now has the correct V11 shape, but `restore_and_continue`
+does not join several required persisted fields to the accepted prefix or use
+them as continuation operands. Adversarial executions independently changed
+each of the following and restore still returned the accepted final commit:
+
+- `active_participant_ids` to `["bogus"]`;
+- `accepted_material_receipts` to an empty list;
+- `reduction_state` to a fabricated peak and operand count;
+- `accepted_until_ns` to `42` while embedded coupled time retained the original
+  cursor;
+- staged V11 physical canopy liquid to `999.0`, with its physical digest
+  recomputed but the enclosing state digest unchanged.
+
+The same gap applies to scheduled receipts, pending publication/outbox state,
+parent/next sequence joins, and the embedded coupled-time cursor/ordinals unless
+separately checked. Suffix vegetation is reconstructed from the original parent
+candidate prefix rather than `staged_v11_state`, so a schema-valid but physically
+different checkpoint can be silently ignored. This directly violates
+`INV-VEGETATION-127` and the contract requirement to reconstruct identity,
+predecessor, owner debit, receipt, reduction, and publication chains before
+returning a continuation.
+
+Required disposition: semantically validate and cross-join every restart field,
+derive suffix execution from authenticated staged V11/owner/controller state,
+and add poisons for participant, cursor/coupled-time mismatch, material,
+scheduled-once, reduction, publication/outbox, next sequence, staged-state
+digest, and staged-state continuation changes.
+
+Terminal gates:
+
+- strict BEI and science-contract unit lint: PASS for both contracts;
+- authority contract test: 5/5 PASS;
+- chronology oracle: 46/46 PASS;
+- semantic validator: valid transaction, prefix restore cases, seven-owner
+  commit, and 26/26 listed poisons PASS;
+- exact former adversarial probes: all three now reject as required;
+- new restart-field adversarial probes: five invalid checkpoints accepted;
+- `git diff --check`: PASS.
+
 ## Final re-review at typed-validator candidate
 
 Reviewed exact commit: `c7ec8e73096f9816ffbe812ac15deeba1d2b8574`
