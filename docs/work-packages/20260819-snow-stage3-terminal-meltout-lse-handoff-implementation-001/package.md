@@ -1,6 +1,6 @@
 # Implement Stage 3 Terminal Meltout To The Real Snow-Free Owner Stack
 
-Status: `queued`
+Status: `executing / contract-first authority and tests in progress`
 
 Date: `2026-08-19`
 
@@ -245,14 +245,24 @@ bounded gate artifacts; only the primary executor edits tracked source.
 - [x] (2026-08-19) User authorized roadmap reconciliation and package scaffold.
 - [x] (2026-08-19) Confirmed terminal snow mechanics and the complete snow-free
   real-consumer prerequisites have terminal package evidence.
-- [ ] Freeze intake artifacts and contract amendment needs.
-- [ ] Complete the contract-first pre-implementation gate.
+- [x] (2026-08-19) Froze the exact owner/consumer intake, rollback gap,
+  contract contradictions, intended write set, and validation plan.
+- [x] (2026-08-19) Completed the reviewed contract-first gate: science GO,
+  ownership GO, 12/12 contract tests and 2/2 actual shared-WB14 duration tests.
 - [ ] Implement and validate the real-consumer handoff.
 - [ ] Complete reviews, verification, and disposition.
 
 ## Surprises & Discoveries
 
-None at scaffold time.
+- Static intake found that the runner advances the external Stage 3 persistent
+  state before the enclosing production/V10 candidate commits. A later receiver
+  failure can therefore roll production/V10 state back while leaving Stage 3
+  advanced. The new outer transaction must own Stage 3 state rather than merely
+  pass its terminal result.
+- The LSE solver is duration-parameterized internally, but the real V10 and
+  surface-liquid consumer seams enforce exact `1800 s` cadence. Terminal
+  support therefore requires a contract-authorized partial-interval owner
+  transaction and WB14 continuation rule, not a caller-side duration override.
 
 ## Decision Log
 

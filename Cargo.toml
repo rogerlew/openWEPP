@@ -788,6 +788,10 @@ name = "snow_terminal_enthalpy_event_numerics_contract"
 path = "tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs"
 
 [[test]]
+name = "snow_stage3_terminal_receiver_authority_contract"
+path = "tests/integration/snow_stage3_terminal_receiver_authority_contract.rs"
+
+[[test]]
 name = "snow_stage3_shadow_observability_contract"
 path = "tests/integration/snow_stage3_shadow_observability_contract.rs"
 

@@ -158,6 +158,36 @@ mod tests {
         compute_wb14_infiltration_depression_with_profile,
     };
 
+    fn independent_ponded_oracle(
+        cumulative_m: f64,
+        rainfall_m: f64,
+        duration_s: f64,
+        intensity_m_s: f64,
+        conductivity_m_s: f64,
+        matric_m: f64,
+    ) -> f64 {
+        let threshold_m = conductivity_m_s * matric_m / (intensity_m_s - conductivity_m_s);
+        let unponded_m = (threshold_m - cumulative_m).clamp(0.0, rainfall_m);
+        let target_m = conductivity_m_s * (duration_s - unponded_m / intensity_m_s);
+        let start_m = cumulative_m + unponded_m;
+        let residual = |end_m: f64| {
+            (end_m - start_m)
+                - matric_m * ((end_m + matric_m) / (start_m + matric_m)).ln()
+                - target_m
+        };
+        let mut low_m = start_m;
+        let mut high_m = start_m + rainfall_m + matric_m;
+        for _ in 0..160 {
+            let mid_m = 0.5 * (low_m + high_m);
+            if residual(mid_m) < 0.0 {
+                low_m = mid_m;
+            } else {
+                high_m = mid_m;
+            }
+        }
+        (unponded_m + 0.5 * (low_m + high_m) - start_m).min(rainfall_m)
+    }
+
     fn assert_core_continuation_parity(
         inputs: DirectWb14ContinuationIntervalInputs,
     ) -> Result<DirectWb14ContinuationIntervalOutcome, DirectRuntimeError> {
@@ -299,5 +329,89 @@ mod tests {
             ..above_supply
         };
         assert!(assert_core_continuation_parity(above_storage).is_err());
+    }
+
+    #[test]
+    fn variable_duration_shared_kernel_matches_independent_nonlinear_oracle() {
+        let cumulative_m = 0.001_7;
+        let intensity_m_s = 8.0e-6;
+        let conductivity_m_s = 1.1e-7;
+        let matric_m = 0.12;
+        for duration_s in [75.0, 437.0, 1_125.0, 1_800.0] {
+            let rainfall_m = intensity_m_s * duration_s;
+            let actual = super::super::runoff::compute_green_ampt_interval_infiltration(
+                cumulative_m,
+                rainfall_m,
+                duration_s,
+                intensity_m_s,
+                conductivity_m_s,
+                matric_m,
+            )
+            .expect("shared Green-Ampt transition");
+            let expected = independent_ponded_oracle(
+                cumulative_m,
+                rainfall_m,
+                duration_s,
+                intensity_m_s,
+                conductivity_m_s,
+                matric_m,
+            );
+            assert!(
+                (actual - expected).abs() <= 1.0e-12,
+                "duration={duration_s}"
+            );
+        }
+    }
+
+    #[test]
+    fn nonlinear_partial_transition_is_not_proportional_full_bin_scaling() {
+        let cumulative_m = 0.001_7;
+        let intensity_m_s = 8.0e-6;
+        let conductivity_m_s = 1.1e-7;
+        let matric_m = 0.12;
+        let partial_duration_s = 437.0;
+        let partial = super::super::runoff::compute_green_ampt_interval_infiltration(
+            cumulative_m,
+            intensity_m_s * partial_duration_s,
+            partial_duration_s,
+            intensity_m_s,
+            conductivity_m_s,
+            matric_m,
+        )
+        .expect("partial transition");
+        let full = super::super::runoff::compute_green_ampt_interval_infiltration(
+            cumulative_m,
+            intensity_m_s * 1_800.0,
+            1_800.0,
+            intensity_m_s,
+            conductivity_m_s,
+            matric_m,
+        )
+        .expect("full transition");
+        let naive = full * partial_duration_s / 1_800.0;
+        assert!((partial - naive).abs() > 1.0e-8);
+
+        let outcome = advance_wb14_interval_state(DirectWb14IntervalTransitionInputs {
+            cumulative_supply_m: 0.002_4,
+            cumulative_infiltration_m: cumulative_m,
+            interval_supply_m: intensity_m_s * partial_duration_s,
+            interval_duration_s: partial_duration_s,
+            interval_intensity_m_s: intensity_m_s,
+            effective_conductivity_m_s: conductivity_m_s,
+            matric_potential_m: matric_m,
+            storage_capacity_m: 0.02,
+        })
+        .expect("partial shared wrapper with beginning storage state");
+        assert!((outcome.interval_infiltration_m - partial).abs() <= 1.0e-12);
+        assert_eq!(
+            outcome.cumulative_supply_m,
+            0.002_4 + intensity_m_s * partial_duration_s
+        );
+        assert!(
+            (outcome.interval_infiltration_m + outcome.interval_excess_m
+                - intensity_m_s * partial_duration_s)
+                .abs()
+                <= 1.0e-14
+        );
     }
 }

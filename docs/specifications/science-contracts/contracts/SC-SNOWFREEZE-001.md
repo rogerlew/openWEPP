@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 135
+contract_version: 136
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Infiltration/runoff partition consumers affected by frozen-soil state
   - Soil/erosion coupling consumers requiring freeze-thaw context
 evidence_level: static
-last_reviewed: 2026-08-07
+last_reviewed: 2026-08-19
 supersedes: []
 superseded_by: []
 ---
@@ -1501,6 +1501,7 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 | Evolving Stage 3 carrier plausibility (`INV-SNOWFREEZE-098`) | frozen four-site schema-v6 consumer, tuple-level independent energy/mass/state reconstruction, wind/geometry/canopy authority audit, and persistence gate | Evidence hard-fail on malformed custody, producer disagreement, alias, nonclosure, support laundering, or result-selected rules; governance `HOLD` on valid physical divergence, `NOT_EVALUABLE` envelope/geometry/exposure, missing authority, or production/persistence claim | raw-versus-bounded vapor, operator-order melt, endpoint, term/state/stability/support, four-site magnitude, nonreachability, and claim-limit gates; no correction or cutover evidence | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Stage 3 wind source custody and exposure (`INV-SNOWFREEZE-099`) | frozen identities, raw CLI/runtime/Stage-3 chain, PMET-local adjustment, source/virtual-height separation, and per-site two-sided exposure matrix | Hard evidence failure on alias/identity error; `AUTHORITY_MISSING` and persistence hold when immutable generator custody or forcing-to-target exposure linkage is absent | contract-derived alias checks, source-custody ledger, independent neutral bound, and exposure/claim audit; no production correction or canopy authority | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Persistent Stage 3 evaluation continuity (`INV-SNOWFREEZE-100`) | typed request, per-lane private carry, atomic day transaction, snapshot/restore envelope, enabled-only schema-v7 writer, and independent consumer | Evaluation hard-fail on invalid order/identity/state/version/fingerprint, nonclosure, partial commit, aliasing, or production reachability; governance claim limit on unresolved physical magnitude and recipients | synthetic multi-day accumulation/liquid/dormancy/reappearance/restart, anti-alias, noninterference, and exact reconstruction gates; no physical efficacy or cutover evidence | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Terminal receiver chronology (`INV-SNOWFREEZE-102`) | separate default-off wall-support/transaction identities, versioned in-progress adaptive/bisection restart, actual receiver selection, exact liquid receipt, and all-owner transaction | Typed failure under total precedence; first cause retained, rollback diagnostic secondary, exact beginning bytes restored; CoE/default unchanged | numeric liquid/support, endpoint/midnight, restart state-machine, precedence, receiver/routing, contradiction and noninterference vectors | `[INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -1513,6 +1514,7 @@ parity). Contract-specific interpretation tolerances:
 | TOL-SNOWFREEZE-002 | Snow depth/density non-negative comparator tolerance | lower bound `>= -1e-12` | Runtime hard-fail still required for values materially below zero. |
 | TOL-SNOWFREEZE-003 | Density threshold gate proximity tolerance around `350 kg m^-3` | `1e-9 kg m^-3` | Prevents floating-point noise from flipping density-gate branch semantics. |
 | TOL-SNOWFREEZE-004 | Zero-depth/zero-density closure tolerance | If `Dsnew <= 1e-12 m`, require `ρsnew <= 1e-9 kg m^-3` | Prevents false closure from product-only checks that can mask invalid nonzero density. |
+| TOL-SNOWFREEZE-023 | Terminal receiver identity/support/restart | exact for stage, IDs, half-open endpoints, receipt consumed marker, and serialized bytes; numeric event closure inherits TOL-SNOWFREEZE-022 | No tolerance repairs overlap, replay, wrong stage, or owner mismatch. |
 | TOL-SNOWFREEZE-005 | Frost heat-flow equation residual tolerance for iterative closure diagnostics | `<= 1e-8` in routine-native flux units | Diagnostic/comparator aid; not a silent runtime correction mechanism. |
 | TOL-SNOWFREEZE-006 | Stage-1 snow storage closure tolerance | `1e-9 m` water equivalent per daily snow coupling step | Runtime conservation gate for `old SWE + snowfall water equivalent + retained rain - new SWE - routed snowpack melt`; violations are typed errors, not hidden clamps. |
 | TOL-SNOWFREEZE-007 | Frost-depth magnitude acceptance band (frost-tube authority; `INV-SNOWFREEZE-047`) | accepted: greater of `0.10 m` or `25 %` of observed seasonal-maximum depth | Observation-evaluation band, not a comparator FP tolerance or calibration target. Bounded below by frost-tube read/registration uncertainty and ratified with the 2026-06-29 frost-observation arc. |
@@ -4002,10 +4004,87 @@ no-regression/conservation gates pass; zero residual closure is not required.
 | GAP-SNOWFREEZE-008 | Stage 3 evolving-carrier physical passage lacks resolved GRIDMET/CLI wind exposure, canonical `z/L` versus `(z-d)/L` equation selection, a complete applicable canopy aerodynamic operator, and comparable numeric energy/vapor/stability envelopes. | Blocks plausibility passage and physically interpreted persistent efficacy even when mechanics reconstruction succeeds; does not block `INV-SNOWFREEZE-100` continuity mechanics. | non-promotable until authority/evidence packages close every `NOT_EVALUABLE` field | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-009 | Surviving WEPPpy records recover exact CLI hashes, stored watershed centroids and GRIDMET-enabled flags, complete daily parquet wind, and parquet-to-CLI equality. Nearby source only statically reconstructs the GRIDMET request/product and shared-series transform; deployed request/code identity, raw response, server pixel/version/day-boundary/fill policy, and authoritative forcing-to-target exposure linkage remain absent. | Blocks wind applicability, physical carrier passage, and physically interpreted persistence; does not block `INV-SNOWFREEZE-100` continuity mechanics or authorize canopy attenuation/production correction. | narrowed `AUTHORITY_MISSING`; non-promotable until remaining deployed/server custody and two-sided exposure authority exist | `[DIRECT][Static] + [DIRECT][Ran] + [INFERENCE][Static]` |
 
+## Default-Off Terminal Receiver Chronology Amendment
+
+`INV-SNOWFREEZE-102` preserves `INV-SNOWFREEZE-101` as evaluation-only and
+admits a separate `terminal_receiver_v1` owner transaction. It advances the
+complete persistent Stage 3 state only to the earliest localized exhaustion
+event `t*`, closes snow ice/cold-content/vapor/liquid/time/energy there, and
+supplies one fingerprint-bound 0 C liquid receipt. It selects the actual
+snow-free vegetation/litter/mineral/frost/water surface from immutable beginning
+receiver state, rebuilds all receiver forcing, and executes V10/LSE-V2/direct
+hydrology only for `dt_remaining = dt_interval - t*`.
+
+The candidate contains snow persistence/dormancy, vegetation, surface liquid,
+LSE, soil thermal/frost, WB14 continuation, infiltration, ponding, overflow,
+routed runon/runoff, and restart lineage and commits them atomically. Snow-side
+failure precedes handoff; after a valid receipt, receiver errors retain their
+canonical internal precedence; cross-owner identity/closure/rollback failure
+is last. Every failure restores exact interval-beginning bytes and predecessor
+IDs. No cleanup error may replace the causative error.
+
+Absolute support identity is `(calendar_day, wall_bin, wall_start,
+wall_end, wall_t*)` and is immutable across retries/restart. The sequential
+`receiver_transaction_id` and predecessor ID establish commit order only and
+must not encode, infer, or replace calendar/wall support. The snow support is
+the half-open interval `[wall_start,wall_t*)`; receiver support is
+`[wall_t*,wall_end)`. `wall_t*=wall_end` has zero receiver duration. A
+cross-midnight interval uses the absolute endpoint date/time: the receiver
+continuation closes the old day at midnight and opens the new day exactly once,
+without changing transaction identity or replaying either half.
+
+Global error precedence is total: (1) request/restart schema and identity,
+(2) snow forcing/domain, (3) snow integration/localization/closure, (4) terminal
+receipt debit-credit-consumed join, (5) receiver selection/forcing, (6) LSE,
+(7) surface-liquid/WB14/infiltration, (8) frost/soil thermal, (9) routing,
+(10) cross-owner closure/commit, and (11) rollback validation. The first
+causative error is always returned. Rollback validation still executes; if it
+fails, its typed diagnostic and before/after hashes are attached as secondary
+context and the transaction is poisoned/uncommittable, but it never replaces
+or masks the first error. When rollback validation itself is the first failure
+(after an otherwise successful candidate rejection test), it is primary.
+
+Restart is valid immediately before/after meltout and at an accepted terminal
+substep boundary. It persists controller/bracket state, elapsed support, owner
+digests, and partial WB14 interval continuation, producing byte-identical
+uninterrupted/restored execution. Cross-midnight lineage advances once.
+Dormancy followed by snowfall begins a new episode without stale operands.
+Rain on snow-side support is snow-event liquid; rain on remaining support is
+rebuilt receiver ingress. Neither aliases retained liquid, melt, runon,
+storage, infiltration, or runoff.
+
+CoE remains production owner and is absent from this candidate. Carrier/forest
+exposure, physical efficacy, qualification, assurance approval, production
+activation, and cutover remain holds. Required vectors cover pre/mid/post
+restart, cross-midnight, rain on both sides, dormancy/reappearance, each actual
+surface, frozen/thawing state, all water routes, injected failure phases, and
+post-event snow-operand poisons.
+
+Restart envelope schema `terminal_receiver_restart_v1` is version `1` and
+deny-unknown-fields. It checkpoints deterministic stage boundaries inside an
+in-progress adaptive attempt or bisection: `stage` is exactly
+`pre_trial|one_full_done|first_half_done|two_half_done|bracketed|bisect_left_done|
+bisect_mid_done|localized|receiver_running|complete`; `attempt_id`, trial start
+state/time, `h`, completed trial result(s), LTE operands, rejection count,
+bracket endpoint times/states/function values, bisection iteration and pending
+midpoint identify the next operation without recomputation or skipping. Resume
+validates the stored stage and continues with its unique next operation.
+
+Every snapshot also stores absolute support identity, elapsed seconds, owner/
+forcing fingerprints, sequential predecessor ID, and
+`terminal_receipt_consumed`. Pre-event stores no bracket and false; localized
+stores the immutable receipt and false until the atomic surface-liquid credit;
+receiver-running/complete store true plus continuation. Version 0 has no
+migration because it lacks attempt/bracket/consumed custody. Unknown version or
+field, impossible stage/operand combination, incomplete bracket/trial,
+inconsistent elapsed/support, fingerprint mismatch, or receipt/consumed
+mismatch rejects before mutation. Canonical bytes round-trip exactly.
+
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-08-19` | `136` | `Codex` | Added separate default-off terminal receiver chronology (`INV-SNOWFREEZE-102`) with actual-surface selection, partial-interval continuation/restart, and atomic all-owner rollback/error precedence; preserved evaluation-only INV-101 and all production/cutover holds. |
 | `2026-08-07` | `135` | `Codex` | SNOW-TERMINAL-ENTHALPY-EVENT-NUMERICS amendment: added `INV-SNOWFREEZE-101`, `OBL-SNOWFREEZE-P-073`, `OBL-SNOWFREEZE-C-015`, and `TOL-SNOWFREEZE-022`; admitted a fingerprint-bound evaluation-only shallow-snow enthalpy/event request and schema-v8 reconstruction while retaining censored receiving-surface, production, and cutover boundaries. |
 | `2026-08-07` | `134` | `Codex` | SNOW-STAGE3-PERSISTENT-ACCUMULATION-SHADOW amendment: added `INV-SNOWFREEZE-100`, `OBL-SNOWFREEZE-P-072`, `OBL-SNOWFREEZE-C-014`, and `TOL-SNOWFREEZE-021`; authorized an isolated default-off per-lane continuity experiment with atomic snowfall/liquid custody, dormancy/reappearance, schema-v7 evidence, and exact snapshot/restore while retaining every physical-efficacy, recipient, production, and cutover hold. |
 | `2026-08-07` | `133` | `Codex` | WEPPpy provider follow-on: directly proved byte-identical source-run CLI lineage, retained centroids/flags, daily parquet wind, and parquet-to-CLI equality; classified nearby-source request/product/shared-series semantics as static reconstruction and retained the deployed/server and two-sided aerodynamic exposure hold. |

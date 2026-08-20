@@ -4,14 +4,14 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
 consumer_scope:
   - Future soil-heat/frost boundary, evaporation, infiltration/runoff, and surface-water ledgers
 evidence_level: static+independent_oracle
-last_reviewed: 2026-08-18
+last_reviewed: 2026-08-19
 supersedes: []
 superseded_by: []
 ---
@@ -223,6 +223,8 @@ then `snow_free`. No temperature-only guess may override explicit snow state.
 | `INV-LANDSURFACEENERGY-041` | Comparator agreement, current helper code, or silent legacy clamps cannot substitute for canonical physics authority and typed guards. | ADR-0017, REF-010 | `[DIRECT][Static]` | review/gate | hard `HOLD` |
 | `INV-LANDSURFACEENERGY-042` | Future vegetation radiation receipts remain recipient-specific across canopy strata, ground, litter, snow, soil, ponded water, and atmosphere; no recipient is an alias or residual bucket for another. | SC-VEGETATION-001#INV-VEGETATION-021 | `[INFERENCE][Static]` | future integration/test | hard `HOLD` |
 | `INV-LANDSURFACEENERGY-043` | Interval-integrated Stage C transpiration mass and its latent-energy debit share one transaction, stratum, area, interval, lineage, and authority-tagged `h_v`, satisfying `Q_T,s=-h_v*T_s` exactly once. | SC-VEGETATION-001#INV-VEGETATION-014 | `[INFERENCE][Static]` | future integration/test | hard `HOLD` |
+| `INV-LANDSURFACEENERGY-114` | Default-off LSE-V2 selects the actual receiver and rebuilds every flux only on `[wall_t*,wall_end)` without snow operands. | terminal receiver authority | `[INFERENCE][Static]` | runtime/test | typed receiver failure |
+| `INV-LANDSURFACEENERGY-115` | The 0 C parcel enters hydrology once; fusion energy is not soil heat, zero remaining support skips LSE, and any failure rolls back all owners. | conservation/transaction authority | `[INFERENCE][Static]` | runtime/test | typed join/rollback failure |
 
 Guard-map enforcement in version 1 is the contract-derived integration test
 and package review. Runtime mappings are intentionally future obligations; an
@@ -248,6 +250,8 @@ evidence artifact before promotion.
 | `INV-LANDSURFACEENERGY-031` | dual science review and owner assertions | governance | blocked promotion | package review artifacts |
 | `INV-LANDSURFACEENERGY-032` | real-consumer reachability gate | governance | blocked promotion | `GAP-LANDSURFACEENERGY-004` |
 | `INV-LANDSURFACEENERGY-040` | gap-label assertion and package disposition | governance | `NON_PROMOTABLE` | focused test + disposition |
+| `INV-LANDSURFACEENERGY-114` | terminal support/operand validator and receiver selection | default-off runtime/test | typed reject/rollback | terminal handoff package |
+| `INV-LANDSURFACEENERGY-115` | liquid-energy join and atomic envelope | default-off runtime/test | typed reject/rollback | terminal handoff package |
 | `INV-LANDSURFACEENERGY-041` | provenance/no-proxy review | governance | blocked promotion | baseline map + reviews |
 | `INV-LANDSURFACEENERGY-042` | future recipient-specific radiation ledger and poison vectors | runtime + test | blocked promotion on omitted, duplicated, or aliased recipient | vegetation/LSE integration package |
 | `INV-LANDSURFACEENERGY-043` | future latent mass-energy lineage join | runtime + test | blocked promotion on missing/mismatched `h_v`, duplicate debit, or amount/rate basis mismatch | vegetation/LSE integration package |
@@ -311,6 +315,10 @@ No publication is authorized. A future implementation must update the machine
 registry and pass its unit guards before a dimensional runtime surface lands.
 
 ## Tolerance and Numeric Notes
+
+For INV-114/115, `wall_t*`, `wall_end`, support identity, receipt cardinality,
+and snow-operand absence are exact. Existing LSE energy/mass tolerances apply
+only after those checks and cannot repair them.
 
 - `TOL-LANDSURFACEENERGY-001`: future energy closure shall require
   `|epsilon_E| <= max(a_E, rho_E*sum_abs_energy_operands)`; `a_E` has units
@@ -879,10 +887,43 @@ implementation. It authorizes no production selector/default/output, snow
 handoff, calibration, empirical validation or transferability claim, or
 cutover.
 
+## Terminal Receiver Remaining-Support Amendment
+
+`INV-LANDSURFACEENERGY-114` admits LSE-V2 as the energy owner inside only the
+default-off `terminal_receiver_v1` transaction. It receives exact
+`dt_remaining`, actual vegetation/litter/mineral/frost/water owner state, and a
+single 0 C terminal-liquid parcel. It must select the actual surface and
+rebuild shortwave/albedo, longwave, aerodynamic geometry/roughness,
+turbulence, evaporation/condensation, precipitation heat, soil heat, and
+storage terms over `[wall_t*,wall_end)`. No snow temperature, albedo, roughness,
+flux, residual, or terminal unallocated energy may enter any LSE operand.
+
+`INV-LANDSURFACEENERGY-115` binds one candidate-only continuation: liquid
+ingress is passed to hydrology exactly once; LSE neither repartitions it nor
+relabels latent fusion as soil heat. `dt_remaining=0` suppresses the LSE solve.
+Any invalid surface selection, support, receipt, owner join, or LSE solve
+returns its typed error without mutation; the encompassing transaction restores
+all beginning owners. CoE/default behavior and every turbulent-carrier,
+efficacy, qualification, production, and cutover hold remain unchanged.
+
+Vectors must distinguish litter/mineral/ponded and frozen/thawing receivers,
+make snow and receiver fluxes unequal, cover rain and cross-midnight support,
+and poison stale snow operands, full-interval LSE execution, liquid duplication,
+and partial commit.
+
+| Canonical surface | INV-114/115 binding |
+|---|---|
+| Algorithm | select actual receiver from beginning owners; rebuild every forcing/flux on half-open receiver support; solve LSE-V2; join hydrology/soil receipts |
+| Branch/guard | zero duration skips solve; invalid/ambiguous receiver or any snow operand rejects before mutation |
+| Alias/unit | absolute wall support is distinct from transaction order; 0 C parcel sensible enthalpy is zero and fusion energy is not `G` |
+| Tolerance | existing LSE closure tolerances apply after exact support/identity validation; none repairs stale snow operands |
+| Tests/gap | unequal snow/receiver fluxes, endpoint rain, actual surface matrix, zero remainder, rollback; carrier/efficacy/production remain held |
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-19 | 5 | Codex | Admitted default-off terminal remaining-support LSE-V2 authority (`INV-LANDSURFACEENERGY-114/115`) with actual receiver selection, complete flux rebuild, no post-event snow operands, and atomic rollback. |
 | 2026-08-18 | 4 | Codex | Admitted `OPENWEPP_SNOW_FREE_LSE_V2`, binding V10 exact-zero-PAR physiology and deterministic FullSupply iteration-zero final reevaluation; V1 remains immutable. |
 | 2026-08-14 | 3 | Codex | Admitted `OPENWEPP_SNOW_FREE_LSE_V1`: explicit bare-soil and forest-litter thermal state, reciprocal V8 canopy-ground radiation/turbulence, hydrology-owned water mass, liquid enthalpy, coupled potential/final solve, strict numerics and independent closure; no runtime or cutover. |
 | 2026-08-08 | 2 | Codex | VEGETATION-BOUNDARY-AUTHORITY amendment: separated canopy/ground/litter/snow/soil radiation lineage and bound actual transpiration to one independently reconstructed latent-energy debit without admitting constitutive physics. |

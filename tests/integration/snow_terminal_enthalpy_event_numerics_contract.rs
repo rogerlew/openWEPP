@@ -15,7 +15,7 @@ fn contracts_admit_only_event_local_terminal_snow_numerics() {
     let energy = read(ENERGY);
     let freeze = read(FREEZE);
     for required in [
-        "contract_version: 12",
+        "contract_version: 13",
         "INV-SNOWENERGY-034",
         "OBL-SNOWENERGY-P-008",
         "OBL-SNOWENERGY-C-015",
@@ -30,7 +30,7 @@ fn contracts_admit_only_event_local_terminal_snow_numerics() {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
     for required in [
-        "contract_version: 135",
+        "contract_version: 136",
         "INV-SNOWFREEZE-101",
         "OBL-SNOWFREEZE-P-073",
         "OBL-SNOWFREEZE-C-015",
@@ -63,6 +63,6 @@ fn package_and_index_preserve_receiving_surface_and_production_boundaries() {
     assert!(package.contains("No land-surface, soil, frost, infiltration, runoff"));
     assert!(package.contains("No assignment of terminal unallocated energy"));
     assert!(package.contains("No physical seasonal efficacy"));
-    assert!(index.contains("v12 admits evaluation-only shallow-pack enthalpy"));
-    assert!(index.contains("v135 admits a fingerprint-bound terminal-event extension"));
+    assert!(index.contains("preserving v12/INV-034 evaluation-only semantics"));
+    assert!(index.contains("INV-101 remains evaluation-only"));
 }

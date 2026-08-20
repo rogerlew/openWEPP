@@ -1,8 +1,8 @@
 # Required reading map
 
-Status: queued
+Status: intake complete
 
-Evidence mode: not-run
+Evidence mode: Static + Ran
 
 ## Core
 
@@ -40,3 +40,8 @@ Scaffold measurement: `495418` local bytes for the six Core files, disposition
 but remains mandatory under package-preparation governance. The executor must
 remeasure before implementation edits. Conditional files included in mandatory
 pre-read must be added to the total and justified where required.
+
+Ran: core files and triggered conditional governance were read at source
+identity `d309d1a131dd7122651f707c54831a0c3d2d5199`. Applicable instruction
+chains were resolved with `tools/agents/find-agents` for every prospective
+contract, crate, runner, and integration-test path.

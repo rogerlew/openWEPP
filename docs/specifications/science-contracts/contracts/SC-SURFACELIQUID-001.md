@@ -4,7 +4,7 @@ title: Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology/land-surface-energy reviewer
-contract_version: 6
+contract_version: 7
 producer_scope:
   - Persistent snow-free bare-surface and forest-litter liquid hydrology state
   - Same-snapshot withdrawal authorization and finalized debit
@@ -14,7 +14,7 @@ consumer_scope:
   - Production WB14 infiltration/runoff and routed-runon owners
   - Restart and atomic shadow-state consumers
 evidence_level: static+contract_vectors
-last_reviewed: 2026-08-14
+last_reviewed: 2026-08-19
 supersedes: []
 superseded_by: []
 ---
@@ -510,11 +510,11 @@ follow the later all-owner atomic replacement.
 | 1 | malformed or unknown/missing field | schema | Reject before identity projection. | `SURFACELIQUID-E-001` |
 | 2 | owner/configuration/state/transaction/key mismatch | identity | Reject exact identity or lineage. | `SURFACELIQUID-E-002` |
 | 3 | nonfinite/out-of-domain capacity, fraction, mass, interval, temperature, topology, or unsafe proportional representability | domain | Reject without normalization except the exact symmetric joint-authorization rule in section 2. | `SURFACELIQUID-E-003` |
-| 4 | snow, terminal snow, frozen, or thawing surface branch | unsupported domain | Reject before candidate work. | `SURFACELIQUID-E-004` |
+| 4 | snow, terminal snow, frozen, or thawing surface branch | unsupported domain | Reject before candidate work, except the exact typed terminal parcel into an already-authorized actual frozen/thawing receiver under INV-010/011. | `SURFACELIQUID-E-004` |
 | 5 | duplicate/missing request, authorization, use, credit, or parcel | protocol cardinality | Reject complete protocol. | `SURFACELIQUID-E-005` |
 | 6 | `F>A`, `A>D`, negative amount, or wrong basis | resource bound | Reject; no tolerance repairs it. | `SURFACELIQUID-E-006` |
 | 7 | legacy depression retention nonzero in native shadow | exact-one owner | Reject duplicate storage custody. | `SURFACELIQUID-E-007` |
-| 8 | wrong 1800-second cadence, continuation index/carry, or more/fewer than one WB14 continuation call per OFE/interval | production-producer binding | Reject reset, replay, proxy, or incomplete partition. | `SURFACELIQUID-E-008` |
+| 8 | wrong 1800-second cadence, continuation index/carry, or more/fewer than one WB14 continuation call per OFE/interval | production-producer binding | Reject reset, replay, proxy, or incomplete partition; only a tagged INV-011 remaining segment inside one identified base bin may use `0<=d<=1800`. | `SURFACELIQUID-E-008` |
 | 9 | capacity, attribution, routing, or parcel enthalpy mismatch | candidate closure | Reject candidate. | `SURFACELIQUID-E-009` |
 | 10 | local/owner/soil join closure failure | independent closure | Reject candidate. | `SURFACELIQUID-E-010` |
 | 11 | rollback or complete-owner mismatch | atomic envelope | Reject envelope. | `SURFACELIQUID-E-011` |
@@ -556,6 +556,8 @@ string. A generic category plus prose detail is not the canonical payload.
 | `INV-SURFACELIQUID-007` | Mixed post-infiltration excess retains exact tile/source custody; remainder routes once with basis re-keying and OFE-area conversion. | runoff/routing authority + conservative mixing | retention/routing candidate | closure/topology; `E-009` | multi-temperature, multi-tile, unequal-area multi-OFE vectors |
 | `INV-SURFACELIQUID-008` | Mass, enthalpy, infiltration, storage, and runoff are independently reconstructed without producer residuals. | physical conservation | external ledger validators | closure; `E-009..010` | independent numerical vectors |
 | `INV-SURFACELIQUID-009` | All work is candidate-only and every failure preserves complete beginning and production bytes. | transaction atomicity | shadow owner envelope | rollback; `E-011` | phase-injection hashes |
+| `INV-SURFACELIQUID-010` | One fingerprinted 0 C parcel equals retained snow liquid plus snow-support rain plus melt less refreeze; atomic snow debit, surface credit, and consumed marker prevent replay. | snow/physical conservation | terminal receipt validator | identity/cardinality/closure; `E-003,E-005,E-011` | numeric equation, replay, alias, rollback vectors |
+| `INV-SURFACELIQUID-011` | A tagged remaining segment calls the actual shared Green-Ampt/Mein-Larsen transition over exact half-open wall support and advances base-bin continuation only at its endpoint. | WB14 production path | direct-runtime adapter | cadence/support; `E-008` | nonlinear segment, endpoint, ponding, restart vectors |
 
 ## Symbol Alias Map
 
@@ -571,6 +573,8 @@ string. A generic category plus prose detail is not the canonical payload.
 | `T_p` | `surface_liquid.parcel_temperature_k` | WB14/routing | `K` | Celsius or untyped temperature |
 | `Q_p` | `surface_liquid.parcel_enthalpy_j_m2_basis_ofe` | WB14/routing | `J m^-2 basis-OFE-ground` | power rate or un-rekeyed destination energy |
 | `dt` | `surface_liquid.interval_s` | cadence | `s` | arbitrary interval or daily scalar |
+| `wall_t*,wall_end,d` | terminal receiver absolute support | wall-time identity | `s` plus calendar/bin identity | transaction ID, full-bin duration, proportional scale |
+| `m_terminal_liquid` | terminal receipt mass | exact-one ingress | `kg H2O m^-2 OFE-ground` | store level/change, runoff, rain-only, CoE melt |
 
 ## Constants And Parameters
 
@@ -697,10 +701,72 @@ them.
 
 This contract authorizes no production activation or publication.
 
+## Terminal Meltout Receipt And Partial-WB14 Amendment
+
+`INV-SURFACELIQUID-010` admits one `terminal_receiver_v1` ingress parcel keyed
+by snow event fingerprint, transaction/OFE/tile, `t*`, and remaining support.
+Its mass is exactly retained snow liquid plus newly generated terminal liquid,
+its temperature is `273.15 K`, and its sensible enthalpy relative to `T_ref` is
+zero. It is accepted exactly once before the actual receiver's remaining-time
+WB14 solve and is never aliased to rain, runon, store level/change,
+infiltration, ponding, overflow, runoff, or snow drainage. Duplicate, missing,
+wrong-support, wrong-basis, nonzero-enthalpy, or CoE-plus-Stage-3 receipts fail
+typed and leave all owners unchanged.
+
+`INV-SURFACELIQUID-011` extends the existing WB14 continuation without changing
+production cadence: the default-off transaction may execute a partial WB14
+interval over exactly `dt_remaining`, retaining interval/day identity, elapsed
+support, cumulative supply/infiltration, ponding, overflow, runon, and runoff.
+Pre-event support is not replayed and remaining support is not spread across a
+full bin. A cross-midnight endpoint advances continuation once. Restart
+before/after meltout or at an accepted terminal substep restores the same
+partial continuation and produces byte-identical final owner state.
+
+The fixed production base remains exactly 48 wall bins of 1800 seconds and
+`SURFACELIQUID-E-008` still rejects every ordinary call whose duration is not
+1800 seconds. The only exception is a tagged terminal receiver segment inside
+one identified base wall bin. Let `D=1800 s`, `d=wall_end-wall_t*`,
+`0<=d<=D`. Time-varying forcing is partitioned on the half-open absolute
+support `[wall_t*,wall_end)`; it is not scaled from a full-bin aggregate and
+does not replay `[wall_start,wall_t*)`. A parcel exactly at `wall_t*` belongs
+to the receiver. The adapter passes beginning cumulative infiltration,
+beginning ponded water, soil Green-Ampt parameters, the source-boundary
+rain/additional-supply partition, and `d` to the actual shared
+`compute_green_ampt_interval_infiltration` Mein-Larsen transition. Its returned
+infiltration and ending cumulative state feed the existing WB14 depression-
+storage/overflow/runoff chronology. No copied equation, per-parcel solve,
+invented integral, or scaled full-bin proxy is authorized.
+
+Continuation adds absolute `wall_bin_start`, `wall_bin_end`,
+`consumed_support_end=wall_t*`, and `base_bin_complete`. The segment advances
+support monotonically to `wall_end`; only then does interval index advance. At
+midnight the old bin/day closes before new-day interval zero opens, each once.
+`d=0` executes no WB14 physics. Untagged variable duration, overlap/gap,
+full-bin scaling, endpoint duplication, or early index advance is
+`SURFACELIQUID-E-008`.
+
+Both are candidate-only and join the atomic all-owner commit. They authorize
+no production/default/output change, CoE retirement, carrier or efficacy
+claim, qualification, or cutover.
+
+| Canonical surface | Binding |
+|---|---|
+| Algorithm | validate receipt/support; split endpoint forcing; run existing WB14 equations with `Delta t=d`; close/route; advance wall continuation |
+| Branch/guard | `d=0` no-op; tagged `0<d<=1800` allowed; every other non-1800 call `E-008`; receipt replay `E-003/E-011` |
+| Alias/unit | wall support is absolute date/seconds; transaction ID orders commits only; receipt is `kg m^-2 OFE-ground`, never storage/runoff |
+| Tolerance | existing WB14/mass bounds apply to independently integrated segment operands; none repairs support/cardinality/identity |
+| Tests | endpoint rain/runon, nonlinear unequal full-bin/segment forcing, zero/full remainder, midnight, restart/replay, debit-credit marker, rollback |
+
+`GAP-SURFACELIQUID-004` is narrowly superseded only for receipt of this typed
+0 C parcel into an already-authorized actual frozen or thawing receiver.
+Frozen-liquid constitutive physics beyond that receipt remains
+`AUTHORITY_MISSING` and non-promotable.
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---|---|---|
+| 2026-08-19 | 7 | Codex | Added exact-one 0 C terminal receipt and partial-WB14 continuation/restart authority (`INV-SURFACELIQUID-010/011`) for the default-off terminal receiver transaction. |
 | 2026-08-14 | 1 | Codex | Initial contract-first draft. |
 | 2026-08-14 | 2 | Codex | Align exact LSE surface/source identities and OFE condensation basis; bind one actual timed aggregate WB14 call per OFE, zero legacy depression retention, post-infiltration persistent retention, routed topology, canonical digests, profile sections, unit governance, and independent vector obligations. |
 | 2026-08-14 | 3 | Codex | Bind the exact 1800-second/48-step stateful WB14 continuation, mutually exclusive open-rain/covered-canopy supply, conservative mixed enthalpy, exact tile/source retention, retained LSE energy receipt, water density, machine-readable registry seams, continuation restart schema, and basis-rekeyed unequal-area OFE routing. |

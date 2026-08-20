@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 12
+contract_version: 13
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -14,7 +14,7 @@ consumer_scope:
   - Snow sublimation and melt components
   - Snow-energy diagnostics and assurance outputs
 evidence_level: static
-last_reviewed: 2026-08-07
+last_reviewed: 2026-08-19
 supersedes: []
 superseded_by: []
 ---
@@ -753,6 +753,8 @@ divide/branch threshold.
 | `INV-SNOWENERGY-033` | WIND-SOURCE-CUSTODY-AND-EXPOSURE: retained CLI `w-vl` is parsed as raw `vwind` and reaches Stage 3 as raw `vwind_m_s`; PMET alone creates `u_2,PMET` and that value cannot feed snow. GRIDMET `vs` product metadata describes daily nominal `10 m` wind, while Stage 3 `z_u=5 m` is virtual snow-surface-relative transfer geometry. Surviving WEPPpy runs directly prove byte-identical CLI lineage, retained watershed centroids and GRIDMET-enabled flags, complete daily parquet wind, and exact parquet-to-CLI equality. The nearest pre-build code statically reconstructs watershed-centroid GRIDMET `vs` requests, shared run-level wind, and one-decimal formatting; it is not deployed-code or request evidence. Exact deployed identity/request/response, product version/status, server-side pixel/sampling, day boundary, missing policy, source datum, and physical exposure remain `AUTHORITY_MISSING` unless directly retained. Modeled forest/`cancov=0.9` is target intent, not physical exposure or linkage. Neither values, residuals, a height conversion, nor a desired energy balance can establish forest/sub-canopy applicability, fit attenuation, license a canopy operator, or authorize production correction. | `REF-SNOWENERGY-GRIDMET`, `REF-SNOWENERGY-WIND-CUSTODY`, `INV-SNOWENERGY-031`, ADR-0042 | `[DIRECT][Static] + [DIRECT][Ran] + [INFERENCE][Static]` | literal source/consumer alias tests, provider/fixture hash and parquet/CLI equality, static provider-code reconstruction, custody ledger, independent neutral-height diagnostic, and two-sided exposure-authority matrix | governance `HOLD` on remaining custody/applicability; no production correction |
 | `INV-SNOWENERGY-034` | SNOW-TERMINAL-ENTHALPY-EVENT-NUMERICS: only `persistent_accumulation_shadow_v1` may enter an evaluation-only terminal snow domain when post-precipitation represented ice is `0 < m_i <= 1 kg m^-2`. Collapse the complete snow column to one enthalpy-bearing control volume without deleting mass: canonical cold-content deficit `Q_cc >= 0 J m^-2`, retained liquid `m_l >= 0 kg m^-2`, and material enthalpy `H=-Q_cc+L_f m_l` relative to 0 C ice. Use the existing complete bounded Stage 3 carrier and its current-state surface temperature; do not introduce a heat-capacity epsilon, clamp, fitted threshold, cold-content tax, or new flux equation. A deterministic first-order transition map is integrated with step doubling: compare one trial of `h` with two sequential trials of `h/2`, accept the two-half state only when the componentwise scaled ice/liquid/cold-content/energy norm satisfies `TOL-SNOWENERGY-001`, otherwise halve `h`; `h <= 60 s`, `h_min=1e-9 s`, at most 64 consecutive rejections, and any nonfinite/domain/nonconvergence result is typed failure with no state commit. Each trial reevaluates the carrier from its start state. Define `Delta H_cc=Q_cc,start-Q_cc,end`, positive for warming and negative for cooling. Apply energy to `Q_cc` and refreeze first, reserve bounded sublimation before melt availability, define `Q_excess=max(Q_complete+Q_refreeze-Delta H_cc,0)` and `m_melt=min(Q_excess/L_f,max(m_i-m_sublimation,0))`, then apply deposition after same-trial melt availability. Because entry is explicitly post-precipitation, the actual endpoint-solid function is `g(tau)=m_i,start+m_refrozen(tau)+m_deposition(tau)-m_sublimation(tau)-m_melt(tau)`; deposition/refreeze cannot retroactively enlarge same-trial melt availability. Require `g(0)=m_i,start`, bounded `g>=0`, and no event while deposited or refrozen solid remains. When an accepted trial first reaches the mass-root tolerance, replay from the immutable pretrial state and localize the earliest event by safeguarded bisection; preserve the positive/terminal bracket, require monotonically nonincreasing candidate solid, and stop only when both bracket width and endpoint solid satisfy `TOL-SNOWENERGY-001`, otherwise fail after 64 iterations. At the accepted upper endpoint, the complete solid identity—not a debit clamp—must establish zero ice; terminal liquid equals retained/external liquid plus melt less refreeze. The snow energy identity closes through `Delta H_cc`, fusion, refreeze, and `Q_terminal_unallocated=Q_complete+Q_refreeze-Delta H_cc-L_f m_melt >= 0`, which is explicitly censored and may be positive when sublimation exhausts solid first. No snow-domain state receives energy and no snow flux is evaluated after the event. Publish `evaluated_seconds=t_event`, `unevaluated_seconds=requested-t_event`, and censored terminal liquid/energy handoffs; neither is a land-surface recipient. This mechanics-only exception supersedes the `INV-SNOWENERGY-026` no-evaluation branch only for the named operator and terminal domain; compatibility/default paths and historical schemas remain exact. | `REF-SNOWENERGY-LIBSNOBAL`, `INV-SNOWENERGY-017/023/026/029/030`, physical conservation, deterministic numerical analysis | `[DIRECT][Static] + [INFERENCE][Static]` | exact boundary sides, step-doubling refinement, event bracket/order, joint vapor/melt, deposition/refreeze no-false-event, cooling/no-event, typed nonconvergence, atomicity, independent schema-v8 reconstruction, and production isolation | evaluation hard-fail + governance claim limit |
 
+| `INV-SNOWENERGY-035` | A default-off terminal receiver may consume only the earliest closed INV-034 event with in-tolerance unallocated energy, exact half-open support, and one atomic retained/rain/melt/refreeze liquid debit-credit-consumed join; INV-034 remains evaluation-only and CoE remains production owner. | `INV-SNOWENERGY-030/034`, physical conservation | `[INFERENCE][Static]` | receipt, energy, support, and production-isolation guards | typed terminal-receiver failure; no recipient/commit |
+
 ### Guard Map
 
 | Invariant ID | Enforcement path | Guard class | Failure behavior | Evidence artifact |
@@ -790,6 +792,7 @@ divide/branch threshold.
 | `INV-SNOWENERGY-032` | package-local independent schema-v6 consumer | test/governance | reject invalid evidence; preserve valid capacity truncation as a physical finding and keep persistence held | Stage 3 evolving-carrier plausibility package |
 | `INV-SNOWENERGY-033` | contract-derived alias/source checks and wind-custody package evidence | governance | `AUTHORITY_MISSING` / persistence hold; no production correction | Stage 3 wind source-custody package |
 | `INV-SNOWENERGY-034` | terminal one-volume evaluator, adaptive step controller, event bracket/localizer, and schema-v8 consumer | evaluation runtime/test/governance | typed domain, step-underflow, rejection-limit, bracket, iteration, or closure failure; no state commit | terminal enthalpy-event package |
+| `INV-SNOWENERGY-035` | terminal receiver event/receipt join and independent reconstruction | default-off runtime/test/governance | typed no-recipient failure and exact rollback | terminal handoff implementation package |
 
 ## Producer and Consumer Obligations
 
@@ -911,6 +914,10 @@ Energy-carrier integration from `W m^-2` uses the explicit typed hourly
 duration of `3600 s`; a hidden daily factor of `86400` is prohibited.
 
 ## Tolerance and Numeric Notes
+
+INV-035 inherits the INV-034 event tolerances for numeric closure only.
+Fingerprint, half-open support, receipt cardinality, debit/credit/consumed
+state, CoE exclusion, and recipient absence on failure are exact.
 
 - `TOL-SNOWENERGY-001` governs terminal numerics only. The step-doubling LTE
   norm is `max_i |fine_i-coarse_i| / (a_i + 1e-8 *
@@ -1080,6 +1087,7 @@ the originating evidence to authority promoted into this canonical core.
 | `SNOWENERGY-STAGE3-EVOLVING-CARRIER-PLAUSIBILITY` | `docs/work-packages/20260807-snow-stage3-evolving-state-carrier-plausibility-reconciliation-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-017, INV-SNOWENERGY-029, INV-SNOWENERGY-032, OBL-SNOWENERGY-P-007, OBL-SNOWENERGY-C-014` | `dual review and verification required` | Distinguishes evaluation-only raw vapor/latent opportunity from actual bounded sequential transfer; no production correction or persistence authority. |
 | `SNOWENERGY-STAGE3-WIND-SOURCE-CUSTODY` | `docs/work-packages/20260807-snow-stage3-wind-source-custody-and-exposure-authority-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-031, INV-SNOWENERGY-033` | `dual review and verification required` | Separates nominal source height, raw CLI wind, PMET-local adjustment, and virtual Stage 3 geometry; provider recovery directly proves retained output equality and statically reconstructs the local path while deployed/server and exposure authority remain missing. |
 | `SNOWENERGY-TERMINAL-ENTHALPY-EVENT` | `docs/work-packages/20260807-snow-terminal-enthalpy-event-numerics-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-034, OBL-SNOWENERGY-P-008, OBL-SNOWENERGY-C-015, TOL-SNOWENERGY-001` | `flagged-binding-addition` | Admits evaluation-only shallow-pack enthalpy/error-control/event mechanics while keeping liquid, energy, and remaining-time receiving-surface custody censored. |
+| `SNOWENERGY-TERMINAL-RECEIVER-TRANSACTION` | `docs/work-packages/20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-035, OBL-SNOWENERGY-P-009, OBL-SNOWENERGY-C-016` | `flagged-binding-addition` | Admits a fresh default-off terminal receiver transaction; it does not alter evaluation-only `INV-SNOWENERGY-034` or authorize production cutover. |
 
 ## Gap Register
 
@@ -1099,10 +1107,80 @@ the originating evidence to authority promoted into this canonical core.
 | `GAP-SNOWENERGY-012` | Current evaluation schema-v6 can apply raw latent-energy opportunity while actual sublimation is availability-bounded. | this plausibility package and future production implementation | Quantify tuple-level capacity truncation without aliasing; production target must derive latent energy and mass from one bounded `m_v`. | characterization admitted; physical passage and persistence held when active |
 | `GAP-SNOWENERGY-013` | Surviving WEPPpy runs directly recover retained centroids, GRIDMET-enabled intent, daily parquet wind, and exact CLI equality; nearby historical code only statically reconstructs the likely centroid/GRIDMET/share/format path. Deployed identity/request/response, exact GRIDMET asset version/status, server pixel/sampling, missing/day-boundary policy, and physical exposure linkage remain absent. | source generator owner / future authority package | Supply immutable deployed/server receipt fields and two-sided forcing-to-target exposure authority; a height conversion or modeled forest class alone is insufficient. | narrowed `AUTHORITY_MISSING`; persistence held; no canopy or production correction authorized |
 
+## Default-Off Terminal Receiver Transaction Amendment
+
+`INV-SNOWENERGY-035` — `terminal_receiver_v1` is a fresh, internal,
+default-off authority layered after, and not inside, the evaluation-only
+`INV-SNOWENERGY-034` event solver. From immutable interval-beginning snow and
+receiver snapshots, it consumes the earliest complete solid-exhaustion event
+`t*`, where `0 < t* <= dt_interval`, and exposes exactly one receipt containing
+the event fingerprint, `t*`, `dt_remaining = dt_interval - t*`, zero terminal
+represented ice and cold content, bounded vapor transfer, and all retained plus
+newly generated liquid. Liquid temperature is exactly `273.15 K`; sensible
+enthalpy relative to the contract reference is exactly zero. Fusion energy
+remains closed by the snow ledger and is neither liquid sensible enthalpy nor a
+soil-energy credit.
+
+The receipt transfers liquid and zero sensible enthalpy exactly once to
+`SC-SURFACELIQUID-001#INV-SURFACELIQUID-010`. After `t*`, no snow albedo,
+surface temperature, roughness, radiation, turbulence, evaporation,
+precipitation heat, soil heat, or unallocated terminal energy is admissible.
+The actual snow-free receiver rebuilds every flux over only `dt_remaining`.
+Zero remaining duration commits closure/receipt without a receiver physics
+step; all other cases have neither time overlap nor gap.
+
+The transferred amount is explicitly
+`m_terminal_liquid = m_liquid,retained,start + m_rain,snow_support +
+m_melt,new - m_refreeze`, with every term nonnegative,
+finite, on the same OFE-ground basis, and independently present in the event
+ledger. `m_rain,snow_support` is the only authorized external snow-support
+liquid and contains only rain whose absolute support is
+`[wall_start,wall_t*)`; receiver-side rain begins at `wall_t*` and is excluded.
+Runon is receiver-side only and is prohibited on snow support in this
+transaction because no existing snow authority admits it.
+Snow candidate commit sets retained liquid to zero and records
+`terminal_receipt_consumed=true` under the event fingerprint while the surface-
+liquid candidate credits exactly `m_terminal_liquid`. Debit, credit, and the
+consumed marker are one atomic join; any omission, duplication, stale marker,
+negative result, or receipt replay is typed failure and restores all three
+beginning values.
+
+Handoff additionally requires
+`Q_terminal_unallocated <= TOL-SNOWENERGY-001` on the independently reconstructed
+event ledger. A larger positive value is `SNOWENERGY-E-TERMINAL-UNALLOCATED` and
+rejects the receiver transaction with no recipient, disposition, carry, soil
+assignment, or state commit. This does not relax the schema-v8 event-only
+censoring: INV-034 still reports the value only as evaluation evidence.
+
+This mechanics authority is unreachable from production defaults/selectors;
+CoE remains the sole production snow mass/melt generator. Turbulent-carrier and
+forest-exposure authority, physical efficacy, qualification, assurance
+approval, production ownership, and cutover remain held. `INV-SNOWENERGY-034`
+retains schema-v8 evaluation-only, no-recipient, no-commit semantics.
+
+- `OBL-SNOWENERGY-P-009`: emit one immutable fingerprint-bound receipt or a
+  typed snow-side failure; never partially commit.
+- `OBL-SNOWENERGY-C-016`: independently reconstruct snow mass, liquid, vapor,
+  fusion energy, and time, rejecting duplicates, aliases, post-event snow
+  operands, or nonzero liquid sensible enthalpy.
+
+Required unequal-operand vectors distinguish retained liquid, new melt, rain,
+runon, vapor, and receiver storage and poison full-step flux reuse,
+liquid/store aliases, fusion-energy-to-soil assignment, and dual melt owners.
+
+| Canonical surface | INV-035 binding |
+|---|---|
+| Algorithm | localize earliest `t*`; reconstruct event; reject unallocated energy; form explicit liquid debit/credit/consumed join; invoke receiver for remaining half-open support |
+| Branch/guard | no event: remain snow; `t*=wall_end`: zero receiver step; positive out-of-tolerance unallocated energy: typed no-recipient failure |
+| Invariant/alias | event fingerprint, retained/rain/melt/refreeze/vapor terms are distinct; fusion energy is not liquid sensible enthalpy or soil heat |
+| Unit/tolerance | liquid `kg m^-2 OFE-ground`; energy `J m^-2`; time `s`; only named event closure tolerance applies, never to identity/cardinality |
+| Tests/gap | unequal operands, endpoint allocation, replay/alias poisons, unallocated-energy rejection; production/carrier/efficacy/cutover gaps stay held |
+
 ## Change Log
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 13 | 2026-08-19 | Added fresh default-off `terminal_receiver_v1` authority (`INV-SNOWENERGY-035`) for earliest-event closure, exact-one 0 C liquid/enthalpy custody, remaining-time support, and post-event snow-operand exclusion while preserving all carrier/efficacy/production holds and evaluation-only INV-034 semantics. | Contract-first terminal handoff package |
 | 12 | 2026-08-07 | Admitted a persistent-evaluation-only one-volume shallow-snow enthalpy solve, deterministic step-doubling policy, safeguarded earliest solid-exhaustion event, schema-v8 reconstruction, and explicit censoring of terminal liquid, energy, and remaining time. | CC0 libsnobal shallow-pack/cadence/phase chronology, conservation, and independent numerical review |
 | 11 | 2026-08-07 | Recovered byte-identical WEPPpy lineage, retained centroids/flags, and exact parquet-to-CLI equality; separately labeled the nearby historical centroid/GRIDMET/share/format code path as static reconstruction and narrowed missing authority to deployed request/server semantics and two-sided aerodynamic exposure linkage. | Surviving `/wc1` run records, provider source/history, retained parquet/CLI equality, and independent custody/exposure reviews |
 | 10 | 2026-08-07 | Separated nominal GRIDMET `10 m` source height, raw CLI/Stage 3 wind, PMET-local `2 m` adjustment, and virtual Stage 3 `5 m` transfer geometry; retained missing source/exposure authority and prohibited fitted attenuation or production correction. | Stage 3 wind source-custody result-blind authority reconciliation |
