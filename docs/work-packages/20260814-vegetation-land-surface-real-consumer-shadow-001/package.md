@@ -1,6 +1,6 @@
 # Execute Vegetation And Land Surface Through A Real Shadow Consumer
 
-Status: `EXECUTING / root-hydraulic owner implemented; terminal closure pending`
+Status: `COMPLETE / terminal A+B PASS`
 
 Date: `2026-08-14`
 
@@ -27,7 +27,7 @@ domain coverage and performance without activation.
 - [x] Complete comparator and independent reviews on one exact implementation
   commit.
 - [x] Complete exact-head full-workspace correctness.
-- [ ] Complete terminal verification.
+- [x] Complete terminal verification.
 
 ## Implementation Intent
 
@@ -108,3 +108,11 @@ Subagent authorization: this package explicitly authorizes and requires
 land-surface, hydrology/ownership and Rust reviewers, one comparator runner and
 two terminal verifiers. Reviewers/verifiers are read-only; comparator writes
 are limited to ignored logs and package gate artifacts.
+
+## Outcome
+
+Exact implementation commit `3ea08d81d966ccbf163ee64377aa741308e2665a`
+passed three independent reviews, the 20/20 comparator, exact-head workspace
+correctness and both terminal verifiers through evidence commit
+`b327f9eabdc3bc061aab6d5496aaf7496762eade`. No production activation,
+selector, default, publication or output change is included.

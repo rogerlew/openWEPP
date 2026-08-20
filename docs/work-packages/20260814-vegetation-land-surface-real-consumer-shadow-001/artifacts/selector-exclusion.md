@@ -1,6 +1,6 @@
 # Selector And Publication Exclusion
 
-Status: `static PASS / terminal rerun pending`
+Status: `PASS / terminal A+B confirmed no activation surface`
 
 - The V9 real-consumer operation is an explicit method requiring a caller-owned
   `DirectV9RealConsumerShadow`; it has no default construction.

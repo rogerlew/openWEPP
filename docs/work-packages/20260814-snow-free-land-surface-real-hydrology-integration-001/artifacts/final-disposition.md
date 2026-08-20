@@ -1,16 +1,12 @@
 # Final Disposition
 
-Status: `HOLD / Children 1-3 complete / Child 4 real-provider closure absent`
+Status: `COMPLETE / all four children terminal PASS`
 
-Child 4's bounded default-off runtime implementation passes focused science and
-hydrology review, but it cannot truthfully claim the required real repository
-consumer. The repository exposes daily climate and rainfall-breakpoint inputs,
-not an authoritative provider for all 48 interval LSE, vegetation, thermal,
-and WB14 operands. Constructing them here would invent disaggregation physics.
-Its checkpoint also does not prove persisted restart of the complete production
-hydrology owner.
+All four child packages carry independent terminal PASS evidence. Child 4's
+repository-native sealed forcing owner, configuration-bound persisted restart,
+and sealed OFE/lane root authority close the former provider and restart HOLD.
+Its exact implementation passed three independent reviews, a 20/20 comparator,
+3,087/3,087 workspace correctness and dual terminal verification.
 
-These are accepted, unresolved findings. Campaign-wide terminal verification
-and prompt archival have not run. No cutover, calibration, validation, or
-campaign-completion claim is made. Production selectors, defaults, state, and
-outputs remain unchanged.
+No finding is waived or deferred. Production selectors, defaults, state,
+outputs, publication and cutover remain unchanged and outside this campaign.

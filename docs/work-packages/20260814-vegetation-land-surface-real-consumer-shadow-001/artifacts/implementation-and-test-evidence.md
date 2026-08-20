@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `implementation, focused gates, comparator and reviews PASS / terminal verification pending`
+Status: `COMPLETE / terminal A+B PASS`
 
 Reviewed code commit: `3ea08d81d966ccbf163ee64377aa741308e2665a`.
 
@@ -13,7 +13,8 @@ exact-current producer evidence is 722/722 orchestrator, 9/9 focused V10,
 comparator PASS. The exact-head full workspace is 3,087/3,087 PASS after
 rerunning three environment-only failures with the required LLVM and Nix GCC
 runtime dependencies. All three required independent reviews PASS on the same
-exact commit. Terminal verification remains pending.
+exact commit. Both terminal verifiers PASS on evidence commit
+`b327f9eabdc3bc061aab6d5496aaf7496762eade`.
 
 ## Superseded historical implementation record
 

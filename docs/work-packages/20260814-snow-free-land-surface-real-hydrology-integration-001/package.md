@@ -1,6 +1,6 @@
 # Execute Snow-Free Land-Surface and Real-Hydrology Integration
 
-Status: `executing / Children 1-3 complete / Child 4 terminal closure pending`
+Status: `COMPLETE / all four children terminal PASS`
 
 Date: `2026-08-14`
 
@@ -59,7 +59,7 @@ default, publication, or deployment path is in scope.
 - [x] Complete Child 3 LSE runtime shadow.
 - [x] Implement Child 4 real hillslope consumer shadow and close its former
   provider/restart/root-owner blockers.
-- [ ] Run campaign-wide reviews, heavy gates, terminal verification, archive
+- [x] Run campaign-wide reviews, heavy gates, terminal verification, archive
   prompts, and reconcile lifecycle documentation.
 
 ## Required Reviews And Delegation
@@ -88,20 +88,16 @@ scan introduces no new broken link; and terminal limitations remain explicit.
 
 ## Outcomes And Retrospective
 
-Children 1--3 and the V9 reconciliation are complete. Child 4 implemented the
-explicit isolated scheduler attachment and closed its bounded physics,
-ownership, aggregation, identity, and rollback findings. It remains on HOLD:
-the repository has no authoritative provider for the complete 48-step
-snow-free LSE/vegetation/WB14 receipt, and complete persisted restart of the
-production hydrology owner is not proven. Daily climate records cannot be
-silently disaggregated into those operands.
-
-Campaign-wide terminal gates and prompt archival remain withheld. No campaign
-completion or production claim is made.
+All four children are complete with their own terminal evidence. Child 4 uses
+the repository-native sealed forcing owner, configuration-bound persisted
+restart, and a crate-private OFE/lane-qualified root-hydraulic receipt. Its
+exact implementation passed three independent reviews, a 20/20 comparator,
+3,087/3,087 workspace correctness and dual terminal verification. The
+campaign is complete without production activation, selector, default,
+publication, output or cutover changes.
 
 ## Resume disposition
 
-The named dependency closed at `a7d692da4` with dual terminal PASS. The
-historical campaign and Child-3 HOLD records above remain immutable; active
-lifecycle now resumes Child 3 in place. Child 4, campaign heavy gates and
-terminal verification remain pending.
+The named dependencies and all four child packages closed with their own dual
+terminal PASS evidence. Historical HOLD records remain in git history; no
+finding is waived or deferred.

@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: `exact implementation, comparator and independent reviews PASS / terminal verification pending`
+Status: `COMPLETE / terminal A+B PASS`
 
 Exact reviewed code commit `3ea08d81d966ccbf163ee64377aa741308e2665a`:
 
@@ -21,8 +21,9 @@ Exact reviewed code commit `3ea08d81d966ccbf163ee64377aa741308e2665a`:
 
 The root-zone hydraulic, optics, longwave and runon owner contradictions that
 previously held this package are corrected by the sealed, OFE/lane-qualified
-live-owner projection at the reviewed commit. Terminal verification is
-pending; no production selector/default/output activation is claimed.
+live-owner projection at the reviewed commit. Both terminal verifiers PASS on
+exact evidence commit `b327f9eabdc3bc061aab6d5496aaf7496762eade`.
+No production selector/default/output activation is claimed.
 
 ## Superseded historical evidence
 
