@@ -228,6 +228,19 @@ Re-review gates run at the corrected commit:
 - independent calculator: 46/46 reported PASS, subject to RA-001/003/004;
 - `git diff --check`: PASS.
 
+## Regression release re-review
+
+Reviewed exact commit: `c53adab0a91c0ecbe853c884bfe05591826441c5`
+
+Verdict: `PASS` — prior Review A authority release PASS is confirmed with no
+regression or residual finding. The final delta binds migration to the complete
+released V10 Rust configuration/state/model surfaces, explicitly limits the
+small imported fixture to canonical-framing KAT use, authenticates parent-
+beginning owners and accepted receipt payloads during restart, and expands the
+semantic population to 36/36 poisons. Strict BEI/unit lint, the 5/5 authority
+test, 46/46 chronology oracle, semantic restore/commit oracle, full-surface hash
+binding, and diff hygiene all PASS.
+
 ## Authority release re-review
 
 Reviewed exact commit: `ab07b1cf62b3da4299baf4ce045ebecccd85911e`

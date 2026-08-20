@@ -190,6 +190,18 @@ Re-review gates run at the corrected commit:
   above;
 - `git diff --check`: PASS.
 
+## Regression release re-review
+
+Reviewed exact commit: `c53adab0a91c0ecbe853c884bfe05591826441c5`
+
+Verdict: `PASS` — prior Review A transaction-authority PASS is confirmed with
+no regression or residual finding. The final delta freezes exactly one aggregate
+envelope for each of the seven ordered owner classes, authenticates restart
+parent beginnings and retained receipt bodies, and adds forged-beginning and
+forged-material checkpoint poisons. Strict BEI/unit lint, the 5/5 authority
+test, 46/46 chronology oracle, 36/36 semantic poisons, restore equivalence, and
+diff hygiene all PASS.
+
 ## Authority release re-review
 
 Reviewed exact commit: `ab07b1cf62b3da4299baf4ce045ebecccd85911e`

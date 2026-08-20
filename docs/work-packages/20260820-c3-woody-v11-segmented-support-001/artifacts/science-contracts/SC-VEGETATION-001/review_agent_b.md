@@ -502,3 +502,60 @@ unknown-field, changed-bit, and cross-digest poisons across the complete tree.
 complete V10 config/state admission remain open at ab07b1cf6`.
 
 No production Rust may begin.
+
+---
+
+## Release re-review — candidate `c53adab0a91c0ecbe853c884bfe05591826441c5`
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + adversarial restart probes`
+
+### Gate evidence
+
+- strict BEI checks => PASS for both contracts;
+- science-contract unit-compliance => PASS for both contracts;
+- semantic validator => PASS, 36/36 declared poisons and restored suffix
+  equivalence;
+- V11 authority contract test => PASS, 5/5;
+- `git diff --check` => PASS before this append.
+
+### Prior blocker closure
+
+- `V11-AUTH-B-001`: CLOSED. The actual V11 restart is constructed, its suffix
+  executes, and retained owner beginnings plus every accepted slab/event/
+  resource/material envelope are authenticated. Rerun adversarial probes for
+  forged parent beginning, material payload digest, reduction value, outer
+  state digest, participants, and successor sequence all reject typed.
+- `V11-AUTH-B-002`: CLOSED for preimplementation authority. The migration API
+  now normatively accepts only the complete released Rust
+  `VegetationConfiguration` and `VegetationStateV10`; source files, released
+  model definition, and recursive compatibility ledger are hash-bound. The
+  reduced canonical fixture is explicitly a framing KAT and explicitly
+  non-admitted. V11 configuration/state identity inputs and reconstruction are
+  named contractually; exhaustive values remain implementation-gate evidence,
+  not implementation-selectable authority.
+- `V11-AUTH-B-003`: CLOSED. Water, NH4, and NO3 use authenticated typed receipt
+  bits, sequential staged folds, and exact ending-owner reconstruction.
+- `V11-AUTH-B-004`: CLOSED. The independent semantic model constructs and
+  authenticates slab/event/resource/material/publication/parent/restart
+  chronology and exercises 36 adversarial mutations, including rollback and
+  replay.
+- `V11-AUTH-B-005`: CLOSED. Live owner and clock beginnings, reconstructed
+  endings, consuming commit, publication-after-commit, and rollback execute.
+  The contract now explicitly fixes Version 1 to exactly seven aggregate owner
+  envelopes; per-OFE/tile/occupancy/layer identities remain inside each typed
+  envelope, removing the prior manifest ambiguity.
+
+`INV-VEGTRANSACTION-010` is restored and all Review B findings have exact
+authority/evidence closure. No Review B waiver is required.
+
+### Verdict
+
+`PASS / authority may proceed to independent verification at c53adab0a`.
+
+This verdict authorizes the contract verification checkpoint only. Production
+Rust remains prohibited until the package obtains both required independent
+authority verifications and records the exact promoted authority checkpoint.

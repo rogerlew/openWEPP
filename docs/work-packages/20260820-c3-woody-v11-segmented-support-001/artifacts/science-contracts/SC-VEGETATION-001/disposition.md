@@ -1,6 +1,7 @@
 # Authority Finding Disposition
 
-Status: corrections in progress; no waiver accepted.
+Status: all findings closed at reviewed authority commit
+`c53adab0a91c0ecbe853c884bfe05591826441c5`; no waiver accepted.
 
 Reviewed candidate: `5f4d3902065c316309785cc47ac63f766884bbd1`.
 
@@ -19,5 +20,6 @@ Reviewed candidate: `5f4d3902065c316309785cc47ac63f766884bbd1`.
 | `V11-AUTH-B-004` | accepted | Same expanded executable population as `A-001`; tests assert structural results, not counts alone. |
 | `V11-AUTH-B-005` | accepted | Freeze closed complete-owner parent candidate/receipt/proposal framing and consuming atomic API obligations. |
 
-Verification remains prohibited until every row is implemented, invalidated
-gates rerun, and this artifact records the exact corrected checkpoint.
+Every row is implemented and independently re-reviewed PASS. Verification is
+now authorized; production Rust remains prohibited until dual verification and
+promotion of the exact authority checkpoint.

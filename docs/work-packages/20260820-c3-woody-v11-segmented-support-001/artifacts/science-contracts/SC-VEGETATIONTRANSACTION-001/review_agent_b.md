@@ -306,3 +306,41 @@ receipt category's payload, digest, identity, omission, duplicate, and reorder.
 `HOLD / restart owner and material custody remain unauthenticated at ab07b1cf6`.
 
 Do not promote or begin Rust implementation.
+
+---
+
+## Release re-review — candidate `c53adab0a91c0ecbe853c884bfe05591826441c5`
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + adversarial restart probes`
+
+BEI and unit compliance pass for both contracts, the semantic model passes
+36/36 poisons with actual restart-suffix equivalence, authority tests pass 5/5,
+and diff hygiene passes.
+
+### Transaction finding closure
+
+- `V11-TXN-B-001`: CLOSED. Version 4 lifecycle, scope, maps, guard paths, BEI,
+  and the restored normative `INV-VEGTRANSACTION-010` are internally complete.
+- `V11-TXN-B-002`: CLOSED. Authenticated resource receipts retain separate
+  water/NH4/NO3 staged beginnings, request/authorization/final use, exact
+  ending bits, and reconstructed ending owners.
+- `V11-TXN-B-003`: CLOSED. The exact seven aggregate owner envelopes are now a
+  normative V1 boundary, with typed descriptors, independent live owner/clock
+  checks, reconstructed endings, one-shot commit, and late-failure rollback.
+- `V11-TXN-B-004`: CLOSED. The exact restart wire authenticates retained parent
+  beginnings and full accepted receipt payloads, reconstructs cursor/
+  participants/sequences/staged owners/resources, and executes the remaining
+  suffix. All prior direct forgery probes reject.
+- `V11-TXN-B-005`: CLOSED. The 36-poison executable population covers schema,
+  custody, duration, event, material, owner, restart, commit, rollback, and
+  publication aliases rather than relying on flags/counts alone.
+
+### Verdict
+
+`PASS / SC-VEGETATIONTRANSACTION-001 Version 4 may proceed to independent
+verification at c53adab0a`.
+
+Production Rust remains gated on dual authority verification and the recorded
+promoted authority checkpoint.
