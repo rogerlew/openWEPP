@@ -41,7 +41,8 @@ children or use a later child to pass a current child's required gate.
      support, physical segments, common accepted slabs, attempt rollback,
      restart cursor/controller state, atomic owner acceptance, and buffered
      parent publication.
-   - **2B** `C3-WOODY-V11-SEGMENTED-SUPPORT` preserves immutable V10 and
+   - **2B** [`C3-WOODY-V11-SEGMENTED-SUPPORT`](../20260820-c3-woody-v11-segmented-support-001/package.md)
+     preserves immutable V10 and
      supersedes transaction-time integration only, with exact full-support
      compatibility, sequential segments, one parent finalization and commit.
    - **2C** `SNOW-STAGE3-TURBULENT-CARRIER-AUTHORITY-CLOSURE` admits the shared
@@ -137,8 +138,8 @@ limits it requires.
 - [x] (2026-08-20) Split Child 2 into coupled-time (2A), V11 segmented support
   (2B), and snow-covered carrier (2C), and scaffolded 2A.
 - [x] (2026-08-20) Complete and independently verify Child 2A coupled-time authority.
-- [ ] Execute and terminally disposition 2A--2C continuously; then resume Child
-  1 from checkpoint `83cf6eb8e`.
+- [ ] Execute and terminally disposition Child 2B and Child 2C continuously;
+  then resume Child 1 from checkpoint `83cf6eb8e`.
 - [ ] Execute Child 3 actual-scheduler qualification.
 - [ ] Obtain final-candidate `ASSURE-06` human review and approval.
 - [ ] Execute Child 4 atomic cutover and campaign closure.

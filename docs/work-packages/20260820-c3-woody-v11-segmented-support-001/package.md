@@ -25,6 +25,57 @@ one parent transaction increment, and one atomic complete-owner commit.
 - Do not decide snow-covered turbulent equations; those belong to Child 2C.
 - Keep V11 default-off; do not change production selectors or deployment.
 
+## Included Scope
+
+- Successor authority in `SC-VEGETATION-001` and
+  `SC-VEGETATIONTRANSACTION-001`, schemas, vectors, independent reference, and
+  contract-derived tests.
+- Additive V11 configuration/state/migration, segment execution, staged
+  resource custody, restart, parent finalization, and receipts.
+- The actual default-off orchestrator V11 transaction consumer and exact V10
+  full-support comparison.
+
+## Excluded Scope
+
+- V10 mutation, snow-covered turbulent science, Richards/Lane D physics,
+  calibration, production selection/defaults, deployment, release, and push.
+- Approximate/scaled partial-support results or caller-owned duration overrides.
+
+## Dependencies
+
+- Execution/diff base `d59ba76f7f514a98ba0f67f764b289206f9f94b9`.
+- Scaffold identity `3bc8562bff700722e928e631280cf13a8b171ee9`.
+- Released `SC-COUPLEDTIME-001@2` and
+  `OPENWEPP_COUPLED_TIME_SUPPORT_V1` at Child 2A commit
+  `d75fc548482606eab46c603497c77f0ea7b32e49`.
+- Immutable V10 vegetation and transaction authority.
+
+## Intended Write Set
+
+- `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md`
+- `docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md`
+- `docs/specifications/science-contracts/index.md`
+- additive `crates/openwepp-vegetation/src/v11_*.rs`, `src/lib.rs`, and
+  `src/config.rs` only where V11 types/access require it
+- `crates/openwepp-hillslope-orchestrator/**` only for the actual default-off
+  V11 consumer
+- `crates/openwepp-persisted-restart-v1/**` only for additive V11 restart types
+- `tests/integration/c3_woody_v11_*`, `Cargo.toml`, `Cargo.lock`, this package
+  tree, and truthful campaign/roadmap/catalog lifecycle files
+
+Any expansion requires a prospective scope, risk, and gate amendment before
+edits. V10 behavior and frozen wires remain protected even inside listed files.
+
+## Deliverables
+
+1. Dual-reviewed and dual-verified V11 successor authority.
+2. Independent schemas, vectors, reference calculator, and compatibility ledger.
+3. Additive V11 implementation and exact migration.
+4. Actual-consumer proof for full and segmented support, restart, custody, and
+   atomic parent commit.
+5. Three implementation reviews, finding disposition, heavy gates, dual
+   terminal verification, and concrete Child 2C handoff.
+
 ## Required Authority
 
 Define V11 configuration, state, migration, segment forcing, resource staging,
@@ -36,6 +87,32 @@ Every duration-sensitive V11 operation consumes the exact `duration_s_bits`
 from an admitted coupled-time slab. Classify algebraic rates, support
 integrals, sequential state, once-per-parent operations, event transitions,
 and accepted-only diagnostic reductions. No owner commits per segment.
+
+Authority release is blocked until it decides every resource chronology:
+
+- Water requests, authorizations, and finalized uses are segment-local against
+  the current staged owner; cumulative parent debits are independently
+  reconstructed and cannot overbook or commit live per segment.
+- Potential/final nitrogen demand retains NH4/NO3 identity and authorizes
+  against staged inventories; later segments cannot reuse parent beginnings.
+- Canopy liquid, T10, NSC, tissue pools, phenology timers, hydraulics warm
+  starts, and all C/N state advance sequentially from each staged ending.
+- Material/litter authority must choose and test either per-segment proposals
+  accumulated once at parent finalization or a once-only final-state proposal;
+  implementation may not choose this chronology implicitly.
+- Inventory and classify GSI receipt consumption, phenology edges, management
+  events, calendar transitions, daily initialization, material finalization,
+  and transaction increment as segment, event, or scheduled-once operations.
+
+## Restart Authority
+
+Define additive `OPENWEPP_C3_WOODY_V11_RESTART_V1` before production code. It
+persists parent coupled-time identity, accepted segment/slab cursor, staged V11
+state, staged water/BGC/energy/soil-thermal candidates where applicable,
+accepted resource and scheduled-once receipts, and the parent-beginning
+complete owner set. Prove fresh-object, mid-segment, and event-boundary restore;
+rejected-attempt absence; exact parent abort; and no replay. DirectV10 restart
+V1 and coupled-time restart V2 bytes remain unchanged.
 
 ## Acceptance Population
 
@@ -75,6 +152,50 @@ differences.
 6. Run three implementation reviews, disposition all findings, heavy gates,
    dual terminal verification, and release default-off.
 
+## Validation And Exit Criteria
+
+Contract/profile/schema gates, independent reference populations, exact V10
+compatibility, unequal-support and poison tests, restart/rollback tests,
+resource conservation reconstruction, focused crate/consumer tests, formatting,
+Clippy with warnings denied, cargo-deny, full-workspace correctness, exact diff,
+line counts, three reviews, disposition, and dual terminal verification must
+all receive truthful current-tree evidence. Self-consistency alone does not
+accept conservation or output claims.
+
+## Security And Data Impact
+
+Local repository files only. No credentials, external connectivity, messages,
+deployment, release, or production activation. Canonical JSON/wire admission is
+closed and fail-closed; no untrusted caller may forge support or owner custody.
+
+## Calibration And Evidence Posture
+
+This is architecture and exact successor-compatibility work, not calibration.
+V10 is the physical compatibility authority for one full support; coupled time
+owns chronology. Comparator agreement is diagnostic beyond the exact V10 gate.
+
+## Review And Subagent Authorization
+
+Required independent roles: two authority reviewers and two authority
+verifiers before Rust; three implementation reviewers; one
+`comparator_suite_runner` for heavy gates; and two terminal verifiers. This
+package explicitly authorizes those bounded subagents. Reviewers and verifiers
+are read-only except their named artifacts; the runner writes only ignored logs
+and bounded package evidence.
+
+## Line-Count Governance
+
+Apply repository WARN at 2,000 lines and block at 3,000 lines unless an approved
+generated/fixture exception records owner and sunset. Record all touched Rust
+file counts before disposition.
+
+## HOLD Legitimacy
+
+A HOLD is valid only for an exact authority, wire, dependency-cycle, or
+owner-atomicity contradiction after safe in-scope routes are exhausted.
+Implementation volume, refactoring, failing tests, schema size, or heavy-gate
+cost are not HOLD reasons.
+
 ## Progress
 
 - [x] (2026-08-20) Coupled-time prerequisite released and lifecycle reconciled.
@@ -89,3 +210,8 @@ differences.
 `COMPLETE / OPENWEPP_C3_WOODY_V11 segmented-support authority and
 implementation released / full-support V10 compatibility proven / default-off
 only`.
+
+## Outcomes & Retrospective
+
+Queued. Scaffold hardening changes documentation only; Phase 0 has not yet been
+claimed or frozen.

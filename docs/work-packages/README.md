@@ -11,17 +11,17 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260820-coupled-time-authority-implementation-001/` — COMPLETE / CHILD 2A / TERMINAL A+B PASS
-- `20260820-c3-woody-v11-segmented-support-001/` — QUEUED / CHILD 2B / COUPLED-TIME PREREQUISITE SATISFIED
-  NEXT: admit `SC-COUPLEDTIME-001` and implement the reusable exact-integer
-  support, staged clock, attempt/accept/reject, adaptive restart, atomic
-  multi-owner commit, and buffered parent-publication subsystem through a real
-  orchestrator reference consumer. V11 vegetation, snow-carrier science,
-  Richards equations, selectors, and production cutover are excluded.
+- `20260820-coupled-time-authority-implementation-001/` — COMPLETE / CHILD 2A /
+  TERMINAL A+B PASS: released `SC-COUPLEDTIME-001@2`, reusable coupled-time
+  runtime, additive restart V2, and orchestrator reference consumer.
+- `20260820-c3-woody-v11-segmented-support-001/` — QUEUED / CHILD 2B /
+  COUPLED-TIME PREREQUISITE SATISFIED: import immutable V10 science into a V11
+  segmented-support successor and prove exact full-support compatibility,
+  sequential unequal support, staged custody, one parent finalization, and one
+  atomic commit.
 - `20260819-snow-stage3-production-cutover-campaign-001/` — ACTIVE / CHILD 1
-  HOLD; CHILD 2A NEXT: orders coupled-time authority/runtime, V11 segmented
-  vegetation, snow-covered turbulent carrier, resumed terminal handoff,
-  actual-scheduler qualification, final-candidate
+  HOLD; CHILD 2B NEXT: execute V11, then Child 2C carrier authority, resume the
+  terminal handoff, run actual-scheduler qualification, obtain final-candidate
   `ASSURE-06` human approval, and atomic CoE retirement. Canopy-intercepted snow
   is excluded and CoE remains production-authoritative through Child 3.
 - `20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001/` —
