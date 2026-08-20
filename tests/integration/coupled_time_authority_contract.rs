@@ -99,6 +99,18 @@ fn frozen_vectors_have_separating_event_constraint_and_duration_cases() {
         "authority_tuple_richards_valid",
         "authority_tuple_richards_nonpersistent_lane_d",
         "authority_tuple_richards_legacy_r4l",
+        "identity_field_reorder_poison",
+        "identity_field_omission_poison",
+        "identity_wrong_version_poison",
+        "reduction_pre_restart_only_max_alias",
+        "reduction_post_restart_only_max_alias",
+        "duplicate_scheduled_output",
+        "rollback_retained_publication",
+        "committed_undelivered_crash",
+        "committed_undelivered_restart",
+        "acknowledged_crash_no_redelivery",
+        "acknowledged_redelivery_forbidden",
+        "parent_rollback_removes_publication_outbox",
     ] {
         assert!(ids.contains(&id), "missing executable authority case {id}");
     }

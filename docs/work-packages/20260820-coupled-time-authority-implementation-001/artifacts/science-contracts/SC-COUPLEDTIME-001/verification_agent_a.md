@@ -115,3 +115,57 @@ remaining exact identity KATs and implement an independent semantic validator
 plus executable restart, candidate/ledger, reduction, and durable-outbox
 populations. Then rerun both reference and Rust gates and submit the new exact
 checkpoint for verification.
+
+---
+
+## Final rerun — 2026-08-20 — candidate `c2d900bfa`
+
+Final verdict: **FAIL**
+
+Evidence mode: **Static + Ran.** Verified exact commit
+`c2d900bfac8f8cbce6bc09e189d3fe52dd11136d`. Earlier verdicts remain the
+historical record for their named commits; this section is the controlling
+assessment for `c2d900bfa`.
+
+### Final focused gates
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| independent reference population | PASS | 96/96 cases evaluated; 52 accepted and 44 rejected; output SHA-256 `dbaa037d8004fd03b17c2ce5e6fad8c28df0eaa42354b87bd8a4e66f97fe7322` matched the frozen vector identity |
+| independent semantic-schema population | PASS | 31/31 cases evaluated by `semantic_schema_validator.py`; 4 valid documents accepted and 27 poisons rejected |
+| focused Rust contract gate | PASS | `nix develop --command cargo nextest run --test coupled_time_authority_contract`; 5/5 passed |
+| Binding Exposure Index, strict | PASS | 3 rows consolidated |
+| SC unit compliance | PASS | no findings |
+| exact candidate diff hygiene | PASS | `git diff --check c2d900bfa^ c2d900bfa` |
+
+### Final closure assessment
+
+| Finding | Result | Final verification |
+| --- | --- | --- |
+| A-001 | **CLOSED** | Retry control, rejection no-op, policy mismatch, exhaustion, and accepted-boundary restart are executable. |
+| A-002 / B-003 | **CLOSED** | Same-tick physical progress, replay, semantic-cycle, and budget behavior are executable and ordinal-independent. |
+| A-003 / B-002 | **STILL OPEN** | Exact KATs now cover every domain declared by `identity_domain_fields`, and the Rust gate proves tag/type/cardinality agreement with that declaration. The accepted review finding also explicitly required separating vectors for reordered fields, omitted fields, and wrong authority version. None of the 96 reference cases exercises an identity with reordered/omitted fields or a non-V1 framing version, and the generic `identity()` oracle accepts caller-supplied field lists/version without validating them against the closed domain definition. Canonical-JSON field-order poisons do not test canonical identity-field order or hash authority version. |
+| A-004 | **CLOSED** | Equal-time compatibility, conflict, ordering, event custody, and event precedence are machine-decidable and executable. |
+| A-005 | **CLOSED** | All named conversion hard cases, ties, neighbors, large values, and overflow classes execute. |
+| A-006 / B-006 | **STILL OPEN** | The expanded reference and independently implemented semantic validator remove the former presence-only/`forced_error` defect and now cover restart identity/state, joins, candidate cardinality, ledgers, accepted-only reduction, and outbox chronology. The accepted finding and canonical test-vector obligations still require executable wrong-answer cases for pre-restart-only maximum, post-restart-only maximum, duplicate scheduled output, and publication retained after parent rollback. None appears in the 96 reference cases or 31 semantic cases. `publication-and-reduction-operand-lineage.md` continues to name these as required wrong-answer fixtures, confirming they were not dispositioned out of scope. |
+| A-007 | **CLOSED** | Receipt-bound run-relative origin and calendar/forcing identity mapping are consistent and identity-bound. |
+| B-001 | **CLOSED** | The additive restart schema, reference restart/equivalence cases, and independent restart poisons cover complete owner bytes, accepted event/scheduled receipts, active chronology, policies/controller bytes, reductions, publication state, and before/after-event continuation. DirectV10 hashes remain protected. |
+| B-004 | **STILL OPEN** | Parent commit, delivery, post-delivery crash, idempotent redelivery, and acknowledgement transitions execute. The accepted publication finding also requires crash/restart behavior at every commit/delivery boundary and rollback removal. There is no `CommittedUndelivered + crash/restart` case, no acknowledged-state crash/restart/no-redelivery case, and no parent-rollback case proving both staged publication and outbox are absent. The lineage artifact explicitly retains those crash-boundary and rollback fixtures as required. |
+| B-005 | **CLOSED** | The separate semantic validator now enforces checked `u128`, relational support/cursor bounds, ordered uniqueness, owner/cardinality joins, byte/digest reconstruction, accepted-only lineage, outbox checks, and canonical JSON serialization with an independent 31-case gate. |
+| B-007 | **CLOSED** | The structural receipt/candidate/ledger schema plus executable reference joins and independent semantic poisons cover complete owner cardinality, disposition, inactive mutation, common support/duration, state bytes/digests, ledger resolution/failure, and atomic no-op failures. |
+
+### Final disposition
+
+This candidate closes the substantive restart, schema, owner/ledger, and most
+publication/reduction gaps from the prior rerun. It is close, but every accepted
+finding is not yet closed. Authority release still requires:
+
+1. identity-field reorder, omission, and wrong-version poison vectors evaluated
+   against the closed per-domain field definition; and
+2. executable pre-/post-restart maximum aliases, duplicate scheduled output,
+   parent-rollback publication removal, and the remaining outbox crash/restart
+   boundary cases already required by the contract and operand-lineage artifact.
+
+Do not promote/index `SC-COUPLEDTIME-001` or begin production Rust at this
+commit. Add those bounded cases, rerun the same three executable gates, and
+submit the resulting exact checkpoint for final verification.

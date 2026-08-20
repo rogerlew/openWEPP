@@ -32,6 +32,13 @@ def value(f):
     if t=="optional-none": return b"\0"
     fail("InvalidWireIdentity")
 def identity(c):
+    if c.get("enforce_domain",True):
+        model=json.loads((ROOT/"model-definition.json").read_text())
+        declared=model["identity_domain_fields"].get(c["domain"])
+        if declared is None: fail("InvalidIdentityDomain")
+        actual=[f'{f["tag"]}:{f["type"]}' for f in c["fields"]]
+        if actual!=declared: fail("IdentityFieldSchemaMismatch")
+        if c.get("version",1)!=1: fail("IdentityVersionMismatch")
     d=c["domain"].encode(); pre=b"OPENWEPP\0"+be(c.get("version",1),2)+be(len(d),2)+d
     for f in c["fields"]:
         tag=f["tag"].encode(); v=value(f); pre+=be(len(tag),2)+tag+be(len(v),4)+v
@@ -111,7 +118,7 @@ def joins(c):
     return {"status":"accepted","ending_owner_set_sha256":c["ending_owner_set_sha256"],"ledger_digest":c["ledger_digest"]}
 def outbox(c):
     state=c["state"]; action=c["action"]
-    transitions={("Buffered","parent_commit"):"CommittedUndelivered",("CommittedUndelivered","deliver"):"DeliveredUnacknowledged",("DeliveredUnacknowledged","crash"):"DeliveredUnacknowledged",("DeliveredUnacknowledged","redeliver"):"DeliveredUnacknowledged",("DeliveredUnacknowledged","ack"):"Acknowledged"}
+    transitions={("Buffered","parent_commit"):"CommittedUndelivered",("Buffered","parent_rollback"):"Removed",("CommittedUndelivered","deliver"):"DeliveredUnacknowledged",("CommittedUndelivered","crash"):"CommittedUndelivered",("CommittedUndelivered","restart"):"CommittedUndelivered",("DeliveredUnacknowledged","crash"):"DeliveredUnacknowledged",("DeliveredUnacknowledged","redeliver"):"DeliveredUnacknowledged",("DeliveredUnacknowledged","ack"):"Acknowledged",("Acknowledged","crash"):"Acknowledged",("Acknowledged","restart"):"Acknowledged"}
     if (state,action) not in transitions: fail("InvalidOutboxTransition")
     end=transitions[state,action]
     return {"status":"accepted","state":end,"receipt_id":c["receipt_id"],"delivery_count":c["delivery_count"]+(1 if action in ["deliver","redeliver"] else 0)}
@@ -120,6 +127,10 @@ def reduction(c):
     if c["claimed_maximum"]!=max(accepted): fail("ReductionAliasMismatch")
     if c["published_before_commit"]: fail("PublicationBeforeParentCommit")
     return {"status":"accepted","maximum":max(accepted),"accepted_operand_receipts":[x["receipt_id"] for x in c["operands"] if x["accepted"] and x["phase"]=="accepted_slab"]}
+def scheduled_output(c):
+    ids=[x["scheduled_receipt_id"] for x in c["records"]]
+    if len(ids)!=len(set(ids)): fail("DuplicateScheduledOutput")
+    return {"status":"accepted","publication_order":[x["output_receipt_id"] for x in c["records"]]}
 def authority_tuple(c):
     h,t,l,r=c["hydrology"],c["time"],c.get("lane_d","WholeDayNonpersistent"),c.get("legacy_r4l_mutation",True)
     valid=(h=="LegacyWb14Wb18Wb19" and t=="LegacyFixedSchedule") or (h=="RichardsCoupledV1" and t=="CoupledAdaptiveSupportV1" and l=="Persistent" and not r)
@@ -165,6 +176,7 @@ def evaluate(c):
     if op=="joins": return joins(c)
     if op=="outbox": return outbox(c)
     if op=="reduction": return reduction(c)
+    if op=="scheduled_output": return scheduled_output(c)
     if op=="legacy_hash":
         for f in c["files"]:
             if hashlib.sha256((ROOT/f["path"]).read_bytes()).hexdigest()!=f["sha256"]: fail("DirectV10WireChanged")

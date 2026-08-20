@@ -107,3 +107,57 @@ publication, rollback, and authority-tuple poisons. Do not promote/index or
 begin production Rust until those required semantics are executable, the
 focused gates rerun, and both independent verifiers pass the exact corrected
 checkpoint.
+
+## Final Rerun Against Corrected Commit `c2d900bfa`
+
+Final rerun status: complete — **PASS**
+
+Evidence mode: Static + Ran
+
+This final section supersedes both historical FAIL dispositions above while
+retaining them as the finding/correction audit trail. Exact corrected commit:
+`c2d900bfac8f` (`complete coupled time executable authority evidence`). There
+remain no rejected findings or rejected rationales.
+
+### Final gates
+
+- Ran the independent reference model: PASS. All 96 cases executed with zero
+  `forced_error`; emitted SHA-256
+  `dbaa037d8004fd03b17c2ce5e6fad8c28df0eaa42354b87bd8a4e66f97fe7322`
+  exactly matches the frozen vector manifest.
+- Ran the independent semantic validator against
+  `semantic-schema-poisons.json`: PASS. All 31 cases matched their expected
+  disposition: four admitted controls and 27 fail-closed poisons.
+- Ran `nix develop -c cargo nextest run --test
+  coupled_time_authority_contract`: PASS, 5/5 tests.
+- Ran `git diff --check`: PASS.
+- Recomputed protected DirectV10 hashes: PASS, unchanged at
+  `c29e28c4...2ad1`, `c041ab59...0ddd`, and `e01e2a93...d47c9`.
+  Exact diff from `f48100538` over the protected authority artifacts and
+  `crates/openwepp-persisted-restart-v1` is empty.
+
+### Final finding closure
+
+| Finding | Final result | Verification |
+| --- | --- | --- |
+| B-001 | **CLOSED** | Twelve executable restart cases now cover immediately-before/after-event restoration, run/calendar/forcing/model/constraint/controller identity poison, accepted event and scheduled-once receipt poison, reduction poison, and publication-outbox poison. Two uninterrupted/restored equivalence cases compare ending owners, slab/event/scheduled receipts, reduction state, and outbox across both event boundaries. The independent semantic validator additionally admits a complete restart control and rejects altered required/digest/chronology state. |
+| B-002 | **CLOSED** | Fourteen identity cases cover every closed framed domain used by the authority, including parent interval/transaction, segment, accepted slab, attempt, event, constraint, owner set, event/slab/parent/publication receipts, and ambiguous-length separation. Exact preimages/digests are frozen, and checked parent-transaction successor overflow remains executable. |
+| B-003 | **CLOSED** | Event start/interior/end, same-tick ordering, failure, replay, physical no-progress cycle, and finite same-tick budget are executable. Ordinal-only progress cannot satisfy the cycle check, and every rejected event path proves accepted-state no-op. |
+| B-004 | **CLOSED** | The outbox operation now executes atomic parent enqueue, delivery, crash retention, idempotent redelivery with stable receipt identity, and acknowledgement. Restart vectors preserve outbox state across continuation; publication-before-commit remains fail-closed. Independent schema poisons reject record-digest corruption, invalid state, and sequence overflow. Together these cover the specified crash lifecycle without loss, identity change, or precommit visibility. |
+| B-005 | **CLOSED** | The independent semantic validator consumes real valid restart/receipt controls and rejects 27 poisons covering `u128` range/canonical form, support/cursor bounds, closed required shape, owner/participant order and digests, controller bytes, future/invalid receipts, outbox records/state/sequence, receipt candidate cardinality/disposition/base64/state digest/support/duration, unresolved ledgers, and canonical JSON field-order/whitespace/duplicate-field violations. This is executable wire admission rather than schema-string presence. |
+| B-006 | **CLOSED** | The 96-case oracle population now executes identity, support, conversion, event, constraint, retry, restart equivalence/poisons, owner-ledger joins, scheduled-once, reductions and wrong aliases, publication/outbox lifecycle, complete authority tuples, and DirectV10 protection. The separately authored Rust gate requires all named closure cases, structurally compares every result, hash-pins the population, rejects any `forced_error`, and independently invokes the semantic poison validator. The previously missing mandatory populations are present. |
+| B-007 | **CLOSED** | The canonical receipt/candidate/ledger schema is exercised by valid receipt controls plus owner/ledger join KATs and independent poisons for omitted/wrong/duplicate candidates, wrong disposition, corrupt candidate bytes/digest, support/duration mismatch, inactive/cardinality violations, and unresolved/failed ledgers. Exact KATs cover slab, event, parent, and publication receipt identities. Complete-owner cardinality, beginning join, aggregate ledger closure, and ending owner/ledger outputs are now executable. |
+
+### Final release disposition
+
+All accepted findings B-001 through B-007 are closed at exact commit
+`c2d900bfac8f`. The executable evidence agrees with the corrected contract and
+schemas, the independent poison gate fails closed, restart/outbox/reduction and
+receipt chronology are reconstructable, and the released DirectV10 wire remains
+byte-identical.
+
+**Final verdict: PASS.** Verification B authorizes the Phase-2A authority
+release checkpoint from the ownership/restart/wire/publication perspective,
+subject to the separate Verification A result and the package's required
+promotion/index/checkpoint procedure. This PASS does not authorize behavior
+beyond `SC-COUPLEDTIME-001` or waive later production implementation gates.
