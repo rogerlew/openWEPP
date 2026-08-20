@@ -12,4 +12,4 @@ Evidence class: `Static`
 | Calibration posture | No calibration/validation/transferability claim |
 | Vectors/gaps | Generated vectors, ledger, poisons, promotability section |
 
-Result: `candidate complete / independent review pending`.
+Result: `COMPLETE / authority reviews and terminal A+B PASS`.
