@@ -527,7 +527,7 @@ mod tests {
         let interval =
             ParentIntervalId::derive(d(1), d(2), d(3), support(0, 100).expect("support"))
                 .expect("interval identity");
-        let beginning = complete_owner_set_digest(&vec![
+        let beginning = complete_owner_set_digest(&[
             owner(A, b"a0").expect("owner A"),
             owner(B, b"b0").expect("owner B"),
             owner(C, b"c0").expect("owner C"),
