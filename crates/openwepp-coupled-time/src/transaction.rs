@@ -436,6 +436,7 @@ impl DiagnosticReductionV1 {
     pub fn new_sum(reduction_id: String, units: String) -> Result<Self, CoupledTimeError> {
         let mut value = Self::new(reduction_id, units)?;
         value.operator = ReductionOperatorV1::Sum;
+        value.maximum = Some(0.0);
         Ok(value)
     }
     pub fn fold_accepted(
@@ -453,11 +454,15 @@ impl DiagnosticReductionV1 {
         if !value.is_finite() || self.accepted_receipts.contains(&operand.receipt_id) {
             return Err(CoupledTimeError::LedgerFailure);
         }
-        let reduced = self.maximum.map_or(value, |old| match self.operator {
-            ReductionOperatorV1::Maximum => retain_maximum(old, value),
-            ReductionOperatorV1::Minimum => retain_minimum(old, value),
-            ReductionOperatorV1::Sum => old + value,
-        });
+        let reduced = match self.operator {
+            ReductionOperatorV1::Maximum => {
+                self.maximum.map_or(value, |old| retain_maximum(old, value))
+            }
+            ReductionOperatorV1::Minimum => {
+                self.maximum.map_or(value, |old| retain_minimum(old, value))
+            }
+            ReductionOperatorV1::Sum => self.maximum.unwrap_or(0.0) + value,
+        };
         if !reduced.is_finite() {
             return Err(CoupledTimeError::LedgerFailure);
         }

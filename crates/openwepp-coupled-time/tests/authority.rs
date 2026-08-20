@@ -152,6 +152,17 @@ fn event_queue_orders_and_replay_is_closed() {
 #[test]
 fn same_tick_event_proposals_chain_against_accepted_state() {
     let mut c = clock(10);
+    let slab_constraint = constraint(&c, 5);
+    let slab = CoupledSlabCandidateV1::new(
+        &c,
+        segment(&c),
+        TimeSupport::new(t(0), t(5)).unwrap(),
+        &slab_constraint,
+        vec![owner("A", b"a"), owner("B", b"b")],
+        vec![LedgerEntryV1::new("water".into(), "kg".into(), d(18), d(18), d(19)).unwrap()],
+    )
+    .unwrap();
+    let slab_receipt = accept_slab(&mut c, slab).unwrap();
     let first = EventProposalV1::new(
         EventClass::OwnershipTransfer,
         "A".into(),
@@ -174,13 +185,13 @@ fn same_tick_event_proposals_chain_against_accepted_state() {
         vec![LedgerEntryV1::new("mode".into(), "kg".into(), d(24), d(24), d(25)).unwrap()],
     )
     .unwrap();
-    let mut queue = EventQueueV1::new(t(0), vec![second, first]).unwrap();
+    let mut queue = EventQueueV1::new(t(5), vec![second, first]).unwrap();
     let a = queue.apply_next(&mut c).unwrap().unwrap();
     let b = queue.apply_next(&mut c).unwrap().unwrap();
     assert_ne!(a.id(), b.id());
     assert!(queue.apply_next(&mut c).unwrap().is_none());
     let scheduled_id = c
-        .record_scheduled_once("daily".into(), t(0), d(26))
+        .record_scheduled_once("daily".into(), t(5), d(26))
         .unwrap();
     let scheduled = c
         .scheduled_once_receipts()
@@ -188,13 +199,28 @@ fn same_tick_event_proposals_chain_against_accepted_state() {
         .find(|receipt| receipt.id() == scheduled_id)
         .unwrap();
     let mut sum = DiagnosticReductionV1::new_sum("sum".into(), "kg".into()).unwrap();
+    sum.fold_accepted_operand(0.5, AcceptedReductionOperandV1::from_slab(&slab_receipt))
+        .unwrap();
     sum.fold_accepted_operand(1.25, AcceptedReductionOperandV1::from_event(&a))
         .unwrap();
     sum.fold_accepted_operand(2.5, AcceptedReductionOperandV1::from_event(&b))
         .unwrap();
     sum.fold_accepted_operand(4.0, AcceptedReductionOperandV1::from_scheduled(scheduled))
         .unwrap();
-    assert_eq!(sum.maximum(), Some(7.75));
+    assert_eq!(sum.maximum(), Some(8.25));
+    let mut signed_zero = DiagnosticReductionV1::new_sum("zero".into(), "kg".into()).unwrap();
+    signed_zero
+        .fold_accepted_operand(-0.0, AcceptedReductionOperandV1::from_event(&a))
+        .unwrap();
+    assert_eq!(signed_zero.maximum().unwrap().to_bits(), 0.0_f64.to_bits());
+    let restart = CoupledTimeRestartV2::new(d(50), d(51), c, sum, None, vec![]).unwrap();
+    let bytes = restart.to_canonical_json().unwrap();
+    let restored = CoupledTimeRestartV2::from_canonical_json(&bytes, d(50), d(51), d(4)).unwrap();
+    let (_, reductions, _, _) = restored.into_parts();
+    assert_eq!(
+        reductions[0].maximum().unwrap().to_bits(),
+        8.25_f64.to_bits()
+    );
 }
 
 #[test]

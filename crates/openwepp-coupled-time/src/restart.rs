@@ -15,6 +15,30 @@ enum AcceptedOperandLineage {
     ScheduledInstant(crate::ModelTimeNs),
 }
 
+fn reconstruct_reduction(
+    operator: crate::transaction::ReductionOperatorV1,
+    values: &[(ReceiptId, f64)],
+) -> Result<Option<f64>, CoupledTimeError> {
+    if operator == crate::transaction::ReductionOperatorV1::Sum {
+        let mut retained = 0.0_f64;
+        for (_, candidate) in values {
+            retained += *candidate;
+            if !retained.is_finite() {
+                return Err(CoupledTimeError::RestartInvalid);
+            }
+        }
+        return Ok(Some(retained));
+    }
+    Ok(values
+        .iter()
+        .map(|(_, value)| *value)
+        .reduce(match operator {
+            crate::transaction::ReductionOperatorV1::Maximum => crate::transaction::retain_maximum,
+            crate::transaction::ReductionOperatorV1::Minimum => crate::transaction::retain_minimum,
+            crate::transaction::ReductionOperatorV1::Sum => unreachable!(),
+        }))
+}
+
 /// Byte-preserving legacy V1 envelope. V1 cannot resume authenticated mid-parent chronology.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CoupledTimeRestartV1(Vec<u8>);
@@ -762,18 +786,7 @@ impl CoupledTimeRestartV2 {
                         Ok((operand.receipt_id, value))
                     })
                     .collect::<Result<Vec<_>, _>>()?;
-                let reconstructed = values
-                    .iter()
-                    .map(|(_, value)| *value)
-                    .reduce(match operator {
-                        crate::transaction::ReductionOperatorV1::Maximum => {
-                            crate::transaction::retain_maximum
-                        }
-                        crate::transaction::ReductionOperatorV1::Minimum => {
-                            crate::transaction::retain_minimum
-                        }
-                        crate::transaction::ReductionOperatorV1::Sum => |left, right| left + right,
-                    });
+                let reconstructed = reconstruct_reduction(operator, &values)?;
                 let admitted = reduction_wire
                     .value_bits
                     .map(|bits| {
@@ -991,21 +1004,7 @@ impl CoupledTimeRestartV2 {
                     .iter()
                     .any(|receipt| accepted_operand(*receipt).is_none())
                 || reduction.maximum.map(f64::to_bits)
-                    != reduction
-                        .accepted_values
-                        .iter()
-                        .map(|(_, value)| *value)
-                        .reduce(match reduction.operator {
-                            crate::transaction::ReductionOperatorV1::Maximum => {
-                                crate::transaction::retain_maximum
-                            }
-                            crate::transaction::ReductionOperatorV1::Minimum => {
-                                crate::transaction::retain_minimum
-                            }
-                            crate::transaction::ReductionOperatorV1::Sum => {
-                                |left, right| left + right
-                            }
-                        })
+                    != reconstruct_reduction(reduction.operator, &reduction.accepted_values)?
                         .map(f64::to_bits)
             {
                 return Err(CoupledTimeError::RestartInvalid);
