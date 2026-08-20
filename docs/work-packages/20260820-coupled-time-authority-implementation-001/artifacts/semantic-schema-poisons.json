@@ -91,9 +91,10 @@
       ],
       "scheduled_once_receipts": [
         {
-          "receipt_id": "6666666666666666666666666666666666666666666666666666666666666666",
+          "receipt_id": "4753b39e9093d70d631306458ca62315b300f3e944114d404b73560fa2f3c218",
+          "parent_transaction_id": "a8055f3e61f32fab370a36add80685a899a7e12ee6ec346b244e1883bae7abd9",
           "operation_id": "daily",
-          "boundary_id": "7777777777777777777777777777777777777777777777777777777777777777",
+          "boundary_id": "cb03ab51408516a9abc254dcb30350de9bf05af2ffee3d5eb3e2e597a3aa64f7",
           "tick_ns": "5",
           "result_sha256": "8888888888888888888888888888888888888888888888888888888888888888"
         }
@@ -311,6 +312,11 @@
       "value": "6",
       "expected": "rejected"
     },
+    {"id":"scheduled_parent_well_formed_wrong","target":"restart","path":"/scheduled_once_receipts/0/parent_transaction_id","mutation":"set","value":"2222222222222222222222222222222222222222222222222222222222222222","expected":"rejected"},
+    {"id":"scheduled_operation_wrong","target":"restart","path":"/scheduled_once_receipts/0/operation_id","mutation":"set","value":"hourly","expected":"rejected"},
+    {"id":"scheduled_result_well_formed_wrong","target":"restart","path":"/scheduled_once_receipts/0/result_sha256","mutation":"set","value":"8989898989898989898989898989898989898989898989898989898989898989","expected":"rejected"},
+    {"id":"scheduled_duplicate_execution_key_recomputed_id","target":"restart","path":"/scheduled_once_receipts","mutation":"append","value":{"receipt_id":"c5de429f59f8c9e4c9def7b76f68857ca32af1186c4d15273323d25348ea0708","parent_transaction_id":"a8055f3e61f32fab370a36add80685a899a7e12ee6ec346b244e1883bae7abd9","operation_id":"daily","boundary_id":"cb03ab51408516a9abc254dcb30350de9bf05af2ffee3d5eb3e2e597a3aa64f7","tick_ns":"5","result_sha256":"0101010101010101010101010101010101010101010101010101010101010101"},"expected":"rejected"},
+    {"id":"scheduled_distinct_boundary_control","target":"restart","path":"/scheduled_once_receipts","mutation":"append","value":{"receipt_id":"53e1379c71621fad199f48d5219510023a152e6c76c4fcbd0756554d8e7f7ac8","parent_transaction_id":"a8055f3e61f32fab370a36add80685a899a7e12ee6ec346b244e1883bae7abd9","operation_id":"hourly","boundary_id":"b7bfbf90789afbe41eca8e5eef98328deda2c390ec924116026905f2610a0d0a","tick_ns":"4","result_sha256":"8888888888888888888888888888888888888888888888888888888888888888"},"expected":"accepted"},
     {
       "id": "event_id_well_formed_wrong",
       "target": "restart",

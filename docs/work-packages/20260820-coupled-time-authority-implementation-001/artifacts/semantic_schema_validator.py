@@ -204,6 +204,32 @@ def validate_restart(doc):
             sha(receipt["receipt_id"], f"{field}.receipt_id")
             if u128(receipt["tick_ns"], f"{field}.tick") > cursor:
                 raise Invalid(f"{field}:future-receipt")
+    scheduled_execution_keys = set()
+    for receipt in doc["scheduled_once_receipts"]:
+        for field in ["parent_transaction_id", "boundary_id", "result_sha256"]:
+            sha(receipt[field], f"scheduled.{field}")
+        if receipt["parent_transaction_id"] != doc["parent_transaction_id"]:
+            raise Invalid("scheduled:parent-mismatch")
+        expected_boundary_id = framed_identity("scheduled-boundary-v2", [
+            ("parent_transaction_id", bytes.fromhex(receipt["parent_transaction_id"])),
+            ("operation_id", receipt["operation_id"].encode()),
+            ("tick_ns", u128(receipt["tick_ns"], "scheduled.tick").to_bytes(16, "big")),
+        ])
+        if receipt["boundary_id"] != expected_boundary_id:
+            raise Invalid("scheduled:boundary-id-mismatch")
+        execution_key = (receipt["parent_transaction_id"], receipt["operation_id"], receipt["boundary_id"])
+        if execution_key in scheduled_execution_keys:
+            raise Invalid("scheduled:duplicate-execution-key")
+        scheduled_execution_keys.add(execution_key)
+        expected_scheduled_id = framed_identity("scheduled-receipt-v2", [
+            ("parent_transaction_id", bytes.fromhex(receipt["parent_transaction_id"])),
+            ("operation_id", receipt["operation_id"].encode()),
+            ("boundary_id", bytes.fromhex(receipt["boundary_id"])),
+            ("tick_ns", u128(receipt["tick_ns"], "scheduled.tick").to_bytes(16, "big")),
+            ("result_sha256", bytes.fromhex(receipt["result_sha256"])),
+        ])
+        if receipt["receipt_id"] != expected_scheduled_id:
+            raise Invalid("scheduled:receipt-id-mismatch")
     for ordinal, receipt in enumerate(sorted(doc["accepted_event_receipts"], key=lambda x: (u128(x["tick_ns"], "event.tick"), x["event_ordinal"]))):
         for field in ["event_id", "parent_transaction_id", "begin_clock_sha256", "end_clock_sha256", "begin_owner_set_sha256", "end_owner_set_sha256", "event_context_sha256", "ledger_digest"]:
             sha(receipt[field], f"event.{field}")

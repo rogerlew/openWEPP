@@ -376,6 +376,20 @@ noncontiguous support, ordinal gap, cursor mismatch, or digest/lineage mismatch.
 Parent finalization after restore consumes this authenticated chronology exactly
 as uninterrupted execution does.
 
+V2 scheduled-once receipts use the closed `scheduled-receipt-v2` framed
+identity over parent transaction, operation ID, boundary ID, tick, and result
+digest. Event ordinal is not an input: scheduled execution and event-transition
+chronology are distinct namespaces. Restore reconstructs this identity and
+rejects cross-parent, altered-operation, altered-boundary, altered-tick, or
+altered-result substitutions.
+
+`boundary_id` is the closed `scheduled-boundary-v2` framed identity over parent
+transaction, operation ID, and exact integer tick. The canonical scheduled-once
+execution key is `(parent_transaction_id, operation_id, boundary_id)`. Exactly
+one accepted receipt may exist for that key regardless of result digest or
+receipt ID; a second correctly framed receipt is replay and fails typed.
+Different admitted boundary identities remain distinct scheduled executions.
+
 ### 9. Parent finalization and publication
 
 When the cursor equals parent end, all required events/scheduled operations are
@@ -620,3 +634,4 @@ contradiction.
 |---|---|---|
 | 2026-08-20 | `1-rc1` | Authored complete coupled-time identity, event, participant, controller, restart, atomicity, and publication authority for independent review. |
 | 2026-08-20 | `1-rc2` | Added complete accepted-slab receipt chronology to restart after implementation exposed that reductions/publications cannot reconstruct parent finalization. |
+| 2026-08-20 | `2` | Preserved restart V1, released restart V2 slab/event chronology, and closed scheduled-once receipt identity without borrowing event ordinals. |

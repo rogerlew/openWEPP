@@ -11,6 +11,7 @@
     "active participants are a nonempty subset of complete owners",
     "decoded owner/controller/publication bytes match their digests; owner bytes reconstruct owner-set digest",
     "event, scheduled-once and reduction receipt chronology ends no later than accepted_until; no duplicate or future receipt",
+    "scheduled boundary_id reconstructs from parent transaction, operation and tick; execution keys (parent transaction, operation, boundary) are unique independently of receipt_id",
     "accepted slab receipts are ordinal ordered, support-contiguous from parent start through accepted_until, and bind segment, constraint, clock, owner-candidate and coupled-ledger lineage",
     "reduction operands are accepted receipt IDs only and reconstruct value_bits in declared order",
     "pending publication records bind accepted receipts and are invisible; outbox records bind exactly one committed parent receipt",
@@ -436,16 +437,18 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "receipt_id",
-        "operation_id",
+      "receipt_id",
+      "parent_transaction_id",
+      "operation_id",
         "boundary_id",
         "tick_ns",
         "result_sha256"
       ],
       "properties": {
-        "receipt_id": {
-          "$ref": "#/$defs/sha"
-        },
+      "receipt_id": {
+        "$ref": "#/$defs/sha"
+      },
+      "parent_transaction_id": { "$ref": "#/$defs/sha" },
         "operation_id": {
           "$ref": "#/$defs/id"
         },
