@@ -890,3 +890,57 @@ may proceed to independent verification`.
 This supersedes every earlier Restart V2 Review B HOLD. It does not itself
 authorize production implementation before the package records the required
 verification and promoted authority checkpoint.
+
+---
+
+## Sequential-debit amendment Review B — candidate `3065c209c7d5d203a2a06fca793dc8cbc340e26e`
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + independent binary64 reframing`
+
+### Transaction, restart, and serialization audit
+
+- Version 19 makes the accepted-order staged subtraction the sole
+  authoritative resource-owner evolution. Each segment's declared ending is
+  reconstructed from its current staged beginning and becomes the next
+  segment's bit-identical beginning.
+- The `+0.0`-seeded accepted-order cumulative debit remains a separate receipt
+  diagnostic. Parent closure must reconstruct both folds and expressly cannot
+  gate or replace the sequential owner ending with
+  `parent_beginning - cumulative_debit`.
+- The frozen three-segment case separates these identities for water, NH4, and
+  NO3. Independent bit probes confirmed that every sequential terminal differs
+  from its regrouped alias, while every cumulative total matches its declared
+  bits. Both wrong-regrouped fixtures reject with `VEG-E-124`.
+- Restart V2's closed wire is unchanged. Its retained ordered segment resource
+  bodies, staged owner envelopes, and cumulative debit rows contain the inputs
+  needed to reconstruct the two folds independently on admission; Version 19
+  changes their semantic interpretation without changing their canonical
+  representation. The released schema, poison population, and reference
+  calculator hashes remain respectively `af9314c3...2441`,
+  `fa5ae93f...ad34`, and `13f3d009...f7c`.
+
+### Gate evidence
+
+- segmented-support reference population => PASS, 49/49;
+- restart V2 reference => PASS, 54/54, complete-continuation digest
+  `512c259b...f0e`;
+- V11 authority contract => PASS, 7/7;
+- strict binding-exposure and science-contract unit-compliance => PASS for
+  both amended contracts;
+- amendment `git diff --check` => PASS;
+- independent sequential/cumulative/regrouped binary64 probe => PASS for all
+  three resource classes.
+
+### Verdict
+
+`PASS / SC-VEGETATION-001 Version 19 unambiguously separates authoritative
+sequential custody from cumulative receipt identity; no Review B finding or
+waiver remains at 3065c209c`.
+
+Production and restart admission must implement both reconstructions; this
+authority review does not admit a regrouped shortcut or authorize release
+before the amendment's independent verification and promotion checkpoint.

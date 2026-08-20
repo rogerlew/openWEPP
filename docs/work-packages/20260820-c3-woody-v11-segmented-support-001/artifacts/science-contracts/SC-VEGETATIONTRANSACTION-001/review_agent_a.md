@@ -520,3 +520,23 @@ independent custody probes reject; schema, semantic authority, strict BEI (4
 rows), unit compliance, Rust authority 6/6, and diff hygiene all PASS. Event,
 resource/material, sequence, reduction, publication and durable-outbox custody
 remain closed. No Review A regression or new finding remains.
+
+## Sequential-debit amendment Review A — `3065c209c7d5d203a2a06fca793dc8cbc340e26e`
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + independent binary64 probes`
+
+Version 8 cleanly separates two accepted-order folds: authoritative staged
+owner subtraction and the exact-`+0.0` cumulative receipt diagnostic. It
+explicitly prohibits using the regrouped parent-minus-total value as an owner
+ending or acceptance gate, while retaining exact predecessor joins and
+overbooking rejection.
+
+Reference evidence passes 49/49 and authority tests pass 7/7. Independent
+probes cover nonassociative and reordered operands, wrong sequential endings
+for water/NH4/NO3, nonfinite and negative debits, overbooking, and signed-zero
+behavior. BEI (4 rows), unit compliance, and diff hygiene pass. No transaction
+finding remains; the amendment may proceed to independent verification.

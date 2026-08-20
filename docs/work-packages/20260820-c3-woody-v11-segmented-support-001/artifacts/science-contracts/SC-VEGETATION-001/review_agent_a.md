@@ -649,3 +649,30 @@ compliance PASS; Rust authority tests PASS 6/6; commit-range diff hygiene PASS.
 The complete seven-owner suffix, event custody, sequence joins, collection
 ordering/uniqueness/cardinality, and reduction/publication/outbox identities
 remain closed. No Review A regression or new finding remains.
+
+## Sequential-debit amendment Review A — `3065c209c7d5d203a2a06fca793dc8cbc340e26e`
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + independent binary64 probes`
+
+Version 19 correctly makes accepted-order staged subtraction authoritative for
+water, NH4, and NO3 owner endings. The separate exact-`+0.0` ordered addition
+fold remains a diagnostic receipt identity only; it cannot replace or gate the
+sequential ending through `parent_beginning - cumulative`. Operand order,
+predecessor-bit equality, finite/nonnegative amounts, intermediate finiteness,
+and staged overbooking rejection remain explicit.
+
+Independent execution passed the 49/49 reference population, including the
+three-resource nonassociative control and regrouped-ending poisons; the Rust
+authority suite passed 7/7. Direct probes independently separated sequential,
+regrouped, and reordered results; rejected wrong endings for each of water,
+NH4, and NO3; rejected NaN, infinity, negative amounts, and overbooking; and
+confirmed admitted `-0.0` amount deterministically preserves the owner ending
+and exact `+0.0` diagnostic seed. Strict BEI (15 rows), unit compliance, and
+commit-range diff hygiene pass.
+
+No time, numerical, or resource-custody finding remains. The amendment is
+ready for independent verification; production implementation remains gated.

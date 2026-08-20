@@ -575,3 +575,55 @@ to independent verification at 5918d4dbd`.
 
 This supersedes all earlier amendment HOLD verdicts. Production remains gated
 on required verification and the exact promoted authority checkpoint.
+
+---
+
+## Sequential-debit amendment Review B — candidate `3065c209c7d5d203a2a06fca793dc8cbc340e26e`
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + independent binary64 reframing`
+
+Version 8 now gives the parent validator two non-interchangeable
+reconstructions for each exact resource key:
+
+1. accepted-order staged subtraction authenticates every segment ending and
+   next-segment beginning and is authoritative for owner custody;
+2. an independent accepted-order `+0.0` cumulative fold authenticates the
+   diagnostic receipt identity.
+
+The contract explicitly prohibits regrouping the second into
+`parent_beginning - cumulative_debit` to validate or manufacture the first.
+The three-segment water/NH4/NO3 fixture proves the distinction at the bit
+level, and both direct regrouped aliases reject with `VEG-E-124`. Sorting,
+reassociation, compensated arithmetic, tolerance closure, and aggregate
+mineral-N substitution remain forbidden.
+
+Restart V2 retains ordered segment resource bodies, cumulative rows, and the
+staged seven-owner envelopes, so fresh admission can replay the sequential
+chain and cumulative fold independently. No field, canonical ordering, schema,
+or digest rule changed: schema/poison/reference hashes remain
+`af9314c3...2441`, `fa5ae93f...ad34`, and `13f3d009...f7c`. Thus the amendment
+changes semantic validation, not the released V2 serialization authority.
+
+### Gate evidence
+
+- segmented-support reference => PASS, 49/49;
+- restart V2 reference => PASS, 54/54 and complete suffix digest
+  `512c259b...f0e`;
+- authority contract => PASS, 7/7;
+- strict BEI, unit-compliance, and amendment diff hygiene => PASS;
+- independent binary64 probe => PASS: all three sequential terminal owner
+  values are bit-distinct from their regrouped aliases and all cumulative
+  receipt totals reproduce exactly.
+
+### Verdict
+
+`PASS / SC-VEGETATIONTRANSACTION-001 Version 8 closes the sequential-owner
+versus cumulative-receipt ambiguity without changing Restart V2 wire authority
+at 3065c209c`.
+
+No Review B finding or waiver remains. Production remains gated on independent
+verification and promotion of this exact amendment authority.
