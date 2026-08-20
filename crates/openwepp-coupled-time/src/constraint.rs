@@ -11,7 +11,7 @@ pub enum ConstraintClass {
     AdaptiveUpperBound,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct StepConstraintV1 {
     pub(crate) parent_transaction_id: ParentTransactionId,
     pub(crate) accepted_cursor_ns: ModelTimeNs,
@@ -22,6 +22,43 @@ pub struct StepConstraintV1 {
     pub(crate) compatibility_group_digest: Digest32,
     pub(crate) calendar_receipt: Digest32,
     pub(crate) forcing_receipt: Digest32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ConstraintReductionReceiptV1 {
+    parent_transaction_id: ParentTransactionId,
+    accepted_cursor_ns: ModelTimeNs,
+    selected_end_ns: ModelTimeNs,
+    coincident: Vec<StepConstraintV1>,
+    pending_event: Option<EventId>,
+    digest: Digest32,
+}
+
+impl ConstraintReductionReceiptV1 {
+    #[must_use]
+    pub const fn digest(&self) -> Digest32 {
+        self.digest
+    }
+    #[must_use]
+    pub const fn proposed_end(&self) -> ModelTimeNs {
+        self.selected_end_ns
+    }
+    pub(crate) fn validate_identity(&self) -> Result<(), CoupledTimeError> {
+        let rebuilt = reduce_constraints(
+            &self.coincident,
+            self.parent_transaction_id,
+            self.accepted_cursor_ns,
+            self.selected_end_ns,
+            self.pending_event,
+        )?;
+        if rebuilt != *self {
+            return Err(CoupledTimeError::InvalidConstraint);
+        }
+        Ok(())
+    }
+    pub(crate) fn matches_clock(&self, parent: ParentTransactionId, cursor: ModelTimeNs) -> bool {
+        self.parent_transaction_id == parent && self.accepted_cursor_ns == cursor
+    }
 }
 impl StepConstraintV1 {
     #[allow(clippy::too_many_arguments)]
@@ -90,6 +127,23 @@ impl StepConstraintV1 {
     pub const fn proposed_end(&self) -> ModelTimeNs {
         self.proposed_end_ns
     }
+
+    pub(crate) fn validate_identity(&self) -> Result<(), CoupledTimeError> {
+        let reconstructed = Self::new(
+            self.parent_transaction_id,
+            self.accepted_cursor_ns,
+            self.proposed_end_ns,
+            self.source_owner_id.clone(),
+            self.class,
+            self.compatibility_group_digest,
+            self.calendar_receipt,
+            self.forcing_receipt,
+        )?;
+        if reconstructed.constraint_digest != self.constraint_digest {
+            return Err(CoupledTimeError::InvalidConstraint);
+        }
+        Ok(())
+    }
 }
 
 pub fn reduce_constraints(
@@ -98,11 +152,12 @@ pub fn reduce_constraints(
     cursor: ModelTimeNs,
     parent_end: ModelTimeNs,
     pending_event: Option<EventId>,
-) -> Result<&StepConstraintV1, CoupledTimeError> {
+) -> Result<ConstraintReductionReceiptV1, CoupledTimeError> {
     if constraints.is_empty() {
         return Err(CoupledTimeError::InvalidConstraint);
     }
     for value in constraints {
+        value.validate_identity()?;
         if value.parent_transaction_id != parent || value.accepted_cursor_ns != cursor {
             return Err(CoupledTimeError::ParentMismatch);
         }
@@ -135,13 +190,35 @@ pub fn reduce_constraints(
             return Err(CoupledTimeError::ConstraintConflict);
         }
     }
-    coincident
-        .into_iter()
-        .min_by_key(|v| (v.class, &v.source_owner_id, v.constraint_digest))
-        .ok_or(CoupledTimeError::InvalidConstraint)
+    let mut coincident: Vec<_> = coincident.into_iter().cloned().collect();
+    coincident.sort_by_key(|v| (v.class, v.source_owner_id.clone(), v.constraint_digest));
+    if earliest == cursor
+        && (!coincident
+            .iter()
+            .all(|v| v.class == ConstraintClass::EventBoundary)
+            || pending_event.is_none())
+    {
+        return Err(CoupledTimeError::ZeroStepWithoutEvent);
+    }
+    let mut bytes = Vec::new();
+    for value in &coincident {
+        bytes.extend_from_slice(value.digest().as_bytes());
+    }
+    if let Some(event) = pending_event {
+        bytes.extend_from_slice(event.digest().as_bytes());
+    }
+    let digest = crate::digest_bytes(&bytes);
+    Ok(ConstraintReductionReceiptV1 {
+        parent_transaction_id: parent,
+        accepted_cursor_ns: cursor,
+        selected_end_ns: earliest,
+        coincident,
+        pending_event,
+        digest,
+    })
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct RetryControlV1 {
     accepted_state_digest: Digest32,
     controller_policy_digest: Digest32,

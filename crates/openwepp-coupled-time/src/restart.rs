@@ -27,30 +27,19 @@ impl CoupledTimeRestartV1 {
 }
 
 pub(crate) mod u128_string {
-    use serde::{Deserialize, Deserializer, Serializer, de};
+    use serde::Serializer;
     pub(crate) fn serialize<S: Serializer>(v: &u128, s: S) -> Result<S::Ok, S::Error> {
         s.serialize_str(&v.to_string())
     }
-    pub(crate) fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<u128, D::Error> {
-        let text = String::deserialize(d)?;
-        if text.is_empty()
-            || text != "0" && text.starts_with('0')
-            || !text.bytes().all(|b| b.is_ascii_digit())
-        {
-            return Err(de::Error::custom("noncanonical u128"));
-        }
-        text.parse().map_err(de::Error::custom)
-    }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct PublicationRecordV1 {
     pub(crate) record_id: ReceiptId,
     pub(crate) accepted_receipt_id: ReceiptId,
     pub(crate) support: TimeSupport,
     pub(crate) value_digest: Digest32,
     pub(crate) payload: Vec<u8>,
-    pub(crate) support_lineage_digest: Digest32,
     pub(crate) units: String,
     pub(crate) source_owner_id: String,
 }
@@ -60,44 +49,40 @@ impl PublicationRecordV1 {
         support: TimeSupport,
         value_digest: Digest32,
         payload: Vec<u8>,
-        lineage: Digest32,
         units: String,
         source: String,
     ) -> Result<Self, CoupledTimeError> {
         if units.is_empty() || source.is_empty() || digest_bytes(&payload) != value_digest {
             return Err(CoupledTimeError::LedgerFailure);
         }
-        let record = digest_record(
+        let record_id = derive_publication_record_id(
             accepted_receipt_id,
             support,
             value_digest,
-            lineage,
             &units,
             &source,
         )?;
         Ok(Self {
-            record_id: ReceiptId::from_digest(record),
+            record_id,
             accepted_receipt_id,
             support,
             value_digest,
             payload,
-            support_lineage_digest: lineage,
             units,
             source_owner_id: source,
         })
     }
 }
-fn digest_record(
+pub(crate) fn derive_publication_record_id(
     receipt: ReceiptId,
     support: TimeSupport,
     value: Digest32,
-    _lineage: Digest32,
     units: &str,
     source: &str,
-) -> Result<Digest32, CoupledTimeError> {
+) -> Result<ReceiptId, CoupledTimeError> {
     let start = support.start_ns().get().to_be_bytes();
     let end = support.end_ns().get().to_be_bytes();
-    framed_sha256(
+    Ok(ReceiptId::from_digest(framed_sha256(
         "publication-receipt",
         &[
             FramedField {
@@ -120,7 +105,7 @@ fn digest_record(
                 value: b"record",
             },
         ],
-    )
+    )?))
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -129,7 +114,7 @@ pub enum OutboxState {
     DeliveredUnacknowledged,
     Acknowledged,
 }
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct PublicationOutboxV1 {
     pub(crate) receipt_id: ReceiptId,
     pub(crate) parent_receipt_id: ReceiptId,
@@ -202,51 +187,7 @@ impl ParentCommitCandidateV1 {
                 return Err(CoupledTimeError::LedgerFailure);
             }
         }
-        let begin = clock
-            .accepted_slab_receipts
-            .first()
-            .ok_or(CoupledTimeError::ParentNotFinalizable)?
-            .id()
-            .digest();
-        let end = owner_set_digest(&clock.complete_owner_set)?;
-        let mut ordered = Vec::new();
-        for s in &clock.accepted_slab_receipts {
-            ordered.extend_from_slice(s.id().digest().as_bytes());
-        }
-        let mut events = Vec::new();
-        for e in &clock.accepted_event_receipts {
-            events.extend_from_slice(e.id().digest().as_bytes());
-        }
-        let parent_digest = framed_sha256(
-            "parent-receipt",
-            &[
-                FramedField {
-                    tag: "parent_transaction_id",
-                    value: clock.parent_transaction_id.digest().as_bytes(),
-                },
-                FramedField {
-                    tag: "parent_interval_id",
-                    value: clock.parent_interval_id.digest().as_bytes(),
-                },
-                FramedField {
-                    tag: "begin_owner_set",
-                    value: begin.as_bytes(),
-                },
-                FramedField {
-                    tag: "end_owner_set",
-                    value: end.as_bytes(),
-                },
-                FramedField {
-                    tag: "ordered_slab_receipts",
-                    value: &ordered,
-                },
-                FramedField {
-                    tag: "ordered_event_receipts",
-                    value: &events,
-                },
-            ],
-        )?;
-        let parent = ReceiptId::from_digest(parent_digest);
+        let parent = derive_parent_receipt(clock)?;
         let record_bytes = serde_json::to_vec(
             &records
                 .iter()
@@ -255,37 +196,102 @@ impl ParentCommitCandidateV1 {
         )
         .map_err(|_| CoupledTimeError::NonCanonicalIdentity)?;
         let records_digest = crate::digest_bytes(&record_bytes);
-        let publication = framed_sha256(
-            "publication-receipt",
-            &[
-                FramedField {
-                    tag: "parent_receipt_id",
-                    value: parent.digest().as_bytes(),
-                },
-                FramedField {
-                    tag: "ordered_output_records",
-                    value: &record_bytes,
-                },
-                FramedField {
-                    tag: "outbox_state",
-                    value: b"CommittedUndelivered",
-                },
-            ],
-        )?;
+        let successor_sequence = clock
+            .parent_transaction_sequence
+            .checked_add(1)
+            .ok_or(CoupledTimeError::ArithmeticOverflow)?;
+        let publication = derive_publication_receipt(parent, &records, successor_sequence)?;
         Ok(Self {
             parent_receipt_id: parent,
             records,
             records_digest,
-            successor_sequence: clock
-                .parent_transaction_sequence
-                .checked_add(1)
-                .ok_or(CoupledTimeError::ArithmeticOverflow)?,
-            publication_receipt_id: ReceiptId::from_digest(publication),
+            successor_sequence,
+            publication_receipt_id: publication,
         })
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+fn derive_parent_receipt(clock: &CoupledClockStateV1) -> Result<ReceiptId, CoupledTimeError> {
+    let mut slabs = Vec::new();
+    for receipt in &clock.accepted_slab_receipts {
+        slabs.extend_from_slice(receipt.id().digest().as_bytes());
+    }
+    let mut events = Vec::new();
+    for receipt in &clock.accepted_event_receipts {
+        events.extend_from_slice(receipt.id().digest().as_bytes());
+    }
+    let mut scheduled = Vec::new();
+    for receipt in &clock.scheduled_once_receipts {
+        scheduled.extend_from_slice(receipt.receipt_id.digest().as_bytes());
+    }
+    Ok(ReceiptId::from_digest(framed_sha256(
+        "parent-receipt-v2",
+        &[
+            FramedField {
+                tag: "parent_transaction_id",
+                value: clock.parent_transaction_id.digest().as_bytes(),
+            },
+            FramedField {
+                tag: "parent_interval_id",
+                value: clock.parent_interval_id.digest().as_bytes(),
+            },
+            FramedField {
+                tag: "begin_owner_set",
+                value: clock.begin_owner_set_digest.as_bytes(),
+            },
+            FramedField {
+                tag: "end_owner_set",
+                value: owner_set_digest(&clock.complete_owner_set)?.as_bytes(),
+            },
+            FramedField {
+                tag: "ordered_slab_receipts",
+                value: &slabs,
+            },
+            FramedField {
+                tag: "ordered_event_receipts",
+                value: &events,
+            },
+            FramedField {
+                tag: "ordered_scheduled_receipts",
+                value: &scheduled,
+            },
+        ],
+    )?))
+}
+
+fn derive_publication_receipt(
+    parent: ReceiptId,
+    records: &[PublicationRecordV1],
+    sequence: u128,
+) -> Result<ReceiptId, CoupledTimeError> {
+    let mut ids = Vec::new();
+    for record in records {
+        ids.extend_from_slice(record.record_id.digest().as_bytes());
+    }
+    Ok(ReceiptId::from_digest(framed_sha256(
+        "publication-receipt-v2",
+        &[
+            FramedField {
+                tag: "parent_receipt_id",
+                value: parent.digest().as_bytes(),
+            },
+            FramedField {
+                tag: "ordered_output_record_ids",
+                value: &ids,
+            },
+            FramedField {
+                tag: "outbox_sequence",
+                value: &sequence.to_be_bytes(),
+            },
+            FramedField {
+                tag: "outbox_state",
+                value: b"CommittedUndelivered",
+            },
+        ],
+    )?))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ParentCommitV1 {
     parent_receipt_id: ReceiptId,
     #[serde(with = "u128_string")]
@@ -310,11 +316,38 @@ impl ParentCommitV1 {
         self.outbox
     }
 }
+#[derive(Debug, Clone)]
+pub struct DurableParentCommitV1 {
+    clock: CoupledClockStateV1,
+    commit: ParentCommitV1,
+}
+impl DurableParentCommitV1 {
+    #[must_use]
+    pub const fn clock(&self) -> &CoupledClockStateV1 {
+        &self.clock
+    }
+    #[must_use]
+    pub const fn commit(&self) -> &ParentCommitV1 {
+        &self.commit
+    }
+    #[must_use]
+    pub fn into_parts(self) -> (CoupledClockStateV1, ParentCommitV1) {
+        (self.clock, self.commit)
+    }
+}
 pub fn commit_parent(
-    clock: &mut CoupledClockStateV1,
+    mut clock: CoupledClockStateV1,
     candidate: ParentCommitCandidateV1,
-) -> Result<ParentCommitV1, CoupledTimeError> {
+) -> Result<DurableParentCommitV1, CoupledTimeError> {
     if clock.committed || !clock.is_complete() {
+        return Err(CoupledTimeError::ParentNotFinalizable);
+    }
+    let expected = ParentCommitCandidateV1::new(&clock, candidate.records.clone())?;
+    if expected.parent_receipt_id != candidate.parent_receipt_id
+        || expected.records_digest != candidate.records_digest
+        || expected.successor_sequence != candidate.successor_sequence
+        || expected.publication_receipt_id != candidate.publication_receipt_id
+    {
         return Err(CoupledTimeError::ParentNotFinalizable);
     }
     let outbox = PublicationOutboxV1 {
@@ -327,12 +360,12 @@ pub fn commit_parent(
         records: candidate.records,
     };
     clock.committed = true;
-    clock.parent_transaction_sequence = candidate.successor_sequence;
-    Ok(ParentCommitV1 {
+    let commit = ParentCommitV1 {
         parent_receipt_id: candidate.parent_receipt_id,
         transaction_sequence: candidate.successor_sequence,
         outbox,
-    })
+    };
+    Ok(DurableParentCommitV1 { clock, commit })
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -401,22 +434,6 @@ impl CoupledTimeRestartV2 {
             .collect();
         let begin_owner = self.clock.begin_owner_set_digest;
         let begin_clock = self.clock.begin_clock_digest;
-        let mut participant_bytes = Vec::new();
-        for p in &self.clock.active_participant_set {
-            participant_bytes.extend_from_slice(p.as_bytes());
-            participant_bytes.push(0);
-        }
-        let active_support = TimeSupport::new(
-            self.clock.active_segment_start,
-            self.clock.parent_support.end_ns(),
-        )?;
-        let active_id = crate::SegmentId::derive(
-            self.clock.parent_transaction_id,
-            self.clock.segment_ordinal,
-            active_support,
-            digest_bytes(self.clock.active_regime_id.as_bytes()),
-            digest_bytes(&participant_bytes),
-        )?;
         let slabs = self
             .clock
             .accepted_slab_receipts
@@ -509,7 +526,18 @@ impl CoupledTimeRestartV2 {
             calendar_receipt_sha256: self.clock.calendar_receipt,
             forcing_receipt_sha256: self.clock.forcing_receipt,
             parent_interval_id: self.clock.parent_interval_id,
+            checkpoint_phase: if self.clock.committed {
+                "CommittedParent".into()
+            } else {
+                "ActiveParent".into()
+            },
             parent_transaction_sequence: self.clock.parent_transaction_sequence.to_string(),
+            next_parent_transaction_sequence: self
+                .clock
+                .parent_transaction_sequence
+                .checked_add(u128::from(self.clock.committed))
+                .ok_or(CoupledTimeError::ArithmeticOverflow)?
+                .to_string(),
             parent_transaction_id: self.clock.parent_transaction_id,
             parent_support: self.clock.parent_support,
             accepted_until_ns: self.clock.accepted_until,
@@ -518,11 +546,11 @@ impl CoupledTimeRestartV2 {
             next_event_ordinal: self.clock.event_ordinal,
             last_accepted_step_ns: self.clock.last_accepted_step_ns.unwrap_or(0).to_string(),
             active_segment: SegmentWire {
-                segment_id: active_id,
+                segment_id: self.clock.active_segment_id,
                 ordinal: self.clock.segment_ordinal,
                 regime_id: self.clock.active_regime_id.clone(),
                 start_ns: self.clock.active_segment_start,
-                end_ns: self.clock.parent_support.end_ns(),
+                end_ns: self.clock.active_segment_end,
                 active_participants: self.clock.active_participant_set.clone(),
             },
             complete_owner_state: owners,
@@ -552,6 +580,23 @@ impl CoupledTimeRestartV2 {
             return Err(CoupledTimeError::RestartInvalid);
         }
         let sequence = parse_u128(&w.parent_transaction_sequence)?;
+        let next_sequence = parse_u128(&w.next_parent_transaction_sequence)?;
+        let committed_phase = match w.checkpoint_phase.as_str() {
+            "ActiveParent" => false,
+            "CommittedParent" => true,
+            _ => return Err(CoupledTimeError::RestartInvalid),
+        };
+        let expected_next = sequence
+            .checked_add(u128::from(committed_phase))
+            .ok_or(CoupledTimeError::RestartInvalid)?;
+        if next_sequence != expected_next
+            || committed_phase == w.publication_outbox.is_empty()
+            || committed_phase
+                && (w.publication_outbox.len() != 1 || !w.pending_publication_buffer.is_empty())
+            || !committed_phase && !w.publication_outbox.is_empty()
+        {
+            return Err(CoupledTimeError::RestartInvalid);
+        }
         let last = parse_u128(&w.last_accepted_step_ns)?;
         let owners = w
             .complete_owner_state
@@ -711,7 +756,7 @@ impl CoupledTimeRestartV2 {
             calendar_receipt: w.calendar_receipt_sha256,
             forcing_receipt: w.forcing_receipt_sha256,
             parent_transaction_sequence: sequence,
-            committed: !outbox.is_empty(),
+            committed: committed_phase,
             begin_owner_set_digest: w.begin_complete_owner_set_sha256,
             begin_clock_digest: w.begin_clock_sha256,
             accepted_clock_digest: events.last().map_or_else(
@@ -729,6 +774,8 @@ impl CoupledTimeRestartV2 {
             complete_owner_set: owners,
             active_regime_id: w.active_segment.regime_id,
             active_segment_start: w.active_segment.start_ns,
+            active_segment_end: w.active_segment.end_ns,
+            active_segment_id: w.active_segment.segment_id,
             active_participant_set: w.active_segment.active_participants,
             accepted_slab_receipts: slabs,
             accepted_event_receipts: events,
@@ -777,9 +824,54 @@ impl CoupledTimeRestartV2 {
         {
             return Err(CoupledTimeError::RestartInvalid);
         }
+        for scheduled in &self.clock.scheduled_once_receipts {
+            scheduled.validate_identity(self.clock.parent_transaction_id)?;
+        }
+        let accepted_support = |receipt: ReceiptId| {
+            self.clock
+                .accepted_slab_receipts
+                .iter()
+                .find(|r| r.id() == receipt)
+                .map(AcceptedSlabReceiptV1::support)
+        };
+        for record in self
+            .pending_publication_buffer
+            .iter()
+            .chain(self.publication_outbox.iter().flat_map(|o| &o.records))
+        {
+            if derive_publication_record_id(
+                record.accepted_receipt_id,
+                record.support,
+                record.value_digest,
+                &record.units,
+                &record.source_owner_id,
+            )? != record.record_id
+                || accepted_support(record.accepted_receipt_id) != Some(record.support)
+            {
+                return Err(CoupledTimeError::RestartInvalid);
+            }
+        }
+        for reduction in &self.reduction_state {
+            if reduction
+                .accepted_receipts
+                .iter()
+                .any(|receipt| accepted_support(*receipt).is_none())
+            {
+                return Err(CoupledTimeError::RestartInvalid);
+            }
+        }
         for outbox in &self.publication_outbox {
+            let parent = derive_parent_receipt(&self.clock)?;
             if !self.clock.committed
-                || outbox.parent_receipt_id == ReceiptId::from_digest(Digest32::zero())
+                || outbox.parent_receipt_id != parent
+                || outbox.sequence
+                    != self
+                        .clock
+                        .parent_transaction_sequence
+                        .checked_add(1)
+                        .ok_or(CoupledTimeError::RestartInvalid)?
+                || outbox.receipt_id
+                    != derive_publication_receipt(parent, &outbox.records, outbox.sequence)?
                 || crate::digest_bytes(
                     &serde_json::to_vec(
                         &outbox

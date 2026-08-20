@@ -1,11 +1,11 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 use crate::{
     CoupledTimeError, Digest32, ModelTimeNs, ParentIntervalId, ParentTransactionId, ReceiptId,
     TimeSupport,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct OwnerState {
     pub(crate) owner_id: String,
     pub(crate) state_bytes: Vec<u8>,
@@ -37,7 +37,7 @@ impl OwnerState {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct CoupledClockStateV1 {
     pub(crate) run_identity: Digest32,
     pub(crate) calendar_receipt: Digest32,
@@ -59,6 +59,8 @@ pub struct CoupledClockStateV1 {
     pub(crate) complete_owner_set: Vec<OwnerState>,
     pub(crate) active_regime_id: String,
     pub(crate) active_segment_start: ModelTimeNs,
+    pub(crate) active_segment_end: ModelTimeNs,
+    pub(crate) active_segment_id: crate::SegmentId,
     pub(crate) active_participant_set: Vec<String>,
     pub(crate) accepted_slab_receipts: Vec<crate::AcceptedSlabReceiptV1>,
     pub(crate) accepted_event_receipts: Vec<crate::AcceptedEventReceiptV1>,
@@ -108,6 +110,18 @@ impl CoupledClockStateV1 {
             ]
             .concat(),
         );
+        let mut participant_bytes = Vec::new();
+        for participant in &participants {
+            participant_bytes.extend_from_slice(participant.as_bytes());
+            participant_bytes.push(0);
+        }
+        let initial_segment_id = crate::SegmentId::derive(
+            transaction,
+            0,
+            authority.parent_support,
+            crate::digest_bytes(regime.as_bytes()),
+            crate::digest_bytes(&participant_bytes),
+        )?;
         Ok(Self {
             run_identity: authority.run_identity,
             calendar_receipt: authority.calendar_receipt,
@@ -128,6 +142,8 @@ impl CoupledClockStateV1 {
             complete_owner_set: owners,
             active_regime_id: regime,
             active_segment_start: authority.parent_support.start_ns(),
+            active_segment_end: authority.parent_support.end_ns(),
+            active_segment_id: initial_segment_id,
             active_participant_set: participants,
             accepted_slab_receipts: Vec::new(),
             accepted_event_receipts: Vec::new(),
@@ -158,11 +174,38 @@ impl CoupledClockStateV1 {
     pub const fn slab_ordinal(&self) -> u32 {
         self.slab_ordinal
     }
+    /// Admit a fixed current regime boundary before any slab in that segment.
+    pub fn admit_active_segment_end(
+        &mut self,
+        end: ModelTimeNs,
+    ) -> Result<crate::SegmentId, CoupledTimeError> {
+        if self.accepted_until != self.active_segment_start
+            || end <= self.active_segment_start
+            || end > self.parent_support.end_ns()
+        {
+            return Err(CoupledTimeError::InvalidSupport);
+        }
+        let support = TimeSupport::new(self.active_segment_start, end)?;
+        let mut bytes = Vec::new();
+        for p in &self.active_participant_set {
+            bytes.extend_from_slice(p.as_bytes());
+            bytes.push(0);
+        }
+        let id = crate::SegmentId::derive(
+            self.parent_transaction_id,
+            self.segment_ordinal,
+            support,
+            crate::digest_bytes(self.active_regime_id.as_bytes()),
+            crate::digest_bytes(&bytes),
+        )?;
+        self.active_segment_end = end;
+        self.active_segment_id = id;
+        Ok(id)
+    }
 
     pub fn record_scheduled_once(
         &mut self,
         operation_id: String,
-        boundary_id: Digest32,
         boundary: ModelTimeNs,
         result: Digest32,
     ) -> Result<ReceiptId, CoupledTimeError> {
@@ -174,37 +217,15 @@ impl CoupledClockStateV1 {
         {
             return Err(CoupledTimeError::ScheduledOnceReplay);
         }
-        let tick = boundary.get().to_be_bytes();
-        let digest = crate::framed_sha256(
-            "event-receipt",
-            &[
-                crate::FramedField {
-                    tag: "event_id",
-                    value: boundary_id.as_bytes(),
-                },
-                crate::FramedField {
-                    tag: "tick_ns",
-                    value: &tick,
-                },
-                crate::FramedField {
-                    tag: "ordinal",
-                    value: &self.event_ordinal.to_be_bytes(),
-                },
-                crate::FramedField {
-                    tag: "begin_owner_set",
-                    value: result.as_bytes(),
-                },
-                crate::FramedField {
-                    tag: "end_owner_set",
-                    value: result.as_bytes(),
-                },
-                crate::FramedField {
-                    tag: "ledger_digest",
-                    value: result.as_bytes(),
-                },
-            ],
+        let boundary_id =
+            derive_scheduled_boundary_id(self.parent_transaction_id, &operation_id, boundary)?;
+        let receipt = derive_scheduled_receipt_id(
+            self.parent_transaction_id,
+            &operation_id,
+            boundary_id,
+            boundary,
+            result,
         )?;
-        let receipt = ReceiptId::from_digest(digest);
         self.scheduled_once_receipts.push(ScheduledOnceReceiptV1 {
             operation_id,
             boundary_id,
@@ -216,7 +237,67 @@ impl CoupledClockStateV1 {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+fn derive_scheduled_boundary_id(
+    parent: ParentTransactionId,
+    operation: &str,
+    tick: ModelTimeNs,
+) -> Result<Digest32, CoupledTimeError> {
+    let tick = tick.get().to_be_bytes();
+    crate::framed_sha256(
+        "scheduled-boundary-v2",
+        &[
+            crate::FramedField {
+                tag: "parent_transaction_id",
+                value: parent.digest().as_bytes(),
+            },
+            crate::FramedField {
+                tag: "operation_id",
+                value: operation.as_bytes(),
+            },
+            crate::FramedField {
+                tag: "tick_ns",
+                value: &tick,
+            },
+        ],
+    )
+}
+
+fn derive_scheduled_receipt_id(
+    parent: ParentTransactionId,
+    operation: &str,
+    boundary_id: Digest32,
+    tick: ModelTimeNs,
+    result: Digest32,
+) -> Result<ReceiptId, CoupledTimeError> {
+    let tick = tick.get().to_be_bytes();
+    Ok(ReceiptId::from_digest(crate::framed_sha256(
+        "scheduled-receipt-v2",
+        &[
+            crate::FramedField {
+                tag: "parent_transaction_id",
+                value: parent.digest().as_bytes(),
+            },
+            crate::FramedField {
+                tag: "operation_id",
+                value: operation.as_bytes(),
+            },
+            crate::FramedField {
+                tag: "boundary_id",
+                value: boundary_id.as_bytes(),
+            },
+            crate::FramedField {
+                tag: "tick_ns",
+                value: &tick,
+            },
+            crate::FramedField {
+                tag: "result_sha256",
+                value: result.as_bytes(),
+            },
+        ],
+    )?))
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub struct ParentAuthorityV1 {
     run_identity: Digest32,
     calendar_receipt: Digest32,
@@ -249,13 +330,36 @@ impl ParentAuthorityV1 {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ScheduledOnceReceiptV1 {
     pub(crate) operation_id: String,
     pub(crate) boundary_id: Digest32,
     pub(crate) boundary: ModelTimeNs,
     pub(crate) receipt_id: ReceiptId,
     pub(crate) result_sha256: Digest32,
+}
+
+impl ScheduledOnceReceiptV1 {
+    pub(crate) fn validate_identity(
+        &self,
+        parent: ParentTransactionId,
+    ) -> Result<(), CoupledTimeError> {
+        let boundary = derive_scheduled_boundary_id(parent, &self.operation_id, self.boundary)?;
+        let receipt = derive_scheduled_receipt_id(
+            parent,
+            &self.operation_id,
+            boundary,
+            self.boundary,
+            self.result_sha256,
+        )?;
+        if self.operation_id.is_empty()
+            || self.boundary_id != boundary
+            || self.receipt_id != receipt
+        {
+            return Err(CoupledTimeError::RestartInvalid);
+        }
+        Ok(())
+    }
 }
 
 pub(crate) fn validate_owner_and_participant_sets(

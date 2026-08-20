@@ -1,12 +1,12 @@
 //! Bounded, non-physical consumer of the closed coupled-time protocol.
 
 use openwepp_coupled_time::{
-    AttemptId, ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, CoupledTimeError,
-    CoupledTimeRestartV2, DiagnosticReductionV1, Digest32, EventClass, EventQueueV1,
-    EventTransitionV1, LedgerEntryV1, ModelTimeNs, OutboxState, OwnerState, ParentAuthorityV1,
-    ParentCommitCandidateV1, ParentIntervalId, ParentTransactionId, PublicationRecordV1,
-    RetryControlV1, SegmentId, StepConstraintV1, TimeSupport, accept_slab, commit_parent,
-    complete_owner_set_digest, reduce_constraints,
+    AttemptId, ConstraintClass, ConstraintReductionReceiptV1, CoupledClockStateV1,
+    CoupledSlabCandidateV1, CoupledTimeError, CoupledTimeRestartV2, DiagnosticReductionV1,
+    Digest32, EventClass, EventId, EventProposalV1, EventQueueV1, LedgerEntryV1, ModelTimeNs,
+    OutboxState, OwnerState, ParentAuthorityV1, ParentCommitCandidateV1, ParentIntervalId,
+    ParentTransactionId, PublicationRecordV1, RetryControlV1, SegmentId, StepConstraintV1,
+    TimeSupport, accept_slab, commit_parent, complete_owner_set_digest, reduce_constraints,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -55,6 +55,8 @@ struct Evidence {
     slab_receipts: Vec<Digest32>,
     event_receipt: Digest32,
     commit_bytes: Vec<u8>,
+    #[cfg(test)]
+    committed_restart_bytes: Vec<u8>,
 }
 
 /// Execute uninterrupted and mid-parent-restored twins through the public API.
@@ -78,15 +80,16 @@ pub fn run_coupled_time_reference_consumer()
 #[allow(clippy::too_many_lines)] // The linear ordering is itself reference evidence.
 fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> {
     let (mut clock, ids) = initial_clock()?;
+    let segment0 = clock.admit_active_segment_end(ModelTimeNs::new(60))?;
     let mut reduction =
         DiagnosticReductionV1::new("accepted-peak".into(), "reference-unit".into())?;
     let mut operands = Vec::new();
     let mut slab_receipts = Vec::new();
 
-    let first_constraint = constraint(&ids, clock.accepted_until(), 40)?;
+    let first_constraint = constraint(&ids, clock.accepted_until(), 40, None)?;
     let first = slab(
         &clock,
-        segment(&clock, ids.parent, 0, "snow-covered", &[A, B])?,
+        segment0,
         support(0, 40)?,
         &first_constraint,
         &[(A, b"a1"), (B, b"b1")],
@@ -100,7 +103,7 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
     // The rejected attempt cannot construct a valid candidate because its
     // debit/credit join fails. Accepted clock and owner bytes remain identical.
     let before_rejection = serde_json::to_vec(&clock)?;
-    let rejected_constraint = constraint(&ids, clock.accepted_until(), 80)?;
+    let rejected_constraint = constraint(&ids, clock.accepted_until(), 80, None)?;
     let root = complete_owner_set_digest(clock.owners())?;
     let _attempt = AttemptId::derive(
         ids.parent,
@@ -131,10 +134,11 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
         clock.accepted_until(),
     )?;
 
-    let retry_constraint = constraint(&ids, clock.accepted_until(), 60)?;
+    let pending_event = pending_event_id(ids.parent, ModelTimeNs::new(60), B, d(40))?;
+    let retry_constraint = constraint(&ids, clock.accepted_until(), 60, Some(pending_event))?;
     let second = slab(
         &clock,
-        segment(&clock, ids.parent, 0, "snow-covered", &[A, B])?,
+        segment0,
         support(40, 60)?,
         &retry_constraint,
         &[(A, b"a2"), (B, b"b2")],
@@ -145,9 +149,15 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
     operands.push((5.0, second_receipt.id().digest()));
     slab_receipts.push(second_receipt.id().digest());
 
-    let event = EventTransitionV1::new(
-        &clock,
-        ModelTimeNs::new(60),
+    let event_ledger_digest = openwepp_coupled_time::digest_bytes(b"event-transfer");
+    let event_ledger = LedgerEntryV1::new(
+        "event-custody-transfer".into(),
+        "reference-unit".into(),
+        event_ledger_digest,
+        event_ledger_digest,
+        d(41),
+    )?;
+    let event = EventProposalV1::new(
         EventClass::OwnershipTransfer,
         B.into(),
         d(40),
@@ -159,8 +169,7 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
         vec![B.into(), C.into()],
         "snow-free".into(),
         vec![A.into(), C.into()],
-        d(41),
-        d(41),
+        vec![event_ledger],
     )?;
     let mut events = EventQueueV1::new(ModelTimeNs::new(60), vec![event])?;
     let event_receipt = events
@@ -169,14 +178,13 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
     if events.apply_next(&mut clock)?.is_some() {
         return Err(CoupledTimeReferenceError::MissingObservation);
     }
-    clock.record_scheduled_once("daily-reference".into(), d(42), ModelTimeNs::new(60), d(43))?;
+    clock.record_scheduled_once("daily-reference".into(), ModelTimeNs::new(60), d(43))?;
 
     let pre_record = PublicationRecordV1::new(
         second_receipt.id(),
         second_receipt.support(),
         openwepp_coupled_time::digest_bytes(b"accepted-five"),
         b"accepted-five".to_vec(),
-        openwepp_coupled_time::digest_bytes(b"v2-wire-lineage"),
         "reference-unit".into(),
         A.into(),
     )?;
@@ -200,7 +208,7 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
         }
     }
 
-    let final_constraint = constraint(&ids, clock.accepted_until(), 100)?;
+    let final_constraint = constraint(&ids, clock.accepted_until(), 100, None)?;
     let final_slab = slab(
         &clock,
         segment(&clock, ids.parent, 1, "snow-free", &[A, C])?,
@@ -218,7 +226,6 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
         final_receipt.support(),
         openwepp_coupled_time::digest_bytes(b"accepted-seven"),
         b"accepted-seven".to_vec(),
-        openwepp_coupled_time::digest_bytes(b"v2-wire-lineage"),
         "reference-unit".into(),
         A.into(),
     )?);
@@ -243,8 +250,19 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
         return Err(CoupledTimeReferenceError::MissingObservation);
     }
     let commit_candidate = ParentCommitCandidateV1::new(&clock, pending)?;
-    let commit = commit_parent(&mut clock, commit_candidate)?;
-    let commit_bytes = serde_json::to_vec(&commit)?;
+    let durable = commit_parent(clock, commit_candidate)?;
+    let commit_bytes = serde_json::to_vec(durable.commit())?;
+    let (clock, commit) = durable.into_parts();
+    #[cfg(test)]
+    let committed_restart_bytes = CoupledTimeRestartV2::new(
+        ids.model,
+        ids.authority,
+        clock.clone(),
+        reduction.clone(),
+        Some(commit.outbox().clone()),
+        Vec::new(),
+    )?
+    .to_canonical_json()?;
 
     Ok(Evidence {
         report: CoupledTimeReferenceReport {
@@ -265,6 +283,8 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
         slab_receipts,
         event_receipt: event_receipt.id().digest(),
         commit_bytes,
+        #[cfg(test)]
+        committed_restart_bytes,
     })
 }
 
@@ -301,8 +321,9 @@ fn constraint(
     ids: &Ids,
     cursor: ModelTimeNs,
     end: u128,
-) -> Result<StepConstraintV1, CoupledTimeReferenceError> {
-    let value = StepConstraintV1::new(
+    pending_event: Option<EventId>,
+) -> Result<ConstraintReductionReceiptV1, CoupledTimeReferenceError> {
+    let adaptive = StepConstraintV1::new(
         ids.parent,
         cursor,
         ModelTimeNs::new(end),
@@ -312,14 +333,65 @@ fn constraint(
         ids.calendar,
         ids.forcing,
     )?;
+    let mut constraints = vec![adaptive];
+    if pending_event.is_some() {
+        constraints.push(StepConstraintV1::new(
+            ids.parent,
+            cursor,
+            ModelTimeNs::new(end),
+            B.into(),
+            ConstraintClass::EventBoundary,
+            d(60),
+            ids.calendar,
+            ids.forcing,
+        )?);
+    }
     Ok(reduce_constraints(
-        std::slice::from_ref(&value),
+        &constraints,
         ids.parent,
         cursor,
         ModelTimeNs::new(100),
-        None,
-    )?
-    .clone())
+        pending_event,
+    )?)
+}
+
+fn pending_event_id(
+    parent: ParentTransactionId,
+    tick: ModelTimeNs,
+    source: &str,
+    context: Digest32,
+) -> Result<EventId, CoupledTimeError> {
+    let tick_bytes = tick.get().to_be_bytes();
+    let ordinal = 0_u32.to_be_bytes();
+    Ok(EventId::from_digest(openwepp_coupled_time::framed_sha256(
+        "event",
+        &[
+            openwepp_coupled_time::FramedField {
+                tag: "parent_transaction_id",
+                value: parent.digest().as_bytes(),
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "tick_ns",
+                value: &tick_bytes,
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "event_class",
+                value: b"OwnershipTransfer",
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "event_ordinal",
+                value: &ordinal,
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "source_owner_id",
+                value: source.as_bytes(),
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "event_context",
+                value: context.as_bytes(),
+            },
+        ],
+    )?))
 }
 
 fn segment(
@@ -347,7 +419,7 @@ fn slab(
     clock: &CoupledClockStateV1,
     segment: SegmentId,
     support: TimeSupport,
-    constraint: &StepConstraintV1,
+    constraint: &ConstraintReductionReceiptV1,
     active: &[(&str, &[u8])],
     ledger_label: &[u8],
 ) -> Result<CoupledSlabCandidateV1, CoupledTimeReferenceError> {
@@ -408,7 +480,7 @@ fn d(seed: u8) -> Digest32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use openwepp_coupled_time::{ParentCommitV1, PublicationOutboxV1, ReceiptId};
+    use openwepp_coupled_time::{PublicationOutboxV1, ReceiptId};
 
     #[test]
     fn closed_protocol_is_restart_equivalent_and_atomic() {
@@ -452,24 +524,78 @@ mod tests {
     #[test]
     fn outbox_is_durable_across_commit_delivery_and_ack_crashes() {
         let evidence = run(false).expect("completed chronology");
-        let commit: ParentCommitV1 =
-            serde_json::from_slice(&evidence.commit_bytes).expect("commit wire");
-        let mut outbox: PublicationOutboxV1 = commit.into_outbox();
+        let committed_wire: serde_json::Value =
+            serde_json::from_slice(&evidence.committed_restart_bytes).expect("committed wire JSON");
+        assert_eq!(committed_wire["checkpoint_phase"], "CommittedParent");
+        assert_eq!(committed_wire["parent_transaction_sequence"], "41");
+        assert_eq!(committed_wire["next_parent_transaction_sequence"], "42");
+        let restored = CoupledTimeRestartV2::from_canonical_json(
+            &evidence.committed_restart_bytes,
+            d(5),
+            d(4),
+        )
+        .expect("restore committed crash boundary");
+        let (clock, mut reductions, mut outboxes, _) = restored.into_parts();
+        assert!(matches!(
+            ParentCommitCandidateV1::new(&clock, Vec::new()),
+            Err(CoupledTimeError::ParentNotFinalizable)
+        ));
+        let interval =
+            ParentIntervalId::derive(d(1), d(2), d(3), support(0, 100).expect("support"))
+                .expect("interval identity");
+        let beginning = complete_owner_set_digest(&vec![
+            owner(A, b"a0").expect("owner A"),
+            owner(B, b"b0").expect("owner B"),
+            owner(C, b"c0").expect("owner C"),
+        ])
+        .expect("beginning owner identity");
+        let active =
+            ParentTransactionId::derive(d(1), 41, interval, beginning).expect("active transaction");
+        let next =
+            ParentTransactionId::derive(d(1), 42, interval, beginning).expect("next transaction");
+        assert_ne!(
+            active, next,
+            "successor sequence cannot replay active identity"
+        );
+        assert_eq!(reductions.len(), 1);
+        assert_eq!(outboxes.len(), 1);
+        let reduction = reductions.pop().expect("sole reduction");
+        let mut outbox = outboxes.pop().expect("sole outbox");
         let key = outbox.receipt_id();
-        let committed = serde_json::to_vec(&outbox).expect("committed boundary");
-        outbox = serde_json::from_slice(&committed).expect("restore committed");
         outbox.mark_delivered(key).expect("deliver");
-        let delivered = serde_json::to_vec(&outbox).expect("delivered boundary");
-        outbox = serde_json::from_slice(&delivered).expect("restore delivered");
+        outbox = restart_outbox(&clock, &reduction, outbox);
         outbox.mark_delivered(key).expect("idempotent redelivery");
         outbox.acknowledge(key).expect("ack");
-        let acknowledged = serde_json::to_vec(&outbox).expect("ack boundary");
-        let mut restored: PublicationOutboxV1 =
-            serde_json::from_slice(&acknowledged).expect("restore ack");
-        assert_eq!(restored.state(), OutboxState::Acknowledged);
+        let mut outbox = restart_outbox(&clock, &reduction, outbox);
+        assert_eq!(outbox.state(), OutboxState::Acknowledged);
         assert_eq!(
-            restored.mark_delivered(ReceiptId::from_digest(d(99))),
+            outbox.mark_delivered(ReceiptId::from_digest(d(99))),
             Err(CoupledTimeError::OutboxTransition)
         );
+    }
+
+    fn restart_outbox(
+        clock: &CoupledClockStateV1,
+        reduction: &DiagnosticReductionV1,
+        outbox: PublicationOutboxV1,
+    ) -> PublicationOutboxV1 {
+        let checkpoint = CoupledTimeRestartV2::new(
+            d(5),
+            d(6),
+            clock.clone(),
+            reduction.clone(),
+            Some(outbox),
+            Vec::new(),
+        )
+        .expect("crash-boundary checkpoint");
+        let bytes = checkpoint
+            .to_canonical_json()
+            .expect("canonical crash wire");
+        let restored = CoupledTimeRestartV2::from_canonical_json(&bytes, d(5), d(4))
+            .expect("restore crash boundary");
+        let (_, reductions, mut outboxes, _) = restored.into_parts();
+        assert_eq!(reductions.len(), 1);
+        assert_eq!(outboxes.len(), 1);
+        outboxes.pop().expect("sole restored outbox")
     }
 }

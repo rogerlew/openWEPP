@@ -1,4 +1,4 @@
-//! Separately written Rust executor for the frozen 108-case oracle population.
+//! Separately written Rust executor for the frozen 114-case oracle population.
 #![allow(
     clippy::cast_possible_truncation,
     clippy::cast_precision_loss,
@@ -597,7 +597,7 @@ fn production_rust_matches_all_frozen_oracle_cases() {
         serde_json::from_slice(&fs::read(root().join("coupled-time-vectors.json")).unwrap())
             .unwrap();
     let cases = vectors["cases"].as_array().unwrap();
-    assert_eq!(cases.len(), 108);
+    assert_eq!(cases.len(), 114);
     for c in cases {
         let actual = eval(c).unwrap_or_else(reject);
         assert_eq!(actual, c["expected"], "{}", s(c, "id"));

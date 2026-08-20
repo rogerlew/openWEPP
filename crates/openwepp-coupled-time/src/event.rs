@@ -1,6 +1,7 @@
 use crate::{
     CoupledClockStateV1, CoupledTimeError, Digest32, EventId, FramedField, ModelTimeNs, OwnerState,
-    ReceiptId, framed_sha256, transaction::owner_set_digest,
+    ReceiptId, TimeSupport, framed_sha256,
+    transaction::{LedgerEntryV1, ledger_digest, owner_set_digest},
 };
 use serde::{Deserialize, Serialize};
 
@@ -25,7 +26,7 @@ impl EventClass {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct AcceptedEventReceiptV1 {
     pub(crate) receipt_id: ReceiptId,
     pub(crate) event_id: EventId,
@@ -52,7 +53,7 @@ impl AcceptedEventReceiptV1 {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct EventTransitionV1 {
     event_id: EventId,
     tick_ns: ModelTimeNs,
@@ -66,7 +67,48 @@ pub struct EventTransitionV1 {
     successor_regime_id: String,
     successor_participants: Vec<String>,
     ledger_digest: Digest32,
+    ledger_entries: Vec<LedgerEntryV1>,
     receipt: AcceptedEventReceiptV1,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EventProposalV1 {
+    class: EventClass,
+    source_owner_id: String,
+    event_context_digest: Digest32,
+    ending_owners: Vec<OwnerState>,
+    mutation_set: Vec<String>,
+    successor_regime_id: String,
+    successor_participants: Vec<String>,
+    ledger_entries: Vec<LedgerEntryV1>,
+}
+
+impl EventProposalV1 {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        class: EventClass,
+        source_owner_id: String,
+        event_context_digest: Digest32,
+        ending_owners: Vec<OwnerState>,
+        mutation_set: Vec<String>,
+        successor_regime_id: String,
+        successor_participants: Vec<String>,
+        ledger_entries: Vec<LedgerEntryV1>,
+    ) -> Result<Self, CoupledTimeError> {
+        if source_owner_id.is_empty() {
+            return Err(CoupledTimeError::EventTransition);
+        }
+        Ok(Self {
+            class,
+            source_owner_id,
+            event_context_digest,
+            ending_owners,
+            mutation_set,
+            successor_regime_id,
+            successor_participants,
+            ledger_entries,
+        })
+    }
 }
 impl EventTransitionV1 {
     #[allow(clippy::too_many_lines)]
@@ -81,10 +123,15 @@ impl EventTransitionV1 {
         mutation_set: Vec<String>,
         successor_regime: String,
         participants: Vec<String>,
-        transfer_debit: Digest32,
-        transfer_credit: Digest32,
+        ledger_entries: Vec<LedgerEntryV1>,
     ) -> Result<Self, CoupledTimeError> {
-        if tick != clock.accepted_until || source.is_empty() || transfer_debit != transfer_credit {
+        if tick != clock.accepted_until
+            || source.is_empty()
+            || !clock
+                .complete_owner_set
+                .iter()
+                .any(|owner| owner.owner_id() == source)
+        {
             return Err(CoupledTimeError::EventTransition);
         }
         crate::clock::validate_owner_and_participant_sets(&ending, &participants)?;
@@ -139,13 +186,7 @@ impl EventTransitionV1 {
             ],
         )?;
         let event_id = EventId::from_digest(event_digest);
-        let ledger = framed_sha256(
-            "event-receipt",
-            &[FramedField {
-                tag: "event_id",
-                value: transfer_debit.as_bytes(),
-            }],
-        )?;
+        let ledger = ledger_digest(&ledger_entries)?;
         let begin_clock = clock.accepted_clock_digest;
         let end_clock = crate::digest_bytes(
             &[
@@ -228,25 +269,26 @@ impl EventTransitionV1 {
             successor_regime_id: successor_regime,
             successor_participants: participants,
             ledger_digest: ledger,
+            ledger_entries,
             receipt,
         })
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct EventQueueV1 {
     tick: ModelTimeNs,
-    pending: Vec<EventTransitionV1>,
+    pending: Vec<EventProposalV1>,
     seen_cycle_keys: Vec<Digest32>,
     applied: u16,
 }
 impl EventQueueV1 {
     pub fn new(
         tick: ModelTimeNs,
-        mut pending: Vec<EventTransitionV1>,
+        mut pending: Vec<EventProposalV1>,
     ) -> Result<Self, CoupledTimeError> {
         pending.sort_by_key(|e| (e.class, e.source_owner_id.clone(), e.event_context_digest));
-        if pending.windows(2).any(|w| w[0].event_id == w[1].event_id) {
+        if pending.windows(2).any(|w| w[0] == w[1]) {
             return Err(CoupledTimeError::EventTransition);
         }
         Ok(Self {
@@ -263,7 +305,7 @@ impl EventQueueV1 {
         let Some(event) = self.pending.first().cloned() else {
             return Ok(None);
         };
-        if self.applied >= 256 || event.tick_ns != self.tick {
+        if self.applied >= 256 || clock.accepted_until != self.tick {
             return Err(CoupledTimeError::EventCycle);
         }
         let mut semantics = Vec::new();
@@ -278,20 +320,46 @@ impl EventQueueV1 {
             return Err(CoupledTimeError::EventCycle);
         }
         self.seen_cycle_keys.push(key);
-        let receipt = apply_event(clock, event)?;
+        let transition = EventTransitionV1::new(
+            clock,
+            self.tick,
+            event.class,
+            event.source_owner_id,
+            event.event_context_digest,
+            event.ending_owners,
+            event.mutation_set,
+            event.successor_regime_id,
+            event.successor_participants,
+            event.ledger_entries,
+        )?;
+        let receipt = apply_event(clock, transition)?;
         self.pending.remove(0);
         self.applied += 1;
         Ok(Some(receipt))
     }
 }
 
-pub fn apply_event(
+fn apply_event(
     clock: &mut CoupledClockStateV1,
     event: EventTransitionV1,
 ) -> Result<AcceptedEventReceiptV1, CoupledTimeError> {
+    let expected = EventTransitionV1::new(
+        clock,
+        event.tick_ns,
+        event.class,
+        event.source_owner_id.clone(),
+        event.event_context_digest,
+        event.ending_owners.clone(),
+        event.mutation_set.clone(),
+        event.successor_regime_id.clone(),
+        event.successor_participants.clone(),
+        event.ledger_entries.clone(),
+    )?;
     if event.tick_ns != clock.accepted_until
         || event.ordinal != clock.event_ordinal
         || event.beginning_owner_set_digest != owner_set_digest(&clock.complete_owner_set)?
+        || event.ledger_digest != ledger_digest(&event.ledger_entries)?
+        || event != expected
         || clock
             .accepted_event_receipts
             .iter()
@@ -316,7 +384,20 @@ pub fn apply_event(
     clock.complete_owner_set = event.ending_owners;
     clock.active_regime_id = event.successor_regime_id;
     clock.active_segment_start = clock.accepted_until;
+    clock.active_segment_end = clock.parent_support.end_ns();
     clock.active_participant_set = event.successor_participants;
+    let mut participant_bytes = Vec::new();
+    for participant in &clock.active_participant_set {
+        participant_bytes.extend_from_slice(participant.as_bytes());
+        participant_bytes.push(0);
+    }
+    clock.active_segment_id = crate::SegmentId::derive(
+        clock.parent_transaction_id,
+        clock.segment_ordinal,
+        TimeSupport::new(clock.active_segment_start, clock.active_segment_end)?,
+        crate::digest_bytes(clock.active_regime_id.as_bytes()),
+        crate::digest_bytes(&participant_bytes),
+    )?;
     clock.accepted_clock_digest = event.receipt.end_clock;
     clock.accepted_event_receipts.push(event.receipt.clone());
     Ok(event.receipt)

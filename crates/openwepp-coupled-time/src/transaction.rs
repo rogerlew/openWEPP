@@ -1,11 +1,11 @@
 use crate::{
-    AcceptedSlabId, CoupledClockStateV1, CoupledTimeError, Digest32, FramedField, OwnerState,
-    ParentTransactionId, ReceiptId, SegmentId, StepConstraintV1, TimeSupport, digest_bytes,
+    AcceptedSlabId, ConstraintReductionReceiptV1, CoupledClockStateV1, CoupledTimeError, Digest32,
+    FramedField, OwnerState, ParentTransactionId, ReceiptId, SegmentId, TimeSupport, digest_bytes,
     framed_sha256,
 };
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct LedgerEntryV1 {
     flux_id: String,
     units: String,
@@ -65,7 +65,7 @@ pub fn complete_owner_set_digest(owners: &[OwnerState]) -> Result<Digest32, Coup
     crate::clock::validate_owner_and_participant_sets(owners, &[])?;
     owner_set_digest(owners)
 }
-fn ledger_digest(entries: &[LedgerEntryV1]) -> Result<Digest32, CoupledTimeError> {
+pub(crate) fn ledger_digest(entries: &[LedgerEntryV1]) -> Result<Digest32, CoupledTimeError> {
     if entries.is_empty() || entries.windows(2).any(|w| w[0].flux_id >= w[1].flux_id) {
         return Err(CoupledTimeError::LedgerFailure);
     }
@@ -83,7 +83,7 @@ fn ledger_digest(entries: &[LedgerEntryV1]) -> Result<Digest32, CoupledTimeError
     Ok(digest_bytes(&bytes))
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct AcceptedSlabReceiptV1 {
     pub(crate) receipt_id: ReceiptId,
     pub(crate) slab_id: AcceptedSlabId,
@@ -111,14 +111,14 @@ impl AcceptedSlabReceiptV1 {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct CoupledSlabCandidateV1 {
     parent: ParentTransactionId,
     segment: SegmentId,
     ordinal: u32,
     support: TimeSupport,
     duration_s_bits: u64,
-    constraint_digest: Digest32,
+    constraint: ConstraintReductionReceiptV1,
     begin_owner_set: Digest32,
     ending_owners: Vec<OwnerState>,
     end_owner_set: Digest32,
@@ -133,29 +133,15 @@ impl CoupledSlabCandidateV1 {
         clock: &CoupledClockStateV1,
         segment: SegmentId,
         support: TimeSupport,
-        constraint: &StepConstraintV1,
+        constraint: &ConstraintReductionReceiptV1,
         ending_owners: Vec<OwnerState>,
         ledger_entries: Vec<LedgerEntryV1>,
     ) -> Result<Self, CoupledTimeError> {
-        let mut participant_bytes = Vec::new();
-        for participant in &clock.active_participant_set {
-            participant_bytes.extend_from_slice(participant.as_bytes());
-            participant_bytes.push(0);
-        }
-        let expected_segment = SegmentId::derive(
-            clock.parent_transaction_id,
-            clock.segment_ordinal,
-            TimeSupport::new(clock.accepted_until, clock.parent_support.end_ns())?,
-            digest_bytes(clock.active_regime_id.as_bytes()),
-            digest_bytes(&participant_bytes),
-        )?;
-        if segment != expected_segment
-            || constraint.parent_transaction_id != clock.parent_transaction_id
-            || constraint.accepted_cursor_ns != clock.accepted_until
-            || constraint.calendar_receipt != clock.calendar_receipt
-            || constraint.forcing_receipt != clock.forcing_receipt
+        constraint.validate_identity()?;
+        if segment != clock.active_segment_id
+            || !constraint.matches_clock(clock.parent_transaction_id, clock.accepted_until)
             || support.start_ns() != clock.accepted_until
-            || support.end_ns() > clock.parent_support.end_ns()
+            || support.end_ns() > clock.active_segment_end
             || constraint.proposed_end() != support.end_ns()
         {
             return Err(CoupledTimeError::ParentMismatch);
@@ -336,7 +322,7 @@ impl CoupledSlabCandidateV1 {
             ordinal: clock.slab_ordinal,
             support,
             duration_s_bits: duration,
-            constraint_digest: constraint.digest(),
+            constraint: constraint.clone(),
             begin_owner_set: begin,
             ending_owners,
             end_owner_set: end,
@@ -351,6 +337,14 @@ pub fn accept_slab(
     clock: &mut CoupledClockStateV1,
     slab: CoupledSlabCandidateV1,
 ) -> Result<AcceptedSlabReceiptV1, CoupledTimeError> {
+    let expected = CoupledSlabCandidateV1::new(
+        clock,
+        slab.segment,
+        slab.support,
+        &slab.constraint,
+        slab.ending_owners.clone(),
+        slab.ledger_entries.clone(),
+    )?;
     if slab.parent != clock.parent_transaction_id
         || slab.ordinal != clock.slab_ordinal
         || slab.support.start_ns() != clock.accepted_until
@@ -358,6 +352,7 @@ pub fn accept_slab(
         || slab.begin_owner_set != owner_set_digest(&clock.complete_owner_set)?
         || slab.end_owner_set != owner_set_digest(&slab.ending_owners)?
         || slab.ledger_digest != ledger_digest(&slab.ledger_entries)?
+        || slab != expected
     {
         return Err(CoupledTimeError::OwnerCandidate);
     }
@@ -380,7 +375,7 @@ pub fn accept_slab(
     Ok(slab.receipt)
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct DiagnosticReductionV1 {
     pub(crate) reduction_id: String,
     pub(crate) units: String,

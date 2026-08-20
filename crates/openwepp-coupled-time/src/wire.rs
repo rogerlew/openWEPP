@@ -17,7 +17,9 @@ pub(crate) struct RestartWireV2 {
     pub calendar_receipt_sha256: Digest32,
     pub forcing_receipt_sha256: Digest32,
     pub parent_interval_id: ParentIntervalId,
+    pub checkpoint_phase: String,
     pub parent_transaction_sequence: String,
+    pub next_parent_transaction_sequence: String,
     pub parent_transaction_id: ParentTransactionId,
     pub parent_support: TimeSupport,
     pub accepted_until_ns: ModelTimeNs,
@@ -199,13 +201,22 @@ pub(crate) fn record_from_wire(
     if digest_bytes(&payload) != w.value_sha256 {
         return Err(CoupledTimeError::RestartInvalid);
     }
+    let expected = super::restart::derive_publication_record_id(
+        w.accepted_receipt_id,
+        w.support,
+        w.value_sha256,
+        &w.units,
+        &w.source_owner_id,
+    )?;
+    if expected != w.record_id {
+        return Err(CoupledTimeError::RestartInvalid);
+    }
     Ok(PublicationRecordV1 {
         record_id: w.record_id,
         accepted_receipt_id: w.accepted_receipt_id,
         support: w.support,
         value_digest: w.value_sha256,
         payload,
-        support_lineage_digest: digest_bytes(b"v2-wire-lineage"),
         units: w.units,
         source_owner_id: w.source_owner_id,
     })
