@@ -238,3 +238,40 @@ verification; technical authority need not reopen.
 **FAIL.** The first disposition correction is substantial but does not satisfy
 the explicit all-finding-ID requirement. Promotion remains gated on one final
 transaction-ID reconciliation and dual confirmation.
+
+---
+
+## Restart V2 final bounded Verification B — checkpoint `081a0169634ff30f916f8af5642e5a3c03a4f922`
+
+Date: 2026-08-20
+
+Status: **PASS**
+
+Evidence class: `Static + Ran + exact finding-ID reconciliation`
+
+The bounded correction explicitly dispositions every previously omitted
+transaction Review A/B range: `RA-TXN-001..005`, `TA-TXN-001`,
+`FA-TXN-001..004`, `RVA-TXN-001..004`, `RVF-TXN-001..002`, and
+`V11-TXN-RESTART-V2-B-001..005`. Each is accepted, mapped to the reviewed
+corrective authority, closed at `5918d4dbd`, and covered by the recorded
+no-waiver statement. Together with the existing vegetation-side disposition,
+every amendment A/B finding identity is now canonical-cycle complete.
+
+Technical authority is unchanged from the passing checkpoint:
+
+- Restart V2 schema `af9314c3...2441`;
+- poison population `fa5ae93f...ad34`;
+- independent reference `13f3d009...f7c`;
+- 54/54 poisons and complete-continuation digest
+  `512c259be830ad33de578f9cd26f8931fb334e7b361c4387f8e7562de4f8cf0e`.
+
+The commit range from the reviewed authority contains only review,
+verification, and disposition records; no schema, reference, vector, contract,
+or production artifact changed. No residual Verification B finding remains.
+
+### Superseding verdict
+
+**PASS.** Restart V2 amendment Verification B is complete at `081a01696`.
+This supersedes the two documentation-only FAILs at `6c74d866d` and
+`1a3aa9d79`. Authority promotion may proceed subject to Verification A and the
+package's exact checkpoint procedure; this does not itself activate production.

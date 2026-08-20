@@ -134,3 +134,10 @@ Version 7 contract, executable reference, and poison objects are byte-identical
 to independently verified checkpoint `6c74d866d`. Regression execution again
 passes complete continuation with 54/54 rejects and Rust authority 6/6; diff
 hygiene passes. The prior technical PASS remains exact with no new finding.
+
+### Exact-checkpoint record — `081a0169634ff30f916f8af5642e5a3c03a4f922`
+
+`PASS` (tree `ed55688c0b8a40124e191a4f7d4963f2ffe841bc`). The
+added table explicitly dispositions every transaction-specific finding family
+without changing technical authority artifacts. It is additive and consistent
+with the reviewed closures; prior Verification A remains exact.

@@ -181,3 +181,40 @@ reference, or production edit is required.
 **FAIL.** The technical transaction authority and no-waiver posture pass, but
 canonical disposition remains incomplete by exact finding identity. One final
 documentation-only reconciliation is required before Verification B PASS.
+
+---
+
+## Restart V2 final bounded Verification B — checkpoint `081a0169634ff30f916f8af5642e5a3c03a4f922`
+
+Date: 2026-08-20
+
+Status: **PASS**
+
+Evidence class: `Static + Ran + exact finding-ID reconciliation`
+
+The transaction disposition now explicitly records and accepts every exact
+transaction finding family omitted at the prior checkpoint:
+
+- `RA-TXN-001..005` and `TA-TXN-001`;
+- `FA-TXN-001..004`;
+- `RVA-TXN-001..004`;
+- `RVF-TXN-001..002`;
+- `V11-TXN-RESTART-V2-B-001..005`.
+
+It maps each range to the reviewed complete-checkpoint, owner, receipt,
+continuation, event/resource/material, reduction/publication/outbox, sequence,
+and terminal-owner corrections; records final review closure at `5918d4dbd`;
+and explicitly states no waiver. All transaction and shared vegetation
+amendment findings are therefore closed and dispositioned.
+
+Technical artifacts are byte-identical to the passing authority. The
+independent reference again passes 54/54 with complete-continuation digest
+`512c259b...cf0e`; no production or contract artifact changed in this bounded
+correction.
+
+### Superseding verdict
+
+**PASS.** Transaction Restart V2 Verification B is complete at `081a01696`.
+This supersedes the documentation-only FAILs at `6c74d866d` and `1a3aa9d79`.
+Promotion remains subject to Verification A and exact package checkpointing;
+production activation remains outside this verification.

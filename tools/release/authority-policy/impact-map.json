@@ -1073,6 +1073,76 @@
       "assurance_watches": ["snow-domain"],
       "gate_definition_ids": ["hard-invariant-snow-phase-v1"],
       "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md"]
+    },
+    {
+      "entry_id": "v11-vegetation-consumer-sc-vegetation",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v11_vegetation_consumer.rs" },
+      "owner": "openwepp-vegetation-process-owner", "semantic_surface": "c3-woody-v11-segmented-support", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-vegetation"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-VEGETATION-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"]
+    },
+    {
+      "entry_id": "v11-vegetation-consumer-transaction",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v11_vegetation_consumer.rs" },
+      "owner": "openwepp-vegetation-transaction-owner", "semantic_surface": "v11-parent-transaction", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-vegetation"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-VEGETATIONTRANSACTION-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md"]
+    },
+    {
+      "entry_id": "v11-vegetation-consumer-coupled-time",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v11_vegetation_consumer.rs" },
+      "owner": "openwepp-coupled-time-owner", "semantic_surface": "coupled-time-consumer", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-coupled-time"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-COUPLEDTIME-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md"]
+    },
+    {
+      "entry_id": "coupled-time-transaction-authority",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-coupled-time/src/transaction.rs" },
+      "owner": "openwepp-coupled-time-owner", "semantic_surface": "coupled-time-transaction", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-coupled-time"],
+      "test_targets": ["openwepp-coupled-time"], "covering_test_targets": ["openwepp-coupled-time"],
+      "contracts": ["SC-COUPLEDTIME-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md"]
+    },
+    {
+      "entry_id": "v11-real-consumer-shadow-vegetation",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs" },
+      "owner": "openwepp-vegetation-process-owner", "semantic_surface": "c3-woody-v11-segmented-support", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator", "openwepp-vegetation"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-VEGETATION-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"]
+    },
+    {
+      "entry_id": "v11-real-consumer-shadow-tests",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs" },
+      "owner": "openwepp-vegetation-process-owner", "semantic_surface": "c3-woody-v11-segmented-support-tests", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-VEGETATION-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"]
+    },
+    {
+      "entry_id": "v11-persisted-restart",
+      "matcher": { "kind": "path_prefix", "value": "crates/openwepp-persisted-restart-v1" },
+      "owner": "openwepp-vegetation-transaction-owner", "semantic_surface": "c3-woody-v11-restart-v2", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-persisted-restart-v1", "openwepp-vegetation"],
+      "test_targets": ["openwepp-persisted-restart-v1"], "covering_test_targets": ["openwepp-persisted-restart-v1"],
+      "contracts": ["SC-VEGETATIONTRANSACTION-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md"]
     }
   ]
 }

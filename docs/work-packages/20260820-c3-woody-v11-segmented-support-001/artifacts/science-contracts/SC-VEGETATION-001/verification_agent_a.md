@@ -146,3 +146,10 @@ sample, the reference again passed complete seven-owner continuation and
 54/54 poisons, the Rust authority suite passed 6/6, and range diff hygiene
 passed. The prior technical Verification A PASS remains exact and no new
 finding is introduced.
+
+### Exact-checkpoint record — `081a0169634ff30f916f8af5642e5a3c03a4f922`
+
+`PASS` (tree `ed55688c0b8a40124e191a4f7d4963f2ffe841bc`). The
+transaction disposition addition only enumerates already closed finding IDs;
+all reviewed contracts, schemas, reference/poisons, and authority test objects
+remain exact. Prior Verification A remains unchanged.
