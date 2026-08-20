@@ -1,9 +1,14 @@
 # Canonical Contract Reference
 
-Status: queued
+Status: correction candidate frozen
 
-Evidence mode: not-run
+Evidence mode: Static
 
-Populate during Phase 2A. No production Rust may precede dual review, complete
-finding disposition/correction, invalidated-gate reruns, dual verification,
-PASS promotion/indexing, and the exact local authority checkpoint.
+Canonical path:
+`docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md`
+
+Exact corrected authority candidate commit:
+`93dc4e97b`
+
+Lifecycle at review: `in_review / draft`, contract version `1-rc1`. Promotion
+is forbidden until both independent verification artifacts pass.

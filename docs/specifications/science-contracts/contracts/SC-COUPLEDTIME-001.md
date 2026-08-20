@@ -134,6 +134,25 @@ forbidden. Closed domain tags are `parent-interval`, `parent-transaction`,
 `event-receipt`, `slab-receipt`, `parent-receipt`, and
 `publication-receipt`.
 
+The V1 field lists are closed and ordered:
+
+| Domain | Ordered fields |
+|---|---|
+| parent-interval | run_id, calendar_receipt, forcing_receipt, start_ns, end_ns |
+| parent-transaction | run_id, sequence, parent_interval_id, begin_owner_set |
+| segment | parent_transaction_id, ordinal, start_ns, end_ns, regime_id, participant_set |
+| accepted-slab | parent_transaction_id, slab_ordinal, segment_id, start_ns, end_ns, duration_bits, begin_owner_set, end_owner_set, constraint_digest, ledger_digest |
+| attempt | parent_transaction_id, accepted_cursor_ns, slab_ordinal, attempt_ordinal, start_ns, end_ns, constraint_digest, begin_owner_set |
+| event | parent_transaction_id, tick_ns, event_class, event_ordinal, source_owner_id, event_context |
+| event-receipt | event_id, tick_ns, ordinal, begin_owner_set, end_owner_set, ledger_digest |
+| slab-receipt | accepted_slab_id, begin_clock, end_clock, owner_set, ledger_digest |
+| parent-receipt | parent_transaction_id, parent_interval_id, begin_owner_set, end_owner_set, ordered_slab_receipts, ordered_event_receipts |
+| publication-receipt | parent_receipt_id, ordered_output_records, outbox_state |
+
+The vector model definition freezes each field's scalar type. A tag reorder,
+field omission, extra field, wrong scalar width, or wrong domain/version is a
+different preimage and cannot be admitted as the named V1 identity.
+
 `n_X` starts at zero and is checked `u128`. `ParentTransactionId` binds run ID,
 `n_X`, parent interval ID, and beginning complete-owner digest. Parent commit
 computes checked `n_X+1`; slabs/events do not change it. `SegmentId` binds the
@@ -181,9 +200,13 @@ is legal only when it names a pending admitted event transition.
 Choose the earliest end tick. At that tick use class precedence in the written
 order above, then lexicographically smallest canonical source-owner identity,
 then lexicographically smallest constraint digest. Equal-time constraints are
-compatible only when their boundary/event semantics can all be satisfied at
-that tick; incompatible equal-time facts fail `ERR-CT-008` rather than being
-silently ordered. The selected end may not cross parent, segment, event,
+compatible only when they share byte-identical parent ID, accepted cursor,
+calendar receipt, and forcing receipt, and every non-adaptive fact has the same
+canonical compatibility-group digest. Adaptive bounds do not conflict with a
+hard fact and remain in the ordered receipt. Coincident event transitions also
+require the precedence-sorted ending owner digest of each event to equal the
+next event's beginning owner digest. Any mismatch fails `ERR-CT-008` rather
+than being silently ordered. The selected end may not cross parent, segment, event,
 output, or restart boundaries.
 
 Coupled time owns this reduction and the accepted cursor. Adopters own proposal
@@ -252,6 +275,18 @@ exactly to `b`, and increment `slab_ordinal` exactly once. Accepted slabs never
 increment the persistent parent transaction ID. Partial installation is
 impossible.
 
+The canonical candidate/receipt/ledger wire is
+`OPENWEPP_COUPLED_TIME_RECEIPT_CANDIDATE_LEDGER_V1`. Its complete-owner map has
+exactly one entry per fixed parent owner. Active entries are candidates;
+inactive entries are byte-identical carries. Event mutation is admitted only
+for the declared event mutation set. Owner keys, participants, receipt IDs, and
+ledger IDs are strictly canonically ordered and unique. Every local ledger
+reference resolves; exchanged-flux, tolerance-policy, units, and operand-
+lineage digests join before the ending complete-owner digest is reconstructed.
+The same closed envelope defines slab/event/parent candidates and receipts and
+the publication receipt. Missing, duplicated, wrong-beginning, inactive-
+mutated, failed-ledger, or partially installed entries fail atomically.
+
 ### 6. Apply a zero-duration event transition
 
 An admitted event may occur at parent start, an accepted slab end, or parent
@@ -317,6 +352,16 @@ publication order, and terminal parent identity.
 Coupled-time restart is additive and versioned. Existing DirectV10 persisted-
 restart V1 schema, vectors, manifest, and bytes remain byte-identical. Any
 change to an existing wire requires separate authority amendment.
+
+`OPENWEPP_COUPLED_TIME_RESTART_V1` retains the complete canonical owner bytes,
+controller checkpoint bytes, accepted event and scheduled-once receipts,
+operand receipt lineage for reductions, complete pending publication record
+bytes, and durable outbox rows—not digests alone. The separately versioned
+`OPENWEPP_COUPLED_TIME_SEMANTIC_VALIDATOR_V1` is mandatory in addition to JSON
+Schema: it enforces checked numeric ranges, relational support/cursor bounds,
+canonical ordering/uniqueness/cardinality, byte-to-digest reconstruction,
+receipt chronology and replay exclusion, accepted-only reduction/publication
+lineage, outbox/parent joins, and canonical reserialization equality.
 
 ### 9. Parent finalization and publication
 

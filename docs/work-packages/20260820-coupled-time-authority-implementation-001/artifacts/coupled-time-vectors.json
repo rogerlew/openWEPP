@@ -1,57 +1,1305 @@
 {
-  "schema":"OPENWEPP_COUPLED_TIME_VECTORS_V1",
-  "expected_reference_results_sha256":"c4b2281fa6fa98c6ad080f9c0927360daaf1441da25cda36d1fc90c38529e92d",
-  "accepted_state_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "mutated_state_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-  "cases":[
-    {"id":"full_support","op":"partition","parent":["0","1800000000000"],"segments":[["0","1800000000000"]],"expected":{"status":"accepted","cursor":"1800000000000"}},
-    {"id":"participant_transition","op":"participants","owners":["A","B","C"],"segments":[["A","B"],["A","C"]],"expected":{"status":"accepted","terminal":["A","B","C"]}},
-    {"id":"duration_1s","op":"duration","support":["0","1000000000"],"expected":{"status":"accepted","bits_hex":"3ff0000000000000"}},
-    {"id":"duration_30s","op":"duration","support":["300000000000","330000000000"],"expected":{"status":"accepted","bits_hex":"403e000000000000"}},
-    {"id":"duration_above_2p53_ns","op":"duration","support":["0","9007199254740993"],"expected":{"status":"accepted","bits_hex":"41612e0be826d695"}},
-    {"id":"duration_u128_max","op":"duration","support":["0","340282366920938463463374607431768211455"],"expected":{"status":"accepted","bits_hex":"46112e0be826d695"}},
-    {"id":"quantize_positive_zero","op":"quantize","seconds_bits":"0000000000000000","parent":["0","10"],"expected":{"status":"accepted","tick":"0"}},
-    {"id":"quantize_negative_zero","op":"quantize","seconds_bits":"8000000000000000","parent":["0","10"],"expected":{"status":"accepted","tick":"0"}},
-    {"id":"quantize_half_neighbor_below","op":"quantize","seconds_bits":"3e012e0be826d694","parent":["0","10"],"expected":{"status":"accepted","tick":"0"}},
-    {"id":"quantize_half_neighbor_above","op":"quantize","seconds_bits":"3e012e0be826d695","parent":["0","10"],"expected":{"status":"accepted","tick":"1"}},
-    {"id":"quantize_two_half_neighbor_below","op":"quantize","seconds_bits":"3e25798ee2308c39","parent":["0","10"],"expected":{"status":"accepted","tick":"2"}},
-    {"id":"quantize_two_half_neighbor_above","op":"quantize","seconds_bits":"3e25798ee2308c3a","parent":["0","10"],"expected":{"status":"accepted","tick":"3"}},
-    {"id":"event_parent_start","op":"event","tick":"0","parent":["0","10"],"class":"OwnershipTransfer","expected":{"status":"accepted","event_ordinal":1,"cursor":"0"}},
-    {"id":"event_inside","op":"event","tick":"5","parent":["0","10"],"class":"RegimeTransition","expected":{"status":"accepted","event_ordinal":1,"cursor":"5"}},
-    {"id":"event_parent_end","op":"event","tick":"10","parent":["0","10"],"class":"DiagnosticMarker","expected":{"status":"accepted","event_ordinal":1,"cursor":"10"}},
-    {"id":"two_events_same_tick","op":"event_order","events":[{"class":"RegimeTransition","owner":"B","digest":"22"},{"class":"OwnershipTransfer","owner":"C","digest":"11"}],"expected":{"status":"accepted","order":["OwnershipTransfer:C:11","RegimeTransition:B:22"]}},
-    {"id":"compatible_equal_constraints","op":"constraints","constraints":[{"end":"5","class":"OutputBoundary","owner":"B","digest":"22"},{"end":"5","class":"HardBoundary","owner":"A","digest":"11"}],"expected":{"status":"accepted","end":"5","ordered_classes":["HardBoundary","OutputBoundary"]}},
-    {"id":"retry_reduce","op":"retry","proposals":["10","5"],"outcomes":["reject","accept"],"expected":{"status":"accepted","attempt_ordinals":[0,1],"accepted_cursor":"5","accepted_state_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},
-    {"id":"restart_after_rejection","op":"retry_restart","proposals":["10","5"],"expected":{"status":"accepted","restored_attempt_ordinal":0,"accepted_state_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"publication_commit","op":"publication","owner_commit":true,"state":"CommittedUndelivered","expected":{"status":"accepted","visible":"durable_outbox","state":"CommittedUndelivered"}},
-    {"id":"publication_redelivery","op":"publication","owner_commit":true,"state":"DeliveredUnacknowledged","expected":{"status":"accepted","visible":"idempotent_redelivery","state":"DeliveredUnacknowledged"}},
-    {"id":"direct_v10_hash_protection","op":"legacy_hash","files":[{"path":"../../20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-vector.json","sha256":"c29e28c4fdefd7b49fd6348d46181537df6ae7fc61c21aae1df7960b36ca2ad1"},{"path":"../../20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-schema.json","sha256":"c041ab5923d696e6f26ea8e646a7520fadc30df86191009f08b556b470d80ddd"},{"path":"../../20260817-direct-hydrology-persisted-restart-authority-001/artifacts/artifact-manifest.json","sha256":"e01e2a931ee4edca2fcc452bf90c04e13d2e4e36e15cd96b3ef24666931d47c9"}],"expected":{"status":"accepted","protected_files":3}},
-    {"id":"empty_support","op":"partition","parent":["5","5"],"segments":[],"expected":{"status":"rejected","error":"InvalidParentSupport","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"gap","op":"partition","parent":["0","10"],"segments":[["0","4"],["5","10"]],"expected":{"status":"rejected","error":"InvalidSegmentPartition","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"overlap","op":"partition","parent":["0","10"],"segments":[["0","6"],["5","10"]],"expected":{"status":"rejected","error":"InvalidSegmentPartition","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"u128_overflow","op":"tick","value":"340282366920938463463374607431768211456","expected":{"status":"rejected","error":"InvalidWireIdentity","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"leading_zero","op":"tick","value":"01","expected":{"status":"rejected","error":"InvalidWireIdentity","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"quantize_nan","op":"quantize","seconds_bits":"7ff8000000000000","parent":["0","10"],"expected":{"status":"rejected","error":"InvalidEventProposal","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"quantize_negative","op":"quantize","seconds_bits":"bff0000000000000","parent":["0","10"],"expected":{"status":"rejected","error":"InvalidEventProposal","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"quantize_past_parent","op":"quantize","seconds_bits":"3e479f505f35670c","parent":["0","10"],"expected":{"status":"rejected","error":"EventPastParentEnd","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"event_failure","op":"forced_error","error":"LedgerNotClosed","expected":{"status":"rejected","error":"LedgerNotClosed","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"event_replay_poison","op":"forced_error","error":"EventReplay","expected":{"status":"rejected","error":"EventReplay","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"event_no_progress_cycle_new_ordinals","op":"event_cycle","semantic_keys":["same","same"],"ordinals":[0,1],"expected":{"status":"rejected","error":"EventNoProgressCycle","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"event_budget_exhausted","op":"event_budget","count":257,"expected":{"status":"rejected","error":"EventNoProgressCycle","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"constraint_behind","op":"constraint_bounds","parent":["0","10"],"cursor":"5","end":"4","expected":{"status":"rejected","error":"ConstraintBehindAcceptedTime","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"constraint_past_parent","op":"constraint_bounds","parent":["0","10"],"cursor":"0","end":"11","expected":{"status":"rejected","error":"ConstraintPastParentEnd","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"conflicting_equal_constraints","op":"forced_error","error":"ConflictingEqualTimeConstraints","expected":{"status":"rejected","error":"ConflictingEqualTimeConstraints","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"identical_retry_exhaustion","op":"retry","proposals":["10","10","10"],"outcomes":["reject","reject","reject"],"expected":{"status":"rejected","error":"MinimumStepExhaustion","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"controller_mismatch","op":"forced_error","error":"ControllerPolicyMismatch","expected":{"status":"rejected","error":"ControllerPolicyMismatch","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"owner_join_mismatch","op":"forced_error","error":"BeginningOwnerSetMismatch","expected":{"status":"rejected","error":"BeginningOwnerSetMismatch","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"duration_bits_mismatch","op":"forced_error","error":"DurationBitsMismatch","expected":{"status":"rejected","error":"DurationBitsMismatch","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"participant_mismatch","op":"forced_error","error":"ParticipantSetMismatch","expected":{"status":"rejected","error":"ParticipantSetMismatch","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"inactive_owner_mutated","op":"forced_error","error":"AtomicAcceptanceFailure","expected":{"status":"rejected","error":"AtomicAcceptanceFailure","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"partial_owner_install","op":"forced_error","error":"AtomicAcceptanceFailure","expected":{"status":"rejected","error":"AtomicAcceptanceFailure","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"direct_clock_advance","op":"forced_error","error":"UnauthorizedClockAdvance","expected":{"status":"rejected","error":"UnauthorizedClockAdvance","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"scheduled_once_replay","op":"forced_error","error":"ScheduledOnceReplay","expected":{"status":"rejected","error":"ScheduledOnceReplay","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"publication_before_commit","op":"publication","owner_commit":false,"state":"Buffered","expected":{"status":"rejected","error":"PublicationBeforeParentCommit","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"publication_after_rollback","op":"forced_error","error":"PublicationRetainedAfterRollback","expected":{"status":"rejected","error":"PublicationRetainedAfterRollback","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-    {"id":"richards_legacy_time","op":"authority_tuple","hydrology":"RichardsCoupledV1","time":"LegacyFixedSchedule","expected":{"status":"rejected","error":"UnsupportedAuthorityTuple","before_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","after_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}
+  "schema": "OPENWEPP_COUPLED_TIME_VECTORS_V1",
+  "expected_reference_results_sha256": "c57e0532427929d7d3dc45182290d0c65a23f41a36d6d2e34d2e8018741fdeb8",
+  "accepted_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "mutated_state_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "cases": [
+    {
+      "id": "parent_interval_identity_kat",
+      "op": "identity",
+      "domain": "parent-interval",
+      "fields": [
+        {
+          "tag": "run_id",
+          "type": "sha256",
+          "value": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+        },
+        {
+          "tag": "calendar_receipt",
+          "type": "sha256",
+          "value": "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f"
+        },
+        {
+          "tag": "forcing_receipt",
+          "type": "sha256",
+          "value": "404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f"
+        },
+        {
+          "tag": "start_ns",
+          "type": "u128",
+          "value": "0"
+        },
+        {
+          "tag": "end_ns",
+          "type": "u128",
+          "value": "1800000000000"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e57455050000001000f706172656e742d696e74657276616c000672756e5f696400000020000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f001063616c656e6461725f7265636569707400000020202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f000f666f7263696e675f7265636569707400000020404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f000873746172745f6e7300000010000000000000000000000000000000000006656e645f6e73000000100000000000000000000001a3185c5000",
+        "sha256": "f2ebbdcc404bc86c2790c4b53d226e99b3488aa90fa85f1184776cb25faca995",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "parent_transaction_identity_kat",
+      "op": "identity",
+      "domain": "parent-transaction",
+      "fields": [
+        {
+          "tag": "run_id",
+          "type": "sha256",
+          "value": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+        },
+        {
+          "tag": "sequence",
+          "type": "u128",
+          "value": "7"
+        },
+        {
+          "tag": "parent_interval_id",
+          "type": "sha256",
+          "value": "1111111111111111111111111111111111111111111111111111111111111111"
+        },
+        {
+          "tag": "begin_owner_set",
+          "type": "sha256",
+          "value": "2222222222222222222222222222222222222222222222222222222222222222"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e574550500000010012706172656e742d7472616e73616374696f6e000672756e5f696400000020000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f000873657175656e636500000010000000000000000000000000000000070012706172656e745f696e74657276616c5f6964000000201111111111111111111111111111111111111111111111111111111111111111000f626567696e5f6f776e65725f736574000000202222222222222222222222222222222222222222222222222222222222222222",
+        "sha256": "69a706587a88f2444a849448b94491395f7ea6b13b78dce441c9bf41dd8c575a",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "event_receipt_identity_kat",
+      "op": "identity",
+      "domain": "event-receipt",
+      "fields": [
+        {
+          "tag": "event_id",
+          "type": "sha256",
+          "value": "3333333333333333333333333333333333333333333333333333333333333333"
+        },
+        {
+          "tag": "tick_ns",
+          "type": "u128",
+          "value": "5"
+        },
+        {
+          "tag": "ordinal",
+          "type": "u32",
+          "value": 2
+        },
+        {
+          "tag": "begin_owner_set",
+          "type": "sha256",
+          "value": "4444444444444444444444444444444444444444444444444444444444444444"
+        },
+        {
+          "tag": "end_owner_set",
+          "type": "sha256",
+          "value": "5555555555555555555555555555555555555555555555555555555555555555"
+        },
+        {
+          "tag": "ledger_digest",
+          "type": "sha256",
+          "value": "6666666666666666666666666666666666666666666666666666666666666666"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e57455050000001000d6576656e742d7265636569707400086576656e745f696400000020333333333333333333333333333333333333333333333333333333333333333300077469636b5f6e73000000100000000000000000000000000000000500076f7264696e616c0000000400000002000f626567696e5f6f776e65725f736574000000204444444444444444444444444444444444444444444444444444444444444444000d656e645f6f776e65725f736574000000205555555555555555555555555555555555555555555555555555555555555555000d6c65646765725f646967657374000000206666666666666666666666666666666666666666666666666666666666666666",
+        "sha256": "642d3dcaaee679961fa8c4d38c5bac5ff3c6f795cf5d4514e35f004a6f9afc14",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "ambiguous_length_left",
+      "op": "identity",
+      "domain": "constraint",
+      "fields": [
+        {
+          "tag": "a",
+          "type": "utf8",
+          "value": "ab"
+        },
+        {
+          "tag": "b",
+          "type": "utf8",
+          "value": "c"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e57455050000001000a636f6e73747261696e740001610000000261620001620000000163",
+        "sha256": "249bc2b7d030d842a2ae9c9d1a27d30000667b4312a9c99417b3a7a33a7bfcd6",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "ambiguous_length_right",
+      "op": "identity",
+      "domain": "constraint",
+      "fields": [
+        {
+          "tag": "a",
+          "type": "utf8",
+          "value": "a"
+        },
+        {
+          "tag": "b",
+          "type": "utf8",
+          "value": "bc"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e57455050000001000a636f6e73747261696e740001610000000161000162000000026263",
+        "sha256": "31c757424c76efb605b0049a5e3286cbd46a2a460564f9331e46530f5c54c2b0",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "full_support",
+      "op": "partition",
+      "parent": [
+        "0",
+        "1800000000000"
+      ],
+      "segments": [
+        [
+          "0",
+          "1800000000000"
+        ]
+      ],
+      "expected": {
+        "cursor": "1800000000000",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "participant_transition",
+      "op": "participants",
+      "owners": [
+        "A",
+        "B",
+        "C"
+      ],
+      "segments": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "C"
+        ]
+      ],
+      "expected": {
+        "status": "accepted",
+        "terminal": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    },
+    {
+      "id": "duration_1s",
+      "op": "duration",
+      "support": [
+        "0",
+        "1000000000"
+      ],
+      "expected": {
+        "bits_hex": "3ff0000000000000",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "duration_30s",
+      "op": "duration",
+      "support": [
+        "300000000000",
+        "330000000000"
+      ],
+      "expected": {
+        "bits_hex": "403e000000000000",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "duration_above_2p53_ns",
+      "op": "duration",
+      "support": [
+        "0",
+        "9007199254740993"
+      ],
+      "expected": {
+        "bits_hex": "41612e0be826d695",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "duration_u128_max",
+      "op": "duration",
+      "support": [
+        "0",
+        "340282366920938463463374607431768211455"
+      ],
+      "expected": {
+        "bits_hex": "46112e0be826d695",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "quantize_positive_zero",
+      "op": "quantize",
+      "seconds_bits": "0000000000000000",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "expected": {
+        "status": "accepted",
+        "tick": "0"
+      }
+    },
+    {
+      "id": "quantize_negative_zero",
+      "op": "quantize",
+      "seconds_bits": "8000000000000000",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "expected": {
+        "status": "accepted",
+        "tick": "0"
+      }
+    },
+    {
+      "id": "quantize_half_neighbor_below",
+      "op": "quantize",
+      "seconds_bits": "3e012e0be826d694",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "expected": {
+        "status": "accepted",
+        "tick": "0"
+      }
+    },
+    {
+      "id": "quantize_half_neighbor_above",
+      "op": "quantize",
+      "seconds_bits": "3e012e0be826d695",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "expected": {
+        "status": "accepted",
+        "tick": "1"
+      }
+    },
+    {
+      "id": "quantize_two_half_neighbor_below",
+      "op": "quantize",
+      "seconds_bits": "3e25798ee2308c39",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "expected": {
+        "status": "accepted",
+        "tick": "2"
+      }
+    },
+    {
+      "id": "quantize_two_half_neighbor_above",
+      "op": "quantize",
+      "seconds_bits": "3e25798ee2308c3a",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "expected": {
+        "status": "accepted",
+        "tick": "3"
+      }
+    },
+    {
+      "id": "quantize_exact_half_ties_even",
+      "op": "quantize",
+      "seconds_bits": "3f50000000000000",
+      "parent": [
+        "0",
+        "1000000"
+      ],
+      "expected": {
+        "status": "accepted",
+        "tick": "976562"
+      }
+    },
+    {
+      "id": "quantize_above_2p53_ns",
+      "op": "quantize",
+      "seconds_bits": "41612e0be826d695",
+      "parent": [
+        "0",
+        "9007199254740994"
+      ],
+      "expected": {
+        "status": "accepted",
+        "tick": "9007199254740993"
+      }
+    },
+    {
+      "id": "quantize_to_u128_max",
+      "op": "quantize",
+      "seconds_bits": "3e112e0be826d695",
+      "parent": [
+        "340282366920938463463374607431768211454",
+        "340282366920938463463374607431768211455"
+      ],
+      "expected": {
+        "status": "accepted",
+        "tick": "340282366920938463463374607431768211455"
+      }
+    },
+    {
+      "id": "quantize_addition_overflow",
+      "op": "quantize",
+      "seconds_bits": "3e212e0be826d695",
+      "parent": [
+        "340282366920938463463374607431768211454",
+        "340282366920938463463374607431768211455"
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "EventTickOverflow",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "quantize_magnitude_overflow",
+      "op": "quantize",
+      "seconds_bits": "4611aba4db89fc3d",
+      "parent": [
+        "0",
+        "340282366920938463463374607431768211455"
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "EventProposalOverflow",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "event_parent_start",
+      "op": "events",
+      "event_ordinal": 0,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "events": [
+        {
+          "tick": "0",
+          "class": "OwnershipTransfer",
+          "owner": "B",
+          "digest": "11",
+          "event_id": "e0",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "regime_sha256": "r0",
+          "participant_sha256": "p0",
+          "pending_event_ids": [],
+          "ledger_closed": true
+        }
+      ],
+      "expected": {
+        "end_owner_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "event_ordinal": 1,
+        "receipts": [
+          "OwnershipTransfer:e0:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "event_inside",
+      "op": "events",
+      "event_ordinal": 4,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "events": [
+        {
+          "tick": "5",
+          "class": "RegimeTransition",
+          "owner": "B",
+          "digest": "11",
+          "event_id": "e5",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "regime_sha256": "r1",
+          "participant_sha256": "p1",
+          "pending_event_ids": [],
+          "ledger_closed": true
+        }
+      ],
+      "expected": {
+        "end_owner_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "event_ordinal": 5,
+        "receipts": [
+          "RegimeTransition:e5:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "event_parent_end",
+      "op": "events",
+      "event_ordinal": 9,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "events": [
+        {
+          "tick": "10",
+          "class": "DiagnosticMarker",
+          "owner": "B",
+          "digest": "11",
+          "event_id": "e10",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "regime_sha256": "r1",
+          "participant_sha256": "p1",
+          "pending_event_ids": [],
+          "ledger_closed": true
+        }
+      ],
+      "expected": {
+        "end_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "event_ordinal": 10,
+        "receipts": [
+          "DiagnosticMarker:e10:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "two_events_same_tick",
+      "op": "events",
+      "event_ordinal": 0,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "events": [
+        {
+          "tick": "5",
+          "class": "RegimeTransition",
+          "owner": "B",
+          "digest": "22",
+          "event_id": "e2",
+          "begin_owner_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "end_owner_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "regime_sha256": "r2",
+          "participant_sha256": "p2",
+          "pending_event_ids": [],
+          "ledger_closed": true
+        },
+        {
+          "tick": "5",
+          "class": "OwnershipTransfer",
+          "owner": "C",
+          "digest": "11",
+          "event_id": "e1",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "regime_sha256": "r1",
+          "participant_sha256": "p1",
+          "pending_event_ids": [
+            "e2"
+          ],
+          "ledger_closed": true
+        }
+      ],
+      "expected": {
+        "end_owner_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "event_ordinal": 2,
+        "receipts": [
+          "OwnershipTransfer:e1:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "RegimeTransition:e2:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "compatible_equal_constraints",
+      "op": "constraints",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "cursor": "0",
+      "constraints": [
+        {
+          "end": "5",
+          "class": "OutputBoundary",
+          "owner": "B",
+          "digest": "22",
+          "parent_id": "p",
+          "cursor": "0",
+          "calendar_receipt": "c",
+          "forcing_receipt": "f",
+          "compatibility_group": "g"
+        },
+        {
+          "end": "5",
+          "class": "HardBoundary",
+          "owner": "A",
+          "digest": "11",
+          "parent_id": "p",
+          "cursor": "0",
+          "calendar_receipt": "c",
+          "forcing_receipt": "f",
+          "compatibility_group": "g"
+        },
+        {
+          "end": "7",
+          "class": "AdaptiveUpperBound",
+          "owner": "C",
+          "digest": "33",
+          "parent_id": "p",
+          "cursor": "0",
+          "calendar_receipt": "c",
+          "forcing_receipt": "f",
+          "compatibility_group": "ignored"
+        }
+      ],
+      "expected": {
+        "end": "5",
+        "ordered": [
+          "HardBoundary:A:11",
+          "OutputBoundary:B:22"
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "retry_reduce",
+      "op": "retry",
+      "controller_policy": "half-v1",
+      "restart_controller_policy": "half-v1",
+      "accepted_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "duration_bits": "3ff0000000000000",
+      "attempts": [
+        {
+          "ordinal": 0,
+          "end": "10",
+          "outcome": "reject",
+          "begin_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "owner_duration_bits": "3ff0000000000000"
+        },
+        {
+          "ordinal": 1,
+          "end": "5",
+          "outcome": "accept",
+          "begin_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_state_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "owner_duration_bits": "3ff0000000000000"
+        }
+      ],
+      "expected": {
+        "accepted_cursor": "5",
+        "accepted_state_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "attempt_ordinals": [
+          0,
+          1
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "restart_after_rejection",
+      "op": "retry",
+      "controller_policy": "half-v1",
+      "restart_controller_policy": "half-v1",
+      "accepted_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "duration_bits": "3ff0000000000000",
+      "attempts": [
+        {
+          "ordinal": 0,
+          "end": "5",
+          "outcome": "accept",
+          "begin_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_state_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "owner_duration_bits": "3ff0000000000000"
+        }
+      ],
+      "expected": {
+        "accepted_cursor": "5",
+        "accepted_state_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "attempt_ordinals": [
+          0
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "publication_commit",
+      "op": "publication",
+      "parent_committed": true,
+      "samples": [
+        {
+          "value": 7,
+          "accepted": true
+        },
+        {
+          "value": 99,
+          "accepted": false
+        },
+        {
+          "value": 8,
+          "accepted": true
+        }
+      ],
+      "records": [
+        {
+          "receipt_id": "r1"
+        },
+        {
+          "receipt_id": "r2"
+        }
+      ],
+      "expected": {
+        "maximum": 8,
+        "publication_order": [
+          "r1",
+          "r2"
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "publication_redelivery",
+      "op": "publication",
+      "parent_committed": true,
+      "samples": [
+        {
+          "value": 8,
+          "accepted": true
+        }
+      ],
+      "records": [
+        {
+          "receipt_id": "r1"
+        }
+      ],
+      "expected": {
+        "maximum": 8,
+        "publication_order": [
+          "r1"
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "direct_v10_hash_protection",
+      "op": "legacy_hash",
+      "files": [
+        {
+          "path": "../../20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-vector.json",
+          "sha256": "c29e28c4fdefd7b49fd6348d46181537df6ae7fc61c21aae1df7960b36ca2ad1"
+        },
+        {
+          "path": "../../20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-schema.json",
+          "sha256": "c041ab5923d696e6f26ea8e646a7520fadc30df86191009f08b556b470d80ddd"
+        },
+        {
+          "path": "../../20260817-direct-hydrology-persisted-restart-authority-001/artifacts/artifact-manifest.json",
+          "sha256": "e01e2a931ee4edca2fcc452bf90c04e13d2e4e36e15cd96b3ef24666931d47c9"
+        }
+      ],
+      "expected": {
+        "protected_files": 3,
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "empty_support",
+      "op": "partition",
+      "parent": [
+        "5",
+        "5"
+      ],
+      "segments": [],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "InvalidParentSupport",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "gap",
+      "op": "partition",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "segments": [
+        [
+          "0",
+          "4"
+        ],
+        [
+          "5",
+          "10"
+        ]
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "InvalidSegmentPartition",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "overlap",
+      "op": "partition",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "segments": [
+        [
+          "0",
+          "6"
+        ],
+        [
+          "5",
+          "10"
+        ]
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "InvalidSegmentPartition",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "u128_overflow",
+      "op": "tick",
+      "value": "340282366920938463463374607431768211456",
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "InvalidWireIdentity",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "leading_zero",
+      "op": "tick",
+      "value": "01",
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "InvalidWireIdentity",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "quantize_nan",
+      "op": "quantize",
+      "seconds_bits": "7ff8000000000000",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "InvalidEventProposal",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "quantize_negative",
+      "op": "quantize",
+      "seconds_bits": "bff0000000000000",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "InvalidEventProposal",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "quantize_past_parent",
+      "op": "quantize",
+      "seconds_bits": "3e479f505f35670c",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "EventPastParentEnd",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "event_failure",
+      "op": "events",
+      "event_ordinal": 0,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "events": [
+        {
+          "tick": "5",
+          "class": "OwnershipTransfer",
+          "owner": "A",
+          "digest": "1",
+          "event_id": "bad",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "regime_sha256": "r",
+          "participant_sha256": "p",
+          "pending_event_ids": [],
+          "ledger_closed": false
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "LedgerNotClosed",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "event_replay_poison",
+      "op": "events",
+      "event_ordinal": 1,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "accepted_event_ids": [
+        "seen"
+      ],
+      "events": [
+        {
+          "tick": "5",
+          "class": "OwnershipTransfer",
+          "owner": "A",
+          "digest": "1",
+          "event_id": "seen",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "regime_sha256": "r",
+          "participant_sha256": "p",
+          "pending_event_ids": [],
+          "ledger_closed": true
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "EventReplay",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "event_no_progress_cycle_new_ordinals",
+      "op": "events",
+      "event_ordinal": 0,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "events": [
+        {
+          "tick": "5",
+          "class": "OwnershipTransfer",
+          "owner": "A",
+          "digest": "1",
+          "event_id": "e1",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "regime_sha256": "r",
+          "participant_sha256": "p",
+          "pending_event_ids": [],
+          "ledger_closed": true
+        },
+        {
+          "tick": "5",
+          "class": "OwnershipTransfer",
+          "owner": "B",
+          "digest": "2",
+          "event_id": "e2",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "regime_sha256": "r",
+          "participant_sha256": "p",
+          "pending_event_ids": [],
+          "ledger_closed": true
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "EventNoProgressCycle",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "event_budget_exhausted",
+      "op": "events",
+      "event_ordinal": 0,
+      "same_tick_event_budget": 1,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "events": [
+        {
+          "tick": "5",
+          "class": "OwnershipTransfer",
+          "owner": "A",
+          "digest": "1",
+          "event_id": "e1",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "regime_sha256": "r",
+          "participant_sha256": "p",
+          "pending_event_ids": [],
+          "ledger_closed": true
+        },
+        {
+          "tick": "5",
+          "class": "RegimeTransition",
+          "owner": "B",
+          "digest": "2",
+          "event_id": "e2",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "regime_sha256": "r2",
+          "participant_sha256": "p2",
+          "pending_event_ids": [],
+          "ledger_closed": true
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "EventBudgetExhausted",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "constraint_behind",
+      "op": "constraints",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "cursor": "5",
+      "constraints": [
+        {
+          "end": "4",
+          "class": "HardBoundary",
+          "owner": "A",
+          "digest": "1",
+          "parent_id": "p",
+          "cursor": "5",
+          "calendar_receipt": "c",
+          "forcing_receipt": "f",
+          "compatibility_group": "g"
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "ConstraintBehindAcceptedTime",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "constraint_past_parent",
+      "op": "constraints",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "cursor": "0",
+      "constraints": [
+        {
+          "end": "11",
+          "class": "HardBoundary",
+          "owner": "A",
+          "digest": "1",
+          "parent_id": "p",
+          "cursor": "0",
+          "calendar_receipt": "c",
+          "forcing_receipt": "f",
+          "compatibility_group": "g"
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "ConstraintPastParentEnd",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "conflicting_equal_constraints",
+      "op": "constraints",
+      "parent": [
+        "0",
+        "10"
+      ],
+      "cursor": "0",
+      "constraints": [
+        {
+          "end": "5",
+          "class": "HardBoundary",
+          "owner": "A",
+          "digest": "1",
+          "parent_id": "p",
+          "cursor": "0",
+          "calendar_receipt": "c",
+          "forcing_receipt": "f",
+          "compatibility_group": "snow"
+        },
+        {
+          "end": "5",
+          "class": "EventBoundary",
+          "owner": "B",
+          "digest": "2",
+          "parent_id": "p",
+          "cursor": "0",
+          "calendar_receipt": "c",
+          "forcing_receipt": "f",
+          "compatibility_group": "soil"
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "ConflictingEqualTimeConstraints",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "identical_retry_exhaustion",
+      "op": "retry",
+      "controller_policy": "half-v1",
+      "restart_controller_policy": "half-v1",
+      "accepted_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "duration_bits": "3ff0000000000000",
+      "attempts": [
+        {
+          "ordinal": 0,
+          "end": "10",
+          "outcome": "reject",
+          "begin_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "owner_duration_bits": "3ff0000000000000"
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "MinimumStepExhaustion",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "controller_mismatch",
+      "op": "retry",
+      "controller_policy": "half-v1",
+      "restart_controller_policy": "other-v1",
+      "accepted_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "duration_bits": "3ff0000000000000",
+      "attempts": [],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "ControllerPolicyMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "owner_join_mismatch",
+      "op": "candidate",
+      "complete_owners": [
+        "A",
+        "B"
+      ],
+      "participants": [
+        "A"
+      ],
+      "accepted_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "begin_owner_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "end_owner_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "begin_bytes": {
+        "A": "00",
+        "B": "00"
+      },
+      "end_bytes": {
+        "A": "01",
+        "B": "00"
+      },
+      "clock_writer": "CoupledClock",
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "BeginningOwnerSetMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "participant_mismatch",
+      "op": "candidate",
+      "complete_owners": [
+        "A",
+        "B"
+      ],
+      "participants": [
+        "C"
+      ],
+      "accepted_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "end_owner_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "begin_bytes": {
+        "A": "00",
+        "B": "00"
+      },
+      "end_bytes": {
+        "A": "00",
+        "B": "00"
+      },
+      "clock_writer": "CoupledClock",
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "ParticipantSetMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "inactive_owner_mutated",
+      "op": "candidate",
+      "complete_owners": [
+        "A",
+        "B"
+      ],
+      "participants": [
+        "A"
+      ],
+      "accepted_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "end_owner_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "begin_bytes": {
+        "A": "00",
+        "B": "00"
+      },
+      "end_bytes": {
+        "A": "01",
+        "B": "01"
+      },
+      "clock_writer": "CoupledClock",
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "InactiveOwnerMutated",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "direct_clock_advance",
+      "op": "candidate",
+      "complete_owners": [
+        "A",
+        "B"
+      ],
+      "participants": [
+        "A"
+      ],
+      "accepted_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "end_owner_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "begin_bytes": {
+        "A": "00",
+        "B": "00"
+      },
+      "end_bytes": {
+        "A": "01",
+        "B": "00"
+      },
+      "clock_writer": "A",
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "UnauthorizedClockAdvance",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "scheduled_once_replay",
+      "op": "scheduled_once",
+      "accepted_receipts": [
+        "daily-1"
+      ],
+      "receipt_id": "daily-1",
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "ScheduledOnceReplay",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "publication_before_commit",
+      "op": "publication",
+      "parent_committed": false,
+      "samples": [
+        {
+          "value": 8,
+          "accepted": true
+        }
+      ],
+      "records": [
+        {
+          "receipt_id": "r1"
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "PublicationBeforeParentCommit",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "transaction_successor_overflow",
+      "op": "transaction_successor",
+      "sequence": "340282366920938463463374607431768211455",
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "TransactionSequenceOverflow",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "richards_legacy_time",
+      "op": "authority_tuple",
+      "hydrology": "RichardsCoupledV1",
+      "time": "LegacyFixedSchedule",
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "UnsupportedAuthorityTuple",
+        "status": "rejected"
+      }
+    }
   ]
 }
