@@ -117,3 +117,20 @@ production Rust or Cargo edit.
 
 Verdict: `PASS / SC-VEGETATIONTRANSACTION-001 Version 7 Restart V2 amendment
 is independently verified for promotion.`
+
+## Final disposition regression — checkpoint `1a3aa9d7953d03b2be7d7b5ddce3ce4ba9d66087`
+
+Status: `PASS`
+
+Verified tree: `54656a34bd391b3498726b7f11da3001051d17dc`
+
+The transaction disposition incorporates the complete shared finding list and
+explicitly records exact segment predecessors, terminal seven-owner equality,
+event custody, ordered unique collections, joint parent sequences, and durable
+outbox reconstruction. All Review A/B amendment findings are therefore
+enumerated, accepted, and closed without waiver.
+
+Version 7 contract, executable reference, and poison objects are byte-identical
+to independently verified checkpoint `6c74d866d`. Regression execution again
+passes complete continuation with 54/54 rejects and Rust authority 6/6; diff
+hygiene passes. The prior technical PASS remains exact with no new finding.

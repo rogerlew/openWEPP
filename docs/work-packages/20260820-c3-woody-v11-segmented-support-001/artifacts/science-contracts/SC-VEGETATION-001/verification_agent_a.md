@@ -126,3 +126,23 @@ edit.
 
 Verdict: `PASS / SC-VEGETATION-001 Version 18 Restart V2 amendment is
 independently verified for promotion.`
+
+## Final disposition regression — checkpoint `1a3aa9d7953d03b2be7d7b5ddce3ce4ba9d66087`
+
+Status: `PASS`
+
+Verified tree: `54656a34bd391b3498726b7f11da3001051d17dc`
+
+The disposition now explicitly enumerates and accepts without waiver every
+Restart V2 family: `RA-001..004`, `TA-001`, `FA-001..003`, `RVA-001..004`,
+`RVC-A-001..004`, `RVF-A-001..002`, and
+`V11-RESTART-V2-B-001..006`. Their stated closures agree with the final Review
+A/B PASS records and Version 18 authority.
+
+The contracts, executable reference, and 54-poison population have exact Git
+object identity with the prior verified checkpoint `6c74d866d`; only
+disposition and verification records changed. As an independent regression
+sample, the reference again passed complete seven-owner continuation and
+54/54 poisons, the Rust authority suite passed 6/6, and range diff hygiene
+passed. The prior technical Verification A PASS remains exact and no new
+finding is introduced.

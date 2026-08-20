@@ -195,3 +195,46 @@ one exact checkpoint; no authority or executable changes are required.
 mandatory finding-disposition lifecycle is incomplete at `6c74d866d`.
 Promotion and production implementation remain prohibited pending the bounded
 documentation correction and dual re-verification.
+
+---
+
+## Restart V2 disposition regression — checkpoint `1a3aa9d7953d03b2be7d7b5ddce3ce4ba9d66087`
+
+Date: 2026-08-20
+
+Status: **FAIL**
+
+Evidence class: `Static + Ran + exact finding-ID reconciliation`
+
+The technical authority is unchanged from the passing checkpoint: Restart V2
+schema `af9314c3...2441`, poison population `fa5ae93f...ad34`, and independent
+reference `13f3d009...f7c` are byte-identical; complete continuation and 54/54
+poisons pass; the authority suite passes 6/6. No production artifact changed.
+
+The disposition correction adds the reviewed authority and review-record
+commits, explicitly records no waiver, and dispositions all vegetation-side
+amendment families (`RA`, `TA`, `FA`, `RVA`, `RVC-A`, `RVF-A`, and
+`V11-RESTART-V2-B`). Those portions pass reconciliation.
+
+### `V11-AMEND-VERIFY-B-002` — BLOCKER — transaction-side finding IDs remain omitted
+
+The verification requirement is every A/B finding ID, not only analogous
+vegetation-side families. The Review A transaction artifact contains distinct
+findings `RA-TXN-001..005`, `TA-TXN-001`, `FA-TXN-001..004`,
+`RVA-TXN-001..004`, and `RVF-TXN-001..002`. Review B contains distinct
+`V11-TXN-RESTART-V2-B-001..005`. Neither disposition file names or ranges
+these IDs. The transaction disposition instead states that the shared
+vegetation list is complete, but analogous corrective subject matter does not
+disposition separately issued finding identities.
+
+Required correction: add the exact transaction Review A and Review B ranges
+above to the transaction disposition (or an explicit row-by-row mapping to the
+accepted vegetation corrections), record each as closed at `5918d4dbd`, and
+retain the no-waiver and production-gate statements. Then rerun the bounded
+verification; technical authority need not reopen.
+
+### Verdict
+
+**FAIL.** The first disposition correction is substantial but does not satisfy
+the explicit all-finding-ID requirement. Promotion remains gated on one final
+transaction-ID reconciliation and dual confirmation.

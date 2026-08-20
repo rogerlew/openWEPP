@@ -28,3 +28,16 @@ predecessor chronology, terminal complete-owner equality, event custody,
 ordered unique receipt collections, current/next parent sequence, and one
 reconstructed durable outbox identity. Both final reviews are PASS; dual
 verification and exact promotion remain the only preimplementation gates.
+
+The transaction review identifiers are explicitly dispositioned as follows:
+
+| Transaction finding family | Disposition | Shared closure |
+|---|---|---|
+| `RA-TXN-001..005`, `TA-TXN-001` | accepted | Complete typed checkpoint, owner manifest, receipt framing, suffix continuation, and integrated transaction invariants. |
+| `FA-TXN-001..004` | accepted | Closed receipt bodies, owner-ending reconstruction, independent beginning-owner admission, and consuming atomic commit. |
+| `RVA-TXN-001..004` | accepted | Cross-wire cursor, participant, resource/material, scheduled, reduction, publication/outbox, and sequence joins. |
+| `RVF-TXN-001..002` | accepted | Exact segment predecessor chain and terminal complete-owner equality. |
+| `V11-TXN-RESTART-V2-B-001..005` | accepted | Closed nested transaction bodies, complete owner/event custody, deterministic collection admission, durable outbox reconstruction, and current/next parent chronology. |
+
+Every exact transaction finding ID is closed without waiver at the reviewed
+authority checkpoint.

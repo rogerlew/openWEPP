@@ -141,3 +141,43 @@ only and does not require reopening the technically passing authority.
 **FAIL.** Transaction custody and restart behavior pass, but Version 7 cannot
 advance while its amendment findings remain undispositioned at the canonical
 contract-cycle surface. Promotion and production implementation remain gated.
+
+---
+
+## Restart V2 disposition regression — checkpoint `1a3aa9d7953d03b2be7d7b5ddce3ce4ba9d66087`
+
+Date: 2026-08-20
+
+Status: **FAIL**
+
+Evidence class: `Static + Ran + exact finding-ID reconciliation`
+
+The amendment technical artifacts are byte-identical to the passing authority;
+complete continuation, 54/54 poisons, and authority tests 6/6 pass. The updated
+disposition records the exact authority/review checkpoints and no waiver.
+
+### `V11-TXN-AMEND-VERIFY-B-002` — BLOCKER — transaction finding families are still not dispositioned by ID
+
+The transaction review issued independent IDs that are absent from both
+disposition records:
+
+- `RA-TXN-001..005`;
+- `TA-TXN-001`;
+- `FA-TXN-001..004`;
+- `RVA-TXN-001..004`;
+- `RVF-TXN-001..002`;
+- `V11-TXN-RESTART-V2-B-001..005`.
+
+The disposition lists vegetation-side analogues only. Referencing that shared
+list does not close separately labeled transaction findings under an
+all-finding-ID verification requirement.
+
+Required correction: add these exact ranges with accepted corrective evidence
+and final `5918d4dbd` Review A/B PASS mapping. No authority, schema, vector,
+reference, or production edit is required.
+
+### Verdict
+
+**FAIL.** The technical transaction authority and no-waiver posture pass, but
+canonical disposition remains incomplete by exact finding identity. One final
+documentation-only reconciliation is required before Verification B PASS.
