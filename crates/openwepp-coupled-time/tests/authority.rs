@@ -317,6 +317,33 @@ fn scheduled_execution_key_rejects_different_result_replay() {
         CoupledTimeError::ScheduledOnceReplay
     );
 }
+
+#[test]
+fn empty_sum_roundtrips_as_null_and_rejects_zero_sentinel() {
+    let restart = CoupledTimeRestartV2::new(
+        d(60),
+        d(61),
+        clock(10),
+        DiagnosticReductionV1::new_sum("sum".into(), "kg".into()).unwrap(),
+        None,
+        vec![],
+    )
+    .unwrap();
+    let bytes = restart.to_canonical_json().unwrap();
+    assert!(
+        bytes
+            .windows(b"\"value_bits\":null".len())
+            .any(|w| w == b"\"value_bits\":null")
+    );
+    let restored = CoupledTimeRestartV2::from_canonical_json(&bytes, d(60), d(61), d(4)).unwrap();
+    let (_, reductions, _, _) = restored.into_parts();
+    assert_eq!(reductions[0].maximum(), None);
+    let text = String::from_utf8(bytes).unwrap();
+    let poison = text.replace("\"value_bits\":null", "\"value_bits\":\"0000000000000000\"");
+    assert!(
+        CoupledTimeRestartV2::from_canonical_json(poison.as_bytes(), d(60), d(61), d(4)).is_err()
+    );
+}
 #[test]
 fn identity_kat_is_stable() {
     let support = TimeSupport::new(t(0), t(1_800_000_000_000)).unwrap();

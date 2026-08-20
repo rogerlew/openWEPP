@@ -20,6 +20,9 @@ fn reconstruct_reduction(
     values: &[(ReceiptId, f64)],
 ) -> Result<Option<f64>, CoupledTimeError> {
     if operator == crate::transaction::ReductionOperatorV1::Sum {
+        if values.is_empty() {
+            return Ok(None);
+        }
         let mut retained = 0.0_f64;
         for (_, candidate) in values {
             retained += *candidate;

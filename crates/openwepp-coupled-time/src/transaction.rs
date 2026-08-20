@@ -436,7 +436,6 @@ impl DiagnosticReductionV1 {
     pub fn new_sum(reduction_id: String, units: String) -> Result<Self, CoupledTimeError> {
         let mut value = Self::new(reduction_id, units)?;
         value.operator = ReductionOperatorV1::Sum;
-        value.maximum = Some(0.0);
         Ok(value)
     }
     pub fn fold_accepted(
