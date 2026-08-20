@@ -1,6 +1,6 @@
 {
   "schema": "OPENWEPP_COUPLED_TIME_VECTORS_V1",
-  "expected_reference_results_sha256": "c57e0532427929d7d3dc45182290d0c65a23f41a36d6d2e34d2e8018741fdeb8",
+  "expected_reference_results_sha256": "dbaa037d8004fd03b17c2ce5e6fad8c28df0eaa42354b87bd8a4e66f97fe7322",
   "accepted_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "mutated_state_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "cases": [
@@ -1299,6 +1299,1563 @@
         "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "error": "UnsupportedAuthorityTuple",
         "status": "rejected"
+      }
+    },
+    {
+      "id": "segment_identity_kat",
+      "op": "identity",
+      "domain": "segment",
+      "fields": [
+        {
+          "tag": "parent_transaction_id",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "ordinal",
+          "type": "u32",
+          "value": 2
+        },
+        {
+          "tag": "start_ns",
+          "type": "u128",
+          "value": "5"
+        },
+        {
+          "tag": "end_ns",
+          "type": "u128",
+          "value": "10"
+        },
+        {
+          "tag": "regime_id",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "participant_set",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e5745505000000100077365676d656e740015706172656e745f7472616e73616374696f6e5f696400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00076f7264696e616c0000000400000002000873746172745f6e7300000010000000000000000000000000000000050006656e645f6e73000000100000000000000000000000000000000a0009726567696d655f696400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000f7061727469636970616e745f73657400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sha256": "e22745e3bcc39b711e708250277c9c8b97d3fc05d8072d9ea3e28c38798a47a0",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "accepted_slab_identity_kat",
+      "op": "identity",
+      "domain": "accepted-slab",
+      "fields": [
+        {
+          "tag": "parent_transaction_id",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "slab_ordinal",
+          "type": "u32",
+          "value": 3
+        },
+        {
+          "tag": "segment_id",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "start_ns",
+          "type": "u128",
+          "value": "5"
+        },
+        {
+          "tag": "end_ns",
+          "type": "u128",
+          "value": "10"
+        },
+        {
+          "tag": "duration_bits",
+          "type": "bytes",
+          "value": "3ff0000000000000"
+        },
+        {
+          "tag": "begin_owner_set",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "end_owner_set",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "constraint_digest",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "ledger_digest",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e57455050000001000d61636365707465642d736c61620015706172656e745f7472616e73616374696f6e5f696400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000c736c61625f6f7264696e616c0000000400000003000a7365676d656e745f696400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000873746172745f6e7300000010000000000000000000000000000000050006656e645f6e73000000100000000000000000000000000000000a000d6475726174696f6e5f62697473000000083ff0000000000000000f626567696e5f6f776e65725f73657400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000d656e645f6f776e65725f73657400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa0011636f6e73747261696e745f64696765737400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000d6c65646765725f64696765737400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sha256": "07105df204ef6e1462510340941228bd98800aedbdcc7a1b1895f93edb0d7a45",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "attempt_identity_kat",
+      "op": "identity",
+      "domain": "attempt",
+      "fields": [
+        {
+          "tag": "parent_transaction_id",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "accepted_cursor_ns",
+          "type": "u128",
+          "value": "5"
+        },
+        {
+          "tag": "slab_ordinal",
+          "type": "u32",
+          "value": 3
+        },
+        {
+          "tag": "attempt_ordinal",
+          "type": "u32",
+          "value": 1
+        },
+        {
+          "tag": "start_ns",
+          "type": "u128",
+          "value": "5"
+        },
+        {
+          "tag": "end_ns",
+          "type": "u128",
+          "value": "10"
+        },
+        {
+          "tag": "constraint_digest",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "begin_owner_set",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e574550500000010007617474656d70740015706172656e745f7472616e73616374696f6e5f696400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa001261636365707465645f637572736f725f6e730000001000000000000000000000000000000005000c736c61625f6f7264696e616c0000000400000003000f617474656d70745f6f7264696e616c0000000400000001000873746172745f6e7300000010000000000000000000000000000000050006656e645f6e73000000100000000000000000000000000000000a0011636f6e73747261696e745f64696765737400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000f626567696e5f6f776e65725f73657400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sha256": "eff96bded4e6c44c16c179227658831d8f9b6b77043b0273f8f779f3944bf01e",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "event_identity_kat",
+      "op": "identity",
+      "domain": "event",
+      "fields": [
+        {
+          "tag": "parent_transaction_id",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "tick_ns",
+          "type": "u128",
+          "value": "5"
+        },
+        {
+          "tag": "event_class",
+          "type": "utf8",
+          "value": "OwnershipTransfer"
+        },
+        {
+          "tag": "event_ordinal",
+          "type": "u32",
+          "value": 2
+        },
+        {
+          "tag": "source_owner_id",
+          "type": "utf8",
+          "value": "snow"
+        },
+        {
+          "tag": "event_context",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e5745505000000100056576656e740015706172656e745f7472616e73616374696f6e5f696400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00077469636b5f6e730000001000000000000000000000000000000005000b6576656e745f636c617373000000114f776e6572736869705472616e73666572000d6576656e745f6f7264696e616c0000000400000002000f736f757263655f6f776e65725f696400000004736e6f77000d6576656e745f636f6e7465787400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sha256": "996b38f7c64920822939d6dbbb1b2ac850d384adcd5d6b48d90d3873a192a66e",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "slab_receipt_identity_kat",
+      "op": "identity",
+      "domain": "slab-receipt",
+      "fields": [
+        {
+          "tag": "accepted_slab_id",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "begin_clock",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "end_clock",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "owner_set",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "ledger_digest",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e57455050000001000c736c61622d72656365697074001061636365707465645f736c61625f696400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000b626567696e5f636c6f636b00000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa0009656e645f636c6f636b00000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00096f776e65725f73657400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000d6c65646765725f64696765737400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sha256": "3561737e4bd7efc552755044b03a14128a2032f4a21ed9cf39a21506a5739acf",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "parent_receipt_identity_kat",
+      "op": "identity",
+      "domain": "parent-receipt",
+      "fields": [
+        {
+          "tag": "parent_transaction_id",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "parent_interval_id",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "begin_owner_set",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "end_owner_set",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "ordered_slab_receipts",
+          "type": "bytes",
+          "value": "00000000"
+        },
+        {
+          "tag": "ordered_event_receipts",
+          "type": "bytes",
+          "value": "00000000"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e57455050000001000e706172656e742d726563656970740015706172656e745f7472616e73616374696f6e5f696400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa0012706172656e745f696e74657276616c5f696400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000f626567696e5f6f776e65725f73657400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa000d656e645f6f776e65725f73657400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00156f7264657265645f736c61625f7265636569707473000000040000000000166f7264657265645f6576656e745f72656365697074730000000400000000",
+        "sha256": "6282eec9261eafd5e5c1dbc434fe8d2d44e84483ad262e7ea6a7ab16ac142f50",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "publication_receipt_identity_kat",
+      "op": "identity",
+      "domain": "publication-receipt",
+      "fields": [
+        {
+          "tag": "parent_receipt_id",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "ordered_output_records",
+          "type": "bytes",
+          "value": "00000000"
+        },
+        {
+          "tag": "outbox_state",
+          "type": "utf8",
+          "value": "CommittedUndelivered"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e5745505000000100137075626c69636174696f6e2d726563656970740011706172656e745f726563656970745f696400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00166f7264657265645f6f75747075745f7265636f7264730000000400000000000c6f7574626f785f737461746500000014436f6d6d6974746564556e64656c697665726564",
+        "sha256": "6b83344bd8112834380666742ce5c82af238af003aee65c37698c9788b836ca0",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "constraint_identity_kat",
+      "op": "identity",
+      "domain": "constraint",
+      "fields": [
+        {
+          "tag": "parent_transaction_id",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "tag": "cursor_ns",
+          "type": "u128",
+          "value": "5"
+        },
+        {
+          "tag": "end_ns",
+          "type": "u128",
+          "value": "10"
+        },
+        {
+          "tag": "class",
+          "type": "utf8",
+          "value": "HardBoundary"
+        },
+        {
+          "tag": "source_owner_id",
+          "type": "utf8",
+          "value": "clock"
+        },
+        {
+          "tag": "compatibility_group",
+          "type": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e57455050000001000a636f6e73747261696e740015706172656e745f7472616e73616374696f6e5f696400000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa0009637572736f725f6e7300000010000000000000000000000000000000050006656e645f6e73000000100000000000000000000000000000000a0005636c6173730000000c48617264426f756e64617279000f736f757263655f6f776e65725f696400000005636c6f636b0013636f6d7061746962696c6974795f67726f757000000020aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sha256": "9c44349985904feec46e7c815be6dfdb6ef3ed8059c44339b3e9b0e26b263203",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "owner_set_identity_kat",
+      "op": "identity",
+      "domain": "owner-set",
+      "fields": [
+        {
+          "tag": "owner_count",
+          "type": "u32",
+          "value": 2
+        },
+        {
+          "tag": "ordered_owner_records",
+          "type": "bytes",
+          "value": "00000000"
+        }
+      ],
+      "expected": {
+        "preimage_hex": "4f50454e5745505000000100096f776e65722d736574000b6f776e65725f636f756e74000000040000000200156f7264657265645f6f776e65725f7265636f7264730000000400000000",
+        "sha256": "72256e469aa314dfebfbd1e49b92a0d8d097560fe7f649002f03fe39cafdfd1e",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "restart_immediately_before_event",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1",
+        "accepted_until_ns": "4",
+        "event_tick_ns": "5",
+        "event_applied": false,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected": {
+        "continuation_sha256": "31da88fbd6f3e33486d71ca2c4922fd294121469995b548bae5df9463786c79a",
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "reduction_maximum": 8,
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "restart_immediately_after_event",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1",
+        "accepted_until_ns": "5",
+        "event_tick_ns": "5",
+        "event_applied": true,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected": {
+        "continuation_sha256": "92a7810c927e0c72966dfc59d6cae6a980486389cb2f0ef4641a5af87ccc711a",
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "reduction_maximum": 8,
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "restart_poison_run_id",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "poison",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1",
+        "accepted_until_ns": "5",
+        "event_tick_ns": "5",
+        "event_applied": true,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "RestartIdentityMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "restart_poison_calendar_receipt",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "run",
+        "calendar_receipt": "poison",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1",
+        "accepted_until_ns": "5",
+        "event_tick_ns": "5",
+        "event_applied": true,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "RestartIdentityMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "restart_poison_forcing_receipt",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "poison",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1",
+        "accepted_until_ns": "5",
+        "event_tick_ns": "5",
+        "event_applied": true,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "RestartIdentityMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "restart_poison_model_definition",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "poison",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1",
+        "accepted_until_ns": "5",
+        "event_tick_ns": "5",
+        "event_applied": true,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "RestartIdentityMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "restart_poison_constraint_policy",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "poison",
+        "controller_policy": "controller-v1",
+        "accepted_until_ns": "5",
+        "event_tick_ns": "5",
+        "event_applied": true,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "RestartIdentityMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "restart_poison_controller_policy",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "poison",
+        "accepted_until_ns": "5",
+        "event_tick_ns": "5",
+        "event_applied": true,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "RestartIdentityMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "owner_ledger_join_success",
+      "op": "joins",
+      "complete_owner_count": 2,
+      "owner_candidates": [
+        {
+          "owner": "A",
+          "begin_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "ledger_closed": true
+        },
+        {
+          "owner": "B",
+          "begin_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "ledger_closed": true
+        }
+      ],
+      "begin_owner_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "ending_owner_set_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "ledger_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "aggregate_ledger_residual": 0,
+      "expected": {
+        "ending_owner_set_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "ledger_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "status": "accepted"
+      }
+    },
+    {
+      "op": "joins",
+      "complete_owner_count": 3,
+      "owner_candidates": [
+        {
+          "owner": "A",
+          "begin_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "ledger_closed": true
+        },
+        {
+          "owner": "B",
+          "begin_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "ledger_closed": true
+        }
+      ],
+      "begin_owner_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "ending_owner_set_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "ledger_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "aggregate_ledger_residual": 0,
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "OwnerCardinalityMismatch",
+        "status": "rejected"
+      },
+      "id": "owner_cardinality_join_failure"
+    },
+    {
+      "op": "joins",
+      "complete_owner_count": 2,
+      "owner_candidates": [
+        {
+          "owner": "A",
+          "begin_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "ledger_closed": true
+        },
+        {
+          "owner": "B",
+          "begin_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "ledger_closed": true
+        }
+      ],
+      "begin_owner_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "ending_owner_set_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "ledger_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "aggregate_ledger_residual": 1,
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "LedgerNotClosed",
+        "status": "rejected"
+      },
+      "id": "ledger_join_failure"
+    },
+    {
+      "id": "outbox_parent_commit",
+      "op": "outbox",
+      "state": "Buffered",
+      "action": "parent_commit",
+      "receipt_id": "pub-r",
+      "delivery_count": 0,
+      "expected": {
+        "delivery_count": 0,
+        "receipt_id": "pub-r",
+        "state": "CommittedUndelivered",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "outbox_delivery",
+      "op": "outbox",
+      "state": "CommittedUndelivered",
+      "action": "deliver",
+      "receipt_id": "pub-r",
+      "delivery_count": 0,
+      "expected": {
+        "delivery_count": 1,
+        "receipt_id": "pub-r",
+        "state": "DeliveredUnacknowledged",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "outbox_crash_retains_receipt",
+      "op": "outbox",
+      "state": "DeliveredUnacknowledged",
+      "action": "crash",
+      "receipt_id": "pub-r",
+      "delivery_count": 1,
+      "expected": {
+        "delivery_count": 1,
+        "receipt_id": "pub-r",
+        "state": "DeliveredUnacknowledged",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "outbox_idempotent_redelivery",
+      "op": "outbox",
+      "state": "DeliveredUnacknowledged",
+      "action": "redeliver",
+      "receipt_id": "pub-r",
+      "delivery_count": 1,
+      "expected": {
+        "delivery_count": 2,
+        "receipt_id": "pub-r",
+        "state": "DeliveredUnacknowledged",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "outbox_ack",
+      "op": "outbox",
+      "state": "DeliveredUnacknowledged",
+      "action": "ack",
+      "receipt_id": "pub-r",
+      "delivery_count": 1,
+      "expected": {
+        "delivery_count": 1,
+        "receipt_id": "pub-r",
+        "state": "Acknowledged",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "reduction_accepted_only",
+      "op": "reduction",
+      "operands": [
+        {
+          "receipt_id": "s1",
+          "value": 7,
+          "accepted": true,
+          "phase": "accepted_slab"
+        },
+        {
+          "receipt_id": "rejected",
+          "value": 99,
+          "accepted": false,
+          "phase": "attempt"
+        },
+        {
+          "receipt_id": "s2",
+          "value": 8,
+          "accepted": true,
+          "phase": "accepted_slab"
+        }
+      ],
+      "claimed_maximum": 8,
+      "published_before_commit": false,
+      "expected": {
+        "accepted_operand_receipts": [
+          "s1",
+          "s2"
+        ],
+        "maximum": 8,
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "reduction_rejected_attempt_alias",
+      "op": "reduction",
+      "operands": [
+        {
+          "receipt_id": "s1",
+          "value": 7,
+          "accepted": true,
+          "phase": "accepted_slab"
+        },
+        {
+          "receipt_id": "rejected",
+          "value": 99,
+          "accepted": false,
+          "phase": "attempt"
+        },
+        {
+          "receipt_id": "s2",
+          "value": 8,
+          "accepted": true,
+          "phase": "accepted_slab"
+        }
+      ],
+      "claimed_maximum": 99,
+      "published_before_commit": false,
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "ReductionAliasMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "reduction_nominal_duration_alias",
+      "op": "reduction",
+      "operands": [
+        {
+          "receipt_id": "s1",
+          "value": 7,
+          "accepted": true,
+          "phase": "accepted_slab"
+        },
+        {
+          "receipt_id": "rejected",
+          "value": 99,
+          "accepted": false,
+          "phase": "attempt"
+        },
+        {
+          "receipt_id": "s2",
+          "value": 8,
+          "accepted": true,
+          "phase": "accepted_slab"
+        }
+      ],
+      "claimed_maximum": 4,
+      "published_before_commit": false,
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "ReductionAliasMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "reduction_precommit_alias",
+      "op": "reduction",
+      "operands": [
+        {
+          "receipt_id": "s1",
+          "value": 7,
+          "accepted": true,
+          "phase": "accepted_slab"
+        },
+        {
+          "receipt_id": "rejected",
+          "value": 99,
+          "accepted": false,
+          "phase": "attempt"
+        },
+        {
+          "receipt_id": "s2",
+          "value": 8,
+          "accepted": true,
+          "phase": "accepted_slab"
+        }
+      ],
+      "claimed_maximum": 8,
+      "published_before_commit": true,
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "PublicationBeforeParentCommit",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "authority_tuple_legacy_valid",
+      "op": "authority_tuple",
+      "hydrology": "LegacyWb14Wb18Wb19",
+      "time": "LegacyFixedSchedule",
+      "lane_d": "WholeDayNonpersistent",
+      "legacy_r4l_mutation": true,
+      "expected": {
+        "status": "accepted",
+        "tuple": "LegacyWb14Wb18Wb19:LegacyFixedSchedule:WholeDayNonpersistent:true"
+      }
+    },
+    {
+      "id": "authority_tuple_richards_valid",
+      "op": "authority_tuple",
+      "hydrology": "RichardsCoupledV1",
+      "time": "CoupledAdaptiveSupportV1",
+      "lane_d": "Persistent",
+      "legacy_r4l_mutation": false,
+      "expected": {
+        "status": "accepted",
+        "tuple": "RichardsCoupledV1:CoupledAdaptiveSupportV1:Persistent:false"
+      }
+    },
+    {
+      "id": "authority_tuple_richards_nonpersistent_lane_d",
+      "op": "authority_tuple",
+      "hydrology": "RichardsCoupledV1",
+      "time": "CoupledAdaptiveSupportV1",
+      "lane_d": "WholeDayNonpersistent",
+      "legacy_r4l_mutation": false,
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "UnsupportedAuthorityTuple",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "authority_tuple_richards_legacy_r4l",
+      "op": "authority_tuple",
+      "hydrology": "RichardsCoupledV1",
+      "time": "CoupledAdaptiveSupportV1",
+      "lane_d": "Persistent",
+      "legacy_r4l_mutation": true,
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "UnsupportedAuthorityTuple",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "restart_poison_accepted_event_receipts",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1",
+        "accepted_until_ns": "5",
+        "event_tick_ns": "5",
+        "event_applied": false,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected_continuation": {
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "RestartContinuationMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "restart_poison_scheduled_once_receipts",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1",
+        "accepted_until_ns": "5",
+        "event_tick_ns": "5",
+        "event_applied": true,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected_continuation": {
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "RestartContinuationMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "restart_poison_reduction_state",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1",
+        "accepted_until_ns": "5",
+        "event_tick_ns": "5",
+        "event_applied": true,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 99,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected_continuation": {
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "RestartContinuationMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "restart_poison_publication_outbox",
+      "op": "restart",
+      "checkpoint": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1",
+        "accepted_until_ns": "5",
+        "event_tick_ns": "5",
+        "event_applied": true,
+        "event_receipt_id": "event-r",
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [],
+        "owner_count": 2,
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected_identity": {
+        "run_id": "run",
+        "calendar_receipt": "cal",
+        "forcing_receipt": "force",
+        "model_definition": "model",
+        "constraint_policy": "constraint-v1",
+        "controller_policy": "controller-v1"
+      },
+      "expected_continuation": {
+        "accepted_event_receipts": [
+          "event-r"
+        ],
+        "scheduled_once_receipts": [
+          "daily-r"
+        ],
+        "reduction_maximum": 8,
+        "publication_outbox": [
+          {
+            "receipt_id": "pub-r",
+            "state": "CommittedUndelivered"
+          }
+        ],
+        "complete_owner_state": [
+          {
+            "owner": "A",
+            "bytes": "00"
+          },
+          {
+            "owner": "B",
+            "bytes": "01"
+          }
+        ]
+      },
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "RestartContinuationMismatch",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "restart_uninterrupted_equivalence_before_event",
+      "op": "restart_equivalence",
+      "uninterrupted": {
+        "ending_owner_set_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "accepted_slab_receipts": [
+          "s1",
+          "s2"
+        ],
+        "accepted_event_receipts": [
+          "e1"
+        ],
+        "scheduled_once_receipts": [
+          "d1"
+        ],
+        "reduction_state": {
+          "maximum": 8
+        },
+        "publication_outbox": [
+          {
+            "receipt_id": "p1",
+            "state": "CommittedUndelivered"
+          }
+        ]
+      },
+      "restarted": {
+        "ending_owner_set_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "accepted_slab_receipts": [
+          "s1",
+          "s2"
+        ],
+        "accepted_event_receipts": [
+          "e1"
+        ],
+        "scheduled_once_receipts": [
+          "d1"
+        ],
+        "reduction_state": {
+          "maximum": 8
+        },
+        "publication_outbox": [
+          {
+            "receipt_id": "p1",
+            "state": "CommittedUndelivered"
+          }
+        ]
+      },
+      "expected": {
+        "equivalence_sha256": "99a51644b862cffd1b35e52b6699976ba0c47263973508ce5d82bc148ebcdfa9",
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "restart_uninterrupted_equivalence_after_event",
+      "op": "restart_equivalence",
+      "uninterrupted": {
+        "ending_owner_set_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "accepted_slab_receipts": [
+          "s1",
+          "s2"
+        ],
+        "accepted_event_receipts": [
+          "e1"
+        ],
+        "scheduled_once_receipts": [
+          "d1"
+        ],
+        "reduction_state": {
+          "maximum": 8
+        },
+        "publication_outbox": [
+          {
+            "receipt_id": "p1",
+            "state": "CommittedUndelivered"
+          }
+        ]
+      },
+      "restarted": {
+        "ending_owner_set_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "accepted_slab_receipts": [
+          "s1",
+          "s2"
+        ],
+        "accepted_event_receipts": [
+          "e1"
+        ],
+        "scheduled_once_receipts": [
+          "d1"
+        ],
+        "reduction_state": {
+          "maximum": 8
+        },
+        "publication_outbox": [
+          {
+            "receipt_id": "p1",
+            "state": "CommittedUndelivered"
+          }
+        ]
+      },
+      "expected": {
+        "equivalence_sha256": "99a51644b862cffd1b35e52b6699976ba0c47263973508ce5d82bc148ebcdfa9",
+        "status": "accepted"
       }
     }
   ]

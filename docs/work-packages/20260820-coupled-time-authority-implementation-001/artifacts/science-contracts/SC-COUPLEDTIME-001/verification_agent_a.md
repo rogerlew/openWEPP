@@ -57,3 +57,61 @@ Do not promote/index `SC-COUPLEDTIME-001` and do not begin production Rust.
 Complete the missing schemas and executable independent vectors, rerun all
 invalidated gates (including the Rust comparison in a Cargo-capable
 environment), and submit a new exact authority candidate for dual verification.
+
+---
+
+## Rerun — 2026-08-20 — corrected candidate `756b08461`
+
+Final rerun verdict: **FAIL**
+
+Evidence mode: **Static + Ran.** Reverified exact commit
+`756b08461b252fc58a0d0511713b6abf2d2f66b3`. The prior verification above is
+retained as historical evidence for `93dc4e97b`; this section supersedes its
+candidate-specific closure assessment only.
+
+### Rerun gates
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| independent Python reference | PASS | Ran `python3 .../reference_model.py`; exact output SHA-256 `c57e0532427929d7d3dc45182290d0c65a23f41a36d6d2e34d2e8018741fdeb8` matched the frozen vector identity |
+| Rust/reference contract comparison | PASS | Ran `nix develop --command cargo nextest run --test coupled_time_authority_contract`; 4/4 passed |
+| Binding Exposure Index, strict | PASS | 3 binding rows fully consolidated |
+| SC unit compliance | PASS | no findings |
+| JSON syntax | PASS | model definition, time schema, restart schema, vectors, and receipt/candidate/ledger schema parsed |
+| candidate diff hygiene | PASS | `git diff --check 756b08461^ 756b08461` |
+
+These gates prove that the 57-case population is deterministic and that Rust
+compares the Python result with the frozen expected JSON. Release still depends
+on the population covering the accepted review corrections rather than only
+passing its present cases.
+
+### Rerun finding closure
+
+| Finding | Result | Rerun verification |
+| --- | --- | --- |
+| A-001 | **CLOSED** | `RetryControlV1` remains correctly separated from accepted chronology. Executable retry reduction, repeated/exhausted retry, policy mismatch, rejected-state identity, and fresh restart-at-accepted-boundary behavior are present. |
+| A-002 / B-003 | **CLOSED** | The physical/pending-event cycle key excludes ordinals and receipts; repeated semantics and the same-tick budget are independently evaluated by the oracle. |
+| A-003 / B-002 | **STILL OPEN** | The contract now closes field lists and adds exact preimage/digest KATs for parent interval, parent transaction, and event receipt plus ambiguous-length separation and sequence overflow. It still lacks the review-required exact KATs for `SegmentId`, `AcceptedSlabId`, `AttemptId`, `EventId`, slab receipt, parent receipt, publication receipt, wrong version, field reorder, and omission. The generic oracle hashes caller-supplied fields, so it does not itself enforce each named domain's closed field list. |
+| A-004 | **CLOSED** | Compatibility is now a closed predicate over parent/cursor/calendar/forcing and compatibility-group identity, with explicit event custody chaining. Compatible and incompatible equal-time constraints are real inputs evaluated by the oracle; event precedence produces exact ordered receipts/state. |
+| A-005 | **CLOSED** | The exact rational conversion is retained and executable cases now include exact halfway ties-to-even, one-bit neighbors, above-`2^53` nanoseconds, `u128::MAX`, addition overflow, and proposal-magnitude overflow. |
+| A-006 / B-006 | **STILL OPEN** | Tautological `forced_error` cases were removed and the present inputs are semantically evaluated. However, the contract's mandatory release population is still materially incomplete: no executable restart immediately before/after an event, event replay after restore, uninterrupted-vs-restored receipt/owner/reduction/publication equivalence, altered restart run/calendar/forcing/model/policy fields, missing/duplicate/failed ledger joins, omitted/extra owner candidate, partial installation, malformed/canonical-reserialization cases, accepted-plus-rejected versus volume/nominal-duration reduction aliases, pre-restart-only/post-restart-only maxima, duplicate scheduled output in publication, outbox crash/acknowledgement boundaries, or rollback-retained publication case. The new semantic-poison document lists these as **required**, but listing is not execution evidence. The Rust test still compares the Python implementation to expected values from the same vector file rather than separately implementing these absent semantics. |
+| A-007 | **CLOSED** | Receipt-bound run-relative origin remains consistent. Parent identity KAT now includes distinct calendar and forcing receipt fields, removing the prior origin/identity ambiguity for the admitted case. |
+| B-001 | **STILL OPEN** | Restart schema now retains controller and pending-publication bytes rather than digest alone and declares the full continuation surface. No executable restart constructor/validator, poison population, or uninterrupted/restored equivalence case proves those fields, replay barriers, active segment, scheduled-once state, reduction state, and publication state are sufficient or enforced. |
+| B-004 | **STILL OPEN** | Durable outbox semantics remain authoritative, but executable cases only compute an accepted-value maximum and record order. They do not model `CommittedUndelivered -> DeliveredUnacknowledged -> Acknowledged`, crash boundaries, durable parent/outbox atomicity, acknowledgement, duplicate/redelivery rules, or restart recovery. The case named `publication_redelivery` has no outbox state or delivery transition. |
+| B-005 | **STILL OPEN** | The authority now explicitly requires a semantic validator beyond JSON Schema. That validator is not implemented or exercised in the reference gate. The schemas' decimal regex still admits 39-digit values above `u128::MAX`, and ordering, relational support, cardinality, digest reconstruction, and canonical-reserialization rules remain annotations/documented requirements without executable poison coverage. |
+| B-007 | **STILL OPEN** | A closed structural schema now names candidate/receipt/ledger fields and the oracle evaluates several owner joins. There is still no semantic validator or positive complete candidate/ledger reconstruction, and no executable missing/extra/duplicate owner, support/duration mismatch, missing/duplicate/failed ledger, exchanged-flux lineage, parent receipt, or partial-install case. Structural schema plus prose does not close the required exact join algorithm. |
+
+### Rerun disposition
+
+The corrected candidate closes A-004 and A-005 in addition to the chronology
+and origin findings previously closed. It also makes substantial, useful
+progress on identity framing, restart wire structure, and candidate/ledger
+shape. It does **not** close the authority release gate because several items
+explicitly recorded as required poison/equivalence populations remain only
+prose, schema annotations, or unexecuted structures.
+
+Do not promote/index this candidate and do not begin production Rust. Add the
+remaining exact identity KATs and implement an independent semantic validator
+plus executable restart, candidate/ledger, reduction, and durable-outbox
+populations. Then rerun both reference and Rust gates and submit the new exact
+checkpoint for verification.

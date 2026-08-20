@@ -88,6 +88,43 @@ def candidate(c):
     if any(c["begin_bytes"][x]!=c["end_bytes"][x] for x in c["complete_owners"] if x not in c["participants"]): fail("InactiveOwnerMutated")
     if c["clock_writer"]!="CoupledClock": fail("UnauthorizedClockAdvance")
     return {"status":"accepted","end_owner_sha256":c["end_owner_sha256"]}
+def restart(c):
+    cp=c["checkpoint"]; expected=c["expected_identity"]
+    for key in ["run_id","calendar_receipt","forcing_receipt","model_definition","constraint_policy","controller_policy"]:
+        if cp[key]!=expected[key]: fail("RestartIdentityMismatch")
+    if len(cp["complete_owner_state"])!=cp["owner_count"]: fail("OwnerCardinalityMismatch")
+    if len({x["owner"] for x in cp["complete_owner_state"]})!=cp["owner_count"]: fail("OwnerCardinalityMismatch")
+    if cp["accepted_until_ns"]==cp["event_tick_ns"] and cp["event_applied"] != (cp["event_receipt_id"] in cp["accepted_event_receipts"]): fail("EventReplayStateMismatch")
+    continuation={k:cp[k] for k in ["accepted_event_receipts","scheduled_once_receipts","reduction_maximum","publication_outbox","complete_owner_state"]}
+    if "expected_continuation" in c and continuation!=c["expected_continuation"]: fail("RestartContinuationMismatch")
+    return {"status":"accepted","continuation_sha256":hashlib.sha256(json.dumps(cp,sort_keys=True,separators=(",",":")).encode()).hexdigest(),"scheduled_once_receipts":cp["scheduled_once_receipts"],"reduction_maximum":cp["reduction_maximum"],"publication_outbox":cp["publication_outbox"]}
+def restart_equivalence(c):
+    keys=["ending_owner_set_sha256","accepted_slab_receipts","accepted_event_receipts","scheduled_once_receipts","reduction_state","publication_outbox"]
+    if any(c["uninterrupted"][k]!=c["restarted"][k] for k in keys): fail("RestartContinuationMismatch")
+    return {"status":"accepted","equivalence_sha256":hashlib.sha256(json.dumps({k:c["restarted"][k] for k in keys},sort_keys=True,separators=(",",":")).encode()).hexdigest()}
+def joins(c):
+    if len(c["owner_candidates"])!=c["complete_owner_count"]: fail("OwnerCardinalityMismatch")
+    if len({x["owner"] for x in c["owner_candidates"]})!=c["complete_owner_count"]: fail("OwnerCardinalityMismatch")
+    if any(x["begin_digest"]!=c["begin_owner_set_sha256"] for x in c["owner_candidates"]): fail("BeginningOwnerSetMismatch")
+    if any(not x["ledger_closed"] for x in c["owner_candidates"]): fail("LedgerNotClosed")
+    if c["aggregate_ledger_residual"]!=0: fail("LedgerNotClosed")
+    return {"status":"accepted","ending_owner_set_sha256":c["ending_owner_set_sha256"],"ledger_digest":c["ledger_digest"]}
+def outbox(c):
+    state=c["state"]; action=c["action"]
+    transitions={("Buffered","parent_commit"):"CommittedUndelivered",("CommittedUndelivered","deliver"):"DeliveredUnacknowledged",("DeliveredUnacknowledged","crash"):"DeliveredUnacknowledged",("DeliveredUnacknowledged","redeliver"):"DeliveredUnacknowledged",("DeliveredUnacknowledged","ack"):"Acknowledged"}
+    if (state,action) not in transitions: fail("InvalidOutboxTransition")
+    end=transitions[state,action]
+    return {"status":"accepted","state":end,"receipt_id":c["receipt_id"],"delivery_count":c["delivery_count"]+(1 if action in ["deliver","redeliver"] else 0)}
+def reduction(c):
+    accepted=[x["value"] for x in c["operands"] if x["accepted"] and x["phase"]=="accepted_slab"]
+    if c["claimed_maximum"]!=max(accepted): fail("ReductionAliasMismatch")
+    if c["published_before_commit"]: fail("PublicationBeforeParentCommit")
+    return {"status":"accepted","maximum":max(accepted),"accepted_operand_receipts":[x["receipt_id"] for x in c["operands"] if x["accepted"] and x["phase"]=="accepted_slab"]}
+def authority_tuple(c):
+    h,t,l,r=c["hydrology"],c["time"],c.get("lane_d","WholeDayNonpersistent"),c.get("legacy_r4l_mutation",True)
+    valid=(h=="LegacyWb14Wb18Wb19" and t=="LegacyFixedSchedule") or (h=="RichardsCoupledV1" and t=="CoupledAdaptiveSupportV1" and l=="Persistent" and not r)
+    if not valid: fail("UnsupportedAuthorityTuple")
+    return {"status":"accepted","tuple":f"{h}:{t}:{l}:{str(r).lower()}"}
 def evaluate(c):
     op=c["op"]
     if op=="tick": tick(c["value"]); return {"status":"accepted"}
@@ -123,13 +160,16 @@ def evaluate(c):
         n=tick(c["sequence"])
         if n==UMAX: fail("TransactionSequenceOverflow")
         return {"status":"accepted","successor":str(n+1)}
+    if op=="restart": return restart(c)
+    if op=="restart_equivalence": return restart_equivalence(c)
+    if op=="joins": return joins(c)
+    if op=="outbox": return outbox(c)
+    if op=="reduction": return reduction(c)
     if op=="legacy_hash":
         for f in c["files"]:
             if hashlib.sha256((ROOT/f["path"]).read_bytes()).hexdigest()!=f["sha256"]: fail("DirectV10WireChanged")
         return {"status":"accepted","protected_files":len(c["files"])}
-    if op=="authority_tuple":
-        if c["hydrology"]=="RichardsCoupledV1" and c["time"]!="CoupledAdaptiveSupportV1": fail("UnsupportedAuthorityTuple")
-        return {"status":"accepted"}
+    if op=="authority_tuple": return authority_tuple(c)
     fail("UnknownVectorOperation")
 def main():
     vs=json.loads((ROOT/"coupled-time-vectors.json").read_text()); results=[]

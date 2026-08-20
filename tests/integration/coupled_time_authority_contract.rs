@@ -57,6 +57,51 @@ fn frozen_vectors_have_separating_event_constraint_and_duration_cases() {
         cases.iter().find(|c| c["id"] == "ambiguous_length_right").unwrap()["expected"]["sha256"],
         "length framing must separate ambiguous concatenations",
     );
+    let model: Value = serde_json::from_str(&read(
+        "docs/work-packages/20260820-coupled-time-authority-implementation-001/artifacts/model-definition.json",
+    ))
+    .expect("model definition parses");
+    for domain in model["identity_domain_fields"].as_object().expect("closed identity domains").keys() {
+        let kat_id = format!("{}_identity_kat", domain.replace('-', "_"));
+        assert!(ids.contains(&kat_id.as_str()), "missing exact framed KAT for {domain}");
+        let case = cases.iter().find(|c| c["id"] == kat_id).unwrap();
+        let declared = model["identity_domain_fields"][domain].as_array().unwrap();
+        assert_eq!(case["fields"].as_array().unwrap().len(), declared.len(), "{domain} field cardinality");
+        for (field, declaration) in case["fields"].as_array().unwrap().iter().zip(declared) {
+            let declaration = declaration.as_str().unwrap();
+            let (tag, kind) = declaration.split_once(':').unwrap();
+            assert_eq!(field["tag"], tag);
+            assert_eq!(field["type"], kind);
+        }
+    }
+    for id in [
+        "restart_immediately_before_event",
+        "restart_immediately_after_event",
+        "restart_poison_run_id",
+        "restart_poison_controller_policy",
+        "restart_poison_accepted_event_receipts",
+        "restart_poison_scheduled_once_receipts",
+        "restart_poison_reduction_state",
+        "restart_poison_publication_outbox",
+        "restart_uninterrupted_equivalence_before_event",
+        "restart_uninterrupted_equivalence_after_event",
+        "owner_ledger_join_success",
+        "owner_cardinality_join_failure",
+        "ledger_join_failure",
+        "outbox_crash_retains_receipt",
+        "outbox_idempotent_redelivery",
+        "outbox_ack",
+        "reduction_accepted_only",
+        "reduction_rejected_attempt_alias",
+        "reduction_nominal_duration_alias",
+        "reduction_precommit_alias",
+        "authority_tuple_legacy_valid",
+        "authority_tuple_richards_valid",
+        "authority_tuple_richards_nonpersistent_lane_d",
+        "authority_tuple_richards_legacy_r4l",
+    ] {
+        assert!(ids.contains(&id), "missing executable authority case {id}");
+    }
 }
 
 #[test]
@@ -92,4 +137,41 @@ fn restart_schema_is_additive_and_direct_v10_is_protected() {
     let package = read("docs/work-packages/20260820-coupled-time-authority-implementation-001/package.md");
     assert!(package.contains("DirectV10 restart V1 schema, vectors, manifest, and bytes are protected"));
     assert!(package.contains("additive and versioned"));
+}
+
+#[test]
+fn independent_semantic_schema_validator_rejects_poison_population() {
+    let artifacts = root().join(
+        "docs/work-packages/20260820-coupled-time-authority-implementation-001/artifacts",
+    );
+    let validator = artifacts.join("semantic_schema_validator.py");
+    let poisons = artifacts.join("semantic-schema-poisons.json");
+    let source = fs::read_to_string(&validator).expect("validator source");
+    assert!(!source.contains("import openwepp"));
+    assert!(!source.contains("subprocess"));
+    let output = Command::new("python3")
+        .arg(validator)
+        .arg("--poisons")
+        .arg(poisons)
+        .output()
+        .expect("semantic validator runs");
+    assert!(output.status.success(), "{}", String::from_utf8_lossy(&output.stderr));
+    let report: Value = serde_json::from_slice(&output.stdout).expect("validator emits JSON");
+    assert_eq!(report["schema"], "OPENWEPP_COUPLED_TIME_SEMANTIC_VALIDATION_RESULTS_V1");
+    let results = report["results"].as_array().expect("result array");
+    assert!(results.len() >= 30, "poison population must remain broad");
+    for id in [
+        "u128_overflow", "leading_zero", "equal_support", "owner_digest_corrupt",
+        "owner_set_digest_corrupt", "participant_not_owner", "controller_bytes_corrupt",
+        "missing_policy", "candidate_omitted", "candidate_wrong_owner",
+        "candidate_wrong_disposition", "candidate_bad_base64",
+        "candidate_state_digest_mismatch", "duplicate_owner_id", "unresolved_ledger",
+        "candidate_support_mismatch", "candidate_duration_mismatch", "field_order_poison",
+        "whitespace_poison", "duplicate_field_poison", "future_scheduled_receipt",
+        "invalid_scheduled_receipt_id", "outbox_records_digest_corrupt",
+        "outbox_state_invalid", "outbox_sequence_overflow",
+    ] {
+        let result = results.iter().find(|result| result["id"] == id).unwrap_or_else(|| panic!("missing poison {id}"));
+        assert_eq!(result["status"], "rejected", "poison {id} must fail closed");
+    }
 }

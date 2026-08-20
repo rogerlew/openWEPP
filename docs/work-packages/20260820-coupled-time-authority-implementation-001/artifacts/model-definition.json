@@ -20,6 +20,8 @@
     "slab-receipt": ["accepted_slab_id:sha256","begin_clock:sha256","end_clock:sha256","owner_set:sha256","ledger_digest:sha256"],
     "parent-receipt": ["parent_transaction_id:sha256","parent_interval_id:sha256","begin_owner_set:sha256","end_owner_set:sha256","ordered_slab_receipts:bytes","ordered_event_receipts:bytes"],
     "publication-receipt": ["parent_receipt_id:sha256","ordered_output_records:bytes","outbox_state:utf8"]
+    ,"constraint": ["parent_transaction_id:sha256","cursor_ns:u128","end_ns:u128","class:utf8","source_owner_id:utf8","compatibility_group:sha256"]
+    ,"owner-set": ["owner_count:u32","ordered_owner_records:bytes"]
   },
   "parent_transaction_sequence": "checked u128; starts zero; increments only at parent commit",
   "constraint_order": ["end_tick", "class", "source_owner_id", "digest"],

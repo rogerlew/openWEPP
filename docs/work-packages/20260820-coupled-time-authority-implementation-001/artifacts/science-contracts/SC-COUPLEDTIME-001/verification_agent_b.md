@@ -1,6 +1,6 @@
 # Authority Verification B — Ownership, Restart, Wire, And Publication
 
-Status: complete — FAIL
+Status: complete — FAIL (latest rerun at `756b08461`)
 
 Evidence mode: Static + Ran
 
@@ -54,3 +54,56 @@ authority release checkpoint, or begin production Rust. Replace forced-error
 and presence-only evidence with independently evaluated identity, restart,
 schema, owner/ledger, outbox, and receipt vectors; then rerun both independent
 verifications and the Rust focused gate.
+
+## Rerun Against Corrected Commit `756b08461`
+
+Rerun status: complete — FAIL
+
+Evidence mode: Static + Ran
+
+This section supersedes the candidate assessment above while retaining it as
+historical evidence. Exact corrected commit:
+`756b08461b25` (`close coupled time authority review findings`). There remain
+no rejected findings or rejected rationales.
+
+### Rerun gates
+
+- Ran `python3 .../reference_model.py`: PASS. Emitted result SHA-256
+  `c57e0532427929d7d3dc45182290d0c65a23f41a36d6d2e34d2e8018741fdeb8`,
+  exactly matching the corrected vector manifest.
+- Inspected all 57 corrected cases: 57 use evaluated operations and zero use
+  `forced_error`.
+- Ran `nix develop -c cargo nextest run --test
+  coupled_time_authority_contract`: PASS, 4/4 tests.
+- Ran `git diff --check`: PASS.
+- Recomputed protected DirectV10 hashes: PASS, unchanged at
+  `c29e28c4...2ad1`, `c041ab59...0ddd`, and `e01e2a93...d47c9`.
+  Exact diff from `f48100538` over the protected artifacts and
+  `crates/openwepp-persisted-restart-v1` remains empty.
+
+### Corrected finding closure
+
+| Finding | Rerun result | Verification |
+| --- | --- | --- |
+| B-001 | **STILL OPEN** | `restart-schema.json` is materially improved: it now closes accepted controller bytes, event/scheduled receipts, accepted reduction operands, pending publication records, complete outbox records/state, and semantic chronology/digest requirements. But no vector has a restart document and the oracle has no serialize/validate/restore operation. The mandatory uninterrupted/mid-parent, immediately-before/after-event, scheduled-once, reduction, publication, omitted/altered-field, and rejected-iterate restart poisons remain requirements in prose rather than executable evidence. `restart_after_rejection` exercises retry state only. |
+| B-002 | **CLOSED** | Five executable framed-hash KATs now include parent interval, parent transaction, event receipt, and ambiguous-length separators with exact preimages/digests. Checked transaction successor overflow is executable. The framing algorithm, domains, integer encodings, sequence semantics, and wrong-partition separation are sufficiently frozen for authority release. |
+| B-003 | **CLOSED** | The non-bookkeeping physical/pending-event cycle key and finite same-tick budget remain authoritative and are executed by the no-progress and budget cases. Replay, ledger failure, event ordering, and start/interior/end boundaries are evaluated rather than requested errors. |
+| B-004 | **STILL OPEN** | The contract, expanded restart schema, and publication-lineage artifact now define the crash-safe durable outbox protocol and required crash fixtures. The executable `publication` operation only filters accepted samples, computes a maximum, and returns input record order after testing `parent_committed`. `publication_redelivery` does not model outbox state or idempotency. There are no commit/delivery/acknowledgement crash-restart transitions, stable receipt-on-redelivery check, acknowledgement-order poison, rollback case, or committed-owner/outbox atomicity execution. |
+| B-005 | **STILL OPEN** | `semantic-validation-and-poison-requirements.md` now precisely freezes the missing semantic validator and poison obligations, and structural schemas are much stronger. The reference model still does not admit an instance of either schema or execute canonical reserialization, collection ordering/bounds, decoded-byte/digest, support/cursor, receipt chronology, or altered restart-field poisons. The Rust gate parses only the vector file and performs schema string checks. Naming the mandatory validator is authority progress, not evidence that its wire predicate is enforceable. |
+| B-006 | **STILL OPEN (CRITICAL)** | The forced-error bypass is fully removed; all present cases execute reference-model logic and are compared structurally by the Rust gate. Identity, event, constraint, retry, candidate, scheduled-once, publication maximum, transaction overflow, and DirectV10 cases are genuine KAT improvements. However, the contract's own canonical vector obligations still require restart equivalence/poisons, partial owner acceptance and ledger failure, rejected-state reduction/publication aliases, pre/post-restart maxima, nominal-duration alias, duplicate output, rollback, and complete authority tuples. Those populations are absent. Therefore the corrected 57-case set is not yet the **complete** executable authority vector gate required by B-006 and `OBL-COUPLEDTIME-005`. |
+| B-007 | **STILL OPEN** | `receipt-candidate-ledger-schema.json` now freezes structural slab/event/parent/publication kinds, complete/active owner IDs, owner candidates, candidate dispositions, ledgers, accepted child receipts, and publication digest. The semantic artifact freezes exact-cardinality and ledger joins. But the schema makes support/tick/ordinal/duration optional for every kind and delegates kind-conditional requirements to a validator that is not executable here. The oracle's four candidate cases do not construct this schema, test complete candidate cardinality, exchanges/local/global ledgers, missing/duplicate/failed ledgers, extra/missing owners, partial installation, or slab/event/parent receipt reconstruction. |
+
+### Latest release disposition
+
+The corrected candidate substantially closes B-002 and confirms B-003, removes
+the tautological `forced_error` mechanism, adds real identity KATs and receipt
+schema authority, expands restart/outbox authority, and preserves DirectV10
+exactly. No regression was found in the focused gates.
+
+**Latest verdict: FAIL.** B-001, B-004, B-005, B-006, and B-007 remain open;
+B-006 remains critical because the canonical contract says the vector
+population **must** distinguish the still-absent restart, ledger, reduction,
+publication, rollback, and authority-tuple poisons. Do not promote/index or
+begin production Rust until those required semantics are executable, the
+focused gates rerun, and both independent verifiers pass the exact corrected
+checkpoint.
