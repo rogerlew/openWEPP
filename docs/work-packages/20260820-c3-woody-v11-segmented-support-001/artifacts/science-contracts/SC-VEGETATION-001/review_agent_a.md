@@ -629,3 +629,23 @@ reconstructed, and invalid delivery transitions reject.
 
 No residual Review A finding remains on the Restart V2 amendment. This verdict
 supersedes the HOLD at `887d92ec557f22682cc5e4df048a20aa249d2cbf`.
+
+## Restart V2 v18 regression review at `5918d4dbdfd0a7641d16b1f5f2040289c9893788`
+
+Evidence class: `Static + Ran + independent custody probes`
+
+Verdict: `PASS`.
+
+The Version 18 delta strengthens accepted-segment custody without regressing
+the prior Review A closures: ordinal-zero now joins the canonical parent
+beginning state, each later segment joins its predecessor state/support, and
+the terminal segment's seven ordered ending-owner envelopes equal checkpoint
+and outer staged envelopes byte-for-byte and digest-for-digest.
+
+Rerun evidence: canonical complete continuation PASS; 54/54 declared poisons
+reject with typed categories; 20 retained and new custody probes reject;
+semantic authority and JSON Schema gates PASS; strict BEI PASS (15 rows); unit
+compliance PASS; Rust authority tests PASS 6/6; commit-range diff hygiene PASS.
+The complete seven-owner suffix, event custody, sequence joins, collection
+ordering/uniqueness/cardinality, and reduction/publication/outbox identities
+remain closed. No Review A regression or new finding remains.

@@ -537,3 +537,41 @@ predecessor and ending-owner custody are retained but unauthenticated`.
 
 All previously reported Review B findings are otherwise closed. One bounded
 correction and confirmation remain before PASS.
+
+---
+
+## Restart V2 final regression Review B — candidate `5918d4dbdfd0a7641d16b1f5f2040289c9893788`
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + independent reframed probes`
+
+The restart V2 reference passes its complete-continuation digest and 54/54
+poisons. Every direct probe accumulated across Review B rejects, including the
+exact forged segment predecessor and terminal-owner substitutions. Schema,
+BEI, unit-compliance, and the 6/6 authority test pass.
+
+### Transaction finding closure
+
+- Complete typed parent/checkpoint and coupled-time identities join before a
+  continuation exists.
+- Accepted segment state digests form one predecessor chain and the terminal
+  ending-owner set equals checkpoint and outer staged custody byte-for-byte.
+- Water/NH4/NO3 and material receipts reconstruct cumulative debits and staged
+  owners; event receipts reconstruct regime and snow-to-surface custody.
+- Scheduled keys, reduction operands, publication records, and outbox rows are
+  closed, ordered, uniquely identified, and replay resistant.
+- Fresh suffix execution reconstructs all seven ending owners and the complete
+  retained receipt/publication sequence identically to uninterrupted execution.
+
+`V11-TXN-RESTART-V2-B-001..005` are CLOSED. No Review B waiver is required.
+
+### Verdict
+
+`PASS / SC-VEGETATIONTRANSACTION-001 Version 5 Restart V2 amendment may proceed
+to independent verification at 5918d4dbd`.
+
+This supersedes all earlier amendment HOLD verdicts. Production remains gated
+on required verification and the exact promoted authority checkpoint.

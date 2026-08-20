@@ -502,3 +502,21 @@ rules.
 No residual Review A finding remains on the transaction/restart amendment.
 This verdict supersedes the HOLD at
 `887d92ec557f22682cc5e4df048a20aa249d2cbf`.
+
+## Restart V2 v7 regression review at `5918d4dbdfd0a7641d16b1f5f2040289c9893788`
+
+Evidence class: `Static + Ran + independent custody probes`
+
+Verdict: `PASS`.
+
+Version 7 adds the missing exact segment-predecessor and terminal-owner joins:
+ordinal zero is rooted in the parent beginning state, subsequent state/support
+chronology is contiguous, and terminal ending-owner envelopes equal both
+checkpoint and outer staged seven-owner envelopes exactly. This is additive
+strengthening and does not weaken any previously closed transaction surface.
+
+Rerun evidence: complete continuation PASS; 54/54 declared poisons and 20
+independent custody probes reject; schema, semantic authority, strict BEI (4
+rows), unit compliance, Rust authority 6/6, and diff hygiene all PASS. Event,
+resource/material, sequence, reduction, publication and durable-outbox custody
+remain closed. No Review A regression or new finding remains.

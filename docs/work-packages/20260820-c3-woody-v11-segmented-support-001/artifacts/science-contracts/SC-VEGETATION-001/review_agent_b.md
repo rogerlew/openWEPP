@@ -838,3 +838,55 @@ and ending-owner custody remain independently forgeable at 937aadb32`.
 
 The amendment is close, but PASS is prohibited until every retained checkpoint
 field participates in authenticated continuation.
+
+---
+
+## Restart V2 final regression Review B — candidate `5918d4dbdfd0a7641d16b1f5f2040289c9893788`
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + independent reframed probes`
+
+### Gate evidence
+
+- restart V2 reference => PASS complete-continuation digest and 54/54 declared
+  poisons;
+- every direct probe retained from all prior amendment reviews rejects,
+  including the exact zero predecessor digest and terminal vegetation-owner
+  substitution forms;
+- restart V2 schema and poison JSON parse => PASS;
+- strict BEI and science-contract unit-compliance => PASS for both contracts;
+- V11 authority contract test => PASS, 6/6.
+
+### Final finding closure
+
+- `V11-RESTART-V2-B-001..003`: CLOSED by complete checkpoint-shaped admission,
+  typed owner parsing, exact coupled/configuration/controller/cursor joins,
+  receipt/event/scheduled reconstruction, resource/material staged custody,
+  ordered reduction/publication identity, and suffix-equivalent continuation.
+- `V11-RESTART-V2-B-004`: CLOSED. Current/next/predecessor sequences join;
+  nested state/event bodies are closed; event source/receiver/participants and
+  transfer amount reconstruct the admitted snow-to-surface owner transition.
+- `V11-RESTART-V2-B-005`: CLOSED. Outbox row shape, identity derivation,
+  ordering/uniqueness, record binding, and state/count rules execute and reject
+  the prior forged/duplicate forms.
+- `V11-RESTART-V2-B-006`: CLOSED. Every segment beginning digest is derived
+  from the preceding accepted state, ending state digest is reconstructed,
+  support predecessors chain, and the terminal segment ending-owner set must
+  equal both checkpoint and outer staged owner sets byte-for-byte.
+
+The complete continuation comparison now includes all seven ending owners,
+accepted event/scheduled chronology, reduction operands, publication/outbox,
+resource/material prefix receipts, and successor sequence. No Review B waiver
+is required.
+
+### Verdict
+
+`PASS / all Restart V2 Review B findings are closed at 5918d4dbd; the amendment
+may proceed to independent verification`.
+
+This supersedes every earlier Restart V2 Review B HOLD. It does not itself
+authorize production implementation before the package records the required
+verification and promoted authority checkpoint.
