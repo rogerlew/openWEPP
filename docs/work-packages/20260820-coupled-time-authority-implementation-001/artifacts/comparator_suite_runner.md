@@ -62,3 +62,11 @@ dependency-policy gates pass at the bound HEAD. Broad workspace correctness is
 red/incomplete due to assurance authority drift, and broad Clippy is red with
 one coupled-time lint plus three unrelated existing lints. No production file
 was edited and no commit or push was performed by this runner.
+# Exact-tree follow-up
+
+After the package-local `useless_vec` and contract-test `too_many_lines`
+findings were corrected, broad Clippy was rerun on the completion worktree. It
+advanced through all coupled-time targets and stopped only on two findings in
+`tests/integration/snow_stage3_terminal_receiver_authority_contract.rs`
+(`unnested_or_patterns` and `cast_possible_truncation`), outside the declared
+2A write set. Focused coupled-time Clippy and tests remain PASS.

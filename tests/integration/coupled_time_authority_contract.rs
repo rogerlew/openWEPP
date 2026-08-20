@@ -40,34 +40,43 @@ fn frozen_vectors_have_separating_event_constraint_and_duration_cases() {
     let cases = vectors["cases"].as_array().expect("case array");
     assert!(cases.len() >= 45, "authority population must stay broad");
     let ids: Vec<_> = cases.iter().map(|v| v["id"].as_str().unwrap()).collect();
-    for id in [
-        "parent_interval_identity_kat",
-        "parent_transaction_identity_kat",
-        "event_receipt_identity_kat",
-        "ambiguous_length_left",
-        "ambiguous_length_right",
-        "event_parent_start",
-        "event_inside",
-        "event_parent_end",
-        "two_events_same_tick",
-        "participant_transition",
-        "compatible_equal_constraints",
-        "conflicting_equal_constraints",
-        "retry_reduce",
-        "restart_after_rejection",
-        "duration_above_2p53_ns",
-        "duration_u128_max",
-        "quantize_exact_half_ties_even",
-        "quantize_above_2p53_ns",
-        "quantize_to_u128_max",
-        "quantize_addition_overflow",
-        "quantize_magnitude_overflow",
-        "publication_before_commit",
-        "transaction_successor_overflow",
-        "direct_v10_hash_protection",
-    ] {
-        assert!(ids.contains(&id), "missing executable vector {id}");
-    }
+    require_case_ids(
+        &ids,
+        &[
+            "parent_interval_identity_kat",
+            "parent_transaction_identity_kat",
+            "event_receipt_identity_kat",
+            "ambiguous_length_left",
+            "ambiguous_length_right",
+            "event_parent_start",
+            "event_inside",
+            "event_parent_end",
+            "two_events_same_tick",
+            "participant_transition",
+            "compatible_equal_constraints",
+            "conflicting_equal_constraints",
+            "retry_reduce",
+            "restart_after_rejection",
+            "duration_above_2p53_ns",
+            "duration_u128_max",
+            "quantize_exact_half_ties_even",
+            "quantize_above_2p53_ns",
+            "quantize_to_u128_max",
+            "quantize_addition_overflow",
+            "quantize_magnitude_overflow",
+            "publication_before_commit",
+            "transaction_successor_overflow",
+            "direct_v10_hash_protection",
+        ],
+        "executable vector",
+    );
+    validate_case_expectations(cases);
+    assert_ambiguous_lengths_separate(cases);
+    validate_identity_domains(cases, &ids);
+    require_authority_cases(&ids);
+}
+
+fn validate_case_expectations(cases: &[Value]) {
     for case in cases {
         assert_ne!(
             case["op"], "forced_error",
@@ -88,6 +97,9 @@ fn frozen_vectors_have_separating_event_constraint_and_duration_cases() {
             );
         }
     }
+}
+
+fn assert_ambiguous_lengths_separate(cases: &[Value]) {
     assert_ne!(
         cases
             .iter()
@@ -99,6 +111,9 @@ fn frozen_vectors_have_separating_event_constraint_and_duration_cases() {
             .unwrap()["expected"]["sha256"],
         "length framing must separate ambiguous concatenations",
     );
+}
+
+fn validate_identity_domains(cases: &[Value], ids: &[&str]) {
     let model: Value = serde_json::from_str(&read(
         "docs/work-packages/20260820-coupled-time-authority-implementation-001/artifacts/model-definition.json",
     ))
@@ -127,45 +142,56 @@ fn frozen_vectors_have_separating_event_constraint_and_duration_cases() {
             assert_eq!(field["type"], kind);
         }
     }
-    for id in [
-        "restart_immediately_before_event",
-        "restart_immediately_after_event",
-        "restart_poison_run_id",
-        "restart_poison_controller_policy",
-        "restart_poison_accepted_event_receipts",
-        "restart_poison_scheduled_once_receipts",
-        "restart_poison_reduction_state",
-        "restart_poison_publication_outbox",
-        "restart_uninterrupted_equivalence_before_event",
-        "restart_uninterrupted_equivalence_after_event",
-        "owner_ledger_join_success",
-        "owner_cardinality_join_failure",
-        "ledger_join_failure",
-        "outbox_crash_retains_receipt",
-        "outbox_idempotent_redelivery",
-        "outbox_ack",
-        "reduction_accepted_only",
-        "reduction_rejected_attempt_alias",
-        "reduction_nominal_duration_alias",
-        "reduction_precommit_alias",
-        "authority_tuple_legacy_valid",
-        "authority_tuple_richards_valid",
-        "authority_tuple_richards_nonpersistent_lane_d",
-        "authority_tuple_richards_legacy_r4l",
-        "identity_field_reorder_poison",
-        "identity_field_omission_poison",
-        "identity_wrong_version_poison",
-        "reduction_pre_restart_only_max_alias",
-        "reduction_post_restart_only_max_alias",
-        "duplicate_scheduled_output",
-        "rollback_retained_publication",
-        "committed_undelivered_crash",
-        "committed_undelivered_restart",
-        "acknowledged_crash_no_redelivery",
-        "acknowledged_redelivery_forbidden",
-        "parent_rollback_removes_publication_outbox",
-    ] {
-        assert!(ids.contains(&id), "missing executable authority case {id}");
+}
+
+fn require_authority_cases(ids: &[&str]) {
+    require_case_ids(
+        ids,
+        &[
+            "restart_immediately_before_event",
+            "restart_immediately_after_event",
+            "restart_poison_run_id",
+            "restart_poison_controller_policy",
+            "restart_poison_accepted_event_receipts",
+            "restart_poison_scheduled_once_receipts",
+            "restart_poison_reduction_state",
+            "restart_poison_publication_outbox",
+            "restart_uninterrupted_equivalence_before_event",
+            "restart_uninterrupted_equivalence_after_event",
+            "owner_ledger_join_success",
+            "owner_cardinality_join_failure",
+            "ledger_join_failure",
+            "outbox_crash_retains_receipt",
+            "outbox_idempotent_redelivery",
+            "outbox_ack",
+            "reduction_accepted_only",
+            "reduction_rejected_attempt_alias",
+            "reduction_nominal_duration_alias",
+            "reduction_precommit_alias",
+            "authority_tuple_legacy_valid",
+            "authority_tuple_richards_valid",
+            "authority_tuple_richards_nonpersistent_lane_d",
+            "authority_tuple_richards_legacy_r4l",
+            "identity_field_reorder_poison",
+            "identity_field_omission_poison",
+            "identity_wrong_version_poison",
+            "reduction_pre_restart_only_max_alias",
+            "reduction_post_restart_only_max_alias",
+            "duplicate_scheduled_output",
+            "rollback_retained_publication",
+            "committed_undelivered_crash",
+            "committed_undelivered_restart",
+            "acknowledged_crash_no_redelivery",
+            "acknowledged_redelivery_forbidden",
+            "parent_rollback_removes_publication_outbox",
+        ],
+        "executable authority case",
+    );
+}
+
+fn require_case_ids(ids: &[&str], required: &[&str], description: &str) {
+    for id in required {
+        assert!(ids.contains(id), "missing {description} {id}");
     }
 }
 

@@ -1,6 +1,6 @@
 # Implement Coupled Time Authority V1
 
-Status: `queued / Child 2A next`
+Status: `complete / Child 2A; Child 2B next`
 
 Date: `2026-08-20`
 
@@ -345,11 +345,11 @@ route in `artifacts/hold-legitimacy-audit.md`.
 ## Progress
 
 - [x] (2026-08-20) Scaffolded 2A and reordered the campaign into 2A--2C.
-- [ ] Complete intake and freeze intent.
-- [ ] Complete authority, vectors, tests, pre-implementation gate, and Phase-2A
+- [x] (2026-08-20) Complete intake and freeze intent.
+- [x] (2026-08-20) Complete authority, vectors, tests, pre-implementation gate, and Phase-2A
   dual authority review/verification checkpoint.
-- [ ] Implement subsystem, restart, and reference consumer.
-- [ ] Complete validation, review, verification, and disposition.
+- [x] (2026-08-20) Implement subsystem, restart, and reference consumer.
+- [x] (2026-08-20) Complete validation, review, verification, and disposition.
 
 ## Surprises & Discoveries
 
@@ -367,5 +367,8 @@ route in `artifacts/hold-legitimacy-audit.md`.
 
 ## Outcomes & Retrospective
 
-Queued. No canonical contract, production Rust, selector, default, output, or
-runtime authority changed during scaffolding.
+Completed the reusable coupled-time authority, additive restart V2, and real
+orchestrator reference consumer. All three implementation reviewers closed
+their findings. Focused authority, crate, consumer, reference, schema, and
+lint gates pass. No production selector/default or physical model was changed;
+Child 2B is the next campaign increment.

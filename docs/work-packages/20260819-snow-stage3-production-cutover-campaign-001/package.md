@@ -1,6 +1,6 @@
 # Coordinate Stage 3 Production Cutover
 
-Status: `active / Child 1 HOLD; Child 2A coupled-time authority next`
+Status: `active / Child 2A complete; Child 2B segmented vegetation next`
 
 Date: `2026-08-19`
 
@@ -136,6 +136,7 @@ limits it requires.
   support/carrier authority boundary.
 - [x] (2026-08-20) Split Child 2 into coupled-time (2A), V11 segmented support
   (2B), and snow-covered carrier (2C), and scaffolded 2A.
+- [x] (2026-08-20) Complete and independently verify Child 2A coupled-time authority.
 - [ ] Execute and terminally disposition 2A--2C continuously; then resume Child
   1 from checkpoint `83cf6eb8e`.
 - [ ] Execute Child 3 actual-scheduler qualification.
