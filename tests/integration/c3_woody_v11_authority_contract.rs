@@ -206,3 +206,15 @@ fn typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit() {
         assert!(ids.contains(&id), "missing semantic poison {id}");
     }
 }
+
+#[test]
+fn restart_v2_reference_closes_complete_custody_amendment() {
+    let output = Command::new("python3")
+        .arg("docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts/restart_v2_reference.py")
+        .output()
+        .expect("run restart V2 reference");
+    assert!(output.status.success(), "{}", String::from_utf8_lossy(&output.stderr));
+    let result: Value = serde_json::from_slice(&output.stdout).expect("restart V2 result JSON");
+    assert_eq!(result["accepted"]["owner_count"], 7);
+    assert_eq!(result["poisons"].as_array().unwrap().len(), 15);
+}

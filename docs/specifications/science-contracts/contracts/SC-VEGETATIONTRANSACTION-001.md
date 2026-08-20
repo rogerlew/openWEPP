@@ -1,10 +1,10 @@
 ---
 contract_id: SC-VEGETATIONTRANSACTION-001
 title: Coupled Vegetation Occupancy Owner-Transaction Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - OPENWEPP_C3_WOODY_V8 occupancy and ground resource/energy candidates
   - OPENWEPP_C3_WOODY_V11 accepted-segment and parent candidates
@@ -12,15 +12,15 @@ consumer_scope:
   - Default-off real-hydrology, LSE, BGC, and soil-thermal shadow owners
   - Default-off coupled-time V11 parent coordinator and additive restart
 evidence_level: static+independent_oracle
-last_reviewed: 2026-08-20
+last_reviewed: pending
 supersedes: []
 superseded_by: []
 ---
 
 # SC-VEGETATIONTRANSACTION-001 Coupled Vegetation Occupancy Owner-Transaction Contract
 
-Status: `approved`
-Maturity: `active`
+Status: `in_review`
+Maturity: `draft`
 Evidence mode: `Static + independent oracle`
 
 ## Purpose
@@ -389,6 +389,14 @@ sufficient. `OPENWEPP_C3_WOODY_V11_PARENT_CANDIDATE_V1` is the closed candidate
 schema and its authenticated parent receipt is the sole consuming commit
 capability.
 
+Version 5 supersedes that unimplemented V1 wire with
+`OPENWEPP_C3_WOODY_V11_RESTART_V2` for production restoration. V2 binds the
+complete typed vegetation parent checkpoint and separate beginning/staged
+seven-owner bytes, plus coupled-time V2, event/scheduled lineage, reductions,
+publication and outbox state. V1 remains immutable evidence and is never an
+accepted production checkpoint. All duplicated cursor, parent, participant,
+owner and receipt facts must join bit-for-bit before a continuation exists.
+
 | Failure ID | Typed failure |
 |---|---|
 | `VEGTXN-E-011` | Wrong parent/segment/slab/participant/support/resource identity rejects before staging. |
@@ -404,6 +412,7 @@ publication, deployment, or production-cutover authority.
 | Date | Version | Author | Change |
 |---|---:|---|---|
 | 2026-08-20 | 4 | Codex | Drafted V11 accepted-segment staging, cumulative resource/material custody, additive restart, and one atomic parent commit. |
+| 2026-08-20 | 5 | Codex | Added production V11 restart V2 complete typed checkpoint/owner custody after implementation inventory proved reviewed V1 insufficient. |
 | 2026-08-19 | 3 | Codex | Added default-off terminal receiver all-owner transaction authority (`INV-VEGTRANSACTION-008`) with phase-aware error precedence, exact rollback, restart membership, and CoE production invariance. |
 | 2026-08-14 | 2 | Codex | Extended the transaction to V8/LSE source-keyed ground water, one real-hydrology authorization, coupled final solve, LSE/soil-thermal owner joins and production-isolated atomic shadow commit. |
 | 2026-08-12 | 1 | Codex | Initial shared V2 occupancy water/energy owner identity, reconstruction, and atomicity authority. |

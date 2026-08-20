@@ -1,0 +1,17 @@
+{"schema":"OPENWEPP_C3_WOODY_V11_RESTART_V2_POISONS_V1","cases":[
+{"id":"wrong_authority","mutation":"wrong_authority","error":"V11-V2-AUTHORITY"},
+{"id":"wrong_parent","mutation":"wrong_parent","error":"V11-V2-JOIN"},
+{"id":"wrong_cursor","mutation":"wrong_cursor","error":"V11-V2-JOIN"},
+{"id":"wrong_slab_ordinal","mutation":"wrong_slab_ordinal","error":"V11-V2-JOIN"},
+{"id":"wrong_event_ordinal","mutation":"wrong_event_ordinal","error":"V11-V2-JOIN"},
+{"id":"wrong_participants","mutation":"wrong_participants","error":"V11-V2-JOIN"},
+{"id":"bad_coupled_digest","mutation":"bad_coupled_digest","error":"V11-V2-DIGEST"},
+{"id":"bad_checkpoint_digest","mutation":"bad_checkpoint_digest","error":"V11-V2-DIGEST"},
+{"id":"noncanonical_checkpoint","mutation":"noncanonical_checkpoint","error":"V11-V2-CANONICAL"},
+{"id":"missing_begin_owner","mutation":"missing_begin_owner","error":"V11-V2-OWNERS"},
+{"id":"reordered_stage_owner","mutation":"reordered_stage_owner","error":"V11-V2-OWNERS"},
+{"id":"forged_owner_bytes","mutation":"forged_owner_bytes","error":"V11-V2-DIGEST"},
+{"id":"bad_successor","mutation":"bad_successor","error":"V11-V2-JOIN"},
+{"id":"future_reduction","mutation":"future_reduction","error":"V11-V2-REDUCTION"},
+{"id":"orphan_outbox","mutation":"orphan_outbox","error":"V11-V2-PUBLICATION"}
+]}

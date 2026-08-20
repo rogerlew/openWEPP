@@ -1,10 +1,10 @@
 ---
 contract_id: SC-VEGETATION-001
 title: Native Vegetation State and Cross-Domain Boundary Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 15
+contract_version: 16
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-08-20
+last_reviewed: pending
 supersedes: []
 superseded_by: []
 ---
@@ -2660,6 +2660,34 @@ candidate. The independent executable definition and poison population are
 `semantic_schema_validator.py` and `semantic-schema-poisons.json` in the V11
 authority package.
 
+### Restart V2 implementation amendment
+
+Implementation inventory proved the released
+`OPENWEPP_C3_WOODY_V11_RESTART_V1` shape cannot carry the contract-required
+complete staged V11 state and owner bytes. V1 remains immutable as reviewed
+preimplementation evidence but is `NONIMPLEMENTABLE / NEVER_PRODUCTION`; it is
+not an admitted restore wire. Production restart authority is the additive
+successor `OPENWEPP_C3_WOODY_V11_RESTART_V2` in
+`v11-restart-v2-schema.json`.
+
+V2 retains canonical, digest-authenticated bytes for the complete typed
+`V11ParentTransactionCheckpoint` and exact coupled-time V2 checkpoint; separate
+beginning and staged seven-owner envelopes; current/next parent sequences;
+active segment/regime/participants and slab/event cursor; controller policy;
+accepted event and scheduled-once lineage; exact ordered reduction operands;
+pending publication records; and durable outbox state. Admission must parse the
+complete vegetation checkpoint through its deny-unknown-fields Rust type,
+reserialize byte-identically, reconstruct every owner envelope through
+`OwnerState::new`, and cross-check all duplicated parent/cursor/receipt fields
+against coupled time. A digest-valid opaque payload without typed admission is
+rejected.
+
+Restore returns a continuation reconstructed from the persisted staged state
+and executes only the unaccepted suffix. It may not reconstruct accepted work
+from a future/full candidate. V1/V2 aliasing, missing parent-beginning owners,
+digest-only owner restoration, or loss of reductions/publication is
+`VEG-E-127`.
+
 ### Full-support compatibility and segmented population
 
 For a migrated V10 state and one V11 slab equal to nominal cadence, identical
@@ -2704,3 +2732,4 @@ snow carrier, selector/default, activation, publication, deployment, or cutover.
 | Date | Version | Author | Change |
 |---|---:|---|---|
 | 2026-08-20 | 15 | Codex | Drafted immutable-V10 V11 segmented support, staged custody, additive restart, exact compatibility, and one atomic parent finalization. |
+| 2026-08-20 | 16 | Codex | Superseded nonimplementable V11 restart V1 with additive V2 complete typed checkpoint/owner/reduction/publication authority after implementation inventory exposed the closed-schema contradiction. |
