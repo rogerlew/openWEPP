@@ -2,7 +2,7 @@
 
 Status: `exact implementation and comparator PASS / independent review pending`
 
-Exact reviewed code commit `443fc274439bc216cd8cad7e421da8fd9a52b25a`:
+Exact reviewed code commit `2566be585974ae75f548dc450905a18e71915e10`:
 
 - orchestrator all-features: 722/722 PASS before the mechanical test split;
 - post-split focused V10 owner suite: 9/9 PASS;
@@ -12,9 +12,9 @@ Exact reviewed code commit `443fc274439bc216cd8cad7e421da8fd9a52b25a`:
 - exact post-split workspace: 3,134/3,134 PASS, 5 skipped;
 - warnings-denied affected Clippy, doctests, cargo-deny, anti-evasion, AUTH11,
   rustfmt and diff hygiene: PASS;
-- exact Child-4 comparator: 17/17 PASS (seven benchmark surfaces and ten
+- exact Child-4 comparator: 20/20 PASS (seven benchmark surfaces and thirteen
   current Child-4 selectors), under
-  `artifacts/comparator-heavy/20260819T230206Z-child4-root-owner-final/`.
+  `artifacts/comparator-heavy/20260819T235452Z-child4-root-owner-final/`.
 
 The root-zone hydraulic, optics, longwave and runon owner contradiction that
 previously held this package is corrected by the live-owner projection at the

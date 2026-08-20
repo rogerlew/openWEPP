@@ -1,0 +1,10 @@
+{
+  "run_root": "docs/work-packages/20260814-vegetation-land-surface-real-consumer-shadow-001/artifacts/comparator-heavy/20260819T235452Z-child4-root-owner-final",
+  "child_id": "child4-20260819T235452Z-child4-root-owner-final",
+  "run_timestamp": "20260819T235452Z-child4-root-owner-final",
+  "commands": [],
+  "commands_ran": 20,
+  "pass_count": 20,
+  "fail_or_hold_count": 0,
+  "verdict": "PASS"
+}
