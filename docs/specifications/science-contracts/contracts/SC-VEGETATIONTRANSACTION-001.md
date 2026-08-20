@@ -4,7 +4,7 @@ title: Coupled Vegetation Occupancy Owner-Transaction Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
-contract_version: 9
+contract_version: 10
 producer_scope:
   - OPENWEPP_C3_WOODY_V8 occupancy and ground resource/energy candidates
   - OPENWEPP_C3_WOODY_V11 accepted-segment and parent candidates
@@ -417,6 +417,13 @@ record has exactly one durable row when buffered for delivery, and the outbox
 row binds parent, record, state, and delivery count. Current/next parent
 sequences also join the checkpoint's last accepted sequence, so a coordinated
 sequence reframe remains invalid.
+
+V2 is frozen `NONIMPLEMENTABLE / NEVER_PRODUCTION` for V11 resource-custody
+continuation because it lacks typed shared-owner transitions. The additive
+`OPENWEPP_C3_WOODY_V11_RESTART_V3` adds, without altering V2, complete ordered
+debit and shared-transition identities, exact support/predecessor joins,
+canonical debit/other-flux links, derivable complete owner-candidate
+bytes/digests, and terminal complete-owner joins.
 Each accepted segment beginning digest equals the prior ending-state digest,
 with ordinal zero rooted in the parent beginning state, and its support begins
 at the predecessor end. The terminal segment ending complete-owner envelopes
@@ -443,6 +450,7 @@ publication, deployment, or production-cutover authority.
 | 2026-08-20 | 7 | Codex | Added exact accepted-segment predecessor chaining and terminal complete-owner equality across restart V2 layers. |
 | 2026-08-20 | 8 | Codex | Separated authoritative sequential resource-owner subtraction from the nonassociative ordered cumulative diagnostic fold and rejected regrouped ending aliases. |
 | 2026-08-20 | 9 | Codex | Split occupancy-scoped vegetation debit receipts from typed shared-owner transitions and required exact debit links, owner-candidate lineage, authorization, and shared predecessor continuity. |
+| 2026-08-20 | 10 | Codex | Froze Restart V2 as nonproduction for resource custody and added additive closed Restart V3 debit/transition predecessor and terminal-owner continuation authority. |
 | 2026-08-19 | 3 | Codex | Added default-off terminal receiver all-owner transaction authority (`INV-VEGTRANSACTION-008`) with phase-aware error precedence, exact rollback, restart membership, and CoE production invariance. |
 | 2026-08-14 | 2 | Codex | Extended the transaction to V8/LSE source-keyed ground water, one real-hydrology authorization, coupled final solve, LSE/soil-thermal owner joins and production-isolated atomic shadow commit. |
 | 2026-08-12 | 1 | Codex | Initial shared V2 occupancy water/energy owner identity, reconstruction, and atomicity authority. |

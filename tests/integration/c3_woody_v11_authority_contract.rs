@@ -26,6 +26,7 @@ fn canonical_contracts_bind_v11_without_mutating_v10() {
         "one parent material batch",
         "occupancy-scoped debit receipt",
         "shared-resource owner transition",
+        "OPENWEPP_C3_WOODY_V11_RESTART_V3",
     ] {
         assert!(vegetation.contains(required), "missing {required}");
     }
@@ -166,6 +167,7 @@ fn successor_schemas_are_closed_and_do_not_hide_v10_physics_in_blobs() {
         "v11-state-schema.json",
         "v11-restart-schema.json",
         "v11-resource-custody-schema.json",
+        "v11-restart-v3-schema.json",
     ] {
         let source = read(&format!("{base}/{name}"));
         let _: Value = serde_json::from_str(&source).unwrap();
@@ -184,6 +186,52 @@ fn successor_schemas_are_closed_and_do_not_hide_v10_physics_in_blobs() {
             "missing fail-closed rule {required}"
         );
     }
+}
+
+#[test]
+fn restart_v3_closes_resource_custody_without_mutating_v2() {
+    let base = "docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts";
+    for (name, expected) in [
+        (
+            "v11-restart-v2-schema.json",
+            "af9314c3f1abd70c40b849c6f466046e3c5e519583a837eefca9edbf43d02441",
+        ),
+        (
+            "restart_v2_reference.py",
+            "13f3d009221a60cc2af094103255c5d8c3be2dbee657bb87144b2fee476bbf7c",
+        ),
+        (
+            "restart-v2-poisons.json",
+            "fa5ae93f8b8e109b851f37946070bff71b5f5182b5df818c80f0d4de9990ad34",
+        ),
+    ] {
+        let output = Command::new("sha256sum")
+            .arg(root().join(format!("{base}/{name}")))
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        assert_eq!(
+            String::from_utf8_lossy(&output.stdout)
+                .split_whitespace()
+                .next(),
+            Some(expected)
+        );
+    }
+    let path = root().join(format!("{base}/restart_v3_reference.py"));
+    let output = Command::new("python3").arg(path).output().unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let result: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        result["schema"],
+        "OPENWEPP_C3_WOODY_V11_RESTART_V3_RESULTS_V1"
+    );
+    assert_eq!(result["accepted"]["debit_count"], 5);
+    assert_eq!(result["accepted"]["transition_count"], 4);
+    assert_eq!(result["poisons"].as_array().unwrap().len(), 12);
 }
 
 #[test]
@@ -264,7 +312,11 @@ fn restart_v2_reference_closes_complete_custody_amendment() {
         .arg("docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts/restart_v2_reference.py")
         .output()
         .expect("run restart V2 reference");
-    assert!(output.status.success(), "{}", String::from_utf8_lossy(&output.stderr));
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     let result: Value = serde_json::from_slice(&output.stdout).expect("restart V2 result JSON");
     assert_eq!(result["poisons"].as_array().unwrap().len(), 54);
     assert_eq!(
@@ -274,6 +326,9 @@ fn restart_v2_reference_closes_complete_custody_amendment() {
             .len(),
         64
     );
-    assert_eq!(result["accepted"]["ending_state"], result["accepted"]["uninterrupted_state"]);
+    assert_eq!(
+        result["accepted"]["ending_state"],
+        result["accepted"]["uninterrupted_state"]
+    );
     assert_eq!(result["accepted"]["suffix_slabs"], 1);
 }

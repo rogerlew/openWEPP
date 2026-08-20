@@ -944,3 +944,74 @@ waiver remains at 3065c209c`.
 Production and restart admission must implement both reconstructions; this
 authority review does not admit a regrouped shortcut or authorize release
 before the amendment's independent verification and promotion checkpoint.
+
+---
+
+## Resource-custody amendment Review B — candidate `1302b60b9c4d07f28e58c92a30dce6f39cd70c8e`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent wire/restart reframing`
+
+The amendment correctly recognizes that occupancy vegetation-use receipts are
+not shared hydrology/BGC inventory predecessors. Its proposed split into typed
+debits and shared-owner transitions is directionally required, and the nominal
+54/54 reference, unchanged Restart V2 54/54 reference, authority 7/7, schema
+meta-validation, strict binding exposure, unit compliance, and diff hygiene all
+pass. Four authority closures remain before release.
+
+### Findings
+
+- `V11-RESOURCE-CUSTODY-B-001` — **Restart V2 omits the new transition
+  authority.** The closed `OPENWEPP_C3_WOODY_V11_RESTART_V2` schema and its
+  checkpoint segment retain old resource receipts but contain neither shared
+  transition bodies nor transition IDs. Its unchanged reference likewise
+  reconstructs no transition. A mid-parent restore therefore cannot prove the
+  transition ending-to-next-beginning chain, exact debit-link coverage, or
+  candidate digest already accepted before the checkpoint. Add the closed
+  typed transition collection and its joins to the additive restart wire, or
+  introduce an explicitly reviewed successor wire; add fresh suffix and
+  missing/duplicate/reordered/forged transition poisons.
+- `V11-RESOURCE-CUSTODY-B-002` — **Debit identity is not closed to the shared
+  owner key.** `INV-VEGTRANSACTION-009` requires inherited
+  parent/owner/OFE/tile/occupancy/layer/species/basis identity, but the new debit
+  schema lacks owner, OFE, tile, and basis. The reference joins a debit to a
+  transition using only slab/resource/layer/source, so a receipt can be linked
+  across OFE/owner/basis while remaining schema-valid. Freeze the exact water
+  and NH4/NO3 identity projections and require equality with the transition and
+  current staged owner.
+- `V11-RESOURCE-CUSTODY-B-003` — **Candidate, ordering, and cardinality
+  authentication is not executable.** The oracle checks only that
+  `owner_candidate_sha256` is 64 lowercase hex characters; changing it to an
+  arbitrary valid digest is accepted. Reversing `ordered_debit_receipt_ids` is
+  also accepted, and an extra same-key transition with a duplicate transition
+  ID, an out-of-parent slab, no links, and a new ending is accepted. The schema
+  has no global transition identity/ordering/cardinality constraints and no
+  admitted candidate body or lineage from which its digest is reconstructed.
+  Bind transition ID derivation, canonical transition and link order, uniqueness
+  and one-transition-per admitted key/slab rules, support membership, exact
+  other-flux alternative semantics, and owner-candidate bytes/digest linkage;
+  add digest-valid and structurally valid reframed poisons.
+- `V11-RESOURCE-CUSTODY-B-004` — **The package authority artifact remains
+  contradictory.** `resource-staging-and-arbitration.md` still states that
+  final use alone forms the next staged owner and that authoritative custody is
+  `current_staged_beginning - admitted_amount`, immediately before stating that
+  occupancy debit rows are not shared-owner inventory and transitions own the
+  predecessor. Remove the superseded rule and state the debit diagnostic and
+  shared-owner transition chronologies once, consistently.
+
+The current wrong-transition poison is only a malformed short digest, so it
+does not address `B-003`. The new population exercises water only; equivalent
+typed BGC NH4 and NO3 cases remain necessary to prove that species identities
+cannot collapse or alias the shared BGC owner.
+
+### Verdict
+
+`HOLD / SC-VEGETATION-001 Version 20 cannot release at 1302b60b9 until the
+restart wire persists transition custody, debit identity closes to the shared
+owner, candidate/order/cardinality rules are executable, and the contradictory
+staging artifact is reconciled`.
+
+No production implementation is authorized by this review.

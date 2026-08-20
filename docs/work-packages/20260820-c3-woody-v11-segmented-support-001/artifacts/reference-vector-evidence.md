@@ -25,6 +25,14 @@ post-use values deliberately differ from shared layer endings; only transition
 identity alias, a missing debit link, a forged owner-candidate transition, and
 authorization overbooking against the staged shared beginning.
 
+`restart_v3_reference.py` independently admits one closed actual-shaped
+resource-custody continuation containing five water/NH4/NO3 debit receipts and
+four hydrology/BGC transitions across OFE/basis identities. Twelve poisons
+cover candidate forgery, arbitrary self-chain, unknown flux, reversed/missing
+links, duplicate/out-of-support transition, owner/OFE/tile-occupancy/basis
+aliases, and terminal owner forgery. Restart V2 artifacts are inputs to no V3
+mutation and remain frozen historical bytes.
+
 Resource sums use ordinary ordered binary64 addition from exact `+0.0`, reject
 nonfinite inputs/intermediates, and remain separate for water/NH4/NO3. The
 state recurrence makes swapped forcing

@@ -627,3 +627,58 @@ at 3065c209c`.
 
 No Review B finding or waiver remains. Production remains gated on independent
 verification and promotion of this exact amendment authority.
+
+---
+
+## Resource-custody amendment Review B — candidate `1302b60b9c4d07f28e58c92a30dce6f39cd70c8e`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + adversarial transaction/restart probes`
+
+The debit-versus-shared-owner separation is scientifically and
+transactionally correct in intent. Nominal evidence passes: segmented reference
+54/54, Restart V2 54/54 with digest `512c259b...f0e`, authority tests 7/7,
+JSON Schema 2020-12 meta-validation, strict BEI, unit compliance, and diff
+hygiene. The following transaction findings block release.
+
+### Findings
+
+- `V11-TXN-RESOURCE-B-001`: the closed Restart V2 checkpoint has no
+  `shared_resource_transition` collection or IDs. It cannot independently
+  restore accepted transition bodies, linked occupancy debits, terminal shared
+  owner custody, or the transition predecessor for the unaccepted suffix.
+- `V11-TXN-RESOURCE-B-002`: the debit DTO omits inherited owner/OFE/tile/basis
+  identity required by `INV-VEGTRANSACTION-009`, while the reference link join
+  compares only slab/resource/layer/source. This leaves cross-owner, cross-OFE,
+  and cross-basis aliases constructible and leaves water versus BGC admission
+  underspecified.
+- `V11-TXN-RESOURCE-B-003`: transition admission does not reconstruct its
+  candidate digest or transition ID and does not enforce canonical transition
+  or debit-link order, global transition-ID uniqueness, admitted slab
+  membership, or exact per-key/slab cardinality. Direct reframing proved that
+  an arbitrary valid 64-hex candidate digest and reversed link order are
+  accepted. An additional same-key transition with a duplicate ID,
+  out-of-parent slab, empty links, and altered terminal ending is also accepted.
+- `V11-TXN-RESOURCE-B-004`: the staging artifact retains the superseded
+  occupancy-final-use subtraction as authoritative owner custody, contradicting
+  the new transition-predecessor rule. It must be reconciled before a fresh
+  implementer can determine which chronology is binding.
+
+Required correction: close and canonically frame debit and transition bodies;
+derive every receipt/transition/candidate identity; freeze exact inherited
+water and NH4/NO3 owner keys; enforce deterministic order, uniqueness,
+cardinality, link coverage, and support membership; carry the accepted
+transition chain through an amended/successor Restart V2 wire and real suffix
+comparison; add digest-valid, ordering, duplicate, cross-OFE/basis, and NH4/NO3
+poisons. A malformed short digest is not an adequate forged-candidate poison.
+
+### Verdict
+
+`HOLD / SC-VEGETATIONTRANSACTION-001 Version 9 is not transaction- or
+restart-complete at 1302b60b9; V11-TXN-RESOURCE-B-001..004 require correction
+and independent re-review`.
+
+No waiver is recommended and production remains gated.

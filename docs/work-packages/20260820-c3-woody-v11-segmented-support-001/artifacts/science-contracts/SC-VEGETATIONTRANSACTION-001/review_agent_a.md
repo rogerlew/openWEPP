@@ -540,3 +540,41 @@ probes cover nonassociative and reordered operands, wrong sequential endings
 for water/NH4/NO3, nonfinite and negative debits, overbooking, and signed-zero
 behavior. BEI (4 rows), unit compliance, and diff hygiene pass. No transaction
 finding remains; the amendment may proceed to independent verification.
+
+## Resource-custody amendment Review A — `1302b60b9c4d07f28e58c92a30dce6f39cd70c8e`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent actual-shaped custody probes`
+
+Version 9 correctly separates occupancy request/authorization/use receipts
+from owner/OFE/layer/source transitions and assigns cross-segment predecessor
+authority only to the shared transition. Receipt identity, exact-once debit
+links, and aggregate authorization against current shared inventory close the
+original two-occupancy alias.
+
+One transaction-authentication blocker remains. The independent oracle checks
+only that `owner_candidate_sha256` is shaped like a digest; it does not derive
+or join it to an admitted canonical owner candidate, the declared shared
+ending, or the next staged owner envelope. Nor does it admit and reconstruct
+`other_flux_receipt_ids`. Reframed cases with an unrelated valid digest,
+arbitrary but self-chained shared endings, and an unknown other-flux receipt all
+accepted. Thus a caller can manufacture a mutually consistent transition
+sequence that is unrelated to the actual hydrology/BGC candidate.
+
+The newly added schema is closed JSON, but the V4 reference fixtures use
+shorthand decimal fields rather than the schema's canonical identity and bit
+fields; no instance gate connects them. Closure requires an actual-shaped
+fixture and validator that recompute or exact-join the canonical owner
+candidate digest and close the chosen other-flux/candidate lineage branch,
+with valid-digest substitution, arbitrary-ending, missing/unknown/duplicate
+other-flux, and schema-instance poisons.
+
+Gate evidence: reference PASS 54/54; authority PASS 7/7; strict BEI PASS (4
+rows); scoped unit compliance, JSON syntax, and diff hygiene PASS. The direct
+forgery probes supersede those self-consistent results.
+
+Verdict: `HOLD / Version 9 has the right custody split but does not yet bind
+the shared transition to the actual owner candidate at 1302b60b9`.

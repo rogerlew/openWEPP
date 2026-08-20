@@ -1,0 +1,18 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"OPENWEPP_C3_WOODY_V11_RESTART_V3",
+  "type":"object","additionalProperties":false,
+  "required":["schema","parent_transaction_id","parent_support","admitted_other_flux_receipt_ids","debit_receipts","shared_owner_transitions","terminal_complete_owners"],
+  "properties":{
+    "schema":{"const":"OPENWEPP_C3_WOODY_V11_RESTART_V3"},"parent_transaction_id":{"$ref":"#/$defs/sha"},"parent_support":{"$ref":"#/$defs/support"},
+    "admitted_other_flux_receipt_ids":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/sha"}},
+    "debit_receipts":{"type":"array","items":{"$ref":"#/$defs/debit"}},"shared_owner_transitions":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/transition"}},
+    "terminal_complete_owners":{"type":"array","minItems":7,"maxItems":7,"items":{"$ref":"#/$defs/owner"}}
+  },
+  "$defs":{
+    "sha":{"type":"string","pattern":"^[0-9a-f]{64}$"},"bits":{"type":"string","pattern":"^[0-9a-f]{16}$"},"id":{"type":"string","minLength":1},
+    "support":{"type":"object","additionalProperties":false,"required":["start_ns","end_ns"],"properties":{"start_ns":{"type":"string","pattern":"^(0|[1-9][0-9]*)$"},"end_ns":{"type":"string","pattern":"^[1-9][0-9]*$"}}},
+    "debit":{"type":"object","additionalProperties":false,"required":["receipt_id","parent_transaction_id","segment_id","accepted_slab_id","support","owner_id","ofe_id","tile_id","occupancy_id","layer_id","source_id","amount_basis","request_bits","authorization_bits","final_use_bits"],"properties":{"receipt_id":{"$ref":"#/$defs/sha"},"parent_transaction_id":{"$ref":"#/$defs/sha"},"segment_id":{"$ref":"#/$defs/sha"},"accepted_slab_id":{"$ref":"#/$defs/sha"},"support":{"$ref":"#/$defs/support"},"owner_id":{"$ref":"#/$defs/id"},"ofe_id":{"$ref":"#/$defs/id"},"tile_id":{"$ref":"#/$defs/id"},"occupancy_id":{"$ref":"#/$defs/id"},"layer_id":{"$ref":"#/$defs/id"},"source_id":{"$ref":"#/$defs/id"},"amount_basis":{"$ref":"#/$defs/id"},"request_bits":{"$ref":"#/$defs/bits"},"authorization_bits":{"$ref":"#/$defs/bits"},"final_use_bits":{"$ref":"#/$defs/bits"}}},
+    "transition":{"type":"object","additionalProperties":false,"required":["transition_id","parent_transaction_id","segment_id","accepted_slab_id","support","owner_id","ofe_id","layer_id","source_id","amount_basis","beginning_bits","ending_bits","debit_receipt_ids","other_flux_receipt_ids","owner_candidate_bytes_base64","owner_candidate_sha256"],"properties":{"transition_id":{"$ref":"#/$defs/sha"},"parent_transaction_id":{"$ref":"#/$defs/sha"},"segment_id":{"$ref":"#/$defs/sha"},"accepted_slab_id":{"$ref":"#/$defs/sha"},"support":{"$ref":"#/$defs/support"},"owner_id":{"$ref":"#/$defs/id"},"ofe_id":{"$ref":"#/$defs/id"},"layer_id":{"$ref":"#/$defs/id"},"source_id":{"$ref":"#/$defs/id"},"amount_basis":{"$ref":"#/$defs/id"},"beginning_bits":{"$ref":"#/$defs/bits"},"ending_bits":{"$ref":"#/$defs/bits"},"debit_receipt_ids":{"type":"array","minItems":1,"uniqueItems":true,"items":{"$ref":"#/$defs/sha"}},"other_flux_receipt_ids":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/sha"}},"owner_candidate_bytes_base64":{"type":"string","contentEncoding":"base64"},"owner_candidate_sha256":{"$ref":"#/$defs/sha"}}},
+    "owner":{"type":"object","additionalProperties":false,"required":["owner_id","state_bytes_base64","state_sha256"],"properties":{"owner_id":{"$ref":"#/$defs/id"},"state_bytes_base64":{"type":"string","contentEncoding":"base64"},"state_sha256":{"$ref":"#/$defs/sha"}}}
+  }
+}

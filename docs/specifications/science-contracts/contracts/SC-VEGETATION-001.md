@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 20
+contract_version: 21
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -2681,8 +2681,8 @@ Implementation inventory proved the released
 `OPENWEPP_C3_WOODY_V11_RESTART_V1` shape cannot carry the contract-required
 complete staged V11 state and owner bytes. V1 remains immutable as reviewed
 preimplementation evidence but is `NONIMPLEMENTABLE / NEVER_PRODUCTION`; it is
-not an admitted restore wire. Production restart authority is the additive
-successor `OPENWEPP_C3_WOODY_V11_RESTART_V2` in
+not an admitted restore wire. The additive successor
+`OPENWEPP_C3_WOODY_V11_RESTART_V2` is frozen in
 `v11-restart-v2-schema.json`.
 
 V2 retains canonical, digest-authenticated bytes for the complete typed
@@ -2721,6 +2721,26 @@ predecessor staged V11 state digest (the parent beginning for ordinal zero),
 and support/ordinal chronology is gap-free. The terminal segment's ordered
 seven ending-owner envelopes must equal both checkpoint and outer staged owner
 envelopes byte-for-byte and digest-for-digest.
+
+### Restart V3 resource-custody amendment
+
+V2 bytes remain immutable, but V2 lacks typed shared-resource transitions and
+therefore is `NONIMPLEMENTABLE / NEVER_PRODUCTION` for V11 resource-custody
+continuation. It is not amended in place. The additive closed production target
+is `OPENWEPP_C3_WOODY_V11_RESTART_V3`.
+
+V3 retains ordered typed occupancy debit receipts with parent, segment, slab,
+owner, OFE, tile/occupancy, layer, source, amount basis, and exact
+request/authorization/final-use bits. Separate shared-owner transition receipts
+bind parent/segment/slab/support, shared owner/OFE/layer/source/basis, exact
+beginning/ending bits, canonical sorted unique linked debit IDs, canonical
+admitted other-flux receipt IDs, and canonical complete owner-candidate bytes
+plus their independently derived digest. Collections have exact order,
+cardinality, key uniqueness, and support membership. Empty/unlinked
+transitions, arbitrary self-chains, unknown flux links, reversed debit links,
+duplicates, and cross-owner/OFE/tile/basis aliases reject. Transition endings
+are exact next beginnings, and terminal hydrology/BGC candidates join the
+terminal complete-owner set byte-for-byte and digest-for-digest.
 
 Restore returns a continuation reconstructed from the persisted staged state
 and executes only the unaccepted suffix. It may not reconstruct accepted work
@@ -2777,3 +2797,4 @@ snow carrier, selector/default, activation, publication, deployment, or cutover.
 | 2026-08-20 | 18 | Codex | Bound restart V2 segments to predecessor V11 state and terminal complete-owner equality across segment, checkpoint, and outer wire. |
 | 2026-08-20 | 19 | Codex | Made sequential staged subtraction authoritative and separated it from the ordered cumulative-debit diagnostic fold; prohibited regrouped owner-ending aliases. |
 | 2026-08-20 | 20 | Codex | Separated occupancy debit receipts from shared hydrology/BGC owner transitions and bound debit links, owner-candidate lineage, authorization, and cross-segment shared-owner continuity. |
+| 2026-08-20 | 21 | Codex | Froze Restart V2 as nonproduction for resource custody and introduced additive closed Restart V3 typed debit/transition continuation authority. |

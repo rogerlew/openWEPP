@@ -676,3 +676,45 @@ commit-range diff hygiene pass.
 
 No time, numerical, or resource-custody finding remains. The amendment is
 ready for independent verification; production implementation remains gated.
+
+## Resource-custody amendment Review A — `1302b60b9c4d07f28e58c92a30dce6f39cd70c8e`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent actual-shaped custody probes`
+
+The Version 20 model-level distinction is scientifically necessary: an
+occupancy debit receipt authenticates vegetation request, authorization, and
+use, while the shared hydrology/BGC owner transition alone supplies the next
+slab's inventory predecessor. Exact debit-link coverage and summed
+authorization prevent the prior occupancy/shared-layer alias and hidden
+vegetation overbooking.
+
+The executable authority does not yet authenticate the alternative lineage it
+claims. `shared_resource_custody` accepts any syntactically valid 64-hex
+`owner_candidate_sha256`; it neither recomputes that digest from a canonical
+owner candidate nor joins it to the transition beginning/ending. It also has no
+`other_flux_receipt_ids` admission or reconstruction. Independent reframed
+probes therefore accepted (1) arbitrary shared endings, provided the next
+beginning repeated them, (2) replacement of the owner-candidate digest with an
+unrelated valid 64-hex value, and (3) an unknown other-flux receipt. These are
+not merely scalar-decomposition omissions: they permit a forged shared owner
+chronology while debit receipts and cross-segment continuity remain
+self-consistent.
+
+The new closed schema parses, but the V4 executable vectors use a different
+decimal/shorthand shape and are not instances of it, so schema closure does not
+cover the result-bearing fixture. Required closure is one actual-shaped typed
+fixture whose transition recomputes or exact-joins the canonical complete-owner
+candidate digest and either reconstructs complete other-flux lineage or proves
+the admitted opaque-candidate boundary. Add wrong-valid-digest, arbitrary
+ending, missing/unknown/duplicate other-flux, and schema-instance poisons.
+
+Gate evidence: reference population PASS 54/54; Rust authority PASS 7/7;
+strict BEI PASS (15 rows); scoped unit compliance PASS; JSON syntax and diff
+hygiene PASS. Those gates do not detect the independent forgery above.
+
+Verdict: `HOLD / occupancy debit separation is correct, but shared-owner
+candidate and other-flux lineage remain unauthenticated at 1302b60b9`.
