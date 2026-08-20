@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{CoupledTimeError, Digest32, ModelTimeNs, ParentTransactionId};
+use crate::{CoupledTimeError, Digest32, EventId, ModelTimeNs, ParentTransactionId};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum ConstraintClass {
@@ -13,15 +13,83 @@ pub enum ConstraintClass {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct StepConstraintV1 {
-    pub parent_transaction_id: ParentTransactionId,
-    pub accepted_cursor_ns: ModelTimeNs,
-    pub proposed_end_ns: ModelTimeNs,
-    pub source_owner_id: String,
-    pub class: ConstraintClass,
-    pub constraint_digest: Digest32,
-    pub compatibility_group_digest: Digest32,
-    pub calendar_receipt: Digest32,
-    pub forcing_receipt: Digest32,
+    pub(crate) parent_transaction_id: ParentTransactionId,
+    pub(crate) accepted_cursor_ns: ModelTimeNs,
+    pub(crate) proposed_end_ns: ModelTimeNs,
+    pub(crate) source_owner_id: String,
+    pub(crate) class: ConstraintClass,
+    pub(crate) constraint_digest: Digest32,
+    pub(crate) compatibility_group_digest: Digest32,
+    pub(crate) calendar_receipt: Digest32,
+    pub(crate) forcing_receipt: Digest32,
+}
+impl StepConstraintV1 {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        parent: ParentTransactionId,
+        cursor: ModelTimeNs,
+        end: ModelTimeNs,
+        source: String,
+        class: ConstraintClass,
+        compatibility: Digest32,
+        calendar: Digest32,
+        forcing: Digest32,
+    ) -> Result<Self, CoupledTimeError> {
+        if source.is_empty() {
+            return Err(CoupledTimeError::InvalidConstraint);
+        }
+        let cursor_b = cursor.get().to_be_bytes();
+        let end_b = end.get().to_be_bytes();
+        let class_b = format!("{class:?}");
+        let constraint_digest = crate::framed_sha256(
+            "constraint",
+            &[
+                crate::FramedField {
+                    tag: "parent_transaction_id",
+                    value: parent.digest().as_bytes(),
+                },
+                crate::FramedField {
+                    tag: "cursor_ns",
+                    value: &cursor_b,
+                },
+                crate::FramedField {
+                    tag: "end_ns",
+                    value: &end_b,
+                },
+                crate::FramedField {
+                    tag: "class",
+                    value: class_b.as_bytes(),
+                },
+                crate::FramedField {
+                    tag: "source_owner_id",
+                    value: source.as_bytes(),
+                },
+                crate::FramedField {
+                    tag: "compatibility_group",
+                    value: compatibility.as_bytes(),
+                },
+            ],
+        )?;
+        Ok(Self {
+            parent_transaction_id: parent,
+            accepted_cursor_ns: cursor,
+            proposed_end_ns: end,
+            source_owner_id: source,
+            class,
+            constraint_digest,
+            compatibility_group_digest: compatibility,
+            calendar_receipt: calendar,
+            forcing_receipt: forcing,
+        })
+    }
+    #[must_use]
+    pub const fn digest(&self) -> Digest32 {
+        self.constraint_digest
+    }
+    #[must_use]
+    pub const fn proposed_end(&self) -> ModelTimeNs {
+        self.proposed_end_ns
+    }
 }
 
 pub fn reduce_constraints(
@@ -29,7 +97,7 @@ pub fn reduce_constraints(
     parent: ParentTransactionId,
     cursor: ModelTimeNs,
     parent_end: ModelTimeNs,
-    pending_event: bool,
+    pending_event: Option<EventId>,
 ) -> Result<&StepConstraintV1, CoupledTimeError> {
     if constraints.is_empty() {
         return Err(CoupledTimeError::InvalidConstraint);
@@ -42,7 +110,7 @@ pub fn reduce_constraints(
             return Err(CoupledTimeError::InvalidConstraint);
         }
         if value.proposed_end_ns == cursor
-            && !(pending_event && value.class == ConstraintClass::EventBoundary)
+            && !(pending_event.is_some() && value.class == ConstraintClass::EventBoundary)
         {
             return Err(CoupledTimeError::ZeroStepWithoutEvent);
         }
@@ -56,15 +124,13 @@ pub fn reduce_constraints(
         .iter()
         .filter(|v| v.proposed_end_ns == earliest)
         .collect();
-    let facts: Vec<_> = coincident
-        .iter()
-        .filter(|v| v.class != ConstraintClass::AdaptiveUpperBound)
-        .collect();
-    if let Some(first) = facts.first() {
-        if facts.iter().any(|v| {
+    if let Some(first) = coincident.first() {
+        if coincident.iter().any(|v| {
             v.calendar_receipt != first.calendar_receipt
                 || v.forcing_receipt != first.forcing_receipt
-                || v.compatibility_group_digest != first.compatibility_group_digest
+                || (v.class != ConstraintClass::AdaptiveUpperBound
+                    && first.class != ConstraintClass::AdaptiveUpperBound
+                    && v.compatibility_group_digest != first.compatibility_group_digest)
         }) {
             return Err(CoupledTimeError::ConstraintConflict);
         }
@@ -77,18 +143,49 @@ pub fn reduce_constraints(
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RetryControlV1 {
-    pub accepted_state_digest: Digest32,
-    pub attempt_ordinal: u32,
-    pub last_proposal_end_ns: Option<ModelTimeNs>,
-    pub retry_digest: Digest32,
+    accepted_state_digest: Digest32,
+    controller_policy_digest: Digest32,
+    attempt_ordinal: u32,
+    last_proposal_end_ns: Option<ModelTimeNs>,
+    retry_digest: Digest32,
+    max_attempts: u32,
+    minimum_step_ns: u128,
 }
 
 impl RetryControlV1 {
+    #[must_use]
+    pub const fn new(
+        root: Digest32,
+        policy: Digest32,
+        max_attempts: u32,
+        minimum_step_ns: u128,
+    ) -> Self {
+        Self {
+            accepted_state_digest: root,
+            controller_policy_digest: policy,
+            attempt_ordinal: 0,
+            last_proposal_end_ns: None,
+            retry_digest: Digest32::zero(),
+            max_attempts,
+            minimum_step_ns,
+        }
+    }
     pub fn record_rejection(
         &mut self,
         proposal: ModelTimeNs,
         new_digest: Digest32,
+        accepted_root: Digest32,
+        policy: Digest32,
+        cursor: ModelTimeNs,
     ) -> Result<(), CoupledTimeError> {
+        if accepted_root != self.accepted_state_digest || policy != self.controller_policy_digest {
+            return Err(CoupledTimeError::ControllerPolicyMismatch);
+        }
+        if proposal.get().saturating_sub(cursor.get()) < self.minimum_step_ns
+            || self.attempt_ordinal >= self.max_attempts
+        {
+            return Err(CoupledTimeError::RetryExhausted);
+        }
         if self.last_proposal_end_ns == Some(proposal) && self.retry_digest == new_digest {
             return Err(CoupledTimeError::RetryExhausted);
         }

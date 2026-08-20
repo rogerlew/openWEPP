@@ -1,111 +1,421 @@
+use crate::{
+    AcceptedSlabId, CoupledClockStateV1, CoupledTimeError, Digest32, FramedField, OwnerState,
+    ParentTransactionId, ReceiptId, SegmentId, StepConstraintV1, TimeSupport, digest_bytes,
+    framed_sha256,
+};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    AcceptedSlabId, CoupledClockStateV1, CoupledTimeError, Digest32, OwnerState, ReceiptId,
-    TimeSupport, digest_bytes,
-};
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LedgerEntryV1 {
+    flux_id: String,
+    units: String,
+    debit_digest: Digest32,
+    credit_digest: Digest32,
+    operand_lineage_digest: Digest32,
+}
+impl LedgerEntryV1 {
+    pub fn new(
+        flux_id: String,
+        units: String,
+        debit: Digest32,
+        credit: Digest32,
+        lineage: Digest32,
+    ) -> Result<Self, CoupledTimeError> {
+        if flux_id.is_empty() || units.is_empty() || debit != credit {
+            return Err(CoupledTimeError::LedgerFailure);
+        }
+        Ok(Self {
+            flux_id,
+            units,
+            debit_digest: debit,
+            credit_digest: credit,
+            operand_lineage_digest: lineage,
+        })
+    }
+}
+
+pub(crate) fn owner_set_digest(owners: &[OwnerState]) -> Result<Digest32, CoupledTimeError> {
+    let count = u32::try_from(owners.len()).map_err(|_| CoupledTimeError::ArithmeticOverflow)?;
+    let mut bytes = Vec::new();
+    for owner in owners {
+        let id = owner.owner_id().as_bytes();
+        bytes.extend_from_slice(
+            &u32::try_from(id.len())
+                .map_err(|_| CoupledTimeError::ArithmeticOverflow)?
+                .to_be_bytes(),
+        );
+        bytes.extend_from_slice(id);
+        bytes.extend_from_slice(owner.state_digest().as_bytes());
+    }
+    framed_sha256(
+        "owner-set",
+        &[
+            FramedField {
+                tag: "owner_count",
+                value: &count.to_be_bytes(),
+            },
+            FramedField {
+                tag: "ordered_owner_records",
+                value: &bytes,
+            },
+        ],
+    )
+}
+pub fn complete_owner_set_digest(owners: &[OwnerState]) -> Result<Digest32, CoupledTimeError> {
+    crate::clock::validate_owner_and_participant_sets(owners, &[])?;
+    owner_set_digest(owners)
+}
+fn ledger_digest(entries: &[LedgerEntryV1]) -> Result<Digest32, CoupledTimeError> {
+    if entries.is_empty() || entries.windows(2).any(|w| w[0].flux_id >= w[1].flux_id) {
+        return Err(CoupledTimeError::LedgerFailure);
+    }
+    let mut bytes = Vec::new();
+    for e in entries {
+        if e.debit_digest != e.credit_digest {
+            return Err(CoupledTimeError::LedgerFailure);
+        }
+        bytes.extend_from_slice(e.flux_id.as_bytes());
+        bytes.push(0);
+        bytes.extend_from_slice(e.units.as_bytes());
+        bytes.extend_from_slice(e.debit_digest.as_bytes());
+        bytes.extend_from_slice(e.operand_lineage_digest.as_bytes());
+    }
+    Ok(digest_bytes(&bytes))
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct OwnerCandidateV1 {
-    pub owner_id: String,
-    pub beginning_state_digest: Digest32,
-    pub ending_state_bytes: Vec<u8>,
-    pub ending_state_digest: Digest32,
-    pub ledger_digest: Digest32,
+pub struct AcceptedSlabReceiptV1 {
+    pub(crate) receipt_id: ReceiptId,
+    pub(crate) slab_id: AcceptedSlabId,
+    pub(crate) parent_transaction_id: ParentTransactionId,
+    pub(crate) slab_ordinal: u32,
+    pub(crate) segment_id: SegmentId,
+    pub(crate) support: TimeSupport,
+    pub(crate) duration_bits: u64,
+    pub(crate) constraint_digest: Digest32,
+    pub(crate) begin_clock: Digest32,
+    pub(crate) end_clock: Digest32,
+    pub(crate) begin_owner_set: Digest32,
+    pub(crate) end_owner_set: Digest32,
+    pub(crate) owner_candidate_set: Digest32,
+    pub(crate) ledger_digest: Digest32,
+}
+impl AcceptedSlabReceiptV1 {
+    #[must_use]
+    pub const fn id(&self) -> ReceiptId {
+        self.receipt_id
+    }
+    #[must_use]
+    pub const fn support(&self) -> TimeSupport {
+        self.support
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CoupledSlabCandidateV1 {
-    pub accepted_slab_id: AcceptedSlabId,
-    pub support: TimeSupport,
-    pub duration_s_bits: u64,
-    pub candidates: Vec<OwnerCandidateV1>,
-    pub global_ledger_digest: Digest32,
-    pub ledgers_closed: bool,
-    pub receipt_id: ReceiptId,
+    parent: ParentTransactionId,
+    segment: SegmentId,
+    ordinal: u32,
+    support: TimeSupport,
+    duration_s_bits: u64,
+    constraint_digest: Digest32,
+    begin_owner_set: Digest32,
+    ending_owners: Vec<OwnerState>,
+    end_owner_set: Digest32,
+    ledger_entries: Vec<LedgerEntryV1>,
+    ledger_digest: Digest32,
+    slab_id: AcceptedSlabId,
+    receipt: AcceptedSlabReceiptV1,
 }
-
-pub fn accept_slab(
-    clock: &mut CoupledClockStateV1,
-    slab: &CoupledSlabCandidateV1,
-) -> Result<(), CoupledTimeError> {
-    if slab.support.start_ns != clock.accepted_until
-        || slab.support.end_ns > clock.parent_support.end_ns
-        || slab.duration_s_bits != slab.support.duration_s_bits()
-    {
-        return Err(CoupledTimeError::ParentMismatch);
-    }
-    if !slab.ledgers_closed {
-        return Err(CoupledTimeError::LedgerFailure);
-    }
-    if slab.candidates.len() != clock.active_participant_set.len() {
-        return Err(CoupledTimeError::OwnerCandidate);
-    }
-    let mut next = clock.complete_owner_set.clone();
-    for (participant, candidate) in clock.active_participant_set.iter().zip(&slab.candidates) {
-        if participant != &candidate.owner_id
-            || digest_bytes(&candidate.ending_state_bytes) != candidate.ending_state_digest
+impl CoupledSlabCandidateV1 {
+    #[allow(clippy::too_many_lines)]
+    pub fn new(
+        clock: &CoupledClockStateV1,
+        segment: SegmentId,
+        support: TimeSupport,
+        constraint: &StepConstraintV1,
+        ending_owners: Vec<OwnerState>,
+        ledger_entries: Vec<LedgerEntryV1>,
+    ) -> Result<Self, CoupledTimeError> {
+        let mut participant_bytes = Vec::new();
+        for participant in &clock.active_participant_set {
+            participant_bytes.extend_from_slice(participant.as_bytes());
+            participant_bytes.push(0);
+        }
+        let expected_segment = SegmentId::derive(
+            clock.parent_transaction_id,
+            clock.segment_ordinal,
+            TimeSupport::new(clock.accepted_until, clock.parent_support.end_ns())?,
+            digest_bytes(clock.active_regime_id.as_bytes()),
+            digest_bytes(&participant_bytes),
+        )?;
+        if segment != expected_segment
+            || constraint.parent_transaction_id != clock.parent_transaction_id
+            || constraint.accepted_cursor_ns != clock.accepted_until
+            || constraint.calendar_receipt != clock.calendar_receipt
+            || constraint.forcing_receipt != clock.forcing_receipt
+            || support.start_ns() != clock.accepted_until
+            || support.end_ns() > clock.parent_support.end_ns()
+            || constraint.proposed_end() != support.end_ns()
+        {
+            return Err(CoupledTimeError::ParentMismatch);
+        }
+        crate::clock::validate_owner_and_participant_sets(
+            &ending_owners,
+            &clock.active_participant_set,
+        )?;
+        if ending_owners.len() != clock.complete_owner_set.len()
+            || ending_owners
+                .iter()
+                .zip(&clock.complete_owner_set)
+                .any(|(a, b)| a.owner_id() != b.owner_id())
         {
             return Err(CoupledTimeError::OwnerCandidate);
         }
-        let owner = next
-            .binary_search_by(|o| o.owner_id.cmp(participant))
-            .map_err(|_| CoupledTimeError::OwnerCandidate)?;
-        if next[owner].state_digest != candidate.beginning_state_digest {
-            return Err(CoupledTimeError::OwnerCandidate);
+        for (before, after) in clock.complete_owner_set.iter().zip(&ending_owners) {
+            if !clock
+                .active_participant_set
+                .iter()
+                .any(|p| p == before.owner_id())
+                && before != after
+            {
+                return Err(CoupledTimeError::OwnerCandidate);
+            }
         }
-        next[owner] = OwnerState {
-            owner_id: participant.clone(),
-            state_bytes: candidate.ending_state_bytes.clone(),
-            state_digest: candidate.ending_state_digest,
+        let begin = owner_set_digest(&clock.complete_owner_set)?;
+        let end = owner_set_digest(&ending_owners)?;
+        let ledger = ledger_digest(&ledger_entries)?;
+        let duration = support.duration_s_bits();
+        let ordinal_b = clock.slab_ordinal.to_be_bytes();
+        let start = support.start_ns().get().to_be_bytes();
+        let end_tick = support.end_ns().get().to_be_bytes();
+        let duration_b = duration.to_be_bytes();
+        let slab_digest = framed_sha256(
+            "accepted-slab",
+            &[
+                FramedField {
+                    tag: "parent_transaction_id",
+                    value: clock.parent_transaction_id.digest().as_bytes(),
+                },
+                FramedField {
+                    tag: "slab_ordinal",
+                    value: &ordinal_b,
+                },
+                FramedField {
+                    tag: "segment_id",
+                    value: segment.digest().as_bytes(),
+                },
+                FramedField {
+                    tag: "start_ns",
+                    value: &start,
+                },
+                FramedField {
+                    tag: "end_ns",
+                    value: &end_tick,
+                },
+                FramedField {
+                    tag: "duration_bits",
+                    value: &duration_b,
+                },
+                FramedField {
+                    tag: "begin_owner_set",
+                    value: begin.as_bytes(),
+                },
+                FramedField {
+                    tag: "end_owner_set",
+                    value: end.as_bytes(),
+                },
+                FramedField {
+                    tag: "constraint_digest",
+                    value: constraint.digest().as_bytes(),
+                },
+                FramedField {
+                    tag: "ledger_digest",
+                    value: ledger.as_bytes(),
+                },
+            ],
+        )?;
+        let slab_id = AcceptedSlabId::from_digest(slab_digest);
+        let owner_candidate_set = digest_bytes(
+            &serde_json::to_vec(&ending_owners)
+                .map_err(|_| CoupledTimeError::NonCanonicalIdentity)?,
+        );
+        let begin_clock = clock.accepted_clock_digest;
+        let next_ordinal = clock
+            .slab_ordinal
+            .checked_add(1)
+            .ok_or(CoupledTimeError::ArithmeticOverflow)?;
+        let end_clock = digest_bytes(
+            &[
+                &support.end_ns().get().to_be_bytes()[..],
+                &next_ordinal.to_be_bytes()[..],
+                end.as_bytes(),
+            ]
+            .concat(),
+        );
+        let receipt_digest = framed_sha256(
+            "slab-receipt-v2",
+            &[
+                FramedField {
+                    tag: "parent_transaction_id",
+                    value: clock.parent_transaction_id.digest().as_bytes(),
+                },
+                FramedField {
+                    tag: "accepted_slab_id",
+                    value: slab_digest.as_bytes(),
+                },
+                FramedField {
+                    tag: "slab_ordinal",
+                    value: &ordinal_b,
+                },
+                FramedField {
+                    tag: "segment_id",
+                    value: segment.digest().as_bytes(),
+                },
+                FramedField {
+                    tag: "start_ns",
+                    value: &start,
+                },
+                FramedField {
+                    tag: "end_ns",
+                    value: &end_tick,
+                },
+                FramedField {
+                    tag: "duration_bits",
+                    value: &duration_b,
+                },
+                FramedField {
+                    tag: "constraint_digest",
+                    value: constraint.digest().as_bytes(),
+                },
+                FramedField {
+                    tag: "begin_clock",
+                    value: begin_clock.as_bytes(),
+                },
+                FramedField {
+                    tag: "end_clock",
+                    value: end_clock.as_bytes(),
+                },
+                FramedField {
+                    tag: "begin_owner_set",
+                    value: begin.as_bytes(),
+                },
+                FramedField {
+                    tag: "end_owner_set",
+                    value: end.as_bytes(),
+                },
+                FramedField {
+                    tag: "owner_candidate_set",
+                    value: owner_candidate_set.as_bytes(),
+                },
+                FramedField {
+                    tag: "ledger_digest",
+                    value: ledger.as_bytes(),
+                },
+            ],
+        )?;
+        let receipt = AcceptedSlabReceiptV1 {
+            receipt_id: ReceiptId::from_digest(receipt_digest),
+            slab_id,
+            parent_transaction_id: clock.parent_transaction_id,
+            slab_ordinal: clock.slab_ordinal,
+            segment_id: segment,
+            support,
+            duration_bits: duration,
+            constraint_digest: constraint.digest(),
+            begin_clock,
+            end_clock,
+            begin_owner_set: begin,
+            end_owner_set: end,
+            owner_candidate_set,
+            ledger_digest: ledger,
         };
+        Ok(Self {
+            parent: clock.parent_transaction_id,
+            segment,
+            ordinal: clock.slab_ordinal,
+            support,
+            duration_s_bits: duration,
+            constraint_digest: constraint.digest(),
+            begin_owner_set: begin,
+            ending_owners,
+            end_owner_set: end,
+            ledger_entries,
+            ledger_digest: ledger,
+            slab_id,
+            receipt,
+        })
     }
-    let duration = slab.support.duration_ns();
-    let next_ordinal = clock
+}
+pub fn accept_slab(
+    clock: &mut CoupledClockStateV1,
+    slab: CoupledSlabCandidateV1,
+) -> Result<AcceptedSlabReceiptV1, CoupledTimeError> {
+    if slab.parent != clock.parent_transaction_id
+        || slab.ordinal != clock.slab_ordinal
+        || slab.support.start_ns() != clock.accepted_until
+        || slab.duration_s_bits != slab.support.duration_s_bits()
+        || slab.begin_owner_set != owner_set_digest(&clock.complete_owner_set)?
+        || slab.end_owner_set != owner_set_digest(&slab.ending_owners)?
+        || slab.ledger_digest != ledger_digest(&slab.ledger_entries)?
+    {
+        return Err(CoupledTimeError::OwnerCandidate);
+    }
+    if clock
+        .accepted_slab_receipts
+        .iter()
+        .any(|r| r.id() == slab.receipt.id())
+    {
+        return Err(CoupledTimeError::OwnerCandidate);
+    }
+    clock.slab_ordinal = clock
         .slab_ordinal
         .checked_add(1)
         .ok_or(CoupledTimeError::ArithmeticOverflow)?;
-    clock.complete_owner_set = next;
-    clock.accepted_until = slab.support.end_ns;
-    clock.last_accepted_step_ns = Some(duration);
-    clock.slab_ordinal = next_ordinal;
-    Ok(())
+    clock.last_accepted_step_ns = Some(slab.support.duration_ns());
+    clock.accepted_until = slab.support.end_ns();
+    clock.accepted_clock_digest = slab.receipt.end_clock;
+    clock.complete_owner_set = slab.ending_owners;
+    clock.accepted_slab_receipts.push(slab.receipt.clone());
+    Ok(slab.receipt)
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct DiagnosticReductionV1 {
-    pub maximum: Option<f64>,
-    pub accepted_receipts: Vec<ReceiptId>,
+    pub(crate) reduction_id: String,
+    pub(crate) units: String,
+    pub(crate) maximum: Option<f64>,
+    pub(crate) accepted_receipts: Vec<ReceiptId>,
 }
-
 impl DiagnosticReductionV1 {
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {
+    pub fn new(reduction_id: String, units: String) -> Result<Self, CoupledTimeError> {
+        if reduction_id.is_empty() || units.is_empty() {
+            return Err(CoupledTimeError::LedgerFailure);
+        }
+        Ok(Self {
+            reduction_id,
+            units,
             maximum: None,
             accepted_receipts: Vec::new(),
-        }
+        })
     }
     pub fn fold_accepted(
         &mut self,
         value: f64,
-        receipt: ReceiptId,
+        receipt: &AcceptedSlabReceiptV1,
     ) -> Result<(), CoupledTimeError> {
-        if !value.is_finite() {
+        if !value.is_finite() || self.accepted_receipts.contains(&receipt.id()) {
             return Err(CoupledTimeError::LedgerFailure);
         }
         self.maximum = Some(self.maximum.map_or(value, |old| old.max(value)));
-        self.accepted_receipts.push(receipt);
+        self.accepted_receipts.push(receipt.id());
         Ok(())
     }
-}
-
-impl Default for DiagnosticReductionV1 {
-    fn default() -> Self {
-        Self::new()
+    #[must_use]
+    pub const fn maximum(&self) -> Option<f64> {
+        self.maximum
     }
 }
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TemporalOperatorClass {
     AlgebraicRate,
@@ -114,30 +424,4 @@ pub enum TemporalOperatorClass {
     ThresholdEvent,
     ScheduledOnce,
     DiagnosticReduction,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct ParentCommitV1 {
-    pub transaction_sequence: u128,
-    pub receipt_id: ReceiptId,
-    pub ending_owner_set: Vec<OwnerState>,
-}
-
-/// Finalize exactly once after the accepted cursor reaches the parent end.
-pub fn finalize_parent(
-    clock: &CoupledClockStateV1,
-    transaction_sequence: u128,
-    receipt_id: ReceiptId,
-) -> Result<ParentCommitV1, CoupledTimeError> {
-    if !clock.is_complete() {
-        return Err(CoupledTimeError::ParentNotFinalizable);
-    }
-    let successor = transaction_sequence
-        .checked_add(1)
-        .ok_or(CoupledTimeError::ArithmeticOverflow)?;
-    Ok(ParentCommitV1 {
-        transaction_sequence: successor,
-        receipt_id,
-        ending_owner_set: clock.complete_owner_set.clone(),
-    })
 }

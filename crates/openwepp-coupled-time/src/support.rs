@@ -1,16 +1,56 @@
 use num_bigint::BigUint;
 use num_traits::{ToPrimitive, Zero};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
 
 use crate::CoupledTimeError;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct ModelTimeNs(pub u128);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ModelTimeNs(u128);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+impl ModelTimeNs {
+    #[must_use]
+    pub const fn new(value: u128) -> Self {
+        Self(value)
+    }
+    #[must_use]
+    pub const fn get(self) -> u128 {
+        self.0
+    }
+}
+
+impl Serialize for ModelTimeNs {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.0.to_string())
+    }
+}
+impl<'de> Deserialize<'de> for ModelTimeNs {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let text = String::deserialize(deserializer)?;
+        if text.is_empty()
+            || text != "0" && text.starts_with('0')
+            || !text.bytes().all(|b| b.is_ascii_digit())
+        {
+            return Err(de::Error::custom("noncanonical u128 string"));
+        }
+        text.parse::<u128>().map(Self).map_err(de::Error::custom)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub struct TimeSupport {
-    pub start_ns: ModelTimeNs,
-    pub end_ns: ModelTimeNs,
+    start_ns: ModelTimeNs,
+    end_ns: ModelTimeNs,
+}
+impl<'de> Deserialize<'de> for TimeSupport {
+    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        struct Wire {
+            start_ns: ModelTimeNs,
+            end_ns: ModelTimeNs,
+        }
+        let w = Wire::deserialize(d)?;
+        Self::new(w.start_ns, w.end_ns).map_err(de::Error::custom)
+    }
 }
 
 impl TimeSupport {
@@ -19,6 +59,15 @@ impl TimeSupport {
             return Err(CoupledTimeError::InvalidSupport);
         }
         Ok(Self { start_ns, end_ns })
+    }
+
+    #[must_use]
+    pub const fn start_ns(self) -> ModelTimeNs {
+        self.start_ns
+    }
+    #[must_use]
+    pub const fn end_ns(self) -> ModelTimeNs {
+        self.end_ns
     }
 
     #[must_use]

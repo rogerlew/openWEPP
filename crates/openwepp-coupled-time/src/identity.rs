@@ -1,16 +1,52 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
 use sha2::{Digest, Sha256};
 
 use crate::CoupledTimeError;
 
 /// Raw SHA-256 bytes; hexadecimal text is never used inside canonical preimages.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Digest32(pub [u8; 32]);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Digest32([u8; 32]);
 
 impl Digest32 {
     #[must_use]
     pub const fn zero() -> Self {
         Self([0; 32])
+    }
+    #[must_use]
+    pub const fn from_bytes(bytes: [u8; 32]) -> Self {
+        Self(bytes)
+    }
+    #[must_use]
+    pub const fn as_bytes(&self) -> &[u8; 32] {
+        &self.0
+    }
+}
+impl Serialize for Digest32 {
+    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        let mut text = String::with_capacity(64);
+        for b in self.0 {
+            use std::fmt::Write as _;
+            write!(&mut text, "{b:02x}").map_err(serde::ser::Error::custom)?;
+        }
+        s.serialize_str(&text)
+    }
+}
+impl<'de> Deserialize<'de> for Digest32 {
+    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let text = String::deserialize(d)?;
+        if text.len() != 64
+            || !text
+                .bytes()
+                .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
+        {
+            return Err(de::Error::custom("noncanonical sha256"));
+        }
+        let mut out = [0; 32];
+        for (i, chunk) in text.as_bytes().chunks_exact(2).enumerate() {
+            let part = std::str::from_utf8(chunk).map_err(de::Error::custom)?;
+            out[i] = u8::from_str_radix(part, 16).map_err(de::Error::custom)?;
+        }
+        Ok(Self(out))
     }
 }
 
@@ -19,7 +55,17 @@ macro_rules! identity {
         #[derive(
             Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
         )]
-        pub struct $name(pub Digest32);
+        pub struct $name(Digest32);
+        impl $name {
+            #[must_use]
+            pub const fn from_digest(digest: Digest32) -> Self {
+                Self(digest)
+            }
+            #[must_use]
+            pub const fn digest(self) -> Digest32 {
+                self.0
+            }
+        }
     };
 }
 identity!(ParentIntervalId);
@@ -64,4 +110,173 @@ pub fn framed_sha256(
 #[must_use]
 pub fn digest_bytes(bytes: &[u8]) -> Digest32 {
     Digest32(Sha256::digest(bytes).into())
+}
+
+fn id(domain: &str, fields: &[FramedField<'_>]) -> Result<Digest32, CoupledTimeError> {
+    framed_sha256(domain, fields)
+}
+
+impl ParentIntervalId {
+    pub fn derive(
+        run: Digest32,
+        calendar: Digest32,
+        forcing: Digest32,
+        support: crate::TimeSupport,
+    ) -> Result<Self, CoupledTimeError> {
+        let start = support.start_ns().get().to_be_bytes();
+        let end = support.end_ns().get().to_be_bytes();
+        Ok(Self(id(
+            "parent-interval",
+            &[
+                FramedField {
+                    tag: "run_id",
+                    value: run.as_bytes(),
+                },
+                FramedField {
+                    tag: "calendar_receipt",
+                    value: calendar.as_bytes(),
+                },
+                FramedField {
+                    tag: "forcing_receipt",
+                    value: forcing.as_bytes(),
+                },
+                FramedField {
+                    tag: "start_ns",
+                    value: &start,
+                },
+                FramedField {
+                    tag: "end_ns",
+                    value: &end,
+                },
+            ],
+        )?))
+    }
+}
+impl ParentTransactionId {
+    pub fn derive(
+        run: Digest32,
+        sequence: u128,
+        interval: ParentIntervalId,
+        owners: Digest32,
+    ) -> Result<Self, CoupledTimeError> {
+        let sequence = sequence.to_be_bytes();
+        Ok(Self(id(
+            "parent-transaction",
+            &[
+                FramedField {
+                    tag: "run_id",
+                    value: run.as_bytes(),
+                },
+                FramedField {
+                    tag: "sequence",
+                    value: &sequence,
+                },
+                FramedField {
+                    tag: "parent_interval_id",
+                    value: interval.0.as_bytes(),
+                },
+                FramedField {
+                    tag: "begin_owner_set",
+                    value: owners.as_bytes(),
+                },
+            ],
+        )?))
+    }
+}
+impl SegmentId {
+    pub fn derive(
+        parent: ParentTransactionId,
+        ordinal: u32,
+        support: crate::TimeSupport,
+        regime: Digest32,
+        participants: Digest32,
+    ) -> Result<Self, CoupledTimeError> {
+        let ordinal = ordinal.to_be_bytes();
+        let start = support.start_ns().get().to_be_bytes();
+        let end = support.end_ns().get().to_be_bytes();
+        Ok(Self(id(
+            "segment",
+            &[
+                FramedField {
+                    tag: "parent_transaction_id",
+                    value: parent.0.as_bytes(),
+                },
+                FramedField {
+                    tag: "ordinal",
+                    value: &ordinal,
+                },
+                FramedField {
+                    tag: "start_ns",
+                    value: &start,
+                },
+                FramedField {
+                    tag: "end_ns",
+                    value: &end,
+                },
+                FramedField {
+                    tag: "regime_id",
+                    value: regime.as_bytes(),
+                },
+                FramedField {
+                    tag: "participant_set",
+                    value: participants.as_bytes(),
+                },
+            ],
+        )?))
+    }
+}
+impl AttemptId {
+    #[allow(clippy::too_many_arguments)]
+    pub fn derive(
+        parent: ParentTransactionId,
+        cursor: crate::ModelTimeNs,
+        slab: u32,
+        attempt: u32,
+        support: crate::TimeSupport,
+        constraint: Digest32,
+        owners: Digest32,
+    ) -> Result<Self, CoupledTimeError> {
+        let cursor = cursor.get().to_be_bytes();
+        let slab = slab.to_be_bytes();
+        let attempt = attempt.to_be_bytes();
+        let start = support.start_ns().get().to_be_bytes();
+        let end = support.end_ns().get().to_be_bytes();
+        Ok(Self(id(
+            "attempt",
+            &[
+                FramedField {
+                    tag: "parent_transaction_id",
+                    value: parent.0.as_bytes(),
+                },
+                FramedField {
+                    tag: "accepted_cursor_ns",
+                    value: &cursor,
+                },
+                FramedField {
+                    tag: "slab_ordinal",
+                    value: &slab,
+                },
+                FramedField {
+                    tag: "attempt_ordinal",
+                    value: &attempt,
+                },
+                FramedField {
+                    tag: "start_ns",
+                    value: &start,
+                },
+                FramedField {
+                    tag: "end_ns",
+                    value: &end,
+                },
+                FramedField {
+                    tag: "constraint_digest",
+                    value: constraint.as_bytes(),
+                },
+                FramedField {
+                    tag: "begin_owner_set",
+                    value: owners.as_bytes(),
+                },
+            ],
+        )?))
+    }
 }

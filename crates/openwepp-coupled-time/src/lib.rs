@@ -12,6 +12,7 @@ mod identity;
 mod restart;
 mod support;
 mod transaction;
+mod wire;
 
 pub use clock::*;
 pub use constraint::*;
