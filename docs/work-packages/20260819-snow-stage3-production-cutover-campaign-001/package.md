@@ -1,6 +1,6 @@
 # Coordinate Stage 3 Production Cutover
 
-Status: `active / Child 1 HOLD; Child 2 authority closure next`
+Status: `active / Child 1 HOLD; Child 2A coupled-time authority next`
 
 Date: `2026-08-19`
 
@@ -16,7 +16,8 @@ This ExecPlan is a living document maintained under
 Move ground snow from the current CoE production owner to the already admitted
 Stage 3 owner without a partial or dual-owner deployment. The campaign first
 joins the completed terminal snow event to the completed snow-free real-owner
-stack, then closes unresolved turbulent-carrier authority, qualifies the whole
+stack, then establishes shared time authority, introduces segmented
+vegetation, closes unresolved turbulent-carrier authority, qualifies the whole
 actual-scheduler candidate, obtains human assurance approval, and finally
 changes ownership atomically. Canopy-intercepted snow remains a separate later
 campaign.
@@ -35,17 +36,26 @@ children or use a later child to pass a current child's required gate.
    is executed HOLD before production edits. It admitted the snow/LSE/liquid
    transaction contracts, but exposed missing V10 partial-support and
    snow-covered pre-event vegetation authority. It resumes after Child 2.
-2. `SNOW-STAGE3-TURBULENT-CARRIER-AUTHORITY-CLOSURE` decides and admits the
-   applicable open/forest aerodynamic carrier without fitted attenuation and
-   closes the vegetation nominal/partial-support plus pre-event chronology
-   dependency exposed by Child 1.
+2. Child 2 is a continuously executed three-increment coordinator:
+   - **2A** [`COUPLED-TIME-AUTHORITY-IMPLEMENTATION`](../20260820-coupled-time-authority-implementation-001/package.md)
+     admits and implements exact-one coupled clock custody, exact integer
+     support, physical segments, common accepted slabs, attempt rollback,
+     restart cursor/controller state, atomic owner acceptance, and buffered
+     parent publication.
+   - **2B** `C3-WOODY-V11-SEGMENTED-SUPPORT` preserves immutable V10 and
+     supersedes transaction-time integration only, with exact full-support
+     compatibility, sequential segments, one parent finalization and commit.
+   - **2C** `SNOW-STAGE3-TURBULENT-CARRIER-AUTHORITY-CLOSURE` admits the shared
+     snow/canopy/vegetation carrier and snow-covered pre-event chronology.
 3. `SNOW-STAGE3-REAL-CONSUMER-CUTOVER-QUALIFICATION` exercises the actual
    scheduler and complete owner stack over representative full snow seasons.
 4. `SNOW-COE-STAGE3-ATOMIC-CUTOVER` changes the production owner/default and
    retires CoE generation in one stable increment.
 
-Children execute in order. Child 2 may be prepared while Child 1 executes, but
-Child 3 cannot start until both pass. The final-candidate `ASSURE-06` report
+Children execute in order. Child 2A--2C execute continuously, but each retains
+its own authority and evidence boundary. Child 1 resumes only after 2A--2C
+pass, and Child 3 cannot start until resumed Child 1 passes. The final-candidate
+`ASSURE-06` report
 requires independent human scientific review and approval after Child 3 and
 before Child 4. Child 4 is the first increment allowed to change production
 ownership.
@@ -68,7 +78,7 @@ as a correctness criterion.
 ## Intended Write Set
 
 - `docs/work-packages/20260819-snow-stage3-production-cutover-campaign-001/**`
-- the four child package trees as each is prospectively scaffolded;
+- the child package trees as each is prospectively scaffolded;
 - `docs/ROADMAP.md` and `docs/work-packages/README.md`;
 - campaign-wide evidence summaries only after their underlying child evidence
   exists.
@@ -81,6 +91,8 @@ No production source is directly owned by the coordinator.
 - A complete owner/consumer chronology from snow interval start through routed
   post-meltout water and outputs.
 - A turbulent-carrier authority decision with explicit forest/open domain.
+- One reusable coupled-time authority consumed by the V11 and later Richards
+  campaigns; no vegetation-only `transaction_support_s` exception.
 - Actual-scheduler seasonal qualification with diagnostic CoE comparisons.
 - Final-candidate `ASSURE-06` human review and approval evidence.
 - One atomic owner/default cutover with a separately proven rollback release.
@@ -123,7 +135,9 @@ limits it requires.
 - [x] (2026-08-19) Executed Child 1 through its contract checkpoint and
   dispositioned HOLD before production edits on a dual-reviewed vegetation
   support/carrier authority boundary.
-- [ ] Scaffold, execute, and terminally disposition Child 2; then resume Child
+- [x] (2026-08-20) Split Child 2 into coupled-time (2A), V11 segmented support
+  (2B), and snow-covered carrier (2C), and scaffolded 2A.
+- [ ] Execute and terminally disposition 2A--2C continuously; then resume Child
   1 from checkpoint `83cf6eb8e`.
 - [ ] Execute Child 3 actual-scheduler qualification.
 - [ ] Obtain final-candidate `ASSURE-06` human review and approval.
@@ -136,6 +150,10 @@ limits it requires.
   mutate or scale it. Authority must also decide vegetation evolution on the
   snow-covered half before `t*`, which couples the mechanical handoff to Child
   2's turbulent-carrier decision.
+- The same missing authority governs snow terminal events, adaptive Richards
+  slabs, Lane D CFL limits, soil--plant iterations, threshold events, restart,
+  and output chronology. Duration is therefore a cross-domain state/transaction
+  authority, not a vegetation override.
 
 ## Decision Log
 
@@ -147,6 +165,12 @@ limits it requires.
   and cutover. Rationale: they have distinct authority, write sets, evidence,
   and release consequences; mechanical success cannot imply physical efficacy
   or production readiness. Date/Author: 2026-08-19 / Codex.
+- Decision: decompose former Child 2 into 2A coupled time, 2B V11 segmented
+  vegetation, and 2C snow-covered carrier, executed continuously. Rationale:
+  time identity/atomicity is reusable infrastructure; vegetation integration
+  and snow-carrier equations remain distinct science authorities. V10 remains
+  immutable and Richards must later import 2A rather than define another
+  clock. Date/Author: 2026-08-20 / Codex.
 
 ## Outcomes & Retrospective
 
