@@ -1,29 +1,15 @@
-# Independent Rust Review
+# Independent Rust, API And Serialization Review
 
-## Exact implementation re-review
+Evidence class: `Static + Ran`. Verdict: `PASS` on exact implementation commit
+`3ea08d81d966ccbf163ee64377aa741308e2665a`.
 
-Evidence class: `Static` plus reviewer-run diff hygiene. Verdict: `PASS` on
-`81c2a910c4c47eadd71649959d145d2f82125b9c`. The default-off scheduler seam
-accepts only the opaque prepared capability and typed template, executes on
-isolated candidates, buffers output, and assigns production plus the complete
-V10 owner only after all fallible work succeeds. No material finding remains.
+The public receipt-minting path is removed. Root-bearing types and constructors
+are crate-private; the public canopy constructor remains root-free. Nested and
+outer digests, qualified topology, all configuration/source/cadence joins and
+exact-bit payloads are validated before use. Restart wire artifacts are
+unchanged.
 
-Reviewer: `child4_rust_review` (Anscombe)
+Reviewer-ran isolated evidence: focused V10 9/9 PASS, persisted restart 30/30
+PASS, and exact correction diff hygiene PASS.
 
-Evidence class: `Static + Ran` at `a7e481022593bd2c00eeaec7346a06e816aa4b3c`.
-
-Verdict: `HOLD`. No high-severity Rust correctness finding remained after the
-scheduler/output and lane/OFE corrections. Material closure findings retained:
-
-1. no default-off harness joins the actual production day builder to a real
-   higher-frequency repository receipt provider;
-2. the checkpoint is not a complete persisted restart for hydrology/maps/
-   configuration/counters;
-3. typed causes were string-erased at the reviewed bytes;
-4. full-run buffering requires performance disposition;
-5. package and line-count evidence required reconciliation.
-
-After review, item 3 was corrected at `1d1bb33d3` with concrete transparent
-source variants for LSE, LSE shadow, real hydrology, BGC, projection, and owner
-envelope errors; item 5 is reconciled by current package artifacts. Items 1,
-2, and 4 remain open. Focused exact review tests passed 9/9.
+Reviewer: `restart_serialization_review` (Heisenberg).

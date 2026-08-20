@@ -1,21 +1,15 @@
 # Independent Hydrology And Ownership Review
 
-## Exact implementation re-review
+Evidence class: `Static`. Verdict: `PASS` on exact implementation commit
+`3ea08d81d966ccbf163ee64377aa741308e2665a`.
 
-Evidence class: `Static`. Verdict: `PASS` on
-`81c2a910c4c47eadd71649959d145d2f82125b9c`. The actual scheduler consumes the
-opaque repository-prepared GSI/48-step day through V10/LSE-V2. Static/LSE
-topology, GSI, WB14, atmospheric scalar, cursor, complete hydrology,
-shared-soil and post-commit joins fail closed. No material finding remains.
+The review found no material hydrology or ownership defect. Bare-ground
+liquid/frozen posture is read from the exact tile-qualified live hydrology
+fact. Root receipts are crate-private and keyed by OFE, production lane,
+occupancy, stratum and layer. Their envelope binds the released owner/model,
+root/hydrology/vegetation/LSE configuration identities, root-binding digest,
+live hydrology snapshot, transaction, day and interval. Restart configuration
+identity remains topology-bound and nonempty runon remains fail-closed before
+mutation.
 
-Reviewer: `child4_hydrology_review` (Huygens)
-
-Evidence class: `Static + Ran` at `a7e481022593bd2c00eeaec7346a06e816aa4b3c`.
-
-Verdict: `PASS`, no material hydrology/ownership finding. The review confirmed
-immutable pre-native provider operands, isolated hydrology, buffered external
-publication, surface-owner lane/OFE identity, all-tile precipitation closure,
-and fail-closed rollback. Focused Child-4 tests passed 9/9 in an isolated exact
-worktree.
-
-This PASS does not override the accepted provider/restart package HOLD.
+Reviewer: `restart_hydrology_review` (Feynman).

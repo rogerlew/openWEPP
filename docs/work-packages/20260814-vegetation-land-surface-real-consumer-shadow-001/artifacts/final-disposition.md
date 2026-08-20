@@ -3,9 +3,10 @@
 Status: `EXECUTING / prior HOLD closed; terminal verification pending`.
 
 The former root-hydraulic authority contradiction is closed by the released
-`OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1` and implementation commit
-`cec1f9768`. Terminal verification remains pending exact-current comparator
-and review evidence.
+`OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1` and exact implementation commit
+`3ea08d81d966ccbf163ee64377aa741308e2665a`. The exact comparator, full
+workspace and all three independent reviews PASS; terminal verification
+remains pending.
 
 The explicit default-off scheduler attachment, V9/V8 identity adapter,
 complete-owner transaction, all-tile precipitation join, shared soil-thermal

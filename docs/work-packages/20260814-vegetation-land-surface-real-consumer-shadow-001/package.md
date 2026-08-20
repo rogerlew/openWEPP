@@ -24,7 +24,10 @@ domain coverage and performance without activation.
 - [x] Admit and implement exact root-zone matric-potential and root
   path/gravity ownership; remove caller-controlled ground optics and unowned
   runon from the V10 seam.
-- [ ] Complete comparator, independent reviews and terminal verification.
+- [x] Complete comparator and independent reviews on one exact implementation
+  commit.
+- [x] Complete exact-head full-workspace correctness.
+- [ ] Complete terminal verification.
 
 ## Implementation Intent
 

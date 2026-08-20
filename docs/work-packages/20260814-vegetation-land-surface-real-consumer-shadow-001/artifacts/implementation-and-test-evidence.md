@@ -1,17 +1,19 @@
 # Implementation And Test Evidence
 
-Status: `implementation and exact-current gates PASS / independent review pending`
+Status: `implementation, focused gates, comparator and reviews PASS / terminal verification pending`
 
-Reviewed code commit: `443fc274439bc216cd8cad7e421da8fd9a52b25a`.
+Reviewed code commit: `3ea08d81d966ccbf163ee64377aa741308e2665a`.
 
 The prior HOLD narrative below is retained as historical evidence. The missing
 provider, complete persisted-restart, and caller-controlled root/optics/runon
 boundaries are now closed by the repository-prepared V10 owner, released
-restart transaction, and root-zone owner implementation. The exact-current
-producer evidence is 722/722 orchestrator, 30/30 persisted restart, 28/28
-reference, 38/38 focused authority/integration, 3,134/3,134 workspace, and
-17/17 comparator PASS. Required independent reviews and terminal verification
-remain pending.
+restart transaction, and sealed OFE/lane-qualified root-zone owner. The
+exact-current producer evidence is 722/722 orchestrator, 9/9 focused V10,
+30/30 persisted restart, 28/28 reference, 31/31 focused integration, and 20/20
+comparator PASS. The exact-head full workspace is 3,087/3,087 PASS after
+rerunning three environment-only failures with the required LLVM and Nix GCC
+runtime dependencies. All three required independent reviews PASS on the same
+exact commit. Terminal verification remains pending.
 
 ## Superseded historical implementation record
 

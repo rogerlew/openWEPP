@@ -1,24 +1,27 @@
 # Gate Results
 
-Status: `exact implementation and comparator PASS / independent review pending`
+Status: `exact implementation, comparator and independent reviews PASS / terminal verification pending`
 
-Exact reviewed code commit `2566be585974ae75f548dc450905a18e71915e10`:
+Exact reviewed code commit `3ea08d81d966ccbf163ee64377aa741308e2665a`:
 
-- orchestrator all-features: 722/722 PASS before the mechanical test split;
-- post-split focused V10 owner suite: 9/9 PASS;
+- orchestrator all-features: 722/722 PASS;
+- focused V10 owner suite: 9/9 PASS;
 - persisted restart production crate: 30/30 PASS;
 - released restart reference: 28/28 PASS;
-- focused authority/integration gates: 38/38 PASS;
-- exact post-split workspace: 3,134/3,134 PASS, 5 skipped;
-- warnings-denied affected Clippy, doctests, cargo-deny, anti-evasion, AUTH11,
-  rustfmt and diff hygiene: PASS;
+- focused authority/integration gates: 31/31 PASS;
+- exact-head full workspace: 3,087/3,087 PASS, 33 canonically skipped. The
+  initial 3,084/3,087 run exposed only three missing-tool/runtime failures;
+  those exact three passed after supplying LLVM tools and the Nix GCC runtime;
+- warnings-denied affected Clippy, rustfmt and diff hygiene: PASS;
 - exact Child-4 comparator: 20/20 PASS (seven benchmark surfaces and thirteen
   current Child-4 selectors), under
-  `artifacts/comparator-heavy/20260819T235452Z-child4-root-owner-final/`.
+  `artifacts/comparator-heavy/20260820T003717Z-child4-root-owner-final/`;
+- independent hydrology/ownership, Rust/API/serialization and science/state
+  reviews: PASS on the same exact implementation commit.
 
-The root-zone hydraulic, optics, longwave and runon owner contradiction that
-previously held this package is corrected by the live-owner projection at the
-reviewed commit. Required independent reviews and terminal verification remain
+The root-zone hydraulic, optics, longwave and runon owner contradictions that
+previously held this package are corrected by the sealed, OFE/lane-qualified
+live-owner projection at the reviewed commit. Terminal verification is
 pending; no production selector/default/output activation is claimed.
 
 ## Superseded historical evidence
