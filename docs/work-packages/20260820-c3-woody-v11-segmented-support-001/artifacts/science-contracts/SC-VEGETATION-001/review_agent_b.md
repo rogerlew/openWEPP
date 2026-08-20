@@ -642,3 +642,76 @@ ac8cb0eda`.
 
 Do not promote this amendment or resume restart production until all three
 blockers are corrected and independently re-reviewed.
+
+---
+
+## Restart V2 amendment re-review — candidate `a38e2cfa12705a6692ced186b5dc4e51d97ab3f3`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent mutation probes`
+
+### Gate evidence
+
+- corrected restart V2 reference => PASS one-slab suffix equality and 24/24
+  declared poisons;
+- strict BEI and science-contract unit-compliance => PASS for both contracts;
+- schema/poison JSON parse => PASS;
+- Rust authority test could not run because concurrent uncommitted
+  orchestrator implementation does not compile; the failures are outside this
+  amendment and are not used as the semantic verdict.
+
+The correction materially improves typed owner-body parsing, coupled
+authority/configuration/controller/cursor joins, complete checkpoint-shaped
+fixture structure, event/scheduled checks, reduction/publication checks, and a
+one-slab suffix comparison. Two blockers remain under direct adversarial
+probe.
+
+### `V11-RESTART-V2-B-001` — OPEN — checkpoint resource/material custody is not reconstructed
+
+The checkpoint now contains beginning/staged states, a segment, typed receipts,
+cumulative debit fields, and owner envelopes. Admission authenticates receipt
+framing and cardinality, but it does not reconstruct resource folds or material
+effects. Each of these independently reframed mutations was accepted through
+`restore_suffix`:
+
+- change the water receipt's final use from 1.0 to 2.5;
+- change checkpoint cumulative water debit from 1.0 to 99.0;
+- change the accepted material amount from 0.01 to 99.0.
+
+The accepted suffix uses only scalar `staged_state.value`; it does not derive
+that state or staged owners from authenticated accepted receipts. Thus a
+complete-looking checkpoint can retain contradictory debit/material custody
+and still produce the hard-coded equality `7 == 7`.
+
+Required closure: reconstruct cumulative water/NH4/NO3 bits and staged ending
+owners from the accepted receipt sequence, validate material effects and
+staged state predecessors, then start suffix execution from those reconstructed
+objects. Add changed-use, changed-ending, changed-cumulative, material amount/
+source/receiver, and staged-owner mismatch poisons.
+
+### `V11-RESTART-V2-B-002` — OPEN — retained identities and reduction/publication IDs remain forgeable
+
+Direct mutations of `active_regime_id`, reduction `operand_id`, and publication
+`record_id` were accepted. Active regime is not joined to an embedded regime/
+event transition. Reduction validates source/support/value but never
+reconstructs operand identity or uniqueness/order. Publication authenticates
+payload and source reduction but never reconstructs record identity; outbox IDs
+and uniqueness are likewise not authenticated.
+
+Required closure: derive active regime from the accepted event/participant
+transition; reconstruct reduction operand/reduction/result identities in order;
+reconstruct publication and outbox IDs and enforce uniqueness/state transition
+rules. Add one-field identity, duplicate, reorder, regime, and outbox-ID
+poisons.
+
+### Verdict
+
+`HOLD / the corrected V2 model closes much of the former surface, but still
+admits contradictory checkpoint custody and forged retained identities at
+a38e2cfa1`.
+
+This verdict supersedes the Review B amendment verdict at `ac8cb0eda`; another
+correction and independent re-review are required before promotion.

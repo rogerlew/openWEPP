@@ -22,5 +22,15 @@
 {"id":"scheduled_wrong_key","mutation":"scheduled_wrong_key","error":"V11-V2-SCHEDULED"},
 {"id":"reduction_wrong_source","mutation":"reduction_wrong_source","error":"V11-V2-REDUCTION"},
 {"id":"publication_wrong_payload","mutation":"publication_wrong_payload","error":"V11-V2-PUBLICATION"},
-{"id":"outbox_impossible_count","mutation":"outbox_impossible_count","error":"V11-V2-PUBLICATION"}
+{"id":"outbox_impossible_count","mutation":"outbox_impossible_count","error":"V11-V2-PUBLICATION"},
+{"id":"wrong_active_regime","mutation":"wrong_active_regime","error":"V11-V2-EVENT"},
+{"id":"resource_final_use_reframed","mutation":"resource_final_use_reframed","error":"V11-V2-CUSTODY"},
+{"id":"cumulative_debit_reframed","mutation":"cumulative_debit_reframed","error":"V11-V2-CUSTODY"},
+{"id":"material_amount_reframed","mutation":"material_amount_reframed","error":"V11-V2-CUSTODY"},
+{"id":"reduction_operand_id_forged","mutation":"reduction_operand_id_forged","error":"V11-V2-REDUCTION"},
+{"id":"publication_record_id_forged","mutation":"publication_record_id_forged","error":"V11-V2-PUBLICATION"},
+{"id":"unknown_top_field","mutation":"unknown_top_field","error":"V11-V2-CANONICAL"},
+{"id":"unknown_coupled_field","mutation":"unknown_coupled_field","error":"V11-V2-JOIN"},
+{"id":"unknown_checkpoint_field","mutation":"unknown_checkpoint_field","error":"V11-V2-CHECKPOINT"},
+{"id":"unknown_receipt_field","mutation":"unknown_receipt_field","error":"V11-V2-RECEIPT"}
 ]}

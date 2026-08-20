@@ -499,3 +499,56 @@ delivery poisons.
 - Ran exact commit-range `git diff --check`: PASS.
 - Static: the authority test asserts only owner count and poison count for this
   amendment; it does not exercise the omitted semantics above.
+## Restart V2 corrected-amendment re-review at `a38e2cfa12705a6692ced186b5dc4e51d97ab3f3`
+
+Evidence class: `Static + Ran + adversarial inspection`
+
+Superseding verdict: `HOLD`.
+
+The correction materially improves the reference: it now authenticates the
+embedded coupled authority/configuration, decodes typed-labeled owner bodies,
+joins the primary cursor fields, checks one accepted slab/event/scheduled key,
+retains staged state, executes a one-slab scalar suffix, reconstructs one
+maximum, authenticates publication payload bytes, and rejects 24/24 listed
+poisons. Those changes narrow every prior finding but do not close them.
+
+### RVC-A-001 — Blocker — Typed admission remains open and fixture-specific
+
+Checkpoint, state, owner and receipt bodies are still accepted through `get`
+lookups without exact field-set/type validation. Unknown fields are accepted;
+owner-specific schema/model/configuration are absent; all seven owners share a
+generic `{schema, owner_id, phase, value}` fixture. Checkpoint validity is a
+literal comparison to the one frozen example, not admission of the complete
+deny-unknown-fields Rust checkpoint. Prior `RVA-001` remains open.
+
+### RVC-A-002 — Blocker — The suffix does not consume complete persisted physics/custody
+
+`restore_suffix` computes `staged * 2 + 4 + 1`. It does not consume staged
+complete-owner bytes, event custody/transfer, resource or material receipt
+amounts, scheduled state, reduction/publication/outbox state, active regime, or
+controller state as suffix operands. Resource bodies are only digest-framed;
+their beginning/use/ending recurrence is never validated. Staged vegetation is
+not joined to the vegetation owner envelope. Thus the result can still be
+partly fixture-selected instead of reconstructed from complete persisted
+custody. Prior `RVA-002` remains open.
+
+### RVC-A-003 — High — Reduction aliases remain admissible
+
+The new wrong-source poison is useful, but the validator still permits
+duplicate/reordered/overlapping operands, `start >= end`, nonfinite bits,
+changed accepted-prefix values that retain the expected maximum, and an
+operand source/support mismatch beyond the one hard-coded slab ID. No operator
+identity or reduction receipt is persisted/reconstructed. Prior `RVA-003`
+remains open.
+
+### RVC-A-004 — High — Publication/outbox identity and chronology remain incomplete
+
+Payload bytes and one impossible delivery count now reject. Record IDs and
+outbox IDs are not reconstructed; duplicate record IDs overwrite in a map;
+ordering, source-reduction receipt identity, precommit visibility, rollback
+clearing, and delivered/acknowledged transition chronology remain untested.
+Prior `RVA-004` remains open.
+
+Ran: exact-commit reference base PASS and 24/24 expected poison rejections.
+Static: the correction is meaningful but does not yet satisfy the amendment's
+complete typed checkpoint/suffix claim.

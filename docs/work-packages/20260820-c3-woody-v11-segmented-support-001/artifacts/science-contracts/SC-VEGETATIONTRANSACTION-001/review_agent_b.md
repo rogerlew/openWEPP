@@ -398,3 +398,52 @@ complete authenticated continuation authority at ac8cb0eda`.
 The additive V2 direction correctly avoids mutating the nonimplementable V1,
 but production restart work must remain paused pending correction and another
 independent review.
+
+---
+
+## Restart V2 amendment re-review — candidate `a38e2cfa12705a6692ced186b5dc4e51d97ab3f3`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent mutation probes`
+
+The corrected reference passes its one-slab suffix equality and 24/24 declared
+poisons; BEI, unit-compliance, and JSON gates pass. The Rust authority test was
+blocked by unrelated concurrent orchestrator compilation failures.
+
+### `V11-TXN-RESTART-V2-B-001` — OPEN — accepted receipt custody does not determine restored state
+
+The complete checkpoint-shaped fixture is now present, but restore does not
+fold its accepted resource receipts or material transfers into cumulative
+debits, staged owners, or staged V11 state. Independently reframed changes to a
+water final-use amount, cumulative water debit, and material amount all pass.
+The suffix begins from a caller-retained scalar staged value and its equality
+is therefore independent of the contradictory retained resource/material
+chronology.
+
+Required closure: derive cumulative debits and staged owner/state candidates
+from authenticated accepted receipts, prove every checkpoint duplicate joins,
+and execute the suffix from only the reconstructed continuation.
+
+### `V11-TXN-RESTART-V2-B-002` — OPEN — regime and publication/reduction commit identities are not closed
+
+Forged active regime, reduction operand ID, and publication record ID all pass
+admission. The event transition does not derive the regime, reduction IDs are
+not reconstructed in ordered folds, and publication/outbox IDs are not
+reconstructed with uniqueness and delivery-state authority. These are retained
+transaction facts, not optional diagnostics.
+
+Required closure: bind regime to the accepted event transition and rebuild all
+reduction, publication, and outbox identities before continuation exists; add
+operand-level duplicate/reorder/identity and outbox transition poisons.
+
+### Superseding verdict
+
+`HOLD / Version 5 restart V2 remains non-releasable at a38e2cfa1 because
+accepted custody does not reconstruct staged continuation and retained commit
+identities remain forgeable`.
+
+This supersedes the prior amendment review at `ac8cb0eda`. Production restart
+implementation must remain paused.

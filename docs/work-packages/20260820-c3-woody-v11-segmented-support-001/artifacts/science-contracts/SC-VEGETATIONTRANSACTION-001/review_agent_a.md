@@ -426,3 +426,30 @@ delivery-state poisons.
 - Ran exact commit-range `git diff --check`: PASS.
 - Static: the integration test checks only count/owner summary, so the four
   transaction gaps remain release-blocking.
+## Restart V2 corrected transaction re-review at `a38e2cfa12705a6692ced186b5dc4e51d97ab3f3`
+
+Evidence class: `Static + Ran + adversarial inspection`
+
+Superseding verdict: `HOLD`.
+
+The corrected oracle rejects 24/24 listed poisons and now performs a bounded
+scalar suffix. It also joins more coupled-time fields and checks event,
+scheduled, reduction and publication examples. The prior transaction findings
+are improved, not closed:
+
+- `RVA-TXN-001` remains Blocker: checkpoint/owner/receipt bodies have no exact
+  deny-unknown-fields/type admission and use generic fixture owner bodies.
+- `RVA-TXN-002` remains Blocker: suffix arithmetic uses only staged scalar
+  state; it does not consume staged owners, resource/material recurrence,
+  event transfer, scheduled state, reduction/publication/outbox, active regime,
+  or controller state. Resource receipts are framed but semantically ignored.
+- `RVA-TXN-003` remains High: duplicate/reordered/overlapping/nonfinite
+  reduction operands, invalid support and changed-prefix aliases remain
+  admissible; operator/result receipt identity is absent.
+- `RVA-TXN-004` remains High: record/outbox IDs, uniqueness/order, commit
+  visibility, rollback clearing and durable delivery transitions are not
+  reconstructed.
+
+Ran: exact-commit base continuation PASS and all 24 expected poison labels
+PASS. This evidence does not yet authorize the claimed complete V2 transaction
+checkpoint or equivalent continuation.
