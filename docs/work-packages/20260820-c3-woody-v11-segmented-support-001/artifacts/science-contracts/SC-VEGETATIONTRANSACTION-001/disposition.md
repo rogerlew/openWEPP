@@ -13,3 +13,18 @@ terminal change log rather than retained as an isolated appendix.
 All finding closures are recorded and both reviews are PASS. Independent
 verification is authorized; production Rust remains gated on dual verification
 and exact authority promotion.
+
+## Restart V2 amendment cycle
+
+Status: all shared amendment findings closed at reviewed authority commit
+`5918d4dbdfd0a7641d16b1f5f2040289c9893788`; final dual-review record commit
+`6c74d866dba776189ec9bc6b8bd62901aecf4917`; no waiver accepted.
+
+The complete amendment disposition is recorded in
+`../SC-VEGETATION-001/disposition.md`. It includes `RA-001..004`, `TA-001`,
+`FA-001..003`, `RVA-001..004`, `RVC-A-001..004`, `RVF-A-001..002`, and
+`V11-RESTART-V2-B-001..006`. Transaction-specific closure binds exact segment
+predecessor chronology, terminal complete-owner equality, event custody,
+ordered unique receipt collections, current/next parent sequence, and one
+reconstructed durable outbox identity. Both final reviews are PASS; dual
+verification and exact promotion remain the only preimplementation gates.

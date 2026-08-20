@@ -118,3 +118,80 @@ and the exact preimplementation authority checkpoint from the custody/wire/
 restart perspective, subject to the separate Verification A PASS and package
 promotion procedure. This does not constitute production implementation or
 terminal package acceptance.
+
+---
+
+## Restart V2 amendment Verification B — checkpoint `6c74d866dba776189ec9bc6b8bd62901aecf4917`
+
+Date: 2026-08-20
+
+Status: **FAIL**
+
+Evidence class: `Static + Ran + independent adversarial execution`
+
+Exact commit tree:
+`2295f9525ab54ba03eb951be253b3db27eba0300`.
+
+### Exact artifact identities
+
+- immutable Restart V1 schema:
+  `79f4d1ddf85194ac73f1366f3144fa311c0a1fb60135646d9a3033e5503624b3`;
+- Restart V2 schema:
+  `af9314c3f1abd70c40b849c6f466046e3c5e519583a837eefca9edbf43d02441`;
+- 54-case poison population:
+  `fa5ae93f8b8e109b851f37946070bff71b5f5182b5df818c80f0d4de9990ad34`;
+- independent V2 reference:
+  `13f3d009221a60cc2af094103255c5d8c3be2dbee657bb87144b2fee476bbf7c`;
+- protected DirectV10 checkpoint implementation:
+  `c5221657b704b626da78516616b591a82c01c266d5d27aea0d3f7e325edef842`;
+- protected coupled-time restart implementation:
+  `37601306e6105980e0296b233a1f231c977a45fb7c6b8b74a4203ebda7e1d5de`.
+
+### Technical verification
+
+- independent V2 reference => PASS 54/54, complete continuation digest
+  `512c259be830ad33de578f9cd26f8931fb334e7b361c4387f8e7562de4f8cf0e`;
+- accumulated independent reframed matrix => PASS, 15/15 rejected, including
+  exact predecessor and terminal-owner substitutions;
+- sequence, segment/state predecessor, seven-owner terminal set, event custody,
+  staged resource/material folds, reduction/publication IDs, and outbox joins
+  => PASS;
+- JSON Schema 2020-12 meta-validation and package schema parsing => PASS;
+- strict BEI => PASS, 15 rows; science-contract unit compliance => PASS;
+- V11 authority test => PASS, 6/6;
+- protected diff from `5dd5c1a9b` for Restart V1, DirectV10 checkpoint, and
+  coupled-time restart implementation => empty;
+- V1 remains `NONIMPLEMENTABLE / NEVER_PRODUCTION`, V2 remains default-off,
+  and both contracts exclude activation/publication/cutover => PASS.
+
+No technical custody, serialization, continuation, immutability, or production-
+exclusion defect was reproduced.
+
+### `V11-AMEND-VERIFY-B-001` — BLOCKER — amendment findings are not dispositioned
+
+Both canonical disposition records remain pinned to the pre-amendment
+`c53adab0a` review and enumerate only the original `A-001..007` and
+`V11-AUTH-B-001..005` set. They do not record, accept, or close the subsequent
+Restart V2 amendment findings and exact corrected review checkpoint, including
+the `RVF-A-*`, `V11-RESTART-V2-B-*`, and transaction counterparts through the
+final `5918d4dbd` PASS.
+
+Their own status text therefore claims “all findings closed” at an obsolete
+authority identity while the review artifacts contain several later HOLD/
+correction cycles. Review PASS is evidence, but it is not the required finding
+disposition record. The verification request explicitly requires all A/B
+findings to be closed **and dispositioned**.
+
+Required correction: update both contract-cycle `disposition.md` files with
+the complete amendment finding inventory, accepted corrective checkpoints,
+superseding Review A/B PASS at
+`5918d4dbdfd0a7641d16b1f5f2040289c9893788`, no-waiver statement, and exact
+verification candidate lineage. Then rerun both independent verifications at
+one exact checkpoint; no authority or executable changes are required.
+
+### Verdict
+
+**FAIL.** The Restart V2 technical authority passes Verification B, but the
+mandatory finding-disposition lifecycle is incomplete at `6c74d866d`.
+Promotion and production implementation remain prohibited pending the bounded
+documentation correction and dual re-verification.

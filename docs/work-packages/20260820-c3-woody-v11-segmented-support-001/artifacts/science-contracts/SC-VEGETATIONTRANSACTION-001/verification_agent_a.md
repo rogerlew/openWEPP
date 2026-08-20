@@ -85,3 +85,35 @@ object IDs.
 
 Verdict: `PASS / SC-VEGETATIONTRANSACTION-001 Version 4 remains verified at
 a7bfbbac5 with accepted-slab prefix omission rejected.`
+
+## Restart V2 amendment Verification A — Versions 18/7
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Verified exact checkpoint: `6c74d866dba776189ec9bc6b8bd62901aecf4917`
+
+Verified tree: `2295f9525ab54ba03eb951be253b3db27eba0300`
+
+Reviewed authority content: `5918d4dbdfd0a7641d16b1f5f2040289c9893788`
+
+Both review histories end in PASS and disposition every restart/transaction
+finding without waiver. Independent execution confirms canonical complete
+continuation, 54/54 typed poison rejection, and 20 direct custody-probe
+rejections. Restart schema instance/meta validation, semantic authority,
+strict BEI (4 rows), unit compliance, authority tests 6/6, and diff hygiene all
+PASS.
+
+The verified transaction preserves exact segment predecessor/support chains,
+terminal seven-owner equality, resource/material/event custody, scheduled-once
+uniqueness, joint parent sequences, reductions, publication, and durable
+outbox identities. Protected object IDs match execution base `d59ba76f7`:
+persisted-restart `8c4585371f1e818eeb0d8e93d89e339b88059444` and
+coupled-time `9206afef1574aa6051ea801560cd1514203d8531`; the four
+protected V10 source IDs also match exactly. DirectV10 restart V1 is therefore
+immutable, and the `5dd5c1a9b..6c74d866d` amendment range contains no
+production Rust or Cargo edit.
+
+Verdict: `PASS / SC-VEGETATIONTRANSACTION-001 Version 7 Restart V2 amendment
+is independently verified for promotion.`

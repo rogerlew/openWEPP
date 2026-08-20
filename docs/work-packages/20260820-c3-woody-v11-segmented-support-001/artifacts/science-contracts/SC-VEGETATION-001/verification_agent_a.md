@@ -88,3 +88,41 @@ trees remain byte-identical to execution base `d59ba76f7`.
 
 Verdict: `PASS / prior Verification A remains valid at a7bfbbac5; accepted-slab
 restart-prefix cardinality is now explicitly authenticated.`
+
+## Restart V2 amendment Verification A — Versions 18/7
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Verified exact checkpoint: `6c74d866dba776189ec9bc6b8bd62901aecf4917`
+
+Verified tree: `2295f9525ab54ba03eb951be253b3db27eba0300`
+
+Reviewed authority content: `5918d4dbdfd0a7641d16b1f5f2040289c9893788`
+
+Evidence class: `Static + Ran + independent adversarial verification`
+
+Both amendment review histories terminate in PASS and explicitly close every
+prior Review A and Review B restart finding without waiver. The checkpoint
+delta after reviewed authority contains review records only.
+
+Executed evidence: restart V2 canonical continuation PASS with complete
+seven-owner byte equality; 54/54 declared poisons reject; 20 direct custody
+probes reject; canonical restart instance validates and its Draft 2020-12
+schema meta-validates; semantic authority PASS; strict BEI PASS (15 rows);
+unit-compliance PASS; Rust authority suite PASS 6/6; diff hygiene PASS.
+
+Protected-boundary object IDs match execution base `d59ba76f7` exactly:
+persisted-restart tree `8c4585371f1e818eeb0d8e93d89e339b88059444`,
+coupled-time tree `9206afef1574aa6051ea801560cd1514203d8531`,
+V10 `config.rs` `2dd3079a4e7ede6610d954b61e563bf2c600b05b`,
+`v10_state.rs` `0bbb9b3bd9242eb0d477a3731965f2de84fb177b`,
+`water_phase.rs` `eec7e80b6ef7883ce0cc3e69500eeb48f5448d8d`,
+and `persistent_phase.rs` `450ea5b63ec61482389ffe59420c306c8b5629ee`.
+Thus DirectV10 restart V1 and coupled-time V2 remain byte-identical. The
+`5dd5c1a9b..6c74d866d` authority range contains no production Rust or Cargo
+edit.
+
+Verdict: `PASS / SC-VEGETATION-001 Version 18 Restart V2 amendment is
+independently verified for promotion.`

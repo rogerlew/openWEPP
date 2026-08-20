@@ -95,3 +95,49 @@ No transaction custody or restart finding remains.
 proceed to authority promotion and the exact preimplementation checkpoint,
 subject to Verification A and the package release procedure. Production and
 terminal implementation claims remain outside this verification.
+
+---
+
+## Restart V2 amendment Verification B — checkpoint `6c74d866dba776189ec9bc6b8bd62901aecf4917`
+
+Date: 2026-08-20
+
+Status: **FAIL**
+
+Evidence class: `Static + Ran + independent adversarial execution`
+
+Exact tree: `2295f9525ab54ba03eb951be253b3db27eba0300`.
+
+Technical transaction verification passes: the independent reference closes
+54/54 poisons and complete continuation digest
+`512c259be830ad33de578f9cd26f8931fb334e7b361c4387f8e7562de4f8cf0e`;
+all 15 accumulated direct probes reject; exact state/segment/owner/sequence/
+event/resource/material/reduction/publication/outbox joins pass; schema meta,
+BEI, unit compliance, and authority tests pass (6/6); Restart V1, DirectV10,
+and coupled-time restart protected diffs are empty; production activation and
+cutover remain excluded.
+
+Artifact identities are shared with the paired vegetation verification:
+Restart V1 `79f4d1dd...624b3`, Restart V2 `af9314c3...2441`, poison population
+`fa5ae93f...ad34`, reference `13f3d009...f7c`, DirectV10 checkpoint
+`c5221657...f842`, and coupled-time restart `37601306...d5de`.
+
+### `V11-TXN-AMEND-VERIFY-B-001` — BLOCKER — transaction amendment disposition is stale
+
+The transaction disposition still identifies `c53adab0a` and Version 4 and
+delegates to the equally stale vegetation disposition. Neither file inventories
+or dispositions the Restart V2 Review A/B findings, correction checkpoints,
+or final Version 7/Version 18 review PASS at `5918d4dbd`. Consequently the
+transaction's technical findings are closed in review evidence but not in the
+mandatory canonical disposition record.
+
+Required correction: reconcile both disposition files with every amendment
+finding and its accepted correction, record the exact final dual-review PASS
+identity and no-waiver result, and rerun verification. This is documentation-
+only and does not require reopening the technically passing authority.
+
+### Verdict
+
+**FAIL.** Transaction custody and restart behavior pass, but Version 7 cannot
+advance while its amendment findings remain undispositioned at the canonical
+contract-cycle surface. Promotion and production implementation remain gated.
