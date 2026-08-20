@@ -13,6 +13,7 @@
     "event, scheduled-once and reduction receipt chronology ends no later than accepted_until; no duplicate or future receipt",
     "scheduled boundary_id reconstructs from parent transaction, operation and tick; execution keys (parent transaction, operation, boundary) are unique independently of receipt_id",
     "ActiveParent requires next sequence equal parent sequence and no durable committed outbox; CommittedParent requires complete cursor and checked next sequence = parent sequence + 1",
+    "reduction operand values are retained and independently reconstruct nullable value_bits; outbox delivery state and attempt count are coherent",
     "accepted slab receipts are ordinal ordered, support-contiguous from parent start through accepted_until, and bind segment, constraint, clock, owner-candidate and coupled-ledger lineage",
     "reduction operands are accepted receipt IDs only and reconstruct value_bits in declared order",
     "pending publication records bind accepted receipts and are invisible; outbox records bind exactly one committed parent receipt",
@@ -475,8 +476,9 @@
         "reduction_id",
         "operator",
         "units",
-        "value_bits",
-        "accepted_operand_receipt_ids"
+      "value_bits",
+      "accepted_operand_receipt_ids",
+      "accepted_operand_values"
       ],
       "properties": {
         "reduction_id": {
@@ -492,17 +494,18 @@
         "units": {
           "$ref": "#/$defs/id"
         },
-        "value_bits": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{16}$"
-        },
-        "accepted_operand_receipt_ids": {
+      "value_bits": { "oneOf": [{"type":"null"},{"type":"string","pattern":"^[0-9a-f]{16}$"}] },
+      "accepted_operand_receipt_ids": {
           "type": "array",
           "maxItems": 65536,
           "items": {
             "$ref": "#/$defs/sha"
           }
-        }
+      },
+      "accepted_operand_values": {
+        "type":"array","maxItems":65536,
+        "items":{"type":"object","additionalProperties":false,"required":["receipt_id","value_bits"],"properties":{"receipt_id":{"$ref":"#/$defs/sha"},"value_bits":{"type":"string","pattern":"^[0-9a-f]{16}$"}}}
+      }
       }
     },
     "publicationRecord": {

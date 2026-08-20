@@ -5,6 +5,7 @@ import argparse
 import base64
 import hashlib
 import json
+import math
 import re
 import struct
 from pathlib import Path
@@ -288,6 +289,34 @@ def validate_restart(doc):
         ordered_unique(reduction["accepted_operand_receipt_ids"], lambda x: x, MAX_RECEIPTS, "reduction-operands")
         if not set(reduction["accepted_operand_receipt_ids"]).issubset(accepted):
             raise Invalid("reduction:unaccepted-operand")
+        values = reduction["accepted_operand_values"]
+        if [row["receipt_id"] for row in values] != reduction["accepted_operand_receipt_ids"]:
+            raise Invalid("reduction:operand-projection")
+        decoded = []
+        for row in values:
+            sha(row["receipt_id"], "reduction.operand-receipt")
+            if not re.fullmatch(r"[0-9a-f]{16}", row["value_bits"]):
+                raise Invalid("reduction:operand-bits")
+            decoded.append(struct.unpack(">d", bytes.fromhex(row["value_bits"]))[0])
+            if not math.isfinite(decoded[-1]):
+                raise Invalid("reduction:nonfinite-operand")
+        if not decoded:
+            expected_value_bits = None
+        elif reduction["operator"] == "maximum":
+            expected_value_bits = struct.pack(">d", max(decoded)).hex()
+        elif reduction["operator"] == "minimum":
+            expected_value_bits = struct.pack(">d", min(decoded)).hex()
+        elif reduction["operator"] == "sum":
+            total = 0.0
+            for value in decoded:
+                total += value
+                if not math.isfinite(total):
+                    raise Invalid("reduction:nonfinite-result")
+            expected_value_bits = struct.pack(">d", total).hex()
+        else:
+            raise Invalid("reduction:operator")
+        if reduction["value_bits"] != expected_value_bits:
+            raise Invalid("reduction:value-mismatch")
     records = doc["pending_publication_buffer"]
     ordered_unique(records, lambda x: x["record_id"], MAX_RECEIPTS, "publication-buffer")
     for record in records:
@@ -306,6 +335,9 @@ def validate_restart(doc):
         u128(row["delivery_attempt_count"], "delivery_attempt_count")
         if row["state"] not in {"CommittedUndelivered", "DeliveredUnacknowledged", "Acknowledged"}:
             raise Invalid("outbox:state")
+        attempts = u128(row["delivery_attempt_count"], "delivery_attempt_count")
+        if (row["state"] == "CommittedUndelivered" and attempts != 0) or (row["state"] != "CommittedUndelivered" and attempts == 0):
+            raise Invalid("outbox:state-attempt-coherence")
         ordered_unique(row["records"], lambda x: x["record_id"], MAX_RECEIPTS, "outbox.records")
         if digest(canonical(row["records"])) != row["records_sha256"]:
             raise Invalid("outbox:records-digest")

@@ -95,7 +95,7 @@ if next_parent == committed["parent_transaction_id"]:
     raise SystemExit("next parent reused committed identity")
 evidence = {"active": active, "committed": executed_commit, "restored": restored, "acknowledged": acknowledged, "next_parent_id": next_parent}
 actual = hashlib.sha256(json.dumps(evidence, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-expected = "0b5b9be20d22de5139dd5b19d2aeb4430af917640149b7e04baeeef74e479642"
+expected = "bedc538b51f9a766e81fc7fc6235ab784b13e5d68c256156ac269a1ab13cb85f"
 if actual != expected:
     raise SystemExit(f"phase fixture mismatch: {actual}")
 print(actual)

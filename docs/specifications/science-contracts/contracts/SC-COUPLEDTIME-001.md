@@ -403,6 +403,22 @@ parent sequence. Beginning the next parent consumes exactly the persisted
 `next_parent_transaction_sequence`; the committed checkpoint itself cannot be
 committed again.
 
+Each persisted diagnostic reduction retains ordered
+`(accepted_receipt_id, value_bits)` operands, not IDs alone. Admission requires
+the operand-ID projection to equal `accepted_operand_receipt_ids`, requires
+every ID to name an accepted slab/event/scheduled receipt, and independently
+recomputes the declared maximum/minimum/sum bits. An empty reduction has no
+operands and `value_bits = null`; zero is never used as an empty sentinel.
+Operands and results must be finite binary64 values. Maximum and minimum scan
+the persisted order and retain the first operand on numeric equality (including
+signed-zero equality). Sum is a left fold in persisted order beginning at
+positive zero; any nonfinite intermediate or result fails typed.
+
+Outbox delivery attempt counts are phase coherent: `CommittedUndelivered` has
+count zero, while `DeliveredUnacknowledged` and `Acknowledged` have count at
+least one. Crash/restart preserves both state and count; each actual delivery or
+redelivery increments the count exactly once.
+
 V2 scheduled-once receipts use the closed `scheduled-receipt-v2` framed
 identity over parent transaction, operation ID, boundary ID, tick, and result
 digest. Event ordinal is not an input: scheduled execution and event-transition
