@@ -17,7 +17,7 @@ Evidence class: `Ran + Static`; base `2465849c9e0eed83c4e3aec11caa8b27cf7597ad`.
 | Independent authority reviews | PASS (Static + Ran) | Soil hydraulics, geometry/ownership, and Rust/numeric/schema reviews all bind PASS to exact authority commit `b30f42de67136bca37f888fa62e8f1145537a230`; no finding waived or deferred. |
 | Terminal verifier A | PASS (Static + Ran) | Exact promoted candidate `5cb09bb9029ef0c2991de3b8477c1c15504a3117`; focused 7/7, validator, A0, anti-evasion and diff hygiene PASS; no production/restart/activation mutation. |
 | Terminal verifier B | PASS (Static + Ran) | Exact promoted candidate `5cb09bb9029ef0c2991de3b8477c1c15504a3117`; generator, validator, focused 7/7, Clippy, A0, anti-evasion, AUTH11 3/3 and cumulative hygiene PASS. |
-| Production implementation | NOT RUN | Contract-first sequencing. |
+| Production implementation | NOT RUN in this authority-only package | Contract-first sequencing; successor implementation later completed at `3ea08d81d966ccbf163ee64377aa741308e2665a` with terminal A+B PASS. |
 
 Rust commands used `nix-shell -p cargo rustc cargo-nextest`; ambient Cargo absence
 is infrastructure, not a science HOLD.

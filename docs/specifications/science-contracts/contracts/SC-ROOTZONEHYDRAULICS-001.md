@@ -15,7 +15,7 @@ superseded_by: []
 
 # Root-Zone Hydraulic Owner Contract
 
-Status: `approved / active / implementation not started`
+Status: `approved / active / implemented in default-off V10 shadow`
 
 Authority identity: `OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1`
 
@@ -169,7 +169,7 @@ oracle: emitted bits must also pass the Rust `libm` evaluator for every vector.
 
 ## Calibration and identifiability posture
 
-`science_implementation_status=NOT_IMPLEMENTED`;
+`science_implementation_status=IMPLEMENTED`;
 `calibration_evidence_status=NOT_CALIBRATION_READY`;
 `identifiability_status=NOT_ASSESSED`. External `psi_sat`, `B`, and path values
 have no universal default or calibrated/validated/transferable claim.
@@ -197,8 +197,9 @@ wrong geometry order, and caller-created receipts.
 The former contradictions are resolved by the required non-defaulted stratum
 path and cited layer-local Brooks--Corey operator. Independent calculators,
 contract-derived tests, and three independent reviews passed exact authority
-commit `b30f42de67136bca37f888fa62e8f1145537a230`. Production implementation
-remains forbidden until terminal authority release.
+commit `b30f42de67136bca37f888fa62e8f1145537a230`. Terminal authority release
+subsequently authorized the default-off implementation, which completed at
+`3ea08d81d966ccbf163ee64377aa741308e2665a` with dual terminal PASS.
 
 ## Binding Exposure Index
 
@@ -214,3 +215,4 @@ adds hidden executable authority.
 | 2026-08-19 | `0.1.0-hold` | Recorded missing root-path/current-K authority. |
 | 2026-08-19 | `1.0.0-rc1` | Admitted required stratum geometry, live Brooks--Corey relations, exact operation order and sealed receipt custody; candidate pending vectors/review. |
 | 2026-08-19 | `1.0.0` | Approved after exact-bit vectors, executable owner/poison authority, and three independent PASS reviews on `b30f42de67136bca37f888fa62e8f1145537a230`. |
+| 2026-08-19 | `1.0.0` | Recorded completed default-off implementation at `3ea08d81d966ccbf163ee64377aa741308e2665a`; no equation or authority version change. |

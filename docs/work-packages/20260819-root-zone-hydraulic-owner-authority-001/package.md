@@ -1,6 +1,6 @@
 # Admit Root-Zone Hydraulic Owner V1
 
-Status: `complete / authority released / production implementation not started`
+Status: `COMPLETE / authority released / successor implementation terminal PASS`
 
 Date: `2026-08-19`
 

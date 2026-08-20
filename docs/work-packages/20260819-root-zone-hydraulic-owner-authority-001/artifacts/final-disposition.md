@@ -12,5 +12,7 @@ All three independent reviewers passed exact authority commit
 promotion and admission passed. Both terminal verifiers independently passed
 exact promoted release candidate
 `5cb09bb9029ef0c2991de3b8477c1c15504a3117`. The package releases
-`OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1` authority only. Production
-implementation has not started and belongs to the successor package.
+`OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1` authority. The successor implementation
+subsequently completed at `3ea08d81d966ccbf163ee64377aa741308e2665a`
+with terminal A+B PASS; that later implementation evidence does not replace
+this package's authority-release evidence.
