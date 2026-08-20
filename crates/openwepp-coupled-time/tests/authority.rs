@@ -217,6 +217,19 @@ fn coincident_constraints_and_pending_event_are_authenticated() {
         d(3),
     )
     .unwrap();
+    let proposal = EventProposalV1::new(
+        EventClass::OwnershipTransfer,
+        "A".into(),
+        d(31),
+        vec![owner("A", b"terminal"), owner("B", b"b")],
+        vec!["A".into()],
+        "r1".into(),
+        vec!["B".into()],
+        vec![LedgerEntryV1::new("event".into(), "kg".into(), d(32), d(32), d(33)).unwrap()],
+    )
+    .unwrap();
+    let queue = EventQueueV1::new(t(0), vec![proposal]).unwrap();
+    let join = queue.pending_event_join(&c).unwrap().unwrap();
     assert!(
         reduce_constraints(
             std::slice::from_ref(&zero),
@@ -227,16 +240,7 @@ fn coincident_constraints_and_pending_event_are_authenticated() {
         )
         .is_err()
     );
-    assert!(
-        reduce_constraints(
-            &[zero],
-            clock_parent(&c),
-            t(0),
-            t(10),
-            Some(EventId::from_digest(d(31)))
-        )
-        .is_ok()
-    );
+    assert!(reduce_constraints(&[zero], clock_parent(&c), t(0), t(10), Some(&join)).is_ok());
 }
 #[test]
 fn canonical_restart_roundtrip_and_poison_rejection() {
@@ -251,10 +255,23 @@ fn canonical_restart_roundtrip_and_poison_rejection() {
     )
     .unwrap();
     let bytes = restart.to_canonical_json().unwrap();
-    assert!(CoupledTimeRestartV2::from_canonical_json(&bytes, d(20), d(4)).is_ok());
+    assert!(CoupledTimeRestartV2::from_canonical_json(&bytes, d(20), d(21), d(4)).is_ok());
+    assert!(CoupledTimeRestartV2::from_canonical_json(&bytes, d(20), d(22), d(4)).is_err());
     let mut poison = bytes.clone();
     poison.push(b' ');
-    assert!(CoupledTimeRestartV2::from_canonical_json(&poison, d(20), d(4)).is_err());
+    assert!(CoupledTimeRestartV2::from_canonical_json(&poison, d(20), d(21), d(4)).is_err());
+}
+
+#[test]
+fn scheduled_execution_key_rejects_different_result_replay() {
+    let mut c = clock(10);
+    c.record_scheduled_once("daily".into(), t(0), d(40))
+        .unwrap();
+    assert_eq!(
+        c.record_scheduled_once("daily".into(), t(0), d(41))
+            .unwrap_err(),
+        CoupledTimeError::ScheduledOnceReplay
+    );
 }
 #[test]
 fn identity_kat_is_stable() {

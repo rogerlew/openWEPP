@@ -381,6 +381,7 @@ pub struct DiagnosticReductionV1 {
     pub(crate) units: String,
     pub(crate) maximum: Option<f64>,
     pub(crate) accepted_receipts: Vec<ReceiptId>,
+    pub(crate) accepted_values: Vec<(ReceiptId, f64)>,
 }
 impl DiagnosticReductionV1 {
     pub fn new(reduction_id: String, units: String) -> Result<Self, CoupledTimeError> {
@@ -392,6 +393,7 @@ impl DiagnosticReductionV1 {
             units,
             maximum: None,
             accepted_receipts: Vec::new(),
+            accepted_values: Vec::new(),
         })
     }
     pub fn fold_accepted(
@@ -404,6 +406,7 @@ impl DiagnosticReductionV1 {
         }
         self.maximum = Some(self.maximum.map_or(value, |old| old.max(value)));
         self.accepted_receipts.push(receipt.id());
+        self.accepted_values.push((receipt.id(), value));
         Ok(())
     }
     #[must_use]

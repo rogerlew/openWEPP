@@ -3,9 +3,9 @@
 use openwepp_coupled_time::{
     AttemptId, ConstraintClass, ConstraintReductionReceiptV1, CoupledClockStateV1,
     CoupledSlabCandidateV1, CoupledTimeError, CoupledTimeRestartV2, DiagnosticReductionV1,
-    Digest32, EventClass, EventId, EventProposalV1, EventQueueV1, LedgerEntryV1, ModelTimeNs,
-    OutboxState, OwnerState, ParentAuthorityV1, ParentCommitCandidateV1, ParentIntervalId,
-    ParentTransactionId, PublicationRecordV1, RetryControlV1, SegmentId, StepConstraintV1,
+    Digest32, EventClass, EventProposalV1, EventQueueV1, LedgerEntryV1, ModelTimeNs, OutboxState,
+    OwnerState, ParentAuthorityV1, ParentCommitCandidateV1, ParentIntervalId, ParentTransactionId,
+    PendingEventJoinV1, PublicationRecordV1, RetryControlV1, SegmentId, StepConstraintV1,
     TimeSupport, accept_slab, commit_parent, complete_owner_set_digest, reduce_constraints,
 };
 use serde::{Deserialize, Serialize};
@@ -134,8 +134,7 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
         clock.accepted_until(),
     )?;
 
-    let pending_event = pending_event_id(ids.parent, ModelTimeNs::new(60), B, d(40))?;
-    let retry_constraint = constraint(&ids, clock.accepted_until(), 60, Some(pending_event))?;
+    let retry_constraint = constraint(&ids, clock.accepted_until(), 60, None)?;
     let second = slab(
         &clock,
         segment0,
@@ -172,6 +171,9 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
         vec![event_ledger],
     )?;
     let mut events = EventQueueV1::new(ModelTimeNs::new(60), vec![event])?;
+    let pending_event = events.pending_event_join(&clock)?;
+    let _event_boundary_receipt =
+        constraint(&ids, clock.accepted_until(), 60, pending_event.as_ref())?;
     let event_receipt = events
         .apply_next(&mut clock)?
         .ok_or(CoupledTimeReferenceError::MissingObservation)?;
@@ -193,7 +195,12 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
         let restart =
             CoupledTimeRestartV2::new(ids.model, ids.authority, clock, reduction, None, pending)?;
         let bytes = restart.to_canonical_json()?;
-        let restored = CoupledTimeRestartV2::from_canonical_json(&bytes, ids.model, ids.policy)?;
+        let restored = CoupledTimeRestartV2::from_canonical_json(
+            &bytes,
+            ids.model,
+            ids.authority,
+            ids.policy,
+        )?;
         let (restored_clock, mut reductions, outboxes, restored_pending) = restored.into_parts();
         if reductions.len() != 1 || !outboxes.is_empty() {
             return Err(CoupledTimeReferenceError::RestartDivergence);
@@ -321,77 +328,33 @@ fn constraint(
     ids: &Ids,
     cursor: ModelTimeNs,
     end: u128,
-    pending_event: Option<EventId>,
+    pending_event: Option<&PendingEventJoinV1>,
 ) -> Result<ConstraintReductionReceiptV1, CoupledTimeReferenceError> {
-    let adaptive = StepConstraintV1::new(
+    let value = StepConstraintV1::new(
         ids.parent,
         cursor,
         ModelTimeNs::new(end),
-        A.into(),
-        ConstraintClass::AdaptiveUpperBound,
+        if pending_event.is_some() {
+            B.into()
+        } else {
+            A.into()
+        },
+        if pending_event.is_some() {
+            ConstraintClass::EventBoundary
+        } else {
+            ConstraintClass::AdaptiveUpperBound
+        },
         d(60),
         ids.calendar,
         ids.forcing,
     )?;
-    let mut constraints = vec![adaptive];
-    if pending_event.is_some() {
-        constraints.push(StepConstraintV1::new(
-            ids.parent,
-            cursor,
-            ModelTimeNs::new(end),
-            B.into(),
-            ConstraintClass::EventBoundary,
-            d(60),
-            ids.calendar,
-            ids.forcing,
-        )?);
-    }
     Ok(reduce_constraints(
-        &constraints,
+        std::slice::from_ref(&value),
         ids.parent,
         cursor,
         ModelTimeNs::new(100),
         pending_event,
     )?)
-}
-
-fn pending_event_id(
-    parent: ParentTransactionId,
-    tick: ModelTimeNs,
-    source: &str,
-    context: Digest32,
-) -> Result<EventId, CoupledTimeError> {
-    let tick_bytes = tick.get().to_be_bytes();
-    let ordinal = 0_u32.to_be_bytes();
-    Ok(EventId::from_digest(openwepp_coupled_time::framed_sha256(
-        "event",
-        &[
-            openwepp_coupled_time::FramedField {
-                tag: "parent_transaction_id",
-                value: parent.digest().as_bytes(),
-            },
-            openwepp_coupled_time::FramedField {
-                tag: "tick_ns",
-                value: &tick_bytes,
-            },
-            openwepp_coupled_time::FramedField {
-                tag: "event_class",
-                value: b"OwnershipTransfer",
-            },
-            openwepp_coupled_time::FramedField {
-                tag: "event_ordinal",
-                value: &ordinal,
-            },
-            openwepp_coupled_time::FramedField {
-                tag: "source_owner_id",
-                value: source.as_bytes(),
-            },
-            openwepp_coupled_time::FramedField {
-                tag: "event_context",
-                value: context.as_bytes(),
-            },
-        ],
-    )?))
 }
 
 fn segment(
@@ -532,6 +495,7 @@ mod tests {
         let restored = CoupledTimeRestartV2::from_canonical_json(
             &evidence.committed_restart_bytes,
             d(5),
+            d(6),
             d(4),
         )
         .expect("restore committed crash boundary");
@@ -591,7 +555,7 @@ mod tests {
         let bytes = checkpoint
             .to_canonical_json()
             .expect("canonical crash wire");
-        let restored = CoupledTimeRestartV2::from_canonical_json(&bytes, d(5), d(4))
+        let restored = CoupledTimeRestartV2::from_canonical_json(&bytes, d(5), d(6), d(4))
             .expect("restore crash boundary");
         let (_, reductions, mut outboxes, _) = restored.into_parts();
         assert_eq!(reductions.len(), 1);

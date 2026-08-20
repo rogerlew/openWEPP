@@ -394,7 +394,7 @@ impl CoupledTimeRestartV2 {
             publication_outbox: outbox.into_iter().collect(),
             pending_publication_buffer: pending,
         };
-        value.validate(model, value.clock.controller_policy_sha256)?;
+        value.validate(model, authority, value.clock.controller_policy_sha256)?;
         Ok(value)
     }
     pub fn to_canonical_json(&self) -> Result<Vec<u8>, CoupledTimeError> {
@@ -403,6 +403,7 @@ impl CoupledTimeRestartV2 {
     pub fn from_canonical_json(
         bytes: &[u8],
         model: Digest32,
+        authority: Digest32,
         policy: Digest32,
     ) -> Result<Self, CoupledTimeError> {
         let wire: crate::wire::RestartWireV2 =
@@ -411,7 +412,7 @@ impl CoupledTimeRestartV2 {
         if value.to_canonical_json()?.as_slice() != bytes {
             return Err(CoupledTimeError::RestartInvalid);
         }
-        value.validate(model, policy)?;
+        value.validate(model, authority, policy)?;
         Ok(value)
     }
     #[allow(clippy::too_many_lines)]
@@ -495,8 +496,16 @@ impl CoupledTimeRestartV2 {
                 reduction_id: reduction.reduction_id.clone(),
                 operator: "maximum".into(),
                 units: reduction.units.clone(),
-                value_bits: format!("{:016x}", reduction.maximum.unwrap_or(0.0).to_bits()),
+                value_bits: reduction.maximum.map(|v| format!("{:016x}", v.to_bits())),
                 accepted_operand_receipt_ids: reduction.accepted_receipts.clone(),
+                accepted_operand_values: reduction
+                    .accepted_values
+                    .iter()
+                    .map(|(receipt_id, value)| crate::wire::ReductionOperandWire {
+                        receipt_id: *receipt_id,
+                        value_bits: format!("{:016x}", value.to_bits()),
+                    })
+                    .collect(),
             })
             .collect();
         let pending = self
@@ -714,15 +723,48 @@ impl CoupledTimeRestartV2 {
                 if reduction_wire.operator != "maximum" {
                     return Err(CoupledTimeError::RestartInvalid);
                 }
-                let value = f64::from_bits(
-                    u64::from_str_radix(&reduction_wire.value_bits, 16)
-                        .map_err(|_| CoupledTimeError::RestartInvalid)?,
-                );
+                if reduction_wire.accepted_operand_receipt_ids.len()
+                    != reduction_wire.accepted_operand_values.len()
+                    || reduction_wire
+                        .accepted_operand_receipt_ids
+                        .iter()
+                        .zip(&reduction_wire.accepted_operand_values)
+                        .any(|(id, value)| id != &value.receipt_id)
+                {
+                    return Err(CoupledTimeError::RestartInvalid);
+                }
+                let values = reduction_wire
+                    .accepted_operand_values
+                    .into_iter()
+                    .map(|operand| {
+                        let value = f64::from_bits(
+                            u64::from_str_radix(&operand.value_bits, 16)
+                                .map_err(|_| CoupledTimeError::RestartInvalid)?,
+                        );
+                        if !value.is_finite() {
+                            return Err(CoupledTimeError::RestartInvalid);
+                        }
+                        Ok((operand.receipt_id, value))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                let reconstructed = values.iter().map(|(_, value)| *value).reduce(f64::max);
+                let admitted = reduction_wire
+                    .value_bits
+                    .map(|bits| {
+                        u64::from_str_radix(&bits, 16)
+                            .map(f64::from_bits)
+                            .map_err(|_| CoupledTimeError::RestartInvalid)
+                    })
+                    .transpose()?;
+                if admitted != reconstructed {
+                    return Err(CoupledTimeError::RestartInvalid);
+                }
                 Ok(DiagnosticReductionV1 {
                     reduction_id: reduction_wire.reduction_id,
                     units: reduction_wire.units,
-                    maximum: Some(value),
+                    maximum: admitted,
                     accepted_receipts: reduction_wire.accepted_operand_receipt_ids,
+                    accepted_values: values,
                 })
             })
             .collect::<Result<Vec<_>, CoupledTimeError>>()?;
@@ -759,10 +801,12 @@ impl CoupledTimeRestartV2 {
             committed: committed_phase,
             begin_owner_set_digest: w.begin_complete_owner_set_sha256,
             begin_clock_digest: w.begin_clock_sha256,
-            accepted_clock_digest: events.last().map_or_else(
-                || slabs.last().map_or(w.begin_clock_sha256, |r| r.end_clock),
-                |r| r.end_clock,
-            ),
+            accepted_clock_digest: match (slabs.last(), events.last()) {
+                (Some(slab), Some(event)) if event.tick >= slab.support.end_ns() => event.end_clock,
+                (Some(slab), _) => slab.end_clock,
+                (None, Some(event)) => event.end_clock,
+                (None, None) => w.begin_clock_sha256,
+            },
             parent_interval_id: w.parent_interval_id,
             parent_transaction_id: w.parent_transaction_id,
             parent_support: w.parent_support,
@@ -792,8 +836,15 @@ impl CoupledTimeRestartV2 {
             pending_publication_buffer: pending,
         })
     }
-    pub fn validate(&self, model: Digest32, policy: Digest32) -> Result<(), CoupledTimeError> {
+    #[allow(clippy::too_many_lines)]
+    pub fn validate(
+        &self,
+        model: Digest32,
+        authority: Digest32,
+        policy: Digest32,
+    ) -> Result<(), CoupledTimeError> {
         if self.model_definition_sha256 != model
+            || self.authority_sha256 != authority
             || self.clock.controller_policy_sha256 != policy
             || self.clock.accepted_until < self.clock.parent_support.start_ns()
             || self.clock.accepted_until > self.clock.parent_support.end_ns()
@@ -819,8 +870,16 @@ impl CoupledTimeRestartV2 {
             || self
                 .clock
                 .scheduled_once_receipts
-                .windows(2)
-                .any(|w| w[0] == w[1])
+                .iter()
+                .enumerate()
+                .any(|(i, left)| {
+                    self.clock.scheduled_once_receipts[i + 1..]
+                        .iter()
+                        .any(|right| {
+                            left.operation_id == right.operation_id
+                                && left.boundary_id == right.boundary_id
+                        })
+                })
         {
             return Err(CoupledTimeError::RestartInvalid);
         }
@@ -852,10 +911,30 @@ impl CoupledTimeRestartV2 {
             }
         }
         for reduction in &self.reduction_state {
-            if reduction
-                .accepted_receipts
-                .iter()
-                .any(|receipt| accepted_support(*receipt).is_none())
+            if reduction.maximum.is_some_and(|value| !value.is_finite())
+                || reduction.accepted_receipts.len() != reduction.accepted_values.len()
+                || reduction
+                    .accepted_receipts
+                    .iter()
+                    .zip(&reduction.accepted_values)
+                    .any(|(receipt, (value_receipt, value))| {
+                        receipt != value_receipt || !value.is_finite()
+                    })
+                || reduction
+                    .accepted_receipts
+                    .iter()
+                    .enumerate()
+                    .any(|(i, receipt)| reduction.accepted_receipts[i + 1..].contains(receipt))
+                || reduction
+                    .accepted_receipts
+                    .iter()
+                    .any(|receipt| accepted_support(*receipt).is_none())
+                || reduction.maximum
+                    != reduction
+                        .accepted_values
+                        .iter()
+                        .map(|(_, value)| *value)
+                        .reduce(f64::max)
             {
                 return Err(CoupledTimeError::RestartInvalid);
             }
@@ -863,6 +942,12 @@ impl CoupledTimeRestartV2 {
         for outbox in &self.publication_outbox {
             let parent = derive_parent_receipt(&self.clock)?;
             if !self.clock.committed
+                || match outbox.state {
+                    OutboxState::CommittedUndelivered => outbox.delivery_attempt_count != 0,
+                    OutboxState::DeliveredUnacknowledged | OutboxState::Acknowledged => {
+                        outbox.delivery_attempt_count == 0
+                    }
+                }
                 || outbox.parent_receipt_id != parent
                 || outbox.sequence
                     != self

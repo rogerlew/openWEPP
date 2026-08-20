@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{CoupledTimeError, Digest32, EventId, ModelTimeNs, ParentTransactionId};
+use crate::{
+    CoupledTimeError, Digest32, EventId, ModelTimeNs, ParentTransactionId, PendingEventJoinV1,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum ConstraintClass {
@@ -49,7 +51,9 @@ impl ConstraintReductionReceiptV1 {
             self.parent_transaction_id,
             self.accepted_cursor_ns,
             self.selected_end_ns,
-            self.pending_event,
+            self.pending_event
+                .map(|event_id| PendingEventJoinV1 { event_id })
+                .as_ref(),
         )?;
         if rebuilt != *self {
             return Err(CoupledTimeError::InvalidConstraint);
@@ -151,7 +155,7 @@ pub fn reduce_constraints(
     parent: ParentTransactionId,
     cursor: ModelTimeNs,
     parent_end: ModelTimeNs,
-    pending_event: Option<EventId>,
+    pending_event: Option<&PendingEventJoinV1>,
 ) -> Result<ConstraintReductionReceiptV1, CoupledTimeError> {
     if constraints.is_empty() {
         return Err(CoupledTimeError::InvalidConstraint);
@@ -205,7 +209,7 @@ pub fn reduce_constraints(
         bytes.extend_from_slice(value.digest().as_bytes());
     }
     if let Some(event) = pending_event {
-        bytes.extend_from_slice(event.digest().as_bytes());
+        bytes.extend_from_slice(event.event_id.digest().as_bytes());
     }
     let digest = crate::digest_bytes(&bytes);
     Ok(ConstraintReductionReceiptV1 {
@@ -213,7 +217,7 @@ pub fn reduce_constraints(
         accepted_cursor_ns: cursor,
         selected_end_ns: earliest,
         coincident,
-        pending_event,
+        pending_event: pending_event.map(|event| event.event_id),
         digest,
     })
 }

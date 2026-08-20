@@ -125,8 +125,15 @@ pub(crate) struct ReductionWire {
     pub reduction_id: String,
     pub operator: String,
     pub units: String,
-    pub value_bits: String,
+    pub value_bits: Option<String>,
     pub accepted_operand_receipt_ids: Vec<ReceiptId>,
+    pub accepted_operand_values: Vec<ReductionOperandWire>,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct ReductionOperandWire {
+    pub receipt_id: ReceiptId,
+    pub value_bits: String,
 }
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

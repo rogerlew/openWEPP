@@ -282,6 +282,11 @@ pub struct EventQueueV1 {
     seen_cycle_keys: Vec<Digest32>,
     applied: u16,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PendingEventJoinV1 {
+    pub(crate) event_id: EventId,
+}
 impl EventQueueV1 {
     pub fn new(
         tick: ModelTimeNs,
@@ -336,6 +341,33 @@ impl EventQueueV1 {
         self.pending.remove(0);
         self.applied += 1;
         Ok(Some(receipt))
+    }
+
+    pub fn pending_event_join(
+        &self,
+        clock: &CoupledClockStateV1,
+    ) -> Result<Option<PendingEventJoinV1>, CoupledTimeError> {
+        let Some(event) = self.pending.first() else {
+            return Ok(None);
+        };
+        if clock.accepted_until != self.tick {
+            return Err(CoupledTimeError::EventTransition);
+        }
+        let transition = EventTransitionV1::new(
+            clock,
+            self.tick,
+            event.class,
+            event.source_owner_id.clone(),
+            event.event_context_digest,
+            event.ending_owners.clone(),
+            event.mutation_set.clone(),
+            event.successor_regime_id.clone(),
+            event.successor_participants.clone(),
+            event.ledger_entries.clone(),
+        )?;
+        Ok(Some(PendingEventJoinV1 {
+            event_id: transition.event_id,
+        }))
     }
 }
 
