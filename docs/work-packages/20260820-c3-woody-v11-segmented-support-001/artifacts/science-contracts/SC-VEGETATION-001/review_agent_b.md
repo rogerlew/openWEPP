@@ -715,3 +715,68 @@ a38e2cfa1`.
 
 This verdict supersedes the Review B amendment verdict at `ac8cb0eda`; another
 correction and independent re-review are required before promotion.
+
+---
+
+## Restart V2 final amendment re-review — candidate `887d92ec557f22682cc5e4df048a20aa249d2cbf`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent mutation probes`
+
+### Gate and closure evidence
+
+- reference one-slab suffix equality => PASS;
+- declared restart V2 poisons => PASS, 34/34;
+- the prior six reframed probes (active regime, resource final use, cumulative
+  debit, material amount, reduction operand ID, publication record ID) now all
+  reject with the intended typed category;
+- strict BEI, science-contract unit-compliance, and poison JSON parsing => PASS.
+
+The correction materially closes the two findings from `a38e2cfa1`: resource
+and material receipts now reconstruct cumulative/staged custody for the
+fixture, active regime is checked, and reduction/publication identities are
+derived. A final closed-body/outbox audit found two remaining blockers.
+
+### `V11-RESTART-V2-B-004` — BLOCKER — current sequence and nested event/state bodies remain open
+
+The outer current parent sequence is checked only against its claimed
+successor. Changing `parent_transaction_sequence` from 24 to 30 and
+`next_parent_transaction_sequence` from 25 to 31 is accepted while the
+checkpoint beginning/staged states remain at last sequence 23. Current
+chronology therefore is not joined to the typed checkpoint.
+
+The top-level, coupled, checkpoint, segment, slab, resource, material,
+reduction, and publication shapes now receive exact-key checks, but V11 state
+bodies and event bodies do not. Adding an unknown field to checkpoint
+`beginning_state` is accepted. Adding an unknown field to a digest-valid event
+body is accepted. Changing the event's `source_owner` from snow to BGC is also
+accepted while the staged snow-to-surface custody changes remain unchanged.
+
+Required closure: exact-key/type validation for beginning/staged V11 state and
+event bodies; join checkpoint last-parent sequence plus one to outer current
+sequence; derive event source/receiver/transfer custody from beginning and
+staged owner envelopes. Add current-sequence-pair, nested-state unknown,
+event-unknown, source/receiver, transfer, and owner-ending poisons.
+
+### `V11-RESTART-V2-B-005` — BLOCKER — outbox identity, uniqueness, and binding are not authenticated
+
+The reference checks record membership and delivery-count polarity only. A
+`CommittedUndelivered` row with an all-zero `outbox_id` is accepted, and two
+identical outbox rows are accepted. No outbox ID derivation, exact body set,
+uniqueness, or one-record/one-outbox cardinality is enforced.
+
+Required closure: define and reconstruct outbox ID from record and parent
+identity, exact-check the outbox body, enforce unique IDs/record bindings and
+valid state/count transitions, and add forged-ID, duplicate-ID, duplicate-
+record, unknown-field, and impossible-transition poisons.
+
+### Verdict
+
+`HOLD / the prior six findings are closed, but current chronology, nested event
+custody, and durable outbox identity remain forgeable at 887d92ec5`.
+
+This verdict supersedes the amendment re-review at `a38e2cfa1`. Promotion still
+requires one bounded correction and independent confirmation.

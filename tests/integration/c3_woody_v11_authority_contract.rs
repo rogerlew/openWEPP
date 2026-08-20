@@ -215,8 +215,14 @@ fn restart_v2_reference_closes_complete_custody_amendment() {
         .expect("run restart V2 reference");
     assert!(output.status.success(), "{}", String::from_utf8_lossy(&output.stderr));
     let result: Value = serde_json::from_slice(&output.stdout).expect("restart V2 result JSON");
-    assert_eq!(result["accepted"]["owner_count"], 7);
-    assert_eq!(result["poisons"].as_array().unwrap().len(), 34);
+    assert_eq!(result["poisons"].as_array().unwrap().len(), 52);
+    assert_eq!(
+        result["accepted"]["complete_continuation_sha256"]
+            .as_str()
+            .unwrap()
+            .len(),
+        64
+    );
     assert_eq!(result["accepted"]["ending_state"], result["accepted"]["uninterrupted_state"]);
     assert_eq!(result["accepted"]["suffix_slabs"], 1);
 }

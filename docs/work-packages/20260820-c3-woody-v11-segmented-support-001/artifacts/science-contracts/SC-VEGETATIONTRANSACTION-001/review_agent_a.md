@@ -453,3 +453,24 @@ are improved, not closed:
 Ran: exact-commit base continuation PASS and all 24 expected poison labels
 PASS. This evidence does not yet authorize the claimed complete V2 transaction
 checkpoint or equivalent continuation.
+## Restart V2 final transaction re-review at `887d92ec557f22682cc5e4df048a20aa249d2cbf`
+
+Evidence class: `Static + Ran + adversarial inspection`
+
+Superseding verdict: `HOLD`.
+
+The correction closes principal resource/event/material/reduction/publication
+joins and rejects all 34 listed poisons. Two transaction residuals remain:
+
+- `RVF-TXN-001` — Blocker: owner `state` bodies remain generic/open; LSE and
+  soil-thermal staged state are not consumed, and suffix equivalence compares
+  only one scalar vegetation result rather than the complete seven-owner
+  candidate, receipts, reductions, publication and outbox bytes.
+- `RVF-TXN-002` — High: event body fields/source/receiver/from-participants and
+  collection uniqueness/order remain underconstrained; duplicate reduction,
+  publication or outbox identities and unreconstructed outbox IDs/transitions
+  are not poisoned.
+
+Ran: exact-commit base suffix PASS, 34/34 poison PASS, diff hygiene PASS. Full
+typed-owner suffix equality and closed collection chronology are still required
+before the V2 amendment merits Review A PASS.

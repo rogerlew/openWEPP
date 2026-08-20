@@ -447,3 +447,51 @@ identities remain forgeable`.
 
 This supersedes the prior amendment review at `ac8cb0eda`. Production restart
 implementation must remain paused.
+
+---
+
+## Restart V2 final amendment re-review — candidate `887d92ec557f22682cc5e4df048a20aa249d2cbf`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent mutation probes`
+
+The reference passes real one-slab suffix equality, all 34 declared poisons,
+and all six probes retained from `a38e2cfa1`. BEI, unit-compliance, and JSON
+gates pass. Resource/material-to-staged-owner reconstruction and derived
+reduction/publication IDs are materially closed for the fixture.
+
+### `V11-TXN-RESTART-V2-B-003` — BLOCKER — parent/event chronology can contradict staged custody
+
+Changing current and next parent sequence together is accepted without joining
+the checkpoint states' last-parent sequence. Unknown fields in beginning state
+and accepted event bodies are accepted. A digest-valid event re-framed with BGC
+as source instead of snow is accepted even though staged owner envelopes still
+encode snow liquid transfer to surface liquid. Thus the event receipt and
+owner transition can contradict each other while suffix continuation succeeds.
+
+Required closure: close nested state/event bodies, bind current sequence to the
+checkpoint predecessor, and reconstruct event source/receiver/amount custody
+against beginning/staged owner envelopes before returning continuation.
+
+### `V11-TXN-RESTART-V2-B-004` — BLOCKER — durable outbox remains forgeable
+
+An all-zero outbox ID and duplicate identical outbox rows both pass when their
+record ID exists and delivery count is zero. The transaction therefore lacks a
+reconstructed unique durable publication identity despite otherwise valid
+publication records.
+
+Required closure: derive outbox identity from parent/record authority, enforce
+closed row shape and unique one-record binding, validate the full state/count
+transition table, and poison forged, duplicate, unknown, and conflicting rows.
+
+### Superseding verdict
+
+`HOLD / Version 5 restart V2 is close but not releasable at 887d92ec5 while
+parent/event custody and durable outbox identity remain independently
+forgeable`.
+
+This supersedes the re-review at `a38e2cfa1`; production restart must remain
+paused pending bounded correction and confirmation.

@@ -552,3 +552,48 @@ Prior `RVA-004` remains open.
 Ran: exact-commit reference base PASS and 24/24 expected poison rejections.
 Static: the correction is meaningful but does not yet satisfy the amendment's
 complete typed checkpoint/suffix claim.
+## Restart V2 final-amendment re-review at `887d92ec557f22682cc5e4df048a20aa249d2cbf`
+
+Evidence class: `Static + Ran + adversarial inspection`
+
+Superseding verdict: `HOLD`.
+
+The 34/34 poison result is real and the amendment now closes outer, coupled,
+checkpoint, receipt-envelope and principal receipt-body field sets; joins water
+and NH4/NO3 endings to staged owners; joins event liquid transfer to snow and
+surface owners; joins material input to BGC; reconstructs operand and
+publication IDs; and authenticates the scalar staged suffix. This closes the
+core of prior `RVA-001`, `RVA-003`, and `RVA-004`, but two exact residuals
+remain.
+
+### RVF-A-001 — Blocker — Complete typed owner/suffix equality is still not executed
+
+Every owner body retains a generic open `state` dictionary rather than an
+owner-specific closed type. Validation never inspects land-surface-energy or
+soil-thermal state, and only selected scalar members of the other owners are
+joined. `restore_suffix` still computes a scalar vegetation value; it does not
+execute or compare the complete seven-owner suffix, material donor ending,
+energy/thermal candidates, receipt chronology, reductions, publication and
+outbox bytes against uninterrupted execution. A reframed LSE or soil-thermal
+state can therefore be ignored while `ending_state == uninterrupted_state`.
+
+Required disposition: use closed owner-specific bodies and execute the suffix
+from all staged owners; compare complete final owner/receipt/reduction/
+publication/outbox bytes, not only scalar vegetation state.
+
+### RVF-A-002 — High — Event and collection identity remain partly open
+
+Event bodies have no exact field-set check and `source_owner`,
+`receiver_owner`, and `from_participants` are not validated. Reduction operand
+and publication/outbox arrays do not reject duplicate IDs/order aliases, and
+outbox rows lack exact field-set/ID reconstruction. These permit reframed
+same-digest structures to alter or duplicate chronology after recomputing
+dependent IDs.
+
+Required disposition: close the event body and every collection element,
+require canonical unique ordered IDs, reconstruct outbox IDs/transitions, and
+add event source/receiver/from-participant plus duplicate/reorder poisons.
+
+Ran: exact-commit V2 oracle base PASS, 34/34 expected poison labels PASS, exact
+commit-range diff hygiene PASS. The remaining HOLD is narrowly about the
+amendment's claim of complete typed owner custody and complete suffix equality.

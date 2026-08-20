@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 16
+contract_version: 17
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -2682,6 +2682,27 @@ reserialize byte-identically, reconstruct every owner envelope through
 against coupled time. A digest-valid opaque payload without typed admission is
 rejected.
 
+Each of the seven envelopes decodes through an owner-specific, closed canonical
+state schema: vegetation, snow, land-surface energy, surface liquid, hydrology,
+BGC, and soil thermal are not aliases of one generic blob. The decoded schema,
+owner identity, exact field set, canonical bytes, and reconstructed digest must
+all agree. In particular, land-surface-energy canopy-air state and soil-thermal
+temperature state are authenticated operands in continuation equality, not
+unchanged digest-only passengers.
+
+Continuation equivalence is byte equality over the complete ordered seven-owner
+ending set plus accepted slab/event/scheduled/resource/material receipt state,
+event custody, reduction operands, pending publication, durable outbox, and
+successor sequence. Scalar vegetation equality alone is insufficient. Every
+receipt, operand, publication, and outbox collection has an exact cardinality,
+canonical order, and unique identity. Event identity reconstructs the source
+and receiver owners, prior and next participant sets, transfer bits, tick, and
+ordinal against the owner custody change. Publication-record IDs and outbox IDs
+are reconstructed; an outbox row is one-to-one with its publication record and
+binds parent transaction, record, state, and delivery count. Jointly changing
+current/next sequence or reframing an owner/event/outbox body cannot create a
+continuation.
+
 Restore returns a continuation reconstructed from the persisted staged state
 and executes only the unaccepted suffix. It may not reconstruct accepted work
 from a future/full candidate. V1/V2 aliasing, missing parent-beginning owners,
@@ -2733,3 +2754,4 @@ snow carrier, selector/default, activation, publication, deployment, or cutover.
 |---|---:|---|---|
 | 2026-08-20 | 15 | Codex | Drafted immutable-V10 V11 segmented support, staged custody, additive restart, exact compatibility, and one atomic parent finalization. |
 | 2026-08-20 | 16 | Codex | Superseded nonimplementable V11 restart V1 with additive V2 complete typed checkpoint/owner/reduction/publication authority after implementation inventory exposed the closed-schema contradiction. |
+| 2026-08-20 | 17 | Codex | Closed restart V2 seven-owner canonical state, complete-suffix equality, event custody, ordered collection, and durable outbox identity findings. |
