@@ -11,7 +11,7 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260820-coupled-time-authority-implementation-001/` — QUEUED / CHILD 2A
+- `20260820-coupled-time-authority-implementation-001/` — COMPLETE / CHILD 2A / TERMINAL A+B PASS
   NEXT: admit `SC-COUPLEDTIME-001` and implement the reusable exact-integer
   support, staged clock, attempt/accept/reject, adaptive restart, atomic
   multi-owner commit, and buffered parent-publication subsystem through a real
