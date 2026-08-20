@@ -13,5 +13,14 @@
 {"id":"forged_owner_bytes","mutation":"forged_owner_bytes","error":"V11-V2-DIGEST"},
 {"id":"bad_successor","mutation":"bad_successor","error":"V11-V2-JOIN"},
 {"id":"future_reduction","mutation":"future_reduction","error":"V11-V2-REDUCTION"},
-{"id":"orphan_outbox","mutation":"orphan_outbox","error":"V11-V2-PUBLICATION"}
+{"id":"orphan_outbox","mutation":"orphan_outbox","error":"V11-V2-PUBLICATION"},
+{"id":"coupled_wrong_authority","mutation":"coupled_wrong_authority","error":"V11-V2-JOIN"},
+{"id":"coupled_wrong_configuration","mutation":"coupled_wrong_configuration","error":"V11-V2-JOIN"},
+{"id":"checkpoint_forged_staged_state","mutation":"checkpoint_forged_staged_state","error":"V11-V2-CHECKPOINT"},
+{"id":"checkpoint_missing_resource","mutation":"checkpoint_missing_resource","error":"V11-V2-CHECKPOINT"},
+{"id":"event_wrong_tick","mutation":"event_wrong_tick","error":"V11-V2-EVENT"},
+{"id":"scheduled_wrong_key","mutation":"scheduled_wrong_key","error":"V11-V2-SCHEDULED"},
+{"id":"reduction_wrong_source","mutation":"reduction_wrong_source","error":"V11-V2-REDUCTION"},
+{"id":"publication_wrong_payload","mutation":"publication_wrong_payload","error":"V11-V2-PUBLICATION"},
+{"id":"outbox_impossible_count","mutation":"outbox_impossible_count","error":"V11-V2-PUBLICATION"}
 ]}

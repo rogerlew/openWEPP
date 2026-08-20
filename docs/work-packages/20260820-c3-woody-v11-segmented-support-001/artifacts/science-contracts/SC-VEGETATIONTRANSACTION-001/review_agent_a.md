@@ -360,3 +360,69 @@ Final re-review gates:
 - adversarial probes: open payload, forged ending, and forged live beginning
   were all accepted;
 - `git diff --check`: PASS.
+## Restart V2 transaction amendment review at `ac8cb0eda4110d5b5fe8811d82da314b6d8bf25e`
+
+Evidence class: `Static + Ran`
+
+Verdict: `HOLD`.
+
+Scope: read-only Review A of restart suffix chronology, coupled-time joins,
+accepted reduction/publication retention, and the 15 V2 poisons.
+
+### RVA-TXN-001 — Blocker — V2 does not admit the complete typed transaction checkpoint
+
+The reference admits arbitrary canonical checkpoint JSON and arbitrary
+digest-valid owner bytes, then inspects only parent, cursor, slab count and
+`finalized`. It does not parse the complete `V11ParentTransactionCheckpoint`,
+typed staged V11 state, resource/material receipt prefixes, or owner-specific
+payloads. This fails the Version 5 requirement that a typed complete checkpoint
+and seven typed owners exist before a continuation capability is returned.
+
+Required disposition: close and execute the checkpoint/owner type admission,
+including deny-unknown-fields, schema/model/configuration identity, canonical
+order/cardinality, receipt bodies and staged-owner joins.
+
+### RVA-TXN-002 — Blocker — No suffix transaction is resumed
+
+The reference validates a few duplicated cursor fields and returns three
+summary values. It does not reconstruct the accepted prefix, restore staged
+owners, apply pending event/scheduled work, or execute any remaining slab.
+Active segment/regime, controller policy, sequences, event/material/resource
+receipts and staged state are not cross-joined. Thus restore equivalence and
+replay resistance are unevaluated despite the amendment's claim.
+
+Required disposition: execute before-event, after-event and mid-parent suffixes
+from independently persisted inputs and require bit-identical uninterrupted
+parent candidate/commit bytes; poison every duplicated cross-wire family.
+
+### RVA-TXN-003 — High — Accepted reduction chronology is underconstrained
+
+An operand passes whenever its end is not in the future. Source receipt,
+support ordering, uniqueness, finite value, operator and retained result are
+unvalidated. This permits loss/reordering/duplication or replacement of an
+accepted peak/total and violates accepted-only diagnostic continuation.
+
+Required disposition: replay the exact typed reduction over authenticated
+accepted receipts and add wrong-source, overlap/reorder, duplicate, NaN,
+changed-value and lost-pre/post-restart-maximum poisons.
+
+### RVA-TXN-004 — High — Publication/outbox restore is not transactionally authenticated
+
+Pending publication payload digests, record IDs, source reductions, ordering
+and uniqueness are not checked. Outbox validation is only set membership of
+record ID and does not validate durable state or delivery count chronology.
+The one orphan poison does not prove precommit invisibility, rollback clearing,
+or exactly-once postcommit continuation.
+
+Required disposition: reconstruct publication and durable outbox transitions
+from accepted reductions and parent commit state, with forged payload,
+duplicate/order, wrong reduction, premature visibility, rollback retention and
+delivery-state poisons.
+
+### Gate evidence
+
+- Ran exact-commit reference: base accepted and all 15 listed poisons rejected
+  under their expected labels.
+- Ran exact commit-range `git diff --check`: PASS.
+- Static: the integration test checks only count/owner summary, so the four
+  transaction gaps remain release-blocking.

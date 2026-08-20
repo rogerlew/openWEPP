@@ -344,3 +344,57 @@ verification at c53adab0a`.
 
 Production Rust remains gated on dual authority verification and the recorded
 promoted authority checkpoint.
+
+---
+
+## Restart V2 amendment review — candidate `ac8cb0eda4110d5b5fe8811d82da314b6d8bf25e`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + adversarial surface audit`
+
+Mechanical evidence passes: BEI and unit-compliance for both contracts, the
+restart V2 reference fixture with 15/15 declared poisons, schema/poison JSON
+parsing, and the V11 authority contract test at 6/6. The following transaction
+custody claims remain unproved.
+
+### `V11-TXN-RESTART-V2-B-001` — BLOCKER — complete parent transaction is not restored
+
+The oracle's embedded checkpoint is not the runtime
+`V11ParentTransactionCheckpoint`. It omits complete beginning/staged V11
+states, accepted segment projections, cumulative typed debits, staged owner
+map, resource/material bodies, and the reconstructed suffix predecessor. The
+reference returns three scalar facts after validation and never restores a
+fresh transaction or executes its unaccepted suffix. This cannot establish
+equivalent continuation, replay resistance, staged custody, or parent abort.
+
+Required closure: serialize/admit the complete checkpoint projection, restore
+fresh owners and transaction state, execute at least one unequal remaining
+segment/event/resource/material suffix, and compare final candidate/owner/
+receipt/publication bytes with uninterrupted execution.
+
+### `V11-TXN-RESTART-V2-B-002` — BLOCKER — cross-authority joins and retained ledgers are incomplete
+
+Only a subset of coupled-time facts is joined. Active segment/regime,
+controller policy, configuration, current sequence, scheduled keys, and event
+predecessor/support chains remain caller-controlled. Reduction sources and
+fold order are not reconstructed; publication payload digests are unchecked;
+outbox delivery semantics are not validated. Owner blobs are digest-checked
+without typed `OwnerState::new` reconstruction or canonical nested-state
+admission.
+
+Required closure: field-by-field typed joins to admitted coupled-time V2 and
+the complete vegetation checkpoint; reconstruction of every owner, receipt,
+scheduled key, reduction, publication record, and outbox transition; and
+one-field poisons across the entire retained surface.
+
+### Verdict
+
+`HOLD / SC-VEGETATIONTRANSACTION-001 Version 5 restart amendment is not yet a
+complete authenticated continuation authority at ac8cb0eda`.
+
+The additive V2 direction correctly avoids mutating the nonimplementable V1,
+but production restart work must remain paused pending correction and another
+independent review.

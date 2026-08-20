@@ -420,3 +420,82 @@ Final re-review gates:
 - adversarial semantic probes: unknown receipt payload accepted; forged
   hydrology ending accepted; forged beginning self-seeded and committed;
 - `git diff --check`: PASS.
+## Restart V2 amendment review at `ac8cb0eda4110d5b5fe8811d82da314b6d8bf25e`
+
+Evidence class: `Static + Ran`
+
+Verdict: `HOLD`.
+
+Scope: read-only audit of time/restart suffix identity, coupled-time cross-wire
+joins, reduction/publication continuation, and all 15 V2 poisons. No production
+source was edited during this review.
+
+### RVA-001 — Blocker — Claimed typed checkpoint/owner admission is digest-only
+
+The amendment requires the parent checkpoint to be parsed through the complete
+deny-unknown-fields Rust type and every owner through its typed owner authority.
+The cited reference decodes arbitrary canonical JSON, checks only five fields
+of the checkpoint, and accepts each owner as arbitrary canonical bytes plus a
+matching SHA-256. It never validates the checkpoint schema/field set, staged
+V11 state, receipt prefixes, owner-specific schema/model/configuration, or typed
+owner payload. A canonical digest-valid future/full checkpoint or nonsensical
+owner body remains admissible, contrary to `INV-VEGETATION-127`.
+
+Required disposition: make the independent validator admit the exact closed
+parent-checkpoint type and all seven typed owner envelopes, reject unknown,
+missing, reordered and wrong-schema fields, and prove the Rust admission path
+applies the same checks before restore capability exists.
+
+### RVA-002 — Blocker — Restore suffix and duplicated cross-wire facts are not reconstructed
+
+Only parent, cursor, slab/event ordinals, participants and accepted-slab count
+are joined. `active_segment_id`, `active_regime_id`, controller policy, parent
+sequence, event receipts, scheduled-once keys, staged vegetation state,
+resource/material prefixes, reduction/publication state and outbox posture are
+not joined to coupled time/checkpoint or consumed to execute an unaccepted
+suffix. The reference returns a summary immediately after validation; it never
+restores and advances a continuation. Therefore V2 can silently change regime,
+replay scheduled/event work, or ignore staged physical state while its 15
+poisons still pass.
+
+Required disposition: restore from authenticated staged state, execute only the
+suffix, and compare complete final owner/receipt/reduction/publication bytes to
+uninterrupted execution. Cross-check every duplicated field family and add
+before-event, after-event and mid-slab continuation cases.
+
+### RVA-003 — High — Reduction continuation is not an authenticated reduction
+
+Validation checks only `support_end_ns <= accepted_until_ns`. It does not bind
+operand source to an accepted receipt, require ordered unique operands, require
+`start < end`, constrain start to accepted chronology, reject nonfinite value
+bits, identify the reduction operator, or reconstruct the retained aggregate.
+The sole `future_reduction` poison cannot distinguish a lost peak, reordered or
+duplicated operand, wrong source receipt, NaN, or a value changed wholly inside
+the accepted prefix.
+
+Required disposition: persist and independently replay the typed reduction
+operator and ordered accepted operands, join every operand to accepted receipt
+support, and poison each alias above.
+
+### RVA-004 — High — Publication and durable-outbox bytes are largely unchecked
+
+The validator does not authenticate publication payload bytes/digest, record
+ID, source-reduction existence, record ordering or uniqueness. It checks only
+that each outbox record ID appears in the pending-record set; it does not bind
+outbox ID/state/delivery count to durable chronology or prevent duplicate and
+premature publication. Consequently forged payload, duplicate record, wrong
+reduction, invalid delivery transition, or loss/republication across restore
+can pass. `orphan_outbox` covers only one missing-reference shape.
+
+Required disposition: reconstruct publication records and ordered outbox state
+from accepted reductions, prove precommit invisibility and postcommit exactly-
+once chronology across restore, and add payload/digest/order/duplicate/state/
+delivery poisons.
+
+### Gate evidence
+
+- Ran exact-commit independent V2 reference: accepted base case and 15/15
+  listed poisons rejected with the expected labels.
+- Ran exact commit-range `git diff --check`: PASS.
+- Static: the authority test asserts only owner count and poison count for this
+  amendment; it does not exercise the omitted semantics above.

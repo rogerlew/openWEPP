@@ -559,3 +559,86 @@ authority/evidence closure. No Review B waiver is required.
 This verdict authorizes the contract verification checkpoint only. Production
 Rust remains prohibited until the package obtains both required independent
 authority verifications and records the exact promoted authority checkpoint.
+
+---
+
+## Restart V2 amendment review — candidate `ac8cb0eda4110d5b5fe8811d82da314b6d8bf25e`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + adversarial surface audit`
+
+### Gate evidence
+
+- independent `restart_v2_reference.py` => PASS for its valid fixture and
+  15/15 declared poisons;
+- V11 authority contract test => PASS, 6/6 (with unrelated concurrent Rust
+  warnings outside this amendment);
+- strict BEI checks => PASS for both contracts;
+- science-contract unit-compliance => PASS for both contracts;
+- restart V2 schema and poison JSON parse => PASS.
+
+These gates prove the checked fixture, not the complete typed admission
+claimed by the amendment.
+
+### `V11-RESTART-V2-B-001` — BLOCKER — the oracle admits a reduced surrogate checkpoint
+
+The amendment normatively requires the complete deny-unknown-fields
+`V11ParentTransactionCheckpoint`. The reference instead embeds a package-local
+five-field object containing only schema, parent ID, cursor, slab count, owner
+arrays, and `finalized`. It omits the complete beginning/staged V11 states,
+accepted segment projections, cumulative resource debits, staged owner map,
+receipt support/duration/predecessor facts, typed resource/material payloads,
+and reconstructed final staged state. `decode` merely parses generic JSON and
+canonicalizes it; it never admits the production checkpoint type. A reduced
+checkpoint can therefore pass every current poison while being impossible to
+continue equivalently.
+
+Required closure: construct the complete runtime checkpoint projection in the
+independent oracle, enumerate its closed field set, authenticate its complete
+nested states/segments/debits/materials/owners, and execute a remaining suffix
+from that restored checkpoint. Unknown/omitted/changed nested-field poisons are
+required.
+
+### `V11-RESTART-V2-B-002` — BLOCKER — retained outer chronology is not completely joined
+
+The reference joins only parent ID, cursor, slab/event ordinals, participants,
+and successor arithmetic. `active_segment_id`, `active_regime_id`,
+`controller_policy_sha256`, configuration identity, scheduled execution keys,
+accepted event predecessor/support chains, and current parent sequence are not
+cross-checked against either embedded authority. The embedded coupled-time
+fixture itself is not admitted as the released typed V2 wire. Independent
+mutations of these retained fields therefore have no declared poison and no
+reconstruction path.
+
+Required closure: typed-admit exact coupled-time V2 bytes with expected model,
+authority, and policy; cross-check every duplicated cursor/regime/participant/
+sequence identity; reconstruct ordered event and scheduled-once chronology;
+and add one-field poisons for every retained fact.
+
+### `V11-RESTART-V2-B-003` — BLOCKER — owner, reduction, and publication authentication is partial
+
+Owner envelopes verify base64 and digest but do not parse-reserialize canonical
+owner state or reconstruct `OwnerState::new`; the schema's seven repeated
+`owner` references do not itself bind class order. Reduction admission checks
+only that an operand does not end in the future: it does not authenticate
+source receipts, ordering/uniqueness, finite value bits, or rebuild the fold.
+Publication payload digests are never checked. Event receipt IDs/predecessors
+are not authenticated or ordered. Outbox state/delivery-count consistency and
+record uniqueness are absent.
+
+Required closure: execute the contract-declared typed owner constructor and
+digest comparison; rebuild event, reduction, publication, and outbox identity
+from operands; and add forged payload/digest/source/order/duplicate/state-count
+poisons for each surface.
+
+### Verdict
+
+`HOLD / Restart V2 is directionally the correct additive boundary, but its
+reference and poison authority do not yet prove complete typed restoration at
+ac8cb0eda`.
+
+Do not promote this amendment or resume restart production until all three
+blockers are corrected and independently re-reviewed.
