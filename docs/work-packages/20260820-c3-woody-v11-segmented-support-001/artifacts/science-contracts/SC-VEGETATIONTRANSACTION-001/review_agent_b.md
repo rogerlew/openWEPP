@@ -87,3 +87,67 @@ digests, receipt order, one increment, and zero publication on rejection.
 
 Structural lint passes do not supersede these blockers. Correct and disposition
 them before verification or production Rust.
+
+---
+
+## Re-review — corrected candidate `675296fdb262efd052be40d32d6730b3d895220a`
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran`
+
+Mechanical evidence: strict BEI PASS, unit-compliance PASS, authority tests
+4/4 PASS, and calculator 46/46. Semantic closure remains incomplete.
+
+### `V11-TXN-B-001` — PARTIAL, remains BLOCKER
+
+Version 4 is now integrated into purpose, scope, state surfaces, algorithm,
+branch table, obligations, and test obligations, and the Change Log is terminal.
+However the body still says `approved/active` while frontmatter says
+`in_review/draft`; producer scope still names V8 only; the Symbol and Unit maps
+remain water/energy-only; and the Invariant Guard Map still ends at
+`INV-VEGTRANSACTION-008`, omitting enforcement/evidence rows for 009--013.
+Reconcile every lifecycle/profile surface before approval.
+
+### `V11-TXN-B-002` — PARTIAL, remains BLOCKER
+
+The ordered binary64 fold policy and separate water/NH4/NO3 keys are now
+normative. The reference still uses anonymous decimal strings and aggregate
+totals rather than typed parent/segment/slab/owner/OFE/tile/occupancy/layer/
+species/basis receipts, staged authorization/final use, and bit-exact ending
+owners. Energy, thermal, and material identities remain unexecuted. Add typed
+wire cases, staged owner advancement, exact subtraction reconstruction, and
+identity/order aliases.
+
+### `V11-TXN-B-003` — PARTIAL, remains BLOCKER
+
+The amendment now enumerates candidate fields and consuming semantics, but no
+closed candidate/parent-receipt schema, complete-owner manifest/cardinality,
+typed field/framing definition, or executable consume transition exists. The
+oracle hardcodes one increment/commit and cannot detect a forged/partial/
+reordered candidate or late owner failure. Freeze and execute this wire/API.
+
+### `V11-TXN-B-004` — PARTIAL, remains BLOCKER
+
+Restart fields were expanded, but the generic receipt shape is invalid for
+non-slab event/scheduled/publication chronology, embedded JSON remains open,
+and the promised semantic validator/cross-wire authentication is not
+implemented. Restart vectors compare claimed digest strings without parsing or
+continuation. Define phase/type unions and execute canonical restore,
+reconstruction, continuation, abort, reduction/publication, and replay cases.
+
+### `V11-TXN-B-005` — OPEN, remains BLOCKER
+
+Forty-six results do not constitute the transaction population when events are
+only counted, participants only length-checked, restart is string equality,
+consecutive parents are independent, publication is an input-list hash,
+commit counts are constants, and materials/typed owners are absent. Replace
+flags with constructed authenticated transaction objects and operand-level
+poisons.
+
+### Re-review verdict
+
+`HOLD / Version 4 remains non-releasable at 675296fdb`.
+
+The correction improves normative direction but does not yet supply the closed,
+independently reconstructed owner transaction required before Rust.

@@ -134,3 +134,68 @@ fn successor_schemas_are_closed_and_do_not_hide_v10_physics_in_blobs() {
         );
     }
 }
+
+#[test]
+fn typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit() {
+    let base = "docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts";
+    for name in [
+        "parent-candidate-schema.json",
+        "semantic-schema-poisons.json",
+    ] {
+        let _: Value = serde_json::from_str(&read(&format!("{base}/{name}"))).unwrap();
+    }
+    let path = root().join(format!("{base}/semantic_schema_validator.py"));
+    let source = fs::read_to_string(&path).unwrap();
+    assert!(!source.contains("import openwepp"));
+    assert!(!source.contains("subprocess"));
+    for required in [
+        "framed(",
+        "class AtomicStore",
+        "payload_sha256",
+        "duration_s_bits",
+    ] {
+        assert!(
+            source.contains(required),
+            "missing executable authority {required}"
+        );
+    }
+    let output = Command::new("python3").arg(path).output().unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let result: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        result["schema"],
+        "OPENWEPP_C3_WOODY_V11_SEMANTIC_RESULTS_V1"
+    );
+    assert_eq!(result["restore_equivalent"], true);
+    assert_eq!(result["atomic_commit_owner_count"], 7);
+    assert_eq!(result["publication_count"], 1);
+    assert_eq!(result["valid"]["receipt_count"], 13);
+    assert_eq!(
+        result["valid"]["ending_resource_bits"]["water"],
+        "0000000000000000"
+    );
+    assert_eq!(result["poisons"].as_array().unwrap().len(), 21);
+    let ids = result["poisons"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v["id"].as_str().unwrap())
+        .collect::<Vec<_>>();
+    for id in [
+        "wrong_digest",
+        "broken_event_custody",
+        "material_reordered",
+        "local_duration_conversion",
+        "rejected_attempt_leakage",
+        "stale_clock_commit",
+        "partial_owner_commit",
+        "late_failure",
+        "commit_consumed_twice",
+    ] {
+        assert!(ids.contains(&id), "missing semantic poison {id}");
+    }
+}

@@ -133,3 +133,97 @@ but implementation must not choose what compatibility means.
 and authority population are not yet complete enough to constrain an
 independent production implementation. No production Rust may begin until the
 findings are dispositioned and independently verified.
+
+## Re-review at corrected commit
+
+Reviewed exact commit: `675296fdb262efd052be40d32d6730b3d895220a`
+
+Evidence class: `Static + Ran`
+
+Verdict: `HOLD`.
+
+Disposition of original findings:
+
+- `A-002` closed: `VegetationEventTransitionV1` now binds the required event
+  identity, ordering, owner joins, custody entries, receipt, ordinal, rollback,
+  no-progress/cycle, and no-rate semantics in canonical authority.
+- `A-004` closed: the contract now unambiguously makes phenology edge selection
+  sequential per positive slab and GSI preparation/calendar/management receipt
+  consumption scheduled once.
+- `A-006` closed: migration now has independently executable neighbor, tie,
+  zero-rounding, nonfinite, and `u128`-range cases.
+- `A-007` closed: the compatibility ledger freezes a recursive fail-closed
+  projection, narrow successor-identity allowlist, source-path evidence, and
+  unknown/mutated-leaf poisons before implementation.
+- `A-001`, `A-003`, and `A-005` are improved but remain open for the exact
+  defects below.
+
+### RA-001 — Blocker — The 46-case oracle still does not execute event/restart custody
+
+The expanded population is materially better and forcing order is now
+observable. However, events are evaluated only as an in-range unique string ID
+plus an `integrates_rate` boolean; the oracle never applies participant/custody
+changes, checks beginning/ending owner digests, advances an event ordinal,
+orders two same-tick events, closes an event ledger, or exercises failure,
+cycle, and no-progress semantics. The two “equivalent restart” cases merely
+compare caller-provided strings (`restored_digest == uninterrupted_digest`);
+they do not checkpoint, restore, continue, or reconstruct any state/receipt/
+reduction/publication chain. Thus the executable evidence still cannot detect
+an implementation that ignores the corrected event and restart authority.
+
+Required disposition: make the independent oracle construct and consume the
+event/restart structures it claims to validate, and add same-tick precedence,
+custody/digest/ordinal, event failure/no-progress/cycle, pre/post-event restore,
+scheduled/reduction/publication continuation, and replay poisons.
+
+### RA-002 — Blocker — Closed schemas still admit unauthenticated arbitrary embedded objects
+
+Replacing opaque base64 physical payloads is positive, but configuration/state
+now accept arbitrary `type: object, minProperties: 1` V10 JSON and restart
+receipts accept arbitrary `payload_canonical_json` objects. JSON Schema cannot
+enforce the model-definition prose string that claims canonical
+parse-reserialize, digest reconstruction, imported schema identity, ordering,
+or cross-object joins. No independent semantic validator or poison population
+executes those rules. A forged payload/digest, unknown V10 field, reordered or
+duplicate owner/receipt, noncanonical object, or mismatched embedded schema can
+remain schema-valid and pass the four current tests.
+
+Required disposition: freeze typed imported-schema references/envelopes and an
+executable independent semantic validator; poison digest, embedded schema,
+canonical reserialization, duplicate/reordered/unknown owner and receipt, and
+cross-wire mismatches.
+
+### RA-003 — High — Resource oracle still does not reconstruct staged endings
+
+The authority now correctly freezes ordinary ordered binary64 left-fold
+arithmetic and separate water/NH4/NO3 keys, closing the policy ambiguity in
+`A-005`. The oracle, however, only folds anonymous amounts and checks
+`total > inventory`; it never advances per-segment staged inventories, checks
+authorization versus final use, or verifies the required bit-identical
+`parent_beginning - cumulative_debit == final_candidate`. No non-associative
+order alias, resource identity swap, stale staged inventory, or ending-owner
+poison exists.
+
+Required disposition: execute the complete staged resource recurrence and
+independent ending reconstruction with alias-separating amount bits and typed
+receipt identities.
+
+### RA-004 — High — Mandatory poison surface remains incomplete
+
+The package explicitly requires scaled V10 output, shortened cloned V10
+configuration, material reorder/final-state recomputation, rejected staged
+owner mutation, wrong active participant set, and post-restart segment/event
+replay. The 46 cases do not execute those semantics; several current poisons
+are boolean shortcuts rather than wrong-answer structures. Count and case-name
+assertions do not establish semantic rejection.
+
+Required disposition: add executable wrong-answer fixtures for every package
+poison and assert reconstructed outputs/owner bytes, not only status/count.
+
+Re-review gates run at the corrected commit:
+
+- strict BEI lint: PASS for both contracts;
+- science-contract unit lint: PASS for both contracts;
+- `cargo test --test c3_woody_v11_authority_contract`: 4/4 PASS;
+- independent calculator: 46/46 reported PASS, subject to RA-001/003/004;
+- `git diff --check`: PASS.

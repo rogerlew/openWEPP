@@ -106,3 +106,86 @@ during implementation.
 `HOLD`. The one-parent/one-commit design is correct, but its event, restart,
 resource-arithmetic, and anti-alias transaction authority is incomplete. No
 production Rust may begin before correction and dual verification.
+
+## Re-review at corrected commit
+
+Reviewed exact commit: `675296fdb262efd052be40d32d6730b3d895220a`
+
+Evidence class: `Static + Ran`
+
+Verdict: `HOLD`.
+
+The corrected contract now integrates V11 into purpose, scope, state,
+algorithm, guards, obligations, tests, BEI, and change-log surfaces. It also
+freezes event capability semantics, ordered typed resource arithmetic,
+restart/publication continuation fields, and a parent-candidate field list.
+Those changes close original `A-002`, `A-004`, `A-006`, and `A-007` at the
+canonical-authority level. The following executable/closed-wire blockers
+remain and also cover the overlapping Review B findings.
+
+### RA-TXN-001 — Blocker — Event and restart vectors are receipt-free shortcuts
+
+The oracle does not construct an event receipt, transition participants or
+custody, join beginning/ending owners, advance ordinals, or test same-tick
+ordering/failure/no-progress. Restart “equivalence” is equality of two input
+strings rather than serialization, restore, continuation, and byte comparison.
+It therefore cannot prove `INV-VEGTRANSACTION-013` or reject lost/replayed
+scheduled, reduction, material, publication, and outbox facts.
+
+Required disposition: independently execute the admitted event/restart
+transaction structures and their complete positive/poison population.
+
+### RA-TXN-002 — Blocker — The semantic wire validator remains prose-only
+
+The model definition names a semantic validator, but no independent executable
+validator exists. Configuration/state permit arbitrary embedded JSON objects;
+restart receipts permit arbitrary payload objects; claimed hashes are not
+reconstructed by schema or tests. Owner/receipt type, cardinality, canonical
+order, uniqueness, imported schema identity, and cross-wire joins are therefore
+not demonstrated fail-closed. This leaves overlapping `V11-AUTH-B-002` and
+`V11-TXN-B-004` open.
+
+Required disposition: provide typed closed envelopes plus an executable
+semantic validator and canonical/digest/schema/order/cardinality poisons.
+
+### RA-TXN-003 — Blocker — Complete-owner candidate membership remains unspecified
+
+The added parent wire lists digests and ordered receipt IDs, but it does not
+freeze the complete owner manifest, owner class/order/cardinality, typed ending
+candidate envelopes, or stable material proposal framing. The vectors contain
+no missing/duplicate/reordered owner, stale clock, late-owner rejection,
+material reorder, or second consuming-finalize structure. A scalar
+`atomic_commits: 1` result cannot prove absence of a vegetation-only/partial
+commit path. Overlapping `V11-AUTH-B-005` and `V11-TXN-B-003` remain open.
+
+Required disposition: freeze the owner manifest and typed candidate/proposal/
+receipt framing and execute all atomic-finalization poisons.
+
+### RA-TXN-004 — High — Resource custody is still aggregated rather than staged
+
+Although the arithmetic policy is now canonical, the oracle folds anonymous
+amounts once, never authorizes against each current staged owner, never checks
+final use against authorization, and never reconstructs exact final owner bits.
+Typed owner/species/layer/basis swaps and non-associative order aliases are
+absent. `A-005`, `V11-AUTH-B-003`, and `V11-TXN-B-002` remain open at the
+executable-evidence level.
+
+Required disposition: model sequential typed authorization/final-use/ending
+owner recurrence and independent parent reconstruction.
+
+### RA-TXN-005 — High — Required transaction poisons are still missing
+
+Scaled V10, shortened V10 cadence, material reorder/final-state recomputation,
+rejected staged-owner leakage, wrong active participant structure, complete
+restart replay, partial/reordered owners, stale clock, late failure, and
+publication/reduction continuation are not executable fixtures. Boolean flags
+and result-count checks are insufficient anti-alias evidence.
+
+Re-review gates run at the corrected commit:
+
+- strict BEI lint: PASS for both contracts;
+- science-contract unit lint: PASS for both contracts;
+- authority contract test: 4/4 PASS;
+- independent calculator: 46/46 reported PASS, with the semantic limitations
+  above;
+- `git diff --check`: PASS.

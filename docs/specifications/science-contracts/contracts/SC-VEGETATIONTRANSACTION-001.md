@@ -7,8 +7,10 @@ owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
 contract_version: 4
 producer_scope:
   - OPENWEPP_C3_WOODY_V8 occupancy and ground resource/energy candidates
+  - OPENWEPP_C3_WOODY_V11 accepted-segment and parent candidates
 consumer_scope:
   - Default-off real-hydrology, LSE, BGC, and soil-thermal shadow owners
+  - Default-off coupled-time V11 parent coordinator and additive restart
 evidence_level: static+independent_oracle
 last_reviewed: pending
 supersedes: []
@@ -17,9 +19,9 @@ superseded_by: []
 
 # SC-VEGETATIONTRANSACTION-001 Coupled Vegetation Occupancy Owner-Transaction Contract
 
-Status: `approved`
-Maturity: `active`
-Evidence mode: `Static`
+Status: `in_review`
+Maturity: `draft`
+Evidence mode: `Static + independent oracle`
 
 ## Purpose
 
@@ -147,7 +149,6 @@ current/next parent sequence. None is a live-owner mutation before commit.
 | `INV-VEGTRANSACTION-007` | Surface `-G`, soil `+G`, infiltration energy and routed runoff enthalpy preserve exact OFE/tile/source identity. | REF-003/004 | `[INFERENCE][Static]` | LSE/soil thermal/hydrology | `VEGTXN-E-010` |
 | `INV-VEGTRANSACTION-008` | The terminal receiver binds snow and receiver halves by one predecessor chain while preserving independent absolute support, total error precedence, restart custody, atomic commit/rollback, and CoE production invariance. | REF-001/004 + terminal contracts | `[INFERENCE][Static]` | orchestrator | `VEGTXN-E-007` |
 | `INV-VEGTRANSACTION-009` | Segment resource identity extends, never replaces, parent/owner/OFE/tile/occupancy/layer/species/basis identity. | SC-COUPLEDTIME-001 + V11 amendment | `[INFERENCE][Static]` | orchestrator | `VEGTXN-E-011` |
-| `INV-VEGTRANSACTION-010` | Each segment authorizes against current staged inventory and the parent independently closes cumulative debits. | V11 amendment | `[INFERENCE][Static]` | resource owners | `VEGTXN-E-012` |
 | `INV-VEGTRANSACTION-011` | Ordered segment material receipts form one parent batch without final-state recomputation. | V11 amendment | `[INFERENCE][Static]` | vegetation/material owner | `VEGTXN-E-013` |
 | `INV-VEGTRANSACTION-012` | Exactly one complete parent commit installs all owners and increments once. | SC-COUPLEDTIME-001 + V11 amendment | `[INFERENCE][Static]` | orchestrator | `VEGTXN-E-014` |
 | `INV-VEGTRANSACTION-013` | Restart reconstructs the staged owner/receipt chain and cannot replay accepted work. | SC-COUPLEDTIME-001 + V11 amendment | `[INFERENCE][Static]` | restart owner | `VEGTXN-E-014` |
@@ -164,6 +165,11 @@ current/next parent sequence. None is a live-owner mutation before commit.
 | `INV-VEGTRANSACTION-006` | signed vapor mass/energy join | runtime/test | reject | V8/LSE implementation package |
 | `INV-VEGTRANSACTION-007` | ground/advection cross-owner joins | runtime/test | reject | V8/LSE implementation package |
 | `INV-VEGTRANSACTION-008` | terminal all-owner state machine, precedence, and rollback poisons | default-off runtime/test | reject/rollback | terminal handoff package |
+| `INV-VEGTRANSACTION-009` | parent/segment/slab/resource identity reconstruction | default-off runtime/test | reject | V11 segmented-support package |
+| `INV-VEGTRANSACTION-010` | sequential staged inventory and cumulative fold aliases | default-off runtime/test | reject/rollback | V11 segmented-support package |
+| `INV-VEGTRANSACTION-011` | ordered material receipt/proposal reconstruction | default-off runtime/test | reject/rollback | V11 segmented-support package |
+| `INV-VEGTRANSACTION-012` | consuming complete-owner parent commit and late-failure injection | default-off runtime/test | rollback | V11 segmented-support package |
+| `INV-VEGTRANSACTION-013` | fresh restore, event boundary, replay, reduction and publication poisons | default-off runtime/test | reject/rollback | V11 segmented-support package |
 
 ## Producer Obligations and Consumer Obligations
 
@@ -187,6 +193,9 @@ current/next parent sequence. None is a live-owner mutation before commit.
 |---|---|---|---|---|
 | `D_W/A_W/F_W,o,l` | future occupancy resource DTO | diagnostic | stand-ground interval mass | this / SC-WATBAL-001 |
 | `Q_o,k` | future energy operands | diagnostic | tile-ground interval energy | this / SC-LANDSURFACEENERGY-001 |
+| `D_R/A_R/F_R,k` | `V11ResourceReceiptV1` | parent/segment/slab/resource key | finite binary64 interval amount | this / resource owner |
+| `M_k` | `V11MaterialReceiptV1` | ordered accepted material transfer | `kg C`, `kg N`, or dry matter per declared basis | this / BGC-material owner |
+| `C_parent` | `V11ParentCommitCandidateV1` | consuming complete owner replacement | identity/ledger only | this / SC-COUPLEDTIME-001 |
 
 ## Constants and Parameters with Provenance Anchors
 
@@ -199,6 +208,9 @@ constitutive values retain V2/adjacent-owner authority.
 |---|---|---|---|---|---|
 | occupancy water | `kg H2O m^-2 stand-ground` | future typed DTO | one-time `f_t` conversion | none | none |
 | occupancy energy | `J m^-2 tile-ground` | future typed DTO | weight after local closure | none | none |
+| V11 water debit | owner-declared `kg H2O m^-2` basis | `V11ResourceReceiptV1` | no local conversion after receipt | none | parent operand lineage |
+| V11 mineral N debit | owner-declared `kg N m^-2` basis, separate NH4/NO3 | `V11ResourceReceiptV1` | no NH4/NO3 aggregation | none | parent operand lineage |
+| V11 material transfer | typed C/N/dry-matter amount and basis | `V11MaterialReceiptV1` | none | none | ordered parent batch lineage |
 
 ## Tolerance and Numeric Notes
 
@@ -322,6 +334,24 @@ checks the live parent clock and beginning owner set, installs all candidates,
 increments once, and releases buffered publication. No public segment commit or
 vegetation-only finalize capability exists.
 
+`V11CompleteOwnerManifestV1` fixes canonical owner-class order as
+`vegetation`, `snow`, `land_surface_energy`, `surface_liquid`, `hydrology`,
+`bgc`, then `soil_thermal`; a parent configuration may mark any non-vegetation
+class inactive, but its manifest entry remains present and its bytes must carry
+unchanged.
+Within a class, owner IDs are strict ascending canonical UTF-8 bytes and unique.
+The manifest binds expected count, each owner schema/model/configuration ID,
+beginning digest, active/inactive segment disposition, and ending digest. A
+candidate with a missing, extra, reordered, duplicate, or unknown owner is not
+constructible.
+
+`V11MaterialProposalV1` frames parent transaction, source segment/slab receipt,
+within-slab ordinal, source/destination owner and pool, element/species, amount
+bits, basis, and beginning/ending transfer digests. Its ID is SHA-256 over
+domain `openwepp-v11-material-proposal-v1` plus the length-framed fields in that
+order. Parent material order is accepted chronology then within-slab ordinal;
+reordering changes the parent receipt and fails the receiving-owner ledger.
+
 Its canonical closed wire binds schema/model/authority/configuration IDs;
 parent interval and transaction; current and successor sequence; parent
 beginning and ending complete-owner digests; ordered slab, event, scheduled,
@@ -349,6 +379,12 @@ merged slab/event predecessor chain, resource folds, scheduled execution keys,
 reductions, parent/publication receipts, and outbox state before releasing a
 continuation. DirectV10 restart V1 and coupled-time restart V2 remain embedded
 or referenced byte-identically, never extended in place.
+
+Admission must execute `OPENWEPP_C3_WOODY_V11_SEMANTIC_VALIDATOR_V1` as bound by
+`SC-VEGETATION-001`; schema validation or caller-claimed hashes alone are never
+sufficient. `OPENWEPP_C3_WOODY_V11_PARENT_CANDIDATE_V1` is the closed candidate
+schema and its authenticated parent receipt is the sole consuming commit
+capability.
 
 | Failure ID | Typed failure |
 |---|---|

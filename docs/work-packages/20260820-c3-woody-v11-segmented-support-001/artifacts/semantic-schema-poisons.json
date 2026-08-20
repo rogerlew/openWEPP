@@ -1,0 +1,26 @@
+{
+  "schema": "OPENWEPP_C3_WOODY_V11_SEMANTIC_POISONS_V1",
+  "cases": [
+    {"id":"wrong_digest","mutation":"wrong_digest","error":"V11-SCHEMA-DIGEST"},
+    {"id":"wrong_schema","mutation":"wrong_schema","error":"V11-SCHEMA-TAG"},
+    {"id":"invalid_base64","mutation":"invalid_base64","error":"V11-SCHEMA-BASE64"},
+    {"id":"reordered_owner_manifest","mutation":"reordered_owner_manifest","error":"V11-OWNER-MANIFEST"},
+    {"id":"duplicate_owner","mutation":"duplicate_owner","error":"V11-OWNER-MANIFEST"},
+    {"id":"wrong_participants","mutation":"wrong_participants","error":"V11-PARTICIPANTS"},
+    {"id":"broken_event_custody","mutation":"broken_event_custody","error":"V11-EVENT-CUSTODY"},
+    {"id":"resource_overbook","mutation":"resource_overbook","error":"V11-RESOURCE"},
+    {"id":"resource_wrong_ending_bits","mutation":"resource_wrong_ending_bits","error":"V11-RESOURCE"},
+    {"id":"material_reordered","mutation":"material_reordered","error":"V11-MATERIAL-ORDER"},
+    {"id":"scaled_v10","mutation":"scaled_v10","error":"V11-DURATION-AUTHORITY"},
+    {"id":"shortened_v10_config","mutation":"shortened_v10_config","error":"V11-DURATION-AUTHORITY"},
+    {"id":"local_duration_conversion","mutation":"local_duration_conversion","error":"V11-DURATION-AUTHORITY"},
+    {"id":"rejected_attempt_leakage","mutation":"rejected_attempt_leakage","error":"V11-REJECTED-LEAKAGE"},
+    {"id":"restart_event_replay","mutation":"restart_event_replay","error":"V11-REPLAY"},
+    {"id":"stale_clock_commit","mutation":"stale_clock_commit","error":"V11-STALE-CLOCK"},
+    {"id":"partial_owner_commit","mutation":"partial_owner_commit","error":"V11-ATOMICITY"},
+    {"id":"reordered_owner_commit","mutation":"reordered_owner_commit","error":"V11-ATOMICITY"},
+    {"id":"late_failure","mutation":"late_failure","error":"V11-PARENT-ABORT"},
+    {"id":"publication_before_commit","mutation":"publication_before_commit","error":"V11-PUBLICATION"},
+    {"id":"commit_consumed_twice","mutation":"commit_consumed_twice","error":"V11-COMMIT-CONSUMED"}
+  ]
+}

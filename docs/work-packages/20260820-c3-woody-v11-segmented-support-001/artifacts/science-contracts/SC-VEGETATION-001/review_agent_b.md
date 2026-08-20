@@ -113,3 +113,123 @@ and executable before implementation.
 
 No production Rust may begin until blockers are corrected, invalidated gates
 are rerun, and independent verification passes the corrected checkpoint.
+
+---
+
+## Re-review — corrected candidate `675296fdb262efd052be40d32d6730b3d895220a`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran`
+
+Ran on the exact corrected candidate:
+
+- strict Binding Exposure Index checks => PASS for both contracts;
+- science-contract unit-compliance checks => PASS for both contracts;
+- `nix develop --command cargo test --test
+  c3_woody_v11_authority_contract` => PASS, 4/4;
+- independent calculator => 46/46 expected records;
+- `git diff --check` => PASS before this review append.
+
+### Finding closure audit
+
+#### `V11-AUTH-B-001` — PARTIAL, remains BLOCKER
+
+The restart schema now explicitly carries cursor/ordinal/participants, slab and
+event receipts, reductions, pending publication/outbox, and current/next parent
+sequence. That closes the original missing-field list in form. It does not yet
+close equivalent continuation: all receipt kinds share one generic shape that
+requires a nonempty `segment_id` and `accepted_slab_id`, including parent-start
+events and scheduled/publication receipts that need not belong to a slab;
+`CommittedParent` still requires an active segment; and duplicated coupled-time
+and V11 fields have no executed cross-wire join. Restart positives merely
+compare caller-provided strings (`restored_digest == uninterrupted_digest`) and
+never parse, validate, serialize, restore, or continue the restart schema.
+
+Required closure: define phase-appropriate receipt unions/cardinality and
+optional/required fields, phase-specific restart constraints, and executable
+fresh-object roundtrip/continuation that reconstructs all duplicated joins,
+reductions, publication, sequence, and event replay state.
+
+#### `V11-AUTH-B-002` — OPEN, remains BLOCKER
+
+`OPENWEPP_C3_WOODY_V11_SEMANTIC_VALIDATOR_V1` exists only as a descriptive
+string in `model-definition.json`; it is neither normative contract text with
+a complete algorithm/error map nor an independent executable validator. The
+configuration/state schemas replaced base64 with unconstrained JSON objects:
+`v10_configuration_canonical_json` and `v10_physical_state_canonical_json`
+accept arbitrary properties and unknown structures. Restart receipt
+`payload_canonical_json` is equally open. The new test proves only that the
+literal word `base64` disappeared, not closed V10/V11 schema identity, digest
+reconstruction, ordering/cardinality, or parse-reserialize equality. No
+malformed canonicalization/digest/duplicate/reorder/unknown-owner cases execute.
+
+Required closure: import closed versioned V10 schemas or enumerate the embedded
+types, make semantic validation canonical authority with an executable
+independent population, and prove every claimed digest, order, cardinality,
+schema identity, and canonical reserialization poison.
+
+#### `V11-AUTH-B-003` — PARTIAL, remains BLOCKER
+
+The contract now correctly selects ordinary IEEE-754 left folds from `+0.0`,
+finite intermediates, distinct water/NH4/NO3 keys, and bit-exact parent closure.
+But vectors encode decimal strings, not canonical `f64` bit strings, and the
+calculator converts them with Python `float`; it checks only `total > inventory`.
+It does not advance a staged owner after each receipt, enforce
+`0 <= finalized <= authorization <= demand`, compare bit-exact cumulative debit
+with parent-beginning-minus-final ending, retain layer/owner/basis identities,
+or execute non-associative/order and identity-swap aliases. Thus the selected
+policy is frozen in prose but not independently proven.
+
+Required closure: model canonical amount bits and typed receipt keys, segment-
+by-segment authorization/final-use/ending inventory, independent parent
+reconstruction, exact subtraction bits, and non-associative/reordered/
+water-NH4-NO3-layer-owner-basis poisons.
+
+#### `V11-AUTH-B-004` — OPEN, remains BLOCKER
+
+The case count increased from 22 to 46 and names the requested surfaces, but
+most new cases are Boolean/string switches rather than the admitted model:
+events are counted without beginning/ending owners or custody ledgers;
+participant sets are checked only for array length; restart equivalence is a
+string equality; consecutive parents are not chained; `atomic_commits` is a
+constant; publication is a hash of an input list; no material receipt is
+represented; and no typed owner/receipt identity is constructed. The test still
+asserts selected names and result count, not schema/wire/owner semantics. This
+is expanded self-consistency, not independent transaction reconstruction.
+
+Required closure: make the oracle construct/authenticate typed slab, event,
+resource, material, restart, parent-candidate, commit, and publication objects;
+derive ending owners and receipts; chain restart/consecutive parents; and
+mutate exact operands for every poison.
+
+#### `V11-AUTH-B-005` — PARTIAL, remains BLOCKER
+
+The model definition and transaction prose now list parent-candidate fields and
+state one-shot atomic semantics. There is still no closed candidate/receipt
+schema, typed complete-owner manifest/cardinality, field types, framing/domain
+tags, canonical proposal-ID algorithm, or executable live-clock/beginning
+authentication. The oracle returns constant `increments=1` and
+`atomic_commits=1`; it never constructs or consumes a candidate, so duplicate,
+partial/reordered/stale/late-owner paths are not tested.
+
+Required closure: freeze the full typed wire and identity framing, complete
+owner manifest, proposal IDs, live preconditions, consuming transition, and
+independent construction/poison population.
+
+### Overlapping Review A findings
+
+The event capability and phenology classification prose materially improves
+`A-002/A-004`, and migration boundary vectors materially improve `A-006`.
+`A-001/A-003/A-005` remain open for the same non-executable chronology,
+restart, and resource reasons above. Compatibility classification improvements
+must be judged separately under `A-007`; they do not cure custody/wire gaps.
+
+### Re-review verdict
+
+`HOLD / corrections are directionally substantial but V11-AUTH-B-001..005 are
+not terminally closed at 675296fdb`.
+
+Do not promote or begin production Rust from this candidate.

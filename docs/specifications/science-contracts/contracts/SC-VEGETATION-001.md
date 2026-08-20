@@ -2637,6 +2637,18 @@ mid-parent, event-boundary, abort, and consecutive-parent continuations equal
 uninterrupted bytes; replay fails. DirectV10 V1 and coupled-time V2 bytes remain
 unchanged.
 
+`OPENWEPP_C3_WOODY_V11_SEMANTIC_VALIDATOR_V1` is mandatory admission authority,
+not optional evidence. It decodes canonical base64, requires parse-reserialize
+byte equality for embedded canonical JSON, reconstructs every payload and
+receipt digest, enforces the complete-owner manifest/order/cardinality, replays
+the merged slab/event/scheduled predecessor chain, repeats staged water/NH4/NO3
+and material ledgers, reconstructs reduction/publication/outbox identity, and
+rejects unknown, duplicate, reordered, stale, or unjoined objects. JSON Schema
+shape validity alone never admits configuration, state, restart, or a parent
+candidate. The independent executable definition and poison population are
+`semantic_schema_validator.py` and `semantic-schema-poisons.json` in the V11
+authority package.
+
 ### Full-support compatibility and segmented population
 
 For a migrated V10 state and one V11 slab equal to nominal cadence, identical
