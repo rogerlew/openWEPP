@@ -218,3 +218,47 @@ correction.
 This supersedes the documentation-only FAILs at `6c74d866d` and `1a3aa9d79`.
 Promotion remains subject to Verification A and exact package checkpointing;
 production activation remains outside this verification.
+
+---
+
+## Sequential-debit amendment Verification B — checkpoint `f71c36a7c186a95474f29f6470fb2b980f1311cd`
+
+Date: 2026-08-20
+
+Status: **PASS**
+
+Evidence class: `Static + Ran + independent transaction/restart verification`
+
+Version 8 unambiguously requires two independent accepted-order folds per
+exact resource key. Sequential staged subtraction is authoritative for owner
+custody and predecessor bits; the `+0.0` cumulative fold is authoritative only
+for receipt diagnostics. Regrouping the latter into an ending owner, sorting
+or reassociating operands, tolerance closure, and aggregate mineral-N aliases
+remain forbidden.
+
+The 49/49 reference population and independent bit probes demonstrate the
+nonassociative separation for water, NH4, and NO3 and reject both regrouped
+aliases with `VEG-E-124`. The authority suite passes 7/7. Restart continuation
+passes 54/54 with digest
+`512c259be830ad33de578f9cd26f8931fb334e7b361c4387f8e7562de4f8cf0e`.
+
+The amendment does not change Restart V2 serialization. Exact protected hashes
+remain schema `af9314c3f1abd70c40b849c6f466046e3c5e519583a837eefca9edbf43d02441`,
+poisons `fa5ae93f8b8e109b851f37946070bff71b5f5182b5df818c80f0d4de9990ad34`,
+and reference `13f3d009221a60cc2af094103255c5d8c3be2dbee657bb87144b2fee476bbf7c`.
+Ordered segment resource bodies reconstruct the sequential owner chain;
+independent cumulative rows reconstruct the diagnostic fold. Their semantic
+roles change without field, order, digest, or canonical-wire drift.
+
+Strict binding exposure and unit compliance pass for both contracts;
+commit-range diff hygiene passes. Review A and Review B are PASS at
+`3065c209c` and introduced no new finding, so no new disposition row or waiver
+is required. Existing Restart V2 finding families remain fully dispositioned,
+and DirectV10 Restart V1 and coupled-time Restart V2 remain protected.
+
+### Verdict
+
+**PASS.** SC-VEGETATIONTRANSACTION-001 Version 8 sequential-debit authority is
+verified at `f71c36a7c`. No Verification B finding remains. Promotion is still
+subject to Verification A and exact authority checkpointing; production is
+not activated by this record.

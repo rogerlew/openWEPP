@@ -275,3 +275,54 @@ or production artifact changed. No residual Verification B finding remains.
 This supersedes the two documentation-only FAILs at `6c74d866d` and
 `1a3aa9d79`. Authority promotion may proceed subject to Verification A and the
 package's exact checkpoint procedure; this does not itself activate production.
+
+---
+
+## Sequential-debit amendment Verification B — checkpoint `f71c36a7c186a95474f29f6470fb2b980f1311cd`
+
+Date: 2026-08-20
+
+Status: **PASS**
+
+Evidence class: `Static + Ran + independent arithmetic/wire verification`
+
+The Version 19 contract, Version 3 vectors, and independent calculator make
+the two resource identities non-interchangeable. Accepted-order subtraction
+authenticates every staged owner ending and next beginning. A separate exact
+`+0.0`-seeded accepted-order addition fold authenticates cumulative receipt
+identity. Parent-beginning-minus-cumulative is explicitly non-authoritative and
+cannot gate or manufacture the sequential ending.
+
+Independent bit reconstruction reproduced all three declared water/NH4/NO3
+sequential chains and cumulative totals. Each valid terminal owner value is
+bit-distinct from its regrouped alias; both frozen regrouped poisons reject
+with `VEG-E-124`. The reference population passes 49/49 and the authority suite
+passes 7/7.
+
+Restart V2 already retains the ordered segment resource bodies, staged owner
+envelopes, and cumulative debit rows needed to replay these reconstructions
+independently. The amendment changes their required semantic validation only.
+No Restart V2 schema, poison population, or reference file changed, and their
+exact SHA-256 values remain:
+
+- schema: `af9314c3f1abd70c40b849c6f466046e3c5e519583a837eefca9edbf43d02441`;
+- poison population: `fa5ae93f8b8e109b851f37946070bff71b5f5182b5df818c80f0d4de9990ad34`;
+- reference: `13f3d009221a60cc2af094103255c5d8c3be2dbee657bb87144b2fee476bbf7c`.
+
+The unchanged restart reference passes 54/54 and reconstructs complete suffix
+digest `512c259be830ad33de578f9cd26f8931fb334e7b361c4387f8e7562de4f8cf0e`.
+Strict binding exposure, unit compliance, and commit-range diff hygiene pass.
+The contract/vector/reference hashes are respectively `58f1c6c9...b823`,
+`82e22866...042a`, and `9af4efa2...a89e`.
+
+Review A and Review B are independently PASS at `3065c209c`; neither issued a
+new finding, so the existing complete no-waiver disposition remains unchanged.
+DirectV10 Restart V1, coupled-time Restart V2, and the closed vegetation
+Restart V2 wire are outside the amendment diff and remain protected.
+
+### Verdict
+
+**PASS.** SC-VEGETATION-001 Version 19 sequential-debit authority is verified
+at `f71c36a7c`. No Verification B finding or waiver remains. Promotion may
+proceed subject to Verification A and the exact checkpoint procedure; this
+verification does not itself authorize production.

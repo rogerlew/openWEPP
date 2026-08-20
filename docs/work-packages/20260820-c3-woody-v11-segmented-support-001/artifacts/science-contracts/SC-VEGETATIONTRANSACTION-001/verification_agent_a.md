@@ -141,3 +141,27 @@ hygiene passes. The prior technical PASS remains exact with no new finding.
 added table explicitly dispositions every transaction-specific finding family
 without changing technical authority artifacts. It is additive and consistent
 with the reviewed closures; prior Verification A remains exact.
+
+## Sequential-debit amendment Verification A
+
+Status: `PASS`
+
+Verified checkpoint: `f71c36a7c186a95474f29f6470fb2b980f1311cd`
+
+Verified tree: `da7eae817703614bc3bc0f2a32ee822f73b9cd15`
+
+Reviewed authority: `3065c209c7d5d203a2a06fca793dc8cbc340e26e`
+
+Review A and B are PASS with no residual finding. Version 8 preserves exact
+segment predecessor custody while separating authoritative sequential
+subtraction from the ordered cumulative diagnostic; no regrouped ending gate
+is admitted.
+
+Reference 49/49, authority 7/7, BEI 4 rows, unit compliance, independent
+nonassociation/order probes, and diff hygiene all PASS. No production Rust or
+Cargo file occurs in the amendment range. Persisted-restart, coupled-time, and
+Restart V2 schema/poison Git objects are byte-identical to released authority,
+so protected wires are unchanged.
+
+Verdict: `PASS / SC-VEGETATIONTRANSACTION-001 Version 8 sequential-debit
+amendment is independently verified for promotion.`

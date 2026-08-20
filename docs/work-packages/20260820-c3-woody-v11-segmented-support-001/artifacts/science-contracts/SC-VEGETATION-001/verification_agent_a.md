@@ -153,3 +153,31 @@ finding is introduced.
 transaction disposition addition only enumerates already closed finding IDs;
 all reviewed contracts, schemas, reference/poisons, and authority test objects
 remain exact. Prior Verification A remains unchanged.
+
+## Sequential-debit amendment Verification A
+
+Status: `PASS`
+
+Verified checkpoint: `f71c36a7c186a95474f29f6470fb2b980f1311cd`
+
+Verified tree: `da7eae817703614bc3bc0f2a32ee822f73b9cd15`
+
+Reviewed authority: `3065c209c7d5d203a2a06fca793dc8cbc340e26e`
+
+Both independent reviews terminate in PASS with no finding or waiver. Version
+19 exactly defines accepted-order staged subtraction as authoritative owner
+custody and the accepted-order exact-`+0.0` addition fold as diagnostic receipt
+identity only; regrouped parent-minus-total bits cannot replace or gate the
+sequential ending.
+
+Independent evidence: reference 49/49 PASS; authority suite 7/7 PASS; strict
+BEI 15 rows PASS; unit compliance PASS; direct nonassociation and reordered-
+operand probes PASS; diff hygiene PASS. The authority range contains no
+production Rust/Cargo edit. Protected persisted-restart and coupled-time trees
+remain `8c4585371f1e818eeb0d8e93d89e339b88059444` and
+`9206afef1574aa6051ea801560cd1514203d8531`; Restart V2 schema and poison
+objects remain `3229ef601742d2acb403538ff7456305511edebe` and
+`a9c78cf4d656ba58a88b993ffcd22381201bb964`. Protected wires are unchanged.
+
+Verdict: `PASS / SC-VEGETATION-001 Version 19 sequential-debit amendment is
+independently verified for promotion.`
