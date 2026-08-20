@@ -1,6 +1,6 @@
 # Pre Implementation Contract Gate
 
-Status: PASS / awaiting Phase-2A review
+Status: PASS / Phase-2A authority released
 
 Evidence mode: Ran
 
@@ -12,6 +12,8 @@ Evidence mode: Ran
   corrected `Symbol`/`Units` headings; final PASS.
 - `git diff --check`: PASS.
 
-This gate authorizes Phase 2A review only. It does not authorize production
-Rust until dual review, disposition/corrections, dual verification, promotion,
-and the exact authority checkpoint complete.
+Final Phase-2A evidence: all 14 review findings closed; final verifier A PASS;
+final verifier B PASS; 108/108 reference cases; 31/31 semantic-schema cases;
+focused Rust 5/5; strict binding exposure PASS; unit compliance PASS; protected
+DirectV10 hashes/diff PASS. Promotion and exact authority checkpoint now
+authorize production Rust.

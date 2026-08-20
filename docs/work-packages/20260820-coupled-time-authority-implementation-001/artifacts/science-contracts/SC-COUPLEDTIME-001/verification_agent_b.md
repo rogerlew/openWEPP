@@ -161,3 +161,15 @@ release checkpoint from the ownership/restart/wire/publication perspective,
 subject to the separate Verification A result and the package's required
 promotion/index/checkpoint procedure. This PASS does not authorize behavior
 beyond `SC-COUPLEDTIME-001` or waive later production implementation gates.
+
+## Regression Verdict At `11d520330`
+
+**PASS.** Exact commit `11d520330e60` preserves closure of B-001 through
+B-007. The expanded independent oracle executed 108/108 cases with zero
+`forced_error` and matched frozen SHA-256
+`4540951f70f9de0846669f8f955e7eeca425dd831108997f50009d6ec002df95`.
+The semantic-schema suite matched all 31 expected dispositions (four admitted
+controls, 27 fail-closed poisons), and `nix develop -c cargo nextest run --test
+coupled_time_authority_contract` passed 5/5. `git diff --check` passed; all
+three protected DirectV10 hashes and the exact protected-tree diff remain
+unchanged. The final fixture additions introduce no B-scope regression.

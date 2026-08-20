@@ -1,6 +1,6 @@
 # Authority Review Finding Disposition
 
-Status: corrections in progress
+Status: complete / authority released
 
 Evidence mode: Static
 
@@ -25,6 +25,9 @@ commit will be recorded before verification.
 | B-006 | B | critical | accepted | same complete executable authority vector gate |
 | B-007 | B | major | accepted | canonical slab/event/parent receipt and owner/ledger joins |
 
-No rejected, deferred, or follow-up findings. Production Rust remains forbidden
-until corrections, invalidated gates, dual verification, promotion, and exact
-authority checkpoint pass.
+No rejected, deferred, or follow-up findings. Final exact candidate
+`11d520330` passed both independent verifiers: 108/108 reference cases, 31/31
+semantic-schema cases, focused Rust 5/5, binding exposure, unit compliance,
+DirectV10 protection, and diff hygiene. All A-001..A-007 and B-001..B-007 are
+closed. Promotion to `approved / active` is authorized; production Rust may
+begin only after the following exact authority checkpoint commit.

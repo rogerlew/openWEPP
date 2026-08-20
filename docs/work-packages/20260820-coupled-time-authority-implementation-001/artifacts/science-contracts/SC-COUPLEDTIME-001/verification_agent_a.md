@@ -169,3 +169,37 @@ finding is not yet closed. Authority release still requires:
 Do not promote/index `SC-COUPLEDTIME-001` or begin production Rust at this
 commit. Add those bounded cases, rerun the same three executable gates, and
 submit the resulting exact checkpoint for final verification.
+
+---
+
+## Release verification — 2026-08-20 — candidate `11d520330`
+
+Final verdict: **PASS**
+
+Evidence mode: **Static + Ran.** Verified exact commit
+`11d520330e6020f560f63ae64ef34732ce82afc4`. This section supersedes the
+candidate-specific verdicts above; those remain historical evidence for their
+named commits.
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| independent reference population | PASS | 108/108 executable cases; 56 accepted and 52 rejected; output SHA-256 `4540951f70f9de0846669f8f955e7eeca425dd831108997f50009d6ec002df95` matched the frozen identity |
+| independent semantic-schema population | PASS | 31/31 cases; 4 valid documents accepted and 27 poisons rejected |
+| focused Rust contract gate | PASS | `nix develop --command cargo nextest run --test coupled_time_authority_contract`; 5/5 passed |
+| Binding Exposure Index, strict | PASS | 3 rows consolidated |
+| SC unit compliance | PASS | no findings |
+| exact candidate diff hygiene | PASS | `git diff --check 11d520330^ 11d520330` |
+
+All A-001 through A-007 and overlapping B-001 through B-007 findings are now
+**CLOSED**. In particular, the final population independently rejects identity
+field reorder, omission, and wrong framing version; rejects pre- and
+post-restart-only maxima and duplicate scheduled output; rejects retained
+publication without parent commit; proves parent rollback removes the buffered
+publication/outbox; and covers committed-undelivered and acknowledged
+crash/restart/redelivery boundaries.
+
+No accepted finding remains open. `SC-COUPLEDTIME-001` passes authority review
+verification A at this exact checkpoint and may proceed to the remaining dual-
+verification, promotion/index, and exact authority-checkpoint steps required by
+the package. This PASS authorizes that authority-release sequence; it does not
+independently attest later production Rust.

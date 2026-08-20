@@ -1,8 +1,8 @@
 ---
 contract_id: SC-COUPLEDTIME-001
 title: Coupled Time Support, Event, and Atomic Chronology Contract
-status: in_review
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP maintainers + time/numerics + transaction/restart reviewers
 contract_version: 1
 producer_scope:
@@ -11,21 +11,21 @@ producer_scope:
 consumer_scope:
   - Segmented-support vegetation V11
   - Snow, land-surface-energy, surface-liquid, Lane D, Richards, plant, soil-thermal, biogeochemistry, restart, and publication adopters
-evidence_level: static+contract_vectors_pending
-last_reviewed: pending
+evidence_level: static+independent_oracle+contract_vectors
+last_reviewed: 2026-08-20
 supersedes: []
 superseded_by: []
 ---
 
 # SC-COUPLEDTIME-001 Coupled Time Support, Event, and Atomic Chronology Contract
 
-Status: `in_review`
+Status: `approved`
 
-Maturity: `draft`
+Maturity: `active`
 
 Authority identity: `OPENWEPP_COUPLED_TIME_SUPPORT_V1`
 
-Evidence mode: `Static; independent vectors and review pending`
+Evidence mode: `Static + independent oracle and executable contract vectors`
 
 ## Purpose and scientific scope
 
