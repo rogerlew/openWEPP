@@ -60,3 +60,28 @@ authority is verified for promotion and production implementation.`
 
 This is a preimplementation authority verification, not implementation or
 terminal package acceptance.
+
+## Regression verification — accepted-slab prefix cardinality
+
+Exact checkpoint: `a7bfbbac57bd2661948ce516cd18fc34e5bd98a8`
+
+Status: `PASS`
+
+Evidence class: `Static + Ran + adversarial executable verification`
+
+The restart admission path now joins accepted slab receipt cardinality exactly
+to `next_slab_ordinal`, then retains the existing ordered identity-prefix and
+closed receipt-payload checks. The added `checkpoint_missing_slab` adversary is
+rejected as `V11-RESTART`. This closes the omission alias without weakening
+event, resource, material, scheduled, reduction, publication, owner, or cursor
+authentication.
+
+Regression evidence: strict BEI/unit gates PASS for both contracts; 46/46
+chronology cases PASS; the expanded semantic population rejects 37/37 poisons
+and preserves exact before/after-event continuation, one atomic seven-owner
+install, rollback, and delayed publication; authority tests PASS 5/5; diff
+hygiene PASS. All protected production trees retain their execution-base Git
+object IDs.
+
+Verdict: `PASS / SC-VEGETATIONTRANSACTION-001 Version 4 remains verified at
+a7bfbbac5 with accepted-slab prefix omission rejected.`

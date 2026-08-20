@@ -64,3 +64,27 @@ verified for promotion and production implementation.`
 This verification authorizes the preimplementation authority checkpoint only;
 it does not claim the later Rust implementation, actual-consumer compatibility,
 or terminal package gates.
+
+## Regression verification — accepted-slab prefix cardinality
+
+Exact checkpoint: `a7bfbbac57bd2661948ce516cd18fc34e5bd98a8`
+
+Status: `PASS`
+
+Evidence class: `Static + Ran + adversarial executable verification`
+
+The correction requires `accepted_slab_receipts.len()` to equal the authenticated
+`next_slab_ordinal` before prefix identity and receipt validation. The new
+`checkpoint_missing_slab` poison independently removes the accepted prefix and
+is rejected as `V11-RESTART`; a checkpoint can no longer omit accepted slab
+chronology while retaining cursor and staged-state claims.
+
+Regression evidence: strict BEI and unit compliance PASS for both contracts;
+reference calculator 46/46 PASS; semantic validator 37/37 poisons PASS with
+before/after-event restore equivalence, seven-owner atomic installation, and
+delayed publication intact; authority contract tests 5/5 PASS; `git diff
+--check` PASS. The vegetation, persisted-restart, and coupled-time production
+trees remain byte-identical to execution base `d59ba76f7`.
+
+Verdict: `PASS / prior Verification A remains valid at a7bfbbac5; accepted-slab
+restart-prefix cardinality is now explicitly authenticated.`

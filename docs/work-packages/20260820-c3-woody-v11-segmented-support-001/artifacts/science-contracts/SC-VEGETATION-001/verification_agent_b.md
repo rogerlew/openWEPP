@@ -81,3 +81,40 @@ parent receipt forgeries. That does not waive the accepted slab-prefix blocker.
 **FAIL.** `INV-VEGETATION-127` and the V11 restart-equivalence obligation are
 not closed while an accepted slab receipt can be deleted without rejection.
 Do not promote the authority or begin production Rust from this checkpoint.
+
+## Corrected-checkpoint re-verification
+
+Status: **PASS**
+
+Verified exact commit: `a7bfbbac57bd2661948ce516cd18fc34e5bd98a8`
+
+Evidence class: `Static + Ran + independent adversarial execution`
+
+This section supersedes the FAIL verdict above while retaining it as the
+finding audit trail. `V11-VERIFY-B-001` is closed: restart now requires
+`len(accepted_slab_receipts) == next_slab_ordinal`, and the exact direct probe
+that removed the sole accepted slab receipt from an `after_event` checkpoint
+rejects with `V11-RESTART`.
+
+Corrected-checkpoint evidence:
+
+- strict BEI lint: PASS for both contracts (15 and 4 rows);
+- science-contract unit lint: PASS for both contracts;
+- all package JSON artifacts parse: PASS;
+- independent chronology calculator: PASS, 46/46;
+- semantic validator: PASS, 37/37 poisons, including
+  `checkpoint_missing_slab`;
+- independent direct restart-forgery matrix: PASS, 29/29 rejected;
+- Rust authority contract: PASS, 5/5;
+- exact seven-owner manifest and full V10 four-surface binding: PASS;
+- DirectV10 V1 protected hashes and coupled-time restart V2 hash: unchanged;
+- protected base-to-checkpoint diff and `git diff --check`: PASS.
+
+No residual custody, wire, restart, serialization, or protected-boundary
+finding was identified.
+
+**Superseding verdict: PASS.** Verification B authorizes authority promotion
+and the exact preimplementation authority checkpoint from the custody/wire/
+restart perspective, subject to the separate Verification A PASS and package
+promotion procedure. This does not constitute production implementation or
+terminal package acceptance.

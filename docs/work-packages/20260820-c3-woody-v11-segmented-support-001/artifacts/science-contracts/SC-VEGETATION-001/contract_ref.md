@@ -1,6 +1,6 @@
 # Contract Reference
 
-Status: reviewed candidate / dual review PASS / verification pending.
+Status: released authority / dual review PASS / dual verification PASS.
 
 - Canonical contract: `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md`
 - Candidate contract version: 15 (`OPENWEPP_C3_WOODY_V11` amendment)
@@ -12,4 +12,5 @@ Status: reviewed candidate / dual review PASS / verification pending.
 - Protected imports: complete released V10 Rust configuration/state/model hashes,
   DirectV10 restart V1, and coupled-time restart V2.
 
-Promotion remains prohibited until two independent verification PASS records.
+Promoted after independent Verification A+B PASS at
+`a7bfbbac57bd2661948ce516cd18fc34e5bd98a8`.

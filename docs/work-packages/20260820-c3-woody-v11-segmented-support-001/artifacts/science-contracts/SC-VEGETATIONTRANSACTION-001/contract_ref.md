@@ -1,6 +1,6 @@
 # Contract Reference
 
-Status: reviewed candidate / dual review PASS / verification pending.
+Status: released authority / dual review PASS / dual verification PASS.
 
 - Canonical contract: `docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md`
 - Candidate contract version: 4 (V11 segmented parent transaction)
@@ -10,4 +10,5 @@ Status: reviewed candidate / dual review PASS / verification pending.
 - Candidate/manifest authority: `OPENWEPP_C3_WOODY_V11_PARENT_CANDIDATE_V1`
   with exactly seven aggregate owner envelopes and one consuming atomic commit.
 
-Promotion remains prohibited until two independent verification PASS records.
+Promoted after independent Verification A+B PASS at
+`a7bfbbac57bd2661948ce516cd18fc34e5bd98a8`.

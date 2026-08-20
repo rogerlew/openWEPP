@@ -1,8 +1,8 @@
 ---
 contract_id: SC-VEGETATION-001
 title: Native Vegetation State and Cross-Domain Boundary Contract
-status: in_review
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
 contract_version: 15
 producer_scope:
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: pending
+last_reviewed: 2026-08-20
 supersedes: []
 superseded_by: []
 ---

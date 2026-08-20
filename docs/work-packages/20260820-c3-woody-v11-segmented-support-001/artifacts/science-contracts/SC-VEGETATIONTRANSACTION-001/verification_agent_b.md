@@ -61,3 +61,37 @@ sufficient to fail release.
 `cf1fc326d76e9e4c0cbd4c6e1b94febf263878e0`. Production implementation and
 authority promotion remain prohibited until the accepted slab-prefix defect is
 closed and dual verification passes at an exact corrected checkpoint.
+
+## Corrected-checkpoint re-verification
+
+Status: **PASS**
+
+Verified exact commit: `a7bfbbac57bd2661948ce516cd18fc34e5bd98a8`
+
+Evidence class: `Static + Ran + independent adversarial execution`
+
+This section supersedes the prior FAIL while retaining the finding history.
+`V11-TXN-VERIFY-B-001` is closed. The restart validator now joins accepted slab
+receipt cardinality to `next_slab_ordinal`; deleting the accepted slab prefix
+from the exact `after_event` checkpoint rejects with `V11-RESTART`.
+
+Rerun results at the corrected identity:
+
+- strict BEI and science-contract unit lint: PASS for both contracts;
+- all package JSON parsing: PASS;
+- chronology oracle: 46/46 PASS;
+- semantic custody/restart oracle: 37/37 poisons PASS;
+- direct restart-forgery matrix: 29/29 rejected, including omission,
+  duplication, payload, cursor, owner, state, resource, reduction,
+  publication/outbox, and parent-receipt mutations;
+- Rust authority test: 5/5 PASS;
+- seven-owner manifest and complete V10 source binding: PASS;
+- protected DirectV10 V1 and coupled-time V2 bytes: unchanged;
+- protected diff and diff hygiene: PASS.
+
+No transaction custody or restart finding remains.
+
+**Superseding verdict: PASS.** `SC-VEGETATIONTRANSACTION-001` Version 4 may
+proceed to authority promotion and the exact preimplementation checkpoint,
+subject to Verification A and the package release procedure. Production and
+terminal implementation claims remain outside this verification.
