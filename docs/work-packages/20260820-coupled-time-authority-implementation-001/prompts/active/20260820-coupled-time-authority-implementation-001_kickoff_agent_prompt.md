@@ -1,22 +1,23 @@
 # Implement coupled time authority V1 end to end
 
-Required starting commit:
-`f481005388bf037f6c8d9ba3133e348f37ac18e7`
+Required hardening anchor commit:
+`46b0c679ae98cedd1c259295ab02202d24846706`
+
+The clean launch HEAD may be this anchor or its single documentation-only
+kickoff-repin child. Record the exact launch HEAD in the intake artifact.
 
 Before edits:
 
 ```bash
 cd /workdir/openWEPP
-test "$(git rev-parse HEAD)" = \
-  "f481005388bf037f6c8d9ba3133e348f37ac18e7"
-test "$(git rev-parse origin/main)" = \
-  "f481005388bf037f6c8d9ba3133e348f37ac18e7"
+test "$(git merge-base --is-ancestor \
+  46b0c679ae98cedd1c259295ab02202d24846706 HEAD; echo $?)" = "0"
 test "$(git branch --show-current)" = "main"
 git status --short --branch
 git diff --check
 ```
 
-Do not pull, reset, rebase, merge over, switch branches, amend the starting
+Do not pull, reset, rebase, merge over, switch branches, amend the hardening
 commit, create a PR, or push. Local commits are permitted at the authority
 checkpoint and terminal package boundary.
 
