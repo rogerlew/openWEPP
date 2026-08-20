@@ -2559,6 +2559,26 @@ by scheduled-boundary receipt. Phenology edge selection uses the current staged
 phase/previous accepted GSI per physical segment; retry cannot repeat it because
 only acceptance installs state. Parent finalization/increment execute once.
 
+Phenology edge selection is therefore a `SequentialStateTransition`, not a
+`ScheduledOnce` operation: it is evaluated on every accepted positive-duration
+vegetation slab from that slab's staged beginning and forcing. The daily GSI
+preparation/receipt, calendar rollover, daily initialization, and management
+event consumption are `ScheduledOnce` and execute at most once for their
+canonical coupled-time boundary key. A segmented parent may observe at most one
+edge for one staged beginning; after an edge, the next slab sees the updated
+phase and cannot replay it.
+
+`VegetationEventTransitionV1` is a closed zero-duration capability derived from
+an admitted coupled-time event proposal. It binds parent transaction, event ID
+and ordinal, tick, precedence, prior/next regime, prior/next active participant
+sets, beginning/ending complete-owner digests, typed custody-transfer entries,
+and an event receipt ID. Application requires the live staged beginning digest,
+reconstructs every identity and ledger entry, changes no accepted cursor or
+parent sequence, increments the event ordinal once, and returns an authenticated
+receipt. It performs no rate-times-duration operation. Same-tick events are
+applied only through coupled-time queue order; replay, cycle, no-progress, or
+unadmitted participant/custody change fails byte-identically.
+
 ### Sequential resource custody
 
 Water requests are computed from current staged state and authorized against
@@ -2570,6 +2590,16 @@ Mineral-N demand is recomputed per segment after water-limited carbon. NH4/NO3,
 layer, stratum, owner, basis, parent, segment, and slab identity remain exact.
 Authorization uses current staged BGC inventory; cumulative debits equal parent
 beginning minus final candidate and cannot overbook.
+
+All resource amount bits are finite binary64 values in their contract-declared
+basis. For each exact resource key, receipts are ordered by accepted chronology
+and cumulative debit is an ordinary IEEE-754 binary64 left fold seeded by exact
+`+0.0`; every intermediate must be finite. Parent closure independently repeats
+that exact order and requires bit-identical cumulative debit plus bit-identical
+`parent_beginning - cumulative_debit == final_candidate`. Water, NH4, and NO3
+are three separate keyed folds; reassociation, sorting by magnitude,
+compensated/`fsum` arithmetic, tolerance closure, and aggregate mineral-N
+substitution are forbidden.
 
 Vegetation, water, BGC, energy, and applicable soil-thermal candidates advance
 together. Segment ending canopy/T10/C/N/phenology/warm-start state is the next

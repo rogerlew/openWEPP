@@ -54,19 +54,37 @@ fn frozen_vectors_are_executable_and_cover_required_aliases() {
         .collect::<Vec<_>>();
     for id in [
         "nominal_1800",
-        "sub_ns_nonroundtrip",
-        "600_1200",
-        "1200_600",
+        "half_ns_tie_even_zero",
+        "one_ns_lower_neighbor",
+        "u128_range_overflow",
+        "600_1200_forcing_order",
+        "1200_600_forcing_order",
         "one_ns_first",
         "one_ns_last",
         "three_unequal",
+        "event_at_start",
+        "event_interior",
+        "event_at_end_zero_remainder_skip",
+        "restart_before_event_equivalent",
+        "restart_after_event_equivalent",
+        "consecutive_parent_1",
+        "consecutive_parent_2",
         "gap",
         "overlap",
-        "overbook",
+        "wrong_slab_receipt",
+        "participant_mismatch",
+        "duration_nominal_alias",
+        "water_overbook",
+        "nh4_overbook",
+        "no3_overbook",
         "two_increments",
+        "per_segment_commit",
         "rejected_attempt_noop",
         "scheduled_twice",
         "restart_replay",
+        "event_replay",
+        "publish_before_commit",
+        "parent_abort_rollback",
     ] {
         assert!(ids.contains(&id), "missing {id}");
     }
@@ -87,5 +105,32 @@ fn independent_reference_accepts_frozen_population() {
         String::from_utf8_lossy(&output.stderr)
     );
     let result: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(result["results"].as_array().unwrap().len(), 22);
+    assert_eq!(result["results"].as_array().unwrap().len(), 46);
+}
+
+#[test]
+fn successor_schemas_are_closed_and_do_not_hide_v10_physics_in_blobs() {
+    let base = "docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts";
+    for name in [
+        "v11-configuration-schema.json",
+        "v11-state-schema.json",
+        "v11-restart-schema.json",
+    ] {
+        let source = read(&format!("{base}/{name}"));
+        let _: Value = serde_json::from_str(&source).unwrap();
+        assert!(source.contains("\"additionalProperties\":false"));
+        assert!(!source.contains("physical_state_base64"));
+        assert!(!source.contains("physical_configuration_base64"));
+    }
+    let ledger = read(&format!("{base}/full-support-compatibility-ledger.md"));
+    for required in [
+        "unmatched",
+        "synthetic unknown leaf",
+        "every projection root",
+    ] {
+        assert!(
+            ledger.contains(required),
+            "missing fail-closed rule {required}"
+        );
+    }
 }

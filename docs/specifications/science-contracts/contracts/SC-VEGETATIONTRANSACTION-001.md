@@ -23,15 +23,17 @@ Evidence mode: `Static`
 
 ## Purpose
 
-Define shared typed identity and independent receiving-owner obligations for the
-default-off V8/LSE real-hydrology shadow transaction without activating
-production selectors.
+Define shared typed identity and independent receiving-owner obligations for
+default-off vegetation transactions, including V11 accepted-segment staging
+under one coupled-time parent, without activating production selectors.
 
 ## Scientific Scope and Explicit Out-of-Scope Boundaries
 
-In scope are occupancy water arbitration, component-energy operands, owner
-candidate validation, independent reconstruction, and atomic commit. Production
-cutover, canopy snow, and soil transformations are excluded.
+In scope are occupancy water arbitration, mineral-N and material custody,
+component-energy operands, accepted-segment/event chronology, owner candidate
+validation, additive restart, independent reconstruction, and atomic parent
+commit. Production cutover, snow-covered carrier equations, and soil
+transformations are excluded.
 
 ## Authority Anchors with Top-Down Citations
 
@@ -41,6 +43,7 @@ cutover, canopy snow, and soil transformations are excluded.
 | `REF-VEGTRANSACTION-002` | `SC-WATBAL-001#INV-WATBAL-101` | hydrology sole mutation and same-layer arbitration | `[DIRECT][Static]` |
 | `REF-VEGTRANSACTION-003` | `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-010/012/042/043` | independent energy and latent identity | `[DIRECT][Static]` |
 | `REF-VEGTRANSACTION-004` | physical conservation/dimensional identity | exact-one debit/conversion | `[INFERENCE][Static]` |
+| `REF-VEGTRANSACTION-005` | `SC-COUPLEDTIME-001@2` | parent/slab/event/scheduled/restart/atomic chronology | `[DIRECT][Static]` |
 
 ## Variables and Units Using Canonical Symbols First
 
@@ -61,6 +64,12 @@ current-ingress partitions, infiltration, and runoff. LSE owns one surface
 thermal node per tile; soil thermal owns all soil temperatures/enthalpies and
 the conductive/advective receipts. The orchestrator commits the complete owner
 set.
+
+For V11, the state surface additionally includes the immutable parent beginning
+owner set, current staged complete owner set, accepted slab/event/scheduled
+receipts, typed water and NH4/NO3 inventories and cumulative ledgers, ordered
+material transfers, accepted-only reductions, buffered publication, and the
+current/next parent sequence. None is a live-owner mutation before commit.
 
 ## Algorithm Specification with Step Sequence
 
@@ -95,6 +104,16 @@ set.
 9. Validate vegetation, hydrology, LSE, BGC, and soil-thermal candidates before
    one atomic shadow commit. Any failure preserves every beginning and
    production byte.
+10. For V11, repeat steps 1--8 only through a closed accepted-slab capability,
+    with each accepted ending becoming the next staged beginning. Interleave
+    admitted zero-duration event receipts in coupled-time order; events may
+    change regime/participants/custody but never integrate a rate.
+11. Independently reconstruct ordered water and NH4/NO3 debits, material
+    transfers, scheduled-once execution keys, reductions, and predecessor
+    digests from the parent beginning through the final staged owner set.
+12. Consume one authenticated parent candidate to install the complete owner
+    set, increment once, and make buffered publication durable. No callable
+    per-segment commit or vegetation-only finalize exists.
 
 ## Branch and Guard Table
 
@@ -110,6 +129,10 @@ set.
 | current ingress used for same-interval authorization | reject | `VEGTXN-E-008` |
 | missing/duplicate condensation or liquid-enthalpy crossing | reject | `VEGTXN-E-009` |
 | wrong OFE, routed destination, or soil-thermal receipt | reject | `VEGTXN-E-010` |
+| wrong parent/segment/slab/event/participant/predecessor | reject before staging | `VEGTXN-E-011` |
+| stale staged inventory, unordered debit, overbooking, or arithmetic mismatch | reject parent | `VEGTXN-E-012` |
+| per-segment/partial/duplicate commit or publication | reject atomically | `VEGTXN-E-013` |
+| restart omission, replay, or reconstructed-chain mismatch | reject continuation | `VEGTXN-E-014` |
 
 ## Invariants and Invariant Guard Map
 
@@ -149,6 +172,14 @@ set.
 - `OBL-VEGTRANSACTION-C-001`: hydrology and energy independently validate their
   identities, bases, candidates, and receipts.
 - `OBL-VEGTRANSACTION-C-002`: no vegetation-only commit API is closure eligible.
+- `OBL-VEGTRANSACTION-P-002`: V11 producers emit authenticated slab, event,
+  scheduled, resource, material, reduction, and publication receipts in
+  accepted chronology; receipt IDs are not caller-selected.
+- `OBL-VEGTRANSACTION-C-003`: resource owners reconstruct each ordered debit
+  from the current staged inventory and the parent independently reconstructs
+  the cumulative ledger and ending owner bytes.
+- `OBL-VEGTRANSACTION-C-004`: restart admission authenticates every retained
+  owner/receipt/buffer and returns only a closed continuation capability.
 
 ## Symbol Alias Map
 
@@ -188,6 +219,10 @@ Require distinct occupancy/layer requests; duplicate/swap; zero demand/supply;
 oversubscription; unused authorization; wrong/double/missing `f_t`;
 authorization-as-use; component omission/duplication; tile/ground and
 rate/amount aliases; producer-residual poison; and phase-injection rollback.
+V11 additionally requires unequal-support order aliases, start/interior/end
+events, active-participant changes, water and separate NH4/NO3 overbooking,
+scheduled replay, rejected-attempt no-op, mid-parent/event-boundary restart,
+publication-before-commit, abort, consecutive parents, and exact-one commit.
 
 ## Binding Exposure Index
 
@@ -257,15 +292,6 @@ qualification, assurance approval, production activation, or cutover.
 | Alias/unit | absolute wall identity is independent of sequential transaction/predecessor identity; owner bytes and consumed marker are exact |
 | Tests | inject every precedence level, rollback-validator failure with earlier cause, rollback-only failure, restart stages, CoE/default byte invariance |
 
-## Change Log
-
-| Date | Version | Author | Change |
-|---|---:|---|---|
-| 2026-08-20 | 4 | Codex | Drafted V11 accepted-segment staging, cumulative resource/material custody, additive restart, and one atomic parent commit. |
-| 2026-08-19 | 3 | Codex | Added default-off terminal receiver all-owner transaction authority (`INV-VEGTRANSACTION-008`) with phase-aware error precedence, exact rollback, restart membership, and CoE production invariance. |
-| 2026-08-14 | 2 | Codex | Extended the transaction to V8/LSE source-keyed ground water, one real-hydrology authorization, coupled final solve, LSE/soil-thermal owner joins and production-isolated atomic shadow commit. |
-| 2026-08-12 | 1 | Codex | Initial shared V2 occupancy water/energy owner identity, reconstruction, and atomicity authority. |
-
 ## V11 segmented parent-transaction amendment
 
 Version 4 imports every V3 single-support owner identity and adds a parent /
@@ -296,10 +322,33 @@ checks the live parent clock and beginning owner set, installs all candidates,
 increments once, and releases buffered publication. No public segment commit or
 vegetation-only finalize capability exists.
 
+Its canonical closed wire binds schema/model/authority/configuration IDs;
+parent interval and transaction; current and successor sequence; parent
+beginning and ending complete-owner digests; ordered slab, event, scheduled,
+resource and material receipt IDs; reconstructed water/N/material ledger
+digests; successor V11 state digest; accepted-only reduction digest; ordered
+publication-record IDs; and parent-receipt ID. All decimal `u128`, digest,
+binary64-bit, byte, array-order, cardinality, and canonical-JSON rules import
+`SC-COUPLEDTIME-001@2`. The parent receipt is reconstructed from this exact
+field sequence. Atomic commit consumes this candidate and the live clock; it
+does not accept caller-supplied IDs, owner sets, a boolean commit flag, or an
+independent publication transition.
+
 `OPENWEPP_C3_WOODY_V11_RESTART_V1` retains the parent beginning set, current
 staged complete owner set, accepted receipt chronology, and scheduled/material
 state. Restore reauthenticates the hierarchy and returns only a continuation
 capability; rejected attempts and live-owner partial installs are impossible.
+
+The restart wire also retains checkpoint phase; parent interval/current and
+next sequence; coupled-time cursor, segment/event ordinal and active
+participants; exact staged V11/water/BGC/energy/thermal owner bytes and digests;
+accepted slab/event/scheduled/resource/material receipts; ordered reduction
+operands and values; pending publication records; durable outbox state; and
+controller/authority/configuration identities. Fresh restore reconstructs the
+merged slab/event predecessor chain, resource folds, scheduled execution keys,
+reductions, parent/publication receipts, and outbox state before releasing a
+continuation. DirectV10 restart V1 and coupled-time restart V2 remain embedded
+or referenced byte-identically, never extended in place.
 
 | Failure ID | Typed failure |
 |---|---|
@@ -310,3 +359,12 @@ capability; rejected attempts and live-owner partial installs are impossible.
 
 Version 4 is default-off and adds no snow-carrier, constitutive, selector,
 publication, deployment, or production-cutover authority.
+
+## Change Log
+
+| Date | Version | Author | Change |
+|---|---:|---|---|
+| 2026-08-20 | 4 | Codex | Drafted V11 accepted-segment staging, cumulative resource/material custody, additive restart, and one atomic parent commit. |
+| 2026-08-19 | 3 | Codex | Added default-off terminal receiver all-owner transaction authority (`INV-VEGTRANSACTION-008`) with phase-aware error precedence, exact rollback, restart membership, and CoE production invariance. |
+| 2026-08-14 | 2 | Codex | Extended the transaction to V8/LSE source-keyed ground water, one real-hydrology authorization, coupled final solve, LSE/soil-thermal owner joins and production-isolated atomic shadow commit. |
+| 2026-08-12 | 1 | Codex | Initial shared V2 occupancy water/energy owner identity, reconstruction, and atomicity authority. |

@@ -1,13 +1,14 @@
-{
-  "schema": "OPENWEPP_C3_WOODY_V10_V11_MIGRATION_VECTORS_V1",
-  "cases": [
-    {"id":"nominal_1800","duration_bits":"409c200000000000","expected":{"status":"accepted","nominal_cadence_ns":"1800000000000"}},
-    {"id":"nominal_600","duration_bits":"4082c00000000000","expected":{"status":"accepted","nominal_cadence_ns":"600000000000"}},
-    {"id":"one_ns","duration_bits":"3e112e0be826d695","expected":{"status":"accepted","nominal_cadence_ns":"1"}},
-    {"id":"sub_ns_nonroundtrip","duration_bits":"3e012e0be826d695","expected":{"status":"rejected","error":"VEG-E-121"}},
-    {"id":"zero","duration_bits":"0000000000000000","expected":{"status":"rejected","error":"VEG-E-121"}},
-    {"id":"negative","duration_bits":"bff0000000000000","expected":{"status":"rejected","error":"VEG-E-121"}},
-    {"id":"infinity","duration_bits":"7ff0000000000000","expected":{"status":"rejected","error":"VEG-E-121"}},
-    {"id":"nan","duration_bits":"7ff8000000000000","expected":{"status":"rejected","error":"VEG-E-121"}}
-  ]
-}
+{"schema":"OPENWEPP_C3_WOODY_V10_V11_MIGRATION_VECTORS_V2","rounding":"exact binary64 seconds x 1e9; integer ties-to-even; exact bit roundtrip","cases":[
+{"id":"nominal_1800","duration_bits":"409c200000000000","expected":{"status":"accepted","nominal_cadence_ns":"1800000000000"}},
+{"id":"nominal_600","duration_bits":"4082c00000000000","expected":{"status":"accepted","nominal_cadence_ns":"600000000000"}},
+{"id":"one_ns","duration_bits":"3e112e0be826d695","expected":{"status":"accepted","nominal_cadence_ns":"1"}},
+{"id":"one_ns_lower_neighbor","duration_bits":"3e112e0be826d694","expected":{"status":"rejected","error":"VEG-E-121"}},
+{"id":"one_ns_upper_neighbor","duration_bits":"3e112e0be826d696","expected":{"status":"rejected","error":"VEG-E-121"}},
+{"id":"half_ns_tie_even_zero","duration_bits":"3e012e0be826d695","expected":{"status":"rejected","error":"VEG-E-121"}},
+{"id":"one_half_ns_tie_even_two","duration_bits":"3e19c511dc3a41df","expected":{"status":"rejected","error":"VEG-E-121"}},
+{"id":"two_half_ns_tie_even_two","duration_bits":"3e25798ee2308c3a","expected":{"status":"rejected","error":"VEG-E-121"}},
+{"id":"u128_range_overflow","duration_bits":"46293e5939a08cea","expected":{"status":"rejected","error":"VEG-E-121"}},
+{"id":"zero","duration_bits":"0000000000000000","expected":{"status":"rejected","error":"VEG-E-121"}},
+{"id":"negative","duration_bits":"bff0000000000000","expected":{"status":"rejected","error":"VEG-E-121"}},
+{"id":"infinity","duration_bits":"7ff0000000000000","expected":{"status":"rejected","error":"VEG-E-121"}},
+{"id":"nan","duration_bits":"7ff8000000000000","expected":{"status":"rejected","error":"VEG-E-121"}}]}

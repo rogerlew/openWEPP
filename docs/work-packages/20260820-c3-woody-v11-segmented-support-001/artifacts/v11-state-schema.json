@@ -3,13 +3,13 @@
   "$id":"OPENWEPP_C3_WOODY_V11_STATE_V1",
   "type":"object",
   "additionalProperties":false,
-  "required":["schema","model_definition_sha256","configuration_sha256","state_sha256","physical_state_base64","physical_state_sha256","last_parent_transaction_sequence"],
+  "required":["schema","model_definition_sha256","configuration_sha256","state_sha256","v10_physical_state_canonical_json","physical_state_sha256","last_parent_transaction_sequence"],
   "properties":{
     "schema":{"const":"OPENWEPP_C3_WOODY_V11_STATE_V1"},
     "model_definition_sha256":{"$ref":"#/$defs/sha"},
     "configuration_sha256":{"$ref":"#/$defs/sha"},
     "state_sha256":{"$ref":"#/$defs/sha"},
-    "physical_state_base64":{"type":"string","pattern":"^[A-Za-z0-9+/]*={0,2}$"},
+    "v10_physical_state_canonical_json":{"type":"object","minProperties":1},
     "physical_state_sha256":{"$ref":"#/$defs/sha"},
     "last_parent_transaction_sequence":{"$ref":"#/$defs/u128"}
   },
