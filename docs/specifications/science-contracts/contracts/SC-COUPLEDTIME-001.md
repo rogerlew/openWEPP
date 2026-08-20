@@ -4,7 +4,7 @@ title: Coupled Time Support, Event, and Atomic Chronology Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + time/numerics + transaction/restart reviewers
-contract_version: 1
+contract_version: 2
 producer_scope:
   - OPENWEPP_COUPLED_TIME_SUPPORT_V1
   - Coupled parent-interval coordinator and staged clock
@@ -337,7 +337,8 @@ retained in its terminal state. The complete parent owner set remains A+B+C.
 Persist only the last accepted boundary: parent/run/forcing/calendar identities;
 parent support and accepted cursor; next segment/slab/event ordinals; last
 accepted step; accepted complete-owner set; active regime and participants;
-accepted event-transition and scheduled-once receipts; diagnostic/peak
+the complete ordered accepted-slab receipt chronology; accepted event-transition
+and scheduled-once receipts; diagnostic/peak
 reduction state; buffered parent publication; boundary modes; constraint and
 controller policy identities/digests; and the adopter-owned controller history
 required for the next proposal. Rejected iterates and attempt physical state are
@@ -353,8 +354,8 @@ Coupled-time restart is additive and versioned. Existing DirectV10 persisted-
 restart V1 schema, vectors, manifest, and bytes remain byte-identical. Any
 change to an existing wire requires separate authority amendment.
 
-`OPENWEPP_COUPLED_TIME_RESTART_V1` retains the complete canonical owner bytes,
-controller checkpoint bytes, accepted event and scheduled-once receipts,
+`OPENWEPP_COUPLED_TIME_RESTART_V2` retains the complete canonical owner bytes,
+controller checkpoint bytes, accepted slab, event, and scheduled-once receipts,
 operand receipt lineage for reductions, complete pending publication record
 bytes, and durable outbox rows—not digests alone. The separately versioned
 `OPENWEPP_COUPLED_TIME_SEMANTIC_VALIDATOR_V1` is mandatory in addition to JSON
@@ -362,6 +363,18 @@ Schema: it enforces checked numeric ranges, relational support/cursor bounds,
 canonical ordering/uniqueness/cardinality, byte-to-digest reconstruction,
 receipt chronology and replay exclusion, accepted-only reduction/publication
 lineage, outbox/parent joins, and canonical reserialization equality.
+
+`OPENWEPP_COUPLED_TIME_RESTART_V1` remains byte-identical and does not support
+mid-parent continuation requiring authenticated slab chronology; admission to
+that workflow fails typed. Accepted slab receipts are not reconstructable from reduction or publication
+state: either surface is optional and may contain only a subset of slabs. The
+restart wire therefore persists each accepted slab receipt in slab-ordinal
+order, including its support, segment and constraint lineage, beginning and
+ending clock/owner-set digests, duration bits, owner-candidate-set digest, and
+coupled-ledger digest. Admission rejects an omission, duplicate, reorder,
+noncontiguous support, ordinal gap, cursor mismatch, or digest/lineage mismatch.
+Parent finalization after restore consumes this authenticated chronology exactly
+as uninterrupted execution does.
 
 ### 9. Parent finalization and publication
 
@@ -606,3 +619,4 @@ contradiction.
 | Date | Version | Change |
 |---|---|---|
 | 2026-08-20 | `1-rc1` | Authored complete coupled-time identity, event, participant, controller, restart, atomicity, and publication authority for independent review. |
+| 2026-08-20 | `1-rc2` | Added complete accepted-slab receipt chronology to restart after implementation exposed that reductions/publications cannot reconstruct parent finalization. |

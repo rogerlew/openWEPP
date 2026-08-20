@@ -2,77 +2,479 @@
   "schema": "OPENWEPP_COUPLED_TIME_SEMANTIC_POISONS_V1",
   "baseline": {
     "restart": {
-      "schema": "OPENWEPP_COUPLED_TIME_RESTART_V1", "version": 1,
+      "schema": "OPENWEPP_COUPLED_TIME_RESTART_V2",
+      "version": 2,
       "authority_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "model_definition_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       "run_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "calendar_receipt_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
       "forcing_receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-      "parent_interval_id": "1111111111111111111111111111111111111111111111111111111111111111",
+      "parent_interval_id": "4c2867b938e47aedbb319d2c18164b37f4e69a1b588d57649c7fd84890e5b796",
       "parent_transaction_sequence": "1",
-      "parent_transaction_id": "2222222222222222222222222222222222222222222222222222222222222222",
-      "parent_support": {"start_ns": "0", "end_ns": "10"},
-      "accepted_until_ns": "5", "next_segment_ordinal": 1, "next_slab_ordinal": 1,
-      "next_event_ordinal": 0, "last_accepted_step_ns": "5",
-      "active_segment": {"segment_id": "3333333333333333333333333333333333333333333333333333333333333333", "ordinal": 0, "regime_id": "r", "start_ns": "0", "end_ns": "10", "active_participants": ["A"]},
-      "complete_owner_state": [{"owner_id": "A", "state_encoding": "canonical-binary", "state_bytes_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", "state_bytes_base64": "YQ=="}],
+      "parent_transaction_id": "a8055f3e61f32fab370a36add80685a899a7e12ee6ec346b244e1883bae7abd9",
+      "parent_support": {
+        "start_ns": "0",
+        "end_ns": "5"
+      },
+      "accepted_until_ns": "5",
+      "next_segment_ordinal": 1,
+      "next_slab_ordinal": 1,
+      "next_event_ordinal": 1,
+      "last_accepted_step_ns": "5",
+      "active_segment": {
+        "segment_id": "369b6c4fa33ff7c1f3ac516a2ace6a70571a6b0717ffa4759bfc245aaebcacfd",
+        "ordinal": 0,
+        "regime_id": "3737373737373737373737373737373737373737373737373737373737373737",
+        "start_ns": "0",
+        "end_ns": "5",
+        "active_participants": [
+          "A"
+        ]
+      },
+      "complete_owner_state": [
+        {
+          "owner_id": "A",
+          "state_encoding": "canonical-binary",
+          "state_bytes_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+          "state_bytes_base64": "YQ=="
+        }
+      ],
+      "begin_complete_owner_set_sha256": "20cfc5ffc8d6c6771dee6a239fafd418408f3480a0eb68b45596e63eda47bbaf",
+      "begin_clock_sha256": "aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae",
       "accepted_complete_owner_set_sha256": "20cfc5ffc8d6c6771dee6a239fafd418408f3480a0eb68b45596e63eda47bbaf",
       "boundary_modes": [],
       "constraint_policy_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
       "controller_policy_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
-      "accepted_controller_checkpoint": {"encoding": "canonical-binary", "bytes_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", "bytes_base64": "YQ=="},
-      "accepted_event_receipts": [],
-      "scheduled_once_receipts": [{"receipt_id":"6666666666666666666666666666666666666666666666666666666666666666","operation_id":"daily","boundary_id":"7777777777777777777777777777777777777777777777777777777777777777","tick_ns":"5","result_sha256":"8888888888888888888888888888888888888888888888888888888888888888"}],
-      "reduction_state": [], "pending_publication_buffer": [],
-      "publication_outbox": [{"publication_receipt_id":"9999999999999999999999999999999999999999999999999999999999999999","parent_receipt_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","outbox_sequence":"1","state":"CommittedUndelivered","records":[],"records_sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","delivery_attempt_count":"0"}]
+      "accepted_controller_checkpoint": {
+        "encoding": "canonical-binary",
+        "bytes_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+        "bytes_base64": "YQ=="
+      },
+      "accepted_slab_receipts": [
+        {
+          "receipt_id": "fac79dde85dfe9c56f7de05113868cbfb981b884f29dd8359a0bead3563b1a65",
+          "accepted_slab_id": "d46ae2947c5bad9033d772b6006587f23900496094a0dd9cd2453b7288561c88",
+          "parent_transaction_id": "a8055f3e61f32fab370a36add80685a899a7e12ee6ec346b244e1883bae7abd9",
+          "slab_ordinal": 0,
+          "segment_id": "369b6c4fa33ff7c1f3ac516a2ace6a70571a6b0717ffa4759bfc245aaebcacfd",
+          "support": {
+            "start_ns": "0",
+            "end_ns": "5"
+          },
+          "duration_bits": "3e35798ee2308c3a",
+          "constraint_digest": "adadadadadadadadadadadadadadadadadadadadadadadadadadadadadadadad",
+          "begin_clock_sha256": "aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae",
+          "end_clock_sha256": "afafafafafafafafafafafafafafafafafafafafafafafafafafafafafafafaf",
+          "begin_owner_set_sha256": "20cfc5ffc8d6c6771dee6a239fafd418408f3480a0eb68b45596e63eda47bbaf",
+          "end_owner_set_sha256": "20cfc5ffc8d6c6771dee6a239fafd418408f3480a0eb68b45596e63eda47bbaf",
+          "owner_candidate_set_sha256": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
+          "coupled_ledger_sha256": "bdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbd"
+        }
+      ],
+      "accepted_event_receipts": [
+        {
+          "receipt_id": "121ed77cac6c2476bdcda5df1968992180e0f9d9805c1a1c865e64a206aa8a36",
+          "event_id": "15e80dbfba1de800a7926dcd02170c6dec61a1b53f44f6f732ad3d0f8d9dadb6",
+          "parent_transaction_id": "a8055f3e61f32fab370a36add80685a899a7e12ee6ec346b244e1883bae7abd9",
+          "tick_ns": "5",
+          "event_ordinal": 0,
+          "class": "OwnershipTransfer",
+          "source_owner_id": "A",
+          "begin_clock_sha256": "afafafafafafafafafafafafafafafafafafafafafafafafafafafafafafafaf",
+          "end_clock_sha256": "3434343434343434343434343434343434343434343434343434343434343434",
+          "begin_owner_set_sha256": "20cfc5ffc8d6c6771dee6a239fafd418408f3480a0eb68b45596e63eda47bbaf",
+          "end_owner_set_sha256": "20cfc5ffc8d6c6771dee6a239fafd418408f3480a0eb68b45596e63eda47bbaf",
+          "event_context_sha256": "3535353535353535353535353535353535353535353535353535353535353535",
+          "ledger_digest": "3636363636363636363636363636363636363636363636363636363636363636",
+          "ledgers": []
+        }
+      ],
+      "scheduled_once_receipts": [
+        {
+          "receipt_id": "6666666666666666666666666666666666666666666666666666666666666666",
+          "operation_id": "daily",
+          "boundary_id": "7777777777777777777777777777777777777777777777777777777777777777",
+          "tick_ns": "5",
+          "result_sha256": "8888888888888888888888888888888888888888888888888888888888888888"
+        }
+      ],
+      "reduction_state": [],
+      "pending_publication_buffer": [],
+      "publication_outbox": [
+        {
+          "publication_receipt_id": "9999999999999999999999999999999999999999999999999999999999999999",
+          "parent_receipt_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "outbox_sequence": "1",
+          "state": "CommittedUndelivered",
+          "records": [],
+          "records_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "delivery_attempt_count": "0"
+        }
+      ]
     },
     "receipt": {
-      "schema": "OPENWEPP_COUPLED_TIME_RECEIPT_CANDIDATE_LEDGER_V1", "version": 1,
+      "schema": "OPENWEPP_COUPLED_TIME_RECEIPT_CANDIDATE_LEDGER_V1",
+      "version": 1,
       "kind": "SlabCandidate",
       "identity_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "parent_transaction_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "support": {"start_ns": "0", "end_ns": "5"}, "ordinal": 0, "duration_s_bits": "3e112e0be826d695",
+      "support": {
+        "start_ns": "0",
+        "end_ns": "5"
+      },
+      "ordinal": 0,
+      "duration_s_bits": "3e112e0be826d695",
       "begin_complete_owner_set_sha256": "20cfc5ffc8d6c6771dee6a239fafd418408f3480a0eb68b45596e63eda47bbaf",
       "end_complete_owner_set_sha256": "20cfc5ffc8d6c6771dee6a239fafd418408f3480a0eb68b45596e63eda47bbaf",
-      "complete_owner_ids": ["A"], "active_participant_ids": ["A"],
-      "owner_candidates": [{"owner_id": "A", "disposition": "ActiveCandidate", "candidate_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "begin_state_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", "end_state_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", "end_state_bytes_base64": "YQ==", "support": {"start_ns": "0", "end_ns": "5"}, "duration_s_bits": "3e112e0be826d695", "exchange_bundle_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "local_ledger_ids": []}],
-      "ledgers": [], "accepted_child_receipt_ids": [],
+      "complete_owner_ids": [
+        "A"
+      ],
+      "active_participant_ids": [
+        "A"
+      ],
+      "owner_candidates": [
+        {
+          "owner_id": "A",
+          "disposition": "ActiveCandidate",
+          "candidate_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "begin_state_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+          "end_state_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+          "end_state_bytes_base64": "YQ==",
+          "support": {
+            "start_ns": "0",
+            "end_ns": "5"
+          },
+          "duration_s_bits": "3e112e0be826d695",
+          "exchange_bundle_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "local_ledger_ids": []
+        }
+      ],
+      "ledgers": [],
+      "accepted_child_receipt_ids": [],
       "publication_records_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     }
   },
   "cases": [
-    {"id":"valid_restart","target":"restart","path":"/accepted_until_ns","mutation":"set","value":"5","expected":"accepted"},
-    {"id":"u128_overflow","target":"restart","path":"/accepted_until_ns","mutation":"set","value":"340282366920938463463374607431768211456","expected":"rejected"},
-    {"id":"leading_zero","target":"restart","path":"/accepted_until_ns","mutation":"set","value":"05","expected":"rejected"},
-    {"id":"cursor_after_parent","target":"restart","path":"/accepted_until_ns","mutation":"set","value":"11","expected":"rejected"},
-    {"id":"equal_support","target":"restart","path":"/parent_support/end_ns","mutation":"set","value":"0","expected":"rejected"},
-    {"id":"owner_digest_corrupt","target":"restart","path":"/complete_owner_state/0/state_bytes_base64","mutation":"set","value":"Yg==","expected":"rejected"},
-    {"id":"owner_set_digest_corrupt","target":"restart","path":"/accepted_complete_owner_set_sha256","mutation":"set","value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","expected":"rejected"},
-    {"id":"participant_not_owner","target":"restart","path":"/active_segment/active_participants/0","mutation":"set","value":"Z","expected":"rejected"},
-    {"id":"controller_bytes_corrupt","target":"restart","path":"/accepted_controller_checkpoint/bytes_base64","mutation":"set","value":"Yg==","expected":"rejected"},
-    {"id":"missing_policy","target":"restart","path":"/controller_policy_sha256","mutation":"delete","expected":"rejected"},
-    {"id":"future_scheduled_receipt","target":"restart","path":"/scheduled_once_receipts/0/tick_ns","mutation":"set","value":"6","expected":"rejected"},
-    {"id":"invalid_scheduled_receipt_id","target":"restart","path":"/scheduled_once_receipts/0/receipt_id","mutation":"set","value":"no","expected":"rejected"},
-    {"id":"outbox_records_digest_corrupt","target":"restart","path":"/publication_outbox/0/records_sha256","mutation":"set","value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","expected":"rejected"},
-    {"id":"outbox_state_invalid","target":"restart","path":"/publication_outbox/0/state","mutation":"set","value":"Delivered","expected":"rejected"},
-    {"id":"outbox_sequence_overflow","target":"restart","path":"/publication_outbox/0/outbox_sequence","mutation":"set","value":"340282366920938463463374607431768211456","expected":"rejected"},
-    {"id":"valid_receipt","target":"receipt","path":"/ordinal","mutation":"set","value":0,"expected":"accepted"},
-    {"id":"receipt_support_reversed","target":"receipt","path":"/support/end_ns","mutation":"set","value":"0","expected":"rejected"},
-    {"id":"candidate_omitted","target":"receipt","path":"/owner_candidates/0","mutation":"delete","expected":"rejected"},
-    {"id":"candidate_wrong_owner","target":"receipt","path":"/owner_candidates/0/owner_id","mutation":"set","value":"B","expected":"rejected"},
-    {"id":"candidate_wrong_disposition","target":"receipt","path":"/owner_candidates/0/disposition","mutation":"set","value":"InactiveByteCarry","expected":"rejected"},
-    {"id":"candidate_bad_base64","target":"receipt","path":"/owner_candidates/0/end_state_bytes_base64","mutation":"set","value":"***","expected":"rejected"},
-    {"id":"candidate_state_digest_mismatch","target":"receipt","path":"/owner_candidates/0/end_state_bytes_base64","mutation":"set","value":"Yg==","expected":"rejected"},
-    {"id":"duplicate_owner_id","target":"receipt","path":"/complete_owner_ids","mutation":"append","value":"A","expected":"rejected"},
-    {"id":"unresolved_ledger","target":"receipt","path":"/owner_candidates/0/local_ledger_ids","mutation":"append","value":"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee","expected":"rejected"},
-    {"id":"one_child_receipt","target":"receipt","path":"/accepted_child_receipt_ids","mutation":"append","value":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","expected":"accepted"},
-    {"id":"candidate_support_mismatch","target":"receipt","path":"/owner_candidates/0/support/end_ns","mutation":"set","value":"4","expected":"rejected"},
-    {"id":"candidate_duration_mismatch","target":"receipt","path":"/owner_candidates/0/duration_s_bits","mutation":"set","value":"0000000000000000","expected":"rejected"}
+    {
+      "id": "valid_restart",
+      "target": "restart",
+      "path": "/accepted_until_ns",
+      "mutation": "set",
+      "value": "5",
+      "expected": "accepted"
+    },
+    {
+      "id": "u128_overflow",
+      "target": "restart",
+      "path": "/accepted_until_ns",
+      "mutation": "set",
+      "value": "340282366920938463463374607431768211456",
+      "expected": "rejected"
+    },
+    {
+      "id": "leading_zero",
+      "target": "restart",
+      "path": "/accepted_until_ns",
+      "mutation": "set",
+      "value": "05",
+      "expected": "rejected"
+    },
+    {
+      "id": "cursor_after_parent",
+      "target": "restart",
+      "path": "/accepted_until_ns",
+      "mutation": "set",
+      "value": "11",
+      "expected": "rejected"
+    },
+    {
+      "id": "equal_support",
+      "target": "restart",
+      "path": "/parent_support/end_ns",
+      "mutation": "set",
+      "value": "0",
+      "expected": "rejected"
+    },
+    {
+      "id": "owner_digest_corrupt",
+      "target": "restart",
+      "path": "/complete_owner_state/0/state_bytes_base64",
+      "mutation": "set",
+      "value": "Yg==",
+      "expected": "rejected"
+    },
+    {
+      "id": "owner_set_digest_corrupt",
+      "target": "restart",
+      "path": "/accepted_complete_owner_set_sha256",
+      "mutation": "set",
+      "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "rejected"
+    },
+    {
+      "id": "participant_not_owner",
+      "target": "restart",
+      "path": "/active_segment/active_participants/0",
+      "mutation": "set",
+      "value": "Z",
+      "expected": "rejected"
+    },
+    {
+      "id": "controller_bytes_corrupt",
+      "target": "restart",
+      "path": "/accepted_controller_checkpoint/bytes_base64",
+      "mutation": "set",
+      "value": "Yg==",
+      "expected": "rejected"
+    },
+    {
+      "id": "missing_policy",
+      "target": "restart",
+      "path": "/controller_policy_sha256",
+      "mutation": "delete",
+      "expected": "rejected"
+    },
+    {"id":"parent_interval_id_well_formed_wrong","target":"restart","path":"/parent_interval_id","mutation":"set","value":"1111111111111111111111111111111111111111111111111111111111111111","expected":"rejected"},
+    {"id":"parent_transaction_id_well_formed_wrong","target":"restart","path":"/parent_transaction_id","mutation":"set","value":"2222222222222222222222222222222222222222222222222222222222222222","expected":"rejected"},
+    {"id":"begin_clock_well_formed_wrong","target":"restart","path":"/begin_clock_sha256","mutation":"set","value":"2525252525252525252525252525252525252525252525252525252525252525","expected":"rejected"},
+    {"id":"active_segment_id_well_formed_wrong","target":"restart","path":"/active_segment/segment_id","mutation":"set","value":"3333333333333333333333333333333333333333333333333333333333333333","expected":"rejected"},
+    {"id":"last_accepted_step_wrong","target":"restart","path":"/last_accepted_step_ns","mutation":"set","value":"4","expected":"rejected"},
+    {"id":"next_segment_ordinal_wrong","target":"restart","path":"/next_segment_ordinal","mutation":"set","value":2,"expected":"rejected"},
+    {
+      "id": "missing_accepted_slab_receipts",
+      "target": "restart",
+      "path": "/accepted_slab_receipts",
+      "mutation": "delete",
+      "expected": "rejected"
+    },
+    {
+      "id": "slab_receipt_ordinal_gap",
+      "target": "restart",
+      "path": "/accepted_slab_receipts/0/slab_ordinal",
+      "mutation": "set",
+      "value": 1,
+      "expected": "rejected"
+    },
+    {
+      "id": "slab_receipt_support_gap",
+      "target": "restart",
+      "path": "/accepted_slab_receipts/0/support/start_ns",
+      "mutation": "set",
+      "value": "1",
+      "expected": "rejected"
+    },
+    {
+      "id": "slab_receipt_cursor_mismatch",
+      "target": "restart",
+      "path": "/accepted_slab_receipts/0/support/end_ns",
+      "mutation": "set",
+      "value": "4",
+      "expected": "rejected"
+    },
+    {
+      "id": "slab_receipt_digest_malformed",
+      "target": "restart",
+      "path": "/accepted_slab_receipts/0/coupled_ledger_sha256",
+      "mutation": "set",
+      "value": "no",
+      "expected": "rejected"
+    },
+    {
+      "id": "slab_receipt_duration_well_formed_wrong",
+      "target": "restart",
+      "path": "/accepted_slab_receipts/0/duration_bits",
+      "mutation": "set",
+      "value": "3e112e0be826d695",
+      "expected": "rejected"
+    },
+    {
+      "id": "slab_receipt_parent_well_formed_wrong",
+      "target": "restart",
+      "path": "/accepted_slab_receipts/0/parent_transaction_id",
+      "mutation": "set",
+      "value": "2323232323232323232323232323232323232323232323232323232323232323",
+      "expected": "rejected"
+    },
+    {
+      "id": "slab_receipt_terminal_owner_well_formed_wrong",
+      "target": "restart",
+      "path": "/accepted_slab_receipts/0/end_owner_set_sha256",
+      "mutation": "set",
+      "value": "2424242424242424242424242424242424242424242424242424242424242424",
+      "expected": "rejected"
+    },
+    {
+      "id": "future_scheduled_receipt",
+      "target": "restart",
+      "path": "/scheduled_once_receipts/0/tick_ns",
+      "mutation": "set",
+      "value": "6",
+      "expected": "rejected"
+    },
+    {
+      "id": "event_id_well_formed_wrong",
+      "target": "restart",
+      "path": "/accepted_event_receipts/0/event_id",
+      "mutation": "set",
+      "value": "3232323232323232323232323232323232323232323232323232323232323232",
+      "expected": "rejected"
+    },
+    {
+      "id": "event_begin_clock_chain_wrong",
+      "target": "restart",
+      "path": "/accepted_event_receipts/0/begin_clock_sha256",
+      "mutation": "set",
+      "value": "3333333333333333333333333333333333333333333333333333333333333333",
+      "expected": "rejected"
+    },
+    {
+      "id": "invalid_scheduled_receipt_id",
+      "target": "restart",
+      "path": "/scheduled_once_receipts/0/receipt_id",
+      "mutation": "set",
+      "value": "no",
+      "expected": "rejected"
+    },
+    {
+      "id": "outbox_records_digest_corrupt",
+      "target": "restart",
+      "path": "/publication_outbox/0/records_sha256",
+      "mutation": "set",
+      "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "rejected"
+    },
+    {
+      "id": "outbox_state_invalid",
+      "target": "restart",
+      "path": "/publication_outbox/0/state",
+      "mutation": "set",
+      "value": "Delivered",
+      "expected": "rejected"
+    },
+    {
+      "id": "outbox_sequence_overflow",
+      "target": "restart",
+      "path": "/publication_outbox/0/outbox_sequence",
+      "mutation": "set",
+      "value": "340282366920938463463374607431768211456",
+      "expected": "rejected"
+    },
+    {
+      "id": "valid_receipt",
+      "target": "receipt",
+      "path": "/ordinal",
+      "mutation": "set",
+      "value": 0,
+      "expected": "accepted"
+    },
+    {
+      "id": "receipt_support_reversed",
+      "target": "receipt",
+      "path": "/support/end_ns",
+      "mutation": "set",
+      "value": "0",
+      "expected": "rejected"
+    },
+    {
+      "id": "candidate_omitted",
+      "target": "receipt",
+      "path": "/owner_candidates/0",
+      "mutation": "delete",
+      "expected": "rejected"
+    },
+    {
+      "id": "candidate_wrong_owner",
+      "target": "receipt",
+      "path": "/owner_candidates/0/owner_id",
+      "mutation": "set",
+      "value": "B",
+      "expected": "rejected"
+    },
+    {
+      "id": "candidate_wrong_disposition",
+      "target": "receipt",
+      "path": "/owner_candidates/0/disposition",
+      "mutation": "set",
+      "value": "InactiveByteCarry",
+      "expected": "rejected"
+    },
+    {
+      "id": "candidate_bad_base64",
+      "target": "receipt",
+      "path": "/owner_candidates/0/end_state_bytes_base64",
+      "mutation": "set",
+      "value": "***",
+      "expected": "rejected"
+    },
+    {
+      "id": "candidate_state_digest_mismatch",
+      "target": "receipt",
+      "path": "/owner_candidates/0/end_state_bytes_base64",
+      "mutation": "set",
+      "value": "Yg==",
+      "expected": "rejected"
+    },
+    {
+      "id": "duplicate_owner_id",
+      "target": "receipt",
+      "path": "/complete_owner_ids",
+      "mutation": "append",
+      "value": "A",
+      "expected": "rejected"
+    },
+    {
+      "id": "unresolved_ledger",
+      "target": "receipt",
+      "path": "/owner_candidates/0/local_ledger_ids",
+      "mutation": "append",
+      "value": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "expected": "rejected"
+    },
+    {
+      "id": "one_child_receipt",
+      "target": "receipt",
+      "path": "/accepted_child_receipt_ids",
+      "mutation": "append",
+      "value": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "expected": "accepted"
+    },
+    {
+      "id": "candidate_support_mismatch",
+      "target": "receipt",
+      "path": "/owner_candidates/0/support/end_ns",
+      "mutation": "set",
+      "value": "4",
+      "expected": "rejected"
+    },
+    {
+      "id": "candidate_duration_mismatch",
+      "target": "receipt",
+      "path": "/owner_candidates/0/duration_s_bits",
+      "mutation": "set",
+      "value": "0000000000000000",
+      "expected": "rejected"
+    }
   ],
   "canonical_serialization_cases": [
-    {"id":"canonical_json","raw":"{\"a\":1,\"b\":2}","expected":"accepted"},
-    {"id":"field_order_poison","raw":"{\"b\":2,\"a\":1}","expected":"rejected"},
-    {"id":"whitespace_poison","raw":"{ \"a\": 1, \"b\": 2 }","expected":"rejected"},
-    {"id":"duplicate_field_poison","raw":"{\"a\":1,\"a\":1}","expected":"rejected"}
+    {
+      "id": "canonical_json",
+      "raw": "{\"a\":1,\"b\":2}",
+      "expected": "accepted"
+    },
+    {
+      "id": "field_order_poison",
+      "raw": "{\"b\":2,\"a\":1}",
+      "expected": "rejected"
+    },
+    {
+      "id": "whitespace_poison",
+      "raw": "{ \"a\": 1, \"b\": 2 }",
+      "expected": "rejected"
+    },
+    {
+      "id": "duplicate_field_poison",
+      "raw": "{\"a\":1,\"a\":1}",
+      "expected": "rejected"
+    }
   ]
 }
