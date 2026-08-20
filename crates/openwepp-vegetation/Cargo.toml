@@ -11,7 +11,6 @@ publish = false
 workspace = true
 
 [dependencies]
-libm = "=0.2.16"
 openwepp-kernel-contract = { path = "../openwepp-kernel-contract", version = "0.1.0" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }

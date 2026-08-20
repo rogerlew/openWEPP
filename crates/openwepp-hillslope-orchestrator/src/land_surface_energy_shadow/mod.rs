@@ -102,6 +102,9 @@ pub(crate) use strict_v8_endpoint::endpoint_rollback_tests::{EndpointFixture, en
 pub(crate) use strict_v8_endpoint::execute_v8_lse_runtime_shadow_internal;
 pub use strict_v8_endpoint::{ExecuteV8LseRuntimeShadowError, execute_v8_lse_runtime_shadow};
 pub use v8_input_projection::{V8CanopyForcingReceipt, V8InputProjectionError};
+pub(crate) use v8_input_projection::{
+    V10RootZoneLayerReceipt, V10RootZoneReceiptKey, V10RootZoneReceiptSet,
+};
 pub use v8_projection::V8ProjectionError;
 pub use v8_rollback::{
     V8RollbackError, V8RollbackInputs, V8RollbackOwnerBytes, V8RollbackOwnerKind,

@@ -245,7 +245,6 @@ fn public_water_forcing() -> SnowFreeForcing {
             accessible: true,
             frozen: false,
         }],
-        root_zone_hydraulics: None,
         gsi: 1.0,
     }
 }
@@ -264,6 +263,7 @@ fn rust_sources_below(path: &Path, sources: &mut Vec<std::path::PathBuf>) {
 
 #[test]
 fn v7_diagnostic_has_no_production_selector_or_legacy_pmet_gsi_entry_point() {
+    assert_public_vegetation_api_cannot_mint_root_zone_hydraulic_receipts();
     let mut production_sources = Vec::new();
     rust_sources_below(
         Path::new("crates/openwepp-runner/src"),
@@ -1212,6 +1212,22 @@ fn public_water_boundary_preserves_v5_identity_and_one_time_tile_conversion() {
         assert_eq!(
             local[&key],
             layer["authorization_kg_m2_tile_ground"].as_f64().unwrap()
+        );
+    }
+}
+
+fn assert_public_vegetation_api_cannot_mint_root_zone_hydraulic_receipts() {
+    let transaction = fs::read_to_string("crates/openwepp-vegetation/src/transaction.rs")
+        .expect("vegetation transaction source");
+    for forbidden in [
+        "pub struct RootZoneHydraulicLayerSource",
+        "pub struct RootZoneHydraulicLayerReceipt",
+        "pub struct RootZoneHydraulicReceiptSet",
+        "pub root_zone_hydraulics:",
+    ] {
+        assert!(
+            !transaction.contains(forbidden),
+            "public root authority bypass remains: {forbidden}"
         );
     }
 }

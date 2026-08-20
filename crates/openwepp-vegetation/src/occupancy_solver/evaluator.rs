@@ -795,29 +795,7 @@ fn hydraulic_layers(input: &OccupancyPassInput<'_>) -> Result<Vec<LayerOperands>
                     .ok_or(VegetationError::Domain(
                         "V3 hydraulic forcing layer identity",
                     ))?;
-            let authority = if root.root_fraction > 0.0 {
-                input
-                    .forcing
-                    .root_zone_hydraulics
-                    .as_ref()
-                    .map(|receipts| {
-                        receipts.get(
-                            input.occupancy_id,
-                            &input.stratum_config.stratum_id,
-                            &root.layer_id,
-                        )
-                    })
-                    .transpose()?
-            } else {
-                None
-            };
-            layer_operands(
-                root.root_fraction,
-                root.lateral_root_length_m,
-                forcing,
-                authority,
-                input.forcing.root_zone_hydraulics.is_some(),
-            )
+            layer_operands(root.root_fraction, root.lateral_root_length_m, forcing)
         })
         .collect()
 }
@@ -826,71 +804,22 @@ fn layer_operands(
     root_fraction: f64,
     lateral_root_length_m: f64,
     forcing: &SoilLayerForcing,
-    authority: Option<&crate::transaction::RootZoneHydraulicLayerReceipt>,
-    owner_authority_present: bool,
 ) -> Result<LayerOperands, VegetationError> {
-    if root_fraction == 0.0 && owner_authority_present {
-        return Ok(LayerOperands {
-            layer_id: forcing.layer_id.as_str().to_owned(),
-            soil_potential_mm: 0.0,
-            gravity_head_mm: 0.0,
-            root_fraction,
-            z3_m: lateral_root_length_m,
-            ksoil_m2_s: 0.0,
-            dxroot_m: lateral_root_length_m,
-            accessible: false,
-            frozen: false,
-        });
-    }
-    let (
-        soil_potential_mm,
-        gravity_head_mm,
-        root_path_length_mm,
-        conductivity_mm_s,
-        accessible,
-        frozen,
-    ) = authority.map_or(
-        (
-            forcing.matric_potential_mm,
-            forcing.gravity_root_mm,
-            forcing.root_path_length_mm,
-            forcing.hydraulic_conductivity_mm_s,
-            forcing.accessible,
-            forcing.frozen,
-        ),
-        |receipt| {
-            (
-                receipt.matric_potential_mm,
-                receipt.gravity_root_mm,
-                receipt.root_path_length_mm,
-                receipt.hydraulic_conductivity_mm_s,
-                receipt.accessible,
-                receipt.frozen,
-            )
-        },
-    );
-    if authority.is_some_and(|receipt| {
-        receipt.lateral_root_length_m.to_bits() != lateral_root_length_m.to_bits()
-    }) {
-        return Err(VegetationError::Receipt(
-            "root-zone lateral-root identity".into(),
-        ));
-    }
-    let z3_m = root_path_length_mm / 1_000.0;
-    let ksoil_m_s = conductivity_mm_s / 1_000.0;
+    let z3_m = forcing.root_path_length_mm / 1_000.0;
+    let ksoil_m_s = forcing.hydraulic_conductivity_mm_s / 1_000.0;
     if !z3_m.is_finite() || z3_m <= 0.0 || !ksoil_m_s.is_finite() || ksoil_m_s < 0.0 {
         return Err(VegetationError::Domain("V3 hydraulic layer SI conversion"));
     }
     Ok(LayerOperands {
         layer_id: forcing.layer_id.as_str().to_owned(),
-        soil_potential_mm,
-        gravity_head_mm,
+        soil_potential_mm: forcing.matric_potential_mm,
+        gravity_head_mm: forcing.gravity_root_mm,
         root_fraction,
         z3_m,
         ksoil_m2_s: ksoil_m_s,
         dxroot_m: lateral_root_length_m,
-        accessible,
-        frozen,
+        accessible: forcing.accessible,
+        frozen: forcing.frozen,
     })
 }
 
@@ -958,7 +887,6 @@ mod tests {
                 accessible: true,
                 frozen: false,
             }],
-            root_zone_hydraulics: None,
             gsi: 1.0,
         }
     }

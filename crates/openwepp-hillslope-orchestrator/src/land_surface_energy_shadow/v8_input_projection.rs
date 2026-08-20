@@ -58,6 +58,128 @@ pub enum V8InputProjectionError {
     LandSurface(#[from] LandSurfaceEnergyError),
     #[error(transparent)]
     Shadow(#[from] super::LandSurfaceEnergyShadowError),
+    #[error("root-zone water above pore capacity")]
+    WaterAbovePoreCapacity,
+    #[error("rooted frozen layer is unsupported")]
+    FrozenRootedLayerUnsupported,
+    #[error("rooted inaccessible layer is unsupported")]
+    InaccessibleRootedLayer,
+    #[error("root-zone owner join failure: {0}")]
+    RootOwnerJoin(&'static str),
+    #[error("root-zone receipt digest failure")]
+    RootReceiptDigest,
+    #[error("root-zone scalar domain failure")]
+    RootDomain,
+}
+
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub(crate) struct V10RootZoneReceiptKey {
+    pub ofe_id: OfeId,
+    pub production_lane_index: usize,
+    pub production_lane_id: u32,
+    pub occupancy_id: OccupancyId,
+    pub stratum_id: openwepp_kernel_contract::StratumId,
+    pub layer_id: openwepp_kernel_contract::SoilLayerId,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct V10RootZoneLayerReceipt {
+    pub key: V10RootZoneReceiptKey,
+    pub matric_potential_mm: f64,
+    pub hydraulic_conductivity_mm_s: f64,
+    pub root_path_length_mm: f64,
+    pub gravity_root_mm: f64,
+    pub lateral_root_length_m: f64,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct V10RootZoneReceiptSet {
+    model_definition_sha256: String,
+    root_configuration_sha256: String,
+    hydrology_snapshot_sha256: Sha256Digest,
+    transaction_id: TransactionId,
+    receipts: BTreeMap<V10RootZoneReceiptKey, V10RootZoneLayerReceipt>,
+    receipt_sha256: String,
+}
+
+impl V10RootZoneReceiptSet {
+    pub(crate) fn try_new(
+        root_configuration_sha256: String,
+        hydrology_snapshot_sha256: Sha256Digest,
+        transaction_id: TransactionId,
+        receipts: Vec<V10RootZoneLayerReceipt>,
+    ) -> Result<Self, V8InputProjectionError> {
+        let mut indexed = BTreeMap::new();
+        for receipt in receipts {
+            if indexed.insert(receipt.key.clone(), receipt).is_some() {
+                return Err(V8InputProjectionError::RootOwnerJoin(
+                    "duplicate OFE/lane/occupancy/layer receipt",
+                ));
+            }
+        }
+        let mut value = Self {
+            model_definition_sha256: V8_MODEL_SHA256.into(),
+            root_configuration_sha256,
+            hydrology_snapshot_sha256,
+            transaction_id,
+            receipts: indexed,
+            receipt_sha256: String::new(),
+        };
+        value.receipt_sha256 = value.compute_digest();
+        Ok(value)
+    }
+
+    fn compute_digest(&self) -> String {
+        let mut digest = Sha256::new();
+        for value in [
+            self.model_definition_sha256.as_bytes(),
+            self.root_configuration_sha256.as_bytes(),
+            self.hydrology_snapshot_sha256.as_str().as_bytes(),
+        ] {
+            digest.update((value.len() as u64).to_le_bytes());
+            digest.update(value);
+        }
+        digest.update(self.transaction_id.0.to_le_bytes());
+        digest.update((self.receipts.len() as u64).to_le_bytes());
+        for (key, receipt) in &self.receipts {
+            for value in [
+                key.ofe_id.as_str(),
+                key.occupancy_id.tile_id.as_str(),
+                key.occupancy_id.stratum_id.as_str(),
+                key.stratum_id.as_str(),
+                key.layer_id.as_str(),
+            ] {
+                digest.update((value.len() as u64).to_le_bytes());
+                digest.update(value.as_bytes());
+            }
+            digest.update((key.production_lane_index as u64).to_le_bytes());
+            digest.update(key.production_lane_id.to_le_bytes());
+            for value in [
+                receipt.matric_potential_mm,
+                receipt.hydraulic_conductivity_mm_s,
+                receipt.root_path_length_mm,
+                receipt.gravity_root_mm,
+                receipt.lateral_root_length_m,
+            ] {
+                digest.update(value.to_bits().to_le_bytes());
+            }
+        }
+        format!("{:x}", digest.finalize())
+    }
+
+    fn get(
+        &self,
+        key: &V10RootZoneReceiptKey,
+    ) -> Result<&V10RootZoneLayerReceipt, V8InputProjectionError> {
+        if self.receipt_sha256 != self.compute_digest() {
+            return Err(V8InputProjectionError::RootReceiptDigest);
+        }
+        self.receipts
+            .get(key)
+            .ok_or(V8InputProjectionError::RootOwnerJoin(
+                "missing qualified receipt",
+            ))
+    }
 }
 
 /// Digest-bound canopy and root-hydraulic forcing joined to the exact LSE and
@@ -75,6 +197,7 @@ pub struct V8CanopyForcingReceipt {
     transaction_id: TransactionId,
     forcing_sha256: String,
     forcing: SnowFreeForcing,
+    root_zone_hydraulics: Option<V10RootZoneReceiptSet>,
 }
 
 impl V8CanopyForcingReceipt {
@@ -100,6 +223,37 @@ impl V8CanopyForcingReceipt {
             transaction_id,
             forcing_sha256: String::new(),
             forcing,
+            root_zone_hydraulics: None,
+        };
+        value.forcing_sha256 = value.canonical_sha256();
+        value.validate_digest()?;
+        Ok(value)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn try_new_with_root_zone(
+        vegetation_configuration_sha256: String,
+        vegetation_beginning_state_sha256: String,
+        lse_configuration_sha256: Sha256Digest,
+        lse_forcing_sha256: Sha256Digest,
+        hydrology_snapshot_sha256: Sha256Digest,
+        soil_thermal_snapshot_sha256: Sha256Digest,
+        transaction_id: TransactionId,
+        forcing: SnowFreeForcing,
+        root_zone_hydraulics: V10RootZoneReceiptSet,
+    ) -> Result<Self, V8InputProjectionError> {
+        let mut value = Self {
+            model_definition_sha256: V8_MODEL_SHA256.into(),
+            vegetation_configuration_sha256,
+            vegetation_beginning_state_sha256,
+            lse_configuration_sha256,
+            lse_forcing_sha256,
+            hydrology_snapshot_sha256,
+            soil_thermal_snapshot_sha256,
+            transaction_id,
+            forcing_sha256: String::new(),
+            forcing,
+            root_zone_hydraulics: Some(root_zone_hydraulics),
         };
         value.forcing_sha256 = value.canonical_sha256();
         value.validate_digest()?;
@@ -136,6 +290,13 @@ impl V8CanopyForcingReceipt {
         }
         digest.update(self.transaction_id.0.to_le_bytes());
         hash_snow_free_forcing(&mut digest, &self.forcing);
+        match &self.root_zone_hydraulics {
+            None => digest.update([0]),
+            Some(receipts) => {
+                digest.update([1]);
+                digest.update(receipts.receipt_sha256.as_bytes());
+            }
+        }
         format!("{:x}", digest.finalize())
     }
 }
@@ -180,15 +341,6 @@ fn hash_snow_free_forcing(digest: &mut Sha256, forcing: &SnowFreeForcing) {
         }
         digest.update([u8::from(layer.accessible), u8::from(layer.frozen)]);
     }
-    match &forcing.root_zone_hydraulics {
-        None => digest.update([0]),
-        Some(receipts) => {
-            digest.update([1]);
-            let receipt_sha256 = receipts.canonical_sha256();
-            digest.update((receipt_sha256.len() as u64).to_le_bytes());
-            digest.update(receipt_sha256.as_bytes());
-        }
-    }
 }
 
 /// Four exact E01--E03 column solutions for one ground tile.
@@ -211,6 +363,9 @@ pub(crate) struct V8ProjectedRootLayer {
 /// Immutable source operands for one ordered V8 occupancy.
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct V8ProjectedOccupancyInput {
+    pub(crate) ofe_id: OfeId,
+    pub(crate) production_lane_index: usize,
+    pub(crate) production_lane_id: u32,
     pub(crate) occupancy_id: OccupancyId,
     pub(crate) vertical_rank: u32,
     pub(crate) conditional_lai_m2_m2_tile_ground: f64,
@@ -242,6 +397,7 @@ pub(crate) struct V8ProjectedTileRuntimeInput {
     pub(crate) tile_fraction: f64,
     pub(crate) forcing: LandSurfaceForcing,
     pub(crate) vegetation_forcing: SnowFreeForcing,
+    pub(crate) root_zone_hydraulics: Option<V10RootZoneReceiptSet>,
     pub(crate) canopy_air_state: Option<V8TileCanopyAirState>,
     pub(crate) radiation: V8ProjectedColumnRadiation,
     pub(crate) ground: V8ProjectedGroundInput,
@@ -650,22 +806,24 @@ impl V8ProjectedTileRuntimeInput {
                         .find(|v| v.layer_id == root.forcing.layer_id)
                         .ok_or(V8InputProjectionError::Topology("unconfigured root layer"))?;
                     let authority = if configured.root_fraction > 0.0 {
-                        self.vegetation_forcing
-                            .root_zone_hydraulics
+                        self.root_zone_hydraulics
                             .as_ref()
                             .map(|receipts| {
-                                receipts.get(
-                                    &occupancy.occupancy_id,
-                                    &config.stratum_id,
-                                    &root.forcing.layer_id,
-                                )
+                                receipts.get(&V10RootZoneReceiptKey {
+                                    ofe_id: occupancy.ofe_id.clone(),
+                                    production_lane_index: occupancy.production_lane_index,
+                                    production_lane_id: occupancy.production_lane_id,
+                                    occupancy_id: occupancy.occupancy_id.clone(),
+                                    stratum_id: config.stratum_id.clone(),
+                                    layer_id: root.forcing.layer_id.clone(),
+                                })
                             })
                             .transpose()?
                     } else {
                         None
                     };
                     if authority.is_some_and(|receipt| {
-                        receipt.lateral_root_length_m().to_bits()
+                        receipt.lateral_root_length_m.to_bits()
                             != configured.lateral_root_length_m.to_bits()
                     }) {
                         return Err(V8InputProjectionError::Identity(
@@ -674,37 +832,25 @@ impl V8ProjectedTileRuntimeInput {
                     }
                     Ok(RootHydraulicLayer {
                         layer_id: root.forcing.layer_id.as_str().into(),
-                        accessible: authority.map_or_else(
-                            || {
-                                self.vegetation_forcing.root_zone_hydraulics.is_none()
-                                    && root.forcing.accessible
-                            },
-                            openwepp_vegetation::RootZoneHydraulicLayerReceipt::accessible,
-                        ),
-                        frozen: authority.map_or_else(
-                            || {
-                                self.vegetation_forcing.root_zone_hydraulics.is_none()
-                                    && root.forcing.frozen
-                            },
-                            openwepp_vegetation::RootZoneHydraulicLayerReceipt::frozen,
-                        ),
+                        accessible: authority.map_or(root.forcing.accessible, |_| true),
+                        frozen: authority.map_or(root.forcing.frozen, |_| false),
                         root_fraction: configured.root_fraction,
                         soil_potential_mm: authority.map_or_else(
                             || root.forcing.matric_potential_mm,
-                            openwepp_vegetation::RootZoneHydraulicLayerReceipt::matric_potential_mm,
+                            |value| value.matric_potential_mm,
                         ),
                         gravity_head_mm: authority.map_or_else(
                             || root.forcing.gravity_root_mm,
-                            openwepp_vegetation::RootZoneHydraulicLayerReceipt::gravity_root_mm,
+                            |value| value.gravity_root_mm,
                         ),
                         z3_m: authority.map_or_else(
                             || root.forcing.root_path_length_mm / 1000.0,
-                            |v| v.root_path_length_mm() / 1000.0,
+                            |value| value.root_path_length_mm / 1000.0,
                         ),
                         dxroot_m: configured.lateral_root_length_m,
                         ksoil_m2_s: authority.map_or_else(
                             || root.forcing.hydraulic_conductivity_mm_s / 1000.0,
-                            |v| v.hydraulic_conductivity_mm_s() / 1000.0,
+                            |value| value.hydraulic_conductivity_mm_s / 1000.0,
                         ),
                     })
                 })
@@ -1112,6 +1258,8 @@ pub(crate) fn project_v8_runtime_inputs(
                 vegetation_configuration,
                 vegetation_state,
                 canopy_forcing.forcing(),
+                canopy_forcing.root_zone_hydraulics.as_ref(),
+                &ofe.ofe_id,
                 &tile.vegetation_tile_id,
                 tile.surface_vis_albedo,
                 tile.surface_nir_albedo,
@@ -1167,6 +1315,7 @@ pub(crate) fn project_v8_runtime_inputs(
                 tile_fraction: tile.fraction_ofe_ground,
                 forcing: lse_forcing.clone(),
                 vegetation_forcing: canopy_forcing.forcing().clone(),
+                root_zone_hydraulics: canopy_forcing.root_zone_hydraulics.clone(),
                 canopy_air_state,
                 radiation,
                 ground: V8ProjectedGroundInput {
@@ -1231,6 +1380,15 @@ fn validate_cross_owner_lineage(
     {
         return Err(V8InputProjectionError::Identity("cross-owner lineage"));
     }
+    if let Some(root) = &canopy_forcing.root_zone_hydraulics {
+        if root.model_definition_sha256 != V8_MODEL_SHA256
+            || &root.hydrology_snapshot_sha256 != hydrology_snapshot_sha256
+            || root.transaction_id != transaction_id
+            || root.receipt_sha256 != root.compute_digest()
+        {
+            return Err(V8InputProjectionError::RootReceiptDigest);
+        }
+    }
     Ok(())
 }
 
@@ -1261,6 +1419,8 @@ fn project_column(
     configuration: &VegetationConfiguration,
     state: &V8CoupledOwnedState,
     forcing: &SnowFreeForcing,
+    root_zone_hydraulics: Option<&V10RootZoneReceiptSet>,
+    ofe_id: &OfeId,
     tile_id: &TileId,
     surface_vis_albedo: f64,
     surface_nir_albedo: f64,
@@ -1356,8 +1516,10 @@ fn project_column(
                     .ok_or(V8InputProjectionError::Topology(
                         "missing hydraulic forcing layer",
                     ))?;
-            if layer_forcing.water_beginning_kg_m2.to_bits() != fact.liquid_supply_kg_m2.to_bits()
-                || layer_forcing.frozen != fact.frozen
+            if root_zone_hydraulics.is_none()
+                && (layer_forcing.water_beginning_kg_m2.to_bits()
+                    != fact.liquid_supply_kg_m2.to_bits()
+                    || layer_forcing.frozen != fact.frozen)
             {
                 return Err(V8InputProjectionError::Identity(
                     "hydraulic owner operand join",
@@ -1370,6 +1532,9 @@ fn project_column(
             });
         }
         occupancies.push(V8ProjectedOccupancyInput {
+            ofe_id: ofe_id.clone(),
+            production_lane_index: lane_index,
+            production_lane_id: lane_id,
             occupancy_id: identity.clone(),
             vertical_rank: stratum.vertical_rank,
             conditional_lai_m2_m2_tile_ground: lai,
@@ -1473,7 +1638,6 @@ mod tests {
             specific_humidity: 0.0102,
             reference_height_m: 24.0,
             soil_layers: Vec::new(),
-            root_zone_hydraulics: None,
             gsi: 1.0,
         }
     }
@@ -1648,6 +1812,7 @@ mod tests {
             tile_fraction: 1.0,
             forcing: lse_forcing(),
             vegetation_forcing: vegetation_forcing(),
+            root_zone_hydraulics: None,
             canopy_air_state: None,
             radiation: V8ProjectedColumnRadiation {
                 visible_direct: radiation(RadiationBand::Visible, 410.0),
@@ -1744,6 +1909,7 @@ mod tests {
         assert_ne!(left, right);
         assert_eq!(left.as_str(), "shared::left");
         assert_eq!(right.as_str(), "shared::right");
+        assert_root_receipts_are_qualified_by_ofe_and_production_lane();
     }
 
     #[test]
@@ -1772,5 +1938,50 @@ mod tests {
         assert!(validate_covered_precipitation_join(&forcing, &ofe, &forest, rain).is_err());
         forcing.precipitation_parcels = vec![precipitation_parcel("rain-1", "open", rain)];
         assert!(validate_covered_precipitation_join(&forcing, &ofe, &forest, rain).is_err());
+    }
+
+    fn assert_root_receipts_are_qualified_by_ofe_and_production_lane() {
+        let occupancy = OccupancyId {
+            stratum_id: openwepp_kernel_contract::StratumId::try_new("tree").unwrap(),
+            tile_id: TileId::try_new("forest").unwrap(),
+        };
+        let layer = openwepp_kernel_contract::SoilLayerId::try_new("soil-1").unwrap();
+        let key = |ofe: &str, lane_index: usize, lane_id: u32| V10RootZoneReceiptKey {
+            ofe_id: OfeId::try_new(ofe).unwrap(),
+            production_lane_index: lane_index,
+            production_lane_id: lane_id,
+            occupancy_id: occupancy.clone(),
+            stratum_id: occupancy.stratum_id.clone(),
+            layer_id: layer.clone(),
+        };
+        let receipt = |key: V10RootZoneReceiptKey, potential: f64| V10RootZoneLayerReceipt {
+            key,
+            matric_potential_mm: potential,
+            hydraulic_conductivity_mm_s: 0.1,
+            root_path_length_mm: 150.0,
+            gravity_root_mm: -50.0,
+            lateral_root_length_m: 0.02,
+        };
+        let left = key("ofe-1", 0, 10);
+        let right = key("ofe-2", 1, 20);
+        let set = V10RootZoneReceiptSet::try_new(
+            "a".repeat(64),
+            Sha256Digest::try_new("b".repeat(64)).unwrap(),
+            TransactionId(7),
+            vec![
+                receipt(left.clone(), -100.0),
+                receipt(right.clone(), -250.0),
+            ],
+        )
+        .unwrap();
+        assert_eq!(
+            set.get(&left).unwrap().matric_potential_mm.to_bits(),
+            (-100.0_f64).to_bits()
+        );
+        assert_eq!(
+            set.get(&right).unwrap().matric_potential_mm.to_bits(),
+            (-250.0_f64).to_bits()
+        );
+        assert!(set.get(&key("ofe-2", 0, 10)).is_err());
     }
 }

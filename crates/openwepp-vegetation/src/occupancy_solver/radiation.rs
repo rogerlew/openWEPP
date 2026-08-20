@@ -362,7 +362,6 @@ mod tests {
                 accessible: true,
                 frozen: false,
             }],
-            root_zone_hydraulics: None,
             gsi: 1.0,
         }
     }

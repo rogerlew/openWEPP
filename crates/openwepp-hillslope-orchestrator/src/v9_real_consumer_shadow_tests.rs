@@ -322,7 +322,7 @@ mod tests {
     }
 
     #[test]
-    fn v10_rejects_caller_root_hydraulic_template_operands_atomically() {
+    fn v10_ignores_caller_root_hydraulic_template_operands() {
         let (mut poisoned, fixture) = v10_shadow_fixture();
         let beginning = poisoned.clone();
         let template = day_input(&fixture);
@@ -368,7 +368,7 @@ mod tests {
         let production = fixture.hydrology.beginning_frame().clone();
         let production_input = production_day_input();
         let day_frame = projected_day(&production, &production_input);
-        let error = poisoned
+        poisoned
             .execute_prepared_gsi_day(
                 &production,
                 &[day_frame],
@@ -376,16 +376,9 @@ mod tests {
                 poisoned_prepared,
                 poisoned_template,
             )
-            .expect_err("caller hydraulic template poison must reject");
-        assert!(matches!(
-            error,
-            DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Physical(
-                ExecuteV8LseRuntimeShadowError::Projection(V8InputProjectionError::Identity(
-                    "hydraulic owner operand join"
-                ))
-            ))
-        ));
-        assert_eq!(poisoned, beginning);
+            .expect("caller hydraulic template fields are non-authoritative");
+        assert_eq!(poisoned.inner.accepted_interval_count(), 48);
+        assert_ne!(poisoned, beginning);
     }
 
     #[test]
@@ -398,8 +391,12 @@ mod tests {
             &fixture.hydrology,
             shadow.inner.soil_thermal(),
             shadow.inner.root_zone_hydraulic_configuration.as_ref(),
+            &shadow.inner.surface_configuration,
+            &shadow.inner.lse_configuration,
             &shadow.inner.vegetation_configuration,
             shadow.inner.vegetation_state(),
+            Sha256Digest::try_new("11".repeat(32)).unwrap(),
+            TransactionId(1),
         )
         .expect("owner-derived ground forcing");
         let mut poisoned = provider.clone();
@@ -411,25 +408,29 @@ mod tests {
             &fixture.hydrology,
             shadow.inner.soil_thermal(),
             shadow.inner.root_zone_hydraulic_configuration.as_ref(),
+            &shadow.inner.surface_configuration,
+            &shadow.inner.lse_configuration,
             &shadow.inner.vegetation_configuration,
             shadow.inner.vegetation_state(),
+            Sha256Digest::try_new("11".repeat(32)).unwrap(),
+            TransactionId(1),
         )
         .expect("caller ground forcing is not authoritative");
         assert_eq!(
-            projected.ground_albedo_vis.to_bits(),
-            canonical.ground_albedo_vis.to_bits()
+            projected.0.ground_albedo_vis.to_bits(),
+            canonical.0.ground_albedo_vis.to_bits()
         );
         assert_eq!(
-            projected.ground_albedo_nir.to_bits(),
-            canonical.ground_albedo_nir.to_bits()
+            projected.0.ground_albedo_nir.to_bits(),
+            canonical.0.ground_albedo_nir.to_bits()
         );
         assert_eq!(
-            projected.longwave_up_w_m2.to_bits(),
-            canonical.longwave_up_w_m2.to_bits()
+            projected.0.longwave_up_w_m2.to_bits(),
+            canonical.0.longwave_up_w_m2.to_bits()
         );
-        assert_eq!(canonical.ground_albedo_vis.to_bits(), 0.0_f64.to_bits());
-        assert_eq!(canonical.ground_albedo_nir.to_bits(), 0.0_f64.to_bits());
-        assert_eq!(canonical.longwave_up_w_m2.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(canonical.0.ground_albedo_vis.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(canonical.0.ground_albedo_nir.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(canonical.0.longwave_up_w_m2.to_bits(), 0.0_f64.to_bits());
     }
 
     #[test]

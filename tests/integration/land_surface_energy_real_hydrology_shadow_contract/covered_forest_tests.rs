@@ -332,7 +332,6 @@ fn snow_forcing(hydrology: &RealHydrologyShadowAdapter) -> SnowFreeForcing {
             }
         })
         .collect(),
-        root_zone_hydraulics: None,
         gsi: 1.0,
     }
 }
@@ -995,7 +994,6 @@ fn execute_poison(poison: EndpointPoison) -> ExecuteV8LseRuntimeShadowError {
             }
         })
         .collect(),
-        root_zone_hydraulics: None,
         gsi: 1.0,
     };
     let actual_hydrology =

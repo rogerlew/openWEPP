@@ -23,11 +23,10 @@ use openwepp_meteorology::snow_free_forcing::{
 };
 use openwepp_plant_phenology::{GsiParameters, GsiState};
 use openwepp_vegetation::{
-    NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, RootZoneHydraulicLayerReceipt,
-    RootZoneHydraulicLayerSource, RootZoneHydraulicReceiptSet, SnowFreeForcing,
-    V9CoupledOwnedState, V9StateError, V10CoupledOwnedState, V10StateError,
-    VegetationConfiguration, VegetationError, project_v8_runtime_to_v9, project_v9_runtime_to_v8,
-    project_v9_runtime_to_v10, project_v10_runtime_to_v9,
+    NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, SnowFreeForcing, V9CoupledOwnedState,
+    V9StateError, V10CoupledOwnedState, V10StateError, VegetationConfiguration, VegetationError,
+    project_v8_runtime_to_v9, project_v9_runtime_to_v8, project_v9_runtime_to_v10,
+    project_v10_runtime_to_v9,
 };
 use serde::Serialize;
 use sha2::{Digest, Sha256};
@@ -37,6 +36,7 @@ use crate::land_surface_energy_shadow::{
     CoveredV8OwnerEnvelopeError, ExecuteV8LseRuntimeShadowError,
     LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError,
     UncommittedCoveredV8OwnerEnvelope, V8CanopyForcingReceipt, V8InputProjectionError,
+    V10RootZoneLayerReceipt, V10RootZoneReceiptKey, V10RootZoneReceiptSet,
     execute_v8_lse_runtime_shadow_internal, unified_beginning_hydrology_snapshot_sha256,
 };
 use crate::runtime_inputs::{
@@ -1307,7 +1307,7 @@ impl DirectV9RealConsumerShadow {
         )
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     pub fn try_new(
         vegetation_configuration: VegetationConfiguration,
         vegetation_state: V9CoupledOwnedState,
@@ -1521,6 +1521,7 @@ impl DirectV9RealConsumerShadow {
         })
     }
 
+    #[allow(clippy::too_many_lines)]
     fn execute_interval(
         &mut self,
         day_index: usize,
@@ -1581,24 +1582,41 @@ impl DirectV9RealConsumerShadow {
             &self.surface_configuration,
         )?;
         let forcing_sha256 = input.lse_forcing.canonical_sha256()?;
-        let vegetation_forcing = project_live_vegetation_forcing(
+        let (vegetation_forcing, root_zone_hydraulics) = project_live_vegetation_forcing(
             &input.vegetation_forcing,
             &hydrology,
             &self.soil_thermal,
             self.root_zone_hydraulic_configuration.as_ref(),
+            &self.surface_configuration,
+            &self.lse_configuration,
             &self.vegetation_configuration,
             &self.vegetation_state,
-        )?;
-        let canopy_forcing = V8CanopyForcingReceipt::try_new(
-            v8_configuration.configuration_sha256.clone(),
-            v8_beginning.state_sha256.clone(),
-            self.lse_configuration.configuration_sha256.clone(),
-            forcing_sha256,
-            hydrology_snapshot,
-            self.soil_thermal.snapshot_sha256.clone(),
+            hydrology_snapshot.clone(),
             transaction_id,
-            vegetation_forcing,
         )?;
+        let canopy_forcing = match root_zone_hydraulics {
+            Some(receipts) => V8CanopyForcingReceipt::try_new_with_root_zone(
+                v8_configuration.configuration_sha256.clone(),
+                v8_beginning.state_sha256.clone(),
+                self.lse_configuration.configuration_sha256.clone(),
+                forcing_sha256,
+                hydrology_snapshot,
+                self.soil_thermal.snapshot_sha256.clone(),
+                transaction_id,
+                vegetation_forcing,
+                receipts,
+            )?,
+            None => V8CanopyForcingReceipt::try_new(
+                v8_configuration.configuration_sha256.clone(),
+                v8_beginning.state_sha256.clone(),
+                self.lse_configuration.configuration_sha256.clone(),
+                forcing_sha256,
+                hydrology_snapshot,
+                self.soil_thermal.snapshot_sha256.clone(),
+                transaction_id,
+                vegetation_forcing,
+            )?,
+        };
         let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
         let envelope = execute_v8_lse_runtime_shadow_internal(
             &v8_configuration,
@@ -1817,9 +1835,13 @@ fn project_live_vegetation_forcing(
     hydrology: &RealHydrologyShadowAdapter,
     soil_thermal: &SoilThermalSnapshot,
     root_zone: Option<&DirectRootZoneHydraulicConfiguration>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    lse_configuration: &LandSurfaceEnergyConfiguration,
     vegetation_configuration: &VegetationConfiguration,
     vegetation_state: &V9CoupledOwnedState,
-) -> Result<SnowFreeForcing, DirectV9RealConsumerError> {
+    hydrology_snapshot_sha256: Sha256Digest,
+    transaction_id: TransactionId,
+) -> Result<(SnowFreeForcing, Option<V10RootZoneReceiptSet>), DirectV9RealConsumerError> {
     let mut forcing = provider.clone();
     // V10 does not consume the legacy global ground scalars. Shortwave optics
     // come from each LSE tile, while reciprocal longwave uses the current
@@ -1845,7 +1867,16 @@ fn project_live_vegetation_forcing(
                     .map(|candidate| candidate.temperature_k)
             })
             .collect::<Vec<_>>();
-        let water = common_provider_value(&water_values, "vegetation soil-water projection")?;
+        let water = if root_zone.is_some() {
+            water_values
+                .first()
+                .copied()
+                .ok_or(DirectV9RealConsumerError::Identity(
+                    "vegetation soil-water projection",
+                ))?
+        } else {
+            common_provider_value(&water_values, "vegetation soil-water projection")?
+        };
         let temperature = common_provider_value(
             &temperature_values,
             "vegetation soil-temperature projection",
@@ -1874,7 +1905,6 @@ fn project_live_vegetation_forcing(
                 if root.root_fraction == 0.0 {
                     continue;
                 }
-                let mut candidates = Vec::new();
                 for configured in root_zone
                     .ordered_layers
                     .iter()
@@ -1921,48 +1951,61 @@ fn project_live_vegetation_forcing(
                                 .layer_thickness_m;
                         }
                     }
-                    candidates.push(root_zone_hydraulic_values(
+                    let source_values = root_zone_hydraulic_values(
                         fact,
                         configured,
                         top_m,
                         geometry.root_tissue_lateral_path_m,
-                    )?);
+                    )?;
+                    let matching_ofes = surface_configuration
+                        .ofe_bindings
+                        .iter()
+                        .filter(|binding| {
+                            binding.production_lane_index == configured.production_lane_index
+                                && binding.production_lane_id == configured.production_lane_id
+                                && lse_configuration.ofes.iter().any(|ofe| {
+                                    ofe.ofe_id == binding.ofe_id
+                                        && ofe.tiles.iter().any(|tile| {
+                                            tile.vegetation_tile_id == occupancy_id.tile_id
+                                        })
+                                })
+                        })
+                        .collect::<Vec<_>>();
+                    if matching_ofes.is_empty() {
+                        return Err(DirectV9RealConsumerError::Identity(
+                            "root-zone OFE/lane join",
+                        ));
+                    }
+                    for ofe in matching_ofes {
+                        receipts.push(root_zone_hydraulic_receipt(
+                            V10RootZoneReceiptKey {
+                                ofe_id: ofe.ofe_id.clone(),
+                                production_lane_index: configured.production_lane_index,
+                                production_lane_id: configured.production_lane_id,
+                                occupancy_id: occupancy_id.clone(),
+                                stratum_id: stratum.stratum_id.clone(),
+                                layer_id: root.layer_id.clone(),
+                            },
+                            source_values,
+                            root.lateral_root_length_m,
+                        )?);
+                    }
                 }
-                let selected =
-                    candidates
-                        .first()
-                        .copied()
-                        .ok_or(DirectV9RealConsumerError::Identity(
-                            "root-zone configured root layer",
-                        ))?;
-                if candidates.iter().any(|value| value != &selected) {
-                    return Err(DirectV9RealConsumerError::Unsupported(
-                        "root-zone cross-OFE hydraulic projection",
-                    ));
-                }
-                receipts.push(RootZoneHydraulicLayerReceipt::try_from_source(
-                    RootZoneHydraulicLayerSource {
-                        occupancy_id: occupancy_id.clone(),
-                        stratum_id: stratum.stratum_id.clone(),
-                        layer_id: root.layer_id.clone(),
-                        liquid_water_depth_m: selected.liquid_water_depth_m,
-                        layer_thickness_m: selected.layer_thickness_m,
-                        porosity: selected.porosity,
-                        saturated_conductivity_m_s: selected.saturated_conductivity_m_s,
-                        saturated_matric_potential_mm: selected.saturated_matric_potential_mm,
-                        clapp_hornberger_b: selected.clapp_hornberger_b,
-                        layer_top_m: selected.layer_top_m,
-                        root_tissue_lateral_path_m: selected.root_tissue_lateral_path_m,
-                        lateral_root_length_m: root.lateral_root_length_m,
-                        accessible: true,
-                        frozen: selected.frozen,
-                    },
-                )?);
             }
         }
-        forcing.root_zone_hydraulics = Some(RootZoneHydraulicReceiptSet::try_new(receipts)?);
+        return Ok((
+            forcing,
+            Some(V10RootZoneReceiptSet::try_new(
+                root_zone.restart_identity_sha256().map_err(|_| {
+                    DirectV9RealConsumerError::Identity("root-zone configuration identity")
+                })?,
+                hydrology_snapshot_sha256,
+                transaction_id,
+                receipts,
+            )?),
+        ));
     }
-    Ok(forcing)
+    Ok((forcing, None))
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -1976,6 +2019,43 @@ struct RootZoneHydraulicSourceValues {
     layer_top_m: f64,
     root_tissue_lateral_path_m: f64,
     frozen: bool,
+}
+
+fn root_zone_hydraulic_receipt(
+    key: V10RootZoneReceiptKey,
+    source: RootZoneHydraulicSourceValues,
+    lateral_root_length_m: f64,
+) -> Result<V10RootZoneLayerReceipt, DirectV9RealConsumerError> {
+    if !lateral_root_length_m.is_finite() || lateral_root_length_m <= 0.0 {
+        return Err(V8InputProjectionError::RootOwnerJoin("root length domain").into());
+    }
+    let capacity = source.porosity * source.layer_thickness_m;
+    let capacity_limit = f64::from_bits(capacity.to_bits() + 1);
+    if source.liquid_water_depth_m > capacity_limit {
+        return Err(V8InputProjectionError::WaterAbovePoreCapacity.into());
+    }
+    let relative_saturation_raw = source.liquid_water_depth_m / capacity;
+    let mut relative_saturation = relative_saturation_raw.clamp(0.0, 1.0);
+    if relative_saturation == 0.0 {
+        relative_saturation = 0.0;
+    }
+    let matric_potential_mm = (source.saturated_matric_potential_mm
+        * libm::pow(relative_saturation.max(0.01), -source.clapp_hornberger_b))
+    .max(-1.0e8);
+    let hydraulic_conductivity_mm_s = 1000.0
+        * source.saturated_conductivity_m_s.min(
+            source.saturated_conductivity_m_s
+                * libm::pow(relative_saturation, 2.0 * source.clapp_hornberger_b + 3.0),
+        );
+    let layer_node_depth_m = source.layer_top_m + 0.5 * source.layer_thickness_m;
+    Ok(V10RootZoneLayerReceipt {
+        key,
+        matric_potential_mm,
+        hydraulic_conductivity_mm_s,
+        root_path_length_mm: 1000.0 * (layer_node_depth_m + source.root_tissue_lateral_path_m),
+        gravity_root_mm: -1000.0 * layer_node_depth_m,
+        lateral_root_length_m,
+    })
 }
 
 fn root_zone_hydraulic_values(
@@ -2004,14 +2084,10 @@ fn root_zone_hydraulic_values(
         || top_m < 0.0
         || root_tissue_lateral_path_m < 0.0
     {
-        return Err(DirectV9RealConsumerError::Unsupported(
-            "root-zone scalar domain",
-        ));
+        return Err(V8InputProjectionError::RootDomain.into());
     }
     if fact.frozen {
-        return Err(DirectV9RealConsumerError::Unsupported(
-            "root-zone frozen rooted layer",
-        ));
+        return Err(V8InputProjectionError::FrozenRootedLayerUnsupported.into());
     }
     Ok(RootZoneHydraulicSourceValues {
         liquid_water_depth_m: fact.liquid_water_depth_m,
