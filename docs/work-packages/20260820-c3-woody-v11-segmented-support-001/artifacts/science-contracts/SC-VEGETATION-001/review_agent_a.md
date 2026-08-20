@@ -597,3 +597,35 @@ add event source/receiver/from-participant plus duplicate/reorder poisons.
 Ran: exact-commit V2 oracle base PASS, 34/34 expected poison labels PASS, exact
 commit-range diff hygiene PASS. The remaining HOLD is narrowly about the
 amendment's claim of complete typed owner custody and complete suffix equality.
+
+## Restart V2 terminal amendment re-review at `937aadb329ced16f050c676f89769fec2d8f5efe`
+
+Evidence class: `Static + Ran + independent adversarial probes`
+
+Superseding verdict: `PASS`.
+
+The executable V2 reference accepts its canonical checkpoint and rejects all
+52/52 declared poisons with their required typed categories. The JSON Schema
+2020-12 meta-check, strict BEI (15 rows), science-contract unit-compliance,
+semantic authority model, and Rust authority suite (6/6) all pass. I also
+reran 18 retained adversarial probes covering joint parent/checkpoint sequence
+forgery, closed nested state/event/owner bodies, event source/receiver/from-set
+custody, forged LSE and soil-thermal state, duplicate/reordered reduction and
+publication identities, scheduled/event/resource/material uniqueness, and
+outbox ID/cardinality; every probe rejected.
+
+Prior `RVF-A-001` is closed. Owner envelopes now admit exactly seven ordered,
+owner-specific closed bodies; suffix continuation consumes every staged owner
+and compares canonical bytes for the complete ending owner set together with
+event, scheduled-once, reduction, publication, outbox, prefix resource and
+material receipts, and the joint successor sequence against independently
+constructed uninterrupted continuation.
+
+Prior `RVF-A-002` is closed. Event bodies are closed and their custody is
+joined to snow/surface-liquid state and active participants. Reduction,
+publication, and outbox collections enforce canonical order, uniqueness and
+one-record/one-outbox cardinality; operand, record, and outbox identities are
+reconstructed, and invalid delivery transitions reject.
+
+No residual Review A finding remains on the Restart V2 amendment. This verdict
+supersedes the HOLD at `887d92ec557f22682cc5e4df048a20aa249d2cbf`.

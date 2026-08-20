@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 17
+contract_version: 18
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -2701,7 +2701,11 @@ ordinal against the owner custody change. Publication-record IDs and outbox IDs
 are reconstructed; an outbox row is one-to-one with its publication record and
 binds parent transaction, record, state, and delivery count. Jointly changing
 current/next sequence or reframing an owner/event/outbox body cannot create a
-continuation.
+continuation. Every accepted segment beginning-state digest equals the exact
+predecessor staged V11 state digest (the parent beginning for ordinal zero),
+and support/ordinal chronology is gap-free. The terminal segment's ordered
+seven ending-owner envelopes must equal both checkpoint and outer staged owner
+envelopes byte-for-byte and digest-for-digest.
 
 Restore returns a continuation reconstructed from the persisted staged state
 and executes only the unaccepted suffix. It may not reconstruct accepted work
@@ -2755,3 +2759,4 @@ snow carrier, selector/default, activation, publication, deployment, or cutover.
 | 2026-08-20 | 15 | Codex | Drafted immutable-V10 V11 segmented support, staged custody, additive restart, exact compatibility, and one atomic parent finalization. |
 | 2026-08-20 | 16 | Codex | Superseded nonimplementable V11 restart V1 with additive V2 complete typed checkpoint/owner/reduction/publication authority after implementation inventory exposed the closed-schema contradiction. |
 | 2026-08-20 | 17 | Codex | Closed restart V2 seven-owner canonical state, complete-suffix equality, event custody, ordered collection, and durable outbox identity findings. |
+| 2026-08-20 | 18 | Codex | Bound restart V2 segments to predecessor V11 state and terminal complete-owner equality across segment, checkpoint, and outer wire. |

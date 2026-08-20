@@ -474,3 +474,31 @@ joins and rejects all 34 listed poisons. Two transaction residuals remain:
 Ran: exact-commit base suffix PASS, 34/34 poison PASS, diff hygiene PASS. Full
 typed-owner suffix equality and closed collection chronology are still required
 before the V2 amendment merits Review A PASS.
+
+## Restart V2 terminal amendment re-review at `937aadb329ced16f050c676f89769fec2d8f5efe`
+
+Evidence class: `Static + Ran + independent adversarial probes`
+
+Superseding verdict: `PASS`.
+
+The executable V2 reference passes its canonical continuation and rejects
+52/52 declared poisons with typed errors. JSON Schema 2020-12, strict BEI (4
+rows), unit-compliance, the semantic authority model, and the Rust authority
+suite (6/6) pass. Eighteen retained independent probes also reject, including
+joint-sequence forgery; nested state, owner and event openness; event custody;
+forged LSE/thermal endings; duplicate/reordered receipt/reduction/publication
+collections; scheduled/event/resource/material duplication; and forged or
+duplicate outbox identities.
+
+The former complete-suffix finding is closed: restoration consumes all seven
+closed staged owner bodies and canonical equality covers the ending complete
+owner set, prefix resource/material custody, event and scheduled receipts,
+reduction operands, publication records, outbox, and the joint next-parent
+sequence against uninterrupted continuation. The former event/collection
+finding is closed by exact bodies, derived IDs, canonical ordering,
+uniqueness/cardinality, event owner-transfer joins, and valid outbox state/count
+rules.
+
+No residual Review A finding remains on the transaction/restart amendment.
+This verdict supersedes the HOLD at
+`887d92ec557f22682cc5e4df048a20aa249d2cbf`.

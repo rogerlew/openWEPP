@@ -495,3 +495,45 @@ forgeable`.
 
 This supersedes the re-review at `a38e2cfa1`; production restart must remain
 paused pending bounded correction and confirmation.
+
+---
+
+## Restart V2 independent final Review B — candidate `937aadb329ced16f050c676f89769fec2d8f5efe`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent reframed probes`
+
+The complete-continuation reference, 52/52 declared poisons, all twelve prior
+direct probes, schema/BEI/unit gates, and the 6/6 authority test pass. Current
+sequence, closed owner/event bodies, event transfer custody, reduction/
+publication ordering and identity, and unique reconstructed outbox identity
+are materially closed for the fixture.
+
+### `V11-TXN-RESTART-V2-B-005` — BLOCKER — segment custody does not join to restored staged custody
+
+A digest-valid checkpoint with a forged accepted-segment
+`beginning_state_sha256` is accepted. A checkpoint whose segment-ending
+vegetation owner is replaced by the parent-beginning owner is also accepted
+while checkpoint/outer staged owners remain unchanged. The suffix consumes the
+outer staged set rather than proving that it is the exact ending set produced
+by the accepted segment chain.
+
+This leaves two contradictory predecessor/owner chronologies inside one
+admitted checkpoint and violates the contract's exact sequential parent
+custody requirement.
+
+Required closure: reconstruct every segment beginning state digest, chain it
+to the preceding ending, validate every segment ending owner envelope, and join
+the terminal segment ending set byte-for-byte to both checkpoint and outer
+staged owner sets. Add operand-level predecessor and ending-set poisons.
+
+### Superseding verdict
+
+`HOLD / Version 5 restart V2 cannot release at 937aadb32 while accepted-segment
+predecessor and ending-owner custody are retained but unauthenticated`.
+
+All previously reported Review B findings are otherwise closed. One bounded
+correction and confirmation remain before PASS.

@@ -4,7 +4,7 @@ title: Coupled Vegetation Occupancy Owner-Transaction Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
-contract_version: 6
+contract_version: 7
 producer_scope:
   - OPENWEPP_C3_WOODY_V8 occupancy and ground resource/energy candidates
   - OPENWEPP_C3_WOODY_V11 accepted-segment and parent candidates
@@ -406,6 +406,11 @@ record has exactly one durable row when buffered for delivery, and the outbox
 row binds parent, record, state, and delivery count. Current/next parent
 sequences also join the checkpoint's last accepted sequence, so a coordinated
 sequence reframe remains invalid.
+Each accepted segment beginning digest equals the prior ending-state digest,
+with ordinal zero rooted in the parent beginning state, and its support begins
+at the predecessor end. The terminal segment ending complete-owner envelopes
+equal checkpoint and outer staged seven-owner envelopes byte-for-byte and
+digest-for-digest.
 
 | Failure ID | Typed failure |
 |---|---|
@@ -424,6 +429,7 @@ publication, deployment, or production-cutover authority.
 | 2026-08-20 | 4 | Codex | Drafted V11 accepted-segment staging, cumulative resource/material custody, additive restart, and one atomic parent commit. |
 | 2026-08-20 | 5 | Codex | Added production V11 restart V2 complete typed checkpoint/owner custody after implementation inventory proved reviewed V1 insufficient. |
 | 2026-08-20 | 6 | Codex | Required owner-specific V2 state admission, full seven-owner suffix equality, authenticated event custody, canonical collections, and reconstructed durable outbox identity. |
+| 2026-08-20 | 7 | Codex | Added exact accepted-segment predecessor chaining and terminal complete-owner equality across restart V2 layers. |
 | 2026-08-19 | 3 | Codex | Added default-off terminal receiver all-owner transaction authority (`INV-VEGTRANSACTION-008`) with phase-aware error precedence, exact rollback, restart membership, and CoE production invariance. |
 | 2026-08-14 | 2 | Codex | Extended the transaction to V8/LSE source-keyed ground water, one real-hydrology authorization, coupled final solve, LSE/soil-thermal owner joins and production-isolated atomic shadow commit. |
 | 2026-08-12 | 1 | Codex | Initial shared V2 occupancy water/energy owner identity, reconstruction, and atomicity authority. |

@@ -780,3 +780,61 @@ custody, and durable outbox identity remain forgeable at 887d92ec5`.
 
 This verdict supersedes the amendment re-review at `a38e2cfa1`. Promotion still
 requires one bounded correction and independent confirmation.
+
+---
+
+## Restart V2 independent final Review B — candidate `937aadb329ced16f050c676f89769fec2d8f5efe`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent reframed probes`
+
+### Gate evidence
+
+- restart V2 independent reference => PASS complete-continuation digest and
+  52/52 declared poisons;
+- all twelve probes retained from the two preceding amendment reviews now
+  reject;
+- restart schema JSON, strict BEI, and science-contract unit-compliance =>
+  PASS;
+- V11 authority contract test => PASS, 6/6.
+
+The correction closes current/next sequence, nested state/event body shape,
+event-owner custody, typed LSE/thermal state shape, ordered unique reductions/
+publication, reconstructed outbox identity, and full ending-owner continuation
+for the reference fixture. One exact checkpoint-authentication blocker remains.
+
+### `V11-RESTART-V2-B-006` — BLOCKER — accepted-segment predecessor and ending-owner fields are ignored
+
+Two independent mutations were reframed with a valid checkpoint digest and
+accepted through complete continuation:
+
+- replace the accepted segment's `beginning_state_sha256` with 64 zeroes;
+- replace `accepted_segments[0].ending_complete_owners[0]` with the beginning
+  vegetation owner envelope while leaving the checkpoint/outer staged owner
+  set unchanged.
+
+The validator exact-checks the accepted-segment field names but never
+reconstructs `beginning_state_sha256` from the checkpoint beginning/staged
+predecessor and never joins the segment's ending complete owners to its ending
+state, the checkpoint staged set, or the outer staged set. `restore_suffix`
+uses the outer staged owners, so contradictory retained segment custody is
+silently bypassed. The fixture's claimed beginning digest is itself not derived
+from the embedded beginning state.
+
+Required closure: define and reconstruct the canonical beginning-state digest;
+require each segment's beginning digest to equal the previous accepted ending
+state; typed-admit `ending_complete_owners`; require the terminal segment
+ending set to equal checkpoint and outer staged owners byte-for-byte; and add
+forged predecessor, reordered/missing/changed segment ending owner, and stale
+terminal-staged-set poisons.
+
+### Verdict
+
+`HOLD / all prior Review B probes are closed, but accepted-segment predecessor
+and ending-owner custody remain independently forgeable at 937aadb32`.
+
+The amendment is close, but PASS is prohibited until every retained checkpoint
+field participates in authenticated continuation.
