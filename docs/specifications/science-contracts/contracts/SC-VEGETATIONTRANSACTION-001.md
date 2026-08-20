@@ -339,9 +339,11 @@ vegetation-only finalize capability exists.
 `vegetation`, `snow`, `land_surface_energy`, `surface_liquid`, `hydrology`,
 `bgc`, then `soil_thermal`; a parent configuration may mark any non-vegetation
 class inactive, but its manifest entry remains present and its bytes must carry
-unchanged.
-Within a class, owner IDs are strict ascending canonical UTF-8 bytes and unique.
-The manifest binds expected count, each owner schema/model/configuration ID,
+unchanged. Version 1 admits exactly one aggregate owner envelope for each of
+these seven classes; per-OFE/tile/occupancy/layer identities remain typed inside
+that envelope. A future multiple-envelope class requires a successor manifest.
+Owner IDs are strict ascending canonical UTF-8 bytes and unique. The manifest
+binds expected count, each owner schema/model/configuration ID,
 beginning digest, active/inactive segment disposition, and ending digest. A
 candidate with a missing, extra, reordered, duplicate, or unknown owner is not
 constructible.

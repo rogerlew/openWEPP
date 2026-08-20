@@ -261,3 +261,48 @@ Neither supersedes the restart owner-chronology blocker.
 accepted chronology and publication/reduction state`.
 
 Do not begin production Rust.
+
+---
+
+## Re-review — candidate `ab07b1cf62b3da4299baf4ce045ebecccd85911e`
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + adversarial restart probes`
+
+BEI, unit compliance, semantic validator 34/34, authority tests 5/5, and diff
+hygiene pass. `INV-VEGTRANSACTION-010`, typed staged folds, owner descriptors,
+live owner/clock authentication, and actual suffix execution remain present.
+
+### `V11-TXN-B-004` — OPEN — retained restart custody is forgeable
+
+The expanded validation closes all eight newly declared checkpoint poisons, but
+two independent mutations still pass:
+
+- a forged `parent_beginning_owner_sha256` entry;
+- a forged accepted material receipt payload digest.
+
+The restore path never joins the retained parent-beginning array to candidate/
+live beginnings, and it checks material prefix identity IDs without decoding
+and authenticating the receipt payload. Consequently equivalent continuation
+is established from a trusted complete candidate while contradictory restart
+custody remains admitted.
+
+Required closure: authenticate every retained owner beginning and complete
+receipt envelope from restart bytes, rebuild receipt IDs/order, and poison every
+receipt category's payload, digest, identity, omission, duplicate, and reorder.
+
+### Remaining status
+
+- `V11-TXN-B-001/002/003/005`: materially closed for the aggregate-owner
+  reference transaction, subject to reconciling the contract's multiple-owner-
+  within-class language with the exactly-seven-descriptor schema.
+- Complete V10 configuration/state migration remains an upstream
+  `SC-VEGETATION-001` blocker and prevents transaction release even though
+  `INV-010` is restored.
+
+### Verdict
+
+`HOLD / restart owner and material custody remain unauthenticated at ab07b1cf6`.
+
+Do not promote or begin Rust implementation.

@@ -1,0 +1,15 @@
+{
+  "schema":"OPENWEPP_C3_WOODY_V10_FULL_SURFACE_BINDING_V1",
+  "model":"OPENWEPP_C3_WOODY_V10",
+  "configuration_rust_type":"openwepp_vegetation::VegetationConfiguration",
+  "state_rust_type":"openwepp_vegetation::VegetationStateV10",
+  "configuration_source":"crates/openwepp-vegetation/src/config.rs",
+  "configuration_source_sha256":"b49b8904ecc90b95b980f6dd87312820ea56ea545889384701e6d04aa176d9bf",
+  "state_source":"crates/openwepp-vegetation/src/v10_state.rs",
+  "state_source_sha256":"fed6f222964c586c042ecad004ed8610f23230e935c671ff6c00d1398c74f595",
+  "model_definition":"crates/openwepp-vegetation/model-registry/openwepp_c3_woody_v10_definition.json",
+  "model_definition_sha256":"0c42b025b6f9282d85afd5c8819ec9cc60d66a2b79ac6d5922bfdcc8026dd182",
+  "recursive_projection_ledger":"docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts/full-support-compatibility-ledger.md",
+  "recursive_projection_ledger_sha256":"d0beebb1af52a89c716f16f013bd80320d114722dda870b6fc481b34f0fa4038",
+  "admission":"production typed constructors validate the complete released Rust values before V11 framing; the reduced canonical KAT fixture is not a substitute type or migration input"
+}

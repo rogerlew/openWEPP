@@ -190,6 +190,42 @@ Re-review gates run at the corrected commit:
   above;
 - `git diff --check`: PASS.
 
+## Authority release re-review
+
+Reviewed exact commit: `ab07b1cf62b3da4299baf4ce045ebecccd85911e`
+
+Evidence class: `Static + Ran + adversarial execution`
+
+Verdict: `PASS`.
+
+`TA-TXN-001` is closed. The restart validator now joins every retained
+transaction family required by `INV-VEGTRANSACTION-013`, including the outer and
+embedded clock cursor/ordinals, participant regime, owner manifest and staged
+owner set, staged V11 state, resource/material prefixes, scheduled state,
+reduction, publication/outbox, and successor sequence. Continuation advances
+from the reconstructed staged owner/resource set and proves byte-identical
+complete-owner commit against uninterrupted execution.
+
+The 34-poison population now includes and rejects the exact former residuals:
+bad participants, missing material prefix, forged reduction, cursor mismatch,
+forged staged state, bad successor sequence, scheduled replay, and outbox
+forgery. Direct reruns of all earlier adversarial probes, including forged
+staged vegetation owner, also reject.
+
+No remaining Review A transaction-authority finding was identified. This PASS
+is limited to preimplementation authority release; actual V11 Rust custody,
+restart, consuming atomicity, and exact full-support V10 compatibility remain
+implementation gates.
+
+Release re-review gates:
+
+- strict BEI/unit lint: PASS for both contracts;
+- authority contract test: 5/5 PASS;
+- chronology oracle: 46/46 PASS;
+- semantic validator: 34/34 poisons and both restart positions PASS;
+- adversarial restart/custody probes: all reject as required;
+- `git diff --check`: PASS.
+
 ## Terminal authority re-review
 
 Reviewed exact commit: `205e0ad4e628044093e42eb99388fbbac6942d2c`

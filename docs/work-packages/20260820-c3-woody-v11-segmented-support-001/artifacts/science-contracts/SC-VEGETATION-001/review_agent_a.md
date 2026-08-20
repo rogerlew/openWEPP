@@ -228,6 +228,50 @@ Re-review gates run at the corrected commit:
 - independent calculator: 46/46 reported PASS, subject to RA-001/003/004;
 - `git diff --check`: PASS.
 
+## Authority release re-review
+
+Reviewed exact commit: `ab07b1cf62b3da4299baf4ce045ebecccd85911e`
+
+Evidence class: `Static + Ran + adversarial execution`
+
+Verdict: `PASS`.
+
+`TA-001` is closed. Restore now authenticates the V11 authority/configuration,
+parent and successor sequence, cursor and embedded coupled-time cursor,
+slab/event ordinals, active participants, complete owner manifest, closed staged
+V11 state and enclosing digest, accepted slab/event/resource/material prefixes,
+scheduled-once state, reduction state, publication/outbox posture, staged
+resource bits, and staged complete-owner digests. It replays the accepted prefix,
+then executes the event (when pending), slab-1 vegetation transition, and each
+suffix resource transition from the authenticated staged owners/resources before
+comparing the reconstructed complete ending to uninterrupted execution.
+
+All prior adversarial probes now reject:
+
+- bad participant set -> `V11-RESTART`;
+- missing accepted material -> `V11-RESTART`;
+- forged reduction -> `V11-RESTART`;
+- outer/embedded cursor mismatch -> `V11-RESTART`;
+- forged staged physical state/digest -> `V11-RESTART`;
+- forged staged vegetation owner -> `V11-RESTART`;
+- prior unknown-body, forged-ending, and forged-live-beginning probes remain
+  rejected by their typed guards.
+
+No remaining Review A authority finding was identified. This PASS authorizes
+the independent verification checkpoint; it is not production implementation,
+full-support V10 runtime compatibility, or final package acceptance evidence.
+
+Release re-review gates:
+
+- strict BEI lint: PASS for both contracts;
+- science-contract unit lint: PASS for both contracts;
+- authority contract test: 5/5 PASS;
+- chronology oracle: 46/46 PASS;
+- semantic validator: valid transaction, before/after-event restore equivalence,
+  seven-owner consuming commit, and 34/34 poisons PASS;
+- all prior and new adversarial restart probes: rejected as required;
+- `git diff --check`: PASS.
+
 ## Terminal authority re-review
 
 Reviewed exact commit: `205e0ad4e628044093e42eb99388fbbac6942d2c`

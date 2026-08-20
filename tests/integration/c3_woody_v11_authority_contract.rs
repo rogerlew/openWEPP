@@ -180,7 +180,7 @@ fn typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit() {
         result["valid"]["ending_resource_bits"]["water"],
         "0000000000000000"
     );
-    assert_eq!(result["poisons"].as_array().unwrap().len(), 34);
+    assert_eq!(result["poisons"].as_array().unwrap().len(), 36);
     let ids = result["poisons"]
         .as_array()
         .unwrap()

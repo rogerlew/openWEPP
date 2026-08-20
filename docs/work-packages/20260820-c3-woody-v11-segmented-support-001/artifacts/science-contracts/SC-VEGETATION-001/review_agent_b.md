@@ -420,3 +420,85 @@ physical field plus outer identity joins.
 remain release-blocking at 205e0ad4e`.
 
 No production Rust may begin from this checkpoint.
+
+---
+
+## Re-review — candidate `ab07b1cf62b3da4299baf4ce045ebecccd85911e`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + adversarial restart probes`
+
+Ran at the exact checkpoint:
+
+- strict BEI checks => PASS for both contracts;
+- science-contract unit-compliance => PASS for both contracts;
+- semantic validator => PASS with 34/34 declared poisons and suffix-equivalent
+  restore;
+- V11 authority contract test => PASS, 5/5;
+- `git diff --check` => PASS before this append.
+
+The prior forged reduction, staged-state digest, participants, successor
+sequence, cursor, scheduled replay, and outbox probes are now rejected. Actual
+suffix event/resource/state advancement executes. Two exact blockers remain.
+
+### `V11-AUTH-B-001` — OPEN — restart does not authenticate all retained owner/receipt bytes
+
+Two new independent one-field probes were accepted through restore and terminal
+commit:
+
+- replacing `parent_beginning_owner_sha256[0]` with all zeros;
+- replacing the accepted material receipt's `payload_sha256` with all zeros
+  while retaining its claimed receipt identity.
+
+`restore_and_continue` reconstructs staged owners from the complete candidate,
+not from the restart's retained parent-beginning array, so that array is never
+joined. For accepted material receipts it compares identity IDs only; it never
+calls `validate_receipt`, so payload bytes/digest/body can be forged. The same
+ID-only prefix pattern must be audited for every accepted receipt category;
+every retained receipt requires full identity and payload authentication, not
+projection equality alone.
+
+Required closure: require restart parent beginnings to equal candidate/live
+parent beginnings, decode and authenticate every accepted slab/event/resource/
+material/scheduled/publication receipt from restart bytes, reconstruct their
+IDs and ordered predecessor chain, and add payload/digest/identity poisons per
+category.
+
+### `V11-AUTH-B-002` — OPEN — closed config/state artifacts remain incomplete V10 projections
+
+The embedded fixtures are syntactically closed and canonical, but the V10
+configuration projection has five fields and the V10 state projection has five
+fields. The production `VegetationConfiguration` alone contains the full
+stratum parameter stack, topology, roots, optics, hydraulics, carbon/nitrogen,
+phenology, and many other fields; V10 state likewise contains complete shared/
+occupancy and persistent physical state. The reduced fixtures cannot prove the
+contract's bit-identical migration of the complete V10 physical surface.
+
+The validator also checks fixture key sets directly rather than constructing a
+complete `OPENWEPP_C3_WOODY_V11_CONFIGURATION_V1` and reconstructing its outer
+configuration/initial-state digests. This remains a surrogate admission surface.
+
+Required closure: freeze a lossless exhaustive canonical projection of every
+V10 configuration/state field (prefer generated from released types), execute
+outer V11 configuration/state identity reconstruction, and add omission,
+unknown-field, changed-bit, and cross-digest poisons across the complete tree.
+
+### Other finding status
+
+- `V11-AUTH-B-003`: closed for staged water/NH4/NO3 authority.
+- `V11-AUTH-B-004`: closed for the declared non-restart semantic population;
+  restart remains blocked by B001.
+- `V11-AUTH-B-005`: independent live owner/clock, ending owner reconstruction,
+  and consuming atomic store remain closed for the seven aggregate owners.
+  Multiple within-class owners remain a prose/schema mismatch unless the
+  contract explicitly fixes one aggregate owner per class.
+
+### Verdict
+
+`HOLD / restart parent-beginning and material-receipt authentication plus
+complete V10 config/state admission remain open at ab07b1cf6`.
+
+No production Rust may begin.

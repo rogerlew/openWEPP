@@ -159,6 +159,7 @@ def restore_and_continue(cp,c):
     expected_phase="before_event" if restored["next_event_ordinal"]==0 else "after_event"
     expected_participants=PARTICIPANTS[0 if restored["next_event_ordinal"]==0 else 1]
     if restored["authority_sha256"]!=framed("v11-authority") or restored["parent_transaction_sequence"]!="24" or restored["next_parent_transaction_sequence"]!="25" or restored["accepted_until_ns"]!="600000000000" or restored["next_slab_ordinal"]!=1 or restored["checkpoint_phase"]!=expected_phase or restored["active_participant_ids"]!=expected_participants or restored["complete_owner_manifest"]!=OWNERS: raise ValueError("V11-RESTART")
+    if restored["parent_beginning_owner_sha256"]!=c["beginning_owner_sha256"]: raise ValueError("V11-RESTART")
     if coupled_state!={"schema":"OPENWEPP_COUPLED_TIME_RESTART_V2","accepted_until_ns":restored["accepted_until_ns"],"next_slab_ordinal":restored["next_slab_ordinal"],"next_event_ordinal":restored["next_event_ordinal"]}: raise ValueError("V11-RESTART")
     state=restored["staged_v11_state"]; state_keys={"schema","model_definition_sha256","configuration_sha256","state_sha256","v10_physical_state_canonical_json","physical_state_sha256","last_parent_transaction_sequence"}
     imported=json.loads((ROOT/"imported-canonical-fixtures.json").read_text())
@@ -172,6 +173,7 @@ def restore_and_continue(cp,c):
         accepted=restored[f"accepted_{group}_receipts"]
         full=c[f"{group}_receipts"]
         if [x["identity_sha256"] for x in accepted]!=[x["identity_sha256"] for x in full[:len(accepted)]]: raise ValueError("V11-RESTART")
+        for i,r in enumerate(accepted): validate_receipt(r,c["parent_id"],i,group)
     staged_owners,staged=replay_prefix(c,restored["next_event_ordinal"])
     if staged!=restored["staged_resource_bits"] or [staged_owners[x] for x in OWNERS]!=restored["staged_owner_sha256"]: raise ValueError("V11-RESTART")
     if restored["next_event_ordinal"]==0:
@@ -237,6 +239,10 @@ def mutate(base,name):
         c["parent_receipt_sha256"]=framed("parent-receipt",c["parent_id"],sha(canonical({**c,"parent_receipt_sha256":""})))
     return c
 def main():
+    binding=json.loads((ROOT/"v10-full-surface-binding.json").read_text())
+    repo=ROOT.parents[3]
+    for path_key,digest_key in (("configuration_source","configuration_source_sha256"),("state_source","state_source_sha256"),("model_definition","model_definition_sha256"),("recursive_projection_ledger","recursive_projection_ledger_sha256")):
+        if sha((repo/binding[path_key]).read_bytes())!=binding[digest_key]: raise SystemExit("full V10 surface binding drift")
     imported=json.loads((ROOT/"imported-canonical-fixtures.json").read_bytes())
     if set(imported)!={"schema","configuration","state"} or set(imported["configuration"])!={"schema","model_sha256","configuration_sha256","dt_s_bits","area_m2_bits"} or set(imported["state"])!={"schema","state_sha256","transaction_sequence","canopy_liquid_bits","t10_k_bits"}: raise SystemExit("imported canonical fixture is not closed")
     if canonical(imported)!= (ROOT/"imported-canonical-fixtures.json").read_bytes().rstrip(b"\n"): raise SystemExit("imported canonical fixture is not canonical")
@@ -284,6 +290,10 @@ def main():
                 cp,_=checkpoint(altered,"after_event"); cp["scheduled_once_receipts"]=altered["scheduled_receipts"]; restore_and_continue(cp,altered)
             elif case["mutation"]=="checkpoint_outbox_forgery":
                 cp,_=checkpoint(altered,"after_event"); cp["publication_outbox"]=[{"outbox_id":"0"*64,"state":"Acknowledged","delivery_count":0}]; restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_forged_parent_beginning":
+                cp,_=checkpoint(altered,"after_event"); cp["parent_beginning_owner_sha256"][0]="0"*64; restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_forged_material_payload":
+                cp,_=checkpoint(altered,"after_event"); cp["accepted_material_receipts"][0]["payload_sha256"]="0"*64; restore_and_continue(cp,altered)
             else: validate(altered)
         except (ValueError,base64.binascii.Error,json.JSONDecodeError) as exc:
             actual=str(exc)

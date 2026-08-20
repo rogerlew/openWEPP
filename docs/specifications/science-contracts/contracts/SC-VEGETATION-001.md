@@ -2528,6 +2528,17 @@ and accepted transaction sequence. Only model/configuration/state identities
 are recomputed under closed V11 framing. Unknown fields, V9-or-earlier direct
 migration, duration override, or copied V10 digest fails typed.
 
+The migration API accepts the complete released Rust
+`VegetationConfiguration` and `VegetationStateV10` values, never a reduced JSON
+projection. `v10-full-surface-binding.json` freezes their source and released
+model-definition hashes plus the recursive compatibility classification.
+`imported-canonical-fixtures.json` is only a small canonical-framing KAT and is
+explicitly not an admitted substitute configuration/state. V11 configuration
+identity is reconstructed from the full validated V10 configuration digest,
+exact cadence ticks, topology/strata bytes, timestamp and V11 model identity;
+V11 state identity is reconstructed from every complete physical state byte,
+the checked parent sequence, and V11 configuration identity.
+
 ### Admitted segment input and chronology
 
 `execute_v11_segment` accepts a validated V11 configuration, staged beginning

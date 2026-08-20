@@ -35,5 +35,7 @@
     ,{"id":"checkpoint_bad_successor","mutation":"checkpoint_bad_successor","error":"V11-RESTART"}
     ,{"id":"checkpoint_scheduled_replay","mutation":"checkpoint_scheduled_replay","error":"V11-RESTART"}
     ,{"id":"checkpoint_outbox_forgery","mutation":"checkpoint_outbox_forgery","error":"V11-RESTART"}
+    ,{"id":"checkpoint_forged_parent_beginning","mutation":"checkpoint_forged_parent_beginning","error":"V11-RESTART"}
+    ,{"id":"checkpoint_forged_material_payload","mutation":"checkpoint_forged_material_payload","error":"V11-SCHEMA-DIGEST"}
   ]
 }
