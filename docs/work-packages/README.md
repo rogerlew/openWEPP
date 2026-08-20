@@ -11,13 +11,24 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260819-root-zone-hydraulic-owner-authority-001/` — EXECUTING / candidate authority and vectors authored; independent review pending
-  `OPENWEPP_ROOT_ZONE_HYDRAULIC_OWNER_V1` not released: primary-source and
-  repository audits prove that required rooted scenarios have no admitted
-  explicit `z3` input and current subsurface conductivity is saturated/base,
-  not current unsaturated soil-root conductivity. No production code started.
-- `20260819-root-zone-hydraulic-owner-implementation-001/` — QUEUED / blocked
-  on root-zone owner authority release; future default-off implementation only.
+- `20260819-snow-stage3-production-cutover-campaign-001/` — QUEUED /
+  COORDINATOR AND CHILD 1 SCAFFOLDED: orders mechanical terminal handoff,
+  turbulent-carrier authority, actual-scheduler qualification, final-candidate
+  `ASSURE-06` human approval, and atomic CoE retirement. Canopy-intercepted snow
+  is excluded and CoE remains production-authoritative through Child 3.
+- `20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001/` —
+  QUEUED / CHILD 1: fresh successor to the historical terminal-handoff HOLD.
+  It joins the completed terminal event to the completed V10/LSE-V2/direct-
+  hydrology receiver with restart, exact-one liquid custody, remaining-time
+  recomputation, and atomic rollback; it cannot claim efficacy or cutover.
+
+- `20260819-root-zone-hydraulic-owner-authority-001/` — COMPLETE / AUTHORITY
+  RELEASED / SUCCESSOR TERMINAL PASS: admitted non-defaulted stratum root path,
+  live-saturation Brooks--Corey conductivity, typed guards and exact vectors.
+- `20260819-root-zone-hydraulic-owner-implementation-001/` — COMPLETE /
+  TERMINAL A+B PASS: implemented the sealed OFE/lane-qualified owner, removed
+  caller-owned root hydraulic physics from the V10 seam, and preserved
+  selectors, defaults, outputs and production activation state.
 
 - `20260814-nix-agent-devbox-feasibility-001/` — ACTIVE / BRANCH SCAFFOLDED:
   establish a pinned Nix development shell and concurrency-safe Cargo cache,
@@ -605,19 +616,13 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-08-14 UTC`:
+State as of `2026-08-19 UTC`:
 
 - `20260814-snow-free-land-surface-real-hydrology-integration-001/`
-  - EXECUTING / CHILDREN 1-2 COMPLETE / CHILD 3 RESUMED AFTER CUSTODY LIFT:
-    coordinates four
-    independently closed packages for complete snow-free ground/forest-floor
-    authority, V8 arbitration against the real hillslope hydrology owner, a
-    default-off LSE runtime, and a real scheduler consumer. Local base is the
-    unpushed governance commit `0db196012`; production selection, state,
-    outputs, calibration, deployment and cutover remain excluded. Child 3
-    retains a passing exact runtime and production soil-layer bridge. The
-    persistent per-OFE/tile surface/litter owner is now terminally released;
-    covered forest integration is active. Child 4 has not started.
+  - COMPLETE / ALL FOUR CHILDREN TERMINAL PASS: the real default-off scheduler
+    consumer uses repository-native forcing, persisted restart, root hydraulics
+    and atomic rollback. The campaign changed no production selector, default,
+    output, publication or cutover state.
 
 - `20260814-snow-free-land-surface-energy-authority-001/`
   - COMPLETE / SNOW-FREE LAND-SURFACE-ENERGY IMPLEMENTATION AUTHORITY
@@ -633,10 +638,9 @@ State as of `2026-08-14 UTC`:
     hydrology while preserving production bytes and legacy behavior.
 
 - `20260814-snow-free-land-surface-energy-runtime-shadow-001/`
-  - EXECUTED HOLD / BOUNDED LITTER-CONDUCTIVITY AND GROUND-OPTICS CORRECTION
-    IMPLEMENTED: the strict default-off endpoint now derives forest-litter
-    conductivity from immutable beginning litter water and admits per-tile LSE
-    ground optics. The V3/V5 frozen-authority contradiction remains terminal.
+  - COMPLETE / TERMINAL PASS: the admitted default-off LSE runtime and its
+    receiving-state ownership prerequisites are closed within the completed
+    snow-free campaign; production remains unchanged.
 
 - `20260817-c3-woody-v3-v5-oracle-reconciliation-001/`
   - QUEUED / CONTRACT-FIRST AUTHORITY RECONCILIATION: resolve the isolated
@@ -645,9 +649,10 @@ State as of `2026-08-14 UTC`:
     this package and a clean full-workspace gate pass.
 
 - `20260814-vegetation-land-surface-real-consumer-shadow-001/`
-  - NOT STARTED / BLOCKED ON COMPLETE CHILD 3 FOREST ENDPOINT. No package PASS,
-    real scheduler consumer, heavy campaign gate or terminal evidence is
-    claimed.
+  - COMPLETE / TERMINAL A+B PASS: the actual scheduler executes the complete
+    isolated owner set with exact-one custody, persisted restart and atomic
+    rollback. Three reviews, the 20/20 comparator, 3,087/3,087 full-workspace
+    correctness and dual terminal verification passed.
 
 - `20260813-c3-woody-storage-transfer-phenology-authority-001/`
   - COMPLETE / V7 STORAGE-TRANSFER PHENOLOGY AUTHORITY RELEASED / TERMINAL
