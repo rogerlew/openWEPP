@@ -1,9 +1,39 @@
 # Implement coupled time authority V1 end to end
 
+Required starting commit:
+`f481005388bf037f6c8d9ba3133e348f37ac18e7`
+
+Before edits:
+
+```bash
+cd /workdir/openWEPP
+test "$(git rev-parse HEAD)" = \
+  "f481005388bf037f6c8d9ba3133e348f37ac18e7"
+test "$(git rev-parse origin/main)" = \
+  "f481005388bf037f6c8d9ba3133e348f37ac18e7"
+test "$(git branch --show-current)" = "main"
+git status --short --branch
+git diff --check
+```
+
+Do not pull, reset, rebase, merge over, switch branches, amend the starting
+commit, create a PR, or push. Local commits are permitted at the authority
+checkpoint and terminal package boundary.
+
 Scope: local contract-first Rust architecture and integration; no external
 connectivity, messaging, deployment, release, or production cutover.
 
 Execution mode: package-end-to-end (default).
+
+Files: edits are limited to the exact intended write set in `package.md`:
+`SC-COUPLEDTIME-001` and its registry row; the selected coupled-time crate;
+the bounded hillslope-orchestrator reference-consumer seam; additive new
+persisted-restart types only when inventory proves ownership;
+`tests/integration/coupled_time_*`; root Cargo manifests/lock; this package;
+and truthful campaign roadmap/catalog lifecycle updates. Amend the prospective
+write set and gates before any broader edit. Vegetation, snow, Lane D,
+Richards, soil-thermal, BGC, existing DirectV10 restart wire, selectors, and
+defaults are protected.
 
 Phase plan: execute every phase in `package.md` sequentially through truthful
 disposition. Do not stop after contract prose or clock types.
@@ -27,10 +57,11 @@ On-demand: the Stage 3 campaign and terminal-handoff HOLD; touched sections of
 `SC-VEGETATIONTRANSACTION-001`, restart and forcing/simulation identity
 contracts; and source/test modules identified by Phase 0 inventory.
 
-Required-reading budget: remeasure local Core bytes at intake using
-`artifacts/required-reading-map.md`. Apply `OK <=400000`, `WARN >400000`, and
-`REQUIRES-JUSTIFICATION >800000`; explain every mandatory heavy read above the
-last threshold and keep mechanism-specific material on demand.
+Required-reading budget: `501127` local Core bytes at hardened
+scaffold time, `WARN`. Remeasure at intake in
+`artifacts/required-reading-map.md`. Thresholds are `OK <=400000`,
+`WARN >400000`, and `REQUIRES-JUSTIFICATION >800000`; keep mechanism-specific
+material on demand.
 
 Task: admit `SC-COUPLEDTIME-001` and implement the exact-integer, single-clock,
 attempt/accept/reject, adaptive restart, atomic multi-owner, parent-buffered
@@ -39,8 +70,20 @@ exact inventory and implementation intent first. Refresh current main rather
 than trusting the older Richards inventory.
 
 Contract-first sequence: canonical contract, contract-derived tests,
-independent vectors/reference calculator, passing pre-implementation gate, then
-production Rust. No production edit may precede that gate.
+independent vectors/reference model, passing pre-implementation gate, then the
+Phase-2A authority release cycle: two independent contract reviews, complete
+finding disposition/correction, invalidated-gate reruns, two independent
+contract verifications, contract promotion/indexing after PASS, and an exact
+local authority-checkpoint commit. No production Rust may be edited before that
+checkpoint. Package-level A/B/C reviews remain final implementation reviews and
+cannot substitute for the contract cycle.
+
+Authority completeness: freeze time origin/wire/range; parent, transaction,
+segment, slab, attempt, event, calendar/day and forcing identities; integer-to-
+`f64` conversion and proposal quantization/ties; one parent increment;
+diagnostic-only attempts; zero-duration custody/state transitions; complete
+owner set versus segment participant set; deterministic constraint arbitration;
+adopter-owned controller policy/digest; and restart/publication chronology.
 
 Implementation completeness: a type-only crate, vegetation-local support
 override, independently advanceable owner clock, mock-only unit test without an
@@ -66,6 +109,13 @@ clock and cannot accept mismatched owner support, advance on rejection, or
 publish staged results. Include a negative old-path/bypass audit. This does not
 claim a physical production adopter.
 
+Conservation/output acceptance: record accepted-slab operand lineage, support,
+units and source identity; separate accepted values from rejected attempts,
+volume/nominal-duration aliases and precommit buffers; independently
+reconstruct parent reductions and publication order; prove no staged output is
+externally visible before parent commit. Self-consistency alone is not
+acceptance.
+
 Validation: select exact current commands under the testing strategy; record
 truthful `Static:` and `Ran:` evidence, exact source identity, commands, counts,
 hashes, failures/retries, exact-diff reconciliation, manifest policy, line
@@ -73,11 +123,24 @@ counts, and placeholder/bypass audits. Required 2A gates cannot be deferred to
 2B/2C/Richards/campaign closure.
 
 Subagent authorization: this prompt explicitly authorizes subagent
-spawning/delegation to time/numerics authority, Rust/API,
-serialization/restart reviewers, a bounded heavy-gate runner, and two terminal
+spawning/delegation to two preimplementation contract reviewers and verifiers;
+three final time/numerics, Rust/API/atomicity, and serialization/restart
+reviewers; `comparator_suite_runner`; and two terminal
 verifiers. Outputs are compact findings, command/count/hash summaries, and
 artifact paths. Reviewers/verifiers are read-only; the runner writes only
 ignored logs and bounded package artifacts.
+
+Subagent requirement: REQUIRED. Spawn `comparator_suite_runner` for full
+workspace, broad Clippy, cargo-deny, comparator/property population, and other
+heavy closure runs. Do not run those batches on the parent model when the
+runner is available. If unavailable, retain command-level evidence of the
+failure before executing locally.
+
+HOLD legitimacy audit: a HOLD is valid only for an exact authority,
+dependency-cycle, wire-compatibility or owner-atomicity contradiction after all
+safe in-scope contract, implementation and validation routes are exhausted.
+Implementation volume, failing tests, refactoring, controller design, schema
+size or heavy-gate cost are not HOLD reasons.
 
 Autonomy: execute the full package and maintain every artifact through final
 disposition without requesting direction unless hard-blocked. Disposition all

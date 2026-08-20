@@ -10,4 +10,5 @@ Evidence mode: not-run
 | Science-contract, crate, and test instructions named by kickoff | Conditional | Before respective authority/source/test edits | not-run |
 | Stage 3 HOLD and touched SC/restart/forcing/source authorities | On-demand | When Phase 0 selects the boundary | not-run |
 
-Record exact local byte counts and budget disposition at intake.
+Hardened-scaffold Core measurement: `501127` local bytes (`WARN`) on
+2026-08-20. Remeasure and record per-file bytes at execution intake.

@@ -4,10 +4,11 @@ Status: queued
 
 Evidence mode: not-run
 
-Role: independent Rust/API and serialization/restart review.
+Role: final independent Rust API, atomicity, and bypass-resistance review. This
+does not replace the Phase-2A canonical contract review.
 
 Required checks: typed API and error precedence, checked arithmetic, owner-clock
-bypass resistance, attempt isolation, digest/codec determinism, consumer proof,
+bypass resistance, attempt isolation, atomicity, consumer proof,
 validation non-deferral, exact diff, and line-count governance.
 
 | Finding ID | Severity | Finding | Evidence | Recommended disposition |

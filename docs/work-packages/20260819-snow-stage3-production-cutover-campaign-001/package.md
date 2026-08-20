@@ -15,12 +15,11 @@ This ExecPlan is a living document maintained under
 
 Move ground snow from the current CoE production owner to the already admitted
 Stage 3 owner without a partial or dual-owner deployment. The campaign first
-joins the completed terminal snow event to the completed snow-free real-owner
-stack, then establishes shared time authority, introduces segmented
-vegetation, closes unresolved turbulent-carrier authority, qualifies the whole
-actual-scheduler candidate, obtains human assurance approval, and finally
-changes ownership atomically. Canopy-intercepted snow remains a separate later
-campaign.
+establishes shared time authority, introduces segmented vegetation, and closes
+snow-covered turbulent-carrier authority. It then resumes the terminal snow
+event join to the snow-free real-owner stack, qualifies the whole actual-
+scheduler candidate, obtains human assurance approval, and finally changes
+ownership atomically. Canopy-intercepted snow remains a separate later campaign.
 
 ## Current Authority Boundary
 

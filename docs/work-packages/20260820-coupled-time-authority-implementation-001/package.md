@@ -41,6 +41,32 @@ derived numerical operand only. Operations are classified as `AlgebraicRate`,
 `ScheduledOnce`, or `DiagnosticReduction`, with explicit segmentation/retry
 semantics.
 
+The Phase-1 authority decision must freeze the model-time origin, wire integer
+width, maximum representable simulation duration, and the complete lineage of
+parent interval, parent transaction, segment, slab ordinal, attempt, event,
+calendar/day, and forcing-receipt identities. It must define integer-tick to
+binary64-seconds conversion, binary64 event-proposal quantization to ticks, and
+one-bit/tie behavior at boundaries. One parent transaction increments once;
+accepted slabs do not increment its persistent ID; rejected attempts consume no
+accepted chronology; attempt IDs are diagnostic only; restart resumes at the
+last accepted slab/event boundary; and every participating owner receives the
+same derived `f64` duration bits.
+
+The complete parent owner set is fixed for the parent transaction. Each segment
+selects an admitted active participant set. Inactive owners remain byte-identical
+unless an admitted zero-duration event transition changes their custody/state;
+an accepted event may deterministically create the successor physical segment
+and its active participant set without changing the sealed parent support. The
+atomic parent commit installs the complete owner set exactly once.
+
+Clock and controller authority remain separate. Coupled-time owns the accepted
+cursor, hard boundaries, typed constraint collection/reduction, attempt
+chronology, restart identity, and atomic acceptance. Each adopter owns its
+controller algorithm, tolerances/constants, proposal history, policy definition,
+and digest. Constraint reduction is deterministic by earliest end tick, then
+constraint-class precedence, source-owner identity, and constraint digest. The
+reference halving policy is demonstration-only and is not Richards authority.
+
 ## Included Scope
 
 - New `SC-COUPLEDTIME-001` contract, registry row, invariants, typed guard/error
@@ -53,7 +79,10 @@ semantics.
 - A deterministic versioned restart representation for parent support,
   accepted cursor, next ordinal, last step, required adaptive history, active
   boundary/event context, forcing identity, and accepted owner identity.
-  Rejected iterates are never persisted.
+  Rejected iterates are never persisted. It also retains accepted event
+  receipts, active regime and participant set, scheduled-once receipts,
+  diagnostic-reduction and peak state, publication buffer, and controller
+  policy/digest so continuation is equivalent.
 - An orchestrator-level reference consumer with at least three independent mock
   owners and buffered parent output. It executes multiple segments/slabs,
   rejects and retries an attempt, proves byte-identical rollback, restores
@@ -62,6 +91,12 @@ semantics.
   `CoupledAdaptiveSupportV1`, including the forward guard that
   `RichardsCoupledV1 + LegacyFixedSchedule` is unsupported.
 - Contract-derived unit, property, negative, restart, and integration tests.
+- Zero-duration event-transition authority: explicit beginning/ending owner
+  digests, independently closed conservation transfers, no rate integration or
+  time advance, one event ordinal increment, replay prevention, deterministic
+  same-tick precedence, and typed no-progress-cycle failure.
+- Publication/reduction operand lineage, alias-separating fixtures, independent
+  reconstruction, and precommit/rollback visibility proof.
 
 ## Excluded Scope
 
@@ -85,13 +120,16 @@ semantics.
 4. Orchestrator reference-consumer proof, including negative proof that owners
    cannot consume different slabs or publish before parent commit.
 5. Multi-segment adaptive restart and rejection-rollback evidence.
-6. Complete evidence, dual review/finding disposition, dual terminal
+6. A preimplementation canonical contract cycle with two authority reviews,
+   finding disposition, two verifications, and an exact authority checkpoint.
+7. Complete evidence, three final implementation reviews/finding disposition,
+   dual terminal
    verification, and a concrete Child 2B handoff.
 
 ## Dependencies
 
-- Intake at `51dc26cb568ce3b5b5fb7cca861f252404a8a9a8` or an exact later
-  descendant, mechanically refreshed before edits.
+- Required execution base
+  `f481005388bf037f6c8d9ba3133e348f37ac18e7` on clean synchronized `main`.
 - Stage 3 campaign and terminal-handoff HOLD evidence.
 - On-demand boundary authority: `SC-SNOWENERGY-001`,
   `SC-LANDSURFACEENERGY-001`, `SC-VEGETATION-001`,
@@ -116,6 +154,11 @@ Any broader production-owner edit requires a prospective write-set/risk/gate
 amendment. Vegetation, snow, Lane D, Richards, soil-thermal, and BGC kernels are
 protected boundaries.
 
+Existing DirectV10 restart V1 schema, vectors, manifest, and bytes are protected
+and remain byte-identical. Coupled-time restart is additive and versioned;
+touching `openwepp-persisted-restart-v1` may add new types only. Any existing
+wire change requires a separate authority amendment.
+
 ## Phase Plan
 
 ### Phase 0 — Intake and intent
@@ -133,11 +176,43 @@ distinctions; earliest-constraint tie rules; attempt lifecycle; owner/digest
 joins; atomicity; restart; parent finalization/publication; temporal operator
 semantics; compatibility tuples; and error precedence.
 
+`artifacts/reference_model.py` must not import production Rust or call a Rust
+binary for expected values. It consumes only frozen input/vector definitions;
+a separately authored test compares Rust and reference outputs.
+
+Phase 1 must explicitly decide every identity and conversion requirement in
+`Authority To Establish`; dynamic segment/participant selection; and a typed
+constraint model including `HardBoundary`, `EventBoundary`, `OutputBoundary`,
+`RestartBoundary`, and `AdaptiveUpperBound`. Required failures include a
+constraint behind accepted time or past parent end, zero-step without an event,
+conflicting equal-time constraints, minimum-step exhaustion, restart policy/
+digest mismatch, and an owner attempting direct clock advancement.
+
+Event vectors cover an event at parent start, inside the parent, and at parent
+end; two same-tick events; event failure; restart immediately before/after an
+event; and event-replay poison. The reference consumer chronology is segment 0
+with A+B active/C unchanged, a B-to-C custody event, then segment 1 with A+C
+active/B retained terminally.
+
 ### Phase 2 — Contract tests and pre-implementation gate
 
 Write tests against the contract/vectors before production Rust. Run and record
 contract, profile, schema, and reference checks. Production edits are forbidden
 until this gate passes.
+
+### Phase 2A — Authority review and release checkpoint
+
+Complete two independent `SC-COUPLEDTIME-001` reviews: A covers time, numerics,
+events, identities and conversion; B covers transaction ownership, participant
+sets, restart, serialization, and publication. Disposition every finding,
+apply accepted corrections, rerun invalidated contract/vector/schema/profile
+gates, and obtain two independent contract verifications. Promote/index the
+contract only after PASS and commit an exact local authority checkpoint. No
+production Rust may be edited before this checkpoint. The canonical cycle lives
+under `artifacts/science-contracts/SC-COUPLEDTIME-001/`; package-level reviews
+remain final implementation reviews and cannot substitute retroactively.
+
+No production Rust may be edited before this checkpoint.
 
 ### Phase 3 — Reusable subsystem
 
@@ -158,9 +233,15 @@ parent finalization, and delayed publication.
 Reconcile exact diff/write set; format/lint; run focused crate, contract,
 property, restart, integration and doctests; run applicable workspace/domain
 profiles; run cargo-deny for manifest changes; audit bypasses/placeholders,
-line counts, security and assurance impact. Obtain two independent reviews,
+line counts, security and assurance impact. Obtain three independent final
+implementation reviews: A checks time/numerics semantic conformance, B checks
+Rust API/atomicity/bypass resistance, and C checks canonical serialization and
+restart determinism. Disposition every finding,
 disposition every finding, rerun after fixes, and obtain two independent
 terminal verifications on the final identity.
+
+Final review artifacts are `artifacts/review_agent_a.md`,
+`artifacts/review_agent_b.md`, and `artifacts/review_agent_c.md`.
 
 ## Required Invariants And Scenarios
 
@@ -169,7 +250,12 @@ terminal verifications on the final identity.
 - Ordered segments exactly cover the parent; slabs exactly cover each segment,
   with no gap/overlap.
 - Event instants can split support but cannot be integrated as slabs.
-- All coupled owners consume one support and begin from one accepted owner set.
+- An accepted slab `[a,b)` may be followed by a zero-duration state/custody
+  transition at `b`, then `[b,c)`. The event advances no time, integrates no
+  rate, closes transfer ledgers, advances its ordinal once, and cannot replay.
+- The complete parent owner set stays fixed; all active slab participants
+  consume one support and begin from one accepted owner set. Inactive owners
+  are byte-identical except for admitted event transitions.
 - Rejection leaves owners, clock, controller, ordinal, ledgers, diagnostics,
   and publication buffer byte-identical.
 - Acceptance advances exactly to the slab end, increments the ordinal once,
@@ -184,14 +270,19 @@ terminal verifications on the final identity.
   accepted-slab values, not a volume/nominal-duration reconstruction.
 - A full-support single segment is representable, but V10 equivalence belongs
   to Child 2B and is not claimed here.
+- Required negative cases include constraints behind/past support, zero-step
+  without event progress, equal-time conflict, minimum-step exhaustion,
+  controller-policy restart mismatch, direct owner clock advancement, same-tick
+  event cycles/failure/replay, and participant-set mismatch.
 
 ## Validation And Exit Criteria
 
 This critical increment requires current evidence for every phase on one exact
-final source identity: contract/profile/index checks; independent vector
+final source identity: the Phase-2A authority release checkpoint;
+contract/profile/index checks; independent vector
 reproduction; warnings-denied lint; focused crate, contract, property,
 integration, restart and doctest passes; applicable quick/frost/domain profiles;
-manifest policy; exact-diff and bypass audits; line counts; dual reviews with
+manifest policy; exact-diff and bypass audits; line counts; three final reviews with
 all findings dispositioned; post-fix reruns; and dual terminal verification.
 Record exact commands, counts, hashes, failures, retries, and rationale in
 `artifacts/gate-results.md`.
@@ -199,6 +290,14 @@ Record exact commands, counts, hashes, failures, retries, and rationale in
 No required 2A gate may be deferred to 2B, 2C, Richards, or campaign closure.
 If the reusable subsystem cannot run through the declared orchestrator
 consumer, the package is HOLD, not complete.
+
+Publication/reduction acceptance requires an operand-lineage table covering
+support, units, source identity, accepted/rejected status, and publication
+state; fixtures whose answers differ for accepted-plus-rejected maximum,
+parent-volume/nominal-duration, pre-restart-only and post-restart-only maxima,
+duplicate scheduled output, precommit publication, and publication retained
+after rollback; plus independent reconstruction and real closure/magnitude and
+ordering evidence. Self-consistency alone is not acceptance.
 
 ## Calibration And Evidence Posture
 
@@ -218,7 +317,7 @@ or the lockfile change.
 
 Subagent authorization: this package explicitly authorizes subagent
 spawning/delegation to independent time/numerics authority, Rust/API,
-serialization/restart reviewers, a bounded heavy-gate runner, and two terminal
+serialization/restart reviewers, `comparator_suite_runner`, and two terminal
 verifiers. Outputs are compact findings, command/count/hash summaries, and
 artifact paths. Reviewers/verifiers are read-only; the runner writes only
 ignored logs and bounded gate artifacts.
@@ -228,11 +327,27 @@ rollback, atomicity, restart determinism, publication timing, exact-diff/gate
 legitimacy, and `.rs` line counts. Files at 2,000+ lines are WARN with a split
 rationale; 3,000+ nonexempt files block closure.
 
+Subagent requirement: REQUIRED. Spawn `comparator_suite_runner` for full
+workspace, broad Clippy, cargo-deny, comparator/property population, and other
+heavy closure runs. Do not run those batches on the parent model when the runner
+is available. If unavailable, retain command-level failure evidence before
+executing locally.
+
+## HOLD Legitimacy
+
+A HOLD is valid only for an exact authority, dependency-cycle,
+wire-compatibility, or owner-atomicity contradiction after all safe in-scope
+contract, implementation, and validation routes are exhausted. Implementation
+volume, failing tests, refactoring, controller design, schema size, or
+heavy-gate cost are not HOLD reasons. Record the proof and considered in-scope
+route in `artifacts/hold-legitimacy-audit.md`.
+
 ## Progress
 
 - [x] (2026-08-20) Scaffolded 2A and reordered the campaign into 2A--2C.
 - [ ] Complete intake and freeze intent.
-- [ ] Complete authority, vectors, tests, and pre-implementation gate.
+- [ ] Complete authority, vectors, tests, pre-implementation gate, and Phase-2A
+  dual authority review/verification checkpoint.
 - [ ] Implement subsystem, restart, and reference consumer.
 - [ ] Complete validation, review, verification, and disposition.
 
