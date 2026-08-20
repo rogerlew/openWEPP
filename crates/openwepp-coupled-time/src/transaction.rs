@@ -382,6 +382,12 @@ pub struct DiagnosticReductionV1 {
     pub(crate) maximum: Option<f64>,
     pub(crate) accepted_receipts: Vec<ReceiptId>,
     pub(crate) accepted_values: Vec<(ReceiptId, f64)>,
+    pub(crate) operator: ReductionOperatorV1,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub(crate) enum ReductionOperatorV1 {
+    Maximum,
+    Minimum,
 }
 impl DiagnosticReductionV1 {
     pub fn new(reduction_id: String, units: String) -> Result<Self, CoupledTimeError> {
@@ -394,7 +400,13 @@ impl DiagnosticReductionV1 {
             maximum: None,
             accepted_receipts: Vec::new(),
             accepted_values: Vec::new(),
+            operator: ReductionOperatorV1::Maximum,
         })
+    }
+    pub fn new_minimum(reduction_id: String, units: String) -> Result<Self, CoupledTimeError> {
+        let mut value = Self::new(reduction_id, units)?;
+        value.operator = ReductionOperatorV1::Minimum;
+        Ok(value)
     }
     pub fn fold_accepted(
         &mut self,
@@ -404,7 +416,10 @@ impl DiagnosticReductionV1 {
         if !value.is_finite() || self.accepted_receipts.contains(&receipt.id()) {
             return Err(CoupledTimeError::LedgerFailure);
         }
-        self.maximum = Some(self.maximum.map_or(value, |old| old.max(value)));
+        self.maximum = Some(self.maximum.map_or(value, |old| match self.operator {
+            ReductionOperatorV1::Maximum => retain_maximum(old, value),
+            ReductionOperatorV1::Minimum => retain_minimum(old, value),
+        }));
         self.accepted_receipts.push(receipt.id());
         self.accepted_values.push((receipt.id(), value));
         Ok(())
@@ -412,6 +427,35 @@ impl DiagnosticReductionV1 {
     #[must_use]
     pub const fn maximum(&self) -> Option<f64> {
         self.maximum
+    }
+}
+
+pub(crate) fn retain_maximum(retained: f64, candidate: f64) -> f64 {
+    if candidate > retained {
+        candidate
+    } else {
+        retained
+    }
+}
+pub(crate) fn retain_minimum(retained: f64, candidate: f64) -> f64 {
+    if candidate < retained {
+        candidate
+    } else {
+        retained
+    }
+}
+
+#[cfg(test)]
+mod reduction_tests {
+    use super::{retain_maximum, retain_minimum};
+
+    #[test]
+    fn maximum_retains_first_exact_bits_on_numeric_equality() {
+        assert_eq!(retain_maximum(-0.0, 0.0).to_bits(), (-0.0_f64).to_bits());
+        assert_eq!(retain_maximum(0.0, -0.0).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(retain_maximum(4.0, 4.0).to_bits(), 4.0_f64.to_bits());
+        assert_eq!(retain_minimum(-0.0, 0.0).to_bits(), (-0.0_f64).to_bits());
+        assert_eq!(retain_minimum(0.0, -0.0).to_bits(), 0.0_f64.to_bits());
     }
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

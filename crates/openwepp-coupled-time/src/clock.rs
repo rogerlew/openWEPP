@@ -233,6 +233,8 @@ impl CoupledClockStateV1 {
             boundary,
             receipt_id: receipt,
         });
+        self.scheduled_once_receipts
+            .sort_by_key(|receipt| receipt.receipt_id);
         Ok(receipt)
     }
 }

@@ -8,6 +8,13 @@ use serde::{Deserialize, Serialize};
 pub const RESTART_SCHEMA_V1_ID: &str = "OPENWEPP_COUPLED_TIME_RESTART_V1";
 pub const RESTART_SCHEMA_ID: &str = "OPENWEPP_COUPLED_TIME_RESTART_V2";
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum AcceptedOperandLineage {
+    Slab(TimeSupport),
+    EventInstant(crate::ModelTimeNs),
+    ScheduledInstant(crate::ModelTimeNs),
+}
+
 /// Byte-preserving legacy V1 envelope. V1 cannot resume authenticated mid-parent chronology.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CoupledTimeRestartV1(Vec<u8>);
@@ -494,7 +501,11 @@ impl CoupledTimeRestartV2 {
             .iter()
             .map(|reduction| ReductionWire {
                 reduction_id: reduction.reduction_id.clone(),
-                operator: "maximum".into(),
+                operator: match reduction.operator {
+                    crate::transaction::ReductionOperatorV1::Maximum => "maximum",
+                    crate::transaction::ReductionOperatorV1::Minimum => "minimum",
+                }
+                .into(),
                 units: reduction.units.clone(),
                 value_bits: reduction.maximum.map(|v| format!("{:016x}", v.to_bits())),
                 accepted_operand_receipt_ids: reduction.accepted_receipts.clone(),
@@ -720,9 +731,11 @@ impl CoupledTimeRestartV2 {
             .reduction_state
             .into_iter()
             .map(|reduction_wire| {
-                if reduction_wire.operator != "maximum" {
-                    return Err(CoupledTimeError::RestartInvalid);
-                }
+                let operator = match reduction_wire.operator.as_str() {
+                    "maximum" => crate::transaction::ReductionOperatorV1::Maximum,
+                    "minimum" => crate::transaction::ReductionOperatorV1::Minimum,
+                    _ => return Err(CoupledTimeError::RestartInvalid),
+                };
                 if reduction_wire.accepted_operand_receipt_ids.len()
                     != reduction_wire.accepted_operand_values.len()
                     || reduction_wire
@@ -747,7 +760,17 @@ impl CoupledTimeRestartV2 {
                         Ok((operand.receipt_id, value))
                     })
                     .collect::<Result<Vec<_>, _>>()?;
-                let reconstructed = values.iter().map(|(_, value)| *value).reduce(f64::max);
+                let reconstructed = values
+                    .iter()
+                    .map(|(_, value)| *value)
+                    .reduce(match operator {
+                        crate::transaction::ReductionOperatorV1::Maximum => {
+                            crate::transaction::retain_maximum
+                        }
+                        crate::transaction::ReductionOperatorV1::Minimum => {
+                            crate::transaction::retain_minimum
+                        }
+                    });
                 let admitted = reduction_wire
                     .value_bits
                     .map(|bits| {
@@ -756,7 +779,7 @@ impl CoupledTimeRestartV2 {
                             .map_err(|_| CoupledTimeError::RestartInvalid)
                     })
                     .transpose()?;
-                if admitted != reconstructed {
+                if admitted.map(f64::to_bits) != reconstructed.map(f64::to_bits) {
                     return Err(CoupledTimeError::RestartInvalid);
                 }
                 Ok(DiagnosticReductionV1 {
@@ -765,6 +788,7 @@ impl CoupledTimeRestartV2 {
                     maximum: admitted,
                     accepted_receipts: reduction_wire.accepted_operand_receipt_ids,
                     accepted_values: values,
+                    operator,
                 })
             })
             .collect::<Result<Vec<_>, CoupledTimeError>>()?;
@@ -870,6 +894,11 @@ impl CoupledTimeRestartV2 {
             || self
                 .clock
                 .scheduled_once_receipts
+                .windows(2)
+                .any(|pair| pair[0].receipt_id >= pair[1].receipt_id)
+            || self
+                .clock
+                .scheduled_once_receipts
                 .iter()
                 .enumerate()
                 .any(|(i, left)| {
@@ -885,13 +914,42 @@ impl CoupledTimeRestartV2 {
         }
         for scheduled in &self.clock.scheduled_once_receipts {
             scheduled.validate_identity(self.clock.parent_transaction_id)?;
+            if scheduled.boundary < self.clock.parent_support.start_ns()
+                || scheduled.boundary > self.clock.parent_support.end_ns()
+                || scheduled.boundary > self.clock.accepted_until
+            {
+                return Err(CoupledTimeError::RestartInvalid);
+            }
         }
-        let accepted_support = |receipt: ReceiptId| {
+        let accepted_slab_support = |receipt: ReceiptId| {
             self.clock
                 .accepted_slab_receipts
                 .iter()
                 .find(|r| r.id() == receipt)
                 .map(AcceptedSlabReceiptV1::support)
+        };
+        let accepted_operand = |receipt: ReceiptId| {
+            if let Some(slab) = self
+                .clock
+                .accepted_slab_receipts
+                .iter()
+                .find(|r| r.id() == receipt)
+            {
+                Some(AcceptedOperandLineage::Slab(slab.support()))
+            } else if let Some(event) = self
+                .clock
+                .accepted_event_receipts
+                .iter()
+                .find(|r| r.id() == receipt)
+            {
+                Some(AcceptedOperandLineage::EventInstant(event.tick()))
+            } else {
+                self.clock
+                    .scheduled_once_receipts
+                    .iter()
+                    .find(|r| r.receipt_id == receipt)
+                    .map(|scheduled| AcceptedOperandLineage::ScheduledInstant(scheduled.boundary))
+            }
         };
         for record in self
             .pending_publication_buffer
@@ -905,7 +963,7 @@ impl CoupledTimeRestartV2 {
                 &record.units,
                 &record.source_owner_id,
             )? != record.record_id
-                || accepted_support(record.accepted_receipt_id) != Some(record.support)
+                || accepted_slab_support(record.accepted_receipt_id) != Some(record.support)
             {
                 return Err(CoupledTimeError::RestartInvalid);
             }
@@ -928,13 +986,21 @@ impl CoupledTimeRestartV2 {
                 || reduction
                     .accepted_receipts
                     .iter()
-                    .any(|receipt| accepted_support(*receipt).is_none())
-                || reduction.maximum
+                    .any(|receipt| accepted_operand(*receipt).is_none())
+                || reduction.maximum.map(f64::to_bits)
                     != reduction
                         .accepted_values
                         .iter()
                         .map(|(_, value)| *value)
-                        .reduce(f64::max)
+                        .reduce(match reduction.operator {
+                            crate::transaction::ReductionOperatorV1::Maximum => {
+                                crate::transaction::retain_maximum
+                            }
+                            crate::transaction::ReductionOperatorV1::Minimum => {
+                                crate::transaction::retain_minimum
+                            }
+                        })
+                        .map(f64::to_bits)
             {
                 return Err(CoupledTimeError::RestartInvalid);
             }

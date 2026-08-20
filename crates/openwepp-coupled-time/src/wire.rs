@@ -395,6 +395,12 @@ pub(crate) fn validate_authenticated_chronology(w: &RestartWireV2) -> Result<(),
         }
     }
     for e in &w.accepted_event_receipts {
+        if e.tick_ns < w.parent_support.start_ns()
+            || e.tick_ns > w.parent_support.end_ns()
+            || e.tick_ns > w.accepted_until_ns
+        {
+            return Err(CoupledTimeError::RestartInvalid);
+        }
         let tick = e.tick_ns.get().to_be_bytes();
         let ordinal = e.event_ordinal.to_be_bytes();
         let event = framed_sha256(
