@@ -1,6 +1,6 @@
 # Gate results
 
-Status: validation plan frozen / not yet terminal
+Status: terminal HOLD
 
 Evidence mode: Static
 
@@ -21,5 +21,16 @@ reconciliation. This is critical, so exact-head full-workspace correctness is
 non-deferrable and must be delegated to `comparator_suite_runner`. Cargo-deny
 is selected only if manifests/lockfile/dependency resolution change.
 
-Current results: NOT RUN pending the contract-first edits. Every terminal row
-must use PASS/FAIL/BLOCKED/NOT RUN and exact commands/source identity.
+| Requirement | Result | Evidence |
+|---|---|---|
+| contract-derived terminal receiver tests | PASS | 12/12 under `nix develop`; final run `3a93df38-b977-409a-ac6a-8f493e3d0c56` |
+| shared nonlinear WB14 duration vectors | PASS | 2/2 under `nix develop` |
+| rustfmt / diff hygiene for checkpoint | PASS | contract checkpoint `83cf6eb8e` |
+| `SC-VEGETATION-001` partial-support authority | BLOCKED | dual independent HOLD; nominal `dt_s` is configuration/hash identity |
+| production terminal receiver | NOT RUN | prohibited before authority closure |
+| focused/domain/full-workspace runtime gates | NOT RUN | no production implementation; package HOLD |
+| comparator / dual terminal verification | NOT RUN | no candidate implementation to verify |
+
+The generic science-admission script reports the expected policy failure for
+the changed overall draft/in-review snow contracts; this bounded amendment did
+not promote their lifecycle. It is not counted as runtime acceptance.

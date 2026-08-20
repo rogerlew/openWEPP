@@ -1,6 +1,6 @@
 # Implement Stage 3 Terminal Meltout To The Real Snow-Free Owner Stack
 
-Status: `executing / contract-first authority and tests in progress`
+Status: `executed / HOLD — snow-covered vegetation support authority missing`
 
 Date: `2026-08-19`
 
@@ -249,8 +249,12 @@ bounded gate artifacts; only the primary executor edits tracked source.
   contract contradictions, intended write set, and validation plan.
 - [x] (2026-08-19) Completed the reviewed contract-first gate: science GO,
   ownership GO, 12/12 contract tests and 2/2 actual shared-WB14 duration tests.
-- [ ] Implement and validate the real-consumer handoff.
-- [ ] Complete reviews, verification, and disposition.
+- [x] (2026-08-19) Reopened the pre-implementation review after tracing the
+  duration-sensitive V10 vegetation consumer and received independent science
+  and ownership HOLD verdicts.
+- [x] (2026-08-19) Dispositioned the package before production edits. The
+  terminal-receiver runtime remains unimplemented and every production/cutover
+  hold remains intact.
 
 ## Surprises & Discoveries
 
@@ -263,6 +267,14 @@ bounded gate artifacts; only the primary executor edits tracked source.
   surface-liquid consumer seams enforce exact `1800 s` cadence. Terminal
   support therefore requires a contract-authorized partial-interval owner
   transaction and WB14 continuation rule, not a caller-side duration override.
+- The first contract gate did not include `SC-VEGETATION-001`. V8/V9/V10 bind
+  carbon, water, hydraulics, phenology, T10, receipts, state, and configuration
+  identity to `VegetationConfiguration.dt_s`. Running only `dt_remaining`
+  would either over-advance those owners or invalidate their hashes.
+- This cannot be repaired as a mechanical duration field alone. Authority must
+  decide whether vegetation is dormant/censored on the snow-covered support or
+  evolves there using a snow/canopy environment. The latter depends on the
+  still-missing turbulent-carrier and forest-exposure authority.
 
 ## Decision Log
 
@@ -274,8 +286,16 @@ bounded gate artifacts; only the primary executor edits tracked source.
   closure claim. Rationale: producer-only, skeleton, shadow-internal, or
   snowbench evidence cannot prove the downstream transition. Date/Author:
   2026-08-19 / Codex.
+- Decision: stop before production edits at the vegetation-support authority
+  boundary. Rationale: nominal-duration execution, proportional scaling,
+  configuration rehashing, or silently freezing pre-event vegetation would
+  each invent an unauthorized owner chronology. Route the decision into Child
+  2's carrier/forest authority closure, then resume this child from its local
+  contract checkpoint. Date/Author: 2026-08-19 / Codex.
 
 ## Outcomes & Retrospective
 
-Queued. No contract, runtime, selector, default, output, or ownership behavior
-has changed.
+Executed HOLD. Commit `83cf6eb8e` admits the bounded snow/LSE/surface-liquid
+transaction contracts and their tests, but no terminal receiver production
+runtime was implemented. CoE, selectors, defaults, public schemas, outputs,
+and ownership behavior are unchanged.

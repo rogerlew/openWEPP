@@ -1,6 +1,6 @@
 # Terminal verification A
 
-Status: queued
+Status: NOT RUN / no candidate implementation
 
 Evidence mode: not-run
 

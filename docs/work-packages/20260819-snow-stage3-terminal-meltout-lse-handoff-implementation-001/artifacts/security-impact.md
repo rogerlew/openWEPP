@@ -1,8 +1,8 @@
 # Security and data impact
 
-Status: queued
+Status: PASS / no production implementation
 
-Evidence mode: not-run
+Evidence mode: Static
 
 Reconcile the exact terminal diff for credentials, network, unsafe code,
 external execution, protected fixtures/data, parsers, and release impact.

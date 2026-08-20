@@ -11,16 +11,17 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260819-snow-stage3-production-cutover-campaign-001/` — QUEUED /
-  COORDINATOR AND CHILD 1 SCAFFOLDED: orders mechanical terminal handoff,
+- `20260819-snow-stage3-production-cutover-campaign-001/` — ACTIVE / CHILD 1
+  HOLD; CHILD 2 NEXT: orders mechanical terminal handoff,
   turbulent-carrier authority, actual-scheduler qualification, final-candidate
   `ASSURE-06` human approval, and atomic CoE retirement. Canopy-intercepted snow
   is excluded and CoE remains production-authoritative through Child 3.
 - `20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001/` —
-  QUEUED / CHILD 1: fresh successor to the historical terminal-handoff HOLD.
-  It joins the completed terminal event to the completed V10/LSE-V2/direct-
-  hydrology receiver with restart, exact-one liquid custody, remaining-time
-  recomputation, and atomic rollback; it cannot claim efficacy or cutover.
+  EXECUTED / HOLD BEFORE PRODUCTION EDITS: admitted the bounded terminal
+  receiver and shared-WB14 contracts/tests, then found that V10 vegetation
+  duration is configuration/hash identity and lacks partial-support plus
+  snow-covered pre-event evolution authority. Child 2 owns that authority
+  decision; CoE remains production-authoritative.
 
 - `20260819-root-zone-hydraulic-owner-authority-001/` — COMPLETE / AUTHORITY
   RELEASED / SUCCESSOR TERMINAL PASS: admitted non-defaulted stratum root path,

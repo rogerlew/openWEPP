@@ -1,8 +1,8 @@
 # Calibration readiness matrix
 
-Status: queued
+Status: HOLD / fixed-mechanics implementation not reached
 
-Evidence mode: not-run
+Evidence mode: Static
 
 Disposition every applicable science-contract readiness obligation using the
 ADR-0042 implementation, calibration-evidence, and identifiability enums. This

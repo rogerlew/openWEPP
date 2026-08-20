@@ -1,6 +1,6 @@
 # Coordinate Stage 3 Production Cutover
 
-Status: `queued / coordinator and Child 1 scaffolded`
+Status: `active / Child 1 HOLD; Child 2 authority closure next`
 
 Date: `2026-08-19`
 
@@ -32,10 +32,13 @@ children or use a later child to pass a current child's required gate.
 ## Child Order And Release Gates
 
 1. `20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001`
-   closes the mechanical terminal snow-to-land transition on isolated,
-   default-off state while production remains unchanged.
+   is executed HOLD before production edits. It admitted the snow/LSE/liquid
+   transaction contracts, but exposed missing V10 partial-support and
+   snow-covered pre-event vegetation authority. It resumes after Child 2.
 2. `SNOW-STAGE3-TURBULENT-CARRIER-AUTHORITY-CLOSURE` decides and admits the
-   applicable open/forest aerodynamic carrier without fitted attenuation.
+   applicable open/forest aerodynamic carrier without fitted attenuation and
+   closes the vegetation nominal/partial-support plus pre-event chronology
+   dependency exposed by Child 1.
 3. `SNOW-STAGE3-REAL-CONSUMER-CUTOVER-QUALIFICATION` exercises the actual
    scheduler and complete owner stack over representative full snow seasons.
 4. `SNOW-COE-STAGE3-ATOMIC-CUTOVER` changes the production owner/default and
@@ -117,15 +120,22 @@ limits it requires.
 - [x] (2026-08-19) Reconciled the completed root-zone and snow-free prerequisite
   lifecycle from their terminal package evidence.
 - [x] (2026-08-19) Scaffolded the coordinator and mechanical handoff Child 1.
-- [ ] Execute and terminally disposition Child 1.
-- [ ] Scaffold, execute, and terminally disposition Child 2.
+- [x] (2026-08-19) Executed Child 1 through its contract checkpoint and
+  dispositioned HOLD before production edits on a dual-reviewed vegetation
+  support/carrier authority boundary.
+- [ ] Scaffold, execute, and terminally disposition Child 2; then resume Child
+  1 from checkpoint `83cf6eb8e`.
 - [ ] Execute Child 3 actual-scheduler qualification.
 - [ ] Obtain final-candidate `ASSURE-06` human review and approval.
 - [ ] Execute Child 4 atomic cutover and campaign closure.
 
 ## Surprises & Discoveries
 
-None at scaffold time.
+- Child 1 proved that `VegetationConfiguration.dt_s` is exact configuration,
+  receipt, and state identity. A remaining-support receiver cannot safely
+  mutate or scale it. Authority must also decide vegetation evolution on the
+  snow-covered half before `t*`, which couples the mechanical handoff to Child
+  2's turbulent-carrier decision.
 
 ## Decision Log
 
@@ -140,5 +150,6 @@ None at scaffold time.
 
 ## Outcomes & Retrospective
 
-Queued. No runtime, selector, default, output, assurance, or ownership change
-has occurred.
+Active HOLD at Child 1. Its bounded contract checkpoint exists, but no terminal
+receiver runtime, selector, default, output, assurance, or ownership change has
+occurred.

@@ -43,6 +43,15 @@ All findings are `accepted` and closure-blocking until rereview:
   frozen-liquid physics.
 - `OWN-MEDIUM-007`: strengthen tests beyond substring inventory.
 
-No lifecycle promotion or production Rust edit is allowed until both reviewers
-return GO on remediated exact contract/test bytes and the pre-implementation
-contract gate passes.
+Those initial findings were remediated and both reviewers returned GO. A later
+consumer-depth rereview found a distinct omitted authority surface:
+
+- `SCI-VEG-DURATION-001` — accepted, closure-blocking. `SC-VEGETATION-001`
+  does not authorize `transaction_support_s < configuration.dt_s`, nor decide
+  pre-event vegetation evolution. Final science verdict: HOLD.
+- `OWN-VEG-DURATION-001` — accepted, closure-blocking. Receipts, state hashes,
+  configuration identity, LSE joins, and restart cannot be rekeyed or advanced
+  on a caller override. Final ownership verdict: HOLD.
+
+Disposition: route both to campaign Child 2 because the pre-event decision
+depends on the unresolved snow/canopy carrier. No production edit was made.
