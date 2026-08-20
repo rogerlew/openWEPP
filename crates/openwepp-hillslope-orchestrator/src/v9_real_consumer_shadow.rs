@@ -442,8 +442,8 @@ impl DirectRootZoneLayerConfiguration {
             || !clapp_hornberger_b.is_finite()
             || clapp_hornberger_b <= 0.0
         {
-            return Err(DirectV10RealConsumerError::Runtime(
-                DirectV9RealConsumerError::Unsupported("root-zone configuration domain"),
+            return Err(DirectV10RealConsumerError::RootDomain(
+                "root-zone configuration layer",
             ));
         }
         Ok(Self {
@@ -479,8 +479,8 @@ impl DirectRootZoneStratumGeometry {
         root_tissue_lateral_path_m: f64,
     ) -> Result<Self, DirectV10RealConsumerError> {
         if !root_tissue_lateral_path_m.is_finite() || root_tissue_lateral_path_m < 0.0 {
-            return Err(DirectV10RealConsumerError::Runtime(
-                DirectV9RealConsumerError::Unsupported("root-zone stratum path domain"),
+            return Err(DirectV10RealConsumerError::RootDomain(
+                "root-zone stratum path",
             ));
         }
         Ok(Self {
@@ -527,8 +527,8 @@ impl DirectRootZoneHydraulicConfiguration {
             || unique_layers.len() != layer_keys.len()
             || unique_strata.len() != stratum_keys.len()
         {
-            return Err(DirectV10RealConsumerError::Runtime(
-                DirectV9RealConsumerError::Identity("root-zone configuration order"),
+            return Err(DirectV10RealConsumerError::RootConfigurationIdentity(
+                "root-zone configuration order",
             ));
         }
         Ok(Self {
@@ -594,6 +594,10 @@ pub type DirectV10ShadowDayReceipt = DirectV9ShadowDayReceipt;
 
 #[derive(Debug, Error, PartialEq)]
 pub enum DirectV10RealConsumerError {
+    #[error("root-zone configuration identity failure: {0}")]
+    RootConfigurationIdentity(&'static str),
+    #[error("root-zone scalar domain failure: {0}")]
+    RootDomain(&'static str),
     #[error(transparent)]
     V10(#[from] V10StateError),
     #[error(transparent)]
@@ -610,6 +614,8 @@ impl DirectV10RealConsumerError {
     #[must_use]
     pub const fn category(&self) -> &'static str {
         match self {
+            Self::RootConfigurationIdentity(_) => "root_configuration_identity",
+            Self::RootDomain(_) => "root_domain",
             Self::V10(_) => "vegetation_v10",
             Self::LseV2(_) => "land_surface_energy_v2",
             Self::LandSurface(_) => "land_surface_energy",
@@ -1591,8 +1597,11 @@ impl DirectV9RealConsumerShadow {
             &self.lse_configuration,
             &self.vegetation_configuration,
             &self.vegetation_state,
+            v8_configuration.configuration_sha256.clone(),
             hydrology_snapshot.clone(),
             transaction_id,
+            day_index,
+            interval_index,
         )?;
         let canopy_forcing = match root_zone_hydraulics {
             Some(receipts) => V8CanopyForcingReceipt::try_new_with_root_zone(
@@ -1839,8 +1848,11 @@ fn project_live_vegetation_forcing(
     lse_configuration: &LandSurfaceEnergyConfiguration,
     vegetation_configuration: &VegetationConfiguration,
     vegetation_state: &V9CoupledOwnedState,
+    receipt_vegetation_configuration_sha256: String,
     hydrology_snapshot_sha256: Sha256Digest,
     transaction_id: TransactionId,
+    day_index: usize,
+    interval_index: u8,
 ) -> Result<(SnowFreeForcing, Option<V10RootZoneReceiptSet>), DirectV9RealConsumerError> {
     let mut forcing = provider.clone();
     // V10 does not consume the legacy global ground scalars. Shortwave optics
@@ -1999,8 +2011,16 @@ fn project_live_vegetation_forcing(
                 root_zone.restart_identity_sha256().map_err(|_| {
                     DirectV9RealConsumerError::Identity("root-zone configuration identity")
                 })?,
+                lse_configuration
+                    .hydrology_configuration
+                    .configuration_sha256
+                    .clone(),
+                receipt_vegetation_configuration_sha256,
+                lse_configuration.configuration_sha256.clone(),
                 hydrology_snapshot_sha256,
                 transaction_id,
+                day_index,
+                interval_index,
                 receipts,
             )?),
         ));
@@ -2027,7 +2047,7 @@ fn root_zone_hydraulic_receipt(
     lateral_root_length_m: f64,
 ) -> Result<V10RootZoneLayerReceipt, DirectV9RealConsumerError> {
     if !lateral_root_length_m.is_finite() || lateral_root_length_m <= 0.0 {
-        return Err(V8InputProjectionError::RootOwnerJoin("root length domain").into());
+        return Err(V8InputProjectionError::RootDomain.into());
     }
     let capacity = source.porosity * source.layer_thickness_m;
     let capacity_limit = f64::from_bits(capacity.to_bits() + 1);

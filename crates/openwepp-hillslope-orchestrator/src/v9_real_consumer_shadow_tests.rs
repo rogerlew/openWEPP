@@ -312,8 +312,8 @@ mod tests {
         shadow
             .execute_prepared_gsi_day(
                 &production,
-                &[day_frame],
-                &[production_input],
+                std::slice::from_ref(&day_frame),
+                std::slice::from_ref(&production_input),
                 prepared,
                 template,
             )
@@ -325,6 +325,7 @@ mod tests {
     fn v10_ignores_caller_root_hydraulic_template_operands() {
         let (mut poisoned, fixture) = v10_shadow_fixture();
         let beginning = poisoned.clone();
+        let mut canonical = beginning.clone();
         let template = day_input(&fixture);
         let mut poisoned_template = template.clone();
         for interval in &mut poisoned_template.intervals {
@@ -365,20 +366,30 @@ mod tests {
                 .expect("prepared provider day")
         };
         let poisoned_prepared = prepare(&poisoned, &poisoned_template);
+        let canonical_prepared = prepare(&canonical, &template);
         let production = fixture.hydrology.beginning_frame().clone();
         let production_input = production_day_input();
         let day_frame = projected_day(&production, &production_input);
         poisoned
             .execute_prepared_gsi_day(
                 &production,
-                &[day_frame],
-                &[production_input],
+                std::slice::from_ref(&day_frame),
+                std::slice::from_ref(&production_input),
                 poisoned_prepared,
                 poisoned_template,
             )
             .expect("caller hydraulic template fields are non-authoritative");
+        canonical
+            .execute_prepared_gsi_day(
+                &production,
+                &[day_frame],
+                &[production_input],
+                canonical_prepared,
+                template,
+            )
+            .expect("canonical live-owner execution");
         assert_eq!(poisoned.inner.accepted_interval_count(), 48);
-        assert_ne!(poisoned, beginning);
+        assert_eq!(poisoned, canonical);
     }
 
     #[test]
@@ -395,8 +406,17 @@ mod tests {
             &shadow.inner.lse_configuration,
             &shadow.inner.vegetation_configuration,
             shadow.inner.vegetation_state(),
+            project_v9_runtime_to_v8(
+                &shadow.inner.vegetation_configuration,
+                shadow.inner.vegetation_state(),
+            )
+            .unwrap()
+            .0
+            .configuration_sha256,
             Sha256Digest::try_new("11".repeat(32)).unwrap(),
             TransactionId(1),
+            0,
+            0,
         )
         .expect("owner-derived ground forcing");
         let mut poisoned = provider.clone();
@@ -412,8 +432,17 @@ mod tests {
             &shadow.inner.lse_configuration,
             &shadow.inner.vegetation_configuration,
             shadow.inner.vegetation_state(),
+            project_v9_runtime_to_v8(
+                &shadow.inner.vegetation_configuration,
+                shadow.inner.vegetation_state(),
+            )
+            .unwrap()
+            .0
+            .configuration_sha256,
             Sha256Digest::try_new("11".repeat(32)).unwrap(),
             TransactionId(1),
+            0,
+            0,
         )
         .expect("caller ground forcing is not authoritative");
         assert_eq!(

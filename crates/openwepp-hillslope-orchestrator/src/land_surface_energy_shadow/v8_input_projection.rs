@@ -46,6 +46,10 @@ use super::{
     unified_beginning_hydrology_snapshot_sha256,
 };
 
+const ROOT_ZONE_OWNER_ID: &str = "root-zone-hydraulic-owner-v1";
+const ROOT_ZONE_MODEL_SHA256: &str =
+    "65c90f388ef939aa84e6d53919411d389a8612c57de647c47b8a538ad1ba60e4";
+
 #[derive(Clone, Debug, Error, PartialEq)]
 pub enum V8InputProjectionError {
     #[error("V8 input projection identity failure: {0}")]
@@ -94,19 +98,32 @@ pub(crate) struct V10RootZoneLayerReceipt {
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct V10RootZoneReceiptSet {
+    owner_id: String,
     model_definition_sha256: String,
     root_configuration_sha256: String,
+    hydrology_configuration_sha256: Sha256Digest,
+    vegetation_configuration_sha256: String,
+    vegetation_root_bindings_sha256: String,
+    lse_configuration_sha256: Sha256Digest,
     hydrology_snapshot_sha256: Sha256Digest,
     transaction_id: TransactionId,
+    day_index: usize,
+    interval_index: u8,
     receipts: BTreeMap<V10RootZoneReceiptKey, V10RootZoneLayerReceipt>,
     receipt_sha256: String,
 }
 
 impl V10RootZoneReceiptSet {
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn try_new(
         root_configuration_sha256: String,
+        hydrology_configuration_sha256: Sha256Digest,
+        vegetation_configuration_sha256: String,
+        lse_configuration_sha256: Sha256Digest,
         hydrology_snapshot_sha256: Sha256Digest,
         transaction_id: TransactionId,
+        day_index: usize,
+        interval_index: u8,
         receipts: Vec<V10RootZoneLayerReceipt>,
     ) -> Result<Self, V8InputProjectionError> {
         let mut indexed = BTreeMap::new();
@@ -117,11 +134,19 @@ impl V10RootZoneReceiptSet {
                 ));
             }
         }
+        let vegetation_root_bindings_sha256 = root_binding_digest(&indexed);
         let mut value = Self {
-            model_definition_sha256: V8_MODEL_SHA256.into(),
+            owner_id: ROOT_ZONE_OWNER_ID.into(),
+            model_definition_sha256: ROOT_ZONE_MODEL_SHA256.into(),
             root_configuration_sha256,
+            hydrology_configuration_sha256,
+            vegetation_configuration_sha256,
+            vegetation_root_bindings_sha256,
+            lse_configuration_sha256,
             hydrology_snapshot_sha256,
             transaction_id,
+            day_index,
+            interval_index,
             receipts: indexed,
             receipt_sha256: String::new(),
         };
@@ -132,14 +157,21 @@ impl V10RootZoneReceiptSet {
     fn compute_digest(&self) -> String {
         let mut digest = Sha256::new();
         for value in [
+            self.owner_id.as_bytes(),
             self.model_definition_sha256.as_bytes(),
             self.root_configuration_sha256.as_bytes(),
+            self.hydrology_configuration_sha256.as_str().as_bytes(),
+            self.vegetation_configuration_sha256.as_bytes(),
+            self.vegetation_root_bindings_sha256.as_bytes(),
+            self.lse_configuration_sha256.as_str().as_bytes(),
             self.hydrology_snapshot_sha256.as_str().as_bytes(),
         ] {
             digest.update((value.len() as u64).to_le_bytes());
             digest.update(value);
         }
         digest.update(self.transaction_id.0.to_le_bytes());
+        digest.update((self.day_index as u64).to_le_bytes());
+        digest.update([self.interval_index]);
         digest.update((self.receipts.len() as u64).to_le_bytes());
         for (key, receipt) in &self.receipts {
             for value in [
@@ -180,6 +212,29 @@ impl V10RootZoneReceiptSet {
                 "missing qualified receipt",
             ))
     }
+}
+
+fn root_binding_digest(
+    receipts: &BTreeMap<V10RootZoneReceiptKey, V10RootZoneLayerReceipt>,
+) -> String {
+    let mut digest = Sha256::new();
+    for (key, receipt) in receipts {
+        for value in [
+            key.ofe_id.as_str(),
+            key.occupancy_id.tile_id.as_str(),
+            key.occupancy_id.stratum_id.as_str(),
+            key.stratum_id.as_str(),
+            key.layer_id.as_str(),
+        ] {
+            digest.update((value.len() as u64).to_le_bytes());
+            digest.update(value.as_bytes());
+        }
+        digest.update((key.production_lane_index as u64).to_le_bytes());
+        digest.update(key.production_lane_id.to_le_bytes());
+        digest.update(receipt.lateral_root_length_m.to_bits().to_le_bytes());
+        digest.update([1]);
+    }
+    format!("{:x}", digest.finalize())
 }
 
 /// Digest-bound canopy and root-hydraulic forcing joined to the exact LSE and
@@ -384,6 +439,7 @@ pub(crate) struct V8ProjectedGroundInput {
     pub(crate) state: TileState,
     pub(crate) surface_liquid: DirectSurfaceLiquidStateRecord,
     pub(crate) soil_thermal: SoilThermalOfeSnapshot,
+    pub(crate) top_hydrology: RealHydrologyLayerFact,
 }
 
 /// Fully projected, solve-free runtime input for one OFE/tile.
@@ -587,11 +643,15 @@ impl V8ProjectedTileRuntimeInput {
                         .ok_or(V8InputProjectionError::Topology(
                             "missing top soil water owner",
                         ))?;
-                    let (liquid, ice) = if top.frozen {
-                        (0.0, top.water_beginning_kg_m2)
+                    let (water, frozen) = if self.root_zone_hydraulics.is_some() {
+                        (
+                            self.ground.top_hydrology.liquid_supply_kg_m2,
+                            self.ground.top_hydrology.frozen,
+                        )
                     } else {
-                        (top.water_beginning_kg_m2, 0.0)
+                        (top.water_beginning_kg_m2, top.frozen)
                     };
+                    let (liquid, ice) = if frozen { (0.0, water) } else { (water, 0.0) };
                     (
                         SurfaceClassKind::BareMineralSoil,
                         1.0,
@@ -1142,6 +1202,8 @@ pub(crate) fn project_v8_runtime_inputs(
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
     soil_thermal: &SoilThermalSnapshot,
+    day_index: usize,
+    interval_index: u8,
 ) -> Result<ValidatedV8RuntimeInputProjection, V8InputProjectionError> {
     vegetation_configuration.validate_v8()?;
     let configured_bindings = vegetation_configuration
@@ -1189,6 +1251,8 @@ pub(crate) fn project_v8_runtime_inputs(
         transaction_id,
         canopy_forcing,
         &hydrology_snapshot_sha256,
+        day_index,
+        interval_index,
     )?;
     validate_forcing_join(
         vegetation_configuration,
@@ -1324,6 +1388,21 @@ pub(crate) fn project_v8_runtime_inputs(
                     state: tile_state.clone(),
                     surface_liquid: surface_record.clone(),
                     soil_thermal: thermal.clone(),
+                    top_hydrology: soil_adapter
+                        .owner
+                        .layer_facts()
+                        .get(&RealHydrologySourceKey {
+                            ofe_lane:
+                                crate::vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId {
+                                    lane_index: lane.production_lane_index,
+                                    lane_id: lane.production_lane_id,
+                                },
+                            layer_id: ofe.soil_interface_layers[0].layer_id.clone(),
+                        })
+                        .cloned()
+                        .ok_or(V8InputProjectionError::Topology(
+                            "missing top live hydrology owner",
+                        ))?,
                 },
                 occupancies,
             });
@@ -1355,6 +1434,8 @@ fn validate_cross_owner_lineage(
     transaction_id: TransactionId,
     canopy_forcing: &V8CanopyForcingReceipt,
     hydrology_snapshot_sha256: &Sha256Digest,
+    day_index: usize,
+    interval_index: u8,
 ) -> Result<(), V8InputProjectionError> {
     if lse_configuration
         .vegetation_configuration
@@ -1381,9 +1462,32 @@ fn validate_cross_owner_lineage(
         return Err(V8InputProjectionError::Identity("cross-owner lineage"));
     }
     if let Some(root) = &canopy_forcing.root_zone_hydraulics {
-        if root.model_definition_sha256 != V8_MODEL_SHA256
-            || &root.hydrology_snapshot_sha256 != hydrology_snapshot_sha256
+        if root.owner_id != ROOT_ZONE_OWNER_ID
+            || root.model_definition_sha256 != ROOT_ZONE_MODEL_SHA256
+        {
+            return Err(V8InputProjectionError::RootOwnerJoin("root model identity"));
+        }
+        if root.vegetation_configuration_sha256 != vegetation_configuration.configuration_sha256
+            || root.lse_configuration_sha256 != lse_configuration.configuration_sha256
+            || root.hydrology_configuration_sha256
+                != lse_configuration
+                    .hydrology_configuration
+                    .configuration_sha256
+        {
+            return Err(V8InputProjectionError::RootOwnerJoin(
+                "root configuration identities",
+            ));
+        }
+        if &root.hydrology_snapshot_sha256 != hydrology_snapshot_sha256
             || root.transaction_id != transaction_id
+            || root.day_index != day_index
+            || root.interval_index != interval_index
+        {
+            return Err(V8InputProjectionError::RootOwnerJoin(
+                "root interval lineage",
+            ));
+        }
+        if root.vegetation_root_bindings_sha256 != root_binding_digest(&root.receipts)
             || root.receipt_sha256 != root.compute_digest()
         {
             return Err(V8InputProjectionError::RootReceiptDigest);
@@ -1850,10 +1954,25 @@ mod tests {
                 soil_thermal: SoilThermalOfeSnapshot {
                     ofe_id,
                     ordered_layers: vec![SoilThermalLayerSnapshot {
-                        layer_id,
+                        layer_id: layer_id.clone(),
                         temperature_k: 293.0,
                         enthalpy_j_m2_ofe_ground: 1.0,
                     }],
+                },
+                top_hydrology: RealHydrologyLayerFact {
+                    source: RealHydrologySourceKey {
+                        ofe_lane: crate::vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId {
+                            lane_index: 0,
+                            lane_id: 1,
+                        },
+                        layer_id: layer_id.clone(),
+                    },
+                    liquid_supply_kg_m2: 1.0,
+                    frozen: false,
+                    liquid_water_depth_m: 0.01,
+                    layer_thickness_m: 0.08,
+                    porosity: 0.4,
+                    saturated_conductivity_m_s: 1.0e-6,
                 },
             },
             occupancies: Vec::new(),
@@ -1967,7 +2086,12 @@ mod tests {
         let set = V10RootZoneReceiptSet::try_new(
             "a".repeat(64),
             Sha256Digest::try_new("b".repeat(64)).unwrap(),
+            "c".repeat(64),
+            Sha256Digest::try_new("d".repeat(64)).unwrap(),
+            Sha256Digest::try_new("e".repeat(64)).unwrap(),
             TransactionId(7),
+            0,
+            0,
             vec![
                 receipt(left.clone(), -100.0),
                 receipt(right.clone(), -250.0),

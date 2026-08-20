@@ -298,6 +298,8 @@ fn execute_v8_lse_runtime_shadow_phases(
         soil_adapter,
         surface_configuration,
         soil_thermal,
+        day_index,
+        interval_index,
     )?;
     injected(injection, V8EndpointFailureInjection::AfterProjection)?;
     let ingress_schedule = derive_ingress_schedule(
