@@ -13,11 +13,12 @@
     "area_m2":{"type":"number","exclusiveMinimum":0},
     "timestamp":{"type":"string","minLength":1},
     "topology_tiles":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["tile_id","fraction_bits"],"properties":{"tile_id":{"type":"string","minLength":1},"fraction_bits":{"$ref":"#/$defs/f64bits"}}}},
-    "strata":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["stratum_id","v10_configuration_canonical_json","v10_physical_configuration_sha256"],"properties":{"stratum_id":{"type":"string","minLength":1},"v10_configuration_canonical_json":{"type":"object","minProperties":1},"v10_physical_configuration_sha256":{"$ref":"#/$defs/sha"}}}}
+    "strata":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["stratum_id","v10_configuration_canonical_json","v10_physical_configuration_sha256"],"properties":{"stratum_id":{"type":"string","minLength":1},"v10_configuration_canonical_json":{"$ref":"#/$defs/v10config"},"v10_physical_configuration_sha256":{"$ref":"#/$defs/sha"}}}}
   },
   "$defs":{
     "sha":{"type":"string","pattern":"^[0-9a-f]{64}$"},
     "f64bits":{"type":"string","pattern":"^[0-9a-f]{16}$"},
-    "u128_positive":{"type":"string","pattern":"^(?:[1-9][0-9]*)$"}
+    "u128_positive":{"type":"string","pattern":"^(?:[1-9][0-9]*)$"},
+    "v10config":{"type":"object","additionalProperties":false,"required":["schema","model_sha256","configuration_sha256","dt_s_bits","area_m2_bits"],"properties":{"schema":{"const":"OPENWEPP_C3_WOODY_V10_CONFIGURATION_CANONICAL_V1"},"model_sha256":{"$ref":"#/$defs/sha"},"configuration_sha256":{"$ref":"#/$defs/sha"},"dt_s_bits":{"$ref":"#/$defs/f64bits"},"area_m2_bits":{"$ref":"#/$defs/f64bits"}}}
   }
 }

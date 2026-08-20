@@ -233,3 +233,100 @@ must be judged separately under `A-007`; they do not cure custody/wire gaps.
 not terminally closed at 675296fdb`.
 
 Do not promote or begin production Rust from this candidate.
+
+---
+
+## Final re-review — candidate `c7ec8e73096f9816ffbe812ac15deeba1d2b8574`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + adversarial probe`
+
+Ran on the exact candidate:
+
+- strict BEI checks => PASS for both contracts;
+- science-contract unit-compliance => PASS for both contracts;
+- independent semantic validator => PASS valid construction, before/after
+  checkpoint equivalence, atomic commit, and 21/21 poisons;
+- V11 authority contract test => PASS, 5/5;
+- `git diff --check` => PASS before this append.
+
+The executable authenticated receipt model, staged resource folds, event
+custody, material ordering, publication buffering, one-shot store, and poison
+suite are substantive corrections. They close the former purely flag/count
+posture. Three exact blockers remain.
+
+### `V11-AUTH-B-001` — OPEN — the released restart wire is still not exercised
+
+`semantic_schema_validator.py` does not construct, validate, serialize, or
+restore `OPENWEPP_C3_WOODY_V11_RESTART_V1` from `v11-restart-schema.json`.
+Instead it invents the narrower
+`OPENWEPP_C3_WOODY_V11_CHECKPOINT_TEST_V2`, containing only parent/receipt
+prefixes and staged resource bits. It omits the released restart's complete
+owner candidates, active participants/segment, coupled-time V2 bytes,
+reductions, pending publication, outbox, scheduled/material receipts, and
+current/next sequence. `restore_and_continue` then validates the already-complete
+parent candidate and commits it; it does not resume physical construction from
+the checkpoint. Thus fresh-object/event-boundary equivalent continuation of the
+actual additive wire remains unproven.
+
+Required closure: construct the exact V11 restart schema before and after the
+event, execute the mandatory semantic validator over every field/cross-wire
+join, deserialize into a fresh staged coordinator, continue only the remaining
+chronology, and compare terminal owners/receipts/reductions/publication bytes
+with uninterrupted execution. Poison each omitted/reordered/duplicated field.
+
+### `V11-AUTH-B-002` — PARTIAL — validator scope does not cover all admitted wires
+
+The semantic validator is now normative and executable for the parent
+candidate and its receipt payloads, closing the prior unauthenticated-receipt
+defect. It still never admits V11 configuration, V11 state, or V11 restart,
+although the contract says JSON shape alone never admits any of them. Their
+`v10_*_canonical_json` payloads remain schema-open objects and no executed case
+checks embedded V10 schema/version, configuration/state digest reconstruction,
+unknown fields, or canonical parse-reserialize identity. The test assertion
+that base64 field names are absent is not semantic admission.
+
+Required closure: extend the independent validator and poisons to the exact
+configuration/state/restart wires, including closed embedded V10 schema
+identity, digest joins, unknown-field rejection, canonical JSON bytes, and
+roundtrip equality.
+
+### `V11-AUTH-B-005` — OPEN — live beginning-owner authentication is missing
+
+The candidate schema and validator now authenticate receipt payloads and a
+fixed seven-class order. However `AtomicStore.commit` checks only live clock
+identity; it never requires the store's current owner digests to equal
+`candidate.beginning_owner_sha256`. An adversarial read-only probe changed the
+candidate's vegetation beginning digest to all zeros, recomputed the parent
+receipt, and observed both `validate(c) => PASS` and `commit(c) => consumed`.
+This violates the required same-beginning complete-owner join and permits a
+stale/foreign candidate to overwrite live owners.
+
+The candidate also represents one digest per owner class, while the normative
+manifest requires owner IDs, expected per-class counts, schema/model/config IDs,
+and multiple within-class owners ordered by canonical ID. Those fields do not
+exist in the schema or executable manifest.
+
+Required closure: authenticate exact live owner set against candidate
+beginnings before any install; encode/validate the full typed owner manifest and
+cardinality; add stale-beginning, multiple-owner, wrong owner-schema/config,
+missing/extra ID, and late-failure rollback poisons.
+
+### Prior findings otherwise
+
+- `V11-AUTH-B-003`: materially closed for the reference transaction. It now
+  uses binary64 bits, sequential request/authorization/final-use/ending folds,
+  distinct water/NH4/NO3, and independent receipt authentication. Production
+  implementation must retain full OFE/tile/layer/basis identity.
+- `V11-AUTH-B-004`: materially closed for candidate/event/resource/material/
+  publication/atomicity poisons by the independent semantic model, subject to
+  the actual-restart and live-owner gaps above.
+
+### Final verdict
+
+`HOLD / B001, B002, and B005 remain release-blocking at c7ec8e730`.
+
+Do not promote the authority or begin production Rust.

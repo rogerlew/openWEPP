@@ -227,3 +227,79 @@ Re-review gates run at the corrected commit:
 - `cargo test --test c3_woody_v11_authority_contract`: 4/4 PASS;
 - independent calculator: 46/46 reported PASS, subject to RA-001/003/004;
 - `git diff --check`: PASS.
+
+## Final re-review at typed-validator candidate
+
+Reviewed exact commit: `c7ec8e73096f9816ffbe812ac15deeba1d2b8574`
+
+Evidence class: `Static + Ran + adversarial execution`
+
+Verdict: `HOLD`.
+
+The seven-owner manifest, framed receipts, event record, sequential resource
+receipts, prefix checkpoint objects, consuming store, 21 poisons, and mandatory
+validator contract are substantial corrections. They close the earlier
+case-count/outer-framing gaps, but three authority defects remain executable.
+
+### FA-001 — Blocker — Receipt payloads are canonical but not closed or typed
+
+`validate_receipt` authenticates base64, canonical JSON, digest, kind, and
+ordinal, but every receipt body remains an unconstrained JSON object. Each
+kind-specific validator reads selected keys and never rejects unknown keys or
+enforces an exact field set/schema. Adversarial execution added
+`unknown_field` to a resource body, rebuilt its authenticated receipt and parent
+receipt, and `validate` accepted it. Therefore the claimed mandatory semantic
+validator still admits unknown receipt semantics, contrary to the canonical
+contract's explicit unknown-object rejection.
+
+Required disposition: freeze exact closed body schemas/field sets for slab,
+event, scheduled, resource, material, and publication receipts and reject
+missing/extra/wrong-typed fields before digest/ledger admission. Add one poison
+per receipt kind.
+
+### FA-002 — Blocker — Resource/event receipts do not authenticate complete-owner endings
+
+The resource recurrence now checks request, authorization, final use, staged
+beginning, and ending bits in exact order. However, its reconstructed water and
+N endings are never joined to the hydrology/BGC digests in
+`ending_owner_sha256`. Likewise, the event checks snow beginning/ending but
+does not bind the receiving surface-liquid ending to `transfer_bits`.
+Adversarial execution replaced the hydrology ending digest with 64 `f` bytes,
+recomputed the parent receipt, and `validate` accepted it. This leaves the
+complete-owner candidate independent of the custody ledgers it claims to
+install.
+
+Required disposition: deterministically reconstruct and compare every affected
+owner ending (water/hydrology, NH4/NO3/BGC, event donor and receiver,
+vegetation/material receiver) and poison each cross-owner join.
+
+### FA-003 — Blocker — Restore/commit does not join an external accepted owner set or continue from the prefix
+
+`restore_and_continue` authenticates the accepted resource prefix, then calls
+`validate(c)` on the already complete uninterrupted candidate and constructs
+`AtomicStore(c)`, whose live owners and clock are initialized from that same
+candidate. It does not rebuild suffix slabs/events/resources from restored
+state. Thus it is a prefix check followed by replay of a prebuilt final
+candidate, not restore-and-continuation. The same self-seeding makes the commit
+join tautological: adversarial execution forged the candidate's hydrology
+beginning digest, recomputed the parent receipt, and the store committed it.
+The `restart_event_replay` and `rejected_attempt_leakage` poisons also raise
+directly in `mutate` rather than being detected by restore/validation.
+
+Required disposition: supply an independently held accepted live clock/owner
+set to restore and commit; reconstruct the suffix from checkpoint cursor,
+ordinals, participants, receipts, and staged owners; compare the resulting
+candidate/commit bytes with uninterrupted execution; route replay/leakage
+poisons through that validator.
+
+Final re-review gates:
+
+- strict BEI lint: PASS for both contracts;
+- science-contract unit lint: PASS for both contracts;
+- authority contract test: 5/5 PASS;
+- chronology calculator: 46/46 reported PASS;
+- semantic validator: valid case, 21/21 poisons, two checkpoint digests,
+  seven-owner commit and publication assertions PASS;
+- adversarial semantic probes: unknown receipt payload accepted; forged
+  hydrology ending accepted; forged beginning self-seeded and committed;
+- `git diff --check`: PASS.

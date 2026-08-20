@@ -22,5 +22,10 @@
     {"id":"late_failure","mutation":"late_failure","error":"V11-PARENT-ABORT"},
     {"id":"publication_before_commit","mutation":"publication_before_commit","error":"V11-PUBLICATION"},
     {"id":"commit_consumed_twice","mutation":"commit_consumed_twice","error":"V11-COMMIT-CONSUMED"}
+    ,{"id":"unknown_receipt_body_field","mutation":"unknown_receipt_body_field","error":"V11-SCHEMA-BODY"}
+    ,{"id":"forged_hydrology_ending","mutation":"forged_hydrology_ending","error":"V11-OWNER-ENDING"}
+    ,{"id":"forged_live_beginning","mutation":"forged_live_beginning","error":"V11-BEGINNING-OWNER"}
+    ,{"id":"checkpoint_rejected_leakage","mutation":"checkpoint_rejected_leakage","error":"V11-REJECTED-LEAKAGE"}
+    ,{"id":"checkpoint_event_replay","mutation":"checkpoint_event_replay","error":"V11-REPLAY"}
   ]
 }

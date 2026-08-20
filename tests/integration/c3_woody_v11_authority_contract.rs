@@ -140,6 +140,8 @@ fn typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit() {
     let base = "docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts";
     for name in [
         "parent-candidate-schema.json",
+        "owner-descriptor-manifest-schema.json",
+        "imported-canonical-fixtures.json",
         "semantic-schema-poisons.json",
     ] {
         let _: Value = serde_json::from_str(&read(&format!("{base}/{name}"))).unwrap();
@@ -178,7 +180,7 @@ fn typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit() {
         result["valid"]["ending_resource_bits"]["water"],
         "0000000000000000"
     );
-    assert_eq!(result["poisons"].as_array().unwrap().len(), 21);
+    assert_eq!(result["poisons"].as_array().unwrap().len(), 26);
     let ids = result["poisons"]
         .as_array()
         .unwrap()
@@ -195,6 +197,11 @@ fn typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit() {
         "partial_owner_commit",
         "late_failure",
         "commit_consumed_twice",
+        "unknown_receipt_body_field",
+        "forged_hydrology_ending",
+        "forged_live_beginning",
+        "checkpoint_rejected_leakage",
+        "checkpoint_event_replay",
     ] {
         assert!(ids.contains(&id), "missing semantic poison {id}");
     }

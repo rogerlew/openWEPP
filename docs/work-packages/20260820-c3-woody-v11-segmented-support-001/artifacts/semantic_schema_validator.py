@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 OWNERS = ["vegetation", "snow", "land_surface_energy", "surface_liquid", "hydrology", "bgc", "soil_thermal"]
 PARTICIPANTS = [["vegetation", "snow"], ["vegetation", "surface"]]
+BODY_KEYS={"slab":{"parent_id","slab_ordinal","start_ns","end_ns","duration_s_bits","active_participants","beginning_vegetation_sha256"},"event":{"event_ordinal","tick_ns","event","beginning_owner_sha256","ending_owner_sha256","from_participants","to_participants","transfer_bits"},"scheduled":{"operation","execution_boundary","count"},"resource":{"resource","slab_ordinal","owner_id","beginning_bits","requested_bits","authorized_bits","final_use_bits","ending_bits"},"material":{"slab_ordinal","transfer_id","amount_bits","source","receiver"},"publication":{"metric","operand_bits","value_bits","visibility"}}
 
 def canonical(value): return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()
 def sha(data): return hashlib.sha256(data).hexdigest()
@@ -38,6 +39,7 @@ def validate_receipt(r,parent,ordinal,kind):
     if set(r)!={"kind","ordinal","identity_sha256","payload","payload_sha256"}: raise ValueError("V11-SCHEMA-TAG")
     if r["kind"]!=kind or r["ordinal"]!=ordinal: raise ValueError("V11-SCHEMA-TAG")
     body=payload(r)
+    if set(body)!=BODY_KEYS[kind]: raise ValueError("V11-SCHEMA-BODY")
     if r["identity_sha256"]!=framed("v11-receipt",kind,ordinal,parent,r["payload_sha256"]): raise ValueError("V11-SCHEMA-DIGEST")
     return body
 
@@ -68,13 +70,19 @@ def build():
             receipts["event"].append(receipt("event",0,parent,eb)); owners["snow"]=eb["ending_owner_sha256"]; owners["surface_liquid"]=framed("event-receiver",owners["surface_liquid"],eb["transfer_bits"])
     receipts["scheduled"].append(receipt("scheduled",0,parent,{"operation":"gsi","execution_boundary":"parent","count":1}))
     receipts["publication"].append(receipt("publication",0,parent,{"metric":"peak_transpiration","operand_bits":[bits(.2),bits(.4)],"value_bits":bits(.4),"visibility":"pending"}))
-    candidate={"schema":"OPENWEPP_C3_WOODY_V11_PARENT_CANDIDATE_V1","parent_id":parent,"clock_begin_sha256":framed("clock",0),"clock_end_sha256":framed("clock",1_800_000_000_000),"complete_owner_manifest":OWNERS.copy(),"beginning_owner_sha256":[initial[x] for x in OWNERS],"ending_owner_sha256":[owners[x] for x in OWNERS],"slab_receipts":receipts["slab"],"event_receipts":receipts["event"],"scheduled_receipts":receipts["scheduled"],"resource_receipts":receipts["resource"],"material_receipts":receipts["material"],"publication_receipts":receipts["publication"],"parent_receipt_sha256":""}
+    classes={"vegetation":"PhysicalState","snow":"PhysicalState","land_surface_energy":"PhysicalState","surface_liquid":"BoundaryState","hydrology":"ResourceInventory","bgc":"ResourceInventory","soil_thermal":"PhysicalState"}
+    manifest={"schema":"OPENWEPP_C3_WOODY_V11_OWNER_MANIFEST_V1","owner_count":len(OWNERS),"owners":[{"ordinal":i,"owner_id":name,"owner_class":classes[name],"schema_id":f"OPENWEPP_{name.upper()}_OWNER_V1","model_sha256":framed("model",name),"configuration_sha256":framed("configuration",name),"beginning_sha256":initial[name]} for i,name in enumerate(OWNERS)]}
+    candidate={"schema":"OPENWEPP_C3_WOODY_V11_PARENT_CANDIDATE_V1","parent_id":parent,"owner_manifest":manifest,"clock_begin_sha256":framed("clock",0),"clock_end_sha256":framed("clock",1_800_000_000_000),"complete_owner_manifest":OWNERS.copy(),"beginning_owner_sha256":[initial[x] for x in OWNERS],"ending_owner_sha256":[owners[x] for x in OWNERS],"slab_receipts":receipts["slab"],"event_receipts":receipts["event"],"scheduled_receipts":receipts["scheduled"],"resource_receipts":receipts["resource"],"material_receipts":receipts["material"],"publication_receipts":receipts["publication"],"parent_receipt_sha256":""}
     candidate["parent_receipt_sha256"]=framed("parent-receipt",parent,sha(canonical({**candidate,"parent_receipt_sha256":""})))
     return candidate
 
 def validate(c):
     if c.get("schema")!="OPENWEPP_C3_WOODY_V11_PARENT_CANDIDATE_V1": raise ValueError("V11-SCHEMA-TAG")
+    exact={"schema","parent_id","owner_manifest","clock_begin_sha256","clock_end_sha256","complete_owner_manifest","beginning_owner_sha256","ending_owner_sha256","slab_receipts","event_receipts","scheduled_receipts","resource_receipts","material_receipts","publication_receipts","parent_receipt_sha256"}
+    if set(c)!=exact: raise ValueError("V11-SCHEMA-BODY")
     if c["complete_owner_manifest"]!=OWNERS or len(set(c["complete_owner_manifest"]))!=len(OWNERS): raise ValueError("V11-OWNER-MANIFEST")
+    manifest=c["owner_manifest"]; owner_keys={"ordinal","owner_id","owner_class","schema_id","model_sha256","configuration_sha256","beginning_sha256"}
+    if set(manifest)!={"schema","owner_count","owners"} or manifest["schema"]!="OPENWEPP_C3_WOODY_V11_OWNER_MANIFEST_V1" or manifest["owner_count"]!=len(OWNERS) or len(manifest["owners"])!=len(OWNERS) or any(set(o)!=owner_keys or o["ordinal"]!=i or o["owner_id"]!=OWNERS[i] or o["beginning_sha256"]!=c["beginning_owner_sha256"][i] for i,o in enumerate(manifest["owners"])): raise ValueError("V11-OWNER-MANIFEST")
     if len(c["beginning_owner_sha256"])!=len(OWNERS) or len(c["ending_owner_sha256"])!=len(OWNERS): raise ValueError("V11-ATOMICITY")
     parent=c["parent_id"]
     slabs=[validate_receipt(r,parent,i,"slab") for i,r in enumerate(c["slab_receipts"])]
@@ -104,40 +112,82 @@ def validate(c):
     if any(p["visibility"]!="pending" or p["value_bits"]!=max(p["operand_bits"],key=from_bits) for p in pubs): raise ValueError("V11-PUBLICATION")
     claimed=c["parent_receipt_sha256"]; blank={**c,"parent_receipt_sha256":""}
     if claimed!=framed("parent-receipt",parent,sha(canonical(blank))): raise ValueError("V11-SCHEMA-DIGEST")
+    reconstructed=dict(zip(OWNERS,c["beginning_owner_sha256"])); veg=reconstructed["vegetation"]
+    for i,s in enumerate(slabs): veg=framed("vegetation-ending",veg,i,s["duration_s_bits"])
+    reconstructed["vegetation"]=veg; reconstructed["snow"]=events[0]["ending_owner_sha256"]
+    reconstructed["surface_liquid"]=framed("event-receiver",reconstructed["surface_liquid"],events[0]["transfer_bits"])
+    for r in resources:
+        owner_class="hydrology" if r["resource"]=="water" else "bgc"
+        reconstructed[owner_class]=framed("resource-ending",reconstructed[owner_class],r["resource"],r["ending_bits"])
+    if [reconstructed[x] for x in OWNERS]!=c["ending_owner_sha256"]: raise ValueError("V11-OWNER-ENDING")
     return {"ending_resource_bits":expected,"receipt_count":sum(len(c[k]) for k in ("slab_receipts","event_receipts","scheduled_receipts","resource_receipts","material_receipts","publication_receipts"))}
 
+def replay_prefix(c,event_count):
+    staged=dict(zip(OWNERS,c["beginning_owner_sha256"]))
+    slab=validate_receipt(c["slab_receipts"][0],c["parent_id"],0,"slab")
+    staged["vegetation"]=framed("vegetation-ending",staged["vegetation"],0,slab["duration_s_bits"])
+    resources=c["resource_receipts"][:3]
+    inventory={"water":bits(3.0),"nh4":add_bits(bits(.1),bits(.2)),"no3":add_bits(bits(.3),bits(.4))}
+    for i,r in enumerate(resources):
+        body=validate_receipt(r,c["parent_id"],i,"resource")
+        if body["beginning_bits"]!=inventory[body["resource"]]: raise ValueError("V11-RESOURCE")
+        inventory[body["resource"]]=body["ending_bits"]
+        owner_class="hydrology" if body["resource"]=="water" else "bgc"
+        staged[owner_class]=framed("resource-ending",staged[owner_class],body["resource"],body["ending_bits"])
+    if event_count:
+        event=validate_receipt(c["event_receipts"][0],c["parent_id"],0,"event")
+        if event["beginning_owner_sha256"]!=staged["snow"]: raise ValueError("V11-EVENT-CUSTODY")
+        staged["snow"]=event["ending_owner_sha256"]
+        staged["surface_liquid"]=framed("event-receiver",staged["surface_liquid"],event["transfer_bits"])
+    return staged,inventory
 def checkpoint(c,phase):
     event_count=0 if phase=="before_event" else 1
     prefix_resources=c["resource_receipts"][:3]
-    staged={"water":bits(3.0),"nh4":add_bits(bits(.1),bits(.2)),"no3":add_bits(bits(.3),bits(.4))}
-    for i,r in enumerate(prefix_resources):
-        body=validate_receipt(r,c["parent_id"],i,"resource")
-        if body["beginning_bits"]!=staged[body["resource"]]: raise ValueError("V11-RESOURCE")
-        staged[body["resource"]]=body["ending_bits"]
-    cp={"schema":"OPENWEPP_C3_WOODY_V11_CHECKPOINT_TEST_V2","phase":phase,"parent_id":c["parent_id"],"parent_receipt_sha256":c["parent_receipt_sha256"],"accepted_slab_receipts":c["slab_receipts"][:1],"accepted_event_receipts":c["event_receipts"][:event_count],"accepted_resource_receipts":prefix_resources,"staged_resource_bits":staged,"next_slab_ordinal":1,"next_event_ordinal":event_count,"consumed":False}
+    staged_owners,staged=replay_prefix(c,event_count)
+    coupled=canonical({"schema":"OPENWEPP_COUPLED_TIME_RESTART_V2","accepted_until_ns":"600000000000","next_slab_ordinal":1,"next_event_ordinal":event_count})
+    imported=json.loads((ROOT/"imported-canonical-fixtures.json").read_text()); physical=imported["state"]; physical_digest=sha(canonical(physical))
+    staged_state={"schema":"OPENWEPP_C3_WOODY_V11_STATE_V1","model_definition_sha256":framed("v11-model"),"configuration_sha256":imported["configuration"]["configuration_sha256"],"state_sha256":framed("v11-state",physical_digest,24),"v10_physical_state_canonical_json":physical,"physical_state_sha256":physical_digest,"last_parent_transaction_sequence":"23"}
+    cp={"schema":"OPENWEPP_C3_WOODY_V11_RESTART_V1","authority_sha256":framed("v11-authority"),"configuration_sha256":imported["configuration"]["configuration_sha256"],"checkpoint_phase":phase,"parent_transaction_id":c["parent_id"],"parent_transaction_sequence":"24","next_parent_transaction_sequence":"25","accepted_until_ns":"600000000000","next_slab_ordinal":1,"next_event_ordinal":event_count,"active_participant_ids":PARTICIPANTS[0 if event_count==0 else 1],"coupled_time_v2_base64":base64.b64encode(coupled).decode(),"coupled_time_v2_sha256":sha(coupled),"complete_owner_manifest":c["complete_owner_manifest"],"parent_beginning_owner_sha256":c["beginning_owner_sha256"],"staged_owner_sha256":[staged_owners[x] for x in OWNERS],"staged_v11_state":staged_state,"accepted_slab_receipts":c["slab_receipts"][:1],"accepted_event_receipts":c["event_receipts"][:event_count],"accepted_resource_receipts":prefix_resources,"accepted_material_receipts":c["material_receipts"][:1],"scheduled_once_receipts":[],"staged_resource_bits":staged,"reduction_state":{"peak_bits":bits(.2),"operand_count":1},"pending_publication_records":[],"publication_outbox":[],"parent_receipt_sha256":c["parent_receipt_sha256"]}
     wire=canonical(cp); return json.loads(wire),sha(wire)
 def restore_and_continue(cp,c):
     restored=json.loads(canonical(cp))
-    if restored["schema"]!="OPENWEPP_C3_WOODY_V11_CHECKPOINT_TEST_V2" or restored["parent_id"]!=c["parent_id"] or restored["parent_receipt_sha256"]!=c["parent_receipt_sha256"]: raise ValueError("V11-RESTART")
+    required={"schema","authority_sha256","configuration_sha256","checkpoint_phase","parent_transaction_id","parent_transaction_sequence","next_parent_transaction_sequence","accepted_until_ns","next_slab_ordinal","next_event_ordinal","active_participant_ids","coupled_time_v2_base64","coupled_time_v2_sha256","complete_owner_manifest","parent_beginning_owner_sha256","staged_owner_sha256","staged_v11_state","accepted_slab_receipts","accepted_event_receipts","accepted_resource_receipts","accepted_material_receipts","scheduled_once_receipts","staged_resource_bits","reduction_state","pending_publication_records","publication_outbox","parent_receipt_sha256"}
+    if set(restored)!=required or restored["schema"]!="OPENWEPP_C3_WOODY_V11_RESTART_V1" or restored["parent_transaction_id"]!=c["parent_id"] or restored["parent_receipt_sha256"]!=c["parent_receipt_sha256"]: raise ValueError("V11-RESTART")
+    coupled=base64.b64decode(restored["coupled_time_v2_base64"],validate=True)
+    if sha(coupled)!=restored["coupled_time_v2_sha256"] or canonical(json.loads(coupled))!=coupled: raise ValueError("V11-RESTART")
+    state=restored["staged_v11_state"]; state_keys={"schema","model_definition_sha256","configuration_sha256","state_sha256","v10_physical_state_canonical_json","physical_state_sha256","last_parent_transaction_sequence"}
+    if set(state)!=state_keys or set(state["v10_physical_state_canonical_json"])!={"schema","state_sha256","transaction_sequence","canopy_liquid_bits","t10_k_bits"} or sha(canonical(state["v10_physical_state_canonical_json"]))!=state["physical_state_sha256"] or state["configuration_sha256"]!=restored["configuration_sha256"]: raise ValueError("V11-RESTART")
+    if len(restored["accepted_event_receipts"])!=restored["next_event_ordinal"] or len({x["identity_sha256"] for x in restored["accepted_event_receipts"]})!=len(restored["accepted_event_receipts"]): raise ValueError("V11-REPLAY")
+    if len(restored["accepted_resource_receipts"])!=3*restored["next_slab_ordinal"]: raise ValueError("V11-REJECTED-LEAKAGE")
     for group in ("slab","event","resource"):
         accepted=restored[f"accepted_{group}_receipts"]
         full=c[f"{group}_receipts"]
         if [x["identity_sha256"] for x in accepted]!=[x["identity_sha256"] for x in full[:len(accepted)]]: raise ValueError("V11-RESTART")
-    staged={"water":bits(3.0),"nh4":add_bits(bits(.1),bits(.2)),"no3":add_bits(bits(.3),bits(.4))}
-    for i,r in enumerate(restored["accepted_resource_receipts"]):
+    staged_owners,staged=replay_prefix(c,restored["next_event_ordinal"])
+    if staged!=restored["staged_resource_bits"] or [staged_owners[x] for x in OWNERS]!=restored["staged_owner_sha256"]: raise ValueError("V11-RESTART")
+    if restored["next_event_ordinal"]==0:
+        event=validate_receipt(c["event_receipts"][0],c["parent_id"],0,"event")
+        staged_owners["snow"]=event["ending_owner_sha256"]
+        staged_owners["surface_liquid"]=framed("event-receiver",staged_owners["surface_liquid"],event["transfer_bits"])
+    slab=validate_receipt(c["slab_receipts"][1],c["parent_id"],1,"slab")
+    staged_owners["vegetation"]=framed("vegetation-ending",staged_owners["vegetation"],1,slab["duration_s_bits"])
+    for i,r in enumerate(c["resource_receipts"][3:],start=3):
         body=validate_receipt(r,c["parent_id"],i,"resource")
         if body["beginning_bits"]!=staged[body["resource"]]: raise ValueError("V11-RESTART")
         staged[body["resource"]]=body["ending_bits"]
-    if staged!=restored["staged_resource_bits"]: raise ValueError("V11-RESTART")
+        owner_class="hydrology" if body["resource"]=="water" else "bgc"
+        staged_owners[owner_class]=framed("resource-ending",staged_owners[owner_class],body["resource"],body["ending_bits"])
+    if [staged_owners[x] for x in OWNERS]!=c["ending_owner_sha256"]: raise ValueError("V11-RESTART")
     validate(c)
-    return AtomicStore(c).commit(c)
+    return AtomicStore(c["beginning_owner_sha256"],c["clock_begin_sha256"]).commit(c)
 class AtomicStore:
-    def __init__(self,c):
-        self.owners=c["beginning_owner_sha256"].copy(); self.clock=c["clock_begin_sha256"]
+    def __init__(self,live_owners,live_clock):
+        self.owners=live_owners.copy(); self.clock=live_clock
         self.published=[]; self.consumed=set()
     def commit(self,c,install_order=None,fail_after=None):
         validate(c)
         if c["parent_id"] in self.consumed: raise ValueError("V11-COMMIT-CONSUMED")
+        if self.owners!=c["beginning_owner_sha256"]: raise ValueError("V11-BEGINNING-OWNER")
         if self.clock!=c["clock_begin_sha256"]: raise ValueError("V11-STALE-CLOCK")
         order=OWNERS if install_order is None else install_order
         if order!=OWNERS: raise ValueError("V11-ATOMICITY")
@@ -169,14 +219,22 @@ def mutate(base,name):
         elif name=="stale_clock_commit": return c
         elif name=="late_failure": return c
         elif name=="commit_consumed_twice": return c
+        elif name=="unknown_receipt_body_field":
+            body=payload(c["slab_receipts"][0]); body["unknown"]=1; c["slab_receipts"][0]=receipt("slab",0,c["parent_id"],body)
+        elif name=="forged_hydrology_ending": c["ending_owner_sha256"][OWNERS.index("hydrology")]=framed("forged-hydrology")
+        elif name=="forged_live_beginning": return c
+        elif name in ("checkpoint_rejected_leakage","checkpoint_event_replay"): return c
     if name not in ("wrong_digest","wrong_schema","invalid_base64","reordered_owner_manifest","duplicate_owner"):
         c["parent_receipt_sha256"]=framed("parent-receipt",c["parent_id"],sha(canonical({**c,"parent_receipt_sha256":""})))
     return c
 def main():
+    imported=json.loads((ROOT/"imported-canonical-fixtures.json").read_bytes())
+    if set(imported)!={"schema","configuration","state"} or set(imported["configuration"])!={"schema","model_sha256","configuration_sha256","dt_s_bits","area_m2_bits"} or set(imported["state"])!={"schema","state_sha256","transaction_sequence","canopy_liquid_bits","t10_k_bits"}: raise SystemExit("imported canonical fixture is not closed")
+    if canonical(imported)!= (ROOT/"imported-canonical-fixtures.json").read_bytes().rstrip(b"\n"): raise SystemExit("imported canonical fixture is not canonical")
     base=build(); valid=validate(base)
     before,before_digest=checkpoint(base,"before_event"); after,after_digest=checkpoint(base,"after_event")
     assert canonical(before)==canonical(json.loads(canonical(before))) and canonical(after)==canonical(json.loads(canonical(after)))
-    uninterrupted_store=AtomicStore(base); uninterrupted=uninterrupted_store.commit(base)
+    uninterrupted_store=AtomicStore(base["beginning_owner_sha256"],base["clock_begin_sha256"]); uninterrupted=uninterrupted_store.commit(base)
     restored_before=restore_and_continue(before,base)
     restored_after=restore_and_continue(after,base)
     assert uninterrupted==restored_before==restored_after and before_digest!=after_digest
@@ -185,16 +243,22 @@ def main():
         try:
             altered=mutate(base,case["mutation"])
             if case["mutation"]=="stale_clock_commit":
-                store=AtomicStore(altered); store.clock="0"*64; store.commit(altered)
+                store=AtomicStore(altered["beginning_owner_sha256"],"0"*64); store.commit(altered)
             elif case["mutation"]=="late_failure":
-                store=AtomicStore(altered); snapshot=(store.owners.copy(),store.clock,store.published.copy(),store.consumed.copy())
+                store=AtomicStore(altered["beginning_owner_sha256"],altered["clock_begin_sha256"]); snapshot=(store.owners.copy(),store.clock,store.published.copy(),store.consumed.copy())
                 try: store.commit(altered,fail_after=2)
                 finally:
                     if (store.owners,store.clock,store.published,store.consumed)!=snapshot: raise SystemExit("late failure did not roll back")
-            elif case["mutation"]=="partial_owner_commit": AtomicStore(altered).commit(altered,OWNERS[:-1])
-            elif case["mutation"]=="reordered_owner_commit": AtomicStore(altered).commit(altered,list(reversed(OWNERS)))
+            elif case["mutation"]=="partial_owner_commit": AtomicStore(altered["beginning_owner_sha256"],altered["clock_begin_sha256"]).commit(altered,OWNERS[:-1])
+            elif case["mutation"]=="reordered_owner_commit": AtomicStore(altered["beginning_owner_sha256"],altered["clock_begin_sha256"]).commit(altered,list(reversed(OWNERS)))
             elif case["mutation"]=="commit_consumed_twice":
-                store=AtomicStore(altered); store.commit(altered); store.commit(altered)
+                store=AtomicStore(altered["beginning_owner_sha256"],altered["clock_begin_sha256"]); store.commit(altered); store.commit(altered)
+            elif case["mutation"]=="forged_live_beginning":
+                live=altered["beginning_owner_sha256"].copy(); live[0]=framed("independent-live-forgery"); AtomicStore(live,altered["clock_begin_sha256"]).commit(altered)
+            elif case["mutation"]=="checkpoint_rejected_leakage":
+                cp,_=checkpoint(altered,"after_event"); cp["accepted_resource_receipts"].append(altered["resource_receipts"][3]); restore_and_continue(cp,altered)
+            elif case["mutation"]=="checkpoint_event_replay":
+                cp,_=checkpoint(altered,"after_event"); cp["accepted_event_receipts"].append(altered["event_receipts"][0]); restore_and_continue(cp,altered)
             else: validate(altered)
         except (ValueError,base64.binascii.Error,json.JSONDecodeError) as exc:
             actual=str(exc)

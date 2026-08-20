@@ -151,3 +151,63 @@ poisons.
 
 The correction improves normative direction but does not yet supply the closed,
 independently reconstructed owner transaction required before Rust.
+
+---
+
+## Final re-review — candidate `c7ec8e73096f9816ffbe812ac15deeba1d2b8574`
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + adversarial probe`
+
+Mechanical/independent gates pass: BEI, unit compliance, semantic validator
+with 21/21 poisons, and authority tests 5/5. The typed receipt/candidate model is
+a substantive improvement, but the transaction is not yet releasable.
+
+### `V11-TXN-B-001` — OPEN — profile integration contains a missing invariant
+
+Lifecycle status, producer/consumer scope, symbols/units, and guard-map rows
+were corrected. The edit accidentally removed the normative invariant-table
+statement for `INV-VEGTRANSACTION-010`; the ID now appears only in its guard-map
+row and BEI. The canonical staged-inventory/cumulative-fold invariant therefore
+has enforcement references but no normative statement. Restore that invariant
+and rerun BEI/profile gates.
+
+### `V11-TXN-B-003` — OPEN — candidate can commit from the wrong live owners
+
+The new candidate schema and `AtomicStore` prove fixed class order, one-shot
+consumption, stale-clock rejection, publication-after-install, and rollback.
+They do not join candidate beginning owners to live store owners. A read-only
+probe replaced the vegetation beginning digest with zeros, recomputed the
+parent receipt, and the validator and store both accepted it. Commit must reject
+unless every live owner digest and typed manifest entry exactly equals the
+candidate beginning.
+
+Further, `V11CompleteOwnerManifestV1` prose requires owner IDs, expected count,
+schema/model/configuration IDs, active disposition, and within-class ordering;
+the schema contains only seven class strings plus seven digest arrays. Encode
+the declared manifest rather than a one-owner-per-class surrogate.
+
+### `V11-TXN-B-004` — OPEN — checkpoint proof does not use the additive restart
+
+The independent model restores a package-local `CHECKPOINT_TEST_V2`, not
+`OPENWEPP_C3_WOODY_V11_RESTART_V1`. It then validates and commits the already
+finished candidate instead of continuing remaining slabs/events/resources from
+fresh restored owners. No reduction/publication/outbox or coupled-time V2 join
+is restored. Construct, admit, restore, and continue the actual closed restart
+wire before claiming equivalent continuation.
+
+### Other prior transaction findings
+
+- `V11-TXN-B-002` is materially closed for the reference water/NH4/NO3 staged
+  folds and authenticated receipt arithmetic.
+- `V11-TXN-B-005` is materially closed for the parent-candidate/event/material/
+  publication poison population, subject to the live-owner and actual-restart
+  blockers above.
+
+### Final verdict
+
+`HOLD / INV-010 authority, live-owner authentication, complete manifest, and
+actual restart continuation remain open at c7ec8e730`.
+
+No production Rust may begin from this checkpoint.

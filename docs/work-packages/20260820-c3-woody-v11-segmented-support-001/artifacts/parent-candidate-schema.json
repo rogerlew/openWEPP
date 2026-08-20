@@ -2,10 +2,11 @@
   "$schema":"https://json-schema.org/draft/2020-12/schema",
   "$id":"OPENWEPP_C3_WOODY_V11_PARENT_CANDIDATE_V1",
   "type":"object","additionalProperties":false,
-  "required":["schema","parent_id","clock_begin_sha256","clock_end_sha256","complete_owner_manifest","beginning_owner_sha256","ending_owner_sha256","slab_receipts","event_receipts","scheduled_receipts","resource_receipts","material_receipts","publication_receipts","parent_receipt_sha256"],
+  "required":["schema","parent_id","owner_manifest","clock_begin_sha256","clock_end_sha256","complete_owner_manifest","beginning_owner_sha256","ending_owner_sha256","slab_receipts","event_receipts","scheduled_receipts","resource_receipts","material_receipts","publication_receipts","parent_receipt_sha256"],
   "properties":{
     "schema":{"const":"OPENWEPP_C3_WOODY_V11_PARENT_CANDIDATE_V1"},
     "parent_id":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "owner_manifest":{"$ref":"owner-descriptor-manifest-schema.json"},
     "clock_begin_sha256":{"$ref":"#/$defs/sha"},"clock_end_sha256":{"$ref":"#/$defs/sha"},
     "complete_owner_manifest":{"type":"array","prefixItems":[{"const":"vegetation"},{"const":"snow"},{"const":"land_surface_energy"},{"const":"surface_liquid"},{"const":"hydrology"},{"const":"bgc"},{"const":"soil_thermal"}],"items":false,"minItems":7,"maxItems":7},
     "beginning_owner_sha256":{"type":"array","minItems":7,"maxItems":7,"items":{"$ref":"#/$defs/sha"}},

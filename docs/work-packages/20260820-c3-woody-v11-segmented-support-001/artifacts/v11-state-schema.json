@@ -9,9 +9,9 @@
     "model_definition_sha256":{"$ref":"#/$defs/sha"},
     "configuration_sha256":{"$ref":"#/$defs/sha"},
     "state_sha256":{"$ref":"#/$defs/sha"},
-    "v10_physical_state_canonical_json":{"type":"object","minProperties":1},
+    "v10_physical_state_canonical_json":{"$ref":"#/$defs/v10state"},
     "physical_state_sha256":{"$ref":"#/$defs/sha"},
     "last_parent_transaction_sequence":{"$ref":"#/$defs/u128"}
   },
-  "$defs":{"sha":{"type":"string","pattern":"^[0-9a-f]{64}$"},"u128":{"type":"string","pattern":"^(?:0|[1-9][0-9]*)$"}}
+  "$defs":{"sha":{"type":"string","pattern":"^[0-9a-f]{64}$"},"f64bits":{"type":"string","pattern":"^[0-9a-f]{16}$"},"u128":{"type":"string","pattern":"^(?:0|[1-9][0-9]*)$"},"v10state":{"type":"object","additionalProperties":false,"required":["schema","state_sha256","transaction_sequence","canopy_liquid_bits","t10_k_bits"],"properties":{"schema":{"const":"OPENWEPP_C3_WOODY_V10_STATE_CANONICAL_V1"},"state_sha256":{"$ref":"#/$defs/sha"},"transaction_sequence":{"$ref":"#/$defs/u128"},"canopy_liquid_bits":{"$ref":"#/$defs/f64bits"},"t10_k_bits":{"$ref":"#/$defs/f64bits"}}}}
 }

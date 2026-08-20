@@ -189,3 +189,77 @@ Re-review gates run at the corrected commit:
 - independent calculator: 46/46 reported PASS, with the semantic limitations
   above;
 - `git diff --check`: PASS.
+
+## Final re-review at typed-validator candidate
+
+Reviewed exact commit: `c7ec8e73096f9816ffbe812ac15deeba1d2b8574`
+
+Evidence class: `Static + Ran + adversarial execution`
+
+Verdict: `HOLD`.
+
+The integrated Version 4 authority now defines the seven owner classes, owner
+order/cardinality, typed public symbols, material proposal framing, mandatory
+semantic admission, closed outer parent candidate, and consuming commit. The
+remaining blockers are exact transaction contradictions, not missing document
+structure.
+
+### FA-TXN-001 — Blocker — Authenticated receipt envelopes still contain open bodies
+
+The executable validator authenticates receipt envelopes but permits arbitrary
+extra fields in every decoded payload. A resource receipt with a newly inserted
+unknown field was re-framed and accepted. Consequently producer/consumer
+agreement is not closed for resource, material, event, scheduled, slab, or
+publication receipts, and the contract's unknown-object rejection is not
+implemented by its cited independent authority.
+
+Required disposition: bind and enforce exact per-kind payload schemas/field
+sets and poison unknown/missing/wrong-type fields for every receipt class.
+
+### FA-TXN-002 — Blocker — Complete-owner replacement is not joined to resource/event ledgers
+
+Resource receipt endings are sequentially checked, but the resulting final
+water/N values are not authenticated into the hydrology/BGC owner ending
+digests. Event transfer validates the snow ending only, not the receiving
+surface-liquid ending. The validator accepted a forged hydrology ending digest
+after parent-receipt reconstruction. Material receipts similarly do not join
+vegetation and receiving BGC/residue owner endings.
+
+Required disposition: require exact donor/receiver candidate reconstruction for
+every accepted transfer before the parent receipt or atomic install is valid.
+
+### FA-TXN-003 — Blocker — Atomic live preconditions are candidate-selected
+
+`AtomicStore(c)` initializes its live owner set and clock from `c` itself.
+Commit therefore cannot authenticate the candidate against an independently
+accepted live beginning. A forged beginning owner digest was accepted and
+committed. The stale-clock poison mutates this self-created store only after
+construction and does not close the fundamental caller-selected beginning.
+
+Required disposition: construct the store from separately supplied accepted
+clock/owner authority and require exact joins to the candidate. Add forged
+beginning-owner and beginning-clock poisons.
+
+### FA-TXN-004 — Blocker — Checkpoint continuation validates a prebuilt final candidate
+
+The checkpoint preserves a receipt prefix, but restore validates that prefix
+and then commits the original complete candidate through a fresh self-seeded
+store. It never executes the suffix from restored cursor/event ordinal/staged
+owners, so `restore_equivalent=true` does not prove equivalent continuation.
+Replay/leakage poisons raise directly in the mutation helper rather than
+testing restart admission.
+
+Required disposition: resume suffix execution from both before-event and
+after-event checkpoint objects, independently reconstruct final receipts/
+owners/publication, and compare with uninterrupted bytes; feed replay and
+rejected-state mutations through restore.
+
+Final re-review gates:
+
+- strict BEI lint and unit lint: PASS for both contracts;
+- authority contract test: 5/5 PASS;
+- chronology oracle: 46/46 PASS;
+- semantic oracle: valid transaction and 21/21 listed poisons PASS;
+- adversarial probes: open payload, forged ending, and forged live beginning
+  were all accepted;
+- `git diff --check`: PASS.
