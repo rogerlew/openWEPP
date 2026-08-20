@@ -111,7 +111,9 @@ fn accepted_receipt_authenticates_reduction_and_atomic_parent_outbox() {
     .unwrap();
     let receipt = accept_slab(&mut c, candidate).unwrap();
     let mut reduction = DiagnosticReductionV1::new("peak".into(), "m3/s".into()).unwrap();
-    reduction.fold_accepted(4.0, &receipt).unwrap();
+    reduction
+        .fold_accepted_operand(4.0, AcceptedReductionOperandV1::from_slab(&receipt))
+        .unwrap();
     assert!(reduction.fold_accepted(9.0, &receipt).is_err());
     let record = PublicationRecordV1::new(
         receipt.id(),
@@ -177,6 +179,22 @@ fn same_tick_event_proposals_chain_against_accepted_state() {
     let b = queue.apply_next(&mut c).unwrap().unwrap();
     assert_ne!(a.id(), b.id());
     assert!(queue.apply_next(&mut c).unwrap().is_none());
+    let scheduled_id = c
+        .record_scheduled_once("daily".into(), t(0), d(26))
+        .unwrap();
+    let scheduled = c
+        .scheduled_once_receipts()
+        .iter()
+        .find(|receipt| receipt.id() == scheduled_id)
+        .unwrap();
+    let mut sum = DiagnosticReductionV1::new_sum("sum".into(), "kg".into()).unwrap();
+    sum.fold_accepted_operand(1.25, AcceptedReductionOperandV1::from_event(&a))
+        .unwrap();
+    sum.fold_accepted_operand(2.5, AcceptedReductionOperandV1::from_event(&b))
+        .unwrap();
+    sum.fold_accepted_operand(4.0, AcceptedReductionOperandV1::from_scheduled(scheduled))
+        .unwrap();
+    assert_eq!(sum.maximum(), Some(7.75));
 }
 
 #[test]

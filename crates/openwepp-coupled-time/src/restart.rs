@@ -504,6 +504,7 @@ impl CoupledTimeRestartV2 {
                 operator: match reduction.operator {
                     crate::transaction::ReductionOperatorV1::Maximum => "maximum",
                     crate::transaction::ReductionOperatorV1::Minimum => "minimum",
+                    crate::transaction::ReductionOperatorV1::Sum => "sum",
                 }
                 .into(),
                 units: reduction.units.clone(),
@@ -734,6 +735,7 @@ impl CoupledTimeRestartV2 {
                 let operator = match reduction_wire.operator.as_str() {
                     "maximum" => crate::transaction::ReductionOperatorV1::Maximum,
                     "minimum" => crate::transaction::ReductionOperatorV1::Minimum,
+                    "sum" => crate::transaction::ReductionOperatorV1::Sum,
                     _ => return Err(CoupledTimeError::RestartInvalid),
                 };
                 if reduction_wire.accepted_operand_receipt_ids.len()
@@ -770,6 +772,7 @@ impl CoupledTimeRestartV2 {
                         crate::transaction::ReductionOperatorV1::Minimum => {
                             crate::transaction::retain_minimum
                         }
+                        crate::transaction::ReductionOperatorV1::Sum => |left, right| left + right,
                     });
                 let admitted = reduction_wire
                     .value_bits
@@ -998,6 +1001,9 @@ impl CoupledTimeRestartV2 {
                             }
                             crate::transaction::ReductionOperatorV1::Minimum => {
                                 crate::transaction::retain_minimum
+                            }
+                            crate::transaction::ReductionOperatorV1::Sum => {
+                                |left, right| left + right
                             }
                         })
                         .map(f64::to_bits)

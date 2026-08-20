@@ -388,6 +388,31 @@ pub struct DiagnosticReductionV1 {
 pub(crate) enum ReductionOperatorV1 {
     Maximum,
     Minimum,
+    Sum,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AcceptedReductionOperandV1 {
+    receipt_id: ReceiptId,
+}
+impl AcceptedReductionOperandV1 {
+    #[must_use]
+    pub const fn from_slab(receipt: &AcceptedSlabReceiptV1) -> Self {
+        Self {
+            receipt_id: receipt.id(),
+        }
+    }
+    #[must_use]
+    pub const fn from_event(receipt: &crate::AcceptedEventReceiptV1) -> Self {
+        Self {
+            receipt_id: receipt.id(),
+        }
+    }
+    #[must_use]
+    pub const fn from_scheduled(receipt: &crate::ScheduledOnceReceiptV1) -> Self {
+        Self {
+            receipt_id: receipt.id(),
+        }
+    }
 }
 impl DiagnosticReductionV1 {
     pub fn new(reduction_id: String, units: String) -> Result<Self, CoupledTimeError> {
@@ -408,20 +433,37 @@ impl DiagnosticReductionV1 {
         value.operator = ReductionOperatorV1::Minimum;
         Ok(value)
     }
+    pub fn new_sum(reduction_id: String, units: String) -> Result<Self, CoupledTimeError> {
+        let mut value = Self::new(reduction_id, units)?;
+        value.operator = ReductionOperatorV1::Sum;
+        Ok(value)
+    }
     pub fn fold_accepted(
         &mut self,
         value: f64,
         receipt: &AcceptedSlabReceiptV1,
     ) -> Result<(), CoupledTimeError> {
-        if !value.is_finite() || self.accepted_receipts.contains(&receipt.id()) {
+        self.fold_accepted_operand(value, AcceptedReductionOperandV1::from_slab(receipt))
+    }
+    pub fn fold_accepted_operand(
+        &mut self,
+        value: f64,
+        operand: AcceptedReductionOperandV1,
+    ) -> Result<(), CoupledTimeError> {
+        if !value.is_finite() || self.accepted_receipts.contains(&operand.receipt_id) {
             return Err(CoupledTimeError::LedgerFailure);
         }
-        self.maximum = Some(self.maximum.map_or(value, |old| match self.operator {
+        let reduced = self.maximum.map_or(value, |old| match self.operator {
             ReductionOperatorV1::Maximum => retain_maximum(old, value),
             ReductionOperatorV1::Minimum => retain_minimum(old, value),
-        }));
-        self.accepted_receipts.push(receipt.id());
-        self.accepted_values.push((receipt.id(), value));
+            ReductionOperatorV1::Sum => old + value,
+        });
+        if !reduced.is_finite() {
+            return Err(CoupledTimeError::LedgerFailure);
+        }
+        self.maximum = Some(reduced);
+        self.accepted_receipts.push(operand.receipt_id);
+        self.accepted_values.push((operand.receipt_id, value));
         Ok(())
     }
     #[must_use]

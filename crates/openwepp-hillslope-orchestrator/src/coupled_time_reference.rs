@@ -1,12 +1,13 @@
 //! Bounded, non-physical consumer of the closed coupled-time protocol.
 
 use openwepp_coupled_time::{
-    AttemptId, ConstraintClass, ConstraintReductionReceiptV1, CoupledClockStateV1,
-    CoupledSlabCandidateV1, CoupledTimeError, CoupledTimeRestartV2, DiagnosticReductionV1,
-    Digest32, EventClass, EventProposalV1, EventQueueV1, LedgerEntryV1, ModelTimeNs, OutboxState,
-    OwnerState, ParentAuthorityV1, ParentCommitCandidateV1, ParentIntervalId, ParentTransactionId,
-    PendingEventJoinV1, PublicationRecordV1, RetryControlV1, SegmentId, StepConstraintV1,
-    TimeSupport, accept_slab, commit_parent, complete_owner_set_digest, reduce_constraints,
+    AcceptedReductionOperandV1, AttemptId, ConstraintClass, ConstraintReductionReceiptV1,
+    CoupledClockStateV1, CoupledSlabCandidateV1, CoupledTimeError, CoupledTimeRestartV2,
+    DiagnosticReductionV1, Digest32, EventClass, EventProposalV1, EventQueueV1, LedgerEntryV1,
+    ModelTimeNs, OutboxState, OwnerState, ParentAuthorityV1, ParentCommitCandidateV1,
+    ParentIntervalId, ParentTransactionId, PendingEventJoinV1, PublicationRecordV1, RetryControlV1,
+    SegmentId, StepConstraintV1, TimeSupport, accept_slab, commit_parent,
+    complete_owner_set_digest, reduce_constraints,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -22,6 +23,7 @@ pub struct CoupledTimeReferenceReport {
     pub accepted_maximum_bits: u64,
     pub reconstructed_maximum_bits: u64,
     pub accepted_reduction_count: usize,
+    pub cross_class_sum_bits: u64,
     pub publication_invisible_before_commit: bool,
     pub final_outbox_state: OutboxState,
     pub parent_transaction_sequence: u128,
@@ -181,6 +183,22 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
         return Err(CoupledTimeReferenceError::MissingObservation);
     }
     clock.record_scheduled_once("daily-reference".into(), ModelTimeNs::new(60), d(43))?;
+    let scheduled = clock
+        .scheduled_once_receipts()
+        .last()
+        .ok_or(CoupledTimeReferenceError::MissingObservation)?;
+    let mut cross_class_sum =
+        DiagnosticReductionV1::new_sum("cross-class-sum".into(), "reference-unit".into())?;
+    cross_class_sum
+        .fold_accepted_operand(1.25, AcceptedReductionOperandV1::from_slab(&second_receipt))?;
+    cross_class_sum
+        .fold_accepted_operand(2.5, AcceptedReductionOperandV1::from_event(&event_receipt))?;
+    cross_class_sum
+        .fold_accepted_operand(4.0, AcceptedReductionOperandV1::from_scheduled(scheduled))?;
+    let cross_class_sum_bits = cross_class_sum
+        .maximum()
+        .ok_or(CoupledTimeReferenceError::MissingObservation)?
+        .to_bits();
 
     let pre_record = PublicationRecordV1::new(
         second_receipt.id(),
@@ -278,6 +296,7 @@ fn run(restart_mid_parent: bool) -> Result<Evidence, CoupledTimeReferenceError> 
             accepted_maximum_bits: maximum.to_bits(),
             reconstructed_maximum_bits: reconstructed.to_bits(),
             accepted_reduction_count: operands.len(),
+            cross_class_sum_bits,
             publication_invisible_before_commit,
             final_outbox_state: commit.outbox().state(),
             parent_transaction_sequence: commit.transaction_sequence(),
@@ -456,6 +475,7 @@ mod tests {
             report.reconstructed_maximum_bits
         );
         assert_eq!(report.accepted_reduction_count, 3);
+        assert_eq!(report.cross_class_sum_bits, 7.75_f64.to_bits());
         assert!(report.publication_invisible_before_commit);
         assert_eq!(report.final_outbox_state, OutboxState::CommittedUndelivered);
         assert_eq!(report.parent_transaction_sequence, 42);

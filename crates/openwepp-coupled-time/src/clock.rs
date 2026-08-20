@@ -70,6 +70,10 @@ pub struct CoupledClockStateV1 {
 }
 
 impl CoupledClockStateV1 {
+    #[must_use]
+    pub fn scheduled_once_receipts(&self) -> &[ScheduledOnceReceiptV1] {
+        &self.scheduled_once_receipts
+    }
     pub fn new(
         authority: ParentAuthorityV1,
         owners: Vec<OwnerState>,
@@ -342,6 +346,10 @@ pub struct ScheduledOnceReceiptV1 {
 }
 
 impl ScheduledOnceReceiptV1 {
+    #[must_use]
+    pub const fn id(&self) -> ReceiptId {
+        self.receipt_id
+    }
     pub(crate) fn validate_identity(
         &self,
         parent: ParentTransactionId,
