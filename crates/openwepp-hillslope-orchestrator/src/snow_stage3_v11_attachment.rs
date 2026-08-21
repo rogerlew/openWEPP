@@ -16,21 +16,21 @@ use openwepp_vegetation::v11::{
     V11OwnerEnvelope, V11ParentCandidate, V11ParentTransaction, VegetationConfigurationV11,
     execute_v11_segment,
 };
-use thiserror::Error;
 use serde::Serialize;
+use thiserror::Error;
 
 use crate::hydrology::{
     DirectActiveSnowPartitionInputs, DirectSnowStage3PersistentDayResult,
     DirectSnowStage3PersistentState, DirectSnowStage3SupportInput, DirectSnowTerminalEventRequest,
     DirectSnowTerminalEventResult, Wb11HydrologyKernel,
 };
-use crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow;
-use crate::v9_real_consumer_shadow::{
-    DirectV9ShadowIntervalInput, DirectV11RealConsumerError, DirectV11RealConsumerStack,
-};
 use crate::runtime_inputs::{
     PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError, SnowFreeHalfHourProviderCursor,
     SnowFreePrecipitationParcelReceipt,
+};
+use crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow;
+use crate::v9_real_consumer_shadow::{
+    DirectV9ShadowIntervalInput, DirectV11RealConsumerError, DirectV11RealConsumerStack,
 };
 use crate::{DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidConfigurationRecord};
 
@@ -103,38 +103,114 @@ impl DirectSnowStage3V11StaticContext {
 /// accepted as a substitute.
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectSnowStage3V11PreparedSupport {
-    pub support: TimeSupport,
-    pub forcing_receipt: Digest32,
-    pub snow_inputs_by_lane: BTreeMap<u32, DirectActiveSnowPartitionInputs>,
-    pub support_forcing_by_lane: BTreeMap<u32, DirectSnowStage3SupportInput>,
+    support: TimeSupport,
+    snow_inputs_by_lane: BTreeMap<u32, DirectActiveSnowPartitionInputs>,
+    support_forcing_by_lane: BTreeMap<u32, DirectSnowStage3SupportInput>,
     /// Sealed lower-boundary/atmospheric input for the actual V11 owner.
     /// It contains no event request, carrier operand, or ending owner.
-    pub v11_interval: DirectV9ShadowIntervalInput,
+    v11_interval: DirectV9ShadowIntervalInput,
     /// Provider-owned destination and receipt identity. The physical
     /// precipitation parcel remains sealed input; it is not a terminal parcel
     /// and cannot contain an ending owner or event time.
-    pub support_identity_by_lane: BTreeMap<u32, PreparedStage3V11SupportIdentityV1>,
+    support_identity_by_lane: BTreeMap<u32, Vec<PreparedStage3V11SupportIdentityV1>>,
+}
+
+impl DirectSnowStage3V11PreparedSupport {
+    /// Construct an unsealed support draft. Provider/GSI identity is admitted
+    /// only when `PreparedStage3V11DayV1::bind_provider_day` consumes this
+    /// draft and returns the opaque validated day capability.
+    pub fn try_new(
+        support: TimeSupport,
+        snow_inputs_by_lane: BTreeMap<u32, DirectActiveSnowPartitionInputs>,
+        support_forcing_by_lane: BTreeMap<u32, DirectSnowStage3SupportInput>,
+        v11_interval: DirectV9ShadowIntervalInput,
+        support_identity_by_lane: BTreeMap<u32, Vec<PreparedStage3V11SupportIdentityV1>>,
+    ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
+        let lane_ids = snow_inputs_by_lane.keys().copied().collect::<BTreeSet<_>>();
+        if support.duration_ns() == 0
+            || lane_ids.is_empty()
+            || lane_ids != support_forcing_by_lane.keys().copied().collect()
+            || lane_ids != support_identity_by_lane.keys().copied().collect()
+            || support_identity_by_lane.values().any(Vec::is_empty)
+            || support_identity_by_lane.values().any(|identities| {
+                identities.windows(2).any(|pair| {
+                    (
+                        pair[0].destination_ofe_id.as_str(),
+                        pair[0].destination_tile_id.as_str(),
+                    ) >= (
+                        pair[1].destination_ofe_id.as_str(),
+                        pair[1].destination_tile_id.as_str(),
+                    )
+                })
+            })
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Support(
+                "support draft lane and destination identity",
+            ));
+        }
+        Ok(Self {
+            support,
+            snow_inputs_by_lane,
+            support_forcing_by_lane,
+            v11_interval,
+            support_identity_by_lane,
+        })
+    }
+
+    #[must_use]
+    pub const fn support(&self) -> TimeSupport {
+        self.support
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct PreparedStage3V11SupportIdentityV1 {
-    pub destination_ofe_id: String,
-    pub destination_tile_id: String,
-    pub wb14_configuration_sha256: String,
-    pub exposure_identity: Digest32,
-    pub precipitation_parcels: Vec<SnowFreePrecipitationParcelReceipt>,
+    destination_ofe_id: String,
+    destination_tile_id: String,
+    wb14_configuration_sha256: String,
+    exposure_identity: Digest32,
+    precipitation_parcels: Vec<SnowFreePrecipitationParcelReceipt>,
+    forcing_receipt_digest: Digest32,
+}
+
+impl PreparedStage3V11SupportIdentityV1 {
+    #[must_use]
+    pub fn new(
+        destination_ofe_id: String,
+        destination_tile_id: String,
+        wb14_configuration_sha256: String,
+        exposure_identity: Digest32,
+        precipitation_parcels: Vec<SnowFreePrecipitationParcelReceipt>,
+        forcing_receipt_digest: Digest32,
+    ) -> Self {
+        Self {
+            destination_ofe_id,
+            destination_tile_id,
+            wb14_configuration_sha256,
+            exposure_identity,
+            precipitation_parcels,
+            forcing_receipt_digest,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct PreparedStage3V11DayV1 {
-    pub day_index: usize,
-    pub accepted_gsi_receipt: Digest32,
-    pub beginning_provider_cursor: SnowFreeHalfHourProviderCursor,
-    pub ending_provider_cursor: SnowFreeHalfHourProviderCursor,
-    pub supports: Vec<DirectSnowStage3V11PreparedSupport>,
+    day_index: usize,
+    accepted_gsi_receipt: Digest32,
+    beginning_provider_cursor: SnowFreeHalfHourProviderCursor,
+    ending_provider_cursor: SnowFreeHalfHourProviderCursor,
+    supports: Vec<DirectSnowStage3V11PreparedSupport>,
 }
 
-pub type DirectSnowStage3V11PreparedDay = PreparedStage3V11DayV1;
+/// Opaque provider/GSI-joined capability accepted by the closure path.
+#[derive(Clone, Debug)]
+pub struct ValidatedPreparedStage3V11DayV1 {
+    inner: PreparedStage3V11DayV1,
+    provider_day: PreparedSnowFreeGsiDayV1,
+}
+
+pub type DirectSnowStage3V11PreparedDay = ValidatedPreparedStage3V11DayV1;
 pub type PreparedStage3V11SupportV1 = DirectSnowStage3V11PreparedSupport;
 
 impl PreparedStage3V11DayV1 {
@@ -145,43 +221,88 @@ impl PreparedStage3V11DayV1 {
         provider: &PreparedSnowFreeGsiDayV1,
         day_index: usize,
         supports: Vec<DirectSnowStage3V11PreparedSupport>,
-    ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
+    ) -> Result<ValidatedPreparedStage3V11DayV1, DirectSnowStage3V11AttachmentError> {
         if supports.len() != STAGE3_V11_PARENT_SUPPORT_COUNT {
             return Err(DirectSnowStage3V11AttachmentError::Support(
                 "provider binding requires exactly 48 supports",
             ));
         }
         provider.gsi_receipt().validate()?;
-        if provider.gsi_receipt().day_index != u64::try_from(day_index).map_err(|_| {
-            DirectSnowStage3V11AttachmentError::Support("provider day index width")
-        })? {
+        if provider.gsi_receipt().day_index
+            != u64::try_from(day_index).map_err(|_| {
+                DirectSnowStage3V11AttachmentError::Support("provider day index width")
+            })?
+        {
             return Err(DirectSnowStage3V11AttachmentError::Support(
                 "provider day index",
             ));
         }
         let accepted_gsi_receipt = provider.gsi_receipt_digest()?;
         for (support_index, support) in supports.iter().enumerate() {
-            for identity in support.support_identity_by_lane.values() {
-                let interval = provider
-                    .forcing_receipts()
-                    .receipts()
-                    .iter()
-                    .flat_map(|day| day.intervals.iter())
-                    .find(|interval| {
-                        interval.day_index == day_index
-                            && interval.interval_index == support_index
-                            && interval.ofe_id == identity.destination_ofe_id
-                            && interval.tile_id == identity.destination_tile_id
-                    })
+            let provider_destinations = provider
+                .forcing_receipts()
+                .receipts()
+                .iter()
+                .filter(|day| day.day_index == day_index)
+                .map(|day| {
+                    let interval = day.intervals.get(support_index).ok_or(
+                        DirectSnowStage3V11AttachmentError::Support(
+                            "provider interval cardinality",
+                        ),
+                    )?;
+                    Ok((
+                        (interval.ofe_id.clone(), interval.tile_id.clone()),
+                        interval,
+                    ))
+                })
+                .collect::<Result<BTreeMap<_, _>, DirectSnowStage3V11AttachmentError>>()?;
+            if provider_destinations.is_empty() {
+                return Err(DirectSnowStage3V11AttachmentError::Support(
+                    "provider day destination set",
+                ));
+            }
+            let mut support_destinations = BTreeSet::new();
+            for identity in support
+                .support_identity_by_lane
+                .values()
+                .flat_map(|identities| identities.iter())
+            {
+                if identity.exposure_identity == Digest32::zero() {
+                    return Err(DirectSnowStage3V11AttachmentError::Support(
+                        "missing sealed exposure identity",
+                    ));
+                }
+                if !support_destinations.insert((
+                    identity.destination_ofe_id.clone(),
+                    identity.destination_tile_id.clone(),
+                )) {
+                    return Err(DirectSnowStage3V11AttachmentError::Support(
+                        "duplicate support destination identity",
+                    ));
+                }
+            }
+            if support_destinations != provider_destinations.keys().cloned().collect() {
+                return Err(DirectSnowStage3V11AttachmentError::Support(
+                    "support/provider destination set",
+                ));
+            }
+            for identity in support
+                .support_identity_by_lane
+                .values()
+                .flat_map(|identities| identities.iter())
+            {
+                let interval = provider_destinations
+                    .get(&(
+                        identity.destination_ofe_id.clone(),
+                        identity.destination_tile_id.clone(),
+                    ))
                     .ok_or(DirectSnowStage3V11AttachmentError::Support(
                         "support/provider destination interval join",
                     ))?;
                 let receipt_digest = parse_lower_hex_digest(&interval.interval_receipt_sha256)?;
-                if support.forcing_receipt != receipt_digest
-                    || interval.gsi_receipt_sha256
-                        != provider.gsi_receipt().receipt_sha256
-                    || interval.wb14_configuration_sha256
-                        != identity.wb14_configuration_sha256
+                if identity.forcing_receipt_digest != receipt_digest
+                    || interval.gsi_receipt_sha256 != provider.gsi_receipt().receipt_sha256
+                    || interval.wb14_configuration_sha256 != identity.wb14_configuration_sha256
                     || interval.precipitation_parcels != identity.precipitation_parcels
                     || support.support.start_ns().get()
                         != u128::try_from(interval.start_s)
@@ -212,16 +333,19 @@ impl PreparedStage3V11DayV1 {
                 }
             }
         }
-        Ok(Self {
-            day_index,
-            accepted_gsi_receipt,
-            beginning_provider_cursor: provider.forcing_receipts().beginning_cursor().clone(),
-            ending_provider_cursor: provider.forcing_receipts().ending_cursor().clone(),
-            supports,
+        Ok(ValidatedPreparedStage3V11DayV1 {
+            inner: Self {
+                day_index,
+                accepted_gsi_receipt,
+                beginning_provider_cursor: provider.forcing_receipts().beginning_cursor().clone(),
+                ending_provider_cursor: provider.forcing_receipts().ending_cursor().clone(),
+                supports,
+            },
+            provider_day: provider.clone(),
         })
     }
 
-    pub fn validate(
+    fn validate(
         &self,
         context: &DirectSnowStage3V11StaticContext,
         expected_start_ns: u128,
@@ -254,6 +378,7 @@ impl PreparedStage3V11DayV1 {
                     .copied()
                     .collect::<BTreeSet<_>>()
                     != expected_lanes
+                || support.support_identity_by_lane.values().any(Vec::is_empty)
             {
                 return Err(DirectSnowStage3V11AttachmentError::Support(
                     "support chronology or lane forcing identity",
@@ -264,7 +389,7 @@ impl PreparedStage3V11DayV1 {
         Ok(())
     }
 
-    pub fn validate_provider_join(
+    fn validate_provider_join(
         &self,
         expected_gsi_receipt: Digest32,
         expected_beginning_cursor: &SnowFreeHalfHourProviderCursor,
@@ -278,6 +403,54 @@ impl PreparedStage3V11DayV1 {
             ));
         }
         Ok(())
+    }
+}
+
+impl ValidatedPreparedStage3V11DayV1 {
+    #[must_use]
+    pub const fn day_index(&self) -> usize {
+        self.inner.day_index
+    }
+
+    #[must_use]
+    pub const fn accepted_gsi_receipt(&self) -> Digest32 {
+        self.inner.accepted_gsi_receipt
+    }
+
+    #[must_use]
+    pub fn supports(&self) -> &[DirectSnowStage3V11PreparedSupport] {
+        &self.inner.supports
+    }
+
+    #[must_use]
+    pub const fn beginning_provider_cursor(&self) -> &SnowFreeHalfHourProviderCursor {
+        &self.inner.beginning_provider_cursor
+    }
+
+    #[must_use]
+    pub const fn ending_provider_cursor(&self) -> &SnowFreeHalfHourProviderCursor {
+        &self.inner.ending_provider_cursor
+    }
+
+    fn validate(
+        &self,
+        context: &DirectSnowStage3V11StaticContext,
+        expected_start_ns: u128,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        self.inner.validate(context, expected_start_ns)
+    }
+
+    fn validate_provider_join(
+        &self,
+        expected_gsi_receipt: Digest32,
+        expected_beginning_cursor: &SnowFreeHalfHourProviderCursor,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        self.inner
+            .validate_provider_join(expected_gsi_receipt, expected_beginning_cursor)
+    }
+
+    fn into_provider_day(self) -> PreparedSnowFreeGsiDayV1 {
+        self.provider_day
     }
 }
 
@@ -394,7 +567,7 @@ impl DirectSnowStage3V11ShadowAttachment {
 
     pub fn stage_prepared_day(
         &mut self,
-        prepared: DirectSnowStage3V11PreparedDay,
+        prepared: &ValidatedPreparedStage3V11DayV1,
     ) -> Result<(), DirectSnowStage3V11AttachmentError> {
         if self.pending_candidate.is_some() {
             return Err(DirectSnowStage3V11AttachmentError::Identity(
@@ -421,14 +594,15 @@ impl DirectSnowStage3V11ShadowAttachment {
     /// rate projection or completed production day frame is consulted.
     pub fn execute_prepared_day(
         &self,
-        prepared: &DirectSnowStage3V11PreparedDay,
+        prepared: &ValidatedPreparedStage3V11DayV1,
     ) -> Result<DirectSnowStage3V11ParentCandidate, DirectSnowStage3V11AttachmentError> {
         prepared.validate(&self.static_context, 0)?;
+        validate_prepared_day_against_committed_provider(&self.committed, prepared)?;
         let mut candidate = self.committed.clone();
         let mut terminal_events = Vec::new();
-        for support in &prepared.supports {
+        for support in prepared.supports() {
             let support_index = prepared
-                .supports
+                .supports()
                 .iter()
                 .position(|candidate| candidate.support == support.support)
                 .ok_or(DirectSnowStage3V11AttachmentError::Support(
@@ -490,7 +664,7 @@ impl DirectSnowStage3V11ShadowAttachment {
                 &candidate.real_consumer,
                 &candidate.coupled_clock,
                 support,
-                prepared.day_index,
+                prepared.day_index(),
                 support_index,
                 candidate.next_parent_sequence,
                 canonical_stage3_snow_owner_bytes(&candidate.stage3_by_lane)?,
@@ -503,6 +677,9 @@ impl DirectSnowStage3V11ShadowAttachment {
                 DirectSnowStage3V11AttachmentError::Identity("V11 parent sequence overflow"),
             )?;
         }
+        candidate
+            .real_consumer
+            .commit_prepared_provider_day(prepared.clone().into_provider_day())?;
         let stage3_digests = candidate
             .stage3_by_lane
             .iter()
@@ -525,8 +702,8 @@ impl DirectSnowStage3V11ShadowAttachment {
             canonical_stage3_snow_owner_bytes(&candidate.stage3_by_lane)?,
         );
         let receipt = DirectSnowStage3V11ParentReceipt {
-            day_index: prepared.day_index,
-            support_count: prepared.supports.len(),
+            day_index: prepared.day_index(),
+            support_count: prepared.supports().len(),
             terminal_events,
             ending_stage3_state_digests: stage3_digests,
             complete_owner_bytes,
@@ -600,10 +777,26 @@ impl DirectSnowStage3V11ShadowAttachment {
                 "terminal source lane receiver split",
             ));
         }
+        // The solver result is OFE-ground basis. Use the declared uniform-depth
+        // basis for every receiving tile, then reconstruct the OFE amount with
+        // the tile fractions. Dividing by each fraction would duplicate the
+        // same OFE mass once per tile.
+        let reconstructed_mass = records
+            .iter()
+            .map(|record| record.tile_fraction * terminal_liquid_kg_m2)
+            .sum::<f64>();
+        let mass_tolerance = 1.0e-12_f64.max(1.0e-12 * terminal_liquid_kg_m2.abs());
+        if !reconstructed_mass.is_finite()
+            || (reconstructed_mass - terminal_liquid_kg_m2).abs() > mass_tolerance
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Terminal(
+                "terminal parcel mass basis closure",
+            ));
+        }
         records
             .into_iter()
             .map(|record| {
-                let mass = terminal_liquid_kg_m2 / record.tile_fraction;
+                let mass = terminal_liquid_kg_m2;
                 let digest = openwepp_coupled_time::digest_bytes(
                     format!(
                         "OPENWEPP_STAGE3_TERMINAL_PARCEL_V1|{lane_id}|{}|{}|{:016x}",
@@ -663,6 +856,51 @@ impl DirectSnowStage3V11ShadowAttachment {
         }
         self.terminal_parcels(lane_id, event.terminal_liquid_kg_m2)
     }
+}
+
+fn validate_prepared_day_against_committed_provider(
+    committed: &DirectSnowStage3V11CommittedState,
+    prepared: &ValidatedPreparedStage3V11DayV1,
+) -> Result<(), DirectSnowStage3V11AttachmentError> {
+    let owner_destinations = committed
+        .real_consumer
+        .provider_static_configuration()
+        .destinations
+        .iter()
+        .map(|destination| (destination.ofe_id.clone(), destination.tile_id.clone()))
+        .collect::<BTreeSet<_>>();
+    let prepared_destinations = prepared
+        .supports()
+        .first()
+        .into_iter()
+        .flat_map(|support| {
+            support
+                .support_identity_by_lane
+                .values()
+                .flat_map(|identities| identities.iter())
+                .map(|identity| {
+                    (
+                        identity.destination_ofe_id.clone(),
+                        identity.destination_tile_id.clone(),
+                    )
+                })
+        })
+        .collect::<BTreeSet<_>>();
+    if prepared_destinations != owner_destinations {
+        return Err(DirectSnowStage3V11AttachmentError::Support(
+            "prepared/committed provider destination topology",
+        ));
+    }
+    let current_receipt = committed.real_consumer.provider_gsi_receipt_sha256();
+    let expected_gsi_receipt = if current_receipt.chars().all(|byte| byte == '0') {
+        prepared.accepted_gsi_receipt()
+    } else {
+        parse_lower_hex_digest(current_receipt)?
+    };
+    prepared.validate_provider_join(
+        expected_gsi_receipt,
+        committed.real_consumer.provider_cursor(),
+    )
 }
 
 fn execute_real_v11_parent(
@@ -878,9 +1116,7 @@ fn canonical_stage3_snow_owner_bytes(
     .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("canonical Stage-3 snow bytes"))
 }
 
-fn parse_lower_hex_digest(
-    value: &str,
-) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
+fn parse_lower_hex_digest(value: &str) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
     if value.len() != 64
         || value
             .bytes()

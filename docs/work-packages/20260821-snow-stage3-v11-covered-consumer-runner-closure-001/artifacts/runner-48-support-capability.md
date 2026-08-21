@@ -18,14 +18,17 @@ Stage-3 and V11 forcing, exposure identity, WB14 and receiver topology, and
 forcing digest. It must not contain event time, ending owners, live
 conductance, terminal parcel, or owner candidates.
 
-Status: `IN PROGRESS / provider bind landed; runner physical support builder
-and covered executor remain open`.
+Status: `IN PROGRESS / capability sealing and destination-complete provider
+bind landed; runner physical support builder and covered executor remain open`.
 
 `Static:` `PreparedStage3V11DayV1::bind_provider_day` now admits only 48
-supports and binds each support to the provider's GSI receipt, interval
-receipt digest, precipitation parcel list, WB14 identity, destination identity,
-and exact half-open nanosecond bounds. The scheduler has a provider-facing
-installation method that uses this binding before the attachment is staged.
+supports, returns `ValidatedPreparedStage3V11DayV1`, and binds every support
+to the provider's GSI receipt, interval receipt digest, precipitation parcel
+list, WB14 identity, complete destination set, and exact half-open nanosecond
+bounds. The closure path rechecks the accepted GSI receipt, beginning cursor,
+and committed provider destination topology before execution. The provider
+GSI/cursor owners are installed only on the cloned candidate after all 48
+coupled supports succeed.
 
 `Static:` The current surface still requires the runner to assemble the
 physical `DirectActiveSnowPartitionInputs`, per-lane Stage-3 forcing, and V11

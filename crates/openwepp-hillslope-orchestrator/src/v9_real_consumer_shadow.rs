@@ -1152,6 +1152,30 @@ impl DirectV10RealConsumerShadow {
         self.inner.hydrology_frame()
     }
 
+    #[must_use]
+    pub(crate) fn provider_gsi_receipt_sha256(&self) -> &str {
+        &self.inner.provider_gsi_receipt_sha256
+    }
+
+    /// Install the provider/GSI owner transition only on a cloned candidate
+    /// after all coupled Stage-3/V11 supports have accepted. This keeps the
+    /// runner cursor out of the live state on any failed support.
+    pub(crate) fn commit_prepared_provider_day(
+        &mut self,
+        prepared: PreparedSnowFreeGsiDayV1,
+    ) -> Result<(), DirectV11RealConsumerError> {
+        let accepted_receipt = prepared.gsi_receipt().receipt_sha256.clone();
+        prepared
+            .commit(&mut self.gsi_state, &mut self.provider_cursor)
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::ForcingProvider(
+                    error,
+                ))
+            })?;
+        self.inner.provider_gsi_receipt_sha256 = accepted_receipt;
+        Ok(())
+    }
+
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     pub fn try_new(
         vegetation_configuration: VegetationConfiguration,

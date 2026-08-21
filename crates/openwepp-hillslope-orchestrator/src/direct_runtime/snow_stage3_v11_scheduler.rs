@@ -1,9 +1,9 @@
+use crate::runtime_inputs::PreparedSnowFreeGsiDayV1;
 use crate::snow_stage3_v11_attachment::{
     DirectSnowStage3V11AttachmentError, DirectSnowStage3V11CommittedState,
     DirectSnowStage3V11PreparedDay, DirectSnowStage3V11ShadowAttachment,
-    DirectSnowStage3V11StaticContext,
+    DirectSnowStage3V11StaticContext, PreparedStage3V11DayV1,
 };
-use crate::runtime_inputs::PreparedSnowFreeGsiDayV1;
 
 use super::{DirectDayFrame, DirectPublicationDayInput, DirectRunFrame, DirectRuntimeError};
 
@@ -19,7 +19,7 @@ impl DirectRunFrame {
         Ok(())
     }
 
-    pub fn prepare_snow_stage3_v11_day(
+    pub(crate) fn prepare_snow_stage3_v11_day(
         &mut self,
         prepared: DirectSnowStage3V11PreparedDay,
     ) -> Result<(), DirectRuntimeError> {
@@ -30,7 +30,7 @@ impl DirectRunFrame {
             },
         )?;
         attachment
-            .stage_prepared_day(prepared)
+            .stage_prepared_day(&prepared)
             .map_err(attachment_runtime_error("prepare"))
     }
 
@@ -44,10 +44,8 @@ impl DirectRunFrame {
         day_index: usize,
         supports: Vec<crate::snow_stage3_v11_attachment::DirectSnowStage3V11PreparedSupport>,
     ) -> Result<(), DirectRuntimeError> {
-        let prepared = DirectSnowStage3V11PreparedDay::bind_provider_day(
-            provider, day_index, supports,
-        )
-        .map_err(attachment_runtime_error("bind_provider"))?;
+        let prepared = PreparedStage3V11DayV1::bind_provider_day(provider, day_index, supports)
+            .map_err(attachment_runtime_error("bind_provider"))?;
         self.prepare_snow_stage3_v11_day(prepared)
     }
 

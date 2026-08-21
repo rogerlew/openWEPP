@@ -121,6 +121,8 @@ fields.
   HOLD protection.
 - [x] Successor package scaffold and intake artifact placeholders.
 - [x] Child 2C contract/operand and exact-one snow-owner mapping.
+- [x] Provider capability sealing, complete destination binding, and
+  conservative terminal-liquid mass basis.
 - [ ] Covered consumer and terminal chronology.
 - [~] Runner-owned 48-support capability/provider bind; physical support
   construction and complete restart remain open.
