@@ -1,3 +1,4 @@
+use openwepp_coupled_time::Digest32;
 use openwepp_meteorology::snow_free_forcing::{
     SnowFreeAtmosphericError, atmospheric_longwave_dilley_unsworth, celsius_to_kelvin,
     fao56_station_pressure_kpa, liquid_specific_enthalpy_j_kg, weiss_norman_partition,
@@ -571,6 +572,10 @@ impl PreparedSnowFreeGsiDayV1 {
         &self.forcing_receipts
     }
 
+    pub fn gsi_receipt_digest(&self) -> Result<Digest32, SnowFreeHalfHourForcingError> {
+        digest_from_lower_hex(&self.gsi_receipt.receipt_sha256)
+    }
+
     /// Commit both stateful provider owners after every fallible guard. The
     /// final replacement is deliberately assignment-only and cannot fail.
     pub fn commit(
@@ -695,6 +700,16 @@ impl ValidatedSnowFreeHalfHourForcingReceipts {
     #[must_use]
     pub fn receipts(&self) -> &[SnowFreeHalfHourDayReceipt] {
         &self.receipts
+    }
+
+    #[must_use]
+    pub const fn beginning_cursor(&self) -> &SnowFreeHalfHourProviderCursor {
+        &self.beginning_cursor
+    }
+
+    #[must_use]
+    pub const fn ending_cursor(&self) -> &SnowFreeHalfHourProviderCursor {
+        &self.ending_cursor
     }
 
     /// Commit the prepared cursor transition only after every downstream
@@ -1294,6 +1309,22 @@ fn is_sha256(value: &str) -> bool {
         && value
             .bytes()
             .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+}
+
+fn digest_from_lower_hex(value: &str) -> Result<Digest32, SnowFreeHalfHourForcingError> {
+    if !is_sha256(value) {
+        return Err(SnowFreeHalfHourForcingError::Identity(
+            "lowercase SHA-256 digest",
+        ));
+    }
+    let mut bytes = [0_u8; 32];
+    for (index, chunk) in value.as_bytes().chunks_exact(2).enumerate() {
+        let text = std::str::from_utf8(chunk)
+            .map_err(|_| SnowFreeHalfHourForcingError::Identity("SHA-256 digest encoding"))?;
+        bytes[index] = u8::from_str_radix(text, 16)
+            .map_err(|_| SnowFreeHalfHourForcingError::Identity("SHA-256 digest digits"))?;
+    }
+    Ok(Digest32::from_bytes(bytes))
 }
 
 fn source_climate_sha256(

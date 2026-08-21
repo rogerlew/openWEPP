@@ -17,6 +17,7 @@ use openwepp_vegetation::v11::{
     execute_v11_segment,
 };
 use thiserror::Error;
+use serde::Serialize;
 
 use crate::hydrology::{
     DirectActiveSnowPartitionInputs, DirectSnowStage3PersistentDayResult,
@@ -26,6 +27,10 @@ use crate::hydrology::{
 use crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow;
 use crate::v9_real_consumer_shadow::{
     DirectV9ShadowIntervalInput, DirectV11RealConsumerError, DirectV11RealConsumerStack,
+};
+use crate::runtime_inputs::{
+    PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError, SnowFreeHalfHourProviderCursor,
+    SnowFreePrecipitationParcelReceipt,
 };
 use crate::{DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidConfigurationRecord};
 
@@ -50,6 +55,8 @@ pub enum DirectSnowStage3V11AttachmentError {
     V11(#[from] openwepp_vegetation::v11::V11ExecutionError<DirectV11RealConsumerError>),
     #[error(transparent)]
     V11Authority(#[from] openwepp_vegetation::v11::V11Error),
+    #[error(transparent)]
+    ForcingProvider(#[from] SnowFreeHalfHourForcingError),
 }
 
 /// Static configuration and topology identity.  There is intentionally no
@@ -103,15 +110,117 @@ pub struct DirectSnowStage3V11PreparedSupport {
     /// Sealed lower-boundary/atmospheric input for the actual V11 owner.
     /// It contains no event request, carrier operand, or ending owner.
     pub v11_interval: DirectV9ShadowIntervalInput,
+    /// Provider-owned destination and receipt identity. The physical
+    /// precipitation parcel remains sealed input; it is not a terminal parcel
+    /// and cannot contain an ending owner or event time.
+    pub support_identity_by_lane: BTreeMap<u32, PreparedStage3V11SupportIdentityV1>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct DirectSnowStage3V11PreparedDay {
+pub struct PreparedStage3V11SupportIdentityV1 {
+    pub destination_ofe_id: String,
+    pub destination_tile_id: String,
+    pub wb14_configuration_sha256: String,
+    pub exposure_identity: Digest32,
+    pub precipitation_parcels: Vec<SnowFreePrecipitationParcelReceipt>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct PreparedStage3V11DayV1 {
     pub day_index: usize,
+    pub accepted_gsi_receipt: Digest32,
+    pub beginning_provider_cursor: SnowFreeHalfHourProviderCursor,
+    pub ending_provider_cursor: SnowFreeHalfHourProviderCursor,
     pub supports: Vec<DirectSnowStage3V11PreparedSupport>,
 }
 
-impl DirectSnowStage3V11PreparedDay {
+pub type DirectSnowStage3V11PreparedDay = PreparedStage3V11DayV1;
+pub type PreparedStage3V11SupportV1 = DirectSnowStage3V11PreparedSupport;
+
+impl PreparedStage3V11DayV1 {
+    /// Bind runner-built support operands to the already validated repository
+    /// provider day. This is the only constructor that admits provider/GSI
+    /// identity into the sealed 48-support capability.
+    pub fn bind_provider_day(
+        provider: &PreparedSnowFreeGsiDayV1,
+        day_index: usize,
+        supports: Vec<DirectSnowStage3V11PreparedSupport>,
+    ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
+        if supports.len() != STAGE3_V11_PARENT_SUPPORT_COUNT {
+            return Err(DirectSnowStage3V11AttachmentError::Support(
+                "provider binding requires exactly 48 supports",
+            ));
+        }
+        provider.gsi_receipt().validate()?;
+        if provider.gsi_receipt().day_index != u64::try_from(day_index).map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Support("provider day index width")
+        })? {
+            return Err(DirectSnowStage3V11AttachmentError::Support(
+                "provider day index",
+            ));
+        }
+        let accepted_gsi_receipt = provider.gsi_receipt_digest()?;
+        for (support_index, support) in supports.iter().enumerate() {
+            for identity in support.support_identity_by_lane.values() {
+                let interval = provider
+                    .forcing_receipts()
+                    .receipts()
+                    .iter()
+                    .flat_map(|day| day.intervals.iter())
+                    .find(|interval| {
+                        interval.day_index == day_index
+                            && interval.interval_index == support_index
+                            && interval.ofe_id == identity.destination_ofe_id
+                            && interval.tile_id == identity.destination_tile_id
+                    })
+                    .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                        "support/provider destination interval join",
+                    ))?;
+                let receipt_digest = parse_lower_hex_digest(&interval.interval_receipt_sha256)?;
+                if support.forcing_receipt != receipt_digest
+                    || interval.gsi_receipt_sha256
+                        != provider.gsi_receipt().receipt_sha256
+                    || interval.wb14_configuration_sha256
+                        != identity.wb14_configuration_sha256
+                    || interval.precipitation_parcels != identity.precipitation_parcels
+                    || support.support.start_ns().get()
+                        != u128::try_from(interval.start_s)
+                            .map_err(|_| {
+                                DirectSnowStage3V11AttachmentError::Support(
+                                    "provider interval start width",
+                                )
+                            })?
+                            .checked_mul(1_000_000_000)
+                            .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                                "provider interval start overflow",
+                            ))?
+                    || support.support.end_ns().get()
+                        != u128::try_from(interval.end_s)
+                            .map_err(|_| {
+                                DirectSnowStage3V11AttachmentError::Support(
+                                    "provider interval end width",
+                                )
+                            })?
+                            .checked_mul(1_000_000_000)
+                            .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                                "provider interval end overflow",
+                            ))?
+                {
+                    return Err(DirectSnowStage3V11AttachmentError::Support(
+                        "sealed provider support operands",
+                    ));
+                }
+            }
+        }
+        Ok(Self {
+            day_index,
+            accepted_gsi_receipt,
+            beginning_provider_cursor: provider.forcing_receipts().beginning_cursor().clone(),
+            ending_provider_cursor: provider.forcing_receipts().ending_cursor().clone(),
+            supports,
+        })
+    }
+
     pub fn validate(
         &self,
         context: &DirectSnowStage3V11StaticContext,
@@ -139,12 +248,34 @@ impl DirectSnowStage3V11PreparedDay {
                     .copied()
                     .collect::<BTreeSet<_>>()
                     != expected_lanes
+                || support
+                    .support_identity_by_lane
+                    .keys()
+                    .copied()
+                    .collect::<BTreeSet<_>>()
+                    != expected_lanes
             {
                 return Err(DirectSnowStage3V11AttachmentError::Support(
                     "support chronology or lane forcing identity",
                 ));
             }
             cursor = support.support.end_ns().get();
+        }
+        Ok(())
+    }
+
+    pub fn validate_provider_join(
+        &self,
+        expected_gsi_receipt: Digest32,
+        expected_beginning_cursor: &SnowFreeHalfHourProviderCursor,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        if self.accepted_gsi_receipt != expected_gsi_receipt
+            || &self.beginning_provider_cursor != expected_beginning_cursor
+            || self.beginning_provider_cursor == self.ending_provider_cursor
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Support(
+                "prepared day provider/GSI cursor join",
+            ));
         }
         Ok(())
     }
@@ -229,6 +360,29 @@ impl DirectSnowStage3V11ShadowAttachment {
         {
             return Err(DirectSnowStage3V11AttachmentError::Identity(
                 "complete committed lane and V11 parent state",
+            ));
+        }
+        let canonical_snow = canonical_stage3_snow_owner_bytes(&committed.stage3_by_lane)?;
+        let parent_snow = committed
+            .v11_parent_state
+            .staged_resource_owners()
+            .get("snow")
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "missing canonical Stage-3 snow owner",
+            ))?;
+        let clock_snow = committed
+            .coupled_clock
+            .owners()
+            .iter()
+            .find(|owner| owner.owner_id() == "snow")
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "missing coupled-time Stage-3 snow owner",
+            ))?;
+        if parent_snow.state_bytes != canonical_snow
+            || clock_snow.state_bytes() != canonical_snow.as_slice()
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "hydrology and Stage-3 snow owners are not exact-one custody",
             ));
         }
         Ok(Self {
@@ -339,6 +493,7 @@ impl DirectSnowStage3V11ShadowAttachment {
                 prepared.day_index,
                 support_index,
                 candidate.next_parent_sequence,
+                canonical_stage3_snow_owner_bytes(&candidate.stage3_by_lane)?,
             )?;
             candidate.v11_parent_state = parent;
             candidate.real_consumer = consumer;
@@ -364,6 +519,11 @@ impl DirectSnowStage3V11ShadowAttachment {
             .map_err(|_| {
                 DirectSnowStage3V11AttachmentError::Identity("canonical V11 owner bytes")
             })?;
+        let mut complete_owner_bytes = complete_owner_bytes;
+        complete_owner_bytes.insert(
+            "snow".to_owned(),
+            canonical_stage3_snow_owner_bytes(&candidate.stage3_by_lane)?,
+        );
         let receipt = DirectSnowStage3V11ParentReceipt {
             day_index: prepared.day_index,
             support_count: prepared.supports.len(),
@@ -514,6 +674,7 @@ fn execute_real_v11_parent(
     day_index: usize,
     interval_index: usize,
     parent_sequence: u128,
+    ending_snow_owner_bytes: Vec<u8>,
 ) -> Result<
     (
         V11ParentTransaction,
@@ -597,11 +758,12 @@ fn execute_real_v11_parent(
     let mut provisional_clock = beginning_clock.clone();
     let provisional_receipt = accept_slab(&mut provisional_clock, provisional_slab)?;
     let provisional_parent = beginning_parent.clone();
-    let provisional_stack = DirectV11RealConsumerStack::new(
+    let provisional_stack = DirectV11RealConsumerStack::new_with_ending_snow_owner(
         beginning_consumer,
         &prepared.v11_interval,
         day_index,
         interval_index,
+        ending_snow_owner_bytes.clone(),
     );
     let mut provisional_executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
         stack: provisional_stack,
@@ -623,11 +785,12 @@ fn execute_real_v11_parent(
     )?;
     let mut final_clock = beginning_clock.clone();
     let final_receipt = accept_slab(&mut final_clock, final_slab)?;
-    let final_stack = DirectV11RealConsumerStack::new(
+    let final_stack = DirectV11RealConsumerStack::new_with_ending_snow_owner(
         beginning_consumer,
         &prepared.v11_interval,
         day_index,
         interval_index,
+        ending_snow_owner_bytes,
     );
     let mut final_executor =
         crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack: final_stack };
@@ -695,6 +858,48 @@ fn owner_states_from_envelopes(
         .map(V11OwnerEnvelope::to_owner_state)
         .collect::<Result<Vec<_>, _>>()?;
     Ok(values)
+}
+
+/// The Stage-3 persistent state is the sole authoritative snow owner. The
+/// hydrology winter-column fields remain a checked compatibility projection;
+/// they are intentionally absent from this canonical owner envelope.
+fn canonical_stage3_snow_owner_bytes(
+    states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+) -> Result<Vec<u8>, DirectSnowStage3V11AttachmentError> {
+    #[derive(Serialize)]
+    struct CanonicalSnowOwner<'a> {
+        schema: &'static str,
+        lanes: Vec<(&'a u32, &'a DirectSnowStage3PersistentState)>,
+    }
+    serde_json::to_vec(&CanonicalSnowOwner {
+        schema: "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V1",
+        lanes: states.iter().collect(),
+    })
+    .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("canonical Stage-3 snow bytes"))
+}
+
+fn parse_lower_hex_digest(
+    value: &str,
+) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
+    if value.len() != 64
+        || value
+            .bytes()
+            .any(|byte| !(byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte)))
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Support(
+            "provider receipt digest encoding",
+        ));
+    }
+    let mut bytes = [0_u8; 32];
+    for (index, chunk) in value.as_bytes().chunks_exact(2).enumerate() {
+        let text = std::str::from_utf8(chunk).map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Support("provider receipt digest encoding")
+        })?;
+        bytes[index] = u8::from_str_radix(text, 16).map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Support("provider receipt digest digits")
+        })?;
+    }
+    Ok(Digest32::from_bytes(bytes))
 }
 
 fn owner_envelopes_from_states(

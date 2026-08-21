@@ -1,5 +1,15 @@
 # Work Packages
 
+## 20260821-snow-stage3-v11-covered-consumer-runner-closure-001
+
+Active Child-1 successor from the synchronized Stage-3 terminal handoff
+`EXECUTED HOLD` at `40a4bb8b53cea4c6b642c70cb036a1a5e2f3de0a`.
+It owns the actual snow-covered V11/Stage-3 shared-carrier consumer, the
+runner-owned sealed 48-support capability, exact-one Stage-3 snow custody,
+terminal-liquid consumption, complete owner installation, additive restart,
+positive physical scenarios, and Child-1 closure. Status: `EXECUTING`; the
+predecessor remains immutable historical evidence and Child 3 is blocked.
+
 ## 20260821-snow-stage3-terminal-handoff-constitutive-closure-001
 
 Active Child-1 successor executing the actual Stage-3/V11 terminal-handoff

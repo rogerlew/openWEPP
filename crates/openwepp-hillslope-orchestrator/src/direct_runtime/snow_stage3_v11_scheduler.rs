@@ -3,6 +3,7 @@ use crate::snow_stage3_v11_attachment::{
     DirectSnowStage3V11PreparedDay, DirectSnowStage3V11ShadowAttachment,
     DirectSnowStage3V11StaticContext,
 };
+use crate::runtime_inputs::PreparedSnowFreeGsiDayV1;
 
 use super::{DirectDayFrame, DirectPublicationDayInput, DirectRunFrame, DirectRuntimeError};
 
@@ -31,6 +32,23 @@ impl DirectRunFrame {
         attachment
             .stage_prepared_day(prepared)
             .map_err(attachment_runtime_error("prepare"))
+    }
+
+    /// Bind the runner's already validated GSI/provider day to the 48
+    /// runner-built supports before installation. The provider day owns the
+    /// atmospheric clock and cursor transition; no completed daily result can
+    /// satisfy this boundary.
+    pub fn prepare_snow_stage3_v11_day_from_provider(
+        &mut self,
+        provider: &PreparedSnowFreeGsiDayV1,
+        day_index: usize,
+        supports: Vec<crate::snow_stage3_v11_attachment::DirectSnowStage3V11PreparedSupport>,
+    ) -> Result<(), DirectRuntimeError> {
+        let prepared = DirectSnowStage3V11PreparedDay::bind_provider_day(
+            provider, day_index, supports,
+        )
+        .map_err(attachment_runtime_error("bind_provider"))?;
+        self.prepare_snow_stage3_v11_day(prepared)
     }
 
     pub(crate) fn stage_snow_stage3_shadow(
