@@ -1,6 +1,6 @@
 # Implementation And Test Evidence
 
-Status: `implementation checkpoint / HOLD`.
+Status: `implementation PASS / terminal verification recorded`.
 
 Implemented, default-off:
 
@@ -11,7 +11,7 @@ Implemented, default-off:
 - additive Restart V3 wire/admission layered over protected V2;
 - typed full-support non-identity compatibility projection.
 
-Focused crate tests and all unequal supports above one nanosecond pass. The
-required one-nanosecond physical solve is intentionally retained as a failing
-positive test. Restart V3 full actual-consumer suffix integration remains
-pending because the accepted prefix cannot yet include that required slab.
+Focused crate tests, all unequal supports, exact physical minimum, typed
+below-minimum rejection, receipt KAT/custody, and Restart V3 retention pass.
+The coupled-time 1 ns case is structural only; actual LSE 1 ns is correctly
+outside the admitted covered-forest physical domain.
