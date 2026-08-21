@@ -1,5 +1,15 @@
 # Work Packages
 
+## 20260821-snow-stage3-terminal-handoff-constitutive-closure-001
+
+Active Child-1 successor executing the actual Stage-3/V11 terminal-handoff
+constitutive closure from `85d88fb903b302a33d43304a5001911f13f7d8d5`. It
+preserves the three historical HOLD packages and owns the real Stage-3 solver,
+shared V11 carrier, typed owner chronology/custody, complete additive restart,
+positive physical scenarios, assurance reconciliation, reviews, and exact-head
+closure. Status: `EXECUTING`; Child 3 is blocked; production Stage 3 remains
+default-off and unauthorized.
+
 ## 20260821-snow-stage3-terminal-handoff-live-owner-closure-001
 
 Fresh resumed Child-1 closure package from `56f394871`, preserving the prior
@@ -44,8 +54,9 @@ physical scenarios remain missing. Child 3 is not authorized.
   is excluded and CoE remains production-authoritative through Child 3. Its
   fresh Child 1 successor is
   `20260821-snow-stage3-terminal-handoff-live-owner-closure-001/`; it is
-  `EXECUTED HOLD` after source review, and campaign status remains
-  `active / Child 1 next`.
+  `EXECUTED HOLD` after source review. Its fresh constitutive successor is
+  `20260821-snow-stage3-terminal-handoff-constitutive-closure-001/`, currently
+  executing; campaign status remains `active / Child 1 executing`.
 - `20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001/` —
   EXECUTED / HOLD BEFORE PRODUCTION EDITS: admitted the bounded terminal
   receiver and shared-WB14 contracts/tests, then found that V10 vegetation
