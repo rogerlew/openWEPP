@@ -13,7 +13,9 @@ Required Child 2C result:
 
 - no time/state/receipt advancement from provisional predictor attempts;
 - unchanged nominal/full-support V10 outputs;
-- admitted conservation treatment for sub-ULP storage increments;
+- admitted deterministic event-boundary placement that prevents creation of a
+  positive snow-free LSE segment below the active adopter's support domain,
+  while preserving event-time, snow mass, liquid mass, and energy tolerances;
 - exact event-time/mass/energy coalescing bounds;
 - no time gap, wrong-regime flux, or hidden physical duration floor;
 - restart-equivalent event-boundary state if introduced.

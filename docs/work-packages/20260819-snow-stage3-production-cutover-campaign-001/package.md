@@ -45,8 +45,9 @@ children or use a later child to pass a current child's required gate.
      preserves immutable V10 and
      supersedes transaction-time integration only, with exact full-support
      compatibility, sequential segments, one parent finalization and commit.
-   - **2C** `SNOW-STAGE3-TURBULENT-CARRIER-AUTHORITY-CLOSURE` admits the shared
-     snow/canopy/vegetation carrier and snow-covered pre-event chronology.
+   - **2C** [`SNOW-STAGE3-TURBULENT-CARRIER-AUTHORITY-CLOSURE`](../20260821-snow-stage3-shared-carrier-authority-closure-001/package.md)
+     admits the shared snow/canopy/vegetation carrier, active-participant
+     support aggregation, and snow-covered pre-event chronology.
 3. `SNOW-STAGE3-REAL-CONSUMER-CUTOVER-QUALIFICATION` exercises the actual
    scheduler and complete owner stack over representative full snow seasons.
 4. `SNOW-COE-STAGE3-ATOMIC-CUTOVER` changes the production owner/default and
