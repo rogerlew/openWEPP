@@ -681,3 +681,32 @@ diff hygiene. The suffix-not-consumed poison is not an anti-tautology oracle.
 
 Verdict: `HOLD / Version 12 binds the V2/V3 prefix but still self-compares one
 suffix execution instead of proving uninterrupted equivalence at e97f1683b`.
+
+## Resource-custody terminal Review A — `e11b6c15e3daf5daaf9d4143e7ca361a4fde1a87`
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + independent uninterrupted/restored probes`
+
+Version 13 supplies the missing independent transaction chronology. The
+uninterrupted path derives accepted prefix custody from frozen beginning
+owners/state and frozen operations without reading V3. The restored path uses
+the admitted V2/V3 terminal prefix. Applying identical future input produces
+byte-identical seven-owner, V11 state, resource/material receipt, slab/event,
+reduction, and publication results. A validly reframed restored-only debit
+prefix is rejected by the independent comparison.
+
+All prior identity, link, candidate, support/cursor, terminal, overbooking,
+multi-component BGC, and cross-wire probes remain closed. Typed other-flux
+receipts have derived closed bodies, admitted source/receiver mappings, and
+exact-once transition linkage; coordinated parent/segment and flux reframes
+reject.
+
+Gates PASS: V2 54/54, V3 13/13, authority 8/8, strict BEI 4 rows, scoped unit,
+schema, and diff hygiene. No residual Review A finding or waiver remains.
+
+Verdict: `PASS / SC-VEGETATIONTRANSACTION-001 Version 13 closes complete
+resource-custody restart equivalence at e11b6c15e and may proceed to independent
+verification`.

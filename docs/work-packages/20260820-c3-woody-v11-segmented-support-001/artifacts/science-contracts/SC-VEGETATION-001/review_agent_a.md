@@ -839,3 +839,35 @@ schema, and diff hygiene. These do not remove the suffix anti-tautology gap.
 
 Verdict: `HOLD / prefix custody is cross-wire exact, but uninterrupted versus
 restored suffix equivalence is not independently executed at e97f1683b`.
+
+## Resource-custody terminal Review A — `e11b6c15e3daf5daaf9d4143e7ca361a4fde1a87`
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + independent uninterrupted/restored probes`
+
+Version 24 closes the final Review A finding. The uninterrupted oracle is
+rooted in frozen parent-beginning owners/state and independently reconstructs
+the accepted prefix without reading V3 checkpoint fields. Restored execution
+consumes the admitted seven terminal owners and terminal V11 state. Both then
+apply the same future operation, as required for restart equivalence, and their
+complete owner/state/resource/material/slab/event/reduction/publication bytes
+match. A coordinated restored-only prefix forgery now rejects `V3-SUFFIX`
+against the unchanged uninterrupted oracle.
+
+All retained custody probes reject: cross-wire graft, support scaling, cursor,
+prefix substitution, terminal owner, candidate cardinality/digest, missing
+debit link, coordinated parent/segment reframe, invalid snow-to-hydrology flux,
+and suffix bypass. Typed flux bodies bind direction, source/receiver, resource,
+OFE/layer/source/basis and amount; their derived IDs link exactly once. Debit,
+transition, candidate, support, and V2 domains join exactly.
+
+Gate evidence: Restart V2 PASS 54/54; Restart V3 PASS 13/13; authority PASS
+8/8; strict BEI PASS 15 rows; scoped unit, schema, and diff hygiene PASS.
+Independent inspection confirmed seven final owners, five resource receipts,
+two material receipts, and byte-identical complete chronology.
+
+Verdict: `PASS / all Resource-custody Review A findings are closed at
+e11b6c15e; the amendment may proceed to independent verification`.

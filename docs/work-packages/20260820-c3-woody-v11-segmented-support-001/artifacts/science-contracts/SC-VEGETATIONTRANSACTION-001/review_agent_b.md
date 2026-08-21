@@ -826,3 +826,49 @@ e97f1683b; accepted chronology is time-aligned but not fully identity-joined or
 independently reconstructed`.
 
 Production remains gated with no waiver.
+
+---
+
+## Resource-custody terminal Review B — candidate `e11b6c15e3daf5daaf9d4143e7ca361a4fde1a87`
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + independent transaction/suffix regression`
+
+Version 13 closes the cross-wire transaction boundary. Every V3 custody body
+now joins the exact decoded V2 parent, active segment, accepted slab receipt,
+support, and cursor projection. Collections are prefix-only, canonically
+ordered, exact-cardinality and identity-unique; candidate count derives as
+seven owners per accepted slab. Terminal V11 and complete-owner bytes join the
+embedded staged checkpoint exactly.
+
+Typed flux receipts have closed body-derived IDs and admit only the frozen
+class/direction/source-owner/receiver-owner/resource/spatial/basis mapping.
+Each is linked exactly once. Debit and transition IDs are likewise derived;
+NH4/NO3 components bind one complete BGC owner candidate rather than scalar
+owner aliases.
+
+The uninterrupted comparison is independently rooted in frozen parent
+beginnings and frozen operations. It does not read the checkpoint under test.
+Restored-only prefix mutation therefore rejects rather than changing both sides
+of a self-consistency comparison.
+
+Direct regressions reject coordinated parent/segment reframing (`V3-V2`),
+snow-to-hydrology flux mapping (`V3-FLUX-MAPPING`), prefix substitution
+(`V3-DEBIT`), and restored-only prefix forgery (`V3-SUFFIX`). V2 54/54, V3
+13/13, authority 8/8, schema, strict BEI, unit, and diff gates all pass. The
+complete V3 suffix digest is `0b2ff7b0...1096`; V2 schema/reference hashes stay
+`af9314c3...2441` and `13f3d009...f7c`.
+
+### Verdict
+
+`V11-TXN-RESOURCE-B-001..004` are CLOSED without waiver. This supersedes all
+earlier transaction resource-custody Review B HOLDs.
+
+`PASS / SC-VEGETATIONTRANSACTION-001 Version 13 may proceed to disposition and
+independent verification at e11b6c15e`.
+
+Production remains gated on completion of the contract cycle and exact
+authority promotion.

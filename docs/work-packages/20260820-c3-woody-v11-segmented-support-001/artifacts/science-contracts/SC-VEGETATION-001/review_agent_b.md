@@ -1084,6 +1084,64 @@ No waiver or production authorization is recommended.
 
 ---
 
+## Resource-custody terminal Review B — candidate `e11b6c15e3daf5daaf9d4143e7ca361a4fde1a87`
+
+Date: 2026-08-20
+
+Status: `PASS`
+
+Evidence mode: `Static + Ran + independent cross-wire/suffix probes`
+
+Version 24 closes every residual Review B finding. The decoded V2 checkpoint is
+the sole parent/support/cursor/accepted-slab domain. Every debit, typed flux,
+transition, and complete owner candidate must join its exact parent, active
+segment, accepted slab receipt, and support. Candidate cardinality is
+`7 x accepted_prefix_slabs`; terminal candidates join V2 staged owners and the
+terminal V11 state joins the typed vegetation checkpoint.
+
+Debit, flux, and transition identities are derived from their complete closed
+bodies. Typed flux admission freezes class, direction, source/receiver owner,
+resource, OFE/layer/source/basis, and amount. Links are canonical and exact-once
+and must map to the consuming transition. Water binds hydrology; NH4 and NO3
+remain distinct components of the same complete BGC candidate.
+
+The suffix comparison is no longer checkpoint self-consistency. Restored
+execution consumes the admitted V3 prefix and runtime-only suffix, while the
+uninterrupted oracle independently rebuilds chronology from frozen
+parent-beginning owners/state and frozen prefix/suffix operations without
+reading the V3 checkpoint. Complete final owners, V11 state, resource/material
+receipts, slabs/events, reduction, and publication bytes compare canonically.
+
+### Independent regression evidence
+
+- coordinated parent/segment reframe => rejects `V3-V2`;
+- forbidden snow-to-hydrology flux mapping => rejects `V3-FLUX-MAPPING`;
+- accepted-prefix slab substitution => rejects `V3-DEBIT`;
+- restored-only prefix forgery => rejects `V3-SUFFIX`;
+- V2 reference => PASS, 54/54;
+- V3 reference => PASS, 13/13, complete suffix
+  `0b2ff7b0182c756d6d706016b164459d5d55e99e148bd776aca1c0d1d6341096`;
+- authority contract => PASS, 8/8;
+- V2/V3/resource schemas, strict BEI, unit compliance, and diff hygiene =>
+  PASS.
+
+Protected V2 artifacts remain byte-identical: schema
+`af9314c3...2441`, reference `13f3d009...f7c`. V3 schema/reference/poison hashes
+are `0f8c77a6...efe`, `5951dcc0...930`, and `d3e97f2a...28ff`.
+
+### Finding closure and verdict
+
+`V11-RESOURCE-CUSTODY-B-001..004` are CLOSED without waiver. This supersedes
+all earlier resource-custody Review B HOLDs.
+
+`PASS / SC-VEGETATION-001 Version 24 resource-custody and Restart V3 authority
+may proceed to finding disposition and independent verification at e11b6c15e`.
+
+This review does not itself authorize production before the remaining contract
+cycle gates and exact promotion checkpoint.
+
+---
+
 ## Resource-custody final bounded Review B — candidate `bf2c288c4e1010c47042078c362925db747d46b1`
 
 Date: 2026-08-20
