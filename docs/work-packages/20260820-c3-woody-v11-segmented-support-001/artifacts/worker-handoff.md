@@ -1,6 +1,6 @@
 # Child 2C handoff after V11 terminal release
 
-Status: `queued dependency / Child 2C not authorized until V11 terminal gates`.
+Status: `COMPLETE / Child 2C authorized to begin`.
 
 Starting authority is `SC-LANDSURFACEENERGY-001@6` plus the V11 actual-stack
 covered-forest support receipt. Coupled-time nanosecond chronology is valid;
@@ -18,6 +18,7 @@ Required Child 2C result:
 - no time gap, wrong-regime flux, or hidden physical duration floor;
 - restart-equivalent event-boundary state if introduced.
 
-After V11 terminal release, Child 2C may begin its own contract-first authority
-cycle. Restart V3 consumer integration and all V11 terminal gates remain
-release-blocking before that handoff.
+Child 2B terminal A+B verification is complete at `f9eeecf8f`. Child 2C may
+begin its own contract-first authority cycle. The physical adopter remains
+default-off; no production selector or snow equation is activated by this
+handoff.

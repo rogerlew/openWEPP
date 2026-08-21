@@ -1,8 +1,8 @@
 ---
 contract_id: SC-VEGETATIONTRANSACTION-001
 title: Coupled Vegetation Occupancy Owner-Transaction Contract
-status: in_review
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
 contract_version: 14
 producer_scope:
@@ -19,8 +19,8 @@ superseded_by: []
 
 # SC-VEGETATIONTRANSACTION-001 Coupled Vegetation Occupancy Owner-Transaction Contract
 
-Status: `in_review`
-Maturity: `draft`
+Status: `approved`
+Maturity: `active`
 Evidence mode: `Static + independent oracle`
 
 ## Purpose

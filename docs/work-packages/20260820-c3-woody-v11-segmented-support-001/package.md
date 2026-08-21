@@ -1,6 +1,6 @@
 # Implement C3 Woody V11 Segmented Support
 
-Status: `IMPLEMENTATION CHECKPOINT / positive-support authority admitted; terminal release pending`
+Status: `COMPLETE / Child 2B released / Child 2C authorized`
 
 Date: `2026-08-20`
 
@@ -218,8 +218,10 @@ cost are not HOLD reasons.
 - [x] (2026-08-20) Scaffolded Child 2B at exact base.
 - [x] (2026-08-20) Complete V10 surface inventory and freeze intent.
 - [x] (2026-08-20) Release positive-support V11/LSE authority through dual review and verification.
-- [ ] Complete and terminally validate the actual V11 consumer, including receipt custody.
-- [ ] Complete final review, verification, and Child 2C handoff.
+- [x] (2026-08-20) Complete and terminally validate the actual V11 consumer,
+  including sealed receipt custody.
+- [x] (2026-08-20) Complete three implementation reviews, dual terminal
+  verification, and the Child 2C handoff.
 
 ## Release Boundary
 
@@ -229,5 +231,12 @@ only`.
 
 ## Outcomes & Retrospective
 
-Queued. Scaffold hardening changes documentation only; Phase 0 has not yet been
-claimed or frozen.
+Released default-off. The physical adopter retains a deterministic
+600000000 ns minimum positive-support domain for the executed covered-forest
+LSE profile; coupled-time 1 ns remains structural chronology, not a promise
+that every constitutive solver can resolve a storage lattice at one tick.
+Full-support V10 compatibility, ordinary unequal support, staged owner
+custody, sealed support receipts, rollback, and Restart V3 retention are
+terminally verified. Child 2C owns the independently reviewed event-boundary
+coalescing and snow-covered shared-carrier authority; no snow equations or
+production selector changed in this package.

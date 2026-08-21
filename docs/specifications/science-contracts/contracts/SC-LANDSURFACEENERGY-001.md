@@ -1,8 +1,8 @@
 ---
 contract_id: SC-LANDSURFACEENERGY-001
 title: Land-Surface Energy-Balance Process Contract
-status: in_review
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
 contract_version: 6
 producer_scope:
@@ -18,8 +18,8 @@ superseded_by: []
 
 # SC-LANDSURFACEENERGY-001 Land-Surface Energy-Balance Process Contract
 
-Status: `in_review`
-Maturity: `draft`
+Status: `approved`
+Maturity: `active`
 Evidence mode: `static + independent oracle`
 
 ## Purpose

@@ -1,6 +1,6 @@
 # Final Disposition
 
-Status: `IMPLEMENTATION REVIEW PASS / terminal gates pending`.
+Status: `COMPLETE / Child 2B released / Child 2C authorized`.
 
 The V11 authority is amended through `SC-VEGETATION-001@25`,
 `SC-VEGETATIONTRANSACTION-001@14`, and `SC-LANDSURFACEENERGY-001@6`.
@@ -28,8 +28,10 @@ evidence remains historical; no physical parameter, tolerance, or V10 behavior
 was changed.
 
 No V11 scaling, frozen-state shortcut, relaxed ledger, hidden duration floor,
-or surrogate solve is admitted. Three implementation reviews now terminate
-PASS: receipt KAT/order, accepted/checkpoint/Restart V3 custody, owner joins,
-and actual-consumer behavior are closed. Heavy gates, exact diff/line-count
-reconciliation, and dual terminal verification remain before release. Child 2C
-remains blocked until those terminal gates close.
+or surrogate solve is admitted. Three implementation reviews terminate PASS;
+the package nextest population is 361/361, the authority oracle is 15/15,
+the contract suite is 8/8, and Terminal Verification A+B both PASS at
+`f9eeecf8f`. The full workspace quick-profile snow identity drift and the
+pre-existing broad `float_cmp` test remain classified workspace debt and are
+outside this additive package. Child 2B is released default-off; Child 2C is
+now authorized to begin its contract-first shared-carrier/event-boundary cycle.
