@@ -210,3 +210,10 @@ The checkpoint changes disposition and verification prose only. All technical
 objects and protected wires are byte-identical to `38492e60a`; the prior V2
 54/54, V3 13/13, authority 8/8, independent suffix, BEI, unit, schema, diff,
 and production-exclusion PASS remains exact. Verification A remains PASS.
+
+### LSE positive-support addendum — `3b7d40648a5543bf8e8a3936cd2b383657a9c9f2`
+
+Receipt chronology, rollback/restore, schema/vector population, and protected
+wire checks pass. Addendum verdict is **FAIL pending diff hygiene** because the
+canonical LSE Review A artifact contains trailing whitespace at lines 3 and 6.
+No transaction-authority semantic failure was found.

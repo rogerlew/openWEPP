@@ -338,3 +338,10 @@ and DirectV10 Restart V1 and coupled-time Restart V2 remain protected.
 verified at `f71c36a7c`. No Verification B finding remains. Promotion is still
 subject to Verification A and exact authority checkpointing; production is
 not activated by this record.
+# Positive-support amendment Verification B — 2026-08-20
+
+Exact checkpoint `3b7d40648a5543bf8e8a3936cd2b383657a9c9f2` is **FAIL** solely on the
+shared authority diff-hygiene gate: LSE `review_agent_a.md` lines 3 and 6 carry
+trailing whitespace. Transaction receipt identity, typed pre-Newton rollback,
+fresh restored suffix, disposition, lifecycle, and protected-wire checks PASS.
+A hygiene-only correction and bounded re-verification are required.

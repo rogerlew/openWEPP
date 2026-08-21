@@ -235,3 +235,11 @@ test objects remain exact; the previously recorded V2 54/54, V3 13/13,
 authority 8/8, independent suffix, BEI, unit, schema, protected-wire, and
 nonproduction-range PASS therefore remains unchanged. No residual finding is
 introduced.
+
+### LSE positive-support addendum — `3b7d40648a5543bf8e8a3936cd2b383657a9c9f2`
+
+The V11/LSE technical dependency checks pass: oracle 15/15, schema and frozen
+population consistency PASS, and protected V10/coupled-time/DirectV10 wire
+paths are unchanged. Addendum verdict is **FAIL pending diff hygiene** because
+the canonical LSE Review A artifact contains trailing whitespace at lines 3
+and 6. No V11 authority-semantic failure was found.

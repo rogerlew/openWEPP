@@ -420,3 +420,10 @@ schema/reference/poison hashes remain `0f8c77a6...efe`, `5951dcc0...930`, and
 `8a35ed97f`. This supersedes the disposition-only FAIL at `38492e60a`.
 Authority promotion may proceed subject to Verification A and the exact
 checkpoint procedure; this record does not itself activate production.
+# Positive-support amendment Verification B — 2026-08-20
+
+Exact checkpoint `3b7d40648a5543bf8e8a3936cd2b383657a9c9f2` is **FAIL** solely because
+the shared LSE Review A artifact has trailing whitespace at lines 3 and 6.
+Receipt/schema/KAT, rollback/restored suffix, disposition, lifecycle, and
+protected V10/restart/coupled-time checks PASS. Reverify after a hygiene-only
+checkpoint correction.

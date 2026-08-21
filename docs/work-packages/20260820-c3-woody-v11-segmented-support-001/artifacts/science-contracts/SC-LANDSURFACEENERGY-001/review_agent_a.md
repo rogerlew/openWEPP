@@ -1,9 +1,9 @@
 # Authority Review A — LSE Version 6 positive-support amendment
 
-Reviewer role: independent time/numerics and supported-domain authority review  
+Reviewer role: independent time/numerics and supported-domain authority review
 Reviewed: `SC-LANDSURFACEENERGY-001@6`, `SC-VEGETATION-001@25`,
 `SC-VEGETATIONTRANSACTION-001@14`, the support schema/vectors/reference,
-representation evidence, tiny-support blocker, and lifecycle index.  
+representation evidence, tiny-support blocker, and lifecycle index.
 Disposition: **HOLD**
 
 The architecture is sound: coupled-time keeps nanosecond chronology while the

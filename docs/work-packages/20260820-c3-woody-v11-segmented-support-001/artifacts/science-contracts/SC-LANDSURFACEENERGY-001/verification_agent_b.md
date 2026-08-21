@@ -1,4 +1,33 @@
-# Authority verification B — pending
+# Authority verification B — 2026-08-20
 
-Run the independent schema, vector, pre-Newton rejection/rollback, and
-protected-boundary checks after review disposition.
+Exact checkpoint: `3b7d40648a5543bf8e8a3936cd2b383657a9c9f2`.
+
+Verdict: **FAIL / checkpoint hygiene correction required**.
+
+Technical authority verification passes:
+
+- independent schema validation and baseline domain-prefixed KAT: PASS;
+- support oracle: 15/15 PASS;
+- exact-minimum, one-tick-below, leading-zero identity, and digest-valid
+  cross-segment reframing probes: PASS;
+- aligned accepted-prefix cursor/receipt chronology, byte-identical rollback,
+  seven-owner uninterrupted/restored suffix comparison: PASS;
+- reviewed finding disposition: `LSE-SUPPORT-A-001..006` and
+  `LSE-SUPPORT-B-001..004` closed without waiver;
+- contract/index lifecycle is consistently `in_review`/`draft`, correctly
+  awaiting dual verification and promotion;
+- protected `openwepp-coupled-time`, `openwepp-persisted-restart-v1`, V10/V11
+  vegetation implementation/model-registry surfaces: no checkpoint diff.
+
+The exact checkpoint fails `git diff --check HEAD^` at:
+
+```text
+artifacts/science-contracts/SC-LANDSURFACEENERGY-001/review_agent_a.md:3
+artifacts/science-contracts/SC-LANDSURFACEENERGY-001/review_agent_a.md:6
+```
+
+Both lines contain trailing whitespace. Verification B cannot certify the exact
+authority checkpoint while its mandatory diff-hygiene gate fails. Remove only
+those trailing spaces, create a corrected checkpoint, and rerun bounded B
+verification; no authority reopening or technical rerun beyond regression is
+otherwise indicated.
