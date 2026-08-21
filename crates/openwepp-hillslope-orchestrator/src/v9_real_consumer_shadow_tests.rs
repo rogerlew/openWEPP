@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
+
     use openwepp_coupled_time::{
         ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, Digest32, LedgerEntryV1,
         ModelTimeNs, OwnerState, ParentAuthorityV1, ParentIntervalId, ParentTransactionId,
@@ -19,6 +21,16 @@ mod tests {
         SnowStage3TerminalHandoffRequest, TerminalEventInput,
         TerminalStateRates,
     };
+    use crate::snow_stage3_v11_attachment::{
+        PreparedStage3V11DayV1, PreparedStage3V11SupportIdentityV1,
+        PreparedStage3V11SupportV1,
+    };
+    use crate::hydrology::{
+        DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowStage3SupportInput,
+        DirectSnowSurfaceEnergyOptions,
+        SnowDensityModel, SnowMeltModel, SnowStage3LiquidRoutingModel,
+    };
+    use crate::winter_column::DirectSnowLayerState;
     use openwepp_vegetation::v11::{
         V11_COMPLETE_OWNER_MANIFEST, V11ExecutionError, V11OwnerEnvelope, V11ParentCandidate,
         V11ParentTransaction, execute_v11_segment, migrate_v10_runtime_to_v11,
@@ -32,7 +44,8 @@ mod tests {
     use super::*;
     use crate::land_surface_energy_shadow::{EndpointFixture, endpoint_fixture};
     use crate::runtime_inputs::{
-        SnowFreeHalfHourProviderCursor, SnowFreeHalfHourStaticConfiguration,
+        PreparedSnowFreeGsiDayV1, SnowFreeHalfHourProviderCursor,
+        SnowFreeHalfHourStaticConfiguration,
         build_hillslope_climate_runtime_request,
     };
     use crate::{
@@ -337,6 +350,102 @@ mod tests {
         input.precipitation_m = 0.0;
         input.effective_temperature_c = 7.5;
         input
+    }
+
+    fn attachment_stage3_inputs() -> DirectActiveSnowPartitionInputs {
+        let mut layer = DirectSnowLayerState::new(0.18, 0.40, 450.0, 12.0);
+        layer.temperature_c = -8.0;
+        layer.cold_content_j_m2 = 0.18 * 1_000.0 * 2_100.0 * 8.0;
+        DirectActiveSnowPartitionInputs {
+            hyetograph_rainfall_m: 0.0,
+            rst_c: 0.0,
+            newsnw_kg_m3: 100.0,
+            ssd_kg_m3: 522.0,
+            runtime_swe_m: 0.18,
+            runtime_depth_m: 0.40,
+            runtime_density_kg_m3: 450.0,
+            runtime_settle_day_count: 12.0,
+            liquid_water_retained_m: 0.0,
+            tmax_c: -3.0,
+            tmin_c: -7.0,
+            canopy_cover_fraction: 0.45,
+            wind_m_s: 3.0,
+            dewpoint_c: -15.0,
+            snow_melt_model: SnowMeltModel::CoeLiquidHoldingCapacityV1,
+            snow_density_model: SnowDensityModel::PhysicsBulkDensityCompactionV1,
+            stage3_liquid_routing_model: SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1,
+            surface_energy_options: DirectSnowSurfaceEnergyOptions::default(),
+            sturm_climate_class: None,
+            sturm_day_of_year: None,
+            coe_boundary_depth_m: 0.40,
+            coe_boundary_density_kg_m3: 450.0,
+            coe_boundary_settle_day_count: 12.0,
+            snow_albedo_model: None,
+            snow_albedo_state: None,
+            snow_layers: vec![layer],
+            underlying_surface_albedo: 0.2,
+            hourly: [DirectSnowHourlyForcing::zero(); 24],
+        }
+    }
+
+    fn digest_from_receipt(value: &str) -> Digest32 {
+        let mut bytes = [0_u8; 32];
+        for (index, chunk) in value.as_bytes().chunks_exact(2).enumerate() {
+            bytes[index] = u8::from_str_radix(
+                std::str::from_utf8(chunk).expect("lower-hex receipt"),
+                16,
+            )
+            .expect("lower-hex receipt digits");
+        }
+        Digest32::from_bytes(bytes)
+    }
+
+    fn attachment_supports(
+        provider: &PreparedSnowFreeGsiDayV1,
+        interval_template: &DirectV9ShadowIntervalInput,
+        lane_id: u32,
+    ) -> Vec<PreparedStage3V11SupportV1> {
+        let snow_inputs = attachment_stage3_inputs();
+        (0..INTERVALS_PER_DAY)
+            .map(|interval_index| {
+                let support_start = interval_index as u128 * 1_800_000_000_000;
+                let support = TimeSupport::new(
+                    ModelTimeNs::new(support_start),
+                    ModelTimeNs::new(support_start + 1_800_000_000_000),
+                )
+                .expect("1,800-second support");
+                let identities = provider
+                    .forcing_receipts()
+                    .receipts()
+                    .iter()
+                    .map(|day| {
+                        let interval = &day.intervals[interval_index];
+                        PreparedStage3V11SupportIdentityV1::new(
+                            interval.ofe_id.clone(),
+                            interval.tile_id.clone(),
+                            interval.wb14_configuration_sha256.clone(),
+                            Digest32::from_bytes([7_u8; 32]),
+                            interval.precipitation_parcels.clone(),
+                            digest_from_receipt(&interval.interval_receipt_sha256),
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                PreparedStage3V11SupportV1::try_new(
+                    support,
+                    BTreeMap::from([(lane_id, snow_inputs.clone())]),
+                    BTreeMap::from([(
+                        lane_id,
+                        DirectSnowStage3SupportInput {
+                            forcing: DirectSnowHourlyForcing::zero(),
+                            duration_seconds: 1_800.0,
+                        },
+                    )]),
+                    interval_template.clone(),
+                    BTreeMap::from([(lane_id, identities)]),
+                )
+                .expect("runner-built attachment support")
+            })
+            .collect()
     }
 
     fn child2c_support(
@@ -1836,6 +1945,108 @@ mod tests {
             .provider_cursor()
             .validate_for_configuration(shadow.provider_static_configuration(), 1)
             .expect("provider cursor advances exactly once");
+    }
+
+    #[test]
+    fn prepared_provider_chain_accepts_two_days_and_rejects_sequence_poisons() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let template = day_input(&fixture);
+        let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 0.0 2.5 180.0 20.0\n21 6 2000 0.0 0.0 0.0 0.0 29.0 23.0 0.0 2.5 180.0 21.0\n22 6 2000 0.0 0.0 0.0 0.0 30.0 24.0 0.0 2.5 180.0 22.0\n";
+        let climate = parse_climate_from_str(source, ParserMode::Strict).expect("strict climate");
+        let request = build_hillslope_climate_runtime_request(&climate).expect("climate request");
+        let legacy = shadow
+            .snow_free_provider_configuration(&template)
+            .expect("owner-derived provider configuration");
+        let configuration = SnowFreeHalfHourStaticConfiguration {
+            run_id: legacy.run_id,
+            co2_pa: legacy.co2_pa,
+            reference_height_m: legacy.reference_height_m,
+            gsi_owner_configuration_sha256: shadow
+                .gsi_owner_configuration()
+                .configuration_sha256
+                .clone(),
+            destinations: legacy.destinations,
+        };
+        let initial_gsi = shadow.gsi_state().clone();
+        let initial_cursor = shadow.provider_cursor().clone();
+        let day_zero = request
+            .prepare_snow_free_gsi_day_from_repository(
+                0,
+                &configuration,
+                shadow.gsi_owner_configuration(),
+                &initial_gsi,
+                &initial_cursor,
+            )
+            .expect("day zero provider capability");
+        let lane_id = fixture.hydrology.beginning_frame().lanes[0].lane_id;
+        let bound_day_zero = PreparedStage3V11DayV1::bind_provider_day(
+            &day_zero,
+            0,
+            attachment_supports(&day_zero, &template.intervals[0], lane_id),
+        )
+        .expect("day zero Stage-3/V11 provider binding");
+        let day_zero_replay = day_zero.clone();
+        let mut gsi_after_day_zero = initial_gsi.clone();
+        let mut cursor_after_day_zero = initial_cursor.clone();
+        day_zero
+            .commit(&mut gsi_after_day_zero, &mut cursor_after_day_zero)
+            .expect("day zero provider commit");
+
+        let day_one = request
+            .prepare_snow_free_gsi_day_from_repository(
+                1,
+                &configuration,
+                shadow.gsi_owner_configuration(),
+                &gsi_after_day_zero,
+                &cursor_after_day_zero,
+            )
+            .expect("day one provider capability");
+        let bound_day_one = PreparedStage3V11DayV1::bind_provider_day(
+            &day_one,
+            1,
+            attachment_supports(&day_one, &template.intervals[0], lane_id),
+        )
+        .expect("day one Stage-3/V11 provider binding");
+        assert_ne!(
+            bound_day_zero.accepted_gsi_receipt(),
+            bound_day_one.accepted_gsi_receipt(),
+            "sequential days must carry distinct GSI receipts"
+        );
+        let day_one_replay = day_one.clone();
+        let mut gsi_after_day_one = gsi_after_day_zero.clone();
+        let mut cursor_after_day_one = cursor_after_day_zero.clone();
+        day_one
+            .commit(&mut gsi_after_day_one, &mut cursor_after_day_one)
+            .expect("day one provider commit");
+        cursor_after_day_one
+            .validate_for_configuration(&configuration, 2)
+            .expect("provider cursor advances to day two");
+
+        assert!(day_zero_replay
+            .commit(&mut gsi_after_day_one.clone(), &mut cursor_after_day_one.clone())
+            .is_err());
+        assert!(request
+            .prepare_snow_free_gsi_day_from_repository(
+                2,
+                &configuration,
+                shadow.gsi_owner_configuration(),
+                &initial_gsi,
+                &initial_cursor,
+            )
+            .is_err());
+
+        let mut substituted_gsi = initial_gsi;
+        let mut correct_cursor = cursor_after_day_zero;
+        assert!(day_one_replay
+            .clone()
+            .commit(&mut substituted_gsi, &mut correct_cursor)
+            .is_err());
+
+        let mut correct_gsi = gsi_after_day_zero;
+        let mut rewound_cursor = initial_cursor;
+        assert!(day_one_replay
+            .commit(&mut correct_gsi, &mut rewound_cursor)
+            .is_err());
     }
 
     #[test]

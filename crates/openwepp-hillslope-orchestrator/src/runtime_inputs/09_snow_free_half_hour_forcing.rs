@@ -259,7 +259,7 @@ impl DirectGsiDailyReceiptV1 {
     }
 }
 
-fn direct_gsi_state(
+pub(crate) fn direct_gsi_state(
     state: &GsiState,
 ) -> Result<DirectGsiOwnerStateV1, SnowFreeHalfHourForcingError> {
     let mut value = DirectGsiOwnerStateV1 {

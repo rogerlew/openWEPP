@@ -123,6 +123,8 @@ fields.
 - [x] Child 2C contract/operand and exact-one snow-owner mapping.
 - [x] Provider capability sealing, complete destination binding, and
   conservative terminal-liquid mass basis.
+- [x] Parent cadence, sequential GSI/cursor joins, and lane-to-OFE destination
+  binding corrections with poison regressions.
 - [ ] Covered consumer and terminal chronology.
 - [~] Runner-owned 48-support capability/provider bind; physical support
   construction and complete restart remain open.

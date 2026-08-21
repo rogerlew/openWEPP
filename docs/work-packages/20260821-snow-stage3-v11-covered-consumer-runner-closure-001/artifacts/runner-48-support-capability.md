@@ -25,8 +25,9 @@ bind landed; runner physical support builder and covered executor remain open`.
 supports, returns `ValidatedPreparedStage3V11DayV1`, and binds every support
 to the provider's GSI receipt, interval receipt digest, precipitation parcel
 list, WB14 identity, complete destination set, and exact half-open nanosecond
-bounds. The closure path rechecks the accepted GSI receipt, beginning cursor,
-and committed provider destination topology before execution. The provider
+bounds. The closure path rechecks the prepared beginning GSI state, beginning
+cursor, sequential provider day, lane-to-OFE destination topology, and
+committed provider destination topology before execution. The provider
 GSI/cursor owners are installed only on the cloned candidate after all 48
 coupled supports succeed.
 

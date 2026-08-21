@@ -26,7 +26,7 @@ use crate::hydrology::{
 };
 use crate::runtime_inputs::{
     PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError, SnowFreeHalfHourProviderCursor,
-    SnowFreePrecipitationParcelReceipt,
+    SnowFreePrecipitationParcelReceipt, direct_gsi_state,
 };
 use crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow;
 use crate::v9_real_consumer_shadow::{
@@ -34,7 +34,7 @@ use crate::v9_real_consumer_shadow::{
 };
 use crate::{DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidConfigurationRecord};
 
-pub const STAGE3_V11_PARENT_SUPPORT_NS: u128 = 1_800_000_000;
+pub const STAGE3_V11_PARENT_SUPPORT_NS: u128 = 1_800_000_000_000;
 pub const STAGE3_V11_PARENT_SUPPORT_COUNT: usize = 48;
 
 #[derive(Debug, Error)]
@@ -126,9 +126,9 @@ impl DirectSnowStage3V11PreparedSupport {
         v11_interval: DirectV9ShadowIntervalInput,
         support_identity_by_lane: BTreeMap<u32, Vec<PreparedStage3V11SupportIdentityV1>>,
     ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
+        validate_parent_support_duration(support.duration_ns())?;
         let lane_ids = snow_inputs_by_lane.keys().copied().collect::<BTreeSet<_>>();
-        if support.duration_ns() == 0
-            || lane_ids.is_empty()
+        if lane_ids.is_empty()
             || lane_ids != support_forcing_by_lane.keys().copied().collect()
             || lane_ids != support_identity_by_lane.keys().copied().collect()
             || support_identity_by_lane.values().any(Vec::is_empty)
@@ -391,15 +391,13 @@ impl PreparedStage3V11DayV1 {
 
     fn validate_provider_join(
         &self,
-        expected_gsi_receipt: Digest32,
         expected_beginning_cursor: &SnowFreeHalfHourProviderCursor,
     ) -> Result<(), DirectSnowStage3V11AttachmentError> {
-        if self.accepted_gsi_receipt != expected_gsi_receipt
-            || &self.beginning_provider_cursor != expected_beginning_cursor
+        if &self.beginning_provider_cursor != expected_beginning_cursor
             || self.beginning_provider_cursor == self.ending_provider_cursor
         {
             return Err(DirectSnowStage3V11AttachmentError::Support(
-                "prepared day provider/GSI cursor join",
+                "prepared day provider cursor join",
             ));
         }
         Ok(())
@@ -437,16 +435,56 @@ impl ValidatedPreparedStage3V11DayV1 {
         context: &DirectSnowStage3V11StaticContext,
         expected_start_ns: u128,
     ) -> Result<(), DirectSnowStage3V11AttachmentError> {
-        self.inner.validate(context, expected_start_ns)
+        self.inner.validate(context, expected_start_ns)?;
+        self.validate_lane_destination_bindings(context)
+    }
+
+    fn validate_lane_destination_bindings(
+        &self,
+        context: &DirectSnowStage3V11StaticContext,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        let provider_destinations_by_ofe = self
+            .provider_day
+            .forcing_receipts()
+            .receipts()
+            .iter()
+            .flat_map(|day| day.intervals.iter())
+            .fold(
+                BTreeMap::<String, BTreeSet<(String, String)>>::new(),
+                |mut destinations, interval| {
+                    destinations
+                        .entry(interval.ofe_id.clone())
+                        .or_default()
+                        .insert((interval.ofe_id.clone(), interval.tile_id.clone()));
+                    destinations
+                },
+            );
+        for support in &self.inner.supports {
+            for (lane_id, identities) in &support.support_identity_by_lane {
+                let binding = context
+                    .surface_liquid_configuration
+                    .ofe_bindings
+                    .iter()
+                    .find(|binding| binding.production_lane_id == *lane_id)
+                    .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                        "support lane surface-liquid binding",
+                    ))?;
+                let expected = provider_destinations_by_ofe
+                    .get(binding.ofe_id.as_str())
+                    .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                        "support lane provider OFE destinations",
+                    ))?;
+                validate_lane_destination_set(binding.ofe_id.as_str(), identities, expected)?;
+            }
+        }
+        Ok(())
     }
 
     fn validate_provider_join(
         &self,
-        expected_gsi_receipt: Digest32,
         expected_beginning_cursor: &SnowFreeHalfHourProviderCursor,
     ) -> Result<(), DirectSnowStage3V11AttachmentError> {
-        self.inner
-            .validate_provider_join(expected_gsi_receipt, expected_beginning_cursor)
+        self.inner.validate_provider_join(expected_beginning_cursor)
     }
 
     fn into_provider_day(self) -> PreparedSnowFreeGsiDayV1 {
@@ -574,7 +612,7 @@ impl DirectSnowStage3V11ShadowAttachment {
                 "duplicate uncommitted Stage-3/V11 parent",
             ));
         }
-        let candidate = self.execute_prepared_day(&prepared)?;
+        let candidate = self.execute_prepared_day(prepared)?;
         self.pending_candidate = Some(candidate);
         Ok(())
     }
@@ -891,16 +929,32 @@ fn validate_prepared_day_against_committed_provider(
             "prepared/committed provider destination topology",
         ));
     }
-    let current_receipt = committed.real_consumer.provider_gsi_receipt_sha256();
-    let expected_gsi_receipt = if current_receipt.chars().all(|byte| byte == '0') {
-        prepared.accepted_gsi_receipt()
-    } else {
-        parse_lower_hex_digest(current_receipt)?
-    };
-    prepared.validate_provider_join(
-        expected_gsi_receipt,
-        committed.real_consumer.provider_cursor(),
-    )
+    committed
+        .real_consumer
+        .provider_cursor()
+        .validate_for_configuration(
+            committed.real_consumer.provider_static_configuration(),
+            prepared.day_index(),
+        )?;
+    let beginning_gsi_state = direct_gsi_state(committed.real_consumer.gsi_state())?;
+    let prepared_gsi_receipt = prepared.provider_day.gsi_receipt();
+    if prepared_gsi_receipt.configuration_sha256
+        != committed
+            .real_consumer
+            .gsi_owner_configuration()
+            .configuration_sha256
+        || prepared_gsi_receipt.run_id
+            != committed
+                .real_consumer
+                .provider_static_configuration()
+                .run_id
+        || prepared_gsi_receipt.beginning_state != beginning_gsi_state
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Support(
+            "prepared beginning GSI owner state",
+        ));
+    }
+    prepared.validate_provider_join(committed.real_consumer.provider_cursor())
 }
 
 fn execute_real_v11_parent(
@@ -1138,6 +1192,43 @@ fn parse_lower_hex_digest(value: &str) -> Result<Digest32, DirectSnowStage3V11At
     Ok(Digest32::from_bytes(bytes))
 }
 
+fn validate_lane_destination_set(
+    bound_ofe_id: &str,
+    identities: &[PreparedStage3V11SupportIdentityV1],
+    expected: &BTreeSet<(String, String)>,
+) -> Result<(), DirectSnowStage3V11AttachmentError> {
+    let actual = identities
+        .iter()
+        .map(|identity| {
+            (
+                identity.destination_ofe_id.clone(),
+                identity.destination_tile_id.clone(),
+            )
+        })
+        .collect::<BTreeSet<_>>();
+    if identities
+        .iter()
+        .any(|identity| identity.destination_ofe_id != bound_ofe_id)
+        || &actual != expected
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Support(
+            "support lane/OFE destination binding",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_parent_support_duration(
+    duration_ns: u128,
+) -> Result<(), DirectSnowStage3V11AttachmentError> {
+    if duration_ns != STAGE3_V11_PARENT_SUPPORT_NS {
+        return Err(DirectSnowStage3V11AttachmentError::Support(
+            "support duration is not 1,800 seconds",
+        ));
+    }
+    Ok(())
+}
+
 fn owner_envelopes_from_states(
     owners: &[OwnerState],
 ) -> Result<BTreeMap<String, V11OwnerEnvelope>, DirectSnowStage3V11AttachmentError> {
@@ -1283,4 +1374,76 @@ fn validate_receiver_topology(
         ));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn support_identity(ofe_id: &str, tile_id: &str) -> PreparedStage3V11SupportIdentityV1 {
+        PreparedStage3V11SupportIdentityV1::new(
+            ofe_id.to_owned(),
+            tile_id.to_owned(),
+            "a".repeat(64),
+            Digest32::zero(),
+            Vec::new(),
+            Digest32::zero(),
+        )
+    }
+
+    #[test]
+    fn parent_support_cadence_is_exactly_1_800_seconds() {
+        assert_eq!(STAGE3_V11_PARENT_SUPPORT_NS, 1_800_000_000_000);
+        let support = TimeSupport::new(
+            ModelTimeNs::new(0),
+            ModelTimeNs::new(STAGE3_V11_PARENT_SUPPORT_NS),
+        )
+        .expect("valid parent support");
+        assert_eq!(support.duration_ns(), 1_800_000_000_000);
+        assert_eq!(support.duration_s_bits(), 1_800.0_f64.to_bits());
+        assert_eq!(
+            STAGE3_V11_PARENT_SUPPORT_NS * STAGE3_V11_PARENT_SUPPORT_COUNT as u128,
+            86_400_000_000_000
+        );
+        assert!(validate_parent_support_duration(1_800_000_000).is_err());
+        assert!(validate_parent_support_duration(STAGE3_V11_PARENT_SUPPORT_NS + 1).is_err());
+        validate_parent_support_duration(STAGE3_V11_PARENT_SUPPORT_NS)
+            .expect("1,800-second support accepted");
+    }
+
+    #[test]
+    fn lane_destination_permutation_fails_exact_lane_ofe_join() {
+        let mut provider_destinations_by_ofe = BTreeMap::new();
+        provider_destinations_by_ofe.insert(
+            "ofe-1".to_owned(),
+            BTreeSet::from([("ofe-1".to_owned(), "tile-1".to_owned())]),
+        );
+        provider_destinations_by_ofe.insert(
+            "ofe-2".to_owned(),
+            BTreeSet::from([("ofe-2".to_owned(), "tile-2".to_owned())]),
+        );
+        let lane_one_identities = vec![support_identity("ofe-2", "tile-2")];
+        let lane_two_identities = vec![support_identity("ofe-1", "tile-1")];
+
+        assert!(
+            validate_lane_destination_set(
+                "ofe-1",
+                &lane_one_identities,
+                provider_destinations_by_ofe
+                    .get("ofe-1")
+                    .expect("lane one OFE destinations"),
+            )
+            .is_err()
+        );
+        assert!(
+            validate_lane_destination_set(
+                "ofe-2",
+                &lane_two_identities,
+                provider_destinations_by_ofe
+                    .get("ofe-2")
+                    .expect("lane two OFE destinations"),
+            )
+            .is_err()
+        );
+    }
 }

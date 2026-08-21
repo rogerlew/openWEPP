@@ -23,6 +23,8 @@ Exact source edits admitted in this increment:
   ending Stage-3 owner injection into the existing snow-free owner envelope
   and read-only owner configuration accessors. The snow-present guard remains
   unchanged.
+- `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs`:
+  two-day provider-bound capability and GSI/cursor sequence poison regressions.
 - `crates/openwepp-hillslope-orchestrator/src/lib.rs`: public typed exports.
 
 `Static:` No covered lower-boundary physics implementation is admitted through
