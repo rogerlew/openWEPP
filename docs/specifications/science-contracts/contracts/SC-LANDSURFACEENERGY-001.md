@@ -1,10 +1,10 @@
 ---
 contract_id: SC-LANDSURFACEENERGY-001
 title: Land-Surface Energy-Balance Process Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 6
+contract_version: 7
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
@@ -18,8 +18,8 @@ superseded_by: []
 
 # SC-LANDSURFACEENERGY-001 Land-Surface Energy-Balance Process Contract
 
-Status: `approved`
-Maturity: `active`
+Status: `in_review`
+Maturity: `draft`
 Evidence mode: `static + independent oracle`
 
 ## Purpose
@@ -197,6 +197,9 @@ mechanics reproducible but does not make the runtime algorithm promotable.
 | latent mass-energy mismatch | reject | `LSEB-E-013` |
 | ground-flux dual ownership | reject | `LSEB-E-014` |
 | negative end storage beyond tolerance | reject; no clamp/default | `LSEB-E-015` |
+| positive successor support is below the active adopter domain | reject before Newton and restore every owner/receipt byte | `LSEB-E-041` |
+| support/adopter/event receipt join, duration, policy, or owner digest is invalid | reject before physical evaluation | `LSEB-E-042` |
+| post-event operand or support chronology is invalid | reject before physical evaluation | `LSEB-E-043` |
 
 Branch priority is `snow_terminal` rejection, then `snow_present` delegation,
 then `snow_free`. No temperature-only guess may override explicit snow state.
@@ -375,10 +378,19 @@ invalid Kelvin/log/roughness/resistance domains, negative storage, duplicate
 lineage, wrong branch priority, and every censored schema-v8 terminal payload.
 Real-consumer proof remains intentionally unsatisfied in version 1.
 
+### Child 2C invariant IDs
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-LANDSURFACEENERGY-121` | A positive snow-free successor consumes the accepted event receipt and a covered-forest support-admission receipt. | typed receipt join / `LSEB-E-042` |
+| `INV-LANDSURFACEENERGY-122` | The successor uses only post-event snow-free operands and its exact accepted support. | chronology/operand lineage / `LSEB-E-043` |
+| `INV-LANDSURFACEENERGY-123` | Below-domain positive support rejects before Newton with exact owner rollback; zero support performs no physical solve. | preflight / `LSEB-E-041` |
+
 ## Binding Exposure Index
 
-No addendum or provenance sidecar predates version 1. Package evidence is
-non-authoritative and introduces no separate binding entry.
+| Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
+|---|---|---|---|---|---|---|
+| `LSE-CHILD2C-SUCCESSOR` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-121, INV-LANDSURFACEENERGY-122, INV-LANDSURFACEENERGY-123` | `flagged-binding-addition` | Accepted event receipt, post-event-only operands, and pre-Newton covered-forest support admission; no storage arithmetic change. |
 
 ## Gap Register and Promotability Labels
 
@@ -919,6 +931,41 @@ and partial commit.
 | Tolerance | existing LSE closure tolerances apply after exact support/identity validation; none repairs stale snow operands |
 | Tests/gap | unequal snow/receiver fluxes, endpoint rain, actual surface matrix, zero remainder, rollback; carrier/efficacy/production remain held |
 
+## Child 2C shared-carrier and successor-support amendment
+
+The covered-forest snow-free receiver remains a default-off physical adopter.
+For any positive successor segment it consumes the coupled-time
+`LseSupportAdmissibilityReceiptV1` and admits only the declared physical
+support domain `dt >= 600000000 ns`. A structural one-nanosecond clock interval
+is not a valid constitutive LSE solve. The guard runs before Newton and leaves
+the LSE, snow, surface-liquid, hydrology, soil-thermal, BGC, V11, and coupled
+time owners unchanged on rejection.
+
+### Snow-free successor chronology
+
+The snow-free receiver may be called only after a consumed
+`EventBoundaryCoalescingReceiptV1` proves that the accepted event tick is a
+valid successor boundary. It reconstructs all fluxes on
+`[accepted_event_tick,parent_end_tick)` using the successor forcing and owner
+set. It must not consume snow albedo, snow temperature, snow roughness, snow
+vapor, snow sensible heat, snow longwave, or terminal snow liquid after the
+accepted tick. If the remaining support is zero, the receiver records a
+zero-duration custody transition and does not execute Newton. If it is
+positive but below the support receipt domain, it returns `LSEB-E-041` before
+Newton; it never scales a longer result or freezes a state.
+
+### Child 2C guards
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-LANDSURFACEENERGY-121` | A positive snow-free successor consumes the accepted event receipt and a support-admission receipt whose active adopter is the covered-forest LSE policy. | typed receipt join / `LSEB-E-042` |
+| `INV-LANDSURFACEENERGY-122` | The successor uses only post-event snow-free operands and its exact accepted support. | chronology/operand lineage / `LSEB-E-043` |
+| `INV-LANDSURFACEENERGY-123` | Below-domain positive support rejects before Newton with exact owner rollback; zero support performs no physical solve. | preflight / `LSEB-E-041` |
+
+`LSEB-E-043` is the wrong-regime operand failure. The existing exact energy,
+liquid, and equal/opposite `G` ledgers remain binding; Child 2C adds no new
+storage arithmetic and does not admit compensated or sub-ULP increments.
+
 ## Change Log
 
 | Date | Version | Author | Change |
@@ -1026,6 +1073,7 @@ are frozen in the package artifact set.
 | Date | Version | Author | Change |
 |---|---:|---|---|
 | 2026-08-20 | 6 | Codex | Prospective deterministic positive-support admission; nanosecond chronology remains coupled-time-valid, below-domain support rejects before Newton, and event-boundary coalescing is deferred to the reviewed snow/event contract. |
+| 2026-08-20 | 7 | Codex | Bound the covered-forest snow-free successor to the accepted event receipt, post-event-only operands, and pre-Newton support admission without scaling, freezing, or sub-ULP storage treatment. |
 It does not invoke hydraulic attenuation, conductance or vulnerability floors,
 plant capacitance, or authorization donation.
 

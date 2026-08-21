@@ -1,0 +1,66 @@
+{
+  "schema": "OPENWEPP_CHILD2C_RESTART_ROLLBACK_VECTORS_V2",
+  "cases": [
+    {
+      "id": "restart_before_event",
+      "source_event_case": "unequal_support_pre_event_coalescing",
+      "checkpoint": {
+        "accepted_cursor": "600000000",
+        "pending_event_tick": "1100000000",
+        "owner_state": {"snow": 10.0, "liquid": 0.5, "energy": 0.0},
+        "receipt_state": {"event_id": "event-pre", "accepted": false}
+      },
+      "resumed_transition": {
+        "accepted_cursor": "1200000000",
+        "owner_delta": {"snow": -1.2, "liquid": 0.12, "energy": 120.0},
+        "receipt_update": {"accepted": true, "accepted_event_tick": "1200000000"}
+      },
+      "uninterrupted_start": {
+        "accepted_cursor": "600000000",
+        "pending_event_tick": "1100000000",
+        "owner_state": {"snow": 10.0, "liquid": 0.5, "energy": 0.0},
+        "receipt_state": {"event_id": "event-pre", "accepted": false}
+      },
+      "uninterrupted_transition": {
+        "accepted_cursor": "1200000000",
+        "owner_delta": {"snow": -1.2, "liquid": 0.12, "energy": 120.0},
+        "receipt_update": {"accepted": true, "accepted_event_tick": "1200000000"}
+      },
+      "expected_equivalent": true
+    },
+    {
+      "id": "restart_after_event",
+      "source_event_case": "exact_active_minimum_support_acceptance",
+      "checkpoint": {
+        "accepted_cursor": "600000000",
+        "pending_event_tick": null,
+        "owner_state": {"snow": 8.0, "liquid": 0.62, "energy": 120.0},
+        "receipt_state": {"event_id": "event-post", "accepted": true, "accepted_event_tick": "600000000"}
+      },
+      "resumed_transition": {
+        "accepted_cursor": "1200000000",
+        "owner_delta": {"snow": -0.2, "liquid": 0.03, "energy": 30.0},
+        "receipt_update": {"next_segment": "snow-free", "replayed": false}
+      },
+      "uninterrupted_start": {
+        "accepted_cursor": "600000000",
+        "pending_event_tick": null,
+        "owner_state": {"snow": 8.0, "liquid": 0.62, "energy": 120.0},
+        "receipt_state": {"event_id": "event-post", "accepted": true, "accepted_event_tick": "600000000"}
+      },
+      "uninterrupted_transition": {
+        "accepted_cursor": "1200000000",
+        "owner_delta": {"snow": -0.2, "liquid": 0.03, "energy": 30.0},
+        "receipt_update": {"next_segment": "snow-free", "replayed": false}
+      },
+      "expected_equivalent": true
+    },
+    {
+      "id": "rollback_no_candidate",
+      "beginning_owner_map": {"stage3": "stage3-before", "v11": "v11-before", "carrier": "carrier-before", "lse": "lse-before"},
+      "staged_candidate_map": {"stage3": "stage3-staged", "v11": "v11-staged", "carrier": "carrier-staged", "lse": "lse-staged"},
+      "restored_owner_map": {"stage3": "stage3-before", "v11": "v11-before", "carrier": "carrier-before", "lse": "lse-before"},
+      "expected_noop": true
+    }
+  ]
+}

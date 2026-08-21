@@ -1,10 +1,9 @@
 # Line-count governance
 
-Status: queued
+Status: PASS
 
-Evidence mode: not-run
+Evidence mode: Ran
 
-No production Rust is touched by this scaffold. At execution and terminal
-disposition, run line counts for every touched Rust/test file. Repository policy
-is `WARN` at 2,000 lines and `BLOCK` at 3,000 unless a generated/fixture
-exception records owner and sunset.
+Ran: `wc -l tests/integration/snow_stage3_shared_carrier_authority_contract.rs`
+returned `546` lines. No production Rust is touched. This is below the
+repository `WARN` threshold of 2,000 and `BLOCK` threshold of 3,000 lines.

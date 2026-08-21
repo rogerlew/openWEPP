@@ -1,10 +1,10 @@
 ---
 contract_id: SC-VEGETATIONTRANSACTION-001
 title: Coupled Vegetation Occupancy Owner-Transaction Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
-contract_version: 14
+contract_version: 15
 producer_scope:
   - OPENWEPP_C3_WOODY_V8 occupancy and ground resource/energy candidates
   - OPENWEPP_C3_WOODY_V11 accepted-segment and parent candidates
@@ -19,8 +19,8 @@ superseded_by: []
 
 # SC-VEGETATIONTRANSACTION-001 Coupled Vegetation Occupancy Owner-Transaction Contract
 
-Status: `approved`
-Maturity: `active`
+Status: `in_review`
+Maturity: `draft`
 Evidence mode: `Static + independent oracle`
 
 ## Purpose
@@ -135,6 +135,10 @@ current/next parent sequence. None is a live-owner mutation before commit.
 | stale staged inventory, unordered debit, overbooking, or arithmetic mismatch | reject parent | `VEGTXN-E-012` |
 | per-segment/partial/duplicate commit or publication | reject atomically | `VEGTXN-E-013` |
 | restart omission, replay, or reconstructed-chain mismatch | reject continuation | `VEGTXN-E-014` |
+| shared carrier candidate is partial or not joined to the complete owner set | rollback exact beginning bytes | `VEGTXN-E-015` |
+| typed sensible/vapor/longwave flux or independent mass/energy ledger is missing, duplicated, or stale | reject before parent validation | `VEGTXN-E-016` |
+| forcing, exposure, support, or event receipt is absent or fails identity validation | reject before staging | `VEGTXN-E-017` |
+| wrong regime or post-event snow operand is present | reject with no owner mutation | `VEGTXN-E-018` |
 
 ## Invariants and Invariant Guard Map
 
@@ -153,6 +157,10 @@ current/next parent sequence. None is a live-owner mutation before commit.
 | `INV-VEGTRANSACTION-011` | Ordered segment material receipts form one parent batch without final-state recomputation. | V11 amendment | `[INFERENCE][Static]` | vegetation/material owner | `VEGTXN-E-013` |
 | `INV-VEGTRANSACTION-012` | Exactly one complete parent commit installs all owners and increments once. | SC-COUPLEDTIME-001 + V11 amendment | `[INFERENCE][Static]` | orchestrator | `VEGTXN-E-014` |
 | `INV-VEGTRANSACTION-013` | Restart reconstructs the staged owner/receipt chain and cannot replay accepted work. | SC-COUPLEDTIME-001 + V11 amendment | `[INFERENCE][Static]` | restart owner | `VEGTXN-E-014` |
+| `INV-VEGTRANSACTION-014` | Shared carrier state is staged once and committed only with the complete owner set. | Child 2C carrier transaction | `[INFERENCE][Static]` | complete-owner validator | `VEGTXN-E-015` |
+| `INV-VEGTRANSACTION-015` | Carrier fluxes and reciprocal longwave are exact-once, independently reconstructed, and owner/segment keyed. | Child 2C carrier transaction | `[INFERENCE][Static]` | ledger validator | `VEGTXN-E-016` |
+| `INV-VEGTRANSACTION-016` | Event receipt, active supports, and forcing/exposure receipts are authenticated before any carrier solve. | Child 2C carrier transaction | `[INFERENCE][Static]` | receipt join | `VEGTXN-E-017` |
+| `INV-VEGTRANSACTION-017` | Wrong-regime or post-event snow operands reject without mutating any owner. | Child 2C carrier transaction | `[INFERENCE][Static]` | regime validator | `VEGTXN-E-018` |
 
 ### Invariant Guard Map
 
@@ -187,6 +195,11 @@ current/next parent sequence. None is a live-owner mutation before commit.
   the cumulative ledger and ending owner bytes.
 - `OBL-VEGTRANSACTION-C-004`: restart admission authenticates every retained
   owner/receipt/buffer and returns only a closed continuation capability.
+- `OBL-VEGTRANSACTION-P-003`: the carrier emits a complete staged candidate and
+  never a live-owner mutation.
+- `OBL-VEGTRANSACTION-C-005`: the parent validator reconstructs carrier flux,
+  snow mass, liquid, energy, and chronology from beginning owners and rejects
+  aliases, duplicates, and partial commits.
 
 ## Symbol Alias Map
 
@@ -197,6 +210,9 @@ current/next parent sequence. None is a live-owner mutation before commit.
 | `D_R/A_R/F_R,k` | `V11ResourceReceiptV1` | parent/segment/slab/resource key | finite binary64 interval amount | this / resource owner |
 | `M_k` | `V11MaterialReceiptV1` | ordered accepted material transfer | `kg C`, `kg N`, or dry matter per declared basis | this / BGC-material owner |
 | `C_parent` | `V11ParentCommitCandidateV1` | consuming complete owner replacement | identity/ledger only | this / SC-COUPLEDTIME-001 |
+| `SharedCanopyAirNodeV1` | carrier transaction state | one staged shared node | `K`, `kg kg^-1`, receipt identity | `SC-SNOWENERGY-001` |
+| `CarrierFluxReceiptV1` | typed sensible/vapor/longwave flux map | exact-once carrier lineage | owner/segment/duration units | this contract |
+| `EventBoundaryCoalescingReceiptV1` | accepted event join | zero-duration custody transition | canonical tick/support strings | `SC-COUPLEDTIME-001` |
 
 ## Constants and Parameters with Provenance Anchors
 
@@ -212,6 +228,8 @@ constitutive values retain V2/adjacent-owner authority.
 | V11 water debit | owner-declared `kg H2O m^-2` basis | `V11ResourceReceiptV1` | no local conversion after receipt | none | parent operand lineage |
 | V11 mineral N debit | owner-declared `kg N m^-2` basis, separate NH4/NO3 | `V11ResourceReceiptV1` | no NH4/NO3 aggregation | none | parent operand lineage |
 | V11 material transfer | typed C/N/dry-matter amount and basis | `V11MaterialReceiptV1` | none | none | ordered parent batch lineage |
+| shared carrier state | `K`, `kg kg^-1` | `SharedCanopyAirNodeV1` | no conversion | one staged transaction owner | parent receipt |
+| carrier fluxes | `W m^-2`, `kg m^-2 s^-1`, `J m^-2` | `CarrierFluxReceiptV1` | explicit duration integration | none | parent ledger |
 
 ## Tolerance and Numeric Notes
 
@@ -245,6 +263,7 @@ publication-before-commit, abort, consecutive parents, and exact-one commit.
 | `BEI-VEGTRANSACTION-002` | V8/LSE shared-hydrology amendment | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-005, INV-VEGTRANSACTION-006, INV-VEGTRANSACTION-007` | `flagged-binding-addition` | Immutable shared hydrology snapshots and reciprocal mass/energy joins. |
 | `BEI-VEGTRANSACTION-003` | Terminal receiver amendment | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-008` | `flagged-binding-addition` | Phase-aware predecessor chain, restart, and rollback authority. |
 | `BEI-VEGTRANSACTION-004` | V11 segmented parent-transaction amendment | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-009, INV-VEGTRANSACTION-010, INV-VEGTRANSACTION-011, INV-VEGTRANSACTION-012, INV-VEGTRANSACTION-013` | `flagged-binding-addition` | Segment resource identities, staged custody, ordered material accumulation, atomic parent commit, and restart. |
+| `BEI-VEGTRANSACTION-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-VEGTRANSACTION-014, INV-VEGTRANSACTION-015, INV-VEGTRANSACTION-016, INV-VEGTRANSACTION-017, OBL-VEGTRANSACTION-P-003, OBL-VEGTRANSACTION-C-005` | `flagged-binding-addition` | Shared carrier staging, typed flux/ledger lineage, receipt joins, complete-owner custody, and wrong-regime rollback. |
 
 ## Gap Register and Promotability Labels
 
@@ -485,10 +504,41 @@ segment is below the LSE domain.
 |---|---:|---|---|
 | 2026-08-20 | 14 | Codex | Bound V11 transaction admission to the reviewed LSE positive-support receipt and replaced the actual-stack 1 ns positive requirement with structural identity plus minimum/typed-reject populations. |
 
+## Child 2C shared-carrier transaction amendment
+
+The carrier transaction is one owner of the staged shared canopy-air node. It
+joins one V11 canopy candidate, one Stage 3 snow candidate, the sealed forcing
+and exposure receipt, and the coupled-time segment/event receipt. It may stage
+all candidates but may not publish or commit a canopy-air, snow, or LSE owner
+independently. The complete parent transaction remains the only consuming
+commit.
+
+The carrier receipt binds `parent_transaction_id`, `segment_id`, active
+participant set, support-admission receipts, exposure receipt, shared-node
+trial state, canopy/snow sensible and vapor flux IDs, reciprocal longwave ID,
+independent mass/energy ledgers, beginning owner digest, ending owner digest,
+and the accepted event receipt when the segment follows a terminal event.
+Duplicate sensible/vapor flux, stale snow operands, missing support, raw 10 m
+wind, fixed attenuation, independent canopy-air state, or a partial owner set
+is typed rejection with exact rollback.
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-VEGTRANSACTION-014` | Shared carrier state is staged once and committed only with the complete owner set. | `VEGTXN-E-015` |
+| `INV-VEGTRANSACTION-015` | Carrier fluxes and reciprocal longwave are exact-once, independently reconstructed, and owner/segment keyed. | `VEGTXN-E-016` |
+| `INV-VEGTRANSACTION-016` | Event receipt, active supports, and forcing/exposure receipts are authenticated before any carrier solve. | `VEGTXN-E-017` |
+| `INV-VEGTRANSACTION-017` | Wrong-regime or post-event snow operands reject without mutating any owner. | `VEGTXN-E-018` |
+
+`OBL-VEGTRANSACTION-P-003`: the carrier emits a complete staged candidate and
+never a live-owner mutation. `OBL-VEGTRANSACTION-C-005`: the parent validator
+reconstructs carrier flux, snow mass, liquid, energy, and chronology from
+beginning owners and rejects aliases, duplicates, and partial commits.
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-20 | 15 | Codex | Bound the shared Child 2C carrier node, exposure/event/support receipt joins, exact-once flux lineage, wrong-regime rejection, and complete-owner-only commit. |
 | 2026-08-20 | 4 | Codex | Drafted V11 accepted-segment staging, cumulative resource/material custody, additive restart, and one atomic parent commit. |
 | 2026-08-20 | 5 | Codex | Added production V11 restart V2 complete typed checkpoint/owner custody after implementation inventory proved reviewed V1 insufficient. |
 | 2026-08-20 | 6 | Codex | Required owner-specific V2 state admission, full seven-owner suffix equality, authenticated event custody, canonical collections, and reconstructed durable outbox identity. |

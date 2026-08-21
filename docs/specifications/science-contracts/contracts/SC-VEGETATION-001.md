@@ -1,10 +1,10 @@
 ---
 contract_id: SC-VEGETATION-001
 title: Native Vegetation State and Cross-Domain Boundary Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 25
+contract_version: 26
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -20,8 +20,8 @@ superseded_by: []
 
 # SC-VEGETATION-001 Native Vegetation State and Cross-Domain Boundary Contract
 
-Status: `approved`
-Maturity: `active`
+Status: `in_review`
+Maturity: `draft`
 Evidence mode: `Static + Ran`
 
 ## Purpose
@@ -943,6 +943,9 @@ state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
 | any nested solve exceeds its admitted limit | discard all candidates | `VEG-E-064` |
 | missing C/N pool, parameter, initial state, or BGC receipt | reject; no synthesis/source | `VEG-E-065` |
 | invalid tile fractions, coverage, membership, or duplicate occupancy | reject before radiation/E04 | `VEG-E-070` |
+| shared carrier has no sealed exposure or active support receipt | reject before canopy trial | `VEG-E-129/131` |
+| canopy flux/longwave is duplicated, unowned, or not joined to the shared node | reject without candidate | `VEG-E-130` |
+| snow-covered flux crosses the accepted event boundary | reject without candidate | `VEG-E-132` |
 | missing, duplicate, extra, or stale V2 occupancy state lane | reject before calculation | `VEG-E-071` |
 | stand-area plant area used as tile-local area, or `f_t` omitted/applied twice | reject candidate | `VEG-E-072` |
 | liquid release crosses tile or stemflow enters lower foliage | reject routing/ground receipt | `VEG-E-073` |
@@ -1113,6 +1116,15 @@ state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
   until a later real-consumer cutover proves the adapter and retires duplicate
   ownership atomically.
 
+### Child 2C canonical invariants
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-VEGETATION-129` | One shared canopy-air node receives all V11 canopy and Stage 3 snow turbulent exchanges; V11 has no independent node. | `VEG-E-129` |
+| `INV-VEGETATION-130` | V11 canopy fluxes and longwave terms join the carrier trial and are consumed once with exact owner/segment lineage. | `VEG-E-130` |
+| `INV-VEGETATION-131` | V11 accepts only the sealed exposure-projected wind and active-participant support receipt. | `VEG-E-131` |
+| `INV-VEGETATION-132` | Snow-covered V11 fluxes stop at the accepted event and snow-free successor fluxes never enter the pre-event candidate. | `VEG-E-132` |
+
 ## Symbol Alias Map
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Owner contract |
@@ -1126,6 +1138,9 @@ state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
 | `L_DM,c` | not an alias of `L_C,c` or `L_N,c` | dead-material receipt | independent unit/stoichiometry fields | this contract / `SC-RESIDUE-001` |
 | `S_snow,s` | not ground SWE or snow depth | future canopy store | `kg m^-2` water equivalent; no runtime alias | this contract / `SC-SNOWFREEZE-001` |
 | `Q_rad,k,j` | not a universal ground/net-radiation scalar | energy receipt | interval-integrated `J m^-2`; recipient-specific | `SC-LANDSURFACEENERGY-001` |
+| `T_ca`, `q_ca` | `SharedCanopyAirNodeV1` | shared carrier participant state | `K`, `kg kg^-1` | `SC-SNOWENERGY-001` / transaction |
+| `H_canopy`, `V_canopy` | typed carrier flux entries | canopy-to-node exchange | `W m^-2`, `kg m^-2 s^-1` | shared carrier |
+| `L_can,j` | component longwave ledger entry | V11 leaf/stem component emission | `W m^-2` | shared carrier |
 | `S_liq,s,t` | not V1 `S_liq,s` and not a mutable weighted aggregate | V2 occupancy state | `kg H2O m^-2 tile-ground`; exact `(s,t)` identity | this contract |
 | `D_W,s,t,l`, `A_W,s,t,l`, `F_W,s,t,l` | not stratum-only or tile-ground owner debits | V2 water exchange | stand-ground interval amount with explicit one-time `f_t` conversion | this contract / `SC-WATBAL-001` |
 | `u_ref` | `reference_wind_m_s` | V3 forcing boundary | `m s^-1`; input to neutral momentum logarithm, never leaf wind directly | this contract / meteorology |
@@ -1454,6 +1469,7 @@ and `VEG-E-100`.
 | `BEI-VEGETATION-013` | V9 reproducible oracle identity amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-115, INV-VEGETATION-116, INV-VEGETATION-117` | `flagged-binding-addition` | Reproducible oracle identity and exact V8-to-V9 migration. |
 | `BEI-VEGETATION-014` | V10 nonpositive-assimilation amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-118, INV-VEGETATION-119, INV-VEGETATION-120` | `flagged-binding-addition` | Exact dark/low-light behavior and immutable V9-to-V10 migration. |
 | `BEI-VEGETATION-015` | V11 segmented-support amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-121, INV-VEGETATION-122, INV-VEGETATION-123, INV-VEGETATION-124, INV-VEGETATION-125, INV-VEGETATION-126, INV-VEGETATION-127, INV-VEGETATION-128` | `flagged-binding-addition` | Immutable V10 import, common slab duration, staged resources/materials, additive restart, exact compatibility, and atomic parent finalization. |
+| `BEI-VEGETATION-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-129, INV-VEGETATION-130, INV-VEGETATION-131, INV-VEGETATION-132` | `flagged-binding-addition` | Shared canopy-air carrier, sealed exposure, exact-once canopy fluxes, and event-bounded snow regime. |
 
 ## Gap Register and Promotability Labels
 
@@ -2822,6 +2838,40 @@ beginning, or aliasing parent/segment identity is rejected.
 V11 introduces no constitutive or calibration claim. It authorizes no canopy-
 snow carrier, selector/default, activation, publication, deployment, or cutover.
 
+## V11 Child 2C shared snow-carrier amendment
+
+V11 retains every V10 constitutive equation and every V11 segmented-support,
+resource-custody, restart, and full-support compatibility rule. For a
+forest-covered snow segment, V11 contributes its canopy surfaces to the one
+`SharedCanopyAirNodeV1` owned by the carrier transaction. V11 must not create
+an occupancy-local or stratum-local canopy-air node for that segment.
+
+V11 supplies current-trial canopy surface temperatures, vapor states, neutral
+surface conductances, leaf/stem areas, and reciprocal longwave operands. It
+consumes the carrier's canopy sensible/vapor fluxes and canopy-side longwave
+terms exactly once. Reference wind is accepted only through the sealed
+exposure/transfer receipt; the V11 neutral log-law remains the source of
+surface momentum and no fixed attenuation or raw 10 m substitution is allowed.
+
+The shared carrier and Stage 3 snow are active physical participants for
+support aggregation before the event. V11 is an active participant after the
+event with the snow-free LSE, surface liquid, hydrology, soil thermal, and BGC
+owners as declared by the successor participant receipt. A one-nanosecond
+structural clock transition may change that participant set but cannot invoke a
+positive V11 constitutive solve below the active common minimum support.
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-VEGETATION-129` | One shared canopy-air node receives all V11 canopy and Stage 3 snow turbulent exchanges; V11 has no independent node. | `VEG-E-129` |
+| `INV-VEGETATION-130` | V11 canopy fluxes and longwave terms join the carrier trial and are consumed once with exact owner/segment lineage. | `VEG-E-130` |
+| `INV-VEGETATION-131` | V11 accepts only the sealed exposure-projected wind and active-participant support receipt. | `VEG-E-131` |
+| `INV-VEGETATION-132` | Snow-covered V11 fluxes stop at the accepted event and snow-free successor fluxes never enter the pre-event candidate. | `VEG-E-132` |
+
+Child 2C adds no new vegetation parameter, calibration claim, canopy-
+intercepted snow path, selector, default, publication, or production
+consumer. The actual V11/Stage 3 consumer remains a later default-off
+implementation package.
+
 ## V11 amendment change log
 
 ### Positive-support adoption amendment
@@ -2862,3 +2912,4 @@ constitutive behavior unchanged.
 | 2026-08-20 | 23 | Codex | Restricted Restart V3 to the exact V2-accepted custody prefix, made seven-owner candidate cardinality cursor-derived, and required runtime-only suffix execution with full uninterrupted equality. |
 | 2026-08-20 | 22 | Codex | Completed additive Restart V3 by composing all V2 admission and full-suffix equivalence, deriving typed receipt identities, binding one complete owner candidate per owner/slab, and aggregating shared-inventory authorization. |
 | 2026-08-20 | 21 | Codex | Froze Restart V2 as nonproduction for resource custody and introduced additive closed Restart V3 typed debit/transition continuation authority. |
+| 2026-08-20 | 26 | Codex | Bound forest-covered V11 to the shared Child 2C canopy-air carrier, sealed exposure wind, exact-once flux lineage, active participant support, and pre/post-event regime custody. |

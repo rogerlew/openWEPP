@@ -1,8 +1,8 @@
 # Consumer-path proof
 
-Status: queued
+Status: NOT_APPLICABLE / deferred to implementation package
 
-Evidence mode: not-run
+Evidence mode: Static
 
 This authority package does not claim a production consumer. The later
 implementation package must identify the actual V11/Stage 3 scheduler consumer,

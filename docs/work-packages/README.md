@@ -19,13 +19,13 @@
   covered-forest LSE minimum positive support, exact full-support V10
   compatibility, unequal actual-stack execution, staged seven-owner custody,
   sealed support receipts, and additive Restart V3.
-- `20260821-snow-stage3-shared-carrier-authority-closure-001/` — QUEUED / CHILD
-  2C AUTHORITY: freeze the shared snow--canopy turbulent carrier, active-adopter
-  support aggregation, and deterministic event-boundary coalescing before any
-  default-off production implementation. Sub-ULP LSE storage arithmetic is not
-  admitted.
+- `20260821-snow-stage3-shared-carrier-authority-closure-001/` — COMPLETE / CHILD
+  2C AUTHORITY CHECKPOINT: released the shared snow--canopy turbulent carrier,
+  active-adopter support aggregation, and deterministic event-boundary
+  coalescing for a separately reviewed default-off implementation. Sub-ULP LSE
+  storage arithmetic is not admitted.
 - `20260819-snow-stage3-production-cutover-campaign-001/` — ACTIVE / CHILD 2C
-  NEXT; CHILD 1 HOLD: execute Child 2C carrier authority, then resume the
+  COMPLETE; CHILD 1 NEXT: resume the
   terminal handoff, run actual-scheduler qualification, obtain final-candidate
   `ASSURE-06` human approval, and atomic CoE retirement. Canopy-intercepted snow
   is excluded and CoE remains production-authoritative through Child 3.

@@ -1,6 +1,6 @@
 # Coordinate Stage 3 Production Cutover
 
-Status: `active / Child 2A and Child 2B complete; Child 2C executing next`
+Status: `active / Child 2A, Child 2B, and Child 2C authority complete; Child 1 next`
 
 Date: `2026-08-19`
 
@@ -142,8 +142,9 @@ limits it requires.
 - [x] (2026-08-20) Terminally release Child 2B V11 segmented support with
   explicit covered-forest LSE minimum-support authority, full-support
   compatibility, receipt custody, and Restart V3 verification.
-- [ ] Execute Child 2C shared snow/canopy carrier authority, then resume
-  Child 1 from checkpoint `83cf6eb8e`.
+- [x] (2026-08-20) Execute Child 2C shared snow/canopy carrier authority;
+  authority checkpoint released with default-off implementation separately
+  gated. Resume Child 1 from checkpoint `83cf6eb8e`.
 - [ ] Execute Child 3 actual-scheduler qualification.
 - [ ] Obtain final-candidate `ASSURE-06` human review and approval.
 - [ ] Execute Child 4 atomic cutover and campaign closure.
@@ -179,6 +180,6 @@ limits it requires.
 
 ## Outcomes & Retrospective
 
-Active HOLD at Child 1. Its bounded contract checkpoint exists, but no terminal
-receiver runtime, selector, default, output, assurance, or ownership change has
-occurred.
+Child 2C authority is terminally complete. Child 1 remains the next campaign
+step at checkpoint `83cf6eb8e`; no receiver runtime, selector, default, output,
+assurance, or ownership change has occurred.

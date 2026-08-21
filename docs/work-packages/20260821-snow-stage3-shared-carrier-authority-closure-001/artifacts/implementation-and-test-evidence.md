@@ -1,8 +1,8 @@
 # Implementation and test evidence
 
-Status: not applicable at scaffold
+Status: NOT_APPLICABLE / deferred to implementation package
 
-Evidence mode: not-run
+Evidence mode: Static
 
 This authority package does not include production Rust. A later default-off
 implementation package must provide the runtime consumer, implementation tests,

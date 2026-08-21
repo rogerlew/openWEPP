@@ -1,10 +1,10 @@
 ---
 contract_id: SC-COUPLEDTIME-001
 title: Coupled Time Support, Event, and Atomic Chronology Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + time/numerics + transaction/restart reviewers
-contract_version: 2
+contract_version: 3
 producer_scope:
   - OPENWEPP_COUPLED_TIME_SUPPORT_V1
   - Coupled parent-interval coordinator and staged clock
@@ -19,9 +19,9 @@ superseded_by: []
 
 # SC-COUPLEDTIME-001 Coupled Time Support, Event, and Atomic Chronology Contract
 
-Status: `approved`
+Status: `in_review`
 
-Maturity: `active`
+Maturity: `draft`
 
 Authority identity: `OPENWEPP_COUPLED_TIME_SUPPORT_V1`
 
@@ -87,6 +87,10 @@ The five distinct time concepts are:
 | `A_g` | ordered identity subset | active participants for segment `g` | `active_participant_set` |
 | `C` | typed proposal | step constraint | `StepConstraintV1` |
 | `D_policy` | SHA-256 | adopter controller definition identity | `controller_policy_sha256` |
+| `dt_min_pre`, `dt_min_post` | `u128 ns` | admitted minimum positive physical support for the pre/post active participant set | `minimum_support_ns` |
+| `epsilon_t` | `u128 ns` | event-time displacement tolerance | `event_time_tolerance_ns` |
+| `epsilon_M`, `epsilon_L`, `epsilon_E` | typed mass/energy units | terminal snow-mass, liquid-mass, and energy tolerances | `snow_mass_tolerance_kg_m2`, `liquid_mass_tolerance_kg_m2`, `energy_tolerance_j_m2` |
+| `R_E` | dimensionless binary64 | ordered combined normalized mass/energy error used only for candidate ranking | `combined_normalized_mass_energy_error` |
 
 The wire representation for every tick is an unsigned 128-bit integer encoded
 as a canonical base-10 string with no sign, leading zero (except `"0"`),
@@ -490,8 +494,9 @@ digest binds this matrix, both precedence tables, and the 256-event budget.
 | publication before commit/after rollback | reject and expose nothing | `ERR-CT-018 PublicationState` |
 | unsupported authority tuple | reject configuration | `ERR-CT-019 UnsupportedAuthorityTuple` |
 | malformed/noncanonical serialization | reject | `ERR-CT-020 Serialization` |
+| no candidate satisfies both neighbor supports and all independently admitted event tolerances | atomic parent retry/no-op; no owner or chronology mutation | `ERR-CT-021 EventBoundaryNoCandidate` |
 
-Error precedence is the numeric order `ERR-CT-001` through `ERR-CT-020`.
+Error precedence is the numeric order `ERR-CT-001` through `ERR-CT-021`.
 Within a class, choose the earliest canonical owner/constraint/event identity.
 Validation must not depend on hash-map iteration order.
 
@@ -506,7 +511,7 @@ families: `InvalidTimeIdentity`, `ArithmeticOverflow`,
 `RestartSchemaMismatch`, `ControllerPolicyMismatch`, `RejectedStateLeak`,
 `ScheduledOnceReplay`, `PublicationBeforeParentCommit`,
 `PublicationRetainedAfterRollback`, `UnsupportedAuthorityTuple`, and
-`NoncanonicalSerialization`. More specific aliases inherit their enclosing
+`NoncanonicalSerialization`, and `EventBoundaryNoCandidate`. More specific aliases inherit their enclosing
 `ERR-CT-*` position and are ordered lexicographically when multiple aliases in
 one family are simultaneously true.
 
@@ -530,6 +535,10 @@ one family are simultaneously true.
 | INV-COUPLEDTIME-014 | Existing DirectV10 persisted-restart V1 bytes remain unchanged; this authority is additive/versioned. | REF-CT-RESTART | `[DIRECT][Static]` | exact legacy vector/manifest gate | governance `HOLD` / `ERR-CT-015` |
 | INV-COUPLEDTIME-015 | Temporal operator classes determine retry, integration, sequencing, event, once-only, and reduction behavior without changing adopter equations. | REF-CT-PHYSICAL | `[INFERENCE][Static]` | operator ledger/profile tests | governance `HOLD` |
 | INV-COUPLEDTIME-016 | `RichardsCoupledV1` requires `CoupledAdaptiveSupportV1`, persistent Lane D, signed top-face exchange, staged coupling, and atomic interval commit. | REF-CT-PACKAGE | `[DIRECT][Static]` | authority-tuple validator | `ERR-CT-019` |
+| INV-COUPLEDTIME-017 | Active physical participants use the maximum of their admitted minimum supports; structural clock identity is not a constitutive support promise. | Child 2C support authority | `[INFERENCE][Static]` | support receipt validator | `ERR-CT-021` |
+| INV-COUPLEDTIME-018 | Event boundary candidates satisfy both neighbor-side support predicates and all four independently admitted tolerances. | Child 2C event authority | `[INFERENCE][Static]` | candidate validator | `ERR-CT-021` |
+| INV-COUPLEDTIME-019 | Proposed and accepted ticks, candidate digest, errors, and tie-break identity are retained and replay-authenticated. | Child 2C receipt authority | `[INFERENCE][Static]` | event receipt validator | `ERR-CT-012/015` |
+| INV-COUPLEDTIME-020 | A no-candidate event is an atomic retry/failure; it cannot drop, freeze, scale, or execute a below-domain successor. | Child 2C rollback authority | `[INFERENCE][Static]` | rollback validator | `ERR-CT-021` |
 
 ## Canonical obligations
 
@@ -542,6 +551,7 @@ one family are simultaneously true.
 | OBL-COUPLEDTIME-005 | Dual independent authority review, disposition, correction, and dual verification pass before production Rust. | contract promotion gate |
 | OBL-COUPLEDTIME-006 | V10 remains immutable; full-support V10/V11 equivalence belongs to Child 2B. | exact-diff/write-set audit |
 | OBL-COUPLEDTIME-007 | Richards equations and controller policy remain outside this contract; Richards adoption must import this clock authority. | boundary and tuple audit |
+| OBL-COUPLEDTIME-008 | Child 2C event receipts bind canonical ticks, participant/support receipts, immutable terminal-state and candidate ledgers, tolerance policy, tie rank, owner custody, and atomic retry identity. | schema, oracle, restart, and transaction gates |
 
 ## Symbol alias map
 
@@ -670,6 +680,117 @@ contradiction.
 | `BEI-CT-001` | coupled-time package Authority To Establish | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-001, INV-COUPLEDTIME-002, INV-COUPLEDTIME-003, INV-COUPLEDTIME-004, INV-COUPLEDTIME-005, INV-COUPLEDTIME-006, INV-COUPLEDTIME-007, INV-COUPLEDTIME-008, INV-COUPLEDTIME-009, INV-COUPLEDTIME-010, INV-COUPLEDTIME-011, INV-COUPLEDTIME-012, INV-COUPLEDTIME-013, INV-COUPLEDTIME-014, INV-COUPLEDTIME-015, INV-COUPLEDTIME-016, OBL-COUPLEDTIME-001, OBL-COUPLEDTIME-002, OBL-COUPLEDTIME-003, OBL-COUPLEDTIME-004, OBL-COUPLEDTIME-005, OBL-COUPLEDTIME-006, OBL-COUPLEDTIME-007` | `flagged-binding-addition` | Entire new authority receives the mandatory contract cycle. |
 | `BEI-CT-002` | terminal snow HOLD timing findings | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-002, INV-COUPLEDTIME-007, INV-COUPLEDTIME-008, INV-COUPLEDTIME-010` | `flagged-binding-addition` | Preserves event, participant, and restart residue. |
 | `BEI-CT-003` | Richards assessment timing recommendation | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-003, INV-COUPLEDTIME-009, INV-COUPLEDTIME-016, OBL-COUPLEDTIME-007` | `flagged-binding-addition` | Imports chronology only, not Richards numerics. |
+| `BEI-CT-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-017, INV-COUPLEDTIME-018, INV-COUPLEDTIME-019, INV-COUPLEDTIME-020, OBL-COUPLEDTIME-008` | `flagged-binding-addition` | Active-participant support, canonical event receipt, deterministic coalescing, and atomic no-candidate retry. |
+
+## Child 2C shared-carrier and event-boundary amendment
+
+This version imports the released V11/Restart V3 chronology and adds the
+support-admissibility and event-boundary authority required by the Child 2C
+shared snow--canopy carrier. It changes no tick identity, parent transaction
+identity, restart V1/V2 bytes, or owner commit rule.
+
+### Active physical support aggregation
+
+For every positive-duration segment, the coordinator first forms the ordered
+active physical participant set `A_g` and reads one admitted minimum support
+from each participant. The common physical minimum is exactly:
+
+```text
+common_minimum_support = max(minimum support of every active physical participant)
+```
+
+The maximum is taken over the active set for the segment being proposed, not
+over inactive owners or the complete owner set. A one-nanosecond structural
+clock interval remains a valid identity and event location, but a positive
+physical segment is rejected before owner execution when its duration is below
+this common minimum. The segment receipt retains the participant list,
+individual support receipts, and the derived maximum. No physical owner may
+convert the structural interval into a constitutive one-nanosecond advance.
+
+### Terminal event-boundary coalescing
+
+For parent support `[a,b)`, a terminal event proposal `t*`, pre-event minimum
+support `dt_min_pre`, and post-event minimum support `dt_min_post`, enumerate
+integer tick candidates in the independently admitted event-time tolerance
+window around `t*`. A candidate `t` is support-admissible exactly when:
+
+```text
+t-a == 0 or t-a >= dt_min_pre
+b-t == 0 or b-t >= dt_min_post
+```
+
+The coordinator recomputes the terminal state and all event ledgers at each
+candidate; it may accept only a candidate that also passes the independently
+admitted event-time, snow-mass, liquid-mass, and energy tolerances. Candidate
+selection is deterministic:
+
+1. smallest absolute displacement from `t*`;
+2. lowest combined normalized mass/energy error;
+3. earliest tick.
+
+The combined score is calculated in this fixed order:
+
+```text
+R_E = snow_error / epsilon_M
+    + liquid_error / epsilon_L
+    + energy_error / epsilon_E
+```
+
+Each term is zero when its tolerance and error are both exactly zero. A
+zero-tolerance term admits only exact zero error; it is not replaced with a
+unit denominator. Candidate errors are reconstructed from the immutable
+terminal state and ledgers, never accepted from caller-supplied diagnostics.
+
+The event receipt stores both `proposed_event_tick` and
+`accepted_event_tick`, the candidate set digest, both neighboring support
+values, each error, the tie-break rank, and the retry/rollback identity. When
+no candidate passes, the event attempt fails with `ERR-CT-021
+EventBoundaryNoCandidate`; all owners, chronology, reductions, and receipts
+remain byte-identical and the declared parent retry policy is invoked. No
+remainder is dropped, no snow-free state is frozen, no longer LSE result is
+scaled, and no below-domain physical solve is attempted.
+
+The accepted chronology is normative:
+
+```text
+solve terminal event proposal
+-> enumerate admissible boundary candidates
+-> select deterministically
+-> recompute terminal snow state and ledgers at selected tick
+-> accept zero-duration custody transition
+-> execute successor regime only when support is nonzero and admissible
+```
+
+### Child 2C guards and receipt fields
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-COUPLEDTIME-017` | Active physical participants use the maximum of their admitted minimum supports; structural clock identity is not a constitutive support promise. | support receipt validator / `ERR-CT-021` |
+| `INV-COUPLEDTIME-018` | Event boundary candidates satisfy both neighbor-side support predicates and all four independently admitted tolerances. | candidate validator / `ERR-CT-021` |
+| `INV-COUPLEDTIME-019` | Proposed and accepted ticks, candidate digest, errors, and tie-break identity are retained and replay-authenticated. | event receipt validator / `ERR-CT-012`, `ERR-CT-015` |
+| `INV-COUPLEDTIME-020` | A no-candidate event is an atomic retry/failure; it cannot drop, freeze, scale, or execute a below-domain successor. | rollback validator / `ERR-CT-021` |
+
+The closed `EventBoundaryCoalescingReceiptV1` fields are
+`parent_transaction_id`, `segment_id`, `event_id`, `proposed_event_tick`,
+`accepted_event_tick`, `parent_start_tick`, `parent_end_tick`,
+`pre_common_minimum_support`, `post_common_minimum_support`,
+`candidate_ticks`, `candidate_digest`, `event_time_error_ns`,
+`snow_mass_error_kg_m2`, `liquid_mass_error_kg_m2`, `energy_error_j_m2`,
+`tie_break_rank`, `retry_policy_digest`, `begin_owner_digest`,
+`ending_owner_digest`, and `receipt_id`. Tick and support fields are canonical
+base-10 strings representing unsigned 128-bit values. The candidate list is
+strictly sorted and unique; its digest covers the ordered candidates,
+participant/support receipts, immutable terminal-state digest, tolerances,
+candidate evaluation ledgers, and retry policy. A receipt cannot be
+reconstructed from the accepted tick alone.
+
+### Child 2C test obligations
+
+The contract-derived population must include unequal sequential supports in
+both orders, an exact common minimum, a structural one-nanosecond interval,
+both neighbor-side violations, deterministic tie and tie-poison cases,
+proposed/accepted tick divergence, no-candidate retry, owner-preserving
+rejection, restart before/after the event, and wrong-regime flux rejection.
 
 ## Change log
 
@@ -678,3 +799,4 @@ contradiction.
 | 2026-08-20 | `1-rc1` | Authored complete coupled-time identity, event, participant, controller, restart, atomicity, and publication authority for independent review. |
 | 2026-08-20 | `1-rc2` | Added complete accepted-slab receipt chronology to restart after implementation exposed that reductions/publications cannot reconstruct parent finalization. |
 | 2026-08-20 | `2` | Preserved restart V1, released restart V2 slab/event chronology, and closed scheduled-once receipt identity without borrowing event ordinals. |
+| 2026-08-20 | `3` | Bound Child 2C active-participant maximum support, deterministic event-boundary coalescing, typed no-candidate retry, and the proposal/accepted event receipt. |

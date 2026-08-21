@@ -1,6 +1,6 @@
 # Snow Stage 3 Shared Carrier Authority Closure
 
-Status: `queued / Child 2C authority scaffold`
+Status: `complete / Child 2C authority closure / implementation handoff`
 
 Date: `2026-08-21`
 
@@ -196,6 +196,8 @@ Protected boundaries:
 - `docs/specifications/science-contracts/index.md` for lifecycle updates.
 - Contract-derived tests and independently authored vectors under `tests/` and
   this package's artifacts.
+- `Cargo.toml` only to register the package-owned contract integration test;
+  no dependency, feature, workspace, or production target change.
 - This package tree, `docs/work-packages/README.md`, `docs/ROADMAP.md`, and the
   Child 2 campaign handoff files.
 
@@ -271,16 +273,22 @@ generated/fixture exception includes owner and sunset.
   authority.
 - [x] (2026-08-21) Corrected the stale Child 2C handoff language.
 - [x] (2026-08-21) Scaffolded the contract-first package and required gates.
-- [ ] Amend canonical authority and derive vectors/tests.
-- [ ] Complete dual science review and verification.
-- [ ] Publish authority checkpoint and implementation handoff.
+- [x] (2026-08-20) Amend canonical authority and derive vectors, receipt
+  schemas, independent ledger oracle, and focused tests.
+- [x] (2026-08-20) Complete dual science review and disposition all findings;
+  both independent verification agents returned terminal PASS after the
+  correction chain.
+- [x] (2026-08-20) Publish the authority checkpoint and implementation handoff;
+  production implementation remains a separately scoped package.
 
 ## Release boundary
 
-`QUEUED / Child 2C authority only / default-off implementation not yet authorized`
+`COMPLETE / Child 2C authority only / default-off implementation separately authorized`
 
 ## Outcomes and retrospective
 
-The package is intentionally queued. The immediate handoff correction is
-complete, and the next admissible work is contract-first authority authoring.
-No production behavior claim is made by this scaffold.
+The authority surfaces, independent vectors/oracle, receipt schemas, review
+disposition, focused gates, and terminal dual verification are complete. This
+package releases the bounded contract checkpoint and handoff only. No
+production behavior claim is made; a separately reviewed default-off
+implementation package is authorized to consume the checkpoint.

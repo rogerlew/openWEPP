@@ -869,6 +869,10 @@ path = "tests/integration/direct_hydrology_restart_authority_contract.rs"
 name = "root_zone_hydraulic_authority_contract"
 path = "tests/integration/root_zone_hydraulic_authority_contract.rs"
 
+[[test]]
+name = "snow_stage3_shared_carrier_authority_contract"
+path = "tests/integration/snow_stage3_shared_carrier_authority_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

@@ -1,6 +1,6 @@
 # Security impact
 
-Status: queued
+Status: NOT_APPLICABLE
 
 Evidence mode: Static
 

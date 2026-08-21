@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 13
+contract_version: 14
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -13,8 +13,8 @@ consumer_scope:
   - Shared Stage 3 snow-surface energy carrier
   - Snow sublimation and melt components
   - Snow-energy diagnostics and assurance outputs
-evidence_level: static
-last_reviewed: 2026-08-19
+evidence_level: static+independent_oracle+contract_vectors
+last_reviewed: 2026-08-20
 supersedes: []
 superseded_by: []
 ---
@@ -23,7 +23,7 @@ superseded_by: []
 
 Status: `in_review`
 Maturity: `draft`
-Evidence mode: `static`
+Evidence mode: `static + independent oracle + contract vectors`
 
 ## Purpose
 
@@ -199,6 +199,9 @@ gaps/edges/trunks, terrain-obstructed sky, or anisotropic diffuse radiation.
 | `Q_cc` | `J m^-2` | Positive active-layer cold-content deficit relative to `0 degC` ice. | Stage 3 thermal partition | shared energy carrier |
 | `m_v,raw` | `kg m^-2` | Signed vapor exchange opportunity integrated from turbulent mass flux before snow-ice availability bounding; deposition positive, sublimation negative. | evaluation-only schema-v6 carrier | attribution diagnostic; never actual S/F debit |
 | `m_v` | `kg m^-2` | Signed bounded vapor transfer; deposition positive, sublimation negative. | bounded Stage 3 transfer | actual snow mass and canonical latent-energy ledgers |
+| `T_ca`, `q_ca` | `K`, `kg kg^-1` | Shared canopy-air temperature and specific humidity solved by the coupled carrier. | shared carrier transaction | V11 canopy and Stage 3 snow turbulent exchange |
+| `H_i`, `V_i` | `W m^-2`, `kg m^-2 s^-1` | Sensible and vapor exchange between participant `i` and the shared carrier. | shared carrier transaction | canopy/snow flux ledgers |
+| `L_can`, `L_snow<->canopy` | `W m^-2` | Area-weighted component canopy emission and reciprocal canopy/snow longwave exchange. | V11/LSE canopy components | snow longwave and reciprocal ledger |
 | `Q_E` | `J m^-2` | Hour-integrated applied surface energy, positive toward snow. | shared energy carrier | cold-content update |
 | `Q_complete` | `J m^-2` | Exact-one sum of all admitted external and ground/interlayer energy operands for the declared substep/control volume, before phase-change allocation. | future complete Stage 3 energy carrier | cold-content and phase allocation |
 | `Q_cold_required` | `J m^-2` | Non-negative energy required to bring the melt-owning ice to its phase threshold after active/lower allocation. | future Stage 3 thermal state | positive-excess derivation |
@@ -708,6 +711,10 @@ bounded-latent production target.
 | Any energy, solid, or liquid ledger does not reconstruct from exact operands | Reject without residual acceptance, alias substitution, or clamp. | runtime/test | hard `IMPLEMENTATION_HOLD`; typed closure failure after cutover |
 | Available-ice bound saturates and `Q_unallocated_after_exhaustion > 0` | Do not discard, carry, or route the energy by proxy; target cutover remains blocked until canonical physical recipient and next-state chronology are amended. | governance/model boundary | hard `IMPLEMENTATION_HOLD` |
 | `m_s <= 1 kg m^-2` or terminal meltout would enter unresolved residual snow | Preserve current compatibility behavior only; do not activate a partial target phase path. | governance/model boundary | hard `IMPLEMENTATION_HOLD` |
+| shared carrier lacks sealed exposure, has duplicate flux lineage, or has invalid participant/support receipt | reject before trial state or ledger mutation | runtime | `SNOWENERGY-E-WIND-001` / `SNOWENERGY-E-CARRIER-001` |
+| snow flux is requested after the accepted event or in a snow-free regime | reject before evaluation | runtime | `SNOWENERGY-E-REGIME-001` |
+| canopy-intercepted snow is supplied to this surface carrier | reject as out of scope | runtime | `SNOWENERGY-E-SCOPE-001` |
+| component-weighted canopy longwave or reciprocal ledger does not close | reject without candidate publication | runtime | `SNOWENERGY-E-LW-001` |
 
 `R_a,min` is the numerically explicit `1e-9 MJ m^-2 d^-1`
 divide/branch threshold.
@@ -793,6 +800,11 @@ divide/branch threshold.
 | `INV-SNOWENERGY-033` | contract-derived alias/source checks and wind-custody package evidence | governance | `AUTHORITY_MISSING` / persistence hold; no production correction | Stage 3 wind source-custody package |
 | `INV-SNOWENERGY-034` | terminal one-volume evaluator, adaptive step controller, event bracket/localizer, and schema-v8 consumer | evaluation runtime/test/governance | typed domain, step-underflow, rejection-limit, bracket, iteration, or closure failure; no state commit | terminal enthalpy-event package |
 | `INV-SNOWENERGY-035` | terminal receiver event/receipt join and independent reconstruction | default-off runtime/test/governance | typed no-recipient failure and exact rollback | terminal handoff implementation package |
+| `INV-SNOWENERGY-036` | One shared canopy-air node jointly closes reference, all V11 canopy, and Stage 3 snow sensible/vapor exchange. | Child 2C carrier authority | `[INFERENCE][Static]` | carrier residual | `SNOWENERGY-E-CARRIER-001` |
+| `INV-SNOWENERGY-037` | Wind is a sealed exposure-projected operand at declared transfer geometry; raw 10 m wind and fixed attenuation are not substitutes. | Child 2C exposure authority | `[INFERENCE][Static]` | exposure join | `SNOWENERGY-E-WIND-001` |
+| `INV-SNOWENERGY-038` | Canopy--snow--sky longwave uses one reciprocal current-trial state and exact-one exchange. | Child 2C longwave authority | `[INFERENCE][Static]` | radiation lineage | `SNOWENERGY-E-LW-001` |
+| `INV-SNOWENERGY-039` | Snow fluxes stop at the accepted event and snow-free fluxes begin only on admitted successor support. | Child 2C chronology authority | `[INFERENCE][Static]` | event/regime join | `SNOWENERGY-E-REGIME-001` |
+| `INV-SNOWENERGY-040` | Canopy-intercepted snow is outside this carrier and cannot enter its mass or energy ledgers. | Child 2C scope authority | `[INFERENCE][Static]` | scope guard | `SNOWENERGY-E-SCOPE-001` |
 
 ## Producer and Consumer Obligations
 
@@ -821,6 +833,8 @@ divide/branch threshold.
 | `OBL-SNOWENERGY-C-013` | melt-owner implementation and cutover | Atomically replace CoE generation with bounded Stage 3 positive-energy phase conversion; close same-substep refreeze/retention/routing, residual-snow and terminal-unallocated-energy authority, selectors/defaults/rollback, real-consumer use, and independent energy plus linked mass ledgers before claiming conformance. |
 | `OBL-SNOWENERGY-C-014` | evaluation evidence consumer | Reconstruct raw vapor from turbulent primitives; verify `Q_latent_raw=m_v,raw L_s(T_s)`; derive bounded transfer and `Q_latent_bounded=m_v L_s(T_s)`; report their difference; reconstruct the exact characterization-only raw-latent cold/melt chronology; and reject producer disagreement plus all vapor/melt/liquid/N/A aliases before reduction. Never claim the as-built raw-latent chronology conforms to the future bounded-latent target. |
 | `OBL-SNOWENERGY-C-015` | terminal event evidence consumer | Independently reconstruct endpoint solid, terminal liquid, enthalpy/energy, event support, and bracket/error acceptance from schema-v8 primitives. Reject full-step melt/sublimation, omitted deposition/refreeze, post-event snow flux, poisoned producer residuals, request/state mismatch, terminal recipient claims, and any event outside the terminal domain. |
+| `OBL-SNOWENERGY-P-010` | shared carrier producer | Emit one carrier candidate with complete operand lineage, residuals, current-trial temperatures, and owner/support identities. |
+| `OBL-SNOWENERGY-C-017` | shared carrier consumer | Independently reconstruct snow, vapor, liquid, energy, longwave, and event-time closure and reject any alias or duplicate flux. |
 
 ## Symbol Alias Map
 
@@ -846,6 +860,9 @@ divide/branch threshold.
 | `m_ice_available`, `m_melt`, `m_liquid_external_in`, `delta_m_retained`, `m_refrozen`, `m_routed`, `m_solid_precip`, `m_deposition`, `m_sublimation` | future typed Stage 3 phase/liquid-ledger fields | same-substep mass closure | `kg m^-2` -> same | `SC-SNOWENERGY-001` / `SC-SNOWFREEZE-001` | Exact named operands with retained change defined as end minus start. |
 | `SWE_layer` | `snow.layer.mass_swe_m` | persistent snow layer to density lifecycle | `m` -> `m` | `SC-SNOWENERGY-001` | Typed vector element converted to `m_layer`; strict mass-unit lifecycle boundary. |
 | `z_layer` | `snow.layer.thickness_m` | persistent snow layer to density closure | `m` -> `m` | `SC-SNOWENERGY-001` | Typed vector element; physical-depth aggregate only. |
+| `T_ca`, `q_ca` | `SharedCanopyAirNodeV1.temperature_k`, `.specific_humidity` | shared carrier trial state | `K`, `kg kg^-1` | `SC-VEGETATIONTRANSACTION-001` | no independent canopy-air alias |
+| `H_i`, `V_i` | typed carrier turbulent flux entries | surface/node exchange | `W m^-2`, `kg m^-2 s^-1` | Child 2C carrier | exact-once flux lineage |
+| `L_can`, `L_snow<->canopy` | typed longwave ledger entries | component emission/reciprocal exchange | `W m^-2` | V11/LSE and Stage 3 | equal/opposite closure |
 
 ## Constants and Parameters
 
@@ -909,6 +926,9 @@ model.
 | `t_collapse` | `s` | Stage 3 diagnostic scalar | accumulated explicit substep duration | internal scalar exception with contract-bound non-negative guard | environment-gated research trace |
 | `p_a` | `Pa` | typed positive pressure wrapper | named elevation-to-pressure projection | none | environment-gated research trace |
 | `k_d`, `k_eff` | `W m^-1 K^-1` | typed positive thermal-conductivity wrapper | exact named `KTS+efcon` helper | none | environment-gated research trace operands |
+| `T_ca`, `q_ca` | `K`, `kg kg^-1` | typed shared carrier node | identity at trial state | none | carrier receipt |
+| `H_i`, `V_i` | `W m^-2`, `kg m^-2 s^-1` | typed flux wrappers | named duration integration | no raw 10 m wind alias | carrier ledger |
+| `L_can`, `L_snow<->canopy` | `W m^-2` | typed longwave ledger | Stefan--Boltzmann and complementary exchange | none | reciprocal ledger |
 
 Energy-carrier integration from `W m^-2` uses the explicit typed hourly
 duration of `3600 s`; a hidden daily factor of `86400` is prohibited.
@@ -930,6 +950,10 @@ state, CoE exclusion, and recipient absence on failure are exact.
   `max(1e-12 kg m^-2,1e-12*sum_abs_mass_operands)` and
   `max(1e-6 J m^-2,1e-12*sum_abs_energy_operands)`. LTE, event-root, and
   closure tolerances are not interchangeable and authorize no state clamp.
+
+| Tolerance ID | Binding rule | Guard |
+|---|---|---|
+| `TOL-SNOWENERGY-001` | Terminal step-doubling, event-root, and independent mass/energy closure tolerances are distinct and never repair identity or state. | typed numerical failure |
 
 - Analytical evidence uses an absolute tolerance of `1e-9` for dimensionless
   identity checks and `1e-6 W m^-2` for independently reconstructed fluxes.
@@ -1068,6 +1092,15 @@ Producer-only analytical vectors cannot close runtime activation. EB-03 must
 prove the real shared Stage 3 snow-energy consumer reads the contracted
 operands.
 
+### Child 2C canonical obligation IDs
+
+| ID | Binding requirement | Enforcement |
+|---|---|---|
+| `TOL-SNOWENERGY-001` | Terminal step-doubling, event-root, and independent mass/energy closure tolerances are distinct and never repair identity or state. | typed numerical failure |
+| `OBL-SNOWENERGY-P-009` | Emit one immutable terminal receiver receipt or a typed failure; never partially commit. | receiver transaction |
+| `OBL-SNOWENERGY-C-016` | Reconstruct snow, liquid, vapor, fusion energy, and time without post-event snow operands or aliases. | receiver validator |
+| `INV-SNOWENERGY-041` | Terminal numerical tolerances are typed, distinct, and never repair identity, support, or state. | numerical validator |
+
 ## Binding Exposure Index
 
 No binding addendum, sidecar amendment, companion implementation contract, or
@@ -1076,6 +1109,7 @@ the originating evidence to authority promoted into this canonical core.
 
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
 |---|---|---|---|---|---|---|
+| `SNOWENERGY-CHILD2C-CARRIER` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-036, INV-SNOWENERGY-037, INV-SNOWENERGY-038, INV-SNOWENERGY-039, INV-SNOWENERGY-040, OBL-SNOWENERGY-P-010, OBL-SNOWENERGY-C-017` | `flagged-binding-addition` | Shared carrier topology, sealed exposure, weighted component longwave, typed flux lineage, and wrong-regime/scope rejection. |
 | `SNOWENERGY-EB02-AUTHORITY` | `docs/work-packages/20260730-snow-surface-eb-02-subcanopy-longwave-contract-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-001, INV-SNOWENERGY-002, INV-SNOWENERGY-003, INV-SNOWENERGY-004, INV-SNOWENERGY-005, INV-SNOWENERGY-006, INV-SNOWENERGY-007, INV-SNOWENERGY-008, INV-SNOWENERGY-009, INV-SNOWENERGY-010, INV-SNOWENERGY-011, INV-SNOWENERGY-012, INV-SNOWENERGY-013, INV-SNOWENERGY-014` | `none` | Package-local source reconciliation and analytical artifacts are evidence; all binding equations, guards, and obligations are in this canonical contract. |
 | `SNOWENERGY-EB03-COMPOSITION` | `docs/work-packages/20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-015, INV-SNOWENERGY-016, INV-SNOWENERGY-017, INV-SNOWENERGY-018, INV-SNOWENERGY-019` | `none` | Package evidence binds the Stage 3 provider, orthogonal selectors, and mass/energy composition implemented by version 2. |
 | `SNOWENERGY-EB03A-COUPLING` | `docs/work-packages/20260730-snow-surface-eb-03a-active-layer-thermal-coupling-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-020, INV-SNOWENERGY-021, INV-SNOWENERGY-022, INV-SNOWENERGY-023, INV-SNOWENERGY-024, INV-SNOWENERGY-025` | `none` | Package evidence must implement and verify the version-3 active thermal control volume and coupled substep solver. |
@@ -1086,7 +1120,7 @@ the originating evidence to authority promoted into this canonical core.
 | `SNOWENERGY-STAGE3-COMPLETE-CARRIER` | `docs/work-packages/20260805-snow-stage3-complete-carrier-shadow-melt-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-029, INV-SNOWENERGY-030, INV-SNOWENERGY-031` | `dual review and verification required` | User authority binds explicit CLIGEN virtual-instrument geometry and lifts the turbulent-input authority hold; carrier and shadow evidence remain required before atomic cutover. |
 | `SNOWENERGY-STAGE3-EVOLVING-CARRIER-PLAUSIBILITY` | `docs/work-packages/20260807-snow-stage3-evolving-state-carrier-plausibility-reconciliation-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-017, INV-SNOWENERGY-029, INV-SNOWENERGY-032, OBL-SNOWENERGY-P-007, OBL-SNOWENERGY-C-014` | `dual review and verification required` | Distinguishes evaluation-only raw vapor/latent opportunity from actual bounded sequential transfer; no production correction or persistence authority. |
 | `SNOWENERGY-STAGE3-WIND-SOURCE-CUSTODY` | `docs/work-packages/20260807-snow-stage3-wind-source-custody-and-exposure-authority-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-031, INV-SNOWENERGY-033` | `dual review and verification required` | Separates nominal source height, raw CLI wind, PMET-local adjustment, and virtual Stage 3 geometry; provider recovery directly proves retained output equality and statically reconstructs the local path while deployed/server and exposure authority remain missing. |
-| `SNOWENERGY-TERMINAL-ENTHALPY-EVENT` | `docs/work-packages/20260807-snow-terminal-enthalpy-event-numerics-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-034, OBL-SNOWENERGY-P-008, OBL-SNOWENERGY-C-015, TOL-SNOWENERGY-001` | `flagged-binding-addition` | Admits evaluation-only shallow-pack enthalpy/error-control/event mechanics while keeping liquid, energy, and remaining-time receiving-surface custody censored. |
+| `SNOWENERGY-TERMINAL-ENTHALPY-EVENT` | `docs/work-packages/20260807-snow-terminal-enthalpy-event-numerics-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-034, INV-SNOWENERGY-041, OBL-SNOWENERGY-P-008, OBL-SNOWENERGY-C-015` | `flagged-binding-addition` | Admits evaluation-only shallow-pack enthalpy/error-control/event mechanics while keeping liquid, energy, and remaining-time receiving-surface custody censored. |
 | `SNOWENERGY-TERMINAL-RECEIVER-TRANSACTION` | `docs/work-packages/20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-035, OBL-SNOWENERGY-P-009, OBL-SNOWENERGY-C-016` | `flagged-binding-addition` | Admits a fresh default-off terminal receiver transaction; it does not alter evaluation-only `INV-SNOWENERGY-034` or authorize production cutover. |
 
 ## Gap Register
@@ -1164,6 +1198,11 @@ retains schema-v8 evaluation-only, no-recipient, no-commit semantics.
   fusion energy, and time, rejecting duplicates, aliases, post-event snow
   operands, or nonzero liquid sensible enthalpy.
 
+| Obligation ID | Binding requirement | Enforcement |
+|---|---|---|
+| `OBL-SNOWENERGY-P-009` | Emit one immutable terminal receiver receipt or a typed failure; never partially commit. | receiver transaction |
+| `OBL-SNOWENERGY-C-016` | Reconstruct snow, liquid, vapor, fusion energy, and time without post-event snow operands or aliases. | receiver validator |
+
 Required unequal-operand vectors distinguish retained liquid, new melt, rain,
 runon, vapor, and receiver storage and poison full-step flux reuse,
 liquid/store aliases, fusion-energy-to-soil assignment, and dual melt owners.
@@ -1175,6 +1214,135 @@ liquid/store aliases, fusion-energy-to-soil assignment, and dual melt owners.
 | Invariant/alias | event fingerprint, retained/rain/melt/refreeze/vapor terms are distinct; fusion energy is not liquid sensible enthalpy or soil heat |
 | Unit/tolerance | liquid `kg m^-2 OFE-ground`; energy `J m^-2`; time `s`; only named event closure tolerance applies, never to identity/cardinality |
 | Tests/gap | unequal operands, endpoint allocation, replay/alias poisons, unallocated-energy rejection; production/carrier/efficacy/cutover gaps stay held |
+
+## Child 2C shared snow--canopy turbulent carrier amendment
+
+This amendment binds one default-off carrier for a forest-covered V11 canopy
+and Stage 3 ground snow. It does not activate the carrier, select a production
+default, admit canopy-intercepted snow, or qualify an exposure or seasonal
+consumer. The carrier fails closed when any required sealed forcing, exposure,
+thermal, or support receipt is missing.
+
+### Carrier topology, inputs, and ownership
+
+The topology is:
+
+```text
+sealed reference atmosphere -> shared canopy-air node
+shared canopy-air node -> V11 canopy surfaces
+shared canopy-air node -> Stage 3 ground snow surface
+```
+
+The sealed half-hour forcing owns reference wind, temperature, humidity, and
+pressure. It must provide an exposure-projected wind at the admitted virtual
+transfer geometry; a nominal raw `10 m` wind is not a subcanopy operand. V11
+owns canopy structure, leaf/stem surfaces, their temperatures and transfer
+conductances. Stage 3 owns snow surface temperature, SWE, liquid, cold
+content, roughness, emissivity, and albedo. The carrier transaction owns one
+shared canopy-air temperature/humidity node and its coupled residual. Coupled
+time owns the segment support receipt and one complete-owner parent commit.
+
+The source authority is `SC-VEGETATION-001@26` for V11 shared-tile air,
+neutral momentum and canopy-surface conductances; `SC-SNOWENERGY-001` for
+Stage 3 virtual `z_T=z_q=z_u=5 m`, exposed-snow `z_0,aero=0.005 m`, and
+reciprocal sky/canopy/snow longwave; `SC-COUPLEDTIME-001@3` for support and
+event chronology; and `SC-LANDSURFACEENERGY-001@7` for the snow-free
+successor. No fixed forest attenuation multiplier or fitted proxy is
+authority.
+
+### Turbulent carrier equations
+
+All turbulent fluxes use the same current trial shared-node state. Define
+surface-to-node fluxes as positive from a canopy or snow surface into the
+shared node:
+
+```text
+H_i = rho_a * c_p * g_H,i * (T_i - T_ca)
+V_i = rho_a * g_q,i * (q_i - q_ca)
+H_ref = rho_a * c_p * g_H,ref * (T_ref - T_ca)
+V_ref = rho_a * g_q,ref * (q_ref - q_ca)
+R_T = H_ref + sum_i(H_i) = 0
+R_q = V_ref + sum_i(V_i) = 0
+```
+
+The unknown shared node is solved or iterated from these complete residuals;
+the linear trial update, when every conductance is fixed, is the weighted
+closure `T_ca=(g_H,ref*T_ref+sum(g_H,i*T_i))/(g_H,ref+sum(g_H,i))` and the
+same expression for `q_ca`. Nonlinear conductances, saturation, and V11
+surface temperatures are reevaluated until both residuals and the owning
+constitutive tolerances pass. The carrier exports snow sensible and vapor
+terms as `H_snow=-H_s` and `V_snow=-V_s`, positive into snow. It exports
+canopy terms with the same sign reversal into each canopy owner. There is one
+reference exchange and one snow exchange; no flux is copied into a second
+owner.
+
+Reference wind is first converted through the sealed exposure/transfer
+receipt and the named neutral log-law in V11. Surface conductances remain
+owner-specific. Raw `10 m` wind, a fixed attenuation factor, a hidden wind
+floor, or independent canopy-air nodes is typed failure.
+
+### Canopy--snow--sky longwave
+
+The carrier imports the reciprocal V11 rank recurrence and the Stage 3
+complementary longwave boundary. For the one-layer snow boundary:
+
+```text
+L_can       = sum_j(w_j * sigma*T_can,j^4)
+L_snow,down = f_sky * L_atm + (1-f_sky) * L_can
+L_snow,net  = L_snow,down - sigma*T_s^4
+L_snow<->canopy = (1-f_sky) * (sigma*T_s^4 - L_can)
+```
+
+The canopy-side term is the equal-and-opposite exchange in the V11 recurrence;
+atmospheric and canopy component terms remain separate operands. `L_can` is
+reconstructed from the current V11 canopy component temperatures and
+emissive-area weights; it is not the shared-air temperature and cannot be
+copied from a stale or aggregate diagnostic. `f_sky` is
+the existing effective-cover Beer-law translation, not a new input. Canopy
+and snow emissivity are exactly one under the admitted one-layer domain.
+Longwave is evaluated from the same current trial temperatures as the
+turbulent residual; a stale or post-event snow temperature is invalid.
+
+### Carrier algorithm and guards
+
+1. Validate forcing, exposure, virtual transfer geometry, active participant
+   set, owner state, and support receipts without mutating owners.
+2. Construct one current-trial shared node from all active V11 surfaces and
+   the Stage 3 snow surface; do not split the node by stratum or regime.
+3. Evaluate reciprocal canopy--snow--sky longwave and all turbulent residuals
+   from the same trial state.
+4. Iterate the complete coupled system until the carrier, V11, and Stage 3
+   tolerances pass; reject incomplete or wrong-regime operands.
+5. Independently reconstruct vapor mass, sensible/latent energy, longwave,
+   cold-content, liquid, and event-time ledgers before producing a typed
+   owner candidate. Commit only through the coupled-time complete-owner
+   transaction.
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-SNOWENERGY-036` | One shared canopy-air node jointly closes reference, all V11 canopy, and Stage 3 snow sensible/vapor exchange. | carrier residual / `SNOWENERGY-E-CARRIER-001` |
+| `INV-SNOWENERGY-037` | Wind is a sealed exposure-projected operand at declared transfer geometry; raw 10 m wind and fixed attenuation are not substitutes. | forcing/exposure join / `SNOWENERGY-E-WIND-001` |
+| `INV-SNOWENERGY-038` | Canopy--snow--sky longwave uses one reciprocal current-trial state and exact-one exchange. | radiation lineage / `SNOWENERGY-E-LW-001` |
+| `INV-SNOWENERGY-039` | Snow fluxes stop at the accepted event and snow-free fluxes begin only on admitted successor support. | chronology / `SNOWENERGY-E-REGIME-001` |
+| `INV-SNOWENERGY-040` | Canopy-intercepted snow is outside this carrier and cannot enter its mass or energy ledgers. | scope guard / `SNOWENERGY-E-SCOPE-001` |
+
+### Child 2C obligations and gaps
+
+`OBL-SNOWENERGY-P-010`: emit one carrier candidate with complete operand
+lineage, residuals, current-trial temperatures, and owner/support identities.
+`OBL-SNOWENERGY-C-017`: independently reconstruct snow, vapor, liquid, energy,
+longwave, and event-time closure and reject any alias or duplicate flux.
+
+The carrier is `AUTHORITY_ADMITTED / IMPLEMENTATION_MISSING` until the later
+default-off implementation package proves a real V11/Stage 3 consumer. The
+existing wind-custody/exposure gap remains a typed precondition, not a license
+for attenuation. Calibration is `CALIBRATION_NOT_APPLICABLE` here; no
+efficacy, qualification, or empirical claim follows.
+
+| ID | Gap | Disposition |
+|---|---|---|
+| `GAP-SNOWENERGY-014` | Default-off runtime carrier and actual V11 snow-covered consumer are not implemented. | later implementation package; current authority remains promotable |
+| `GAP-SNOWENERGY-015` | Deployed/server exposure receipt is not available for every retained forcing value. | typed runtime precondition; no proxy or attenuation admitted |
 
 ## Change Log
 
@@ -1193,3 +1361,4 @@ liquid/store aliases, fusion-energy-to-soil assignment, and dual melt owners.
 | 3 | 2026-07-30 | Replaced the failed snowfall-event top-layer provider with the Marks/SNOBAL upper-`0.25 m` active thermal control volume, harmonic active/lower `G_0`, conservative depositional-layer projection, and mass-dependent `60/15/1 minute` substeps. The amendment retains CoE snow existence/melt authority and prohibits shallow-pack temperature replacement, cold-content tax, fitted limiter, or new user coefficient. | `SNOW-SURFACE-EB-03A` contract-first authority trace |
 | 2 | 2026-07-30 | Selected the Stage 3 top-layer thermal provider; bound `T_c=T_a`, polar-night typed unavailability, `R_a,min`, orthogonal default-off selectors, exact-one vapor/latent composition, snow-state mutation, and mass/energy closure obligations. Real S/LS execution then retained the seam as diagnostic/reproduction-only and opened `GAP-SNOWENERGY-007` because the common provider reaches `0 K` with material SWE remaining. | `SNOW-SURFACE-EB-03` contract-first implementation and terminal consumer evidence |
 | 1 | 2026-07-30 | Initial contract: atmospheric longwave, effective-cover-derived diffuse sky view, complementary canopy exchange, runtime hold, and analytical obligations. | `SNOW-SURFACE-EB-01A` and `SNOW-SURFACE-EB-02` static/analytical evidence |
+| 14 | 2026-08-20 | Bound the default-off shared V11/Stage 3 canopy-air carrier, complete turbulent residuals, reciprocal canopy--snow--sky longwave, sealed exposure wind, wrong-regime guards, and implementation-only disposition. | Child 2C authority package |
