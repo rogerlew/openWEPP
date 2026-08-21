@@ -1015,3 +1015,69 @@ owner, candidate/order/cardinality rules are executable, and the contradictory
 staging artifact is reconciled`.
 
 No production implementation is authorized by this review.
+
+---
+
+## Resource-custody final re-review B — candidate `9020f3dcb4cabfde3517f3ee5e23142c8517ce50`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + coordinated identity/continuation reframing`
+
+The correction closes substantial portions of the prior review. Debit bodies
+now carry owner/OFE/tile/occupancy/layer/source/basis identity; transition
+ordering, support membership, link coverage, cross-owner/OFE/tile/basis
+poisons, candidate digest syntax, terminal joins, and the contradictory staging
+prose are improved. Nominal gates pass: segmented 54/54, immutable V2 54/54,
+V3 12/12, authority 8/8, all three schema meta-checks, strict BEI, unit
+compliance, and diff hygiene. V2 schema/reference hashes remain
+`af9314c3...2441` and `13f3d009...f7c`.
+
+Two Review B authority findings remain.
+
+### Residual findings
+
+- `V11-RESOURCE-CUSTODY-B-001` — **not closed: V3 is not a complete restart
+  successor.** `OPENWEPP_C3_WOODY_V11_RESTART_V3` contains only parent/support,
+  other-flux IDs, debit/transition arrays, and terminal owners. It neither
+  embeds nor authenticates the complete V2 checkpoint: coupled-time V2,
+  vegetation parent checkpoint and staged state, beginning owners,
+  current/next sequence, cursor/regime/participants, accepted event/scheduled/
+  material lineage, reductions, publication, and outbox are absent. The V3
+  reference validates a static custody envelope and executes no restored suffix.
+  Consequently the contract's claim that restore resumes persisted staged state
+  and equals uninterrupted continuation is not executable. Make V3 a closed
+  additive superset/composition of byte-identical V2 plus typed custody, join
+  duplicated facts, and compare a real fresh-object suffix over complete state.
+- `V11-RESOURCE-CUSTODY-B-003` — **partially closed: IDs and complete owner
+  candidates remain caller-reframable.** The reference does not derive debit
+  receipt IDs or transition IDs from their bodies. Coordinated replacement of a
+  debit ID and all links is accepted, as is arbitrary replacement of a
+  transition ID. Coordinated replacement of an admitted other-flux ID and all
+  transition links is also accepted because V3 retains no authenticated flux
+  bodies or V2 receipt join. Further, `owner_candidate_bytes_base64` decodes
+  only `{owner, ending_bits}`. For BGC, separate NH4 and NO3 scalar candidates
+  exist but only the last transition for owner `bgc` is joined to the terminal
+  owner; this is not a canonical complete BGC owner candidate and leaves the
+  other species transition outside terminal custody. Derive all IDs with frozen
+  domains/field order, authenticate other-flux receipts through the complete
+  checkpoint, and bind transitions to one reconstructable complete owner
+  candidate per owner/slab (or an exact admitted component-to-complete-owner
+  aggregation with all components joined).
+
+Prior `V11-RESOURCE-CUSTODY-B-002` and `B-004` are closed by the expanded
+identity bodies/alias poisons and reconciled staging artifact. The previous
+candidate-digest, reversed/missing/duplicate link, extra/out-of-support
+transition, and cross-owner/OFE/tile/basis probes now reject, but that does not
+close the coordinated-ID and complete-BGC-candidate forms above.
+
+### Verdict
+
+`HOLD / SC-VEGETATION-001 Version 21 remains non-releasable at 9020f3dcb;
+Restart V3 must carry complete V2 continuation and reconstruct receipt,
+transition, flux, and complete-owner candidate identities before Review B can
+PASS`.
+
+No waiver or production authorization is recommended.

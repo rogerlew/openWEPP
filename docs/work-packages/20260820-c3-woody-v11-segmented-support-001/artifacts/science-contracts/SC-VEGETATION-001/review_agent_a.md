@@ -718,3 +718,48 @@ hygiene PASS. Those gates do not detect the independent forgery above.
 
 Verdict: `HOLD / occupancy debit separation is correct, but shared-owner
 candidate and other-flux lineage remain unauthenticated at 1302b60b9`.
+
+## Resource-custody final Review A — `9020f3dcb4cabfde3517f3ee5e23142c8517ce50`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent actual-shaped custody probes`
+
+The V3 correction closes the three prior direct forgeries: candidate bytes are
+canonically decoded and hashed, declared endings join their decoded candidate,
+other-flux IDs must be admitted, shared predecessors chain, debit links are
+exact, and terminal hydrology/BGC bytes join the selected terminal candidate.
+All twelve declared V3 poisons reject.
+
+Two resource-custody blockers remain in the actual-shaped oracle.
+
+1. Authorization is checked only per occupancy as
+   `use <= authorization <= request`; accepted authorizations are never summed
+   against the transition's current shared beginning inventory. A reframed
+   water fixture with two 100-unit authorizations against a 10-unit shared
+   beginning is accepted. This reopens hidden cross-occupancy overbooking.
+2. The fixture emits two different purported *complete* BGC owner candidates
+   for the same owner and slab: the NH4 transition candidate contains only its
+   `ending_bits`, while the NO3 transition candidate contains only its distinct
+   ending. A complete BGC candidate must be one byte-identical candidate across
+   every resource transition for that owner/slab (or the wire must carry one
+   owner candidate separately and link both typed transitions to it). The
+   validator instead retains only the last transition by owner for terminal
+   joining, leaving the other same-slab candidate orphaned.
+
+Required closure: reconstruct summed authorization/final-use bounds per exact
+shared transition; add an overbooking poison; and represent one canonical
+complete owner candidate per owner/slab with all resource transitions linked to
+it, rejecting conflicting/orphaned candidates. The candidate body must be
+actual complete-owner bytes, not the current two-field resource scalar proxy.
+
+Gate evidence: segmented reference PASS 54/54; Restart V2 PASS 54/54; Restart
+V3 PASS 12/12 declared poisons; authority PASS 8/8; strict BEI PASS (15 rows);
+scoped unit and JSON gates PASS; range diff hygiene PASS. Restart V2 artifacts
+are byte-untouched and the correction range contains no production Rust.
+
+Verdict: `HOLD / prior digest and flux forgeries are closed, but V3 still
+accepts shared-inventory overbooking and contradicts complete same-owner BGC
+candidate custody at 9020f3dcb`.

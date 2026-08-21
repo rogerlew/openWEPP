@@ -578,3 +578,41 @@ forgery probes supersede those self-consistent results.
 
 Verdict: `HOLD / Version 9 has the right custody split but does not yet bind
 the shared transition to the actual owner candidate at 1302b60b9`.
+
+## Resource-custody final Review A — `9020f3dcb4cabfde3517f3ee5e23142c8517ce50`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent actual-shaped custody probes`
+
+Version 10 / Restart V3 now rejects every prior Review A forgery: unrelated
+candidate digests, arbitrary self-chains, unknown flux IDs, broken/reordered
+debit links, identity aliases, and terminal owner substitution. Candidate
+bytes/digests and terminal joins are executable rather than format-only.
+
+The transaction oracle still omits aggregate authorization against shared
+inventory. It validates each occupancy independently but accepts two 100-unit
+water authorizations against a 10-unit shared beginning. Exact debit-link
+coverage does not prevent that cross-occupancy overbooking.
+
+It also constructs distinct candidate bytes for NH4 and NO3 transitions of the
+same BGC owner in the same slab. Both are described as canonical complete owner
+candidates, yet only the last transition encountered is joined to the terminal
+BGC envelope. The earlier candidate is neither equal to the same owner/slab
+candidate nor terminally joined. This is a contradictory complete-owner
+chronology, not a harmless per-resource diagnostic.
+
+Closure requires one canonical complete candidate per owner/slab linked from
+all its resource transitions, exact same-owner candidate equality/cardinality,
+and summed authorization/final-use validation against the current shared
+inventory, with direct poisons for both defects.
+
+Gate evidence: segmented 54/54, Restart V2 54/54, Restart V3 12/12, authority
+8/8, strict BEI 4 rows, scoped units, schema syntax, and diff hygiene PASS. V2
+is byte-pinned and no production path appears in the amendment range.
+
+Verdict: `HOLD / Version 10 closes prior authentication findings but not
+cross-occupancy overbooking or same-owner/slab complete-candidate uniqueness at
+9020f3dcb`.

@@ -682,3 +682,53 @@ restart-complete at 1302b60b9; V11-TXN-RESOURCE-B-001..004 require correction
 and independent re-review`.
 
 No waiver is recommended and production remains gated.
+
+---
+
+## Resource-custody final re-review B — candidate `9020f3dcb4cabfde3517f3ee5e23142c8517ce50`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + coordinated transaction/restart forgeries`
+
+The V3 correction closes prior identity-field and staging contradictions and
+rejects the original malformed/valid candidate, reversed/duplicate/missing
+link, extra/out-of-support transition, and cross-owner/OFE/tile/basis probes.
+Required nominal evidence passes: segmented 54/54; protected V2 54/54; V3
+12/12; authority 8/8; schema, strict BEI, unit, and diff gates PASS. V2 remains
+byte-identical and explicitly nonproduction for resource custody.
+
+### Residual transaction findings
+
+- `V11-TXN-RESOURCE-B-001` remains open. V3 is a standalone resource envelope,
+  not a closed successor of the complete V2 restart. It omits coupled time,
+  vegetation checkpoint/staged state, beginning owners, sequence/cursor/regime,
+  event/scheduled/material receipts, reductions, publication, and outbox. Its
+  oracle validates no fresh-object suffix or complete uninterrupted
+  continuation. Persist or canonically embed the immutable V2 payload, join all
+  duplicated parent/support/owner/receipt facts, and execute the unaccepted
+  suffix before admitting V3.
+- `V11-TXN-RESOURCE-B-003` remains partially open. Debit `receipt_id` and
+  `transition_id` are checked for order/uniqueness but never derived from their
+  bodies; coordinated ID-and-link reframes are accepted. Admitted other-flux
+  IDs are likewise caller-reframable because no authenticated receipt bodies or
+  V2 joins exist. Candidate bytes contain only owner plus scalar ending bits.
+  Separate NH4 and NO3 transitions therefore create two alleged complete BGC
+  candidates, while terminal joining retains only the last candidate for owner
+  `bgc`. Freeze domain-separated ID derivations and bind every scalar component
+  to a single complete hydrology/BGC owner candidate whose canonical bytes and
+  digest join the terminal complete-owner set.
+
+`V11-TXN-RESOURCE-B-002` and `B-004` are closed. Direct reframing at this
+checkpoint still accepts coordinated debit-ID, transition-ID, and other-flux-ID
+forgeries, so passing the declared 12 poisons is insufficient for release.
+
+### Verdict
+
+`HOLD / SC-VEGETATIONTRANSACTION-001 Version 10 cannot release at 9020f3dcb;
+complete Restart V3 continuation and derived transaction/candidate identities
+remain required`.
+
+Production remains gated; no waiver is justified.

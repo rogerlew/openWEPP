@@ -1,14 +1,16 @@
 [
- {"id":"forged_candidate","mutation":"x['shared_owner_transitions'][0]['owner_candidate_sha256']='0'*64","error":"V3-CANDIDATE"},
- {"id":"arbitrary_self_chain","mutation":"x['shared_owner_transitions'][-1]['beginning_bits']=x['shared_owner_transitions'][-1]['ending_bits']","error":"V3-CHAIN"},
- {"id":"unknown_other_flux","mutation":"x['shared_owner_transitions'][0]['other_flux_receipt_ids']=[sid('unknown')]","error":"V3-FLUX"},
- {"id":"reversed_links","mutation":"next(t for t in x['shared_owner_transitions'] if len(t['debit_receipt_ids'])>1)['debit_receipt_ids'].reverse()","error":"V3-LINK"},
- {"id":"duplicate_transition","mutation":"x['shared_owner_transitions'].append(x['shared_owner_transitions'][0])","error":"V3-ORDER"},
- {"id":"out_of_support","mutation":"x['shared_owner_transitions'][0]['support']={'start_ns':'1800','end_ns':'1900'}","error":"V3-SUPPORT"},
- {"id":"cross_owner_alias","mutation":"x['debit_receipts'][0]['owner_id']='bgc'","error":"V3-ALIAS"},
- {"id":"cross_ofe_alias","mutation":"x['debit_receipts'][0]['ofe_id']='ofe-2'","error":"V3-ALIAS"},
- {"id":"cross_tile_occupancy_alias","mutation":"a=next(d for d in x['debit_receipts'] if d['receipt_id']==sid('w0a'));b=next(d for d in x['debit_receipts'] if d['receipt_id']==sid('w0b'));b['occupancy_id']=a['occupancy_id'];b['tile_id']=a['tile_id']","error":"V3-DEBIT"},
- {"id":"cross_basis_alias","mutation":"x['debit_receipts'][0]['amount_basis']='kg_n_m2'","error":"V3-ALIAS"},
- {"id":"terminal_join_forgery","mutation":"x['terminal_complete_owners'][4]['state_sha256']='0'*64","error":"V3-TERMINAL"},
- {"id":"missing_debit_link","mutation":"x['shared_owner_transitions'][0]['debit_receipt_ids'].pop()","error":"V3-LINK"}
+ {"id":"forged_candidate","mutation":"forged_candidate","error":"V3-CANDIDATE"},
+ {"id":"arbitrary_self_chain","mutation":"arbitrary_self_chain","error":"V3-CHAIN"},
+ {"id":"unknown_other_flux","mutation":"unknown_other_flux","error":"V3-FLUX"},
+ {"id":"reversed_links","mutation":"reversed_links","error":"V3-CANDIDATE"},
+ {"id":"duplicate_transition","mutation":"duplicate_transition","error":"V3-ORDER"},
+ {"id":"out_of_support","mutation":"out_of_support","error":"V3-SUPPORT"},
+ {"id":"coordinated_debit_link_reframe","mutation":"coordinated_debit_link","error":"V3-CANDIDATE"},
+ {"id":"transition_id_reframe","mutation":"transition_id_reframe","error":"V3-TRANSITION"},
+ {"id":"coordinated_flux_link_reframe","mutation":"coordinated_flux_link","error":"V3-CANDIDATE"},
+ {"id":"v2_field_omission","mutation":"v2_field_omission","error":"V11-V2-CANONICAL"},
+ {"id":"v2_field_forgery","mutation":"v2_field_forgery","error":"V11-V2-JOIN"},
+ {"id":"two_100_vs_10","mutation":"two_100_vs_10","error":"V3-OVERBOOK"},
+ {"id":"terminal_join_forgery","mutation":"terminal_join_forgery","error":"V3-TERMINAL"},
+ {"id":"missing_debit_link","mutation":"missing_debit_link","error":"V3-CANDIDATE"}
 ]

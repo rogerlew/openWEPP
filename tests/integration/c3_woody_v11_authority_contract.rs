@@ -231,7 +231,11 @@ fn restart_v3_closes_resource_custody_without_mutating_v2() {
     );
     assert_eq!(result["accepted"]["debit_count"], 5);
     assert_eq!(result["accepted"]["transition_count"], 4);
-    assert_eq!(result["poisons"].as_array().unwrap().len(), 12);
+    assert_eq!(
+        result["accepted"]["complete_suffix_sha256"],
+        "512c259be830ad33de578f9cd26f8931fb334e7b361c4387f8e7562de4f8cf0e"
+    );
+    assert_eq!(result["poisons"].as_array().unwrap().len(), 14);
 }
 
 #[test]

@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 21
+contract_version: 22
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -2729,6 +2729,15 @@ therefore is `NONIMPLEMENTABLE / NEVER_PRODUCTION` for V11 resource-custody
 continuation. It is not amended in place. The additive closed production target
 is `OPENWEPP_C3_WOODY_V11_RESTART_V3`.
 
+V3 composes the complete closed V2 checkpoint as one required, unchanged
+subobject and re-applies every V2 semantic admission before considering the V3
+extension. Thus coupled-time bytes/digest, parent checkpoint and staged state,
+beginning owners, cursor/regime/participants/sequences, accepted segment/event/
+resource/material/scheduled receipts, reductions, publication records, and
+outbox rows cannot be omitted or reframed. Restore executes the actual V2
+suffix reconstruction and requires equality of the complete uninterrupted and
+restored continuation, not merely a scalar vegetation state or digest alias.
+
 V3 retains ordered typed occupancy debit receipts with parent, segment, slab,
 owner, OFE, tile/occupancy, layer, source, amount basis, and exact
 request/authorization/final-use bits. Separate shared-owner transition receipts
@@ -2741,6 +2750,15 @@ transitions, arbitrary self-chains, unknown flux links, reversed debit links,
 duplicates, and cross-owner/OFE/tile/basis aliases reject. Transition endings
 are exact next beginnings, and terminal hydrology/BGC candidates join the
 terminal complete-owner set byte-for-byte and digest-for-digest.
+
+Debit, typed other-flux, and transition receipt IDs are derived from their
+complete closed bodies. Each owner/slab has exactly one canonical complete
+owner candidate with sorted unique component entries. Water transitions bind
+the hydrology candidate; NH4 and NO3 transitions bind the same complete BGC
+candidate containing both components. Aggregate linked occupancy
+authorization and final use may not exceed the transition beginning inventory
+plus its admitted typed inflows. Coordinated body/link/ID reframing, including
+two occupancies each authorized for 100 against shared inventory 10, rejects.
 
 Restore returns a continuation reconstructed from the persisted staged state
 and executes only the unaccepted suffix. It may not reconstruct accepted work
@@ -2797,4 +2815,5 @@ snow carrier, selector/default, activation, publication, deployment, or cutover.
 | 2026-08-20 | 18 | Codex | Bound restart V2 segments to predecessor V11 state and terminal complete-owner equality across segment, checkpoint, and outer wire. |
 | 2026-08-20 | 19 | Codex | Made sequential staged subtraction authoritative and separated it from the ordered cumulative-debit diagnostic fold; prohibited regrouped owner-ending aliases. |
 | 2026-08-20 | 20 | Codex | Separated occupancy debit receipts from shared hydrology/BGC owner transitions and bound debit links, owner-candidate lineage, authorization, and cross-segment shared-owner continuity. |
+| 2026-08-20 | 22 | Codex | Completed additive Restart V3 by composing all V2 admission and full-suffix equivalence, deriving typed receipt identities, binding one complete owner candidate per owner/slab, and aggregating shared-inventory authorization. |
 | 2026-08-20 | 21 | Codex | Froze Restart V2 as nonproduction for resource custody and introduced additive closed Restart V3 typed debit/transition continuation authority. |
