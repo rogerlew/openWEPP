@@ -899,3 +899,8 @@ findings with expected-domain receipt authentication, narrowed covered-forest
 scope, atomic rejection/rollback, and independent restored-suffix evidence.
 **Addendum verdict: PASS**, subject to normal lifecycle disposition and dual
 verification.
+
+Implementation addendum: the released LSE receipt is now a mandatory sealed
+member of every accepted V11 segment and parent checkpoint. Exact staged LSE/
+soil-thermal predecessor joins, replay rejection, and rollback are executable.
+Vegetation tests pass `272/272`. **Implementation Review A: PASS.**

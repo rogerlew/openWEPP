@@ -13,8 +13,9 @@ mod tests {
         V2_VEGETATION_MODEL_DEFINITION_SHA256, V2_VEGETATION_MODEL_VERSION,
     };
     use openwepp_vegetation::v11::{
-        V11_COMPLETE_OWNER_MANIFEST, V11OwnerEnvelope, V11ParentCandidate, V11ParentTransaction,
-        execute_v11_segment, migrate_v10_runtime_to_v11, v11_vegetation_owner_envelope,
+        V11_COMPLETE_OWNER_MANIFEST, V11ExecutionError, V11OwnerEnvelope, V11ParentCandidate,
+        V11ParentTransaction, execute_v11_segment, migrate_v10_runtime_to_v11,
+        v11_vegetation_owner_envelope,
     };
     use openwepp_vegetation::{
         V8CoupledOwnedState, V9_MODEL_SHA256, V9CoupledOwnedState, V10_MODEL_SHA256,
@@ -440,16 +441,26 @@ mod tests {
     }
 
     fn initial_v11_owners(
+        shadow: &DirectV10RealConsumerShadow,
         state: &openwepp_vegetation::v11::V11CoupledOwnedState,
     ) -> BTreeMap<String, V11OwnerEnvelope> {
         V11_COMPLETE_OWNER_MANIFEST
             .iter()
             .map(|id| {
-                let envelope = if *id == "vegetation" {
-                    v11_vegetation_owner_envelope(state).expect("vegetation owner")
-                } else {
-                    V11OwnerEnvelope::try_new((*id).to_owned(), id.as_bytes().to_vec())
-                        .expect("owner")
+                let envelope = match *id {
+                    "vegetation" => v11_vegetation_owner_envelope(state).expect("vegetation owner"),
+                    "land_surface_energy" => V11OwnerEnvelope::try_new(
+                        (*id).to_owned(),
+                        serde_json::to_vec(&shadow.inner.lse_state).expect("LSE owner"),
+                    )
+                    .expect("LSE owner envelope"),
+                    "soil_thermal" => V11OwnerEnvelope::try_new(
+                        (*id).to_owned(),
+                        serde_json::to_vec(&shadow.inner.soil_thermal).expect("soil owner"),
+                    )
+                    .expect("soil owner envelope"),
+                    _ => V11OwnerEnvelope::try_new((*id).to_owned(), id.as_bytes().to_vec())
+                        .expect("owner"),
                 };
                 ((*id).to_owned(), envelope)
             })
@@ -491,7 +502,7 @@ mod tests {
         let migrated =
             migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
                 .expect("migration");
-        let owners = initial_v11_owners(&migrated.state);
+        let owners = initial_v11_owners(shadow, &migrated.state);
         let clock_owners = owners
             .values()
             .map(|owner| owner.to_owner_state().expect("clock owner"))
@@ -554,6 +565,30 @@ mod tests {
             parent
                 .accept_segment(&migrated.configuration, segment)
                 .expect("accept actual segmented V11 execution");
+            let support_receipt = executor
+                .stack
+                .last_support_receipt()
+                .expect("sealed LSE support receipt");
+            assert_eq!(
+                support_receipt.requested_support_ns,
+                duration_ns.to_string()
+            );
+            assert_eq!(support_receipt.slab_ordinal, ordinal.to_string());
+            assert_eq!(
+                parent
+                    .accepted_segments()
+                    .last()
+                    .expect("accepted segment")
+                    .lse_support_receipt
+                    .canonical_json,
+                serde_json::to_vec(support_receipt).expect("canonical LSE support receipt"),
+                "accepted segment must retain the exact sealed support receipt"
+            );
+            assert_eq!(
+                support_receipt.beginning_soil_thermal_state_sha256,
+                staged_shadow.inner.soil_thermal.state_sha256,
+                "support receipt must bind the staged beginning soil owner"
+            );
             staged_shadow = executor.stack.take_staged_ending().expect("staged ending");
         }
         parent.finalize(&migrated.configuration).expect("finalize")
@@ -566,7 +601,7 @@ mod tests {
         let migrated =
             migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
                 .expect("migration");
-        let owners = initial_v11_owners(&migrated.state);
+        let owners = initial_v11_owners(&shadow, &migrated.state);
         let clock_owners = owners
             .values()
             .map(|owner| owner.to_owner_state().expect("clock owner"))
@@ -610,21 +645,26 @@ mod tests {
         );
         assert_eq!(candidate.ending_complete_owners.len(), 7);
         assert_eq!(candidate.accepted_segments.len(), 1);
+        assert_eq!(
+            candidate.accepted_segment_checkpoints[0].lse_support_receipt,
+            candidate.accepted_segments[0].lse_support_receipt,
+            "parent checkpoint must retain the accepted LSE support receipt"
+        );
     }
 
     #[test]
     fn v11_rejected_duration_attempt_leaves_parent_and_live_stack_unchanged() {
         let (shadow, fixture) = v10_shadow_fixture();
-        let interval = day_input(&fixture).intervals.remove(0);
+        let base_interval = day_input(&fixture).intervals.remove(0);
         let migrated =
             migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
                 .expect("migration");
-        let owners = initial_v11_owners(&migrated.state);
+        let owners = initial_v11_owners(&shadow, &migrated.state);
         let clock_owners = owners
             .values()
             .map(|owner| owner.to_owner_state().expect("clock owner"))
             .collect::<Vec<_>>();
-        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 600_000_000_000);
+        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 599_999_999);
         let parent = V11ParentTransaction::new_with_complete_owners(
             &migrated.configuration,
             &migrated.state,
@@ -633,12 +673,23 @@ mod tests {
             owners,
         )
         .expect("parent");
+        let interval = segment_interval(&base_interval, 599_999_999, 41, 0.0);
         let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
         let before = parent.staged_state().clone();
-        assert!(
-            execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor).is_err()
-        );
+        let error = execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+            .expect_err("one tick below the LSE minimum must be rejected");
+        assert!(matches!(
+            error,
+            V11ExecutionError::Executor(DirectV11RealConsumerError::Runtime(
+                DirectV10RealConsumerError::LandSurface(
+                    LandSurfaceEnergyError::SupportBelowMinimum {
+                        requested_ns: 599_999_999,
+                        minimum_ns: 600_000_000,
+                    }
+                )
+            ))
+        ));
         assert_eq!(parent.staged_state(), &before);
         assert!(executor.stack.take_staged_ending().is_none());
         assert_eq!(executor.stack.beginning, shadow);
@@ -691,14 +742,62 @@ mod tests {
     }
 
     #[test]
-    fn v11_actual_stack_accepts_one_nanosecond_edge_supports() {
+    fn coupled_time_one_nanosecond_support_is_structurally_admitted() {
+        let support =
+            TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1)).expect("one tick support");
+        assert_eq!(support.duration_ns(), 1);
+        assert_eq!(
+            support.duration_s_bits(),
+            f64::from_bits(support.duration_s_bits()).to_bits()
+        );
+    }
+
+    #[test]
+    fn v11_actual_stack_accepts_the_declared_lse_minimum_support() {
         let (shadow, fixture) = v10_shadow_fixture();
         let interval = day_input(&fixture).intervals.remove(0);
-        for durations in [[1, 1_799_999_999_999], [1_799_999_999_999, 1]] {
-            let candidate = run_actual_v11_segments(&shadow, &interval, &durations, &[0.0, 0.0]);
-            assert_eq!(candidate.accepted_segments.len(), 2);
-            assert_eq!(candidate.ending_complete_owners.len(), 7);
-        }
+        let candidate = run_actual_v11_segments(&shadow, &interval, &[600_000_000], &[0.0]);
+        assert_eq!(candidate.accepted_segments.len(), 1);
+        assert_eq!(candidate.ending_complete_owners.len(), 7);
+    }
+
+    #[test]
+    fn v11_actual_stack_rejects_one_tick_below_lse_minimum_before_newton() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let interval = day_input(&fixture).intervals.remove(0);
+        let migrated =
+            migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
+                .expect("migration");
+        let owners = initial_v11_owners(&shadow, &migrated.state);
+        let clock_owners = owners
+            .values()
+            .map(|owner| owner.to_owner_state().expect("clock owner"))
+            .collect::<Vec<_>>();
+        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 599_999_999);
+        let parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        let segmented = segment_interval(&interval, 599_999_999, 41, 0.0);
+        let stack = DirectV11RealConsumerStack::new(&shadow, &segmented, 0, 0);
+        let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
+        let error = execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+            .expect_err("one tick below the LSE minimum must be rejected");
+        assert!(matches!(
+            error,
+            V11ExecutionError::Executor(DirectV11RealConsumerError::Runtime(
+                DirectV10RealConsumerError::LandSurface(
+                    LandSurfaceEnergyError::SupportBelowMinimum {
+                        requested_ns: 599_999_999,
+                        minimum_ns: 600_000_000,
+                    }
+                )
+            ))
+        ));
     }
 
     #[test]
@@ -1690,12 +1789,7 @@ mod tests {
         std::panic::set_hook(Box::new(|_| {}));
         for duration_ns in durations_ns {
             let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                let _ = run_actual_v11_segments(
-                    &shadow,
-                    &interval,
-                    &[duration_ns],
-                    &[0.0],
-                );
+                let _ = run_actual_v11_segments(&shadow, &interval, &[duration_ns], &[0.0]);
             }));
             eprintln!(
                 "V11_SUPPORT_SWEEP fixture=v10_actual duration_ns={} result={}",
@@ -1705,12 +1799,7 @@ mod tests {
         }
         for duration_ns in (30_000_000_u128..=60_000_000).step_by(1_000_000) {
             let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                let _ = run_actual_v11_segments(
-                    &shadow,
-                    &interval,
-                    &[duration_ns],
-                    &[0.0],
-                );
+                let _ = run_actual_v11_segments(&shadow, &interval, &[duration_ns], &[0.0]);
             }));
             eprintln!(
                 "V11_SUPPORT_SWEEP fixture=v10_actual_boundary duration_ns={} result={}",

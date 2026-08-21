@@ -364,9 +364,248 @@ pub enum V11ResourceKey {
     MineralNitrogen(MineralNitrogenKey),
 }
 
+/// Exact sealed LSE support receipt carried by one accepted V11 slab.
+///
+/// Vegetation owns chronology, not LSE policy interpretation. The producing
+/// LSE adopter validates the typed receipt, then transfers its exact canonical
+/// bytes through this closed envelope. Extracted identity fields are checked
+/// against both those bytes and the coupled-time slab at every acceptance and
+/// restore boundary.
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11LseSupportReceiptEnvelope {
+    pub parent_transaction_id: String,
+    pub segment_id: String,
+    pub accepted_slab_id: String,
+    pub slab_ordinal: String,
+    pub support_start_ns: String,
+    pub support_end_ns: String,
+    pub requested_support_ns: String,
+    pub duration_s_bits: String,
+    pub configuration_sha256: String,
+    pub beginning_state_sha256: String,
+    pub beginning_soil_thermal_state_sha256: String,
+    pub receipt_sha256: String,
+    pub canonical_bytes_sha256: String,
+    pub canonical_json: Vec<u8>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct LseSupportReceiptWire {
+    parent_transaction_id: String,
+    segment_id: String,
+    accepted_slab_id: String,
+    slab_ordinal: String,
+    support_start_ns: String,
+    support_end_ns: String,
+    model_version: String,
+    model_definition_sha256: String,
+    configuration_sha256: String,
+    beginning_state_sha256: String,
+    beginning_soil_thermal_state_sha256: String,
+    tolerance_policy_sha256: String,
+    numerical_policy_sha256: String,
+    requested_support_ns: String,
+    duration_s_bits: String,
+    minimum_support_ns: String,
+    receipt_sha256: String,
+}
+
+impl V11LseSupportReceiptEnvelope {
+    pub fn from_canonical_json(canonical_json: Vec<u8>) -> Result<Self, V11Error> {
+        let value: serde_json::Value =
+            serde_json::from_slice(&canonical_json).map_err(V11Error::Schema)?;
+        let field = |name: &'static str| -> Result<String, V11Error> {
+            value
+                .get(name)
+                .and_then(serde_json::Value::as_str)
+                .map(str::to_owned)
+                .ok_or(V11Error::LseSupportReceipt)
+        };
+        let envelope = Self {
+            parent_transaction_id: field("parent_transaction_id")?,
+            segment_id: field("segment_id")?,
+            accepted_slab_id: field("accepted_slab_id")?,
+            slab_ordinal: field("slab_ordinal")?,
+            support_start_ns: field("support_start_ns")?,
+            support_end_ns: field("support_end_ns")?,
+            requested_support_ns: field("requested_support_ns")?,
+            duration_s_bits: field("duration_s_bits")?,
+            configuration_sha256: field("configuration_sha256")?,
+            beginning_state_sha256: field("beginning_state_sha256")?,
+            beginning_soil_thermal_state_sha256: field("beginning_soil_thermal_state_sha256")?,
+            receipt_sha256: field("receipt_sha256")?,
+            canonical_bytes_sha256: format!("{:x}", Sha256::digest(&canonical_json)),
+            canonical_json,
+        };
+        envelope.validate_closed_bytes()?;
+        Ok(envelope)
+    }
+
+    fn validate_closed_bytes(&self) -> Result<(), V11Error> {
+        if format!("{:x}", Sha256::digest(&self.canonical_json)) != self.canonical_bytes_sha256
+            || !is_lower_hex(&self.receipt_sha256, 64)
+            || !is_lower_hex(&self.canonical_bytes_sha256, 64)
+            || !is_lower_hex(&self.configuration_sha256, 64)
+            || !is_lower_hex(&self.beginning_state_sha256, 64)
+            || !is_lower_hex(&self.beginning_soil_thermal_state_sha256, 64)
+        {
+            return Err(V11Error::LseSupportReceipt);
+        }
+        let wire: LseSupportReceiptWire =
+            serde_json::from_slice(&self.canonical_json).map_err(V11Error::Schema)?;
+        if serde_json::to_vec(&wire).map_err(V11Error::Schema)? != self.canonical_json
+            || wire.receipt_sha256 != self.receipt_sha256
+            || wire.model_version != "OPENWEPP_SNOW_FREE_LSE_V1"
+            || wire.model_definition_sha256
+                != "e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f"
+            || wire.tolerance_policy_sha256
+                != format!(
+                    "{:x}",
+                    Sha256::digest(b"energy_absolute=1e-6;energy_relative=1e-10")
+                )
+            || wire.numerical_policy_sha256
+                != format!(
+                    "{:x}",
+                    Sha256::digest(b"iterations=50;backtracking=0..20;strict-decrease")
+                )
+            || wire.minimum_support_ns != "600000000"
+        {
+            return Err(V11Error::LseSupportReceipt);
+        }
+        let mut blank = wire;
+        blank.receipt_sha256.clear();
+        let mut preimage = b"OPENWEPP_LSE_SUPPORT_ADMISSION_V1\0".to_vec();
+        preimage.extend(serde_json::to_vec(&blank).map_err(V11Error::Schema)?);
+        if format!("{:x}", Sha256::digest(preimage)) != self.receipt_sha256 {
+            return Err(V11Error::LseSupportReceipt);
+        }
+        let reconstructed = Self::from_json_without_recursion(&self.canonical_json)?;
+        if reconstructed != *self {
+            return Err(V11Error::LseSupportReceipt);
+        }
+        Ok(())
+    }
+
+    fn from_json_without_recursion(bytes: &[u8]) -> Result<Self, V11Error> {
+        let value: serde_json::Value = serde_json::from_slice(bytes).map_err(V11Error::Schema)?;
+        let field = |name: &'static str| -> Result<String, V11Error> {
+            value
+                .get(name)
+                .and_then(serde_json::Value::as_str)
+                .map(str::to_owned)
+                .ok_or(V11Error::LseSupportReceipt)
+        };
+        Ok(Self {
+            parent_transaction_id: field("parent_transaction_id")?,
+            segment_id: field("segment_id")?,
+            accepted_slab_id: field("accepted_slab_id")?,
+            slab_ordinal: field("slab_ordinal")?,
+            support_start_ns: field("support_start_ns")?,
+            support_end_ns: field("support_end_ns")?,
+            requested_support_ns: field("requested_support_ns")?,
+            duration_s_bits: field("duration_s_bits")?,
+            configuration_sha256: field("configuration_sha256")?,
+            beginning_state_sha256: field("beginning_state_sha256")?,
+            beginning_soil_thermal_state_sha256: field("beginning_soil_thermal_state_sha256")?,
+            receipt_sha256: field("receipt_sha256")?,
+            canonical_bytes_sha256: format!("{:x}", Sha256::digest(bytes)),
+            canonical_json: bytes.to_vec(),
+        })
+    }
+
+    pub fn validate_join(&self, slab: &AcceptedSlabReceiptV1) -> Result<(), V11Error> {
+        self.validate_closed_bytes()?;
+        let support = slab.support();
+        if self.parent_transaction_id != digest_hex(slab.parent_transaction_id().digest())
+            || self.segment_id != digest_hex(slab.segment_id().digest())
+            || self.accepted_slab_id != digest_hex(slab.slab_id().digest())
+            || self.slab_ordinal != slab.slab_ordinal().to_string()
+            || self.support_start_ns != support.start_ns().get().to_string()
+            || self.support_end_ns != support.end_ns().get().to_string()
+            || self.requested_support_ns != support.duration_ns().to_string()
+            || self.duration_s_bits != format!("{:016x}", support.duration_s_bits())
+        {
+            return Err(V11Error::LseSupportReceipt);
+        }
+        Ok(())
+    }
+
+    fn validate_beginning_owners(
+        &self,
+        owners: &BTreeMap<String, V11OwnerEnvelope>,
+    ) -> Result<(), V11Error> {
+        let lse: serde_json::Value = serde_json::from_slice(
+            &owners
+                .get("land_surface_energy")
+                .ok_or(V11Error::LseSupportReceipt)?
+                .state_bytes,
+        )
+        .map_err(V11Error::Schema)?;
+        let soil: serde_json::Value = serde_json::from_slice(
+            &owners
+                .get("soil_thermal")
+                .ok_or(V11Error::LseSupportReceipt)?
+                .state_bytes,
+        )
+        .map_err(V11Error::Schema)?;
+        if lse
+            .get("configuration_sha256")
+            .and_then(serde_json::Value::as_str)
+            != Some(self.configuration_sha256.as_str())
+            || lse.get("state_sha256").and_then(serde_json::Value::as_str)
+                != Some(self.beginning_state_sha256.as_str())
+            || soil.get("state_sha256").and_then(serde_json::Value::as_str)
+                != Some(self.beginning_soil_thermal_state_sha256.as_str())
+        {
+            return Err(V11Error::LseSupportReceipt);
+        }
+        Ok(())
+    }
+
+    fn validate_checkpoint_join(
+        &self,
+        segment: &V11AcceptedSegmentCheckpoint,
+    ) -> Result<(), V11Error> {
+        self.validate_closed_bytes()?;
+        if self.parent_transaction_id != digest_hex(segment.parent_transaction_id.digest())
+            || self.segment_id != digest_hex(segment.segment_id.digest())
+            || self.accepted_slab_id != digest_hex(segment.slab_id.digest())
+            || self.slab_ordinal != segment.slab_ordinal.to_string()
+            || self.support_start_ns != segment.support.start_ns().get().to_string()
+            || self.support_end_ns != segment.support.end_ns().get().to_string()
+            || self.requested_support_ns != segment.support.duration_ns().to_string()
+            || self.duration_s_bits != format!("{:016x}", segment.duration_s_bits)
+        {
+            return Err(V11Error::LseSupportReceipt);
+        }
+        Ok(())
+    }
+}
+
+fn is_lower_hex(value: &str, length: usize) -> bool {
+    value.len() == length
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+}
+
+fn digest_hex(value: Digest32) -> String {
+    use std::fmt::Write as _;
+    value
+        .as_bytes()
+        .iter()
+        .fold(String::with_capacity(64), |mut text, byte| {
+            write!(&mut text, "{byte:02x}").expect("writing to String cannot fail");
+            text
+        })
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct V11ImportedV10SegmentOutput {
     pub ending: V10CoupledOwnedState,
+    pub lse_support_receipt: V11LseSupportReceiptEnvelope,
     pub resource_debits: Vec<V11ResourceDebit>,
     pub admitted_resource_fluxes: Vec<V11AdmittedResourceFlux>,
     pub shared_resource_transitions: Vec<V11SharedResourceOwnerTransition>,
@@ -387,6 +626,7 @@ pub trait V11ConstitutiveExecutor {
 #[derive(Clone, Debug, PartialEq)]
 pub struct V11AcceptedSegmentCandidate {
     pub accepted_slab_receipt: AcceptedSlabReceiptV1,
+    pub lse_support_receipt: V11LseSupportReceiptEnvelope,
     pub beginning_state_sha256: String,
     pub ending_state: V11CoupledOwnedState,
     pub resource_debits: Vec<V11ResourceDebit>,
@@ -428,6 +668,14 @@ pub fn execute_v11_segment<E: V11ConstitutiveExecutor>(
     let output = executor
         .execute_v10_segment(&input)
         .map_err(V11ExecutionError::Executor)?;
+    output
+        .lse_support_receipt
+        .validate_join(accepted_slab_receipt)
+        .map_err(V11ExecutionError::V11)?;
+    output
+        .lse_support_receipt
+        .validate_beginning_owners(&parent.staged_resource_owners)
+        .map_err(V11ExecutionError::V11)?;
     output
         .ending
         .validate(&input.configuration)
@@ -475,6 +723,7 @@ pub fn execute_v11_segment<E: V11ConstitutiveExecutor>(
     .map_err(V11ExecutionError::V11)?;
     Ok(V11AcceptedSegmentCandidate {
         accepted_slab_receipt: accepted_slab_receipt.clone(),
+        lse_support_receipt: output.lse_support_receipt,
         beginning_state_sha256: parent.staged_state.state_sha256.clone(),
         ending_state,
         resource_debits: output.resource_debits,
@@ -574,6 +823,19 @@ impl V11ParentTransaction {
                         != Some(candidate.accepted_slab_receipt.slab_ordinal())
                 })
         {
+            return Err(V11Error::SupportPredecessor);
+        }
+        candidate
+            .lse_support_receipt
+            .validate_join(&candidate.accepted_slab_receipt)?;
+        candidate
+            .lse_support_receipt
+            .validate_beginning_owners(&self.staged_resource_owners)?;
+        if self.accepted_segment_checkpoints.iter().any(|prior| {
+            prior.lse_support_receipt.receipt_sha256 == candidate.lse_support_receipt.receipt_sha256
+                || prior.lse_support_receipt.canonical_bytes_sha256
+                    == candidate.lse_support_receipt.canonical_bytes_sha256
+        }) {
             return Err(V11Error::SupportPredecessor);
         }
         validate_debits(&candidate.resource_debits)?;
@@ -717,6 +979,7 @@ pub struct V11AcceptedSegmentCheckpoint {
     pub segment_id: SegmentId,
     pub support: TimeSupport,
     pub duration_s_bits: u64,
+    pub lse_support_receipt: V11LseSupportReceiptEnvelope,
     pub beginning_state_sha256: String,
     pub ending_state: V11CoupledOwnedState,
     pub resource_debits: Vec<V11ResourceDebit>,
@@ -738,6 +1001,7 @@ impl V11AcceptedSegmentCheckpoint {
             segment_id: receipt.segment_id(),
             support: receipt.support(),
             duration_s_bits: receipt.duration_s_bits(),
+            lse_support_receipt: candidate.lse_support_receipt.clone(),
             beginning_state_sha256: candidate.beginning_state_sha256.clone(),
             ending_state: candidate.ending_state.clone(),
             resource_debits: candidate.resource_debits.clone(),
@@ -824,6 +1088,7 @@ impl V11ParentTransaction {
         let mut cursor = checkpoint.accepted_segments[0].support.start_ns().get();
         let mut predecessor_state_sha256 = checkpoint.beginning_state.state_sha256.clone();
         let mut prior_transitions = Vec::<V11SharedResourceOwnerTransition>::new();
+        let mut predecessor_owners = checkpoint.beginning_complete_owners.clone();
         let mut cumulative = BTreeMap::<(String, V11ResourceKey), f64>::new();
         for (index, segment) in checkpoint.accepted_segments.iter().enumerate() {
             if segment.parent_transaction_id != checkpoint.parent_transaction_id
@@ -836,6 +1101,26 @@ impl V11ParentTransaction {
                 || segment.duration_s_bits != segment.support.duration_s_bits()
                 || segment.beginning_state_sha256 != predecessor_state_sha256
             {
+                return Err(V11Error::RestartCheckpoint);
+            }
+            let reconstructed_slab = checkpoint
+                .accepted_segments
+                .get(index)
+                .ok_or(V11Error::RestartCheckpoint)?;
+            segment
+                .lse_support_receipt
+                .validate_checkpoint_join(reconstructed_slab)
+                .map_err(|_| V11Error::RestartCheckpoint)?;
+            segment
+                .lse_support_receipt
+                .validate_beginning_owners(&predecessor_owners)
+                .map_err(|_| V11Error::RestartCheckpoint)?;
+            if checkpoint.accepted_segments[..index].iter().any(|prior| {
+                prior.lse_support_receipt.receipt_sha256
+                    == segment.lse_support_receipt.receipt_sha256
+                    || prior.lse_support_receipt.canonical_bytes_sha256
+                        == segment.lse_support_receipt.canonical_bytes_sha256
+            }) {
                 return Err(V11Error::RestartCheckpoint);
             }
             segment.ending_state.validate(configuration)?;
@@ -870,6 +1155,7 @@ impl V11ParentTransaction {
                 }
             }
             prior_transitions.clone_from(&segment.shared_resource_transitions);
+            predecessor_owners.clone_from(&segment.ending_resource_owners);
             cursor = segment.support.end_ns().get();
             predecessor_state_sha256.clone_from(&segment.ending_state.state_sha256);
         }
@@ -1355,6 +1641,8 @@ pub enum V11Error {
     SupportDuration,
     #[error("VEG-E-123: segment predecessor mismatch")]
     SupportPredecessor,
+    #[error("VEG-E-123: invalid or mismatched LSE support receipt")]
+    LseSupportReceipt,
     #[error("VEG-E-123: V11 state identity mismatch")]
     StateIdentity,
     #[error("VEG-E-123: segment attempted persistent transaction advance")]
@@ -1432,6 +1720,25 @@ mod tests {
             .map(|id| {
                 let envelope = if id == "vegetation" {
                     v11_vegetation_owner_envelope(state).expect("vegetation owner")
+                } else if id == "land_surface_energy" {
+                    V11OwnerEnvelope::try_new(
+                        id.into(),
+                        serde_json::to_vec(&serde_json::json!({
+                            "configuration_sha256": "a".repeat(64),
+                            "state_sha256": "b".repeat(64),
+                        }))
+                        .expect("LSE state"),
+                    )
+                    .expect("owner")
+                } else if id == "soil_thermal" {
+                    V11OwnerEnvelope::try_new(
+                        id.into(),
+                        serde_json::to_vec(&serde_json::json!({
+                            "state_sha256": "c".repeat(64),
+                        }))
+                        .expect("soil state"),
+                    )
+                    .expect("owner")
                 } else {
                     V11OwnerEnvelope::try_new(id.into(), format!("{id}-state").into_bytes())
                         .expect("owner")
@@ -1548,6 +1855,7 @@ mod tests {
             build_complete_owner_candidates(&receipt, &parent.staged_resource_owners, &[])
                 .expect("candidates");
         V11AcceptedSegmentCandidate {
+            lse_support_receipt: test_lse_support_receipt(&receipt),
             accepted_slab_receipt: receipt,
             beginning_state_sha256: parent.staged_state.state_sha256.clone(),
             ending_state: parent.staged_state.clone(),
@@ -1558,6 +1866,66 @@ mod tests {
             material_transfers: vec![],
             ending_resource_owners: parent.staged_resource_owners.clone(),
         }
+    }
+
+    fn test_lse_support_receipt(receipt: &AcceptedSlabReceiptV1) -> V11LseSupportReceiptEnvelope {
+        let support = receipt.support();
+        let mut value = LseSupportReceiptWire {
+            parent_transaction_id: digest_hex(receipt.parent_transaction_id().digest()),
+            segment_id: digest_hex(receipt.segment_id().digest()),
+            accepted_slab_id: digest_hex(receipt.slab_id().digest()),
+            slab_ordinal: receipt.slab_ordinal().to_string(),
+            support_start_ns: support.start_ns().get().to_string(),
+            support_end_ns: support.end_ns().get().to_string(),
+            model_version: "OPENWEPP_SNOW_FREE_LSE_V1".into(),
+            model_definition_sha256:
+                "e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f".into(),
+            configuration_sha256: "a".repeat(64),
+            beginning_state_sha256: "b".repeat(64),
+            beginning_soil_thermal_state_sha256: "c".repeat(64),
+            tolerance_policy_sha256: format!(
+                "{:x}",
+                Sha256::digest(b"energy_absolute=1e-6;energy_relative=1e-10")
+            ),
+            numerical_policy_sha256: format!(
+                "{:x}",
+                Sha256::digest(b"iterations=50;backtracking=0..20;strict-decrease")
+            ),
+            requested_support_ns: support.duration_ns().to_string(),
+            duration_s_bits: format!("{:016x}", support.duration_s_bits()),
+            minimum_support_ns: "600000000".into(),
+            receipt_sha256: String::new(),
+        };
+        let mut preimage = b"OPENWEPP_LSE_SUPPORT_ADMISSION_V1\0".to_vec();
+        preimage.extend(serde_json::to_vec(&value).expect("blank receipt"));
+        value.receipt_sha256 = format!("{:x}", Sha256::digest(preimage));
+        V11LseSupportReceiptEnvelope::from_canonical_json(
+            serde_json::to_vec(&value).expect("receipt json"),
+        )
+        .expect("receipt envelope")
+    }
+
+    fn reframe_test_lse_receipt(
+        envelope: &V11LseSupportReceiptEnvelope,
+        lse_state: Option<String>,
+        soil_state: Option<String>,
+    ) -> V11LseSupportReceiptEnvelope {
+        let mut wire: LseSupportReceiptWire =
+            serde_json::from_slice(&envelope.canonical_json).expect("receipt wire");
+        if let Some(value) = lse_state {
+            wire.beginning_state_sha256 = value;
+        }
+        if let Some(value) = soil_state {
+            wire.beginning_soil_thermal_state_sha256 = value;
+        }
+        wire.receipt_sha256.clear();
+        let mut preimage = b"OPENWEPP_LSE_SUPPORT_ADMISSION_V1\0".to_vec();
+        preimage.extend(serde_json::to_vec(&wire).expect("blank wire"));
+        wire.receipt_sha256 = format!("{:x}", Sha256::digest(preimage));
+        V11LseSupportReceiptEnvelope::from_canonical_json(
+            serde_json::to_vec(&wire).expect("sealed wire"),
+        )
+        .expect("sealed receipt")
     }
 
     #[test]
@@ -1709,6 +2077,28 @@ mod tests {
             V11ParentTransaction::restore(&migrated.configuration, predecessor_poison).is_err()
         );
 
+        let mut receipt_poison = checkpoint.clone();
+        receipt_poison.accepted_segments[0]
+            .lse_support_receipt
+            .canonical_json[0] ^= 1;
+        assert!(V11ParentTransaction::restore(&migrated.configuration, receipt_poison).is_err());
+
+        let mut lse_join_poison = checkpoint.clone();
+        lse_join_poison.accepted_segments[0].lse_support_receipt = reframe_test_lse_receipt(
+            &lse_join_poison.accepted_segments[0].lse_support_receipt,
+            Some("9".repeat(64)),
+            None,
+        );
+        assert!(V11ParentTransaction::restore(&migrated.configuration, lse_join_poison).is_err());
+
+        let mut soil_join_poison = checkpoint.clone();
+        soil_join_poison.accepted_segments[0].lse_support_receipt = reframe_test_lse_receipt(
+            &soil_join_poison.accepted_segments[0].lse_support_receipt,
+            None,
+            Some("8".repeat(64)),
+        );
+        assert!(V11ParentTransaction::restore(&migrated.configuration, soil_join_poison).is_err());
+
         let mut owner_poison = checkpoint;
         owner_poison.accepted_segments[0]
             .ending_resource_owners
@@ -1717,6 +2107,36 @@ mod tests {
             .state_bytes
             .push(0);
         assert!(V11ParentTransaction::restore(&migrated.configuration, owner_poison).is_err());
+    }
+
+    #[test]
+    fn lse_support_receipt_replay_rejects_without_parent_mutation() {
+        let (v10_configuration, v10_state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
+        let owners = complete_owners(&migrated.state);
+        let (parent_id, receipts) =
+            accepted_receipts(&owners, &[600_000_000_000, 1_800_000_000_000]);
+        let mut parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        let first = staged_candidate(&parent, receipts[0].clone(), None);
+        let replay = first.lse_support_receipt.clone();
+        parent
+            .accept_segment(&migrated.configuration, first)
+            .expect("first segment");
+        let before = parent.checkpoint();
+        let mut second = staged_candidate(&parent, receipts[1].clone(), None);
+        second.lse_support_receipt = replay;
+        assert!(matches!(
+            parent.accept_segment(&migrated.configuration, second),
+            Err(V11Error::LseSupportReceipt | V11Error::SupportPredecessor)
+        ));
+        assert_eq!(parent.checkpoint(), before);
     }
 
     #[cfg(any())]

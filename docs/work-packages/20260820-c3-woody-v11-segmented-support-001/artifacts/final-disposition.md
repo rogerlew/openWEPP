@@ -1,9 +1,10 @@
 # Final Disposition
 
-Status: `HOLD / not terminally released`.
+Status: `IMPLEMENTATION REVIEW PASS / terminal gates pending`.
 
-The V11 authority is released through `SC-VEGETATION-001@24` and
-`SC-VEGETATIONTRANSACTION-001@13`. The implementation checkpoint proves:
+The V11 authority is amended through `SC-VEGETATION-001@25`,
+`SC-VEGETATIONTRANSACTION-001@14`, and `SC-LANDSURFACEENERGY-001@6`.
+The implementation checkpoint proves:
 
 - immutable full-support V10 physical compatibility apart from successor
   identity/chronology;
@@ -14,15 +15,21 @@ The V11 authority is released through `SC-VEGETATION-001@24` and
 - additive Restart V3 admission surfaces with DirectV10 V1 and coupled-time V2
   protected.
 
-Release is blocked by the mandatory positive one-nanosecond accepted slab. The
-unchanged `SC-LANDSURFACEENERGY-001@3` rate-form solve reaches
-`LsebE034 / IterationLimit` (50 iterations, 736 backtracks). Root-preserving
-preconditioning and deterministic support continuation were prototyped and
-reverted: both encounter a binary64 storage-residual precision wall before the
-unchanged acceptance threshold.
+The physical adopter domain is explicit: V11 actual covered-forest LSE admits
+support at or above 600000000 ns with a sealed parent/segment/slab/absolute-
+support receipt bound to LSE, soil-thermal, configuration, state, tolerance,
+and numerical identities. Coupled-time one-nanosecond identity remains a
+structural pass; one tick below the physical minimum rejects before Newton and
+leaves parent/live owners byte-identical.
 
-No V11 scaling, frozen-state shortcut, relaxed ledger, or surrogate solve is
-admitted. Child 2C is not authorized by this HOLD. Resume only after a
-contract-first LSE authority admits and verifies a tiny-support numerical/state
-representation, then rerun 1 ns, Restart V3 actual-consumer integration, three
-implementation reviews, heavy gates, and dual terminal verification.
+The former unconditional actual 1 ns case is removed by authority. The
+unchanged `SC-LANDSURFACEENERGY-001@3` rate-form solve's retained failure
+evidence remains historical; no physical parameter, tolerance, or V10 behavior
+was changed.
+
+No V11 scaling, frozen-state shortcut, relaxed ledger, hidden duration floor,
+or surrogate solve is admitted. Three implementation reviews now terminate
+PASS: receipt KAT/order, accepted/checkpoint/Restart V3 custody, owner joins,
+and actual-consumer behavior are closed. Heavy gates, exact diff/line-count
+reconciliation, and dual terminal verification remain before release. Child 2C
+remains blocked until those terminal gates close.

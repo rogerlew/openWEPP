@@ -1,6 +1,6 @@
 # Implement C3 Woody V11 Segmented Support
 
-Status: `HOLD / implementation checkpoint / tiny-support LSE numerical authority required`
+Status: `IMPLEMENTATION CHECKPOINT / positive-support authority admitted; terminal release pending`
 
 Date: `2026-08-20`
 
@@ -104,9 +104,23 @@ Authority release is blocked until it decides every resource chronology:
   events, calendar transitions, daily initialization, material finalization,
   and transaction increment as segment, event, or scheduled-once operations.
 
+## Positive-Support Authority
+
+Coupled-time nanosecond chronology remains structurally admissible. The actual
+V11 covered-forest LSE adopter has a sealed, deterministic positive-support
+domain with minimum `600000000` ns. A support at or above that boundary carries
+`LseSupportAdmissibilityReceiptV1`, bound to parent/segment/slab/absolute
+support, duration bits, LSE and soil-thermal beginning identities, model and
+configuration identities, tolerance/numerical policies, and its digest. A
+support one tick below the boundary rejects before Newton with no owner,
+candidate, receipt, or checkpoint mutation. The domain is scoped to the
+executed covered-forest adopter profile; other fixture profiles require their
+own authority cycle. No hidden floor, scaling, tolerance relaxation, or V10
+change is permitted.
+
 ## Restart Authority
 
-Define additive `OPENWEPP_C3_WOODY_V11_RESTART_V1` before production code. It
+Define and preserve additive `OPENWEPP_C3_WOODY_V11_RESTART_V3` before production code. It
 persists parent coupled-time identity, accepted segment/slab cursor, staged V11
 state, staged water/BGC/energy/soil-thermal candidates where applicable,
 accepted resource and scheduled-once receipts, and the parent-beginning
@@ -116,8 +130,9 @@ V1 and coupled-time restart V2 bytes remain unchanged.
 
 ## Acceptance Population
 
-Required positive cases: 1800; 600+1200; 1200+600; 1 ns+remainder;
-remainder+1 ns; three unequal segments; events at parent start/end;
+Required positive cases: 1800; 600+1200; 1200+600; three unequal segments;
+coupled-time 1 ns structural identity; physical support exactly at the admitted
+minimum; events at parent start/end;
 zero-remainder receiver skip; mid-parent restart; consecutive segmented
 parents. Segment forcing must differ so order is observable.
 
@@ -146,7 +161,8 @@ differences.
 3. Complete two independent authority reviews, disposition, and two
    verifications; commit the exact authority checkpoint before Rust edits.
 4. Implement V11 migration, staged segment execution, parent resource
-   arbitration, restart, and one atomic finalization/commit.
+   arbitration, sealed positive-support receipts, restart, and one atomic
+   finalization/commit.
 5. Prove full-support compatibility and the unequal-support/poison population
    through the actual V11 vegetation transaction consumer.
 6. Run three implementation reviews, disposition all findings, heavy gates,
@@ -200,9 +216,9 @@ cost are not HOLD reasons.
 
 - [x] (2026-08-20) Coupled-time prerequisite released and lifecycle reconciled.
 - [x] (2026-08-20) Scaffolded Child 2B at exact base.
-- [ ] Complete V10 surface inventory and freeze intent.
-- [ ] Release V11 contract authority through dual review and verification.
-- [ ] Implement and validate the actual V11 consumer.
+- [x] (2026-08-20) Complete V10 surface inventory and freeze intent.
+- [x] (2026-08-20) Release positive-support V11/LSE authority through dual review and verification.
+- [ ] Complete and terminally validate the actual V11 consumer, including receipt custody.
 - [ ] Complete final review, verification, and Child 2C handoff.
 
 ## Release Boundary

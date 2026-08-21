@@ -38,6 +38,7 @@ def receipt(parent: str = "a" * 64, segment: str = "b" * 64, slab: str = "c" * 6
         "model_definition_sha256": "e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f",
         "configuration_sha256": "a" * 64,
         "beginning_state_sha256": "b" * 64,
+        "beginning_soil_thermal_state_sha256": "d" * 64,
         "tolerance_policy_sha256": TOLERANCE_POLICY_SHA256,
         "numerical_policy_sha256": NUMERICAL_POLICY_SHA256,
         "requested_support_ns": str(duration),
@@ -81,7 +82,7 @@ def validate(value: dict, expected_shape: dict | None = None) -> str:
     if value["receipt_sha256"] != digest:
         return "LSEB-E-042"
     if expected_shape is not None:
-        for field in ("parent_transaction_id", "segment_id", "accepted_slab_id", "slab_ordinal", "support_start_ns", "support_end_ns", "configuration_sha256", "beginning_state_sha256"):
+        for field in ("parent_transaction_id", "segment_id", "accepted_slab_id", "slab_ordinal", "support_start_ns", "support_end_ns", "configuration_sha256", "beginning_state_sha256", "beginning_soil_thermal_state_sha256"):
             if value[field] != expected_shape[field]:
                 return "LSEB-E-042"
     return admit(requested)
@@ -140,7 +141,7 @@ def main() -> None:
     assert validate(receipt(duration=MINIMUM_SUPPORT_NS + 1), receipt(duration=MINIMUM_SUPPORT_NS + 1)) == "admitted"
     leading_zero_digest = receipt(parent="0" + "a" * 63)
     assert validate(leading_zero_digest, leading_zero_digest) == "admitted"
-    for field, value in [("parent_transaction_id", "d" * 64), ("segment_id", "e" * 64), ("accepted_slab_id", "f" * 64), ("slab_ordinal", "01"), ("support_start_ns", "01"), ("support_end_ns", str(MINIMUM_SUPPORT_NS + 1)), ("duration_s_bits", "0000000000000000"), ("model_version", "other"), ("model_definition_sha256", "1" * 64), ("configuration_sha256", "2" * 64), ("beginning_state_sha256", "3" * 64), ("tolerance_policy_sha256", "4" * 64), ("numerical_policy_sha256", "c" * 64), ("minimum_support_ns", "1"), ("receipt_sha256", "d" * 64)]:
+    for field, value in [("parent_transaction_id", "d" * 64), ("segment_id", "e" * 64), ("accepted_slab_id", "f" * 64), ("slab_ordinal", "01"), ("support_start_ns", "01"), ("support_end_ns", str(MINIMUM_SUPPORT_NS + 1)), ("duration_s_bits", "0000000000000000"), ("model_version", "other"), ("model_definition_sha256", "1" * 64), ("configuration_sha256", "2" * 64), ("beginning_state_sha256", "3" * 64), ("beginning_soil_thermal_state_sha256", "4" * 64), ("tolerance_policy_sha256", "4" * 64), ("numerical_policy_sha256", "c" * 64), ("minimum_support_ns", "1"), ("receipt_sha256", "d" * 64)]:
         poison = dict(baseline)
         poison[field] = value
         if field != "receipt_sha256":

@@ -736,3 +736,8 @@ findings. The transaction receipt binds the independently supplied slab domain,
 below-domain rejection is atomic, and restored continuation covers complete
 owner and buffered chronology state. **Addendum verdict: PASS**, subject to
 normal lifecycle disposition and dual verification.
+
+Implementation addendum: accepted-segment and restart chronology now retain
+one sealed LSE support receipt per slab, validate exact predecessor owner and
+support joins, and reject duplicate/replayed or digest-valid reframed receipts
+atomically. Vegetation tests pass `272/272`. **Implementation Review A: PASS.**

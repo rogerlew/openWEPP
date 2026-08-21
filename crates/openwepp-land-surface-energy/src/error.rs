@@ -49,6 +49,13 @@ pub enum LandSurfaceEnergyError {
     NonFinite(&'static str),
     #[error("unsupported domain: {0}")]
     UnsupportedDomain(&'static str),
+    #[error("positive support {requested_ns} ns is below the admitted minimum {minimum_ns} ns")]
+    SupportBelowMinimum {
+        requested_ns: u128,
+        minimum_ns: u128,
+    },
+    #[error("support admissibility receipt violation: {0}")]
+    SupportReceipt(&'static str),
     #[error("constitutive domain violation: {0}")]
     ConstitutiveDomain(&'static str),
     #[error("water identity or bound violation: {detail}")]
@@ -147,7 +154,9 @@ impl LandSurfaceEnergyError {
     pub const fn class(&self) -> LandSurfaceEnergyErrorClass {
         match self {
             Self::MalformedSerialization(_) => LandSurfaceEnergyErrorClass::Malformed,
-            Self::Identity { .. } | Self::StateLineage(_) => LandSurfaceEnergyErrorClass::Identity,
+            Self::Identity { .. } | Self::StateLineage(_) | Self::SupportReceipt(_) => {
+                LandSurfaceEnergyErrorClass::Identity
+            }
             Self::Topology { class, .. } => match class {
                 TopologyErrorClass::Domain => LandSurfaceEnergyErrorClass::Domain,
                 TopologyErrorClass::Cardinality => LandSurfaceEnergyErrorClass::Cardinality,
@@ -158,7 +167,9 @@ impl LandSurfaceEnergyError {
             | Self::NumericalBacktrackingLimit { .. }
             | Self::NumericalIterationLimit { .. }
             | Self::NumericalAcceptedResidual => LandSurfaceEnergyErrorClass::Domain,
-            Self::UnsupportedDomain(_) => LandSurfaceEnergyErrorClass::Unsupported,
+            Self::UnsupportedDomain(_) | Self::SupportBelowMinimum { .. } => {
+                LandSurfaceEnergyErrorClass::Unsupported
+            }
             Self::WaterIdentityOrBound { class, .. } => match class {
                 WaterErrorClass::Identity => LandSurfaceEnergyErrorClass::Identity,
                 WaterErrorClass::Domain => LandSurfaceEnergyErrorClass::Domain,

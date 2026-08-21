@@ -3,7 +3,7 @@
   "$id": "OPENWEPP_LSE_SUPPORT_ADMISSIBILITY_V1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["parent_transaction_id", "segment_id", "accepted_slab_id", "slab_ordinal", "support_start_ns", "support_end_ns", "model_version", "model_definition_sha256", "configuration_sha256", "beginning_state_sha256", "tolerance_policy_sha256", "numerical_policy_sha256", "requested_support_ns", "duration_s_bits", "minimum_support_ns", "receipt_sha256"],
+  "required": ["parent_transaction_id", "segment_id", "accepted_slab_id", "slab_ordinal", "support_start_ns", "support_end_ns", "model_version", "model_definition_sha256", "configuration_sha256", "beginning_state_sha256", "beginning_soil_thermal_state_sha256", "tolerance_policy_sha256", "numerical_policy_sha256", "requested_support_ns", "duration_s_bits", "minimum_support_ns", "receipt_sha256"],
   "properties": {
     "parent_transaction_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "segment_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
@@ -15,6 +15,7 @@
     "model_definition_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "configuration_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "beginning_state_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "beginning_soil_thermal_state_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "tolerance_policy_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "numerical_policy_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "requested_support_ns": {"type": "string", "pattern": "^[1-9][0-9]*$"},

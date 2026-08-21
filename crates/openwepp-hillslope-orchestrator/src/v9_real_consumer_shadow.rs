@@ -4,6 +4,7 @@
 //! selector, publication, or output API.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::Write as _;
 
 use openwepp_biogeochemistry::{BiogeochemistryError, BiogeochemistryState, available_by_key};
 use openwepp_coupled_time::Digest32;
@@ -14,10 +15,10 @@ use openwepp_kernel_contract::{
 use openwepp_land_surface_energy::{
     CoveredColumnAuthority, LandSurfaceEnergyConfiguration, LandSurfaceEnergyError,
     LandSurfaceEnergyState, LandSurfaceEnergyV2State, LandSurfaceForcing, LiquidParcel,
-    LiquidParcelKind, LiquidTemperatureProvider, LseV2StateError, OfeId, ParcelId, Sha256Digest,
-    SoilThermalLayerSnapshot, SoilThermalOfeSnapshot, SoilThermalSnapshot,
-    SoilThermalTileCandidate, build_lse_ending_state, project_v2_runtime_to_v1,
-    project_validated_v1_runtime_to_v2,
+    LiquidParcelKind, LiquidTemperatureProvider, LseSupportAdmissibilityReceiptV1, LseV2StateError,
+    OfeId, ParcelId, Sha256Digest, SoilThermalLayerSnapshot, SoilThermalOfeSnapshot,
+    SoilThermalSnapshot, SoilThermalTileCandidate, build_lse_ending_state,
+    project_v2_runtime_to_v1, project_validated_v1_runtime_to_v2,
 };
 use openwepp_meteorology::snow_free_forcing::{
     celsius_to_kelvin, kilopascals_to_pascals, liquid_specific_enthalpy_j_kg,
@@ -25,8 +26,8 @@ use openwepp_meteorology::snow_free_forcing::{
 use openwepp_plant_phenology::{GsiParameters, GsiState};
 use openwepp_vegetation::v11::{
     V11AdmittedResourceFlux, V11ImportedV10SegmentInput, V11ImportedV10SegmentOutput,
-    V11OwnerEnvelope, V11ResourceDebit, V11ResourceKey, V11SharedResourceKey,
-    V11SharedResourceKind, V11SharedResourceOwnerTransition,
+    V11LseSupportReceiptEnvelope, V11OwnerEnvelope, V11ResourceDebit, V11ResourceKey,
+    V11SharedResourceKey, V11SharedResourceKind, V11SharedResourceOwnerTransition,
 };
 use openwepp_vegetation::{
     NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, SnowFreeForcing, V9CoupledOwnedState,
@@ -70,6 +71,7 @@ pub struct DirectV11RealConsumerStack<'a> {
     pub day_index: usize,
     pub interval_index: usize,
     ending: Option<DirectV10RealConsumerShadow>,
+    last_support_receipt: Option<LseSupportAdmissibilityReceiptV1>,
 }
 
 impl<'a> DirectV11RealConsumerStack<'a> {
@@ -86,6 +88,7 @@ impl<'a> DirectV11RealConsumerStack<'a> {
             day_index,
             interval_index,
             ending: None,
+            last_support_receipt: None,
         }
     }
 
@@ -93,6 +96,11 @@ impl<'a> DirectV11RealConsumerStack<'a> {
     /// the corresponding segment candidate.
     pub fn take_staged_ending(&mut self) -> Option<DirectV10RealConsumerShadow> {
         self.ending.take()
+    }
+
+    #[must_use]
+    pub fn last_support_receipt(&self) -> Option<&LseSupportAdmissibilityReceiptV1> {
+        self.last_support_receipt.as_ref()
     }
 }
 
@@ -705,6 +713,21 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
         }
         let _interval_index = u8::try_from(self.interval_index)
             .map_err(|_| DirectV11RealConsumerError::Identity("V11 interval index overflow"))?;
+        let support_receipt = LseSupportAdmissibilityReceiptV1::admit(
+            &self.beginning.inner.lse_configuration,
+            &self.beginning.inner.lse_state,
+            digest32_hex(input.parent_transaction_id.digest()),
+            digest32_hex(input.accepted_slab_receipt.segment_id().digest()),
+            digest32_hex(input.accepted_slab_receipt.slab_id().digest()),
+            input.accepted_slab_receipt.slab_ordinal(),
+            input.support.start_ns().get(),
+            input.support.end_ns().get(),
+            input.duration_s_bits,
+            self.beginning.inner.soil_thermal.state_sha256.clone(),
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
+        })?;
         let mut candidate = self.beginning.clone();
         let envelope = candidate
             .inner
@@ -807,7 +830,11 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
             ("snow".to_owned(), snow),
             (
                 "land_surface_energy".to_owned(),
-                v11_owner_envelope("land_surface_energy", &candidate.lse_state)?,
+                // The support receipt and the actual LSE solver are bound to
+                // the immutable V1 physical owner.  Keep the staged owner on
+                // that same canonical payload; the surrounding V2 wrapper is
+                // an identity projection, not a second physical owner.
+                v11_owner_envelope("land_surface_energy", &candidate.inner.lse_state)?,
             ),
             (
                 "surface_liquid".to_owned(),
@@ -844,15 +871,32 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
 
         let output = V11ImportedV10SegmentOutput {
             ending: segment_ending,
+            lse_support_receipt: V11LseSupportReceiptEnvelope::from_canonical_json(
+                serde_json::to_vec(&support_receipt).map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                        DirectV9RealConsumerError::Serialization(error.to_string()),
+                    ))
+                })?,
+            )
+            .map_err(|_| DirectV11RealConsumerError::Identity("V11 LSE support receipt"))?,
             resource_debits,
             admitted_resource_fluxes: Vec::<V11AdmittedResourceFlux>::new(),
             shared_resource_transitions,
             ending_resource_owners,
             material_transfers: envelope.vegetation().material_proposals().to_vec(),
         };
+        self.last_support_receipt = Some(support_receipt);
         self.ending = Some(candidate);
         Ok(output)
     }
+}
+
+fn digest32_hex(value: Digest32) -> String {
+    let mut text = String::with_capacity(64);
+    for byte in value.as_bytes() {
+        write!(&mut text, "{byte:02x}").expect("writing to String cannot fail");
+    }
+    text
 }
 
 fn normalize_v11_staged_parent_lineage(

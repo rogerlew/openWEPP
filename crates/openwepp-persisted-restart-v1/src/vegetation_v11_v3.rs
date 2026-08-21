@@ -7,8 +7,9 @@
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use openwepp_vegetation::{
     V11_COMPLETE_OWNER_MANIFEST, V11AdmittedResourceFlux, V11CompleteOwnerCandidate,
-    V11CoupledOwnedState, V11OwnerEnvelope, V11ParentTransactionCheckpoint, V11ResourceDebit,
-    V11SharedResourceKind, V11SharedResourceOwnerTransition,
+    V11CoupledOwnedState, V11LseSupportReceiptEnvelope, V11OwnerEnvelope,
+    V11ParentTransactionCheckpoint, V11ResourceDebit, V11SharedResourceKind,
+    V11SharedResourceOwnerTransition,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -89,6 +90,10 @@ pub struct VegetationV11RestartV3 {
 /// Isolated continuation; admission installs no owner and publishes no output.
 pub struct AdmittedVegetationV11RestartV3 {
     pub v2: AdmittedVegetationV11RestartV2,
+    /// Exact ordered LSE receipt envelopes retained inside the embedded parent
+    /// checkpoint. These are projections of admitted checkpoint bytes, never
+    /// caller-authored duplicates.
+    pub lse_support_receipts: Vec<V11LseSupportReceiptEnvelope>,
     pub admitted_resource_fluxes: Vec<V11AdmittedResourceFlux>,
     pub resource_debits: Vec<V11ResourceDebit>,
     pub shared_resource_transitions: Vec<V11SharedResourceOwnerTransition>,
@@ -239,8 +244,14 @@ impl VegetationV11RestartV3 {
             .iter()
             .flat_map(|segment| segment.complete_owner_candidates.iter().cloned())
             .collect();
+        let lse_support_receipts = checkpoint
+            .accepted_segments
+            .iter()
+            .map(|segment| segment.lse_support_receipt.clone())
+            .collect();
         Ok(AdmittedVegetationV11RestartV3 {
             v2,
+            lse_support_receipts,
             admitted_resource_fluxes,
             resource_debits,
             shared_resource_transitions,
