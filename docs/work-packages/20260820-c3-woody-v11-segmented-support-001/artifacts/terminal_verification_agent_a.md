@@ -34,3 +34,26 @@ Terminal promotion is blocked by unreconciled mandatory artifacts:
 These are lifecycle/evidence defects, not implementation failures. Populate
 and reconcile them against this exact tree, obtain Verification B, then rerun
 Verification A on the resulting evidence-only checkpoint.
+
+## Superseding rerun — `f9eeecf8ff4c4075cb7a5d6e2cacf5fe82057b3d`
+
+The evidence-only checkpoint closes the prior terminal blockers:
+
+- finding disposition: COMPLETE, no open findings or waivers;
+- exact-diff reconciliation: PASS at implementation checkpoint `b052158d0`;
+- line-count governance: PASS with the sole >3,000-line file identified as
+  pre-existing and the additive delta bounded;
+- gate results: package population corrected to `361/361` and focused
+  orchestrator `6 PASS / 1 ignored`;
+- reviews A/B/C: terminal PASS records with every finding closed.
+
+Independent rerun results: authority oracle `15/15`, Draft 2020-12 schema,
+formatting, four-crate check, package nextest `361/361`, focused orchestrator,
+protected-boundary comparison, evidence-only checkpoint scope, and diff hygiene
+all PASS. No production, contract, schema, vector, V10, coupled-time V2, or
+DirectV10 restart V1 path changed after `b052158d0`.
+
+**Superseding verdict: PASS.** Terminal Verification A authorizes lifecycle
+transition after Terminal Verification B is recorded. The pending wording in
+the gate/final disposition is the truthful pre-dual-verification state and
+must be advanced only after both terminal records exist.
