@@ -21,6 +21,7 @@ use openwepp_vegetation::{
     NitrogenArbiter, UncommittedV8VegetationCandidate, V8ComponentOccupancyBinding,
     V8CoupledOwnedState, V8PersistentForcingReceipt, VegetationConfiguration, VegetationError,
     construct_uncommitted_v8_vegetation_candidate, execute_uncommitted_v8_persistent_phase,
+    execute_uncommitted_v8_persistent_phase_v11,
 };
 use thiserror::Error;
 
@@ -183,6 +184,46 @@ pub(crate) fn construct_multi_tile_v8_owner_envelope(
         projected.capped(),
         persistent_forcing,
         nitrogen,
+    )?;
+    run_owner_failure_hook(failure_hook, V8OwnerFailurePhase::Persistent)?;
+    let vegetation = construct_uncommitted_v8_vegetation_candidate(
+        vegetation_configuration,
+        vegetation_beginning,
+        projected.potential(),
+        projected.capped(),
+        projected.final_state(),
+        &persistent,
+    )?;
+    run_owner_failure_hook(failure_hook, V8OwnerFailurePhase::VegetationCandidate)?;
+    join_covered_v8_owner_envelope(
+        CoveredV8PhysicalOwner::MultiTile(physical),
+        vegetation,
+        biogeochemistry_beginning,
+        failure_hook,
+    )
+}
+
+/// V11-only owner construction over the authenticated common-slab duration.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn construct_multi_tile_v8_owner_envelope_v11(
+    physical: MultiTileRuntimeResult,
+    projected: &V8CoveredProjection,
+    vegetation_configuration: &VegetationConfiguration,
+    vegetation_beginning: &V8CoupledOwnedState,
+    persistent_forcing: &V8PersistentForcingReceipt,
+    nitrogen: &dyn NitrogenArbiter,
+    biogeochemistry_beginning: &BiogeochemistryState,
+    failure_hook: OwnerFailureHook<'_>,
+    duration_s_bits: u64,
+) -> Result<UncommittedCoveredV8OwnerEnvelope, CoveredV8OwnerEnvelopeError> {
+    let persistent = execute_uncommitted_v8_persistent_phase_v11(
+        vegetation_configuration,
+        vegetation_beginning,
+        projected.potential(),
+        projected.capped(),
+        persistent_forcing,
+        nitrogen,
+        duration_s_bits,
     )?;
     run_owner_failure_hook(failure_hook, V8OwnerFailurePhase::Persistent)?;
     let vegetation = construct_uncommitted_v8_vegetation_candidate(

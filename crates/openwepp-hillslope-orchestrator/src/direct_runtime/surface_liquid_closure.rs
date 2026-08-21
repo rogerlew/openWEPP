@@ -1338,7 +1338,7 @@ fn frozen_identities_for_record(
             }
             DirectTileGroundIngress::CoveredCanopyRelease { .. } => {}
             DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { runon_parcels, .. } => {
-                let mut identities = covered_canonical_frozen_identities(record);
+                let mut identities = covered_canonical_frozen_identities(record, input.interval_s);
                 identities.extend(runon_parcels.iter().map(|parcel| FrozenSourceIdentity {
                     source_parcel_id: parcel.parcel_id.to_string(),
                     kind: parcel.kind,
@@ -1362,14 +1362,16 @@ fn frozen_identities_for_record(
             DirectSurfaceLiquidParcelKind::CanopyStemflow,
         ],
     };
+    let interval_s = input.map_or(INTERVAL_S, |value| value.interval_s);
     Ok(kinds
         .iter()
-        .map(|kind| local_frozen_identity(record, *kind, 0.0, INTERVAL_S))
+        .map(|kind| local_frozen_identity(record, *kind, 0.0, interval_s))
         .collect())
 }
 
 fn covered_canonical_frozen_identities(
     record: &DirectSurfaceLiquidConfigurationRecord,
+    interval_s: f64,
 ) -> Vec<FrozenSourceIdentity> {
     [
         DirectSurfaceLiquidParcelKind::CanopyThroughfall,
@@ -1378,7 +1380,7 @@ fn covered_canonical_frozen_identities(
         DirectSurfaceLiquidParcelKind::CanopyStemflow,
     ]
     .into_iter()
-    .map(|kind| local_frozen_identity(record, kind, 0.0, INTERVAL_S))
+    .map(|kind| local_frozen_identity(record, kind, 0.0, interval_s))
     .collect()
 }
 

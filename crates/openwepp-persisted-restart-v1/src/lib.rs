@@ -44,6 +44,8 @@ mod subsurface;
 mod surface_liquid;
 mod transaction;
 mod transfer;
+mod vegetation_v11;
+mod vegetation_v11_v3;
 mod winter;
 
 pub use canonical::{
@@ -99,4 +101,6 @@ pub use transfer::{
     DirectLaneTransferLedgerRestartV1, DirectRunTransferDownstreamOperandsRestartV1,
     DirectTransferBuffersRestartV1, TransferRestartError,
 };
+pub use vegetation_v11::*;
+pub use vegetation_v11_v3::*;
 pub use winter::{DirectWinterColumnRestartV1, RestoredWinterCompatibility, WinterRestartError};

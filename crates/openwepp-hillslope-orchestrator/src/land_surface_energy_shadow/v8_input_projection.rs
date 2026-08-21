@@ -1204,6 +1204,7 @@ pub(crate) fn project_v8_runtime_inputs(
     soil_thermal: &SoilThermalSnapshot,
     day_index: usize,
     interval_index: u8,
+    authenticated_duration_s_bits: Option<u64>,
 ) -> Result<ValidatedV8RuntimeInputProjection, V8InputProjectionError> {
     vegetation_configuration.validate_v8()?;
     let configured_bindings = vegetation_configuration
@@ -1258,6 +1259,7 @@ pub(crate) fn project_v8_runtime_inputs(
         vegetation_configuration,
         canopy_forcing.forcing(),
         lse_forcing,
+        authenticated_duration_s_bits,
     )?;
     let surface_state = soil_adapter
         .owner
@@ -1500,8 +1502,11 @@ fn validate_forcing_join(
     vegetation_configuration: &VegetationConfiguration,
     vegetation: &SnowFreeForcing,
     lse: &LandSurfaceForcing,
+    authenticated_duration_s_bits: Option<u64>,
 ) -> Result<(), V8InputProjectionError> {
-    let exact = vegetation_configuration.dt_s.to_bits() == lse.interval_s.to_bits()
+    let expected_duration_bits =
+        authenticated_duration_s_bits.unwrap_or_else(|| vegetation_configuration.dt_s.to_bits());
+    let exact = expected_duration_bits == lse.interval_s.to_bits()
         && vegetation.air_temperature_k.to_bits() == lse.air_temperature_k.to_bits()
         && vegetation.pressure_pa.to_bits() == lse.air_pressure_pa.to_bits()
         && vegetation.wind_m_s.to_bits() == lse.reference_wind_m_s.to_bits()
@@ -1787,7 +1792,7 @@ mod tests {
         let configuration = configuration();
         let baseline = vegetation_forcing();
         let lse = lse_forcing();
-        assert!(validate_forcing_join(&configuration, &baseline, &lse).is_ok());
+        assert!(validate_forcing_join(&configuration, &baseline, &lse, None).is_ok());
         for mutate in 0..10 {
             let mut poison = baseline.clone();
             let field = match mutate {
@@ -1803,12 +1808,14 @@ mod tests {
                 _ => {
                     let mut wrong_configuration = configuration.clone();
                     wrong_configuration.dt_s = f64::from_bits(configuration.dt_s.to_bits() + 1);
-                    assert!(validate_forcing_join(&wrong_configuration, &baseline, &lse).is_err());
+                    assert!(
+                        validate_forcing_join(&wrong_configuration, &baseline, &lse, None).is_err()
+                    );
                     continue;
                 }
             };
             *field = f64::from_bits(field.to_bits() + 1);
-            assert!(validate_forcing_join(&configuration, &poison, &lse).is_err());
+            assert!(validate_forcing_join(&configuration, &poison, &lse, None).is_err());
         }
     }
 

@@ -118,7 +118,11 @@ pub struct DirectIngressAmount {
 }
 
 impl DirectIngressAmount {
-    fn validate(&self, require_full_interval: bool) -> Result<(), DirectSurfaceLiquidError> {
+    fn validate(
+        &self,
+        require_full_interval: bool,
+        interval_s: f64,
+    ) -> Result<(), DirectSurfaceLiquidError> {
         require_nonnegative(self.mass_kg_m2_tile_ground, "ingress mass")?;
         require_temperature(self.temperature_k)?;
         let expected = liquid_specific_enthalpy(self.temperature_k);
@@ -131,10 +135,10 @@ impl DirectIngressAmount {
             || !self.end_s.is_finite()
             || self.start_s < 0.0
             || self.end_s <= self.start_s
-            || self.end_s > INTERVAL_S
+            || self.end_s > interval_s
             || (require_full_interval
                 && (self.start_s.to_bits() != 0.0_f64.to_bits()
-                    || self.end_s.to_bits() != INTERVAL_S.to_bits()))
+                    || self.end_s.to_bits() != interval_s.to_bits()))
         {
             return Err(DirectSurfaceLiquidError::Domain(
                 "invalid ingress interval support",
@@ -770,7 +774,7 @@ fn execute_surface_liquid_ingress_inner(
     configuration.validate()?;
     resource.beginning_state().validate(configuration)?;
     validate_resource_working_state_domains(configuration, resource)?;
-    if !input.interval_s.is_finite() {
+    if !input.interval_s.is_finite() || input.interval_s <= 0.0 {
         return Err(DirectSurfaceLiquidError::Domain(
             "nonfinite ingress interval",
         ));
@@ -783,13 +787,6 @@ fn execute_surface_liquid_ingress_inner(
         input.transaction_id,
         &input.wb14_parameters,
     )?;
-    if input.interval_s.to_bits() != INTERVAL_S.to_bits() {
-        return Err(production_binding_failure(
-            input.transaction_id,
-            None,
-            "ingress cadence is not exactly 1800 seconds",
-        ));
-    }
     validate_cadence(resource.beginning_state(), input)?;
     let mut pending = validate_and_build_local_ingress(configuration, resource, input)?;
     let mut ending = resource.working_state().clone();
@@ -827,6 +824,7 @@ fn execute_surface_liquid_ingress_inner(
             cumulative_supply_m,
             cumulative_infiltration_m,
             input.transaction_id,
+            input.interval_s,
         )?;
         if call_count.insert(ofe_id.clone(), 1).is_some() {
             return Err(production_binding_failure(
@@ -1221,10 +1219,10 @@ fn preflight_tile_ingress_domains(
             || !amount.end_s.is_finite()
             || amount.start_s < 0.0
             || amount.end_s <= amount.start_s
-            || amount.end_s > INTERVAL_S
+            || amount.end_s > input.interval_s
             || (require_full_interval
                 && (amount.start_s.to_bits() != 0.0_f64.to_bits()
-                    || amount.end_s.to_bits() != INTERVAL_S.to_bits()))
+                    || amount.end_s.to_bits() != input.interval_s.to_bits()))
         {
             Some("invalid ingress amount domain")
         } else {
@@ -1427,6 +1425,7 @@ fn validate_and_build_local_ingress(
             configured,
             ingress,
             input.transaction_id,
+            input.interval_s,
             pending.entry(ofe_id.clone()).or_default(),
         )
         .map_err(|error| {
@@ -1501,7 +1500,7 @@ fn validate_and_build_local_ingress(
                 basis_ofe_id: overflow.store_key.ofe_id.clone(),
                 kind: DirectSurfaceLiquidParcelKind::CondensationOverflow,
                 start_s: 0.0,
-                end_s: INTERVAL_S,
+                end_s: input.interval_s,
                 mass_kg_m2_basis_ofe_ground: overflow.amount_kg_m2_ofe_ground,
                 enthalpy_j_m2_basis_ofe_ground: enthalpy,
             });
@@ -1513,6 +1512,7 @@ fn append_tile_ingress(
     configured: &DirectSurfaceLiquidConfigurationRecord,
     ingress: &DirectTileGroundIngress,
     transaction_id: TransactionId,
+    interval_s: f64,
     parcels: &mut Vec<TimedParcel>,
 ) -> Result<(), DirectSurfaceLiquidError> {
     match ingress {
@@ -1524,6 +1524,7 @@ fn append_tile_ingress(
             raw_precipitation,
             false,
             transaction_id,
+            interval_s,
             parcels,
         ),
         DirectTileGroundIngress::OpenLiquidParcels {
@@ -1546,7 +1547,7 @@ fn append_tile_ingress(
                         "invalid open liquid parcel kind, destination, or identity",
                     ));
                 }
-                parcel.amount.validate(false)?;
+                parcel.amount.validate(false, interval_s)?;
                 let mass = checked_surface_liquid_mul(
                     configured.tile_fraction,
                     parcel.amount.mass_kg_m2_tile_ground,
@@ -1574,7 +1575,7 @@ fn append_tile_ingress(
             Ok(())
         }
         DirectTileGroundIngress::CoveredCanopyRelease { release, .. } => {
-            append_canopy_release(configured, release, transaction_id, parcels)
+            append_canopy_release(configured, release, transaction_id, interval_s, parcels)
         }
         DirectTileGroundIngress::CoveredCanopyReleaseAndRunon {
             ofe_id,
@@ -1583,8 +1584,15 @@ fn append_tile_ingress(
             runon_parcels,
             ..
         } => {
-            append_canopy_release(configured, release, transaction_id, parcels)?;
-            append_external_runon(configured, ofe_id, tile_id, runon_parcels, parcels)
+            append_canopy_release(configured, release, transaction_id, interval_s, parcels)?;
+            append_external_runon(
+                configured,
+                ofe_id,
+                tile_id,
+                runon_parcels,
+                interval_s,
+                parcels,
+            )
         }
     }
 }
@@ -1593,6 +1601,7 @@ fn append_canopy_release(
     configured: &DirectSurfaceLiquidConfigurationRecord,
     release: &DirectCanopyLiquidRelease,
     transaction_id: TransactionId,
+    interval_s: f64,
     parcels: &mut Vec<TimedParcel>,
 ) -> Result<(), DirectSurfaceLiquidError> {
     for (kind, amount) in [
@@ -1613,7 +1622,15 @@ fn append_canopy_release(
             &release.stemflow,
         ),
     ] {
-        append_amount(configured, kind, amount, true, transaction_id, parcels)?;
+        append_amount(
+            configured,
+            kind,
+            amount,
+            true,
+            transaction_id,
+            interval_s,
+            parcels,
+        )?;
     }
     Ok(())
 }
@@ -1623,6 +1640,7 @@ fn append_external_runon(
     ofe_id: &OfeId,
     tile_id: &TileId,
     ingress_parcels: &[DirectOpenLiquidIngressParcel],
+    interval_s: f64,
     parcels: &mut Vec<TimedParcel>,
 ) -> Result<(), DirectSurfaceLiquidError> {
     let mut identities = BTreeSet::new();
@@ -1636,7 +1654,7 @@ fn append_external_runon(
                 "invalid covered runon kind, destination, or identity",
             ));
         }
-        parcel.amount.validate(false)?;
+        parcel.amount.validate(false, interval_s)?;
         let mass = checked_surface_liquid_mul(
             configured.tile_fraction,
             parcel.amount.mass_kg_m2_tile_ground,
@@ -1669,9 +1687,10 @@ fn append_amount(
     amount: &DirectIngressAmount,
     require_full_interval: bool,
     transaction_id: TransactionId,
+    interval_s: f64,
     parcels: &mut Vec<TimedParcel>,
 ) -> Result<(), DirectSurfaceLiquidError> {
-    amount.validate(require_full_interval)?;
+    amount.validate(require_full_interval, interval_s)?;
     let mass = checked_surface_liquid_mul(configured.tile_fraction, amount.mass_kg_m2_tile_ground)
         .ok_or_else(|| {
             ingress_arithmetic_failure(
@@ -1718,6 +1737,7 @@ fn advance_one_ofe(
     mut cumulative_supply_m: f64,
     mut cumulative_infiltration_m: f64,
     transaction_id: TransactionId,
+    interval_s: f64,
 ) -> Result<OfeAdvance, DirectSurfaceLiquidError> {
     let binding = configuration
         .ofe_bindings
@@ -1739,7 +1759,7 @@ fn advance_one_ofe(
         .iter()
         .flat_map(|parcel| [parcel.start_s, parcel.end_s])
         .collect::<Vec<_>>();
-    boundaries.extend([0.0, INTERVAL_S]);
+    boundaries.extend([0.0, interval_s]);
     boundaries.sort_by(f64::total_cmp);
     boundaries.dedup_by(|left, right| left.to_bits() == right.to_bits());
     let mut receipts = Vec::new();

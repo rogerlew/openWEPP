@@ -169,6 +169,32 @@ pub(crate) fn execute_persistent_core(
     final_carbon: &BTreeMap<StratumId, StratumCarbonOperands>,
     nitrogen: &dyn NitrogenArbiter,
 ) -> Result<PersistentCoreResult, VegetationError> {
+    execute_persistent_core_with_duration(
+        configuration,
+        beginning_strata,
+        transaction_id,
+        forcing,
+        potential_carbon,
+        final_carbon,
+        nitrogen,
+        configuration.dt_s,
+    )
+}
+
+#[allow(clippy::too_many_lines, clippy::too_many_arguments)]
+pub(crate) fn execute_persistent_core_with_duration(
+    configuration: &VegetationConfiguration,
+    beginning_strata: &BTreeMap<StratumId, StratumSharedState>,
+    transaction_id: TransactionId,
+    forcing: &PersistentForcingInputs,
+    potential_carbon: &BTreeMap<StratumId, StratumCarbonOperands>,
+    final_carbon: &BTreeMap<StratumId, StratumCarbonOperands>,
+    nitrogen: &dyn NitrogenArbiter,
+    duration_s: f64,
+) -> Result<PersistentCoreResult, VegetationError> {
+    if !duration_s.is_finite() || duration_s <= 0.0 {
+        return Err(VegetationError::Domain("persistent support duration"));
+    }
     if transaction_id.0 == 0 {
         return Err(VegetationError::Receipt(
             "persistent core zero transaction identity".into(),
@@ -211,14 +237,14 @@ pub(crate) fn execute_persistent_core(
             &mut candidate,
             stratum,
             forcing.gsi,
-            configuration.dt_s,
+            duration_s,
             &parameters,
         )?;
         apply_phenology_update(&mut candidate, &phenology);
         let mut transfers = phenology.transfers;
         transfers.extend(advance_turnover(
             &mut candidate.tissues,
-            configuration.dt_s,
+            duration_s,
             &parameters,
         )?);
         candidate.retranslocation_n += phenology.retranslocated_n;
@@ -246,7 +272,7 @@ pub(crate) fn execute_persistent_core(
             &root_operands,
             stratum.mr_base_kgc_per_kgn_s,
             stratum.mr_q10,
-            configuration.dt_s,
+            duration_s,
         )?;
         let final_maintenance = maintenance_respiration(
             &candidate.tissues,
@@ -255,14 +281,14 @@ pub(crate) fn execute_persistent_core(
             &root_operands,
             stratum.mr_base_kgc_per_kgn_s,
             stratum.mr_q10,
-            configuration.dt_s,
+            duration_s,
         )?;
         let potential_offer = carbon_offer(
             potential.gross_primary_production_kg_c_m2,
             potential_maintenance,
             candidate.xs_c,
             candidate.nsc_c,
-            configuration.dt_s,
+            duration_s,
             stratum.xs_recovery_days,
         )?;
         let final_offer = carbon_offer(
@@ -270,7 +296,7 @@ pub(crate) fn execute_persistent_core(
             final_maintenance,
             candidate.xs_c,
             candidate.nsc_c,
-            configuration.dt_s,
+            duration_s,
             stratum.xs_recovery_days,
         )?;
         let potential_demand = nitrogen_demand(

@@ -1,13 +1,24 @@
 #[cfg(test)]
 mod tests {
+    use openwepp_coupled_time::{
+        ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, Digest32, LedgerEntryV1,
+        ModelTimeNs, OwnerState, ParentAuthorityV1, ParentIntervalId, ParentTransactionId,
+        SegmentId, StepConstraintV1, TimeSupport, accept_slab, complete_owner_set_digest,
+        digest_bytes, reduce_constraints,
+    };
     use openwepp_input_contract::parsers::climate::{ParserMode, parse_climate_from_str};
     use openwepp_kernel_contract::TileId;
     use openwepp_land_surface_energy::{
         OfeId, SoilThermalLayerCandidate, V2_MODEL_DEFINITION_SHA256, V2_MODEL_VERSION,
         V2_VEGETATION_MODEL_DEFINITION_SHA256, V2_VEGETATION_MODEL_VERSION,
     };
+    use openwepp_vegetation::v11::{
+        V11_COMPLETE_OWNER_MANIFEST, V11OwnerEnvelope, V11ParentCandidate, V11ParentTransaction,
+        execute_v11_segment, migrate_v10_runtime_to_v11, v11_vegetation_owner_envelope,
+    };
     use openwepp_vegetation::{
-        V9_MODEL_SHA256, V9CoupledOwnedState, V10_MODEL_SHA256, V10CoupledOwnedState,
+        V8CoupledOwnedState, V9_MODEL_SHA256, V9CoupledOwnedState, V10_MODEL_SHA256,
+        V10CoupledOwnedState,
     };
 
     use super::*;
@@ -21,6 +32,51 @@ mod tests {
         DirectLanedActiveLaneConfig, DirectLanedActiveMeshPolicy, DirectPublicationCalendarDay,
         DirectPublicationDayInput, DirectPublicationRunMetadata,
     };
+
+    /// Generated-wire projection of every V8 physical field. Only the released
+    /// successor identity/chronology paths are removed; both source states stay
+    /// immutable and every remaining serialized field compares exactly.
+    #[derive(Debug, PartialEq)]
+    struct V11NonIdentityPhysicalProjection(serde_json::Value);
+
+    impl V11NonIdentityPhysicalProjection {
+        fn from_v8(state: &V8CoupledOwnedState) -> Self {
+            let mut value = serde_json::to_value(state).expect("serialize V8 physical ledger");
+            let root = value.as_object_mut().expect("V8 state object");
+            for identity in [
+                "model_definition_sha256",
+                "configuration_sha256",
+                "state_sha256",
+                "last_transaction_id",
+            ] {
+                assert!(
+                    root.remove(identity).is_some(),
+                    "missing V8 identity field {identity}"
+                );
+            }
+            let strata = root
+                .get_mut("strata")
+                .and_then(serde_json::Value::as_object_mut)
+                .expect("typed V8 stratum map");
+            for state in strata.values_mut() {
+                let state = state.as_object_mut().expect("typed V8 stratum entry");
+                assert!(state.remove("last_transaction_id").is_some());
+            }
+            let occupancies = root
+                .get_mut("occupancies")
+                .and_then(serde_json::Value::as_array_mut)
+                .expect("typed V8 occupancy map");
+            for entry in occupancies {
+                let state = entry
+                    .as_object_mut()
+                    .and_then(|row| row.get_mut("state"))
+                    .and_then(serde_json::Value::as_object_mut)
+                    .expect("typed V8 occupancy entry");
+                assert!(state.remove("last_accepted_transaction_id").is_some());
+            }
+            Self(value)
+        }
+    }
 
     fn v9_configuration_and_state(
         fixture: &EndpointFixture,
@@ -273,6 +329,376 @@ mod tests {
         input.precipitation_m = 0.0;
         input.effective_temperature_c = 7.5;
         input
+    }
+
+    fn digest(seed: u8) -> Digest32 {
+        Digest32::from_bytes([seed; 32])
+    }
+
+    fn accepted_v11_slab(
+        owners: &[OwnerState],
+        end_ns: u128,
+    ) -> (
+        ParentTransactionId,
+        openwepp_coupled_time::AcceptedSlabReceiptV1,
+    ) {
+        let (parent, mut receipts) = accepted_v11_slabs(owners, &[end_ns]);
+        (parent, receipts.remove(0))
+    }
+
+    fn accepted_v11_slabs(
+        owners: &[OwnerState],
+        end_ticks: &[u128],
+    ) -> (
+        ParentTransactionId,
+        Vec<openwepp_coupled_time::AcceptedSlabReceiptV1>,
+    ) {
+        let parent_end = *end_ticks.last().expect("at least one slab");
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(parent_end))
+            .expect("parent support");
+        let beginning = complete_owner_set_digest(owners).expect("owner digest");
+        let interval =
+            ParentIntervalId::derive(digest(1), digest(2), digest(3), support).expect("interval");
+        let parent =
+            ParentTransactionId::derive(digest(1), 40, interval, beginning).expect("parent");
+        let authority =
+            ParentAuthorityV1::new(digest(1), digest(2), digest(3), 40, support, beginning)
+                .expect("authority");
+        let participants = owners
+            .iter()
+            .map(|owner| owner.owner_id().to_owned())
+            .collect::<Vec<_>>();
+        let mut clock = CoupledClockStateV1::new(
+            authority,
+            owners.to_vec(),
+            "snow-free".to_owned(),
+            participants.clone(),
+            digest(4),
+            Vec::new(),
+        )
+        .expect("clock");
+        let mut participant_bytes = Vec::new();
+        for id in &participants {
+            participant_bytes.extend_from_slice(id.as_bytes());
+            participant_bytes.push(0);
+        }
+        let mut start_ns = 0;
+        let mut receipts = Vec::with_capacity(end_ticks.len());
+        for &end_ns in end_ticks {
+            let slab_support =
+                TimeSupport::new(ModelTimeNs::new(start_ns), ModelTimeNs::new(end_ns))
+                    .expect("slab support");
+            let constraint = StepConstraintV1::new(
+                parent,
+                ModelTimeNs::new(start_ns),
+                ModelTimeNs::new(end_ns),
+                "vegetation".to_owned(),
+                ConstraintClass::HardBoundary,
+                digest(5),
+                digest(2),
+                digest(3),
+            )
+            .expect("constraint");
+            let reduced = reduce_constraints(
+                &[constraint],
+                parent,
+                ModelTimeNs::new(start_ns),
+                ModelTimeNs::new(parent_end),
+                None,
+            )
+            .expect("reduced");
+            let segment = SegmentId::derive(
+                parent,
+                0,
+                support,
+                digest_bytes(b"snow-free"),
+                digest_bytes(&participant_bytes),
+            )
+            .expect("segment");
+            let joined = digest(6);
+            let ledger = LedgerEntryV1::new(
+                "vegetation".to_owned(),
+                "owner".to_owned(),
+                joined,
+                joined,
+                digest(7),
+            )
+            .expect("ledger");
+            let slab = CoupledSlabCandidateV1::new(
+                &clock,
+                segment,
+                slab_support,
+                &reduced,
+                owners.to_vec(),
+                vec![ledger],
+            )
+            .expect("slab");
+            receipts.push(accept_slab(&mut clock, slab).expect("accepted slab"));
+            start_ns = end_ns;
+        }
+        (parent, receipts)
+    }
+
+    fn initial_v11_owners(
+        state: &openwepp_vegetation::v11::V11CoupledOwnedState,
+    ) -> BTreeMap<String, V11OwnerEnvelope> {
+        V11_COMPLETE_OWNER_MANIFEST
+            .iter()
+            .map(|id| {
+                let envelope = if *id == "vegetation" {
+                    v11_vegetation_owner_envelope(state).expect("vegetation owner")
+                } else {
+                    V11OwnerEnvelope::try_new((*id).to_owned(), id.as_bytes().to_vec())
+                        .expect("owner")
+                };
+                ((*id).to_owned(), envelope)
+            })
+            .collect()
+    }
+
+    fn segment_interval(
+        base: &DirectV9ShadowIntervalInput,
+        duration_ns: u128,
+        transaction_id: u128,
+        air_temperature_delta_k: f64,
+    ) -> DirectV9ShadowIntervalInput {
+        let mut interval = base.clone();
+        interval.lse_forcing.interval_s = f64::from_bits(
+            TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(duration_ns))
+                .expect("segment duration support")
+                .duration_s_bits(),
+        );
+        interval.lse_forcing.transaction_id = TransactionId(transaction_id);
+        interval.lse_forcing.air_temperature_k += air_temperature_delta_k;
+        interval.lse_forcing.precipitation_parcels.clear();
+        interval.lse_forcing.runon_parcels.clear();
+        interval.vegetation_forcing.air_temperature_k += air_temperature_delta_k;
+        interval.vegetation_forcing.rain_kg_m2 = 0.0;
+        interval.lse_forcing.forcing_sha256 = interval
+            .lse_forcing
+            .canonical_sha256()
+            .expect("segment forcing digest");
+        interval
+    }
+
+    fn run_actual_v11_segments(
+        shadow: &DirectV10RealConsumerShadow,
+        base_interval: &DirectV9ShadowIntervalInput,
+        durations_ns: &[u128],
+        temperature_deltas_k: &[f64],
+    ) -> V11ParentCandidate {
+        assert_eq!(durations_ns.len(), temperature_deltas_k.len());
+        let migrated =
+            migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
+                .expect("migration");
+        let owners = initial_v11_owners(&migrated.state);
+        let clock_owners = owners
+            .values()
+            .map(|owner| owner.to_owner_state().expect("clock owner"))
+            .collect::<Vec<_>>();
+        let mut cumulative = 0;
+        let end_ticks = durations_ns
+            .iter()
+            .map(|duration| {
+                cumulative += duration;
+                cumulative
+            })
+            .collect::<Vec<_>>();
+        let (parent_id, receipts) = accepted_v11_slabs(&clock_owners, &end_ticks);
+        let mut parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        let mut staged_shadow = shadow.clone();
+        for (ordinal, ((receipt, duration_ns), temperature_delta_k)) in receipts
+            .iter()
+            .zip(durations_ns)
+            .zip(temperature_deltas_k)
+            .enumerate()
+        {
+            let interval = segment_interval(base_interval, *duration_ns, 41, *temperature_delta_k);
+            let stack = DirectV11RealConsumerStack::new(&staged_shadow, &interval, 0, ordinal);
+            let mut executor =
+                crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
+            let segment =
+                execute_v11_segment(&migrated.configuration, &parent, receipt, &mut executor)
+                    .expect("actual segmented V11 execution");
+            for transition in &segment.shared_resource_transitions {
+                let owner = segment
+                    .ending_resource_owners
+                    .get(&transition.shared_resource_key.owner_id)
+                    .expect("transition ending owner");
+                assert_eq!(
+                    transition.owner_candidate_sha256, owner.state_sha256,
+                    "transition must bind the canonical ending owner"
+                );
+                if let Some(previous) = parent.accepted_segments().last().and_then(|accepted| {
+                    accepted
+                        .shared_resource_transitions
+                        .iter()
+                        .find(|candidate| {
+                            candidate.shared_resource_key == transition.shared_resource_key
+                        })
+                }) {
+                    assert_eq!(
+                        transition.beginning_amount.to_bits(),
+                        previous.ending_amount.to_bits(),
+                        "next shared-owner beginning must be the prior staged ending"
+                    );
+                }
+            }
+            parent
+                .accept_segment(&migrated.configuration, segment)
+                .expect("accept actual segmented V11 execution");
+            staged_shadow = executor.stack.take_staged_ending().expect("staged ending");
+        }
+        parent.finalize(&migrated.configuration).expect("finalize")
+    }
+
+    #[test]
+    fn v11_full_support_runs_actual_v10_stack_and_finalizes_once() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let interval = day_input(&fixture).intervals.remove(0);
+        let migrated =
+            migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
+                .expect("migration");
+        let owners = initial_v11_owners(&migrated.state);
+        let clock_owners = owners
+            .values()
+            .map(|owner| owner.to_owner_state().expect("clock owner"))
+            .collect::<Vec<_>>();
+        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 1_800_000_000_000);
+        let mut parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
+        let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
+        let segment = execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+            .expect("actual V11 segment");
+        parent
+            .accept_segment(&migrated.configuration, segment)
+            .expect("accept segment");
+        let candidate = parent.finalize(&migrated.configuration).expect("finalize");
+
+        let mut expected = shadow.clone();
+        expected
+            .inner
+            .execute_interval(0, 0, &interval)
+            .expect("V10");
+        expected.vegetation_state = project_v9_runtime_to_v10(
+            expected.inner.vegetation_state(),
+            &expected.vegetation_configuration,
+        )
+        .expect("V10 ending");
+        assert_eq!(
+            V11NonIdentityPhysicalProjection::from_v8(&candidate.ending_state.physical),
+            V11NonIdentityPhysicalProjection::from_v8(&expected.vegetation_state.0),
+            "every non-identity V11 physical field must exactly match V10"
+        );
+        assert_eq!(
+            candidate.ending_state.last_parent_transaction_id,
+            migrated.state.last_parent_transaction_id + 1
+        );
+        assert_eq!(candidate.ending_complete_owners.len(), 7);
+        assert_eq!(candidate.accepted_segments.len(), 1);
+    }
+
+    #[test]
+    fn v11_rejected_duration_attempt_leaves_parent_and_live_stack_unchanged() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let interval = day_input(&fixture).intervals.remove(0);
+        let migrated =
+            migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
+                .expect("migration");
+        let owners = initial_v11_owners(&migrated.state);
+        let clock_owners = owners
+            .values()
+            .map(|owner| owner.to_owner_state().expect("clock owner"))
+            .collect::<Vec<_>>();
+        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 600_000_000_000);
+        let parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
+        let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
+        let before = parent.staged_state().clone();
+        assert!(
+            execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor).is_err()
+        );
+        assert_eq!(parent.staged_state(), &before);
+        assert!(executor.stack.take_staged_ending().is_none());
+        assert_eq!(executor.stack.beginning, shadow);
+    }
+
+    #[test]
+    fn v11_actual_stack_accepts_sequential_unequal_supports_once_per_parent() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let interval = day_input(&fixture).intervals.remove(0);
+        for durations in [
+            vec![600_000_000_000, 1_200_000_000_000],
+            vec![1_200_000_000_000, 600_000_000_000],
+            vec![300_000_000_000, 500_000_000_000, 1_000_000_000_000],
+        ] {
+            let candidate = run_actual_v11_segments(
+                &shadow,
+                &interval,
+                &durations,
+                &vec![0.0; durations.len()],
+            );
+            assert_eq!(candidate.accepted_segments.len(), durations.len());
+            assert_eq!(candidate.ending_complete_owners.len(), 7);
+            assert_eq!(
+                candidate.ending_state.last_parent_transaction_id,
+                shadow.vegetation_state.0.last_transaction_id + 1
+            );
+        }
+    }
+
+    #[test]
+    fn v11_actual_stack_is_forcing_order_observable() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let interval = day_input(&fixture).intervals.remove(0);
+        let warm_then_cool = run_actual_v11_segments(
+            &shadow,
+            &interval,
+            &[600_000_000_000, 1_200_000_000_000],
+            &[4.0, -4.0],
+        );
+        let cool_then_warm = run_actual_v11_segments(
+            &shadow,
+            &interval,
+            &[600_000_000_000, 1_200_000_000_000],
+            &[-4.0, 4.0],
+        );
+        assert_ne!(
+            warm_then_cool.ending_state.state_sha256,
+            cool_then_warm.ending_state.state_sha256
+        );
+    }
+
+    #[test]
+    fn v11_actual_stack_accepts_one_nanosecond_edge_supports() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let interval = day_input(&fixture).intervals.remove(0);
+        for durations in [[1, 1_799_999_999_999], [1_799_999_999_999, 1]] {
+            let candidate = run_actual_v11_segments(&shadow, &interval, &durations, &[0.0, 0.0]);
+            assert_eq!(candidate.accepted_segments.len(), 2);
+            assert_eq!(candidate.ending_complete_owners.len(), 7);
+        }
     }
 
     #[test]

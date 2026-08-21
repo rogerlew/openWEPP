@@ -125,6 +125,37 @@ impl ValidatedV8FinalStatePass {
         configuration: &VegetationConfiguration,
         beginning: &V8CoupledOwnedState,
     ) -> Result<Self, VegetationError> {
+        Self::try_new_with_duration_bits(
+            bindings,
+            tiles,
+            configuration,
+            beginning,
+            configuration.dt_s.to_bits(),
+        )
+    }
+
+    /// V11-only final-state receipt admission using coupled-time duration.
+    pub fn try_new_v11(
+        bindings: &[V8ComponentOccupancyBinding],
+        tiles: Vec<V8FinalTileReceipt>,
+        configuration: &VegetationConfiguration,
+        beginning: &V8CoupledOwnedState,
+        duration_s_bits: u64,
+    ) -> Result<Self, VegetationError> {
+        Self::try_new_with_duration_bits(bindings, tiles, configuration, beginning, duration_s_bits)
+    }
+
+    fn try_new_with_duration_bits(
+        bindings: &[V8ComponentOccupancyBinding],
+        tiles: Vec<V8FinalTileReceipt>,
+        configuration: &VegetationConfiguration,
+        beginning: &V8CoupledOwnedState,
+        duration_s_bits: u64,
+    ) -> Result<Self, VegetationError> {
+        let duration_s = f64::from_bits(duration_s_bits);
+        if !duration_s.is_finite() || duration_s <= 0.0 {
+            return Err(VegetationError::Domain("V11 support duration"));
+        }
         configuration.validate_v8()?;
         beginning.validate(configuration).map_err(|error| {
             VegetationError::Receipt(format!("invalid V8 beginning state: {error}"))
@@ -165,7 +196,7 @@ impl ValidatedV8FinalStatePass {
                 || tile.vegetation_model_definition_sha256 != V8_MODEL_SHA256
                 || tile.vegetation_configuration_sha256 != configuration.configuration_sha256
                 || tile.vegetation_beginning_state_sha256 != beginning.state_sha256
-                || tile.interval_s.to_bits() != configuration.dt_s.to_bits()
+                || tile.interval_s.to_bits() != duration_s_bits
                 || fractions.get(&tile.tile_id).map(|value| value.to_bits())
                     != Some(tile.tile_fraction.to_bits())
                 || !actual_tiles.insert(tile.tile_id.clone())

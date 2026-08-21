@@ -14,13 +14,14 @@
 - `20260820-coupled-time-authority-implementation-001/` — COMPLETE / CHILD 2A /
   TERMINAL A+B PASS: released `SC-COUPLEDTIME-001@2`, reusable coupled-time
   runtime, additive restart V2, and orchestrator reference consumer.
-- `20260820-c3-woody-v11-segmented-support-001/` — QUEUED / CHILD 2B /
-  COUPLED-TIME PREREQUISITE SATISFIED: import immutable V10 science into a V11
-  segmented-support successor and prove exact full-support compatibility,
-  sequential unequal support, staged custody, one parent finalization, and one
-  atomic commit.
+- `20260820-c3-woody-v11-segmented-support-001/` — HOLD / CHILD 2B /
+  TINY-SUPPORT LSE AUTHORITY REQUIRED: released V11 authority and implemented
+  full/unequal default-off execution; the required 1 ns actual LSE slab reaches
+  a binary64 storage-residual precision wall. Restart V3 integration and
+  terminal reviews remain pending.
 - `20260819-snow-stage3-production-cutover-campaign-001/` — ACTIVE / CHILD 1
-  HOLD; CHILD 2B NEXT: execute V11, then Child 2C carrier authority, resume the
+  HOLD; CHILD 2B NUMERICAL DEPENDENCY NEXT: admit tiny-support LSE authority,
+  finish V11, then Child 2C carrier authority, resume the
   terminal handoff, run actual-scheduler qualification, obtain final-candidate
   `ASSURE-06` human approval, and atomic CoE retirement. Canopy-intercepted snow
   is excluded and CoE remains production-authoritative through Child 3.

@@ -14,9 +14,7 @@ use crate::nitrogen_protocol::{
     MineralNitrogenFinalizedUse, MineralNitrogenMaximumAuthorization,
     PotentialMineralNitrogenRequest,
 };
-use crate::persistent_phase::{
-    PersistentForcingInputs, StratumPreallocation, execute_persistent_core,
-};
+use crate::persistent_phase::{PersistentForcingInputs, StratumPreallocation};
 use crate::transaction::NitrogenArbiter;
 use crate::v8_state::{V8_MODEL_SHA256, V8CoupledOwnedState};
 use crate::{VegetationConfiguration, VegetationError};
@@ -73,6 +71,61 @@ impl ValidatedV8CarbonPass {
         configuration: &VegetationConfiguration,
         beginning: &V8CoupledOwnedState,
     ) -> Result<Self, VegetationError> {
+        Self::try_new_with_duration_bits(
+            model_definition_sha256,
+            configuration_sha256,
+            transaction_id,
+            vegetation_beginning_state_sha256,
+            pass,
+            interval_s,
+            occupancies,
+            configuration,
+            beginning,
+            configuration.dt_s.to_bits(),
+        )
+    }
+
+    /// V11-only receipt admission using the authenticated coupled-time bits.
+    #[allow(clippy::too_many_arguments)]
+    pub fn try_new_v11(
+        model_definition_sha256: String,
+        configuration_sha256: String,
+        transaction_id: TransactionId,
+        vegetation_beginning_state_sha256: String,
+        pass: CoupledSolvePass,
+        interval_s: f64,
+        occupancies: Vec<V8OccupancyCarbonReceipt>,
+        configuration: &VegetationConfiguration,
+        beginning: &V8CoupledOwnedState,
+        duration_s_bits: u64,
+    ) -> Result<Self, VegetationError> {
+        Self::try_new_with_duration_bits(
+            model_definition_sha256,
+            configuration_sha256,
+            transaction_id,
+            vegetation_beginning_state_sha256,
+            pass,
+            interval_s,
+            occupancies,
+            configuration,
+            beginning,
+            duration_s_bits,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn try_new_with_duration_bits(
+        model_definition_sha256: String,
+        configuration_sha256: String,
+        transaction_id: TransactionId,
+        vegetation_beginning_state_sha256: String,
+        pass: CoupledSolvePass,
+        interval_s: f64,
+        occupancies: Vec<V8OccupancyCarbonReceipt>,
+        configuration: &VegetationConfiguration,
+        beginning: &V8CoupledOwnedState,
+        duration_s_bits: u64,
+    ) -> Result<Self, VegetationError> {
         configuration.validate_v8()?;
         beginning.validate(configuration).map_err(|error| {
             VegetationError::Receipt(format!("invalid V8 beginning state: {error}"))
@@ -85,7 +138,7 @@ impl ValidatedV8CarbonPass {
             || transaction_id.0 != beginning.last_transaction_id + 1
             || !interval_s.is_finite()
             || interval_s <= 0.0
-            || interval_s.to_bits() != configuration.dt_s.to_bits()
+            || interval_s.to_bits() != duration_s_bits
         {
             return Err(VegetationError::Receipt("V8 carbon receipt lineage".into()));
         }
@@ -268,6 +321,33 @@ pub fn execute_uncommitted_v8_persistent_phase(
     forcing: &V8PersistentForcingReceipt,
     nitrogen: &dyn NitrogenArbiter,
 ) -> Result<UncommittedV8PersistentPhase, VegetationError> {
+    execute_uncommitted_v8_persistent_phase_v11(
+        configuration,
+        beginning,
+        potential,
+        capped,
+        forcing,
+        nitrogen,
+        configuration.dt_s.to_bits(),
+    )
+}
+
+/// Additive V11 path. The immutable configuration retains nominal V10/V8
+/// cadence while every duration-sensitive operation consumes these exact
+/// coupled-time supplied bits.
+pub fn execute_uncommitted_v8_persistent_phase_v11(
+    configuration: &VegetationConfiguration,
+    beginning: &V8CoupledOwnedState,
+    potential: &ValidatedV8CarbonPass,
+    capped: &ValidatedV8CarbonPass,
+    forcing: &V8PersistentForcingReceipt,
+    nitrogen: &dyn NitrogenArbiter,
+    duration_s_bits: u64,
+) -> Result<UncommittedV8PersistentPhase, VegetationError> {
+    let duration_s = f64::from_bits(duration_s_bits);
+    if !duration_s.is_finite() || duration_s <= 0.0 {
+        return Err(VegetationError::Domain("V11 support duration"));
+    }
     configuration.validate_v8()?;
     beginning.validate(configuration).map_err(|error| {
         VegetationError::Receipt(format!("invalid V8 beginning state: {error}"))
@@ -286,6 +366,7 @@ pub fn execute_uncommitted_v8_persistent_phase(
         || capped.vegetation_beginning_state_sha256 != beginning.state_sha256
         || forcing.vegetation_beginning_state_sha256 != beginning.state_sha256
         || potential.interval_s.to_bits() != capped.interval_s.to_bits()
+        || potential.interval_s.to_bits() != duration_s_bits
         || forcing.transaction_id.0 != beginning.last_transaction_id + 1
     {
         return Err(VegetationError::Receipt(
@@ -328,7 +409,7 @@ pub fn execute_uncommitted_v8_persistent_phase(
                         advanced_t10_k: update_t10(
                             beginning_t10,
                             forcing.air_temperature_k,
-                            potential.interval_s,
+                            duration_s,
                         )?,
                     },
                 ))
@@ -337,7 +418,7 @@ pub fn execute_uncommitted_v8_persistent_phase(
     };
     let potential_strata = bind_t10(&potential.strata)?;
     let capped_strata = bind_t10(&capped.strata)?;
-    let core = execute_persistent_core(
+    let core = crate::persistent_phase::execute_persistent_core_with_duration(
         configuration,
         &beginning.strata,
         forcing.transaction_id,
@@ -349,6 +430,7 @@ pub fn execute_uncommitted_v8_persistent_phase(
         &potential_strata,
         &capped_strata,
         nitrogen,
+        duration_s,
     )?;
     Ok(UncommittedV8PersistentPhase {
         transaction_id: core.transaction_id,
@@ -418,6 +500,16 @@ mod tests {
         pass: CoupledSolvePass,
         gross: f64,
     ) -> ValidatedV8CarbonPass {
+        carbon_pass_duration(configuration, beginning, pass, gross, configuration.dt_s)
+    }
+
+    fn carbon_pass_duration(
+        configuration: &VegetationConfiguration,
+        beginning: &V8CoupledOwnedState,
+        pass: CoupledSolvePass,
+        gross: f64,
+        duration_s: f64,
+    ) -> ValidatedV8CarbonPass {
         let fractions = configuration
             .topology_tiles
             .iter()
@@ -432,18 +524,71 @@ mod tests {
                 operands: operands(gross),
             })
             .collect();
-        ValidatedV8CarbonPass::try_new(
+        ValidatedV8CarbonPass::try_new_v11(
             V8_MODEL_SHA256.into(),
             configuration.configuration_sha256.clone(),
             TransactionId(beginning.last_transaction_id + 1),
             beginning.state_sha256.clone(),
             pass,
-            configuration.dt_s,
+            duration_s,
             receipts,
             configuration,
             beginning,
+            duration_s.to_bits(),
         )
         .expect("validated carbon pass")
+    }
+
+    #[test]
+    fn v11_authenticated_duration_is_used_without_changing_configuration_dt() {
+        let (configuration, beginning) = crate::v8_state::v8_test_fixture();
+        let duration_s = configuration.dt_s / 3.0;
+        let potential = carbon_pass_duration(
+            &configuration,
+            &beginning,
+            CoupledSolvePass::Potential,
+            12.0,
+            duration_s,
+        );
+        let capped = carbon_pass_duration(
+            &configuration,
+            &beginning,
+            CoupledSolvePass::Capped,
+            9.0,
+            duration_s,
+        );
+        let nitrogen = CountingNitrogen {
+            calls: Cell::new(0),
+            requests: RefCell::new(Vec::new()),
+        };
+        let phase = execute_uncommitted_v8_persistent_phase_v11(
+            &configuration,
+            &beginning,
+            &potential,
+            &capped,
+            &forcing(&configuration, &beginning),
+            &nitrogen,
+            duration_s.to_bits(),
+        )
+        .expect("V11 duration");
+        let expected = update_t10(
+            beginning.strata.values().next().expect("stratum").t10_k,
+            295.0,
+            duration_s,
+        )
+        .expect("T10");
+        assert_eq!(
+            phase
+                .strata()
+                .values()
+                .next()
+                .expect("stratum")
+                .candidate_after_growth
+                .t10_k
+                .to_bits(),
+            expected.to_bits()
+        );
+        assert_eq!(configuration.dt_s.to_bits(), 1800.0_f64.to_bits());
     }
 
     fn forcing(

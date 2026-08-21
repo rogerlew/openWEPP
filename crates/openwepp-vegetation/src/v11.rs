@@ -1,0 +1,2062 @@
+//! Default-off V11 segmented-support adopter.
+//!
+//! The adapter preserves V10's constitutive implementation and immutable
+//! configuration identity. It supplies the coupled-time duration separately,
+//! then removes segment-local transaction identity before staging the result.
+//! Only [`V11ParentTransaction::finalize`] advances persistent chronology.
+
+use std::collections::{BTreeMap, BTreeSet};
+
+use openwepp_coupled_time::{
+    AcceptedSlabId, AcceptedSlabReceiptV1, Digest32, ModelTimeNs, OwnerState, ParentTransactionId,
+    ReceiptId, SegmentId, TimeSupport, quantize_seconds_to_tick,
+};
+use openwepp_kernel_contract::{MineralNitrogenKey, WaterResourceKey};
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
+use thiserror::Error;
+
+use crate::carbon_nitrogen::MaterialTransfer;
+use crate::v10_state::{V10_MODEL_SHA256, V10CoupledOwnedState};
+use crate::{VegetationConfiguration, VegetationError};
+
+pub const V11_MODEL_VERSION: &str = "OPENWEPP_C3_WOODY_V11";
+pub const V11_MODEL_SHA256: &str =
+    "126e782104a50b52c8f12c32a9d48e3dd06215d806b801b5251049def415dfb2";
+pub const V11_MODEL_BYTES: &[u8] =
+    include_bytes!("../model-registry/openwepp_c3_woody_v11_definition.json");
+
+#[must_use]
+pub fn v11_model_sha256() -> String {
+    V11_MODEL_SHA256.into()
+}
+
+pub fn load_v11_model_definition() -> Result<crate::ModelDefinition, V11Error> {
+    if format!("{:x}", Sha256::digest(V11_MODEL_BYTES)) != V11_MODEL_SHA256 {
+        return Err(V11Error::MigrationIdentity);
+    }
+    let value: serde_json::Value =
+        serde_json::from_slice(V11_MODEL_BYTES).map_err(V11Error::Schema)?;
+    if value["model_version"].as_str() != Some(V11_MODEL_VERSION)
+        || value["base_model_definition_sha256"].as_str() != Some(V10_MODEL_SHA256)
+    {
+        return Err(V11Error::MigrationIdentity);
+    }
+    Ok(crate::ModelDefinition {
+        version: V11_MODEL_VERSION,
+        sha256: V11_MODEL_SHA256.into(),
+        bytes: V11_MODEL_BYTES,
+    })
+}
+
+/// Complete V10 configuration payload plus its exact V11 cadence identity.
+///
+/// The nested V10 value is constitutive source authority, not an executable
+/// duration override. Segment execution supplies a separate authenticated
+/// duration operand while leaving this value byte-identical.
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct VegetationConfigurationV11 {
+    pub model_definition_sha256: String,
+    pub configuration_sha256: String,
+    pub initial_state_sha256: String,
+    #[serde(with = "u128_string")]
+    pub nominal_cadence_ns: u128,
+    pub imported_v10: VegetationConfiguration,
+}
+
+impl VegetationConfigurationV11 {
+    pub fn validate(&self) -> Result<(), V11Error> {
+        self.imported_v10
+            .validate_v10()
+            .map_err(V11Error::Configuration)?;
+        if self.model_definition_sha256 != v11_model_sha256()
+            || self.nominal_cadence_ns == 0
+            || self.configuration_sha256 != self.canonical_sha256()?
+        {
+            return Err(V11Error::MigrationIdentity);
+        }
+        let support = TimeSupport::new(
+            ModelTimeNs::new(0),
+            ModelTimeNs::new(self.nominal_cadence_ns),
+        )?;
+        if support.duration_s_bits() != self.imported_v10.dt_s.to_bits() {
+            return Err(V11Error::CadenceRoundtrip);
+        }
+        Ok(())
+    }
+
+    pub fn canonical_sha256(&self) -> Result<String, V11Error> {
+        let mut canonical = self.clone();
+        canonical.configuration_sha256.clear();
+        canonical.initial_state_sha256.clear();
+        let bytes = serde_json::to_vec(&canonical).map_err(V11Error::Schema)?;
+        Ok(format!("{:x}", Sha256::digest(bytes)))
+    }
+}
+
+/// V11 state physically imports the complete V10 state payload.
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11CoupledOwnedState {
+    pub model_definition_sha256: String,
+    pub configuration_sha256: String,
+    pub state_sha256: String,
+    pub physical: crate::V8CoupledOwnedState,
+    #[serde(with = "u128_string")]
+    pub last_parent_transaction_id: u128,
+}
+
+impl V11CoupledOwnedState {
+    pub fn canonical_sha256(&self) -> Result<String, V11Error> {
+        let mut canonical = self.clone();
+        canonical.state_sha256.clear();
+        let bytes = serde_json::to_vec(&canonical).map_err(V11Error::Schema)?;
+        Ok(format!("{:x}", Sha256::digest(bytes)))
+    }
+
+    pub fn validate(&self, configuration: &VegetationConfigurationV11) -> Result<(), V11Error> {
+        configuration.validate()?;
+        if self.model_definition_sha256 != v11_model_sha256()
+            || self.configuration_sha256 != configuration.configuration_sha256
+            || self.state_sha256 != self.canonical_sha256()?
+            || self.physical.last_transaction_id != self.last_parent_transaction_id
+        {
+            return Err(V11Error::StateIdentity);
+        }
+        let (imported_configuration, projected) = imported_v10_view(configuration, self)?;
+        projected
+            .validate(&imported_configuration)
+            .map_err(V11Error::V10State)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct V10ToV11Migration {
+    pub configuration: VegetationConfigurationV11,
+    pub state: V11CoupledOwnedState,
+}
+
+pub fn migrate_v10_runtime_to_v11(
+    configuration: &VegetationConfiguration,
+    state: &V10CoupledOwnedState,
+) -> Result<V10ToV11Migration, V11Error> {
+    state.validate(configuration).map_err(V11Error::V10State)?;
+    let cadence = quantize_seconds_to_tick(
+        ModelTimeNs::new(0),
+        ModelTimeNs::new(u128::MAX),
+        configuration.dt_s,
+    )?
+    .get();
+    let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(cadence))?;
+    if cadence == 0 || support.duration_s_bits() != configuration.dt_s.to_bits() {
+        return Err(V11Error::CadenceRoundtrip);
+    }
+    let mut target_configuration = VegetationConfigurationV11 {
+        model_definition_sha256: v11_model_sha256(),
+        configuration_sha256: String::new(),
+        initial_state_sha256: String::new(),
+        nominal_cadence_ns: cadence,
+        imported_v10: configuration.clone(),
+    };
+    target_configuration.configuration_sha256 = target_configuration.canonical_sha256()?;
+    let mut physical = state.0.clone();
+    physical.model_definition_sha256 = v11_model_sha256();
+    physical
+        .configuration_sha256
+        .clone_from(&target_configuration.configuration_sha256);
+    physical.state_sha256.clear();
+    let mut target_state = V11CoupledOwnedState {
+        model_definition_sha256: v11_model_sha256(),
+        configuration_sha256: target_configuration.configuration_sha256.clone(),
+        state_sha256: String::new(),
+        last_parent_transaction_id: physical.last_transaction_id,
+        physical,
+    };
+    target_state.physical.state_sha256 = target_state.physical.canonical_sha256();
+    target_state.state_sha256 = target_state.canonical_sha256()?;
+    target_configuration
+        .initial_state_sha256
+        .clone_from(&target_state.state_sha256);
+    // Initial-state identity participates only as a receipt and is omitted from
+    // the configuration digest, matching the historical configuration rule.
+    target_configuration.validate()?;
+    target_state.validate(&target_configuration)?;
+    Ok(V10ToV11Migration {
+        configuration: target_configuration,
+        state: target_state,
+    })
+}
+
+/// Exact support and identity handed to the imported constitutive consumer.
+#[derive(Clone, Debug)]
+pub struct V11ImportedV10SegmentInput {
+    pub parent_transaction_id: ParentTransactionId,
+    pub accepted_slab_receipt: AcceptedSlabReceiptV1,
+    pub support: TimeSupport,
+    pub duration_s_bits: u64,
+    pub configuration: VegetationConfiguration,
+    pub beginning: V10CoupledOwnedState,
+    pub staged_resource_owners: BTreeMap<String, V11OwnerEnvelope>,
+}
+
+pub const V11_COMPLETE_OWNER_MANIFEST: [&str; 7] = [
+    "vegetation",
+    "snow",
+    "land_surface_energy",
+    "surface_liquid",
+    "hydrology",
+    "bgc",
+    "soil_thermal",
+];
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11OwnerEnvelope {
+    pub owner_id: String,
+    pub state_bytes: Vec<u8>,
+    pub state_sha256: Digest32,
+}
+
+impl V11OwnerEnvelope {
+    pub fn try_new(owner_id: String, state_bytes: Vec<u8>) -> Result<Self, V11Error> {
+        let owner = OwnerState::new(owner_id.clone(), state_bytes.clone())?;
+        Ok(Self {
+            owner_id,
+            state_bytes,
+            state_sha256: owner.state_digest(),
+        })
+    }
+
+    pub fn to_owner_state(&self) -> Result<OwnerState, V11Error> {
+        let owner = OwnerState::new(self.owner_id.clone(), self.state_bytes.clone())?;
+        if owner.state_digest() != self.state_sha256 {
+            return Err(V11Error::ResourceOwnerCandidate);
+        }
+        Ok(owner)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11ResourceDebit {
+    pub receipt_id: Digest32,
+    pub parent_transaction_id: ParentTransactionId,
+    pub segment_id: SegmentId,
+    pub accepted_slab_id: AcceptedSlabId,
+    pub support: TimeSupport,
+    pub owner_id: String,
+    pub resource_key: V11ResourceKey,
+    pub ofe_id: String,
+    pub tile_id: String,
+    pub occupancy_id: String,
+    pub layer_id: String,
+    pub source_id: String,
+    pub amount_basis: String,
+    pub request: f64,
+    pub authorization: f64,
+    pub final_use: f64,
+}
+
+impl V11ResourceDebit {
+    pub fn new(mut value: Self) -> Result<Self, V11Error> {
+        value.receipt_id = Digest32::zero();
+        value.receipt_id = digest_canonical(b"OPENWEPP_V11_DEBIT_V1\0", &value)?;
+        validate_debits(std::slice::from_ref(&value))?;
+        Ok(value)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11AdmittedResourceFlux {
+    pub receipt_id: Digest32,
+    pub parent_transaction_id: ParentTransactionId,
+    pub segment_id: SegmentId,
+    pub accepted_slab_id: AcceptedSlabId,
+    pub support: TimeSupport,
+    pub flux_class: String,
+    pub direction: String,
+    pub source_owner_id: String,
+    pub receiver_owner_id: String,
+    pub shared_resource_key: V11SharedResourceKey,
+    pub amount: f64,
+}
+
+impl V11AdmittedResourceFlux {
+    pub fn new(mut value: Self) -> Result<Self, V11Error> {
+        value.receipt_id = Digest32::zero();
+        value.receipt_id = digest_canonical(b"OPENWEPP_V11_FLUX_V1\0", &value)?;
+        validate_fluxes(std::slice::from_ref(&value))?;
+        Ok(value)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11OwnerCandidateComponent {
+    pub shared_resource_key: V11SharedResourceKey,
+    pub ending_amount_bits: u64,
+    pub debit_receipt_ids: Vec<Digest32>,
+    pub admitted_flux_receipt_ids: Vec<Digest32>,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11CompleteOwnerCandidate {
+    pub parent_transaction_id: ParentTransactionId,
+    pub segment_id: SegmentId,
+    pub accepted_slab_id: AcceptedSlabId,
+    pub slab_ordinal: u32,
+    pub support: TimeSupport,
+    pub owner_id: String,
+    pub components: Vec<V11OwnerCandidateComponent>,
+    pub ending_owner: V11OwnerEnvelope,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11SharedResourceOwnerTransition {
+    pub transition_id: Digest32,
+    pub parent_transaction_id: ParentTransactionId,
+    pub segment_id: SegmentId,
+    pub accepted_slab_id: AcceptedSlabId,
+    pub support: TimeSupport,
+    pub shared_resource_key: V11SharedResourceKey,
+    pub beginning_amount: f64,
+    pub ending_amount: f64,
+    pub debit_receipt_ids: Vec<Digest32>,
+    pub admitted_flux_receipt_ids: Vec<Digest32>,
+    pub owner_candidate_sha256: Digest32,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum V11SharedResourceKind {
+    Water,
+    Ammonium,
+    Nitrate,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11SharedResourceKey {
+    pub resource: V11SharedResourceKind,
+    pub owner_id: String,
+    pub ofe_id: String,
+    pub layer_id: String,
+    pub source_id: String,
+    pub amount_basis: String,
+}
+
+impl V11SharedResourceOwnerTransition {
+    pub fn new(mut value: Self) -> Result<Self, V11Error> {
+        value.transition_id = Digest32::zero();
+        value.transition_id = digest_canonical(b"OPENWEPP_V11_TRANSITION_V1\0", &value)?;
+        Ok(value)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum V11ResourceKey {
+    Water(WaterResourceKey),
+    MineralNitrogen(MineralNitrogenKey),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct V11ImportedV10SegmentOutput {
+    pub ending: V10CoupledOwnedState,
+    pub resource_debits: Vec<V11ResourceDebit>,
+    pub admitted_resource_fluxes: Vec<V11AdmittedResourceFlux>,
+    pub shared_resource_transitions: Vec<V11SharedResourceOwnerTransition>,
+    /// Six non-vegetation owner candidates. The vegetation envelope is
+    /// constructed internally from the validated ending V11 state.
+    pub ending_resource_owners: BTreeMap<String, V11OwnerEnvelope>,
+    pub material_transfers: Vec<MaterialTransfer>,
+}
+
+pub trait V11ConstitutiveExecutor {
+    type Error;
+    fn execute_v10_segment(
+        &mut self,
+        input: &V11ImportedV10SegmentInput,
+    ) -> Result<V11ImportedV10SegmentOutput, Self::Error>;
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct V11AcceptedSegmentCandidate {
+    pub accepted_slab_receipt: AcceptedSlabReceiptV1,
+    pub beginning_state_sha256: String,
+    pub ending_state: V11CoupledOwnedState,
+    pub resource_debits: Vec<V11ResourceDebit>,
+    pub admitted_resource_fluxes: Vec<V11AdmittedResourceFlux>,
+    pub shared_resource_transitions: Vec<V11SharedResourceOwnerTransition>,
+    pub complete_owner_candidates: Vec<V11CompleteOwnerCandidate>,
+    pub material_transfers: Vec<MaterialTransfer>,
+    pub ending_resource_owners: BTreeMap<String, V11OwnerEnvelope>,
+}
+
+pub fn execute_v11_segment<E: V11ConstitutiveExecutor>(
+    configuration: &VegetationConfigurationV11,
+    parent: &V11ParentTransaction,
+    accepted_slab_receipt: &AcceptedSlabReceiptV1,
+    executor: &mut E,
+) -> Result<V11AcceptedSegmentCandidate, V11ExecutionError<E::Error>> {
+    configuration.validate().map_err(V11ExecutionError::V11)?;
+    parent
+        .validate(configuration)
+        .map_err(V11ExecutionError::V11)?;
+    let support = accepted_slab_receipt.support();
+    if accepted_slab_receipt.parent_transaction_id() != parent.parent_transaction_id
+        || accepted_slab_receipt.duration_s_bits() != support.duration_s_bits()
+        || support.start_ns().get() != parent.accepted_until_ns
+    {
+        return Err(V11ExecutionError::V11(V11Error::SupportPredecessor));
+    }
+    let (imported_configuration, segment_beginning) =
+        imported_v10_view(configuration, &parent.staged_state).map_err(V11ExecutionError::V11)?;
+    let input = V11ImportedV10SegmentInput {
+        parent_transaction_id: parent.parent_transaction_id,
+        accepted_slab_receipt: accepted_slab_receipt.clone(),
+        support,
+        duration_s_bits: support.duration_s_bits(),
+        configuration: imported_configuration,
+        beginning: segment_beginning,
+        staged_resource_owners: parent.staged_resource_owners.clone(),
+    };
+    let output = executor
+        .execute_v10_segment(&input)
+        .map_err(V11ExecutionError::Executor)?;
+    output
+        .ending
+        .validate(&input.configuration)
+        .map_err(|e| V11ExecutionError::V11(V11Error::V10State(e)))?;
+    if output.ending.0.last_transaction_id
+        != input
+            .beginning
+            .0
+            .last_transaction_id
+            .checked_add(1)
+            .ok_or_else(|| V11ExecutionError::V11(V11Error::ParentTransactionOverflow))?
+    {
+        return Err(V11ExecutionError::V11(V11Error::SegmentTransaction));
+    }
+    validate_debits(&output.resource_debits).map_err(V11ExecutionError::V11)?;
+    validate_fluxes(&output.admitted_resource_fluxes).map_err(V11ExecutionError::V11)?;
+    validate_material_transfers(&output.material_transfers).map_err(V11ExecutionError::V11)?;
+    let ending_state = stage_imported_ending(configuration, &parent.staged_state, output.ending)
+        .map_err(V11ExecutionError::V11)?;
+    validate_nonvegetation_owners(&output.ending_resource_owners)
+        .map_err(V11ExecutionError::V11)?;
+    let mut ending_resource_owners = output.ending_resource_owners;
+    ending_resource_owners.insert(
+        "vegetation".into(),
+        v11_vegetation_owner_envelope(&ending_state).map_err(V11ExecutionError::V11)?,
+    );
+    let complete_owner_candidates = build_complete_owner_candidates(
+        accepted_slab_receipt,
+        &ending_resource_owners,
+        &output.shared_resource_transitions,
+    )
+    .map_err(V11ExecutionError::V11)?;
+    validate_resource_custody(
+        accepted_slab_receipt.parent_transaction_id(),
+        accepted_slab_receipt.segment_id(),
+        accepted_slab_receipt.slab_id(),
+        accepted_slab_receipt.slab_ordinal(),
+        accepted_slab_receipt.support(),
+        &output.resource_debits,
+        &output.admitted_resource_fluxes,
+        &output.shared_resource_transitions,
+        &complete_owner_candidates,
+        None,
+    )
+    .map_err(V11ExecutionError::V11)?;
+    Ok(V11AcceptedSegmentCandidate {
+        accepted_slab_receipt: accepted_slab_receipt.clone(),
+        beginning_state_sha256: parent.staged_state.state_sha256.clone(),
+        ending_state,
+        resource_debits: output.resource_debits,
+        admitted_resource_fluxes: output.admitted_resource_fluxes,
+        shared_resource_transitions: output.shared_resource_transitions,
+        complete_owner_candidates,
+        material_transfers: output.material_transfers,
+        ending_resource_owners,
+    })
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct V11ParentTransaction {
+    parent_transaction_id: ParentTransactionId,
+    beginning_state: V11CoupledOwnedState,
+    staged_state: V11CoupledOwnedState,
+    accepted_until_ns: u128,
+    accepted_segments: Vec<V11AcceptedSegmentCandidate>,
+    accepted_segment_checkpoints: Vec<V11AcceptedSegmentCheckpoint>,
+    cumulative_debits: BTreeMap<(String, V11ResourceKey), f64>,
+    beginning_complete_owners: BTreeMap<String, V11OwnerEnvelope>,
+    staged_resource_owners: BTreeMap<String, V11OwnerEnvelope>,
+    finalized: bool,
+}
+
+impl V11ParentTransaction {
+    pub fn new_with_complete_owners(
+        configuration: &VegetationConfigurationV11,
+        beginning: &V11CoupledOwnedState,
+        parent_transaction_id: ParentTransactionId,
+        parent_start_ns: ModelTimeNs,
+        staged_resource_owners: BTreeMap<String, V11OwnerEnvelope>,
+    ) -> Result<Self, V11Error> {
+        beginning.validate(configuration)?;
+        validate_complete_owners(&staged_resource_owners)?;
+        if staged_resource_owners.get("vegetation")
+            != Some(&v11_vegetation_owner_envelope(beginning)?)
+        {
+            return Err(V11Error::ResourceOwnerCandidate);
+        }
+        Ok(Self {
+            parent_transaction_id,
+            beginning_state: beginning.clone(),
+            staged_state: beginning.clone(),
+            accepted_until_ns: parent_start_ns.get(),
+            accepted_segments: Vec::new(),
+            accepted_segment_checkpoints: Vec::new(),
+            cumulative_debits: BTreeMap::new(),
+            beginning_complete_owners: staged_resource_owners.clone(),
+            staged_resource_owners,
+            finalized: false,
+        })
+    }
+
+    #[must_use]
+    pub const fn parent_transaction_id(&self) -> ParentTransactionId {
+        self.parent_transaction_id
+    }
+    #[must_use]
+    pub fn beginning_state(&self) -> &V11CoupledOwnedState {
+        &self.beginning_state
+    }
+    #[must_use]
+    pub fn staged_state(&self) -> &V11CoupledOwnedState {
+        &self.staged_state
+    }
+    #[must_use]
+    pub fn accepted_segments(&self) -> &[V11AcceptedSegmentCandidate] {
+        &self.accepted_segments
+    }
+    #[must_use]
+    pub fn staged_resource_owners(&self) -> &BTreeMap<String, V11OwnerEnvelope> {
+        &self.staged_resource_owners
+    }
+
+    pub fn accept_segment(
+        &mut self,
+        configuration: &VegetationConfigurationV11,
+        candidate: V11AcceptedSegmentCandidate,
+    ) -> Result<(), V11Error> {
+        self.validate(configuration)?;
+        let support = candidate.accepted_slab_receipt.support();
+        if self.finalized
+            || candidate.beginning_state_sha256 != self.staged_state.state_sha256
+            || support.start_ns().get() != self.accepted_until_ns
+            || candidate.accepted_slab_receipt.parent_transaction_id() != self.parent_transaction_id
+            || candidate.accepted_slab_receipt.duration_s_bits() != support.duration_s_bits()
+            || self.accepted_segment_checkpoints.iter().any(|prior| {
+                prior.receipt_id == candidate.accepted_slab_receipt.id()
+                    || prior.slab_id == candidate.accepted_slab_receipt.slab_id()
+            })
+            || self
+                .accepted_segment_checkpoints
+                .last()
+                .is_some_and(|prior| {
+                    prior.slab_ordinal.checked_add(1)
+                        != Some(candidate.accepted_slab_receipt.slab_ordinal())
+                })
+        {
+            return Err(V11Error::SupportPredecessor);
+        }
+        validate_debits(&candidate.resource_debits)?;
+        validate_fluxes(&candidate.admitted_resource_fluxes)?;
+        validate_material_transfers(&candidate.material_transfers)?;
+        validate_complete_owners(&candidate.ending_resource_owners)?;
+        if candidate.ending_resource_owners.get("vegetation")
+            != Some(&v11_vegetation_owner_envelope(&candidate.ending_state)?)
+        {
+            return Err(V11Error::ResourceOwnerCandidate);
+        }
+        let predecessors = self
+            .accepted_segment_checkpoints
+            .last()
+            .map(|segment| segment.shared_resource_transitions.as_slice());
+        validate_resource_custody(
+            candidate.accepted_slab_receipt.parent_transaction_id(),
+            candidate.accepted_slab_receipt.segment_id(),
+            candidate.accepted_slab_receipt.slab_id(),
+            candidate.accepted_slab_receipt.slab_ordinal(),
+            candidate.accepted_slab_receipt.support(),
+            &candidate.resource_debits,
+            &candidate.admitted_resource_fluxes,
+            &candidate.shared_resource_transitions,
+            &candidate.complete_owner_candidates,
+            predecessors,
+        )?;
+        let mut next = self.cumulative_debits.clone();
+        for debit in &candidate.resource_debits {
+            let value = next
+                .entry((debit.owner_id.clone(), debit.resource_key.clone()))
+                .or_insert(0.0);
+            *value += debit.final_use;
+            // This ordered +0.0-seeded fold is an authenticated diagnostic.
+            // Owner custody is the independently validated per-segment
+            // beginning-minus-amount ending chain; binary64 nonassociativity
+            // forbids regrouping this cumulative value into an owner ending.
+            if !value.is_finite() {
+                return Err(V11Error::ResourceDebit);
+            }
+        }
+        candidate.ending_state.validate(configuration)?;
+        self.cumulative_debits = next;
+        self.accepted_until_ns = support.end_ns().get();
+        self.staged_state = candidate.ending_state.clone();
+        self.staged_resource_owners = candidate.ending_resource_owners.clone();
+        self.accepted_segment_checkpoints
+            .push(V11AcceptedSegmentCheckpoint::from_candidate(&candidate));
+        self.accepted_segments.push(candidate);
+        Ok(())
+    }
+
+    pub fn finalize(
+        mut self,
+        configuration: &VegetationConfigurationV11,
+    ) -> Result<V11ParentCandidate, V11Error> {
+        self.validate(configuration)?;
+        if self.finalized || self.accepted_segment_checkpoints.is_empty() {
+            return Err(V11Error::ParentFinalization);
+        }
+        let next = self
+            .beginning_state
+            .last_parent_transaction_id
+            .checked_add(1)
+            .ok_or(V11Error::ParentTransactionOverflow)?;
+        self.staged_state.last_parent_transaction_id = next;
+        normalize_parent_transaction_lineage(&mut self.staged_state.physical, next);
+        self.staged_state.physical.state_sha256 = self.staged_state.physical.canonical_sha256();
+        self.staged_state.state_sha256 = self.staged_state.canonical_sha256()?;
+        self.staged_resource_owners.insert(
+            "vegetation".into(),
+            v11_vegetation_owner_envelope(&self.staged_state)?,
+        );
+        self.finalized = true;
+        let mut material_transfers = self
+            .accepted_segment_checkpoints
+            .iter()
+            .flat_map(|segment| segment.material_transfers.iter().cloned())
+            .collect::<Vec<_>>();
+        for (index, transfer) in material_transfers.iter_mut().enumerate() {
+            transfer.transaction_id = next;
+            transfer.proposal_id = u64::try_from(index)
+                .ok()
+                .and_then(|value| value.checked_add(1))
+                .ok_or(V11Error::ParentTransactionOverflow)?;
+        }
+        Ok(V11ParentCandidate {
+            parent_transaction_id: self.parent_transaction_id,
+            beginning_state_sha256: self.beginning_state.state_sha256,
+            ending_state: self.staged_state,
+            accepted_segments: self.accepted_segments,
+            accepted_segment_checkpoints: self.accepted_segment_checkpoints,
+            cumulative_debits: self.cumulative_debits,
+            material_transfers,
+            beginning_complete_owners: ordered_owner_states(&self.beginning_complete_owners)?,
+            ending_complete_owners: ordered_owner_states(&self.staged_resource_owners)?,
+        })
+    }
+
+    fn validate(&self, configuration: &VegetationConfigurationV11) -> Result<(), V11Error> {
+        self.beginning_state.validate(configuration)?;
+        self.staged_state.validate(configuration)?;
+        validate_complete_owners(&self.beginning_complete_owners)?;
+        validate_complete_owners(&self.staged_resource_owners)?;
+        if self.beginning_complete_owners.get("vegetation")
+            != Some(&v11_vegetation_owner_envelope(&self.beginning_state)?)
+            || self.staged_resource_owners.get("vegetation")
+                != Some(&v11_vegetation_owner_envelope(&self.staged_state)?)
+        {
+            return Err(V11Error::ResourceOwnerCandidate);
+        }
+        if self.staged_state.last_parent_transaction_id
+            != self.beginning_state.last_parent_transaction_id
+        {
+            return Err(V11Error::SegmentTransaction);
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct V11ParentCandidate {
+    pub parent_transaction_id: ParentTransactionId,
+    pub beginning_state_sha256: String,
+    pub ending_state: V11CoupledOwnedState,
+    pub accepted_segments: Vec<V11AcceptedSegmentCandidate>,
+    pub accepted_segment_checkpoints: Vec<V11AcceptedSegmentCheckpoint>,
+    pub cumulative_debits: BTreeMap<(String, V11ResourceKey), f64>,
+    pub material_transfers: Vec<MaterialTransfer>,
+    pub beginning_complete_owners: Vec<OwnerState>,
+    pub ending_complete_owners: Vec<OwnerState>,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11AcceptedSegmentCheckpoint {
+    pub receipt_id: ReceiptId,
+    pub slab_id: AcceptedSlabId,
+    pub parent_transaction_id: ParentTransactionId,
+    pub slab_ordinal: u32,
+    pub segment_id: SegmentId,
+    pub support: TimeSupport,
+    pub duration_s_bits: u64,
+    pub beginning_state_sha256: String,
+    pub ending_state: V11CoupledOwnedState,
+    pub resource_debits: Vec<V11ResourceDebit>,
+    pub admitted_resource_fluxes: Vec<V11AdmittedResourceFlux>,
+    pub shared_resource_transitions: Vec<V11SharedResourceOwnerTransition>,
+    pub complete_owner_candidates: Vec<V11CompleteOwnerCandidate>,
+    pub material_transfers: Vec<MaterialTransfer>,
+    pub ending_resource_owners: BTreeMap<String, V11OwnerEnvelope>,
+}
+
+impl V11AcceptedSegmentCheckpoint {
+    fn from_candidate(candidate: &V11AcceptedSegmentCandidate) -> Self {
+        let receipt = &candidate.accepted_slab_receipt;
+        Self {
+            receipt_id: receipt.id(),
+            slab_id: receipt.slab_id(),
+            parent_transaction_id: receipt.parent_transaction_id(),
+            slab_ordinal: receipt.slab_ordinal(),
+            segment_id: receipt.segment_id(),
+            support: receipt.support(),
+            duration_s_bits: receipt.duration_s_bits(),
+            beginning_state_sha256: candidate.beginning_state_sha256.clone(),
+            ending_state: candidate.ending_state.clone(),
+            resource_debits: candidate.resource_debits.clone(),
+            admitted_resource_fluxes: candidate.admitted_resource_fluxes.clone(),
+            shared_resource_transitions: candidate.shared_resource_transitions.clone(),
+            complete_owner_candidates: candidate.complete_owner_candidates.clone(),
+            material_transfers: candidate.material_transfers.clone(),
+            ending_resource_owners: candidate.ending_resource_owners.clone(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11ParentTransactionCheckpoint {
+    pub schema: String,
+    pub parent_transaction_id: ParentTransactionId,
+    pub beginning_state: V11CoupledOwnedState,
+    pub staged_state: V11CoupledOwnedState,
+    #[serde(with = "u128_string")]
+    pub accepted_until_ns: u128,
+    pub accepted_segments: Vec<V11AcceptedSegmentCheckpoint>,
+    pub cumulative_debits: Vec<V11CumulativeDebit>,
+    pub beginning_complete_owners: BTreeMap<String, V11OwnerEnvelope>,
+    pub staged_complete_owners: BTreeMap<String, V11OwnerEnvelope>,
+    pub finalized: bool,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11CumulativeDebit {
+    pub owner_id: String,
+    pub resource_key: V11ResourceKey,
+    pub amount: f64,
+}
+
+impl V11ParentTransaction {
+    #[must_use]
+    pub fn checkpoint(&self) -> V11ParentTransactionCheckpoint {
+        V11ParentTransactionCheckpoint {
+            schema: "OPENWEPP_C3_WOODY_V11_PARENT_CHECKPOINT_V1".into(),
+            parent_transaction_id: self.parent_transaction_id,
+            beginning_state: self.beginning_state.clone(),
+            staged_state: self.staged_state.clone(),
+            accepted_until_ns: self.accepted_until_ns,
+            accepted_segments: self.accepted_segment_checkpoints.clone(),
+            cumulative_debits: self
+                .cumulative_debits
+                .iter()
+                .map(|((owner_id, resource_key), amount)| V11CumulativeDebit {
+                    owner_id: owner_id.clone(),
+                    resource_key: resource_key.clone(),
+                    amount: *amount,
+                })
+                .collect(),
+            beginning_complete_owners: self.beginning_complete_owners.clone(),
+            staged_complete_owners: self.staged_resource_owners.clone(),
+            finalized: self.finalized,
+        }
+    }
+
+    #[allow(clippy::too_many_lines)]
+    pub fn restore(
+        configuration: &VegetationConfigurationV11,
+        checkpoint: V11ParentTransactionCheckpoint,
+    ) -> Result<Self, V11Error> {
+        if checkpoint.schema != "OPENWEPP_C3_WOODY_V11_PARENT_CHECKPOINT_V1"
+            || checkpoint.finalized
+            || checkpoint.accepted_segments.is_empty()
+        {
+            return Err(V11Error::RestartCheckpoint);
+        }
+        checkpoint.beginning_state.validate(configuration)?;
+        checkpoint.staged_state.validate(configuration)?;
+        validate_complete_owners(&checkpoint.beginning_complete_owners)?;
+        validate_complete_owners(&checkpoint.staged_complete_owners)?;
+        if checkpoint.beginning_complete_owners.get("vegetation")
+            != Some(&v11_vegetation_owner_envelope(&checkpoint.beginning_state)?)
+            || checkpoint.staged_complete_owners.get("vegetation")
+                != Some(&v11_vegetation_owner_envelope(&checkpoint.staged_state)?)
+        {
+            return Err(V11Error::RestartCheckpoint);
+        }
+        let mut cursor = checkpoint.accepted_segments[0].support.start_ns().get();
+        let mut predecessor_state_sha256 = checkpoint.beginning_state.state_sha256.clone();
+        let mut prior_transitions = Vec::<V11SharedResourceOwnerTransition>::new();
+        let mut cumulative = BTreeMap::<(String, V11ResourceKey), f64>::new();
+        for (index, segment) in checkpoint.accepted_segments.iter().enumerate() {
+            if segment.parent_transaction_id != checkpoint.parent_transaction_id
+                || index > 0
+                    && checkpoint.accepted_segments[index - 1]
+                        .slab_ordinal
+                        .checked_add(1)
+                        != Some(segment.slab_ordinal)
+                || segment.support.start_ns().get() != cursor
+                || segment.duration_s_bits != segment.support.duration_s_bits()
+                || segment.beginning_state_sha256 != predecessor_state_sha256
+            {
+                return Err(V11Error::RestartCheckpoint);
+            }
+            segment.ending_state.validate(configuration)?;
+            validate_debits(&segment.resource_debits)?;
+            validate_fluxes(&segment.admitted_resource_fluxes)?;
+            validate_material_transfers(&segment.material_transfers)?;
+            validate_complete_owners(&segment.ending_resource_owners)?;
+            if segment.ending_resource_owners.get("vegetation")
+                != Some(&v11_vegetation_owner_envelope(&segment.ending_state)?)
+            {
+                return Err(V11Error::RestartCheckpoint);
+            }
+            validate_resource_custody(
+                segment.parent_transaction_id,
+                segment.segment_id,
+                segment.slab_id,
+                segment.slab_ordinal,
+                segment.support,
+                &segment.resource_debits,
+                &segment.admitted_resource_fluxes,
+                &segment.shared_resource_transitions,
+                &segment.complete_owner_candidates,
+                (!prior_transitions.is_empty()).then_some(prior_transitions.as_slice()),
+            )
+            .map_err(|_| V11Error::RestartCheckpoint)?;
+            for debit in &segment.resource_debits {
+                let key = (debit.owner_id.clone(), debit.resource_key.clone());
+                let value = cumulative.entry(key.clone()).or_insert(0.0);
+                *value += debit.final_use;
+                if !value.is_finite() {
+                    return Err(V11Error::RestartCheckpoint);
+                }
+            }
+            prior_transitions.clone_from(&segment.shared_resource_transitions);
+            cursor = segment.support.end_ns().get();
+            predecessor_state_sha256.clone_from(&segment.ending_state.state_sha256);
+        }
+        let checkpoint_cumulative = checkpoint
+            .cumulative_debits
+            .iter()
+            .map(|value| {
+                (
+                    (value.owner_id.clone(), value.resource_key.clone()),
+                    value.amount,
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
+        if checkpoint_cumulative.len() != checkpoint.cumulative_debits.len()
+            || cursor != checkpoint.accepted_until_ns
+            || !cumulative_debits_bit_equal(&cumulative, &checkpoint_cumulative)
+            || checkpoint.accepted_segments.last().map(|s| &s.ending_state)
+                != Some(&checkpoint.staged_state)
+            || checkpoint
+                .accepted_segments
+                .last()
+                .map(|s| &s.ending_resource_owners)
+                != Some(&checkpoint.staged_complete_owners)
+        {
+            return Err(V11Error::RestartCheckpoint);
+        }
+        Ok(Self {
+            parent_transaction_id: checkpoint.parent_transaction_id,
+            beginning_state: checkpoint.beginning_state,
+            staged_state: checkpoint.staged_state,
+            accepted_until_ns: checkpoint.accepted_until_ns,
+            accepted_segments: Vec::new(),
+            accepted_segment_checkpoints: checkpoint.accepted_segments,
+            cumulative_debits: checkpoint_cumulative,
+            beginning_complete_owners: checkpoint.beginning_complete_owners,
+            staged_resource_owners: checkpoint.staged_complete_owners,
+            finalized: false,
+        })
+    }
+}
+
+fn imported_v10_view(
+    configuration: &VegetationConfigurationV11,
+    state: &V11CoupledOwnedState,
+) -> Result<(VegetationConfiguration, V10CoupledOwnedState), V11Error> {
+    let mut config = configuration.imported_v10.clone();
+    let mut physical = state.physical.clone();
+    physical.model_definition_sha256 = V10_MODEL_SHA256.into();
+    physical
+        .configuration_sha256
+        .clone_from(&config.configuration_sha256);
+    physical.last_transaction_id = state.last_parent_transaction_id;
+    physical.state_sha256 = physical.canonical_sha256();
+    if physical.last_transaction_id == 0 {
+        config
+            .initial_state_sha256
+            .clone_from(&physical.state_sha256);
+    }
+    let projected = V10CoupledOwnedState(physical);
+    projected.validate(&config).map_err(V11Error::V10State)?;
+    Ok((config, projected))
+}
+
+fn stage_imported_ending(
+    configuration: &VegetationConfigurationV11,
+    beginning: &V11CoupledOwnedState,
+    ending: V10CoupledOwnedState,
+) -> Result<V11CoupledOwnedState, V11Error> {
+    let mut physical = ending.0;
+    physical.model_definition_sha256 = v11_model_sha256();
+    physical
+        .configuration_sha256
+        .clone_from(&configuration.configuration_sha256);
+    normalize_parent_transaction_lineage(&mut physical, beginning.last_parent_transaction_id);
+    physical.state_sha256 = physical.canonical_sha256();
+    let mut state = V11CoupledOwnedState {
+        model_definition_sha256: v11_model_sha256(),
+        configuration_sha256: configuration.configuration_sha256.clone(),
+        state_sha256: String::new(),
+        physical,
+        last_parent_transaction_id: beginning.last_parent_transaction_id,
+    };
+    state.state_sha256 = state.canonical_sha256()?;
+    state.validate(configuration)?;
+    Ok(state)
+}
+
+fn normalize_parent_transaction_lineage(
+    physical: &mut crate::V8CoupledOwnedState,
+    parent_transaction_id: u128,
+) {
+    physical.last_transaction_id = parent_transaction_id;
+    for stratum in physical.strata.values_mut() {
+        stratum.last_transaction_id = parent_transaction_id;
+    }
+    let accepted = (parent_transaction_id != 0).then_some(parent_transaction_id);
+    for occupancy in physical.occupancies.values_mut() {
+        occupancy.last_accepted_transaction_id = accepted;
+    }
+}
+
+fn validate_debits(values: &[V11ResourceDebit]) -> Result<(), V11Error> {
+    let mut identities = BTreeSet::new();
+    for value in values {
+        let mut canonical = value.clone();
+        canonical.receipt_id = Digest32::zero();
+        if value.receipt_id != digest_canonical(b"OPENWEPP_V11_DEBIT_V1\0", &canonical)?
+            || [value.request, value.authorization, value.final_use]
+                .iter()
+                .any(|amount| !amount.is_finite() || *amount < 0.0)
+            || value.final_use > value.authorization
+            || value.authorization > value.request
+            || [
+                value.owner_id.as_str(),
+                value.ofe_id.as_str(),
+                value.tile_id.as_str(),
+                value.occupancy_id.as_str(),
+                value.layer_id.as_str(),
+                value.source_id.as_str(),
+                value.amount_basis.as_str(),
+            ]
+            .contains(&"")
+            || !identities.insert((
+                value.parent_transaction_id,
+                value.segment_id,
+                value.accepted_slab_id,
+                value.owner_id.clone(),
+                value.ofe_id.clone(),
+                value.tile_id.clone(),
+                value.occupancy_id.clone(),
+                value.layer_id.clone(),
+                value.source_id.clone(),
+                value.amount_basis.clone(),
+                value.resource_key.clone(),
+            ))
+        {
+            return Err(V11Error::ResourceDebit);
+        }
+    }
+    Ok(())
+}
+
+fn validate_fluxes(values: &[V11AdmittedResourceFlux]) -> Result<(), V11Error> {
+    let mut ids = BTreeSet::new();
+    for value in values {
+        let mut canonical = value.clone();
+        canonical.receipt_id = Digest32::zero();
+        let admitted = value.flux_class == "surface_runon"
+            && value.direction == "source_to_receiver"
+            && value.source_owner_id == "surface_liquid"
+            && value.receiver_owner_id == "hydrology"
+            && value.shared_resource_key.owner_id == "hydrology"
+            && value.shared_resource_key.resource == V11SharedResourceKind::Water;
+        if value.receipt_id != digest_canonical(b"OPENWEPP_V11_FLUX_V1\0", &canonical)?
+            || !value.amount.is_finite()
+            || value.amount < 0.0
+            || !admitted
+            || !ids.insert(value.receipt_id)
+        {
+            return Err(V11Error::ResourceFlux);
+        }
+    }
+    Ok(())
+}
+
+fn debit_shared_resource_key(value: &V11ResourceDebit) -> V11SharedResourceKey {
+    use openwepp_kernel_contract::MineralNitrogenSpecies;
+    let resource = match &value.resource_key {
+        V11ResourceKey::Water(_) => V11SharedResourceKind::Water,
+        V11ResourceKey::MineralNitrogen(key) => match key.species {
+            MineralNitrogenSpecies::Ammonium => V11SharedResourceKind::Ammonium,
+            MineralNitrogenSpecies::Nitrate => V11SharedResourceKind::Nitrate,
+        },
+    };
+    V11SharedResourceKey {
+        resource,
+        owner_id: value.owner_id.clone(),
+        ofe_id: value.ofe_id.clone(),
+        layer_id: value.layer_id.clone(),
+        source_id: value.source_id.clone(),
+        amount_basis: value.amount_basis.clone(),
+    }
+}
+
+fn build_complete_owner_candidates(
+    receipt: &AcceptedSlabReceiptV1,
+    owners: &BTreeMap<String, V11OwnerEnvelope>,
+    transitions: &[V11SharedResourceOwnerTransition],
+) -> Result<Vec<V11CompleteOwnerCandidate>, V11Error> {
+    validate_complete_owners(owners)?;
+    V11_COMPLETE_OWNER_MANIFEST
+        .into_iter()
+        .map(|owner_id| {
+            let mut components = transitions
+                .iter()
+                .filter(|t| t.shared_resource_key.owner_id == owner_id)
+                .map(|t| V11OwnerCandidateComponent {
+                    shared_resource_key: t.shared_resource_key.clone(),
+                    ending_amount_bits: t.ending_amount.to_bits(),
+                    debit_receipt_ids: t.debit_receipt_ids.clone(),
+                    admitted_flux_receipt_ids: t.admitted_flux_receipt_ids.clone(),
+                })
+                .collect::<Vec<_>>();
+            components.sort_by(|a, b| a.shared_resource_key.cmp(&b.shared_resource_key));
+            Ok(V11CompleteOwnerCandidate {
+                parent_transaction_id: receipt.parent_transaction_id(),
+                segment_id: receipt.segment_id(),
+                accepted_slab_id: receipt.slab_id(),
+                slab_ordinal: receipt.slab_ordinal(),
+                support: receipt.support(),
+                owner_id: owner_id.into(),
+                components,
+                ending_owner: owners
+                    .get(owner_id)
+                    .ok_or(V11Error::ResourceOwnerCandidate)?
+                    .clone(),
+            })
+        })
+        .collect()
+}
+
+#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_lines)]
+fn validate_resource_custody(
+    parent: ParentTransactionId,
+    segment: SegmentId,
+    slab: AcceptedSlabId,
+    ordinal: u32,
+    support: TimeSupport,
+    debits: &[V11ResourceDebit],
+    fluxes: &[V11AdmittedResourceFlux],
+    transitions: &[V11SharedResourceOwnerTransition],
+    candidates: &[V11CompleteOwnerCandidate],
+    predecessors: Option<&[V11SharedResourceOwnerTransition]>,
+) -> Result<(), V11Error> {
+    validate_debits(debits)?;
+    validate_fluxes(fluxes)?;
+    let domain = |p, s, a, t| p == parent && s == segment && a == slab && t == support;
+    if debits.iter().any(|d| {
+        !domain(
+            d.parent_transaction_id,
+            d.segment_id,
+            d.accepted_slab_id,
+            d.support,
+        )
+    }) || fluxes.iter().any(|f| {
+        !domain(
+            f.parent_transaction_id,
+            f.segment_id,
+            f.accepted_slab_id,
+            f.support,
+        )
+    }) || transitions.iter().any(|t| {
+        !domain(
+            t.parent_transaction_id,
+            t.segment_id,
+            t.accepted_slab_id,
+            t.support,
+        )
+    }) || candidates.len() != V11_COMPLETE_OWNER_MANIFEST.len()
+        || candidates
+            .iter()
+            .zip(V11_COMPLETE_OWNER_MANIFEST)
+            .any(|(c, id)| {
+                c.owner_id != id
+                    || c.slab_ordinal != ordinal
+                    || !domain(
+                        c.parent_transaction_id,
+                        c.segment_id,
+                        c.accepted_slab_id,
+                        c.support,
+                    )
+                    || c.ending_owner.owner_id != id
+            })
+    {
+        return Err(V11Error::ResourceCustody);
+    }
+    let debit_by_id = debits
+        .iter()
+        .map(|d| (d.receipt_id, d))
+        .collect::<BTreeMap<_, _>>();
+    let flux_by_id = fluxes
+        .iter()
+        .map(|f| (f.receipt_id, f))
+        .collect::<BTreeMap<_, _>>();
+    let mut linked_debits = Vec::new();
+    let mut linked_fluxes = Vec::new();
+    let mut keys = BTreeSet::new();
+    for t in transitions {
+        let mut canonical = t.clone();
+        canonical.transition_id = Digest32::zero();
+        if t.transition_id != digest_canonical(b"OPENWEPP_V11_TRANSITION_V1\0", &canonical)?
+            || t.debit_receipt_ids.is_empty()
+            || !is_sorted_unique(&t.debit_receipt_ids)
+            || !is_sorted_unique(&t.admitted_flux_receipt_ids)
+            || !t.beginning_amount.is_finite()
+            || !t.ending_amount.is_finite()
+            || t.beginning_amount < 0.0
+            || t.ending_amount < 0.0
+            || !keys.insert(t.shared_resource_key.clone())
+        {
+            return Err(V11Error::ResourceCustody);
+        }
+        let candidate = candidates
+            .iter()
+            .find(|c| c.owner_id == t.shared_resource_key.owner_id)
+            .ok_or(V11Error::ResourceCustody)?;
+        if t.owner_candidate_sha256 != candidate.ending_owner.state_sha256 {
+            return Err(V11Error::ResourceCustody);
+        }
+        let component = V11OwnerCandidateComponent {
+            shared_resource_key: t.shared_resource_key.clone(),
+            ending_amount_bits: t.ending_amount.to_bits(),
+            debit_receipt_ids: t.debit_receipt_ids.clone(),
+            admitted_flux_receipt_ids: t.admitted_flux_receipt_ids.clone(),
+        };
+        if !candidate.components.contains(&component) {
+            return Err(V11Error::ResourceCustody);
+        }
+        let mut auth = 0.0;
+        let mut used = 0.0;
+        for id in &t.debit_receipt_ids {
+            let d = debit_by_id.get(id).ok_or(V11Error::ResourceCustody)?;
+            if debit_shared_resource_key(d) != t.shared_resource_key {
+                return Err(V11Error::ResourceCustody);
+            }
+            auth += d.authorization;
+            used += d.final_use;
+            linked_debits.push(*id);
+        }
+        let mut inflow = 0.0;
+        for id in &t.admitted_flux_receipt_ids {
+            let f = flux_by_id.get(id).ok_or(V11Error::ResourceCustody)?;
+            if f.receiver_owner_id != t.shared_resource_key.owner_id
+                || f.shared_resource_key != t.shared_resource_key
+            {
+                return Err(V11Error::ResourceCustody);
+            }
+            inflow += f.amount;
+            linked_fluxes.push(*id);
+        }
+        if auth > t.beginning_amount + inflow || used > t.beginning_amount + inflow {
+            return Err(V11Error::ResourceCustody);
+        }
+        if let Some(previous) = predecessors {
+            if let Some(p) = previous
+                .iter()
+                .find(|p| p.shared_resource_key == t.shared_resource_key)
+            {
+                if p.ending_amount.to_bits() != t.beginning_amount.to_bits() {
+                    return Err(V11Error::ResourceCustody);
+                }
+            }
+        }
+    }
+    linked_debits.sort();
+    linked_fluxes.sort();
+    if linked_debits != debit_by_id.keys().copied().collect::<Vec<_>>()
+        || linked_fluxes != flux_by_id.keys().copied().collect::<Vec<_>>()
+    {
+        return Err(V11Error::ResourceCustody);
+    }
+    Ok(())
+}
+
+fn is_sorted_unique<T: Ord>(values: &[T]) -> bool {
+    values.windows(2).all(|w| w[0] < w[1])
+}
+fn digest_canonical<T: Serialize>(domain: &[u8], value: &T) -> Result<Digest32, V11Error> {
+    let mut h = Sha256::new();
+    h.update(domain);
+    h.update(serde_json::to_vec(value).map_err(V11Error::Schema)?);
+    Ok(Digest32::from_bytes(h.finalize().into()))
+}
+
+fn cumulative_debits_bit_equal(
+    left: &BTreeMap<(String, V11ResourceKey), f64>,
+    right: &BTreeMap<(String, V11ResourceKey), f64>,
+) -> bool {
+    left.len() == right.len()
+        && left
+            .iter()
+            .zip(right)
+            .all(|((left_key, left_amount), (right_key, right_amount))| {
+                left_key == right_key && left_amount.to_bits() == right_amount.to_bits()
+            })
+}
+
+fn validate_material_transfers(values: &[MaterialTransfer]) -> Result<(), V11Error> {
+    for value in values {
+        if value.owner_id.as_str().is_empty()
+            || !value.carbon.is_finite()
+            || !value.nitrogen.is_finite()
+            || !value.dry_matter.is_finite()
+            || value.carbon < 0.0
+            || value.nitrogen < 0.0
+            || value.dry_matter < 0.0
+        {
+            return Err(V11Error::MaterialTransfer);
+        }
+    }
+    Ok(())
+}
+
+fn validate_complete_owners(values: &BTreeMap<String, V11OwnerEnvelope>) -> Result<(), V11Error> {
+    let expected = V11_COMPLETE_OWNER_MANIFEST
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    if values.keys().map(String::as_str).collect::<BTreeSet<_>>() != expected {
+        return Err(V11Error::ResourceOwnerCandidate);
+    }
+    for (id, value) in values {
+        if value.owner_id != *id {
+            return Err(V11Error::ResourceOwnerCandidate);
+        }
+        value.to_owner_state()?;
+    }
+    Ok(())
+}
+
+fn validate_nonvegetation_owners(
+    values: &BTreeMap<String, V11OwnerEnvelope>,
+) -> Result<(), V11Error> {
+    let expected = V11_COMPLETE_OWNER_MANIFEST
+        .into_iter()
+        .filter(|id| *id != "vegetation")
+        .collect::<BTreeSet<_>>();
+    if values.keys().map(String::as_str).collect::<BTreeSet<_>>() != expected {
+        return Err(V11Error::ResourceOwnerCandidate);
+    }
+    for (id, value) in values {
+        if value.owner_id != *id {
+            return Err(V11Error::ResourceOwnerCandidate);
+        }
+        value.to_owner_state()?;
+    }
+    Ok(())
+}
+
+pub fn v11_vegetation_owner_envelope(
+    state: &V11CoupledOwnedState,
+) -> Result<V11OwnerEnvelope, V11Error> {
+    let bytes = serde_json::to_vec(state).map_err(V11Error::Schema)?;
+    V11OwnerEnvelope::try_new("vegetation".into(), bytes)
+}
+
+fn ordered_owner_states(
+    values: &BTreeMap<String, V11OwnerEnvelope>,
+) -> Result<Vec<OwnerState>, V11Error> {
+    validate_complete_owners(values)?;
+    V11_COMPLETE_OWNER_MANIFEST
+        .into_iter()
+        .map(|id| {
+            values
+                .get(id)
+                .ok_or(V11Error::ResourceOwnerCandidate)?
+                .to_owner_state()
+        })
+        .collect()
+}
+
+#[derive(Debug, Error)]
+pub enum V11ExecutionError<E> {
+    #[error("VEG-E-122: V11 authority rejected segment: {0}")]
+    V11(#[from] V11Error),
+    #[error("VEG-E-123: imported V10 segment execution failed")]
+    Executor(E),
+}
+
+#[derive(Debug, Error)]
+pub enum V11Error {
+    #[error("VEG-E-121: invalid V11 configuration: {0}")]
+    Configuration(VegetationError),
+    #[error("VEG-E-121: V10 source/state rejected: {0}")]
+    V10State(crate::V10StateError),
+    #[error("VEG-E-121: V11 canonical schema: {0}")]
+    Schema(serde_json::Error),
+    #[error("VEG-E-121: migration identity mismatch")]
+    MigrationIdentity,
+    #[error("VEG-E-121: cadence does not roundtrip exactly")]
+    CadenceRoundtrip,
+    #[error("VEG-E-122: invalid coupled-time support duration")]
+    SupportDuration,
+    #[error("VEG-E-123: segment predecessor mismatch")]
+    SupportPredecessor,
+    #[error("VEG-E-123: V11 state identity mismatch")]
+    StateIdentity,
+    #[error("VEG-E-123: segment attempted persistent transaction advance")]
+    SegmentTransaction,
+    #[error("VEG-E-124: invalid or duplicate resource debit")]
+    ResourceDebit,
+    #[error("VEG-E-124: unadmitted typed resource flux")]
+    ResourceFlux,
+    #[error("VEG-E-124: invalid shared-resource custody chronology")]
+    ResourceCustody,
+    #[error("VEG-E-124: invalid complete staged owner candidate")]
+    ResourceOwnerCandidate,
+    #[error("VEG-E-125: invalid material-transfer chronology")]
+    MaterialTransfer,
+    #[error("VEG-E-126: parent transaction overflow")]
+    ParentTransactionOverflow,
+    #[error("VEG-E-126: invalid or duplicate parent finalization")]
+    ParentFinalization,
+    #[error("VEG-E-127: invalid V11 parent checkpoint")]
+    RestartCheckpoint,
+    #[error("VEG-E-122: coupled-time authority rejected support: {0}")]
+    CoupledTime(#[from] openwepp_coupled_time::CoupledTimeError),
+}
+
+mod u128_string {
+    use serde::{Deserialize, Deserializer, Serializer, de};
+
+    pub(super) fn serialize<S: Serializer>(value: &u128, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&value.to_string())
+    }
+
+    pub(super) fn deserialize<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<u128, D::Error> {
+        let text = String::deserialize(deserializer)?;
+        if text.is_empty()
+            || text != "0" && text.starts_with('0')
+            || !text.bytes().all(|byte| byte.is_ascii_digit())
+        {
+            return Err(de::Error::custom("noncanonical u128 string"));
+        }
+        text.parse().map_err(de::Error::custom)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use openwepp_coupled_time::{
+        ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, LedgerEntryV1,
+        ParentAuthorityV1, ParentIntervalId, StepConstraintV1, accept_slab,
+        complete_owner_set_digest, digest_bytes, reduce_constraints,
+    };
+
+    fn v10_fixture() -> (VegetationConfiguration, V10CoupledOwnedState) {
+        let (v8_config, v8_state) = crate::v8_state::v8_test_fixture();
+        let mut configuration = v8_config;
+        configuration.model_definition_sha256 = V10_MODEL_SHA256.into();
+        configuration.configuration_sha256 = configuration.canonical_sha256().expect("config");
+        let mut physical = v8_state;
+        physical.model_definition_sha256 = V10_MODEL_SHA256.into();
+        physical.configuration_sha256 = configuration.configuration_sha256.clone();
+        physical.state_sha256 = physical.canonical_sha256();
+        configuration.initial_state_sha256 = physical.state_sha256.clone();
+        (configuration, V10CoupledOwnedState(physical))
+    }
+
+    fn digest(byte: u8) -> Digest32 {
+        Digest32::from_bytes([byte; 32])
+    }
+
+    fn complete_owners(state: &V11CoupledOwnedState) -> BTreeMap<String, V11OwnerEnvelope> {
+        V11_COMPLETE_OWNER_MANIFEST
+            .into_iter()
+            .map(|id| {
+                let envelope = if id == "vegetation" {
+                    v11_vegetation_owner_envelope(state).expect("vegetation owner")
+                } else {
+                    V11OwnerEnvelope::try_new(id.into(), format!("{id}-state").into_bytes())
+                        .expect("owner")
+                };
+                (id.into(), envelope)
+            })
+            .collect()
+    }
+
+    fn accepted_receipts(
+        owners: &BTreeMap<String, V11OwnerEnvelope>,
+        ends: &[u128],
+    ) -> (ParentTransactionId, Vec<AcceptedSlabReceiptV1>) {
+        let mut clock_owners = owners
+            .values()
+            .map(V11OwnerEnvelope::to_owner_state)
+            .collect::<Result<Vec<_>, _>>()
+            .expect("owner states");
+        clock_owners.sort_by(|a, b| a.owner_id().cmp(b.owner_id()));
+        let participants = clock_owners
+            .iter()
+            .map(|owner| owner.owner_id().to_owned())
+            .collect::<Vec<_>>();
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_800_000_000_000))
+            .expect("parent support");
+        let interval =
+            ParentIntervalId::derive(digest(1), digest(2), digest(3), support).expect("interval");
+        let owner_digest = complete_owner_set_digest(&clock_owners).expect("owner digest");
+        let parent =
+            ParentTransactionId::derive(digest(1), 0, interval, owner_digest).expect("parent");
+        let authority =
+            ParentAuthorityV1::new(digest(1), digest(2), digest(3), 0, support, owner_digest)
+                .expect("authority");
+        let mut clock = CoupledClockStateV1::new(
+            authority,
+            clock_owners.clone(),
+            "vegetation".into(),
+            participants.clone(),
+            digest(4),
+            vec![],
+        )
+        .expect("clock");
+        let mut participant_bytes = Vec::new();
+        for participant in &participants {
+            participant_bytes.extend_from_slice(participant.as_bytes());
+            participant_bytes.push(0);
+        }
+        let segment = SegmentId::derive(
+            parent,
+            0,
+            support,
+            digest_bytes(b"vegetation"),
+            digest_bytes(&participant_bytes),
+        )
+        .expect("segment");
+        let mut receipts = Vec::new();
+        for &end in ends {
+            let constraint = StepConstraintV1::new(
+                parent,
+                clock.accepted_until(),
+                ModelTimeNs::new(end),
+                "vegetation".into(),
+                ConstraintClass::HardBoundary,
+                digest(5),
+                digest(6),
+                digest(7),
+            )
+            .expect("constraint");
+            let reduction = reduce_constraints(
+                &[constraint],
+                parent,
+                clock.accepted_until(),
+                ModelTimeNs::new(1_800_000_000_000),
+                None,
+            )
+            .expect("reduction");
+            let candidate = CoupledSlabCandidateV1::new(
+                &clock,
+                segment,
+                TimeSupport::new(clock.accepted_until(), ModelTimeNs::new(end)).expect("slab"),
+                &reduction,
+                clock_owners.clone(),
+                vec![
+                    LedgerEntryV1::new(
+                        "vegetation_test".into(),
+                        "kg".into(),
+                        digest(8),
+                        digest(8),
+                        digest(9),
+                    )
+                    .expect("ledger"),
+                ],
+            )
+            .expect("candidate");
+            receipts.push(accept_slab(&mut clock, candidate).expect("accept"));
+        }
+        (parent, receipts)
+    }
+
+    fn staged_candidate(
+        parent: &V11ParentTransaction,
+        receipt: AcceptedSlabReceiptV1,
+        debit: Option<V11ResourceDebit>,
+    ) -> V11AcceptedSegmentCandidate {
+        staged_candidate_with_debits(parent, receipt, debit.into_iter().collect())
+    }
+
+    fn staged_candidate_with_debits(
+        parent: &V11ParentTransaction,
+        receipt: AcceptedSlabReceiptV1,
+        resource_debits: Vec<V11ResourceDebit>,
+    ) -> V11AcceptedSegmentCandidate {
+        let complete_owner_candidates =
+            build_complete_owner_candidates(&receipt, &parent.staged_resource_owners, &[])
+                .expect("candidates");
+        V11AcceptedSegmentCandidate {
+            accepted_slab_receipt: receipt,
+            beginning_state_sha256: parent.staged_state.state_sha256.clone(),
+            ending_state: parent.staged_state.clone(),
+            resource_debits,
+            admitted_resource_fluxes: vec![],
+            shared_resource_transitions: vec![],
+            complete_owner_candidates,
+            material_transfers: vec![],
+            ending_resource_owners: parent.staged_resource_owners.clone(),
+        }
+    }
+
+    #[test]
+    fn embedded_v11_definition_is_identity_distinct() {
+        assert_ne!(v11_model_sha256(), V10_MODEL_SHA256);
+        assert_eq!(
+            load_v11_model_definition().expect("model").sha256,
+            V11_MODEL_SHA256
+        );
+        let value: serde_json::Value = serde_json::from_slice(V11_MODEL_BYTES).expect("definition");
+        assert_eq!(value["model_version"], V11_MODEL_VERSION);
+    }
+
+    #[test]
+    fn migration_preserves_every_physical_payload_bit() {
+        let (configuration, state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&configuration, &state).expect("migration");
+        assert_eq!(migrated.configuration.nominal_cadence_ns, 1_800_000_000_000);
+        assert_eq!(migrated.state.physical.strata, state.0.strata);
+        assert_eq!(migrated.state.physical.occupancies, state.0.occupancies);
+        assert_eq!(
+            migrated.state.last_parent_transaction_id,
+            state.0.last_transaction_id
+        );
+        migrated
+            .state
+            .validate(&migrated.configuration)
+            .expect("valid V11 state");
+    }
+
+    #[test]
+    fn complete_owner_manifest_is_exact_and_digest_bound() {
+        let owners = V11_COMPLETE_OWNER_MANIFEST
+            .into_iter()
+            .map(|id| {
+                (
+                    id.to_owned(),
+                    V11OwnerEnvelope::try_new(id.to_owned(), id.as_bytes().to_vec())
+                        .expect("owner"),
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
+        validate_complete_owners(&owners).expect("complete owners");
+        let mut poison = owners;
+        poison.get_mut("hydrology").expect("hydrology").state_bytes[0] ^= 1;
+        assert!(matches!(
+            validate_complete_owners(&poison),
+            Err(V11Error::ResourceOwnerCandidate)
+        ));
+    }
+
+    #[test]
+    fn segment_local_lineage_is_normalized_to_parent_chronology() {
+        let (_, mut physical) = crate::v8_state::v8_test_fixture();
+        physical.last_transaction_id = 9;
+        for stratum in physical.strata.values_mut() {
+            stratum.last_transaction_id = 9;
+        }
+        for occupancy in physical.occupancies.values_mut() {
+            occupancy.last_accepted_transaction_id = Some(9);
+        }
+        normalize_parent_transaction_lineage(&mut physical, 8);
+        assert_eq!(physical.last_transaction_id, 8);
+        assert!(
+            physical
+                .strata
+                .values()
+                .all(|value| value.last_transaction_id == 8)
+        );
+        assert!(
+            physical
+                .occupancies
+                .values()
+                .all(|value| value.last_accepted_transaction_id == Some(8))
+        );
+    }
+
+    #[test]
+    fn unequal_segments_chain_and_finalize_one_complete_owner_successor() {
+        let (v10_configuration, v10_state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
+        let owners = complete_owners(&migrated.state);
+        let (parent_id, receipts) =
+            accepted_receipts(&owners, &[600_000_000_000, 1_800_000_000_000]);
+        assert_eq!(receipts[0].duration_s_bits(), 600.0_f64.to_bits());
+        assert_eq!(receipts[1].duration_s_bits(), 1_200.0_f64.to_bits());
+        let mut parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        for receipt in receipts {
+            let candidate = staged_candidate(&parent, receipt, None);
+            parent
+                .accept_segment(&migrated.configuration, candidate)
+                .expect("stage");
+        }
+        let beginning_transaction = migrated.state.last_parent_transaction_id;
+        let candidate = parent.finalize(&migrated.configuration).expect("finalize");
+        assert_eq!(
+            candidate.ending_state.last_parent_transaction_id,
+            beginning_transaction + 1
+        );
+        assert_eq!(
+            candidate.ending_complete_owners[0].state_bytes(),
+            serde_json::to_vec(&candidate.ending_state)
+                .expect("ending state")
+                .as_slice()
+        );
+        assert_eq!(
+            candidate
+                .ending_complete_owners
+                .iter()
+                .map(OwnerState::owner_id)
+                .collect::<Vec<_>>(),
+            V11_COMPLETE_OWNER_MANIFEST
+        );
+    }
+
+    #[test]
+    fn checkpoint_restore_rejects_broken_predecessor_and_terminal_owner() {
+        let (v10_configuration, v10_state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
+        let owners = complete_owners(&migrated.state);
+        let (parent_id, receipts) = accepted_receipts(&owners, &[1_800_000_000_000]);
+        let mut parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        let candidate = staged_candidate(&parent, receipts[0].clone(), None);
+        parent
+            .accept_segment(&migrated.configuration, candidate)
+            .expect("stage");
+        let checkpoint = parent.checkpoint();
+        let restored = V11ParentTransaction::restore(&migrated.configuration, checkpoint.clone())
+            .expect("restore");
+        assert_eq!(restored.checkpoint(), checkpoint);
+
+        let mut predecessor_poison = checkpoint.clone();
+        predecessor_poison.accepted_segments[0].beginning_state_sha256 = "0".repeat(64);
+        assert!(
+            V11ParentTransaction::restore(&migrated.configuration, predecessor_poison).is_err()
+        );
+
+        let mut owner_poison = checkpoint;
+        owner_poison.accepted_segments[0]
+            .ending_resource_owners
+            .get_mut("snow")
+            .expect("snow")
+            .state_bytes
+            .push(0);
+        assert!(V11ParentTransaction::restore(&migrated.configuration, owner_poison).is_err());
+    }
+
+    #[cfg(any())]
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn nonassociative_resource_custody_uses_sequential_endings_for_water_nh4_no3() {
+        use openwepp_kernel_contract::{
+            MineralNitrogenSpecies, OccupancyId, SoilLayerId, StratumId, TileId,
+        };
+
+        let (v10_configuration, v10_state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
+        let owners = complete_owners(&migrated.state);
+        let (parent_id, receipts) = accepted_receipts(
+            &owners,
+            &[600_000_000_000, 1_200_000_000_000, 1_800_000_000_000],
+        );
+        let mut parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        let layer = SoilLayerId::try_new("l1").expect("layer");
+        let keys = [
+            V11ResourceKey::Water(WaterResourceKey {
+                occupancy_id: OccupancyId {
+                    stratum_id: StratumId::try_new("s1").expect("stratum"),
+                    tile_id: TileId::try_new("t1").expect("tile"),
+                },
+                layer_id: layer.clone(),
+            }),
+            V11ResourceKey::MineralNitrogen(MineralNitrogenKey {
+                layer_id: layer.clone(),
+                species: MineralNitrogenSpecies::Ammonium,
+            }),
+            V11ResourceKey::MineralNitrogen(MineralNitrogenKey {
+                layer_id: layer,
+                species: MineralNitrogenSpecies::Nitrate,
+            }),
+        ];
+        let beginnings = [
+            497_355_953.965_941_8,
+            0.497_355_953_965_941_84,
+            497.355_953_965_941_75,
+        ];
+        let amounts = [
+            [
+                108_987_197.969_511_36,
+                119_731_815.493_540_45,
+                27_340_159.710_375_622,
+            ],
+            [
+                0.108_987_197_969_511_37,
+                0.119_731_815_493_540_46,
+                0.027_340_159_710_375_622,
+            ],
+            [
+                108.987_197_969_511_36,
+                119.731_815_493_540_45,
+                27.340_159_710_375_62,
+            ],
+        ];
+        let mut staged = beginnings;
+        for (ordinal, receipt) in receipts.into_iter().enumerate() {
+            let debits: Vec<V11ResourceDebit> = keys
+                .iter()
+                .enumerate()
+                .map(|(resource, key)| {
+                    let beginning = staged[resource];
+                    let amount = amounts[resource][ordinal];
+                    let ending = beginning - amount;
+                    staged[resource] = ending;
+                    V11ResourceDebit {
+                        owner_id: if resource == 0 { "hydrology" } else { "bgc" }.into(),
+                        resource_key: key.clone(),
+                        beginning_amount: beginning,
+                        amount,
+                        ending_amount: ending,
+                    }
+                })
+                .collect();
+            if ordinal == 2 {
+                let mut regrouped = debits.clone();
+                let cumulative = amounts[0]
+                    .iter()
+                    .fold(0.0_f64, |total, amount| total + amount);
+                regrouped[0].ending_amount = beginnings[0] - cumulative;
+                assert_ne!(
+                    regrouped[0].ending_amount.to_bits(),
+                    debits[0].ending_amount.to_bits()
+                );
+                let before = parent.checkpoint();
+                let poison = staged_candidate_with_debits(&parent, receipt.clone(), regrouped);
+                assert!(matches!(
+                    parent.accept_segment(&migrated.configuration, poison),
+                    Err(V11Error::ResourceDebit)
+                ));
+                assert_eq!(parent.checkpoint(), before);
+            }
+            let candidate = staged_candidate_with_debits(&parent, receipt, debits);
+            parent
+                .accept_segment(&migrated.configuration, candidate)
+                .expect("sequential custody");
+        }
+        assert_eq!(staged[0].to_bits(), 241_296_780.792_514_32_f64.to_bits());
+        assert_eq!(staged[1].to_bits(), 0.241_296_780_792_514_43_f64.to_bits());
+        assert_eq!(staged[2].to_bits(), 241.296_780_792_514_34_f64.to_bits());
+        for (resource, key) in keys.iter().enumerate() {
+            let owner = if resource == 0 { "hydrology" } else { "bgc" };
+            let cumulative = parent
+                .cumulative_debits
+                .get(&(owner.into(), key.clone()))
+                .expect("cumulative diagnostic");
+            assert_ne!(
+                (beginnings[resource] - cumulative).to_bits(),
+                staged[resource].to_bits()
+            );
+        }
+        let checkpoint = parent.checkpoint();
+        V11ParentTransaction::restore(&migrated.configuration, checkpoint)
+            .expect("nonassociative checkpoint");
+    }
+
+    #[cfg(any())]
+    #[test]
+    fn wrong_segment_ending_rejects_atomically() {
+        let (v10_configuration, v10_state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
+        let owners = complete_owners(&migrated.state);
+        let (parent_id, receipts) = accepted_receipts(&owners, &[1_800_000_000_000]);
+        let mut parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        let before = parent.checkpoint();
+        let poison = V11ResourceDebit {
+            owner_id: "hydrology".into(),
+            resource_key: V11ResourceKey::Water(WaterResourceKey {
+                occupancy_id: openwepp_kernel_contract::OccupancyId {
+                    stratum_id: openwepp_kernel_contract::StratumId::try_new("s1")
+                        .expect("stratum"),
+                    tile_id: openwepp_kernel_contract::TileId::try_new("t1").expect("tile"),
+                },
+                layer_id: openwepp_kernel_contract::SoilLayerId::try_new("l1").expect("layer"),
+            }),
+            beginning_amount: 497_355_953.965_941_8,
+            amount: 256_059_173.173_427_4,
+            ending_amount: 241_296_780.792_514_32,
+        };
+        let candidate = staged_candidate(&parent, receipts[0].clone(), Some(poison));
+        assert!(matches!(
+            parent.accept_segment(&migrated.configuration, candidate),
+            Err(V11Error::ResourceDebit)
+        ));
+        assert_eq!(parent.checkpoint(), before);
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn closed_multi_occupancy_water_and_mineral_n_custody_rejects_aliases() {
+        use openwepp_kernel_contract::{
+            MineralNitrogenSpecies, OccupancyId, SoilLayerId, StratumId, TileId,
+        };
+        let (v10_configuration, v10_state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
+        let owners = complete_owners(&migrated.state);
+        let (_, receipts) = accepted_receipts(&owners, &[1_800_000_000_000]);
+        let receipt = &receipts[0];
+        let layer = SoilLayerId::try_new("l1").expect("layer");
+        let water_key = V11ResourceKey::Water(WaterResourceKey {
+            occupancy_id: OccupancyId {
+                stratum_id: StratumId::try_new("s1").expect("s"),
+                tile_id: TileId::try_new("t1").expect("t"),
+            },
+            layer_id: layer.clone(),
+        });
+        let nh4 = V11ResourceKey::MineralNitrogen(MineralNitrogenKey {
+            layer_id: layer.clone(),
+            species: MineralNitrogenSpecies::Ammonium,
+        });
+        let no3 = V11ResourceKey::MineralNitrogen(MineralNitrogenKey {
+            layer_id: layer,
+            species: MineralNitrogenSpecies::Nitrate,
+        });
+        let make =
+            |occupancy: &str, key: V11ResourceKey, owner: &str, source: &str, amount: f64| {
+                V11ResourceDebit::new(V11ResourceDebit {
+                    receipt_id: Digest32::zero(),
+                    parent_transaction_id: receipt.parent_transaction_id(),
+                    segment_id: receipt.segment_id(),
+                    accepted_slab_id: receipt.slab_id(),
+                    support: receipt.support(),
+                    owner_id: owner.into(),
+                    resource_key: key,
+                    ofe_id: "ofe-1".into(),
+                    tile_id: format!("tile-{occupancy}"),
+                    occupancy_id: occupancy.into(),
+                    layer_id: "l1".into(),
+                    source_id: source.into(),
+                    amount_basis: "kg_m2".into(),
+                    request: amount,
+                    authorization: amount,
+                    final_use: amount,
+                })
+                .expect("debit")
+            };
+        let mut debits = vec![
+            make("a", water_key.clone(), "hydrology", "soil_water", 4.0),
+            make("b", water_key, "hydrology", "soil_water", 4.0),
+            make("n", nh4.clone(), "bgc", "nh4", 0.1),
+            make("n", no3.clone(), "bgc", "no3", 0.2),
+        ];
+        debits.sort_by_key(|d| d.receipt_id);
+        let transition = |owner: &str,
+                          key: V11ResourceKey,
+                          source: &str,
+                          begin: f64,
+                          end: f64,
+                          ids: Vec<Digest32>| {
+            let resource = match key {
+                V11ResourceKey::Water(_) => V11SharedResourceKind::Water,
+                V11ResourceKey::MineralNitrogen(key) => match key.species {
+                    MineralNitrogenSpecies::Ammonium => V11SharedResourceKind::Ammonium,
+                    MineralNitrogenSpecies::Nitrate => V11SharedResourceKind::Nitrate,
+                },
+            };
+            V11SharedResourceOwnerTransition::new(V11SharedResourceOwnerTransition {
+                transition_id: Digest32::zero(),
+                parent_transaction_id: receipt.parent_transaction_id(),
+                segment_id: receipt.segment_id(),
+                accepted_slab_id: receipt.slab_id(),
+                support: receipt.support(),
+                shared_resource_key: V11SharedResourceKey {
+                    resource,
+                    owner_id: owner.into(),
+                    ofe_id: "ofe-1".into(),
+                    layer_id: "l1".into(),
+                    source_id: source.into(),
+                    amount_basis: "kg_m2".into(),
+                },
+                beginning_amount: begin,
+                ending_amount: end,
+                debit_receipt_ids: ids,
+                admitted_flux_receipt_ids: vec![],
+                owner_candidate_sha256: owners[owner].state_sha256,
+            })
+            .expect("transition")
+        };
+        let water_ids = debits
+            .iter()
+            .filter(|d| d.owner_id == "hydrology")
+            .map(|d| d.receipt_id)
+            .collect();
+        let transitions = vec![
+            transition(
+                "bgc",
+                nh4,
+                "nh4",
+                1.0,
+                0.9,
+                vec![
+                    debits
+                        .iter()
+                        .find(|d| d.source_id == "nh4")
+                        .unwrap()
+                        .receipt_id,
+                ],
+            ),
+            transition(
+                "bgc",
+                no3,
+                "no3",
+                2.0,
+                1.8,
+                vec![
+                    debits
+                        .iter()
+                        .find(|d| d.source_id == "no3")
+                        .unwrap()
+                        .receipt_id,
+                ],
+            ),
+            transition(
+                "hydrology",
+                debits
+                    .iter()
+                    .find(|d| d.owner_id == "hydrology")
+                    .unwrap()
+                    .resource_key
+                    .clone(),
+                "soil_water",
+                10.0,
+                2.0,
+                water_ids,
+            ),
+        ];
+        let candidates =
+            build_complete_owner_candidates(receipt, &owners, &transitions).expect("candidates");
+        validate_resource_custody(
+            receipt.parent_transaction_id(),
+            receipt.segment_id(),
+            receipt.slab_id(),
+            receipt.slab_ordinal(),
+            receipt.support(),
+            &debits,
+            &[],
+            &transitions,
+            &candidates,
+            None,
+        )
+        .expect("valid custody");
+        let mut overbook = debits.clone();
+        for d in overbook.iter_mut().filter(|d| d.owner_id == "hydrology") {
+            d.request = 6.;
+            d.authorization = 6.;
+            d.final_use = 6.;
+            *d = V11ResourceDebit::new(d.clone()).expect("rebind");
+        }
+        overbook.sort_by_key(|d| d.receipt_id);
+        assert!(
+            validate_resource_custody(
+                receipt.parent_transaction_id(),
+                receipt.segment_id(),
+                receipt.slab_id(),
+                receipt.slab_ordinal(),
+                receipt.support(),
+                &overbook,
+                &[],
+                &transitions,
+                &candidates,
+                None
+            )
+            .is_err()
+        );
+    }
+}

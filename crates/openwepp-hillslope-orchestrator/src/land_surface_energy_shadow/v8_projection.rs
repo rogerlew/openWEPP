@@ -127,6 +127,50 @@ pub(crate) fn project_multi_tile_v8_passes(
     configuration: &VegetationConfiguration,
     beginning: &V8CoupledOwnedState,
 ) -> Result<V8CoveredProjection, V8ProjectionError> {
+    project_multi_tile_v8_passes_with_duration(
+        potentials,
+        finals,
+        bindings,
+        hydrology,
+        configuration,
+        beginning,
+        None,
+    )
+}
+
+/// V11 projection using the authenticated common-slab duration bits while
+/// retaining the immutable nominal V8/V10 configuration identity.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn project_multi_tile_v8_passes_v11(
+    potentials: &[&PotentialCoveredVegetationOperands],
+    finals: &[&AcceptedCoveredVegetationOperands],
+    bindings: &[V8ComponentOccupancyBinding],
+    hydrology: &UnifiedRealHydrologyCandidate,
+    configuration: &VegetationConfiguration,
+    beginning: &V8CoupledOwnedState,
+    duration_s_bits: u64,
+) -> Result<V8CoveredProjection, V8ProjectionError> {
+    project_multi_tile_v8_passes_with_duration(
+        potentials,
+        finals,
+        bindings,
+        hydrology,
+        configuration,
+        beginning,
+        Some(duration_s_bits),
+    )
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn project_multi_tile_v8_passes_with_duration(
+    potentials: &[&PotentialCoveredVegetationOperands],
+    finals: &[&AcceptedCoveredVegetationOperands],
+    bindings: &[V8ComponentOccupancyBinding],
+    hydrology: &UnifiedRealHydrologyCandidate,
+    configuration: &VegetationConfiguration,
+    beginning: &V8CoupledOwnedState,
+    duration_s_bits: Option<u64>,
+) -> Result<V8CoveredProjection, V8ProjectionError> {
     configuration.validate_v8()?;
     beginning
         .validate(configuration)
@@ -142,7 +186,7 @@ pub(crate) fn project_multi_tile_v8_passes(
                 "missing configured covered potential/final tile set",
             ));
         }
-        return project_empty_v8_passes(configuration, beginning);
+        return project_empty_v8_passes(configuration, beginning, duration_s_bits);
     }
     let binding_map = validate_v8_component_bindings(bindings, configuration)?;
     let mut potential_components = BTreeSet::new();
@@ -174,7 +218,8 @@ pub(crate) fn project_multi_tile_v8_passes(
             || potential.tile_id != final_value.tile_id
             || potential.tile_fraction.to_bits() != final_value.tile_fraction.to_bits()
             || potential.interval_s.to_bits() != final_value.interval_s.to_bits()
-            || potential.interval_s.to_bits() != configuration.dt_s.to_bits()
+            || potential.interval_s.to_bits()
+                != duration_s_bits.unwrap_or_else(|| configuration.dt_s.to_bits())
             || potential.top_rain_kg_m2_tile_ground.to_bits()
                 != final_value.top_rain_kg_m2_tile_ground.to_bits()
         {
@@ -303,30 +348,45 @@ pub(crate) fn project_multi_tile_v8_passes(
     capped_receipts.sort_by(|left, right| left.occupancy_id.cmp(&right.occupancy_id));
     final_tiles.sort_by(|left, right| left.tile_id.cmp(&right.tile_id));
     let first = potentials[0];
-    let potential = ValidatedV8CarbonPass::try_new(
-        first.vegetation_model_definition_sha256.to_owned(),
-        configuration.configuration_sha256.clone(),
-        expected_transaction,
-        beginning.state_sha256.clone(),
-        CoupledSolvePass::Potential,
-        first.interval_s,
-        potential_receipts,
-        configuration,
-        beginning,
-    )?;
-    let capped = ValidatedV8CarbonPass::try_new(
-        first.vegetation_model_definition_sha256.to_owned(),
-        configuration.configuration_sha256.clone(),
-        expected_transaction,
-        beginning.state_sha256.clone(),
-        CoupledSolvePass::Capped,
-        first.interval_s,
-        capped_receipts,
-        configuration,
-        beginning,
-    )?;
-    let final_state =
-        ValidatedV8FinalStatePass::try_new(bindings, final_tiles, configuration, beginning)?;
+    let make_pass = |pass, receipts| match duration_s_bits {
+        Some(bits) => ValidatedV8CarbonPass::try_new_v11(
+            first.vegetation_model_definition_sha256.to_owned(),
+            configuration.configuration_sha256.clone(),
+            expected_transaction,
+            beginning.state_sha256.clone(),
+            pass,
+            first.interval_s,
+            receipts,
+            configuration,
+            beginning,
+            bits,
+        ),
+        None => ValidatedV8CarbonPass::try_new(
+            first.vegetation_model_definition_sha256.to_owned(),
+            configuration.configuration_sha256.clone(),
+            expected_transaction,
+            beginning.state_sha256.clone(),
+            pass,
+            first.interval_s,
+            receipts,
+            configuration,
+            beginning,
+        ),
+    };
+    let potential = make_pass(CoupledSolvePass::Potential, potential_receipts)?;
+    let capped = make_pass(CoupledSolvePass::Capped, capped_receipts)?;
+    let final_state = match duration_s_bits {
+        Some(bits) => ValidatedV8FinalStatePass::try_new_v11(
+            bindings,
+            final_tiles,
+            configuration,
+            beginning,
+            bits,
+        )?,
+        None => {
+            ValidatedV8FinalStatePass::try_new(bindings, final_tiles, configuration, beginning)?
+        }
+    };
     Ok(V8CoveredProjection {
         potential,
         capped,
@@ -337,6 +397,7 @@ pub(crate) fn project_multi_tile_v8_passes(
 fn project_empty_v8_passes(
     configuration: &VegetationConfiguration,
     beginning: &V8CoupledOwnedState,
+    duration_s_bits: Option<u64>,
 ) -> Result<V8CoveredProjection, V8ProjectionError> {
     let transaction_id = TransactionId(
         beginning
@@ -344,23 +405,42 @@ fn project_empty_v8_passes(
             .checked_add(1)
             .ok_or(V8ProjectionError::Identity("V8 transaction overflow"))?,
     );
-    let make_carbon = |pass| {
-        ValidatedV8CarbonPass::try_new(
+    let interval_s = duration_s_bits.map_or(configuration.dt_s, f64::from_bits);
+    let make_carbon = |pass| match duration_s_bits {
+        Some(bits) => ValidatedV8CarbonPass::try_new_v11(
             openwepp_vegetation::V8_MODEL_SHA256.into(),
             configuration.configuration_sha256.clone(),
             transaction_id,
             beginning.state_sha256.clone(),
             pass,
-            configuration.dt_s,
+            interval_s,
             Vec::new(),
             configuration,
             beginning,
-        )
+            bits,
+        ),
+        None => ValidatedV8CarbonPass::try_new(
+            openwepp_vegetation::V8_MODEL_SHA256.into(),
+            configuration.configuration_sha256.clone(),
+            transaction_id,
+            beginning.state_sha256.clone(),
+            pass,
+            interval_s,
+            Vec::new(),
+            configuration,
+            beginning,
+        ),
+    };
+    let final_state = match duration_s_bits {
+        Some(bits) => {
+            ValidatedV8FinalStatePass::try_new_v11(&[], Vec::new(), configuration, beginning, bits)?
+        }
+        None => ValidatedV8FinalStatePass::try_new(&[], Vec::new(), configuration, beginning)?,
     };
     Ok(V8CoveredProjection {
         potential: make_carbon(CoupledSolvePass::Potential)?,
         capped: make_carbon(CoupledSolvePass::Capped)?,
-        final_state: ValidatedV8FinalStatePass::try_new(&[], Vec::new(), configuration, beginning)?,
+        final_state,
     })
 }
 
@@ -831,6 +911,6 @@ mod tests {
             tile_canopy_air: BTreeMap::new(),
         };
         beginning.state_sha256 = beginning.canonical_sha256();
-        project_empty_v8_passes(&configuration, &beginning).expect("empty projection");
+        project_empty_v8_passes(&configuration, &beginning, None).expect("empty projection");
     }
 }

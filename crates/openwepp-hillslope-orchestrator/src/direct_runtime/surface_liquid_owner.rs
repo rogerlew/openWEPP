@@ -1261,7 +1261,7 @@ impl DirectSurfaceLiquidOwnedState {
         Ok(state)
     }
 
-    pub(super) fn recomputed_sha256(&self) -> Result<String, DirectSurfaceLiquidError> {
+    pub(crate) fn recomputed_sha256(&self) -> Result<String, DirectSurfaceLiquidError> {
         Ok(format!(
             "{:x}",
             Sha256::digest(self.canonical_bytes_with_digest(ZERO_SHA256)?)

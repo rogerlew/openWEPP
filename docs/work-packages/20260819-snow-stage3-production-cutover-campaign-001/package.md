@@ -1,6 +1,6 @@
 # Coordinate Stage 3 Production Cutover
 
-Status: `active / Child 2A complete; Child 2B segmented vegetation next`
+Status: `active / Child 2A complete; Child 2B HOLD on tiny-support LSE authority`
 
 Date: `2026-08-19`
 
@@ -138,8 +138,9 @@ limits it requires.
 - [x] (2026-08-20) Split Child 2 into coupled-time (2A), V11 segmented support
   (2B), and snow-covered carrier (2C), and scaffolded 2A.
 - [x] (2026-08-20) Complete and independently verify Child 2A coupled-time authority.
-- [ ] Execute and terminally disposition Child 2B and Child 2C continuously;
-  then resume Child 1 from checkpoint `83cf6eb8e`.
+- [ ] Resolve the Child 2B tiny-support LSE numerical/state authority HOLD,
+  terminally disposition Child 2B, then execute Child 2C and resume Child 1
+  from checkpoint `83cf6eb8e`.
 - [ ] Execute Child 3 actual-scheduler qualification.
 - [ ] Obtain final-candidate `ASSURE-06` human review and approval.
 - [ ] Execute Child 4 atomic cutover and campaign closure.

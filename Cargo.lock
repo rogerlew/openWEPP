@@ -1197,8 +1197,10 @@ dependencies = [
 name = "openwepp-persisted-restart-v1"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "libm",
  "openwepp-biogeochemistry",
+ "openwepp-coupled-time",
  "openwepp-hillslope-orchestrator",
  "openwepp-input-contract",
  "openwepp-kernel-contract",
@@ -1270,6 +1272,7 @@ version = "0.1.0"
 dependencies = [
  "approx",
  "openwepp-biogeochemistry",
+ "openwepp-coupled-time",
  "openwepp-kernel-contract",
  "serde",
  "serde_json",

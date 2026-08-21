@@ -23,13 +23,16 @@ use crate::{
     DirectOpenLiquidIngressParcel, DirectSurfaceLiquidParcelKind, DirectTileGroundIngress,
 };
 
-use super::covered_v8_owner::{V8OwnerFailurePhase, construct_multi_tile_v8_owner_envelope};
+use super::covered_v8_owner::{
+    V8OwnerFailurePhase, construct_multi_tile_v8_owner_envelope,
+    construct_multi_tile_v8_owner_envelope_v11,
+};
 use super::multi_tile_runtime::{
     MultiTileFailurePhase, PendingPayloadKind, StrictProjectedCoveredTile, StrictProjectedOpenTile,
     StrictProjectedTileProblem, execute_multi_tile_runtime,
 };
 use super::v8_input_projection::{V8SolverReadyTilePhysics, project_v8_runtime_inputs};
-use super::v8_projection::project_multi_tile_v8_passes;
+use super::v8_projection::{project_multi_tile_v8_passes, project_multi_tile_v8_passes_v11};
 use super::{
     CoveredIngressSchedule, CoveredV8OwnerEnvelopeError, DirectSurfaceLiquidConfiguration,
     LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError, RealHydrologySourceKey,
@@ -181,6 +184,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
         injection,
         authority,
         &pending,
+        None,
     );
     if let Err(error) = &result {
         pending.borrow_mut().diagnostic = error.to_string().into_bytes();
@@ -232,6 +236,51 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
     result
 }
 
+/// Execute the unchanged strict endpoint over one authenticated V11 slab.
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+pub(crate) fn execute_v8_lse_runtime_shadow_v11(
+    vegetation_configuration: &VegetationConfiguration,
+    vegetation_beginning: &V8CoupledOwnedState,
+    vegetation_owner_id: &ResourceOwnerId,
+    canopy_forcing: &V8CanopyForcingReceipt,
+    lse_configuration: &LandSurfaceEnergyConfiguration,
+    lse_beginning: &LandSurfaceEnergyState,
+    lse_forcing: &LandSurfaceForcing,
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    day_index: usize,
+    interval_index: u8,
+    wb14_parameters: &[DirectOfeWb14Parameters],
+    soil_thermal: &SoilThermalSnapshot,
+    nitrogen: &dyn NitrogenArbiter,
+    biogeochemistry_beginning: &BiogeochemistryState,
+    authority: openwepp_land_surface_energy::CoveredColumnAuthority,
+    duration_s_bits: u64,
+) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
+    let pending = RefCell::new(PendingEndpointEnvelopes::default());
+    execute_v8_lse_runtime_shadow_phases(
+        vegetation_configuration,
+        vegetation_beginning,
+        vegetation_owner_id,
+        canopy_forcing,
+        lse_configuration,
+        lse_beginning,
+        lse_forcing,
+        soil_adapter,
+        surface_configuration,
+        day_index,
+        interval_index,
+        wb14_parameters,
+        soil_thermal,
+        nitrogen,
+        biogeochemistry_beginning,
+        None,
+        authority,
+        &pending,
+        Some(duration_s_bits),
+    )
+}
+
 fn injection_requires_actual_pending_payload(
     injection: Option<V8EndpointFailureInjection>,
 ) -> bool {
@@ -276,6 +325,7 @@ fn execute_v8_lse_runtime_shadow_phases(
     injection: Option<V8EndpointFailureInjection>,
     authority: openwepp_land_surface_energy::CoveredColumnAuthority,
     pending: &RefCell<PendingEndpointEnvelopes>,
+    duration_s_bits: Option<u64>,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let projected = project_v8_runtime_inputs(
         vegetation_configuration,
@@ -300,6 +350,7 @@ fn execute_v8_lse_runtime_shadow_phases(
         soil_thermal,
         day_index,
         interval_index,
+        duration_s_bits,
     )?;
     injected(injection, V8EndpointFailureInjection::AfterProjection)?;
     let ingress_schedule = derive_ingress_schedule(
@@ -419,14 +470,25 @@ fn execute_v8_lse_runtime_shadow_phases(
         .filter_map(|value| value.covered())
         .map(|value| &value.vegetation_operands)
         .collect::<Vec<_>>();
-    let receipts = project_multi_tile_v8_passes(
-        &potentials,
-        &finals,
-        &bindings,
-        physical.hydrology_candidate(),
-        vegetation_configuration,
-        vegetation_beginning,
-    )?;
+    let receipts = match duration_s_bits {
+        Some(bits) => project_multi_tile_v8_passes_v11(
+            &potentials,
+            &finals,
+            &bindings,
+            physical.hydrology_candidate(),
+            vegetation_configuration,
+            vegetation_beginning,
+            bits,
+        )?,
+        None => project_multi_tile_v8_passes(
+            &potentials,
+            &finals,
+            &bindings,
+            physical.hydrology_candidate(),
+            vegetation_configuration,
+            vegetation_beginning,
+        )?,
+    };
     injected(injection, V8EndpointFailureInjection::AfterV8Receipts)?;
     let configured_root_layers = vegetation_configuration
         .strata
@@ -472,16 +534,29 @@ fn execute_v8_lse_runtime_shadow_phases(
     let owner_hook_ref = injection.map(|_| {
         &owner_hook as &dyn Fn(V8OwnerFailurePhase) -> Result<(), CoveredV8OwnerEnvelopeError>
     });
-    let envelope = construct_multi_tile_v8_owner_envelope(
-        physical,
-        &receipts,
-        vegetation_configuration,
-        vegetation_beginning,
-        &persistent_forcing,
-        nitrogen,
-        biogeochemistry_beginning,
-        owner_hook_ref,
-    )?;
+    let envelope = match duration_s_bits {
+        Some(bits) => construct_multi_tile_v8_owner_envelope_v11(
+            physical,
+            &receipts,
+            vegetation_configuration,
+            vegetation_beginning,
+            &persistent_forcing,
+            nitrogen,
+            biogeochemistry_beginning,
+            owner_hook_ref,
+            bits,
+        )?,
+        None => construct_multi_tile_v8_owner_envelope(
+            physical,
+            &receipts,
+            vegetation_configuration,
+            vegetation_beginning,
+            &persistent_forcing,
+            nitrogen,
+            biogeochemistry_beginning,
+            owner_hook_ref,
+        )?,
+    };
     injected(injection, V8EndpointFailureInjection::BeforeReturn)?;
     Ok(envelope)
 }

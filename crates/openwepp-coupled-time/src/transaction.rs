@@ -109,6 +109,26 @@ impl AcceptedSlabReceiptV1 {
     pub const fn support(&self) -> TimeSupport {
         self.support
     }
+    #[must_use]
+    pub const fn slab_id(&self) -> AcceptedSlabId {
+        self.slab_id
+    }
+    #[must_use]
+    pub const fn parent_transaction_id(&self) -> ParentTransactionId {
+        self.parent_transaction_id
+    }
+    #[must_use]
+    pub const fn slab_ordinal(&self) -> u32 {
+        self.slab_ordinal
+    }
+    #[must_use]
+    pub const fn segment_id(&self) -> SegmentId {
+        self.segment_id
+    }
+    #[must_use]
+    pub const fn duration_s_bits(&self) -> u64 {
+        self.duration_bits
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]

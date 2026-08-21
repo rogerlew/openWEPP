@@ -100,6 +100,7 @@ use receiver_validation::{
 #[cfg(all(test, not(feature = "restart-authority-evidence")))]
 pub(crate) use strict_v8_endpoint::endpoint_rollback_tests::{EndpointFixture, endpoint_fixture};
 pub(crate) use strict_v8_endpoint::execute_v8_lse_runtime_shadow_internal;
+pub(crate) use strict_v8_endpoint::execute_v8_lse_runtime_shadow_v11;
 pub use strict_v8_endpoint::{ExecuteV8LseRuntimeShadowError, execute_v8_lse_runtime_shadow};
 pub use v8_input_projection::{V8CanopyForcingReceipt, V8InputProjectionError};
 pub(crate) use v8_input_projection::{

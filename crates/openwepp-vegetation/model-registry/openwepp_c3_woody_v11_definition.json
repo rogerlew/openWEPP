@@ -1,0 +1,1 @@
+{"base_model_definition_sha256":"0c42b025b6f9282d85afd5c8819ec9cc60d66a2b79ac6d5922bfdcc8026dd182","coupled_time_authority":"OPENWEPP_COUPLED_TIME_SUPPORT_V1","model_version":"OPENWEPP_C3_WOODY_V11","supersedes_only":["transaction_time_integration","receipt_chronology"]}
