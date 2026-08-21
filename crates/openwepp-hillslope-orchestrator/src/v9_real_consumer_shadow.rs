@@ -65,6 +65,7 @@ const INTERVALS_PER_DAY: usize = 48;
 const INTERVAL_S: f64 = 1_800.0;
 
 /// One explicit default-off invocation of the actual `DirectV10` owner stack.
+#[derive(Clone)]
 pub struct DirectV11RealConsumerStack<'a> {
     pub beginning: DirectV10RealConsumerShadow,
     pub interval: &'a DirectV9ShadowIntervalInput,

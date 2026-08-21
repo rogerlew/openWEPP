@@ -12,6 +12,13 @@ mod tests {
         OfeId, SoilThermalLayerCandidate, V2_MODEL_DEFINITION_SHA256, V2_MODEL_VERSION,
         V2_VEGETATION_MODEL_DEFINITION_SHA256, V2_VEGETATION_MODEL_VERSION,
     };
+    use crate::snow_stage3_terminal_handoff::{
+        CanopyLongwaveComponent, CarrierSurface, CompleteOwnerSet, ParticipantSupportReceipt,
+        SealedExposureReceipt, SegmentPhase, SharedCarrierInput, SnowCarrierLedgerInput,
+        SnowFreeContinuationInput, SnowStage3HandoffRuntime, SnowStage3OwnerExecutionReceipt,
+        SnowStage3TerminalHandoffRequest, TerminalEventInput,
+        TerminalStateRates,
+    };
     use openwepp_vegetation::v11::{
         V11_COMPLETE_OWNER_MANIFEST, V11ExecutionError, V11OwnerEnvelope, V11ParentCandidate,
         V11ParentTransaction, execute_v11_segment, migrate_v10_runtime_to_v11,
@@ -332,6 +339,128 @@ mod tests {
         input
     }
 
+    fn child2c_support(
+        participant_id: &str,
+        receipt_id: &str,
+        minimum_support_ns: u128,
+    ) -> ParticipantSupportReceipt {
+        ParticipantSupportReceipt {
+            participant_id: participant_id.to_owned(),
+            support_receipt_id: receipt_id.to_owned(),
+            minimum_support_ns: ModelTimeNs::new(minimum_support_ns),
+        }
+    }
+
+    fn child2c_carrier() -> SharedCarrierInput {
+        SharedCarrierInput {
+            phase: SegmentPhase::SnowCovered,
+            rho_air_kg_m3: 1.2,
+            cp_air_j_kg_k: 1005.0,
+            reference: CarrierSurface {
+                temperature_k: 280.0,
+                specific_humidity: 0.002,
+                heat_conductance_m_s: 0.1,
+                vapor_conductance_m_s: 0.1,
+            },
+            canopy: CarrierSurface {
+                temperature_k: 285.0,
+                specific_humidity: 0.004,
+                heat_conductance_m_s: 0.05,
+                vapor_conductance_m_s: 0.05,
+            },
+            snow: CarrierSurface {
+                temperature_k: 270.0,
+                specific_humidity: 0.001,
+                heat_conductance_m_s: 0.05,
+                vapor_conductance_m_s: 0.05,
+            },
+            canopy_longwave_components: vec![
+                CanopyLongwaveComponent {
+                    temperature_k: 285.0,
+                    emissive_area_weight: 0.7,
+                },
+                CanopyLongwaveComponent {
+                    temperature_k: 275.0,
+                    emissive_area_weight: 0.3,
+                },
+            ],
+            exposure: SealedExposureReceipt {
+                receipt_id: "exposure-v1".to_owned(),
+                provider: "sealed-stage3-exposure".to_owned(),
+                provider_digest: "exposure-provider-digest".to_owned(),
+                source: "sealed-exposure-v1".to_owned(),
+                wind_m_s: 3.0,
+                transfer_height_m: 5.0,
+                roughness_m: 0.005,
+            },
+            active_participants: vec![
+                "shared-carrier".to_owned(),
+                "stage3-snow".to_owned(),
+                "v11-canopy".to_owned(),
+            ],
+            support_receipts: vec![
+                child2c_support("shared-carrier", "support-carrier-v1", 600_000_000),
+                child2c_support("stage3-snow", "support-stage3-v1", 600_000_000),
+                child2c_support("v11-canopy", "support-v11-v1", 600_000_000),
+            ],
+            atmospheric_longwave_w_m2: 280.0,
+            effective_canopy_cover: 0.5,
+            canopy_intercepted_snow: false,
+            ledger: SnowCarrierLedgerInput {
+                duration_s: 3600.0,
+                snow_ice_start_kg_m2: 10.0,
+                solid_precipitation_kg_m2: 0.1,
+                melt_kg_m2: 0.03,
+                sublimation_kg_m2: 0.02,
+                deposition_kg_m2: 0.01,
+                liquid_start_kg_m2: 0.5,
+                rain_kg_m2: 0.2,
+                refreeze_kg_m2: 0.01,
+                liquid_runoff_kg_m2: 0.1,
+                energy_start_j_m2: 1000.0,
+                external_energy_j_m2: 5000.0,
+                canopy_energy_j_m2: -1000.0,
+                snow_energy_j_m2: 3000.0,
+                energy_end_j_m2: 8000.0,
+                canopy_snow_longwave_exchange_j_m2: -139_473.340_214_138_1,
+                snow_canopy_longwave_exchange_j_m2: 139_473.340_214_138_1,
+            },
+        }
+    }
+
+    fn child2c_event(parent_end_ns: u128) -> TerminalEventInput {
+        TerminalEventInput {
+            parent_identity: "parent-child2c-v11-test".to_string(),
+            segment_identity: "segment-stage3-v11-test".to_string(),
+            event_ordinal: 1,
+            parent_start_tick: ModelTimeNs::new(0),
+            parent_end_tick: ModelTimeNs::new(parent_end_ns),
+            proposed_event_tick: ModelTimeNs::new(0),
+            candidate_ticks: vec![ModelTimeNs::new(0)],
+            pre_active_participants: vec![
+                child2c_support("shared-carrier", "support-carrier-v1", 600_000_000),
+                child2c_support("stage3-snow", "support-stage3-v1", 600_000_000),
+                child2c_support("v11-canopy", "support-v11-v1", 600_000_000),
+            ],
+            post_active_participants: vec![child2c_support("v11", "v11-post", 600_000_000)],
+            event_time_tolerance_ns: ModelTimeNs::new(0),
+            snow_mass_tolerance_kg_m2: 0.0,
+            liquid_mass_tolerance_kg_m2: 0.0,
+            energy_tolerance_j_m2: 0.0,
+            terminal_state: TerminalStateRates {
+                snow_start_kg_m2: 10.0,
+                snow_rate_kg_m2_s: 0.0,
+                snow_target_kg_m2: 10.0,
+                liquid_start_kg_m2: 0.5,
+                liquid_rate_kg_m2_s: 0.0,
+                liquid_target_kg_m2: 0.5,
+                energy_start_j_m2: 0.0,
+                energy_rate_j_m2_s: 0.0,
+                energy_target_j_m2: 0.0,
+            },
+        }
+    }
+
     fn digest(seed: u8) -> Digest32 {
         Digest32::from_bytes([seed; 32])
     }
@@ -650,6 +779,97 @@ mod tests {
             candidate.accepted_segments[0].lse_support_receipt,
             "parent checkpoint must retain the accepted LSE support receipt"
         );
+    }
+
+    #[test]
+    fn child2c_scheduler_commits_the_concrete_v11_lse_bgc_soil_owner_candidate() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let base_interval = day_input(&fixture).intervals.remove(0);
+        let migrated =
+            migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
+                .expect("migration");
+        let v11_owners = initial_v11_owners(&shadow, &migrated.state);
+        let owner_set = CompleteOwnerSet::new(
+            v11_owners
+                .iter()
+                .map(|(owner_id, owner)| (owner_id.clone(), owner.state_bytes.clone()))
+                .collect(),
+        )
+        .expect("complete V11 owner set");
+        let clock_owners = v11_owners
+            .values()
+            .map(|owner| owner.to_owner_state().expect("clock owner"))
+            .collect::<Vec<_>>();
+        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 1_800_000_000_000);
+        let parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            v11_owners,
+        )
+        .expect("V11 parent");
+        let interval = segment_interval(&base_interval, 1_800_000_000_000, 41, 0.0);
+        let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
+        let mut owner_executor =
+            crate::v11_vegetation_consumer::DirectV11SnowStage3OwnerExecutor::new(
+                migrated.configuration,
+                parent,
+                slab,
+                stack,
+            );
+        let mut frame = shadow.hydrology_frame().clone();
+        let mut runtime = SnowStage3HandoffRuntime::new(ModelTimeNs::new(0), owner_set.clone())
+            .expect("Child 2C runtime");
+        let request = SnowStage3TerminalHandoffRequest {
+            carrier: child2c_carrier(),
+            event: child2c_event(1_800_000_000_000),
+            beginning_owners: owner_set.clone(),
+            ending_owners: owner_set.clone(),
+            owner_execution: SnowStage3OwnerExecutionReceipt::from_owner_set(
+                "test-placeholder",
+                owner_set,
+            )
+            .expect("placeholder owner receipt"),
+            retained_liquid_kg_m2: 0.7,
+            snow_support_rain_kg_m2: 0.2,
+            terminal_melt_kg_m2: 0.5,
+            terminal_refreeze_kg_m2: 0.1,
+            continuation: SnowFreeContinuationInput {
+                duration_ns: ModelTimeNs::new(1_800_000_000_000),
+                terminal_liquid_kg_m2: 1.3,
+                post_event_contains_snow_operands: false,
+            },
+        };
+        let mut pending = Some(request);
+        DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
+            .run_publication_stream_with_snow_stage3_terminal_handoff_and_owner_executor(
+                &mut frame,
+                DirectPublicationRunMetadata {
+                    run_name: "child-2c-real-owner-test".to_owned(),
+                    runtime_selection: "default-off-child-2c".to_owned(),
+                    output_policy: "test".to_owned(),
+                },
+                |_frame, _day, _lane| Ok(production_day_input()),
+                |_lane, _day, _input, _day_frame| Ok(pending.take()),
+                |_row, _day_frame| Ok(()),
+                &mut runtime,
+                &mut owner_executor,
+            )
+            .expect("concrete Child 2C owner endpoint");
+
+        assert_eq!(
+            runtime.accepted_cursor_ns(),
+            ModelTimeNs::new(1_800_000_000_000)
+        );
+        let committed = owner_executor
+            .committed_shadow()
+            .expect("concrete owner candidate committed");
+        assert_eq!(committed.inner.lse_state.last_accepted_transaction_id,
+            Some(TransactionId(40)));
+        assert_eq!(committed.inner.soil_thermal.last_accepted_transaction_id,
+            Some(TransactionId(40)));
+        assert_eq!(committed.inner.biogeochemistry.last_transaction_id, 40);
     }
 
     #[test]

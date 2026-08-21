@@ -1,0 +1,1226 @@
+//! Default-off Child 2C shared-carrier and terminal-owner handoff.
+//!
+//! This module is deliberately independent of the existing Stage 3 evaluation
+//! shadow. It owns the released shared-air equations, integer-tick event
+//! admissibility, complete-owner staging, and the commit boundary used by the
+//! opt-in direct scheduler method. The normal `CoE` path never calls this module.
+
+use std::collections::{BTreeMap, BTreeSet};
+
+use openwepp_coupled_time::{CoupledTimeError, Digest32, ModelTimeNs, digest_bytes};
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
+use thiserror::Error;
+
+pub const SHARED_CARRIER_ID: &str = "shared-carrier";
+pub const STAGE3_SNOW_ID: &str = "stage3-snow";
+pub const V11_CANOPY_ID: &str = "v11-canopy";
+pub const LSE_MINIMUM_SUPPORT_NS: u128 = 600_000_000;
+pub const COMPLETE_OWNER_MANIFEST: [&str; 7] = [
+    "vegetation",
+    "snow",
+    "land_surface_energy",
+    "surface_liquid",
+    "hydrology",
+    "bgc",
+    "soil_thermal",
+];
+const SIGMA_W_M2_K4: f64 = 5.670_374_419e-8;
+const CLOSURE_TOLERANCE: f64 = 1.0e-9;
+
+#[derive(Debug, Error, Clone, PartialEq)]
+pub enum SnowStage3HandoffError {
+    #[error(transparent)]
+    CoupledTime(#[from] CoupledTimeError),
+    #[error("SNOWENERGY-E-WIND-001: {0}")]
+    InvalidExposure(&'static str),
+    #[error("SNOWENERGY-E-CARRIER-001: {0}")]
+    InvalidCarrier(&'static str),
+    #[error("SNOWENERGY-E-SCOPE-001: canopy-intercepted snow is outside Child 2C")]
+    CanopyInterceptedSnow,
+    #[error("SNOWENERGY-E-REGIME-001: {0}")]
+    InvalidRegime(&'static str),
+    #[error("SNOWENERGY-E-LW-001: {0}")]
+    InvalidLongwave(&'static str),
+    #[error("SNOWENERGY-E-LEDGER-001: {0}")]
+    InvalidLedger(&'static str),
+    #[error("SC-VEGETATIONTRANSACTION-E-OWNER-001: {0}")]
+    InvalidOwnerSet(&'static str),
+    #[error("SC-LANDSURFACEENERGY-E-SUPPORT-001: {0}")]
+    InvalidSnowFreeSupport(&'static str),
+    #[error("SC-LANDSURFACEENERGY-E-SNOW-OPERAND-001")]
+    SnowOperandInSnowFreeContinuation,
+    #[error("SC-VEGETATIONTRANSACTION-E-STATE-001: {0}")]
+    InvalidState(&'static str),
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
+pub enum SegmentPhase {
+    SnowCovered,
+    SnowFree,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct SealedExposureReceipt {
+    pub receipt_id: String,
+    pub provider: String,
+    pub provider_digest: String,
+    pub source: String,
+    pub wind_m_s: f64,
+    pub transfer_height_m: f64,
+    pub roughness_m: f64,
+}
+
+impl SealedExposureReceipt {
+    fn validate(&self) -> Result<(), SnowStage3HandoffError> {
+        if self.receipt_id.is_empty()
+            || self.provider != "sealed-stage3-exposure"
+            || self.provider_digest.is_empty()
+            || self.source != "sealed-exposure-v1"
+            || !self.wind_m_s.is_finite()
+            || self.wind_m_s <= 0.0
+            || !self.transfer_height_m.is_finite()
+            || self.transfer_height_m <= 0.0
+            || !self.roughness_m.is_finite()
+            || self.roughness_m <= 0.0
+        {
+            return Err(SnowStage3HandoffError::InvalidExposure(
+                "sealed provider, geometry, and projected wind are required",
+            ));
+        }
+        if self.transfer_height_m.to_bits() != 5.0_f64.to_bits()
+            || self.roughness_m.to_bits() != 0.005_f64.to_bits()
+        {
+            return Err(SnowStage3HandoffError::InvalidExposure(
+                "Child 2C requires the sealed 5 m transfer height and 0.005 m roughness",
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct ParticipantSupportReceipt {
+    pub participant_id: String,
+    pub support_receipt_id: String,
+    pub minimum_support_ns: ModelTimeNs,
+}
+
+impl ParticipantSupportReceipt {
+    fn validate(&self) -> Result<(), SnowStage3HandoffError> {
+        if self.participant_id.is_empty() || self.support_receipt_id.is_empty() {
+            return Err(SnowStage3HandoffError::InvalidCarrier(
+                "support identities must be nonempty",
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
+pub struct CarrierSurface {
+    pub temperature_k: f64,
+    pub specific_humidity: f64,
+    pub heat_conductance_m_s: f64,
+    pub vapor_conductance_m_s: f64,
+}
+
+impl CarrierSurface {
+    fn validate(&self, name: &'static str) -> Result<(), SnowStage3HandoffError> {
+        if !self.temperature_k.is_finite()
+            || self.temperature_k <= 0.0
+            || !self.specific_humidity.is_finite()
+            || !(0.0..=1.0).contains(&self.specific_humidity)
+            || !self.heat_conductance_m_s.is_finite()
+            || self.heat_conductance_m_s <= 0.0
+            || !self.vapor_conductance_m_s.is_finite()
+            || self.vapor_conductance_m_s <= 0.0
+        {
+            return Err(SnowStage3HandoffError::InvalidCarrier(name));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
+pub struct CanopyLongwaveComponent {
+    pub temperature_k: f64,
+    pub emissive_area_weight: f64,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
+pub struct SnowCarrierLedgerInput {
+    pub duration_s: f64,
+    pub snow_ice_start_kg_m2: f64,
+    pub solid_precipitation_kg_m2: f64,
+    pub melt_kg_m2: f64,
+    pub sublimation_kg_m2: f64,
+    pub deposition_kg_m2: f64,
+    pub liquid_start_kg_m2: f64,
+    pub rain_kg_m2: f64,
+    pub refreeze_kg_m2: f64,
+    pub liquid_runoff_kg_m2: f64,
+    pub energy_start_j_m2: f64,
+    pub external_energy_j_m2: f64,
+    pub canopy_energy_j_m2: f64,
+    pub snow_energy_j_m2: f64,
+    pub energy_end_j_m2: f64,
+    pub canopy_snow_longwave_exchange_j_m2: f64,
+    pub snow_canopy_longwave_exchange_j_m2: f64,
+}
+
+impl SnowCarrierLedgerInput {
+    fn validate(&self) -> Result<(), SnowStage3HandoffError> {
+        let nonnegative = [
+            self.snow_ice_start_kg_m2,
+            self.solid_precipitation_kg_m2,
+            self.melt_kg_m2,
+            self.sublimation_kg_m2,
+            self.deposition_kg_m2,
+            self.liquid_start_kg_m2,
+            self.rain_kg_m2,
+            self.refreeze_kg_m2,
+            self.liquid_runoff_kg_m2,
+        ];
+        if !self.duration_s.is_finite()
+            || self.duration_s <= 0.0
+            || nonnegative
+                .iter()
+                .any(|value| !value.is_finite() || *value < 0.0)
+            || [
+                self.energy_start_j_m2,
+                self.external_energy_j_m2,
+                self.canopy_energy_j_m2,
+                self.snow_energy_j_m2,
+                self.energy_end_j_m2,
+                self.canopy_snow_longwave_exchange_j_m2,
+                self.snow_canopy_longwave_exchange_j_m2,
+            ]
+            .iter()
+            .any(|value| !value.is_finite())
+        {
+            return Err(SnowStage3HandoffError::InvalidLedger(
+                "ledger operands must be finite and mass operands nonnegative",
+            ));
+        }
+        let snow_end = self.snow_ice_start_kg_m2 + self.solid_precipitation_kg_m2
+            - self.melt_kg_m2
+            - self.sublimation_kg_m2
+            + self.deposition_kg_m2;
+        let liquid_end = self.liquid_start_kg_m2 + self.rain_kg_m2 + self.melt_kg_m2
+            - self.refreeze_kg_m2
+            - self.liquid_runoff_kg_m2;
+        if snow_end < -CLOSURE_TOLERANCE || liquid_end < -CLOSURE_TOLERANCE {
+            return Err(SnowStage3HandoffError::InvalidLedger(
+                "derived snow or liquid end is negative",
+            ));
+        }
+        let energy_closure =
+            self.external_energy_j_m2 + self.canopy_energy_j_m2 + self.snow_energy_j_m2
+                - (self.energy_end_j_m2 - self.energy_start_j_m2);
+        let longwave_closure =
+            self.canopy_snow_longwave_exchange_j_m2 + self.snow_canopy_longwave_exchange_j_m2;
+        if energy_closure.abs() > CLOSURE_TOLERANCE || longwave_closure.abs() > CLOSURE_TOLERANCE {
+            return Err(SnowStage3HandoffError::InvalidLedger(
+                "energy and reciprocal longwave ledgers do not close",
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct SharedCarrierInput {
+    pub phase: SegmentPhase,
+    pub rho_air_kg_m3: f64,
+    pub cp_air_j_kg_k: f64,
+    pub reference: CarrierSurface,
+    pub canopy: CarrierSurface,
+    pub snow: CarrierSurface,
+    pub canopy_longwave_components: Vec<CanopyLongwaveComponent>,
+    pub exposure: SealedExposureReceipt,
+    pub active_participants: Vec<String>,
+    pub support_receipts: Vec<ParticipantSupportReceipt>,
+    pub atmospheric_longwave_w_m2: f64,
+    pub effective_canopy_cover: f64,
+    pub canopy_intercepted_snow: bool,
+    pub ledger: SnowCarrierLedgerInput,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct SharedCarrierReceipt {
+    pub active_participants: Vec<String>,
+    pub common_minimum_support_ns: ModelTimeNs,
+    pub exposure_receipt_id: String,
+    pub shared_air_temperature_k: f64,
+    pub shared_air_specific_humidity: f64,
+    pub reference_sensible_into_node_w_m2: f64,
+    pub canopy_sensible_into_surface_w_m2: f64,
+    pub snow_sensible_into_surface_w_m2: f64,
+    pub reference_vapor_into_node_kg_m2_s: f64,
+    pub canopy_vapor_into_surface_kg_m2_s: f64,
+    pub snow_vapor_into_surface_kg_m2_s: f64,
+    pub sky_view_fraction: f64,
+    pub snow_longwave_net_w_m2: f64,
+    pub snow_canopy_longwave_exchange_w_m2: f64,
+    pub snow_ice_end_kg_m2: f64,
+    pub liquid_end_kg_m2: f64,
+    pub vapor_net_kg_m2: f64,
+    pub energy_closure_j_m2: f64,
+    pub longwave_reciprocal_closure_j_m2: f64,
+    pub receipt_id: Digest32,
+}
+
+fn serialized_digest<T: Serialize>(value: &T) -> Result<Digest32, SnowStage3HandoffError> {
+    let bytes = serde_json::to_vec(value)
+        .map_err(|_| SnowStage3HandoffError::InvalidState("canonical receipt serialization"))?;
+    Ok(digest_bytes(&bytes))
+}
+
+fn validate_participants(
+    participants: &[String],
+    receipts: &[ParticipantSupportReceipt],
+) -> Result<ModelTimeNs, SnowStage3HandoffError> {
+    if participants.windows(2).any(|pair| pair[0] >= pair[1])
+        || participants.iter().any(String::is_empty)
+        || receipts.len() != participants.len()
+    {
+        return Err(SnowStage3HandoffError::InvalidCarrier(
+            "active participants must be nonempty, sorted, and unique",
+        ));
+    }
+    let mut seen_receipt_ids = BTreeSet::new();
+    let mut maximum = 0_u128;
+    for (participant, receipt) in participants.iter().zip(receipts) {
+        receipt.validate()?;
+        if participant != &receipt.participant_id
+            || !seen_receipt_ids.insert(&receipt.support_receipt_id)
+        {
+            return Err(SnowStage3HandoffError::InvalidCarrier(
+                "support receipts must join one-to-one with participants",
+            ));
+        }
+        maximum = maximum.max(receipt.minimum_support_ns.get());
+    }
+    Ok(ModelTimeNs::new(maximum))
+}
+
+#[allow(clippy::too_many_lines)]
+pub fn evaluate_shared_carrier(
+    input: &SharedCarrierInput,
+) -> Result<SharedCarrierReceipt, SnowStage3HandoffError> {
+    if input.phase != SegmentPhase::SnowCovered {
+        return Err(SnowStage3HandoffError::InvalidRegime(
+            "shared carrier is only admitted in the snow-covered segment",
+        ));
+    }
+    if input.canopy_intercepted_snow {
+        return Err(SnowStage3HandoffError::CanopyInterceptedSnow);
+    }
+    input.exposure.validate()?;
+    input.reference.validate("reference carrier surface")?;
+    input.canopy.validate("canopy carrier surface")?;
+    input.snow.validate("snow carrier surface")?;
+    input.ledger.validate()?;
+    if input.active_participants.is_empty() {
+        return Err(SnowStage3HandoffError::InvalidCarrier(
+            "shared carrier requires active participants",
+        ));
+    }
+    let common_support =
+        validate_participants(&input.active_participants, &input.support_receipts)?;
+    if !input.rho_air_kg_m3.is_finite()
+        || input.rho_air_kg_m3 <= 0.0
+        || !input.cp_air_j_kg_k.is_finite()
+        || input.cp_air_j_kg_k <= 0.0
+        || !input.atmospheric_longwave_w_m2.is_finite()
+        || !input.effective_canopy_cover.is_finite()
+        || input.effective_canopy_cover < 0.0
+        || input.effective_canopy_cover >= 1.0
+    {
+        return Err(SnowStage3HandoffError::InvalidCarrier(
+            "carrier atmosphere and cover domain",
+        ));
+    }
+    if input.canopy_longwave_components.len() < 2 {
+        return Err(SnowStage3HandoffError::InvalidLongwave(
+            "at least leaf and stem components are required",
+        ));
+    }
+    let weight_sum = input
+        .canopy_longwave_components
+        .iter()
+        .try_fold(0.0, |sum, component| {
+            if !component.temperature_k.is_finite()
+                || component.temperature_k <= 0.0
+                || !component.emissive_area_weight.is_finite()
+                || component.emissive_area_weight <= 0.0
+            {
+                return Err(SnowStage3HandoffError::InvalidLongwave(
+                    "longwave component domain",
+                ));
+            }
+            Ok(sum + component.emissive_area_weight)
+        })?;
+    if (weight_sum - 1.0).abs() > 1.0e-12 {
+        return Err(SnowStage3HandoffError::InvalidLongwave(
+            "longwave component weights must sum to one",
+        ));
+    }
+
+    let heat_total = input.reference.heat_conductance_m_s
+        + input.canopy.heat_conductance_m_s
+        + input.snow.heat_conductance_m_s;
+    let vapor_total = input.reference.vapor_conductance_m_s
+        + input.canopy.vapor_conductance_m_s
+        + input.snow.vapor_conductance_m_s;
+    let shared_temperature = (input.reference.heat_conductance_m_s * input.reference.temperature_k
+        + input.canopy.heat_conductance_m_s * input.canopy.temperature_k
+        + input.snow.heat_conductance_m_s * input.snow.temperature_k)
+        / heat_total;
+    let shared_humidity = (input.reference.vapor_conductance_m_s
+        * input.reference.specific_humidity
+        + input.canopy.vapor_conductance_m_s * input.canopy.specific_humidity
+        + input.snow.vapor_conductance_m_s * input.snow.specific_humidity)
+        / vapor_total;
+    let reference_sensible = input.rho_air_kg_m3
+        * input.cp_air_j_kg_k
+        * input.reference.heat_conductance_m_s
+        * (input.reference.temperature_k - shared_temperature);
+    let canopy_sensible = -input.rho_air_kg_m3
+        * input.cp_air_j_kg_k
+        * input.canopy.heat_conductance_m_s
+        * (input.canopy.temperature_k - shared_temperature);
+    let snow_sensible = -input.rho_air_kg_m3
+        * input.cp_air_j_kg_k
+        * input.snow.heat_conductance_m_s
+        * (input.snow.temperature_k - shared_temperature);
+    let reference_vapor = input.rho_air_kg_m3
+        * input.reference.vapor_conductance_m_s
+        * (input.reference.specific_humidity - shared_humidity);
+    let canopy_vapor = -input.rho_air_kg_m3
+        * input.canopy.vapor_conductance_m_s
+        * (input.canopy.specific_humidity - shared_humidity);
+    let snow_vapor = -input.rho_air_kg_m3
+        * input.snow.vapor_conductance_m_s
+        * (input.snow.specific_humidity - shared_humidity);
+    let sky_view_fraction = (1.0 - input.effective_canopy_cover).powf(1.6);
+    let canopy_longwave = input
+        .canopy_longwave_components
+        .iter()
+        .map(|component| {
+            component.emissive_area_weight * SIGMA_W_M2_K4 * component.temperature_k.powi(4)
+        })
+        .sum::<f64>();
+    let snow_emission = SIGMA_W_M2_K4 * input.snow.temperature_k.powi(4);
+    let snow_down = sky_view_fraction * input.atmospheric_longwave_w_m2
+        + (1.0 - sky_view_fraction) * canopy_longwave;
+    let snow_longwave_net = snow_down - snow_emission;
+    let snow_canopy_exchange = (1.0 - sky_view_fraction) * (snow_emission - canopy_longwave);
+    let expected_snow_canopy_exchange_j_m2 = -snow_canopy_exchange * input.ledger.duration_s;
+    if (input.ledger.snow_canopy_longwave_exchange_j_m2 - expected_snow_canopy_exchange_j_m2).abs()
+        > 1.0e-6
+        || (input.ledger.canopy_snow_longwave_exchange_j_m2 + expected_snow_canopy_exchange_j_m2)
+            .abs()
+            > 1.0e-6
+    {
+        return Err(SnowStage3HandoffError::InvalidLedger(
+            "reciprocal longwave ledger does not match the shared-carrier exchange",
+        ));
+    }
+    let temperature_residual = reference_sensible - snow_sensible - canopy_sensible;
+    let vapor_residual = reference_vapor - snow_vapor - canopy_vapor;
+    if temperature_residual.abs() > CLOSURE_TOLERANCE || vapor_residual.abs() > CLOSURE_TOLERANCE {
+        return Err(SnowStage3HandoffError::InvalidCarrier(
+            "shared carrier residual does not close",
+        ));
+    }
+    let snow_ice_end = input.ledger.snow_ice_start_kg_m2 + input.ledger.solid_precipitation_kg_m2
+        - input.ledger.melt_kg_m2
+        - input.ledger.sublimation_kg_m2
+        + input.ledger.deposition_kg_m2;
+    let liquid_end =
+        input.ledger.liquid_start_kg_m2 + input.ledger.rain_kg_m2 + input.ledger.melt_kg_m2
+            - input.ledger.refreeze_kg_m2
+            - input.ledger.liquid_runoff_kg_m2;
+    let mut receipt = SharedCarrierReceipt {
+        active_participants: input.active_participants.clone(),
+        common_minimum_support_ns: common_support,
+        exposure_receipt_id: input.exposure.receipt_id.clone(),
+        shared_air_temperature_k: shared_temperature,
+        shared_air_specific_humidity: shared_humidity,
+        reference_sensible_into_node_w_m2: reference_sensible,
+        canopy_sensible_into_surface_w_m2: canopy_sensible,
+        snow_sensible_into_surface_w_m2: snow_sensible,
+        reference_vapor_into_node_kg_m2_s: reference_vapor,
+        canopy_vapor_into_surface_kg_m2_s: canopy_vapor,
+        snow_vapor_into_surface_kg_m2_s: snow_vapor,
+        sky_view_fraction,
+        snow_longwave_net_w_m2: snow_longwave_net,
+        snow_canopy_longwave_exchange_w_m2: snow_canopy_exchange,
+        snow_ice_end_kg_m2: snow_ice_end,
+        liquid_end_kg_m2: liquid_end,
+        vapor_net_kg_m2: input.ledger.deposition_kg_m2 - input.ledger.sublimation_kg_m2,
+        energy_closure_j_m2: input.ledger.external_energy_j_m2
+            + input.ledger.canopy_energy_j_m2
+            + input.ledger.snow_energy_j_m2
+            - (input.ledger.energy_end_j_m2 - input.ledger.energy_start_j_m2),
+        longwave_reciprocal_closure_j_m2: input.ledger.canopy_snow_longwave_exchange_j_m2
+            + input.ledger.snow_canopy_longwave_exchange_j_m2,
+        receipt_id: Digest32::zero(),
+    };
+    receipt.receipt_id = serialized_digest(&receipt)?;
+    Ok(receipt)
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
+pub struct TerminalStateRates {
+    pub snow_start_kg_m2: f64,
+    pub snow_rate_kg_m2_s: f64,
+    pub snow_target_kg_m2: f64,
+    pub liquid_start_kg_m2: f64,
+    pub liquid_rate_kg_m2_s: f64,
+    pub liquid_target_kg_m2: f64,
+    pub energy_start_j_m2: f64,
+    pub energy_rate_j_m2_s: f64,
+    pub energy_target_j_m2: f64,
+}
+
+impl TerminalStateRates {
+    fn validate(&self) -> Result<(), SnowStage3HandoffError> {
+        let values = [
+            self.snow_start_kg_m2,
+            self.snow_rate_kg_m2_s,
+            self.snow_target_kg_m2,
+            self.liquid_start_kg_m2,
+            self.liquid_rate_kg_m2_s,
+            self.liquid_target_kg_m2,
+            self.energy_start_j_m2,
+            self.energy_rate_j_m2_s,
+            self.energy_target_j_m2,
+        ];
+        if values.iter().any(|value| !value.is_finite()) {
+            return Err(SnowStage3HandoffError::InvalidState(
+                "terminal state rates must be finite",
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct TerminalEventInput {
+    pub parent_identity: String,
+    pub segment_identity: String,
+    pub event_ordinal: u64,
+    pub parent_start_tick: ModelTimeNs,
+    pub parent_end_tick: ModelTimeNs,
+    pub proposed_event_tick: ModelTimeNs,
+    pub candidate_ticks: Vec<ModelTimeNs>,
+    pub pre_active_participants: Vec<ParticipantSupportReceipt>,
+    pub post_active_participants: Vec<ParticipantSupportReceipt>,
+    pub event_time_tolerance_ns: ModelTimeNs,
+    pub snow_mass_tolerance_kg_m2: f64,
+    pub liquid_mass_tolerance_kg_m2: f64,
+    pub energy_tolerance_j_m2: f64,
+    pub terminal_state: TerminalStateRates,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct TerminalCandidateEvaluation {
+    pub tick: ModelTimeNs,
+    pub support_admissible: bool,
+    pub event_time_error_ns: ModelTimeNs,
+    pub snow_mass_error_kg_m2: f64,
+    pub liquid_mass_error_kg_m2: f64,
+    pub energy_error_j_m2: f64,
+    pub combined_normalized_error: Option<f64>,
+    pub accepted: bool,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct TerminalEventReceipt {
+    pub parent_identity: String,
+    pub segment_identity: String,
+    pub event_ordinal: u64,
+    pub candidate_set_digest: Digest32,
+    pub accepted_tie_rank: Option<u32>,
+    pub accepted_event_tick: Option<ModelTimeNs>,
+    pub proposed_event_tick: ModelTimeNs,
+    pub pre_active_participants: Vec<ParticipantSupportReceipt>,
+    pub post_active_participants: Vec<ParticipantSupportReceipt>,
+    pub pre_common_minimum_support_ns: ModelTimeNs,
+    pub post_common_minimum_support_ns: ModelTimeNs,
+    pub candidate_evaluations: Vec<TerminalCandidateEvaluation>,
+    pub event_time_error_ns: Option<ModelTimeNs>,
+    pub snow_mass_error_kg_m2: Option<f64>,
+    pub liquid_mass_error_kg_m2: Option<f64>,
+    pub energy_error_j_m2: Option<f64>,
+    pub combined_normalized_error: Option<f64>,
+    pub receipt_id: Digest32,
+}
+
+fn normalized_error(error: f64, tolerance: f64) -> Option<f64> {
+    if tolerance == 0.0 {
+        (error == 0.0).then_some(0.0)
+    } else {
+        Some(error / tolerance)
+    }
+}
+
+#[derive(Serialize)]
+struct TerminalCandidateSetDigestInput<'a> {
+    parent_identity: &'a str,
+    segment_identity: &'a str,
+    event_ordinal: u64,
+    candidate_ticks: &'a [ModelTimeNs],
+    pre_active_participants: &'a [ParticipantSupportReceipt],
+    post_active_participants: &'a [ParticipantSupportReceipt],
+    event_time_tolerance_ns: ModelTimeNs,
+    snow_mass_tolerance_kg_m2: f64,
+    liquid_mass_tolerance_kg_m2: f64,
+    energy_tolerance_j_m2: f64,
+    terminal_state: TerminalStateRates,
+}
+
+#[allow(clippy::cast_precision_loss, clippy::too_many_lines)]
+pub fn locate_terminal_event(
+    input: &TerminalEventInput,
+) -> Result<TerminalEventReceipt, SnowStage3HandoffError> {
+    if input.parent_start_tick > input.parent_end_tick
+        || input.parent_identity.is_empty()
+        || input.segment_identity.is_empty()
+        || input.proposed_event_tick < input.parent_start_tick
+        || input.proposed_event_tick > input.parent_end_tick
+        || input.event_time_tolerance_ns.get()
+            > input.parent_end_tick.get() - input.parent_start_tick.get()
+        || !input.snow_mass_tolerance_kg_m2.is_finite()
+        || input.snow_mass_tolerance_kg_m2 < 0.0
+        || !input.liquid_mass_tolerance_kg_m2.is_finite()
+        || input.liquid_mass_tolerance_kg_m2 < 0.0
+        || !input.energy_tolerance_j_m2.is_finite()
+        || input.energy_tolerance_j_m2 < 0.0
+    {
+        return Err(SnowStage3HandoffError::InvalidState(
+            "terminal event parent and tolerance domain",
+        ));
+    }
+    input.terminal_state.validate()?;
+    if input
+        .candidate_ticks
+        .windows(2)
+        .any(|pair| pair[0] >= pair[1])
+    {
+        return Err(SnowStage3HandoffError::InvalidState(
+            "candidate ticks must be strictly increasing canonical decimals",
+        ));
+    }
+    let pre_support = validate_participants(
+        &input
+            .pre_active_participants
+            .iter()
+            .map(|receipt| receipt.participant_id.clone())
+            .collect::<Vec<_>>(),
+        &input.pre_active_participants,
+    )?;
+    let post_support = validate_participants(
+        &input
+            .post_active_participants
+            .iter()
+            .map(|receipt| receipt.participant_id.clone())
+            .collect::<Vec<_>>(),
+        &input.post_active_participants,
+    )?;
+    let mut evaluations = Vec::with_capacity(input.candidate_ticks.len());
+    let mut selected: Option<(ModelTimeNs, f64, ModelTimeNs, f64, f64, f64, u32)> = None;
+    for (candidate_index, &tick) in input.candidate_ticks.iter().enumerate() {
+        if tick < input.parent_start_tick || tick > input.parent_end_tick {
+            continue;
+        }
+        // Model ticks are bounded by the admitted parent interval. The event
+        // equations are f64 by contract, so this is the single explicit
+        // integer-to-real projection at their boundary.
+        let elapsed_s = (tick.get() - input.parent_start_tick.get()) as f64 / 1.0e9;
+        let snow = input.terminal_state.snow_start_kg_m2
+            + input.terminal_state.snow_rate_kg_m2_s * elapsed_s;
+        let liquid = input.terminal_state.liquid_start_kg_m2
+            + input.terminal_state.liquid_rate_kg_m2_s * elapsed_s;
+        let energy = input.terminal_state.energy_start_j_m2
+            + input.terminal_state.energy_rate_j_m2_s * elapsed_s;
+        let snow_error = (snow - input.terminal_state.snow_target_kg_m2).abs();
+        let liquid_error = (liquid - input.terminal_state.liquid_target_kg_m2).abs();
+        let energy_error = (energy - input.terminal_state.energy_target_j_m2).abs();
+        let pre_duration = tick.get() - input.parent_start_tick.get();
+        let post_duration = input.parent_end_tick.get() - tick.get();
+        let support_admissible = (pre_duration == 0 || pre_duration >= pre_support.get())
+            && (post_duration == 0 || post_duration >= post_support.get());
+        let event_time_error =
+            ModelTimeNs::new(tick.get().abs_diff(input.proposed_event_tick.get()));
+        let mass_score = normalized_error(snow_error, input.snow_mass_tolerance_kg_m2);
+        let liquid_score = normalized_error(liquid_error, input.liquid_mass_tolerance_kg_m2);
+        let energy_score = normalized_error(energy_error, input.energy_tolerance_j_m2);
+        let tolerance_admissible = mass_score.is_some()
+            && liquid_score.is_some()
+            && energy_score.is_some()
+            && snow_error <= input.snow_mass_tolerance_kg_m2
+            && liquid_error <= input.liquid_mass_tolerance_kg_m2
+            && energy_error <= input.energy_tolerance_j_m2
+            && event_time_error.get() <= input.event_time_tolerance_ns.get();
+        let accepted = support_admissible && tolerance_admissible;
+        let combined = accepted.then(|| {
+            mass_score.unwrap_or(0.0) + liquid_score.unwrap_or(0.0) + energy_score.unwrap_or(0.0)
+        });
+        evaluations.push(TerminalCandidateEvaluation {
+            tick,
+            support_admissible,
+            event_time_error_ns: event_time_error,
+            snow_mass_error_kg_m2: snow_error,
+            liquid_mass_error_kg_m2: liquid_error,
+            energy_error_j_m2: energy_error,
+            combined_normalized_error: combined,
+            accepted,
+        });
+        if let Some(score) = combined {
+            let candidate = (
+                event_time_error,
+                score,
+                tick,
+                snow_error,
+                liquid_error,
+                energy_error,
+                u32::try_from(candidate_index + 1).map_err(|_| {
+                    SnowStage3HandoffError::InvalidState("terminal candidate ordinal overflow")
+                })?,
+            );
+            let replace = selected.as_ref().is_none_or(|current| {
+                (candidate.0.get(), candidate.1, candidate.2)
+                    < (current.0.get(), current.1, current.2)
+            });
+            if replace {
+                selected = Some(candidate);
+            }
+        }
+    }
+    let Some((time_error, combined, tick, snow_error, liquid_error, energy_error, tie_rank)) =
+        selected
+    else {
+        return Err(CoupledTimeError::EventBoundaryNoCandidate.into());
+    };
+    let mut receipt = TerminalEventReceipt {
+        parent_identity: input.parent_identity.clone(),
+        segment_identity: input.segment_identity.clone(),
+        event_ordinal: input.event_ordinal,
+        candidate_set_digest: serialized_digest(&TerminalCandidateSetDigestInput {
+            parent_identity: &input.parent_identity,
+            segment_identity: &input.segment_identity,
+            event_ordinal: input.event_ordinal,
+            candidate_ticks: &input.candidate_ticks,
+            pre_active_participants: &input.pre_active_participants,
+            post_active_participants: &input.post_active_participants,
+            event_time_tolerance_ns: input.event_time_tolerance_ns,
+            snow_mass_tolerance_kg_m2: input.snow_mass_tolerance_kg_m2,
+            liquid_mass_tolerance_kg_m2: input.liquid_mass_tolerance_kg_m2,
+            energy_tolerance_j_m2: input.energy_tolerance_j_m2,
+            terminal_state: input.terminal_state,
+        })?,
+        accepted_tie_rank: Some(tie_rank),
+        accepted_event_tick: Some(tick),
+        proposed_event_tick: input.proposed_event_tick,
+        pre_active_participants: input.pre_active_participants.clone(),
+        post_active_participants: input.post_active_participants.clone(),
+        pre_common_minimum_support_ns: pre_support,
+        post_common_minimum_support_ns: post_support,
+        candidate_evaluations: evaluations,
+        event_time_error_ns: Some(time_error),
+        snow_mass_error_kg_m2: Some(snow_error),
+        liquid_mass_error_kg_m2: Some(liquid_error),
+        energy_error_j_m2: Some(energy_error),
+        combined_normalized_error: Some(combined),
+        receipt_id: Digest32::zero(),
+    };
+    receipt.receipt_id = serialized_digest(&receipt)?;
+    Ok(receipt)
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+pub struct CompleteOwnerSet {
+    pub owners: BTreeMap<String, Vec<u8>>,
+}
+
+impl CompleteOwnerSet {
+    pub fn new(owners: BTreeMap<String, Vec<u8>>) -> Result<Self, SnowStage3HandoffError> {
+        let expected = COMPLETE_OWNER_MANIFEST
+            .iter()
+            .copied()
+            .collect::<BTreeSet<_>>();
+        let found = owners.keys().map(String::as_str).collect::<BTreeSet<_>>();
+        if found != expected || owners.values().any(Vec::is_empty) {
+            return Err(SnowStage3HandoffError::InvalidOwnerSet(
+                "complete owner manifest or state payload does not match V11",
+            ));
+        }
+        Ok(Self { owners })
+    }
+
+    pub fn digest(&self) -> Result<Digest32, SnowStage3HandoffError> {
+        serialized_digest(&self.owners)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct SnowStage3OwnerExecutionReceipt {
+    pub executor_id: String,
+    pub ending_owners: CompleteOwnerSet,
+    pub owner_state_digests: BTreeMap<String, Digest32>,
+    pub v11_state_digest: Digest32,
+    pub lse_state_digest: Digest32,
+    pub bgc_state_digest: Digest32,
+    pub soil_thermal_state_digest: Digest32,
+}
+
+impl SnowStage3OwnerExecutionReceipt {
+    pub fn from_owner_set(
+        executor_id: impl Into<String>,
+        ending_owners: CompleteOwnerSet,
+    ) -> Result<Self, SnowStage3HandoffError> {
+        let owner_state_digests = ending_owners
+            .owners
+            .iter()
+            .map(|(owner_id, state_bytes)| (owner_id.clone(), digest_bytes(state_bytes)))
+            .collect::<BTreeMap<_, _>>();
+        let v11_state_digest = *owner_state_digests.get("vegetation").ok_or(
+            SnowStage3HandoffError::InvalidOwnerSet(
+                "owner execution receipt is missing a required owner",
+            ),
+        )?;
+        let lse_state_digest = *owner_state_digests.get("land_surface_energy").ok_or(
+            SnowStage3HandoffError::InvalidOwnerSet(
+                "owner execution receipt is missing a required owner",
+            ),
+        )?;
+        let bgc_state_digest =
+            *owner_state_digests
+                .get("bgc")
+                .ok_or(SnowStage3HandoffError::InvalidOwnerSet(
+                    "owner execution receipt is missing a required owner",
+                ))?;
+        let soil_thermal_state_digest = *owner_state_digests.get("soil_thermal").ok_or(
+            SnowStage3HandoffError::InvalidOwnerSet(
+                "owner execution receipt is missing a required owner",
+            ),
+        )?;
+        Ok(Self {
+            executor_id: executor_id.into(),
+            ending_owners,
+            owner_state_digests,
+            v11_state_digest,
+            lse_state_digest,
+            bgc_state_digest,
+            soil_thermal_state_digest,
+        })
+    }
+
+    pub fn validate(&self) -> Result<(), SnowStage3HandoffError> {
+        if self.executor_id.is_empty() {
+            return Err(SnowStage3HandoffError::InvalidOwnerSet(
+                "owner execution receipt has no executor identity",
+            ));
+        }
+        CompleteOwnerSet::new(self.ending_owners.owners.clone())?;
+        let expected = self
+            .ending_owners
+            .owners
+            .iter()
+            .map(|(owner_id, bytes)| (owner_id.clone(), digest_bytes(bytes)))
+            .collect::<BTreeMap<_, _>>();
+        if expected != self.owner_state_digests {
+            return Err(SnowStage3HandoffError::InvalidOwnerSet(
+                "owner execution receipt digest join",
+            ));
+        }
+        if self.v11_state_digest != expected["vegetation"]
+            || self.lse_state_digest != expected["land_surface_energy"]
+            || self.bgc_state_digest != expected["bgc"]
+            || self.soil_thermal_state_digest != expected["soil_thermal"]
+        {
+            return Err(SnowStage3HandoffError::InvalidOwnerSet(
+                "owner execution receipt scientific-owner digest join",
+            ));
+        }
+        Ok(())
+    }
+}
+
+pub trait SnowStage3OwnerExecutor: Clone {
+    type Error: std::fmt::Debug + std::fmt::Display;
+
+    fn stage_owner_execution(
+        &mut self,
+        request: &SnowStage3TerminalHandoffRequest,
+    ) -> Result<SnowStage3OwnerExecutionReceipt, Self::Error>;
+
+    fn commit_owner_execution(&mut self) -> Result<(), Self::Error>;
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct SnowFreeContinuationInput {
+    pub duration_ns: ModelTimeNs,
+    pub terminal_liquid_kg_m2: f64,
+    pub post_event_contains_snow_operands: bool,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct SnowStage3TerminalHandoffRequest {
+    pub carrier: SharedCarrierInput,
+    pub event: TerminalEventInput,
+    pub beginning_owners: CompleteOwnerSet,
+    pub ending_owners: CompleteOwnerSet,
+    pub owner_execution: SnowStage3OwnerExecutionReceipt,
+    pub retained_liquid_kg_m2: f64,
+    pub snow_support_rain_kg_m2: f64,
+    pub terminal_melt_kg_m2: f64,
+    pub terminal_refreeze_kg_m2: f64,
+    pub continuation: SnowFreeContinuationInput,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct SnowStage3TerminalHandoffReceipt {
+    pub parent_identity: String,
+    pub segment_identity: String,
+    pub event_ordinal: u64,
+    pub candidate_set_digest: Digest32,
+    pub accepted_tie_rank: u32,
+    pub predecessor_receipt_id: Option<Digest32>,
+    pub carrier_receipt_id: Digest32,
+    pub event_receipt_id: Digest32,
+    pub accepted_event_tick: ModelTimeNs,
+    pub continuation_duration_ns: ModelTimeNs,
+    pub terminal_liquid_kg_m2: f64,
+    pub beginning_owner_digest: Digest32,
+    pub ending_owner_digest: Digest32,
+    pub receipt_id: Digest32,
+}
+
+fn validate_receipt_identity(
+    receipt: &SnowStage3TerminalHandoffReceipt,
+) -> Result<(), SnowStage3HandoffError> {
+    if receipt.parent_identity.is_empty() || receipt.segment_identity.is_empty() {
+        return Err(SnowStage3HandoffError::InvalidState(
+            "handoff receipt identity is incomplete",
+        ));
+    }
+    let mut unsealed = receipt.clone();
+    unsealed.receipt_id = Digest32::zero();
+    if serialized_digest(&unsealed)? != receipt.receipt_id {
+        return Err(SnowStage3HandoffError::InvalidState(
+            "handoff receipt digest does not match its body",
+        ));
+    }
+    Ok(())
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct StagedHandoff {
+    receipt: SnowStage3TerminalHandoffReceipt,
+    ending_owners: CompleteOwnerSet,
+    accepted_cursor_ns: ModelTimeNs,
+    accepted_event_ordinal: u64,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct SnowStage3HandoffRuntime {
+    committed_owners: CompleteOwnerSet,
+    accepted_cursor_ns: ModelTimeNs,
+    accepted_event_ordinal: u64,
+    receipt_chain: Vec<Digest32>,
+    #[serde(default)]
+    receipt_history: Vec<SnowStage3TerminalHandoffReceipt>,
+    #[serde(skip)]
+    pending: Option<StagedHandoff>,
+}
+
+impl SnowStage3HandoffRuntime {
+    pub fn new(
+        accepted_cursor_ns: ModelTimeNs,
+        committed_owners: CompleteOwnerSet,
+    ) -> Result<Self, SnowStage3HandoffError> {
+        let committed_owners = CompleteOwnerSet::new(committed_owners.owners)?;
+        committed_owners.digest()?;
+        Ok(Self {
+            committed_owners,
+            accepted_cursor_ns,
+            accepted_event_ordinal: 0,
+            receipt_chain: Vec::new(),
+            receipt_history: Vec::new(),
+            pending: None,
+        })
+    }
+
+    #[must_use]
+    pub const fn accepted_cursor_ns(&self) -> ModelTimeNs {
+        self.accepted_cursor_ns
+    }
+
+    #[must_use]
+    pub const fn accepted_event_ordinal(&self) -> u64 {
+        self.accepted_event_ordinal
+    }
+
+    #[must_use]
+    pub fn committed_owners(&self) -> &CompleteOwnerSet {
+        &self.committed_owners
+    }
+
+    #[must_use]
+    pub fn receipt_chain(&self) -> &[Digest32] {
+        &self.receipt_chain
+    }
+
+    #[must_use]
+    pub fn receipt_history(&self) -> &[SnowStage3TerminalHandoffReceipt] {
+        &self.receipt_history
+    }
+
+    pub fn committed_owner_digest(&self) -> Result<Digest32, SnowStage3HandoffError> {
+        self.committed_owners.digest()
+    }
+
+    pub fn validate_restored(&self) -> Result<(), SnowStage3HandoffError> {
+        let _ = CompleteOwnerSet::new(self.committed_owners.owners.clone())?;
+        if self.pending.is_some() {
+            return Err(SnowStage3HandoffError::InvalidState(
+                "a restart cannot contain an uncommitted handoff",
+            ));
+        }
+        if self.receipt_chain.len() != self.receipt_history.len()
+            || self
+                .receipt_chain
+                .iter()
+                .zip(&self.receipt_history)
+                .any(|(digest, receipt)| digest != &receipt.receipt_id)
+        {
+            return Err(SnowStage3HandoffError::InvalidState(
+                "restart receipt history does not match the receipt chain",
+            ));
+        }
+        for receipt in &self.receipt_history {
+            validate_receipt_identity(receipt)?;
+        }
+        for (index, receipt) in self.receipt_history.iter().enumerate() {
+            let expected_predecessor = index
+                .checked_sub(1)
+                .and_then(|previous| self.receipt_history.get(previous))
+                .map(|previous| previous.receipt_id);
+            if receipt.predecessor_receipt_id != expected_predecessor {
+                return Err(SnowStage3HandoffError::InvalidState(
+                    "restart receipt predecessor chain is not contiguous",
+                ));
+            }
+        }
+        if let Some(last) = self.receipt_history.last() {
+            let restored_end = last
+                .accepted_event_tick
+                .get()
+                .checked_add(last.continuation_duration_ns.get())
+                .ok_or(SnowStage3HandoffError::InvalidState(
+                    "restart accepted cursor overflow",
+                ))?;
+            if restored_end != self.accepted_cursor_ns.get()
+                || self.committed_owners.digest()? != last.ending_owner_digest
+            {
+                return Err(SnowStage3HandoffError::InvalidState(
+                    "restart cursor or ending-owner digest does not match the final receipt",
+                ));
+            }
+        }
+        for (index, receipt) in self.receipt_history.iter().enumerate() {
+            let expected_ordinal = u64::try_from(index)
+                .map_err(|_| SnowStage3HandoffError::InvalidState("restart ordinal overflow"))?
+                .checked_add(1)
+                .ok_or(SnowStage3HandoffError::InvalidState(
+                    "restart ordinal overflow",
+                ))?;
+            if receipt.event_ordinal != expected_ordinal {
+                return Err(SnowStage3HandoffError::InvalidState(
+                    "restart event ordinal history is not contiguous",
+                ));
+            }
+        }
+        if self
+            .receipt_history
+            .last()
+            .is_some_and(|receipt| receipt.event_ordinal != self.accepted_event_ordinal)
+            || (self.receipt_history.is_empty() && self.accepted_event_ordinal != 0)
+        {
+            return Err(SnowStage3HandoffError::InvalidState(
+                "restart event ordinal does not match receipt history",
+            ));
+        }
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_lines)]
+    pub fn stage(
+        &mut self,
+        request: SnowStage3TerminalHandoffRequest,
+    ) -> Result<(), SnowStage3HandoffError> {
+        if self.pending.is_some() {
+            return Err(SnowStage3HandoffError::InvalidState(
+                "a terminal handoff is already staged",
+            ));
+        }
+        if request.beginning_owners != self.committed_owners {
+            return Err(SnowStage3HandoffError::InvalidOwnerSet(
+                "beginning owner bytes do not match committed owner bytes",
+            ));
+        }
+        request.owner_execution.validate()?;
+        if request.owner_execution.ending_owners != request.ending_owners {
+            return Err(SnowStage3HandoffError::InvalidOwnerSet(
+                "owner execution receipt does not match ending owners",
+            ));
+        }
+        if request.event.parent_start_tick != self.accepted_cursor_ns {
+            return Err(SnowStage3HandoffError::InvalidState(
+                "event parent does not start at accepted cursor",
+            ));
+        }
+        let expected_event_ordinal = self.accepted_event_ordinal.checked_add(1).ok_or(
+            SnowStage3HandoffError::InvalidState("terminal event ordinal overflow"),
+        )?;
+        if request.event.event_ordinal != expected_event_ordinal {
+            return Err(SnowStage3HandoffError::InvalidState(
+                "terminal event ordinal is not exactly once",
+            ));
+        }
+        if self.receipt_history.iter().any(|receipt| {
+            receipt.parent_identity == request.event.parent_identity
+                && receipt.segment_identity == request.event.segment_identity
+        }) {
+            return Err(SnowStage3HandoffError::InvalidState(
+                "terminal segment identity was already accepted",
+            ));
+        }
+        if request.continuation.post_event_contains_snow_operands {
+            return Err(SnowStage3HandoffError::SnowOperandInSnowFreeContinuation);
+        }
+        let carrier = evaluate_shared_carrier(&request.carrier)?;
+        let event = locate_terminal_event(&request.event)?;
+        if request.carrier.support_receipts != request.event.pre_active_participants {
+            return Err(SnowStage3HandoffError::InvalidState(
+                "carrier and terminal event pre-participant support receipts do not join",
+            ));
+        }
+        let accepted_tick =
+            event
+                .accepted_event_tick
+                .ok_or(SnowStage3HandoffError::InvalidState(
+                    "accepted event tick missing",
+                ))?;
+        let continuation_duration = request.event.parent_end_tick.get() - accepted_tick.get();
+        let post_support = event.post_common_minimum_support_ns.get();
+        if continuation_duration != 0 && request.event.post_active_participants.is_empty() {
+            return Err(SnowStage3HandoffError::InvalidSnowFreeSupport(
+                "nonzero continuation requires successor participants",
+            ));
+        }
+        if continuation_duration != 0 && continuation_duration < post_support {
+            return Err(SnowStage3HandoffError::InvalidSnowFreeSupport(
+                "post-event continuation is below the active participant support",
+            ));
+        }
+        if continuation_duration != 0 && post_support < LSE_MINIMUM_SUPPORT_NS {
+            return Err(SnowStage3HandoffError::InvalidSnowFreeSupport(
+                "nonzero continuation is below the LSE minimum support",
+            ));
+        }
+        if request.continuation.duration_ns.get() != continuation_duration {
+            return Err(SnowStage3HandoffError::InvalidSnowFreeSupport(
+                "continuation duration does not equal the half-open remainder",
+            ));
+        }
+        let mass = [
+            request.retained_liquid_kg_m2,
+            request.snow_support_rain_kg_m2,
+            request.terminal_melt_kg_m2,
+            request.terminal_refreeze_kg_m2,
+        ];
+        if mass.iter().any(|value| !value.is_finite() || *value < 0.0) {
+            return Err(SnowStage3HandoffError::InvalidLedger(
+                "terminal liquid operands must be finite and nonnegative",
+            ));
+        }
+        let terminal_liquid = request.retained_liquid_kg_m2
+            + request.snow_support_rain_kg_m2
+            + request.terminal_melt_kg_m2
+            - request.terminal_refreeze_kg_m2;
+        if terminal_liquid < -CLOSURE_TOLERANCE {
+            return Err(SnowStage3HandoffError::InvalidLedger(
+                "terminal liquid debit-credit join is negative",
+            ));
+        }
+        if (request.continuation.terminal_liquid_kg_m2 - terminal_liquid).abs() > CLOSURE_TOLERANCE
+        {
+            return Err(SnowStage3HandoffError::InvalidLedger(
+                "terminal liquid was not transferred exactly once",
+            ));
+        }
+        let beginning_digest = request.beginning_owners.digest()?;
+        let ending_digest = request.ending_owners.digest()?;
+        let mut receipt = SnowStage3TerminalHandoffReceipt {
+            parent_identity: event.parent_identity.clone(),
+            segment_identity: event.segment_identity.clone(),
+            event_ordinal: event.event_ordinal,
+            candidate_set_digest: event.candidate_set_digest,
+            accepted_tie_rank: event.accepted_tie_rank.ok_or(
+                SnowStage3HandoffError::InvalidState("accepted terminal event has no tie rank"),
+            )?,
+            predecessor_receipt_id: self
+                .receipt_history
+                .last()
+                .map(|receipt| receipt.receipt_id),
+            carrier_receipt_id: carrier.receipt_id,
+            event_receipt_id: event.receipt_id,
+            accepted_event_tick: accepted_tick,
+            continuation_duration_ns: ModelTimeNs::new(continuation_duration),
+            terminal_liquid_kg_m2: terminal_liquid,
+            beginning_owner_digest: beginning_digest,
+            ending_owner_digest: ending_digest,
+            receipt_id: Digest32::zero(),
+        };
+        receipt.receipt_id = serialized_digest(&receipt)?;
+        self.pending = Some(StagedHandoff {
+            receipt,
+            ending_owners: request.ending_owners,
+            accepted_cursor_ns: request.event.parent_end_tick,
+            accepted_event_ordinal: event.event_ordinal,
+        });
+        Ok(())
+    }
+
+    pub fn commit_pending(
+        &mut self,
+    ) -> Result<SnowStage3TerminalHandoffReceipt, SnowStage3HandoffError> {
+        let staged = self
+            .pending
+            .take()
+            .ok_or(SnowStage3HandoffError::InvalidState(
+                "no staged terminal handoff",
+            ))?;
+        self.committed_owners = staged.ending_owners;
+        self.committed_owners = CompleteOwnerSet::new(self.committed_owners.owners.clone())?;
+        self.accepted_cursor_ns = staged.accepted_cursor_ns;
+        self.accepted_event_ordinal = staged.accepted_event_ordinal;
+        self.receipt_chain.push(staged.receipt.receipt_id);
+        self.receipt_history.push(staged.receipt.clone());
+        Ok(staged.receipt)
+    }
+
+    pub fn checkpoint_digest(&self) -> Result<String, SnowStage3HandoffError> {
+        let bytes = serde_json::to_vec(self)
+            .map_err(|_| SnowStage3HandoffError::InvalidState("checkpoint serialization"))?;
+        let mut digest = Sha256::new();
+        digest.update(bytes);
+        Ok(format!("{:x}", digest.finalize()))
+    }
+}

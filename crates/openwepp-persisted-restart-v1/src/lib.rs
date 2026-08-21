@@ -40,6 +40,7 @@ mod hydrology_restart;
 mod primitives;
 mod projection;
 mod scientific_owners;
+mod snow_stage3_handoff;
 mod subsurface;
 mod surface_liquid;
 mod transaction;
@@ -91,6 +92,7 @@ pub use projection::{
     checkpoint_identities_v1, project_complete_owner_state_v1, project_scientific_owner_state_v1,
 };
 pub use scientific_owners::*;
+pub use snow_stage3_handoff::{SnowStage3HandoffRestartError, SnowStage3HandoffRestartV1};
 pub use subsurface::{DirectSubsurfaceLayerRestartV1, SubsurfaceRestartError};
 pub use surface_liquid::{
     DirectSurfaceLiquidConfigurationRestartV1, DirectSurfaceLiquidOwnedStateRestartV1,

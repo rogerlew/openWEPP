@@ -12,6 +12,7 @@ struct DirectExecutionCounters {
     phase_hold_counts: [u64; DIRECT_PHASE_COUNT],
 }
 
+#[allow(clippy::enum_variant_names)]
 enum DirectPublicationDayHook<'a> {
     ProjectedDay {
         lane_index: usize,
@@ -21,6 +22,7 @@ enum DirectPublicationDayHook<'a> {
     CompleteDay {
         day_index: usize,
     },
+    CommittedDay,
 }
 
 impl DirectExecutionCounters {
@@ -326,6 +328,243 @@ impl DirectFrameExecutor {
         )
     }
 
+    /// Run the ordinary direct scheduler with an explicitly supplied Child 2C
+    /// terminal handoff candidate. The candidate is staged against a cloned
+    /// frame/runtime, and rows are released only after the complete owner/day
+    /// commit succeeds. No normal selector invokes this method.
+    pub fn run_publication_stream_with_snow_stage3_terminal_handoff<F, B, S>(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        build_day_input: F,
+        mut build_handoff: B,
+        mut consume_row: S,
+        runtime: &mut crate::snow_stage3_terminal_handoff::SnowStage3HandoffRuntime,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        B: FnMut(
+            usize,
+            usize,
+            &DirectPublicationDayInput,
+            &DirectDayFrame,
+        ) -> Result<
+            Option<crate::snow_stage3_terminal_handoff::SnowStage3TerminalHandoffRequest>,
+            DirectRuntimeError,
+        >,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+    {
+        if frame.laned_active.is_some() {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "snow_stage3_terminal_handoff.laned_active_unsupported",
+            });
+        }
+        let mut production_candidate = frame.clone();
+        let mut runtime_candidate = runtime.clone();
+        let mut buffered_rows = Vec::<(DirectPublicationDayRow, DirectDayFrame)>::new();
+        let mut pending_handoff = false;
+        let execution = self.run_publication_stream_with_day_hook(
+            &mut production_candidate,
+            metadata,
+            build_day_input,
+            |row, day_frame| {
+                buffered_rows.push((row.clone(), day_frame.clone()));
+                Ok(())
+            },
+            |event| match event {
+                DirectPublicationDayHook::ProjectedDay {
+                    lane_index,
+                    input,
+                    frame: day_frame,
+                } => {
+                    if pending_handoff {
+                        return Err(DirectRuntimeError::DirectDomainViolation {
+                            field: "snow_stage3_terminal_handoff.multiple_pending",
+                        });
+                    }
+                    if let Some(request) = build_handoff(
+                        lane_index,
+                        day_frame.day_index,
+                        input,
+                        day_frame,
+                    )? {
+                        runtime_candidate.stage(request).map_err(|error| {
+                            DirectRuntimeError::DirectKernelGuardFailure {
+                                phase: "snow_stage3_terminal_handoff.stage",
+                                detail: error.to_string(),
+                            }
+                        })?;
+                        pending_handoff = true;
+                    }
+                    Ok(())
+                }
+                DirectPublicationDayHook::CommittedDay => {
+                    if pending_handoff {
+                        runtime_candidate.commit_pending().map_err(|error| {
+                            DirectRuntimeError::DirectKernelGuardFailure {
+                                phase: "snow_stage3_terminal_handoff.commit",
+                                detail: error.to_string(),
+                            }
+                        })?;
+                        pending_handoff = false;
+                    }
+                    Ok(())
+                }
+                DirectPublicationDayHook::CompleteDay { day_index: _ } => Ok(()),
+            },
+        )?;
+        if pending_handoff {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "snow_stage3_terminal_handoff.uncommitted_candidate",
+            });
+        }
+        for (row, day_frame) in &buffered_rows {
+            consume_row(row, day_frame)?;
+        }
+        *frame = production_candidate;
+        *runtime = runtime_candidate;
+        Ok(execution)
+    }
+
+    /// Runs the opt-in Child 2C path with a typed, two-phase owner executor.
+    ///
+    /// The owner executor is cloned before any candidate work. Its concrete
+    /// V11/LSE/BGC/soil-thermal stage is therefore discarded together with the
+    /// cloned scheduler/runtime on any failure; only after the day frame and
+    /// terminal runtime candidate are committed does the owner candidate
+    /// receive its commit callback.
+    #[allow(clippy::too_many_arguments)]
+    pub fn run_publication_stream_with_snow_stage3_terminal_handoff_and_owner_executor<
+        F,
+        B,
+        O,
+        S,
+    >(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        build_day_input: F,
+        mut build_handoff: B,
+        mut consume_row: S,
+        runtime: &mut crate::snow_stage3_terminal_handoff::SnowStage3HandoffRuntime,
+        owner_executor: &mut O,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        B: FnMut(
+            usize,
+            usize,
+            &DirectPublicationDayInput,
+            &DirectDayFrame,
+        ) -> Result<
+            Option<crate::snow_stage3_terminal_handoff::SnowStage3TerminalHandoffRequest>,
+            DirectRuntimeError,
+        >,
+        O: crate::snow_stage3_terminal_handoff::SnowStage3OwnerExecutor,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+    {
+        if frame.laned_active.is_some() {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "snow_stage3_terminal_handoff.laned_active_unsupported",
+            });
+        }
+        let mut production_candidate = frame.clone();
+        let mut runtime_candidate = runtime.clone();
+        let mut owner_candidate = owner_executor.clone();
+        let mut buffered_rows = Vec::<(DirectPublicationDayRow, DirectDayFrame)>::new();
+        let mut pending_handoff = false;
+        let execution = self.run_publication_stream_with_day_hook(
+            &mut production_candidate,
+            metadata,
+            build_day_input,
+            |row, day_frame| {
+                buffered_rows.push((row.clone(), day_frame.clone()));
+                Ok(())
+            },
+            |event| match event {
+                DirectPublicationDayHook::ProjectedDay {
+                    lane_index,
+                    input,
+                    frame: day_frame,
+                } => {
+                    if pending_handoff {
+                        return Err(DirectRuntimeError::DirectDomainViolation {
+                            field: "snow_stage3_terminal_handoff.multiple_pending",
+                        });
+                    }
+                    if let Some(mut request) = build_handoff(
+                        lane_index,
+                        day_frame.day_index,
+                        input,
+                        day_frame,
+                    )? {
+                        let owner_receipt = owner_candidate
+                            .stage_owner_execution(&request)
+                            .map_err(|error| DirectRuntimeError::DirectKernelGuardFailure {
+                                phase: "snow_stage3_terminal_handoff.owner_stage",
+                                detail: format!("{error:?}: {error}"),
+                            })?;
+                        owner_receipt.validate().map_err(|error| {
+                            DirectRuntimeError::DirectKernelGuardFailure {
+                                phase: "snow_stage3_terminal_handoff.owner_receipt",
+                                detail: error.to_string(),
+                            }
+                        })?;
+                        request.ending_owners = owner_receipt.ending_owners.clone();
+                        request.owner_execution = owner_receipt;
+                        runtime_candidate.stage(request).map_err(|error| {
+                            DirectRuntimeError::DirectKernelGuardFailure {
+                                phase: "snow_stage3_terminal_handoff.stage",
+                                detail: error.to_string(),
+                            }
+                        })?;
+                        pending_handoff = true;
+                    }
+                    Ok(())
+                }
+                DirectPublicationDayHook::CommittedDay => {
+                    if pending_handoff {
+                        runtime_candidate.commit_pending().map_err(|error| {
+                            DirectRuntimeError::DirectKernelGuardFailure {
+                                phase: "snow_stage3_terminal_handoff.commit",
+                                detail: error.to_string(),
+                            }
+                        })?;
+                        owner_candidate.commit_owner_execution().map_err(|error| {
+                            DirectRuntimeError::DirectKernelGuardFailure {
+                                phase: "snow_stage3_terminal_handoff.owner_commit",
+                                detail: format!("{error:?}: {error}"),
+                            }
+                        })?;
+                        pending_handoff = false;
+                    }
+                    Ok(())
+                }
+                DirectPublicationDayHook::CompleteDay { day_index: _ } => Ok(()),
+            },
+        )?;
+        if pending_handoff {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "snow_stage3_terminal_handoff.uncommitted_candidate",
+            });
+        }
+        for (row, day_frame) in &buffered_rows {
+            consume_row(row, day_frame)?;
+        }
+        *frame = production_candidate;
+        *runtime = runtime_candidate;
+        *owner_executor = owner_candidate;
+        Ok(execution)
+    }
+
     /// Runs the normal production stream while advancing an explicitly
     /// supplied, isolated V9 shadow once per complete OFE day.
     ///
@@ -408,6 +647,7 @@ impl DirectFrameExecutor {
                     projected_frames.clear();
                     Ok(())
                 }
+                DirectPublicationDayHook::CommittedDay => Ok(()),
             },
         )?;
         for (row, day_frame) in &buffered_rows {
@@ -507,6 +747,7 @@ impl DirectFrameExecutor {
                     projected_frames.clear();
                     Ok(())
                 }
+                DirectPublicationDayHook::CommittedDay => Ok(()),
             },
         )?;
         for (row, day_frame) in &buffered_rows {
@@ -618,6 +859,7 @@ impl DirectFrameExecutor {
                 }
                 frame.commit_day_frame(&day_frame)?;
                 counters.record_day_frame_commit();
+                run_day_shadow(DirectPublicationDayHook::CommittedDay)?;
             }
             run_day_shadow(DirectPublicationDayHook::CompleteDay { day_index })?;
         }

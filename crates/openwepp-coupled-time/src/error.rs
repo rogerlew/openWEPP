@@ -43,4 +43,6 @@ pub enum CoupledTimeError {
     OutboxTransition,
     #[error("ERR-CT-020 event proposal cannot be represented")]
     EventProposal,
+    #[error("ERR-CT-021 event boundary has no admissible candidate")]
+    EventBoundaryNoCandidate,
 }

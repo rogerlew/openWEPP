@@ -1,6 +1,6 @@
 # Implement Child 2C Shared Carrier and Terminal Snow Handoff
 
-Status: `queued / successor scaffold / implementation not started`
+Status: `EXECUTED HOLD / ordinary-runner typed owner-input authority and custody closure remain open`
 
 Date: `2026-08-20`
 
@@ -236,15 +236,74 @@ rationale. Canopy-intercepted snow remains `NOT_IMPLEMENTED`.
   Child 2C lifecycle terminalization.
 - [x] (2026-08-20) Preserved the historical Child 1 HOLD and recorded
   `83cf6eb8e` as consumed evidence, not an implementation base.
-- [ ] Complete actual-consumer intake and freeze the exact source/test write
-  set.
-- [ ] Complete pre-implementation contract, consumer-path, and owner-set gate.
-- [ ] Implement and test the shared carrier and terminal handoff.
-- [ ] Execute mandatory scenarios, restart/rollback, and independent closure.
-- [ ] Complete dual review, disposition, dual verification, and final release
-  boundary.
+- [x] (2026-08-21) Complete actual-consumer intake and freeze the exact
+  source/test write set.
+- [x] (2026-08-21) Complete the pre-implementation contract and owner-set
+  gate; endpoint consumer proof remains held.
+- [x] (2026-08-21) Implement the shared carrier, event locator, staged
+  terminal transaction, restart wire, and focused test source.
+- [x] (2026-08-21 follow-on) Wire the concrete V11/LSE/BGC/soil-thermal owner
+  executor to the opt-in scheduler and prove its staged owner commit.
+- [ ] Execute mandatory scenarios and full restart/rollback/consumer closure.
+- [x] (2026-08-21 follow-on) Complete dual independent review, finding
+  disposition, and dual independent verification; all four dispositions are
+  `HOLD`.
+- [x] (2026-08-21 hold-lift) Complete the bounded hold-lift audit, identity /
+  restart hardening, exact-diff reconciliation, and final HOLD disposition.
+- [ ] Complete the final release boundary; this requires a separately
+  authorized typed owner-input/receiver authority and the remaining custody,
+  publication, and critical-profile gates.
 
 ## Decision log
+
+### Follow-on amendment — 2026-08-21
+
+The user-directed follow-on authorizes the remaining concrete-owner wiring and
+the package's independent review/verification gates. The amended source write
+set is limited to the existing orchestrator owner surfaces and their tests:
+
+- `crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/v11_vegetation_consumer.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs`; and
+- package-owned integration/unit tests needed to prove the typed endpoint.
+
+The follow-on may not activate the normal selector, retire CoE ownership, or
+edit released science-contract authority. The endpoint claim requires an
+actual invocation of the typed V11 stack that produces LSE, BGC, and
+soil-thermal owner candidates before the terminal handoff commit; a callback
+that merely rewraps bytes is insufficient.
+
+The follow-on endpoint now satisfies that typed invocation at the opt-in
+scheduler boundary. The ordinary hillslope runner remains outside the amended
+write set and still needs a separately authorized typed receiver/transaction
+integration; no production-path closure is claimed here.
+
+### Hold-lift amendment — 2026-08-21
+
+The user explicitly authorized completion of the remaining HOLD work. This
+amendment reopens the package's already-declared ordinary-runner, owner-custody,
+restart, rollback, publication, and mandatory-scenario scope. The bounded source
+write set now includes the normal hillslope runner and the typed transaction
+surfaces it must consume:
+
+- `crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs` and
+  package-owned runner tests;
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/` owner/frame and
+  publication surfaces;
+- `crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs`
+  and `v11_vegetation_consumer.rs`;
+- `crates/openwepp-persisted-restart-v1/src/` for the complete typed restart
+  transaction; and
+- package-owned integration/unit tests and evidence.
+
+The hold-lift must move the real downstream consumer, not relabel the existing
+shadow path. It may not add surrogate/proxy process physics, silently activate
+the normal selector, edit released science-contract authority without a
+separate contract-first amendment, or weaken fail-closed custody/restart
+guards. If the existing runner lacks authoritative typed owner state, the
+implementation must expose that missing input as a typed boundary rather than
+fabricate it.
 
 - Decision: create a fresh successor rather than edit the historical Child 1
   package. Rationale: the historical package records the pre-V11/shared-carrier
@@ -257,6 +316,30 @@ rationale. Canopy-intercepted snow remains `NOT_IMPLEMENTED`.
   resetting to `83cf6eb8e`. Rationale: the checkpoint identifies consumed
   evidence; current `main` contains the released contracts and tests needed by
   the successor. Date/Author: 2026-08-20 / Codex.
+- Decision: retain `HOLD` after the initial implementation increment. Rationale:
+  at that checkpoint the direct scheduler seam still accepted opaque ending
+  owner bytes. This historical reason is superseded by the follow-on typed
+  endpoint, but the package remains held for ordinary-runner integration,
+  contract closure, authority-document guards, and independent review/
+  verification. Date/Author: 2026-08-21 / Codex.
+- Decision: retain `HOLD` after the typed-owner follow-on. Rationale: the
+  owner-aware opt-in endpoint reaches the real V11/LSE/BGC/soil-thermal stack,
+  but the normal hillslope runner does not construct it; carrier/event joins,
+  terminal liquid custody, durable publication/restart identity, mandatory
+  scenarios, and authority-document guards remain open. Date/Author:
+  2026-08-21 / Codex.
+- Decision: execute the hold-lift amendment in this package. Rationale: the
+  user explicitly requested completion of the remaining HOLD work, and the
+  original package already declared ordinary-runner consumer, owner custody,
+  restart, rollback, publication, and mandatory-scenario closure as included
+  scope. Date/Author: 2026-08-21 / Codex.
+- Decision: close the hold-lift increment as `EXECUTED HOLD`. Rationale: the
+  implementable identity/restart and participant-join protections are complete,
+  while the ordinary runner still lacks authoritative typed V11/LSE/BGC/soil-
+  thermal input state and the current receiver cannot legally transfer terminal
+  liquid into the real surface-liquid owner. Fabricating those owners would
+  violate the science-contract and kernel governance boundary. Date/Author:
+  2026-08-21 / Codex.
 
 ## Surprises & Discoveries
 
@@ -264,15 +347,20 @@ rationale. Canopy-intercepted snow remains `NOT_IMPLEMENTED`.
   lifecycle prompt relocation was therefore performed with `git mv` and
   byte-identity was checked directly. This is a tooling boundary, not a
   documentation correctness exception.
-- The required Core reading set is `677448` bytes, which is `WARN` but below
+- The required Core reading set is `678907` bytes, which is `WARN` but below
   the `REQUIRES-JUSTIFICATION` threshold. Conditional and on-demand sources
   remain deferred until actual-consumer intake identifies the touched paths.
 
 ## Outcomes & Retrospective
 
-This section is intentionally open. The successor has only been scaffolded;
-implementation, review, verification, and terminal disposition evidence do
-not yet exist.
+The increment produced contract-bound carrier/event/runtime/restart code and a
+real direct-publication opt-in seam. The follow-on now proves that the typed
+V11/LSE/BGC/soil-thermal owner stack executes and commits before the handoff
+runtime advances. The ordinary runner and the broader carrier/event/custody,
+publication/restart, mandatory-scenario, authority, and review/verification
+closures remain open. Nix-backed focused Rust validation passes, while
+unchanged authority-document guards fail in the combined and frost profiles.
+The package remains HOLD.
 
 ## Surprises & Discoveries
 
@@ -284,7 +372,11 @@ not yet exist.
 
 ## Outcomes and retrospective
 
-This is a pre-implementation scaffold only. No production source, selector,
-default, publication, or CoE owner changed. The next action is actual-consumer
-intake followed by the pre-implementation gate; implementation must not begin
-until that gate freezes the source path and owner transaction.
+This is an executed implementation increment under HOLD. The normal
+selector/default, publication authority, and CoE owner remain unchanged. The
+typed owner-aware opt-in endpoint is wired and hardened with event identity,
+participant joins, contiguous ordinals, and persisted receipt bodies. The
+ordinary runner still lacks the authoritative typed owner-input boundary needed
+for a valid receiver binding; terminal-liquid custody, durable publication,
+critical-profile, and authority-document closure therefore remain explicitly
+open.

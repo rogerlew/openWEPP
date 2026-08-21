@@ -45,7 +45,7 @@ On-demand: pinned legacy baseline files only for exact provenance mapping;
 existing comparator and observed-data materials only when a declared evidence
 obligation requires them. They are not correctness targets.
 
-Required-reading budget: the current Core set is `677448` local bytes,
+Required-reading budget: the current Core set is `678907` local bytes,
 calculated with `wc -c`; this is `WARN` (`>400000` and `<=800000`) under
 `docs/standards/kernel-work-package-preparation.md`. Record the per-file map
 and command in `artifacts/required-reading-map.md` before edits. No file is in
