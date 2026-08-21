@@ -1,15 +1,17 @@
-Status: complete
+Status: EXECUTED HOLD
 Evidence mode: Static/Ran
 
 - [x] typed `DirectRuntimeError` propagation; no production `unwrap`/`expect`
   in the new attachment.
 - [x] fail-closed finite/nonnegative mass and staged transport guards.
-- [x] exact coupled-time event candidate and support receipts delegated to the
-  released handoff runtime.
-- [x] exact terminal-liquid identity and WB14 continuation through the real
-  surface owner.
-- [x] complete seven-owner candidate and one commit installation.
-- [x] additive restart validation and replay suppression.
+- [ ] actual persistent Stage-3 terminal candidate and support receipts from
+  the coupled owner stack (the current tick is configured).
+- [x] terminal-liquid identity and bounded WB14 continuation through the
+  surface owner; the complete coupled remainder is not proven.
+- [ ] complete typed seven-owner candidate and one commit installation (the
+  current chain hashes debug-derived payloads).
+- [ ] additive restart validation for the complete coupled owner set; replay
+  suppression is present for the wrapper.
 - [x] publication rows delivered only after owner/day commit.
 - [x] no selector/default/CoE/output/deployment change.
 

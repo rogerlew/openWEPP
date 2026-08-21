@@ -1,4 +1,4 @@
-Status: complete
+Status: superseded by EXECUTED HOLD correction
 Evidence mode: Static local review; delegation unavailable
 
 Review focus: consumer path and ordinary API. Findings:
@@ -11,4 +11,9 @@ Review focus: consumer path and ordinary API. Findings:
 3. The returned batch exposes rows only through an immutable slice accessor.
    Disposition: accepted.
 
-No unresolved consumer-path finding.
+Correction: this review established only the ordinary API shape and immutable
+batch boundary. It did not audit whether the runner constructs the attachment
+from real run-owned Stage-3/V11 state or whether the constitutive consumer is
+actually invoked. The later source review records those unresolved
+consumer-path blockers; this artifact must not be read as a Child-1 closure
+approval.

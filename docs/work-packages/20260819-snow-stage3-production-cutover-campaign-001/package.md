@@ -34,7 +34,12 @@ children or use a later child to pass a current child's required gate.
 1. `20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001`
    is executed HOLD before production edits. It admitted the snow/LSE/liquid
    transaction contracts, but exposed missing V10 partial-support and
-   snow-covered pre-event vegetation authority. It resumes after Child 2.
+   snow-covered pre-event vegetation authority. Its fresh resumed Child-1
+   successor,
+   [`20260821-snow-stage3-terminal-handoff-live-owner-closure-001`](../20260821-snow-stage3-terminal-handoff-live-owner-closure-001/package.md),
+   is also EXECUTED HOLD: the scheduler/publication scaffold landed, but the
+   actual Stage-3/V11 coupled terminal chronology and typed owner custody are
+   still required. It remains the active Child-1 task after Child 2.
 2. Child 2 is a continuously executed three-increment coordinator:
    - **2A** [`COUPLED-TIME-AUTHORITY-IMPLEMENTATION`](../20260820-coupled-time-authority-implementation-001/package.md)
      admits and implements exact-one coupled clock custody, exact integer
@@ -145,6 +150,9 @@ limits it requires.
 - [x] (2026-08-20) Execute Child 2C shared snow/canopy carrier authority;
   authority checkpoint released with default-off implementation separately
   gated. Resume Child 1 from checkpoint `83cf6eb8e`.
+- [x] (2026-08-21) Review the resumed Child-1 increment and correct its
+  disposition to EXECUTED HOLD; ordinary scheduler/publication plumbing is
+  retained, but Child 3 remains prohibited until the constitutive path closes.
 - [ ] Execute Child 3 actual-scheduler qualification.
 - [ ] Obtain final-candidate `ASSURE-06` human review and approval.
 - [ ] Execute Child 4 atomic cutover and campaign closure.
@@ -180,6 +188,9 @@ limits it requires.
 
 ## Outcomes & Retrospective
 
-Child 2C authority is terminally complete. Child 1 remains the next campaign
-step at checkpoint `83cf6eb8e`; no receiver runtime, selector, default, output,
-assurance, or ownership change has occurred.
+Child 2C authority is terminally complete. The resumed Child-1 increment is
+EXECUTED HOLD after source review: its ordinary scheduler/publication scaffold
+is retained, but actual Stage-3/V11 terminal chronology, typed owner custody,
+complete restart, positive physical scenarios, and assurance reconciliation
+remain. Child 1 remains the next campaign step; no Child 3 qualification,
+selector, default, output, assurance, or ownership change has occurred.

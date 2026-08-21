@@ -1,4 +1,4 @@
-Status: complete
+Status: superseded by EXECUTED HOLD correction
 Evidence mode: Static local verification; delegation unavailable
 
 Verification B independently checked:
@@ -9,5 +9,8 @@ Verification B independently checked:
 - all changed Rust files are below 3,000 lines;
 - prior package diff is empty.
 
-Disposition: verified. The only remaining repository-wide failures are the
-pre-existing assurance identity/authority drift recorded in `gate-results`.
+Disposition: verified only for API-shape, scheduler-hook, restart-wrapper,
+line-count, and prior-package-preservation claims. The constitutive owner and
+chronology claims were not verified. Package-local source blockers remain in
+`review-disposition-correction.md`; assurance drift is an additional failed
+workspace gate.

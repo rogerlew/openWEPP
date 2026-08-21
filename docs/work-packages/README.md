@@ -7,8 +7,11 @@ shared-carrier implementation as EXECUTED HOLD. It owns the persistent
 default-off Stage-3/V11 shadow attachment, ordinary-scheduler internal
 consumption, terminal liquid/WB14 continuation, complete-owner installation,
 restart, replay, failure, and immutable publication-batch closure.
-Status: `EXECUTED COMPLETE` for the affected write set; repository-wide
-assurance identity drift remains separately recorded in the package artifacts.
+Status: `EXECUTED HOLD`: ordinary scheduler attachment, surface-liquid/WB14
+continuation, restart/replay wrapper, failure rollback, and immutable
+publication batching are implemented; actual Stage-3 event solve, shared V11
+carrier, sequential typed owner execution, complete restart, and positive
+physical scenarios remain missing. Child 3 is not authorized.
 
 > **Canonical roadmap: [../ROADMAP.md](../ROADMAP.md)** — a **forward-only planning
 > queue** (what is next and deferred). The section below is this roadmap's
@@ -39,9 +42,10 @@ assurance identity drift remains separately recorded in the package artifacts.
   terminal handoff, run actual-scheduler qualification, obtain final-candidate
   `ASSURE-06` human approval, and atomic CoE retirement. Canopy-intercepted snow
   is excluded and CoE remains production-authoritative through Child 3. Its
-  fresh Child 1 successor scaffold is
-  `20260821-snow-stage3-shared-carrier-terminal-handoff-implementation-001/`;
-  campaign status remains `active / Child 1 next`.
+  fresh Child 1 successor is
+  `20260821-snow-stage3-terminal-handoff-live-owner-closure-001/`; it is
+  `EXECUTED HOLD` after source review, and campaign status remains
+  `active / Child 1 next`.
 - `20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001/` —
   EXECUTED / HOLD BEFORE PRODUCTION EDITS: admitted the bounded terminal
   receiver and shared-WB14 contracts/tests, then found that V10 vegetation

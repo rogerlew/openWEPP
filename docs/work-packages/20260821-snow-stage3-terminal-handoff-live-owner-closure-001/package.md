@@ -1,6 +1,6 @@
 # Stage-3 Terminal Handoff Live-Owner Closure
 
-Status: `EXECUTED COMPLETE — affected closure passed; repository-wide exact-head assurance drift remains separately recorded`
+Status: `EXECUTED HOLD / ordinary-scheduler attachment and publication batching implemented / actual Stage-3/V11 coupled terminal chronology and typed owner custody remain unimplemented`
 
 Date: `2026-08-21`
 
@@ -38,19 +38,19 @@ to the released contract version; the released contract body is not changed.
 
 ## Prospective owner binding
 
-| Caller field / old DTO surface | Actual owner used by this package | Class | Binding rule |
-|---|---|---|---|
-| wind, transfer height, roughness | sealed Stage-3 exposure receipt | sealed forcing | exact `5 m`, `0.005 m`, provider/source identity |
-| air temperature, humidity, longwave | sealed half-hour forcing receipt | sealed forcing | exact provider receipt and interval identity |
-| canopy temperature/humidity/conductance | staged V11 canopy owner and static configuration | staged/static | derived from current live V11 owner; no raw conductance input |
-| snow temperature/state and mass ledgers | persistent Stage-3 shadow owner | staged | current interval beginning/ending state and accepted receipts |
-| active participants/supports | coupled-time support receipts | sealed/staged | reconstructed from current segment and event boundary |
-| event proposal/ticks/tolerances | Stage-3 terminal solver and coupled clock | static/staged | scheduler wall cursor and contract tolerances; no caller event DTO |
-| terminal liquid mass | Stage-3 event receipt plus snow retained-liquid owner | staged | retained liquid + support rain + terminal melt - refreeze |
-| terminal liquid temperature/enthalpy | SC-SURFACELIQUID-001 identity | static | `273.15 K`, zero sensible enthalpy relative to `T_ref` |
-| WB14 parameters and continuation | surface-liquid configuration and live hydrology/WB14 owner | static/staged | actual configured lane, soil layer, cumulative state, exact remainder |
-| V11/LSE/BGC/soil-thermal endings | ordinary scheduler's persistent shadow owner set | staged | one sequential candidate from live owners; no caller payload |
-| rows/publication | immutable scheduler publication batch | staged | rows are consumed only after owner transaction returns successfully |
+| Caller field / old DTO surface | Intended owner / required source | Class | Binding rule | Implementation audit |
+|---|---|---|---|---|
+| wind, transfer height, roughness | sealed Stage-3 exposure receipt | sealed forcing | exact `5 m`, `0.005 m`, provider/source identity | scaffold receipt exists; live owner custody not independently proven |
+| air temperature, humidity, longwave | sealed half-hour forcing receipt | sealed forcing | exact provider receipt and interval identity | scaffold forcing exists; coupled consumer path not proven |
+| canopy temperature/humidity/conductance | staged V11 canopy owner and static configuration | staged/static | derived from current live V11 owner; no raw conductance input | FAIL: configured receipts are still accepted; actual V11 stack is not invoked |
+| snow temperature/state and mass ledgers | persistent Stage-3 shadow owner | staged | current interval beginning/ending state and accepted receipts | FAIL: configured event/state projection is accepted rather than solved from Stage 3 |
+| active participants/supports | coupled-time support receipts | sealed/staged | reconstructed from current segment and event boundary | partial: support receipt plumbing exists; actual multi-owner chronology is absent |
+| event proposal/ticks/tolerances | Stage-3 terminal solver and coupled clock | static/staged | scheduler wall cursor and contract tolerances; no caller event DTO | FAIL: configured event tick is accepted; persistent terminal solve is not called |
+| terminal liquid mass | Stage-3 event receipt plus snow retained-liquid owner | staged | retained liquid + support rain + terminal melt - refreeze | partial: INV-010 parcel path is exercised by scaffold scenarios only |
+| terminal liquid temperature/enthalpy | SC-SURFACELIQUID-001 identity | static | `273.15 K`, zero sensible enthalpy relative to `T_ref` | PASS for the admitted parcel identity |
+| WB14 parameters and continuation | surface-liquid configuration and live hydrology/WB14 owner | static/staged | actual configured lane, soil layer, cumulative state, exact remainder | PASS for bounded surface-liquid continuation; not a complete coupled continuation |
+| V11/LSE/BGC/soil-thermal endings | ordinary scheduler's persistent shadow owner set | staged | one sequential candidate from live owners; no caller payload | FAIL: debug-derived payloads are hashed into a synthetic chain |
+| rows/publication | immutable scheduler publication batch | staged | rows are consumed only after owner transaction returns successfully | PASS for the immutable post-commit batch boundary |
 
 ## Included scope
 
@@ -144,6 +144,43 @@ unavailable, equivalent local checks must be run and the limitation recorded.
 - [x] Resume commit and prior EXECUTED HOLD identified and preserved.
 - [x] Prospective owner-binding table and protected boundaries authored.
 - [x] Contract-derived tests and pre-implementation gate.
-- [x] Persistent attachment and ordinary scheduler closure.
-- [x] Full restart/replay/publication/failure/dual-terminal closure.
-- [x] Line-count split, heavy gates, dual review/verification, and disposition.
+- [x] Persistent attachment and ordinary scheduler hook.
+- [x] Surface-liquid/WB14 continuation plumbing, restart wrapper, replay guard,
+  failure rollback, and immutable publication batch.
+- [x] Line-count split and package-scoped compile/test gates.
+- [ ] Actual persistent Stage-3 terminal solve and event-boundary coalescing.
+- [ ] Actual shared V11/Stage-3 carrier and sequential typed owner execution.
+- [ ] Parent-interval chronology before complete-day finalization.
+- [ ] Complete coupled owner-set and cursor restart.
+- [ ] Repository-backed positive physical scenarios and exact-head assurance
+  reconciliation.
+
+Status: EXECUTED HOLD
+Evidence mode: Ran/Static plus external source review
+
+The ordinary-scheduler attachment, bounded surface-liquid continuation,
+restart/replay wrapper, late-failure rollback, and immutable publication batch
+are retained as a useful increment. The central Child-1 physical closure is
+not complete: the current attachment observes a completed ordinary day and
+packages configured/debug-derived representations rather than executing the
+Stage-3/V11 coupled snow-covered segment, terminal solve, snow-free remainder,
+and complete typed owner transaction.
+
+The repository-wide exact-head assurance drift remains separately recorded,
+but it is secondary to these package-local implementation blockers. Child 3
+must not start.
+
+## Disposition correction — 2026-08-21
+
+Required disposition:
+
+`EXECUTED HOLD / ordinary scheduler attachment, surface-liquid continuation,
+restart wrapper, replay guard, and immutable batch implemented / actual
+Stage-3 event solve, shared V11 carrier, sequential typed owner execution,
+complete restart, and positive physical scenarios missing`
+
+The correction is documentation-only. It does not alter the landed Rust,
+contracts, selectors, defaults, CoE ownership, production outputs, deployment,
+or the preserved prior package. The next implementation increment must close
+the blockers recorded in `artifacts/review-disposition-correction.md` before
+any Child-3 qualification work is authorized.
