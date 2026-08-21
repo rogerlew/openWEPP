@@ -763,3 +763,43 @@ are byte-untouched and the correction range contains no production Rust.
 Verdict: `HOLD / prior digest and flux forgeries are closed, but V3 still
 accepts shared-inventory overbooking and contradicts complete same-owner BGC
 candidate custody at 9020f3dcb`.
+
+## Resource-custody terminal Review A — `bf2c288c4e1010c47042078c362925db747d46b1`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent composition probes`
+
+The two prior local custody findings are closed. Aggregate authorization and
+final use are reconstructed against shared beginning plus admitted inflow, and
+the two-100-versus-10 poison rejects. One complete candidate now exists per
+owner/slab; its sorted components jointly contain NH4 and NO3, and every typed
+transition exact-joins that shared candidate. All earlier candidate, flux,
+link, chain, and terminal substitutions reject.
+
+One complete-continuation blocker remains: the required embedded V2 checkpoint
+and the V3 resource extension are validated independently but are never joined.
+All seven V3 `terminal_complete_owners` differ from the embedded V2
+`staged_complete_owners`, including hydrology and BGC. `restore_suffix` returns
+only its V2 continuation digest; V3 merely copies that digest into its result
+and does not compare V3 candidates/owners/receipts with the accepted-segment
+and seven-owner chronology that produced the V2 checkpoint or with the restored
+suffix owners. Consequently a valid, unrelated V3 custody history can be
+attached to any otherwise valid V2 checkpoint sharing only the parent ID.
+
+Required closure: define the V3 extension's exact temporal position relative
+to the V2 checkpoint and join its beginning owner candidates byte-for-byte to
+the corresponding V2 staged/segment owners; then require restored V3 suffix
+owner, resource, receipt, and terminal bytes to equal uninterrupted V3
+continuation. Add a poison that substitutes a separately valid V3 extension
+under the same parent ID and a seven-owner staged/terminal mismatch poison.
+
+Gate evidence: segmented 54/54, V2 54/54, V3 14/14, authority 8/8, BEI 15
+rows, scoped unit/schema/diff gates PASS. Prior overbooking and multi-component
+candidate probes reject. The passing V2 suffix digest is not evidence of the
+missing V2-to-V3 join.
+
+Verdict: `HOLD / local V3 resource custody is closed, but complete V2/V3 owner
+and suffix composition remains disconnected at bf2c288c4`.

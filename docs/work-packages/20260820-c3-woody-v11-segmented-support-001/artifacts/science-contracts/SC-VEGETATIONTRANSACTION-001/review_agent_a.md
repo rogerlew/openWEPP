@@ -616,3 +616,37 @@ is byte-pinned and no production path appears in the amendment range.
 Verdict: `HOLD / Version 10 closes prior authentication findings but not
 cross-occupancy overbooking or same-owner/slab complete-candidate uniqueness at
 9020f3dcb`.
+
+## Resource-custody terminal Review A — `bf2c288c4e1010c47042078c362925db747d46b1`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent composition probes`
+
+Version 11 closes both previous transaction findings: aggregate linked
+authorization/final use cannot exceed shared inventory plus typed inflow, and
+NH4/NO3 transitions share one canonical complete BGC owner candidate for their
+owner/slab. All declared V3 and retained direct custody poisons reject.
+
+The V3 extension is nevertheless not transactionally composed with its
+required V2 checkpoint. The validator admits V2 and computes its suffix digest,
+then separately admits V3 transitions/candidates. It joins only the parent ID.
+The fixture's V3 terminal set is byte- and digest-different from the V2 staged
+set for every one of the seven owners, and no check connects V3 resource
+transitions to V2 accepted segments or connects the restored V2 suffix to V3
+terminal custody. Thus an unrelated, internally valid resource transaction can
+be grafted onto an internally valid checkpoint.
+
+Closure requires explicit checkpoint-position semantics and exact V2 staged /
+V3 beginning owner joins, followed by complete uninterrupted-versus-restored
+V3 suffix equality over seven owners and resource receipts. Add independent
+valid-extension substitution and staged/terminal owner mismatch poisons.
+
+Gate evidence: segmented 54/54, V2 54/54, V3 14/14, authority 8/8, BEI 4 rows,
+scoped unit/schema/diff PASS. These self-contained gates do not exercise the
+missing cross-wire composition.
+
+Verdict: `HOLD / Version 11 closes local debit/candidate custody but does not
+compose that custody with the V2 checkpoint and suffix at bf2c288c4`.

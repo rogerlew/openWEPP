@@ -732,3 +732,51 @@ complete Restart V3 continuation and derived transaction/candidate identities
 remain required`.
 
 Production remains gated; no waiver is justified.
+
+---
+
+## Resource-custody final bounded Review B — candidate `bf2c288c4e1010c47042078c362925db747d46b1`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + exact cross-wire support probes`
+
+The candidate now derives debit, transition, and typed-flux IDs; rejects the
+prior coordinated reframes; binds NH4/NO3 components into one BGC candidate;
+and closes the original ordering, link, candidate, and terminal-owner probes.
+Segmented 54/54, V2 54/54, V3 14/14, authority 8/8, schemas, BEI, unit, and diff
+gates pass. Direct cross-owner/OFE/tile/basis, extra-transition, duplicate-link,
+and missing-link reruns reject.
+
+`V11-TXN-RESOURCE-B-001` nevertheless remains open. The admitted V3 object
+uses `[0,1800)` with two 900-tick slabs, but its embedded coupled-time V2 object
+uses `[0,1800000000000)` and `accepted_until_ns=600000000000`. Validation
+accepts the mismatch because only parent transaction ID is cross-joined. It
+does not bind outer support, debit/flux/transition supports, segment/slab IDs,
+or V3 candidate ordinals to the embedded V2 cursor and accepted receipt
+chronology.
+
+The reported `complete_suffix_sha256` is therefore the unchanged V2 reference
+suffix. No V3 custody operand enters suffix execution or uninterrupted
+comparison. The schema's fixed 14 candidates and ordinal maximum 1 additionally
+make it a two-slab test shape rather than a restart wire for arbitrary accepted
+chronology.
+
+Required correction: join exact V2 support/cursor/slab/segment chronology;
+derive V3 collections from the accepted prefix; persist them in the staged
+continuation consumed by restore; execute the remaining slabs with custody;
+and compare all complete owner candidates, transitions, receipts, and terminal
+owners against uninterrupted V3 execution. Poison nanosecond/second support
+aliases, cursor disagreement, missing/extra accepted prefix, variable slab
+counts, and a V3 custody mutation that would alter the suffix.
+
+### Verdict
+
+`HOLD / SC-VEGETATIONTRANSACTION-001 Version 11 remains non-releasable at
+bf2c288c4; full V2 composition is present structurally but its time chronology
+and actual V3 suffix continuation are not joined`.
+
+The prior ID and complete-owner candidate findings are closed. Production
+remains gated without waiver.

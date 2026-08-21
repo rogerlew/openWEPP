@@ -227,15 +227,16 @@ fn restart_v3_closes_resource_custody_without_mutating_v2() {
     let result: Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(
         result["schema"],
-        "OPENWEPP_C3_WOODY_V11_RESTART_V3_RESULTS_V1"
+        "OPENWEPP_C3_WOODY_V11_RESTART_V3_RESULTS_V2"
     );
-    assert_eq!(result["accepted"]["debit_count"], 5);
-    assert_eq!(result["accepted"]["transition_count"], 4);
+    assert_eq!(result["accepted"]["accepted_prefix_slabs"], 1);
+    assert_eq!(result["accepted"]["candidate_count"], 7);
+    assert_eq!(result["accepted"]["transition_count"], 3);
     assert_eq!(
         result["accepted"]["complete_suffix_sha256"],
-        "512c259be830ad33de578f9cd26f8931fb334e7b361c4387f8e7562de4f8cf0e"
+        "c155d3ac47088e9e4bcc37c20e8df1f69dba6941d5eae124637253eb064aaf97"
     );
-    assert_eq!(result["poisons"].as_array().unwrap().len(), 14);
+    assert_eq!(result["poisons"].as_array().unwrap().len(), 10);
 }
 
 #[test]

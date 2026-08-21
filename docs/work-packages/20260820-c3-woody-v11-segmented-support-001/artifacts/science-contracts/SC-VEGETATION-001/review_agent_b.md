@@ -1081,3 +1081,59 @@ transition, flux, and complete-owner candidate identities before Review B can
 PASS`.
 
 No waiver or production authorization is recommended.
+
+---
+
+## Resource-custody final bounded Review B — candidate `bf2c288c4e1010c47042078c362925db747d46b1`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + exact support/continuation reframing`
+
+The correction closes the prior coordinated identity and component-candidate
+findings. Debit, transition, and typed other-flux IDs are now body-derived;
+linked components bind one candidate per owner/slab; NH4 and NO3 share the same
+BGC candidate; declared candidate/link/order/cardinality/terminal poisons
+reject. All requested nominal gates pass: segmented 54/54, immutable V2 54/54,
+V3 14/14, authority 8/8, schema meta-validation, strict BEI, unit compliance,
+and diff hygiene. Direct reruns of cross-owner/OFE/tile/basis, extra transition,
+duplicate link, and missing link probes reject.
+
+One release-blocking continuation contradiction remains under
+`V11-RESOURCE-CUSTODY-B-001`.
+
+### Residual finding
+
+The admitted V3 control is not joined to the embedded V2 clock support. V3
+declares parent support `[0,1800)` and transition slabs `[0,900)` and
+`[900,1800)`, while the byte-identical embedded V2 coupled-time checkpoint owns
+`[0,1800000000000)` and is already accepted through `600000000000`. The current
+validator admits this exact mismatch. It checks only parent transaction ID
+across the composition; parent support, accepted cursor, slab/segment identity,
+and accepted-prefix chronology are never joined.
+
+Consequently `restore_suffix()` merely reruns the unchanged V2 suffix and
+returns its preexisting digest. It does not consume or compare V3 debit,
+transition, candidate, or terminal-owner state in the restored continuation.
+V3 also fixes exactly two slab ordinals (`0..1`) and exactly fourteen owner
+candidates, which cannot represent the authority's arbitrary accepted-slab
+cursor or a checkpoint after a different number of accepted slabs.
+
+Required correction: use the exact V2 integer support/cursor and admitted slab
+receipts in every V3 debit/flux/transition/candidate join; derive candidate
+cardinality from persisted accepted chronology rather than a two-slab fixture;
+embed V3 custody into the staged checkpoint restored by the suffix; and compare
+complete post-suffix V3 owner/custody/receipt bytes with an independently run
+uninterrupted V3 parent. Add support-unit, cursor/prefix, variable-slab-count,
+and custody-affects-suffix poisons.
+
+### Verdict
+
+`HOLD / SC-VEGETATION-001 Version 22 cannot release at bf2c288c4 because the
+accepted Restart V3 fixture has contradictory V2/V3 time support and the
+claimed actual suffix does not continue V3 custody state`.
+
+Prior coordinated-ID and complete-candidate findings are closed. No waiver or
+production authorization is recommended.

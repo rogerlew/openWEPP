@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 22
+contract_version: 23
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -2737,6 +2737,13 @@ resource/material/scheduled receipts, reductions, publication records, and
 outbox rows cannot be omitted or reframed. Restore executes the actual V2
 suffix reconstruction and requires equality of the complete uninterrupted and
 restored continuation, not merely a scalar vegetation state or digest alias.
+V3 custody collections contain only the accepted prefix through the embedded
+V2 cursor. Parent support, accepted-until tick, next slab/event ordinals, and
+every accepted slab/event ID and nanosecond support join V2 exactly. Candidate
+cardinality is dynamic: exactly seven complete owner candidates per accepted
+slab. The terminal prefix candidates equal V2 staged complete owners and the
+terminal V11 state exactly. Future suffix forcing and operations are separate
+runtime input and are never serialized as accepted receipts in the checkpoint.
 
 V3 retains ordered typed occupancy debit receipts with parent, segment, slab,
 owner, OFE, tile/occupancy, layer, source, amount basis, and exact
@@ -2765,6 +2772,9 @@ and executes only the unaccepted suffix. It may not reconstruct accepted work
 from a future/full candidate. V1/V2 aliasing, missing parent-beginning owners,
 digest-only owner restoration, or loss of reductions/publication is
 `VEG-E-127`.
+Independent acceptance executes that separate suffix from the joined V2/V3
+checkpoint position and compares final seven-owner, resource, receipt, event,
+reduction, and publication bytes with uninterrupted V3 chronology.
 
 ### Full-support compatibility and segmented population
 
@@ -2815,5 +2825,6 @@ snow carrier, selector/default, activation, publication, deployment, or cutover.
 | 2026-08-20 | 18 | Codex | Bound restart V2 segments to predecessor V11 state and terminal complete-owner equality across segment, checkpoint, and outer wire. |
 | 2026-08-20 | 19 | Codex | Made sequential staged subtraction authoritative and separated it from the ordered cumulative-debit diagnostic fold; prohibited regrouped owner-ending aliases. |
 | 2026-08-20 | 20 | Codex | Separated occupancy debit receipts from shared hydrology/BGC owner transitions and bound debit links, owner-candidate lineage, authorization, and cross-segment shared-owner continuity. |
+| 2026-08-20 | 23 | Codex | Restricted Restart V3 to the exact V2-accepted custody prefix, made seven-owner candidate cardinality cursor-derived, and required runtime-only suffix execution with full uninterrupted equality. |
 | 2026-08-20 | 22 | Codex | Completed additive Restart V3 by composing all V2 admission and full-suffix equivalence, deriving typed receipt identities, binding one complete owner candidate per owner/slab, and aggregating shared-inventory authorization. |
 | 2026-08-20 | 21 | Codex | Froze Restart V2 as nonproduction for resource custody and introduced additive closed Restart V3 typed debit/transition continuation authority. |
