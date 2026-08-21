@@ -17,3 +17,16 @@ Independent results:
 Verdict: **FAIL / verification cannot promote the checkpoint until the two
 trailing-whitespace defects are removed and this check is rerun.** No technical
 authority, schema, vector, population, or protected-wire failure was found.
+
+## Superseding rerun — `99b21e976fe1ee1a620b033b72e96446b02b96e3`
+
+- LSE support oracle: `15/15` PASS.
+- Draft 2020-12 baseline Schema validation: PASS.
+- Vector/profile/baseline and frozen checkpoint-prefix consistency: PASS.
+- `git diff --check 3b7d40648 99b21e976`: PASS.
+- Checkpoint scope: PASS. The delta contains only the two corrected Review A
+  lines and authority verification records; no contract, schema, vector,
+  production crate, V10, coupled-time V2, or DirectV10 restart V1 path changed.
+
+**Superseding verdict: PASS.** Verification A independently authorizes the LSE
+positive-support authority checkpoint for lifecycle promotion.

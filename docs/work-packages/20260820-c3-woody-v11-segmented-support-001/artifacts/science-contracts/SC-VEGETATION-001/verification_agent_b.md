@@ -427,3 +427,11 @@ the shared LSE Review A artifact has trailing whitespace at lines 3 and 6.
 Receipt/schema/KAT, rollback/restored suffix, disposition, lifecycle, and
 protected V10/restart/coupled-time checks PASS. Reverify after a hygiene-only
 checkpoint correction.
+
+## Superseding positive-support Verification B — 2026-08-20
+
+`PASS` at exact checkpoint `99b21e976fe1ee1a620b033b72e96446b02b96e3`.
+Technical authority artifacts are byte-identical to the prior PASS surface;
+hygiene, oracle 15/15, schema/KAT, rollback/restored suffix, disposition, and
+protected V10/restart/coupled-time checks pass. This supersedes the prior
+hygiene-only FAIL.

@@ -345,3 +345,11 @@ shared authority diff-hygiene gate: LSE `review_agent_a.md` lines 3 and 6 carry
 trailing whitespace. Transaction receipt identity, typed pre-Newton rollback,
 fresh restored suffix, disposition, lifecycle, and protected-wire checks PASS.
 A hygiene-only correction and bounded re-verification are required.
+
+## Superseding positive-support Verification B — 2026-08-20
+
+`PASS` at exact checkpoint `99b21e976fe1ee1a620b033b72e96446b02b96e3`.
+The correction is verification/hygiene-only; receipt chronology, pre-Newton
+rollback, restored suffix, lifecycle disposition, and protected-wire checks
+remain technically identical and pass. This supersedes the prior hygiene-only
+FAIL.

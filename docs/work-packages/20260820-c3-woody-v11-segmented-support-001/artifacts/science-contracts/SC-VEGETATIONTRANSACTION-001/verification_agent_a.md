@@ -217,3 +217,7 @@ Receipt chronology, rollback/restore, schema/vector population, and protected
 wire checks pass. Addendum verdict is **FAIL pending diff hygiene** because the
 canonical LSE Review A artifact contains trailing whitespace at lines 3 and 6.
 No transaction-authority semantic failure was found.
+
+Superseding rerun at `99b21e976fe1ee1a620b033b72e96446b02b96e3`:
+oracle 15/15, schema/vector/profile consistency, protected paths, checkpoint
+scope, and diff hygiene all PASS. **LSE dependency addendum verdict: PASS.**
