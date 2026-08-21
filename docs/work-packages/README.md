@@ -28,7 +28,10 @@
   COMPLETE; CHILD 1 NEXT: resume the
   terminal handoff, run actual-scheduler qualification, obtain final-candidate
   `ASSURE-06` human approval, and atomic CoE retirement. Canopy-intercepted snow
-  is excluded and CoE remains production-authoritative through Child 3.
+  is excluded and CoE remains production-authoritative through Child 3. Its
+  fresh Child 1 successor scaffold is
+  `20260821-snow-stage3-shared-carrier-terminal-handoff-implementation-001/`;
+  campaign status remains `active / Child 1 next`.
 - `20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001/` —
   EXECUTED / HOLD BEFORE PRODUCTION EDITS: admitted the bounded terminal
   receiver and shared-WB14 contracts/tests, then found that V10 vegetation
