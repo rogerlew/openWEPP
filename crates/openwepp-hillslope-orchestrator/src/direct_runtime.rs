@@ -171,6 +171,7 @@ mod subhourly_generation;
 mod subsurface;
 pub(crate) use subsurface::apply_direct_same_pass_infiltration;
 mod snow_stage3_shadow;
+mod snow_stage3_v11_scheduler;
 mod surface_liquid_attachment;
 mod surface_liquid_closure;
 mod surface_liquid_ingress;

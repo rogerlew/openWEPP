@@ -102,7 +102,7 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
     let contract = read(CONTRACT);
     for required in [
         "contract_id: SC-SURFACELIQUID-001",
-        "contract_version: 6",
+        "contract_version: 7",
         "INV-SURFACELIQUID-001",
         "INV-SURFACELIQUID-002",
         "(run_id, ofe_id, tile_id, surface_id, surface_class, source_type, source_id)",

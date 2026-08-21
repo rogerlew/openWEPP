@@ -564,6 +564,11 @@ pub struct DirectRunFrame {
     /// advances and commits it only when this attachment is explicitly
     /// installed by a typed sealed configuration.
     pub snow_stage3_shadow: Option<Box<snow_stage3_shadow::DirectSnowStage3ShadowAttachment>>,
+    /// Default-off constitutive Stage-3/V11 attachment. Its candidate is
+    /// staged from a sealed 48-support forcing capability and installed only
+    /// at the scheduler commit boundary.
+    pub snow_stage3_v11_attachment:
+        Option<Box<crate::snow_stage3_v11_attachment::DirectSnowStage3V11ShadowAttachment>>,
     /// D15A (rev 27): the opt-in ACTIVE routing configuration. `Some` IS the
     /// activation selector inside the orchestrator (the runner sets it from
     /// `OPENWEPP_LANED_ACTIVE=1` after its fail-closed preflight); `None`
@@ -592,6 +597,7 @@ impl DirectRunFrame {
             groundwater: DirectGroundwaterRunState::disabled(),
             surface_liquid_shadow: None,
             snow_stage3_shadow: None,
+            snow_stage3_v11_attachment: None,
             laned_active: None,
             laned_active_summary: None,
         })
@@ -622,6 +628,7 @@ impl DirectRunFrame {
             groundwater: DirectGroundwaterRunState::disabled(),
             surface_liquid_shadow: None,
             snow_stage3_shadow: None,
+            snow_stage3_v11_attachment: None,
             laned_active: None,
             laned_active_summary: None,
         })

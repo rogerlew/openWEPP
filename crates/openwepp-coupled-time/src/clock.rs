@@ -167,6 +167,18 @@ impl CoupledClockStateV1 {
         self.accepted_until
     }
     #[must_use]
+    pub const fn parent_transaction_id(&self) -> ParentTransactionId {
+        self.parent_transaction_id
+    }
+    #[must_use]
+    pub const fn parent_support(&self) -> TimeSupport {
+        self.parent_support
+    }
+    #[must_use]
+    pub const fn active_segment_id(&self) -> crate::SegmentId {
+        self.active_segment_id
+    }
+    #[must_use]
     pub fn owners(&self) -> &[OwnerState] {
         &self.complete_owner_set
     }

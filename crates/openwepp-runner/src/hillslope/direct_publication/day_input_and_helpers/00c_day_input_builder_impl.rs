@@ -151,7 +151,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             residue_cover_state: std::cell::RefCell::new(residue_cover_state),
             forest_canopy_state: std::cell::RefCell::new(forest_canopy_state),
             canopy_research_pending: std::cell::RefCell::new(canopy_research_pending),
-            snow_stage3_persistent_state: persistent_enabled
+            snow_stage3_historical_evaluation_state: persistent_enabled
                 .then(|| std::cell::RefCell::new(vec![None; persistent_lane_count])),
             winter_hourly_geometry: seed_authority.winter_hourly_geometry,
             sturm_climate_class,
@@ -208,7 +208,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let sturm_day_of_year = self.sturm_climate_class.map(|_| f64::from(day.julian_day));
         let snow_diagnostic_capture =
             DirectSnowDiagnosticCaptureRequest::resolve(day_index, lane_index);
-        let persistent_state = self.snow_stage3_persistent_state.as_ref().and_then(|states| {
+        let persistent_state = self
+            .snow_stage3_historical_evaluation_state
+            .as_ref()
+            .and_then(|states| {
             states.borrow().get(lane_index).cloned().flatten()
         });
         let snow_result = authority.snow_frost.snow_liquid_partition(
@@ -443,7 +446,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             &snow_trace_row,
         )?;
         if let (Some(states), Some(next_state)) =
-            (&self.snow_stage3_persistent_state, persistent_next_state)
+            (
+                &self.snow_stage3_historical_evaluation_state,
+                persistent_next_state,
+            )
         {
             states.borrow_mut()[lane_index] = Some(next_state);
         }

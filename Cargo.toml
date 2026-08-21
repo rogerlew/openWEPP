@@ -877,6 +877,10 @@ path = "tests/integration/snow_stage3_shared_carrier_authority_contract.rs"
 name = "snow_stage3_shared_carrier_terminal_handoff_implementation"
 path = "tests/integration/snow_stage3_shared_carrier_terminal_handoff_implementation.rs"
 
+[[test]]
+name = "snow_stage3_v11_constitutive_boundary_contract"
+path = "tests/integration/snow_stage3_v11_constitutive_boundary_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

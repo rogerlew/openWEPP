@@ -225,6 +225,47 @@ fn terminal_event_request_is_state_bound_and_censors_remaining_time() {
 }
 
 #[test]
+fn persistent_support_evaluator_runs_one_admitted_parent_support() {
+    let mut inputs = reconciliation_inputs();
+    inputs.snow_layers[0].mass_swe_m = 0.000_6;
+    inputs.snow_layers[0].thickness_m = 0.001_2;
+    inputs.snow_layers[0].cold_content_j_m2 = 0.0;
+    inputs.snow_layers[0].temperature_c = 0.0;
+    inputs.hourly = [DirectSnowHourlyForcing {
+        radiation_mj_m2: 1_000.0,
+        air_temperature_c: 0.0,
+        ..DirectSnowHourlyForcing::zero()
+    }; 24];
+    inputs.surface_energy_options.daily_solar_radiation_mj_m2 = 48.0;
+    let state = Wb11HydrologyKernel::initialize_stage3_persistent_state_with_terminal_event(
+        21,
+        inputs.snow_layers.clone(),
+        DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
+    )
+    .expect("valid support state");
+    let support = DirectSnowStage3SupportInput {
+        forcing: inputs.hourly[0],
+        duration_seconds: 1_800.0,
+    };
+    let result = Wb11HydrologyKernel::evaluate_stage3_persistent_support(
+        &inputs,
+        &state,
+        21,
+        0,
+        support,
+        DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
+    )
+    .expect("one parent support must use the actual terminal solver");
+    let event = result.terminal_event.expect("terminal result is retained");
+    assert!(event.event_occurred);
+    assert_eq!(result.evaluation.requested_seconds, 1_800.0);
+    assert_eq!(event.requested_seconds, 1_800.0);
+    assert!(event.evaluated_seconds > 0.0);
+    assert!(event.unevaluated_seconds > 0.0);
+    assert_eq!(result.state.next_interval_index, 1);
+}
+
+#[test]
 fn terminal_no_event_refreeze_closes_persistent_day() {
     let mut inputs = reconciliation_inputs();
     inputs.snow_layers.truncate(1);

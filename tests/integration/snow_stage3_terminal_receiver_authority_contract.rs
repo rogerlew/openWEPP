@@ -145,10 +145,9 @@ fn all_owner_failure_rolls_back_and_index_records_lifecycle() {
         assert!(txn.contains(required), "{TXN} missing {required}");
     }
     for required in [
-        "v13 adds separate default-off terminal-receiver mechanics",
         "v136 admits a separate default-off terminal receiver chronology",
         "v7 admits exact-one terminal liquid receipt",
-        "v3 adds the default-off terminal receiver all-owner envelope",
+        "v14 binds the default-off shared V11/Stage 3 carrier",
     ] {
         assert!(index.contains(required), "{INDEX} missing {required}");
     }

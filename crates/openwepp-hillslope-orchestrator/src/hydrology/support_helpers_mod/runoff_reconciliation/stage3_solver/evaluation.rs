@@ -8,12 +8,39 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         tag: Stage3EvaluationTag,
         inputs: &DirectActiveSnowPartitionInputs,
+        supports: &[DirectSnowStage3SupportInput],
         mut layers: Vec<DirectSnowLayerState>,
         mut cold_content_by_layer: Vec<f64>,
         terminal_request: Option<DirectSnowTerminalEventRequest>,
         mut terminal_detached_liquid_kg_m2: f64,
     ) -> Result<Stage3ShadowSummary, DirectSnowStage3EvaluationError> {
+        if supports.is_empty() || supports.len() > 24 {
+            return Err(Self::stage3_domain_error(
+                phase_class,
+                "snow.stage3_support_cardinality",
+                supports.len() as f64,
+                Some(1.0),
+                Some(24.0),
+            )
+            .into());
+        }
+        for support in supports {
+            if !support.duration_seconds.is_finite() || support.duration_seconds <= 0.0 {
+                return Err(Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_support_duration_seconds",
+                    support.duration_seconds,
+                    Some(f64::MIN_POSITIVE),
+                    None,
+                )
+                .into());
+            }
+        }
         let mut summary = Stage3ShadowSummary::new(tag);
+        summary.requested_seconds = supports
+            .iter()
+            .map(|support| support.duration_seconds)
+            .sum::<f64>();
         Self::stage3_shadow_fingerprints(
             inputs,
             &layers,
@@ -22,13 +49,15 @@ impl Wb11HydrologyKernel {
         );
         summary.complete_arm_non_formulation_fingerprint =
             summary.non_formulation_fingerprint;
-        for hour in &mut summary.hourly {
-            hour.requested_seconds = STAGE3_SECONDS_PER_HOUR;
+        for (hour, support) in summary.hourly.iter_mut().zip(supports) {
+            hour.requested_seconds = support.duration_seconds;
         }
         let resolved_at_day_start = Self::stage3_total_ice_mass_swe_m(&layers)
             > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M;
         let mut prepared_active_layer_count = None;
-        'hours: for (hour_index, hourly) in inputs.hourly.iter().copied().enumerate() {
+        'hours: for (hour_index, support) in supports.iter().copied().enumerate() {
+            let hourly = support.forcing;
+            let support_seconds = support.duration_seconds;
             if tag.operator == SnowStage3EvaluationOperator::PersistentAccumulationShadowV1
                 && hourly.snowfall_m > 0.0
             {
@@ -57,7 +86,7 @@ impl Wb11HydrologyKernel {
             }
             let mut elapsed_seconds = 0.0;
             let mut substep_index = 0;
-            while elapsed_seconds < STAGE3_SECONDS_PER_HOUR && !layers.is_empty() {
+            while elapsed_seconds < support_seconds && !layers.is_empty() {
                 if Self::stage3_total_ice_mass_swe_m(&layers)
                     <= STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
                 {
@@ -80,7 +109,7 @@ impl Wb11HydrologyKernel {
                         } else {
                             inputs.newsnw_kg_m3
                         };
-                        let remaining_seconds = STAGE3_SECONDS_PER_HOUR - elapsed_seconds;
+                        let remaining_seconds = support_seconds - elapsed_seconds;
                         let mut terminal = Self::solve_terminal_enthalpy_event(
                             phase_class,
                             hour_index,
@@ -111,6 +140,7 @@ impl Wb11HydrologyKernel {
                                         snow_depth_m: trial_depth_m,
                                         snow_density_kg_m3: density_kg_m3,
                                         duration_seconds,
+                                        forcing_duration_seconds: support_seconds,
                                     },
                                     Some(tag.operator),
                                     DirectSnowDiagnosticCapture::Verbose,
@@ -139,7 +169,7 @@ impl Wb11HydrologyKernel {
                                     external_liquid_kg_m2: hourly.rain_m
                                         * STAGE3_RHO_WATER_KG_M3
                                         * duration_seconds
-                                        / STAGE3_SECONDS_PER_HOUR,
+                                        / support_seconds,
                                 })
                             },
                         )?;
@@ -150,11 +180,11 @@ impl Wb11HydrologyKernel {
                         hour.shortwave_energy_j_m2 += terminal.shortwave_energy_j_m2;
                         hour.longwave_energy_j_m2 += terminal.longwave_energy_j_m2;
                         hour.sensible_flux_w_m2 += terminal.sensible_energy_j_m2
-                            / STAGE3_SECONDS_PER_HOUR;
+                            / support_seconds;
                         hour.latent_flux_w_m2 += terminal.latent_energy_j_m2
-                            / STAGE3_SECONDS_PER_HOUR;
+                            / support_seconds;
                         hour.advected_flux_w_m2 += terminal.advected_energy_j_m2
-                            / STAGE3_SECONDS_PER_HOUR;
+                            / support_seconds;
                         hour.cold_required_j_m2 += terminal.start_cold_content_j_m2;
                         hour.cold_energy_change_j_m2 += terminal.cold_energy_change_j_m2;
                         hour.excess_energy_j_m2 += (terminal.complete_energy_j_m2
@@ -233,7 +263,7 @@ impl Wb11HydrologyKernel {
                             cold_content_by_layer.push(terminal.end_cold_content_j_m2);
                         }
                         elapsed_seconds += terminal.evaluated_seconds;
-                        if elapsed_seconds >= STAGE3_SECONDS_PER_HOUR {
+                        if elapsed_seconds >= support_seconds {
                             break;
                         }
                     }
@@ -246,7 +276,7 @@ impl Wb11HydrologyKernel {
                     )
                 });
                 let substep_seconds = Self::stage3_substep_seconds(&layers, active_layer_count)
-                    .min(STAGE3_SECONDS_PER_HOUR - elapsed_seconds);
+                    .min(support_seconds - elapsed_seconds);
                 let before_reconciliation = Self::stage3_reconciliation_state(
                     &layers,
                     &cold_content_by_layer,
@@ -274,6 +304,7 @@ impl Wb11HydrologyKernel {
                         snow_depth_m: active_state.depth_m,
                         snow_density_kg_m3: active_state.density_kg_m3,
                         duration_seconds: substep_seconds,
+                        forcing_duration_seconds: support_seconds,
                     },
                     Some(tag.operator),
                     DirectSnowDiagnosticCapture::Verbose,
@@ -405,6 +436,7 @@ impl Wb11HydrologyKernel {
                     substep_index,
                     elapsed_seconds,
                     substep_seconds,
+                    support_seconds,
                     "aligned_active_dynamic",
                     before_reconciliation,
                     after_reconciliation,
@@ -430,7 +462,7 @@ impl Wb11HydrologyKernel {
                     };
 
                 let hour = &mut summary.hourly[hour_index];
-                let weight = substep_seconds / STAGE3_SECONDS_PER_HOUR;
+                let weight = substep_seconds / support_seconds;
                 hour.sensible_flux_w_m2 += surface.shadow_sensible_flux_w_m2 * weight;
                 hour.latent_flux_w_m2 += surface.shadow_latent_flux_w_m2 * weight;
                 hour.advected_flux_w_m2 += surface.shadow_advected_flux_w_m2 * weight;
@@ -576,6 +608,7 @@ impl Wb11HydrologyKernel {
                     snow_depth_m: snapshot.depth_m,
                     snow_density_kg_m3: snapshot.density_kg_m3,
                     duration_seconds: STAGE3_SECONDS_PER_HOUR,
+                    forcing_duration_seconds: STAGE3_SECONDS_PER_HOUR,
                 },
                 Some(tag.operator),
                 DirectSnowDiagnosticCapture::Verbose,
@@ -632,6 +665,7 @@ impl Wb11HydrologyKernel {
                 hour_index,
                 0,
                 0.0,
+                STAGE3_SECONDS_PER_HOUR,
                 STAGE3_SECONDS_PER_HOUR,
                 "whole_column_immutable",
                 reconciliation_state,
@@ -867,6 +901,7 @@ impl Wb11HydrologyKernel {
         substep_index: usize,
         elapsed_start_seconds: f64,
         duration_seconds: f64,
+        requested_seconds: f64,
         projection_id: &'static str,
         before: Stage3ReconciliationState,
         after: Stage3ReconciliationState,
@@ -881,7 +916,7 @@ impl Wb11HydrologyKernel {
             hour_index,
             substep_index,
             elapsed_start_seconds,
-            requested_seconds: STAGE3_SECONDS_PER_HOUR,
+            requested_seconds,
             evaluated_seconds: duration_seconds,
             duration_seconds,
             applicable: true,
@@ -1027,6 +1062,7 @@ impl Wb11HydrologyKernel {
             snow_depth_m,
             snow_density_kg_m3,
             duration_seconds,
+            forcing_duration_seconds,
         } = interval;
         let albedo_value = inputs
             .snow_albedo_state
@@ -1059,7 +1095,8 @@ impl Wb11HydrologyKernel {
             None,
         )?;
         // UNIT-CONVERSION-ALLOW: contract-bound MJ m^-2 hourly energy to W m^-2.
-        let incoming_w_m2 = hourly.radiation_mj_m2 * 1_000_000.0 / STAGE3_SECONDS_PER_HOUR;
+        let incoming_w_m2 =
+            hourly.radiation_mj_m2 * 1_000_000.0 / forcing_duration_seconds;
         let shortwave = net_shortwave_radiation(
             RadiativeFluxWattsPerSquareMeter::try_new(incoming_w_m2).map_err(|_| {
                 Self::stage3_domain_error(
@@ -1202,7 +1239,7 @@ impl Wb11HydrologyKernel {
                 surface_temperature_c,
                 true,
             )?
-            * (duration_seconds / STAGE3_SECONDS_PER_HOUR);
+            * (duration_seconds / forcing_duration_seconds);
             sublimation_m = sublimation_m
             .min(snow_depth_m * snow_density_kg_m3 / STAGE3_RHO_WATER_KG_M3);
             let mass_flux = MassFluxKilogramsPerSquareMeterSecond::try_new(
@@ -1380,9 +1417,9 @@ impl Wb11HydrologyKernel {
             // stability substeps so the hour's mass and advected heat are
             // integrated exactly once.
             let rain_mass_flux =
-                hourly.rain_m * STAGE3_RHO_WATER_KG_M3 / STAGE3_SECONDS_PER_HOUR;
+                hourly.rain_m * STAGE3_RHO_WATER_KG_M3 / forcing_duration_seconds;
             let snow_mass_flux = hourly.snowfall_m * 0.1 * STAGE3_RHO_WATER_KG_M3
-                / STAGE3_SECONDS_PER_HOUR;
+                / forcing_duration_seconds;
             let advected = precipitation_advected_heat_flux(PrecipitationAdvectedHeatInputs {
                 rain_mass_flux: PrecipitationMassFluxKilogramsPerSquareMeterSecond::try_new(
                     rain_mass_flux,

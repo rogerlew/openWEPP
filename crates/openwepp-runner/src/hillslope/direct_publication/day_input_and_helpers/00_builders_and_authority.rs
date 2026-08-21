@@ -13,7 +13,10 @@ struct DirectProductionDayInputBuilder<'a> {
     forest_canopy_state:
         std::cell::RefCell<Vec<Option<openwepp_plant_phenology::ForestCanopyState>>>,
     canopy_research_pending: std::cell::RefCell<Vec<Option<NativeCanopyBuilderTrace>>>,
-    snow_stage3_persistent_state: Option<std::cell::RefCell<Vec<Option<
+    /// Historical evaluation-only carry.  The constitutive Stage-3/V11
+    /// attachment owns its own persistent state; this field is never read by
+    /// that path and exists only for the released day-oriented evaluator.
+    snow_stage3_historical_evaluation_state: Option<std::cell::RefCell<Vec<Option<
         openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState,
     >>>>,
     winter_hourly_geometry: DirectProductionWinterHourlyGeometry,

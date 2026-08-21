@@ -178,6 +178,7 @@ struct Stage3SurfaceInterval {
     snow_depth_m: f64,
     snow_density_kg_m3: f64,
     duration_seconds: f64,
+    forcing_duration_seconds: f64,
 }
 
 #[derive(Clone, Copy)]

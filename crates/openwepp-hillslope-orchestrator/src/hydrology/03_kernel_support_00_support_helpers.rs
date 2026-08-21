@@ -1008,6 +1008,14 @@ impl DirectSnowHourlyForcing {
     }
 }
 
+/// One admitted coupled-time support for the Stage-3 constitutive transition.
+/// The forcing totals are for this support, not a duplicated daily row.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectSnowStage3SupportInput {
+    pub forcing: DirectSnowHourlyForcing,
+    pub duration_seconds: f64,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectActiveSnowPartitionInputs {
     pub hyetograph_rainfall_m: f64,

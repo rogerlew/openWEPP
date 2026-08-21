@@ -246,7 +246,7 @@ fn v130_retains_additive_default_off_operator_reconciliation() {
     let contract = read(CONTRACT);
 
     for required in [
-        "contract_version: 135",
+        "contract_version: 136",
         "REF-SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION",
         "INV-SNOWFREEZE-096",
         "OBL-SNOWFREEZE-P-069",
@@ -295,7 +295,12 @@ fn v130_retains_production_and_claim_holds() {
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
-    for required in ["v135", "schema-v8", "production", "cutover"] {
+    for required in [
+        "v136",
+        "v14 binds the default-off shared V11/Stage 3 carrier",
+        "production",
+        "cutover",
+    ] {
         assert!(index.contains(required), "{INDEX} missing {required}");
     }
 }
@@ -555,7 +560,7 @@ fn v131_binds_raw_opportunity_separately_from_bounded_transfer() {
     assert_v131_normative_sections(&snow, &energy);
 
     for required in [
-        "contract_version: 135",
+        "contract_version: 136",
         "INV-SNOWFREEZE-098",
         "OBL-SNOWFREEZE-P-071",
         "OBL-SNOWFREEZE-C-013",
@@ -567,7 +572,7 @@ fn v131_binds_raw_opportunity_separately_from_bounded_transfer() {
         assert!(snow.contains(required), "{CONTRACT} missing {required}");
     }
     for required in [
-        "contract_version: 12",
+        "contract_version: 14",
         "`m_v,raw`",
         "Signed bounded vapor transfer",
         "INV-SNOWENERGY-032",
@@ -723,6 +728,6 @@ fn v131_retains_fail_closed_authority_gaps_and_protected_boundaries() {
     assert!(energy.contains("makes no production correction"));
     assert!(package.contains("Quantify an isolated consequence only if"));
     assert!(package.contains("otherwise record implementation/reference parity"));
-    assert!(index.contains("v135 admits a fingerprint-bound terminal-event extension"));
-    assert!(index.contains("v12 admits evaluation-only shallow-pack enthalpy"));
+    assert!(index.contains("v136 admits a separate default-off terminal receiver chronology"));
+    assert!(index.contains("v14 binds the default-off shared V11/Stage 3 carrier"));
 }

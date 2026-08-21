@@ -7,6 +7,7 @@ pub mod coupled_time_reference;
 pub mod land_surface_energy_shadow;
 pub mod runtime_inputs;
 pub mod snow_stage3_terminal_handoff;
+pub mod snow_stage3_v11_attachment;
 pub mod v11_vegetation_consumer;
 pub mod v9_real_consumer_shadow;
 pub mod vegetation_diagnostic;
@@ -115,19 +116,17 @@ pub use direct_runtime::{
     DirectSaturationAddbackSpanReport, DirectSaturationAddbackState, DirectShadowProjection,
     DirectSnowCouplingDownstreamOperands, DirectSnowCouplingInputs,
     DirectSnowCouplingShadowProjection, DirectSnowCouplingSpanReport, DirectSnowCouplingState,
-    DirectSnowRuntimeCarry, DirectSnowStage3SealedForcing, DirectSnowStage3ShadowAttachment,
-    DirectSnowStage3ShadowConfiguration, DirectSnowStage3ShadowRestartV1,
-    DirectSnowStage3StagedSurfaceReceipt, DirectStorageBoundsDownstreamOperands,
-    DirectStorageBoundsInputs, DirectStorageBoundsShadowProjection, DirectStorageBoundsSpanReport,
-    DirectStorageBoundsState, DirectStorageDownstreamOperands,
-    DirectStorageInputDownstreamOperands, DirectStorageInputInputs,
-    DirectStorageInputShadowProjection, DirectStorageInputSpanReport, DirectStorageInputState,
-    DirectStorageReconciliationInputs, DirectStorageReconciliationSpanReport,
-    DirectStorageReconciliationState, DirectStorageShadowProjection,
-    DirectStreamingPublicationExecution, DirectSubsurfaceComputeDownstreamOperands,
-    DirectSubsurfaceComputeInputs, DirectSubsurfaceComputeShadowProjection,
-    DirectSubsurfaceComputeSpanReport, DirectSubsurfaceComputeState, DirectSubsurfaceLayerInputs,
-    DirectSubsurfaceLayerState, DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
+    DirectSnowRuntimeCarry, DirectStorageBoundsDownstreamOperands, DirectStorageBoundsInputs,
+    DirectStorageBoundsShadowProjection, DirectStorageBoundsSpanReport, DirectStorageBoundsState,
+    DirectStorageDownstreamOperands, DirectStorageInputDownstreamOperands,
+    DirectStorageInputInputs, DirectStorageInputShadowProjection, DirectStorageInputSpanReport,
+    DirectStorageInputState, DirectStorageReconciliationInputs,
+    DirectStorageReconciliationSpanReport, DirectStorageReconciliationState,
+    DirectStorageShadowProjection, DirectStreamingPublicationExecution,
+    DirectSubsurfaceComputeDownstreamOperands, DirectSubsurfaceComputeInputs,
+    DirectSubsurfaceComputeShadowProjection, DirectSubsurfaceComputeSpanReport,
+    DirectSubsurfaceComputeState, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
+    DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
     DirectSubsurfaceLossShadowProjection, DirectSubsurfaceLossSpanReport,
     DirectSubsurfaceLossState, DirectSubsurfaceSaturationTraceEvent, DirectTransferBuffers,
     DirectWaterLedgerState, DirectWaterState, DirectWave1ContinuityInputs,
@@ -145,6 +144,15 @@ pub use direct_runtime::{
     wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
 };
 
+pub use snow_stage3_v11_attachment::{
+    DirectSnowStage3V11AttachmentError, DirectSnowStage3V11CommittedState,
+    DirectSnowStage3V11ParentCandidate, DirectSnowStage3V11ParentReceipt,
+    DirectSnowStage3V11PreparedDay, DirectSnowStage3V11PreparedSupport,
+    DirectSnowStage3V11ShadowAttachment, DirectSnowStage3V11StaticContext,
+    DirectSnowStage3V11TerminalParcel, DirectSnowStage3V11TerminalReceipt,
+    STAGE3_V11_PARENT_SUPPORT_COUNT, STAGE3_V11_PARENT_SUPPORT_NS,
+};
+
 pub use direct_runtime::{
     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
     DirectOpenLiquidIngressParcel, DirectSurfaceLiquidClosureOperands,
@@ -155,6 +163,7 @@ pub use direct_runtime::{
     DirectSurfaceLiquidStoreClosureOperands, DirectTileGroundIngress,
     execute_surface_liquid_ingress,
 };
+
 pub use direct_runtime::{
     DirectErosionConsolidationCarry, ErosionAdjustmentFactors, ErosionAdjustmentInputs,
     ErosionConsolidationBaselines, ErosionConsolidationInputs, ErosionFrostInputs,
@@ -174,6 +183,11 @@ pub use direct_runtime::{
     DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
     DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
     apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
+};
+pub use direct_runtime::{
+    DirectSnowStage3SealedForcing, DirectSnowStage3ShadowAttachment,
+    DirectSnowStage3ShadowConfiguration, DirectSnowStage3ShadowRestartV1,
+    DirectSnowStage3StagedSurfaceReceipt,
 };
 pub use direct_runtime::{
     EROSION_PARTICLE_CLASS_COUNT, ErosionEffectiveIntensity, ErosionExcessInterval,

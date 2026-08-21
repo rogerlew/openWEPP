@@ -334,6 +334,7 @@ impl DirectHydrologyRestartV1 {
             groundwater,
             surface_liquid_shadow,
             snow_stage3_shadow,
+            snow_stage3_v11_attachment: _,
             laned_active,
             laned_active_summary,
         } = value;
@@ -529,6 +530,7 @@ impl DirectHydrologyRestartV1 {
                 .map_err(nested)?
                 .map(Box::new),
             snow_stage3_shadow: None,
+            snow_stage3_v11_attachment: None,
             laned_active: None,
             laned_active_summary: None,
         };

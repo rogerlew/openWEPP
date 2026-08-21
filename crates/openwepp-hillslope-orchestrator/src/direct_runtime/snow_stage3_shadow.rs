@@ -643,28 +643,6 @@ impl DirectRunFrame {
         self.snow_stage3_shadow = Some(Box::new(attachment));
         Ok(())
     }
-
-    pub(crate) fn stage_snow_stage3_shadow(
-        &mut self,
-        day_input: &DirectPublicationDayInput,
-        day_frame: &DirectDayFrame,
-    ) -> Result<(), DirectRuntimeError> {
-        let Some(mut attachment) = self.snow_stage3_shadow.take().map(|value| *value) else {
-            return Ok(());
-        };
-        let result = attachment.stage_after_live_day(self, day_input, day_frame);
-        self.snow_stage3_shadow = Some(Box::new(attachment));
-        result
-    }
-
-    pub(crate) fn commit_snow_stage3_shadow(&mut self) -> Result<(), DirectRuntimeError> {
-        let Some(mut attachment) = self.snow_stage3_shadow.take().map(|value| *value) else {
-            return Ok(());
-        };
-        let result = attachment.commit_after_live_day(self);
-        self.snow_stage3_shadow = Some(Box::new(attachment));
-        result
-    }
 }
 
 fn validate_configuration(

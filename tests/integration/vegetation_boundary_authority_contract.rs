@@ -639,7 +639,7 @@ fn assurance_receipts_form_the_recorded_generation_chain() {
     ] {
         assert!(terminal_residue.contains(required));
     }
-    assert!(identity.contains("90313e7b476cb5366605a1a708c29b5c2eeb68ecac36f90b00b9160b882c4fd8"));
+    assert!(identity.contains("41b142902d22e139ea732288ed40a504931a1fb54ab27c891d56891910229dd3"));
     assert!(impact.contains(
         "initial `SC-PLANT-001.md` | `3208ab181e5eb9261a51bb3d8ea63d25c133244b8cf25b6949b4f4eb3a26cc1f`"
     ));

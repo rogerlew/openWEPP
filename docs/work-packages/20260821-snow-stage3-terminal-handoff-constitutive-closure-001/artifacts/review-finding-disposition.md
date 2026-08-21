@@ -1,6 +1,8 @@
 # Review finding disposition
 
-Status: `PENDING REVIEWS`.
+Status: `NO INDEPENDENT FINDINGS / HOLD`.
 
-Each finding must be `accepted`, `rejected`, `deferred`, or `follow-up`, with
-evidence rerun after every accepted material correction.
+No delegated or independent review was completed, so no finding is silently
+accepted or rejected. The known closure blocker is recorded as follow-up in
+`hold-legitimacy-audit.md`; future reviews must disposition it as
+`follow-up`/closure-blocking until the covered consumer and runner path exist.

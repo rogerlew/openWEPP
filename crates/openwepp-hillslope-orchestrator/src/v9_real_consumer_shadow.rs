@@ -61,6 +61,9 @@ use crate::{
     DirectSurfaceLiquidConfiguration,
 };
 
+#[path = "canonical_owner_bytes.rs"]
+mod canonical_owner_bytes;
+
 const INTERVALS_PER_DAY: usize = 48;
 const INTERVAL_S: f64 = 1_800.0;
 

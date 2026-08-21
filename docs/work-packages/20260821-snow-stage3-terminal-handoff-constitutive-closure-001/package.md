@@ -1,6 +1,6 @@
 # Stage-3/V11 Terminal-Handoff Constitutive Closure
 
-Status: `EXECUTING / historical HOLDs preserved / constitutive closure active / Child 3 blocked`
+Status: `EXECUTED HOLD / historical HOLDs preserved / constitutive closure incomplete / Child 3 blocked`
 
 Date: `2026-08-21`
 
@@ -130,8 +130,10 @@ or external data mutation is authorized.
 
 ## Calibration readiness
 
-`science_implementation_status`: `IMPLEMENTED` only if the constitutive path
-actually closes; otherwise `NOT_IMPLEMENTED`.
+`science_implementation_status`: `NOT_IMPLEMENTED` for this package because
+the snow-covered V11/shared-carrier path, complete restart, and runner-owned
+sealed capability do not close. The extracted Stage-3 support evaluator and
+typed fail-closed attachment are implementation evidence, not closure.
 `calibration_evidence_status`: `NOT_APPLICABLE` for this implementation
 package; no empirical calibration is claimed.
 `identifiability_status`: `NOT_ASSESSED` with rationale.
@@ -140,7 +142,16 @@ package; no empirical calibration is claimed.
 
 - [x] 2026-08-21: exact starting identity and clean-tree intake passed.
 - [x] 2026-08-21: package scaffold created; historical packages protected.
-- [ ] required-reading and source/owner/cadence intake;
-- [ ] contract/assurance reconciliation;
-- [ ] constitutive implementation and scenario qualification;
+- [x] required-reading and source/owner/cadence intake;
+- [x] contract/assurance reconciliation;
+- [~] constitutive implementation: Stage-3 support extraction and typed
+  default-off boundary implemented; snow-covered V11/shared-carrier execution,
+  complete restart, and runner capability remain blocked;
 - [ ] reviews, verification, exact-head gates, and terminal disposition.
+
+The exact HOLD legitimacy audit is recorded in
+`artifacts/hold-legitimacy-audit.md`. The blocker is a current implementation
+boundary, not effort, test cost, calibration data, or an unrun tool: the only
+available real V11 consumer rejects snow-covered lower-boundary inputs, while
+the runner does not yet provide the sealed 48-support/owner capability needed
+to construct the required covered executor. Child 3 remains blocked.

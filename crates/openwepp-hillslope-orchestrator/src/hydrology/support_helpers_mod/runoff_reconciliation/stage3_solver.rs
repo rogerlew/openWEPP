@@ -2,6 +2,7 @@
 use super::*;
 
 mod evaluation;
+mod support;
 mod terminal_event;
 
 impl Wb11HydrologyKernel {
@@ -132,57 +133,12 @@ impl Wb11HydrologyKernel {
     }
 
     #[allow(clippy::too_many_lines)]
-    pub fn evaluate_stage3_persistent_day(
-        inputs: &DirectActiveSnowPartitionInputs,
-        state: &DirectSnowStage3PersistentState,
-        lane_id: u32,
-        interval_index: u64,
-    ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
-        if state.schema_version != 1 {
-            return Err(Self::stage3_domain_error(
-                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
-                "snow.stage3_persistent_request_state_mismatch",
-                f64::from(state.schema_version),
-                Some(1.0),
-                Some(1.0),
-            )
-            .into());
-        }
-        Self::evaluate_stage3_persistent_day_internal(inputs, state, lane_id, interval_index, None)
-    }
-
-    pub fn evaluate_stage3_persistent_day_with_terminal_event(
-        inputs: &DirectActiveSnowPartitionInputs,
-        state: &DirectSnowStage3PersistentState,
-        lane_id: u32,
-        interval_index: u64,
-        request: DirectSnowTerminalEventRequest,
-    ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
-        if state.schema_version != 2 || state.terminal_event_model != Some(request.model) {
-            return Err(Self::stage3_domain_error(
-                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
-                "snow.stage3_persistent_request_state_mismatch",
-                f64::from(state.schema_version),
-                Some(2.0),
-                Some(2.0),
-            )
-            .into());
-        }
-        Self::evaluate_stage3_persistent_day_internal(
-            inputs,
-            state,
-            lane_id,
-            interval_index,
-            Some(request),
-        )
-    }
-
-    #[allow(clippy::too_many_lines)]
     fn evaluate_stage3_persistent_day_internal(
         inputs: &DirectActiveSnowPartitionInputs,
         state: &DirectSnowStage3PersistentState,
         lane_id: u32,
         interval_index: u64,
+        supports: &[DirectSnowStage3SupportInput],
         terminal_request: Option<DirectSnowTerminalEventRequest>,
     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
         Self::validate_stage3_persistent_state(state)?;
@@ -216,6 +172,7 @@ impl Wb11HydrologyKernel {
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
             tag,
             inputs,
+            supports,
             state.layers.clone(),
             cold_content,
             terminal_request,
@@ -225,15 +182,13 @@ impl Wb11HydrologyKernel {
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
             &summary,
         )?;
-        let snowfall_kg_m2 = inputs
-            .hourly
+        let snowfall_kg_m2 = supports
             .iter()
-            .map(|hour| hour.snowfall_m * 0.1 * STAGE3_RHO_WATER_KG_M3)
+            .map(|support| support.forcing.snowfall_m * 0.1 * STAGE3_RHO_WATER_KG_M3)
             .sum::<f64>();
-        let external_liquid_kg_m2 = inputs
-            .hourly
+        let external_liquid_kg_m2 = supports
             .iter()
-            .map(|hour| hour.rain_m * STAGE3_RHO_WATER_KG_M3)
+            .map(|support| support.forcing.rain_m * STAGE3_RHO_WATER_KG_M3)
             .sum::<f64>();
         let deposition_kg_m2 = summary
             .reconciliation
@@ -665,10 +620,20 @@ impl Wb11HydrologyKernel {
                     Some(summary)
                 }
                 Some(tag) => {
+                    let supports = inputs
+                        .hourly
+                        .iter()
+                        .copied()
+                        .map(|forcing| DirectSnowStage3SupportInput {
+                            forcing,
+                            duration_seconds: STAGE3_SECONDS_PER_HOUR,
+                        })
+                        .collect::<Vec<_>>();
                     let summary = Self::evaluate_stage3_sequential_melt_shadow(
                         phase_class,
                         tag,
                         inputs,
+                        &supports,
                         layers.clone(),
                         cold_content_by_layer.clone(),
                         None,
@@ -791,6 +756,7 @@ impl Wb11HydrologyKernel {
                         snow_depth_m: active_state.depth_m,
                         snow_density_kg_m3: active_state.density_kg_m3,
                         duration_seconds: substep_seconds,
+                        forcing_duration_seconds: STAGE3_SECONDS_PER_HOUR,
                     },
                     None,
                     capture,
@@ -2893,10 +2859,20 @@ mod stage3_evaluation_validation_tests {
         let tag = Stage3EvaluationTag::new(
             SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
         );
+        let supports = inputs
+            .hourly
+            .iter()
+            .copied()
+            .map(|forcing| DirectSnowStage3SupportInput {
+                forcing,
+                duration_seconds: STAGE3_SECONDS_PER_HOUR,
+            })
+            .collect::<Vec<_>>();
         let mut summary = Wb11HydrologyKernel::evaluate_stage3_sequential_melt_shadow(
             phase,
             tag,
             &inputs,
+            &supports,
             inputs.snow_layers.clone(),
             cold,
             None,
@@ -2926,10 +2902,20 @@ mod stage3_evaluation_validation_tests {
         let tag = Stage3EvaluationTag::new(
             SnowStage3EvaluationOperator::SequentialResolvedShadowV1,
         );
+        let supports = inputs
+            .hourly
+            .iter()
+            .copied()
+            .map(|forcing| DirectSnowStage3SupportInput {
+                forcing,
+                duration_seconds: STAGE3_SECONDS_PER_HOUR,
+            })
+            .collect::<Vec<_>>();
         let mut summary = Wb11HydrologyKernel::evaluate_stage3_sequential_melt_shadow(
             phase,
             tag,
             &inputs,
+            &supports,
             inputs.snow_layers.clone(),
             cold,
             None,
