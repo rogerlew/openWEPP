@@ -382,3 +382,41 @@ vector, reference, test, or production change is required.
 but SC-VEGETATION-001 cannot promote at `38492e60a` until every amendment
 finding identity is canonically dispositioned. Re-run bounded Verification B
 after the documentation-only correction.
+
+---
+
+## Resource-custody disposition regression Verification B — checkpoint `8a35ed97f139531cc7ce5ad9d975c252c5c42108`
+
+Date: 2026-08-20
+
+Status: **PASS**
+
+Evidence class: `Static + exact finding-ID reconciliation`
+
+The resource-custody disposition now explicitly accepts and closes every
+Review B identity:
+
+- `V11-RESOURCE-CUSTODY-B-001`;
+- `V11-RESOURCE-CUSTODY-B-002`;
+- `V11-RESOURCE-CUSTODY-B-003`;
+- `V11-RESOURCE-CUSTODY-B-004`.
+
+It also maps all four titled Review A checkpoint findings at `1302b60b9`,
+`9020f3dcb`, `bf2c288c4`, and `e97f1683b` to the corresponding typed custody,
+complete-candidate, V2/V3 composition, and independent suffix corrections.
+The terminal dual-review record is bound to authority commit `e11b6c15e` and
+review record `38492e60a`; no waiver is accepted.
+
+The bounded correction changes only contract-cycle disposition, review, and
+verification records. Technical contracts, schemas, vectors, references,
+tests, and production sources are unchanged. Protected V2 schema/reference
+hashes remain `af9314c3...2441` and `13f3d009...f7c`; V3
+schema/reference/poison hashes remain `0f8c77a6...efe`, `5951dcc0...930`, and
+`d3e97f2a...28ff`. Commit-range diff hygiene passes.
+
+### Superseding verdict
+
+**PASS.** SC-VEGETATION-001 resource-custody Verification B is complete at
+`8a35ed97f`. This supersedes the disposition-only FAIL at `38492e60a`.
+Authority promotion may proceed subject to Verification A and the exact
+checkpoint procedure; this record does not itself activate production.

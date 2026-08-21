@@ -261,6 +261,42 @@ documentation-only reconciliation.
 
 ---
 
+## Resource-custody disposition regression Verification B — checkpoint `8a35ed97f139531cc7ce5ad9d975c252c5c42108`
+
+Date: 2026-08-20
+
+Status: **PASS**
+
+Evidence class: `Static + exact transaction finding-ID reconciliation`
+
+The transaction disposition explicitly accepts and closes:
+
+- `V11-TXN-RESOURCE-B-001`;
+- `V11-TXN-RESOURCE-B-002`;
+- `V11-TXN-RESOURCE-B-003`;
+- `V11-TXN-RESOURCE-B-004`.
+
+It also incorporates all four titled Review A checkpoint findings at
+`1302b60b9`, `9020f3dcb`, `bf2c288c4`, and `e97f1683b` by exact reference to
+the vegetation disposition and names their debit/transition separation,
+aggregate authorization/complete candidate, V2/V3 prefix composition, and
+independently rooted suffix closures. Every A/B finding is closed without
+waiver at terminal authority `e11b6c15e` and dual-review record `38492e60a`.
+
+Only contract-cycle records changed in this bounded correction. Technical
+authority is byte-identical to the prior PASS: V2 hashes remain
+`af9314c3...2441` / `13f3d009...f7c`; V3 hashes remain
+`0f8c77a6...efe` / `5951dcc0...930` / `d3e97f2a...28ff`. Diff hygiene passes.
+
+### Superseding verdict
+
+**PASS.** SC-VEGETATIONTRANSACTION-001 resource-custody Verification B is
+complete at `8a35ed97f`. This supersedes the disposition-only FAIL at
+`38492e60a`. Promotion remains subject to Verification A and exact authority
+checkpointing; production remains inactive.
+
+---
+
 ## Sequential-debit amendment Verification B — checkpoint `f71c36a7c186a95474f29f6470fb2b980f1311cd`
 
 Date: 2026-08-20

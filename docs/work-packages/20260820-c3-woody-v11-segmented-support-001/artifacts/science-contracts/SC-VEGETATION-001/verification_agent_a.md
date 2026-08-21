@@ -220,3 +220,18 @@ and `d3e97f2a39ce33707cf30f7289ccfdf59af6ac3ed1971aaebc2812c9bc0428ff`.
 
 Verdict: `PASS / SC-VEGETATION-001 Version 24 resource-custody amendment is
 independently verified for promotion at 38492e60a`.
+
+### Disposition regression — `8a35ed97f139531cc7ce5ad9d975c252c5c42108`
+
+`PASS` (tree `8a59c0f5e1c47768c5616837a0d98bdaeb1d2f83`). The
+canonical disposition now enumerates and accepts all four titled Review A
+checkpoint findings and `V11-RESOURCE-CUSTODY-B-001..004`, maps each to the
+terminal correction at `e11b6c15e`, and records closure without waiver. Review
+A and B both terminate PASS.
+
+Only disposition and verification records changed from the verified
+`38492e60a` checkpoint. Contract, V2/V3 schema, reference, poison, and authority
+test objects remain exact; the previously recorded V2 54/54, V3 13/13,
+authority 8/8, independent suffix, BEI, unit, schema, protected-wire, and
+nonproduction-range PASS therefore remains unchanged. No residual finding is
+introduced.

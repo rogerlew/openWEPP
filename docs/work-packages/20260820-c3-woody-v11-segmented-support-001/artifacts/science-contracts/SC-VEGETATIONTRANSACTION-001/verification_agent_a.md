@@ -197,3 +197,16 @@ No production Rust or Cargo path occurs in the resource-authority commit range.
 
 Verdict: `PASS / SC-VEGETATIONTRANSACTION-001 Version 13 resource-custody
 amendment is independently verified for promotion at 38492e60a`.
+
+### Disposition regression — `8a35ed97f139531cc7ce5ad9d975c252c5c42108`
+
+`PASS` (tree `8a59c0f5e1c47768c5616837a0d98bdaeb1d2f83`). The
+transaction disposition explicitly accepts the four titled Review A checkpoint
+findings and `V11-TXN-RESOURCE-B-001..004`, records the terminal reviewed
+authority, and closes every item without waiver. Both review histories end in
+PASS.
+
+The checkpoint changes disposition and verification prose only. All technical
+objects and protected wires are byte-identical to `38492e60a`; the prior V2
+54/54, V3 13/13, authority 8/8, independent suffix, BEI, unit, schema, diff,
+and production-exclusion PASS remains exact. Verification A remains PASS.
