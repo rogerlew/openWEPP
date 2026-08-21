@@ -1,8 +1,8 @@
 ---
 contract_id: SC-SNOWENERGY-001
 title: Snow-Surface Energy and Sub-Canopy Longwave Contract
-status: in_review
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP maintainers + snow-process reviewer
 contract_version: 14
 producer_scope:
@@ -21,8 +21,8 @@ superseded_by: []
 
 # SC-SNOWENERGY-001 Snow-Surface Energy and Sub-Canopy Longwave Contract
 
-Status: `in_review`
-Maturity: `draft`
+Status: `approved`
+Maturity: `active`
 Evidence mode: `static + independent oracle + contract vectors`
 
 ## Purpose

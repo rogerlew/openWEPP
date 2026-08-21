@@ -1,8 +1,8 @@
 ---
 contract_id: SC-COUPLEDTIME-001
 title: Coupled Time Support, Event, and Atomic Chronology Contract
-status: in_review
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP maintainers + time/numerics + transaction/restart reviewers
 contract_version: 3
 producer_scope:
@@ -19,9 +19,9 @@ superseded_by: []
 
 # SC-COUPLEDTIME-001 Coupled Time Support, Event, and Atomic Chronology Contract
 
-Status: `in_review`
+Status: `approved`
 
-Maturity: `draft`
+Maturity: `active`
 
 Authority identity: `OPENWEPP_COUPLED_TIME_SUPPORT_V1`
 
@@ -663,8 +663,8 @@ proof of atomic no-op on every rejected path.
 
 | Gap ID | Gap | Promotability |
 |---|---|---|
-| GAP-CT-001 | Independent schemas, model definition, vectors, and reference calculator are not yet admitted. | `HOLD` before authority release |
-| GAP-CT-002 | Dual authority review, disposition, and dual verification are pending. | `HOLD` before registry promotion to approved/active |
+| GAP-CT-001 | Independent schemas, model definition, vectors, and reference calculator were pending authority admission. | `AUTHORITY_ADMITTED` by Child 2C contract evidence |
+| GAP-CT-002 | Dual authority review, disposition, and dual verification were pending. | `AUTHORITY_RELEASED` after Child 2C dual review and verification |
 | GAP-CT-003 | Production crate and orchestrator reference consumer are not implemented. | expected after authority release; blocks package completion, not contract review |
 | GAP-CT-004 | V11 full-support compatibility and snow-covered carrier equations are Child 2B/2C. | explicitly out of scope; no V10/V11 efficacy claim |
 | GAP-CT-005 | Richards equations/controller policy remain for `SC-RICHARDS-001`. | explicitly out of scope; tuple guard is current scope |
