@@ -1137,3 +1137,62 @@ claimed actual suffix does not continue V3 custody state`.
 
 Prior coordinated-ID and complete-candidate findings are closed. No waiver or
 production authorization is recommended.
+
+---
+
+## Resource-custody cross-wire Review B — candidate `e97f1683b5de8615e5c45b62aae2e346d3ca8d1c`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + coordinated cross-wire identity probes`
+
+The correction closes the prior time-scale, cursor projection, prefix-only
+collection, dynamic `7 x accepted_slabs` cardinality, terminal V11 state, and
+terminal staged-owner joins for the frozen control. V2 54/54, V3 10/10,
+authority 8/8, schema meta-validation, strict BEI, unit compliance, and diff
+hygiene pass. Prior support-scale, cursor, prefix substitution,
+missing/extra-candidate, terminal-owner, forged-candidate, missing-link, and
+suffix-not-consumed poisons reject.
+
+One exact-identity/independence portion of `V11-RESOURCE-CUSTODY-B-001` remains
+open.
+
+### Residual finding
+
+Debit and transition bodies are proven internally hash-consistent but their
+`parent_transaction_id` and `segment_id` are not required to equal the embedded
+V2 parent and admitted segment. A direct coordinated probe changed both fields
+in one debit and its transition, rederived the debit/transition IDs and
+component link, and was accepted. Its complete suffix digest changed, proving
+the forged prefix entered continuation without failing the cross-wire join.
+
+Typed other-flux receipts have the same gap. They are checked for derived ID
+and admitted slab ID, but their parent, segment, support, owner, OFE, layer,
+source, and basis are not required to equal the linked transition. A
+schema-valid `snow` flux was linked into a hydrology transition and accepted.
+
+Finally, the claimed uninterrupted comparison is not independent:
+`restored = execute_suffix(c, consume)` and
+`full = execute_suffix(c, True)` both start from the same caller-supplied V3
+checkpoint. Coordinated prefix reframing therefore changes both sides. This
+proves suffix consumption, but not equality to an independently constructed
+uninterrupted parent chronology.
+
+Required correction: join every debit, transition, and flux parent/segment to
+the exact V2 parent and admitted slab/segment projection; join every linked
+flux's complete owner/OFE/layer/source/basis/support identity to its transition
+under an explicitly admitted flux-class direction rule; and construct the
+uninterrupted comparison independently from frozen parent beginning inputs and
+forcing rather than the restored checkpoint. Add coordinated parent/segment,
+cross-owner flux, cross-basis flux, and shared-origin self-consistency poisons.
+
+### Verdict
+
+`HOLD / SC-VEGETATION-001 Version 23 cannot release at e97f1683b because
+cross-wire parent/segment and typed-flux identity joins remain incomplete and
+suffix equality is checkpoint self-consistency rather than an independent
+uninterrupted reconstruction`.
+
+No waiver or production authorization is recommended.

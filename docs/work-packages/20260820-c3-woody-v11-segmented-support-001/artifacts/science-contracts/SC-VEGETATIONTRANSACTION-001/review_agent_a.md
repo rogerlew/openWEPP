@@ -650,3 +650,34 @@ missing cross-wire composition.
 
 Verdict: `HOLD / Version 11 closes local debit/candidate custody but does not
 compose that custody with the V2 checkpoint and suffix at bf2c288c4`.
+
+## Resource-custody cross-wire Review A — `e97f1683b5de8615e5c45b62aae2e346d3ca8d1c`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent suffix probe`
+
+Version 12 closes the prior checkpoint-prefix transaction finding. V3 position
+is derived from V2 support/cursor/slab/event chronology, terminal candidates
+equal the seven V2 staged owners, and terminal V11 state equals the decoded V2
+staged state. All requested graft and prefix poisons reject.
+
+One transaction verification gap remains. The alleged uninterrupted result and
+restored result are both `execute_suffix(c, True)` over the same restored
+checkpoint. There is no independently constructed uninterrupted parent
+chronology, so equality is by construction and cannot detect lost, duplicated,
+or misapplied prefix custody shared by both paths.
+
+Closure requires two independently constructed paths: parent beginning through
+accepted prefix and suffix, versus admitted checkpoint terminal through suffix,
+with complete owner/resource/receipt/event/reduction/publication equality. A
+poison must alter accepted-prefix custody in only the restored path while the
+independent uninterrupted path remains fixed.
+
+Gates PASS: V2 54/54, V3 10/10, authority 8/8, BEI 4 rows, scoped unit/schema/
+diff hygiene. The suffix-not-consumed poison is not an anti-tautology oracle.
+
+Verdict: `HOLD / Version 12 binds the V2/V3 prefix but still self-compares one
+suffix execution instead of proving uninterrupted equivalence at e97f1683b`.

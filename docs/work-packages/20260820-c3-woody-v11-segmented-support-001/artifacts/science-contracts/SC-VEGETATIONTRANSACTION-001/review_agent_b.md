@@ -780,3 +780,49 @@ and actual V3 suffix continuation are not joined`.
 
 The prior ID and complete-owner candidate findings are closed. Production
 remains gated without waiver.
+
+---
+
+## Resource-custody cross-wire Review B — candidate `e97f1683b5de8615e5c45b62aae2e346d3ca8d1c`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + coordinated transaction/flux probes`
+
+The exact V2 parent support/cursor/accepted-slab projection, prefix-only wire,
+dynamic seven-owner candidate cardinality, terminal V11 state, and terminal
+staged owners now join for the control. Required gates pass: V2 54/54, V3
+10/10, authority 8/8, schemas, BEI, unit compliance, and diff hygiene. The
+declared cross-wire and suffix-consumption poisons reject.
+
+`V11-TXN-RESOURCE-B-001` nevertheless remains open in two related forms:
+
+- a debit and transition can be moved together to an arbitrary parent and
+  segment, have both IDs and component links rederived, and still pass because
+  validation joins only accepted slab/support and local debit-transition
+  fields—not their parent/segment to V2;
+- a typed other-flux receipt with owner `snow` can be linked to a hydrology
+  transition and accepted. Flux validation does not join parent, segment,
+  support, owner, OFE, layer, source, or basis to the consuming transition, nor
+  apply an admitted flux-class direction mapping.
+
+The runtime-only suffix comparison is also tautological for prefix authority:
+both restored and `full` executions consume the same supplied checkpoint.
+Coordinated parent/segment reframing changes the reported suffix digest but
+passes both sides. An uninterrupted oracle must instead begin from independent
+parent-beginning state/forcing and reconstruct the accepted prefix plus suffix.
+
+Required correction: enforce exact V2 parent/segment identity for every custody
+body, full typed flux-to-transition lineage, and independent uninterrupted
+construction. Add coordinated parent/segment, cross-owner/OFE/source/basis flux,
+and same-forged-origin suffix poisons.
+
+### Verdict
+
+`HOLD / SC-VEGETATIONTRANSACTION-001 Version 12 remains non-releasable at
+e97f1683b; accepted chronology is time-aligned but not fully identity-joined or
+independently reconstructed`.
+
+Production remains gated with no waiver.

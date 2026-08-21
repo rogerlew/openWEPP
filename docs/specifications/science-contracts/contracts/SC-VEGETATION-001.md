@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 23
+contract_version: 24
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -2775,6 +2775,13 @@ digest-only owner restoration, or loss of reductions/publication is
 Independent acceptance executes that separate suffix from the joined V2/V3
 checkpoint position and compares final seven-owner, resource, receipt, event,
 reduction, and publication bytes with uninterrupted V3 chronology.
+The uninterrupted oracle is rooted independently in frozen parent-beginning
+owners/state plus frozen prefix and suffix operations; it reads no V3
+checkpoint field. Every debit, transition, typed flux, and complete candidate
+joins the decoded V2 parent, segment, accepted slab ID, and exact support.
+Flux bodies close class, direction, source/receiver owners, resource,
+OFE/layer/source/basis, and amount; only explicitly admitted mappings may link,
+and each derived flux receipt links exactly once.
 
 ### Full-support compatibility and segmented population
 
@@ -2825,6 +2832,7 @@ snow carrier, selector/default, activation, publication, deployment, or cutover.
 | 2026-08-20 | 18 | Codex | Bound restart V2 segments to predecessor V11 state and terminal complete-owner equality across segment, checkpoint, and outer wire. |
 | 2026-08-20 | 19 | Codex | Made sequential staged subtraction authoritative and separated it from the ordered cumulative-debit diagnostic fold; prohibited regrouped owner-ending aliases. |
 | 2026-08-20 | 20 | Codex | Separated occupancy debit receipts from shared hydrology/BGC owner transitions and bound debit links, owner-candidate lineage, authorization, and cross-segment shared-owner continuity. |
+| 2026-08-20 | 24 | Codex | Joined every V3 custody body to the decoded V2 receipt domain, closed typed flux mappings/exact-once links, and replaced checkpoint-derived comparison with a parent-beginning independent uninterrupted oracle. |
 | 2026-08-20 | 23 | Codex | Restricted Restart V3 to the exact V2-accepted custody prefix, made seven-owner candidate cardinality cursor-derived, and required runtime-only suffix execution with full uninterrupted equality. |
 | 2026-08-20 | 22 | Codex | Completed additive Restart V3 by composing all V2 admission and full-suffix equivalence, deriving typed receipt identities, binding one complete owner candidate per owner/slab, and aggregating shared-inventory authorization. |
 | 2026-08-20 | 21 | Codex | Froze Restart V2 as nonproduction for resource custody and introduced additive closed Restart V3 typed debit/transition continuation authority. |

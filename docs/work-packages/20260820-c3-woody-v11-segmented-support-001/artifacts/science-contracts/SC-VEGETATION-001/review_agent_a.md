@@ -803,3 +803,39 @@ missing V2-to-V3 join.
 
 Verdict: `HOLD / local V3 resource custody is closed, but complete V2/V3 owner
 and suffix composition remains disconnected at bf2c288c4`.
+
+## Resource-custody cross-wire Review A — `e97f1683b5de8615e5c45b62aae2e346d3ca8d1c`
+
+Date: 2026-08-20
+
+Status: `HOLD`
+
+Evidence mode: `Static + Ran + independent suffix probe`
+
+The accepted-prefix cross-wire joins are now closed: parent support, cursor,
+slab/event ordinals and receipts join decoded V2; candidate cardinality is
+seven per accepted slab; terminal candidate bytes equal all seven V2 staged
+owners; and terminal V11 state equals the decoded V2 staged state. Graft,
+support, cursor, prefix, terminal, cardinality, candidate, and link poisons
+reject.
+
+The required uninterrupted suffix comparison remains tautological. `validate`
+computes both `restored` and `full` by calling `execute_suffix` on the same V3
+checkpoint and same terminal prefix. No path executes uninterrupted chronology
+from the parent beginning through prefix and suffix, so a shared defect in the
+checkpoint prefix or suffix operator is guaranteed to compare equal. The
+`suffix_not_consumed` poison proves only that bypassing the single function is
+different; it does not establish independent uninterrupted equality.
+
+Required closure: build an independent uninterrupted execution from parent
+beginning owners and the accepted-prefix plus future inputs, build restored
+execution from admitted V2/V3 terminal custody and future inputs, then compare
+the complete seven-owner, state, resource/material/event/scheduled, reduction,
+publication, and outbox chronology byte-for-byte. The two paths must not share
+the checkpoint-derived prefix result or one implementation function.
+
+Gates PASS: V2 54/54, V3 10/10, authority 8/8, BEI 15 rows, scoped unit,
+schema, and diff hygiene. These do not remove the suffix anti-tautology gap.
+
+Verdict: `HOLD / prefix custody is cross-wire exact, but uninterrupted versus
+restored suffix equivalence is not independently executed at e97f1683b`.

@@ -8,5 +8,8 @@
  {"id":"extra_candidate","mutation":"extra_candidate","error":"V3-CANDIDATE-CARDINALITY"},
  {"id":"suffix_not_consumed","mutation":"suffix_not_consumed","error":"V3-SUFFIX"},
  {"id":"forged_candidate","mutation":"forged_candidate","error":"V3-CANDIDATE"},
- {"id":"missing_debit_link","mutation":"missing_debit_link","error":"V3-CANDIDATE"}
+ {"id":"missing_debit_link","mutation":"missing_debit_link","error":"V3-CANDIDATE"},
+ {"id":"restored_only_prefix_forgery","mutation":"restored_only_prefix_forgery","error":"V3-SUFFIX"},
+ {"id":"coordinated_parent_segment_reframe","mutation":"coordinated_parent_segment_reframe","error":"V3-V2"},
+ {"id":"snow_to_hydrology_flux","mutation":"snow_to_hydrology_flux","error":"V3-FLUX-MAPPING"}
 ]

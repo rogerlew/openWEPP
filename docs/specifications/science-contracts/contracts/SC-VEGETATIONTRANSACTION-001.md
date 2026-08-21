@@ -4,7 +4,7 @@ title: Coupled Vegetation Occupancy Owner-Transaction Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
-contract_version: 12
+contract_version: 13
 producer_scope:
   - OPENWEPP_C3_WOODY_V8 occupancy and ground resource/energy candidates
   - OPENWEPP_C3_WOODY_V11 accepted-segment and parent candidates
@@ -437,6 +437,11 @@ exactly seven complete candidates per accepted slab, and the terminal prefix
 joins V2 staged owners and staged V11 state. The future suffix is separate
 runtime input, is executed after restore, and its complete final chronology is
 compared bytewise with uninterrupted execution.
+Every debit, transition, flux, and complete candidate joins the exact decoded
+V2 parent/segment/slab/support domain. Typed fluxes admit only closed mappings
+of class, direction, source/receiver owner, resource and spatial/basis identity,
+with derived IDs linked exactly once. The uninterrupted comparator starts from
+frozen parent-beginning state and frozen operations, not checkpoint contents.
 Each accepted segment beginning digest equals the prior ending-state digest,
 with ordinal zero rooted in the parent beginning state, and its support begins
 at the predecessor end. The terminal segment ending complete-owner envelopes
@@ -463,6 +468,7 @@ publication, deployment, or production-cutover authority.
 | 2026-08-20 | 7 | Codex | Added exact accepted-segment predecessor chaining and terminal complete-owner equality across restart V2 layers. |
 | 2026-08-20 | 8 | Codex | Separated authoritative sequential resource-owner subtraction from the nonassociative ordered cumulative diagnostic fold and rejected regrouped ending aliases. |
 | 2026-08-20 | 9 | Codex | Split occupancy-scoped vegetation debit receipts from typed shared-owner transitions and required exact debit links, owner-candidate lineage, authorization, and shared predecessor continuity. |
+| 2026-08-20 | 13 | Codex | Closed V3 cross-wire receipt-domain joins, typed flux mapping/exact-once linkage, and independent parent-beginning uninterrupted reconstruction. |
 | 2026-08-20 | 12 | Codex | Restricted V3 persistence to the V2-accepted prefix, derived dynamic seven-owner candidate cardinality from the cursor, and moved future suffix operations to runtime-only continuation input. |
 | 2026-08-20 | 11 | Codex | Completed Restart V3 as a full V2 semantic composition with derived receipt identities, canonical complete owner candidates, typed inflows, aggregate authorization, and actual full-suffix equivalence. |
 | 2026-08-20 | 10 | Codex | Froze Restart V2 as nonproduction for resource custody and added additive closed Restart V3 debit/transition predecessor and terminal-owner continuation authority. |
