@@ -560,6 +560,10 @@ pub struct DirectRunFrame {
     /// `None` preserves the production lane exactly; shadow consumers must
     /// provide a strict digest-bound state before requesting this owner.
     pub surface_liquid_shadow: Option<Box<DirectSurfaceLiquidOwnedState>>,
+    /// Default-off persistent Stage-3/V11 shadow. The ordinary scheduler
+    /// advances and commits it only when this attachment is explicitly
+    /// installed by a typed sealed configuration.
+    pub snow_stage3_shadow: Option<Box<snow_stage3_shadow::DirectSnowStage3ShadowAttachment>>,
     /// D15A (rev 27): the opt-in ACTIVE routing configuration. `Some` IS the
     /// activation selector inside the orchestrator (the runner sets it from
     /// `OPENWEPP_LANED_ACTIVE=1` after its fail-closed preflight); `None`
@@ -587,6 +591,7 @@ impl DirectRunFrame {
             lane_transfer_shadow_projection: None,
             groundwater: DirectGroundwaterRunState::disabled(),
             surface_liquid_shadow: None,
+            snow_stage3_shadow: None,
             laned_active: None,
             laned_active_summary: None,
         })
@@ -616,6 +621,7 @@ impl DirectRunFrame {
             lane_transfer_shadow_projection: None,
             groundwater: DirectGroundwaterRunState::disabled(),
             surface_liquid_shadow: None,
+            snow_stage3_shadow: None,
             laned_active: None,
             laned_active_summary: None,
         })

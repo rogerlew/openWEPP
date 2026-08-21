@@ -444,3 +444,37 @@ pub struct DirectStreamingPublicationExecution {
     pub metadata: DirectPublicationRunMetadata,
     pub row_count: usize,
 }
+
+/// Immutable publication material released only after the scheduler has
+/// committed its candidate frame and all attached shadow owners.  Consumers
+/// can inspect the batch after the owner transaction; no output sink is called
+/// while the batch is being constructed.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectPublicationBatchExecution {
+    report: DirectExecutionReport,
+    identity: DirectRunIdentity,
+    metadata: DirectPublicationRunMetadata,
+    rows: Vec<(DirectPublicationDayRow, DirectDayFrame)>,
+}
+
+impl DirectPublicationBatchExecution {
+    #[must_use]
+    pub const fn report(&self) -> &DirectExecutionReport {
+        &self.report
+    }
+
+    #[must_use]
+    pub const fn identity(&self) -> DirectRunIdentity {
+        self.identity
+    }
+
+    #[must_use]
+    pub const fn metadata(&self) -> &DirectPublicationRunMetadata {
+        &self.metadata
+    }
+
+    #[must_use]
+    pub fn rows(&self) -> &[(DirectPublicationDayRow, DirectDayFrame)] {
+        &self.rows
+    }
+}

@@ -10,7 +10,8 @@ use crate::{
 use openwepp_hillslope_orchestrator::{
     DirectDayConstructorInputs, DirectLaneFrame, DirectLaneTransferLedger, DirectPhaseKind,
     DirectPhasePlan, DirectPublicationFrame, DirectRunFrame, DirectRunIdentity,
-    DirectRunTransferShadowProjection, DirectSurfaceLiquidConfiguration,
+    DirectRunTransferShadowProjection, DirectSnowStage3ShadowRestartV1,
+    DirectSurfaceLiquidConfiguration,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -305,6 +306,7 @@ pub struct DirectHydrologyRestartV1 {
     pub lane_transfer_downstream_operands: DirectRunTransferDownstreamOperandsRestartV1,
     pub groundwater: DirectGroundwaterRunStateRestartV1,
     pub surface_liquid_owned_state: Option<Box<DirectSurfaceLiquidOwnedStateRestartV1>>,
+    pub snow_stage3_shadow: Option<Box<DirectSnowStage3ShadowRestartV1>>,
 }
 
 pub struct ExpectedDirectHydrologyRestartContext<'a> {
@@ -331,6 +333,7 @@ impl DirectHydrologyRestartV1 {
             lane_transfer_shadow_projection,
             groundwater,
             surface_liquid_shadow,
+            snow_stage3_shadow,
             laned_active,
             laned_active_summary,
         } = value;
@@ -413,6 +416,12 @@ impl DirectHydrologyRestartV1 {
                 .transpose()
                 .map_err(nested)?
                 .map(Box::new),
+            snow_stage3_shadow: snow_stage3_shadow
+                .as_deref()
+                .map(|attachment| attachment.restart_v1())
+                .transpose()
+                .map_err(nested)?
+                .map(Box::new),
         })
     }
 
@@ -492,7 +501,7 @@ impl DirectHydrologyRestartV1 {
         {
             return Err(HydrologyRestartError::Join("lane_transfer_ledger"));
         }
-        Ok(DirectRunFrame {
+        let mut frame = DirectRunFrame {
             identity: DirectRunIdentity::new(
                 self.run_id,
                 self.hillslope_id,
@@ -519,9 +528,16 @@ impl DirectHydrologyRestartV1 {
                 .transpose()
                 .map_err(nested)?
                 .map(Box::new),
+            snow_stage3_shadow: None,
             laned_active: None,
             laned_active_summary: None,
-        })
+        };
+        if let Some(restart) = self.snow_stage3_shadow.clone() {
+            frame
+                .restore_snow_stage3_shadow(*restart, context.surface_liquid_configuration.clone())
+                .map_err(nested)?;
+        }
+        Ok(frame)
     }
 }
 

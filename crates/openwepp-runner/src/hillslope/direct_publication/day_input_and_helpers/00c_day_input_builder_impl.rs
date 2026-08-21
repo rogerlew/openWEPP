@@ -677,19 +677,26 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         Ok((growth_state, Some(daily)))
     }
 
-    fn maybe_write_canopy_research_trace(
+    pub(crate) fn canopy_research_trace_for(
+        &self,
+        day_index: usize,
+        lane_index: usize,
+    ) -> Option<NativeCanopyBuilderTrace> {
+        self.canopy_research_pending
+            .borrow()
+            .get(lane_index)
+            .and_then(|trace| *trace)
+            .filter(|trace| trace.day_index == day_index)
+    }
+
+    pub(crate) fn write_canopy_research_trace(
         &self,
         day_frame: &openwepp_hillslope_orchestrator::DirectDayFrame,
+        builder: Option<NativeCanopyBuilderTrace>,
     ) -> Result<(), HillslopeCliError> {
         let Some(config) = canopy_research_trace_config()? else {
             return Ok(());
         };
-        let builder = self
-            .canopy_research_pending
-            .borrow()
-            .get(day_frame.lane_index)
-            .and_then(|trace| *trace)
-            .filter(|trace| trace.day_index == day_frame.day_index);
         let Some(builder) = builder else {
             return Ok(());
         };

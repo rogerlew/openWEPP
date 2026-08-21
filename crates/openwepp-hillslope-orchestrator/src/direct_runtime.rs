@@ -170,6 +170,7 @@ mod storage;
 mod subhourly_generation;
 mod subsurface;
 pub(crate) use subsurface::apply_direct_same_pass_infiltration;
+mod snow_stage3_shadow;
 mod surface_liquid_attachment;
 mod surface_liquid_closure;
 mod surface_liquid_ingress;
@@ -351,6 +352,11 @@ pub use runoff::{
     DirectSaturationAddbackState, DirectWb14HyetographInterval,
     DirectWb14InfiltrationProducerInputs, compute_direct_canopy_interception,
     wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
+};
+pub use snow_stage3_shadow::{
+    DirectSnowStage3SealedForcing, DirectSnowStage3ShadowAttachment,
+    DirectSnowStage3ShadowConfiguration, DirectSnowStage3ShadowRestartV1,
+    DirectSnowStage3StagedSurfaceReceipt,
 };
 pub use storage::{
     DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,

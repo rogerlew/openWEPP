@@ -462,8 +462,9 @@ fn laned_shadow_consumes_live_dynamic_friction_operands() {
     let builder_source = direct_publication_day_input_and_helpers_source();
 
     assert!(
-        runner_source.contains("run_publication_stream_with_interleaved_day_inputs_and_day_frames"),
-        "Lane D shadow must use the frame-aware stream so dynamic operands come from the executed day frame"
+        runner_source.contains("run_publication_batch_with_interleaved_day_inputs_and_day_frames")
+            && runner_source.contains("batch.rows()"),
+        "Lane D shadow must consume the immutable frame-aware batch so dynamic operands come from the executed day frame"
     );
     assert!(
         runner_source.contains("laned_shadow_lane_day_operands(day_frame)")

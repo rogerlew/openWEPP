@@ -1,5 +1,15 @@
 # Work Packages
 
+## 20260821-snow-stage3-terminal-handoff-live-owner-closure-001
+
+Fresh resumed Child-1 closure package from `56f394871`, preserving the prior
+shared-carrier implementation as EXECUTED HOLD. It owns the persistent
+default-off Stage-3/V11 shadow attachment, ordinary-scheduler internal
+consumption, terminal liquid/WB14 continuation, complete-owner installation,
+restart, replay, failure, and immutable publication-batch closure.
+Status: `EXECUTED COMPLETE` for the affected write set; repository-wide
+assurance identity drift remains separately recorded in the package artifacts.
+
 > **Canonical roadmap: [../ROADMAP.md](../ROADMAP.md)** — a **forward-only planning
 > queue** (what is next and deferred). The section below is this roadmap's
 > **execution log**: the home for **completed** work — package status, detail, and

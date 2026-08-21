@@ -328,10 +328,48 @@ impl DirectFrameExecutor {
         )
     }
 
+    /// Execute the ordinary scheduler into an immutable publication batch.
+    /// The external sink is intentionally absent from this transaction: the
+    /// caller receives rows only after the candidate frame and any persistent
+    /// Stage-3 shadow attachment have committed.
+    pub fn run_publication_batch_with_interleaved_day_inputs_and_day_frames<F>(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        build_day_input: F,
+    ) -> Result<DirectPublicationBatchExecution, DirectRuntimeError>
+    where
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+    {
+        let mut candidate = frame.clone();
+        let mut rows = Vec::<(DirectPublicationDayRow, DirectDayFrame)>::new();
+        let execution = self.run_publication_stream_with_interleaved_day_inputs_and_day_frames(
+            &mut candidate,
+            metadata.clone(),
+            build_day_input,
+            |row, day_frame| {
+                rows.push((row.clone(), day_frame.clone()));
+                Ok(())
+            },
+        )?;
+        *frame = candidate;
+        Ok(DirectPublicationBatchExecution {
+            report: execution.report,
+            identity: execution.identity,
+            metadata,
+            rows,
+        })
+    }
+
     /// Run the ordinary direct scheduler with an explicitly supplied Child 2C
     /// terminal handoff candidate. The candidate is staged against a cloned
     /// frame/runtime, and rows are released only after the complete owner/day
     /// commit succeeds. No normal selector invokes this method.
+    #[cfg(test)]
     pub fn run_publication_stream_with_snow_stage3_terminal_handoff<F, B, S>(
         &self,
         frame: &mut DirectRunFrame,
@@ -438,6 +476,7 @@ impl DirectFrameExecutor {
     /// terminal runtime candidate are committed does the owner candidate
     /// receive its commit callback.
     #[allow(clippy::too_many_arguments)]
+    #[cfg(test)]
     pub fn run_publication_stream_with_snow_stage3_terminal_handoff_and_owner_executor<
         F,
         B,
@@ -829,6 +868,11 @@ impl DirectFrameExecutor {
                 .map_err(|source| {
                     Self::day_execution_failure(&day_frame, lane_index, day_index, &source)
                 })?;
+                // The persistent Stage-3/V11 shadow consumes the sealed
+                // terminal event only after ordinary live owners have
+                // produced their day operands.  It is staged before row
+                // construction and committed below with the day frame.
+                frame.stage_snow_stage3_shadow(&day_input, &day_frame)?;
                 for phase in phase_plan {
                     let view = day_frame.phase_view(phase);
                     let _phase = view.phase();
@@ -844,7 +888,6 @@ impl DirectFrameExecutor {
                             lane_count: frame.lanes.len(),
                         })?;
                 let row = DirectPublicationDayRow::from_day_frame(&day_frame, &day_input, lane)?;
-                consume_row(&row, &day_frame)?;
                 row_count =
                     row_count
                         .checked_add(1)
@@ -859,7 +902,9 @@ impl DirectFrameExecutor {
                 }
                 frame.commit_day_frame(&day_frame)?;
                 counters.record_day_frame_commit();
+                frame.commit_snow_stage3_shadow()?;
                 run_day_shadow(DirectPublicationDayHook::CommittedDay)?;
+                consume_row(&row, &day_frame)?;
             }
             run_day_shadow(DirectPublicationDayHook::CompleteDay { day_index })?;
         }
@@ -1146,18 +1191,18 @@ impl DirectFrameExecutor {
                     })?;
             let row =
                 DirectPublicationDayRow::from_day_frame(day_frame, &day_inputs[lane_index], lane)?;
-            consume_row(&row, day_frame)?;
             *row_count =
                 row_count
                     .checked_add(1)
                     .ok_or(DirectRuntimeError::DirectDomainViolation {
                         field: "publication.row_count",
                     })?;
-            if Self::publish_erosion_inflow_to_downstream(frame, &day_frames[lane_index])? {
+            if Self::publish_erosion_inflow_to_downstream(frame, day_frame)? {
                 counters.record_dynamic_transfer_publication();
             }
-            frame.commit_day_frame(&day_frames[lane_index])?;
+            frame.commit_day_frame(day_frame)?;
             counters.record_day_frame_commit();
+            consume_row(&row, day_frame)?;
         }
         Ok(())
     }

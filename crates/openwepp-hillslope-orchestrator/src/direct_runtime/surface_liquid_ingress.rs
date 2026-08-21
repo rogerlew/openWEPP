@@ -105,6 +105,7 @@ pub enum DirectSurfaceLiquidParcelKind {
     CanopyStemflow,
     CondensationOverflow,
     UpstreamRunon,
+    TerminalReceiver,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -993,6 +994,13 @@ fn validate_cadence(
     beginning: &DirectSurfaceLiquidOwnedState,
     input: &DirectSurfaceLiquidIngressInput,
 ) -> Result<(), DirectSurfaceLiquidError> {
+    if input.interval_s > INTERVAL_S {
+        return Err(production_binding_failure(
+            input.transaction_id,
+            None,
+            "surface-liquid interval exceeds the admitted WB14 cadence",
+        ));
+    }
     let initial = beginning
         .records
         .first()
@@ -1539,6 +1547,7 @@ fn append_tile_ingress(
                     parcel.kind,
                     DirectSurfaceLiquidParcelKind::RawPrecipitation
                         | DirectSurfaceLiquidParcelKind::UpstreamRunon
+                        | DirectSurfaceLiquidParcelKind::TerminalReceiver
                 ) || parcel.destination_ofe_id != *ofe_id
                     || parcel.destination_tile_id != *tile_id
                     || !identities.insert(parcel.parcel_id.clone())

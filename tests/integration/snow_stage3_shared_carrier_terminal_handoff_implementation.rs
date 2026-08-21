@@ -8,11 +8,6 @@ use openwepp_hillslope_orchestrator::snow_stage3_terminal_handoff::{
     SnowStage3OwnerExecutionReceipt, SnowStage3TerminalHandoffRequest, TerminalEventInput,
     TerminalStateRates, evaluate_shared_carrier, locate_terminal_event,
 };
-use openwepp_hillslope_orchestrator::{
-    DirectExecutorMode, DirectFrameExecutor, DirectLaneConstructorInputs,
-    DirectPublicationCalendarDay, DirectPublicationDayInput, DirectPublicationRunMetadata,
-    DirectRunConstructorInputs, DirectRunFrame, DirectRunIdentity,
-};
 use openwepp_persisted_restart_v1::SnowStage3HandoffRestartV1;
 
 fn tick(value: u128) -> ModelTimeNs {
@@ -242,14 +237,14 @@ fn event_selection_uses_support_tolerance_and_atomic_no_candidate() {
 fn handoff_stages_complete_owners_commits_once_and_round_trips_restart() {
     let beginning = owners(1);
     let ending = owners(2);
-    let owner_execution = owner_execution(ending.clone());
+    let first_owner_execution = owner_execution(ending.clone());
     let mut runtime = SnowStage3HandoffRuntime::new(tick(0), beginning.clone()).expect("runtime");
     let request = SnowStage3TerminalHandoffRequest {
         carrier: carrier(),
         event: event(600_000_000),
         beginning_owners: beginning.clone(),
         ending_owners: ending,
-        owner_execution,
+        owner_execution: first_owner_execution,
         retained_liquid_kg_m2: 0.7,
         snow_support_rain_kg_m2: 0.2,
         terminal_melt_kg_m2: 0.5,
@@ -292,6 +287,38 @@ fn handoff_stages_complete_owners_commits_once_and_round_trips_restart() {
     assert_eq!(runtime.accepted_event_ordinal(), 1);
     assert_eq!(runtime.receipt_chain().len(), 1);
     assert_eq!(runtime.receipt_history(), std::slice::from_ref(&receipt));
+
+    let second_ending = owners(3);
+    let mut second_event = event(1_200_000_000);
+    second_event.segment_identity = "segment-stage3-test-2".to_string();
+    second_event.event_ordinal = 2;
+    second_event.parent_start_tick = tick(600_000_000);
+    second_event.proposed_event_tick = tick(1_200_000_000);
+    second_event.candidate_ticks = vec![tick(1_200_000_000)];
+    second_event.pre_active_participants = carrier().support_receipts;
+    second_event.post_active_participants = Vec::new();
+    let second_request = SnowStage3TerminalHandoffRequest {
+        carrier: carrier(),
+        event: second_event,
+        beginning_owners: runtime.committed_owners().clone(),
+        ending_owners: second_ending.clone(),
+        owner_execution: owner_execution(second_ending),
+        retained_liquid_kg_m2: 0.7,
+        snow_support_rain_kg_m2: 0.2,
+        terminal_melt_kg_m2: 0.5,
+        terminal_refreeze_kg_m2: 0.1,
+        continuation: SnowFreeContinuationInput {
+            duration_ns: tick(0),
+            terminal_liquid_kg_m2: 1.3,
+            post_event_contains_snow_operands: false,
+        },
+    };
+    runtime
+        .stage(second_request)
+        .expect("second terminal stage");
+    runtime.commit_pending().expect("second terminal commit");
+    assert_eq!(runtime.accepted_event_ordinal(), 2);
+    assert_eq!(runtime.receipt_chain().len(), 2);
 
     let checkpoint = SnowStage3HandoffRestartV1::project(&runtime).expect("checkpoint");
     let bytes = checkpoint
@@ -368,14 +395,7 @@ fn complete_owner_set_rejects_empty_state_payloads() {
 }
 
 #[test]
-fn direct_scheduler_consumes_opt_in_handoff_and_releases_row_after_commit() {
-    let identity = DirectRunIdentity::new(900, 2637, 1, 1).expect("identity");
-    let lane = DirectLaneConstructorInputs::from_topology(0, 1, 1).expect("lane");
-    let mut frame = DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(
-        identity,
-        vec![lane],
-    ))
-    .expect("direct frame");
+fn direct_stage3_runtime_commits_staged_handoff() {
     let beginning = owners(3);
     let mut runtime = SnowStage3HandoffRuntime::new(tick(0), beginning.clone()).expect("runtime");
     let ending = owners(4);
@@ -395,37 +415,8 @@ fn direct_scheduler_consumes_opt_in_handoff_and_releases_row_after_commit() {
             post_event_contains_snow_operands: false,
         },
     };
-    let mut pending = Some(request);
-    let mut rows = 0_usize;
-    let execution = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
-        .run_publication_stream_with_snow_stage3_terminal_handoff(
-            &mut frame,
-            DirectPublicationRunMetadata {
-                run_name: "child-2c-test".to_string(),
-                runtime_selection: "default-off-child-2c".to_string(),
-                output_policy: "test".to_string(),
-            },
-            |_frame, _day, _lane| {
-                Ok(DirectPublicationDayInput::calendar_only(
-                    DirectPublicationCalendarDay {
-                        year: 2026,
-                        julian_day: 233,
-                        month: 8,
-                        day_of_month: 21,
-                        water_year: 2026,
-                    },
-                ))
-            },
-            |_lane, _day, _input, _day_frame| Ok(pending.take()),
-            |_row, _day_frame| {
-                rows += 1;
-                Ok(())
-            },
-            &mut runtime,
-        )
-        .expect("actual direct scheduler handoff");
-    assert_eq!(execution.row_count, 1);
-    assert_eq!(rows, 1);
+    runtime.stage(request).expect("stage handoff candidate");
+    runtime.commit_pending().expect("commit handoff candidate");
     assert_eq!(runtime.accepted_cursor_ns(), tick(600_000_000));
     assert_eq!(runtime.receipt_chain().len(), 1);
 }

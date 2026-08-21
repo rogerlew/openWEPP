@@ -192,11 +192,6 @@ fn execute_direct_publication_stream(
     day_input_builder: &DirectProductionDayInputBuilder<'_>,
     streaming_targets: &DirectPublicationStreamingTargets,
 ) -> Result<RetainedDirectPublication, HillslopeCliError> {
-    let mut stream_sink = DirectPublicationStreamingSink::create(
-        frame.identity,
-        metadata.clone(),
-        streaming_targets,
-    )?;
     let wat5_subhourly_requested = streaming_targets.wat_subhourly.is_some();
     // Lane D ACTIVE owner (SC-OFEROUTE-001 rev 46): explicit active opt-in
     // or conditional default activation when every scheduled lane carries
@@ -213,52 +208,80 @@ fn execute_direct_publication_stream(
     } else {
         None
     };
-    let execution = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
-        .run_publication_stream_with_interleaved_day_inputs_and_day_frames(
+    let mut canopy_research_traces =
+        std::collections::BTreeMap::<(usize, usize), _>::new();
+    let batch = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
+        .run_publication_batch_with_interleaved_day_inputs_and_day_frames(
             frame,
-            metadata,
+            metadata.clone(),
             |frame, day_index, lane_index| {
                 day_input_builder
                     .build(frame, day_index, lane_index)
                     .map(|mut input| {
+                        if let Some(trace) =
+                            day_input_builder.canopy_research_trace_for(day_index, lane_index)
+                        {
+                            canopy_research_traces.insert((day_index, lane_index), trace);
+                        }
                         input.wat5_subhourly_requested = wat5_subhourly_requested;
                         input
                     })
                     .map_err(|error| direct_publication_day_input_build_error(&error))
             },
-            |row, day_frame| {
-                day_input_builder
-                    .maybe_write_canopy_research_trace(day_frame)
-                    .map_err(|error| DirectRuntimeError::PublicationSinkFailure {
-                        detail: error.to_string(),
-                    })?;
-                #[cfg(test)]
-                record_native_canopy_consumer_trace(day_frame);
-                if let Some(collector) = laned_shadow.as_mut() {
-                    let operand_span = collector.profile_span_start();
-                    let operands = Box::new(
-                        day_input_builder
-                            .laned_shadow_lane_day_operands(day_frame)
-                            .map_err(|error| direct_publication_day_input_build_error(&error))?,
-                    );
-                    collector.record_operand_build(operand_span);
-                    collector
-                        .observe_row(row, operands)
-                        .map_err(|detail| DirectRuntimeError::PublicationSinkFailure { detail })?;
-                }
-                stream_sink.observe_row(row).map_err(|error| {
-                    DirectRuntimeError::PublicationSinkFailure {
-                        detail: error.to_string(),
-                    }
-                })?;
-                stream_sink.observe_subhourly_generation(row, day_frame).map_err(|error| {
-                    DirectRuntimeError::PublicationSinkFailure {
-                        detail: error.to_string(),
-                    }
-                })
-            },
         )
         .map_err(|source| direct_production_runtime_error(&source))?;
+    let execution = DirectStreamingPublicationExecution {
+        report: batch.report().clone(),
+        identity: batch.identity(),
+        metadata: batch.metadata().clone(),
+        row_count: batch.rows().len(),
+    };
+    let mut stream_sink = DirectPublicationStreamingSink::create(
+        execution.identity,
+        execution.metadata.clone(),
+        streaming_targets,
+    )?;
+    for (row, day_frame) in batch.rows() {
+        day_input_builder
+            .write_canopy_research_trace(
+                day_frame,
+                canopy_research_traces
+                    .get(&(day_frame.day_index, day_frame.lane_index))
+                    .copied(),
+            )
+            .map_err(|error| DirectRuntimeError::PublicationSinkFailure {
+                detail: error.to_string(),
+            })
+            .map_err(|source| direct_production_runtime_error(&source))?;
+        #[cfg(test)]
+        record_native_canopy_consumer_trace(day_frame);
+        if let Some(collector) = laned_shadow.as_mut() {
+            let operand_span = collector.profile_span_start();
+            let operands = Box::new(
+                day_input_builder
+                    .laned_shadow_lane_day_operands(day_frame)
+                    .map_err(|error| direct_publication_day_input_build_error(&error))
+                    .map_err(|source| direct_production_runtime_error(&source))?,
+            );
+            collector.record_operand_build(operand_span);
+            collector
+                .observe_row(row, operands)
+                .map_err(|detail| DirectRuntimeError::PublicationSinkFailure { detail })
+                .map_err(|source| direct_production_runtime_error(&source))?;
+        }
+        stream_sink.observe_row(row).map_err(|error| {
+            DirectRuntimeError::PublicationSinkFailure {
+                detail: error.to_string(),
+            }
+        })
+        .map_err(|source| direct_production_runtime_error(&source))?;
+        stream_sink.observe_subhourly_generation(row, day_frame).map_err(|error| {
+            DirectRuntimeError::PublicationSinkFailure {
+                detail: error.to_string(),
+            }
+        })
+        .map_err(|source| direct_production_runtime_error(&source))?;
+    }
     let stream = stream_sink.finish()?;
     let laned_shadow = laned_shadow
         .map(crate::hillslope::laned_shadow::LanedShadowCollector::finalize)
