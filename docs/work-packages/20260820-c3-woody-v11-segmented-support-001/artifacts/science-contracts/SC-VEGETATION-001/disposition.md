@@ -48,3 +48,33 @@ digest-valid reframed probe introduced by reviewers. Both independent final
 reviews are PASS at the recorded checkpoint. Independent amendment
 verification is authorized; production restart implementation remains gated on
 dual verification and promotion.
+
+## Resource-custody and Restart V3 amendment cycle
+
+Status: all resource-custody findings closed at reviewed authority commit
+`e11b6c15e3daf5daaf9d4143e7ca361a4fde1a87`; final dual-review record commit
+`38492e60a`; no waiver accepted.
+
+Review A issued its findings as four titled checkpoint findings rather than
+separate alphanumeric IDs. Each is explicitly accepted and closed:
+
+| Review A checkpoint finding | Disposition | Closure |
+|---|---|---|
+| `Resource-custody amendment Review A @ 1302b60b9` | accepted | Separate occupancy debit identity from shared-owner custody; authenticate complete owner candidates and typed other-flux lineage. |
+| `Resource-custody final Review A @ 9020f3dcb` | accepted | Aggregate authorization/final use against shared inventory and require one complete multi-component candidate per owner/slab. |
+| `Resource-custody terminal Review A @ bf2c288c4` | accepted | Compose immutable Restart V2 completely into additive V3 and join accepted-prefix owner/state custody. |
+| `Resource-custody cross-wire Review A @ e97f1683b` | accepted | Replace suffix self-consistency with independently rooted uninterrupted chronology and full restored-byte comparison. |
+
+The exact Review B finding family is dispositioned without waiver:
+
+| Review B finding | Disposition | Closure |
+|---|---|---|
+| `V11-RESOURCE-CUSTODY-B-001` | accepted | V3 is a complete additive V2 successor with typed cross-wire prefix/cursor/support joins and independent suffix continuation. |
+| `V11-RESOURCE-CUSTODY-B-002` | accepted | Debit identity includes parent, segment, slab, support, owner, OFE, tile/occupancy, layer, source, basis, and amount operands. |
+| `V11-RESOURCE-CUSTODY-B-003` | accepted | Debit, transition, flux, and complete-candidate IDs are derived; collections are ordered, unique, cardinality-bound, and terminally joined. |
+| `V11-RESOURCE-CUSTODY-B-004` | accepted | Staging evidence distinguishes vegetation-use authorization from shared-owner transition and removes the false sequential-debit owner alias. |
+
+Restart V2 remains byte-pinned and `NONIMPLEMENTABLE / NEVER_PRODUCTION` for
+resource-custody continuation. Restart V3 is the admitted implementation
+target. Both final reviews are PASS; independent verification and exact
+promotion remain the preimplementation gates.

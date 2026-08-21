@@ -181,3 +181,42 @@ objects remain `3229ef601742d2acb403538ff7456305511edebe` and
 
 Verdict: `PASS / SC-VEGETATION-001 Version 19 sequential-debit amendment is
 independently verified for promotion.`
+
+## Resource-custody amendment Verification A
+
+Status: `PASS`
+
+Verified checkpoint: `38492e60a39d6b8d1fbfd676f3a8874c3ba9c031`
+
+Verified tree: `53fa141b0fd6cee9907d6d5a83dca5df4cbe0427`
+
+Reviewed authority: `e11b6c15e3daf5daaf9d4143e7ca361a4fde1a87`
+
+Every Review A and Review B resource-custody history terminates in an explicit
+PASS with all earlier HOLD findings superseded and no waiver. Version 24 closes
+occupancy/shared-owner separation, aggregate authorization, one complete
+candidate per owner/slab, exact V2 prefix composition, typed flux identity and
+exact-once linkage, and independently rooted uninterrupted-versus-restored
+suffix equality.
+
+Independent rerun evidence: Restart V2 54/54 PASS; Restart V3 13/13 PASS with
+complete suffix digest
+`0b2ff7b0182c756d6d706016b164459d5d55e99e148bd776aca1c0d1d6341096`;
+Rust authority 8/8 PASS; strict BEI 15 rows PASS; scoped unit compliance,
+schema parsing, and range diff hygiene PASS. Direct review evidence confirms
+restored-only prefix forgery, graft/support/cursor/terminal, identity/link,
+candidate, and invalid flux mapping forms reject while complete seven-owner,
+state, resource/material, event, reduction, and publication chronology agrees.
+
+Protected Restart V2 objects remain pinned: reference
+`13f3d009221a60cc2af094103255c5d8c3be2dbee657bb87144b2fee476bbf7c`,
+schema `af9314c3f1abd70c40b849c6f466046e3c5e519583a837eefca9edbf43d02441`,
+and poisons `fa5ae93f8b8e109b851f37946070bff71b5f5182b5df818c80f0d4de9990ad34`.
+The resource-authority range contains no production or Cargo path. V3
+reference/schema/poison hashes are respectively
+`5951dcc088760cbbc2843799ae00f1170da55043879ac7940f3d438df8cac930`,
+`0f8c77a67dcecdfef0f683d0d5dcda017782a550cd8fc2630613f0a8081d6efe`,
+and `d3e97f2a39ce33707cf30f7289ccfdf59af6ac3ed1971aaebc2812c9bc0428ff`.
+
+Verdict: `PASS / SC-VEGETATION-001 Version 24 resource-custody amendment is
+independently verified for promotion at 38492e60a`.

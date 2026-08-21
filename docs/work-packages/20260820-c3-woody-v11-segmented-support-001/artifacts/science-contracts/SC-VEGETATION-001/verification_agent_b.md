@@ -326,3 +326,59 @@ Restart V2 wire are outside the amendment diff and remain protected.
 at `f71c36a7c`. No Verification B finding or waiver remains. Promotion may
 proceed subject to Verification A and the exact checkpoint procedure; this
 verification does not itself authorize production.
+
+---
+
+## Resource-custody final Verification B — checkpoint `38492e60a39d6b8d1fbfd676f3a8874c3ba9c031`
+
+Date: 2026-08-20
+
+Status: **FAIL — disposition-only**
+
+Evidence class: `Static + Ran + independent finding-cycle audit`
+
+### Technical verification
+
+The Version 24 technical authority passes. Restart V2 rejects 54/54; Restart
+V3 rejects 13/13 and reconstructs complete anti-tautology suffix digest
+`0b2ff7b0182c756d6d706016b164459d5d55e99e148bd776aca1c0d1d6341096`.
+The uninterrupted path is independently rooted in frozen parent beginnings and
+operations; coordinated parent/segment, forbidden flux mapping, accepted-prefix
+substitution, and restored-only prefix forgeries reject.
+
+Debit/transition/flux IDs are derived from closed bodies; exact V2 parent,
+segment, slab, support and cursor joins execute; typed flux mappings and
+exact-once links close; candidate cardinality is seven per accepted slab; NH4
+and NO3 share one complete BGC candidate; terminal V11 state and all seven
+owners join the V2 staged checkpoint. Authority tests pass 8/8. Schema
+meta-validation, strict BEI, unit compliance, and diff hygiene pass.
+
+Protected V2 artifacts remain byte-identical at schema
+`af9314c3f1abd70c40b849c6f466046e3c5e519583a837eefca9edbf43d02441`
+and reference
+`13f3d009221a60cc2af094103255c5d8c3be2dbee657bb87144b2fee476bbf7c`.
+V3 schema/reference/poison hashes are `0f8c77a6...efe`,
+`5951dcc0...930`, and `d3e97f2a...28ff`. The amendment range changes no
+crate, workspace manifest, or production source.
+
+### Canonical-cycle failure
+
+`disposition.md` has no resource-custody amendment section and does not name or
+disposition `V11-RESOURCE-CUSTODY-B-001..004`. It still ends with the older
+Restart V2 amendment cycle. Terminal Review A and Review B are PASS at
+`e11b6c15e`, but review prose saying findings are closed is not a substitute for
+the canonical disposition artifact.
+
+Required bounded correction: append a resource-custody amendment cycle to this
+disposition, enumerate `V11-RESOURCE-CUSTODY-B-001..004` (and every distinct
+Review A finding ID, if issued), mark each accepted/closed against the terminal
+corrective authority, record both final reviews PASS at `e11b6c15e`, and retain
+an explicit no-waiver and production-gate statement. No authority, schema,
+vector, reference, test, or production change is required.
+
+### Verdict
+
+**FAIL.** Technical resource-custody authority is verification-ready and PASS,
+but SC-VEGETATION-001 cannot promote at `38492e60a` until every amendment
+finding identity is canonically dispositioned. Re-run bounded Verification B
+after the documentation-only correction.

@@ -221,6 +221,46 @@ production activation remains outside this verification.
 
 ---
 
+## Resource-custody final Verification B — checkpoint `38492e60a39d6b8d1fbfd676f3a8874c3ba9c031`
+
+Date: 2026-08-20
+
+Status: **FAIL — disposition-only**
+
+Evidence class: `Static + Ran + exact transaction finding audit`
+
+The Version 13 transaction authority is technically PASS. V2 passes 54/54;
+V3 passes 13/13 with independently reconstructed complete suffix digest
+`0b2ff7b0...1096`; authority passes 8/8; schemas, BEI, unit compliance, and
+diff hygiene pass. Cross-parent/segment, invalid flux mapping, prefix
+substitution, candidate/link/cardinality, terminal join, suffix bypass, and
+restored-only anti-tautology poisons reject. Exact identities, collections,
+V2-domain joins, typed flux linkage, complete BGC/hydrology candidates, terminal
+state/owners, and independent uninterrupted continuation are closed.
+
+V2 schema/reference hashes remain `af9314c3...2441` and `13f3d009...f7c`;
+the amendment contains no production or workspace-manifest change.
+
+Canonical finding disposition is incomplete. The transaction
+`disposition.md` contains the original and Restart V2 cycles only. It does not
+name or disposition `V11-TXN-RESOURCE-B-001..004`, despite terminal Review B
+declaring those IDs closed, and it contains no mapping for any separately
+issued resource-custody Review A identities.
+
+Required bounded correction: add an explicit resource-custody cycle that
+enumerates every transaction Review A/B finding identity, maps each to the
+accepted terminal correction at `e11b6c15e`, records both independent review
+PASS verdicts, and states no waiver. No technical artifact must reopen.
+
+### Verdict
+
+**FAIL.** SC-VEGETATIONTRANSACTION-001 Version 13 is technically verified but
+cannot promote at `38492e60a` until the exact resource-custody finding IDs are
+canonically dispositioned. Re-run bounded Verification B after that
+documentation-only reconciliation.
+
+---
+
 ## Sequential-debit amendment Verification B — checkpoint `f71c36a7c186a95474f29f6470fb2b980f1311cd`
 
 Date: 2026-08-20

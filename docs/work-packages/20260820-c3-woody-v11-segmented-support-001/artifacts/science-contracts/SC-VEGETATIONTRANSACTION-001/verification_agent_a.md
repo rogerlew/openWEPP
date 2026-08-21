@@ -165,3 +165,35 @@ so protected wires are unchanged.
 
 Verdict: `PASS / SC-VEGETATIONTRANSACTION-001 Version 8 sequential-debit
 amendment is independently verified for promotion.`
+
+## Resource-custody amendment Verification A
+
+Status: `PASS`
+
+Verified checkpoint: `38492e60a39d6b8d1fbfd676f3a8874c3ba9c031`
+
+Verified tree: `53fa141b0fd6cee9907d6d5a83dca5df4cbe0427`
+
+Reviewed authority: `e11b6c15e3daf5daaf9d4143e7ca361a4fde1a87`
+
+Both independent review histories terminate PASS without waiver. Version 13
+binds every debit, transition, complete owner candidate, and typed other-flux
+receipt to the decoded V2 parent/segment/slab/support domain, closes aggregate
+shared-inventory authorization and exact-once links, and proves independently
+rooted uninterrupted/restored complete chronology equality.
+
+Restart V2 54/54, Restart V3 13/13, authority 8/8, strict BEI 4 rows, scoped
+unit compliance, schema, and diff hygiene all PASS. The independent suffix
+digest is
+`0b2ff7b0182c756d6d706016b164459d5d55e99e148bd776aca1c0d1d6341096`.
+All retained graft, cursor/support, restored-only prefix, candidate/link,
+terminal, coordinated identity, and flux-direction probes reject.
+
+Restart V2 reference/schema/poison SHA-256 values remain exactly
+`13f3d009221a60cc2af094103255c5d8c3be2dbee657bb87144b2fee476bbf7c`,
+`af9314c3f1abd70c40b849c6f466046e3c5e519583a837eefca9edbf43d02441`,
+and `fa5ae93f8b8e109b851f37946070bff71b5f5182b5df818c80f0d4de9990ad34`.
+No production Rust or Cargo path occurs in the resource-authority commit range.
+
+Verdict: `PASS / SC-VEGETATIONTRANSACTION-001 Version 13 resource-custody
+amendment is independently verified for promotion at 38492e60a`.

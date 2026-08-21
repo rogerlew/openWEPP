@@ -41,3 +41,26 @@ The transaction review identifiers are explicitly dispositioned as follows:
 
 Every exact transaction finding ID is closed without waiver at the reviewed
 authority checkpoint.
+
+## Resource-custody and Restart V3 amendment cycle
+
+Status: all transaction-side resource-custody findings closed at reviewed
+authority commit `e11b6c15e3daf5daaf9d4143e7ca361a4fde1a87`; final dual-review
+record commit `38492e60a`; no waiver accepted.
+
+The four titled Review A checkpoint findings at `1302b60b9`, `9020f3dcb`,
+`bf2c288c4`, and `e97f1683b` share the exact accepted closures recorded in
+`../SC-VEGETATION-001/disposition.md`: typed debit/shared-owner separation,
+aggregate authorization and one complete owner candidate, complete V2/V3
+prefix composition, and independently rooted suffix equivalence.
+
+| Transaction finding | Disposition | Closure |
+|---|---|---|
+| `V11-TXN-RESOURCE-B-001` | accepted | Complete additive V3 checkpoint and exact V2 prefix/cursor/support joins with real restored continuation. |
+| `V11-TXN-RESOURCE-B-002` | accepted | Closed owner/OFE/tile/occupancy/layer/source/basis debit and transition domains. |
+| `V11-TXN-RESOURCE-B-003` | accepted | Derived canonical debit, flux, transition, and complete-owner candidate identities with exact order/cardinality/link coverage. |
+| `V11-TXN-RESOURCE-B-004` | accepted | One atomic terminal owner join, shared-owner predecessor chronology, aggregate authorization, and anti-tautological suffix equality. |
+
+Every resource-custody A/B finding is closed without waiver. Restart V2 is
+preserved but nonproduction for this continuation surface; Restart V3 is the
+only implementation target.
