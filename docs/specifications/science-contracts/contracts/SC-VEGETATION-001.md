@@ -1,10 +1,10 @@
 ---
 contract_id: SC-VEGETATION-001
 title: Native Vegetation State and Cross-Domain Boundary Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 24
+contract_version: 25
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -2824,6 +2824,31 @@ snow carrier, selector/default, activation, publication, deployment, or cutover.
 
 ## V11 amendment change log
 
+### Positive-support adoption amendment
+
+V11 passes coupled-time support identity, ordering, and event chronology at
+nanosecond resolution, but an actual LSE physical segment must carry the sealed
+`LseSupportAdmissibilityReceiptV1` required by `SC-LANDSURFACEENERGY-001@6`.
+The V11 positive population therefore has a structural 1 ns coupled-time
+identity case, an actual LSE support-at-`600000000` ns case, and a typed
+`600000000 - 1` ns pre-Newton rejection with exact rollback and restart
+equivalence. The old unconditional actual-stack 1 ns positive case is removed;
+no physical result is scaled, frozen, or substituted. A zero-duration event
+remains an event transition/skip, not an admitted positive LSE slab.
+
+The support receipt is slab-specific: a valid receipt from one parent,
+segment, slab ordinal, or absolute support interval cannot be replayed for a
+different one. The machine-readable support profile identifies the executed
+V11 actual covered-forest adopter and explicitly marks open-mineral, litter,
+wet/dry, and other profiles as out of scope until separately reviewed. It
+records deterministic sweep, identity-poison, rollback, and fresh-restore
+cases for the admitted adopter.
+
+The front matter and this body are intentionally `in_review` / `draft` until
+the dual authority reviews and verifications close this amendment. Once
+promoted, the V11 contract remains default-off and imports immutable V10
+constitutive behavior unchanged.
+
 | Date | Version | Author | Change |
 |---|---:|---|---|
 | 2026-08-20 | 15 | Codex | Drafted immutable-V10 V11 segmented support, staged custody, additive restart, exact compatibility, and one atomic parent finalization. |
@@ -2833,6 +2858,7 @@ snow carrier, selector/default, activation, publication, deployment, or cutover.
 | 2026-08-20 | 19 | Codex | Made sequential staged subtraction authoritative and separated it from the ordered cumulative-debit diagnostic fold; prohibited regrouped owner-ending aliases. |
 | 2026-08-20 | 20 | Codex | Separated occupancy debit receipts from shared hydrology/BGC owner transitions and bound debit links, owner-candidate lineage, authorization, and cross-segment shared-owner continuity. |
 | 2026-08-20 | 24 | Codex | Joined every V3 custody body to the decoded V2 receipt domain, closed typed flux mappings/exact-once links, and replaced checkpoint-derived comparison with a parent-beginning independent uninterrupted oracle. |
+| 2026-08-20 | 25 | Codex | Prospective LSE positive-support adoption: structural nanosecond identity, sealed slab-specific support receipt, minimum/one-tick-below populations, and typed rollback/restart semantics. |
 | 2026-08-20 | 23 | Codex | Restricted Restart V3 to the exact V2-accepted custody prefix, made seven-owner candidate cardinality cursor-derived, and required runtime-only suffix execution with full uninterrupted equality. |
 | 2026-08-20 | 22 | Codex | Completed additive Restart V3 by composing all V2 admission and full-suffix equivalence, deriving typed receipt identities, binding one complete owner candidate per owner/slab, and aggregating shared-inventory authorization. |
 | 2026-08-20 | 21 | Codex | Froze Restart V2 as nonproduction for resource custody and introduced additive closed Restart V3 typed debit/transition continuation authority. |

@@ -78,3 +78,10 @@ Restart V2 remains byte-pinned and `NONIMPLEMENTABLE / NEVER_PRODUCTION` for
 resource-custody continuation. Restart V3 is the admitted implementation
 target. Both final reviews are PASS; independent verification and exact
 promotion remain the preimplementation gates.
+## Positive-support amendment disposition
+
+`LSE-SUPPORT-A-001..006` and `LSE-SUPPORT-B-001..004` are closed without
+waiver at the LSE Version 6 checkpoint. V11 remains in review/draft until dual
+verification; the actual-stack 1 ns positive case is replaced by structural
+coupled-time identity, 600000000 ns physical admission, one-tick-below typed
+rejection, rollback, and fresh-restore populations.

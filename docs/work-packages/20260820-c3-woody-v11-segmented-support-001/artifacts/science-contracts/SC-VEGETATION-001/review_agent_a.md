@@ -871,3 +871,31 @@ two material receipts, and byte-identical complete chronology.
 
 Verdict: `PASS / all Resource-custody Review A findings are closed at
 e11b6c15e; the amendment may proceed to independent verification`.
+## Review A addendum — Version 25 LSE positive-support adoption
+
+Disposition: **HOLD**, inherited from `SC-LANDSURFACEENERGY-001` findings
+`LSE-A-001` through `LSE-A-006`.
+
+Version 25 cannot import the prospective support receipt until it binds the
+exact accepted parent/segment/slab/support domain, has executable identity and
+policy poisons, and the 600 ms physical domain is supported by a frozen
+actual-stack population or narrowed profile identity. The structural 1 ns case
+must prove that no physical LSE receipt/candidate is created; minimum-1 must
+prove byte-exact parent/checkpoint rollback and fresh-restore equivalence.
+Version 25 also requires its missing change-log row before verification.
+
+Rerun: **HOLD remains**. The receipt fields were expanded, but the independent
+oracle still does not authenticate them, rollback/restore rows are not
+executed, the declared fixture profile exceeds the one actual swept fixture,
+and Version 25 still has no change-log row.
+
+Third rerun: **HOLD remains**. Version 25 lifecycle metadata is corrected and
+the baseline receipt is schema-valid, but coordinated digest-valid cross-slab
+substitution is still untested/unrejectable, only the covered-forest fixture is
+actually swept, and rollback/fresh-restore rows remain non-executable.
+
+Terminal addendum: the final LSE authority rerun closes these dependency
+findings with expected-domain receipt authentication, narrowed covered-forest
+scope, atomic rejection/rollback, and independent restored-suffix evidence.
+**Addendum verdict: PASS**, subject to normal lifecycle disposition and dual
+verification.

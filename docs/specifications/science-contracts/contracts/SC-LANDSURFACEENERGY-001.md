@@ -1,25 +1,25 @@
 ---
 contract_id: SC-LANDSURFACEENERGY-001
 title: Land-Surface Energy-Balance Process Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
 consumer_scope:
   - Future soil-heat/frost boundary, evaporation, infiltration/runoff, and surface-water ledgers
 evidence_level: static+independent_oracle
-last_reviewed: 2026-08-19
+last_reviewed: 2026-08-20
 supersedes: []
 superseded_by: []
 ---
 
 # SC-LANDSURFACEENERGY-001 Land-Surface Energy-Balance Process Contract
 
-Status: `approved`
-Maturity: `active`
+Status: `in_review`
+Maturity: `draft`
 Evidence mode: `static + independent oracle`
 
 ## Purpose
@@ -953,6 +953,79 @@ reevaluation is forbidden. A residual outside tolerance or any branch,
 identity, owner, or amount mismatch cannot use this acceptance path.
 
 Nonpositive-assimilation partial positive root authorization is typed unsupported in V2.
+
+## Version 6 prospective positive-support admission amendment
+
+`OPENWEPP_SNOW_FREE_LSE_V1` retains nanosecond chronology at the coupled-time
+wire boundary, but its physical nonlinear solver has a deterministic declared
+positive-support domain. The released domain policy is
+`OPENWEPP_SNOW_FREE_LSE_V1_SUPPORT_POLICY_V1` with
+`minimum_support_ns = 600000000` (0.6 seconds). This is a conservative,
+model-specific numerical-domain boundary selected from the frozen V11 actual
+covered-forest stack sweep and representation analysis; open-mineral, litter,
+and other surface profiles remain prospective/non-admitted until separately
+profiled. It is not
+a hidden duration floor, a changed V10 cadence, or a promise that every larger
+support is globally convergent under arbitrary forcing.
+
+Every physical V11 LSE invocation must first admit a sealed
+`LseSupportAdmissibilityReceiptV1` binding parent transaction, segment, slab,
+absolute half-open support, requested support ticks, exact binary64 duration
+bits, model/configuration identity, beginning LSE/soil state identity,
+tolerance-policy identity, numerical-policy identity, the exact minimum, and
+its digest. Requested support below the declared minimum rejects
+before Newton/nonlinear execution with `LSEB-E-041`; the caller receives no
+candidate and all owner state remains byte-identical. A support exactly at the
+minimum is an ordinary positive-support solve and must pass the declared
+fixture; one nanosecond below it is a typed domain rejection. Coupled-time
+identity, ordering, event receipts, and restart chronology remain valid at one
+nanosecond; they do not force the physical LSE solver to execute below its
+admitted domain.
+
+The admission receipt does not canonicalize, round, or silently replace the
+requested duration. A support which is rejected is not retried at the minimum.
+Terminal events may coalesce an otherwise below-domain LSE segment only at an
+admitted event boundary and only when exact event-time, mass, and energy error
+bounds in the event contract are satisfied; no flux from the wrong surface
+regime may be applied and no time gap may be created. This amendment does not
+change the frozen V10 configuration, V10 behavior, selectors, defaults,
+coupled-time V2 bytes, or DirectV10 restart V1 bytes.
+
+The independent representation analysis records adjacent binary64 temperature
+spacing, finite-capacity energy quanta, configured absolute/relative energy
+tolerances, and the necessary storage-resolution support for every declared
+finite-capacity V11 actual-stack profile. The observed
+transition is solver-domain behavior beyond that representational floor; the
+declared 0.6-second policy is therefore fail-closed and deterministic across
+the admitted V11 actual-stack fixture domain. A future smaller or additional
+surface/state-qualified domain
+requires a new contract cycle; it may not be inferred from a successful
+individual run.
+
+The receipt digest preimage is the compact canonical JSON object with the
+`receipt_sha256` field replaced by the empty string, prefixed by the exact
+domain tag `OPENWEPP_LSE_SUPPORT_ADMISSION_V1\\0`. Parent, segment, slab, and
+owner chronology use the 64-lowercase-hex coupled-time identity projection;
+slab ordinal and tick bounds use canonical decimal strings with no leading
+zero. The baseline receipt and 12 independent identity/digest/rollback cases
+are frozen in the package artifact set.
+
+| New guard | Required result |
+|---|---|
+| `INV-LANDSURFACEENERGY-116` | Coupled-time nanosecond identity is independent of the LSE physical support domain. |
+| `INV-LANDSURFACEENERGY-117` | Every physical solve carries one sealed support-admission receipt with exact identity and policy joins. |
+| `INV-LANDSURFACEENERGY-118` | Below-minimum support rejects before Newton and leaves all staged/committed owners unchanged. |
+| `INV-LANDSURFACEENERGY-119` | Support exactly at the declared minimum uses the unchanged constitutive equations and existing tolerances. |
+| `INV-LANDSURFACEENERGY-120` | No hidden floor, longer-step scaling, tolerance relaxation, frozen state, or V10 mutation is admitted. |
+
+| Error | Meaning |
+|---|---|
+| `LSEB-E-041` | Requested positive support is below `600000000` ns for the declared LSE policy; typed pre-Newton rejection. |
+| `LSEB-E-042` | Support receipt parent/segment/slab, absolute support, duration bits, configuration/state, tolerance, or numerical-policy binding is invalid. |
+
+| Date | Version | Author | Change |
+|---|---:|---|---|
+| 2026-08-20 | 6 | Codex | Prospective deterministic positive-support admission; nanosecond chronology remains coupled-time-valid, below-domain support rejects before Newton, and event-boundary coalescing is deferred to the reviewed snow/event contract. |
 It does not invoke hydraulic attenuation, conductance or vulnerability floors,
 plant capacitance, or authorization donation.
 

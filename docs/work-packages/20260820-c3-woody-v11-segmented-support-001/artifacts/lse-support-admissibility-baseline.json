@@ -1,0 +1,18 @@
+{
+  "parent_transaction_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "segment_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "accepted_slab_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "slab_ordinal": "0",
+  "support_start_ns": "0",
+  "support_end_ns": "600000000",
+  "model_version": "OPENWEPP_SNOW_FREE_LSE_V1",
+  "model_definition_sha256": "e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f",
+  "configuration_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "beginning_state_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "tolerance_policy_sha256": "1dd78e3a97cf1aabcbb4bc2b50f5643012a9dde6a671939a4489f289eff3291d",
+  "numerical_policy_sha256": "b3a53a40cb1b8aca2a899884a727e0006917374e48f3681d60d68fc07b23b958",
+  "requested_support_ns": "600000000",
+  "duration_s_bits": "3fe3333333333333",
+  "minimum_support_ns": "600000000",
+  "receipt_sha256": "ddbcf496a02558308aa34b1df961944f4cf2ae863cdccd35eb30593d804ba0f0"
+}

@@ -64,3 +64,9 @@ prefix composition, and independently rooted suffix equivalence.
 Every resource-custody A/B finding is closed without waiver. Restart V2 is
 preserved but nonproduction for this continuation surface; Restart V3 is the
 only implementation target.
+## Positive-support amendment disposition
+
+`LSE-SUPPORT-A-001..006` and `LSE-SUPPORT-B-001..004` are closed without
+waiver at the LSE Version 6 checkpoint. The accepted slab chronology binds the
+sealed support receipt and rejects below-domain support before nonlinear
+execution; no V10, coupled-time V2, or restart V1 wire is changed.

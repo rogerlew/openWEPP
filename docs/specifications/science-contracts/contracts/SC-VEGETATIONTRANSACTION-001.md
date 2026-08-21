@@ -1,10 +1,10 @@
 ---
 contract_id: SC-VEGETATIONTRANSACTION-001
 title: Coupled Vegetation Occupancy Owner-Transaction Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + vegetation/hydrology/energy reviewer
-contract_version: 13
+contract_version: 14
 producer_scope:
   - OPENWEPP_C3_WOODY_V8 occupancy and ground resource/energy candidates
   - OPENWEPP_C3_WOODY_V11 accepted-segment and parent candidates
@@ -19,8 +19,8 @@ superseded_by: []
 
 # SC-VEGETATIONTRANSACTION-001 Coupled Vegetation Occupancy Owner-Transaction Contract
 
-Status: `approved`
-Maturity: `active`
+Status: `in_review`
+Maturity: `draft`
 Evidence mode: `Static + independent oracle`
 
 ## Purpose
@@ -457,6 +457,33 @@ digest-for-digest.
 
 Version 4 is default-off and adds no snow-carrier, constitutive, selector,
 publication, deployment, or production-cutover authority.
+
+### Positive-support adoption amendment
+
+An accepted V11 slab carries the LSE support-admission receipt before any
+duration-sensitive owner operation executes. Coupled-time may represent one
+nanosecond exactly, but the physical LSE adopter admits only the deterministic
+model-specific domain from `SC-LANDSURFACEENERGY-001@6`. The transaction
+population includes structural 1 ns identity, support-at-minimum acceptance,
+one-tick-below typed rejection, exact no-mutation rollback, and fresh restore
+equivalence. The rejection is ordered before nonlinear execution and cannot be
+converted to a minimum-duration retry by a caller.
+
+The receipt is part of the accepted slab's typed chronology and is consumed by
+rollback/restart validation. Parent, segment, slab ordinal, absolute support,
+duration bits, policy identities, and digest are reconstructed; a receipt from
+another chronology is a typed identity failure. This is a prospective
+amendment; the LSE support policy is not called released until both authority
+reviews, disposition, and both verifications are complete.
+
+Material, water, nitrogen, energy, and owner custody remain exactly as in the
+released V11 transaction authority. No per-segment commit, repeated scheduled
+operation, or event-rate integration is permitted merely because a physical
+segment is below the LSE domain.
+
+| Date | Version | Author | Change |
+|---|---:|---|---|
+| 2026-08-20 | 14 | Codex | Bound V11 transaction admission to the reviewed LSE positive-support receipt and replaced the actual-stack 1 ns positive requirement with structural identity plus minimum/typed-reject populations. |
 
 ## Change Log
 

@@ -1,0 +1,22 @@
+{
+  "schema": "OPENWEPP_LSE_SUPPORT_ADMISSIBILITY_V1",
+  "minimum_support_ns": "600000000",
+  "baseline_receipt": "lse-support-admissibility-baseline.json",
+  "canonical_domain": "OPENWEPP_LSE_SUPPORT_ADMISSION_V1\\0",
+  "rollback_snapshot": {"parent_cursor": "41", "accepted_until_ns": "600000000", "parent_transaction_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "controller_policy": "OPENWEPP_SNOW_FREE_LSE_V1_SUPPORT_POLICY_V1", "beginning_owner_envelopes": ["vegetation", "snow", "land_surface_energy", "surface_liquid", "hydrology", "bgc", "soil_thermal"], "staged_owner_envelopes": ["vegetation:state|600000000", "snow:state|600000000", "land_surface_energy:state|600000000", "surface_liquid:state|600000000", "hydrology:state|600000000", "bgc:state|600000000", "soil_thermal:state|600000000"], "accepted_receipts": ["baseline_receipt"], "event_chronology": [], "scheduled_receipts": [], "reduction_operands": [], "publication_records": [], "outbox": [], "suffix_operations": [{"support_ns": "600000000", "event": null}], "candidate_present": false},
+  "cases": [
+    {"name": "structural_1ns", "requested_support_ns": "1", "expected": "coupled_time_identity_only"},
+    {"name": "one_tick_below", "requested_support_ns": "599999999", "expected": "LSEB-E-041"},
+    {"name": "minimum_support", "requested_support_ns": "600000000", "expected": "admitted"},
+    {"name": "one_tick_above", "requested_support_ns": "600000001", "expected": "admission_attempt"},
+    {"name": "wrong_parent", "mutation": "parent_transaction_id", "expected": "LSEB-E-042"},
+    {"name": "wrong_segment", "mutation": "segment_id", "expected": "LSEB-E-042"},
+    {"name": "wrong_absolute_support", "mutation": "support_end_ns", "expected": "LSEB-E-042"},
+    {"name": "wrong_duration_bits", "mutation": "duration_s_bits", "expected": "LSEB-E-042"},
+    {"name": "wrong_policy", "mutation": "numerical_policy_sha256", "expected": "LSEB-E-042"},
+    {"name": "rollback", "requested_support_ns": "599999999", "expected": "byte_identical_no_mutation"},
+    {"name": "fresh_restore", "requested_support_ns": "600000000", "expected": "receipt_roundtrip"},
+    {"name": "leading_zero_digest", "expected": "admitted"},
+    {"name": "reframed_and_rehashed", "mutation": "parent_transaction_id", "rehash": true, "expected": "LSEB-E-042"}
+  ]
+}

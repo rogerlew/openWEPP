@@ -1,0 +1,29 @@
+# Deterministic Phase-1 support sweep summary
+# Command: nix develop -c cargo test -p openwepp-hillslope-orchestrator v11_support_domain_evidence_sweep -- --ignored --nocapture
+# Fixture: v10_actual covered forest (the retained full diagnostic trajectory is in tiny-support-lse-authority-blocker.md)
+# Policy probe: this file records the pre-admission physical observations; it is not a claim of monotone solver success.
+duration_ns,result
+1800000000000,PASS
+600000000000,PASS
+60000000000,PASS
+6000000000,PASS
+600000000,PASS
+60000000,PASS
+59999999,PASS
+50000000,LSE_REJECT
+48000000,LSE_REJECT
+47000000,PASS
+46000000,LSE_REJECT
+45000000,PASS
+42000000,LSE_REJECT
+41000000,LSE_REJECT
+40000000,PASS
+30000000,LSE_REJECT
+1000000,LSE_REJECT
+1,LSE_REJECT
+
+# Policy decision: the fixed 600000000 ns domain is conservative and fail-closed
+# for the executed v11_actual covered-forest adopter only. Other fixture
+# profiles are out of scope and require a separate authority cycle; no
+# duration/tolerance/physical parameter was tuned and no below-domain run is
+# retried at the minimum.

@@ -1254,3 +1254,85 @@ suffix equality is checkpoint self-consistency rather than an independent
 uninterrupted reconstruction`.
 
 No waiver or production authorization is recommended.
+# Positive-support adoption Review B — 2026-08-20
+
+Verdict: **FAIL pending upstream LSE authority correction**.
+
+The V11 Version 25 population correctly replaces an unconditional physical
+1 ns LSE success with structural nanosecond identity, exact-minimum physical
+acceptance, and one-tick-below typed rejection. It may not be released against
+the current LSE receipt, however. `LSE-SUPPORT-B-001` and `-002` show that the
+receipt does not identify the accepted parent/segment/slab/support and has no
+defined digest construction. `LSE-SUPPORT-B-003` shows that the promised exact
+rollback and fresh-restart equivalence has no closed owner/cursor/checkpoint
+population. V11 must import the corrected receipt byte-for-byte, reject before
+any duration-sensitive owner staging, persist no receipt for rejection, and
+prove fresh restore resumes the same unaccepted support. No V10, DirectV10 V1,
+or coupled-time V2 wire change is authorized.
+
+## Positive-support adoption Review B re-review — 2026-08-20
+
+Verdict remains **HOLD**. The revised schema types the parent transaction as
+decimal rather than the coupled-time canonical digest, accepts arbitrary
+segment/slab strings, omits slab ordinal, and permits a leading-zero support
+start. Receipt digest derivation remains undefined. Rollback/restore cases are
+labels rather than complete owner/cursor/checkpoint fixtures, and the expanded
+fixture profile has no results beyond covered forest. V11 Version 25 cannot yet
+admit or persist the promised receipt. Protected V10 and restart wires remain
+unchanged.
+
+## Positive-support final B regression — 2026-08-20
+
+Verdict remains **HOLD**. The receipt schema identity shapes are substantially
+corrected, but the independent validator rejects valid leading-zero digests and
+its frozen digest omits the domain prefix mandated by the LSE contract.
+Rollback remains a three-field label rather than complete V11 owner/chronology/
+restart evidence, and only covered forest has retained sweep results. V11
+Version 25 cannot consume this receipt until those upstream contradictions are
+closed.
+
+## Positive-support final correction-pass Review B — 2026-08-20
+
+Verdict remains **HOLD**. The domain-prefixed KAT is corrected, but the oracle
+still rejects legitimate leading-zero coupled-time digests and lacks poisons
+for several receipt-bound identities. Complete rollback/fresh-restore operands
+and fixture-keyed sweep results beyond covered forest remain absent. V11
+Version 25 stays gated; protected bytes remain unchanged.
+
+## Positive-support final corrected Review B — 2026-08-20
+
+Verdict: **PASS**. Correct prefix cursor/receipt chronology, seven-owner
+checkpoint bytes, rollback equality, and independent uninterrupted-versus-
+restored suffix paths close the final evidence finding. Version 25 may proceed
+to disposition and verification; immutable V10/protected restart boundaries
+remain intact.
+
+## Positive-support hardened-oracle Review B — 2026-08-20
+
+Verdict remains **HOLD**. Receipt identity and digest authority are now sound.
+The remaining blockers are evidence scope: restart round-trips a reduced
+dictionary rather than a complete V11 owner/controller/event checkpoint and
+executed suffix, and only covered actual forest has retained sweep results.
+Version 25 may pass after evidence matches the claims or the claims are narrowed
+prospectively.
+
+## Positive-support narrowed-domain Review B — 2026-08-20
+
+Verdict remains **HOLD on rollback/restore evidence only**. Fixture scope is now
+truthfully limited to the executed covered-forest adopter. The residual is the
+claimed fresh-restore equivalence: the oracle round-trips a reduced dictionary,
+not the complete V11 owner/controller/event checkpoint and restored suffix.
+
+## Positive-support complete-checkpoint Review B — 2026-08-20
+
+Verdict remains **HOLD**. The oracle checkpoint has cursor zero but already
+contains the `[0,600000000)` receipt, then labels 600 ms as its suffix. Its
+"independent" suffix comparison hashes the same checkpoint plus the same
+literal twice. Correct the chronology and compare two independently executed
+owner/cursor/receipt endings before Version 25 release.
+
+## Superseding terminal positive-support Review B — 2026-08-20
+
+**PASS.** This supersedes every earlier positive-support HOLD in this file.
+All LSE support findings are closed; Version 25 may proceed to disposition and
+independent verification.

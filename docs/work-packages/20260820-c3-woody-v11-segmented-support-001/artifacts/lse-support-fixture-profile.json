@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "policy": "OPENWEPP_SNOW_FREE_LSE_V1_SUPPORT_POLICY_V1",
+  "minimum_support_ns": "600000000",
+  "model_definition_sha256": "e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f",
+  "tolerance_policy_sha256": "1dd78e3a97cf1aabcbb4bc2b50f5643012a9dde6a671939a4489f289eff3291d",
+  "numerical_policy_sha256": "b3a53a40cb1b8aca2a899884a727e0006917374e48f3681d60d68fc07b23b958",
+  "sweep_result_artifact": "lse-support-sweep-results.txt",
+  "fixtures": [
+    {"id": "covered_forest", "surface": "forest_litter", "storage": "finite_capacity", "status": "adopter", "sweep": "executed; see lse-support-sweep-results.txt"},
+    {"id": "open_mineral", "surface": "bare_mineral_soil", "storage": "finite_capacity", "status": "out_of_scope", "sweep": "requires separate authority"},
+    {"id": "litter", "surface": "forest_litter", "storage": "finite_capacity", "status": "out_of_scope", "sweep": "requires separate authority"},
+    {"id": "wet_surface", "surface": "forest_litter", "storage": "finite_capacity", "status": "out_of_scope", "sweep": "requires separate authority"},
+    {"id": "dry_surface", "surface": "bare_mineral_soil", "storage": "finite_capacity", "status": "out_of_scope", "sweep": "requires separate authority"},
+    {"id": "v10_full_support", "surface": "covered_forest", "storage": "finite_capacity", "status": "protected_compatibility", "sweep": "existing V10 gate; no V11 LSE admission"},
+    {"id": "v11_actual_stack", "surface": "covered_forest", "storage": "finite_capacity", "status": "adopter", "sweep": "executed; see lse-support-sweep-results.txt"}
+  ],
+  "representation_profiles": [
+    {"areal_heat_capacity_j_m2_k": 3235.68, "temperature_ulp_k": "5.684341886080802e-14", "energy_quantum_j_m2": "1.83927e-10", "tolerance_floor_s": "1.83927e-4"},
+    {"areal_heat_capacity_j_m2_k": 42000.0, "temperature_ulp_k": "5.684341886080802e-14", "energy_quantum_j_m2": "2.3874235921539366e-09", "tolerance_floor_s": "2.3874235921539366e-3"},
+    {"areal_heat_capacity_j_m2_k": 120000.0, "temperature_ulp_k": "5.684341886080802e-14", "energy_quantum_j_m2": "6.8212102632969618e-09", "tolerance_floor_s": "6.8212102632969618e-3"},
+    {"areal_heat_capacity_j_m2_k": 180000.0, "temperature_ulp_k": "5.684341886080802e-14", "energy_quantum_j_m2": "1.0231815394945443e-08", "tolerance_floor_s": "1.0231815394945443e-02"},
+    {"areal_heat_capacity_j_m2_k": 200000.0, "temperature_ulp_k": "5.684341886080802e-14", "energy_quantum_j_m2": "1.1368683772161603e-08", "tolerance_floor_s": "1.1368683772161603e-02"}
+  ]
+}

@@ -872,3 +872,79 @@ independent verification at e11b6c15e`.
 
 Production remains gated on completion of the contract cycle and exact
 authority promotion.
+# Positive-support adoption Review B — 2026-08-20
+
+Verdict: **FAIL pending upstream LSE authority correction**.
+
+Transaction Version 14 correctly orders below-domain rejection before the
+nonlinear solve and prohibits minimum-duration retry, per-segment commit, and
+custody relaxation. Its claimed accepted-slab receipt is not implementable as
+reviewed: `LSE-SUPPORT-B-001` lacks parent/segment/slab and absolute-support
+identity, while `LSE-SUPPORT-B-002` lacks canonical digest derivation.
+`LSE-SUPPORT-B-003` also requires explicit proof that rejection creates no
+accepted receipt, cursor/controller change, staged-owner change, scheduled or
+reduction operand, publication, or restart replay. Correct these upstream and
+bind the transaction population to the resulting exact receipt; protected V1
+and coupled-time V2 wires remain immutable.
+
+## Positive-support adoption Review B re-review — 2026-08-20
+
+Verdict remains **HOLD**. The receipt is not yet a typed accepted-slab
+chronology object: identity domains do not match coupled-time, slab ordinal is
+absent, support-start canonicality is weak, and the digest is non-derivable.
+Rollback/fresh-restore rows contain no transaction owner/cursor/checkpoint
+operands. Version 14 must not be promoted until exact identities, digest
+KAT/poisons, and a byte-complete rejection/restart population exist. No
+protected-wire amendment was observed.
+
+## Positive-support final B regression — 2026-08-20
+
+Verdict remains **HOLD**. Although the schema now carries the necessary slab
+fields, the receipt KAT authenticates an unprefixed digest contrary to the
+contract, and its validator rejects valid leading-zero coupled identities.
+The rollback/restore population still lacks the complete transaction owner,
+clock/controller, scheduled/reduction/publication, and checkpoint operands.
+Transaction Version 14 remains gated; protected wires remain unchanged.
+
+## Positive-support final correction-pass Review B — 2026-08-20
+
+Verdict remains **HOLD**. The receipt digest KAT now matches the contract, but
+semantic admission still disagrees with the schema for valid leading-zero
+coupled identities, the binding-poison set is incomplete, and byte-complete
+transaction rollback/restore evidence is still absent. Version 14 remains
+gated without any protected-wire change.
+
+## Positive-support final corrected Review B — 2026-08-20
+
+Verdict: **PASS**. The accepted prefix now joins cursor and receipt chronology,
+rollback preserves the complete seven-owner checkpoint, and restored execution
+consumes suffix only while matching the independently advanced uninterrupted
+owner ending. Version 14 may proceed to disposition and verification; no
+protected-wire change is authorized or observed.
+
+## Positive-support hardened-oracle Review B — 2026-08-20
+
+Verdict remains **HOLD**. The slab-specific receipt and KAT now pass.
+Transaction rollback/restart evidence still lacks complete owner envelopes,
+controller checkpoint and event chronology, and performs no restored suffix.
+The fresh-restore equivalence claim therefore remains unverified.
+
+## Positive-support complete-checkpoint Review B — 2026-08-20
+
+Verdict remains **HOLD**. Accepted cursor and accepted-receipt chronology
+contradict, and suffix equality is a duplicate hash expression rather than two
+transaction executions. The final evidence must compare independently produced
+ending owner, cursor, and receipt state without replay.
+
+## Positive-support narrowed-domain Review B — 2026-08-20
+
+Verdict remains **HOLD on one finding**. Domain/receipt authority now passes.
+Transaction Version 14 still claims fresh-restore equivalence without a complete
+owner/controller/event checkpoint or execution of the restored unaccepted
+suffix. No other B blocker remains.
+
+## Superseding terminal positive-support Review B — 2026-08-20
+
+**PASS.** This supersedes every earlier positive-support HOLD in this file.
+All support-receipt and rollback/restart findings are closed; Version 14 may
+proceed to disposition and independent verification.

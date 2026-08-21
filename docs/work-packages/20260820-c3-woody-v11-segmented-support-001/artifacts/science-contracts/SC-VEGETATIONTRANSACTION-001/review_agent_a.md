@@ -710,3 +710,29 @@ schema, and diff hygiene. No residual Review A finding or waiver remains.
 Verdict: `PASS / SC-VEGETATIONTRANSACTION-001 Version 13 closes complete
 resource-custody restart equivalence at e11b6c15e and may proceed to independent
 verification`.
+## Review A addendum — Version 14 LSE support-admission join
+
+Disposition: **HOLD**, inherited from `SC-LANDSURFACEENERGY-001` findings
+`LSE-A-001` through `LSE-A-006`.
+
+The transaction cannot prove receipt-before-owner-operation ordering or prevent
+same-duration cross-slab reuse while the receipt omits parent, segment, slab
+and absolute support. Add those joins, typed `LSEB-E-042` poisons, exact
+rollback/restart bytes, and explicit no-retry-at-minimum evidence. Replace
+“reviewed LSE” with prospective/in-review until the authority cycle passes.
+
+Rerun: **HOLD remains**. Absolute-support fields now exist, but no executable
+receipt validator proves the joins, byte-exact rollback/restore vectors remain
+declarative, slab ordinal is absent from the receipt schema, and “reviewed LSE”
+remains premature.
+
+Third rerun: **HOLD remains**. Slab ordinal and canonical fields are now in the
+schema, but validation has no independently supplied expected slab context, so
+a coordinated rehashed receipt from another slab remains admissible. Rollback/
+restore are still declarative, and “reviewed LSE” remains premature.
+
+Terminal addendum: the final LSE authority rerun closes these dependency
+findings. The transaction receipt binds the independently supplied slab domain,
+below-domain rejection is atomic, and restored continuation covers complete
+owner and buffered chronology state. **Addendum verdict: PASS**, subject to
+normal lifecycle disposition and dual verification.
