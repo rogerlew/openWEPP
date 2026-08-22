@@ -10,7 +10,7 @@ use openwepp_biogeochemistry::BiogeochemistryState;
 use openwepp_kernel_contract::ResourceOwnerId;
 use openwepp_land_surface_energy::{
     GroundWaterKey, LandSurfaceEnergyConfiguration, LandSurfaceEnergyState, LandSurfaceForcing,
-    LiquidParcel, Sha256Digest, SoilThermalSnapshot,
+    LiquidParcel, Sha256Digest, SoilThermalSnapshot, Stage3SnowCoveredLowerBoundary,
 };
 use openwepp_vegetation::{
     NitrogenArbiter, V8CoupledOwnedState, V8PersistentForcingReceipt, VegetationConfiguration,
@@ -183,6 +183,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
         biogeochemistry_beginning,
         injection,
         authority,
+        None,
         &pending,
         None,
     );
@@ -255,6 +256,15 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11(
     nitrogen: &dyn NitrogenArbiter,
     biogeochemistry_beginning: &BiogeochemistryState,
     authority: openwepp_land_surface_energy::CoveredColumnAuthority,
+    covered_lower_boundaries: Option<
+        &BTreeMap<
+            (
+                openwepp_land_surface_energy::OfeId,
+                openwepp_kernel_contract::TileId,
+            ),
+            Stage3SnowCoveredLowerBoundary,
+        >,
+    >,
     duration_s_bits: u64,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let pending = RefCell::new(PendingEndpointEnvelopes::default());
@@ -276,6 +286,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11(
         biogeochemistry_beginning,
         None,
         authority,
+        covered_lower_boundaries,
         &pending,
         Some(duration_s_bits),
     )
@@ -324,6 +335,15 @@ fn execute_v8_lse_runtime_shadow_phases(
     biogeochemistry_beginning: &BiogeochemistryState,
     injection: Option<V8EndpointFailureInjection>,
     authority: openwepp_land_surface_energy::CoveredColumnAuthority,
+    covered_lower_boundaries: Option<
+        &BTreeMap<
+            (
+                openwepp_land_surface_energy::OfeId,
+                openwepp_kernel_contract::TileId,
+            ),
+            Stage3SnowCoveredLowerBoundary,
+        >,
+    >,
     pending: &RefCell<PendingEndpointEnvelopes>,
     duration_s_bits: Option<u64>,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
@@ -366,8 +386,11 @@ fn execute_v8_lse_runtime_shadow_phases(
         &projected.hydrology_snapshot_sha256,
         soil_thermal,
     )?;
-    let solver_ready =
-        projected.solver_ready_tiles_with_authority(vegetation_owner_id, authority)?;
+    let solver_ready = projected.solver_ready_tiles_with_authority_and_lower_boundaries(
+        vegetation_owner_id,
+        authority,
+        covered_lower_boundaries,
+    )?;
     injected(injection, V8EndpointFailureInjection::AfterSolverReady)?;
     let mut problems = Vec::with_capacity(solver_ready.len());
     let mut soil_sources = BTreeMap::<GroundWaterKey, RealHydrologySourceKey>::new();

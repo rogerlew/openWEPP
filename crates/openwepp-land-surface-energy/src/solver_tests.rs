@@ -497,6 +497,7 @@ fn covered_v8_block_matches_frozen_joint_solution() {
             ground_absorbed_by_incident_w_m2_tile: BandDirectionalFluxes::default(),
             occupancies: Vec::new(),
         },
+        stage3_lower_boundary: None,
     };
     let biochemical = BiochemicalConstants {
         ha_vcmax_j_mol: 65_330.0,

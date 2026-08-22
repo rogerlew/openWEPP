@@ -2,7 +2,7 @@
 
 | Scenario | Required result | Status |
 | --- | --- | --- |
-| snow persists for full support | covered executor advances | `PASS / one-support focused case; owner-derived carrier and exact Stage-3 boundary` |
+| snow persists for full support | covered executor advances | `HOLD / integration test ignored; released Stage-3 shortwave/soil boundary custody is incomplete` |
 | sublimation/deposition | signed vapor ledger is valid | `NOT RUN` |
 | rain on snow/refreeze/melt | phase and energy custody valid | `NOT RUN` |
 | meltout at start/end/interior | chronology and remainder valid | `NOT RUN` |
@@ -13,7 +13,9 @@
 | snow disappearance/reappearance | owner chronology remains valid | `NOT RUN` |
 | restart before/at/after event | equivalent and nonreplaying | `NOT RUN` |
 
-`Static:` The passing stable case is bounded evidence only. It proves one
-1,800-second owner-derived carrier/Stage-3/V11 candidate and exact rollback;
-it does not pass the physical scenario matrix or the distinct lower-surface
-operator gate.
+`Static:` Current evidence proves the typed owner-derived carrier,
+destination-receipt projection, and rollback plumbing through unit/regression
+coverage. It does not prove a passing 1,800-second physical covered support;
+the integration case is intentionally held at the missing Stage-3 shortwave/
+soil boundary custody and therefore does not pass the physical scenario
+matrix or the distinct lower-surface operator gate.

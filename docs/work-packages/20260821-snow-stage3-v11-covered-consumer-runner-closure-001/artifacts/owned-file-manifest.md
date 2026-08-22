@@ -34,8 +34,17 @@ Exact source edits admitted in this increment:
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs`:
   covered-support boundary admission and duration join.
 - `crates/openwepp-land-surface-energy/src/solver.rs`:
-  explicit `V11SnowCovered` authority identity; lower-boundary operator
-  replacement remains open.
+  explicit `V11SnowCovered` authority identity and the covered lower-boundary
+  operator that suppresses snow-free ground water, sensible/vapor, and soil
+  storage terms.
+- `crates/openwepp-land-surface-energy/src/covered_output.rs` and
+  `crates/openwepp-land-surface-energy/src/transaction.rs`: typed lower-boundary
+  energy receipt, covered operator validation, and held Stage-3 energy-custody
+  seam; released Stage-3 shortwave/advection/soil projections remain open.
+- `crates/openwepp-hillslope-orchestrator/src/v8_input_projection.rs`,
+  `crates/openwepp-hillslope-orchestrator/src/strict_v8_endpoint.rs`, and
+  `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/`:
+  lower-boundary routing into the strict runtime and covered energy join.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs`:
   support-duration-bound Stage-3 reconciliation validation for the admitted
   1,800-second persistent-support API.

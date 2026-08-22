@@ -1,6 +1,6 @@
 # Contract impact and preimplementation gate
 
-Status: `PASS / NO_CONTRACT_CHANGE_REQUIRED`.
+Status: `PASS / IMPLEMENTATION MAP; PROSPECTIVE LOWER-BOUNDARY CLARIFICATION OPEN`.
 
 Required gate: prove that Child 2C already binds canopy temperatures and
 humidity, leaf/stem/wet-surface conductances, shared canopy-air state, snow
@@ -9,11 +9,13 @@ exposure, reciprocal longwave, support identity, and mass/vapor/energy ledger
 operands. A prospective amendment is permitted only for one exact unbound
 field.
 
-Disposition: the released Child 2C amendments already bind the required
-operands and consumer obligations. No prospective contract amendment is
-required before implementation. The implementation must still prove each
-binding at the actual consumer call and must not use the package artifact as a
-physics substitute.
+Disposition: the released Child 2C amendments bind the required physical
+operands and consumer obligations. The current LSE contract does not yet
+explicitly publish the V11 canopy-only lower-boundary operator mask, so the
+new typed seam remains default-off/shadow evidence and a prospective,
+single-field contract clarification is open before release. The
+implementation must still prove each binding at the actual consumer call and
+must not use the package artifact as a physics substitute.
 
 Primary bindings read at this gate:
 

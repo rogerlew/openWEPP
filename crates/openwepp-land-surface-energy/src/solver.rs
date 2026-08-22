@@ -35,7 +35,7 @@ use crate::physics::{
     harmonic_interface_conductance_w_m2_k, litter_relative_humidity, open_neutral_resistances,
     partition_ground_shortwave, saturation_specific_humidity, vapor_export_w_m2,
 };
-use crate::{LandSurfaceEnergyError, NormalizedResidual, ResidualUnit, StepNorms};
+use crate::{LandSurfaceEnergyError, NormalizedResidual, ResidualUnit, Sha256Digest, StepNorms};
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -930,6 +930,9 @@ pub struct CoveredColumnInputs {
     pub ground: OpenSurfaceProblem,
     pub occupancies: Vec<CoveredOccupancyInputs>,
     pub shortwave: CoveredColumnShortwaveInputs,
+    /// Stage-3-owned lower-boundary operands for the explicit V11 covered
+    /// canopy mode. Historical covered columns leave this absent.
+    pub stage3_lower_boundary: Option<Stage3SnowCoveredLowerBoundary>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -937,6 +940,46 @@ pub enum CoveredColumnAuthority {
     HistoricalV8,
     V10NonpositiveAssimilation,
     V11SnowCovered,
+}
+
+/// Stage-3-owned lower-boundary operands for the V11 covered canopy solve.
+///
+/// The LSE solver consumes the shared carrier's lower-boundary transfer only
+/// to close the canopy-air node and to use the released snow temperature in
+/// reciprocal longwave. It does not own snow mass, surface liquid, or the
+/// Stage-3 energy ledger.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Stage3SnowCoveredLowerBoundary {
+    pub snow_temperature_k: f64,
+    pub sensible_to_canopy_air_w_m2: f64,
+    pub vapor_to_canopy_air_kg_m2_s: f64,
+    pub net_longwave_w_m2: f64,
+    pub shortwave_absorbed_w_m2: f64,
+    pub precipitation_advection_w_m2: f64,
+    pub carrier_receipt_id: Sha256Digest,
+}
+
+impl Stage3SnowCoveredLowerBoundary {
+    pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+        if [
+            self.snow_temperature_k,
+            self.sensible_to_canopy_air_w_m2,
+            self.vapor_to_canopy_air_kg_m2_s,
+            self.net_longwave_w_m2,
+            self.shortwave_absorbed_w_m2,
+            self.precipitation_advection_w_m2,
+        ]
+        .iter()
+        .any(|value| !value.is_finite())
+            || !(200.0..=350.0).contains(&self.snow_temperature_k)
+            || self.carrier_receipt_id.as_str().is_empty()
+        {
+            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "Stage-3 snow-covered lower boundary",
+            ));
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -2047,6 +2090,21 @@ pub fn evaluate_covered_column(
     }
     validate_covered_caps(column, caps)?;
     validate_covered_shortwave_inputs(column)?;
+    let stage3_boundary =
+        if column.authority == CoveredColumnAuthority::V11SnowCovered {
+            let boundary = column.stage3_lower_boundary.as_ref().ok_or(
+                LandSurfaceEnergyError::StateLineage("missing Stage-3 covered lower boundary"),
+            )?;
+            boundary.validate()?;
+            if column.top_rain_kg_m2_tile != 0.0 {
+                return Err(LandSurfaceEnergyError::UnsupportedDomain(
+                    "covered precipitation must be owned by Stage-3",
+                ));
+            }
+            Some(boundary)
+        } else {
+            None
+        };
     let expected = 10 * column.occupancies.len() + 3 + column.ground.soil_nodes.len();
     if trial.len() != expected || !covered_trial_is_valid(trial, column.occupancies.len()) {
         return Err(LandSurfaceEnergyError::ConstitutiveDomain(
@@ -2125,7 +2183,7 @@ pub fn evaluate_covered_column(
         .collect();
     let longwave = crate::physics::reciprocal_longwave_column(
         column.atmospheric_downward_longwave_w_m2,
-        ground_temperature,
+        stage3_boundary.map_or(ground_temperature, |boundary| boundary.snow_temperature_k),
         &longwave_layers,
     )?;
     let mut occupancy_results = Vec::with_capacity(column.occupancies.len());
@@ -2158,7 +2216,9 @@ pub fn evaluate_covered_column(
         column.reference_wind_m_s,
     )?;
     let ground = &column.ground;
-    let (ground_law, _) = if ground.class == SurfaceClassKind::BareMineralSoil
+    let (ground_law, _) = if stage3_boundary.is_some() {
+        (0.0, None)
+    } else if ground.class == SurfaceClassKind::BareMineralSoil
         && ground.surface_liquid_kg_m2_tile == 0.0
     {
         let parameters = ground
@@ -2208,7 +2268,9 @@ pub fn evaluate_covered_column(
     let ground_branch = frozen
         .and_then(|value| value.ground)
         .unwrap_or(natural_ground_branch);
-    let final_ground_vapor = if ground_branch == WaterBranch::AuthorizationActiveOrTie {
+    let final_ground_vapor = if stage3_boundary.is_some() {
+        0.0
+    } else if ground_branch == WaterBranch::AuthorizationActiveOrTie {
         caps.ok_or(LandSurfaceEnergyError::water_cardinality(
             "frozen_ground_cap_without_authorization",
         ))?
@@ -2217,22 +2279,36 @@ pub fn evaluate_covered_column(
     } else {
         ground_law
     };
-    let uses_store = !(ground.class == SurfaceClassKind::BareMineralSoil
-        && ground.surface_liquid_kg_m2_tile == 0.0);
-    let ending_water = if uses_store {
-        ground.surface_liquid_kg_m2_tile - final_ground_vapor.max(0.0) * column.interval_s
-            + (-final_ground_vapor).max(0.0) * column.interval_s
+    let ending_water = if stage3_boundary.is_none() {
+        let uses_store = !(ground.class == SurfaceClassKind::BareMineralSoil
+            && ground.surface_liquid_kg_m2_tile == 0.0);
+        let ending_water = if uses_store {
+            ground.surface_liquid_kg_m2_tile - final_ground_vapor.max(0.0) * column.interval_s
+                + (-final_ground_vapor).max(0.0) * column.interval_s
+        } else {
+            ground.surface_liquid_kg_m2_tile
+        };
+        if ending_water < -1.0e-14 {
+            return Err(LandSurfaceEnergyError::water_bound(
+                "covered_surface_water_negative",
+            ));
+        }
+        ending_water
     } else {
-        ground.surface_liquid_kg_m2_tile
+        0.0
     };
-    if ending_water < -1.0e-14 {
-        return Err(LandSurfaceEnergyError::water_bound(
-            "covered_surface_water_negative",
-        ));
-    }
-    let ground_sensible =
+    let ground_sensible = if stage3_boundary.is_some() {
+        0.0
+    } else {
         rho * AIR_HEAT_CAPACITY_J_KG_K * (ground_temperature - canopy_temperature)
-            / ground_resistance.resistance_s_m;
+            / ground_resistance.resistance_s_m
+    };
+    let lower_boundary_sensible = stage3_boundary.map_or(ground_sensible, |boundary| {
+        boundary.sensible_to_canopy_air_w_m2
+    });
+    let lower_boundary_vapor = stage3_boundary.map_or(final_ground_vapor, |boundary| {
+        boundary.vapor_to_canopy_air_kg_m2_s
+    });
     let reference_heat =
         rho * AIR_HEAT_CAPACITY_J_KG_K * (canopy_temperature - column.air_temperature_k)
             / column.canopy_to_atmosphere_heat_resistance_s_m;
@@ -2246,8 +2322,8 @@ pub fn evaluate_covered_column(
         .iter()
         .map(|value| value.canopy_vapor_kg_m2_s)
         .sum();
-    let shared_heat = canopy_sensible + ground_sensible - reference_heat;
-    let shared_vapor = canopy_vapor + final_ground_vapor - reference_vapor;
+    let shared_heat = canopy_sensible + lower_boundary_sensible - reference_heat;
+    let shared_vapor = canopy_vapor + lower_boundary_vapor - reference_vapor;
     let shared_heat_scale =
         (canopy_sensible.abs() + ground_sensible.abs() + reference_heat.abs()).max(1.0);
     let shared_vapor_scale = canopy_vapor
@@ -2259,80 +2335,116 @@ pub fn evaluate_covered_column(
         crate::physics::energy_tolerance(shared_heat_scale),
         crate::physics::water_tolerance(shared_vapor_scale),
     ]);
-    let shortwave = partition_ground_shortwave(
-        ground.terminal_shortwave_w_m2_tile,
-        ground.surface_vis_albedo,
-        ground.surface_nir_albedo,
-    )?;
-    let ground_vapor_energy = vapor_export_w_m2(final_ground_vapor, ground_temperature)?;
-    let (ground_storage, ending_enthalpy, beginning_ground_temperature) = match ground
-        .storage_branch
-    {
-        SurfaceStorageBranch::FiniteCapacity => {
-            let ending_capacity = ground.surface_dry_heat_capacity_j_m2_k
-                + ending_water.max(0.0) * WATER_HEAT_CAPACITY_J_KG_K;
-            let ending = ending_capacity * (ground_temperature - REFERENCE_TEMPERATURE_K);
-            let beginning_capacity = ground.surface_dry_heat_capacity_j_m2_k
-                + ground.surface_liquid_kg_m2_tile * WATER_HEAT_CAPACITY_J_KG_K;
+    let (shortwave, ground_vapor_energy, ground_storage, ending_enthalpy, ground_heat) =
+        if stage3_boundary.is_some() {
             (
-                (ending - ground.surface_enthalpy_j_m2_tile) / column.interval_s,
-                ending,
-                REFERENCE_TEMPERATURE_K + ground.surface_enthalpy_j_m2_tile / beginning_capacity,
+                crate::physics::ShortwavePartition {
+                    absorbed: BandDirectionalFluxes::default(),
+                    reflected: BandDirectionalFluxes::default(),
+                },
+                0.0,
+                0.0,
+                ground.surface_enthalpy_j_m2_tile,
+                vec![0.0; ground.soil_nodes.len()],
             )
+        } else {
+            let shortwave = partition_ground_shortwave(
+                ground.terminal_shortwave_w_m2_tile,
+                ground.surface_vis_albedo,
+                ground.surface_nir_albedo,
+            )?;
+            let ground_vapor_energy = vapor_export_w_m2(final_ground_vapor, ground_temperature)?;
+            let (ground_storage, ending_enthalpy, beginning_ground_temperature) = match ground
+                .storage_branch
+            {
+                SurfaceStorageBranch::FiniteCapacity => {
+                    let ending_capacity = ground.surface_dry_heat_capacity_j_m2_k
+                        + ending_water.max(0.0) * WATER_HEAT_CAPACITY_J_KG_K;
+                    let ending = ending_capacity * (ground_temperature - REFERENCE_TEMPERATURE_K);
+                    let beginning_capacity = ground.surface_dry_heat_capacity_j_m2_k
+                        + ground.surface_liquid_kg_m2_tile * WATER_HEAT_CAPACITY_J_KG_K;
+                    (
+                        (ending - ground.surface_enthalpy_j_m2_tile) / column.interval_s,
+                        ending,
+                        REFERENCE_TEMPERATURE_K
+                            + ground.surface_enthalpy_j_m2_tile / beginning_capacity,
+                    )
+                }
+                SurfaceStorageBranch::EquilibriumZero => (0.0, 0.0, ground_temperature),
+            };
+            let first = &ground.soil_nodes[0];
+            let surface_conductance = harmonic_interface_conductance_w_m2_k(
+                ground.surface_depth_m,
+                ground.surface_conductivity_w_m_k,
+                first.depth_m,
+                first.conductivity_w_m_k,
+            )?;
+            let mut begin_fluxes = vec![
+                surface_conductance
+                    * (beginning_ground_temperature - first.beginning_temperature_k),
+            ];
+            let mut end_fluxes =
+                vec![surface_conductance * (ground_temperature - soil_temperatures[0])];
+            for index in 0..ground.soil_nodes.len().saturating_sub(1) {
+                let upper = &ground.soil_nodes[index];
+                let lower = &ground.soil_nodes[index + 1];
+                let conductance = harmonic_interface_conductance_w_m2_k(
+                    upper.depth_m,
+                    upper.conductivity_w_m_k,
+                    lower.depth_m,
+                    lower.conductivity_w_m_k,
+                )?;
+                begin_fluxes.push(
+                    conductance * (upper.beginning_temperature_k - lower.beginning_temperature_k),
+                );
+                end_fluxes
+                    .push(conductance * (soil_temperatures[index] - soil_temperatures[index + 1]));
+            }
+            let ground_heat: Vec<f64> = begin_fluxes
+                .iter()
+                .zip(end_fluxes.iter())
+                .map(|(begin, end)| 0.5 * (begin + end))
+                .collect();
+            (
+                shortwave,
+                ground_vapor_energy,
+                ground_storage,
+                ending_enthalpy,
+                ground_heat,
+            )
+        };
+    if let Some(boundary) = stage3_boundary {
+        raw.push(ground_temperature - boundary.snow_temperature_k);
+        tolerances.push(1.0e-9);
+        for (temperature, node) in soil_temperatures.iter().zip(&ground.soil_nodes) {
+            raw.push(temperature - node.beginning_temperature_k);
+            tolerances.push(1.0e-9);
         }
-        SurfaceStorageBranch::EquilibriumZero => (0.0, 0.0, ground_temperature),
-    };
-    let first = &ground.soil_nodes[0];
-    let surface_conductance = harmonic_interface_conductance_w_m2_k(
-        ground.surface_depth_m,
-        ground.surface_conductivity_w_m_k,
-        first.depth_m,
-        first.conductivity_w_m_k,
-    )?;
-    let mut begin_fluxes =
-        vec![surface_conductance * (beginning_ground_temperature - first.beginning_temperature_k)];
-    let mut end_fluxes = vec![surface_conductance * (ground_temperature - soil_temperatures[0])];
-    for index in 0..ground.soil_nodes.len().saturating_sub(1) {
-        let upper = &ground.soil_nodes[index];
-        let lower = &ground.soil_nodes[index + 1];
-        let conductance = harmonic_interface_conductance_w_m2_k(
-            upper.depth_m,
-            upper.conductivity_w_m_k,
-            lower.depth_m,
-            lower.conductivity_w_m_k,
-        )?;
-        begin_fluxes
-            .push(conductance * (upper.beginning_temperature_k - lower.beginning_temperature_k));
-        end_fluxes.push(conductance * (soil_temperatures[index] - soil_temperatures[index + 1]));
-    }
-    let ground_heat: Vec<f64> = begin_fluxes
-        .iter()
-        .zip(end_fluxes.iter())
-        .map(|(begin, end)| 0.5 * (begin + end))
-        .collect();
-    let surface_operands = [
-        shortwave.absorbed.total(),
-        longwave.ground_net_w_m2,
-        -ground_sensible,
-        -ground_vapor_energy,
-        -ground_heat[0],
-        -ground_storage,
-    ];
-    let surface_residual: f64 = surface_operands.iter().sum();
-    raw.push(surface_residual);
-    tolerances.push(crate::physics::energy_tolerance(
-        surface_operands.iter().map(|value| value.abs()).sum(),
-    ));
-    for (index, node) in ground.soil_nodes.iter().enumerate() {
-        let incoming = ground_heat[index];
-        let outgoing = ground_heat.get(index + 1).copied().unwrap_or(0.0);
-        let storage = node.heat_capacity_j_m2_k
-            * (soil_temperatures[index] - node.beginning_temperature_k)
-            / column.interval_s;
-        raw.push(incoming - outgoing - storage);
+    } else {
+        let surface_operands = [
+            shortwave.absorbed.total(),
+            longwave.ground_net_w_m2,
+            -ground_sensible,
+            -ground_vapor_energy,
+            -ground_heat[0],
+            -ground_storage,
+        ];
+        let surface_residual: f64 = surface_operands.iter().sum();
+        raw.push(surface_residual);
         tolerances.push(crate::physics::energy_tolerance(
-            incoming.abs() + outgoing.abs() + storage.abs(),
+            surface_operands.iter().map(|value| value.abs()).sum(),
         ));
+        for (index, node) in ground.soil_nodes.iter().enumerate() {
+            let incoming = ground_heat[index];
+            let outgoing = ground_heat.get(index + 1).copied().unwrap_or(0.0);
+            let storage = node.heat_capacity_j_m2_k
+                * (soil_temperatures[index] - node.beginning_temperature_k)
+                / column.interval_s;
+            raw.push(incoming - outgoing - storage);
+            tolerances.push(crate::physics::energy_tolerance(
+                incoming.abs() + outgoing.abs() + storage.abs(),
+            ));
+        }
     }
     let normalized_residuals = raw
         .iter()
@@ -2342,7 +2454,9 @@ pub fn evaluate_covered_column(
     let ground_authorization = caps.map(|value| {
         value.ground.authorization_rate_kg_m2_tile_s * column.tile_fraction * column.interval_s
     });
-    let ground_finalized = if ground_branch == WaterBranch::AuthorizationActiveOrTie {
+    let ground_finalized = if stage3_boundary.is_some() {
+        0.0
+    } else if ground_branch == WaterBranch::AuthorizationActiveOrTie {
         ground_authorization.ok_or(LandSurfaceEnergyError::water_cardinality(
             "missing_ground_authorization",
         ))?
@@ -2376,9 +2490,14 @@ pub fn evaluate_covered_column(
         ground_storage_w_m2_tile: ground_storage,
         ending_surface_enthalpy_j_m2_tile: ending_enthalpy,
         whole_column_longwave: longwave,
-        ground_canopy_release_kg_m2_tile: incident_rain,
+        ground_canopy_release_kg_m2_tile: if stage3_boundary.is_some() {
+            0.0
+        } else {
+            incident_rain
+        },
         ground_stemflow_kg_m2_tile: ground_stemflow,
-        ground_sensible_to_canopy_air_w_m2: ground_sensible,
+        ground_sensible_to_canopy_air_w_m2: lower_boundary_sensible,
+        lower_boundary_vapor_to_canopy_air_kg_m2_s: lower_boundary_vapor,
         sensible_to_reference_air_w_m2: reference_heat,
         vapor_to_reference_air_kg_m2_s: reference_vapor,
     })

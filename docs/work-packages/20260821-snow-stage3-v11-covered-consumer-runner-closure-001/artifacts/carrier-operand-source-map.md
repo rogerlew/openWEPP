@@ -12,7 +12,7 @@ Status: `PASS / source-level map established; call-site proof pending`.
 | snow mass/liquid/cold-content | current Stage-3 owner | `DirectSnowStage3PersistentState` and current support forcing | Stage-3 evaluator and carrier ledger |
 | canopy longwave components | current V11 canopy state | ordered V11 leaf/stem component temperatures/weights | reciprocal longwave evaluation |
 | support receipts | coupled-time/provider | accepted `TimeSupport`, participant receipts, forcing digest | carrier/parent join |
-| mass/vapor/energy ledgers | Stage-3 + carrier transaction | actual evaluator/`SharedCarrierReceipt` operands | independent parent validation |
+| mass/vapor/energy ledgers | Stage-3 + carrier transaction | Stage-3 result and current carrier receipt; carrier input still assembles a pre-execution ledger | complete independent outcome-ledger validation remains open |
 
 The runner may seal atmospheric and identity inputs but may not supply ending
 owners, event time, terminal parcel, or live conductance. The covered stack

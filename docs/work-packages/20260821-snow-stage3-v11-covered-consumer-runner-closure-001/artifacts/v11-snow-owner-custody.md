@@ -17,8 +17,11 @@ payload. Hydrology winter-column bytes remain outside the authoritative
 envelope; a full covered-segment compatibility projection is still required.
 
 `Static:` The stable covered adopter now produces the per-lane shared-carrier
-receipts, exact Stage-3 boundary/result join, and canonical ending Stage-3
-snow envelope before constructing the V11 candidate. Complete atomic
-hydrology compatibility projection, terminal parcel custody, restart, and
-closure of the V11 lower-surface operator remain open. No Child-1 closure
-claim is made.
+receipts, an exact covered `(OFE, tile)` boundary-receipt set, exact Stage-3
+boundary/result join, and canonical ending Stage-3 snow envelope before
+constructing the V11 candidate. The LSE covered branch now suppresses its
+snow-free ground and WB14-facing operators, but complete atomic hydrology
+compatibility projection, keyed physical consumption, Stage-3 shortwave/
+advection/soil energy custody, terminal parcel custody, restart, and closure
+of the V11 lower-surface operator remain open. No Child-1 closure claim is
+made.

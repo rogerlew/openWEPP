@@ -17,8 +17,8 @@ use openwepp_land_surface_energy::{
     LandSurfaceEnergyState, LandSurfaceEnergyV2State, LandSurfaceForcing, LiquidParcel,
     LiquidParcelKind, LiquidTemperatureProvider, LseSupportAdmissibilityReceiptV1, LseV2StateError,
     OfeId, ParcelId, Sha256Digest, SoilThermalLayerSnapshot, SoilThermalOfeSnapshot,
-    SoilThermalSnapshot, SoilThermalTileCandidate, build_lse_ending_state,
-    project_v2_runtime_to_v1, project_validated_v1_runtime_to_v2,
+    SoilThermalSnapshot, SoilThermalTileCandidate, Stage3SnowCoveredLowerBoundary,
+    build_lse_ending_state, project_v2_runtime_to_v1, project_validated_v1_runtime_to_v2,
 };
 use openwepp_meteorology::psychrometrics::saturation_vapor_pressure_ice_kpa;
 use openwepp_meteorology::snow_free_forcing::{
@@ -155,6 +155,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         beginning: &DirectSnowStage3PersistentState,
         stage3_forcing: DirectSnowStage3SupportInput,
         sealed: &SealedCoveredCarrierForcing,
+        tile_override: Option<&TileId>,
         interval_s: f64,
     ) -> Result<SharedCarrierInput, DirectV11RealConsumerError> {
         let lane_index = self
@@ -162,12 +163,21 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             .keys()
             .position(|value| *value == lane_id)
             .ok_or(DirectV11RealConsumerError::Identity("covered lane order"))?;
-        let tile = self
-            .beginning
-            .vegetation_configuration
-            .topology_tiles
-            .get(lane_index % self.beginning.vegetation_configuration.topology_tiles.len())
-            .ok_or(DirectV11RealConsumerError::Identity("covered carrier tile"))?;
+        let tile = match tile_override {
+            Some(tile_id) => self
+                .beginning
+                .vegetation_configuration
+                .topology_tiles
+                .iter()
+                .find(|tile| tile.tile_id == *tile_id)
+                .ok_or(DirectV11RealConsumerError::Identity("covered carrier tile"))?,
+            None => self
+                .beginning
+                .vegetation_configuration
+                .topology_tiles
+                .get(lane_index % self.beginning.vegetation_configuration.topology_tiles.len())
+                .ok_or(DirectV11RealConsumerError::Identity("covered carrier tile"))?,
+        };
         let tile_air = self
             .beginning
             .vegetation_state
@@ -422,6 +432,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         for value in [
             &mut weighted.shared_air_temperature_k,
             &mut weighted.shared_air_specific_humidity,
+            &mut weighted.snow_temperature_k,
             &mut weighted.reference_sensible_into_node_w_m2,
             &mut weighted.canopy_sensible_into_surface_w_m2,
             &mut weighted.snow_sensible_into_surface_w_m2,
@@ -472,6 +483,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                     &mut weighted.shared_air_specific_humidity,
                     receipt.shared_air_specific_humidity,
                 ),
+                (&mut weighted.snow_temperature_k, receipt.snow_temperature_k),
                 (
                     &mut weighted.reference_sensible_into_node_w_m2,
                     receipt.reference_sensible_into_node_w_m2,
@@ -527,6 +539,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         for value in [
             &mut weighted.shared_air_temperature_k,
             &mut weighted.shared_air_specific_humidity,
+            &mut weighted.snow_temperature_k,
             &mut weighted.reference_sensible_into_node_w_m2,
             &mut weighted.canopy_sensible_into_surface_w_m2,
             &mut weighted.snow_sensible_into_surface_w_m2,
@@ -546,6 +559,194 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         weighted.receipt_id = Digest32::zero();
         weighted.receipt_id = canonical_shared_carrier_receipt_digest(&weighted);
         Ok(weighted)
+    }
+
+    fn carrier_receipts_by_destination(
+        &self,
+        interval_s: f64,
+        stage3_forcing_by_lane: &BTreeMap<u32, DirectSnowStage3SupportInput>,
+        stage3_beginning_by_lane: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    ) -> Result<BTreeMap<(OfeId, TileId), SharedCarrierReceipt>, DirectV11RealConsumerError> {
+        let surface = &self.beginning.inner.surface_configuration;
+        let lane_to_ofe = self.covered_lane_to_ofe(stage3_beginning_by_lane)?;
+        let expected_destinations = self.covered_expected_destinations();
+        let configured_destinations = surface
+            .records
+            .iter()
+            .map(|record| (record.key.ofe_id.clone(), record.key.tile_id.clone()))
+            .filter(|destination| expected_destinations.contains(destination))
+            .collect::<BTreeSet<_>>();
+        if expected_destinations != configured_destinations {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered surface/LSE destination set",
+            ));
+        }
+
+        let mut receipts = BTreeMap::new();
+        for (ofe_id, tile_id) in expected_destinations {
+            let binding = surface
+                .ofe_bindings
+                .iter()
+                .find(|binding| binding.ofe_id == ofe_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered destination OFE binding",
+                ))?;
+            if lane_to_ofe.get(&binding.production_lane_id) != Some(&ofe_id) {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered destination lane/OFE binding",
+                ));
+            }
+            let carrier = self.carrier_for_destination(
+                interval_s,
+                binding.production_lane_id,
+                &ofe_id,
+                &tile_id,
+                stage3_forcing_by_lane,
+                stage3_beginning_by_lane,
+            )?;
+            let receipt = evaluate_shared_carrier(&carrier)?;
+            if receipts.insert((ofe_id, tile_id), receipt).is_some() {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "duplicate covered destination carrier receipt",
+                ));
+            }
+        }
+        Ok(receipts)
+    }
+
+    fn covered_lane_to_ofe(
+        &self,
+        stage3_beginning_by_lane: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    ) -> Result<BTreeMap<u32, OfeId>, DirectV11RealConsumerError> {
+        let mut lane_to_ofe = BTreeMap::new();
+        for binding in &self.beginning.inner.surface_configuration.ofe_bindings {
+            if lane_to_ofe
+                .insert(binding.production_lane_id, binding.ofe_id.clone())
+                .is_some()
+            {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "duplicate covered lane/OFE binding",
+                ));
+            }
+        }
+        if stage3_beginning_by_lane
+            .keys()
+            .copied()
+            .collect::<BTreeSet<_>>()
+            != lane_to_ofe.keys().copied().collect::<BTreeSet<_>>()
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered carrier lane/OFE set",
+            ));
+        }
+        Ok(lane_to_ofe)
+    }
+
+    fn covered_expected_destinations(&self) -> BTreeSet<(OfeId, TileId)> {
+        let covered_tile_ids = self
+            .beginning
+            .vegetation_configuration
+            .strata
+            .iter()
+            .flat_map(|stratum| stratum.tile_ids.iter().cloned())
+            .collect::<BTreeSet<_>>();
+        self.beginning
+            .inner
+            .lse_configuration
+            .ofes
+            .iter()
+            .flat_map(|ofe| {
+                ofe.tiles
+                    .iter()
+                    .filter(|tile| covered_tile_ids.contains(&tile.vegetation_tile_id))
+                    .map(|tile| (ofe.ofe_id.clone(), tile.tile_id.clone()))
+            })
+            .collect()
+    }
+
+    fn carrier_for_destination(
+        &self,
+        interval_s: f64,
+        lane_id: u32,
+        ofe_id: &OfeId,
+        tile_id: &TileId,
+        stage3_forcing_by_lane: &BTreeMap<u32, DirectSnowStage3SupportInput>,
+        stage3_beginning_by_lane: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    ) -> Result<SharedCarrierInput, DirectV11RealConsumerError> {
+        let beginning =
+            stage3_beginning_by_lane
+                .get(&lane_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered destination Stage-3 state",
+                ))?;
+        let stage3_forcing = stage3_forcing_by_lane.get(&lane_id).copied().ok_or(
+            DirectV11RealConsumerError::Identity("covered destination Stage-3 forcing"),
+        )?;
+        let sealed = self.carrier_forcing_by_lane.get(&lane_id).ok_or(
+            DirectV11RealConsumerError::Identity("covered destination carrier forcing"),
+        )?;
+        let vegetation_tile_id = self
+            .beginning
+            .inner
+            .lse_configuration
+            .ofes
+            .iter()
+            .find(|ofe| ofe.ofe_id == *ofe_id)
+            .and_then(|ofe| ofe.tiles.iter().find(|tile| tile.tile_id == *tile_id))
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "covered destination vegetation tile",
+            ))?
+            .vegetation_tile_id
+            .clone();
+        self.derive_live_carrier_input(
+            lane_id,
+            beginning,
+            stage3_forcing,
+            sealed,
+            Some(&vegetation_tile_id),
+            interval_s,
+        )
+    }
+
+    fn stage3_lower_boundaries_by_destination(
+        &self,
+        receipts: &BTreeMap<(OfeId, TileId), SharedCarrierReceipt>,
+    ) -> Result<BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>, DirectV11RealConsumerError>
+    {
+        let expected_destinations = self.covered_expected_destinations();
+        if receipts.keys().cloned().collect::<BTreeSet<_>>() != expected_destinations {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered destination carrier receipt set",
+            ));
+        }
+        let mut boundaries = BTreeMap::new();
+        for (destination, receipt) in receipts {
+            let carrier_receipt_id = Sha256Digest::try_new(digest32_hex(receipt.receipt_id))
+                .map_err(|_| DirectV11RealConsumerError::Identity("covered carrier receipt ID"))?;
+            let boundary = Stage3SnowCoveredLowerBoundary {
+                snow_temperature_k: receipt.snow_temperature_k,
+                sensible_to_canopy_air_w_m2: -receipt.snow_sensible_into_surface_w_m2,
+                vapor_to_canopy_air_kg_m2_s: -receipt.snow_vapor_into_surface_kg_m2_s,
+                net_longwave_w_m2: receipt.snow_longwave_net_w_m2,
+                // The current released carrier receipt does not yet expose a
+                // canonical shortwave or precipitation-advection term. Keep
+                // those owners explicit and zero only at this default-off
+                // seam; the physical covered cutover remains blocked on their
+                // Stage-3 projections and ledger reconstruction.
+                shortwave_absorbed_w_m2: 0.0,
+                precipitation_advection_w_m2: 0.0,
+                carrier_receipt_id,
+            };
+            boundary
+                .validate()
+                .map_err(|_| DirectV11RealConsumerError::Identity("covered boundary operands"))?;
+            if boundaries.insert(destination.clone(), boundary).is_some() {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "duplicate covered destination lower boundary",
+                ));
+            }
+        }
+        Ok(boundaries)
     }
 
     pub fn take_staged_ending(&mut self) -> Option<DirectV10RealConsumerShadow> {
@@ -584,6 +785,7 @@ fn canonical_shared_carrier_receipt_digest(receipt: &SharedCarrierReceipt) -> Di
     for value in [
         receipt.shared_air_temperature_k,
         receipt.shared_air_specific_humidity,
+        receipt.snow_temperature_k,
         receipt.reference_sensible_into_node_w_m2,
         receipt.canopy_sensible_into_surface_w_m2,
         receipt.snow_sensible_into_surface_w_m2,
@@ -1350,6 +1552,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                 beginning,
                 stage3_forcing,
                 carrier_forcing,
+                None,
                 interval_s,
             )?;
             let carrier_receipt = evaluate_shared_carrier(&carrier)?;
@@ -1418,6 +1621,13 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
             carrier_receipts.insert(*lane_id, carrier_receipt);
         }
         let aggregate_receipt = self.aggregate_carrier_receipts(&carrier_receipts)?;
+        let destination_receipts = self.carrier_receipts_by_destination(
+            interval_s,
+            self.stage3_forcing_by_lane,
+            &self.stage3_beginning_by_lane,
+        )?;
+        let lower_boundaries =
+            self.stage3_lower_boundaries_by_destination(&destination_receipts)?;
         let _interval_index = u8::try_from(self.interval_index)
             .map_err(|_| DirectV11RealConsumerError::Identity("V11 interval index overflow"))?;
         let mut candidate = self.beginning.clone();
@@ -1431,6 +1641,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                 interval_s,
                 input.duration_s_bits,
                 &aggregate_receipt,
+                &lower_boundaries,
             )
             .map_err(|error| {
                 DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
@@ -3012,6 +3223,7 @@ impl DirectV9RealConsumerShadow {
             input,
             interval_s,
             v11_duration_s_bits,
+            None,
         )
     }
 
@@ -3023,6 +3235,9 @@ impl DirectV9RealConsumerShadow {
         input: &DirectV9ShadowIntervalInput,
         interval_s: f64,
         v11_duration_s_bits: Option<u64>,
+        covered_lower_boundaries: Option<
+            &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+        >,
     ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
         let transaction_id = TransactionId(
             self.vegetation_state
@@ -3136,6 +3351,7 @@ impl DirectV9RealConsumerShadow {
                 &nitrogen,
                 &self.biogeochemistry,
                 self.authority,
+                covered_lower_boundaries,
                 bits,
             )?,
             None => execute_v8_lse_runtime_shadow_internal(
@@ -3177,6 +3393,7 @@ impl DirectV9RealConsumerShadow {
         interval_s: f64,
         v11_duration_s_bits: u64,
         carrier: &SharedCarrierReceipt,
+        lower_boundaries: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
     ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
         if !input.lse_forcing.snow_present_at_beginning
             || !input.lse_forcing.snow_present_at_end
@@ -3209,6 +3426,7 @@ impl DirectV9RealConsumerShadow {
             &covered_input,
             interval_s,
             Some(v11_duration_s_bits),
+            Some(lower_boundaries),
         )
     }
 

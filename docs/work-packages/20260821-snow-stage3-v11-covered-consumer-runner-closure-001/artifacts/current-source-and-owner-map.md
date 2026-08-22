@@ -11,6 +11,7 @@ sealed covered segment input
   -> per-lane shared Child-2C carrier receipts
   -> exact Stage-3 persistent boundary receipt
   -> actual Stage-3 persistent support
+  -> keyed `(OFE, tile)` covered lower-boundary receipt set
   -> common V11 resource/owner finalization
   -> canonical V11 "snow" owner plus complete owner set
 ```
@@ -21,8 +22,12 @@ capability bind; it does not yet construct the covered physical support from
 staged owners. Terminal parcel installation, restart, and publication
 consumers remain open.
 
-`Static:` The selected covered authority is currently an identity and routing
-guard on the generic covered-column solver. The solver still consumes the
-legacy ground/litter/mineral lower-surface terms, so the source path does not
-yet prove that Stage 3 is the sole V11 lower-surface radiation, sensible, and
-vapor owner. This is the next implementation blocker.
+`Static:` `CoveredColumnAuthority::V11SnowCovered` now selects an explicit LSE
+lower-boundary branch. It suppresses covered ground water, sensible/vapor,
+soil-storage, and WB14-facing operators, while keeping the snow-free branch
+unchanged. Generic ground/shortwave accounting structures remain in the
+transaction, and released Stage-3 shortwave, precipitation-advection,
+soil-coupling, fixed-point, and independent ledger joins are not yet present.
+The current parent-level carrier aggregate is therefore not proof of a fully
+keyed heterogeneous covered solve. This remains the next implementation
+blocker.

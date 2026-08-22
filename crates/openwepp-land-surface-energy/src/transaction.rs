@@ -13,25 +13,23 @@ use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, Transaction
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    AIR_HEAT_CAPACITY_J_KG_K, AcceptedOpenSurface, ComponentId, CondensationCredit,
-    CoveredCanopyAirEnergyOperands, CoveredColumnCandidate, CoveredColumnEnergyOperands,
+    AcceptedOpenSurface, ComponentId, CondensationCredit, CoveredCanopyAirEnergyOperands,
+    CoveredColumnAuthority, CoveredColumnCandidate, CoveredColumnEnergyOperands,
     CoveredColumnInputs, CoveredColumnLongwaveOperands, CoveredColumnShortwaveOperands,
     CoveredColumnSolveOutcome, CoveredOccupancyEnergyOperands, CoveredOccupancyLiquidLedger,
-    CoveredSurfaceEnergyOperands, CoveredWaterCaps, DRY_AIR_GAS_CONSTANT_J_KG_K,
-    DiagnosticFailureKind, GroundHeatJoinOperands, GroundWaterKey, LandSurfaceEnergyError,
-    LandSurfaceEnergyState, LatentJoinOperands, MODEL_DEFINITION_SHA256, MODEL_VERSION,
-    NormalizedResidual, NumericalDiagnostics, NumericalFailure, NumericalFailureCode,
-    NumericalFailureKind, OfeId, OpenSurfaceProblem, OpenSurfaceSolveOutcome,
-    OwnerEnvelopeIdentity, OwnerKind, OwnerRollbackHash, RequestingComponent, Sha256Digest,
-    SoilThermalSnapshot, SolveIdentity, SolvePass, SourceId, SourceWaterCap,
-    StandGroundWaterAmountBasis, StepNorms, SurfaceClass, SurfaceClassKind, SurfaceEnergyOperands,
-    SurfaceId, TileState, VEGETATION_MODEL_DEFINITION_SHA256, VEGETATION_MODEL_VERSION,
-    WaterAmount, WaterAuthorization, WaterProtocol, WaterSourceType, canonical_digest,
-    evaluate_covered_column, evaluate_open_surface, liquid_enthalpy_j_kg, solve_covered_column,
-    solve_open_surface,
+    CoveredSurfaceEnergyOperands, CoveredWaterCaps, DiagnosticFailureKind, GroundHeatJoinOperands,
+    GroundWaterKey, LandSurfaceEnergyError, LandSurfaceEnergyState, LatentJoinOperands,
+    MODEL_DEFINITION_SHA256, MODEL_VERSION, NormalizedResidual, NumericalDiagnostics,
+    NumericalFailure, NumericalFailureCode, NumericalFailureKind, OfeId, OpenSurfaceProblem,
+    OpenSurfaceSolveOutcome, OwnerEnvelopeIdentity, OwnerKind, OwnerRollbackHash,
+    RequestingComponent, Sha256Digest, SoilThermalSnapshot, SolveIdentity, SolvePass, SourceId,
+    SourceWaterCap, StandGroundWaterAmountBasis, StepNorms, SurfaceClass, SurfaceClassKind,
+    SurfaceEnergyOperands, SurfaceId, TileState, VEGETATION_MODEL_DEFINITION_SHA256,
+    VEGETATION_MODEL_VERSION, WaterAmount, WaterAuthorization, WaterProtocol, WaterSourceType,
+    canonical_digest, evaluate_covered_column, evaluate_open_surface, liquid_enthalpy_j_kg,
+    solve_covered_column, solve_open_surface,
     solver::{covered_failure_residuals, open_failure_residuals},
-    under_canopy_neutral_resistance, validate_ground_heat_join, validate_latent_join,
-    validate_surface_energy,
+    validate_ground_heat_join, validate_latent_join, validate_surface_energy,
 };
 
 #[derive(Clone, Debug, PartialEq)]
@@ -678,14 +676,20 @@ impl TileEnergyOperandSet {
 /// makes every canopy surface and the shared canopy-air node mandatory.
 #[derive(Clone, Debug, PartialEq)]
 pub struct CoveredTileEnergyOperandSet {
+    pub authority: CoveredColumnAuthority,
     pub ground: TileEnergyOperandSet,
     pub column: CoveredColumnEnergyOperands,
 }
 
 impl CoveredTileEnergyOperandSet {
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
-        self.ground.validate()?;
         self.column.validate()?;
+        if self.authority != CoveredColumnAuthority::V11SnowCovered {
+            self.ground.validate()?;
+        }
+        if self.authority == CoveredColumnAuthority::V11SnowCovered {
+            return Ok(());
+        }
         if self.ground.surface.absorbed_shortwave_w_m2.to_bits()
             != self
                 .column
@@ -1601,36 +1605,17 @@ fn build_covered_energy_operands(
     phase: &CoveredPotentialPhase,
     final_value: &CoveredColumnCandidate,
 ) -> Result<CoveredTileEnergyOperandSet, LandSurfaceEnergyError> {
-    let identity = &phase.identity;
     let evaluation = &final_value.evaluation;
-    let resistance = under_canopy_neutral_resistance(
-        phase.beginning.under_canopy_geometry,
-        phase.beginning.reference_wind_m_s,
-    )?;
-    let rho = phase.beginning.pressure_pa
-        / (DRY_AIR_GAS_CONSTANT_J_KG_K * evaluation.canopy_air_temperature_k);
-    let ground_sensible = rho
-        * AIR_HEAT_CAPACITY_J_KG_K
-        * (evaluation.ground_temperature_k - evaluation.canopy_air_temperature_k)
-        / resistance.resistance_s_m;
-    let signed_amount = evaluation.ground_water.final_kg_m2_tile_s * identity.interval_s;
-    let surface = SurfaceEnergyOperands {
-        absorbed_shortwave_w_m2: crate::partition_ground_shortwave(
-            phase.beginning.ground.terminal_shortwave_w_m2_tile,
-            phase.beginning.ground.surface_vis_albedo,
-            phase.beginning.ground.surface_nir_albedo,
-        )?
-        .absorbed
-        .total(),
-        net_longwave_w_m2: evaluation.whole_column_longwave.ground_net_w_m2,
-        sensible_w_m2: ground_sensible,
-        signed_vapor_kg_m2_s: evaluation.ground_water.final_kg_m2_tile_s,
-        surface_temperature_k: evaluation.ground_temperature_k,
-        ground_heat_w_m2: evaluation.ground_heat_cn_w_m2_tile[0],
-        storage_w_m2: evaluation.ground_storage_w_m2_tile,
+    let stage3_covered = phase.beginning.authority == CoveredColumnAuthority::V11SnowCovered;
+    let ground_sensible = evaluation.ground_sensible_to_canopy_air_w_m2;
+    let ground_vapor = if stage3_covered {
+        evaluation.lower_boundary_vapor_to_canopy_air_kg_m2_s
+    } else {
+        evaluation.ground_water.final_kg_m2_tile_s
     };
-    let ground_heat_amount =
-        evaluation.ground_heat_cn_w_m2_tile[0] * identity.tile_fraction * identity.interval_s;
+    let ground = build_covered_ground_operands(phase, evaluation, ground_sensible, ground_vapor)?;
+    let stage3_lower_boundary_energy_w_m2_tile =
+        stage3_lower_boundary_energy(phase, evaluation, ground_sensible, ground_vapor)?;
     let occupancies = covered_occupancy_energy_operands(phase, evaluation)?;
     let ground_shortwave = crate::partition_ground_shortwave(
         phase.beginning.ground.terminal_shortwave_w_m2_tile,
@@ -1638,24 +1623,8 @@ fn build_covered_energy_operands(
         phase.beginning.ground.surface_nir_albedo,
     )?;
     let longwave = &evaluation.whole_column_longwave;
-    let ground = TileEnergyOperandSet {
-        surface,
-        latent: LatentJoinOperands {
-            signed_vapor_kg_m2_s: evaluation.ground_water.final_kg_m2_tile_s,
-            interval_s: identity.interval_s,
-            surface_temperature_k: evaluation.ground_temperature_k,
-            signed_water_amount_kg_m2: signed_amount,
-            vapor_energy_j_m2: crate::vapor_export_w_m2(
-                evaluation.ground_water.final_kg_m2_tile_s,
-                evaluation.ground_temperature_k,
-            )? * identity.interval_s,
-        },
-        ground_heat: vec![GroundHeatJoinOperands {
-            surface_debit_j_m2: ground_heat_amount,
-            soil_credit_j_m2: ground_heat_amount,
-        }],
-    };
     let operands = CoveredTileEnergyOperandSet {
+        authority: phase.beginning.authority,
         ground,
         column: CoveredColumnEnergyOperands {
             occupancies,
@@ -1664,7 +1633,7 @@ fn build_covered_energy_operands(
                 canopy_air_specific_humidity_kg_kg: evaluation.canopy_air_specific_humidity_kg_kg,
                 ground_sensible_to_canopy_air_w_m2_tile: evaluation
                     .ground_sensible_to_canopy_air_w_m2,
-                ground_vapor_to_canopy_air_kg_m2_tile_s: evaluation.ground_water.final_kg_m2_tile_s,
+                ground_vapor_to_canopy_air_kg_m2_tile_s: ground_vapor,
                 sensible_to_reference_air_w_m2_tile: evaluation.sensible_to_reference_air_w_m2,
                 vapor_to_reference_air_kg_m2_tile_s: evaluation.vapor_to_reference_air_kg_m2_s,
             },
@@ -1695,10 +1664,87 @@ fn build_covered_energy_operands(
                     .map(|(input, values)| (input.occupancy_id.clone(), *values))
                     .collect(),
             },
+            stage3_lower_boundary_energy_w_m2_tile,
         },
     };
     operands.validate()?;
     Ok(operands)
+}
+
+fn build_covered_ground_operands(
+    phase: &CoveredPotentialPhase,
+    evaluation: &crate::CoveredColumnEvaluation,
+    ground_sensible: f64,
+    ground_vapor: f64,
+) -> Result<TileEnergyOperandSet, LandSurfaceEnergyError> {
+    let stage3_covered = phase.beginning.authority == CoveredColumnAuthority::V11SnowCovered;
+    let ground_shortwave = crate::partition_ground_shortwave(
+        phase.beginning.ground.terminal_shortwave_w_m2_tile,
+        phase.beginning.ground.surface_vis_albedo,
+        phase.beginning.ground.surface_nir_albedo,
+    )?;
+    let ground_heat_w_m2 = if stage3_covered {
+        0.0
+    } else {
+        evaluation.ground_heat_cn_w_m2_tile[0]
+    };
+    let ground_heat_amount =
+        ground_heat_w_m2 * phase.identity.tile_fraction * phase.identity.interval_s;
+    let surface = SurfaceEnergyOperands {
+        absorbed_shortwave_w_m2: ground_shortwave.absorbed.total(),
+        net_longwave_w_m2: evaluation.whole_column_longwave.ground_net_w_m2,
+        sensible_w_m2: ground_sensible,
+        signed_vapor_kg_m2_s: ground_vapor,
+        surface_temperature_k: evaluation.ground_temperature_k,
+        ground_heat_w_m2,
+        storage_w_m2: if stage3_covered {
+            0.0
+        } else {
+            evaluation.ground_storage_w_m2_tile
+        },
+    };
+    let ground = TileEnergyOperandSet {
+        surface,
+        latent: LatentJoinOperands {
+            signed_vapor_kg_m2_s: ground_vapor,
+            interval_s: phase.identity.interval_s,
+            surface_temperature_k: evaluation.ground_temperature_k,
+            signed_water_amount_kg_m2: ground_vapor * phase.identity.interval_s,
+            vapor_energy_j_m2: crate::vapor_export_w_m2(
+                ground_vapor,
+                evaluation.ground_temperature_k,
+            )? * phase.identity.interval_s,
+        },
+        ground_heat: vec![GroundHeatJoinOperands {
+            surface_debit_j_m2: ground_heat_amount,
+            soil_credit_j_m2: ground_heat_amount,
+        }],
+    };
+    Ok(ground)
+}
+
+fn stage3_lower_boundary_energy(
+    phase: &CoveredPotentialPhase,
+    evaluation: &crate::CoveredColumnEvaluation,
+    ground_sensible: f64,
+    ground_vapor: f64,
+) -> Result<f64, LandSurfaceEnergyError> {
+    if phase.beginning.authority != CoveredColumnAuthority::V11SnowCovered {
+        return Ok(0.0);
+    }
+    let boundary = phase.beginning.stage3_lower_boundary.as_ref().ok_or(
+        LandSurfaceEnergyError::StateLineage("missing Stage-3 lower-boundary energy"),
+    )?;
+    // This is deliberately sourced only from the typed Stage-3 boundary.
+    // The released carrier does not yet publish canonical shortwave,
+    // precipitation-advection, and soil-coupling custody, so the covered
+    // integration remains fail-closed/held rather than reusing the
+    // snow-free ground shortwave projection as snow physics.
+    Ok(boundary.shortwave_absorbed_w_m2
+        + boundary.precipitation_advection_w_m2
+        + boundary.net_longwave_w_m2
+        - ground_sensible
+        - crate::vapor_export_w_m2(ground_vapor, evaluation.ground_temperature_k)?)
 }
 
 fn build_covered_energy_and_soil(
@@ -2294,8 +2340,20 @@ pub fn finalize_covered_phase(
         ending_tile_state_pre_ingress: TileState {
             ofe_id: phase.identity.ofe_id.clone(),
             tile_id: phase.identity.tile_id.clone(),
-            surface_enthalpy_j_m2_tile_ground: final_value.surface_enthalpy_j_m2_tile,
-            surface_temperature_warm_start_k: final_value.evaluation.ground_temperature_k,
+            surface_enthalpy_j_m2_tile_ground: if phase.beginning.authority
+                == CoveredColumnAuthority::V11SnowCovered
+            {
+                phase.beginning.ground.surface_enthalpy_j_m2_tile
+            } else {
+                final_value.surface_enthalpy_j_m2_tile
+            },
+            surface_temperature_warm_start_k: if phase.beginning.authority
+                == CoveredColumnAuthority::V11SnowCovered
+            {
+                phase.beginning.ground.surface_temperature_warm_start_k
+            } else {
+                final_value.evaluation.ground_temperature_k
+            },
         },
         final_solver_candidate: final_value,
         water_protocol: protocol,

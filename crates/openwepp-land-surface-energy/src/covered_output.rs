@@ -352,12 +352,20 @@ pub struct CoveredColumnEnergyOperands {
     pub canopy_air: CoveredCanopyAirEnergyOperands,
     pub shortwave: CoveredColumnShortwaveOperands,
     pub longwave: CoveredColumnLongwaveOperands,
+    /// Energy transferred from the canopy-only control volume into the
+    /// Stage-3 snow owner. Historical covered columns keep this at zero.
+    pub stage3_lower_boundary_energy_w_m2_tile: f64,
 }
 
 impl CoveredColumnEnergyOperands {
     /// # Errors
     /// Returns a typed domain error when any published operand is invalid.
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+        if !self.stage3_lower_boundary_energy_w_m2_tile.is_finite() {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "covered Stage-3 lower-boundary energy",
+            ));
+        }
         if self.occupancies.is_empty() {
             return Err(LandSurfaceEnergyError::ComponentClosure(
                 "empty covered occupancy energy set",
@@ -514,6 +522,7 @@ pub struct CoveredColumnEvaluation {
     pub ground_canopy_release_kg_m2_tile: f64,
     pub ground_stemflow_kg_m2_tile: f64,
     pub ground_sensible_to_canopy_air_w_m2: f64,
+    pub lower_boundary_vapor_to_canopy_air_kg_m2_s: f64,
     pub sensible_to_reference_air_w_m2: f64,
     pub vapor_to_reference_air_kg_m2_s: f64,
 }
@@ -631,6 +640,7 @@ mod tests {
                     [-2.0, -3.0, -4.0, -5.0],
                 )],
             },
+            stage3_lower_boundary_energy_w_m2_tile: 0.0,
         }
     }
 
@@ -653,6 +663,7 @@ mod tests {
                 - 1.0,
         };
         CoveredTileEnergyOperandSet {
+            authority: crate::CoveredColumnAuthority::HistoricalV8,
             ground: TileEnergyOperandSet {
                 surface,
                 latent: LatentJoinOperands {

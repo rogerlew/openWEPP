@@ -129,10 +129,10 @@ fields.
   including day-boundary and forcing-identity regressions.
 - [~] Persistent covered V11/Stage-3 adopter, typed covered input, owner-
   derived carrier operands, exact Stage-3 boundary receipt, canonical ending
-  owners, per-lane receipt aggregation, and exact rollback; the distinct
-  lower-boundary authority is selected, but the generic covered LSE operator
-  still contains snow-free ground/litter/mineral surface equations and remains
-  a closure blocker. Terminal chronology remains open.
+  owners, keyed destination receipts, explicit covered lower-boundary masking,
+  and rollback; released Stage-3 shortwave/advection/soil custody, keyed
+  heterogeneous physical consumption, fixed-point iteration, and independent
+  ledger closure remain blockers. Terminal chronology remains open.
 - [~] Runner-owned 48-support capability/provider bind; physical support
   construction and complete restart remain open.
 - [ ] Scenario matrix, reviews, exact-head gates, and disposition.

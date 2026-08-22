@@ -821,6 +821,7 @@ fn weighted_operand(
                 covered.ground.surface.ground_heat_w_m2,
                 covered.ground.surface.storage_w_m2,
                 sum_abs_latent_j_m2,
+                column.stage3_lower_boundary_energy_w_m2_tile,
             )
         }
     };
@@ -845,6 +846,7 @@ fn covered_external_energy(
     ground_heat_w_m2: f64,
     storage_w_m2: f64,
     sum_abs_latent_j_m2: f64,
+    stage3_lower_boundary_energy_w_m2: f64,
 ) -> (f64, f64, f64, f64) {
     (
         (incident_shortwave_w_m2 + atmospheric_downward_longwave_w_m2) * interval_s,
@@ -853,7 +855,8 @@ fn covered_external_energy(
             + sensible_to_reference_air_w_m2
             + ground_heat_w_m2)
             * interval_s
-            + latent_to_reference_air_j_m2,
+            + latent_to_reference_air_j_m2
+            + stage3_lower_boundary_energy_w_m2 * interval_s,
         storage_w_m2 * interval_s,
         (incident_shortwave_w_m2.abs()
             + top_reflected_shortwave_w_m2.abs()
@@ -939,7 +942,7 @@ mod tests {
     fn covered_weighting_uses_every_external_column_boundary() {
         let interval = 10.0;
         let baseline = covered_external_energy(
-            interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0,
+            interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0,
         );
         assert_eq!(baseline, (1_500.0, 850.0, 650.0, 3_000.0));
         let closes = |terms: (f64, f64, f64, f64), fraction: f64| {
@@ -959,26 +962,28 @@ mod tests {
         // Every omitted external boundary fails the validator used by the runtime path.
         for poisoned in [
             covered_external_energy(
-                interval, 0.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0,
+                interval, 0.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 0.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0,
+                interval, 100.0, 0.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 10.0, 0.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0,
+                interval, 100.0, 10.0, 0.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 10.0, 50.0, 0.0, 30.0, 200.0, 5.0, 65.0, 200.0,
+                interval, 100.0, 10.0, 50.0, 0.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 10.0, 50.0, 20.0, 0.0, 200.0, 5.0, 65.0, 200.0,
-            ),
-            covered_external_energy(interval, 100.0, 10.0, 50.0, 20.0, 30.0, 0.0, 5.0, 65.0, 0.0),
-            covered_external_energy(
-                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 0.0, 65.0, 200.0,
+                interval, 100.0, 10.0, 50.0, 20.0, 0.0, 200.0, 5.0, 65.0, 200.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 0.0, 200.0,
+                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 0.0, 5.0, 65.0, 0.0, 0.0,
+            ),
+            covered_external_energy(
+                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 0.0, 65.0, 200.0, 0.0,
+            ),
+            covered_external_energy(
+                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 0.0, 200.0, 0.0,
             ),
         ] {
             assert!(closes(poisoned, 1.0).is_err());

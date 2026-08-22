@@ -15,9 +15,9 @@ use openwepp_land_surface_energy::{
     LandSurfaceForcing, LeafBiochemicalInputs, OfeId, OpenNeutralGeometry, OpenSurfaceProblem,
     RequestingComponent, RootHydraulicLayer, RootRuntimeIdentity, RuntimeTileIdentity,
     SoilInterfaceLayer, SoilThermalNodeOperands, SoilThermalOfeSnapshot, SoilThermalSnapshot,
-    SourceId, StandGroundWaterAmountBasis, SurfaceClassKind, SurfaceConfiguration,
-    SurfaceHeatStorageMode, SurfaceStorageBranch, TileConfiguration, TileState,
-    TurbulenceConfiguration, WaterSourceType,
+    SourceId, Stage3SnowCoveredLowerBoundary, StandGroundWaterAmountBasis, SurfaceClassKind,
+    SurfaceConfiguration, SurfaceHeatStorageMode, SurfaceStorageBranch, TileConfiguration,
+    TileState, TurbulenceConfiguration, WaterSourceType,
 };
 use openwepp_vegetation::carbon_nitrogen::{Tissue, atkin_rd25, update_t10};
 use openwepp_vegetation::energy::{
@@ -513,12 +513,41 @@ impl ValidatedV8RuntimeInputProjection {
         vegetation_owner_id: &ResourceOwnerId,
         authority: openwepp_land_surface_energy::CoveredColumnAuthority,
     ) -> Result<Vec<V8SolverReadyTileInput>, V8InputProjectionError> {
+        self.solver_ready_tiles_with_authority_and_lower_boundaries(
+            vegetation_owner_id,
+            authority,
+            None,
+        )
+    }
+
+    pub(crate) fn solver_ready_tiles_with_authority_and_lower_boundaries(
+        &self,
+        vegetation_owner_id: &ResourceOwnerId,
+        authority: openwepp_land_surface_energy::CoveredColumnAuthority,
+        lower_boundaries: Option<&BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>>,
+    ) -> Result<Vec<V8SolverReadyTileInput>, V8InputProjectionError> {
         self.tiles
             .iter()
             .map(|tile| {
                 let mut ready = tile.solver_ready(vegetation_owner_id)?;
                 if let V8SolverReadyTilePhysics::Covered(column) = &mut ready.physics {
                     column.authority = authority;
+                    if authority
+                        == openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered
+                    {
+                        let boundaries = lower_boundaries.ok_or(
+                            V8InputProjectionError::Identity("missing Stage-3 lower-boundary set"),
+                        )?;
+                        column.stage3_lower_boundary = Some(
+                            boundaries
+                                .get(&(tile.ofe_id.clone(), tile.tile_id.clone()))
+                                .ok_or(V8InputProjectionError::Identity(
+                                    "missing Stage-3 lower-boundary destination",
+                                ))?
+                                .clone(),
+                        );
+                        column.top_rain_kg_m2_tile = 0.0;
+                    }
                 }
                 Ok(ready)
             })
@@ -1042,6 +1071,7 @@ impl V8ProjectedTileRuntimeInput {
                 ground,
                 occupancies: rows,
                 shortwave,
+                stage3_lower_boundary: None,
             },
             roots,
             sources,
