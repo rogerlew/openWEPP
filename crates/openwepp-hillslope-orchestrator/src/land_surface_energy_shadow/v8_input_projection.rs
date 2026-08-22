@@ -39,6 +39,7 @@ use thiserror::Error;
 
 use crate::{
     DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidStateRecord,
+    snow_stage3_terminal_handoff::SharedCarrierReceipt,
     vegetation_real_hydrology_shadow::{RealHydrologyLayerFact, RealHydrologySourceKey},
 };
 
@@ -1240,6 +1241,47 @@ pub(crate) fn project_v8_runtime_inputs(
     authenticated_duration_s_bits: Option<u64>,
     covered_lower_boundaries: Option<&BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>>,
 ) -> Result<ValidatedV8RuntimeInputProjection, V8InputProjectionError> {
+    project_v8_runtime_inputs_with_carriers(
+        vegetation_configuration,
+        vegetation_state,
+        vegetation_owner_id,
+        biogeochemistry_owner_id,
+        beginning_biogeochemistry_state_sha256,
+        canopy_forcing,
+        lse_configuration,
+        lse_state,
+        lse_forcing,
+        soil_adapter,
+        surface_configuration,
+        soil_thermal,
+        day_index,
+        interval_index,
+        authenticated_duration_s_bits,
+        covered_lower_boundaries,
+        None,
+    )
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+pub(crate) fn project_v8_runtime_inputs_with_carriers(
+    vegetation_configuration: &VegetationConfiguration,
+    vegetation_state: &V8CoupledOwnedState,
+    vegetation_owner_id: &ResourceOwnerId,
+    biogeochemistry_owner_id: &ResourceOwnerId,
+    beginning_biogeochemistry_state_sha256: &Sha256Digest,
+    canopy_forcing: &V8CanopyForcingReceipt,
+    lse_configuration: &LandSurfaceEnergyConfiguration,
+    lse_state: &LandSurfaceEnergyState,
+    lse_forcing: &LandSurfaceForcing,
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    soil_thermal: &SoilThermalSnapshot,
+    day_index: usize,
+    interval_index: u8,
+    authenticated_duration_s_bits: Option<u64>,
+    covered_lower_boundaries: Option<&BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>>,
+    covered_carrier_receipts: Option<&BTreeMap<(OfeId, TileId), SharedCarrierReceipt>>,
+) -> Result<ValidatedV8RuntimeInputProjection, V8InputProjectionError> {
     vegetation_configuration.validate_v8()?;
     let configured_bindings = vegetation_configuration
         .strata
@@ -1346,6 +1388,24 @@ pub(crate) fn project_v8_runtime_inputs(
                 .strata
                 .iter()
                 .any(|stratum| stratum.tile_ids.contains(&tile.vegetation_tile_id));
+            let mut tile_lse_forcing = lse_forcing.clone();
+            let mut tile_vegetation_forcing = canopy_forcing.forcing().clone();
+            if covered {
+                if let Some(carriers) = covered_carrier_receipts {
+                    let carrier = carriers
+                        .get(&(ofe.ofe_id.clone(), tile.tile_id.clone()))
+                        .ok_or(V8InputProjectionError::Topology(
+                            "missing keyed covered carrier receipt",
+                        ))?;
+                    tile_lse_forcing.air_temperature_k = carrier.shared_air_temperature_k;
+                    tile_lse_forcing.air_specific_humidity_kg_kg =
+                        carrier.shared_air_specific_humidity;
+                    tile_lse_forcing.forcing_sha256 = tile_lse_forcing.canonical_sha256()?;
+                    tile_vegetation_forcing.air_temperature_k = carrier.shared_air_temperature_k;
+                    tile_vegetation_forcing.specific_humidity =
+                        carrier.shared_air_specific_humidity;
+                }
+            }
             if covered {
                 validate_covered_precipitation_join(
                     lse_forcing,
@@ -1364,7 +1424,7 @@ pub(crate) fn project_v8_runtime_inputs(
             let (radiation, occupancies) = project_column(
                 vegetation_configuration,
                 vegetation_state,
-                canopy_forcing.forcing(),
+                &tile_vegetation_forcing,
                 canopy_forcing.root_zone_hydraulics.as_ref(),
                 &ofe.ofe_id,
                 &tile.vegetation_tile_id,
@@ -1421,8 +1481,8 @@ pub(crate) fn project_v8_runtime_inputs(
                 transaction_id,
                 interval_s: lse_forcing.interval_s,
                 tile_fraction: tile.fraction_ofe_ground,
-                forcing: lse_forcing.clone(),
-                vegetation_forcing: canopy_forcing.forcing().clone(),
+                forcing: tile_lse_forcing,
+                vegetation_forcing: tile_vegetation_forcing,
                 root_zone_hydraulics: canopy_forcing.root_zone_hydraulics.clone(),
                 canopy_air_state,
                 radiation,

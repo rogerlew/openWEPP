@@ -1047,11 +1047,17 @@ mod tests {
                 interval_index: 0,
             },
         );
+        let (_, changed_vegetation_state) = project_v9_runtime_to_v8(
+            &changed_stack.beginning.inner.vegetation_configuration,
+            &changed_stack.beginning.inner.vegetation_state,
+        )
+        .expect("changed V8 vegetation state");
         let changed_carrier_receipt = crate::snow_stage3_terminal_handoff::evaluate_shared_carrier(
             &changed_stack
                 .derive_live_carrier_input(
                     1,
                     &changed_stage3,
+                    &changed_vegetation_state,
                     stage3_forcing,
                     &carrier_forcing_by_lane[&1],
                     None,
@@ -1065,6 +1071,32 @@ mod tests {
             changed_carrier_receipt,
             original_carrier_receipt,
             "carrier identity must depend on committed Stage-3 state"
+        );
+        let mut changed_canopy_state = changed_vegetation_state.clone();
+        changed_canopy_state
+            .tile_canopy_air
+            .values_mut()
+            .next()
+            .expect("canopy-air tile")
+            .canopy_air_temperature_k += 1.0;
+        let changed_canopy_receipt = crate::snow_stage3_terminal_handoff::evaluate_shared_carrier(
+            &changed_stack
+                .derive_live_carrier_input(
+                    1,
+                    &changed_stage3,
+                    &changed_canopy_state,
+                    stage3_forcing,
+                    &carrier_forcing_by_lane[&1],
+                    None,
+                    1_800.0,
+                )
+                .expect("changed canopy carrier operands"),
+        )
+        .expect("changed canopy carrier receipt")
+        .receipt_id;
+        assert_ne!(
+            changed_canopy_receipt, changed_carrier_receipt,
+            "carrier identity must depend on candidate canopy-air state"
         );
 
         let mut poisoned_forcing = carrier_forcing_by_lane.clone();

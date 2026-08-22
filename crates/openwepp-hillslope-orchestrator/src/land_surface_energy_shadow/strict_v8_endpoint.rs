@@ -21,6 +21,7 @@ use thiserror::Error;
 use crate::{
     DirectGroundIngressMode, DirectIngressAmount, DirectOfeWb14Parameters,
     DirectOpenLiquidIngressParcel, DirectSurfaceLiquidParcelKind, DirectTileGroundIngress,
+    snow_stage3_terminal_handoff::SharedCarrierReceipt,
 };
 
 use super::covered_v8_owner::{
@@ -31,7 +32,9 @@ use super::multi_tile_runtime::{
     MultiTileFailurePhase, PendingPayloadKind, StrictProjectedCoveredTile, StrictProjectedOpenTile,
     StrictProjectedTileProblem, execute_multi_tile_runtime, execute_multi_tile_runtime_provisional,
 };
-use super::v8_input_projection::{V8SolverReadyTilePhysics, project_v8_runtime_inputs};
+use super::v8_input_projection::{
+    V8SolverReadyTilePhysics, project_v8_runtime_inputs_with_carriers,
+};
 use super::v8_projection::{project_multi_tile_v8_passes, project_multi_tile_v8_passes_v11};
 use super::{
     CoveredIngressSchedule, CoveredV8OwnerEnvelopeError, DirectSurfaceLiquidConfiguration,
@@ -187,6 +190,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
         &pending,
         None,
         true,
+        None,
     );
     if let Err(error) = &result {
         pending.borrow_mut().diagnostic = error.to_string().into_bytes();
@@ -269,6 +273,69 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11(
     duration_s_bits: u64,
     validate_ofe_energy: bool,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
+    execute_v8_lse_runtime_shadow_v11_with_carriers(
+        vegetation_configuration,
+        vegetation_beginning,
+        vegetation_owner_id,
+        canopy_forcing,
+        lse_configuration,
+        lse_beginning,
+        lse_forcing,
+        soil_adapter,
+        surface_configuration,
+        day_index,
+        interval_index,
+        wb14_parameters,
+        soil_thermal,
+        nitrogen,
+        biogeochemistry_beginning,
+        authority,
+        covered_lower_boundaries,
+        duration_s_bits,
+        validate_ofe_energy,
+        None,
+    )
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+pub(crate) fn execute_v8_lse_runtime_shadow_v11_with_carriers(
+    vegetation_configuration: &VegetationConfiguration,
+    vegetation_beginning: &V8CoupledOwnedState,
+    vegetation_owner_id: &ResourceOwnerId,
+    canopy_forcing: &V8CanopyForcingReceipt,
+    lse_configuration: &LandSurfaceEnergyConfiguration,
+    lse_beginning: &LandSurfaceEnergyState,
+    lse_forcing: &LandSurfaceForcing,
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    day_index: usize,
+    interval_index: u8,
+    wb14_parameters: &[DirectOfeWb14Parameters],
+    soil_thermal: &SoilThermalSnapshot,
+    nitrogen: &dyn NitrogenArbiter,
+    biogeochemistry_beginning: &BiogeochemistryState,
+    authority: openwepp_land_surface_energy::CoveredColumnAuthority,
+    covered_lower_boundaries: Option<
+        &BTreeMap<
+            (
+                openwepp_land_surface_energy::OfeId,
+                openwepp_kernel_contract::TileId,
+            ),
+            Stage3SnowCoveredLowerBoundary,
+        >,
+    >,
+    duration_s_bits: u64,
+    validate_ofe_energy: bool,
+    covered_carrier_receipts: Option<
+        &BTreeMap<
+            (
+                openwepp_land_surface_energy::OfeId,
+                openwepp_kernel_contract::TileId,
+            ),
+            SharedCarrierReceipt,
+        >,
+    >,
+) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let pending = RefCell::new(PendingEndpointEnvelopes::default());
     execute_v8_lse_runtime_shadow_phases(
         vegetation_configuration,
@@ -292,6 +359,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11(
         &pending,
         Some(duration_s_bits),
         validate_ofe_energy,
+        covered_carrier_receipts,
     )
 }
 
@@ -350,8 +418,17 @@ fn execute_v8_lse_runtime_shadow_phases(
     pending: &RefCell<PendingEndpointEnvelopes>,
     duration_s_bits: Option<u64>,
     validate_ofe_energy: bool,
+    covered_carrier_receipts: Option<
+        &BTreeMap<
+            (
+                openwepp_land_surface_energy::OfeId,
+                openwepp_kernel_contract::TileId,
+            ),
+            SharedCarrierReceipt,
+        >,
+    >,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
-    let projected = project_v8_runtime_inputs(
+    let projected = project_v8_runtime_inputs_with_carriers(
         vegetation_configuration,
         vegetation_beginning,
         vegetation_owner_id,
@@ -376,6 +453,7 @@ fn execute_v8_lse_runtime_shadow_phases(
         interval_index,
         duration_s_bits,
         covered_lower_boundaries,
+        covered_carrier_receipts,
     )?;
     injected(injection, V8EndpointFailureInjection::AfterProjection)?;
     let ingress_schedule = derive_ingress_schedule(

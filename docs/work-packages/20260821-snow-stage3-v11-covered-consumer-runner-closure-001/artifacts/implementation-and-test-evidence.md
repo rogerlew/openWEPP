@@ -87,11 +87,10 @@ candidate-outcome ledger remains open.
 `Static:` The carrier receipt is now the Stage-3 lower-surface boundary. The
 Stage-3 evaluator consumes `Stage3SnowSurfaceBoundaryReceiptV1`, and the
 covered adopter independently compares sensible, latent, vapor, longwave,
-advected, evaluated-duration, lifecycle, and ending-ice results before it
-stages any V11 candidate. Per-lane receipts and an exact covered destination
-`(OFE, tile)` receipt map are retained; the V11 projection still uses a
-parent-level aggregate for the physical solve. The aggregate runtime receipt
-digest also uses typed framing rather than JSON.
+advected, evaluated-duration, and lifecycle results before it stages any V11
+candidate. Per-destination receipts remain keyed by `(OFE, tile)`; lane
+aggregation is explicit and uses the declared `CoveredTileGround` basis. The
+runtime receipt digest uses typed framing rather than JSON.
 
 `Static:` `CoveredColumnAuthority::V11SnowCovered` is selected on the covered
 candidate and the snow-free guard remains unchanged. The lower-boundary
@@ -126,10 +125,10 @@ retained.
 optical and reciprocal-longwave identities are joined into the Stage-3
 boundary, the final digest is carried through the LSE operand set and the
 canonical snow owner bytes, and accepted final receipt maps are retained only
-after the complete V11 candidate is ready. The V11 endpoint still has a
-parent-level aggregate carrier input for shared canopy forcing; keyed
-destination carrier receipts are area-weighted into lane Stage-3 terms, but
-the aggregate physical projection remains a subsequent ownership boundary.
+after the complete V11 candidate is ready. Keyed destination carrier receipts
+are area-weighted into lane Stage-3 terms under the explicit
+`CoveredTileGround` basis and are also supplied directly to the matching
+physical LSE tile solve.
 
 `Static:` The former provisional-correction sequence is now a bounded loop
 over immutable beginning owners. Each pass evaluates provisional LSE, extracts
@@ -154,7 +153,7 @@ produce the correction it is meant to be checked against.
 - `git diff --check` — passed.
 - `nix develop --command cargo check -p openwepp-land-surface-energy -p openwepp-hillslope-orchestrator` — passed, with the existing direct-runtime dead-code warnings.
 - `nix develop --command cargo test -p openwepp-land-surface-energy --lib` — 66 passed, 0 failed.
-- `nix develop --command cargo test -p openwepp-hillslope-orchestrator --lib` — 748 passed, 0 failed, 1 historical ignored.
+- `nix develop --command cargo test -p openwepp-hillslope-orchestrator --lib -- --test-threads=1` — 750 passed, 0 failed, 1 historical ignored.
 - Focused persistent covered integration, final receipt poison, and Stage-3/column one-bit poison tests — passed.
 
 `HOLD:` The second checkpoint remains open for canopy liquid interception and
@@ -163,3 +162,39 @@ independent snow mass/energy outcome ledger, snow-soil conductive heat receipt,
 heterogeneous physical integration fixtures, runner-owned 48-support
 construction, terminal liquid, additive restart, and physical scenario
 matrix closure.
+
+## Checkpoint amendment: correct candidate feedback and lane lineage
+
+`Static:` Every covered iteration now rebuilds keyed carrier receipts from the
+iteration's candidate V8 canopy state and candidate persistent Stage-3 state.
+The physical LSE projection receives those keyed receipts directly; no
+parent-level aggregate carrier is used as the LSE forcing source. The final
+sealed Stage-3 pass consumes lane-boundary sensible, vapor, latent, shortwave,
+and longwave values rather than the original provisional carrier fluxes.
+
+`Static:` Lane receipt aggregation binds ordered `(OFE, tile)` contributions,
+exact tile fractions, topology digest, receipt-set identities, and the explicit
+`CoveredTileGround` area basis. OFE-ground validation remains available and
+requires fractions to close to one; covered-subarea normalization is not
+implicit. Final receipts independently validate snow temperature, latent heat,
+support duration, latent mass/energy, and ending V11/Stage-3 state joins.
+
+`Static:` The convergence policy is explicit: maximum 32 iterations; separate
+temperature, humidity, flux, vapor-flux, and Stage-3-state absolute/relative
+tolerances; deterministic ordering; and typed `FixedPointIterationLimit`
+rollback before staged fields are populated. A final unsealed physical rerun,
+receipt sealing, and sealed rerun are all self-checked.
+
+`Ran:`
+
+- `nix develop --command cargo test -p openwepp-land-surface-energy --lib` — 66 passed, 0 failed.
+- `nix develop --command cargo test -p openwepp-hillslope-orchestrator --lib -- --test-threads=1` — 750 passed, 0 failed, 1 historical ignored.
+- `nix develop --command cargo test -p openwepp-hillslope-orchestrator --lib snow_stage3_terminal_handoff::tests` — 4 passed, 0 failed.
+- The persistent covered regression passed with candidate-feedback convergence, keyed lane aggregation, final receipt sealing, and rollback coverage.
+- `nix develop --command cargo check -p openwepp-hillslope-orchestrator -p openwepp-land-surface-energy`, `cargo fmt --all -- --check`, and `git diff --check` passed.
+
+`HOLD:` This increment does not close heterogeneous physical scenario
+fixtures, precipitation custody, snow-soil heat, independent outcome-ledger
+closure, runner-owned 48-support construction, terminal chronology/liquid,
+additive restart, or the full physical scenario matrix. Child 3 remains
+blocked.

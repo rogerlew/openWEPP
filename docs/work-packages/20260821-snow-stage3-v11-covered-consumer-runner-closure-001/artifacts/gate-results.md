@@ -98,7 +98,7 @@ operands, the sealed snow-owner bytes, and the retained final receipt map carry
 the final identity. Provisional solves retain no final receipt identity.
 
 `Static:` The covered loop restarts every LSE and Stage-3 candidate from the
-immutable beginning owner set. It is bounded by eight iterations and compares
+immutable beginning owner set. It is bounded by 32 iterations and compares
 keyed canopy-air temperature/humidity, snow temperature and exchange terms,
 snow latent flux, snow net longwave, component canopy temperatures, and the
 Stage-3 candidate fingerprint. A nonconvergent loop returns the typed
@@ -107,11 +107,11 @@ is published. The final unsealed candidate is rerun, sealed, rerun again, and
 must self-reconstruct the accepted boundary exactly.
 
 `Static:` Destination carrier receipts are area-weighted by the exact surface
-configuration tile fraction into one lane Stage-3 boundary, while the keyed
-destination receipts remain available for final receipt joins. The current V8
-endpoint still accepts one aggregate carrier projection for its shared canopy
-forcing; eliminating that parent aggregate from physical LSE execution remains
-open and is not claimed closed here.
+configuration tile fraction into one lane Stage-3 boundary with an explicit
+`CoveredTileGround` basis, while keyed destination receipts remain available
+for final receipt joins. Physical LSE forcing now consumes the matching keyed
+carrier receipt for each covered destination; no parent aggregate carrier is
+used as the physical LSE forcing source.
 
 `Static:` `CoveredTileEnergyOperandSet::validate()` now cross-joins the final
 Stage-3 lower-boundary representation with the covered-column shortwave,
@@ -123,8 +123,9 @@ tests cover the fail-closed joins.
 `Ran:` `nix develop --command cargo check -p openwepp-land-surface-energy -p
 openwepp-hillslope-orchestrator` passed. `nix develop --command cargo test -p
 openwepp-land-surface-energy --lib` passed 66/66. `nix develop --command cargo
-test -p openwepp-hillslope-orchestrator --lib` passed 748/748 executed tests
-with one historical deterministic support-domain test ignored. The focused
+test -p openwepp-hillslope-orchestrator --lib -- --test-threads=1` passed
+750/750 executed tests with one historical deterministic support-domain test
+ignored. The focused
 covered persistent test and the final-receipt poison test passed. Formatting
 and `git diff --check` passed.
 
@@ -134,3 +135,31 @@ nonconvergence fixture, independent snow outcome ledger, canopy rain
 interception/throughfall-stemflow custody, snow-soil heat receipt, runner-owned
 48-support construction, terminal chronology, or additive restart closure is
 claimed by this amendment. Child 3 remains blocked.
+
+## Checkpoint amendment: correct candidate feedback and lane lineage
+
+`Static:` The keyed carrier is rebuilt from each iteration's candidate V8
+canopy state and candidate Stage-3 state, and matching keyed carriers are fed
+to each covered physical LSE tile. The accepted Stage-3 pass consumes the
+sealed lane boundary values; provisional carrier identities are not reused as
+final physical flux identities.
+
+`Static:` Lane receipts bind ordered destinations, exact tile fractions,
+topology, provisional/destination/lane receipt identities, and the explicit
+`CoveredTileGround` area basis. Final receipt validation includes snow
+temperature, latent heat, support duration, latent mass/energy, and ending
+V11/Stage-3 joins. Partial final identity states are structurally rejected.
+
+`Static:` The reviewed convergence policy is 32 maximum iterations with
+separate absolute/relative tolerances for temperature, humidity, sensible or
+longwave flux, vapor flux, and Stage-3 state components. `FixedPointIterationLimit`
+rolls back before staged output fields are populated.
+
+`Ran:` The final focused evidence is 66/66 land-surface-energy tests, 750/750
+serialized orchestrator library tests with one deterministic ignored test, four
+handoff receipt tests, a passing persistent covered regression, passing cargo
+check, passing formatting check, and passing `git diff --check`.
+
+`HOLD:` Precipitation custody, snow-soil heat, independent outcome-ledger
+closure, heterogeneous physical scenario matrix, runner construction,
+terminal liquid, restart, and reviews remain open.
