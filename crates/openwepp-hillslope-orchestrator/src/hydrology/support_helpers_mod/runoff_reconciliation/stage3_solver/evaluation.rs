@@ -17,6 +17,7 @@ impl Wb11HydrologyKernel {
         let support_seconds = support_duration_seconds(boundary.support.duration_ns());
         let sensible_flux_w_m2 = boundary.sensible_energy_j_m2 / support_seconds;
         let latent_flux_w_m2 = boundary.latent_energy_j_m2 / support_seconds;
+        let shortwave_flux_w_m2 = boundary.shortwave_energy_j_m2 / support_seconds;
         let net_longwave_w_m2 = boundary.net_longwave_energy_j_m2 / support_seconds;
             let precipitation_advected_flux_w_m2 =
             boundary.precipitation_advection_j_m2 / support_seconds;
@@ -25,7 +26,8 @@ impl Wb11HydrologyKernel {
             dewpoint_c: inputs.dewpoint_c,
             wind_speed_m_s: inputs.wind_m_s,
             air_pressure_pa: inputs.surface_energy_options.atmospheric_pressure_pa,
-            hourly_radiation_mj_m2: 0.0,
+            hourly_radiation_mj_m2: shortwave_flux_w_m2 * STAGE3_SECONDS_PER_HOUR
+                / 1_000_000.0,
             daily_solar_radiation_mj_m2: 0.0,
             daily_extraterrestrial_radiation_mj_m2: 0.0,
             daylight: false,
@@ -40,12 +42,12 @@ impl Wb11HydrologyKernel {
             snow_temperature_c: surface_temperature_c,
             rain_specific_heat_j_kg_k: 0.0,
             snow_specific_heat_j_kg_k: 0.0,
-            incoming_shortwave_w_m2: 0.0,
+            incoming_shortwave_w_m2: shortwave_flux_w_m2,
             snow_albedo_fraction: 0.0,
             snow_albedo_source_id: "stage3_covered_boundary_v1",
             snow_albedo_model_id: None,
             snow_albedo_accumulated_positive_temperature_c_day: None,
-            net_shortwave_w_m2: 0.0,
+            net_shortwave_w_m2: shortwave_flux_w_m2,
             actual_vapor_pressure_pa: 0.0,
             longwave_cloud_fraction: 0.0,
             sky_view_fraction: 0.0,
@@ -71,7 +73,8 @@ impl Wb11HydrologyKernel {
             sensible_flux_w_m2,
             latent_flux_w_m2,
             precipitation_advected_flux_w_m2,
-            complete_external_flux_w_m2: sensible_flux_w_m2
+            complete_external_flux_w_m2: shortwave_flux_w_m2
+                + sensible_flux_w_m2
                 + latent_flux_w_m2
                 + net_longwave_w_m2
                 + precipitation_advected_flux_w_m2,
@@ -1165,16 +1168,19 @@ impl Wb11HydrologyKernel {
             let vapor_mass_exchange_kg_m2 = boundary.vapor_mass_kg_m2 * scale;
             let latent_heat_j_kg = boundary.latent_heat_j_kg;
             let latent_j_m2 = boundary.latent_energy_j_m2 * scale;
+            let shortwave_j_m2 = boundary.shortwave_energy_j_m2 * scale;
             let longwave_j_m2 = boundary.net_longwave_energy_j_m2 * scale;
             let sensible_j_m2 = boundary.sensible_energy_j_m2 * scale;
             let advected_j_m2 = boundary.precipitation_advection_j_m2 * scale;
-            let total_j_m2 = sensible_j_m2 + latent_j_m2 + longwave_j_m2 + advected_j_m2;
+            let total_j_m2 =
+                shortwave_j_m2 + sensible_j_m2 + latent_j_m2 + longwave_j_m2 + advected_j_m2;
             let sublimation_m = (-vapor_mass_exchange_kg_m2
                 / STAGE3_RHO_WATER_KG_M3)
                 .max(0.0);
             let diagnostics = capture.is_verbose().then(|| {
                 let mut diagnostics = DirectSnowSurfaceEnergyHourDiagnostics::zero();
                 diagnostics.surface_temperature_c = surface_temperature_c;
+                diagnostics.net_shortwave_w_m2 = shortwave_j_m2 / duration_seconds;
                 diagnostics.net_longwave_w_m2 = longwave_j_m2 / duration_seconds;
                 diagnostics.vapor_mass_exchange_kg_m2 = vapor_mass_exchange_kg_m2;
                 diagnostics.latent_heat_j_kg = latent_heat_j_kg;
@@ -1190,7 +1196,7 @@ impl Wb11HydrologyKernel {
             });
             return Ok(Stage3HourlySurfaceEnergy {
                 total_j_m2,
-                shortwave_j_m2: 0.0,
+                shortwave_j_m2,
                 longwave_j_m2,
                 latent_j_m2,
                 vapor_mass_exchange_kg_m2,

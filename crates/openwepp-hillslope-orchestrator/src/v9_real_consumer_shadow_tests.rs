@@ -947,7 +947,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "covered V11 energy closure still needs released Stage-3 shortwave/soil boundary custody"]
     fn v11_covered_stack_runs_persistent_snow_with_shared_carrier_and_stages_rollback() {
         let (shadow, fixture) = v10_shadow_fixture();
         let base_interval = day_input(&fixture).intervals.remove(0);

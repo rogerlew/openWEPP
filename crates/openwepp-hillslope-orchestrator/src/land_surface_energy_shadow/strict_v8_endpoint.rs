@@ -29,7 +29,7 @@ use super::covered_v8_owner::{
 };
 use super::multi_tile_runtime::{
     MultiTileFailurePhase, PendingPayloadKind, StrictProjectedCoveredTile, StrictProjectedOpenTile,
-    StrictProjectedTileProblem, execute_multi_tile_runtime,
+    StrictProjectedTileProblem, execute_multi_tile_runtime, execute_multi_tile_runtime_provisional,
 };
 use super::v8_input_projection::{V8SolverReadyTilePhysics, project_v8_runtime_inputs};
 use super::v8_projection::{project_multi_tile_v8_passes, project_multi_tile_v8_passes_v11};
@@ -186,6 +186,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
         None,
         &pending,
         None,
+        true,
     );
     if let Err(error) = &result {
         pending.borrow_mut().diagnostic = error.to_string().into_bytes();
@@ -266,6 +267,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11(
         >,
     >,
     duration_s_bits: u64,
+    validate_ofe_energy: bool,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let pending = RefCell::new(PendingEndpointEnvelopes::default());
     execute_v8_lse_runtime_shadow_phases(
@@ -289,6 +291,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11(
         covered_lower_boundaries,
         &pending,
         Some(duration_s_bits),
+        validate_ofe_energy,
     )
 }
 
@@ -346,6 +349,7 @@ fn execute_v8_lse_runtime_shadow_phases(
     >,
     pending: &RefCell<PendingEndpointEnvelopes>,
     duration_s_bits: Option<u64>,
+    validate_ofe_energy: bool,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let projected = project_v8_runtime_inputs(
         vegetation_configuration,
@@ -472,16 +476,29 @@ fn execute_v8_lse_runtime_shadow_phases(
         journal.actual_payload_count += 1;
         Ok(())
     };
-    let physical = execute_multi_tile_runtime(
-        soil_adapter,
-        surface_configuration,
-        &receiver_expectations,
-        problems,
-        &soil_sources,
-        &ingress_schedule,
-        runtime_hook_ref,
-        Some(&pending_hook),
-    )?;
+    let physical = if validate_ofe_energy {
+        execute_multi_tile_runtime(
+            soil_adapter,
+            surface_configuration,
+            &receiver_expectations,
+            problems,
+            &soil_sources,
+            &ingress_schedule,
+            runtime_hook_ref,
+            Some(&pending_hook),
+        )?
+    } else {
+        execute_multi_tile_runtime_provisional(
+            soil_adapter,
+            surface_configuration,
+            &receiver_expectations,
+            problems,
+            &soil_sources,
+            &ingress_schedule,
+            runtime_hook_ref,
+            Some(&pending_hook),
+        )?
+    };
     let potentials = physical
         .potential_tiles()
         .iter()

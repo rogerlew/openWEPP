@@ -30,21 +30,26 @@ selects `CoveredColumnAuthority::V11SnowCovered`, and the LSE solver now has an
     explicit lower-boundary branch that suppresses covered ground water, sensible,
     soil-storage, and WB14-facing operators. The radiation projection now selects
     Stage-3 snow VIS/NIR albedos before the two-stream solve and emits a typed
-    band/direction optical receipt. The transaction payload now uses an explicit
-    Stage-3 lower-boundary variant instead of carrying a generic ground operand
-    for V11, and weighted energy tolerance includes the Stage-3 boundary
-    magnitude. Released precipitation-advection and soil-coupling custody,
-    keyed heterogeneous physical consumption, and independent ledger closure
-    remain blockers. This is an incremental custody lift, not a passed full
-    lower-boundary claim.
+    band/direction optical receipt that feeds the Stage-3 boundary on the final
+    pass. The transaction payload now uses an explicit Stage-3 lower-boundary
+    variant instead of carrying a generic ground operand for V11. Covered
+    latent mass/energy is bound exactly, and weighted energy tolerance uses
+    primitive Stage-3 boundary magnitudes. A provisional/final reciprocal-
+    longwave correction now makes the persistent covered case close. Released
+    precipitation-advection and soil-coupling custody, keyed heterogeneous
+    physical consumption, fully iterative fixed-point convergence, and
+    independent ledger closure remain blockers. This is an incremental custody
+    lift, not a passed full lower-boundary claim.
 
 `Static:` Persistent support acceptance checks the Stage-3 result against the
 carrier sensible, latent, vapor, longwave, advected, and ending-ice values,
 rejects terminal events on the persistent branch, and rejects a partial or
 non-active Stage-3 result. Carrier receipts are retained per lane and an exact
 `(OFE, tile)` receipt set is constructed for covered destinations. The V11
-solve still consumes a parent-level aggregate carrier state; keyed
-per-destination physical consumption and fixed-point iteration remain open.
+solve still consumes a parent-level aggregate carrier state and fail-closes
+when covered destinations under one lane disagree; keyed heterogeneous
+per-destination physical consumption and full fixed-point iteration remain
+open.
 Prepared supports contain only sealed covered forcing and do not expose live
 carrier surfaces or carrier ledgers. The new support, configuration, V11, and
 carrier forcing digests use explicit typed framing and fixed-width/f64-bit
@@ -52,20 +57,21 @@ fields.
 
 `Ran:` focused Nix-provided `cargo check` for
 `openwepp-land-surface-energy` and `openwepp-hillslope-orchestrator` passed;
-land-surface-energy lib tests passed 64/64. The orchestrator lib suite passed
-745/745 executed tests with 0 failures and 2 ignored (747 total). The newly
-added persistent covered support/rollback test is one of the ignored tests
-because released Stage-3 shortwave/soil boundary custody is not yet
-available; an explicit `--ignored` run fails closed at
-`ControlVolumeClosure("weighted_ofe_energy")`, and it is not counted as a
-passing physical covered case.
+land-surface-energy lib tests passed 65/65, including the typed weighted-OFE
+decomposition and Stage-3 primitive tolerance evidence. The orchestrator lib
+suite passed 747/747 executed tests with 0 failures and 1 deterministic
+support-domain test ignored (748 total), including the formerly ignored
+persistent covered support/rollback case. The focused covered persistence
+case passed with positive shortwave, exact Stage-3 optical/latent joins, and
+weighted OFE closure. The Stage-3 boundary receipt has a direct poison test
+for latent mass-energy mismatch.
 
-`Ran:` warnings-denied library Clippy fails on pre-existing dead-code,
-large-enum, precision, and scheduler/attachment findings in historical
-direct-runtime paths. After the local refactor, no new diagnostic remains in
-the land-surface-energy changes or covered carrier projection; the command is
-still not a release-clean Clippy gate. Formatting and `git diff --check`
-remain final checks.
+`Ran:` warnings-denied library Clippy remains non-clean on pre-existing
+dead-code, large-enum, precision, and scheduler/attachment findings in
+historical direct-runtime paths. The covered change's added argument-count
+diagnostic is explicitly scoped at its existing large constructor; no other
+new diagnostic remains in the land-surface-energy or covered carrier changes.
+Formatting and `git diff --check` pass for the current worktree.
 
 The release gates remain open: covered V11 executor, runner-owned physical
 support construction, terminal-liquid consumption, additive restart, scenario

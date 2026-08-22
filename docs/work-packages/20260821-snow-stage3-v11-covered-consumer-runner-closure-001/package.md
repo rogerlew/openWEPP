@@ -131,10 +131,12 @@ fields.
   derived carrier operands, exact Stage-3 boundary receipt, canonical ending
   owners, keyed destination receipts, explicit covered lower-boundary masking,
   and rollback. Stage-3 snow VIS/NIR optics now enter the two-stream solve
-  before canopy absorption is finalized; a typed band/direction optical
-  receipt, explicit Stage-3 transaction lower-boundary variant, and weighted
-  boundary tolerance scale are present. Released precipitation-advection and
-  soil custody, keyed heterogeneous physical consumption, fixed-point
+  before canopy absorption is finalized; the same typed optical result feeds
+  the final Stage-3 boundary. Covered latent mass/energy is exact, weighted
+  OFE exposes a typed residual decomposition with primitive boundary scale,
+  and the persistent positive-radiation case closes through the provisional /
+  final reciprocal-longwave correction. Released precipitation-advection and
+  soil custody, keyed heterogeneous physical consumption, full fixed-point
   iteration, and independent ledger closure remain blockers. Terminal
   chronology remains open.
 - [~] Runner-owned 48-support capability/provider bind; physical support

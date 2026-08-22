@@ -264,6 +264,59 @@ pub(crate) fn execute_multi_tile_runtime(
     failure_hook: FailureHook<'_>,
     pending_hook: PendingEnvelopeHook<'_>,
 ) -> Result<MultiTileRuntimeResult, LandSurfaceEnergyShadowError> {
+    execute_multi_tile_runtime_with_mode(
+        soil_adapter,
+        surface_configuration,
+        receiver_expectations,
+        projected_tiles,
+        soil_sources,
+        ingress_schedule,
+        failure_hook,
+        pending_hook,
+        true,
+    )
+}
+
+/// Execute a candidate physical endpoint while retaining local/component
+/// closures but deferring the aggregate OFE energy gate. This is only for the
+/// uncommitted first pass of the covered longwave fixed point; callers must
+/// rerun the final pass with `execute_multi_tile_runtime` before acceptance.
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+pub(crate) fn execute_multi_tile_runtime_provisional(
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    receiver_expectations: &UnifiedReceiverExpectations,
+    projected_tiles: Vec<StrictProjectedTileProblem>,
+    soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
+    ingress_schedule: &CoveredIngressSchedule,
+    failure_hook: FailureHook<'_>,
+    pending_hook: PendingEnvelopeHook<'_>,
+) -> Result<MultiTileRuntimeResult, LandSurfaceEnergyShadowError> {
+    execute_multi_tile_runtime_with_mode(
+        soil_adapter,
+        surface_configuration,
+        receiver_expectations,
+        projected_tiles,
+        soil_sources,
+        ingress_schedule,
+        failure_hook,
+        pending_hook,
+        false,
+    )
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn execute_multi_tile_runtime_with_mode(
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    receiver_expectations: &UnifiedReceiverExpectations,
+    projected_tiles: Vec<StrictProjectedTileProblem>,
+    soil_sources: &BTreeMap<GroundWaterKey, RealHydrologySourceKey>,
+    ingress_schedule: &CoveredIngressSchedule,
+    failure_hook: FailureHook<'_>,
+    pending_hook: PendingEnvelopeHook<'_>,
+    validate_ofe_energy: bool,
+) -> Result<MultiTileRuntimeResult, LandSurfaceEnergyShadowError> {
     let projected_tiles =
         validate_and_sort_projected_tiles(projected_tiles, surface_configuration)?;
     let potential_phases = solve_all_potential(projected_tiles, failure_hook)?;
@@ -358,7 +411,11 @@ pub(crate) fn execute_multi_tile_runtime(
         tile.energy_operands().validate()?;
     }
     run_failure_hook(failure_hook, MultiTileFailurePhase::LocalEnergy)?;
-    let weighted_ofe_energy = reconstruct_weighted_ofe_energy(&finalized_tiles)?;
+    let weighted_ofe_energy = if validate_ofe_energy {
+        reconstruct_weighted_ofe_energy(&finalized_tiles)?
+    } else {
+        Vec::new()
+    };
     run_failure_hook(failure_hook, MultiTileFailurePhase::OfeEnergy)?;
     Ok(MultiTileRuntimeResult {
         potential_request_batch: request_batch,
@@ -805,15 +862,30 @@ fn weighted_operand(
                 })
                 .collect::<Vec<_>>();
             let canopy_latent_j_m2 = canopy_latent_terms.iter().sum::<f64>();
-            let (lower_latent_j_m2, lower_ground_heat_w_m2, lower_storage_w_m2) =
-                match &covered.lower_boundary {
-                    CoveredLowerBoundaryEnergyOperands::SnowFree(ground) => (
-                        ground.latent.vapor_energy_j_m2,
-                        ground.surface.ground_heat_w_m2,
-                        ground.surface.storage_w_m2,
-                    ),
-                    CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(_) => (0.0, 0.0, 0.0),
-                };
+            let (
+                lower_latent_j_m2,
+                lower_ground_heat_w_m2,
+                lower_storage_w_m2,
+                stage3_boundary_abs_j_m2,
+            ) = match &covered.lower_boundary {
+                CoveredLowerBoundaryEnergyOperands::SnowFree(ground) => (
+                    ground.latent.vapor_energy_j_m2,
+                    ground.surface.ground_heat_w_m2,
+                    ground.surface.storage_w_m2,
+                    0.0,
+                ),
+                CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(stage3) => (
+                    stage3.latent_energy_to_canopy_air_j_m2_tile,
+                    0.0,
+                    0.0,
+                    (stage3.optical.absorbed_w_m2_tile.total().abs()
+                        + stage3.net_longwave_w_m2_tile.abs()
+                        + stage3.sensible_to_canopy_air_w_m2_tile.abs()
+                        + (stage3.vapor_to_canopy_air_kg_m2_tile_s * stage3.latent_heat_j_kg)
+                            .abs())
+                        * stage3.interval_s,
+                ),
+            };
             let sum_abs_latent_j_m2 = canopy_latent_terms
                 .iter()
                 .map(|value| value.abs())
@@ -831,6 +903,7 @@ fn weighted_operand(
                 lower_storage_w_m2,
                 sum_abs_latent_j_m2,
                 column.stage3_lower_boundary_energy_w_m2_tile,
+                stage3_boundary_abs_j_m2,
             )
         }
     };
@@ -856,6 +929,7 @@ fn covered_external_energy(
     storage_w_m2: f64,
     sum_abs_latent_j_m2: f64,
     stage3_lower_boundary_energy_w_m2: f64,
+    stage3_boundary_abs_j_m2: f64,
 ) -> (f64, f64, f64, f64) {
     (
         (incident_shortwave_w_m2 + atmospheric_downward_longwave_w_m2) * interval_s,
@@ -876,7 +950,7 @@ fn covered_external_energy(
             + storage_w_m2.abs())
             * interval_s
             + sum_abs_latent_j_m2
-            + stage3_lower_boundary_energy_w_m2.abs() * interval_s,
+            + stage3_boundary_abs_j_m2,
     )
 }
 
@@ -910,7 +984,12 @@ fn reconstruct_weighted_ofe_energy(
                 .iter()
                 .map(|tile| weighted_operand(tile.identity(), tile.energy_operands()))
                 .collect::<Result<Vec<_>, _>>()?;
-            let closure = validate_weighted_ofe_energy(interval_s, &operands)?;
+            let closure = match validate_weighted_ofe_energy(interval_s, &operands) {
+                Ok(value) => value,
+                Err(error) => {
+                    return Err(error.into());
+                }
+            };
             Ok(WeightedOfeEnergyJoin {
                 ofe_id,
                 ordered_tile_ids,
@@ -952,13 +1031,13 @@ mod tests {
     fn covered_weighting_uses_every_external_column_boundary() {
         let interval = 10.0;
         let baseline = covered_external_energy(
-            interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0,
+            interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0, 0.0,
         );
         assert_eq!(baseline, (1_500.0, 850.0, 650.0, 3_000.0));
         let with_stage3_boundary = covered_external_energy(
-            interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 25.0,
+            interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 25.0, 300.0,
         );
-        assert_eq!(with_stage3_boundary, (1_500.0, 1_100.0, 650.0, 3_250.0));
+        assert_eq!(with_stage3_boundary, (1_500.0, 1_100.0, 650.0, 3_300.0));
         let closes = |terms: (f64, f64, f64, f64), fraction: f64| {
             validate_weighted_ofe_energy(
                 interval,
@@ -976,28 +1055,28 @@ mod tests {
         // Every omitted external boundary fails the validator used by the runtime path.
         for poisoned in [
             covered_external_energy(
-                interval, 0.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0,
+                interval, 0.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 0.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0,
+                interval, 100.0, 0.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 10.0, 0.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0,
+                interval, 100.0, 10.0, 0.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 10.0, 50.0, 0.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0,
+                interval, 100.0, 10.0, 50.0, 0.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 10.0, 50.0, 20.0, 0.0, 200.0, 5.0, 65.0, 200.0, 0.0,
+                interval, 100.0, 10.0, 50.0, 20.0, 0.0, 200.0, 5.0, 65.0, 200.0, 0.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 0.0, 5.0, 65.0, 0.0, 0.0,
+                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 0.0, 5.0, 65.0, 0.0, 0.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 0.0, 65.0, 200.0, 0.0,
+                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 0.0, 65.0, 200.0, 0.0, 0.0,
             ),
             covered_external_energy(
-                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 0.0, 200.0, 0.0,
+                interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 0.0, 200.0, 0.0, 0.0,
             ),
         ] {
             assert!(closes(poisoned, 1.0).is_err());

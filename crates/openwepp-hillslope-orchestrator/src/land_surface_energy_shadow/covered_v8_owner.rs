@@ -13,9 +13,10 @@ use openwepp_biogeochemistry::{
     BiogeochemistryError, BiogeochemistryOwnerCandidate, BiogeochemistryState, MaterialPool,
     MaterialProposal, TransformationsMode, construct_biogeochemistry_candidate,
 };
-use openwepp_kernel_contract::TransactionId;
+use openwepp_kernel_contract::{TileId, TransactionId};
 use openwepp_land_surface_energy::{
-    AcceptedCoveredVegetationOperands, GroundWaterKey, RequestingComponent, WaterAmount,
+    AcceptedCoveredVegetationOperands, CoveredLowerBoundaryEnergyOperands, GroundWaterKey, OfeId,
+    RequestingComponent, WaterAmount,
 };
 use openwepp_vegetation::{
     NitrogenArbiter, UncommittedV8VegetationCandidate, V8ComponentOccupancyBinding,
@@ -102,6 +103,85 @@ impl UncommittedCoveredV8OwnerEnvelope {
     #[must_use]
     pub const fn biogeochemistry(&self) -> &BiogeochemistryOwnerCandidate {
         &self.biogeochemistry
+    }
+
+    pub(crate) fn covered_snow_longwave_by_destination(
+        &self,
+    ) -> Result<BTreeMap<(OfeId, TileId), f64>, CoveredV8OwnerEnvelopeError> {
+        let physical = match &self.physical {
+            CoveredV8PhysicalOwner::MultiTile(value) => value,
+            CoveredV8PhysicalOwner::Legacy(_) => {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "covered longwave requires multi-tile physical owner",
+                ));
+            }
+        };
+        let mut receipts = BTreeMap::new();
+        for tile in physical.finalized_tiles() {
+            let Some(covered) = tile.covered() else {
+                continue;
+            };
+            let key = (
+                covered.identity.ofe_id.clone(),
+                covered.identity.tile_id.clone(),
+            );
+            let value = covered.energy_operands.column.longwave.ground_net_w_m2_tile;
+            if receipts.insert(key, value).is_some() {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "duplicate covered longwave destination",
+                ));
+            }
+        }
+        if receipts.is_empty() {
+            return Err(CoveredV8OwnerEnvelopeError::Identity(
+                "empty covered longwave destination set",
+            ));
+        }
+        Ok(receipts)
+    }
+
+    pub(crate) fn covered_snow_shortwave_by_destination(
+        &self,
+    ) -> Result<BTreeMap<(OfeId, TileId), f64>, CoveredV8OwnerEnvelopeError> {
+        let physical = match &self.physical {
+            CoveredV8PhysicalOwner::MultiTile(value) => value,
+            CoveredV8PhysicalOwner::Legacy(_) => {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "covered shortwave requires multi-tile physical owner",
+                ));
+            }
+        };
+        let mut receipts = BTreeMap::new();
+        for tile in physical.finalized_tiles() {
+            let Some(covered) = tile.covered() else {
+                continue;
+            };
+            let key = (
+                covered.identity.ofe_id.clone(),
+                covered.identity.tile_id.clone(),
+            );
+            let value = match &covered.energy_operands.lower_boundary {
+                CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(stage3) => {
+                    stage3.optical.absorbed_w_m2_tile.total()
+                }
+                CoveredLowerBoundaryEnergyOperands::SnowFree(_) => {
+                    return Err(CoveredV8OwnerEnvelopeError::Identity(
+                        "covered Stage-3 optical receipt for shortwave",
+                    ));
+                }
+            };
+            if receipts.insert(key, value).is_some() {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "duplicate covered shortwave destination",
+                ));
+            }
+        }
+        if receipts.is_empty() {
+            return Err(CoveredV8OwnerEnvelopeError::Identity(
+                "empty covered shortwave destination set",
+            ));
+        }
+        Ok(receipts)
     }
 
     pub fn validate(&self) -> Result<(), CoveredV8OwnerEnvelopeError> {

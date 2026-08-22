@@ -337,6 +337,7 @@ pub struct Stage3SnowSurfaceBoundaryReceiptV1 {
     pub sensible_energy_j_m2: f64,
     pub vapor_mass_kg_m2: f64,
     pub latent_energy_j_m2: f64,
+    pub shortwave_energy_j_m2: f64,
     pub net_longwave_energy_j_m2: f64,
     pub precipitation_advection_j_m2: f64,
     pub latent_heat_j_kg: f64,
@@ -350,6 +351,7 @@ pub struct Stage3SnowSurfaceBoundaryReceiptInputs {
     pub sensible_energy_j_m2: f64,
     pub vapor_mass_kg_m2: f64,
     pub latent_energy_j_m2: f64,
+    pub shortwave_energy_j_m2: f64,
     pub net_longwave_energy_j_m2: f64,
     pub precipitation_advection_j_m2: f64,
     pub latent_heat_j_kg: f64,
@@ -365,6 +367,7 @@ impl Stage3SnowSurfaceBoundaryReceiptV1 {
             inputs.sensible_energy_j_m2,
             inputs.vapor_mass_kg_m2,
             inputs.latent_energy_j_m2,
+            inputs.shortwave_energy_j_m2,
             inputs.net_longwave_energy_j_m2,
             inputs.precipitation_advection_j_m2,
             inputs.latent_heat_j_kg,
@@ -379,11 +382,18 @@ impl Stage3SnowSurfaceBoundaryReceiptV1 {
                 "Stage-3 covered boundary receipt domain",
             ));
         }
+        let expected_latent_energy_j_m2 = inputs.vapor_mass_kg_m2 * inputs.latent_heat_j_kg;
+        if expected_latent_energy_j_m2.to_bits() != inputs.latent_energy_j_m2.to_bits() {
+            return Err(SnowStage3HandoffError::InvalidCarrier(
+                "Stage-3 covered latent mass-energy identity",
+            ));
+        }
         Ok(Self {
             support: inputs.support,
             sensible_energy_j_m2: inputs.sensible_energy_j_m2,
             vapor_mass_kg_m2: inputs.vapor_mass_kg_m2,
             latent_energy_j_m2: inputs.latent_energy_j_m2,
+            shortwave_energy_j_m2: inputs.shortwave_energy_j_m2,
             net_longwave_energy_j_m2: inputs.net_longwave_energy_j_m2,
             precipitation_advection_j_m2: inputs.precipitation_advection_j_m2,
             latent_heat_j_kg: inputs.latent_heat_j_kg,
@@ -1370,5 +1380,40 @@ impl SnowStage3HandoffRuntime {
         let mut digest = Sha256::new();
         digest.update(bytes);
         Ok(format!("{:x}", digest.finalize()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn boundary_inputs(latent_energy_j_m2: f64) -> Stage3SnowSurfaceBoundaryReceiptInputs {
+        Stage3SnowSurfaceBoundaryReceiptInputs {
+            support: TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_800_000_000_000))
+                .expect("valid support"),
+            sensible_energy_j_m2: 0.0,
+            vapor_mass_kg_m2: 0.001,
+            latent_energy_j_m2,
+            shortwave_energy_j_m2: 0.0,
+            net_longwave_energy_j_m2: 0.0,
+            precipitation_advection_j_m2: 0.0,
+            latent_heat_j_kg: 2_500_000.0,
+            beginning_stage3_state_sha256: Digest32::from_bytes([1; 32]),
+            carrier_receipt_sha256: Digest32::from_bytes([2; 32]),
+        }
+    }
+
+    #[test]
+    fn covered_boundary_receipt_binds_latent_mass_and_energy() {
+        let receipt = Stage3SnowSurfaceBoundaryReceiptV1::try_new(boundary_inputs(2_500.0));
+        assert!(receipt.is_ok());
+
+        let poisoned = Stage3SnowSurfaceBoundaryReceiptV1::try_new(boundary_inputs(2_500.0 + 1.0));
+        assert!(matches!(
+            poisoned,
+            Err(SnowStage3HandoffError::InvalidCarrier(
+                "Stage-3 covered latent mass-energy identity"
+            ))
+        ));
     }
 }

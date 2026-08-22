@@ -958,6 +958,7 @@ pub enum CoveredColumnAuthority {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Stage3SnowCoveredLowerBoundary {
     pub snow_temperature_k: f64,
+    pub latent_heat_j_kg: f64,
     pub sensible_to_canopy_air_w_m2: f64,
     pub vapor_to_canopy_air_kg_m2_s: f64,
     pub net_longwave_w_m2: f64,
@@ -1115,6 +1116,7 @@ impl Stage3SnowCoveredLowerBoundary {
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
         if [
             self.snow_temperature_k,
+            self.latent_heat_j_kg,
             self.sensible_to_canopy_air_w_m2,
             self.vapor_to_canopy_air_kg_m2_s,
             self.net_longwave_w_m2,
@@ -1124,6 +1126,7 @@ impl Stage3SnowCoveredLowerBoundary {
         .iter()
         .any(|value| !value.is_finite())
             || !(200.0..=350.0).contains(&self.snow_temperature_k)
+            || self.latent_heat_j_kg <= 0.0
             || self.carrier_receipt_id.as_str().is_empty()
             || self.stage3_albedo_state_sha256.as_str().is_empty()
             || self.forcing_receipt_sha256.as_str().is_empty()

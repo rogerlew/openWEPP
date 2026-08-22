@@ -674,8 +674,12 @@ impl TileEnergyOperandSet {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Stage3LowerBoundaryEnergyOperands {
     pub optical: Stage3SnowOpticalBoundaryReceiptV1,
-    pub sensible_to_canopy_air_w_m2_tile: f64,
+    pub snow_temperature_k: f64,
     pub vapor_to_canopy_air_kg_m2_tile_s: f64,
+    pub interval_s: f64,
+    pub latent_heat_j_kg: f64,
+    pub latent_energy_to_canopy_air_j_m2_tile: f64,
+    pub sensible_to_canopy_air_w_m2_tile: f64,
     pub net_longwave_w_m2_tile: f64,
     pub boundary_energy_w_m2_tile: f64,
     pub carrier_receipt_id: Sha256Digest,
@@ -685,6 +689,11 @@ impl Stage3LowerBoundaryEnergyOperands {
     fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
         self.optical.validate()?;
         if [
+            self.snow_temperature_k,
+            self.vapor_to_canopy_air_kg_m2_tile_s,
+            self.interval_s,
+            self.latent_heat_j_kg,
+            self.latent_energy_to_canopy_air_j_m2_tile,
             self.sensible_to_canopy_air_w_m2_tile,
             self.vapor_to_canopy_air_kg_m2_tile_s,
             self.net_longwave_w_m2_tile,
@@ -693,9 +702,20 @@ impl Stage3LowerBoundaryEnergyOperands {
         .iter()
         .any(|value| !value.is_finite())
             || self.carrier_receipt_id.as_str().is_empty()
+            || !(200.0..=350.0).contains(&self.snow_temperature_k)
+            || self.interval_s <= 0.0
+            || self.latent_heat_j_kg <= 0.0
         {
             return Err(LandSurfaceEnergyError::ComponentClosure(
                 "Stage-3 lower-boundary energy operands",
+            ));
+        }
+        let expected_latent_energy =
+            self.vapor_to_canopy_air_kg_m2_tile_s * self.latent_heat_j_kg * self.interval_s;
+        if expected_latent_energy.to_bits() != self.latent_energy_to_canopy_air_j_m2_tile.to_bits()
+        {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "Stage-3 snow latent mass-energy identity",
             ));
         }
         Ok(())
@@ -1671,8 +1691,14 @@ fn build_covered_energy_operands(
             CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(
                 Stage3LowerBoundaryEnergyOperands {
                     optical,
-                    sensible_to_canopy_air_w_m2_tile: boundary.sensible_to_canopy_air_w_m2,
+                    snow_temperature_k: boundary.snow_temperature_k,
                     vapor_to_canopy_air_kg_m2_tile_s: boundary.vapor_to_canopy_air_kg_m2_s,
+                    interval_s: phase.beginning.interval_s,
+                    latent_heat_j_kg: boundary.latent_heat_j_kg,
+                    latent_energy_to_canopy_air_j_m2_tile: boundary.vapor_to_canopy_air_kg_m2_s
+                        * boundary.latent_heat_j_kg
+                        * phase.beginning.interval_s,
+                    sensible_to_canopy_air_w_m2_tile: boundary.sensible_to_canopy_air_w_m2,
                     net_longwave_w_m2_tile: boundary.net_longwave_w_m2,
                     boundary_energy_w_m2_tile: stage3_lower_boundary_energy_w_m2_tile,
                     carrier_receipt_id: boundary.carrier_receipt_id.clone(),
@@ -1812,7 +1838,7 @@ fn build_covered_ground_operands(
 
 fn stage3_lower_boundary_energy(
     phase: &CoveredPotentialPhase,
-    evaluation: &crate::CoveredColumnEvaluation,
+    _evaluation: &crate::CoveredColumnEvaluation,
     ground_sensible: f64,
     ground_vapor: f64,
 ) -> Result<f64, LandSurfaceEnergyError> {
@@ -1833,11 +1859,22 @@ fn stage3_lower_boundary_energy(
     // Shortwave is sourced from the typed optical receipt. Precipitation
     // advection and soil coupling remain separate Stage-3 ledger terms and
     // are not silently borrowed from the snow-free ground projection.
+    let latent_heat_j_kg = boundary.latent_heat_j_kg;
+    if (ground_vapor - boundary.vapor_to_canopy_air_kg_m2_s).to_bits() != 0 {
+        return Err(LandSurfaceEnergyError::StateLineage(
+            "Stage-3 lower-boundary vapor custody",
+        ));
+    }
+    if (ground_sensible - boundary.sensible_to_canopy_air_w_m2).to_bits() != 0 {
+        return Err(LandSurfaceEnergyError::StateLineage(
+            "Stage-3 lower-boundary sensible custody",
+        ));
+    }
     Ok(optical.absorbed_w_m2_tile.total()
         + boundary.precipitation_advection_w_m2
         + boundary.net_longwave_w_m2
         - ground_sensible
-        - crate::vapor_export_w_m2(ground_vapor, evaluation.ground_temperature_k)?)
+        - ground_vapor * latent_heat_j_kg)
 }
 
 fn build_covered_energy_and_soil(

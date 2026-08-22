@@ -348,10 +348,21 @@ pub struct WeightedTileEnergyOperands {
     pub local_sum_abs_integrated_components_j_m2_tile: f64,
 }
 
-pub fn validate_weighted_ofe_energy(
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct WeightedOfeEnergyDecomposition {
+    pub interval_s: f64,
+    pub weighted_input_j_m2: f64,
+    pub weighted_output_j_m2: f64,
+    pub weighted_storage_change_j_m2: f64,
+    pub weighted_residual_j_m2: f64,
+    pub weighted_sum_abs_integrated_components_j_m2: f64,
+    pub tolerance_j_m2: f64,
+}
+
+pub fn decompose_weighted_ofe_energy(
     interval_s: f64,
     tiles: &[WeightedTileEnergyOperands],
-) -> Result<ClosureValue, LandSurfaceEnergyError> {
+) -> Result<WeightedOfeEnergyDecomposition, LandSurfaceEnergyError> {
     if !interval_s.is_finite() || interval_s <= 0.0 {
         return Err(LandSurfaceEnergyError::ControlVolumeClosure(
             "weighted_ofe_interval",
@@ -386,15 +397,15 @@ pub fn validate_weighted_ofe_energy(
                 "tile_fraction_domain",
             ));
         }
-        fraction_sum += tile.tile_fraction;
-        inputs += tile.tile_fraction * tile.local_input_j_m2_tile;
-        outputs += tile.tile_fraction * tile.local_output_j_m2_tile;
-        storage += tile.tile_fraction * tile.local_storage_change_j_m2_tile;
         if tile.local_sum_abs_integrated_components_j_m2_tile < 0.0 {
             return Err(LandSurfaceEnergyError::ControlVolumeClosure(
                 "tile_sum_abs_integrated_components_domain",
             ));
         }
+        fraction_sum += tile.tile_fraction;
+        inputs += tile.tile_fraction * tile.local_input_j_m2_tile;
+        outputs += tile.tile_fraction * tile.local_output_j_m2_tile;
+        storage += tile.tile_fraction * tile.local_storage_change_j_m2_tile;
         sum_abs_integrated_components +=
             tile.tile_fraction * tile.local_sum_abs_integrated_components_j_m2_tile;
     }
@@ -416,14 +427,30 @@ pub fn validate_weighted_ofe_energy(
     // The authorized relative scale precedes signed aggregation so inward
     // fluxes, condensation, and heterogeneous-tile cancellation cannot shrink it.
     let tolerance = 1.0e-6 * interval_s + 1.0e-10 * interval_s.max(sum_abs_integrated_components);
-    if residual.abs() > tolerance {
+    Ok(WeightedOfeEnergyDecomposition {
+        interval_s,
+        weighted_input_j_m2: inputs,
+        weighted_output_j_m2: outputs,
+        weighted_storage_change_j_m2: storage,
+        weighted_residual_j_m2: residual,
+        weighted_sum_abs_integrated_components_j_m2: sum_abs_integrated_components,
+        tolerance_j_m2: tolerance,
+    })
+}
+
+pub fn validate_weighted_ofe_energy(
+    interval_s: f64,
+    tiles: &[WeightedTileEnergyOperands],
+) -> Result<ClosureValue, LandSurfaceEnergyError> {
+    let decomposition = decompose_weighted_ofe_energy(interval_s, tiles)?;
+    if decomposition.weighted_residual_j_m2.abs() > decomposition.tolerance_j_m2 {
         return Err(LandSurfaceEnergyError::ControlVolumeClosure(
             "weighted_ofe_energy",
         ));
     }
     Ok(ClosureValue {
-        reconstructed_residual: residual,
-        tolerance,
+        reconstructed_residual: decomposition.weighted_residual_j_m2,
+        tolerance: decomposition.tolerance_j_m2,
     })
 }
 
@@ -597,6 +624,27 @@ mod tests {
         let closure = validate_weighted_ofe_energy(interval_s, &tiles).expect("exact cancellation");
         assert_eq!(closure.reconstructed_residual, 0.0);
         assert_eq!(closure.tolerance, 1.0e-6 * interval_s + 1.0e-10 * 4.0e12);
+    }
+
+    #[test]
+    fn weighted_energy_decomposition_exposes_residual_and_primitive_scale() {
+        let decomposition = decompose_weighted_ofe_energy(
+            10.0,
+            &[WeightedTileEnergyOperands {
+                tile_fraction: 1.0,
+                local_input_j_m2_tile: 12.0,
+                local_output_j_m2_tile: 8.0,
+                local_storage_change_j_m2_tile: 3.0,
+                local_sum_abs_integrated_components_j_m2_tile: 40.0,
+            }],
+        )
+        .expect("valid weighted decomposition");
+        assert_eq!(decomposition.weighted_residual_j_m2, 1.0);
+        assert_eq!(
+            decomposition.weighted_sum_abs_integrated_components_j_m2,
+            40.0
+        );
+        assert!((decomposition.tolerance_j_m2 - (1.0e-6 * 10.0 + 1.0e-10 * 40.0)).abs() < 1.0e-20);
     }
 
     #[test]
