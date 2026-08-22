@@ -125,6 +125,8 @@ fields.
   conservative terminal-liquid mass basis.
 - [x] Parent cadence, sequential GSI/cursor joins, and lane-to-OFE destination
   binding corrections with poison regressions.
+- [x] Run-relative support chronology and per-support forcing identity binding,
+  including day-boundary and forcing-identity regressions.
 - [ ] Covered consumer and terminal chronology.
 - [~] Runner-owned 48-support capability/provider bind; physical support
   construction and complete restart remain open.

@@ -404,11 +404,30 @@ mod tests {
         provider: &PreparedSnowFreeGsiDayV1,
         interval_template: &DirectV9ShadowIntervalInput,
         lane_id: u32,
+        day_index: usize,
+    ) -> Vec<PreparedStage3V11SupportV1> {
+        attachment_supports_with_start_offset(
+            provider,
+            interval_template,
+            lane_id,
+            day_index,
+            0,
+        )
+    }
+
+    fn attachment_supports_with_start_offset(
+        provider: &PreparedSnowFreeGsiDayV1,
+        interval_template: &DirectV9ShadowIntervalInput,
+        lane_id: u32,
+        day_index: usize,
+        start_offset_ns: u128,
     ) -> Vec<PreparedStage3V11SupportV1> {
         let snow_inputs = attachment_stage3_inputs();
         (0..INTERVALS_PER_DAY)
             .map(|interval_index| {
-                let support_start = interval_index as u128 * 1_800_000_000_000;
+                let support_start = (day_index as u128) * 86_400_000_000_000
+                    + interval_index as u128 * 1_800_000_000_000
+                    + start_offset_ns;
                 let support = TimeSupport::new(
                     ModelTimeNs::new(support_start),
                     ModelTimeNs::new(support_start + 1_800_000_000_000),
@@ -1982,9 +2001,14 @@ mod tests {
         let bound_day_zero = PreparedStage3V11DayV1::bind_provider_day(
             &day_zero,
             0,
-            attachment_supports(&day_zero, &template.intervals[0], lane_id),
+            attachment_supports(&day_zero, &template.intervals[0], lane_id, 0),
         )
         .expect("day zero Stage-3/V11 provider binding");
+        assert_eq!(bound_day_zero.supports()[0].support().start_ns().get(), 0);
+        assert_eq!(
+            bound_day_zero.supports()[47].support().end_ns().get(),
+            86_400_000_000_000
+        );
         let day_zero_replay = day_zero.clone();
         let mut gsi_after_day_zero = initial_gsi.clone();
         let mut cursor_after_day_zero = initial_cursor.clone();
@@ -2004,14 +2028,40 @@ mod tests {
         let bound_day_one = PreparedStage3V11DayV1::bind_provider_day(
             &day_one,
             1,
-            attachment_supports(&day_one, &template.intervals[0], lane_id),
+            attachment_supports(&day_one, &template.intervals[0], lane_id, 1),
         )
         .expect("day one Stage-3/V11 provider binding");
+        assert_eq!(
+            bound_day_one.supports()[0].support().start_ns().get(),
+            86_400_000_000_000
+        );
+        assert_eq!(
+            bound_day_one.supports()[47].support().end_ns().get(),
+            172_800_000_000_000
+        );
         assert_ne!(
             bound_day_zero.accepted_gsi_receipt(),
             bound_day_one.accepted_gsi_receipt(),
             "sequential days must carry distinct GSI receipts"
         );
+        assert!(PreparedStage3V11DayV1::bind_provider_day(
+            &day_one,
+            1,
+            attachment_supports(&day_zero_replay, &template.intervals[0], lane_id, 0),
+        )
+        .is_err());
+        assert!(PreparedStage3V11DayV1::bind_provider_day(
+            &day_zero_replay,
+            0,
+            attachment_supports_with_start_offset(
+                &day_zero_replay,
+                &template.intervals[0],
+                lane_id,
+                0,
+                1,
+            ),
+        )
+        .is_err());
         let day_one_replay = day_one.clone();
         let mut gsi_after_day_one = gsi_after_day_zero.clone();
         let mut cursor_after_day_one = cursor_after_day_zero.clone();

@@ -7,6 +7,8 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+#[cfg(test)]
+use openwepp_coupled_time::ParentIntervalId;
 use openwepp_coupled_time::{
     ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, Digest32, LedgerEntryV1,
     ModelTimeNs, OwnerState, ParentAuthorityV1, StepConstraintV1, TimeSupport, accept_slab,
@@ -36,6 +38,7 @@ use crate::{DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidConfigurationRe
 
 pub const STAGE3_V11_PARENT_SUPPORT_NS: u128 = 1_800_000_000_000;
 pub const STAGE3_V11_PARENT_SUPPORT_COUNT: usize = 48;
+pub const STAGE3_V11_DAY_NS: u128 = 86_400_000_000_000;
 
 #[derive(Debug, Error)]
 pub enum DirectSnowStage3V11AttachmentError {
@@ -238,6 +241,7 @@ impl PreparedStage3V11DayV1 {
             ));
         }
         let accepted_gsi_receipt = provider.gsi_receipt_digest()?;
+        let day_start_ns = day_start_ns(day_index)?;
         for (support_index, support) in supports.iter().enumerate() {
             let provider_destinations = provider
                 .forcing_receipts()
@@ -300,12 +304,9 @@ impl PreparedStage3V11DayV1 {
                         "support/provider destination interval join",
                     ))?;
                 let receipt_digest = parse_lower_hex_digest(&interval.interval_receipt_sha256)?;
-                if identity.forcing_receipt_digest != receipt_digest
-                    || interval.gsi_receipt_sha256 != provider.gsi_receipt().receipt_sha256
-                    || interval.wb14_configuration_sha256 != identity.wb14_configuration_sha256
-                    || interval.precipitation_parcels != identity.precipitation_parcels
-                    || support.support.start_ns().get()
-                        != u128::try_from(interval.start_s)
+                let interval_start_ns = day_start_ns
+                    .checked_add(
+                        u128::try_from(interval.start_s)
                             .map_err(|_| {
                                 DirectSnowStage3V11AttachmentError::Support(
                                     "provider interval start width",
@@ -314,9 +315,14 @@ impl PreparedStage3V11DayV1 {
                             .checked_mul(1_000_000_000)
                             .ok_or(DirectSnowStage3V11AttachmentError::Support(
                                 "provider interval start overflow",
-                            ))?
-                    || support.support.end_ns().get()
-                        != u128::try_from(interval.end_s)
+                            ))?,
+                    )
+                    .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                        "provider interval start day overflow",
+                    ))?;
+                let interval_end_ns = day_start_ns
+                    .checked_add(
+                        u128::try_from(interval.end_s)
                             .map_err(|_| {
                                 DirectSnowStage3V11AttachmentError::Support(
                                     "provider interval end width",
@@ -325,7 +331,17 @@ impl PreparedStage3V11DayV1 {
                             .checked_mul(1_000_000_000)
                             .ok_or(DirectSnowStage3V11AttachmentError::Support(
                                 "provider interval end overflow",
-                            ))?
+                            ))?,
+                    )
+                    .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                        "provider interval end day overflow",
+                    ))?;
+                if identity.forcing_receipt_digest != receipt_digest
+                    || interval.gsi_receipt_sha256 != provider.gsi_receipt().receipt_sha256
+                    || interval.wb14_configuration_sha256 != identity.wb14_configuration_sha256
+                    || interval.precipitation_parcels != identity.precipitation_parcels
+                    || support.support.start_ns().get() != interval_start_ns
+                    || support.support.end_ns().get() != interval_end_ns
                 {
                     return Err(DirectSnowStage3V11AttachmentError::Support(
                         "sealed provider support operands",
@@ -634,18 +650,11 @@ impl DirectSnowStage3V11ShadowAttachment {
         &self,
         prepared: &ValidatedPreparedStage3V11DayV1,
     ) -> Result<DirectSnowStage3V11ParentCandidate, DirectSnowStage3V11AttachmentError> {
-        prepared.validate(&self.static_context, 0)?;
+        prepared.validate(&self.static_context, day_start_ns(prepared.day_index())?)?;
         validate_prepared_day_against_committed_provider(&self.committed, prepared)?;
         let mut candidate = self.committed.clone();
         let mut terminal_events = Vec::new();
-        for support in prepared.supports() {
-            let support_index = prepared
-                .supports()
-                .iter()
-                .position(|candidate| candidate.support == support.support)
-                .ok_or(DirectSnowStage3V11AttachmentError::Support(
-                    "prepared support order",
-                ))?;
+        for (support_index, support) in prepared.supports().iter().enumerate() {
             for lane_id in &self.static_context.lane_ids {
                 let inputs = support.snow_inputs_by_lane.get(lane_id).ok_or(
                     DirectSnowStage3V11AttachmentError::Support("missing lane support input"),
@@ -696,15 +705,28 @@ impl DirectSnowStage3V11ShadowAttachment {
                 }
             }
 
+            let forcing_receipt = canonical_parent_forcing_digest(
+                prepared.day_index(),
+                support_index,
+                prepared.accepted_gsi_receipt(),
+                support,
+            )?;
+            let (beginning_parent, beginning_clock) = begin_v11_parent_for_support(
+                &self.static_context,
+                &candidate,
+                support,
+                forcing_receipt,
+                candidate.next_parent_sequence,
+            )?;
             let (parent, consumer, clock, finalized) = execute_real_v11_parent(
                 &self.static_context,
-                &candidate.v11_parent_state,
+                &beginning_parent,
                 &candidate.real_consumer,
-                &candidate.coupled_clock,
+                &beginning_clock,
                 support,
                 prepared.day_index(),
                 support_index,
-                candidate.next_parent_sequence,
+                forcing_receipt,
                 canonical_stage3_snow_owner_bytes(&candidate.stage3_by_lane)?,
             )?;
             candidate.v11_parent_state = parent;
@@ -957,6 +979,131 @@ fn validate_prepared_day_against_committed_provider(
     prepared.validate_provider_join(committed.real_consumer.provider_cursor())
 }
 
+fn begin_v11_parent_for_support(
+    context: &DirectSnowStage3V11StaticContext,
+    committed: &DirectSnowStage3V11CommittedState,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    forcing_receipt: Digest32,
+    parent_sequence: u128,
+) -> Result<(V11ParentTransaction, CoupledClockStateV1), DirectSnowStage3V11AttachmentError> {
+    let beginning_state = committed.last_v11_parent_candidate.as_ref().map_or_else(
+        || committed.v11_parent_state.beginning_state(),
+        |candidate| &candidate.ending_state,
+    );
+    let beginning_owners = committed.coupled_clock.owners().to_vec();
+    let beginning_owner_digest = complete_owner_set_digest(&beginning_owners)?;
+    let authority = ParentAuthorityV1::new(
+        context.run_identity,
+        context.calendar_receipt,
+        forcing_receipt,
+        parent_sequence,
+        prepared.support,
+        beginning_owner_digest,
+    )?;
+    let participants = committed.coupled_clock.active_participants().to_vec();
+    let clock = CoupledClockStateV1::new(
+        authority,
+        beginning_owners.clone(),
+        "snow-stage3-v11".to_owned(),
+        participants,
+        context.controller_policy,
+        Vec::new(),
+    )?;
+    let parent = V11ParentTransaction::new_with_complete_owners(
+        &context.vegetation_configuration,
+        beginning_state,
+        clock.parent_transaction_id(),
+        prepared.support.start_ns(),
+        owner_envelopes_from_states(&beginning_owners)?,
+    )?;
+    Ok((parent, clock))
+}
+
+fn canonical_parent_forcing_digest(
+    day_index: usize,
+    interval_index: usize,
+    accepted_gsi_receipt: Digest32,
+    support: &DirectSnowStage3V11PreparedSupport,
+) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
+    canonical_parent_forcing_digest_from_parts(
+        day_index,
+        interval_index,
+        accepted_gsi_receipt,
+        support.support,
+        support.v11_interval.lse_forcing.forcing_sha256.as_str(),
+        &support.support_identity_by_lane,
+    )
+}
+
+fn canonical_parent_forcing_digest_from_parts(
+    day_index: usize,
+    interval_index: usize,
+    accepted_gsi_receipt: Digest32,
+    support: TimeSupport,
+    v11_forcing_receipt: &str,
+    support_identity_by_lane: &BTreeMap<u32, Vec<PreparedStage3V11SupportIdentityV1>>,
+) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
+    let mut bytes = Vec::new();
+    bytes.extend_from_slice(b"OPENWEPP_STAGE3_V11_PARENT_FORCING_V1\0");
+    bytes.extend_from_slice(
+        &u128::try_from(day_index)
+            .map_err(|_| DirectSnowStage3V11AttachmentError::Support("day index width"))?
+            .to_be_bytes(),
+    );
+    bytes.extend_from_slice(
+        &u128::try_from(interval_index)
+            .map_err(|_| DirectSnowStage3V11AttachmentError::Support("interval index width"))?
+            .to_be_bytes(),
+    );
+    bytes.extend_from_slice(&support.start_ns().get().to_be_bytes());
+    bytes.extend_from_slice(&support.end_ns().get().to_be_bytes());
+    bytes.extend_from_slice(accepted_gsi_receipt.as_bytes());
+    append_framed_bytes(&mut bytes, v11_forcing_receipt.as_bytes());
+    for (lane_id, identities) in support_identity_by_lane {
+        bytes.extend_from_slice(&u32::to_be_bytes(*lane_id));
+        bytes.extend_from_slice(
+            &u64::try_from(identities.len())
+                .map_err(|_| {
+                    DirectSnowStage3V11AttachmentError::Support("support destination count width")
+                })?
+                .to_be_bytes(),
+        );
+        for identity in identities {
+            append_framed_bytes(&mut bytes, identity.destination_ofe_id.as_bytes());
+            append_framed_bytes(&mut bytes, identity.destination_tile_id.as_bytes());
+            append_framed_bytes(&mut bytes, identity.wb14_configuration_sha256.as_bytes());
+            bytes.extend_from_slice(identity.exposure_identity.as_bytes());
+            bytes.extend_from_slice(identity.forcing_receipt_digest.as_bytes());
+            bytes.extend_from_slice(
+                &u64::try_from(identity.precipitation_parcels.len())
+                    .map_err(|_| {
+                        DirectSnowStage3V11AttachmentError::Support(
+                            "precipitation parcel count width",
+                        )
+                    })?
+                    .to_be_bytes(),
+            );
+            for parcel in &identity.precipitation_parcels {
+                append_framed_bytes(&mut bytes, parcel.parcel_id.as_bytes());
+                append_framed_bytes(&mut bytes, parcel.source_owner_id.as_bytes());
+                append_framed_bytes(&mut bytes, parcel.destination_ofe_id.as_bytes());
+                append_framed_bytes(&mut bytes, parcel.destination_tile_id.as_bytes());
+                bytes.extend_from_slice(&parcel.start_s.to_bits().to_be_bytes());
+                bytes.extend_from_slice(&parcel.end_s.to_bits().to_be_bytes());
+                bytes.extend_from_slice(&parcel.mass_kg_m2.to_bits().to_be_bytes());
+                bytes.extend_from_slice(&parcel.temperature_k.to_bits().to_be_bytes());
+                bytes.extend_from_slice(&parcel.enthalpy_j_m2.to_bits().to_be_bytes());
+            }
+        }
+    }
+    Ok(digest_bytes(&bytes))
+}
+
+fn append_framed_bytes(bytes: &mut Vec<u8>, value: &[u8]) {
+    bytes.extend_from_slice(&(value.len() as u64).to_be_bytes());
+    bytes.extend_from_slice(value);
+}
+
 fn execute_real_v11_parent(
     context: &DirectSnowStage3V11StaticContext,
     beginning_parent: &V11ParentTransaction,
@@ -965,7 +1112,7 @@ fn execute_real_v11_parent(
     prepared: &DirectSnowStage3V11PreparedSupport,
     day_index: usize,
     interval_index: usize,
-    parent_sequence: u128,
+    forcing_receipt: Digest32,
     ending_snow_owner_bytes: Vec<u8>,
 ) -> Result<
     (
@@ -977,8 +1124,8 @@ fn execute_real_v11_parent(
     DirectSnowStage3V11AttachmentError,
 > {
     if beginning_parent.parent_transaction_id() != beginning_clock.parent_transaction_id()
-        || beginning_clock.accepted_until().get() != 0
-        || beginning_clock.parent_support().duration_ns() != context.parent_duration_ns
+        || beginning_clock.accepted_until() != prepared.support.start_ns()
+        || beginning_clock.parent_support() != prepared.support
         || beginning_clock.owners().len()
             != openwepp_vegetation::v11::V11_COMPLETE_OWNER_MANIFEST.len()
     {
@@ -1006,11 +1153,9 @@ fn execute_real_v11_parent(
     }
 
     let parent_id = beginning_parent.parent_transaction_id();
-    let start = beginning_clock.accepted_until();
-    let end = ModelTimeNs::new(start.get().checked_add(context.parent_duration_ns).ok_or(
-        DirectSnowStage3V11AttachmentError::Identity("coupled-time parent support overflow"),
-    )?);
-    let support = TimeSupport::new(start, end)?;
+    let support = prepared.support;
+    let start = support.start_ns();
+    let end = support.end_ns();
     let constraint = StepConstraintV1::new(
         parent_id,
         start,
@@ -1019,7 +1164,7 @@ fn execute_real_v11_parent(
         ConstraintClass::HardBoundary,
         context.controller_policy,
         context.calendar_receipt,
-        context.forcing_receipt,
+        forcing_receipt,
     )?;
     let reduction = reduce_constraints(&[constraint], parent_id, start, end, None)?;
     let ledger_digest = complete_owner_set_digest(beginning_clock.owners())?;
@@ -1102,44 +1247,9 @@ fn execute_real_v11_parent(
     let consumer = final_executor.stack.take_staged_ending().ok_or(
         DirectSnowStage3V11AttachmentError::Identity("missing staged real-consumer ending"),
     )?;
+    let parent_after_segment = parent.clone();
     let finalized = parent.finalize(&context.vegetation_configuration)?;
-    let next_owners = owner_envelopes_from_states(&finalized.ending_complete_owners)?;
-    let next_support = TimeSupport::new(
-        ModelTimeNs::new(0),
-        ModelTimeNs::new(context.parent_duration_ns),
-    )?;
-    let next_authority = ParentAuthorityV1::new(
-        context.run_identity,
-        context.calendar_receipt,
-        context.forcing_receipt,
-        parent_sequence
-            .checked_add(1)
-            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                "next parent sequence overflow",
-            ))?,
-        next_support,
-        complete_owner_set_digest(&finalized.ending_complete_owners)?,
-    )?;
-    let next_clock = CoupledClockStateV1::new(
-        next_authority,
-        finalized.ending_complete_owners.clone(),
-        "snow-stage3-v11".to_owned(),
-        finalized
-            .ending_complete_owners
-            .iter()
-            .map(|owner| owner.owner_id().to_owned())
-            .collect(),
-        context.controller_policy,
-        Vec::new(),
-    )?;
-    let next_parent = V11ParentTransaction::new_with_complete_owners(
-        &context.vegetation_configuration,
-        &finalized.ending_state,
-        next_clock.parent_transaction_id(),
-        ModelTimeNs::new(0),
-        next_owners,
-    )?;
-    Ok((next_parent, consumer, next_clock, finalized))
+    Ok((parent_after_segment, consumer, final_clock, finalized))
 }
 
 fn owner_states_from_envelopes(
@@ -1227,6 +1337,15 @@ fn validate_parent_support_duration(
         ));
     }
     Ok(())
+}
+
+fn day_start_ns(day_index: usize) -> Result<u128, DirectSnowStage3V11AttachmentError> {
+    u128::try_from(day_index)
+        .map_err(|_| DirectSnowStage3V11AttachmentError::Support("day index width"))?
+        .checked_mul(STAGE3_V11_DAY_NS)
+        .ok_or(DirectSnowStage3V11AttachmentError::Support(
+            "run-relative day start overflow",
+        ))
 }
 
 fn owner_envelopes_from_states(
@@ -1409,6 +1528,92 @@ mod tests {
         assert!(validate_parent_support_duration(STAGE3_V11_PARENT_SUPPORT_NS + 1).is_err());
         validate_parent_support_duration(STAGE3_V11_PARENT_SUPPORT_NS)
             .expect("1,800-second support accepted");
+    }
+
+    #[test]
+    fn run_relative_day_supports_are_contiguous_across_midnight() {
+        assert_eq!(day_start_ns(0).expect("day zero start"), 0);
+        assert_eq!(day_start_ns(1).expect("day one start"), STAGE3_V11_DAY_NS);
+        let day_zero_last = TimeSupport::new(
+            ModelTimeNs::new(
+                STAGE3_V11_DAY_NS
+                    .checked_sub(STAGE3_V11_PARENT_SUPPORT_NS)
+                    .expect("day zero last support start"),
+            ),
+            ModelTimeNs::new(STAGE3_V11_DAY_NS),
+        )
+        .expect("day zero last support");
+        let day_one_first = TimeSupport::new(
+            ModelTimeNs::new(STAGE3_V11_DAY_NS),
+            ModelTimeNs::new(
+                STAGE3_V11_DAY_NS
+                    .checked_add(STAGE3_V11_PARENT_SUPPORT_NS)
+                    .expect("day one first support end"),
+            ),
+        )
+        .expect("day one first support");
+        assert_eq!(day_zero_last.end_ns(), day_one_first.start_ns());
+        assert_eq!(day_one_first.start_ns().get(), 86_400_000_000_000);
+    }
+
+    #[test]
+    fn parent_forcing_digest_binds_interval_receipt_identity() {
+        let support = TimeSupport::new(
+            ModelTimeNs::new(0),
+            ModelTimeNs::new(STAGE3_V11_PARENT_SUPPORT_NS),
+        )
+        .expect("support");
+        let mut identities = BTreeMap::from([(7, vec![support_identity("ofe-1", "tile-1")])]);
+        let first = canonical_parent_forcing_digest_from_parts(
+            0,
+            0,
+            Digest32::from_bytes([1; 32]),
+            support,
+            "b".repeat(64).as_str(),
+            &identities,
+        )
+        .expect("first forcing digest");
+        identities.get_mut(&7).expect("lane")[0].forcing_receipt_digest =
+            Digest32::from_bytes([2; 32]);
+        let second = canonical_parent_forcing_digest_from_parts(
+            0,
+            0,
+            Digest32::from_bytes([1; 32]),
+            support,
+            "b".repeat(64).as_str(),
+            &identities,
+        )
+        .expect("second forcing digest");
+        assert_ne!(first, second);
+    }
+
+    #[test]
+    fn parent_interval_identity_binds_run_relative_support() {
+        let first_support = TimeSupport::new(
+            ModelTimeNs::new(0),
+            ModelTimeNs::new(STAGE3_V11_PARENT_SUPPORT_NS),
+        )
+        .expect("first support");
+        let second_support = TimeSupport::new(
+            ModelTimeNs::new(STAGE3_V11_PARENT_SUPPORT_NS),
+            ModelTimeNs::new(STAGE3_V11_DAY_NS),
+        )
+        .expect("second support");
+        let first = ParentIntervalId::derive(
+            Digest32::from_bytes([1; 32]),
+            Digest32::from_bytes([2; 32]),
+            Digest32::from_bytes([3; 32]),
+            first_support,
+        )
+        .expect("first parent interval");
+        let second = ParentIntervalId::derive(
+            Digest32::from_bytes([1; 32]),
+            Digest32::from_bytes([2; 32]),
+            Digest32::from_bytes([3; 32]),
+            second_support,
+        )
+        .expect("second parent interval");
+        assert_ne!(first, second);
     }
 
     #[test]

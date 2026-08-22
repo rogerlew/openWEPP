@@ -35,3 +35,11 @@ coupled supports succeed.
 physical `DirectActiveSnowPartitionInputs`, per-lane Stage-3 forcing, and V11
 interval from live owners. No completed daily result is accepted, but the
 runner-owned physical support construction is not yet closed.
+
+`Static:` Provider day-relative interval receipts are projected into
+run-relative supports before binding: day 0 covers `[0, 86,400 s)` and day 1
+starts at `86,400 s`. Each support's parent forcing identity is derived from
+its ordered sealed provider/GSI, exposure, WB14, precipitation, and lane/OFE/
+tile receipt set. That digest is the actual ParentAuthority, StepConstraint,
+and CoupledClockState forcing identity; no future parent is preconstructed
+with the static context's repeated digest.
