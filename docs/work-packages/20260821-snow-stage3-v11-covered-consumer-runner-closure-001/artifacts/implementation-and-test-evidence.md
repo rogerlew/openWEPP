@@ -17,18 +17,27 @@ day to the committed beginning GSI state and cursor rather than requiring the
 new receipt to equal the prior day receipt. Validated-day preflight also joins
 each lane's complete destination set to its bound surface-liquid OFE; a lane
 permutation fails before any Stage-3/V11 transition.
-The actual snow-covered V11 lower-boundary consumer is not yet implemented;
-the existing snow-free guard remains the fail-closed behavior.
+`Static:` `DirectV11SnowCoveredRealConsumerStack` is now a distinct typed
+adopter beside the existing `DirectV11RealConsumerStack`. Its separate
+`DirectV11SnowCoveredSegmentInput` prevents covered supports from entering the
+snow-free interval type. For a persistent covered support it evaluates the
+shared Child-2C carrier and the actual Stage-3 persistent support from the same
+beginning states, then uses the common V11 resource/owner/finalization path to
+stage canonical snow and V11-related endings. The snow-free snow-present guard
+remains unchanged. Terminal event chronology, runner construction, and
+complete-day installation are still open.
 
 `Static:` Prepared support bounds now use run-relative nanoseconds: day 0 is
 `[0, 86,400 s)`, day 1 begins at `86,400 s`, and every parent uses the exact
 sealed support rather than reconstructing a zero-based interval. Each parent
 forcing identity is derived from the day/interval, accepted GSI receipt, V11
 forcing receipt, and ordered lane/OFE/tile exposure, WB14, precipitation, and
-provider interval identities. Parent authority, constraint, and coupled-clock
-construction all use that digest. The next parent is constructed only when
-its sealed support is available; the committed clock retains the completed
-support at a day boundary.
+provider interval identities. Covered supports add tagged Stage-3 support
+forcing, Stage-3 configuration, covered-V11 forcing, and carrier-configuration
+projections. Parent authority, constraint, and coupled-clock construction all
+use that digest. The next parent is constructed only when its sealed support
+is available; the committed clock retains the completed support at a day
+boundary. The obsolete static generic forcing receipt is removed.
 
 `Ran:` `nix develop --command cargo check -p
 openwepp-hillslope-orchestrator -p openwepp-vegetation
@@ -37,9 +46,14 @@ openwepp-hillslope-orchestrator -p openwepp-vegetation
 11 dead-code warnings in the historical Stage-3 shadow path.
 
 `Ran:` `nix develop --command cargo test -p
-openwepp-hillslope-orchestrator --lib` passed: 745 passed, 0 failed, 1
-ignored (746 total); the current suite includes run-relative cadence,
-per-support forcing identity, lane/OFE, and two-day provider-bound tests.
+openwepp-hillslope-orchestrator --lib` passed: 746 passed, 0 failed, 1
+ignored (747 total); this includes the persistent covered V11/Stage-3
+shared-carrier support and exact rollback test.
+
+`Ran:` the focused covered test passed: 1 passed, 0 failed. It verifies one
+exact 1,800-second support, shared-air/carrier receipt production, canonical
+Stage-3 ending progression, complete V11 owner output, and rejection without
+staged state after carrier failure.
 
 `Ran:` `nix develop --command cargo test -p openwepp-hillslope-orchestrator
 --lib snow_stage3_v11_attachment::tests` passed: 5 passed, 0 failed. The

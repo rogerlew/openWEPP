@@ -1334,7 +1334,8 @@ impl Wb11HydrologyKernel {
                 || tuple.substep_index != count_by_hour[tuple.hour_index]
                 || tuple.elapsed_start_seconds.to_bits()
                     != elapsed_by_hour[tuple.hour_index].to_bits()
-                || tuple.requested_seconds.to_bits() != STAGE3_SECONDS_PER_HOUR.to_bits()
+                || !tuple.requested_seconds.is_finite()
+                || tuple.requested_seconds <= 0.0
                 || tuple.evaluated_seconds.to_bits() != tuple.duration_seconds.to_bits()
                 || !tuple.duration_seconds.is_finite()
                 || tuple.duration_seconds <= 0.0
@@ -1343,7 +1344,7 @@ impl Wb11HydrologyKernel {
                 || tuple.longwave_model_id != "dilley_unsworth_subcanopy_v1"
                 || tuple.sublimation_model_id != "disabled"
                 || tuple.elapsed_start_seconds + tuple.duration_seconds
-                    > STAGE3_SECONDS_PER_HOUR
+                    > tuple.requested_seconds
             {
                 return Err(Self::stage3_domain_error(
                     phase_class,

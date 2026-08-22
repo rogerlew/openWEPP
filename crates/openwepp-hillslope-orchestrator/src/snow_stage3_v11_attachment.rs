@@ -30,9 +30,12 @@ use crate::runtime_inputs::{
     PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError, SnowFreeHalfHourProviderCursor,
     SnowFreePrecipitationParcelReceipt, direct_gsi_state,
 };
+use crate::snow_stage3_terminal_handoff::SharedCarrierInput;
 use crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow;
 use crate::v9_real_consumer_shadow::{
     DirectV9ShadowIntervalInput, DirectV11RealConsumerError, DirectV11RealConsumerStack,
+    DirectV11SnowCoveredRealConsumerStack, DirectV11SnowCoveredSegmentInput,
+    DirectV11SnowCoveredStackInputs,
 };
 use crate::{DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidConfigurationRecord};
 
@@ -71,7 +74,6 @@ pub struct DirectSnowStage3V11StaticContext {
     pub parent_duration_ns: u128,
     pub minimum_support_ns: u128,
     pub calendar_receipt: Digest32,
-    pub forcing_receipt: Digest32,
     pub controller_policy: Digest32,
     pub parent_sequence: u128,
     pub lane_ids: Vec<u32>,
@@ -112,6 +114,13 @@ pub struct DirectSnowStage3V11PreparedSupport {
     /// Sealed lower-boundary/atmospheric input for the actual V11 owner.
     /// It contains no event request, carrier operand, or ending owner.
     v11_interval: DirectV9ShadowIntervalInput,
+    /// Sealed Child-2C carrier inputs, keyed by production lane. A missing
+    /// entry means this support is snow-free and must remain on the existing
+    /// snow-free adopter.
+    shared_carrier_by_lane: BTreeMap<u32, SharedCarrierInput>,
+    /// Covered V11 projection. It is a separate type from the snow-free
+    /// interval so regime selection is explicit at the sealed-support seam.
+    covered_v11_interval: Option<DirectV11SnowCoveredSegmentInput>,
     /// Provider-owned destination and receipt identity. The physical
     /// precipitation parcel remains sealed input; it is not a terminal parcel
     /// and cannot contain an ending owner or event time.
@@ -156,13 +165,140 @@ impl DirectSnowStage3V11PreparedSupport {
             snow_inputs_by_lane,
             support_forcing_by_lane,
             v11_interval,
+            shared_carrier_by_lane: BTreeMap::new(),
+            covered_v11_interval: None,
             support_identity_by_lane,
         })
+    }
+
+    /// Attach the sealed covered lower-boundary carrier to a support draft.
+    /// The provider bind consumes the resulting draft and rechecks all joins.
+    #[must_use]
+    pub fn with_shared_carrier(mut self, lane_id: u32, carrier: SharedCarrierInput) -> Self {
+        self.shared_carrier_by_lane.insert(lane_id, carrier);
+        self
+    }
+
+    /// Attach the distinct covered V11 atmospheric projection to this support.
+    #[must_use]
+    pub fn with_covered_v11_interval(mut self, interval: DirectV11SnowCoveredSegmentInput) -> Self {
+        self.covered_v11_interval = Some(interval);
+        self
     }
 
     #[must_use]
     pub const fn support(&self) -> TimeSupport {
         self.support
+    }
+
+    #[must_use]
+    pub fn shared_carrier_by_lane(&self) -> &BTreeMap<u32, SharedCarrierInput> {
+        &self.shared_carrier_by_lane
+    }
+
+    fn forcing_projections(
+        &self,
+    ) -> Result<(Digest32, Digest32, Digest32, Digest32), DirectSnowStage3V11AttachmentError> {
+        let stage3_support_forcing_sha256 = digest_bytes(
+            format!(
+                "OPENWEPP_STAGE3_SUPPORT_FORCING_V1|{:?}",
+                self.support_forcing_by_lane
+            )
+            .as_bytes(),
+        );
+        let stage3_configuration_sha256 = digest_bytes(
+            format!(
+                "OPENWEPP_STAGE3_CONFIGURATION_V1|{:?}",
+                self.snow_inputs_by_lane
+                    .iter()
+                    .map(|(lane, input)| {
+                        format!(
+                            "{:?}|{:?}|{:?}",
+                            (
+                                lane,
+                                input.snow_melt_model.id(),
+                                input.snow_density_model.id(),
+                                input.stage3_liquid_routing_model.id(),
+                                input.surface_energy_options.longwave_model.id(),
+                                input.surface_energy_options.sublimation_model.id(),
+                                input.snow_albedo_model.map(|model| model.id()),
+                                input.sturm_climate_class.map(|class| format!("{class:?}")),
+                            ),
+                            (
+                                input
+                                    .surface_energy_options
+                                    .daily_solar_radiation_mj_m2
+                                    .to_bits(),
+                                input
+                                    .surface_energy_options
+                                    .daily_extraterrestrial_radiation_mj_m2
+                                    .to_bits(),
+                                input.surface_energy_options.daylight,
+                                input
+                                    .surface_energy_options
+                                    .atmospheric_pressure_pa
+                                    .to_bits(),
+                                input.surface_energy_options.complete_carrier_shadow,
+                            ),
+                            (
+                                input
+                                    .surface_energy_options
+                                    .turbulent_geometry
+                                    .air_temperature_height_m
+                                    .to_bits(),
+                                input
+                                    .surface_energy_options
+                                    .turbulent_geometry
+                                    .vapor_pressure_height_m
+                                    .to_bits(),
+                                input
+                                    .surface_energy_options
+                                    .turbulent_geometry
+                                    .wind_speed_height_m
+                                    .to_bits(),
+                                input
+                                    .surface_energy_options
+                                    .turbulent_geometry
+                                    .aerodynamic_roughness_length_m
+                                    .to_bits(),
+                                input.coe_boundary_depth_m.to_bits(),
+                                input.coe_boundary_density_kg_m3.to_bits(),
+                                input.coe_boundary_settle_day_count.to_bits(),
+                                input.underlying_surface_albedo.to_bits(),
+                                input.sturm_day_of_year.map(f64::to_bits),
+                            ),
+                        )
+                    })
+                    .collect::<Vec<_>>()
+            )
+            .as_bytes(),
+        );
+        let covered_v11_forcing_sha256 = digest_bytes(
+            match self.covered_v11_interval.as_ref() {
+                Some(interval) => format!(
+                    "OPENWEPP_COVERED_V11_FORCING_V1|{:?}|{:?}",
+                    &interval.lse_forcing, &interval.vegetation_forcing
+                ),
+                None => format!(
+                    "OPENWEPP_COVERED_V11_FORCING_V1|{:?}|{:?}",
+                    &self.v11_interval.lse_forcing, &self.v11_interval.vegetation_forcing
+                ),
+            }
+            .as_bytes(),
+        );
+        let carrier_configuration_sha256 = digest_bytes(
+            &serde_json::to_vec(&self.shared_carrier_by_lane).map_err(|_| {
+                DirectSnowStage3V11AttachmentError::Support(
+                    "shared carrier configuration projection",
+                )
+            })?,
+        );
+        Ok((
+            stage3_support_forcing_sha256,
+            stage3_configuration_sha256,
+            covered_v11_forcing_sha256,
+            carrier_configuration_sha256,
+        ))
     }
 }
 
@@ -394,10 +530,29 @@ impl PreparedStage3V11DayV1 {
                     .copied()
                     .collect::<BTreeSet<_>>()
                     != expected_lanes
+                || (!support.shared_carrier_by_lane.is_empty()
+                    && support
+                        .shared_carrier_by_lane
+                        .keys()
+                        .copied()
+                        .collect::<BTreeSet<_>>()
+                        != expected_lanes)
                 || support.support_identity_by_lane.values().any(Vec::is_empty)
             {
                 return Err(DirectSnowStage3V11AttachmentError::Support(
                     "support chronology or lane forcing identity",
+                ));
+            }
+            if support.shared_carrier_by_lane.values().any(|carrier| {
+                carrier.phase != crate::snow_stage3_terminal_handoff::SegmentPhase::SnowCovered
+            }) {
+                return Err(DirectSnowStage3V11AttachmentError::Support(
+                    "covered support carrier regime",
+                ));
+            }
+            if support.shared_carrier_by_lane.is_empty() != support.covered_v11_interval.is_none() {
+                return Err(DirectSnowStage3V11AttachmentError::Support(
+                    "covered support requires covered V11 projection",
                 ));
             }
             cursor = support.support.end_ns().get();
@@ -655,53 +810,59 @@ impl DirectSnowStage3V11ShadowAttachment {
         let mut candidate = self.committed.clone();
         let mut terminal_events = Vec::new();
         for (support_index, support) in prepared.supports().iter().enumerate() {
-            for lane_id in &self.static_context.lane_ids {
-                let inputs = support.snow_inputs_by_lane.get(lane_id).ok_or(
-                    DirectSnowStage3V11AttachmentError::Support("missing lane support input"),
-                )?;
-                let support_forcing = support
-                    .support_forcing_by_lane
-                    .get(lane_id)
-                    .copied()
-                    .ok_or(DirectSnowStage3V11AttachmentError::Support(
-                        "missing sealed support forcing",
-                    ))?;
-                let state = candidate.stage3_by_lane.get(lane_id).ok_or(
-                    DirectSnowStage3V11AttachmentError::Identity("missing committed Stage-3 lane"),
-                )?;
-                let result = Wb11HydrologyKernel::evaluate_stage3_persistent_support(
-                    inputs,
-                    state,
-                    *lane_id,
-                    state.next_interval_index,
-                    support_forcing,
-                    DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
-                )?;
-                let (ending, event) = if let Some(event) = result.terminal_event {
-                    let selected = select_actual_terminal_candidate(
+            let covered_support = !support.shared_carrier_by_lane.is_empty();
+            let beginning_stage3 = candidate.stage3_by_lane.clone();
+            if !covered_support {
+                for lane_id in &self.static_context.lane_ids {
+                    let inputs = support.snow_inputs_by_lane.get(lane_id).ok_or(
+                        DirectSnowStage3V11AttachmentError::Support("missing lane support input"),
+                    )?;
+                    let support_forcing = support
+                        .support_forcing_by_lane
+                        .get(lane_id)
+                        .copied()
+                        .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                            "missing sealed support forcing",
+                        ))?;
+                    let state = candidate.stage3_by_lane.get(lane_id).ok_or(
+                        DirectSnowStage3V11AttachmentError::Identity(
+                            "missing committed Stage-3 lane",
+                        ),
+                    )?;
+                    let result = Wb11HydrologyKernel::evaluate_stage3_persistent_support(
                         inputs,
                         state,
                         *lane_id,
                         state.next_interval_index,
-                        support,
                         support_forcing,
-                        event,
-                        self.static_context.minimum_support_ns,
+                        DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
                     )?;
-                    let ending = selected.1.state.clone();
-                    (ending, Some(selected.0))
-                } else {
-                    (result.state, None)
-                };
-                candidate.stage3_by_lane.insert(*lane_id, ending.clone());
-                if let Some(event) = event {
-                    candidate.accepted_event_ordinal = candidate
-                        .accepted_event_ordinal
-                        .checked_add(1)
-                        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                            "terminal event ordinal overflow",
-                        ))?;
-                    terminal_events.push(event);
+                    let (ending, event) = if let Some(event) = result.terminal_event {
+                        let selected = select_actual_terminal_candidate(
+                            inputs,
+                            state,
+                            *lane_id,
+                            state.next_interval_index,
+                            support,
+                            support_forcing,
+                            event,
+                            self.static_context.minimum_support_ns,
+                        )?;
+                        let ending = selected.1.state.clone();
+                        (ending, Some(selected.0))
+                    } else {
+                        (result.state, None)
+                    };
+                    candidate.stage3_by_lane.insert(*lane_id, ending.clone());
+                    if let Some(event) = event {
+                        candidate.accepted_event_ordinal = candidate
+                            .accepted_event_ordinal
+                            .checked_add(1)
+                            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                                "terminal event ordinal overflow",
+                            ))?;
+                        terminal_events.push(event);
+                    }
                 }
             }
 
@@ -718,21 +879,41 @@ impl DirectSnowStage3V11ShadowAttachment {
                 forcing_receipt,
                 candidate.next_parent_sequence,
             )?;
-            let (parent, consumer, clock, finalized) = execute_real_v11_parent(
-                &self.static_context,
-                &beginning_parent,
-                &candidate.real_consumer,
-                &beginning_clock,
-                support,
-                prepared.day_index(),
-                support_index,
-                forcing_receipt,
-                canonical_stage3_snow_owner_bytes(&candidate.stage3_by_lane)?,
-            )?;
+            let (parent, consumer, clock, finalized, covered_stage3) = if covered_support {
+                let (parent, consumer, clock, finalized, ending_stage3) =
+                    execute_covered_real_v11_parent(
+                        &self.static_context,
+                        &beginning_parent,
+                        &candidate.real_consumer,
+                        &beginning_clock,
+                        support,
+                        prepared.day_index(),
+                        support_index,
+                        forcing_receipt,
+                        beginning_stage3,
+                    )?;
+                (parent, consumer, clock, finalized, Some(ending_stage3))
+            } else {
+                let (parent, consumer, clock, finalized) = execute_real_v11_parent(
+                    &self.static_context,
+                    &beginning_parent,
+                    &candidate.real_consumer,
+                    &beginning_clock,
+                    support,
+                    prepared.day_index(),
+                    support_index,
+                    forcing_receipt,
+                    canonical_stage3_snow_owner_bytes(&candidate.stage3_by_lane)?,
+                )?;
+                (parent, consumer, clock, finalized, None)
+            };
             candidate.v11_parent_state = parent;
             candidate.real_consumer = consumer;
             candidate.coupled_clock = clock;
             candidate.last_v11_parent_candidate = Some(finalized);
+            if let Some(ending_stage3) = covered_stage3 {
+                candidate.stage3_by_lane = ending_stage3;
+            }
             candidate.next_parent_sequence = candidate.next_parent_sequence.checked_add(1).ok_or(
                 DirectSnowStage3V11AttachmentError::Identity("V11 parent sequence overflow"),
             )?;
@@ -1025,14 +1206,36 @@ fn canonical_parent_forcing_digest(
     accepted_gsi_receipt: Digest32,
     support: &DirectSnowStage3V11PreparedSupport,
 ) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
-    canonical_parent_forcing_digest_from_parts(
+    let v11_forcing_receipt = support.covered_v11_interval.as_ref().map_or(
+        support.v11_interval.lse_forcing.forcing_sha256.as_str(),
+        |interval| interval.lse_forcing.forcing_sha256.as_str(),
+    );
+    let base = canonical_parent_forcing_digest_from_parts(
         day_index,
         interval_index,
         accepted_gsi_receipt,
         support.support,
-        support.v11_interval.lse_forcing.forcing_sha256.as_str(),
+        v11_forcing_receipt,
         &support.support_identity_by_lane,
-    )
+    )?;
+    let (
+        stage3_support_forcing_sha256,
+        stage3_configuration_sha256,
+        covered_v11_forcing_sha256,
+        carrier_configuration_sha256,
+    ) = support.forcing_projections()?;
+    let mut bytes = Vec::with_capacity(32 + 4 * 32);
+    bytes.extend_from_slice(b"OPENWEPP_STAGE3_V11_PARENT_FORCING_COVERED_V1\0");
+    bytes.extend_from_slice(base.as_bytes());
+    for projection in [
+        stage3_support_forcing_sha256,
+        stage3_configuration_sha256,
+        covered_v11_forcing_sha256,
+        carrier_configuration_sha256,
+    ] {
+        bytes.extend_from_slice(projection.as_bytes());
+    }
+    Ok(digest_bytes(&bytes))
 }
 
 fn canonical_parent_forcing_digest_from_parts(
@@ -1250,6 +1453,162 @@ fn execute_real_v11_parent(
     let parent_after_segment = parent.clone();
     let finalized = parent.finalize(&context.vegetation_configuration)?;
     Ok((parent_after_segment, consumer, final_clock, finalized))
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    clippy::too_many_lines,
+    clippy::type_complexity
+)]
+fn execute_covered_real_v11_parent(
+    context: &DirectSnowStage3V11StaticContext,
+    beginning_parent: &V11ParentTransaction,
+    beginning_consumer: &DirectV10RealConsumerShadow,
+    beginning_clock: &CoupledClockStateV1,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    day_index: usize,
+    interval_index: usize,
+    forcing_receipt: Digest32,
+    beginning_stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+) -> Result<
+    (
+        V11ParentTransaction,
+        DirectV10RealConsumerShadow,
+        CoupledClockStateV1,
+        V11ParentCandidate,
+        BTreeMap<u32, DirectSnowStage3PersistentState>,
+    ),
+    DirectSnowStage3V11AttachmentError,
+> {
+    if beginning_parent.parent_transaction_id() != beginning_clock.parent_transaction_id()
+        || beginning_clock.accepted_until() != prepared.support.start_ns()
+        || beginning_clock.parent_support() != prepared.support
+        || beginning_clock.owners().len()
+            != openwepp_vegetation::v11::V11_COMPLETE_OWNER_MANIFEST.len()
+        || prepared.shared_carrier_by_lane.is_empty()
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "covered V11/coupled-time parent beginning",
+        ));
+    }
+    let parent_id = beginning_parent.parent_transaction_id();
+    let support = prepared.support;
+    let start = support.start_ns();
+    let end = support.end_ns();
+    let constraint = StepConstraintV1::new(
+        parent_id,
+        start,
+        end,
+        "v11-snow-covered-real-consumer".to_owned(),
+        ConstraintClass::HardBoundary,
+        context.controller_policy,
+        context.calendar_receipt,
+        forcing_receipt,
+    )?;
+    let reduction = reduce_constraints(&[constraint], parent_id, start, end, None)?;
+    let ledger_digest = complete_owner_set_digest(beginning_clock.owners())?;
+    let mut ledger_preimage = Vec::new();
+    ledger_preimage.extend_from_slice(parent_id.digest().as_bytes());
+    ledger_preimage.extend_from_slice(&start.get().to_be_bytes());
+    ledger_preimage.extend_from_slice(&end.get().to_be_bytes());
+    let ledger = LedgerEntryV1::new(
+        "complete-owner-custody".to_owned(),
+        "canonical-owner-state".to_owned(),
+        ledger_digest,
+        ledger_digest,
+        digest_bytes(&ledger_preimage),
+    )?;
+    let segment = beginning_clock.active_segment_id();
+    let covered_interval = prepared.covered_v11_interval.as_ref().ok_or(
+        DirectSnowStage3V11AttachmentError::Support(
+            "covered support missing covered V11 projection",
+        ),
+    )?;
+
+    let provisional_slab = CoupledSlabCandidateV1::new(
+        beginning_clock,
+        segment,
+        support,
+        &reduction,
+        beginning_clock.owners().to_vec(),
+        vec![ledger.clone()],
+    )?;
+    let mut provisional_clock = beginning_clock.clone();
+    let provisional_receipt = accept_slab(&mut provisional_clock, provisional_slab)?;
+    let provisional_stack = DirectV11SnowCoveredRealConsumerStack::new(
+        beginning_consumer,
+        DirectV11SnowCoveredStackInputs {
+            interval: covered_interval,
+            stage3_inputs_by_lane: &prepared.snow_inputs_by_lane,
+            stage3_forcing_by_lane: &prepared.support_forcing_by_lane,
+            carrier_by_lane: &prepared.shared_carrier_by_lane,
+            stage3_beginning_by_lane: beginning_stage3.clone(),
+            day_index,
+            interval_index,
+        },
+    );
+    let mut provisional_executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
+        stack: provisional_stack,
+    };
+    let provisional_segment = execute_v11_segment(
+        &context.vegetation_configuration,
+        beginning_parent,
+        &provisional_receipt,
+        &mut provisional_executor,
+    )?;
+    let ending_owners = owner_states_from_envelopes(&provisional_segment.ending_resource_owners)?;
+    let final_slab = CoupledSlabCandidateV1::new(
+        beginning_clock,
+        segment,
+        support,
+        &reduction,
+        ending_owners,
+        vec![ledger],
+    )?;
+    let mut final_clock = beginning_clock.clone();
+    let final_receipt = accept_slab(&mut final_clock, final_slab)?;
+    let final_stack = DirectV11SnowCoveredRealConsumerStack::new(
+        beginning_consumer,
+        DirectV11SnowCoveredStackInputs {
+            interval: covered_interval,
+            stage3_inputs_by_lane: &prepared.snow_inputs_by_lane,
+            stage3_forcing_by_lane: &prepared.support_forcing_by_lane,
+            carrier_by_lane: &prepared.shared_carrier_by_lane,
+            stage3_beginning_by_lane: beginning_stage3,
+            day_index,
+            interval_index,
+        },
+    );
+    let mut final_executor =
+        crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack: final_stack };
+    let final_segment = execute_v11_segment(
+        &context.vegetation_configuration,
+        beginning_parent,
+        &final_receipt,
+        &mut final_executor,
+    )?;
+    if final_segment.ending_resource_owners != provisional_segment.ending_resource_owners {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "covered V11 ending owner fixed point",
+        ));
+    }
+    let mut parent = beginning_parent.clone();
+    parent.accept_segment(&context.vegetation_configuration, final_segment)?;
+    let ending_stage3 = final_executor.stack.take_staged_stage3().ok_or(
+        DirectSnowStage3V11AttachmentError::Identity("missing staged covered Stage-3 ending"),
+    )?;
+    let consumer = final_executor.stack.take_staged_ending().ok_or(
+        DirectSnowStage3V11AttachmentError::Identity("missing staged covered ending"),
+    )?;
+    let parent_after_segment = parent.clone();
+    let finalized = parent.finalize(&context.vegetation_configuration)?;
+    Ok((
+        parent_after_segment,
+        consumer,
+        final_clock,
+        finalized,
+        ending_stage3,
+    ))
 }
 
 fn owner_states_from_envelopes(

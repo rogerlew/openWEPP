@@ -127,7 +127,9 @@ fields.
   binding corrections with poison regressions.
 - [x] Run-relative support chronology and per-support forcing identity binding,
   including day-boundary and forcing-identity regressions.
-- [ ] Covered consumer and terminal chronology.
+- [~] Persistent covered V11/Stage-3 adopter, typed covered input, shared
+  carrier receipt, canonical ending owners, and exact rollback; terminal
+  chronology remains open.
 - [~] Runner-owned 48-support capability/provider bind; physical support
   construction and complete restart remain open.
 - [ ] Scenario matrix, reviews, exact-head gates, and disposition.

@@ -25,10 +25,15 @@ mod tests {
         PreparedStage3V11DayV1, PreparedStage3V11SupportIdentityV1,
         PreparedStage3V11SupportV1,
     };
+    use crate::v9_real_consumer_shadow::{
+        DirectV11SnowCoveredRealConsumerStack, DirectV11SnowCoveredSegmentInput,
+        DirectV11SnowCoveredStackInputs,
+    };
     use crate::hydrology::{
         DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowStage3SupportInput,
         DirectSnowSurfaceEnergyOptions,
-        SnowDensityModel, SnowMeltModel, SnowStage3LiquidRoutingModel,
+        SnowDensityModel, SnowMeltModel, SnowStage3LiquidRoutingModel, SnowSurfaceLongwaveModel,
+        Wb11HydrologyKernel,
     };
     use crate::winter_column::DirectSnowLayerState;
     use openwepp_vegetation::v11::{
@@ -907,6 +912,121 @@ mod tests {
             candidate.accepted_segments[0].lse_support_receipt,
             "parent checkpoint must retain the accepted LSE support receipt"
         );
+    }
+
+    #[test]
+    fn v11_covered_stack_runs_persistent_snow_with_shared_carrier_and_stages_rollback() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let base_interval = day_input(&fixture).intervals.remove(0);
+        let interval = segment_interval(&base_interval, 1_800_000_000_000, 41, 0.0);
+        let mut interval = interval;
+        interval.lse_forcing.snow_present_at_beginning = true;
+        interval.lse_forcing.snow_present_at_end = true;
+        interval.lse_forcing.forcing_sha256 = interval
+            .lse_forcing
+            .canonical_sha256()
+            .expect("covered forcing digest");
+        let covered_interval = DirectV11SnowCoveredSegmentInput::from_snow_free(&interval);
+
+        let migrated =
+            migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
+                .expect("migration");
+        let owners = initial_v11_owners(&shadow, &migrated.state);
+        let clock_owners = owners
+            .values()
+            .map(|owner| owner.to_owner_state().expect("clock owner"))
+            .collect::<Vec<_>>();
+        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 1_800_000_000_000);
+        let parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("covered parent");
+
+        let mut stage3_inputs = attachment_stage3_inputs();
+        stage3_inputs.surface_energy_options.longwave_model =
+            SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1;
+        stage3_inputs
+            .surface_energy_options
+            .daily_solar_radiation_mj_m2 = 1.0;
+        stage3_inputs
+            .surface_energy_options
+            .daily_extraterrestrial_radiation_mj_m2 = 2.0;
+        stage3_inputs.surface_energy_options.daylight = true;
+        let stage3_beginning = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            7,
+            stage3_inputs.snow_layers.clone(),
+        )
+        .expect("persistent Stage-3 beginning");
+        let mut carrier = child2c_carrier();
+        carrier.ledger.duration_s = 1_800.0;
+        carrier.ledger.canopy_snow_longwave_exchange_j_m2 /= 2.0;
+        carrier.ledger.snow_canopy_longwave_exchange_j_m2 /= 2.0;
+        let stage3_forcing = DirectSnowStage3SupportInput {
+            forcing: DirectSnowHourlyForcing::zero(),
+            duration_seconds: 1_800.0,
+        };
+        let stage3_inputs_by_lane = BTreeMap::from([(7, stage3_inputs)]);
+        let stage3_forcing_by_lane = BTreeMap::from([(7, stage3_forcing)]);
+        let carrier_by_lane = BTreeMap::from([(7, carrier)]);
+        let stage3_beginning_by_lane = BTreeMap::from([(7, stage3_beginning)]);
+        let stack = DirectV11SnowCoveredRealConsumerStack::new(
+            &shadow,
+            DirectV11SnowCoveredStackInputs {
+                interval: &covered_interval,
+                stage3_inputs_by_lane: &stage3_inputs_by_lane,
+                stage3_forcing_by_lane: &stage3_forcing_by_lane,
+                carrier_by_lane: &carrier_by_lane,
+                stage3_beginning_by_lane,
+                day_index: 0,
+                interval_index: 0,
+            },
+        );
+        let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
+        let segment = execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+            .expect("persistent covered V11 segment");
+        assert_eq!(segment.ending_resource_owners.len(), 7);
+        assert!(executor.stack.last_carrier_receipts().is_some());
+        assert_eq!(
+            executor.stack.take_staged_stage3().expect("Stage-3 ending")[&7]
+                .next_interval_index,
+            1
+        );
+        let ending = executor.stack.take_staged_ending().expect("V11 ending");
+        assert_eq!(ending.inner.accepted_interval_count(), 1);
+
+        let mut poisoned_carrier = carrier_by_lane.clone();
+        poisoned_carrier
+            .get_mut(&7)
+            .expect("carrier lane")
+            .canopy_intercepted_snow = true;
+        let mut poisoned = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
+            stack: DirectV11SnowCoveredRealConsumerStack::new(
+                &shadow,
+                DirectV11SnowCoveredStackInputs {
+                    interval: &covered_interval,
+                    stage3_inputs_by_lane: &stage3_inputs_by_lane,
+                    stage3_forcing_by_lane: &stage3_forcing_by_lane,
+                    carrier_by_lane: &poisoned_carrier,
+                    stage3_beginning_by_lane: BTreeMap::from([(
+                        7,
+                        Wb11HydrologyKernel::initialize_stage3_persistent_state(
+                            7,
+                            attachment_stage3_inputs().snow_layers,
+                        )
+                        .expect("rollback Stage-3 beginning"),
+                    )]),
+                    day_index: 0,
+                    interval_index: 0,
+                },
+            ),
+        };
+        assert!(execute_v11_segment(&migrated.configuration, &parent, &slab, &mut poisoned).is_err());
+        assert!(poisoned.stack.last_carrier_receipts().is_none());
+        assert!(poisoned.stack.take_staged_ending().is_none());
     }
 
     #[test]

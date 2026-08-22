@@ -2,7 +2,7 @@
 
 | Scenario | Required result | Status |
 | --- | --- | --- |
-| snow persists for full support | covered executor advances | `NOT RUN` |
+| snow persists for full support | covered executor advances | `PASS / one-support focused case` |
 | sublimation/deposition | signed vapor ledger is valid | `NOT RUN` |
 | rain on snow/refreeze/melt | phase and energy custody valid | `NOT RUN` |
 | meltout at start/end/interior | chronology and remainder valid | `NOT RUN` |

@@ -19,7 +19,8 @@ forcing digest. It must not contain event time, ending owners, live
 conductance, terminal parcel, or owner candidates.
 
 Status: `IN PROGRESS / capability sealing and destination-complete provider
-bind landed; runner physical support builder and covered executor remain open`.
+bind landed; persistent covered adopter is proven for one support; runner
+physical support builder and complete day installation remain open`.
 
 `Static:` `PreparedStage3V11DayV1::bind_provider_day` now admits only 48
 supports, returns `ValidatedPreparedStage3V11DayV1`, and binds every support
@@ -43,3 +44,8 @@ its ordered sealed provider/GSI, exposure, WB14, precipitation, and lane/OFE/
 tile receipt set. That digest is the actual ParentAuthority, StepConstraint,
 and CoupledClockState forcing identity; no future parent is preconstructed
 with the static context's repeated digest.
+
+`Static:` Covered support drafts additionally carry the distinct covered-V11
+segment input, Stage-3 support/configuration projections, and sealed shared
+carrier configuration. The runner has not yet been given authority to derive
+those drafts internally from its staged owners and provider clock.

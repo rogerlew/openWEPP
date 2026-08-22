@@ -20,12 +20,16 @@ and CoupledClockState construction. Parent construction does not pre-bind an
 unknown future forcing receipt.
 
 `Static:` The snow-present rejection in
-`DirectSnowStage3V11Attachment`/`DirectV11RealConsumerStack` remains present;
-no covered interval is routed through snow-free LSE.
+`DirectSnowStage3V11Attachment`/`DirectV11RealConsumerStack` remains present.
+Covered supports use the distinct `DirectV11SnowCoveredSegmentInput` and
+`DirectV11SnowCoveredRealConsumerStack`; they do not enter the snow-free
+adopter. The covered adopter evaluates the shared carrier and Stage-3 support
+before the explicitly named canopy/soil continuation core.
 
 `Ran:` the Nix-provided six-package `cargo check` passed in this increment;
-the orchestrator lib test suite passed 745/745 executed tests with 0 failures
-and 1 ignored (746 total); the focused attachment tests passed 5/5;
+the orchestrator lib test suite passed 746/746 executed tests with 0 failures
+and 1 ignored (747 total), including the persistent covered support and
+rollback test; the focused attachment tests passed 5/5;
 the two-day provider-bound regression passed 1/1; climate adapter passed 8/8;
 coupled-time passed 13/13; V11 vegetation passed 9/9; test compilation and
 formatting checks passed; and `git diff --check` passed. Warnings-denied Clippy
@@ -41,7 +45,7 @@ matrix, and independent reviews are not yet dispositioned.
 | Gate | Status | Evidence |
 | --- | --- | --- |
 | contract/operand mapping | `PASS` | `covered-consumer-contract-map.md` |
-| covered executor | `BLOCKED` | implementation pending |
+| covered executor | `IN PROGRESS` | persistent one-support adopter and rollback pass; physical matrix and terminal branch remain |
 | runner 48-support capability | `IN PROGRESS` | provider bind implemented; support construction pending |
 | terminal liquid exact once | `BLOCKED` | `event-and-terminal-liquid-lineage.md` |
 | complete restart | `BLOCKED` | `restart-schema-and-equivalence.md` |

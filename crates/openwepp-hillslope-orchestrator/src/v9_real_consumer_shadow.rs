@@ -39,6 +39,10 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 
+use crate::hydrology::{
+    DirectActiveSnowPartitionInputs, DirectSnowStage3EvaluationError,
+    DirectSnowStage3PersistentState, DirectSnowStage3SupportInput, Wb11HydrologyKernel,
+};
 use crate::land_surface_energy_shadow::{
     CoveredV8OwnerEnvelopeError, ExecuteV8LseRuntimeShadowError,
     LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError,
@@ -52,6 +56,9 @@ use crate::runtime_inputs::{
     SnowFreeHalfHourProviderConfiguration, SnowFreeHalfHourProviderCursor,
     SnowFreeHalfHourStaticConfiguration, SnowFreePrecipitationParcelReceipt,
     ValidatedSnowFreeHalfHourForcingReceipts,
+};
+use crate::snow_stage3_terminal_handoff::{
+    SharedCarrierInput, SharedCarrierReceipt, SnowStage3HandoffError, evaluate_shared_carrier,
 };
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyShadowAdapter, RealHydrologyShadowError,
@@ -77,6 +84,74 @@ pub struct DirectV11RealConsumerStack<'a> {
     ending: Option<DirectV10RealConsumerShadow>,
     last_support_receipt: Option<LseSupportAdmissibilityReceiptV1>,
     ending_snow_owner_bytes: Option<Vec<u8>>,
+}
+
+/// Explicit covered lower-boundary adopter for the V11 imported transaction.
+///
+/// This type is intentionally separate from [`DirectV11RealConsumerStack`].
+/// It evaluates the Child-2C carrier and the actual persistent Stage-3
+/// transition from the same beginning states and support before it constructs
+/// the V11 canopy/soil owner candidate.
+#[derive(Clone)]
+pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
+    pub beginning: DirectV10RealConsumerShadow,
+    pub interval: &'a DirectV11SnowCoveredSegmentInput,
+    pub stage3_inputs_by_lane: &'a BTreeMap<u32, DirectActiveSnowPartitionInputs>,
+    pub stage3_forcing_by_lane: &'a BTreeMap<u32, DirectSnowStage3SupportInput>,
+    pub carrier_by_lane: &'a BTreeMap<u32, SharedCarrierInput>,
+    pub stage3_beginning_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    pub day_index: usize,
+    pub interval_index: usize,
+    ending: Option<DirectV10RealConsumerShadow>,
+    ending_stage3_by_lane: Option<BTreeMap<u32, DirectSnowStage3PersistentState>>,
+    last_support_receipt: Option<LseSupportAdmissibilityReceiptV1>,
+    last_carrier_receipts: Option<BTreeMap<u32, SharedCarrierReceipt>>,
+}
+
+pub struct DirectV11SnowCoveredStackInputs<'a> {
+    pub interval: &'a DirectV11SnowCoveredSegmentInput,
+    pub stage3_inputs_by_lane: &'a BTreeMap<u32, DirectActiveSnowPartitionInputs>,
+    pub stage3_forcing_by_lane: &'a BTreeMap<u32, DirectSnowStage3SupportInput>,
+    pub carrier_by_lane: &'a BTreeMap<u32, SharedCarrierInput>,
+    pub stage3_beginning_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    pub day_index: usize,
+    pub interval_index: usize,
+}
+
+impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
+    #[must_use]
+    pub fn new(
+        beginning: &DirectV10RealConsumerShadow,
+        inputs: DirectV11SnowCoveredStackInputs<'a>,
+    ) -> Self {
+        Self {
+            beginning: beginning.clone(),
+            interval: inputs.interval,
+            stage3_inputs_by_lane: inputs.stage3_inputs_by_lane,
+            stage3_forcing_by_lane: inputs.stage3_forcing_by_lane,
+            carrier_by_lane: inputs.carrier_by_lane,
+            stage3_beginning_by_lane: inputs.stage3_beginning_by_lane,
+            day_index: inputs.day_index,
+            interval_index: inputs.interval_index,
+            ending: None,
+            ending_stage3_by_lane: None,
+            last_support_receipt: None,
+            last_carrier_receipts: None,
+        }
+    }
+
+    pub fn take_staged_ending(&mut self) -> Option<DirectV10RealConsumerShadow> {
+        self.ending.take()
+    }
+
+    pub fn take_staged_stage3(&mut self) -> Option<BTreeMap<u32, DirectSnowStage3PersistentState>> {
+        self.ending_stage3_by_lane.take()
+    }
+
+    #[must_use]
+    pub fn last_carrier_receipts(&self) -> Option<&BTreeMap<u32, SharedCarrierReceipt>> {
+        self.last_carrier_receipts.as_ref()
+    }
 }
 
 impl<'a> DirectV11RealConsumerStack<'a> {
@@ -136,6 +211,10 @@ pub enum DirectV11RealConsumerError {
     Serialization(#[from] serde_json::Error),
     #[error("V11 actual-consumer identity mismatch: {0}")]
     Identity(&'static str),
+    #[error(transparent)]
+    CoveredBoundary(#[from] SnowStage3HandoffError),
+    #[error(transparent)]
+    Stage3(#[from] DirectSnowStage3EvaluationError),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -143,6 +222,49 @@ pub struct DirectV9ShadowIntervalInput {
     pub lse_forcing: LandSurfaceForcing,
     pub vegetation_forcing: SnowFreeForcing,
     pub wb14_parameters: Vec<DirectOfeWb14Parameters>,
+}
+
+/// Sealed atmospheric and receiver projection for a snow-covered V11
+/// segment. This is deliberately distinct from [`DirectV9ShadowIntervalInput`]:
+/// the covered adopter owns the snow/carrier boundary and may not silently
+/// enter the snow-free interval path.
+#[derive(Clone, Debug, PartialEq)]
+pub struct DirectV11SnowCoveredSegmentInput {
+    pub(crate) lse_forcing: LandSurfaceForcing,
+    pub(crate) vegetation_forcing: SnowFreeForcing,
+    pub(crate) wb14_parameters: Vec<DirectOfeWb14Parameters>,
+}
+
+impl DirectV11SnowCoveredSegmentInput {
+    pub fn try_new(
+        lse_forcing: LandSurfaceForcing,
+        vegetation_forcing: SnowFreeForcing,
+        wb14_parameters: Vec<DirectOfeWb14Parameters>,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        if !lse_forcing.snow_present_at_beginning
+            || !lse_forcing.snow_present_at_end
+            || lse_forcing.snow_terminal_payload_present
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered input requires persistent snow operands",
+            ));
+        }
+        Ok(Self {
+            lse_forcing,
+            vegetation_forcing,
+            wb14_parameters,
+        })
+    }
+
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) fn from_snow_free(input: &DirectV9ShadowIntervalInput) -> Self {
+        Self {
+            lse_forcing: input.lse_forcing.clone(),
+            vegetation_forcing: input.vegetation_forcing.clone(),
+            wb14_parameters: input.wb14_parameters.clone(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -566,7 +688,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
         let mut candidate = self.beginning.clone();
         let envelope = candidate
             .inner
-            .construct_interval_envelope_with_duration(
+            .construct_snow_free_interval_envelope_with_duration(
                 self.day_index,
                 self.interval_index,
                 self.interval,
@@ -730,6 +852,301 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
         self.ending = Some(candidate);
         Ok(output)
     }
+}
+
+impl crate::v11_vegetation_consumer::DirectV11ImportedStack
+    for DirectV11SnowCoveredRealConsumerStack<'_>
+{
+    type Error = DirectV11RealConsumerError;
+
+    fn execute_imported_v10_stack(
+        &mut self,
+        input: &V11ImportedV10SegmentInput,
+    ) -> Result<V11ImportedV10SegmentOutput, Self::Error> {
+        if input.configuration != self.beginning.vegetation_configuration
+            || input.beginning != self.beginning.vegetation_state
+            || input.duration_s_bits != input.support.duration_s_bits()
+            || self.interval.lse_forcing.interval_s.to_bits() != input.duration_s_bits
+            || self.carrier_by_lane.is_empty()
+            || self.carrier_by_lane.keys().collect::<Vec<_>>()
+                != self.stage3_beginning_by_lane.keys().collect::<Vec<_>>()
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered support / DirectV10 beginning join",
+            ));
+        }
+        let interval_s = f64::from_bits(input.duration_s_bits);
+        let mut ending_stage3 = BTreeMap::new();
+        let mut carrier_receipts = BTreeMap::new();
+        for (lane_id, beginning) in &self.stage3_beginning_by_lane {
+            let stage3_inputs = self.stage3_inputs_by_lane.get(lane_id).ok_or(
+                DirectV11RealConsumerError::Identity("covered Stage-3 input lane"),
+            )?;
+            let stage3_forcing = self.stage3_forcing_by_lane.get(lane_id).copied().ok_or(
+                DirectV11RealConsumerError::Identity("covered Stage-3 forcing lane"),
+            )?;
+            if stage3_forcing.duration_seconds.to_bits() != interval_s.to_bits() {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered Stage-3/V11 support duration",
+                ));
+            }
+            let carrier = self
+                .carrier_by_lane
+                .get(lane_id)
+                .ok_or(DirectV11RealConsumerError::Identity("covered carrier lane"))?;
+            if carrier.ledger.duration_s.to_bits() != interval_s.to_bits() {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered carrier support duration",
+                ));
+            }
+            let carrier_receipt = evaluate_shared_carrier(carrier)?;
+            let result =
+                Wb11HydrologyKernel::evaluate_stage3_persistent_support_without_terminal_event(
+                    stage3_inputs,
+                    beginning,
+                    *lane_id,
+                    beginning.next_interval_index,
+                    stage3_forcing,
+                )?;
+            if result.terminal_event.is_some() {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered adopter received terminal event before terminal chronology",
+                ));
+            }
+            ending_stage3.insert(*lane_id, result.state);
+            carrier_receipts.insert(*lane_id, carrier_receipt);
+        }
+        let first_receipt =
+            carrier_receipts
+                .values()
+                .next()
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered carrier receipt",
+                ))?;
+        if carrier_receipts.values().any(|receipt| {
+            receipt.shared_air_temperature_k.to_bits()
+                != first_receipt.shared_air_temperature_k.to_bits()
+                || receipt.shared_air_specific_humidity.to_bits()
+                    != first_receipt.shared_air_specific_humidity.to_bits()
+        }) {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered lanes do not share one carrier air state",
+            ));
+        }
+        let _interval_index = u8::try_from(self.interval_index)
+            .map_err(|_| DirectV11RealConsumerError::Identity("V11 interval index overflow"))?;
+        let candidate = self.beginning.clone();
+        let envelope = candidate
+            .inner
+            .construct_covered_interval_envelope_with_duration(
+                self.day_index,
+                self.interval_index,
+                self.interval,
+                interval_s,
+                input.duration_s_bits,
+                first_receipt,
+            )
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+            })?;
+        let ending_snow_owner_bytes = canonical_stage3_snow_owner_bytes_v11(&ending_stage3)?;
+        let (output, candidate, support_receipt) = finalize_v11_imported_segment(
+            &candidate,
+            input,
+            &envelope,
+            ending_snow_owner_bytes,
+            self.day_index,
+        )?;
+        self.last_support_receipt = Some(support_receipt);
+        self.last_carrier_receipts = Some(carrier_receipts);
+        self.ending_stage3_by_lane = Some(ending_stage3);
+        self.ending = Some(candidate);
+        Ok(output)
+    }
+}
+
+fn canonical_stage3_snow_owner_bytes_v11(
+    states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+) -> Result<Vec<u8>, DirectV11RealConsumerError> {
+    #[derive(Serialize)]
+    struct CanonicalSnowOwner<'a> {
+        schema: &'static str,
+        lanes: Vec<(&'a u32, &'a DirectSnowStage3PersistentState)>,
+    }
+    serde_json::to_vec(&CanonicalSnowOwner {
+        schema: "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V1",
+        lanes: states.iter().collect(),
+    })
+    .map_err(|_| DirectV11RealConsumerError::Identity("canonical Stage-3 snow bytes"))
+}
+
+/// Shared V11 post-boundary transaction assembly. Both lower-boundary
+/// adopters use this owner/resource/finalization path; only the envelope
+/// construction differs between snow-free and covered segments.
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn finalize_v11_imported_segment(
+    beginning: &DirectV10RealConsumerShadow,
+    input: &V11ImportedV10SegmentInput,
+    envelope: &UncommittedCoveredV8OwnerEnvelope,
+    ending_snow_owner_bytes: Vec<u8>,
+    day_index: usize,
+) -> Result<
+    (
+        V11ImportedV10SegmentOutput,
+        DirectV10RealConsumerShadow,
+        LseSupportAdmissibilityReceiptV1,
+    ),
+    DirectV11RealConsumerError,
+> {
+    let support_receipt = LseSupportAdmissibilityReceiptV1::admit(
+        &beginning.inner.lse_configuration,
+        &beginning.inner.lse_state,
+        digest32_hex(input.parent_transaction_id.digest()),
+        digest32_hex(input.accepted_slab_receipt.segment_id().digest()),
+        digest32_hex(input.accepted_slab_receipt.slab_id().digest()),
+        input.accepted_slab_receipt.slab_ordinal(),
+        input.support.start_ns().get(),
+        input.support.end_ns().get(),
+        input.duration_s_bits,
+        beginning.inner.soil_thermal.state_sha256.clone(),
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
+    })?;
+    envelope.validate().map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
+    })?;
+    let mut resource_debits = v11_nitrogen_resource_debits(envelope, input)?;
+    resource_debits.extend(v11_water_resource_debits(
+        envelope,
+        &input.configuration,
+        input,
+    )?);
+
+    let mut candidate = beginning.clone();
+    candidate
+        .inner
+        .accept_envelope(envelope.transaction_id(), envelope)
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+        })?;
+    candidate.vegetation_state = project_v9_runtime_to_v10(
+        candidate.inner.vegetation_state(),
+        &candidate.vegetation_configuration,
+    )
+    .map_err(|error| DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::V10(error)))?;
+    candidate.lse_state = project_validated_v1_runtime_to_v2(
+        &candidate.inner.lse_configuration,
+        candidate.inner.lse_state(),
+        &candidate.lse_configuration,
+        &openwepp_land_surface_energy::Sha256Digest::try_new(
+            candidate
+                .vegetation_configuration
+                .configuration_sha256
+                .clone(),
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
+        })?,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
+    })?;
+
+    let segment_ending = candidate.vegetation_state.clone();
+    normalize_v11_staged_parent_lineage(&mut candidate, input.beginning.0.last_transaction_id)?;
+    let snow = V11OwnerEnvelope::try_new("snow".to_owned(), ending_snow_owner_bytes)?;
+    let surface = candidate
+        .inner
+        .hydrology_frame
+        .surface_liquid_shadow
+        .as_ref()
+        .ok_or(DirectV11RealConsumerError::Identity(
+            "missing staged surface-liquid owner",
+        ))?;
+    let surface_bytes = surface
+        .canonical_bytes(&candidate.inner.surface_configuration)
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Serialization(error.to_string()),
+            ))
+        })?;
+    let beginning_hydrology_adapter = RealHydrologyShadowAdapter::try_from_day_start(
+        &beginning.inner.hydrology_frame,
+        day_index,
+        TransactionId(input.beginning.0.last_transaction_id),
+        f64::from_bits(input.duration_s_bits),
+        candidate.inner.surface_configuration.owner_id.clone(),
+        &candidate.inner.layer_maps,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
+    })?;
+    let hydrology_adapter = RealHydrologyShadowAdapter::try_from_day_start(
+        envelope.hydrology().ending_frame(),
+        day_index,
+        TransactionId(input.beginning.0.last_transaction_id),
+        f64::from_bits(input.duration_s_bits),
+        candidate.inner.surface_configuration.owner_id.clone(),
+        &candidate.inner.layer_maps,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
+    })?;
+    let ending_resource_owners = [
+        ("snow".to_owned(), snow),
+        (
+            "land_surface_energy".to_owned(),
+            v11_owner_envelope("land_surface_energy", &candidate.inner.lse_state)?,
+        ),
+        (
+            "surface_liquid".to_owned(),
+            V11OwnerEnvelope::try_new("surface_liquid".to_owned(), surface_bytes)?,
+        ),
+        (
+            "hydrology".to_owned(),
+            V11OwnerEnvelope::try_new(
+                "hydrology".to_owned(),
+                hydrology_adapter.snapshot_bytes().to_vec(),
+            )?,
+        ),
+        (
+            "bgc".to_owned(),
+            v11_owner_envelope("bgc", &candidate.inner.biogeochemistry)?,
+        ),
+        (
+            "soil_thermal".to_owned(),
+            v11_owner_envelope("soil_thermal", &candidate.inner.soil_thermal)?,
+        ),
+    ]
+    .into_iter()
+    .collect();
+    let shared_resource_transitions = v11_shared_resource_transitions(
+        envelope,
+        input,
+        &resource_debits,
+        &ending_resource_owners,
+        &beginning_hydrology_adapter,
+        &hydrology_adapter,
+        &beginning.inner.biogeochemistry,
+    )?;
+    let output = V11ImportedV10SegmentOutput {
+        ending: segment_ending,
+        lse_support_receipt: V11LseSupportReceiptEnvelope::from_canonical_json(
+            serde_json::to_vec(&support_receipt).map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                    DirectV9RealConsumerError::Serialization(error.to_string()),
+                ))
+            })?,
+        )
+        .map_err(|_| DirectV11RealConsumerError::Identity("V11 LSE support receipt"))?,
+        resource_debits,
+        admitted_resource_fluxes: Vec::<V11AdmittedResourceFlux>::new(),
+        shared_resource_transitions,
+        ending_resource_owners,
+        material_transfers: envelope.vegetation().material_proposals().to_vec(),
+    };
+    Ok((output, candidate, support_receipt))
 }
 
 fn digest32_hex(value: Digest32) -> String {
@@ -2084,7 +2501,7 @@ impl DirectV9RealConsumerShadow {
         interval_index: usize,
         input: &DirectV9ShadowIntervalInput,
     ) -> Result<(), DirectV9RealConsumerError> {
-        let envelope = self.construct_interval_envelope_with_duration(
+        let envelope = self.construct_snow_free_interval_envelope_with_duration(
             day_index,
             interval_index,
             input,
@@ -2095,7 +2512,25 @@ impl DirectV9RealConsumerShadow {
     }
 
     #[allow(clippy::too_many_lines)]
-    fn construct_interval_envelope_with_duration(
+    fn construct_snow_free_interval_envelope_with_duration(
+        &self,
+        day_index: usize,
+        interval_index: usize,
+        input: &DirectV9ShadowIntervalInput,
+        interval_s: f64,
+        v11_duration_s_bits: Option<u64>,
+    ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
+        self.construct_canopy_soil_interval_envelope_with_duration(
+            day_index,
+            interval_index,
+            input,
+            interval_s,
+            v11_duration_s_bits,
+        )
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn construct_canopy_soil_interval_envelope_with_duration(
         &self,
         day_index: usize,
         interval_index: usize,
@@ -2238,6 +2673,57 @@ impl DirectV9RealConsumerShadow {
             )?,
         };
         Ok(envelope)
+    }
+
+    /// Construct the V11 canopy/soil envelope for a Child-2C covered slab.
+    ///
+    /// Snow is not admitted to the snow-free LSE owner. The Stage-3 snow
+    /// column and the canopy/snow air carrier are evaluated and sealed by the
+    /// covered adopter before this projection. The V8/LSE endpoint here is
+    /// consequently a typed canopy/soil continuation with the carrier's
+    /// shared air state; it is not the snow-free lower-boundary selector.
+    #[allow(clippy::too_many_arguments)]
+    fn construct_covered_interval_envelope_with_duration(
+        &self,
+        day_index: usize,
+        interval_index: usize,
+        input: &DirectV11SnowCoveredSegmentInput,
+        interval_s: f64,
+        v11_duration_s_bits: u64,
+        carrier: &SharedCarrierReceipt,
+    ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
+        if !input.lse_forcing.snow_present_at_beginning
+            || !input.lse_forcing.snow_present_at_end
+            || input.lse_forcing.snow_terminal_payload_present
+        {
+            return Err(DirectV9RealConsumerError::Unsupported(
+                "covered adopter requires persistent snow operands",
+            ));
+        }
+        let mut canopy_soil_forcing = input.lse_forcing.clone();
+        // The carrier owns the snow surface. The LSE endpoint receives only
+        // the canopy/soil projection after the carrier has supplied the
+        // shared air state; no snow operand is passed to the snow-free owner.
+        canopy_soil_forcing.snow_present_at_beginning = false;
+        canopy_soil_forcing.snow_present_at_end = false;
+        canopy_soil_forcing.air_temperature_k = carrier.shared_air_temperature_k;
+        canopy_soil_forcing.air_specific_humidity_kg_kg = carrier.shared_air_specific_humidity;
+        canopy_soil_forcing.forcing_sha256 = canopy_soil_forcing.canonical_sha256()?;
+        let mut covered_vegetation_forcing = input.vegetation_forcing.clone();
+        covered_vegetation_forcing.air_temperature_k = carrier.shared_air_temperature_k;
+        covered_vegetation_forcing.specific_humidity = carrier.shared_air_specific_humidity;
+        let covered_input = DirectV9ShadowIntervalInput {
+            lse_forcing: canopy_soil_forcing,
+            vegetation_forcing: covered_vegetation_forcing,
+            wb14_parameters: input.wb14_parameters.clone(),
+        };
+        self.construct_canopy_soil_interval_envelope_with_duration(
+            day_index,
+            interval_index,
+            &covered_input,
+            interval_s,
+            Some(v11_duration_s_bits),
+        )
     }
 
     fn accept_envelope(
