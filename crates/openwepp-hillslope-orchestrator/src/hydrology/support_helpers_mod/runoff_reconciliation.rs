@@ -16,6 +16,7 @@ use openwepp_meteorology::surface_energy::{
 use openwepp_unit_boundary::{
     FractionUnitInterval, LinearRateMetersPerSecond, TemperatureCelsius,
 };
+use crate::snow_stage3_terminal_handoff::Stage3SnowSurfaceBoundaryReceiptV1;
 use super::snow_mass_transition::{
     SNOW_SOLID_TO_LIQUID_CLOSURE_TOLERANCE_M, SNOW_STAGE3_LIQUID_CLOSURE_TOLERANCE_M,
 };
@@ -122,7 +123,11 @@ struct Stage3CarrierReconciliation {
     aerodynamic_roughness_length_m: f64,
     turbulent_options: TurbulentTransferOptions,
     surface_vapor_pressure_pa: f64,
-    turbulent: TurbulentFluxDiagnostics,
+    surface_latent_heat_j_kg: Option<f64>,
+    turbulent: Option<TurbulentFluxDiagnostics>,
+    vapor_mass_flux_kg_m2_s: f64,
+    sensible_flux_w_m2: f64,
+    latent_flux_w_m2: f64,
     precipitation_advected_flux_w_m2: f64,
     complete_external_flux_w_m2: f64,
 }
@@ -179,6 +184,7 @@ struct Stage3SurfaceInterval {
     snow_density_kg_m3: f64,
     duration_seconds: f64,
     forcing_duration_seconds: f64,
+    boundary: Option<Stage3SnowSurfaceBoundaryReceiptV1>,
 }
 
 #[derive(Clone, Copy)]

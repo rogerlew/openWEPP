@@ -79,3 +79,37 @@ debt, and existing scheduler/evaluator debt; all-target test compilation also
 reports existing test-target line-count/float-comparison findings. The one
 new needless-borrow finding from this increment was removed; no broad lint
 allowance was added.
+
+`Static:` This checkpoint removes `SharedCarrierInput` and its caller-supplied
+ledger from prepared covered supports. `SealedCoveredCarrierForcing` contains
+only sealed atmosphere, exposure, participant, and support-receipt operands;
+`DirectV11SnowCoveredRealConsumerStack::derive_live_carrier_input` derives
+canopy and snow surfaces, conductances, longwave components, and the carrier
+ledger from committed V11/Stage-3 beginning owners.
+
+`Static:` The carrier receipt is now the Stage-3 lower-surface boundary. The
+Stage-3 evaluator consumes `Stage3SnowSurfaceBoundaryReceiptV1`, and the
+covered adopter independently compares sensible, latent, vapor, longwave,
+advected, evaluated-duration, lifecycle, and ending-ice results before it
+stages any V11 candidate. Per-lane receipts are retained and the V11
+projection uses deterministic tile-fraction aggregation. The aggregate
+runtime receipt digest also uses typed framing rather than JSON.
+
+`Static:` `CoveredColumnAuthority::V11SnowCovered` is selected on the covered
+candidate and the snow-free guard remains unchanged. The lower-boundary
+implementation is not yet closure-complete: the current covered-column
+operator still evaluates the existing generic ground/litter/mineral surface
+terms after that authority selection. No claim is made that Stage 3 is already
+the sole lower-surface heat/vapor/radiation owner on the V11 side.
+
+`Ran:` after the DTO and identity cleanup, `cargo fmt --all`, focused covered
+execution, the full orchestrator lib suite (746 passed, 0 failed, 1 ignored),
+and land-surface-energy lib tests (63 passed, 0 failed) passed. Warnings-denied
+Clippy still fails on the pre-existing direct-runtime shadow and scheduler
+debt; the changed carrier/Stage-3 code has targeted dispositions for its new
+line/argument and numeric-conversion diagnostics.
+
+`Ran:` the focused covered regression also mutates the committed Stage-3
+beginning temperature and verifies that the derived carrier receipt changes;
+the existing sealed-exposure poison still fails before staged owners are
+retained.

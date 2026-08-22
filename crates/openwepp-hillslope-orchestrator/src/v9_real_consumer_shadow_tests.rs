@@ -16,7 +16,8 @@ mod tests {
     };
     use crate::snow_stage3_terminal_handoff::{
         CanopyLongwaveComponent, CarrierSurface, CompleteOwnerSet, ParticipantSupportReceipt,
-        SealedExposureReceipt, SegmentPhase, SharedCarrierInput, SnowCarrierLedgerInput,
+        SealedCoveredCarrierForcing, SealedCoveredCarrierForcingInputs, SealedExposureReceipt,
+        SegmentPhase, SharedCarrierInput, SnowCarrierLedgerInput,
         SnowFreeContinuationInput, SnowStage3HandoffRuntime, SnowStage3OwnerExecutionReceipt,
         SnowStage3TerminalHandoffRequest, TerminalEventInput,
         TerminalStateRates,
@@ -561,6 +562,37 @@ mod tests {
         }
     }
 
+    fn child2c_carrier_forcing() -> SealedCoveredCarrierForcing {
+        SealedCoveredCarrierForcing::try_new(SealedCoveredCarrierForcingInputs {
+            rho_air_kg_m3: 1.2,
+            cp_air_j_kg_k: 1005.0,
+            reference_temperature_k: 280.0,
+            reference_specific_humidity: 0.002,
+            atmospheric_longwave_w_m2: 280.0,
+            effective_canopy_cover: 0.5,
+            exposure: SealedExposureReceipt {
+                receipt_id: "exposure-v1".to_owned(),
+                provider: "sealed-stage3-exposure".to_owned(),
+                provider_digest: "exposure-provider-digest".to_owned(),
+                source: "sealed-exposure-v1".to_owned(),
+                wind_m_s: 3.0,
+                transfer_height_m: 5.0,
+                roughness_m: 0.005,
+            },
+            active_participants: vec![
+                "shared-carrier".to_owned(),
+                "stage3-snow".to_owned(),
+                "v11-canopy".to_owned(),
+            ],
+            support_receipts: vec![
+                child2c_support("shared-carrier", "support-carrier-v1", 600_000_000),
+                child2c_support("stage3-snow", "support-stage3-v1", 600_000_000),
+                child2c_support("v11-canopy", "support-v11-v1", 600_000_000),
+            ],
+        })
+        .expect("sealed covered carrier forcing")
+    }
+
     fn child2c_event(parent_end_ns: u128) -> TerminalEventInput {
         TerminalEventInput {
             parent_identity: "parent-child2c-v11-test".to_string(),
@@ -961,25 +993,21 @@ mod tests {
             stage3_inputs.snow_layers.clone(),
         )
         .expect("persistent Stage-3 beginning");
-        let mut carrier = child2c_carrier();
-        carrier.ledger.duration_s = 1_800.0;
-        carrier.ledger.canopy_snow_longwave_exchange_j_m2 /= 2.0;
-        carrier.ledger.snow_canopy_longwave_exchange_j_m2 /= 2.0;
         let stage3_forcing = DirectSnowStage3SupportInput {
             forcing: DirectSnowHourlyForcing::zero(),
             duration_seconds: 1_800.0,
         };
         let stage3_inputs_by_lane = BTreeMap::from([(7, stage3_inputs)]);
         let stage3_forcing_by_lane = BTreeMap::from([(7, stage3_forcing)]);
-        let carrier_by_lane = BTreeMap::from([(7, carrier)]);
-        let stage3_beginning_by_lane = BTreeMap::from([(7, stage3_beginning)]);
+        let carrier_forcing_by_lane = BTreeMap::from([(7, child2c_carrier_forcing())]);
+        let stage3_beginning_by_lane = BTreeMap::from([(7, stage3_beginning.clone())]);
         let stack = DirectV11SnowCoveredRealConsumerStack::new(
             &shadow,
             DirectV11SnowCoveredStackInputs {
                 interval: &covered_interval,
                 stage3_inputs_by_lane: &stage3_inputs_by_lane,
                 stage3_forcing_by_lane: &stage3_forcing_by_lane,
-                carrier_by_lane: &carrier_by_lane,
+                carrier_forcing_by_lane: &carrier_forcing_by_lane,
                 stage3_beginning_by_lane,
                 day_index: 0,
                 interval_index: 0,
@@ -998,11 +1026,52 @@ mod tests {
         let ending = executor.stack.take_staged_ending().expect("V11 ending");
         assert_eq!(ending.inner.accepted_interval_count(), 1);
 
-        let mut poisoned_carrier = carrier_by_lane.clone();
-        poisoned_carrier
+        let original_carrier_receipt = executor.stack.last_carrier_receipts().expect("carrier")[&7]
+            .receipt_id;
+        let mut changed_layers = attachment_stage3_inputs().snow_layers;
+        changed_layers[0].temperature_c -= 1.0;
+        let changed_stage3 = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            7,
+            changed_layers,
+        )
+        .expect("changed Stage-3 beginning");
+        let changed_stack = DirectV11SnowCoveredRealConsumerStack::new(
+            &shadow,
+            DirectV11SnowCoveredStackInputs {
+                interval: &covered_interval,
+                stage3_inputs_by_lane: &stage3_inputs_by_lane,
+                stage3_forcing_by_lane: &stage3_forcing_by_lane,
+                carrier_forcing_by_lane: &carrier_forcing_by_lane,
+                stage3_beginning_by_lane: BTreeMap::from([(7, changed_stage3.clone())]),
+                day_index: 0,
+                interval_index: 0,
+            },
+        );
+        let changed_carrier_receipt = crate::snow_stage3_terminal_handoff::evaluate_shared_carrier(
+            &changed_stack
+                .derive_live_carrier_input(
+                    7,
+                    &changed_stage3,
+                    stage3_forcing,
+                    &carrier_forcing_by_lane[&7],
+                    1_800.0,
+                )
+                .expect("changed Stage-3 carrier operands"),
+        )
+        .expect("changed Stage-3 carrier receipt")
+        .receipt_id;
+        assert_ne!(
+            changed_carrier_receipt,
+            original_carrier_receipt,
+            "carrier identity must depend on committed Stage-3 state"
+        );
+
+        let mut poisoned_forcing = carrier_forcing_by_lane.clone();
+        poisoned_forcing
             .get_mut(&7)
             .expect("carrier lane")
-            .canopy_intercepted_snow = true;
+            .exposure
+            .wind_m_s = 0.0;
         let mut poisoned = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
             stack: DirectV11SnowCoveredRealConsumerStack::new(
                 &shadow,
@@ -1010,7 +1079,7 @@ mod tests {
                     interval: &covered_interval,
                     stage3_inputs_by_lane: &stage3_inputs_by_lane,
                     stage3_forcing_by_lane: &stage3_forcing_by_lane,
-                    carrier_by_lane: &poisoned_carrier,
+                    carrier_forcing_by_lane: &poisoned_forcing,
                     stage3_beginning_by_lane: BTreeMap::from([(
                         7,
                         Wb11HydrologyKernel::initialize_stage3_persistent_state(

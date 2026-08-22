@@ -30,7 +30,7 @@ use crate::runtime_inputs::{
     PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError, SnowFreeHalfHourProviderCursor,
     SnowFreePrecipitationParcelReceipt, direct_gsi_state,
 };
-use crate::snow_stage3_terminal_handoff::SharedCarrierInput;
+use crate::snow_stage3_terminal_handoff::SealedCoveredCarrierForcing;
 use crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow;
 use crate::v9_real_consumer_shadow::{
     DirectV9ShadowIntervalInput, DirectV11RealConsumerError, DirectV11RealConsumerStack,
@@ -117,7 +117,7 @@ pub struct DirectSnowStage3V11PreparedSupport {
     /// Sealed Child-2C carrier inputs, keyed by production lane. A missing
     /// entry means this support is snow-free and must remain on the existing
     /// snow-free adopter.
-    shared_carrier_by_lane: BTreeMap<u32, SharedCarrierInput>,
+    covered_carrier_forcing_by_lane: BTreeMap<u32, SealedCoveredCarrierForcing>,
     /// Covered V11 projection. It is a separate type from the snow-free
     /// interval so regime selection is explicit at the sealed-support seam.
     covered_v11_interval: Option<DirectV11SnowCoveredSegmentInput>,
@@ -165,7 +165,7 @@ impl DirectSnowStage3V11PreparedSupport {
             snow_inputs_by_lane,
             support_forcing_by_lane,
             v11_interval,
-            shared_carrier_by_lane: BTreeMap::new(),
+            covered_carrier_forcing_by_lane: BTreeMap::new(),
             covered_v11_interval: None,
             support_identity_by_lane,
         })
@@ -174,8 +174,13 @@ impl DirectSnowStage3V11PreparedSupport {
     /// Attach the sealed covered lower-boundary carrier to a support draft.
     /// The provider bind consumes the resulting draft and rechecks all joins.
     #[must_use]
-    pub fn with_shared_carrier(mut self, lane_id: u32, carrier: SharedCarrierInput) -> Self {
-        self.shared_carrier_by_lane.insert(lane_id, carrier);
+    pub fn with_covered_carrier_forcing(
+        mut self,
+        lane_id: u32,
+        forcing: SealedCoveredCarrierForcing,
+    ) -> Self {
+        self.covered_carrier_forcing_by_lane
+            .insert(lane_id, forcing);
         self
     }
 
@@ -192,114 +197,239 @@ impl DirectSnowStage3V11PreparedSupport {
     }
 
     #[must_use]
-    pub fn shared_carrier_by_lane(&self) -> &BTreeMap<u32, SharedCarrierInput> {
-        &self.shared_carrier_by_lane
+    pub fn covered_carrier_forcing_by_lane(&self) -> &BTreeMap<u32, SealedCoveredCarrierForcing> {
+        &self.covered_carrier_forcing_by_lane
     }
 
-    fn forcing_projections(
-        &self,
-    ) -> Result<(Digest32, Digest32, Digest32, Digest32), DirectSnowStage3V11AttachmentError> {
-        let stage3_support_forcing_sha256 = digest_bytes(
-            format!(
-                "OPENWEPP_STAGE3_SUPPORT_FORCING_V1|{:?}",
-                self.support_forcing_by_lane
-            )
-            .as_bytes(),
-        );
-        let stage3_configuration_sha256 = digest_bytes(
-            format!(
-                "OPENWEPP_STAGE3_CONFIGURATION_V1|{:?}",
-                self.snow_inputs_by_lane
-                    .iter()
-                    .map(|(lane, input)| {
-                        format!(
-                            "{:?}|{:?}|{:?}",
-                            (
-                                lane,
-                                input.snow_melt_model.id(),
-                                input.snow_density_model.id(),
-                                input.stage3_liquid_routing_model.id(),
-                                input.surface_energy_options.longwave_model.id(),
-                                input.surface_energy_options.sublimation_model.id(),
-                                input.snow_albedo_model.map(|model| model.id()),
-                                input.sturm_climate_class.map(|class| format!("{class:?}")),
-                            ),
-                            (
-                                input
-                                    .surface_energy_options
-                                    .daily_solar_radiation_mj_m2
-                                    .to_bits(),
-                                input
-                                    .surface_energy_options
-                                    .daily_extraterrestrial_radiation_mj_m2
-                                    .to_bits(),
-                                input.surface_energy_options.daylight,
-                                input
-                                    .surface_energy_options
-                                    .atmospheric_pressure_pa
-                                    .to_bits(),
-                                input.surface_energy_options.complete_carrier_shadow,
-                            ),
-                            (
-                                input
-                                    .surface_energy_options
-                                    .turbulent_geometry
-                                    .air_temperature_height_m
-                                    .to_bits(),
-                                input
-                                    .surface_energy_options
-                                    .turbulent_geometry
-                                    .vapor_pressure_height_m
-                                    .to_bits(),
-                                input
-                                    .surface_energy_options
-                                    .turbulent_geometry
-                                    .wind_speed_height_m
-                                    .to_bits(),
-                                input
-                                    .surface_energy_options
-                                    .turbulent_geometry
-                                    .aerodynamic_roughness_length_m
-                                    .to_bits(),
-                                input.coe_boundary_depth_m.to_bits(),
-                                input.coe_boundary_density_kg_m3.to_bits(),
-                                input.coe_boundary_settle_day_count.to_bits(),
-                                input.underlying_surface_albedo.to_bits(),
-                                input.sturm_day_of_year.map(f64::to_bits),
-                            ),
-                        )
-                    })
-                    .collect::<Vec<_>>()
-            )
-            .as_bytes(),
-        );
-        let covered_v11_forcing_sha256 = digest_bytes(
-            match self.covered_v11_interval.as_ref() {
-                Some(interval) => format!(
-                    "OPENWEPP_COVERED_V11_FORCING_V1|{:?}|{:?}",
-                    &interval.lse_forcing, &interval.vegetation_forcing
-                ),
-                None => format!(
-                    "OPENWEPP_COVERED_V11_FORCING_V1|{:?}|{:?}",
-                    &self.v11_interval.lse_forcing, &self.v11_interval.vegetation_forcing
-                ),
-            }
-            .as_bytes(),
-        );
-        let carrier_configuration_sha256 = digest_bytes(
-            &serde_json::to_vec(&self.shared_carrier_by_lane).map_err(|_| {
-                DirectSnowStage3V11AttachmentError::Support(
-                    "shared carrier configuration projection",
+    fn forcing_projections(&self) -> (Digest32, Digest32, Digest32, Digest32) {
+        let stage3_support_forcing_sha256 =
+            canonical_stage3_support_forcing_digest(&self.support_forcing_by_lane);
+        let stage3_configuration_sha256 =
+            canonical_stage3_configuration_digest(&self.snow_inputs_by_lane);
+        let covered_v11_forcing_sha256 =
+            if let Some(covered_interval) = self.covered_v11_interval.as_ref() {
+                canonical_v11_forcing_digest(
+                    &covered_interval.lse_forcing,
+                    &covered_interval.vegetation_forcing,
                 )
-            })?,
-        );
-        Ok((
+            } else {
+                canonical_v11_forcing_digest(
+                    &self.v11_interval.lse_forcing,
+                    &self.v11_interval.vegetation_forcing,
+                )
+            };
+        let carrier_configuration_sha256 =
+            canonical_carrier_forcing_digest(&self.covered_carrier_forcing_by_lane);
+        (
             stage3_support_forcing_sha256,
             stage3_configuration_sha256,
             covered_v11_forcing_sha256,
             carrier_configuration_sha256,
-        ))
+        )
     }
+}
+
+fn append_canonical_bytes(bytes: &mut Vec<u8>, value: &[u8]) {
+    bytes.extend_from_slice(&(value.len() as u64).to_be_bytes());
+    bytes.extend_from_slice(value);
+}
+
+fn append_canonical_str(bytes: &mut Vec<u8>, value: &str) {
+    append_canonical_bytes(bytes, value.as_bytes());
+}
+
+fn append_canonical_f64(bytes: &mut Vec<u8>, value: f64) {
+    bytes.extend_from_slice(&value.to_bits().to_be_bytes());
+}
+
+fn append_canonical_option_f64(bytes: &mut Vec<u8>, value: Option<f64>) {
+    match value {
+        Some(value) => {
+            bytes.push(1);
+            append_canonical_f64(bytes, value);
+        }
+        None => bytes.push(0),
+    }
+}
+
+fn canonical_stage3_support_forcing_digest(
+    forcing_by_lane: &BTreeMap<u32, DirectSnowStage3SupportInput>,
+) -> Digest32 {
+    let mut bytes = Vec::new();
+    append_canonical_bytes(&mut bytes, b"OPENWEPP_STAGE3_SUPPORT_FORCING_V2");
+    for (lane, support) in forcing_by_lane {
+        bytes.extend_from_slice(&lane.to_be_bytes());
+        append_canonical_f64(&mut bytes, support.duration_seconds);
+        let forcing = support.forcing;
+        for value in [
+            forcing.active_precipitation_m,
+            forcing.rain_m,
+            forcing.snowfall_m,
+            forcing.radiation_mj_m2,
+            forcing.air_temperature_c,
+            forcing.cloud_fraction,
+            forcing.rain_fraction,
+            forcing.snow_fraction,
+        ] {
+            append_canonical_f64(&mut bytes, value);
+        }
+        append_canonical_str(&mut bytes, forcing.phase_model.id());
+        append_canonical_option_f64(&mut bytes, forcing.hydrometeor_temperature_c);
+    }
+    digest_bytes(&bytes)
+}
+
+fn canonical_stage3_configuration_digest(
+    inputs_by_lane: &BTreeMap<u32, DirectActiveSnowPartitionInputs>,
+) -> Digest32 {
+    let mut bytes = Vec::new();
+    append_canonical_bytes(&mut bytes, b"OPENWEPP_STAGE3_CONFIGURATION_V2");
+    for (lane, input) in inputs_by_lane {
+        bytes.extend_from_slice(&lane.to_be_bytes());
+        for value in [
+            input.hyetograph_rainfall_m,
+            input.rst_c,
+            input.newsnw_kg_m3,
+            input.ssd_kg_m3,
+            input.tmax_c,
+            input.tmin_c,
+            input.canopy_cover_fraction,
+            input.wind_m_s,
+            input.dewpoint_c,
+            input.coe_boundary_depth_m,
+            input.coe_boundary_density_kg_m3,
+            input.coe_boundary_settle_day_count,
+            input.underlying_surface_albedo,
+        ] {
+            append_canonical_f64(&mut bytes, value);
+        }
+        for id in [
+            input.snow_melt_model.id(),
+            input.snow_density_model.id(),
+            input.stage3_liquid_routing_model.id(),
+            input.surface_energy_options.longwave_model.id(),
+            input.surface_energy_options.sublimation_model.id(),
+        ] {
+            append_canonical_str(&mut bytes, id);
+        }
+        if let Some(model) = input.snow_albedo_model {
+            bytes.push(1);
+            append_canonical_str(&mut bytes, model.id());
+        } else {
+            bytes.push(0);
+        }
+        if let Some(class) = input.sturm_climate_class {
+            bytes.push(1);
+            append_canonical_str(&mut bytes, class.id());
+        } else {
+            bytes.push(0);
+        }
+        append_canonical_option_f64(&mut bytes, input.sturm_day_of_year);
+        let options = input.surface_energy_options;
+        for value in [
+            options.daily_solar_radiation_mj_m2,
+            options.daily_extraterrestrial_radiation_mj_m2,
+            options.atmospheric_pressure_pa,
+            options.turbulent_geometry.air_temperature_height_m,
+            options.turbulent_geometry.vapor_pressure_height_m,
+            options.turbulent_geometry.wind_speed_height_m,
+            options.turbulent_geometry.aerodynamic_roughness_length_m,
+        ] {
+            append_canonical_f64(&mut bytes, value);
+        }
+        bytes.push(u8::from(options.daylight));
+        bytes.push(u8::from(options.complete_carrier_shadow));
+    }
+    digest_bytes(&bytes)
+}
+
+fn canonical_v11_forcing_digest(
+    lse_forcing: &openwepp_land_surface_energy::LandSurfaceForcing,
+    vegetation_forcing: &openwepp_vegetation::SnowFreeForcing,
+) -> Digest32 {
+    let mut bytes = Vec::new();
+    append_canonical_bytes(&mut bytes, b"OPENWEPP_COVERED_V11_FORCING_V2");
+    append_canonical_str(&mut bytes, lse_forcing.forcing_sha256.as_str());
+    bytes.extend_from_slice(&lse_forcing.transaction_id.0.to_be_bytes());
+    append_canonical_f64(&mut bytes, lse_forcing.interval_s);
+    for value in [
+        vegetation_forcing.air_temperature_k,
+        vegetation_forcing.pressure_pa,
+        vegetation_forcing.co2_pa,
+        vegetation_forcing.vapor_pressure_deficit_kpa,
+        vegetation_forcing.wind_m_s,
+        vegetation_forcing.rain_kg_m2,
+        vegetation_forcing.direct_par_w_m2,
+        vegetation_forcing.diffuse_par_w_m2,
+        vegetation_forcing.direct_nir_w_m2,
+        vegetation_forcing.diffuse_nir_w_m2,
+        vegetation_forcing.solar_zenith_cosine,
+        vegetation_forcing.ground_albedo_vis,
+        vegetation_forcing.ground_albedo_nir,
+        vegetation_forcing.longwave_down_w_m2,
+        vegetation_forcing.longwave_up_w_m2,
+        vegetation_forcing.specific_humidity,
+        vegetation_forcing.reference_height_m,
+        vegetation_forcing.gsi,
+    ] {
+        append_canonical_f64(&mut bytes, value);
+    }
+    for layer in &vegetation_forcing.soil_layers {
+        append_canonical_str(&mut bytes, layer.layer_id.as_str());
+        for value in [
+            layer.water_beginning_kg_m2,
+            layer.matric_potential_mm,
+            layer.hydraulic_conductivity_mm_s,
+            layer.root_path_length_mm,
+            layer.gravity_root_mm,
+            layer.temperature_k,
+        ] {
+            append_canonical_f64(&mut bytes, value);
+        }
+        bytes.push(u8::from(layer.accessible));
+        bytes.push(u8::from(layer.frozen));
+    }
+    digest_bytes(&bytes)
+}
+
+fn canonical_carrier_forcing_digest(
+    forcing_by_lane: &BTreeMap<u32, SealedCoveredCarrierForcing>,
+) -> Digest32 {
+    let mut bytes = Vec::new();
+    append_canonical_bytes(&mut bytes, b"OPENWEPP_COVERED_CARRIER_CONFIGURATION_V2");
+    for (lane, forcing) in forcing_by_lane {
+        bytes.extend_from_slice(&lane.to_be_bytes());
+        for value in [
+            forcing.rho_air_kg_m3,
+            forcing.cp_air_j_kg_k,
+            forcing.reference_temperature_k,
+            forcing.reference_specific_humidity,
+            forcing.atmospheric_longwave_w_m2,
+            forcing.effective_canopy_cover,
+            forcing.exposure.wind_m_s,
+            forcing.exposure.transfer_height_m,
+            forcing.exposure.roughness_m,
+        ] {
+            append_canonical_f64(&mut bytes, value);
+        }
+        for value in [
+            forcing.exposure.receipt_id.as_str(),
+            forcing.exposure.provider.as_str(),
+            forcing.exposure.provider_digest.as_str(),
+            forcing.exposure.source.as_str(),
+        ] {
+            append_canonical_str(&mut bytes, value);
+        }
+        for participant in &forcing.active_participants {
+            append_canonical_str(&mut bytes, participant);
+        }
+        for receipt in &forcing.support_receipts {
+            append_canonical_str(&mut bytes, &receipt.participant_id);
+            append_canonical_str(&mut bytes, &receipt.support_receipt_id);
+            bytes.extend_from_slice(&receipt.minimum_support_ns.get().to_be_bytes());
+        }
+    }
+    digest_bytes(&bytes)
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -356,6 +486,7 @@ impl PreparedStage3V11DayV1 {
     /// Bind runner-built support operands to the already validated repository
     /// provider day. This is the only constructor that admits provider/GSI
     /// identity into the sealed 48-support capability.
+    #[allow(clippy::too_many_lines)]
     pub fn bind_provider_day(
         provider: &PreparedSnowFreeGsiDayV1,
         day_index: usize,
@@ -530,9 +661,9 @@ impl PreparedStage3V11DayV1 {
                     .copied()
                     .collect::<BTreeSet<_>>()
                     != expected_lanes
-                || (!support.shared_carrier_by_lane.is_empty()
+                || (!support.covered_carrier_forcing_by_lane.is_empty()
                     && support
-                        .shared_carrier_by_lane
+                        .covered_carrier_forcing_by_lane
                         .keys()
                         .copied()
                         .collect::<BTreeSet<_>>()
@@ -543,14 +674,9 @@ impl PreparedStage3V11DayV1 {
                     "support chronology or lane forcing identity",
                 ));
             }
-            if support.shared_carrier_by_lane.values().any(|carrier| {
-                carrier.phase != crate::snow_stage3_terminal_handoff::SegmentPhase::SnowCovered
-            }) {
-                return Err(DirectSnowStage3V11AttachmentError::Support(
-                    "covered support carrier regime",
-                ));
-            }
-            if support.shared_carrier_by_lane.is_empty() != support.covered_v11_interval.is_none() {
+            if support.covered_carrier_forcing_by_lane.is_empty()
+                != support.covered_v11_interval.is_none()
+            {
                 return Err(DirectSnowStage3V11AttachmentError::Support(
                     "covered support requires covered V11 projection",
                 ));
@@ -801,6 +927,7 @@ impl DirectSnowStage3V11ShadowAttachment {
     /// Execute all 48 actual Stage-3 transitions atomically.  Terminal
     /// candidates are rerun against the actual Stage-3 support evaluator; no
     /// rate projection or completed production day frame is consulted.
+    #[allow(clippy::too_many_lines)]
     pub fn execute_prepared_day(
         &self,
         prepared: &ValidatedPreparedStage3V11DayV1,
@@ -810,7 +937,7 @@ impl DirectSnowStage3V11ShadowAttachment {
         let mut candidate = self.committed.clone();
         let mut terminal_events = Vec::new();
         for (support_index, support) in prepared.supports().iter().enumerate() {
-            let covered_support = !support.shared_carrier_by_lane.is_empty();
+            let covered_support = !support.covered_carrier_forcing_by_lane.is_empty();
             let beginning_stage3 = candidate.stage3_by_lane.clone();
             if !covered_support {
                 for lane_id in &self.static_context.lane_ids {
@@ -1223,7 +1350,7 @@ fn canonical_parent_forcing_digest(
         stage3_configuration_sha256,
         covered_v11_forcing_sha256,
         carrier_configuration_sha256,
-    ) = support.forcing_projections()?;
+    ) = support.forcing_projections();
     let mut bytes = Vec::with_capacity(32 + 4 * 32);
     bytes.extend_from_slice(b"OPENWEPP_STAGE3_V11_PARENT_FORCING_COVERED_V1\0");
     bytes.extend_from_slice(base.as_bytes());
@@ -1307,6 +1434,11 @@ fn append_framed_bytes(bytes: &mut Vec<u8>, value: &[u8]) {
     bytes.extend_from_slice(value);
 }
 
+#[allow(
+    clippy::large_types_passed_by_value,
+    clippy::too_many_arguments,
+    clippy::too_many_lines
+)]
 fn execute_real_v11_parent(
     context: &DirectSnowStage3V11StaticContext,
     beginning_parent: &V11ParentTransaction,
@@ -1485,7 +1617,7 @@ fn execute_covered_real_v11_parent(
         || beginning_clock.parent_support() != prepared.support
         || beginning_clock.owners().len()
             != openwepp_vegetation::v11::V11_COMPLETE_OWNER_MANIFEST.len()
-        || prepared.shared_carrier_by_lane.is_empty()
+        || prepared.covered_carrier_forcing_by_lane.is_empty()
     {
         return Err(DirectSnowStage3V11AttachmentError::Identity(
             "covered V11/coupled-time parent beginning",
@@ -1541,7 +1673,7 @@ fn execute_covered_real_v11_parent(
             interval: covered_interval,
             stage3_inputs_by_lane: &prepared.snow_inputs_by_lane,
             stage3_forcing_by_lane: &prepared.support_forcing_by_lane,
-            carrier_by_lane: &prepared.shared_carrier_by_lane,
+            carrier_forcing_by_lane: &prepared.covered_carrier_forcing_by_lane,
             stage3_beginning_by_lane: beginning_stage3.clone(),
             day_index,
             interval_index,
@@ -1573,7 +1705,7 @@ fn execute_covered_real_v11_parent(
             interval: covered_interval,
             stage3_inputs_by_lane: &prepared.snow_inputs_by_lane,
             stage3_forcing_by_lane: &prepared.support_forcing_by_lane,
-            carrier_by_lane: &prepared.shared_carrier_by_lane,
+            carrier_forcing_by_lane: &prepared.covered_carrier_forcing_by_lane,
             stage3_beginning_by_lane: beginning_stage3,
             day_index,
             interval_index,
@@ -1724,6 +1856,11 @@ fn owner_envelopes_from_states(
         .collect()
 }
 
+#[allow(
+    clippy::cast_precision_loss,
+    clippy::large_types_passed_by_value,
+    clippy::too_many_arguments
+)]
 fn select_actual_terminal_candidate(
     inputs: &DirectActiveSnowPartitionInputs,
     state: &DirectSnowStage3PersistentState,

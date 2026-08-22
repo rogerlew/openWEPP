@@ -16,5 +16,9 @@ ending `snow` owner, and the receipt projection emits that same canonical
 payload. Hydrology winter-column bytes remain outside the authoritative
 envelope; a full covered-segment compatibility projection is still required.
 
-No closure claim is made: the covered adopter still must produce the shared
-carrier and both ending owner candidates in one complete transaction.
+`Static:` The stable covered adopter now produces the per-lane shared-carrier
+receipts, exact Stage-3 boundary/result join, and canonical ending Stage-3
+snow envelope before constructing the V11 candidate. Complete atomic
+hydrology compatibility projection, terminal parcel custody, restart, and
+closure of the V11 lower-surface operator remain open. No Child-1 closure
+claim is made.

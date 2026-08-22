@@ -936,6 +936,7 @@ pub struct CoveredColumnInputs {
 pub enum CoveredColumnAuthority {
     HistoricalV8,
     V10NonpositiveAssimilation,
+    V11SnowCovered,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

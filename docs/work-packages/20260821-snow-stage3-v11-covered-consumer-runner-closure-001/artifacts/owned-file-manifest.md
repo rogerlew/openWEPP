@@ -22,8 +22,20 @@ Exact source edits admitted in this increment:
 - `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs`:
   shared V11 resource/owner finalization, the unchanged snow-free guard, and
   the distinct typed `DirectV11SnowCoveredRealConsumerStack` with its
-  `DirectV11SnowCoveredSegmentInput` and shared-carrier/Stage-3
-  persistent-support boundary.
+  `DirectV11SnowCoveredSegmentInput`, owner-derived carrier operands,
+  per-lane carrier receipts, and shared-carrier/Stage-3 persistent-support
+  boundary.
+- `crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs`:
+  sealed covered forcing and typed Stage-3 boundary-receipt inputs.
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`:
+  boundary reconciliation projection.
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs`:
+  exact boundary consumption and Stage-3 result diagnostics.
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs`:
+  covered-support boundary admission and duration join.
+- `crates/openwepp-land-surface-energy/src/solver.rs`:
+  explicit `V11SnowCovered` authority identity; lower-boundary operator
+  replacement remains open.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs`:
   support-duration-bound Stage-3 reconciliation validation for the admitted
   1,800-second persistent-support API.
@@ -33,8 +45,10 @@ Exact source edits admitted in this increment:
 - `crates/openwepp-hillslope-orchestrator/src/lib.rs`: public typed exports.
 
 `Static:` Covered execution is admitted only through the distinct typed
-adopter and covered segment input. It evaluates the shared carrier and
-persistent Stage-3 support before using the explicitly named canopy/soil
-continuation core; the existing snow-free adopter and its snow-present guard
-remain unchanged. Terminal chronology and runner-owned physical support
-construction remain outside this increment.
+adopter and covered segment input. It derives live carrier operands internally,
+uses the carrier as the exact Stage-3 boundary, and retains the existing
+snow-free adopter and its snow-present guard unchanged. The generic covered
+LSE endpoint still contains lower-surface physics that must be replaced or
+explicitly separated before closure. Terminal chronology, runner-owned
+physical support construction, restart, and scenario qualification remain
+outside this increment.

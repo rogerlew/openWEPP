@@ -140,6 +140,7 @@ impl Wb11HydrologyKernel {
         interval_index: u64,
         supports: &[DirectSnowStage3SupportInput],
         terminal_request: Option<DirectSnowTerminalEventRequest>,
+        boundary: Option<Stage3SnowSurfaceBoundaryReceiptV1>,
     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
         Self::validate_stage3_persistent_state(state)?;
         if state.lane_id != lane_id || state.next_interval_index != interval_index {
@@ -177,6 +178,7 @@ impl Wb11HydrologyKernel {
             cold_content,
             terminal_request,
             state.detached_retained_liquid_kg_m2,
+            boundary,
         )?;
         Self::validate_stage3_shadow_summary(
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
@@ -638,6 +640,7 @@ impl Wb11HydrologyKernel {
                         cold_content_by_layer.clone(),
                         None,
                         0.0,
+                        None,
                     )?;
                     Self::validate_stage3_shadow_summary(phase_class, &summary)?;
                     Some(summary)
@@ -757,6 +760,7 @@ impl Wb11HydrologyKernel {
                         snow_density_kg_m3: active_state.density_kg_m3,
                         duration_seconds: substep_seconds,
                         forcing_duration_seconds: STAGE3_SECONDS_PER_HOUR,
+                        boundary: None,
                     },
                     None,
                     capture,
@@ -2878,6 +2882,7 @@ mod stage3_evaluation_validation_tests {
             cold,
             None,
             0.0,
+            None,
         )
         .expect("valid sequential reconciliation");
         Wb11HydrologyKernel::validate_stage3_reconciliation(phase, &summary)
@@ -2921,6 +2926,7 @@ mod stage3_evaluation_validation_tests {
             cold,
             None,
             0.0,
+            None,
         )
         .expect("valid sequential reconciliation");
         assert!(summary.reconciliation.tuples.len() > 1);

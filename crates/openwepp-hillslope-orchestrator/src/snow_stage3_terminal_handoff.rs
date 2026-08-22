@@ -7,7 +7,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_coupled_time::{CoupledTimeError, Digest32, ModelTimeNs, digest_bytes};
+use openwepp_coupled_time::{CoupledTimeError, Digest32, ModelTimeNs, TimeSupport, digest_bytes};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -245,6 +245,152 @@ pub struct SharedCarrierInput {
     pub effective_canopy_cover: f64,
     pub canopy_intercepted_snow: bool,
     pub ledger: SnowCarrierLedgerInput,
+}
+
+/// Sealed external operands admitted at the covered-consumer seam.
+///
+/// This type intentionally contains atmospheric, exposure, cadence, and
+/// topology receipts only. Live canopy/snow temperatures, conductances, and
+/// carrier ledgers are derived by the covered V11 adopter from committed
+/// owners. Keeping those fields crate-private prevents a runner or prepared
+/// day caller from substituting result physics at the capability boundary.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SealedCoveredCarrierForcing {
+    pub(crate) rho_air_kg_m3: f64,
+    pub(crate) cp_air_j_kg_k: f64,
+    pub(crate) reference_temperature_k: f64,
+    pub(crate) reference_specific_humidity: f64,
+    pub(crate) atmospheric_longwave_w_m2: f64,
+    pub(crate) effective_canopy_cover: f64,
+    pub(crate) exposure: SealedExposureReceipt,
+    pub(crate) active_participants: Vec<String>,
+    pub(crate) support_receipts: Vec<ParticipantSupportReceipt>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct SealedCoveredCarrierForcingInputs {
+    pub rho_air_kg_m3: f64,
+    pub cp_air_j_kg_k: f64,
+    pub reference_temperature_k: f64,
+    pub reference_specific_humidity: f64,
+    pub atmospheric_longwave_w_m2: f64,
+    pub effective_canopy_cover: f64,
+    pub exposure: SealedExposureReceipt,
+    pub active_participants: Vec<String>,
+    pub support_receipts: Vec<ParticipantSupportReceipt>,
+}
+
+impl SealedCoveredCarrierForcing {
+    pub fn try_new(
+        inputs: SealedCoveredCarrierForcingInputs,
+    ) -> Result<Self, SnowStage3HandoffError> {
+        if !inputs.rho_air_kg_m3.is_finite()
+            || inputs.rho_air_kg_m3 <= 0.0
+            || !inputs.cp_air_j_kg_k.is_finite()
+            || inputs.cp_air_j_kg_k <= 0.0
+            || !inputs.reference_temperature_k.is_finite()
+            || inputs.reference_temperature_k <= 0.0
+            || !inputs.reference_specific_humidity.is_finite()
+            || !(0.0..=1.0).contains(&inputs.reference_specific_humidity)
+            || !inputs.atmospheric_longwave_w_m2.is_finite()
+            || !inputs.effective_canopy_cover.is_finite()
+            || inputs.effective_canopy_cover < 0.0
+            || inputs.effective_canopy_cover >= 1.0
+        {
+            return Err(SnowStage3HandoffError::InvalidCarrier(
+                "sealed covered atmosphere and geometry domain",
+            ));
+        }
+        inputs.exposure.validate()?;
+        if inputs.active_participants.is_empty()
+            || inputs
+                .active_participants
+                .windows(2)
+                .any(|pair| pair[0] >= pair[1])
+            || inputs.support_receipts.len() != inputs.active_participants.len()
+        {
+            return Err(SnowStage3HandoffError::InvalidCarrier(
+                "sealed covered participant topology",
+            ));
+        }
+        validate_participants(&inputs.active_participants, &inputs.support_receipts)?;
+        Ok(Self {
+            rho_air_kg_m3: inputs.rho_air_kg_m3,
+            cp_air_j_kg_k: inputs.cp_air_j_kg_k,
+            reference_temperature_k: inputs.reference_temperature_k,
+            reference_specific_humidity: inputs.reference_specific_humidity,
+            atmospheric_longwave_w_m2: inputs.atmospheric_longwave_w_m2,
+            effective_canopy_cover: inputs.effective_canopy_cover,
+            exposure: inputs.exposure,
+            active_participants: inputs.active_participants,
+            support_receipts: inputs.support_receipts,
+        })
+    }
+}
+
+/// Exact Stage-3 snow boundary supplied by the shared canopy-air carrier.
+/// All energy and vapor operands are support totals; Stage-3 scales them only
+/// when its admitted thermal substep is shorter than the parent support.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Stage3SnowSurfaceBoundaryReceiptV1 {
+    pub support: TimeSupport,
+    pub sensible_energy_j_m2: f64,
+    pub vapor_mass_kg_m2: f64,
+    pub latent_energy_j_m2: f64,
+    pub net_longwave_energy_j_m2: f64,
+    pub precipitation_advection_j_m2: f64,
+    pub latent_heat_j_kg: f64,
+    pub beginning_stage3_state_sha256: Digest32,
+    pub carrier_receipt_sha256: Digest32,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Stage3SnowSurfaceBoundaryReceiptInputs {
+    pub support: TimeSupport,
+    pub sensible_energy_j_m2: f64,
+    pub vapor_mass_kg_m2: f64,
+    pub latent_energy_j_m2: f64,
+    pub net_longwave_energy_j_m2: f64,
+    pub precipitation_advection_j_m2: f64,
+    pub latent_heat_j_kg: f64,
+    pub beginning_stage3_state_sha256: Digest32,
+    pub carrier_receipt_sha256: Digest32,
+}
+
+impl Stage3SnowSurfaceBoundaryReceiptV1 {
+    pub fn try_new(
+        inputs: Stage3SnowSurfaceBoundaryReceiptInputs,
+    ) -> Result<Self, SnowStage3HandoffError> {
+        if [
+            inputs.sensible_energy_j_m2,
+            inputs.vapor_mass_kg_m2,
+            inputs.latent_energy_j_m2,
+            inputs.net_longwave_energy_j_m2,
+            inputs.precipitation_advection_j_m2,
+            inputs.latent_heat_j_kg,
+        ]
+        .iter()
+        .any(|value| !value.is_finite())
+            || inputs.latent_heat_j_kg <= 0.0
+            || inputs.beginning_stage3_state_sha256 == Digest32::zero()
+            || inputs.carrier_receipt_sha256 == Digest32::zero()
+        {
+            return Err(SnowStage3HandoffError::InvalidCarrier(
+                "Stage-3 covered boundary receipt domain",
+            ));
+        }
+        Ok(Self {
+            support: inputs.support,
+            sensible_energy_j_m2: inputs.sensible_energy_j_m2,
+            vapor_mass_kg_m2: inputs.vapor_mass_kg_m2,
+            latent_energy_j_m2: inputs.latent_energy_j_m2,
+            net_longwave_energy_j_m2: inputs.net_longwave_energy_j_m2,
+            precipitation_advection_j_m2: inputs.precipitation_advection_j_m2,
+            latent_heat_j_kg: inputs.latent_heat_j_kg,
+            beginning_stage3_state_sha256: inputs.beginning_stage3_state_sha256,
+            carrier_receipt_sha256: inputs.carrier_receipt_sha256,
+        })
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
