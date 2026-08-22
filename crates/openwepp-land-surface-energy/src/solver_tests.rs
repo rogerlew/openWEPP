@@ -2,6 +2,47 @@
 
 use super::*;
 
+#[test]
+fn stage3_optical_boundary_receipt_is_band_directional_and_digest_bound() {
+    let digest = || Sha256Digest::try_new("a".repeat(64)).expect("digest");
+    let terminal = BandDirectionalFluxes {
+        direct_vis: 100.0,
+        diffuse_vis: 40.0,
+        direct_nir: 80.0,
+        diffuse_nir: 20.0,
+    };
+    let absorbed = BandDirectionalFluxes {
+        direct_vis: 82.0,
+        diffuse_vis: 32.8,
+        direct_nir: 64.0,
+        diffuse_nir: 16.0,
+    };
+    let reflected = BandDirectionalFluxes {
+        direct_vis: 18.0,
+        diffuse_vis: 7.2,
+        direct_nir: 16.0,
+        diffuse_nir: 4.0,
+    };
+    let receipt =
+        Stage3SnowOpticalBoundaryReceiptV1::try_new(Stage3SnowOpticalBoundaryReceiptInputs {
+            ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+            tile_id: openwepp_kernel_contract::TileId::try_new("snow").expect("tile"),
+            terminal_w_m2_tile: terminal,
+            absorbed_w_m2_tile: absorbed,
+            reflected_w_m2_tile: reflected,
+            snow_vis_albedo: 0.18,
+            snow_nir_albedo: 0.20,
+            stage3_albedo_state_sha256: digest(),
+            forcing_receipt_sha256: digest(),
+        })
+        .expect("optical receipt");
+    receipt.validate().expect("optical receipt validates");
+
+    let mut poisoned = receipt;
+    poisoned.reflected_w_m2_tile.direct_vis += 1.0;
+    assert!(poisoned.validate().is_err());
+}
+
 fn v10_vector_close(actual: f64, expected: f64) {
     assert!(
         (actual - expected).abs() <= 1.0e-12 * expected.abs().max(1.0),
@@ -498,6 +539,7 @@ fn covered_v8_block_matches_frozen_joint_solution() {
             occupancies: Vec::new(),
         },
         stage3_lower_boundary: None,
+        stage3_optical: None,
     };
     let biochemical = BiochemicalConstants {
         ha_vcmax_j_mol: 65_330.0,

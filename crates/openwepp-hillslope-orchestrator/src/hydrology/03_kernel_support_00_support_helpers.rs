@@ -1436,3 +1436,4 @@ pub use support_helpers_mod::{
     DirectSnowStage3Outcome, DirectSnowVerboseDiagnostics,
 };
 pub(crate) use support_helpers_mod::DirectSnowStage3Resolution;
+pub(crate) use support_helpers_mod::STAGE3_DEFAULT_SNOW_ALBEDO;

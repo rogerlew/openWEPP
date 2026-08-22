@@ -35,8 +35,12 @@ use crate::physics::{
     harmonic_interface_conductance_w_m2_k, litter_relative_humidity, open_neutral_resistances,
     partition_ground_shortwave, saturation_specific_humidity, vapor_export_w_m2,
 };
-use crate::{LandSurfaceEnergyError, NormalizedResidual, ResidualUnit, Sha256Digest, StepNorms};
+use crate::{
+    LandSurfaceEnergyError, NormalizedResidual, OfeId, ResidualUnit, Sha256Digest, StepNorms,
+};
+use openwepp_kernel_contract::TileId;
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -933,6 +937,9 @@ pub struct CoveredColumnInputs {
     /// Stage-3-owned lower-boundary operands for the explicit V11 covered
     /// canopy mode. Historical covered columns leave this absent.
     pub stage3_lower_boundary: Option<Stage3SnowCoveredLowerBoundary>,
+    /// Canonical band/direction optical handoff produced by the radiation
+    /// owner with the Stage-3 snow albedo already in the column solve.
+    pub stage3_optical: Option<Stage3SnowOpticalBoundaryReceiptV1>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -957,6 +964,151 @@ pub struct Stage3SnowCoveredLowerBoundary {
     pub shortwave_absorbed_w_m2: f64,
     pub precipitation_advection_w_m2: f64,
     pub carrier_receipt_id: Sha256Digest,
+    pub snow_vis_albedo: f64,
+    pub snow_nir_albedo: f64,
+    pub stage3_albedo_state_sha256: Sha256Digest,
+    pub forcing_receipt_sha256: Sha256Digest,
+}
+
+/// Exact VIS/NIR and direct/diffuse optical custody for one covered OFE/tile.
+/// The receipt is created from the same two-stream result that supplies the
+/// canopy absorption and top reflection; it is not a post-hoc scalar energy
+/// correction.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Stage3SnowOpticalBoundaryReceiptV1 {
+    pub ofe_id: OfeId,
+    pub tile_id: TileId,
+    pub terminal_w_m2_tile: BandDirectionalFluxes,
+    pub absorbed_w_m2_tile: BandDirectionalFluxes,
+    pub reflected_w_m2_tile: BandDirectionalFluxes,
+    pub snow_vis_albedo: f64,
+    pub snow_nir_albedo: f64,
+    pub stage3_albedo_state_sha256: Sha256Digest,
+    pub forcing_receipt_sha256: Sha256Digest,
+    pub receipt_sha256: Sha256Digest,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Stage3SnowOpticalBoundaryReceiptInputs {
+    pub ofe_id: OfeId,
+    pub tile_id: TileId,
+    pub terminal_w_m2_tile: BandDirectionalFluxes,
+    pub absorbed_w_m2_tile: BandDirectionalFluxes,
+    pub reflected_w_m2_tile: BandDirectionalFluxes,
+    pub snow_vis_albedo: f64,
+    pub snow_nir_albedo: f64,
+    pub stage3_albedo_state_sha256: Sha256Digest,
+    pub forcing_receipt_sha256: Sha256Digest,
+}
+
+impl Stage3SnowOpticalBoundaryReceiptV1 {
+    pub fn try_new(
+        inputs: Stage3SnowOpticalBoundaryReceiptInputs,
+    ) -> Result<Self, LandSurfaceEnergyError> {
+        let receipt_sha256 = optical_receipt_digest(&inputs)?;
+        let receipt = Self {
+            ofe_id: inputs.ofe_id,
+            tile_id: inputs.tile_id,
+            terminal_w_m2_tile: inputs.terminal_w_m2_tile,
+            absorbed_w_m2_tile: inputs.absorbed_w_m2_tile,
+            reflected_w_m2_tile: inputs.reflected_w_m2_tile,
+            snow_vis_albedo: inputs.snow_vis_albedo,
+            snow_nir_albedo: inputs.snow_nir_albedo,
+            stage3_albedo_state_sha256: inputs.stage3_albedo_state_sha256,
+            forcing_receipt_sha256: inputs.forcing_receipt_sha256,
+            receipt_sha256,
+        };
+        receipt.validate()?;
+        Ok(receipt)
+    }
+
+    pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+        if self.ofe_id.as_str().trim().is_empty()
+            || self.tile_id.as_str().trim().is_empty()
+            || !self.snow_vis_albedo.is_finite()
+            || !self.snow_nir_albedo.is_finite()
+            || !(0.0..=1.0).contains(&self.snow_vis_albedo)
+            || !(0.0..=1.0).contains(&self.snow_nir_albedo)
+            || self.stage3_albedo_state_sha256.as_str().is_empty()
+            || self.forcing_receipt_sha256.as_str().is_empty()
+        {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "Stage-3 snow optical boundary domain",
+            ));
+        }
+        self.terminal_w_m2_tile.validate_nonnegative()?;
+        self.absorbed_w_m2_tile.validate_nonnegative()?;
+        self.reflected_w_m2_tile.validate_nonnegative()?;
+        let terminal = directional_values(self.terminal_w_m2_tile);
+        let absorbed = directional_values(self.absorbed_w_m2_tile);
+        let reflected = directional_values(self.reflected_w_m2_tile);
+        for index in 0..4 {
+            if (terminal[index] - absorbed[index] - reflected[index]).abs()
+                > energy_tolerance(
+                    terminal[index].abs() + absorbed[index].abs() + reflected[index].abs(),
+                )
+            {
+                return Err(LandSurfaceEnergyError::ComponentClosure(
+                    "Stage-3 snow optical terminal partition",
+                ));
+            }
+            let albedo = if index < 2 {
+                self.snow_vis_albedo
+            } else {
+                self.snow_nir_albedo
+            };
+            if (reflected[index] - albedo * terminal[index]).abs()
+                > energy_tolerance(reflected[index].abs() + terminal[index].abs())
+            {
+                return Err(LandSurfaceEnergyError::ComponentClosure(
+                    "Stage-3 snow optical albedo",
+                ));
+            }
+        }
+        if optical_receipt_digest(&Stage3SnowOpticalBoundaryReceiptInputs {
+            ofe_id: self.ofe_id.clone(),
+            tile_id: self.tile_id.clone(),
+            terminal_w_m2_tile: self.terminal_w_m2_tile,
+            absorbed_w_m2_tile: self.absorbed_w_m2_tile,
+            reflected_w_m2_tile: self.reflected_w_m2_tile,
+            snow_vis_albedo: self.snow_vis_albedo,
+            snow_nir_albedo: self.snow_nir_albedo,
+            stage3_albedo_state_sha256: self.stage3_albedo_state_sha256.clone(),
+            forcing_receipt_sha256: self.forcing_receipt_sha256.clone(),
+        })? != self.receipt_sha256
+        {
+            return Err(LandSurfaceEnergyError::StateLineage(
+                "Stage-3 snow optical receipt digest",
+            ));
+        }
+        Ok(())
+    }
+}
+
+fn optical_receipt_digest(
+    inputs: &Stage3SnowOpticalBoundaryReceiptInputs,
+) -> Result<Sha256Digest, LandSurfaceEnergyError> {
+    let mut bytes = Vec::with_capacity(256);
+    bytes.extend_from_slice(b"OPENWEPP_STAGE3_SNOW_OPTICAL_BOUNDARY_V1\0");
+    append_framed_str(&mut bytes, inputs.ofe_id.as_str());
+    append_framed_str(&mut bytes, inputs.tile_id.as_str());
+    for value in directional_values(inputs.terminal_w_m2_tile)
+        .into_iter()
+        .chain(directional_values(inputs.absorbed_w_m2_tile))
+        .chain(directional_values(inputs.reflected_w_m2_tile))
+    {
+        bytes.extend_from_slice(&value.to_bits().to_le_bytes());
+    }
+    bytes.extend_from_slice(&inputs.snow_vis_albedo.to_bits().to_le_bytes());
+    bytes.extend_from_slice(&inputs.snow_nir_albedo.to_bits().to_le_bytes());
+    append_framed_str(&mut bytes, inputs.stage3_albedo_state_sha256.as_str());
+    append_framed_str(&mut bytes, inputs.forcing_receipt_sha256.as_str());
+    Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes)))
+}
+
+fn append_framed_str(bytes: &mut Vec<u8>, value: &str) {
+    bytes.extend_from_slice(&(value.len() as u64).to_le_bytes());
+    bytes.extend_from_slice(value.as_bytes());
 }
 
 impl Stage3SnowCoveredLowerBoundary {
@@ -973,6 +1125,12 @@ impl Stage3SnowCoveredLowerBoundary {
         .any(|value| !value.is_finite())
             || !(200.0..=350.0).contains(&self.snow_temperature_k)
             || self.carrier_receipt_id.as_str().is_empty()
+            || self.stage3_albedo_state_sha256.as_str().is_empty()
+            || self.forcing_receipt_sha256.as_str().is_empty()
+            || !self.snow_vis_albedo.is_finite()
+            || !self.snow_nir_albedo.is_finite()
+            || !(0.0..=1.0).contains(&self.snow_vis_albedo)
+            || !(0.0..=1.0).contains(&self.snow_nir_albedo)
         {
             return Err(LandSurfaceEnergyError::ConstitutiveDomain(
                 "Stage-3 snow-covered lower boundary",
@@ -2035,8 +2193,30 @@ fn validate_covered_shortwave_inputs(
     }
     let incident = directional_values(column.shortwave.incident_w_m2_tile);
     let reflected = directional_values(column.shortwave.top_reflected_w_m2_tile);
-    let ground_absorbed =
-        directional_values(column.shortwave.ground_absorbed_by_incident_w_m2_tile);
+    let ground_absorbed = if column.authority == CoveredColumnAuthority::V11SnowCovered {
+        let optical =
+            column
+                .stage3_optical
+                .as_ref()
+                .ok_or(LandSurfaceEnergyError::StateLineage(
+                    "missing Stage-3 snow optical boundary",
+                ))?;
+        optical.validate()?;
+        let expected = directional_values(optical.absorbed_w_m2_tile);
+        let actual = directional_values(column.shortwave.ground_absorbed_by_incident_w_m2_tile);
+        if expected
+            .iter()
+            .zip(actual)
+            .any(|(expected, actual)| expected.to_bits() != actual.to_bits())
+        {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "Stage-3 snow optical/column absorption",
+            ));
+        }
+        expected
+    } else {
+        directional_values(column.shortwave.ground_absorbed_by_incident_w_m2_tile)
+    };
     for direction in 0..4 {
         let canopy_absorbed: f64 = column
             .shortwave
@@ -2096,6 +2276,22 @@ pub fn evaluate_covered_column(
                 LandSurfaceEnergyError::StateLineage("missing Stage-3 covered lower boundary"),
             )?;
             boundary.validate()?;
+            let optical =
+                column
+                    .stage3_optical
+                    .as_ref()
+                    .ok_or(LandSurfaceEnergyError::StateLineage(
+                        "missing Stage-3 snow optical boundary",
+                    ))?;
+            if optical.snow_vis_albedo.to_bits() != boundary.snow_vis_albedo.to_bits()
+                || optical.snow_nir_albedo.to_bits() != boundary.snow_nir_albedo.to_bits()
+                || optical.stage3_albedo_state_sha256 != boundary.stage3_albedo_state_sha256
+                || optical.forcing_receipt_sha256 != boundary.forcing_receipt_sha256
+            {
+                return Err(LandSurfaceEnergyError::StateLineage(
+                    "Stage-3 snow optical/lower-boundary identity",
+                ));
+            }
             if column.top_rain_kg_m2_tile != 0.0 {
                 return Err(LandSurfaceEnergyError::UnsupportedDomain(
                     "covered precipitation must be owned by Stage-3",

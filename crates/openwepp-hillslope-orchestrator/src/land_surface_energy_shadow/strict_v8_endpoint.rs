@@ -371,6 +371,7 @@ fn execute_v8_lse_runtime_shadow_phases(
         day_index,
         interval_index,
         duration_s_bits,
+        covered_lower_boundaries,
     )?;
     injected(injection, V8EndpointFailureInjection::AfterProjection)?;
     let ingress_schedule = derive_ingress_schedule(

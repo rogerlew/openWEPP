@@ -46,7 +46,8 @@ use thiserror::Error;
 
 use crate::hydrology::{
     DirectActiveSnowPartitionInputs, DirectSnowStage3EvaluationError,
-    DirectSnowStage3PersistentState, DirectSnowStage3SupportInput, Wb11HydrologyKernel,
+    DirectSnowStage3PersistentState, DirectSnowStage3SupportInput, STAGE3_DEFAULT_SNOW_ALBEDO,
+    Wb11HydrologyKernel,
 };
 use crate::land_surface_energy_shadow::{
     CoveredV8OwnerEnvelopeError, ExecuteV8LseRuntimeShadowError,
@@ -711,6 +712,8 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
     fn stage3_lower_boundaries_by_destination(
         &self,
         receipts: &BTreeMap<(OfeId, TileId), SharedCarrierReceipt>,
+        stage3_inputs_by_lane: &BTreeMap<u32, DirectActiveSnowPartitionInputs>,
+        stage3_forcing_by_lane: &BTreeMap<u32, DirectSnowStage3SupportInput>,
     ) -> Result<BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>, DirectV11RealConsumerError>
     {
         let expected_destinations = self.covered_expected_destinations();
@@ -723,6 +726,29 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         for (destination, receipt) in receipts {
             let carrier_receipt_id = Sha256Digest::try_new(digest32_hex(receipt.receipt_id))
                 .map_err(|_| DirectV11RealConsumerError::Identity("covered carrier receipt ID"))?;
+            let binding = self
+                .beginning
+                .inner
+                .surface_configuration
+                .ofe_bindings
+                .iter()
+                .find(|binding| binding.ofe_id == destination.0)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered boundary OFE binding",
+                ))?;
+            let stage3_input = stage3_inputs_by_lane
+                .get(&binding.production_lane_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered boundary Stage-3 inputs",
+                ))?;
+            let stage3_forcing = stage3_forcing_by_lane
+                .get(&binding.production_lane_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered boundary Stage-3 forcing",
+                ))?;
+            let snow_albedo = stage3_input
+                .snow_albedo_state
+                .map_or(STAGE3_DEFAULT_SNOW_ALBEDO, |state| state.albedo);
             let boundary = Stage3SnowCoveredLowerBoundary {
                 snow_temperature_k: receipt.snow_temperature_k,
                 sensible_to_canopy_air_w_m2: -receipt.snow_sensible_into_surface_w_m2,
@@ -736,6 +762,10 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 shortwave_absorbed_w_m2: 0.0,
                 precipitation_advection_w_m2: 0.0,
                 carrier_receipt_id,
+                snow_vis_albedo: snow_albedo,
+                snow_nir_albedo: snow_albedo,
+                stage3_albedo_state_sha256: stage3_albedo_state_digest(stage3_input)?,
+                forcing_receipt_sha256: stage3_support_forcing_digest(*stage3_forcing)?,
             };
             boundary
                 .validate()
@@ -1626,8 +1656,11 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
             self.stage3_forcing_by_lane,
             &self.stage3_beginning_by_lane,
         )?;
-        let lower_boundaries =
-            self.stage3_lower_boundaries_by_destination(&destination_receipts)?;
+        let lower_boundaries = self.stage3_lower_boundaries_by_destination(
+            &destination_receipts,
+            self.stage3_inputs_by_lane,
+            self.stage3_forcing_by_lane,
+        )?;
         let _interval_index = u8::try_from(self.interval_index)
             .map_err(|_| DirectV11RealConsumerError::Identity("V11 interval index overflow"))?;
         let mut candidate = self.beginning.clone();
@@ -1852,6 +1885,62 @@ fn digest32_hex(value: Digest32) -> String {
         write!(&mut text, "{byte:02x}").expect("writing to String cannot fail");
     }
     text
+}
+
+fn stage3_albedo_state_digest(
+    input: &DirectActiveSnowPartitionInputs,
+) -> Result<Sha256Digest, DirectV11RealConsumerError> {
+    let mut bytes = Vec::with_capacity(128);
+    bytes.extend_from_slice(b"OPENWEPP_STAGE3_SNOW_ALBEDO_STATE_V1\0");
+    match input.snow_albedo_state {
+        Some(state) => {
+            bytes.push(1);
+            bytes.extend_from_slice(state.model.id().as_bytes());
+            bytes.push(0);
+            bytes.extend_from_slice(&state.albedo.to_bits().to_le_bytes());
+            bytes.extend_from_slice(
+                &state
+                    .accumulated_positive_temperature_c_day
+                    .to_bits()
+                    .to_le_bytes(),
+            );
+        }
+        None => bytes.push(0),
+    }
+    Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes)))
+        .map_err(|_| DirectV11RealConsumerError::Identity("Stage-3 albedo digest"))
+}
+
+fn stage3_support_forcing_digest(
+    support: DirectSnowStage3SupportInput,
+) -> Result<Sha256Digest, DirectV11RealConsumerError> {
+    let forcing = support.forcing;
+    let mut bytes = Vec::with_capacity(256);
+    bytes.extend_from_slice(b"OPENWEPP_STAGE3_SUPPORT_FORCING_V1\0");
+    for value in [
+        forcing.active_precipitation_m,
+        forcing.rain_m,
+        forcing.snowfall_m,
+        forcing.radiation_mj_m2,
+        forcing.air_temperature_c,
+        forcing.cloud_fraction,
+        forcing.rain_fraction,
+        forcing.snow_fraction,
+        support.duration_seconds,
+    ] {
+        bytes.extend_from_slice(&value.to_bits().to_le_bytes());
+    }
+    bytes.extend_from_slice(forcing.phase_model.id().as_bytes());
+    bytes.push(0);
+    match forcing.hydrometeor_temperature_c {
+        Some(value) => {
+            bytes.push(1);
+            bytes.extend_from_slice(&value.to_bits().to_le_bytes());
+        }
+        None => bytes.push(0),
+    }
+    Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes)))
+        .map_err(|_| DirectV11RealConsumerError::Identity("Stage-3 forcing digest"))
 }
 
 fn normalize_v11_staged_parent_lineage(

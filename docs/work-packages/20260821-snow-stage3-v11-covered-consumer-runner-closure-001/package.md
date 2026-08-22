@@ -130,9 +130,13 @@ fields.
 - [~] Persistent covered V11/Stage-3 adopter, typed covered input, owner-
   derived carrier operands, exact Stage-3 boundary receipt, canonical ending
   owners, keyed destination receipts, explicit covered lower-boundary masking,
-  and rollback; released Stage-3 shortwave/advection/soil custody, keyed
-  heterogeneous physical consumption, fixed-point iteration, and independent
-  ledger closure remain blockers. Terminal chronology remains open.
+  and rollback. Stage-3 snow VIS/NIR optics now enter the two-stream solve
+  before canopy absorption is finalized; a typed band/direction optical
+  receipt, explicit Stage-3 transaction lower-boundary variant, and weighted
+  boundary tolerance scale are present. Released precipitation-advection and
+  soil custody, keyed heterogeneous physical consumption, fixed-point
+  iteration, and independent ledger closure remain blockers. Terminal
+  chronology remains open.
 - [~] Runner-owned 48-support capability/provider bind; physical support
   construction and complete restart remain open.
 - [ ] Scenario matrix, reviews, exact-head gates, and disposition.

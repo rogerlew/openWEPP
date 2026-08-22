@@ -493,6 +493,7 @@ fn column(fixture: &Value, rank_count: usize, expected: &Value) -> (CoveredColum
             occupancies,
             shortwave,
             stage3_lower_boundary: None,
+            stage3_optical: None,
         },
         start,
     )

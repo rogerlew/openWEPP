@@ -27,12 +27,16 @@ adopter. The covered adopter derives carrier operands from committed V11 and
 Stage-3 beginning state, emits one carrier receipt per lane, and supplies the
 same exact Stage-3 boundary receipt to the Stage-3 evaluator. The V11 side
 selects `CoveredColumnAuthority::V11SnowCovered`, and the LSE solver now has an
-explicit lower-boundary branch that suppresses covered ground water, sensible,
-soil-storage, and WB14-facing operators. The final covered-column transaction
-still retains generic ground/shortwave accounting fields and lacks the
-released Stage-3 shortwave, precipitation-advection, and soil-coupling
-custody needed for closure. This is an explicit closure blocker, not a passed
-lower-boundary claim.
+    explicit lower-boundary branch that suppresses covered ground water, sensible,
+    soil-storage, and WB14-facing operators. The radiation projection now selects
+    Stage-3 snow VIS/NIR albedos before the two-stream solve and emits a typed
+    band/direction optical receipt. The transaction payload now uses an explicit
+    Stage-3 lower-boundary variant instead of carrying a generic ground operand
+    for V11, and weighted energy tolerance includes the Stage-3 boundary
+    magnitude. Released precipitation-advection and soil-coupling custody,
+    keyed heterogeneous physical consumption, and independent ledger closure
+    remain blockers. This is an incremental custody lift, not a passed full
+    lower-boundary claim.
 
 `Static:` Persistent support acceptance checks the Stage-3 result against the
 carrier sensible, latent, vapor, longwave, advected, and ending-ice values,
@@ -48,7 +52,7 @@ fields.
 
 `Ran:` focused Nix-provided `cargo check` for
 `openwepp-land-surface-energy` and `openwepp-hillslope-orchestrator` passed;
-land-surface-energy lib tests passed 63/63. The orchestrator lib suite passed
+land-surface-energy lib tests passed 64/64. The orchestrator lib suite passed
 745/745 executed tests with 0 failures and 2 ignored (747 total). The newly
 added persistent covered support/rollback test is one of the ignored tests
 because released Stage-3 shortwave/soil boundary custody is not yet

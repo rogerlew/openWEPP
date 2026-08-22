@@ -9,13 +9,13 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_kernel_contract::TileId;
 use openwepp_land_surface_energy::{
-    AcceptedOpenSurface, ClosureValue, CoveredColumnInputs, CoveredPotentialPhase,
-    CoveredTileEnergyOperandSet, FinalCoveredTileCandidate, FinalTileCandidate, GroundWaterKey,
-    OfeId, OpenPotentialPhase, OpenSurfaceProblem, PotentialWaterRequestBatch, RootRuntimeIdentity,
-    RuntimeTileIdentity, SoilThermalSnapshot, TileEnergyOperandSet, TileState, WaterAuthorization,
-    WaterProtocol, WeightedTileEnergyOperands, canonical_tile_fraction_sum_closes,
-    finalize_covered_phase, finalize_open_phase, solve_covered_potential_phase,
-    solve_open_potential_phase, validate_weighted_ofe_energy,
+    AcceptedOpenSurface, ClosureValue, CoveredColumnInputs, CoveredLowerBoundaryEnergyOperands,
+    CoveredPotentialPhase, CoveredTileEnergyOperandSet, FinalCoveredTileCandidate,
+    FinalTileCandidate, GroundWaterKey, OfeId, OpenPotentialPhase, OpenSurfaceProblem,
+    PotentialWaterRequestBatch, RootRuntimeIdentity, RuntimeTileIdentity, SoilThermalSnapshot,
+    TileEnergyOperandSet, TileState, WaterAuthorization, WaterProtocol, WeightedTileEnergyOperands,
+    canonical_tile_fraction_sum_closes, finalize_covered_phase, finalize_open_phase,
+    solve_covered_potential_phase, solve_open_potential_phase, validate_weighted_ofe_energy,
 };
 
 use super::{
@@ -805,11 +805,20 @@ fn weighted_operand(
                 })
                 .collect::<Vec<_>>();
             let canopy_latent_j_m2 = canopy_latent_terms.iter().sum::<f64>();
+            let (lower_latent_j_m2, lower_ground_heat_w_m2, lower_storage_w_m2) =
+                match &covered.lower_boundary {
+                    CoveredLowerBoundaryEnergyOperands::SnowFree(ground) => (
+                        ground.latent.vapor_energy_j_m2,
+                        ground.surface.ground_heat_w_m2,
+                        ground.surface.storage_w_m2,
+                    ),
+                    CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(_) => (0.0, 0.0, 0.0),
+                };
             let sum_abs_latent_j_m2 = canopy_latent_terms
                 .iter()
                 .map(|value| value.abs())
                 .sum::<f64>()
-                + covered.ground.latent.vapor_energy_j_m2.abs();
+                + lower_latent_j_m2.abs();
             covered_external_energy(
                 identity.interval_s,
                 incident_shortwave,
@@ -817,9 +826,9 @@ fn weighted_operand(
                 column.longwave.atmospheric_downward_w_m2_tile,
                 column.longwave.top_upward_w_m2_tile,
                 column.canopy_air.sensible_to_reference_air_w_m2_tile,
-                canopy_latent_j_m2 + covered.ground.latent.vapor_energy_j_m2,
-                covered.ground.surface.ground_heat_w_m2,
-                covered.ground.surface.storage_w_m2,
+                canopy_latent_j_m2 + lower_latent_j_m2,
+                lower_ground_heat_w_m2,
+                lower_storage_w_m2,
                 sum_abs_latent_j_m2,
                 column.stage3_lower_boundary_energy_w_m2_tile,
             )
@@ -866,7 +875,8 @@ fn covered_external_energy(
             + ground_heat_w_m2.abs()
             + storage_w_m2.abs())
             * interval_s
-            + sum_abs_latent_j_m2,
+            + sum_abs_latent_j_m2
+            + stage3_lower_boundary_energy_w_m2.abs() * interval_s,
     )
 }
 
@@ -945,6 +955,10 @@ mod tests {
             interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 0.0,
         );
         assert_eq!(baseline, (1_500.0, 850.0, 650.0, 3_000.0));
+        let with_stage3_boundary = covered_external_energy(
+            interval, 100.0, 10.0, 50.0, 20.0, 30.0, 200.0, 5.0, 65.0, 200.0, 25.0,
+        );
+        assert_eq!(with_stage3_boundary, (1_500.0, 1_100.0, 650.0, 3_250.0));
         let closes = |terms: (f64, f64, f64, f64), fraction: f64| {
             validate_weighted_ofe_energy(
                 interval,

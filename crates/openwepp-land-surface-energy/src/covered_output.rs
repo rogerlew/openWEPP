@@ -531,8 +531,8 @@ pub struct CoveredColumnEvaluation {
 mod tests {
     use super::*;
     use crate::{
-        CoveredTileEnergyOperandSet, GroundHeatJoinOperands, LatentJoinOperands,
-        SurfaceEnergyOperands, TileEnergyOperandSet, vapor_export_w_m2,
+        CoveredLowerBoundaryEnergyOperands, CoveredTileEnergyOperandSet, GroundHeatJoinOperands,
+        LatentJoinOperands, SurfaceEnergyOperands, TileEnergyOperandSet, vapor_export_w_m2,
     };
 
     const LATENT: f64 = 2_500_000.0;
@@ -664,7 +664,7 @@ mod tests {
         };
         CoveredTileEnergyOperandSet {
             authority: crate::CoveredColumnAuthority::HistoricalV8,
-            ground: TileEnergyOperandSet {
+            lower_boundary: CoveredLowerBoundaryEnergyOperands::SnowFree(TileEnergyOperandSet {
                 surface,
                 latent: LatentJoinOperands {
                     signed_vapor_kg_m2_s: vapor,
@@ -677,7 +677,7 @@ mod tests {
                     surface_debit_j_m2: 1_800.0,
                     soil_credit_j_m2: 1_800.0,
                 }],
-            },
+            }),
             column,
         }
     }
@@ -726,7 +726,9 @@ mod tests {
     #[test]
     fn authorization_cannot_replace_finalized_water_in_covered_latent_join() {
         let mut poisoned = valid_tile();
-        poisoned.ground.latent.signed_water_amount_kg_m2 += 1.0e-6;
+        if let CoveredLowerBoundaryEnergyOperands::SnowFree(ground) = &mut poisoned.lower_boundary {
+            ground.latent.signed_water_amount_kg_m2 += 1.0e-6;
+        }
         assert!(poisoned.validate().is_err());
     }
 }

@@ -15,7 +15,8 @@ use openwepp_land_surface_energy::{
     LandSurfaceForcing, LeafBiochemicalInputs, OfeId, OpenNeutralGeometry, OpenSurfaceProblem,
     RequestingComponent, RootHydraulicLayer, RootRuntimeIdentity, RuntimeTileIdentity,
     SoilInterfaceLayer, SoilThermalNodeOperands, SoilThermalOfeSnapshot, SoilThermalSnapshot,
-    SourceId, Stage3SnowCoveredLowerBoundary, StandGroundWaterAmountBasis, SurfaceClassKind,
+    SourceId, Stage3SnowCoveredLowerBoundary, Stage3SnowOpticalBoundaryReceiptInputs,
+    Stage3SnowOpticalBoundaryReceiptV1, StandGroundWaterAmountBasis, SurfaceClassKind,
     SurfaceConfiguration, SurfaceHeatStorageMode, SurfaceStorageBranch, TileConfiguration,
     TileState, TurbulenceConfiguration, WaterSourceType,
 };
@@ -405,6 +406,7 @@ pub(crate) struct V8ProjectedColumnRadiation {
     pub visible_diffuse: ColumnRadiationResult,
     pub near_infrared_direct: ColumnRadiationResult,
     pub near_infrared_diffuse: ColumnRadiationResult,
+    pub stage3_optical: Option<Stage3SnowOpticalBoundaryReceiptV1>,
 }
 
 /// One real production layer joined to the V8 hydraulic forcing lane.
@@ -1072,6 +1074,7 @@ impl V8ProjectedTileRuntimeInput {
                 occupancies: rows,
                 shortwave,
                 stage3_lower_boundary: None,
+                stage3_optical: self.radiation.stage3_optical.clone(),
             },
             roots,
             sources,
@@ -1235,6 +1238,7 @@ pub(crate) fn project_v8_runtime_inputs(
     day_index: usize,
     interval_index: u8,
     authenticated_duration_s_bits: Option<u64>,
+    covered_lower_boundaries: Option<&BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>>,
 ) -> Result<ValidatedV8RuntimeInputProjection, V8InputProjectionError> {
     vegetation_configuration.validate_v8()?;
     let configured_bindings = vegetation_configuration
@@ -1350,6 +1354,13 @@ pub(crate) fn project_v8_runtime_inputs(
                     canopy_forcing.forcing().rain_kg_m2,
                 )?;
             }
+            let covered_lower_boundary = if covered {
+                covered_lower_boundaries.and_then(|boundaries| {
+                    boundaries.get(&(ofe.ofe_id.clone(), tile.tile_id.clone()))
+                })
+            } else {
+                None
+            };
             let (radiation, occupancies) = project_column(
                 vegetation_configuration,
                 vegetation_state,
@@ -1362,6 +1373,7 @@ pub(crate) fn project_v8_runtime_inputs(
                 lane.production_lane_index,
                 lane.production_lane_id,
                 soil_adapter,
+                covered_lower_boundary,
             )?;
             let canopy_air_state = vegetation_state
                 .tile_canopy_air
@@ -1566,6 +1578,7 @@ fn project_column(
     lane_index: usize,
     lane_id: u32,
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    covered_lower_boundary: Option<&Stage3SnowCoveredLowerBoundary>,
 ) -> Result<(V8ProjectedColumnRadiation, Vec<V8ProjectedOccupancyInput>), V8InputProjectionError> {
     let mut strata = configuration
         .strata
@@ -1593,12 +1606,16 @@ fn project_column(
         layers_vis.push(mixed_layer(stratum, lai, sai, true));
         layers_nir.push(mixed_layer(stratum, lai, sai, false));
     }
+    let effective_vis_albedo =
+        covered_lower_boundary.map_or(surface_vis_albedo, |boundary| boundary.snow_vis_albedo);
+    let effective_nir_albedo =
+        covered_lower_boundary.map_or(surface_nir_albedo, |boundary| boundary.snow_nir_albedo);
     let visible_direct = solve_mixed_column(
         &layers_vis,
         RadiationBand::Visible,
         IncidentComponent::Direct,
         forcing.solar_zenith_cosine,
-        surface_vis_albedo,
+        effective_vis_albedo,
         forcing.direct_par_w_m2,
     )?;
     let visible_diffuse = solve_mixed_column(
@@ -1606,7 +1623,7 @@ fn project_column(
         RadiationBand::Visible,
         IncidentComponent::Diffuse,
         forcing.solar_zenith_cosine,
-        surface_vis_albedo,
+        effective_vis_albedo,
         forcing.diffuse_par_w_m2,
     )?;
     let near_infrared_direct = solve_mixed_column(
@@ -1614,7 +1631,7 @@ fn project_column(
         RadiationBand::NearInfrared,
         IncidentComponent::Direct,
         forcing.solar_zenith_cosine,
-        surface_nir_albedo,
+        effective_nir_albedo,
         forcing.direct_nir_w_m2,
     )?;
     let near_infrared_diffuse = solve_mixed_column(
@@ -1622,7 +1639,7 @@ fn project_column(
         RadiationBand::NearInfrared,
         IncidentComponent::Diffuse,
         forcing.solar_zenith_cosine,
-        surface_nir_albedo,
+        effective_nir_albedo,
         forcing.diffuse_nir_w_m2,
     )?;
     let forcing_by_layer = forcing
@@ -1684,15 +1701,73 @@ fn project_column(
             root_layers: roots,
         });
     }
+    let stage3_optical = covered_lower_boundary
+        .map(|boundary| {
+            stage3_optical_receipt(
+                ofe_id,
+                tile_id,
+                &visible_direct,
+                &visible_diffuse,
+                &near_infrared_direct,
+                &near_infrared_diffuse,
+                boundary,
+            )
+        })
+        .transpose()?;
     Ok((
         V8ProjectedColumnRadiation {
             visible_direct,
             visible_diffuse,
             near_infrared_direct,
             near_infrared_diffuse,
+            stage3_optical,
         },
         occupancies,
     ))
+}
+
+fn stage3_optical_receipt(
+    ofe_id: &OfeId,
+    tile_id: &TileId,
+    visible_direct: &ColumnRadiationResult,
+    visible_diffuse: &ColumnRadiationResult,
+    near_infrared_direct: &ColumnRadiationResult,
+    near_infrared_diffuse: &ColumnRadiationResult,
+    boundary: &Stage3SnowCoveredLowerBoundary,
+) -> Result<Stage3SnowOpticalBoundaryReceiptV1, V8InputProjectionError> {
+    let terminal =
+        |result: &ColumnRadiationResult| result.terminal_direct + result.terminal_diffuse;
+    let terminal_w_m2_tile = BandDirectionalFluxes {
+        direct_vis: terminal(visible_direct),
+        diffuse_vis: terminal(visible_diffuse),
+        direct_nir: terminal(near_infrared_direct),
+        diffuse_nir: terminal(near_infrared_diffuse),
+    };
+    let absorbed_w_m2_tile = BandDirectionalFluxes {
+        direct_vis: visible_direct.ground_absorbed,
+        diffuse_vis: visible_diffuse.ground_absorbed,
+        direct_nir: near_infrared_direct.ground_absorbed,
+        diffuse_nir: near_infrared_diffuse.ground_absorbed,
+    };
+    let reflected_w_m2_tile = BandDirectionalFluxes {
+        direct_vis: boundary.snow_vis_albedo * terminal_w_m2_tile.direct_vis,
+        diffuse_vis: boundary.snow_vis_albedo * terminal_w_m2_tile.diffuse_vis,
+        direct_nir: boundary.snow_nir_albedo * terminal_w_m2_tile.direct_nir,
+        diffuse_nir: boundary.snow_nir_albedo * terminal_w_m2_tile.diffuse_nir,
+    };
+    Ok(Stage3SnowOpticalBoundaryReceiptV1::try_new(
+        Stage3SnowOpticalBoundaryReceiptInputs {
+            ofe_id: ofe_id.clone(),
+            tile_id: tile_id.clone(),
+            terminal_w_m2_tile,
+            absorbed_w_m2_tile,
+            reflected_w_m2_tile,
+            snow_vis_albedo: boundary.snow_vis_albedo,
+            snow_nir_albedo: boundary.snow_nir_albedo,
+            stage3_albedo_state_sha256: boundary.stage3_albedo_state_sha256.clone(),
+            forcing_receipt_sha256: boundary.forcing_receipt_sha256.clone(),
+        },
+    )?)
 }
 
 fn mixed_layer(stratum: &StratumConfiguration, lai: f64, sai: f64, visible: bool) -> MixedLayer {
@@ -1960,6 +2035,7 @@ mod tests {
                 visible_diffuse: radiation(RadiationBand::Visible, 83.0),
                 near_infrared_direct: radiation(RadiationBand::NearInfrared, 355.0),
                 near_infrared_diffuse: radiation(RadiationBand::NearInfrared, 101.0),
+                stage3_optical: None,
             },
             ground: V8ProjectedGroundInput {
                 configuration,

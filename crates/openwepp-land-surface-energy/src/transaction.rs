@@ -23,11 +23,11 @@ use crate::{
     NumericalFailure, NumericalFailureCode, NumericalFailureKind, OfeId, OpenSurfaceProblem,
     OpenSurfaceSolveOutcome, OwnerEnvelopeIdentity, OwnerKind, OwnerRollbackHash,
     RequestingComponent, Sha256Digest, SoilThermalSnapshot, SolveIdentity, SolvePass, SourceId,
-    SourceWaterCap, StandGroundWaterAmountBasis, StepNorms, SurfaceClass, SurfaceClassKind,
-    SurfaceEnergyOperands, SurfaceId, TileState, VEGETATION_MODEL_DEFINITION_SHA256,
-    VEGETATION_MODEL_VERSION, WaterAmount, WaterAuthorization, WaterProtocol, WaterSourceType,
-    canonical_digest, evaluate_covered_column, evaluate_open_surface, liquid_enthalpy_j_kg,
-    solve_covered_column, solve_open_surface,
+    SourceWaterCap, Stage3SnowOpticalBoundaryReceiptV1, StandGroundWaterAmountBasis, StepNorms,
+    SurfaceClass, SurfaceClassKind, SurfaceEnergyOperands, SurfaceId, TileState,
+    VEGETATION_MODEL_DEFINITION_SHA256, VEGETATION_MODEL_VERSION, WaterAmount, WaterAuthorization,
+    WaterProtocol, WaterSourceType, canonical_digest, evaluate_covered_column,
+    evaluate_open_surface, liquid_enthalpy_j_kg, solve_covered_column, solve_open_surface,
     solver::{covered_failure_residuals, open_failure_residuals},
     validate_ground_heat_join, validate_latent_join, validate_surface_energy,
 };
@@ -671,45 +671,89 @@ impl TileEnergyOperandSet {
     }
 }
 
-/// Covered-column energy receipt. The ground control volume remains the same
-/// independently reconstructed type used by the open path, while `column`
-/// makes every canopy surface and the shared canopy-air node mandatory.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Stage3LowerBoundaryEnergyOperands {
+    pub optical: Stage3SnowOpticalBoundaryReceiptV1,
+    pub sensible_to_canopy_air_w_m2_tile: f64,
+    pub vapor_to_canopy_air_kg_m2_tile_s: f64,
+    pub net_longwave_w_m2_tile: f64,
+    pub boundary_energy_w_m2_tile: f64,
+    pub carrier_receipt_id: Sha256Digest,
+}
+
+impl Stage3LowerBoundaryEnergyOperands {
+    fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+        self.optical.validate()?;
+        if [
+            self.sensible_to_canopy_air_w_m2_tile,
+            self.vapor_to_canopy_air_kg_m2_tile_s,
+            self.net_longwave_w_m2_tile,
+            self.boundary_energy_w_m2_tile,
+        ]
+        .iter()
+        .any(|value| !value.is_finite())
+            || self.carrier_receipt_id.as_str().is_empty()
+        {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "Stage-3 lower-boundary energy operands",
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum CoveredLowerBoundaryEnergyOperands {
+    SnowFree(TileEnergyOperandSet),
+    Stage3SnowCovered(Stage3LowerBoundaryEnergyOperands),
+}
+
+impl CoveredLowerBoundaryEnergyOperands {
+    fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+        match self {
+            Self::SnowFree(ground) => ground.validate(),
+            Self::Stage3SnowCovered(stage3) => stage3.validate(),
+        }
+    }
+}
+
+/// Covered-column energy receipt. Snow-covered columns cannot carry a generic
+/// ground payload; their lower boundary is an explicit Stage-3 variant.
 #[derive(Clone, Debug, PartialEq)]
 pub struct CoveredTileEnergyOperandSet {
     pub authority: CoveredColumnAuthority,
-    pub ground: TileEnergyOperandSet,
+    pub lower_boundary: CoveredLowerBoundaryEnergyOperands,
     pub column: CoveredColumnEnergyOperands,
 }
 
 impl CoveredTileEnergyOperandSet {
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
         self.column.validate()?;
-        if self.authority != CoveredColumnAuthority::V11SnowCovered {
-            self.ground.validate()?;
-        }
-        if self.authority == CoveredColumnAuthority::V11SnowCovered {
-            return Ok(());
-        }
-        if self.ground.surface.absorbed_shortwave_w_m2.to_bits()
+        self.lower_boundary.validate()?;
+        let ground = match &self.lower_boundary {
+            CoveredLowerBoundaryEnergyOperands::SnowFree(ground) => ground,
+            CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(_) => return Ok(()),
+        };
+        if ground.surface.absorbed_shortwave_w_m2.to_bits()
             != self
                 .column
                 .shortwave
                 .ground_absorbed_w_m2_tile
                 .total()
                 .to_bits()
-            || self.ground.surface.sensible_w_m2.to_bits()
+            || ground.surface.sensible_w_m2.to_bits()
                 != self
                     .column
                     .canopy_air
                     .ground_sensible_to_canopy_air_w_m2_tile
                     .to_bits()
-            || self.ground.surface.signed_vapor_kg_m2_s.to_bits()
+            || ground.surface.signed_vapor_kg_m2_s.to_bits()
                 != self
                     .column
                     .canopy_air
                     .ground_vapor_to_canopy_air_kg_m2_tile_s
                     .to_bits()
-            || self.ground.surface.net_longwave_w_m2.to_bits()
+            || ground.surface.net_longwave_w_m2.to_bits()
                 != self.column.longwave.ground_net_w_m2_tile.to_bits()
         {
             return Err(LandSurfaceEnergyError::ComponentClosure(
@@ -1601,6 +1645,7 @@ fn covered_occupancy_energy_operands(
         .collect())
 }
 
+#[allow(clippy::too_many_lines)]
 fn build_covered_energy_operands(
     phase: &CoveredPotentialPhase,
     final_value: &CoveredColumnCandidate,
@@ -1613,19 +1658,61 @@ fn build_covered_energy_operands(
     } else {
         evaluation.ground_water.final_kg_m2_tile_s
     };
-    let ground = build_covered_ground_operands(phase, evaluation, ground_sensible, ground_vapor)?;
     let stage3_lower_boundary_energy_w_m2_tile =
         stage3_lower_boundary_energy(phase, evaluation, ground_sensible, ground_vapor)?;
+    let lower_boundary =
+        if stage3_covered {
+            let boundary = phase.beginning.stage3_lower_boundary.as_ref().ok_or(
+                LandSurfaceEnergyError::StateLineage("missing Stage-3 lower-boundary operands"),
+            )?;
+            let optical = phase.beginning.stage3_optical.clone().ok_or(
+                LandSurfaceEnergyError::StateLineage("missing Stage-3 optical operands"),
+            )?;
+            CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(
+                Stage3LowerBoundaryEnergyOperands {
+                    optical,
+                    sensible_to_canopy_air_w_m2_tile: boundary.sensible_to_canopy_air_w_m2,
+                    vapor_to_canopy_air_kg_m2_tile_s: boundary.vapor_to_canopy_air_kg_m2_s,
+                    net_longwave_w_m2_tile: boundary.net_longwave_w_m2,
+                    boundary_energy_w_m2_tile: stage3_lower_boundary_energy_w_m2_tile,
+                    carrier_receipt_id: boundary.carrier_receipt_id.clone(),
+                },
+            )
+        } else {
+            CoveredLowerBoundaryEnergyOperands::SnowFree(build_covered_ground_operands(
+                phase,
+                evaluation,
+                ground_sensible,
+                ground_vapor,
+            )?)
+        };
     let occupancies = covered_occupancy_energy_operands(phase, evaluation)?;
-    let ground_shortwave = crate::partition_ground_shortwave(
-        phase.beginning.ground.terminal_shortwave_w_m2_tile,
-        phase.beginning.ground.surface_vis_albedo,
-        phase.beginning.ground.surface_nir_albedo,
-    )?;
+    let (ground_terminal, ground_absorbed, ground_reflected) =
+        if stage3_covered {
+            let optical = phase.beginning.stage3_optical.as_ref().ok_or(
+                LandSurfaceEnergyError::StateLineage("missing Stage-3 optical shortwave"),
+            )?;
+            (
+                optical.terminal_w_m2_tile,
+                optical.absorbed_w_m2_tile,
+                optical.reflected_w_m2_tile,
+            )
+        } else {
+            let partition = crate::partition_ground_shortwave(
+                phase.beginning.ground.terminal_shortwave_w_m2_tile,
+                phase.beginning.ground.surface_vis_albedo,
+                phase.beginning.ground.surface_nir_albedo,
+            )?;
+            (
+                phase.beginning.ground.terminal_shortwave_w_m2_tile,
+                partition.absorbed,
+                partition.reflected,
+            )
+        };
     let longwave = &evaluation.whole_column_longwave;
     let operands = CoveredTileEnergyOperandSet {
         authority: phase.beginning.authority,
-        ground,
+        lower_boundary,
         column: CoveredColumnEnergyOperands {
             occupancies,
             canopy_air: CoveredCanopyAirEnergyOperands {
@@ -1644,9 +1731,9 @@ fn build_covered_energy_operands(
                     .beginning
                     .shortwave
                     .ground_absorbed_by_incident_w_m2_tile,
-                ground_terminal_w_m2_tile: phase.beginning.ground.terminal_shortwave_w_m2_tile,
-                ground_absorbed_w_m2_tile: ground_shortwave.absorbed,
-                ground_reflected_w_m2_tile: ground_shortwave.reflected,
+                ground_terminal_w_m2_tile: ground_terminal,
+                ground_absorbed_w_m2_tile: ground_absorbed,
+                ground_reflected_w_m2_tile: ground_reflected,
                 occupancies: phase.beginning.shortwave.occupancies.clone(),
             },
             longwave: CoveredColumnLongwaveOperands {
@@ -1735,12 +1822,18 @@ fn stage3_lower_boundary_energy(
     let boundary = phase.beginning.stage3_lower_boundary.as_ref().ok_or(
         LandSurfaceEnergyError::StateLineage("missing Stage-3 lower-boundary energy"),
     )?;
-    // This is deliberately sourced only from the typed Stage-3 boundary.
-    // The released carrier does not yet publish canonical shortwave,
-    // precipitation-advection, and soil-coupling custody, so the covered
-    // integration remains fail-closed/held rather than reusing the
-    // snow-free ground shortwave projection as snow physics.
-    Ok(boundary.shortwave_absorbed_w_m2
+    let optical =
+        phase
+            .beginning
+            .stage3_optical
+            .as_ref()
+            .ok_or(LandSurfaceEnergyError::StateLineage(
+                "missing Stage-3 optical lower-boundary energy",
+            ))?;
+    // Shortwave is sourced from the typed optical receipt. Precipitation
+    // advection and soil coupling remain separate Stage-3 ledger terms and
+    // are not silently borrowed from the snow-free ground projection.
+    Ok(optical.absorbed_w_m2_tile.total()
         + boundary.precipitation_advection_w_m2
         + boundary.net_longwave_w_m2
         - ground_sensible
