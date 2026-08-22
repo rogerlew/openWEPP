@@ -97,9 +97,10 @@ digest also uses typed framing rather than JSON.
 candidate and the snow-free guard remains unchanged. The lower-boundary
 implementation now has an explicit covered branch that holds covered ground
 water, ground sensible/vapor, soil storage, and WB14-facing state, but it is
-not closure-complete: canonical Stage-3 shortwave, precipitation advection,
-soil coupling, fixed-point iteration, and independent outcome-ledger custody
-are still open. No claim is made that Stage 3 is already the sole lower-surface
+not closure-complete: precipitation advection, soil coupling, per-tile physical
+LSE consumption, and independent outcome-ledger
+custody are still open. The bounded covered fixed-point iteration is now
+implemented and tested. No claim is made that Stage 3 is already the sole lower-surface
 heat/vapor/radiation owner on the V11 side.
 
 `Ran:` after the lower-boundary refactor, land-surface-energy lib tests passed
@@ -118,3 +119,47 @@ diagnostic.
 beginning temperature and verifies that the derived carrier receipt changes;
 the existing sealed-exposure poison still fails before staged owners are
 retained.
+
+## Checkpoint amendment: converge and seal keyed covered boundaries
+
+`Static:` Final covered boundaries are now explicit keyed receipts. The
+optical and reciprocal-longwave identities are joined into the Stage-3
+boundary, the final digest is carried through the LSE operand set and the
+canonical snow owner bytes, and accepted final receipt maps are retained only
+after the complete V11 candidate is ready. The V11 endpoint still has a
+parent-level aggregate carrier input for shared canopy forcing; keyed
+destination carrier receipts are area-weighted into lane Stage-3 terms, but
+the aggregate physical projection remains a subsequent ownership boundary.
+
+`Static:` The former provisional-correction sequence is now a bounded loop
+over immutable beginning owners. Each pass evaluates provisional LSE, extracts
+keyed optical/longwave candidates, evaluates Stage 3, rebuilds sensible/vapor
+boundary terms, and compares canopy-air, snow, longwave, component-temperature,
+and Stage-3 candidate state. The accepted path reruns an unsealed final LSE,
+seals the final receipts, reruns the sealed final LSE, and requires final
+self-reconstruction. `FixedPointIterationLimit` exits before the stack's
+staged fields are populated.
+
+`Static:` `CoveredTileEnergyOperandSet::validate()` now rejects mismatches
+between the Stage-3 optical terminal/absorbed/reflected terms and column
+shortwave, Stage-3 sensible/vapor and column canopy-air ground exchange,
+Stage-3 longwave and column ground longwave, Stage-3 boundary energy and the
+column energy, independently recomputed energy, and all three receipt joins.
+The strict cross-join applies to the sealed final pass so provisional LSE can
+produce the correction it is meant to be checked against.
+
+`Ran:`
+
+- `nix develop --command cargo fmt --all -- --check` — passed.
+- `git diff --check` — passed.
+- `nix develop --command cargo check -p openwepp-land-surface-energy -p openwepp-hillslope-orchestrator` — passed, with the existing direct-runtime dead-code warnings.
+- `nix develop --command cargo test -p openwepp-land-surface-energy --lib` — 66 passed, 0 failed.
+- `nix develop --command cargo test -p openwepp-hillslope-orchestrator --lib` — 748 passed, 0 failed, 1 historical ignored.
+- Focused persistent covered integration, final receipt poison, and Stage-3/column one-bit poison tests — passed.
+
+`HOLD:` The second checkpoint remains open for canopy liquid interception and
+actual throughfall/stemflow parcels, precipitation-advection energy, an
+independent snow mass/energy outcome ledger, snow-soil conductive heat receipt,
+heterogeneous physical integration fixtures, runner-owned 48-support
+construction, terminal liquid, additive restart, and physical scenario
+matrix closure.

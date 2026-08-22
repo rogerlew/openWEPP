@@ -681,8 +681,12 @@ pub struct Stage3LowerBoundaryEnergyOperands {
     pub latent_energy_to_canopy_air_j_m2_tile: f64,
     pub sensible_to_canopy_air_w_m2_tile: f64,
     pub net_longwave_w_m2_tile: f64,
+    pub precipitation_advection_w_m2_tile: f64,
     pub boundary_energy_w_m2_tile: f64,
     pub carrier_receipt_id: Sha256Digest,
+    pub optical_receipt_sha256: Option<Sha256Digest>,
+    pub reciprocal_longwave_receipt_sha256: Option<Sha256Digest>,
+    pub final_canopy_boundary_receipt_sha256: Option<Sha256Digest>,
 }
 
 impl Stage3LowerBoundaryEnergyOperands {
@@ -697,6 +701,7 @@ impl Stage3LowerBoundaryEnergyOperands {
             self.sensible_to_canopy_air_w_m2_tile,
             self.vapor_to_canopy_air_kg_m2_tile_s,
             self.net_longwave_w_m2_tile,
+            self.precipitation_advection_w_m2_tile,
             self.boundary_energy_w_m2_tile,
         ]
         .iter()
@@ -708,6 +713,23 @@ impl Stage3LowerBoundaryEnergyOperands {
         {
             return Err(LandSurfaceEnergyError::ComponentClosure(
                 "Stage-3 lower-boundary energy operands",
+            ));
+        }
+        if self
+            .optical_receipt_sha256
+            .as_ref()
+            .is_some_and(|digest| digest.as_str().is_empty())
+            || self
+                .reciprocal_longwave_receipt_sha256
+                .as_ref()
+                .is_some_and(|digest| digest.as_str().is_empty())
+            || self
+                .final_canopy_boundary_receipt_sha256
+                .as_ref()
+                .is_some_and(|digest| digest.as_str().is_empty())
+        {
+            return Err(LandSurfaceEnergyError::StateLineage(
+                "Stage-3 lower-boundary receipt identity",
             ));
         }
         let expected_latent_energy =
@@ -750,35 +772,109 @@ impl CoveredTileEnergyOperandSet {
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
         self.column.validate()?;
         self.lower_boundary.validate()?;
-        let ground = match &self.lower_boundary {
-            CoveredLowerBoundaryEnergyOperands::SnowFree(ground) => ground,
-            CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(_) => return Ok(()),
-        };
-        if ground.surface.absorbed_shortwave_w_m2.to_bits()
-            != self
-                .column
-                .shortwave
-                .ground_absorbed_w_m2_tile
-                .total()
-                .to_bits()
-            || ground.surface.sensible_w_m2.to_bits()
-                != self
-                    .column
-                    .canopy_air
-                    .ground_sensible_to_canopy_air_w_m2_tile
-                    .to_bits()
-            || ground.surface.signed_vapor_kg_m2_s.to_bits()
-                != self
-                    .column
-                    .canopy_air
-                    .ground_vapor_to_canopy_air_kg_m2_tile_s
-                    .to_bits()
-            || ground.surface.net_longwave_w_m2.to_bits()
-                != self.column.longwave.ground_net_w_m2_tile.to_bits()
-        {
-            return Err(LandSurfaceEnergyError::ComponentClosure(
-                "covered ground/column energy join",
-            ));
+        match (&self.authority, &self.lower_boundary) {
+            (
+                CoveredColumnAuthority::V11SnowCovered,
+                CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(stage3),
+            ) => {
+                // A provisional LSE solve has to be allowed to produce the
+                // corrected optical and reciprocal-longwave values that seal
+                // the next boundary. Once the final receipt is attached,
+                // however, every primitive is an exact cross-join. This keeps
+                // the solve fail-closed without mistaking its predictor for
+                // the accepted transaction.
+                let final_receipt_sealed = stage3.final_canopy_boundary_receipt_sha256.is_some();
+                let joins_match = stage3.optical.terminal_w_m2_tile
+                    == self.column.shortwave.ground_terminal_w_m2_tile
+                    && stage3.optical.absorbed_w_m2_tile
+                        == self.column.shortwave.ground_absorbed_w_m2_tile
+                    && stage3.optical.reflected_w_m2_tile
+                        == self.column.shortwave.ground_reflected_w_m2_tile
+                    && stage3.sensible_to_canopy_air_w_m2_tile.to_bits()
+                        == self
+                            .column
+                            .canopy_air
+                            .ground_sensible_to_canopy_air_w_m2_tile
+                            .to_bits()
+                    && stage3.vapor_to_canopy_air_kg_m2_tile_s.to_bits()
+                        == self
+                            .column
+                            .canopy_air
+                            .ground_vapor_to_canopy_air_kg_m2_tile_s
+                            .to_bits()
+                    && stage3.net_longwave_w_m2_tile.to_bits()
+                        == self.column.longwave.ground_net_w_m2_tile.to_bits()
+                    && stage3.boundary_energy_w_m2_tile.to_bits()
+                        == self.column.stage3_lower_boundary_energy_w_m2_tile.to_bits();
+                if final_receipt_sealed && !joins_match {
+                    return Err(LandSurfaceEnergyError::ComponentClosure(
+                        "Stage-3 lower-boundary/column operand join",
+                    ));
+                }
+                let reconstructed = stage3.optical.absorbed_w_m2_tile.total()
+                    + stage3.net_longwave_w_m2_tile
+                    + stage3.precipitation_advection_w_m2_tile
+                    - stage3.sensible_to_canopy_air_w_m2_tile
+                    - stage3.vapor_to_canopy_air_kg_m2_tile_s * stage3.latent_heat_j_kg;
+                if reconstructed.to_bits() != stage3.boundary_energy_w_m2_tile.to_bits() {
+                    return Err(LandSurfaceEnergyError::ControlVolumeClosure(
+                        "Stage-3 independently reconstructed lower boundary",
+                    ));
+                }
+                if final_receipt_sealed
+                    && (stage3.optical_receipt_sha256.as_ref()
+                        != self.column.optical_receipt_sha256.as_ref()
+                        || stage3.reciprocal_longwave_receipt_sha256.as_ref()
+                            != self.column.reciprocal_longwave_receipt_sha256.as_ref()
+                        || stage3.final_canopy_boundary_receipt_sha256.as_ref()
+                            != self.column.final_canopy_boundary_receipt_sha256.as_ref())
+                {
+                    return Err(LandSurfaceEnergyError::StateLineage(
+                        "Stage-3 lower-boundary receipt identity join",
+                    ));
+                }
+            }
+            (
+                CoveredColumnAuthority::V11SnowCovered,
+                CoveredLowerBoundaryEnergyOperands::SnowFree(_),
+            ) => {
+                return Err(LandSurfaceEnergyError::StateLineage(
+                    "V11 snow-covered authority with snow-free payload",
+                ));
+            }
+            (_, CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(_)) => {
+                return Err(LandSurfaceEnergyError::StateLineage(
+                    "historical authority with Stage-3 snow-covered payload",
+                ));
+            }
+            (_, CoveredLowerBoundaryEnergyOperands::SnowFree(ground)) => {
+                if ground.surface.absorbed_shortwave_w_m2.to_bits()
+                    != self
+                        .column
+                        .shortwave
+                        .ground_absorbed_w_m2_tile
+                        .total()
+                        .to_bits()
+                    || ground.surface.sensible_w_m2.to_bits()
+                        != self
+                            .column
+                            .canopy_air
+                            .ground_sensible_to_canopy_air_w_m2_tile
+                            .to_bits()
+                    || ground.surface.signed_vapor_kg_m2_s.to_bits()
+                        != self
+                            .column
+                            .canopy_air
+                            .ground_vapor_to_canopy_air_kg_m2_tile_s
+                            .to_bits()
+                    || ground.surface.net_longwave_w_m2.to_bits()
+                        != self.column.longwave.ground_net_w_m2_tile.to_bits()
+                {
+                    return Err(LandSurfaceEnergyError::ComponentClosure(
+                        "covered ground/column energy join",
+                    ));
+                }
+            }
         }
         Ok(())
     }
@@ -1680,38 +1776,46 @@ fn build_covered_energy_operands(
     };
     let stage3_lower_boundary_energy_w_m2_tile =
         stage3_lower_boundary_energy(phase, evaluation, ground_sensible, ground_vapor)?;
-    let lower_boundary =
-        if stage3_covered {
-            let boundary = phase.beginning.stage3_lower_boundary.as_ref().ok_or(
-                LandSurfaceEnergyError::StateLineage("missing Stage-3 lower-boundary operands"),
-            )?;
-            let optical = phase.beginning.stage3_optical.clone().ok_or(
-                LandSurfaceEnergyError::StateLineage("missing Stage-3 optical operands"),
-            )?;
-            CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(
-                Stage3LowerBoundaryEnergyOperands {
-                    optical,
-                    snow_temperature_k: boundary.snow_temperature_k,
-                    vapor_to_canopy_air_kg_m2_tile_s: boundary.vapor_to_canopy_air_kg_m2_s,
-                    interval_s: phase.beginning.interval_s,
-                    latent_heat_j_kg: boundary.latent_heat_j_kg,
-                    latent_energy_to_canopy_air_j_m2_tile: boundary.vapor_to_canopy_air_kg_m2_s
-                        * boundary.latent_heat_j_kg
-                        * phase.beginning.interval_s,
-                    sensible_to_canopy_air_w_m2_tile: boundary.sensible_to_canopy_air_w_m2,
-                    net_longwave_w_m2_tile: boundary.net_longwave_w_m2,
-                    boundary_energy_w_m2_tile: stage3_lower_boundary_energy_w_m2_tile,
-                    carrier_receipt_id: boundary.carrier_receipt_id.clone(),
-                },
-            )
-        } else {
-            CoveredLowerBoundaryEnergyOperands::SnowFree(build_covered_ground_operands(
-                phase,
-                evaluation,
-                ground_sensible,
-                ground_vapor,
-            )?)
-        };
+    let lower_boundary = if stage3_covered {
+        let boundary = phase.beginning.stage3_lower_boundary.as_ref().ok_or(
+            LandSurfaceEnergyError::StateLineage("missing Stage-3 lower-boundary operands"),
+        )?;
+        let optical =
+            phase
+                .beginning
+                .stage3_optical
+                .clone()
+                .ok_or(LandSurfaceEnergyError::StateLineage(
+                    "missing Stage-3 optical operands",
+                ))?;
+        CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(Stage3LowerBoundaryEnergyOperands {
+            optical,
+            snow_temperature_k: boundary.snow_temperature_k,
+            vapor_to_canopy_air_kg_m2_tile_s: boundary.vapor_to_canopy_air_kg_m2_s,
+            interval_s: phase.beginning.interval_s,
+            latent_heat_j_kg: boundary.latent_heat_j_kg,
+            latent_energy_to_canopy_air_j_m2_tile: boundary.vapor_to_canopy_air_kg_m2_s
+                * boundary.latent_heat_j_kg
+                * phase.beginning.interval_s,
+            sensible_to_canopy_air_w_m2_tile: boundary.sensible_to_canopy_air_w_m2,
+            net_longwave_w_m2_tile: boundary.net_longwave_w_m2,
+            precipitation_advection_w_m2_tile: boundary.precipitation_advection_w_m2,
+            boundary_energy_w_m2_tile: stage3_lower_boundary_energy_w_m2_tile,
+            carrier_receipt_id: boundary.carrier_receipt_id.clone(),
+            optical_receipt_sha256: boundary.optical_receipt_sha256.clone(),
+            reciprocal_longwave_receipt_sha256: boundary.reciprocal_longwave_receipt_sha256.clone(),
+            final_canopy_boundary_receipt_sha256: boundary
+                .final_canopy_boundary_receipt_sha256
+                .clone(),
+        })
+    } else {
+        CoveredLowerBoundaryEnergyOperands::SnowFree(build_covered_ground_operands(
+            phase,
+            evaluation,
+            ground_sensible,
+            ground_vapor,
+        )?)
+    };
     let occupancies = covered_occupancy_energy_operands(phase, evaluation)?;
     let (ground_terminal, ground_absorbed, ground_reflected) =
         if stage3_covered {
@@ -1778,6 +1882,21 @@ fn build_covered_energy_operands(
                     .collect(),
             },
             stage3_lower_boundary_energy_w_m2_tile,
+            optical_receipt_sha256: phase
+                .beginning
+                .stage3_lower_boundary
+                .as_ref()
+                .and_then(|boundary| boundary.optical_receipt_sha256.clone()),
+            reciprocal_longwave_receipt_sha256: phase
+                .beginning
+                .stage3_lower_boundary
+                .as_ref()
+                .and_then(|boundary| boundary.reciprocal_longwave_receipt_sha256.clone()),
+            final_canopy_boundary_receipt_sha256: phase
+                .beginning
+                .stage3_lower_boundary
+                .as_ref()
+                .and_then(|boundary| boundary.final_canopy_boundary_receipt_sha256.clone()),
         },
     };
     operands.validate()?;

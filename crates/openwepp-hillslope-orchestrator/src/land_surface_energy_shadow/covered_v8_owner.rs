@@ -16,7 +16,7 @@ use openwepp_biogeochemistry::{
 use openwepp_kernel_contract::{TileId, TransactionId};
 use openwepp_land_surface_energy::{
     AcceptedCoveredVegetationOperands, CoveredLowerBoundaryEnergyOperands, GroundWaterKey, OfeId,
-    RequestingComponent, WaterAmount,
+    RequestingComponent, Stage3SnowOpticalBoundaryReceiptV1, WaterAmount,
 };
 use openwepp_vegetation::{
     NitrogenArbiter, UncommittedV8VegetationCandidate, V8ComponentOccupancyBinding,
@@ -69,6 +69,18 @@ pub struct UncommittedCoveredV8OwnerEnvelope {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+pub(crate) struct CoveredLseIterationState {
+    pub canopy_air_temperature_k: f64,
+    pub canopy_air_specific_humidity_kg_kg: f64,
+    pub snow_temperature_k: f64,
+    pub snow_sensible_w_m2: f64,
+    pub snow_vapor_kg_m2_s: f64,
+    pub snow_latent_w_m2: f64,
+    pub snow_net_longwave_w_m2: f64,
+    pub component_temperatures_k: Vec<(String, [f64; 4])>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
 #[allow(clippy::large_enum_variant)]
 enum CoveredV8PhysicalOwner {
     Legacy(CoveredForestShadowResult),
@@ -98,6 +110,87 @@ impl UncommittedCoveredV8OwnerEnvelope {
     #[must_use]
     pub fn hydrology(&self) -> &UnifiedRealHydrologyCandidate {
         self.physical.hydrology()
+    }
+
+    pub(crate) fn covered_lse_iteration_state_by_destination(
+        &self,
+    ) -> Result<BTreeMap<(OfeId, TileId), CoveredLseIterationState>, CoveredV8OwnerEnvelopeError>
+    {
+        let physical = match &self.physical {
+            CoveredV8PhysicalOwner::MultiTile(value) => value,
+            CoveredV8PhysicalOwner::Legacy(_) => {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "covered iteration state requires multi-tile physical owner",
+                ));
+            }
+        };
+        let mut states = BTreeMap::new();
+        for tile in physical.finalized_tiles() {
+            let Some(covered) = tile.covered() else {
+                continue;
+            };
+            let lower = match &covered.energy_operands.lower_boundary {
+                CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(value) => value,
+                CoveredLowerBoundaryEnergyOperands::SnowFree(_) => {
+                    return Err(CoveredV8OwnerEnvelopeError::Identity(
+                        "covered iteration state for snow-free payload",
+                    ));
+                }
+            };
+            let column = &covered.energy_operands.column;
+            let component_temperatures_k = column
+                .occupancies
+                .iter()
+                .map(|occupancy| {
+                    (
+                        occupancy.occupancy_id.clone(),
+                        [
+                            occupancy.sun_leaf.surface_temperature_k,
+                            occupancy.shade_leaf.surface_temperature_k,
+                            occupancy.wet_surface.surface_temperature_k,
+                            occupancy.dry_stem.surface_temperature_k,
+                        ],
+                    )
+                })
+                .collect();
+            let key = (
+                covered.identity.ofe_id.clone(),
+                covered.identity.tile_id.clone(),
+            );
+            if states
+                .insert(
+                    key,
+                    CoveredLseIterationState {
+                        canopy_air_temperature_k: column.canopy_air.canopy_air_temperature_k,
+                        canopy_air_specific_humidity_kg_kg: column
+                            .canopy_air
+                            .canopy_air_specific_humidity_kg_kg,
+                        snow_temperature_k: lower.snow_temperature_k,
+                        snow_sensible_w_m2: column
+                            .canopy_air
+                            .ground_sensible_to_canopy_air_w_m2_tile,
+                        snow_vapor_kg_m2_s: column
+                            .canopy_air
+                            .ground_vapor_to_canopy_air_kg_m2_tile_s,
+                        snow_latent_w_m2: column.canopy_air.ground_vapor_to_canopy_air_kg_m2_tile_s
+                            * lower.latent_heat_j_kg,
+                        snow_net_longwave_w_m2: column.longwave.ground_net_w_m2_tile,
+                        component_temperatures_k,
+                    },
+                )
+                .is_some()
+            {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "duplicate covered iteration destination",
+                ));
+            }
+        }
+        if states.is_empty() {
+            return Err(CoveredV8OwnerEnvelopeError::Identity(
+                "empty covered iteration state set",
+            ));
+        }
+        Ok(states)
     }
 
     #[must_use]
@@ -179,6 +272,53 @@ impl UncommittedCoveredV8OwnerEnvelope {
         if receipts.is_empty() {
             return Err(CoveredV8OwnerEnvelopeError::Identity(
                 "empty covered shortwave destination set",
+            ));
+        }
+        Ok(receipts)
+    }
+
+    pub(crate) fn covered_snow_optical_by_destination(
+        &self,
+    ) -> Result<
+        BTreeMap<(OfeId, TileId), Stage3SnowOpticalBoundaryReceiptV1>,
+        CoveredV8OwnerEnvelopeError,
+    > {
+        let physical = match &self.physical {
+            CoveredV8PhysicalOwner::MultiTile(value) => value,
+            CoveredV8PhysicalOwner::Legacy(_) => {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "covered optical receipt requires multi-tile physical owner",
+                ));
+            }
+        };
+        let mut receipts = BTreeMap::new();
+        for tile in physical.finalized_tiles() {
+            let Some(covered) = tile.covered() else {
+                continue;
+            };
+            let optical = match &covered.energy_operands.lower_boundary {
+                CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(stage3) => {
+                    stage3.optical.clone()
+                }
+                CoveredLowerBoundaryEnergyOperands::SnowFree(_) => {
+                    return Err(CoveredV8OwnerEnvelopeError::Identity(
+                        "covered optical receipt for snow-free payload",
+                    ));
+                }
+            };
+            let key = (
+                covered.identity.ofe_id.clone(),
+                covered.identity.tile_id.clone(),
+            );
+            if receipts.insert(key, optical).is_some() {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "duplicate covered optical receipt",
+                ));
+            }
+        }
+        if receipts.is_empty() {
+            return Err(CoveredV8OwnerEnvelopeError::Identity(
+                "empty covered optical receipt set",
             ));
         }
         Ok(receipts)

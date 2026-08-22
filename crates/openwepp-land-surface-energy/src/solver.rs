@@ -969,6 +969,11 @@ pub struct Stage3SnowCoveredLowerBoundary {
     pub snow_nir_albedo: f64,
     pub stage3_albedo_state_sha256: Sha256Digest,
     pub forcing_receipt_sha256: Sha256Digest,
+    /// Populated only after the keyed optical correction is accepted. The
+    /// provisional pass intentionally carries no optical receipt.
+    pub optical_receipt_sha256: Option<Sha256Digest>,
+    pub reciprocal_longwave_receipt_sha256: Option<Sha256Digest>,
+    pub final_canopy_boundary_receipt_sha256: Option<Sha256Digest>,
 }
 
 /// Exact VIS/NIR and direct/diffuse optical custody for one covered OFE/tile.

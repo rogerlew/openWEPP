@@ -37,8 +37,9 @@ selects `CoveredColumnAuthority::V11SnowCovered`, and the LSE solver now has an
     primitive Stage-3 boundary magnitudes. A provisional/final reciprocal-
     longwave correction now makes the persistent covered case close. Released
     precipitation-advection and soil-coupling custody, keyed heterogeneous
-    physical consumption, fully iterative fixed-point convergence, and
-    independent ledger closure remain blockers. This is an incremental custody
+    per-tile physical LSE consumption, and independent ledger closure remain
+    blockers. The bounded covered fixed-point loop is now implemented, but its
+    heterogeneous physical consumer remains open. This is an incremental custody
     lift, not a passed full lower-boundary claim.
 
 `Static:` Persistent support acceptance checks the Stage-3 result against the
@@ -46,10 +47,9 @@ carrier sensible, latent, vapor, longwave, advected, and ending-ice values,
 rejects terminal events on the persistent branch, and rejects a partial or
 non-active Stage-3 result. Carrier receipts are retained per lane and an exact
 `(OFE, tile)` receipt set is constructed for covered destinations. The V11
-solve still consumes a parent-level aggregate carrier state and fail-closes
-when covered destinations under one lane disagree; keyed heterogeneous
-per-destination physical consumption and full fixed-point iteration remain
-open.
+solve still consumes a parent-level aggregate carrier state for shared canopy
+forcing; keyed destination receipts are now area-weighted into the lane
+Stage-3 boundary, while per-tile physical LSE consumption remains open.
 Prepared supports contain only sealed covered forcing and do not expose live
 carrier surfaces or carrier ledgers. The new support, configuration, V11, and
 carrier forcing digests use explicit typed framing and fixed-width/f64-bit
@@ -86,3 +86,51 @@ matrix, and independent reviews are not yet dispositioned.
 | complete restart | `BLOCKED` | `restart-schema-and-equivalence.md` |
 | physical scenarios | `NOT RUN` | `scenario-matrix.md` |
 | reviews/verifiers/exact-head | `NOT RUN` | to be appended |
+
+## Checkpoint amendment: converge and seal keyed covered boundaries
+
+`Static:` The covered path now constructs a `FinalStage3CanopyBoundaryReceiptV1`
+per `(OFE, tile)` after the optical and reciprocal-longwave values are known.
+The final receipt binds the beginning V11 and Stage-3 digests, provisional
+carrier digest, optical digest, reciprocal-longwave digest, accepted exchange
+terms, and its own canonical digest. Stage-3 boundary operands, covered-column
+operands, the sealed snow-owner bytes, and the retained final receipt map carry
+the final identity. Provisional solves retain no final receipt identity.
+
+`Static:` The covered loop restarts every LSE and Stage-3 candidate from the
+immutable beginning owner set. It is bounded by eight iterations and compares
+keyed canopy-air temperature/humidity, snow temperature and exchange terms,
+snow latent flux, snow net longwave, component canopy temperatures, and the
+Stage-3 candidate fingerprint. A nonconvergent loop returns the typed
+`FixedPointIterationLimit` error before any staged ending or last-receipt field
+is published. The final unsealed candidate is rerun, sealed, rerun again, and
+must self-reconstruct the accepted boundary exactly.
+
+`Static:` Destination carrier receipts are area-weighted by the exact surface
+configuration tile fraction into one lane Stage-3 boundary, while the keyed
+destination receipts remain available for final receipt joins. The current V8
+endpoint still accepts one aggregate carrier projection for its shared canopy
+forcing; eliminating that parent aggregate from physical LSE execution remains
+open and is not claimed closed here.
+
+`Static:` `CoveredTileEnergyOperandSet::validate()` now cross-joins the final
+Stage-3 lower-boundary representation with the covered-column shortwave,
+canopy-air, longwave, boundary-energy, and receipt-identity representations.
+Independent closure remains active for provisional predictors; a sealed final
+receipt requires all exact joins. One-bit optical/receipt and longwave poison
+tests cover the fail-closed joins.
+
+`Ran:` `nix develop --command cargo check -p openwepp-land-surface-energy -p
+openwepp-hillslope-orchestrator` passed. `nix develop --command cargo test -p
+openwepp-land-surface-energy --lib` passed 66/66. `nix develop --command cargo
+test -p openwepp-hillslope-orchestrator --lib` passed 748/748 executed tests
+with one historical deterministic support-domain test ignored. The focused
+covered persistent test and the final-receipt poison test passed. Formatting
+and `git diff --check` passed.
+
+`HOLD:` No heterogeneous two-unequal-tile physical integration fixture,
+longwave-only/sublimation-only/positive-shortwave scenario matrix, explicit
+nonconvergence fixture, independent snow outcome ledger, canopy rain
+interception/throughfall-stemflow custody, snow-soil heat receipt, runner-owned
+48-support construction, terminal chronology, or additive restart closure is
+claimed by this amendment. Child 3 remains blocked.

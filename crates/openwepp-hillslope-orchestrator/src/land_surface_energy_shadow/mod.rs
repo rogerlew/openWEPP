@@ -83,6 +83,7 @@ mod v8_projection;
 mod v8_rollback;
 pub(super) use covered_derived_ingress::CoveredIngressSchedule;
 pub(crate) use covered_forest::CoveredForestShadowResult;
+pub(crate) use covered_v8_owner::CoveredLseIterationState;
 pub use covered_v8_owner::{CoveredV8OwnerEnvelopeError, UncommittedCoveredV8OwnerEnvelope};
 use finalization_sealing::first_sealed_finalization_violation;
 use receiver_failure::canonical_receiver_failure;

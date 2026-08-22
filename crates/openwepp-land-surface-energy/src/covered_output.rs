@@ -5,8 +5,8 @@ use std::collections::BTreeSet;
 use crate::physics::{BandDirectionalFluxes, CanopyLongwaveResult};
 use crate::{
     CoveredOccupancyLiquidLedger, CoveredOccupancyShortwaveInputs, GroundWaterFlux,
-    LandSurfaceEnergyError, SourceWaterFlux, V10LeafGasBranch, WaterBranch, energy_tolerance,
-    water_tolerance,
+    LandSurfaceEnergyError, Sha256Digest, SourceWaterFlux, V10LeafGasBranch, WaterBranch,
+    energy_tolerance, water_tolerance,
 };
 
 /// Primitive energy terms for one named canopy surface. No producer residual
@@ -355,6 +355,9 @@ pub struct CoveredColumnEnergyOperands {
     /// Energy transferred from the canopy-only control volume into the
     /// Stage-3 snow owner. Historical covered columns keep this at zero.
     pub stage3_lower_boundary_energy_w_m2_tile: f64,
+    pub optical_receipt_sha256: Option<Sha256Digest>,
+    pub reciprocal_longwave_receipt_sha256: Option<Sha256Digest>,
+    pub final_canopy_boundary_receipt_sha256: Option<Sha256Digest>,
 }
 
 impl CoveredColumnEnergyOperands {
@@ -532,8 +535,11 @@ mod tests {
     use super::*;
     use crate::{
         CoveredLowerBoundaryEnergyOperands, CoveredTileEnergyOperandSet, GroundHeatJoinOperands,
-        LatentJoinOperands, SurfaceEnergyOperands, TileEnergyOperandSet, vapor_export_w_m2,
+        LatentJoinOperands, OfeId, Sha256Digest, Stage3LowerBoundaryEnergyOperands,
+        Stage3SnowOpticalBoundaryReceiptInputs, Stage3SnowOpticalBoundaryReceiptV1,
+        SurfaceEnergyOperands, TileEnergyOperandSet, vapor_export_w_m2,
     };
+    use openwepp_kernel_contract::TileId;
 
     const LATENT: f64 = 2_500_000.0;
 
@@ -641,6 +647,9 @@ mod tests {
                 )],
             },
             stage3_lower_boundary_energy_w_m2_tile: 0.0,
+            optical_receipt_sha256: None,
+            reciprocal_longwave_receipt_sha256: None,
+            final_canopy_boundary_receipt_sha256: None,
         }
     }
 
@@ -678,6 +687,50 @@ mod tests {
                     soil_credit_j_m2: 1_800.0,
                 }],
             }),
+            column,
+        }
+    }
+
+    fn valid_stage3_tile() -> CoveredTileEnergyOperandSet {
+        let mut column = valid_column();
+        let digest = Sha256Digest::try_new("a".repeat(64)).expect("digest");
+        let optical =
+            Stage3SnowOpticalBoundaryReceiptV1::try_new(Stage3SnowOpticalBoundaryReceiptInputs {
+                ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+                tile_id: TileId::try_new("tile-1").expect("tile"),
+                terminal_w_m2_tile: column.shortwave.ground_terminal_w_m2_tile,
+                absorbed_w_m2_tile: column.shortwave.ground_absorbed_w_m2_tile,
+                reflected_w_m2_tile: column.shortwave.ground_reflected_w_m2_tile,
+                snow_vis_albedo: 0.5,
+                snow_nir_albedo: 0.5,
+                stage3_albedo_state_sha256: digest.clone(),
+                forcing_receipt_sha256: digest.clone(),
+            })
+            .expect("optical receipt");
+        column.stage3_lower_boundary_energy_w_m2_tile = 30.5;
+        column.optical_receipt_sha256 = Some(digest.clone());
+        column.reciprocal_longwave_receipt_sha256 = Some(digest.clone());
+        column.final_canopy_boundary_receipt_sha256 = Some(digest.clone());
+        CoveredTileEnergyOperandSet {
+            authority: crate::CoveredColumnAuthority::V11SnowCovered,
+            lower_boundary: CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(
+                Stage3LowerBoundaryEnergyOperands {
+                    optical,
+                    snow_temperature_k: 280.0,
+                    vapor_to_canopy_air_kg_m2_tile_s: 1.0e-6,
+                    interval_s: 1_800.0,
+                    latent_heat_j_kg: 2_500_000.0,
+                    latent_energy_to_canopy_air_j_m2_tile: 4_500.0,
+                    sensible_to_canopy_air_w_m2_tile: 2.0,
+                    net_longwave_w_m2_tile: 30.0,
+                    precipitation_advection_w_m2_tile: 0.0,
+                    boundary_energy_w_m2_tile: 30.5,
+                    carrier_receipt_id: digest.clone(),
+                    optical_receipt_sha256: Some(digest.clone()),
+                    reciprocal_longwave_receipt_sha256: Some(digest.clone()),
+                    final_canopy_boundary_receipt_sha256: Some(digest),
+                },
+            ),
             column,
         }
     }
@@ -721,6 +774,30 @@ mod tests {
             .longwave
             .downward_boundaries_w_m2_tile[1] += 1.0;
         assert!(wrong_longwave_boundary.validate().is_err());
+    }
+
+    #[test]
+    fn stage3_lower_boundary_and_column_joins_reject_one_bit_poison() {
+        let valid = valid_stage3_tile();
+        valid.validate().expect("Stage-3 cross-join");
+
+        let mut poisoned_optical = valid.clone();
+        if let CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(stage3) =
+            &mut poisoned_optical.lower_boundary
+        {
+            stage3.optical_receipt_sha256 =
+                Some(Sha256Digest::try_new("b".repeat(64)).expect("digest"));
+        }
+        assert!(poisoned_optical.validate().is_err());
+
+        let mut poisoned_longwave = valid;
+        if let CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(stage3) =
+            &mut poisoned_longwave.lower_boundary
+        {
+            stage3.net_longwave_w_m2_tile =
+                f64::from_bits(stage3.net_longwave_w_m2_tile.to_bits() + 1);
+        }
+        assert!(poisoned_longwave.validate().is_err());
     }
 
     #[test]
