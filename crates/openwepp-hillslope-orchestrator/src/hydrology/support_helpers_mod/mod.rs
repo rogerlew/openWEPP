@@ -15,4 +15,7 @@ pub use snow_mass_transition::{
     DirectSnowSolidToLiquidLedger, DirectSnowStage3Outcome, DirectSnowVerboseDiagnostics,
 };
 pub(crate) use snow_mass_transition::DirectSnowStage3Resolution;
-pub(crate) use runoff_reconciliation::STAGE3_DEFAULT_SNOW_ALBEDO;
+pub(crate) use runoff_reconciliation::{
+    STAGE3_DEFAULT_SNOW_ALBEDO, stage3_has_represented_ice,
+    stage3_is_resolved_thermal_domain,
+};

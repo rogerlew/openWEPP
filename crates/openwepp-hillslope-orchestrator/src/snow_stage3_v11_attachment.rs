@@ -15,6 +15,9 @@ use openwepp_coupled_time::{
 };
 use openwepp_kernel_contract::TileId;
 use openwepp_land_surface_energy::OfeId;
+use openwepp_meteorology::psychrometrics::saturation_vapor_pressure_water_kpa;
+use openwepp_meteorology::snow_free_forcing::{celsius_to_kelvin, kilopascals_to_pascals};
+use openwepp_unit_boundary::TemperatureCelsius;
 use openwepp_vegetation::v11::{
     V11OwnerEnvelope, V11ParentCandidate, V11ParentTransaction, VegetationConfigurationV11,
     execute_v11_segment,
@@ -25,11 +28,12 @@ use thiserror::Error;
 use crate::hydrology::{
     DirectActiveSnowPartitionInputs, DirectSnowStage3PersistentDayResult,
     DirectSnowStage3PersistentState, DirectSnowStage3SupportInput, DirectSnowTerminalEventRequest,
-    DirectSnowTerminalEventResult, Wb11HydrologyKernel,
+    DirectSnowTerminalEventResult, Wb11HydrologyKernel, stage3_has_represented_ice,
+    stage3_is_resolved_thermal_domain,
 };
 use crate::runtime_inputs::{
-    PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError, SnowFreeHalfHourProviderCursor,
-    SnowFreePrecipitationParcelReceipt, direct_gsi_state,
+    PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError, SnowFreeHalfHourIntervalReceipt,
+    SnowFreeHalfHourProviderCursor, SnowFreePrecipitationParcelReceipt, direct_gsi_state,
 };
 use crate::snow_stage3_open_boundary::{
     SealedOpenSnowExposureReceiptV1, SealedOpenSnowTileForcingInputsV1,
@@ -128,6 +132,8 @@ pub struct DirectSnowStage3V11PreparedSupport {
     /// destination. Empty means the support is snow-free.
     snow_surface_forcing_by_destination:
         BTreeMap<(OfeId, TileId), SealedStage3TileBoundaryForcingV1>,
+    open_snow_destination_requests: BTreeSet<(OfeId, TileId)>,
+    atmospheric_receipt_by_destination: BTreeMap<(OfeId, TileId), Stage3ParentAtmosphericReceiptV1>,
     /// Covered V11 projection. It is a separate type from the snow-free
     /// interval so regime selection is explicit at the sealed-support seam.
     covered_v11_interval: Option<DirectV11SnowCoveredSegmentInput>,
@@ -142,6 +148,37 @@ pub enum Stage3SnowSurfaceRegime {
     SnowFree,
     OpenSnowOnly,
     CanopyCoveredOrMixed,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum Stage3LaneLifecycleV1 {
+    SnowFree,
+    ResolvedSnow,
+    TerminalPending,
+    SolidPrecipitationPending,
+}
+
+include!("stage3_parent_atmosphere.rs");
+
+fn stage3_lane_lifecycle(
+    state: &DirectSnowStage3PersistentState,
+    snowfall_m: f64,
+) -> Stage3LaneLifecycleV1 {
+    if stage3_is_resolved_thermal_domain(state) {
+        return Stage3LaneLifecycleV1::ResolvedSnow;
+    }
+    let has_terminal_liquid = state.detached_retained_liquid_kg_m2 > 0.0
+        || state
+            .layers
+            .iter()
+            .any(|layer| layer.liquid_water_m > 0.0 || layer.refrozen_liquid_m > 0.0);
+    if stage3_has_represented_ice(state) || has_terminal_liquid {
+        return Stage3LaneLifecycleV1::TerminalPending;
+    }
+    if snowfall_m > 0.0 {
+        return Stage3LaneLifecycleV1::SolidPrecipitationPending;
+    }
+    Stage3LaneLifecycleV1::SnowFree
 }
 
 impl DirectSnowStage3V11PreparedSupport {
@@ -183,6 +220,8 @@ impl DirectSnowStage3V11PreparedSupport {
             support_forcing_by_lane,
             v11_interval,
             snow_surface_forcing_by_destination: BTreeMap::new(),
+            open_snow_destination_requests: BTreeSet::new(),
+            atmospheric_receipt_by_destination: BTreeMap::new(),
             covered_v11_interval: None,
             support_identity_by_lane,
         })
@@ -202,16 +241,6 @@ impl DirectSnowStage3V11PreparedSupport {
         self
     }
 
-    /// Attach one independently sealed open-snow forcing to its destination.
-    #[must_use]
-    pub fn with_open_snow_tile_forcing(mut self, forcing: SealedOpenSnowTileForcingV1) -> Self {
-        self.snow_surface_forcing_by_destination.insert(
-            forcing.destination.clone(),
-            SealedStage3TileBoundaryForcingV1::OpenSnow(forcing),
-        );
-        self
-    }
-
     /// Derive and seal one open-snow destination from the prepared provider
     /// projection. Callers identify the retained raw-wind provider and the
     /// admitted identity projection; all meteorological scalars come from the
@@ -219,12 +248,9 @@ impl DirectSnowStage3V11PreparedSupport {
     pub fn with_provider_open_snow_destination(
         mut self,
         destination: (OfeId, TileId),
-        source_wind_provider_sha256: Digest32,
-        projection_model_definition_sha256: Digest32,
     ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
-        let identity = self
-            .support_identity_by_lane
-            .values_mut()
+        self.support_identity_by_lane
+            .values()
             .flatten()
             .find(|identity| {
                 identity.destination_ofe_id == destination.0.as_str()
@@ -233,39 +259,253 @@ impl DirectSnowStage3V11PreparedSupport {
             .ok_or(DirectSnowStage3V11AttachmentError::Support(
                 "open-snow destination provider identity",
             ))?;
-        let forcing_receipt_sha256 = identity.forcing_receipt_digest;
-        let forcing = &self.v11_interval.lse_forcing;
-        let exposure = SealedOpenSnowExposureReceiptV1::try_new(
-            self.support,
-            destination.clone(),
-            forcing_receipt_sha256,
-            source_wind_provider_sha256,
-            forcing.reference_wind_m_s,
-            projection_model_definition_sha256,
-        )?;
-        identity.exposure_identity = exposure.receipt_sha256;
-        let open = SealedOpenSnowTileForcingV1::try_new(SealedOpenSnowTileForcingInputsV1 {
-            support: self.support,
-            destination: destination.clone(),
-            forcing_receipt_sha256,
-            exposure,
-            reference_temperature_k: forcing.air_temperature_k,
-            reference_specific_humidity_kg_kg: forcing.air_specific_humidity_kg_kg,
-            air_pressure_pa: forcing.air_pressure_pa,
-            atmospheric_downward_longwave_w_m2: forcing.atmospheric_downward_longwave_w_m2,
-            direct_vis_w_m2: forcing.direct_vis_w_m2,
-            diffuse_vis_w_m2: forcing.diffuse_vis_w_m2,
-            direct_nir_w_m2: forcing.direct_nir_w_m2,
-            diffuse_nir_w_m2: forcing.diffuse_nir_w_m2,
-            rain_m: 0.0,
-            snowfall_m: 0.0,
-            precipitation_parcel_count: forcing.precipitation_parcels.len(),
-        })?;
-        self.snow_surface_forcing_by_destination.insert(
-            destination,
-            SealedStage3TileBoundaryForcingV1::OpenSnow(open),
-        );
+        self.open_snow_destination_requests.insert(destination);
         Ok(self)
+    }
+
+    fn bind_provider_atmosphere(
+        &mut self,
+        provider_destinations: &BTreeMap<(String, String), &SnowFreeHalfHourIntervalReceipt>,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        self.atmospheric_receipt_by_destination.clear();
+        for (destination, provider) in provider_destinations {
+            let typed_destination = (
+                OfeId::try_new(destination.0.clone()).map_err(|_| {
+                    DirectSnowStage3V11AttachmentError::Identity("provider atmosphere OFE")
+                })?,
+                TileId::try_new(destination.1.clone()).map_err(|_| {
+                    DirectSnowStage3V11AttachmentError::Identity("provider atmosphere tile")
+                })?,
+            );
+            let atmosphere =
+                Stage3ParentAtmosphericReceiptV1::from_provider(self.support, provider)?;
+            self.validate_atmospheric_projections(provider, &atmosphere)?;
+            self.atmospheric_receipt_by_destination
+                .insert(typed_destination, atmosphere);
+        }
+        let requests = self.open_snow_destination_requests.clone();
+        for destination in requests {
+            let atmosphere = self
+                .atmospheric_receipt_by_destination
+                .get(&destination)
+                .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                    "open-snow provider atmosphere destination",
+                ))?;
+            let provider = provider_destinations
+                .get(&(
+                    destination.0.as_str().to_owned(),
+                    destination.1.as_str().to_owned(),
+                ))
+                .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                    "open-snow provider destination",
+                ))?;
+            let source_wind_provider_sha256 =
+                parse_lower_hex_digest(&provider.provider_definition_sha256)?;
+            let projection_model_definition_sha256 =
+                digest_bytes(b"OPENWEPP_STAGE3_RAW_WIND_IDENTITY_PROJECTION_V1");
+            let exposure = SealedOpenSnowExposureReceiptV1::try_new(
+                self.support,
+                destination.clone(),
+                atmosphere.provider_interval_receipt_sha256,
+                source_wind_provider_sha256,
+                atmosphere.raw_wind_m_s,
+                projection_model_definition_sha256,
+            )?;
+            let open = SealedOpenSnowTileForcingV1::try_new(SealedOpenSnowTileForcingInputsV1 {
+                support: self.support,
+                destination: destination.clone(),
+                forcing_receipt_sha256: atmosphere.provider_interval_receipt_sha256,
+                exposure: exposure.clone(),
+                reference_temperature_k: atmosphere.air_temperature_k,
+                reference_specific_humidity_kg_kg: atmosphere.specific_humidity_kg_kg,
+                air_pressure_pa: atmosphere.air_pressure_pa,
+                atmospheric_downward_longwave_w_m2: atmosphere.downward_longwave_w_m2,
+                direct_vis_w_m2: atmosphere.direct_vis_w_m2,
+                diffuse_vis_w_m2: atmosphere.diffuse_vis_w_m2,
+                direct_nir_w_m2: atmosphere.direct_nir_w_m2,
+                diffuse_nir_w_m2: atmosphere.diffuse_nir_w_m2,
+                rain_m: 0.0,
+                snowfall_m: 0.0,
+                precipitation_parcel_count: provider.precipitation_parcels.len(),
+            })?;
+            let identity = self
+                .support_identity_by_lane
+                .values_mut()
+                .flatten()
+                .find(|identity| {
+                    identity.destination_ofe_id == destination.0.as_str()
+                        && identity.destination_tile_id == destination.1.as_str()
+                })
+                .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                    "open-snow provider identity update",
+                ))?;
+            identity.exposure_identity = exposure.receipt_sha256;
+            self.snow_surface_forcing_by_destination.insert(
+                destination,
+                SealedStage3TileBoundaryForcingV1::OpenSnow(open),
+            );
+        }
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn validate_atmospheric_projections(
+        &self,
+        provider: &SnowFreeHalfHourIntervalReceipt,
+        atmosphere: &Stage3ParentAtmosphericReceiptV1,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        fn same(lhs: f64, rhs: f64) -> bool {
+            lhs.to_bits() == rhs.to_bits()
+        }
+        let validate_lse = |forcing: &openwepp_land_surface_energy::LandSurfaceForcing| {
+            same(forcing.air_temperature_k, atmosphere.air_temperature_k)
+                && same(
+                    forcing.air_specific_humidity_kg_kg,
+                    atmosphere.specific_humidity_kg_kg,
+                )
+                && same(forcing.air_pressure_pa, atmosphere.air_pressure_pa)
+                && same(forcing.reference_wind_m_s, atmosphere.raw_wind_m_s)
+                && same(forcing.direct_vis_w_m2, atmosphere.direct_vis_w_m2)
+                && same(forcing.diffuse_vis_w_m2, atmosphere.diffuse_vis_w_m2)
+                && same(forcing.direct_nir_w_m2, atmosphere.direct_nir_w_m2)
+                && same(forcing.diffuse_nir_w_m2, atmosphere.diffuse_nir_w_m2)
+                && same(
+                    forcing.atmospheric_downward_longwave_w_m2,
+                    atmosphere.downward_longwave_w_m2,
+                )
+        };
+        if !validate_lse(&self.v11_interval.lse_forcing)
+            || self
+                .covered_v11_interval
+                .as_ref()
+                .is_some_and(|covered| !validate_lse(&covered.lse_forcing))
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "base/covered V11 provider atmosphere projection",
+            ));
+        }
+        let base_vegetation = &self.v11_interval.vegetation_forcing;
+        if !same(
+            base_vegetation.air_temperature_k,
+            atmosphere.air_temperature_k,
+        ) || !same(base_vegetation.pressure_pa, atmosphere.air_pressure_pa)
+            || !same(base_vegetation.wind_m_s, atmosphere.raw_wind_m_s)
+            || !same(
+                base_vegetation.specific_humidity,
+                atmosphere.specific_humidity_kg_kg,
+            )
+            || !same(base_vegetation.direct_par_w_m2, atmosphere.direct_vis_w_m2)
+            || !same(
+                base_vegetation.diffuse_par_w_m2,
+                atmosphere.diffuse_vis_w_m2,
+            )
+            || !same(base_vegetation.direct_nir_w_m2, atmosphere.direct_nir_w_m2)
+            || !same(
+                base_vegetation.diffuse_nir_w_m2,
+                atmosphere.diffuse_nir_w_m2,
+            )
+            || !same(
+                base_vegetation.longwave_down_w_m2,
+                atmosphere.downward_longwave_w_m2,
+            )
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "base V11 vegetation provider atmosphere projection",
+            ));
+        }
+        if let Some(covered) = &self.covered_v11_interval {
+            let vegetation = &covered.vegetation_forcing;
+            if !same(vegetation.air_temperature_k, atmosphere.air_temperature_k)
+                || !same(vegetation.pressure_pa, atmosphere.air_pressure_pa)
+                || !same(vegetation.wind_m_s, atmosphere.raw_wind_m_s)
+                || !same(
+                    vegetation.specific_humidity,
+                    atmosphere.specific_humidity_kg_kg,
+                )
+                || !same(vegetation.direct_par_w_m2, atmosphere.direct_vis_w_m2)
+                || !same(vegetation.diffuse_par_w_m2, atmosphere.diffuse_vis_w_m2)
+                || !same(vegetation.direct_nir_w_m2, atmosphere.direct_nir_w_m2)
+                || !same(vegetation.diffuse_nir_w_m2, atmosphere.diffuse_nir_w_m2)
+                || !same(
+                    vegetation.longwave_down_w_m2,
+                    atmosphere.downward_longwave_w_m2,
+                )
+            {
+                return Err(DirectSnowStage3V11AttachmentError::Identity(
+                    "covered V11 vegetation provider atmosphere projection",
+                ));
+            }
+        }
+        let dewpoint = TemperatureCelsius::try_new(provider.dew_point_c).map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Identity("provider dewpoint domain")
+        })?;
+        let dewpoint_vapor_pa = kilopascals_to_pascals(
+            saturation_vapor_pressure_water_kpa(dewpoint)
+                .map_err(|_| {
+                    DirectSnowStage3V11AttachmentError::Identity(
+                        "provider dewpoint vapor projection",
+                    )
+                })?
+                .as_kilopascals(),
+        );
+        if !same(dewpoint_vapor_pa, atmosphere.actual_vapor_pressure_pa) {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "specific-humidity/dewpoint provider contradiction",
+            ));
+        }
+        for (lane_id, inputs) in &self.snow_inputs_by_lane {
+            let support_forcing = self.support_forcing_by_lane.get(lane_id).ok_or(
+                DirectSnowStage3V11AttachmentError::Identity("Stage-3 atmosphere lane"),
+            )?;
+            if !same(inputs.wind_m_s, atmosphere.raw_wind_m_s)
+                || !same(inputs.dewpoint_c, provider.dew_point_c)
+                || !same(
+                    inputs.surface_energy_options.atmospheric_pressure_pa,
+                    atmosphere.air_pressure_pa,
+                )
+                || !same(
+                    support_forcing.forcing.air_temperature_c,
+                    provider.air_temperature_c,
+                )
+            {
+                return Err(DirectSnowStage3V11AttachmentError::Identity(
+                    "Stage-3/open-forcing atmosphere projection",
+                ));
+            }
+        }
+        for (destination, forcing) in &self.snow_surface_forcing_by_destination {
+            let matches_destination = destination.0.as_str() == provider.ofe_id
+                && destination.1.as_str() == provider.tile_id;
+            if !matches_destination {
+                continue;
+            }
+            match forcing {
+                SealedStage3TileBoundaryForcingV1::V11CanopyCovered(covered) => {
+                    if !same(
+                        covered.reference_temperature_k,
+                        atmosphere.air_temperature_k,
+                    ) || !same(
+                        covered.reference_specific_humidity,
+                        atmosphere.specific_humidity_kg_kg,
+                    ) || !same(
+                        covered.atmospheric_longwave_w_m2,
+                        atmosphere.downward_longwave_w_m2,
+                    ) || !same(covered.exposure.wind_m_s, atmosphere.raw_wind_m_s)
+                        || covered.exposure.provider_digest != provider.provider_definition_sha256
+                    {
+                        return Err(DirectSnowStage3V11AttachmentError::Identity(
+                            "covered carrier provider atmosphere projection",
+                        ));
+                    }
+                }
+                SealedStage3TileBoundaryForcingV1::OpenSnow(_) => {
+                    return Err(DirectSnowStage3V11AttachmentError::Identity(
+                        "open-snow forcing must be sealed during provider binding",
+                    ));
+                }
+            }
+        }
+        Ok(())
     }
 
     /// Attach the distinct covered V11 atmospheric projection to this support.
@@ -285,6 +525,78 @@ impl DirectSnowStage3V11PreparedSupport {
         &self,
     ) -> &BTreeMap<(OfeId, TileId), SealedStage3TileBoundaryForcingV1> {
         &self.snow_surface_forcing_by_destination
+    }
+
+    #[must_use]
+    pub fn atmospheric_receipt_by_destination(
+        &self,
+    ) -> &BTreeMap<(OfeId, TileId), Stage3ParentAtmosphericReceiptV1> {
+        &self.atmospheric_receipt_by_destination
+    }
+
+    #[cfg(test)]
+    pub(crate) fn poison_base_air_temperature(&mut self) {
+        self.v11_interval.lse_forcing.air_temperature_k = f64::from_bits(
+            self.v11_interval
+                .lse_forcing
+                .air_temperature_k
+                .to_bits()
+                .wrapping_add(1),
+        );
+    }
+
+    #[cfg(test)]
+    pub(crate) fn poison_base_wind(&mut self) {
+        self.v11_interval.lse_forcing.reference_wind_m_s = f64::from_bits(
+            self.v11_interval
+                .lse_forcing
+                .reference_wind_m_s
+                .to_bits()
+                .wrapping_add(1),
+        );
+    }
+
+    #[cfg(test)]
+    pub(crate) fn poison_covered_atmosphere(&mut self, wind: bool) {
+        let mut covered = DirectV11SnowCoveredSegmentInput::from_snow_free(&self.v11_interval);
+        if wind {
+            covered.lse_forcing.reference_wind_m_s = f64::from_bits(
+                covered
+                    .lse_forcing
+                    .reference_wind_m_s
+                    .to_bits()
+                    .wrapping_add(1),
+            );
+        } else {
+            covered.lse_forcing.air_temperature_k = f64::from_bits(
+                covered
+                    .lse_forcing
+                    .air_temperature_k
+                    .to_bits()
+                    .wrapping_add(1),
+            );
+        }
+        self.covered_v11_interval = Some(covered);
+    }
+
+    #[cfg(test)]
+    pub(crate) fn poison_stage3_pressure(&mut self) {
+        if let Some(inputs) = self.snow_inputs_by_lane.values_mut().next() {
+            inputs.surface_energy_options.atmospheric_pressure_pa = f64::from_bits(
+                inputs
+                    .surface_energy_options
+                    .atmospheric_pressure_pa
+                    .to_bits()
+                    .wrapping_add(1),
+            );
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn poison_stage3_dewpoint(&mut self) {
+        if let Some(inputs) = self.snow_inputs_by_lane.values_mut().next() {
+            inputs.dewpoint_c = f64::from_bits(inputs.dewpoint_c.to_bits().wrapping_add(1));
+        }
     }
 
     fn has_snow_surface_forcing(&self) -> bool {
@@ -444,12 +756,7 @@ impl DirectSnowStage3V11PreparedSupport {
             let forcing = self.support_forcing_by_lane.get(lane_id).ok_or(
                 DirectSnowStage3V11AttachmentError::Support("snow regime lane forcing"),
             )?;
-            let has_snow = state.layers.iter().any(|layer| {
-                layer.mass_swe_m > 0.0
-                    || layer.liquid_water_m > 0.0
-                    || layer.refrozen_liquid_m > 0.0
-            }) || state.detached_retained_liquid_kg_m2 > 0.0
-                || forcing.forcing.snowfall_m > 0.0;
+            let lifecycle = stage3_lane_lifecycle(state, forcing.forcing.snowfall_m);
             let expected = self
                 .support_identity_by_lane
                 .get(lane_id)
@@ -469,17 +776,32 @@ impl DirectSnowStage3V11PreparedSupport {
                 })
                 .collect::<Result<BTreeSet<_>, DirectSnowStage3V11AttachmentError>>()?;
             let actual = represented.get(lane_id).cloned().unwrap_or_default();
-            if has_snow {
-                active.insert(*lane_id);
-                if actual != expected {
-                    return Err(DirectSnowStage3V11AttachmentError::Support(
-                        "active snow lane requires complete destination boundary set",
+            match lifecycle {
+                Stage3LaneLifecycleV1::ResolvedSnow => {
+                    active.insert(*lane_id);
+                    if actual != expected {
+                        return Err(DirectSnowStage3V11AttachmentError::Support(
+                            "active snow lane requires complete destination boundary set",
+                        ));
+                    }
+                }
+                Stage3LaneLifecycleV1::SnowFree => {
+                    if !actual.is_empty() {
+                        return Err(DirectSnowStage3V11AttachmentError::Support(
+                            "snow-free lane cannot claim Stage-3 surface ownership",
+                        ));
+                    }
+                }
+                Stage3LaneLifecycleV1::TerminalPending => {
+                    return Err(DirectSnowStage3V11AttachmentError::Terminal(
+                        "Stage-3 lane requires terminal disposition",
                     ));
                 }
-            } else if !actual.is_empty() {
-                return Err(DirectSnowStage3V11AttachmentError::Support(
-                    "snow-free lane cannot claim Stage-3 surface ownership",
-                ));
+                Stage3LaneLifecycleV1::SolidPrecipitationPending => {
+                    return Err(DirectSnowStage3V11AttachmentError::Support(
+                        "solid precipitation custody is unavailable",
+                    ));
+                }
             }
         }
         Ok(active)
@@ -756,7 +1078,7 @@ impl PreparedStage3V11DayV1 {
     pub fn bind_provider_day(
         provider: &PreparedSnowFreeGsiDayV1,
         day_index: usize,
-        supports: Vec<DirectSnowStage3V11PreparedSupport>,
+        mut supports: Vec<DirectSnowStage3V11PreparedSupport>,
     ) -> Result<ValidatedPreparedStage3V11DayV1, DirectSnowStage3V11AttachmentError> {
         if supports.len() != STAGE3_V11_PARENT_SUPPORT_COUNT {
             return Err(DirectSnowStage3V11AttachmentError::Support(
@@ -775,8 +1097,7 @@ impl PreparedStage3V11DayV1 {
         }
         let accepted_gsi_receipt = provider.gsi_receipt_digest()?;
         let day_start_ns = day_start_ns(day_index)?;
-        for (support_index, support) in supports.iter().enumerate() {
-            support.validate_explicit_snow_surface_set()?;
+        for (support_index, support) in supports.iter_mut().enumerate() {
             let provider_destinations = provider
                 .forcing_receipts()
                 .receipts()
@@ -799,6 +1120,8 @@ impl PreparedStage3V11DayV1 {
                     "provider day destination set",
                 ));
             }
+            support.bind_provider_atmosphere(&provider_destinations)?;
+            support.validate_explicit_snow_surface_set()?;
             let mut support_destinations = BTreeSet::new();
             for identity in support
                 .support_identity_by_lane
@@ -2316,6 +2639,71 @@ fn validate_receiver_topology(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn lifecycle_state(
+        mass_swe_m: Option<f64>,
+        layer_liquid_m: f64,
+        detached_liquid_kg_m2: f64,
+    ) -> DirectSnowStage3PersistentState {
+        let layers = mass_swe_m.map_or_else(Vec::new, |mass| {
+            let mut layer = crate::winter_column::DirectSnowLayerState::new(
+                mass,
+                mass.max(0.001) * 2.0,
+                500.0,
+                0.0,
+            );
+            layer.liquid_water_m = layer_liquid_m;
+            vec![layer]
+        });
+        DirectSnowStage3PersistentState {
+            schema_version: 1,
+            terminal_event_model: None,
+            fingerprint: 0,
+            lane_id: 1,
+            next_interval_index: 0,
+            layers,
+            detached_retained_liquid_kg_m2: detached_liquid_kg_m2,
+            initial_ice_kg_m2: 0.0,
+            initial_retained_liquid_kg_m2: 0.0,
+            cumulative_snowfall_kg_m2: 0.0,
+            cumulative_external_liquid_kg_m2: 0.0,
+            cumulative_deposition_kg_m2: 0.0,
+            cumulative_sublimation_kg_m2: 0.0,
+            cumulative_melt_kg_m2: 0.0,
+            cumulative_unresolved_liquid_kg_m2: 0.0,
+            cumulative_complete_energy_j_m2: 0.0,
+            cumulative_cold_energy_change_j_m2: 0.0,
+            cumulative_terminal_unallocated_energy_j_m2: 0.0,
+        }
+    }
+
+    #[test]
+    fn lane_lifecycle_uses_owner_represented_and_terminal_predicates() {
+        assert_eq!(
+            stage3_lane_lifecycle(&lifecycle_state(None, 0.0, 0.0), 0.0),
+            Stage3LaneLifecycleV1::SnowFree
+        );
+        assert_eq!(
+            stage3_lane_lifecycle(&lifecycle_state(Some(0.001_000_000_000_1), 0.0, 0.0), 0.0),
+            Stage3LaneLifecycleV1::ResolvedSnow
+        );
+        assert_eq!(
+            stage3_lane_lifecycle(&lifecycle_state(Some(0.001), 0.0, 0.0), 0.0),
+            Stage3LaneLifecycleV1::TerminalPending
+        );
+        assert_eq!(
+            stage3_lane_lifecycle(&lifecycle_state(Some(0.0), 0.001, 0.0), 0.0),
+            Stage3LaneLifecycleV1::TerminalPending
+        );
+        assert_eq!(
+            stage3_lane_lifecycle(&lifecycle_state(None, 0.0, 1.0), 0.0),
+            Stage3LaneLifecycleV1::TerminalPending
+        );
+        assert_eq!(
+            stage3_lane_lifecycle(&lifecycle_state(None, 0.0, 0.0), 0.001),
+            Stage3LaneLifecycleV1::SolidPrecipitationPending
+        );
+    }
 
     fn support_identity(ofe_id: &str, tile_id: &str) -> PreparedStage3V11SupportIdentityV1 {
         PreparedStage3V11SupportIdentityV1::new(

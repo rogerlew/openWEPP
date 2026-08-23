@@ -152,7 +152,8 @@ pub use snow_stage3_v11_attachment::{
     DirectSnowStage3V11ShadowAttachment, DirectSnowStage3V11StaticContext,
     DirectSnowStage3V11TerminalParcel, DirectSnowStage3V11TerminalReceipt, PreparedStage3V11DayV1,
     PreparedStage3V11SupportIdentityV1, PreparedStage3V11SupportV1, STAGE3_V11_DAY_NS,
-    STAGE3_V11_PARENT_SUPPORT_COUNT, STAGE3_V11_PARENT_SUPPORT_NS, ValidatedPreparedStage3V11DayV1,
+    STAGE3_V11_PARENT_SUPPORT_COUNT, STAGE3_V11_PARENT_SUPPORT_NS, Stage3LaneLifecycleV1,
+    Stage3ParentAtmosphericReceiptV1, ValidatedPreparedStage3V11DayV1,
 };
 
 pub use direct_runtime::{

@@ -117,6 +117,27 @@ fields.
 
 ## Progress log
 
+### 2026-08-23 provider-atmosphere and lifecycle defect-closure increment
+
+Implementation intent: close the reviewed provider-custody defects before any
+additional precipitation, soil-heat, or terminal physics is added. The
+increment is authorized follow-on work within the existing covered consumer,
+provider capability, Stage-3 attachment, and package-owned test write set.
+
+The increment will first mechanically decompose `v11_covered/mod.rs`, then add
+one provider-derived atmospheric receipt, defer open-snow forcing construction
+until provider-day binding, require exact atmospheric projections into base
+and covered V11 plus Stage 3, replace boolean snow activation with the
+contract-owned lifecycle predicates, and add open-only, heterogeneous-lane,
+provider-rain rollback, and named one-bit/terminal poison regressions. No new
+precipitation chronology, soil heat, terminal-liquid transfer, process formula,
+threshold, selector, or publication behavior is admitted.
+
+Applicable increment validation is formatting, warnings-denied affected-crate
+Clippy, focused attachment/consumer tests, the frost workspace profile, exact
+diff/write-set reconciliation, and line-count evidence. The package remains
+`EXECUTING / HOLD` unless every named fixture and poison has direct evidence.
+
 - [x] Starting identity, clean tree, instruction discovery, and historical
   HOLD protection.
 - [x] Successor package scaffold and intake artifact placeholders.

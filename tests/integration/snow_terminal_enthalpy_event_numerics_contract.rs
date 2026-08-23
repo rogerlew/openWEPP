@@ -15,7 +15,7 @@ fn contracts_admit_only_event_local_terminal_snow_numerics() {
     let energy = read(ENERGY);
     let freeze = read(FREEZE);
     for required in [
-        "contract_version: 14",
+        "contract_version: 16",
         "INV-SNOWENERGY-034",
         "OBL-SNOWENERGY-P-008",
         "OBL-SNOWENERGY-C-015",
@@ -63,6 +63,6 @@ fn package_and_index_preserve_receiving_surface_and_production_boundaries() {
     assert!(package.contains("No land-surface, soil, frost, infiltration, runoff"));
     assert!(package.contains("No assignment of terminal unallocated energy"));
     assert!(package.contains("No physical seasonal efficacy"));
-    assert!(index.contains("v14 binds the default-off shared V11/Stage 3 carrier"));
+    assert!(index.contains("v16 governs unit-specific covered convergence"));
     assert!(index.contains("INV-101 remains evaluation-only"));
 }

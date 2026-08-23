@@ -432,9 +432,52 @@ mod tests {
         day_index: usize,
         start_offset_ns: u128,
     ) -> Vec<PreparedStage3V11SupportV1> {
-        let snow_inputs = attachment_stage3_inputs();
         (0..INTERVALS_PER_DAY)
             .map(|interval_index| {
+                let provider_interval = &provider.forcing_receipts().receipts()[0].intervals
+                    [interval_index];
+                let mut interval = interval_template.clone();
+                interval.lse_forcing.air_temperature_k =
+                    openwepp_meteorology::snow_free_forcing::celsius_to_kelvin(
+                        provider_interval.air_temperature_c,
+                    );
+                interval.lse_forcing.air_specific_humidity_kg_kg =
+                    provider_interval.specific_humidity_kg_kg;
+                interval.lse_forcing.air_pressure_pa =
+                    openwepp_meteorology::snow_free_forcing::kilopascals_to_pascals(
+                        provider_interval.pressure_kpa,
+                    );
+                interval.lse_forcing.reference_wind_m_s = provider_interval.wind_m_s;
+                interval.lse_forcing.direct_vis_w_m2 = provider_interval.direct_visible_w_m2;
+                interval.lse_forcing.diffuse_vis_w_m2 = provider_interval.diffuse_visible_w_m2;
+                interval.lse_forcing.direct_nir_w_m2 = provider_interval.direct_nir_w_m2;
+                interval.lse_forcing.diffuse_nir_w_m2 = provider_interval.diffuse_nir_w_m2;
+                interval.lse_forcing.atmospheric_downward_longwave_w_m2 =
+                    provider_interval.downward_longwave_w_m2;
+                interval.lse_forcing.forcing_sha256 = interval
+                    .lse_forcing
+                    .canonical_sha256()
+                    .expect("provider-projected LSE digest");
+                interval.vegetation_forcing.air_temperature_k =
+                    interval.lse_forcing.air_temperature_k;
+                interval.vegetation_forcing.pressure_pa = interval.lse_forcing.air_pressure_pa;
+                interval.vegetation_forcing.wind_m_s = provider_interval.wind_m_s;
+                interval.vegetation_forcing.specific_humidity =
+                    provider_interval.specific_humidity_kg_kg;
+                interval.vegetation_forcing.direct_par_w_m2 =
+                    provider_interval.direct_visible_w_m2;
+                interval.vegetation_forcing.diffuse_par_w_m2 =
+                    provider_interval.diffuse_visible_w_m2;
+                interval.vegetation_forcing.direct_nir_w_m2 = provider_interval.direct_nir_w_m2;
+                interval.vegetation_forcing.diffuse_nir_w_m2 =
+                    provider_interval.diffuse_nir_w_m2;
+                interval.vegetation_forcing.longwave_down_w_m2 =
+                    provider_interval.downward_longwave_w_m2;
+                let mut snow_inputs = attachment_stage3_inputs();
+                snow_inputs.wind_m_s = provider_interval.wind_m_s;
+                snow_inputs.dewpoint_c = provider_interval.dew_point_c;
+                snow_inputs.surface_energy_options.atmospheric_pressure_pa =
+                    interval.lse_forcing.air_pressure_pa;
                 let support_start = (day_index as u128) * 86_400_000_000_000
                     + interval_index as u128 * 1_800_000_000_000
                     + start_offset_ns;
@@ -465,11 +508,14 @@ mod tests {
                     BTreeMap::from([(
                         lane_id,
                         DirectSnowStage3SupportInput {
-                            forcing: DirectSnowHourlyForcing::zero(),
+                            forcing: DirectSnowHourlyForcing {
+                                air_temperature_c: provider_interval.air_temperature_c,
+                                ..DirectSnowHourlyForcing::zero()
+                            },
                             duration_seconds: 1_800.0,
                         },
                     )]),
-                    interval_template.clone(),
+                    interval,
                     BTreeMap::from([(lane_id, identities)]),
                 )
                 .expect("runner-built attachment support")
@@ -951,6 +997,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn mixed_open_covered_stack_executes_complete_ofe_ground_boundary() {
         let (shadow, fixture) = v10_shadow_fixture();
         let base_interval = day_input(&fixture).intervals.remove(0);
@@ -1158,6 +1205,230 @@ mod tests {
         );
         assert!(executor.stack.take_staged_stage3().is_some());
         assert!(executor.stack.take_staged_ending().is_some());
+
+        let mut open_shadow = shadow.clone();
+        for record in &mut open_shadow.inner.surface_configuration.records {
+            record.ground_ingress_mode = crate::DirectGroundIngressMode::OpenRawPrecipitation;
+        }
+        open_shadow.inner.surface_configuration = DirectSurfaceLiquidConfiguration::new(
+            open_shadow.inner.surface_configuration.owner_id.clone(),
+            open_shadow.inner.surface_configuration.run_id,
+            open_shadow.inner.surface_configuration.ofe_topology.clone(),
+            open_shadow.inner.surface_configuration.ofe_bindings.clone(),
+            open_shadow.inner.surface_configuration.records.clone(),
+        )
+        .expect("open-only surface configuration");
+        let open_liquid = open_shadow
+            .inner
+            .hydrology_frame
+            .surface_liquid_shadow
+            .as_deref()
+            .expect("open-only beginning surface owner")
+            .records
+            .iter()
+            .map(|record| (record.key.clone(), record.liquid_kg_m2_tile))
+            .collect::<BTreeMap<_, _>>();
+        open_shadow.inner.hydrology_frame.surface_liquid_shadow = Some(Box::new(
+            crate::DirectSurfaceLiquidOwnedState::new_initial(
+                &open_shadow.inner.surface_configuration,
+                &open_liquid,
+                0,
+            )
+            .expect("open-only beginning surface state"),
+        ));
+        open_shadow.vegetation_configuration.strata.clear();
+        open_shadow.vegetation_configuration.configuration_sha256 = open_shadow
+            .vegetation_configuration
+            .canonical_sha256()
+            .expect("open-only V10 configuration digest");
+        open_shadow.vegetation_state.0.occupancies.clear();
+        open_shadow.vegetation_state.0.strata.clear();
+        open_shadow.vegetation_state.0.tile_canopy_air.clear();
+        open_shadow.vegetation_state.0.configuration_sha256 =
+            open_shadow.vegetation_configuration.configuration_sha256.clone();
+        open_shadow.vegetation_state.0.state_sha256 =
+            open_shadow.vegetation_state.0.canonical_sha256();
+        open_shadow
+            .lse_configuration
+            .vegetation_configuration
+            .configuration_sha256 = openwepp_land_surface_energy::Sha256Digest::try_new(
+            open_shadow
+                .vegetation_configuration
+                .configuration_sha256
+                .clone(),
+        )
+        .expect("open-only LSE-V2 vegetation configuration receipt");
+        open_shadow.lse_configuration.configuration_sha256 = open_shadow
+            .lse_configuration
+            .canonical_sha256()
+            .expect("open-only LSE-V2 configuration digest");
+        open_shadow.lse_state.0.configuration_sha256 =
+            open_shadow.lse_configuration.configuration_sha256.clone();
+        open_shadow.lse_state.0.state_sha256 = open_shadow
+            .lse_state
+            .0
+            .canonical_sha256()
+            .expect("open-only LSE-V2 state digest");
+        open_shadow.inner.vegetation_configuration.strata.clear();
+        open_shadow.inner.vegetation_configuration.configuration_sha256 = open_shadow
+            .inner
+            .vegetation_configuration
+            .canonical_sha256()
+            .expect("open-only V9 configuration digest");
+        open_shadow.inner.vegetation_state.0.occupancies.clear();
+        open_shadow.inner.vegetation_state.0.strata.clear();
+        open_shadow.inner.vegetation_state.0.tile_canopy_air.clear();
+        open_shadow.inner.vegetation_state.0.configuration_sha256 = open_shadow
+            .inner
+            .vegetation_configuration
+            .configuration_sha256
+            .clone();
+        open_shadow.inner.vegetation_state.0.state_sha256 =
+            open_shadow.inner.vegetation_state.0.canonical_sha256();
+        let (open_v8_configuration, _) = project_v9_runtime_to_v8(
+            &open_shadow.inner.vegetation_configuration,
+            &open_shadow.inner.vegetation_state,
+        )
+        .expect("open-only V8 projection");
+        open_shadow
+            .inner
+            .lse_configuration
+            .vegetation_configuration
+            .configuration_sha256 = openwepp_land_surface_energy::Sha256Digest::try_new(
+            open_v8_configuration.configuration_sha256,
+        )
+        .expect("open-only LSE vegetation configuration receipt");
+        open_shadow.inner.lse_configuration.configuration_sha256 = open_shadow
+            .inner
+            .lse_configuration
+            .canonical_sha256()
+            .expect("open-only LSE configuration digest");
+        open_shadow.inner.lse_state.configuration_sha256 =
+            open_shadow.inner.lse_configuration.configuration_sha256.clone();
+        open_shadow.inner.lse_state.state_sha256 = open_shadow
+            .inner
+            .lse_state
+            .canonical_sha256()
+            .expect("open-only LSE state digest");
+        let open_migrated = migrate_v10_runtime_to_v11(
+            &open_shadow.vegetation_configuration,
+            &open_shadow.vegetation_state,
+        )
+        .expect("open-only migration");
+        let open_owners = initial_v11_owners(&open_shadow, &open_migrated.state);
+        let open_clock_owners = open_owners
+            .values()
+            .map(|owner| owner.to_owner_state().expect("open-only clock owner"))
+            .collect::<Vec<_>>();
+        let (open_parent_id, open_slab) =
+            accepted_v11_slab(&open_clock_owners, 1_800_000_000_000);
+        let open_parent = V11ParentTransaction::new_with_complete_owners(
+            &open_migrated.configuration,
+            &open_migrated.state,
+            open_parent_id,
+            ModelTimeNs::new(0),
+            open_owners,
+        )
+        .expect("open-only parent");
+        let open_only_forcing = open_shadow
+            .inner
+            .surface_configuration
+            .records
+            .iter()
+            .enumerate()
+            .map(|(index, record)| {
+                let destination = (record.key.ofe_id.clone(), record.key.tile_id.clone());
+                let forcing_receipt = Digest32::from_bytes([
+                    20 + u8::try_from(index).expect("open-only tile ordinal");
+                    32
+                ]);
+                let exposure = SealedOpenSnowExposureReceiptV1::try_new(
+                    support,
+                    destination.clone(),
+                    forcing_receipt,
+                    Digest32::from_bytes([30; 32]),
+                    covered_interval.lse_forcing.reference_wind_m_s,
+                    Digest32::from_bytes([31; 32]),
+                )
+                .expect("open-only exposure");
+                let forcing = SealedOpenSnowTileForcingV1::try_new(
+                    SealedOpenSnowTileForcingInputsV1 {
+                        support,
+                        destination: destination.clone(),
+                        forcing_receipt_sha256: forcing_receipt,
+                        exposure,
+                        reference_temperature_k: covered_interval
+                            .lse_forcing
+                            .air_temperature_k,
+                        reference_specific_humidity_kg_kg: covered_interval
+                            .lse_forcing
+                            .air_specific_humidity_kg_kg,
+                        air_pressure_pa: covered_interval.lse_forcing.air_pressure_pa,
+                        atmospheric_downward_longwave_w_m2: covered_interval
+                            .lse_forcing
+                            .atmospheric_downward_longwave_w_m2,
+                        direct_vis_w_m2: covered_interval.lse_forcing.direct_vis_w_m2,
+                        diffuse_vis_w_m2: covered_interval.lse_forcing.diffuse_vis_w_m2,
+                        direct_nir_w_m2: covered_interval.lse_forcing.direct_nir_w_m2,
+                        diffuse_nir_w_m2: covered_interval.lse_forcing.diffuse_nir_w_m2,
+                        rain_m: 0.0,
+                        snowfall_m: 0.0,
+                        precipitation_parcel_count: 0,
+                    },
+                )
+                .expect("open-only forcing");
+                (
+                    destination,
+                    SealedStage3TileBoundaryForcingV1::OpenSnow(forcing),
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
+        let mut open_only_executor =
+            crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
+                stack: DirectV11SnowCoveredRealConsumerStack::new(
+                    &open_shadow,
+                    DirectV11SnowCoveredStackInputs {
+                        interval: &covered_interval,
+                        stage3_inputs_by_lane: &stage3_inputs_by_lane,
+                        stage3_forcing_by_lane: &stage3_forcing_by_lane,
+                        snow_surface_forcing_by_destination: &open_only_forcing,
+                        stage3_beginning_by_lane: BTreeMap::from([(1, stage3_beginning.clone())]),
+                        day_index: 0,
+                        interval_index: 0,
+                    },
+                ),
+            };
+        execute_v11_segment(
+            &open_migrated.configuration,
+            &open_parent,
+            &open_slab,
+            &mut open_only_executor,
+        )
+        .expect("real open-only Stage-3 parent execution");
+        let open_only_receipt = open_only_executor
+            .stack
+            .last_lane_boundary_receipts()
+            .and_then(|receipts| receipts.get(&1))
+            .expect("open-only lane receipt");
+        assert!(open_only_receipt.ordered_destinations.iter().all(|receipt| {
+            receipt.boundary_class
+                == crate::snow_stage3_terminal_handoff::Stage3TileBoundaryClassV1::OpenSnow
+        }));
+        assert!(open_only_executor.stack.take_staged_stage3().is_some());
+        let open_only_ending = open_only_executor
+            .stack
+            .take_staged_ending()
+            .expect("open-only staged owners");
+        assert_eq!(
+            open_only_ending.inner.lse_state.tiles,
+            open_shadow.inner.lse_state.tiles,
+            "open-only execution changes receipt chronology but not LSE tile physics",
+        );
+        assert_eq!(
+            open_only_ending.inner.soil_thermal.ofes,
+            open_shadow.inner.soil_thermal.ofes,
+            "open-only execution changes receipt chronology but not soil thermal physics",
+        );
 
         let (_, original_vegetation_state) = project_v9_runtime_to_v8(
             &executor.stack.beginning.inner.vegetation_configuration,
@@ -2337,6 +2608,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn prepared_provider_chain_accepts_two_days_and_rejects_sequence_poisons() {
         let (shadow, fixture) = v10_shadow_fixture();
         let template = day_input(&fixture);
@@ -2374,6 +2646,119 @@ mod tests {
             attachment_supports(&day_zero, &template.intervals[0], lane_id, 0),
         )
         .expect("day zero Stage-3/V11 provider binding");
+        for poison in [
+            PreparedStage3V11SupportV1::poison_base_air_temperature,
+            PreparedStage3V11SupportV1::poison_base_wind,
+            |support: &mut PreparedStage3V11SupportV1| {
+                support.poison_covered_atmosphere(false);
+            },
+            |support: &mut PreparedStage3V11SupportV1| {
+                support.poison_covered_atmosphere(true);
+            },
+            PreparedStage3V11SupportV1::poison_stage3_pressure,
+            PreparedStage3V11SupportV1::poison_stage3_dewpoint,
+        ] {
+            let mut poisoned = attachment_supports(&day_zero, &template.intervals[0], lane_id, 0);
+            poison(&mut poisoned[0]);
+            assert!(PreparedStage3V11DayV1::bind_provider_day(&day_zero, 0, poisoned).is_err());
+        }
+        let open_requests = attachment_supports(&day_zero, &template.intervals[0], lane_id, 0)
+            .into_iter()
+            .enumerate()
+            .map(|(interval_index, support)| {
+                let interval = &day_zero.forcing_receipts().receipts()[0].intervals
+                    [interval_index];
+                support
+                    .with_provider_open_snow_destination((
+                        OfeId::try_new(interval.ofe_id.clone()).expect("open request OFE"),
+                        TileId::try_new(interval.tile_id.clone()).expect("open request tile"),
+                    ))
+                    .expect("provider-owned open request")
+            })
+            .collect();
+        let bound_open =
+            PreparedStage3V11DayV1::bind_provider_day(&day_zero, 0, open_requests)
+                .expect("provider-owned open atmosphere seal");
+        let first_open = bound_open.supports()[0]
+            .snow_surface_forcing_by_destination()
+            .values()
+            .next()
+            .expect("sealed open forcing");
+        let SealedStage3TileBoundaryForcingV1::OpenSnow(first_open) = first_open else {
+            panic!("provider request must seal open snow");
+        };
+        let first_provider = &day_zero.forcing_receipts().receipts()[0].intervals[0];
+        assert_eq!(
+            first_open.exposure.source_wind_provider_sha256,
+            digest_from_receipt(&first_provider.provider_definition_sha256)
+        );
+        assert_eq!(
+            first_open.exposure.projection_model_definition_sha256,
+            digest_bytes(b"OPENWEPP_STAGE3_RAW_WIND_IDENTITY_PROJECTION_V1")
+        );
+        assert_eq!(
+            first_open.exposure.raw_or_projected_wind_m_s.to_bits(),
+            first_provider.wind_m_s.to_bits()
+        );
+        assert_eq!(
+            bound_open.supports()[0]
+                .atmospheric_receipt_by_destination()
+                .values()
+                .next()
+                .expect("provider atmosphere")
+                .raw_wind_m_s
+                .to_bits(),
+            first_provider.wind_m_s.to_bits()
+        );
+        let rainy_source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 10.0 1.0 0.5 1.0 28.0 22.0 0.0 2.5 180.0 20.0\n";
+        let rainy_climate =
+            parse_climate_from_str(rainy_source, ParserMode::Strict).expect("rainy climate");
+        let rainy_request =
+            build_hillslope_climate_runtime_request(&rainy_climate).expect("rainy request");
+        let rainy_day = rainy_request
+            .prepare_snow_free_gsi_day_from_repository(
+                0,
+                &configuration,
+                shadow.gsi_owner_configuration(),
+                &initial_gsi,
+                &initial_cursor,
+            )
+            .expect("rainy provider capability");
+        assert!(rainy_day
+            .forcing_receipts()
+            .receipts()
+            .iter()
+            .flat_map(|day| day.intervals.iter())
+            .any(|interval| !interval.precipitation_parcels.is_empty()));
+        let rainy_open_requests = attachment_supports(
+            &rainy_day,
+            &template.intervals[0],
+            lane_id,
+            0,
+        )
+        .into_iter()
+        .enumerate()
+        .map(|(interval_index, support)| {
+            let interval = &rainy_day.forcing_receipts().receipts()[0].intervals
+                [interval_index];
+            support
+                .with_provider_open_snow_destination((
+                    OfeId::try_new(interval.ofe_id.clone()).expect("rain poison OFE"),
+                    TileId::try_new(interval.tile_id.clone()).expect("rain poison tile"),
+                ))
+                .expect("rain poison open request")
+        })
+        .collect();
+        let gsi_before_rain_poison = initial_gsi.clone();
+        let cursor_before_rain_poison = initial_cursor.clone();
+        assert!(PreparedStage3V11DayV1::bind_provider_day(
+            &rainy_day,
+            0,
+            rainy_open_requests,
+        )
+        .is_err());
+        assert_eq!(initial_gsi, gsi_before_rain_poison);
+        assert_eq!(initial_cursor, cursor_before_rain_poison);
         assert_eq!(bound_day_zero.supports()[0].support().start_ns().get(), 0);
         assert_eq!(
             bound_day_zero.supports()[47].support().end_ns().get(),

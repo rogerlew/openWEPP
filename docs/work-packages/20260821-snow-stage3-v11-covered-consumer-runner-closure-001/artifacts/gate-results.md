@@ -1,6 +1,57 @@
 # Gate results
 
+## 2026-08-23 provider-owned atmosphere checkpoint results
+
+Ran: `cargo fmt --all -- --check` passed in the repository Nix development
+shell.
+
+Ran: `cargo nextest run -p openwepp-hillslope-orchestrator` passed 766/766
+tests with one skipped.
+
+Ran: the focused provider/mixed/open/lifecycle selection passed 3/3. It covers
+one-bit base temperature and wind changes, covered temperature and wind
+changes, Stage-3 pressure and dewpoint contradictions, derived raw-wind
+provider/model identities, provider rain rejection without cursor/GSI
+mutation, exact terminal-domain sides, liquid-only state, detached terminal
+liquid, and new-snow custody rejection. The open-only real V11/Stage-3
+consumer execution has no vegetation occupancies or covered carrier receipts,
+produces only open boundary classes, advances Stage 3, and preserves exact LSE
+tile plus soil-thermal physical payloads while receipt chronology advances.
+The existing mixed open/covered real-consumer fixture continues to prove class
+completeness and fail-closed missing/class-substituted destinations.
+
+Ran: `bash tools/release/check_authority_suite_antievasion.sh` passed.
+
+Ran: `cargo nextest run --test
+auth11_required_suite_obligation_guards_contract` passed 3/3.
+
+Ran: `cargo nextest run --workspace --profile frost` passed 411/411 with
+2,833 skipped by the profile. The first attempt exposed the mechanically moved
+Stage-3 source path and stale v14 assertions against the current v16
+contract/index; both exact bindings were corrected, their focused tests and
+anti-evasion guards passed, and the frost profile then passed.
+
+Ran: warnings-denied Clippy did not pass. The first command failed on four
+pre-existing `openwepp-land-surface-energy` lints; `--no-deps` then exposed 57
+existing orchestrator lint debts across the active Stage-3/V11 implementation.
+Newly introduced long-function/cast warnings were corrected or explicitly
+scoped, but this increment does not claim workspace Clippy closure.
+
+Static: `v11_covered/mod.rs` is seven lines of wiring. Extracted source sizes
+are: `execution.rs` 1,347; `open_snow.rs` 961; `receipt_sets.rs` 349;
+`fixed_point.rs` 284; and `regime.rs` 47. `owner_finalization.rs` is 1,210.
+No active extracted file reaches the 2,000-line warning threshold.
+
 Status: `IN PROGRESS / HOLD`.
+
+Qualification limits: the heterogeneous real-consumer evidence is a mixed
+open/covered destination set within one production lane; it is not yet the
+requested two-production-lane atomic parent fixture. Provider rain is rejected
+while binding the provider-owned atmospheric capability, before a prepared day
+can exist. That proves the contradictory dry-sealed/rainy-provider state is
+unrepresentable and leaves cursor/GSI inputs unchanged, but it is not a
+`stage_prepared_day` seven-owner rollback exercise. Those two exact fixtures
+remain required before this checkpoint can be dispositioned as complete.
 
 `Static:` The predecessor `EXECUTED HOLD` remains untouched. The new provider
 bind rejects non-48 days, mismatched per-interval GSI receipt, incomplete or duplicate
@@ -537,3 +588,28 @@ model identities. The low-level scalar constructor remains crate-private.
 raw-wind provider identity, provider-rain full-owner rollback poison, and a
 two-lane snow/snow-free integration fixture remain unproven. This increment
 does not claim precipitation, restart, or terminal authority.
+## 2026-08-23 provider-atmosphere/lifecycle follow-on intake
+
+Static: the reviewed `71ecc65642aaec793dbb8fd82d177f232102978e`
+increment was retained at clean `HEAD == origin/main`. The package remains
+`EXECUTING / HOLD`. The new increment records provider-atmosphere closure,
+terminal-aware lifecycle routing, the requested fixtures/poisons, and the
+mechanical covered-module split as current-scope obligations.
+
+Ran: `nix develop --command bash -lc 'cargo fmt --all && cargo check -p
+openwepp-hillslope-orchestrator'` completed successfully. Cargo reported 13
+pre-existing dead-code warnings; this was a compile check, not a
+warnings-denied lint or workflow regression.
+
+Ran: `nix develop --command bash -lc 'cargo nextest run -p
+openwepp-hillslope-orchestrator snow_stage3_v11_attachment'` passed 5/5 tests
+with 761 filtered out.
+
+Static: the first bounded correction exposes the canonical owner predicates
+for represented density-layer mass and the `> 1 kg m^-2` resolved Stage-3
+thermal domain. Attachment routing now classifies `SnowFree`, `ResolvedSnow`,
+`TerminalPending`, and `SolidPrecipitationPending`; only `ResolvedSnow` enters
+the covered solver, while the two pending classes fail closed. Atmospheric
+receipt construction, exact atmosphere joins, full fixtures/poisons, module
+split, Clippy, and frost regression remain not run, so this is not checkpoint
+closure evidence.

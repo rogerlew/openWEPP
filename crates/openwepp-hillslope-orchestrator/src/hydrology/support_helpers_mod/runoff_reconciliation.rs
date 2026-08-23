@@ -31,7 +31,32 @@ const STAGE3_SECONDS_PER_HOUR: f64 = 3_600.0;
 const STAGE3_ACTIVE_LAYER_MAX_DEPTH_M: f64 = 0.25;
 const STAGE3_NORMAL_TIMESTEP_MASS_KG_M2: f64 = 60.0;
 const STAGE3_MEDIUM_TIMESTEP_MASS_KG_M2: f64 = 10.0;
-const STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M: f64 = 0.001;
+pub(crate) const STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M: f64 = 0.001;
+
+pub(crate) fn stage3_total_represented_ice_swe_m(
+    state: &DirectSnowStage3PersistentState,
+) -> f64 {
+    state
+        .layers
+        .iter()
+        .filter(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m))
+        .map(|layer| layer.mass_swe_m)
+        .sum()
+}
+
+pub(crate) fn stage3_has_represented_ice(state: &DirectSnowStage3PersistentState) -> bool {
+    state
+        .layers
+        .iter()
+        .any(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m))
+}
+
+pub(crate) fn stage3_is_resolved_thermal_domain(
+    state: &DirectSnowStage3PersistentState,
+) -> bool {
+    stage3_total_represented_ice_swe_m(state)
+        > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
+}
 const STAGE3_MEDIUM_TIMESTEP_SECONDS: f64 = 900.0;
 const STAGE3_SMALL_TIMESTEP_SECONDS: f64 = 60.0;
 const STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2: f64 = 1.0e-6;

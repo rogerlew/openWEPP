@@ -84,3 +84,17 @@ LSE endpoint still contains lower-surface physics that must be replaced or
 explicitly separated before closure. Terminal chronology, runner-owned
 physical support construction, restart, and scenario qualification remain
 outside this increment.
+
+Provider-atmosphere checkpoint additions:
+
+- `crates/openwepp-hillslope-orchestrator/src/stage3_parent_atmosphere.rs`:
+  provider-derived parent-atmosphere receipt and canonical digest.
+- `crates/openwepp-hillslope-orchestrator/src/v11_covered/{receipt_sets,execution,fixed_point,regime,open_snow}.rs`:
+  behavior-preserving decomposition of the former 2,992-line covered module;
+  `mod.rs` is now include-only wiring and every extracted file is below 2,000
+  lines.
+- `tests/integration/paradigm2_stage0_surface_energy_balance_contract.rs` and
+  `tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs`:
+  exact source-path and current v16 contract-registry reconciliation exposed
+  by the mechanical split/frost profile; authority anti-evasion remains
+  unchanged and was rerun.

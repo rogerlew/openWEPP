@@ -18,7 +18,7 @@ pub const STURM1995_HIGH_PRECIP_SPR_THRESHOLD_MM_DAY: f64 = 2.0;
 pub const STURM1995_LOW_WIND_MAX_M_S: f64 = 0.5;
 pub const STURM1995_HIGH_WIND_MIN_M_S: f64 = 2.0;
 
-fn snow_density_layer_has_resolved_mass(mass_swe_m: f64) -> bool {
+pub(crate) fn snow_density_layer_has_resolved_mass(mass_swe_m: f64) -> bool {
     openwepp_unit_boundary::conversions::snow_water_equivalent_meters_to_area_mass_kg_m2(
         mass_swe_m,
     ) > SNOW_DENSITY_ZERO_MASS_KG_M2
