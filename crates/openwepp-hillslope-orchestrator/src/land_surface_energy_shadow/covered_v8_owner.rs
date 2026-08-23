@@ -87,6 +87,7 @@ pub(crate) struct CoveredLseIterationState {
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct CoveredCarrierComponentState {
+    pub vertical_occupancy_ordinal: u32,
     pub occupancy_id: String,
     pub component_ordinal: u8,
     pub surface_area_m2_m2_tile: f64,
@@ -176,7 +177,8 @@ impl UncommittedCoveredV8OwnerEnvelope {
             let component_carrier_surfaces = column
                 .occupancies
                 .iter()
-                .flat_map(|occupancy| {
+                .enumerate()
+                .flat_map(|(vertical_ordinal, occupancy)| {
                     [
                         occupancy.sun_leaf,
                         occupancy.shade_leaf,
@@ -186,6 +188,7 @@ impl UncommittedCoveredV8OwnerEnvelope {
                     .into_iter()
                     .enumerate()
                     .map(|(ordinal, surface)| CoveredCarrierComponentState {
+                        vertical_occupancy_ordinal: vertical_ordinal as u32,
                         occupancy_id: occupancy.occupancy_id.clone(),
                         component_ordinal: ordinal as u8,
                         surface_area_m2_m2_tile: surface.surface_area_m2_m2_tile,

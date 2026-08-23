@@ -366,3 +366,32 @@ remain open.
 - `nix develop --command cargo nextest run -p openwepp-land-surface-energy -p openwepp-hillslope-orchestrator` — 820 passed, 0 failed, one intentional skip.
 - `nix develop --command cargo fmt --all -- --check` — passed.
 - `git diff --check` — passed.
+
+## Final replay-object and receipt-set semantic join
+
+`Static:` The Stage-3 object that passes exact sealed-replay equality is now
+returned from the fixed-point block and is the same object serialized into the
+snow owner and staged for installation. No equivalent post-block Stage-3
+evaluation remains.
+
+`Static:` Parent-owner construction now requires exact map-key/internal-ID
+joins, exact Stage-3/lane key sets, exactly-once destination coverage, and
+bitwise equality between every lane contribution and its referenced final
+destination receipt. Component surfaces bind an explicit physical vertical
+occupancy ordinal; receipt ordering no longer depends on lexical stratum IDs.
+The diagnostic initial-guess digest now binds destination, duration, exposure,
+forcing, beginning V11 state, beginning Stage-3 state, and numerical values.
+
+`Ran:` Focused component receipt tests passed 2/2, including a two-stratum case
+whose IDs sort opposite to physical vertical order. Final exact-worktree gates
+are recorded after terminal execution.
+
+`Ran at exact checkpoint:` the two-crate nextest regression passed 821/821 with
+one intentional skip. Formatting and diff hygiene passed.
+
+`HOLD:` The adopter-specific v15 lane wire still names source-set index zero as
+the provisional carrier source. Its preimage is now fully contextualized and
+diagnostic-only, but renaming/removing that canonical field requires a
+prospective contract revision before restart authority. Constitutive component
+receipt replay and installed-LSE semantic reconstruction likewise remain
+restart-scope obligations.

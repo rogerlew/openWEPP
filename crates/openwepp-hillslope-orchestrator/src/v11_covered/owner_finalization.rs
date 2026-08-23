@@ -91,11 +91,73 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 DirectV11RealConsumerError::Identity("covered parent-owner envelope")
             })?;
         }
-        for receipt in final_boundaries.values() {
+        for (destination, receipt) in final_boundaries {
             receipt.validate()?;
+            if destination != &receipt.destination {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered final boundary map key",
+                ));
+            }
         }
-        for receipt in final_lane_boundaries.values() {
+        if stage3_states.keys().collect::<Vec<_>>()
+            != final_lane_boundaries.keys().collect::<Vec<_>>()
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered lane/Stage-3 state key set",
+            ));
+        }
+        let mut joined_destinations = BTreeSet::new();
+        for (lane_id, receipt) in final_lane_boundaries {
             receipt.validate()?;
+            if *lane_id != receipt.lane_id {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered lane receipt map key",
+                ));
+            }
+            for contribution in &receipt.ordered_destinations {
+                let destination = (receipt.ofe_id.clone(), contribution.tile_id.clone());
+                if !joined_destinations.insert(destination.clone()) {
+                    return Err(DirectV11RealConsumerError::Identity(
+                        "covered lane duplicate destination join",
+                    ));
+                }
+                let boundary = final_boundaries.get(&destination).ok_or(
+                    DirectV11RealConsumerError::Identity("covered lane/final boundary destination"),
+                )?;
+                if boundary.destination != destination
+                    || contribution.final_boundary_receipt_sha256 != boundary.receipt_sha256
+                    || contribution.provisional_carrier_receipt_sha256
+                        != boundary.provisional_carrier_receipt_sha256
+                    || contribution.optical_receipt_sha256 != boundary.optical_receipt_sha256
+                    || contribution.reciprocal_longwave_receipt_sha256
+                        != boundary.reciprocal_longwave_receipt_sha256
+                    || contribution.beginning_stage3_state_sha256
+                        != boundary.beginning_stage3_state_sha256
+                    || contribution.sensible_to_canopy_air_w_m2.to_bits()
+                        != boundary.sensible_to_canopy_air_w_m2.to_bits()
+                    || contribution.vapor_to_canopy_air_kg_m2_s.to_bits()
+                        != boundary.vapor_to_canopy_air_kg_m2_s.to_bits()
+                    || contribution.latent_energy_to_canopy_air_j_m2.to_bits()
+                        != boundary.latent_energy_to_canopy_air_j_m2.to_bits()
+                    || contribution.snow_absorbed_shortwave_w_m2.to_bits()
+                        != boundary.snow_absorbed_shortwave_w_m2.to_bits()
+                    || contribution.snow_net_longwave_w_m2.to_bits()
+                        != boundary.snow_net_longwave_w_m2.to_bits()
+                    || contribution.snow_temperature_k.to_bits()
+                        != boundary.snow_temperature_k.to_bits()
+                    || contribution.latent_heat_j_kg.to_bits()
+                        != boundary.latent_heat_j_kg.to_bits()
+                {
+                    return Err(DirectV11RealConsumerError::Identity(
+                        "covered lane/final boundary semantic join",
+                    ));
+                }
+            }
+        }
+        if joined_destinations != final_boundaries.keys().cloned().collect::<BTreeSet<_>>() {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered lane complete destination join",
+            ));
         }
         for (destination, receipt) in component_carriers {
             let boundary =

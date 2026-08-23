@@ -250,3 +250,14 @@ reject physical differences in LSE, vegetation, or Stage-3 endings.
 
 `Ran:` `cargo nextest run -p openwepp-hillslope-orchestrator` passed 754/754
 tests with one intentional skip during this increment.
+
+## Final nested receipt semantics
+
+`Static:` The exact-accepted Stage-3 state is retained directly through snow-
+owner construction and staging. Lane receipts are not merely co-hashed with
+destination receipts: every contribution is joined to the actual keyed
+destination receipt and its source identities and physical operands.
+
+`Static:` Component receipt order now carries `vertical_occupancy_ordinal`.
+The focused nonlexical fixture admits `z-upper` before `a-lower`, proving that
+physical order rather than identifier spelling controls receipt order.

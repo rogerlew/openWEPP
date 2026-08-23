@@ -68,7 +68,7 @@ use crate::snow_stage3_terminal_handoff::{
     CanopyLongwaveComponent, CarrierSurface, FinalStage3CanopyBoundaryReceiptInputs,
     FinalStage3CanopyBoundaryReceiptV1, LaneBoundaryContributionV1,
     LaneBoundaryTopologyExpectationV1, LaneStage3BoundaryReceiptV1,
-    STAGE3_OFE_TILE_FRACTION_CLOSURE_TOLERANCE, SealedCoveredCarrierForcing, SharedCarrierReceipt,
+    STAGE3_OFE_TILE_FRACTION_CLOSURE_TOLERANCE, SealedCoveredCarrierForcing,
     SnowStage3HandoffError, Stage3BoundaryIdentity, Stage3LaneAreaBasisV1,
     Stage3SnowSurfaceBoundaryReceiptInputs, Stage3SnowSurfaceBoundaryReceiptV1,
     Stage3TileBoundaryClassV1,
