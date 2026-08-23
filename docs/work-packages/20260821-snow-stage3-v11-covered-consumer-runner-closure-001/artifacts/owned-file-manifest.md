@@ -25,6 +25,10 @@ Exact source edits admitted in this increment:
   `DirectV11SnowCoveredSegmentInput`, owner-derived carrier operands,
   per-lane carrier receipts, and shared-carrier/Stage-3 persistent-support
   boundary.
+- `crates/openwepp-hillslope-orchestrator/src/v11_covered/mod.rs` and
+  `v11_covered/owner_finalization.rs`: behavior-preserving extraction of the
+  covered carrier/iteration/receipt/imported-stack owner and shared final-owner
+  lineage helpers; all active files are below the 3,000-line closure threshold.
 - `crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs`:
   sealed covered forcing and typed Stage-3 boundary-receipt inputs.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`:

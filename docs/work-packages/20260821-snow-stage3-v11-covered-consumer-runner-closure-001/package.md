@@ -136,9 +136,10 @@ fields.
   OFE exposes a typed residual decomposition with primitive boundary scale,
   and the persistent positive-radiation case closes through the provisional /
   final reciprocal-longwave correction. Released precipitation-advection and
-  soil custody, keyed heterogeneous physical consumption, full fixed-point
-  iteration, and independent ledger closure remain blockers. Terminal
-  chronology remains open.
+  soil custody, a component-resolved carrier with heterogeneous physical
+  closure, reviewed per-field fixed-point convergence policy, and independent
+  ledger closure remain blockers. The keyed candidate-feedback iteration is
+  implemented; terminal chronology remains open.
 - [~] Runner-owned 48-support capability/provider bind; physical support
   construction and complete restart remain open.
 - [ ] Scenario matrix, reviews, exact-head gates, and disposition.

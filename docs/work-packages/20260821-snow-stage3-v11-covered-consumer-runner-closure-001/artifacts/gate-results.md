@@ -239,3 +239,31 @@ Ran after promotion to `approved / active / 2026-08-22`:
   pre-existing dead-code warning;
 - `cargo fmt --all -- --check`: `PASS`;
 - `git diff --check`: `PASS`.
+
+## Mechanical covered-consumer module split
+
+`Static:` This checkpoint changes module ownership only. Covered carrier,
+fixed-point, destination/lane receipt, Stage 3 boundary, and covered imported-
+stack execution moved from `v9_real_consumer_shadow.rs` to
+`v11_covered/mod.rs`; shared final-owner and V11 resource-lineage helpers moved
+to `v11_covered/owner_finalization.rs`. No equation, guard, ordering, digest
+preimage, or public type signature changed.
+
+Governance line counts after extraction:
+
+- `v9_real_consumer_shadow.rs`: 2,724;
+- `v11_covered/mod.rs`: 2,189;
+- `v11_covered/owner_finalization.rs`: 722.
+
+Ran before and after extraction with the identical command:
+
+- `nix develop --command cargo test -p openwepp-hillslope-orchestrator --lib
+  -- --test-threads=1`: both runs `PASS`, 751 passed, 0 failed, 1 ignored, 752
+  total.
+
+Also ran after extraction:
+
+- `cargo check -p openwepp-hillslope-orchestrator --tests`: `PASS` with the
+  same pre-existing dead-code warning;
+- `cargo fmt --all -- --check`: `PASS`;
+- `git diff --check`: `PASS`.

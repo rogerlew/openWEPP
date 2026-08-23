@@ -1,0 +1,722 @@
+//! Final owner construction and V11 resource-lineage joins.
+
+use super::*;
+
+pub(crate) fn canonical_stage3_snow_owner_bytes_v11(
+    states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+) -> Result<Vec<u8>, DirectV11RealConsumerError> {
+    #[derive(Serialize)]
+    struct CanonicalSnowOwner<'a> {
+        schema: &'static str,
+        lanes: Vec<(&'a u32, &'a DirectSnowStage3PersistentState)>,
+    }
+    serde_json::to_vec(&CanonicalSnowOwner {
+        schema: "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V1",
+        lanes: states.iter().collect(),
+    })
+    .map_err(|_| DirectV11RealConsumerError::Identity("canonical Stage-3 snow bytes"))
+}
+
+pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_receipts(
+    states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    receipts: &BTreeMap<(OfeId, TileId), FinalStage3CanopyBoundaryReceiptV1>,
+) -> Result<Vec<u8>, DirectV11RealConsumerError> {
+    #[derive(Serialize)]
+    struct CanonicalSnowOwner<'a> {
+        schema: &'static str,
+        lanes: Vec<(&'a u32, &'a DirectSnowStage3PersistentState)>,
+        final_boundary_receipts: BTreeMap<String, String>,
+    }
+    let final_boundary_receipts = receipts
+        .iter()
+        .map(|(destination, receipt)| {
+            (
+                format!("{}\0{}", destination.0.as_str(), destination.1.as_str()),
+                digest32_hex(receipt.receipt_sha256),
+            )
+        })
+        .collect();
+    serde_json::to_vec(&CanonicalSnowOwner {
+        schema: "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V2",
+        lanes: states.iter().collect(),
+        final_boundary_receipts,
+    })
+    .map_err(|_| DirectV11RealConsumerError::Identity("canonical Stage-3 snow bytes"))
+}
+
+/// Shared V11 post-boundary transaction assembly. Both lower-boundary
+/// adopters use this owner/resource/finalization path; only the envelope
+/// construction differs between snow-free and covered segments.
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+pub(crate) fn finalize_v11_imported_segment(
+    beginning: &DirectV10RealConsumerShadow,
+    input: &V11ImportedV10SegmentInput,
+    envelope: &UncommittedCoveredV8OwnerEnvelope,
+    ending_snow_owner_bytes: Vec<u8>,
+    day_index: usize,
+) -> Result<
+    (
+        V11ImportedV10SegmentOutput,
+        DirectV10RealConsumerShadow,
+        LseSupportAdmissibilityReceiptV1,
+    ),
+    DirectV11RealConsumerError,
+> {
+    let support_receipt = LseSupportAdmissibilityReceiptV1::admit(
+        &beginning.inner.lse_configuration,
+        &beginning.inner.lse_state,
+        digest32_hex(input.parent_transaction_id.digest()),
+        digest32_hex(input.accepted_slab_receipt.segment_id().digest()),
+        digest32_hex(input.accepted_slab_receipt.slab_id().digest()),
+        input.accepted_slab_receipt.slab_ordinal(),
+        input.support.start_ns().get(),
+        input.support.end_ns().get(),
+        input.duration_s_bits,
+        beginning.inner.soil_thermal.state_sha256.clone(),
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
+    })?;
+    envelope.validate().map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
+    })?;
+    let mut resource_debits = v11_nitrogen_resource_debits(envelope, input)?;
+    resource_debits.extend(v11_water_resource_debits(
+        envelope,
+        &input.configuration,
+        input,
+    )?);
+
+    let mut candidate = beginning.clone();
+    candidate
+        .inner
+        .accept_envelope(envelope.transaction_id(), envelope)
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+        })?;
+    candidate.vegetation_state = project_v9_runtime_to_v10(
+        candidate.inner.vegetation_state(),
+        &candidate.vegetation_configuration,
+    )
+    .map_err(|error| DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::V10(error)))?;
+    candidate.lse_state = project_validated_v1_runtime_to_v2(
+        &candidate.inner.lse_configuration,
+        candidate.inner.lse_state(),
+        &candidate.lse_configuration,
+        &openwepp_land_surface_energy::Sha256Digest::try_new(
+            candidate
+                .vegetation_configuration
+                .configuration_sha256
+                .clone(),
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
+        })?,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
+    })?;
+
+    let segment_ending = candidate.vegetation_state.clone();
+    normalize_v11_staged_parent_lineage(&mut candidate, input.beginning.0.last_transaction_id)?;
+    let snow = V11OwnerEnvelope::try_new("snow".to_owned(), ending_snow_owner_bytes)?;
+    let surface = candidate
+        .inner
+        .hydrology_frame
+        .surface_liquid_shadow
+        .as_ref()
+        .ok_or(DirectV11RealConsumerError::Identity(
+            "missing staged surface-liquid owner",
+        ))?;
+    let surface_bytes = surface
+        .canonical_bytes(&candidate.inner.surface_configuration)
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Serialization(error.to_string()),
+            ))
+        })?;
+    let beginning_hydrology_adapter = RealHydrologyShadowAdapter::try_from_day_start(
+        &beginning.inner.hydrology_frame,
+        day_index,
+        TransactionId(input.beginning.0.last_transaction_id),
+        f64::from_bits(input.duration_s_bits),
+        candidate.inner.surface_configuration.owner_id.clone(),
+        &candidate.inner.layer_maps,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
+    })?;
+    let hydrology_adapter = RealHydrologyShadowAdapter::try_from_day_start(
+        envelope.hydrology().ending_frame(),
+        day_index,
+        TransactionId(input.beginning.0.last_transaction_id),
+        f64::from_bits(input.duration_s_bits),
+        candidate.inner.surface_configuration.owner_id.clone(),
+        &candidate.inner.layer_maps,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
+    })?;
+    let ending_resource_owners = [
+        ("snow".to_owned(), snow),
+        (
+            "land_surface_energy".to_owned(),
+            v11_owner_envelope("land_surface_energy", &candidate.inner.lse_state)?,
+        ),
+        (
+            "surface_liquid".to_owned(),
+            V11OwnerEnvelope::try_new("surface_liquid".to_owned(), surface_bytes)?,
+        ),
+        (
+            "hydrology".to_owned(),
+            V11OwnerEnvelope::try_new(
+                "hydrology".to_owned(),
+                hydrology_adapter.snapshot_bytes().to_vec(),
+            )?,
+        ),
+        (
+            "bgc".to_owned(),
+            v11_owner_envelope("bgc", &candidate.inner.biogeochemistry)?,
+        ),
+        (
+            "soil_thermal".to_owned(),
+            v11_owner_envelope("soil_thermal", &candidate.inner.soil_thermal)?,
+        ),
+    ]
+    .into_iter()
+    .collect();
+    let shared_resource_transitions = v11_shared_resource_transitions(
+        envelope,
+        input,
+        &resource_debits,
+        &ending_resource_owners,
+        &beginning_hydrology_adapter,
+        &hydrology_adapter,
+        &beginning.inner.biogeochemistry,
+    )?;
+    let output = V11ImportedV10SegmentOutput {
+        ending: segment_ending,
+        lse_support_receipt: V11LseSupportReceiptEnvelope::from_canonical_json(
+            serde_json::to_vec(&support_receipt).map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                    DirectV9RealConsumerError::Serialization(error.to_string()),
+                ))
+            })?,
+        )
+        .map_err(|_| DirectV11RealConsumerError::Identity("V11 LSE support receipt"))?,
+        resource_debits,
+        admitted_resource_fluxes: Vec::<V11AdmittedResourceFlux>::new(),
+        shared_resource_transitions,
+        ending_resource_owners,
+        material_transfers: envelope.vegetation().material_proposals().to_vec(),
+    };
+    Ok((output, candidate, support_receipt))
+}
+
+pub(crate) fn digest32_hex(value: Digest32) -> String {
+    let mut text = String::with_capacity(64);
+    for byte in value.as_bytes() {
+        write!(&mut text, "{byte:02x}").expect("writing to String cannot fail");
+    }
+    text
+}
+
+pub(crate) fn digest32_from_lower_hex(value: &str) -> Result<Digest32, DirectV11RealConsumerError> {
+    if value.len() != 64
+        || value
+            .bytes()
+            .any(|byte| !byte.is_ascii_hexdigit() || byte.is_ascii_uppercase())
+    {
+        return Err(DirectV11RealConsumerError::Identity(
+            "covered receipt digest encoding",
+        ));
+    }
+    let mut bytes = [0_u8; 32];
+    for (index, pair) in value.as_bytes().chunks_exact(2).enumerate() {
+        let high = match pair[0] {
+            byte @ b'0'..=b'9' => byte - b'0',
+            byte @ b'a'..=b'f' => byte - b'a' + 10,
+            _ => {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered receipt digest encoding",
+                ));
+            }
+        };
+        let low = match pair[1] {
+            byte @ b'0'..=b'9' => byte - b'0',
+            byte @ b'a'..=b'f' => byte - b'a' + 10,
+            _ => {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered receipt digest encoding",
+                ));
+            }
+        };
+        bytes[index] = (high << 4) | low;
+    }
+    Ok(Digest32::from_bytes(bytes))
+}
+
+pub(crate) fn stage3_albedo_state_digest(
+    input: &DirectActiveSnowPartitionInputs,
+) -> Result<Sha256Digest, DirectV11RealConsumerError> {
+    let mut bytes = Vec::with_capacity(128);
+    bytes.extend_from_slice(b"OPENWEPP_STAGE3_SNOW_ALBEDO_STATE_V1\0");
+    match input.snow_albedo_state {
+        Some(state) => {
+            bytes.push(1);
+            bytes.extend_from_slice(state.model.id().as_bytes());
+            bytes.push(0);
+            bytes.extend_from_slice(&state.albedo.to_bits().to_le_bytes());
+            bytes.extend_from_slice(
+                &state
+                    .accumulated_positive_temperature_c_day
+                    .to_bits()
+                    .to_le_bytes(),
+            );
+        }
+        None => bytes.push(0),
+    }
+    Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes)))
+        .map_err(|_| DirectV11RealConsumerError::Identity("Stage-3 albedo digest"))
+}
+
+pub(crate) fn stage3_support_forcing_digest(
+    support: DirectSnowStage3SupportInput,
+) -> Result<Sha256Digest, DirectV11RealConsumerError> {
+    let forcing = support.forcing;
+    let mut bytes = Vec::with_capacity(256);
+    bytes.extend_from_slice(b"OPENWEPP_STAGE3_SUPPORT_FORCING_V1\0");
+    for value in [
+        forcing.active_precipitation_m,
+        forcing.rain_m,
+        forcing.snowfall_m,
+        forcing.radiation_mj_m2,
+        forcing.air_temperature_c,
+        forcing.cloud_fraction,
+        forcing.rain_fraction,
+        forcing.snow_fraction,
+        support.duration_seconds,
+    ] {
+        bytes.extend_from_slice(&value.to_bits().to_le_bytes());
+    }
+    bytes.extend_from_slice(forcing.phase_model.id().as_bytes());
+    bytes.push(0);
+    match forcing.hydrometeor_temperature_c {
+        Some(value) => {
+            bytes.push(1);
+            bytes.extend_from_slice(&value.to_bits().to_le_bytes());
+        }
+        None => bytes.push(0),
+    }
+    Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes)))
+        .map_err(|_| DirectV11RealConsumerError::Identity("Stage-3 forcing digest"))
+}
+
+pub(crate) fn normalize_v11_staged_parent_lineage(
+    staged: &mut DirectV10RealConsumerShadow,
+    parent: u128,
+) -> Result<(), DirectV11RealConsumerError> {
+    normalize_v8_parent_lineage(&mut staged.vegetation_state.0, parent);
+    normalize_v8_parent_lineage(&mut staged.inner.vegetation_state.0, parent);
+    let transaction = (parent != 0).then_some(TransactionId(parent));
+    staged.inner.lse_state.last_accepted_transaction_id = transaction;
+    staged.inner.lse_state.state_sha256 =
+        staged.inner.lse_state.canonical_sha256().map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
+        })?;
+    staged.lse_state.0.last_accepted_transaction_id = transaction;
+    staged.lse_state.0.state_sha256 = staged.lse_state.0.canonical_sha256().map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
+    })?;
+    let surface = staged
+        .inner
+        .hydrology_frame
+        .surface_liquid_shadow
+        .as_mut()
+        .ok_or(DirectV11RealConsumerError::Identity(
+            "missing staged surface-liquid owner",
+        ))?;
+    for record in &mut surface.records {
+        record.last_accepted_transaction_id = transaction;
+    }
+    for continuation in &mut surface.continuations {
+        continuation.last_accepted_transaction_id = transaction;
+    }
+    surface.state_sha256 = surface.recomputed_sha256().map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+            DirectV9RealConsumerError::Serialization(error.to_string()),
+        ))
+    })?;
+    staged.inner.biogeochemistry.last_transaction_id = parent;
+    staged.inner.soil_thermal.last_accepted_transaction_id = transaction;
+    let soil_transaction = transaction.ok_or(DirectV11RealConsumerError::Identity(
+        "zero parent transaction lineage",
+    ))?;
+    staged.inner.soil_thermal.state_sha256 = digest_soil_state(
+        &staged.inner.soil_thermal.owner_id,
+        soil_transaction,
+        &staged.inner.soil_thermal.ofes,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+    })?;
+    staged.inner.soil_thermal.snapshot_sha256 = digest_soil_snapshot(
+        &staged.inner.soil_thermal.owner_id,
+        &staged.inner.soil_thermal.configuration_sha256,
+        &staged.inner.soil_thermal.state_sha256,
+        soil_transaction,
+        &staged.inner.soil_thermal.ofes,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+    })?;
+    Ok(())
+}
+
+pub(crate) fn normalize_v8_parent_lineage(
+    state: &mut openwepp_vegetation::V8CoupledOwnedState,
+    parent: u128,
+) {
+    state.last_transaction_id = parent;
+    for stratum in state.strata.values_mut() {
+        stratum.last_transaction_id = parent;
+    }
+    let accepted = (parent != 0).then_some(parent);
+    for occupancy in state.occupancies.values_mut() {
+        occupancy.last_accepted_transaction_id = accepted;
+    }
+    state.state_sha256 = state.canonical_sha256();
+}
+
+pub(crate) fn v11_nitrogen_resource_debits(
+    envelope: &UncommittedCoveredV8OwnerEnvelope,
+    input: &V11ImportedV10SegmentInput,
+) -> Result<Vec<V11ResourceDebit>, DirectV11RealConsumerError> {
+    let (requests, authorizations, uses) = envelope.vegetation().nitrogen_protocol();
+    let occupancies = input.configuration.expected_occupancies();
+    let ofes = envelope
+        .hydrology()
+        .receiver_closure_operands()
+        .production_soil
+        .iter()
+        .map(|row| row.ofe_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let ofe_id = ofes
+        .iter()
+        .next()
+        .filter(|_| ofes.len() == 1)
+        .ok_or(DirectV11RealConsumerError::Identity("V11 BGC OFE binding"))?;
+    uses.iter()
+        .map(|used| {
+            let request = requests
+                .iter()
+                .find(|row| row.owner_id == used.owner_id && row.key == used.key)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "V11 nitrogen request binding",
+                ))?;
+            let authorization = authorizations
+                .iter()
+                .find(|row| row.owner_id == used.owner_id && row.key == used.key)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "V11 nitrogen authorization binding",
+                ))?;
+            let occupancy = occupancies
+                .iter()
+                .find(|id| id.stratum_id.as_str() == used.owner_id.as_str())
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "V11 nitrogen occupancy binding",
+                ))?;
+            V11ResourceDebit::new(V11ResourceDebit {
+                receipt_id: Digest32::zero(),
+                parent_transaction_id: input.parent_transaction_id,
+                segment_id: input.accepted_slab_receipt.segment_id(),
+                accepted_slab_id: input.accepted_slab_receipt.slab_id(),
+                support: input.support,
+                owner_id: "bgc".into(),
+                resource_key: V11ResourceKey::MineralNitrogen(used.key.clone()),
+                ofe_id: (*ofe_id).to_owned(),
+                tile_id: occupancy.tile_id.as_str().to_owned(),
+                occupancy_id: format!(
+                    "{}::{}",
+                    occupancy.stratum_id.as_str(),
+                    occupancy.tile_id.as_str()
+                ),
+                layer_id: used.key.layer_id.as_str().to_owned(),
+                source_id: match used.key.species {
+                    MineralNitrogenSpecies::Ammonium => "nh4",
+                    MineralNitrogenSpecies::Nitrate => "no3",
+                }
+                .into(),
+                amount_basis: "kg_n_m2".into(),
+                request: request.amount,
+                authorization: authorization.amount,
+                final_use: used.amount,
+            })
+            .map_err(|_| DirectV11RealConsumerError::Identity("V11 nitrogen debit"))
+        })
+        .collect()
+}
+
+pub(crate) fn v11_shared_resource_transitions(
+    envelope: &UncommittedCoveredV8OwnerEnvelope,
+    input: &V11ImportedV10SegmentInput,
+    debits: &[V11ResourceDebit],
+    owners: &BTreeMap<String, V11OwnerEnvelope>,
+    beginning_hydrology: &RealHydrologyShadowAdapter,
+    ending_hydrology: &RealHydrologyShadowAdapter,
+    beginning_bgc: &openwepp_biogeochemistry::BiogeochemistryState,
+) -> Result<Vec<V11SharedResourceOwnerTransition>, DirectV11RealConsumerError> {
+    let hydrology_digest = owners
+        .get("hydrology")
+        .ok_or(DirectV11RealConsumerError::Identity(
+            "V11 hydrology candidate",
+        ))?
+        .state_sha256;
+    let mut rows = v11_water_owner_transitions(
+        envelope,
+        input,
+        debits,
+        beginning_hydrology,
+        ending_hydrology,
+        hydrology_digest,
+    )?;
+    let bgc_digest = owners
+        .get("bgc")
+        .ok_or(DirectV11RealConsumerError::Identity("V11 BGC candidate"))?
+        .state_sha256;
+    let ofe_id = envelope
+        .hydrology()
+        .receiver_closure_operands()
+        .production_soil
+        .first()
+        .ok_or(DirectV11RealConsumerError::Identity("V11 BGC OFE"))?
+        .ofe_id
+        .as_str();
+    rows.extend(v11_bgc_owner_transitions(
+        envelope,
+        input,
+        debits,
+        beginning_bgc,
+        ofe_id,
+        bgc_digest,
+    )?);
+    Ok(rows)
+}
+
+pub(crate) fn v11_water_owner_transitions(
+    envelope: &UncommittedCoveredV8OwnerEnvelope,
+    input: &V11ImportedV10SegmentInput,
+    debits: &[V11ResourceDebit],
+    beginning: &RealHydrologyShadowAdapter,
+    ending: &RealHydrologyShadowAdapter,
+    owner_digest: Digest32,
+) -> Result<Vec<V11SharedResourceOwnerTransition>, DirectV11RealConsumerError> {
+    let mut rows = Vec::new();
+    for (ofe_index, ofe) in envelope
+        .hydrology()
+        .receiver_closure_operands()
+        .production_soil
+        .iter()
+        .enumerate()
+    {
+        for layer in &ofe.ordered_layers {
+            let key = V11SharedResourceKey {
+                resource: V11SharedResourceKind::Water,
+                owner_id: "hydrology".into(),
+                ofe_id: ofe.ofe_id.as_str().to_owned(),
+                layer_id: layer.layer_id.as_str().to_owned(),
+                source_id: "soil_water".into(),
+                amount_basis: "kg_m2_stand_ground".into(),
+            };
+            let ids = v11_linked_debit_ids(debits, &key, true);
+            if ids.is_empty() {
+                continue;
+            }
+            let amount = |owner: &RealHydrologyShadowAdapter, message| {
+                owner
+                    .layer_facts()
+                    .values()
+                    .find(|fact| {
+                        fact.source.ofe_lane.lane_index == ofe_index
+                            && fact.source.layer_id == layer.layer_id
+                    })
+                    .map(|fact| fact.liquid_supply_kg_m2)
+                    .ok_or(DirectV11RealConsumerError::Identity(message))
+            };
+            rows.push(v11_shared_transition(
+                input,
+                key,
+                amount(beginning, "V11 beginning hydrology layer binding")?,
+                amount(ending, "V11 ending hydrology layer binding")?,
+                ids,
+                owner_digest,
+            )?);
+        }
+    }
+    Ok(rows)
+}
+
+pub(crate) fn v11_bgc_owner_transitions(
+    envelope: &UncommittedCoveredV8OwnerEnvelope,
+    input: &V11ImportedV10SegmentInput,
+    debits: &[V11ResourceDebit],
+    beginning_bgc: &openwepp_biogeochemistry::BiogeochemistryState,
+    ofe_id: &str,
+    owner_digest: Digest32,
+) -> Result<Vec<V11SharedResourceOwnerTransition>, DirectV11RealConsumerError> {
+    let mut rows = Vec::new();
+    for operand in envelope.biogeochemistry().mineral_operands() {
+        let source_id = match operand.key.species {
+            MineralNitrogenSpecies::Ammonium => "nh4",
+            MineralNitrogenSpecies::Nitrate => "no3",
+        };
+        let resource = match operand.key.species {
+            MineralNitrogenSpecies::Ammonium => V11SharedResourceKind::Ammonium,
+            MineralNitrogenSpecies::Nitrate => V11SharedResourceKind::Nitrate,
+        };
+        let key = V11SharedResourceKey {
+            resource,
+            owner_id: "bgc".into(),
+            ofe_id: ofe_id.to_owned(),
+            layer_id: operand.key.layer_id.as_str().to_owned(),
+            source_id: source_id.into(),
+            amount_basis: "kg_n_m2".into(),
+        };
+        let ids = v11_linked_debit_ids(debits, &key, false);
+        if ids.is_empty() {
+            continue;
+        }
+        let beginning_layer = beginning_bgc
+            .layers
+            .get(operand.key.layer_id.as_str())
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "V11 beginning BGC layer binding",
+            ))?;
+        let beginning_amount = match operand.key.species {
+            MineralNitrogenSpecies::Ammonium => beginning_layer.ammonium_n,
+            MineralNitrogenSpecies::Nitrate => beginning_layer.nitrate_n,
+        };
+        rows.push(v11_shared_transition(
+            input,
+            key,
+            beginning_amount,
+            operand.ending_kg_n_m2,
+            ids,
+            owner_digest,
+        )?);
+    }
+    Ok(rows)
+}
+
+pub(crate) fn v11_linked_debit_ids(
+    debits: &[V11ResourceDebit],
+    key: &V11SharedResourceKey,
+    bind_amount_basis: bool,
+) -> Vec<Digest32> {
+    let mut ids = debits
+        .iter()
+        .filter(|debit| {
+            debit.owner_id == key.owner_id
+                && debit.ofe_id == key.ofe_id
+                && debit.layer_id == key.layer_id
+                && debit.source_id == key.source_id
+                && (!bind_amount_basis || debit.amount_basis == key.amount_basis)
+        })
+        .map(|debit| debit.receipt_id)
+        .collect::<Vec<_>>();
+    ids.sort_unstable();
+    ids
+}
+
+pub(crate) fn v11_shared_transition(
+    input: &V11ImportedV10SegmentInput,
+    key: V11SharedResourceKey,
+    beginning_amount: f64,
+    ending_amount: f64,
+    debit_receipt_ids: Vec<Digest32>,
+    owner_candidate_sha256: Digest32,
+) -> Result<V11SharedResourceOwnerTransition, DirectV11RealConsumerError> {
+    Ok(V11SharedResourceOwnerTransition::new(
+        V11SharedResourceOwnerTransition {
+            transition_id: Digest32::zero(),
+            parent_transaction_id: input.parent_transaction_id,
+            segment_id: input.accepted_slab_receipt.segment_id(),
+            accepted_slab_id: input.accepted_slab_receipt.slab_id(),
+            support: input.support,
+            shared_resource_key: key,
+            beginning_amount,
+            ending_amount,
+            debit_receipt_ids,
+            admitted_flux_receipt_ids: Vec::new(),
+            owner_candidate_sha256,
+        },
+    )?)
+}
+
+pub(crate) fn v11_water_resource_debits(
+    envelope: &UncommittedCoveredV8OwnerEnvelope,
+    configuration: &VegetationConfiguration,
+    input: &V11ImportedV10SegmentInput,
+) -> Result<Vec<V11ResourceDebit>, DirectV11RealConsumerError> {
+    let occupancies = configuration
+        .expected_occupancies()
+        .into_iter()
+        .map(|id| {
+            (
+                format!("{}::{}", id.stratum_id.as_str(), id.tile_id.as_str()),
+                id,
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let requests = &envelope.hydrology().arbitration().requests;
+    let authorizations = &envelope.hydrology().arbitration().authorizations;
+    envelope
+        .hydrology()
+        .finalized_uses()
+        .iter()
+        .filter_map(|value| {
+            let component = value.key.occupancy_id.as_ref()?;
+            let layer = value.key.soil_layer_id.as_ref()?;
+            Some((value, component.as_str(), layer))
+        })
+        .map(|(value, component, layer)| {
+            let occupancy =
+                occupancies
+                    .get(component)
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "V11 water occupancy binding",
+                    ))?;
+            let request = requests.iter().find(|row| row.key == value.key).ok_or(
+                DirectV11RealConsumerError::Identity("V11 water request binding"),
+            )?;
+            let authorization = authorizations
+                .iter()
+                .find(|row| row.key == value.key)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "V11 water authorization binding",
+                ))?;
+            V11ResourceDebit::new(V11ResourceDebit {
+                receipt_id: Digest32::zero(),
+                parent_transaction_id: input.parent_transaction_id,
+                segment_id: input.accepted_slab_receipt.segment_id(),
+                accepted_slab_id: input.accepted_slab_receipt.slab_id(),
+                support: input.support,
+                owner_id: "hydrology".to_owned(),
+                resource_key: V11ResourceKey::Water(openwepp_kernel_contract::WaterResourceKey {
+                    occupancy_id: occupancy.clone(),
+                    layer_id: layer.clone(),
+                }),
+                ofe_id: value.key.ofe_id.as_str().to_owned(),
+                tile_id: occupancy.tile_id.as_str().to_owned(),
+                occupancy_id: component.to_owned(),
+                layer_id: layer.as_str().to_owned(),
+                source_id: "soil_water".to_owned(),
+                amount_basis: "kg_m2_stand_ground".to_owned(),
+                request: request.amount_kg_m2_stand_ground,
+                authorization: authorization.amount_kg_m2_stand_ground,
+                final_use: value.amount_kg_m2_stand_ground,
+            })
+            .map_err(|_| DirectV11RealConsumerError::Identity("V11 water debit"))
+        })
+        .collect()
+}
