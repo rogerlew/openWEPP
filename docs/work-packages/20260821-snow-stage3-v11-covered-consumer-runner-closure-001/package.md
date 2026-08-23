@@ -117,6 +117,27 @@ fields.
 
 ## Progress log
 
+### 2026-08-23 WB14 parent-interval authority checkpoint
+
+From exact clean `8566ebd8a432b56c0ce60051175a9e3ce1872d03`, this
+checkpoint defined a prospective WB14 parent candidate binding the enclosing
+coupled parent, complete beginning owner, persistent cursor, exact 1800-second
+support, parent-local cumulative state, closed 1800/900/60-second children,
+canonical receipt chain, ordered child receipts, final receipt, day rollover,
+and final-only cursor projection. It calls the unchanged shared Green-Ampt
+transition. Focused vectors cover one-child bitwise kernel parity, two 900s,
+thirty 60s, mixed shape, zero supply, closure reconstruction, rollover,
+chronology/replay poisons, and candidate discard after child 1/2 and 17/30.
+
+`HOLD:` both independent reviews rejected release. The prospective API is not
+connected to the actual surface/soil/runoff/V11/Stage-3/clock/provider/GSI
+owner envelope; exact-once installation and complete-owner rollback are
+unproven. Mixed cadence is not dynamically selected from latest accepted
+Stage 3 state, and parity does not compare actual production owner bytes. The
+contract text remains explicitly prospective and unreleased. The attachment
+retains its typed 900/60-second pre-physics rejection; no child evaluator or
+downstream fixtures were enabled.
+
 ### 2026-08-23 current-state surface projection and coupled-cadence checkpoint
 
 Implementation intent: from exact clean commit

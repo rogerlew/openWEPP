@@ -340,3 +340,24 @@ as diagnostic seed identity and does not claim carrier authority.
 continuation authority. The retained runtime admits the single `1800 s` parent
 segment and fails closed before shorter physical work. No partial owner
 transition or invented continuation rule is installed.
+
+## Prospective WB14 parent/local-child continuation
+
+`Static:` The prospective state machine separates the persistent cursor from
+parent-local support, cumulative supply/infiltration, ordinal, and canonical
+chain head. Parent identity binds the enclosing coupled parent, complete owner
+beginning, selected day/bin including rollover, support, and cursor. Child and
+parent receipts use canonical tagged coupled-time framing and retain the
+Green-Ampt input and outcome bits needed for closure reconstruction.
+
+`Static:` Every child delegates to the unchanged shared WB14 transition. The
+API remains unreachable outside its contract tests and the attachment still
+rejects 900/60-second execution before physics.
+
+`Ran:` focused WB14 tests passed 13/13 after review corrections. A complete
+orchestrator run earlier in this checkpoint passed 773/773 with one intentional
+skip; exact terminal results are recorded separately.
+
+`HOLD:` complete physical-owner staging, exact-once installation, dynamic
+latest-Stage-3 cadence, actual production-owner parity, and complete-owner
+rollback remain absent.

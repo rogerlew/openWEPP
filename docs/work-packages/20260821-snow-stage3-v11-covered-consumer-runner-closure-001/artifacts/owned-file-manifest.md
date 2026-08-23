@@ -93,6 +93,14 @@ attachment, exports, package regression, and package evidence files. No
 selector, default, production output, precipitation, terminal-liquid,
 snow-soil-heat, restart, or cutover file is added.
 
+WB14 authority checkpoint additions are limited to the prospective,
+unreachable state machine and vectors in
+`direct_runtime/surface_liquid_wb14.rs`, the explicitly unreleased amendment
+in `SC-SURFACELIQUID-001.md`, its unchanged-v7 registry disposition, package
+evidence, and `docs/ROADMAP.md`. No production ingress, attachment, selector,
+output, restart, precipitation, terminal-liquid, snow-soil heat, or Richards
+source is modified.
+
 - `crates/openwepp-hillslope-orchestrator/src/stage3_parent_atmosphere.rs`:
   provider-derived parent-atmosphere receipt and canonical digest.
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/{receipt_sets,execution,fixed_point,regime,open_snow}.rs`:

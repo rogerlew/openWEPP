@@ -12,3 +12,9 @@ Applicable instruction chain:
 
 The exact contract files read and byte counts are recorded in
 `required-reading-byte-count.md` after the contract census.
+
+WB14 checkpoint intake additionally read the complete applicable instruction
+chain, active package, `SC-SURFACELIQUID-001`, relevant
+`SC-COUPLEDTIME-001` parent/slab/receipt/finalization sections, existing WB14
+shared transition, persistent continuation validation, and the Stage-3/V11
+short-cadence rejection path.

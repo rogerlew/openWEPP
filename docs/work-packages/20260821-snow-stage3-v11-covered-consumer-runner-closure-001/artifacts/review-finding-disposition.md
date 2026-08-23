@@ -1,5 +1,20 @@
 # Review finding disposition
 
+## 2026-08-23 WB14 parent-interval reviews
+
+- `accepted/fixed`: custom hashing, architecture-width day bytes, enclosing
+  coupled-parent omission, incomplete chain identity, day rollover, exact
+  overlap/gap poisons, and missing child outcome operands.
+- `accepted/blocking`: complete staged-owner integration and exact-once
+  installation/rollback remain absent.
+- `accepted/blocking`: mixed cadence is not selected from latest accepted
+  Stage 3 state.
+- `accepted/blocking`: parity covers the shared kernel, not actual production
+  continuation and complete owner bytes.
+
+Both independent reviews returned `HOLD`; nothing was waived. See
+`wb14-parent-authority-reviews.md`.
+
 Static: User review of `8712e272a500ad385051fc2f33d1ae518d4c55ba` is the
 first independent checkpoint review. It accepts the corrected keyed candidate
 feedback topology while retaining package `EXECUTING / HOLD`.

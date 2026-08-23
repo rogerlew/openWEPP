@@ -722,10 +722,11 @@ full bin. A cross-midnight endpoint advances continuation once. Restart
 before/after meltout or at an accepted terminal substep restores the same
 partial continuation and produces byte-identical final owner state.
 
-The fixed production base remains exactly 48 wall bins of 1800 seconds and
+The fixed production base remains exactly 48 wall bins of 1800 seconds and,
+outside the prospective parent transaction described below,
 `SURFACELIQUID-E-008` still rejects every ordinary call whose duration is not
-1800 seconds. The only exception is a tagged terminal receiver segment inside
-one identified base wall bin. Let `D=1800 s`, `d=wall_end-wall_t*`,
+1800 seconds. The terminal exception is a tagged receiver segment inside one
+identified base wall bin. Let `D=1800 s`, `d=wall_end-wall_t*`,
 `0<=d<=D`. Time-varying forcing is partitioned on the half-open absolute
 support `[wall_t*,wall_end)`; it is not scaled from a full-bin aggregate and
 does not replay `[wall_start,wall_t*)`. A parcel exactly at `wall_t*` belongs
@@ -762,11 +763,62 @@ claim, qualification, or cutover.
 Frozen-liquid constitutive physics beyond that receipt remains
 `AUTHORITY_MISSING` and non-promotable.
 
+## WB14 Parent-Interval Child-Slab Amendment
+
+The following proposed rules describe a default-off transaction over exactly
+one existing half-hour WB14 interval. They are **not released authority** while
+the independent reviews remain in `HOLD`; production continues to enforce
+`INV-SURFACELIQUID-006/011`. This is prospective transaction and custody design
+only: every child calls the unchanged shared Green-Ampt transition
+with its exact duration and current accepted cumulative state. It changes no
+equation, parameter, clamp, tolerance, forcing selector, output, or restart
+wire.
+
+The immutable parent authority binds the exact 1800-second half-open support,
+the complete parent-beginning owner digest, the persistent day/next-interval
+cursor digest, and a framed parent identity.
+The parent-local working state contains accepted support end, next child
+ordinal, cumulative supply, cumulative infiltration, and receipt-chain head.
+It is a candidate and is never a second persistent cursor.
+
+Each child duration is exactly 1800, 900, or 60 seconds. Its support must begin
+at the latest accepted endpoint, remain within the parent, and carry the next
+ordinal and current chain head. Its receipt binds parent identity,
+parent-beginning owner and cursor, child support/ordinal, complete Green-Ampt
+input bits, beginning and ending physical working states, predecessor chain,
+and its own digest. Only accepted child
+candidates become the next parent-local beginning. Omission, duplication,
+reorder, overlap, gap, altered beginning, or replay rejects exactly.
+
+Finalization is legal only after one or more accepted children exactly cover
+the parent. It copies the parent-local cumulative state and advances the
+persistent interval cursor once. Children never advance that cursor. A failed
+child or finalization discards the complete candidate, including staged
+surface, soil, runoff, V11, Stage 3, clock, provider, GSI, receipt, and event
+owners; no partial candidate is publishable.
+
+Cadence choice belongs to the coupled Stage 3 controller and is reevaluated
+from the latest accepted Stage 3 state. WB14 validates the selected child's
+closed cadence and chronology but does not infer snow mass or select cadence.
+One 1800-second child must return the historical interval outcome bitwise.
+
+Required vectors are one 1800-second child parity; two 900-second children;
+thirty 60-second children; a latest-state-selected mixed cadence; zero-supply
+no-op children; positive cumulative closure; rollback after child 1/2 and
+17/30; finalization rollback; omission, duplication, reorder, overlap, gap,
+and replay poisons; and exactly one persistent continuation advance.
+
+| Prospective rule | Proposed binding | Release blocker |
+|---|---|---|
+| `PROSPECTIVE-INV-SURFACELIQUID-012` | One WB14 parent covers exactly one existing 1800-second day/interval continuation; persistent cursor is immutable during ordered 1800/900/60-second children and advances once at finalization. | Complete staged-owner integration and exact-once installation evidence. |
+| `PROSPECTIVE-INV-SURFACELIQUID-013` | Every child binds enclosing coupled parent, complete parent beginning, support/ordinal, complete Green-Ampt inputs, beginning/ending working state, and canonical receipt chain; failures roll back the complete owner envelope. | Dynamic Stage 3 cadence fixture, complete owner rollback injections, and terminal re-review. |
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---|---|---|
 | 2026-08-19 | 7 | Codex | Added exact-one 0 C terminal receipt and partial-WB14 continuation/restart authority (`INV-SURFACELIQUID-010/011`) for the default-off terminal receiver transaction. |
+| 2026-08-23 | prospective | Codex | Recorded the unreleased WB14 parent/child transaction design and contract vectors. Independent reviews held release on complete-owner integration, dynamic Stage 3 cadence, and rollback evidence; v7 authority and the production guard remain unchanged. |
 | 2026-08-14 | 1 | Codex | Initial contract-first draft. |
 | 2026-08-14 | 2 | Codex | Align exact LSE surface/source identities and OFE condensation basis; bind one actual timed aggregate WB14 call per OFE, zero legacy depression retention, post-infiltration persistent retention, routed topology, canonical digests, profile sections, unit governance, and independent vector obligations. |
 | 2026-08-14 | 3 | Codex | Bind the exact 1800-second/48-step stateful WB14 continuation, mutually exclusive open-rain/covered-canopy supply, conservative mixed enthalpy, exact tile/source retention, retained LSE energy receipt, water density, machine-readable registry seams, continuation restart schema, and basis-rekeyed unequal-area OFE routing. |

@@ -1,4 +1,5 @@
 use crate::constants::WB11_ZERO_THRESHOLD;
+use openwepp_coupled_time::{FramedField, framed_sha256};
 
 use super::{
     DirectRuntimeError, validate_finite, validate_nonnegative_direct_m, validate_positive_direct,
@@ -150,6 +151,624 @@ pub(super) fn advance_wb14_continuation_interval(
     })
 }
 
+/// Persistent WB14 day/interval cursor. Child slabs never mutate this value;
+/// exactly one finalized parent produces its successor.
+// Prospective authority remains deliberately unreachable from production until
+// the attachment-level owner join is independently released.
+#[allow(dead_code)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(super) struct DirectWb14PersistentCursorV1 {
+    pub day_index: usize,
+    pub next_interval_index: u8,
+    pub cumulative_supply_m: f64,
+    pub cumulative_infiltration_m: f64,
+}
+
+/// Immutable authority for one existing 1,800-second WB14 interval.
+#[allow(dead_code)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) struct DirectWb14ParentAuthorityV1 {
+    pub parent_id: [u8; 32],
+    pub coupled_parent_transaction_sha256: [u8; 32],
+    pub parent_day_index: usize,
+    pub parent_interval_index: u8,
+    pub support_start_ns: u128,
+    pub support_end_ns: u128,
+    pub parent_beginning_owner_sha256: [u8; 32],
+    pub beginning_cursor_sha256: [u8; 32],
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(super) struct DirectWb14ParentWorkingStateV1 {
+    pub accepted_until_ns: u128,
+    pub next_child_ordinal: u32,
+    pub cumulative_supply_m: f64,
+    pub cumulative_infiltration_m: f64,
+    pub receipt_chain_sha256: [u8; 32],
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) struct DirectWb14ChildReceiptV1 {
+    pub parent_id: [u8; 32],
+    pub parent_beginning_owner_sha256: [u8; 32],
+    pub parent_beginning_cursor_sha256: [u8; 32],
+    pub ordinal: u32,
+    pub support_start_ns: u128,
+    pub support_end_ns: u128,
+    pub beginning_working_state_sha256: [u8; 32],
+    pub ending_working_state_sha256: [u8; 32],
+    pub predecessor_receipt_sha256: [u8; 32],
+    pub child_inputs_sha256: [u8; 32],
+    pub interval_supply_m_bits: u64,
+    pub interval_infiltration_m_bits: u64,
+    pub interval_excess_m_bits: u64,
+    pub receipt_sha256: [u8; 32],
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct DirectWb14ParentReceiptV1 {
+    pub parent_id: [u8; 32],
+    pub coupled_parent_transaction_sha256: [u8; 32],
+    pub parent_day_index: usize,
+    pub parent_interval_index: u8,
+    pub parent_beginning_owner_sha256: [u8; 32],
+    pub beginning_cursor_sha256: [u8; 32],
+    pub ending_cursor_sha256: [u8; 32],
+    pub support_start_ns: u128,
+    pub support_end_ns: u128,
+    pub ordered_child_receipt_sha256: Vec<[u8; 32]>,
+    pub receipt_chain_sha256: [u8; 32],
+    pub receipt_sha256: [u8; 32],
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq)]
+pub(super) struct DirectWb14ParentFinalizationV1 {
+    pub persistent_cursor: DirectWb14PersistentCursorV1,
+    pub receipt: DirectWb14ParentReceiptV1,
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq)]
+pub(super) struct DirectWb14ParentIntervalV1 {
+    authority: DirectWb14ParentAuthorityV1,
+    beginning_cursor: DirectWb14PersistentCursorV1,
+    working: DirectWb14ParentWorkingStateV1,
+    receipts: Vec<DirectWb14ChildReceiptV1>,
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, thiserror::Error)]
+pub(super) enum DirectWb14ParentIntervalErrorV1 {
+    #[error("WB14 parent support is not exactly 1,800 seconds")]
+    ParentSupport,
+    #[error("WB14 parent does not match the persistent day/interval cursor")]
+    CursorIdentity,
+    #[error("WB14 child cadence is not an admitted 1,800/900/60-second cadence")]
+    ChildCadence,
+    #[error("WB14 child support is not the next contiguous parent support")]
+    ChildSupport,
+    #[error("WB14 child ordinal or receipt-chain identity is invalid")]
+    ChildIdentity,
+    #[error("WB14 parent is incomplete")]
+    ParentIncomplete,
+    #[error("WB14 parent arithmetic failed")]
+    Arithmetic,
+    #[error("WB14 parent identity framing failed")]
+    IdentityHash,
+}
+
+#[allow(dead_code)]
+fn wb14_hash(
+    domain: &str,
+    fields: &[FramedField<'_>],
+) -> Result<[u8; 32], DirectWb14ParentIntervalErrorV1> {
+    framed_sha256(domain, fields)
+        .map(|digest| *digest.as_bytes())
+        .map_err(|_| DirectWb14ParentIntervalErrorV1::IdentityHash)
+}
+
+#[allow(dead_code)]
+fn cursor_digest(
+    cursor: DirectWb14PersistentCursorV1,
+) -> Result<[u8; 32], DirectWb14ParentIntervalErrorV1> {
+    let day_index =
+        u64::try_from(cursor.day_index).map_err(|_| DirectWb14ParentIntervalErrorV1::Arithmetic)?;
+    wb14_hash(
+        "openwepp-wb14-persistent-cursor-v1",
+        &[
+            FramedField {
+                tag: "day_index",
+                value: &day_index.to_be_bytes(),
+            },
+            FramedField {
+                tag: "next_interval_index",
+                value: &[cursor.next_interval_index],
+            },
+            FramedField {
+                tag: "cumulative_supply_m_bits",
+                value: &cursor.cumulative_supply_m.to_bits().to_be_bytes(),
+            },
+            FramedField {
+                tag: "cumulative_infiltration_m_bits",
+                value: &cursor.cumulative_infiltration_m.to_bits().to_be_bytes(),
+            },
+        ],
+    )
+}
+
+#[allow(dead_code)]
+fn working_digest(
+    working: DirectWb14ParentWorkingStateV1,
+) -> Result<[u8; 32], DirectWb14ParentIntervalErrorV1> {
+    wb14_hash(
+        "openwepp-wb14-parent-working-state-v1",
+        &[
+            FramedField {
+                tag: "accepted_until_ns",
+                value: &working.accepted_until_ns.to_be_bytes(),
+            },
+            FramedField {
+                tag: "next_child_ordinal",
+                value: &working.next_child_ordinal.to_be_bytes(),
+            },
+            FramedField {
+                tag: "cumulative_supply_m_bits",
+                value: &working.cumulative_supply_m.to_bits().to_be_bytes(),
+            },
+            FramedField {
+                tag: "cumulative_infiltration_m_bits",
+                value: &working.cumulative_infiltration_m.to_bits().to_be_bytes(),
+            },
+            FramedField {
+                tag: "receipt_chain_sha256",
+                value: &working.receipt_chain_sha256,
+            },
+        ],
+    )
+}
+
+#[allow(dead_code)]
+fn parent_id(
+    coupled_parent_transaction_sha256: [u8; 32],
+    parent_day_index: usize,
+    parent_interval_index: u8,
+    support_start_ns: u128,
+    support_end_ns: u128,
+    parent_beginning_owner_sha256: [u8; 32],
+    beginning_cursor_sha256: [u8; 32],
+) -> Result<[u8; 32], DirectWb14ParentIntervalErrorV1> {
+    let parent_day_index =
+        u64::try_from(parent_day_index).map_err(|_| DirectWb14ParentIntervalErrorV1::Arithmetic)?;
+    wb14_hash(
+        "openwepp-wb14-parent-interval-v1",
+        &[
+            FramedField {
+                tag: "coupled_parent_transaction_sha256",
+                value: &coupled_parent_transaction_sha256,
+            },
+            FramedField {
+                tag: "parent_day_index",
+                value: &parent_day_index.to_be_bytes(),
+            },
+            FramedField {
+                tag: "parent_interval_index",
+                value: &[parent_interval_index],
+            },
+            FramedField {
+                tag: "support_start_ns",
+                value: &support_start_ns.to_be_bytes(),
+            },
+            FramedField {
+                tag: "support_end_ns",
+                value: &support_end_ns.to_be_bytes(),
+            },
+            FramedField {
+                tag: "parent_beginning_owner_sha256",
+                value: &parent_beginning_owner_sha256,
+            },
+            FramedField {
+                tag: "beginning_cursor_sha256",
+                value: &beginning_cursor_sha256,
+            },
+        ],
+    )
+}
+
+#[allow(dead_code)]
+pub(super) fn wb14_parent_authority_v1(
+    coupled_parent_transaction_sha256: [u8; 32],
+    support_start_ns: u128,
+    support_end_ns: u128,
+    parent_beginning_owner_sha256: [u8; 32],
+    cursor: DirectWb14PersistentCursorV1,
+) -> Result<DirectWb14ParentAuthorityV1, DirectWb14ParentIntervalErrorV1> {
+    let beginning_cursor_sha256 = cursor_digest(cursor)?;
+    let (parent_day_index, parent_interval_index) = if cursor.next_interval_index == 48 {
+        (
+            cursor
+                .day_index
+                .checked_add(1)
+                .ok_or(DirectWb14ParentIntervalErrorV1::Arithmetic)?,
+            0,
+        )
+    } else {
+        (cursor.day_index, cursor.next_interval_index)
+    };
+    Ok(DirectWb14ParentAuthorityV1 {
+        parent_id: parent_id(
+            coupled_parent_transaction_sha256,
+            parent_day_index,
+            parent_interval_index,
+            support_start_ns,
+            support_end_ns,
+            parent_beginning_owner_sha256,
+            beginning_cursor_sha256,
+        )?,
+        coupled_parent_transaction_sha256,
+        parent_day_index,
+        parent_interval_index,
+        support_start_ns,
+        support_end_ns,
+        parent_beginning_owner_sha256,
+        beginning_cursor_sha256,
+    })
+}
+
+#[allow(dead_code)]
+impl DirectWb14ParentIntervalV1 {
+    pub(super) fn begin(
+        authority: DirectWb14ParentAuthorityV1,
+        cursor: DirectWb14PersistentCursorV1,
+    ) -> Result<Self, DirectWb14ParentIntervalErrorV1> {
+        if authority
+            .support_end_ns
+            .checked_sub(authority.support_start_ns)
+            != Some(1_800_000_000_000)
+        {
+            return Err(DirectWb14ParentIntervalErrorV1::ParentSupport);
+        }
+        let expected_parent = if cursor.next_interval_index == 48 {
+            (
+                cursor
+                    .day_index
+                    .checked_add(1)
+                    .ok_or(DirectWb14ParentIntervalErrorV1::Arithmetic)?,
+                0,
+            )
+        } else {
+            (cursor.day_index, cursor.next_interval_index)
+        };
+        if cursor.next_interval_index > 48
+            || authority.beginning_cursor_sha256 != cursor_digest(cursor)?
+            || (authority.parent_day_index, authority.parent_interval_index) != expected_parent
+            || authority.parent_id
+                != parent_id(
+                    authority.coupled_parent_transaction_sha256,
+                    authority.parent_day_index,
+                    authority.parent_interval_index,
+                    authority.support_start_ns,
+                    authority.support_end_ns,
+                    authority.parent_beginning_owner_sha256,
+                    authority.beginning_cursor_sha256,
+                )?
+        {
+            return Err(DirectWb14ParentIntervalErrorV1::CursorIdentity);
+        }
+        let chain = wb14_hash(
+            "openwepp-wb14-parent-receipt-chain-begin-v1",
+            &[
+                FramedField {
+                    tag: "parent_id",
+                    value: &authority.parent_id,
+                },
+                FramedField {
+                    tag: "beginning_cursor_sha256",
+                    value: &authority.beginning_cursor_sha256,
+                },
+            ],
+        )?;
+        let (cumulative_supply_m, cumulative_infiltration_m) = if cursor.next_interval_index == 48 {
+            (0.0, 0.0)
+        } else {
+            (cursor.cumulative_supply_m, cursor.cumulative_infiltration_m)
+        };
+        Ok(Self {
+            authority,
+            beginning_cursor: cursor,
+            working: DirectWb14ParentWorkingStateV1 {
+                accepted_until_ns: authority.support_start_ns,
+                next_child_ordinal: 0,
+                cumulative_supply_m,
+                cumulative_infiltration_m,
+                receipt_chain_sha256: chain,
+            },
+            receipts: Vec::new(),
+        })
+    }
+
+    /// Return a new accepted candidate; `self` is unchanged on every failure.
+    pub(super) fn accept_child(
+        &self,
+        ordinal: u32,
+        support_start_ns: u128,
+        support_end_ns: u128,
+        predecessor_receipt_sha256: [u8; 32],
+        inputs: DirectWb14ContinuationIntervalInputs,
+    ) -> Result<(Self, DirectWb14ContinuationIntervalOutcome), DirectWb14ParentIntervalErrorV1>
+    {
+        let duration_ns = support_end_ns
+            .checked_sub(support_start_ns)
+            .ok_or(DirectWb14ParentIntervalErrorV1::ChildSupport)?;
+        let selected_seconds: f64 = match duration_ns {
+            1_800_000_000_000 => 1_800.0,
+            900_000_000_000 => 900.0,
+            60_000_000_000 => 60.0,
+            _ => return Err(DirectWb14ParentIntervalErrorV1::ChildCadence),
+        };
+        if ordinal != self.working.next_child_ordinal
+            || predecessor_receipt_sha256 != self.working.receipt_chain_sha256
+        {
+            return Err(DirectWb14ParentIntervalErrorV1::ChildIdentity);
+        }
+        if support_start_ns != self.working.accepted_until_ns
+            || support_end_ns > self.authority.support_end_ns
+            || inputs.interval_duration_s.to_bits() != selected_seconds.to_bits()
+            || inputs.cumulative_supply_m.to_bits() != self.working.cumulative_supply_m.to_bits()
+            || inputs.cumulative_infiltration_m.to_bits()
+                != self.working.cumulative_infiltration_m.to_bits()
+        {
+            return Err(DirectWb14ParentIntervalErrorV1::ChildSupport);
+        }
+        let outcome = advance_wb14_continuation_interval(inputs)
+            .map_err(|_| DirectWb14ParentIntervalErrorV1::Arithmetic)?;
+        let child_inputs_sha256 = wb14_hash(
+            "openwepp-wb14-child-inputs-v1",
+            &[
+                FramedField {
+                    tag: "cumulative_supply_m_bits",
+                    value: &inputs.cumulative_supply_m.to_bits().to_be_bytes(),
+                },
+                FramedField {
+                    tag: "cumulative_infiltration_m_bits",
+                    value: &inputs.cumulative_infiltration_m.to_bits().to_be_bytes(),
+                },
+                FramedField {
+                    tag: "interval_supply_m_bits",
+                    value: &inputs.interval_supply_m.to_bits().to_be_bytes(),
+                },
+                FramedField {
+                    tag: "interval_duration_s_bits",
+                    value: &inputs.interval_duration_s.to_bits().to_be_bytes(),
+                },
+                FramedField {
+                    tag: "effective_conductivity_m_s_bits",
+                    value: &inputs.effective_conductivity_m_s.to_bits().to_be_bytes(),
+                },
+                FramedField {
+                    tag: "matric_potential_m_bits",
+                    value: &inputs.matric_potential_m.to_bits().to_be_bytes(),
+                },
+                FramedField {
+                    tag: "storage_capacity_m_bits",
+                    value: &inputs.storage_capacity_m.to_bits().to_be_bytes(),
+                },
+            ],
+        )?;
+        let beginning_digest = working_digest(self.working)?;
+        let next_ordinal = ordinal
+            .checked_add(1)
+            .ok_or(DirectWb14ParentIntervalErrorV1::Arithmetic)?;
+        let provisional_physical = DirectWb14ParentWorkingStateV1 {
+            accepted_until_ns: support_end_ns,
+            next_child_ordinal: next_ordinal,
+            cumulative_supply_m: outcome.cumulative_supply_m,
+            cumulative_infiltration_m: outcome.cumulative_infiltration_m,
+            receipt_chain_sha256: self.working.receipt_chain_sha256,
+        };
+        let child_body_sha256 = wb14_hash(
+            "openwepp-wb14-child-body-v1",
+            &[
+                FramedField {
+                    tag: "parent_id",
+                    value: &self.authority.parent_id,
+                },
+                FramedField {
+                    tag: "ordinal",
+                    value: &ordinal.to_be_bytes(),
+                },
+                FramedField {
+                    tag: "support_start_ns",
+                    value: &support_start_ns.to_be_bytes(),
+                },
+                FramedField {
+                    tag: "support_end_ns",
+                    value: &support_end_ns.to_be_bytes(),
+                },
+                FramedField {
+                    tag: "beginning_working_state_sha256",
+                    value: &beginning_digest,
+                },
+                FramedField {
+                    tag: "ending_cumulative_supply_m_bits",
+                    value: &outcome.cumulative_supply_m.to_bits().to_be_bytes(),
+                },
+                FramedField {
+                    tag: "ending_cumulative_infiltration_m_bits",
+                    value: &outcome.cumulative_infiltration_m.to_bits().to_be_bytes(),
+                },
+                FramedField {
+                    tag: "child_inputs_sha256",
+                    value: &child_inputs_sha256,
+                },
+            ],
+        )?;
+        let ending_chain_sha256 = wb14_hash(
+            "openwepp-wb14-child-chain-v1",
+            &[
+                FramedField {
+                    tag: "predecessor_receipt_chain_sha256",
+                    value: &predecessor_receipt_sha256,
+                },
+                FramedField {
+                    tag: "child_body_sha256",
+                    value: &child_body_sha256,
+                },
+            ],
+        )?;
+        let ending_working = DirectWb14ParentWorkingStateV1 {
+            receipt_chain_sha256: ending_chain_sha256,
+            ..provisional_physical
+        };
+        let ending_digest = working_digest(ending_working)?;
+        let receipt_digest = wb14_hash(
+            "openwepp-wb14-child-receipt-v1",
+            &[
+                FramedField {
+                    tag: "child_body_sha256",
+                    value: &child_body_sha256,
+                },
+                FramedField {
+                    tag: "ending_working_state_sha256",
+                    value: &ending_digest,
+                },
+                FramedField {
+                    tag: "ending_receipt_chain_sha256",
+                    value: &ending_chain_sha256,
+                },
+                FramedField {
+                    tag: "parent_beginning_owner_sha256",
+                    value: &self.authority.parent_beginning_owner_sha256,
+                },
+                FramedField {
+                    tag: "parent_beginning_cursor_sha256",
+                    value: &self.authority.beginning_cursor_sha256,
+                },
+            ],
+        )?;
+        let receipt = DirectWb14ChildReceiptV1 {
+            parent_id: self.authority.parent_id,
+            parent_beginning_owner_sha256: self.authority.parent_beginning_owner_sha256,
+            parent_beginning_cursor_sha256: self.authority.beginning_cursor_sha256,
+            ordinal,
+            support_start_ns,
+            support_end_ns,
+            beginning_working_state_sha256: beginning_digest,
+            ending_working_state_sha256: ending_digest,
+            predecessor_receipt_sha256,
+            child_inputs_sha256,
+            interval_supply_m_bits: inputs.interval_supply_m.to_bits(),
+            interval_infiltration_m_bits: outcome.interval_infiltration_m.to_bits(),
+            interval_excess_m_bits: outcome.interval_excess_m.to_bits(),
+            receipt_sha256: receipt_digest,
+        };
+        let mut candidate = self.clone();
+        candidate.working = ending_working;
+        candidate.receipts.push(receipt);
+        Ok((candidate, outcome))
+    }
+
+    pub(super) fn finalize(
+        &self,
+    ) -> Result<DirectWb14ParentFinalizationV1, DirectWb14ParentIntervalErrorV1> {
+        if self.working.accepted_until_ns != self.authority.support_end_ns
+            || self.receipts.is_empty()
+        {
+            return Err(DirectWb14ParentIntervalErrorV1::ParentIncomplete);
+        }
+        let next = self
+            .authority
+            .parent_interval_index
+            .checked_add(1)
+            .ok_or(DirectWb14ParentIntervalErrorV1::Arithmetic)?;
+        let persistent_cursor = DirectWb14PersistentCursorV1 {
+            day_index: self.authority.parent_day_index,
+            next_interval_index: next,
+            cumulative_supply_m: self.working.cumulative_supply_m,
+            cumulative_infiltration_m: self.working.cumulative_infiltration_m,
+        };
+        let ending_cursor_sha256 = cursor_digest(persistent_cursor)?;
+        let ordered_child_receipt_sha256 = self
+            .receipts
+            .iter()
+            .map(|receipt| receipt.receipt_sha256)
+            .collect::<Vec<_>>();
+        let mut ordered_children = Vec::with_capacity(ordered_child_receipt_sha256.len() * 32);
+        for receipt in &ordered_child_receipt_sha256 {
+            ordered_children.extend_from_slice(receipt);
+        }
+        let receipt_sha256 = wb14_hash(
+            "openwepp-wb14-parent-receipt-v1",
+            &[
+                FramedField {
+                    tag: "parent_id",
+                    value: &self.authority.parent_id,
+                },
+                FramedField {
+                    tag: "coupled_parent_transaction_sha256",
+                    value: &self.authority.coupled_parent_transaction_sha256,
+                },
+                FramedField {
+                    tag: "parent_beginning_owner_sha256",
+                    value: &self.authority.parent_beginning_owner_sha256,
+                },
+                FramedField {
+                    tag: "beginning_cursor_sha256",
+                    value: &self.authority.beginning_cursor_sha256,
+                },
+                FramedField {
+                    tag: "ending_cursor_sha256",
+                    value: &ending_cursor_sha256,
+                },
+                FramedField {
+                    tag: "support_start_ns",
+                    value: &self.authority.support_start_ns.to_be_bytes(),
+                },
+                FramedField {
+                    tag: "support_end_ns",
+                    value: &self.authority.support_end_ns.to_be_bytes(),
+                },
+                FramedField {
+                    tag: "ordered_child_receipts",
+                    value: &ordered_children,
+                },
+                FramedField {
+                    tag: "receipt_chain_sha256",
+                    value: &self.working.receipt_chain_sha256,
+                },
+            ],
+        )?;
+        Ok(DirectWb14ParentFinalizationV1 {
+            persistent_cursor,
+            receipt: DirectWb14ParentReceiptV1 {
+                parent_id: self.authority.parent_id,
+                coupled_parent_transaction_sha256: self.authority.coupled_parent_transaction_sha256,
+                parent_day_index: self.authority.parent_day_index,
+                parent_interval_index: self.authority.parent_interval_index,
+                parent_beginning_owner_sha256: self.authority.parent_beginning_owner_sha256,
+                beginning_cursor_sha256: self.authority.beginning_cursor_sha256,
+                ending_cursor_sha256,
+                support_start_ns: self.authority.support_start_ns,
+                support_end_ns: self.authority.support_end_ns,
+                ordered_child_receipt_sha256,
+                receipt_chain_sha256: self.working.receipt_chain_sha256,
+                receipt_sha256,
+            },
+        })
+    }
+
+    pub(super) const fn working(&self) -> DirectWb14ParentWorkingStateV1 {
+        self.working
+    }
+
+    pub(super) fn receipts(&self) -> &[DirectWb14ChildReceiptV1] {
+        &self.receipts
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -157,6 +776,278 @@ mod tests {
         DC01_HOUR_BIN_COUNT, DirectWb14HyetographInterval, DirectWb14InfiltrationProducerInputs,
         compute_wb14_infiltration_depression_with_profile,
     };
+
+    fn parent_fixture() -> DirectWb14ParentIntervalV1 {
+        let cursor = DirectWb14PersistentCursorV1 {
+            day_index: 3,
+            next_interval_index: 7,
+            cumulative_supply_m: 0.002,
+            cumulative_infiltration_m: 0.001,
+        };
+        DirectWb14ParentIntervalV1::begin(
+            wb14_parent_authority_v1(
+                [29; 32],
+                10_000_000_000_000,
+                11_800_000_000_000,
+                [17; 32],
+                cursor,
+            )
+            .expect("authority"),
+            cursor,
+        )
+        .expect("valid parent")
+    }
+
+    fn child_inputs(
+        parent: &DirectWb14ParentIntervalV1,
+        duration_s: f64,
+        supply_m: f64,
+    ) -> DirectWb14ContinuationIntervalInputs {
+        DirectWb14ContinuationIntervalInputs {
+            cumulative_supply_m: parent.working().cumulative_supply_m,
+            cumulative_infiltration_m: parent.working().cumulative_infiltration_m,
+            interval_supply_m: supply_m,
+            interval_duration_s: duration_s,
+            effective_conductivity_m_s: 1.1e-7,
+            matric_potential_m: 0.12,
+            storage_capacity_m: 0.02,
+        }
+    }
+
+    fn accept_duration(
+        parent: &DirectWb14ParentIntervalV1,
+        duration_s: u64,
+        supply_m: f64,
+    ) -> DirectWb14ParentIntervalV1 {
+        let start = parent.working().accepted_until_ns;
+        let end = start + u128::from(duration_s) * 1_000_000_000;
+        parent
+            .accept_child(
+                parent.working().next_child_ordinal,
+                start,
+                end,
+                parent.working().receipt_chain_sha256,
+                child_inputs(parent, duration_s as f64, supply_m),
+            )
+            .expect("accepted child")
+            .0
+    }
+
+    #[test]
+    fn one_parent_child_is_bitwise_identical_to_historical_interval_transition() {
+        let beginning = parent_fixture();
+        let inputs = child_inputs(&beginning, 1_800.0, 0.003_6);
+        let historical = advance_wb14_continuation_interval(inputs).expect("historical path");
+        let (ending, child) = beginning
+            .accept_child(
+                0,
+                10_000_000_000_000,
+                11_800_000_000_000,
+                beginning.working().receipt_chain_sha256,
+                inputs,
+            )
+            .expect("one child parent");
+        assert_eq!(child, historical);
+        let committed = ending.finalize().expect("complete parent");
+        assert_eq!(committed.persistent_cursor.next_interval_index, 8);
+        assert_eq!(
+            committed.persistent_cursor.cumulative_supply_m.to_bits(),
+            historical.cumulative_supply_m.to_bits()
+        );
+        assert_eq!(
+            committed
+                .persistent_cursor
+                .cumulative_infiltration_m
+                .to_bits(),
+            historical.cumulative_infiltration_m.to_bits()
+        );
+    }
+
+    #[test]
+    fn two_900_and_thirty_60_children_cover_one_parent_and_advance_once() {
+        for (count, duration) in [(2, 900), (30, 60)] {
+            let beginning = parent_fixture();
+            let mut parent = beginning.clone();
+            for _ in 0..count {
+                parent = accept_duration(&parent, duration, 0.000_12);
+                assert_eq!(beginning.beginning_cursor.next_interval_index, 7);
+            }
+            assert_eq!(parent.receipts().len(), count);
+            let supplied = parent
+                .receipts()
+                .iter()
+                .map(|receipt| f64::from_bits(receipt.interval_supply_m_bits))
+                .sum::<f64>();
+            let infiltrated = parent
+                .receipts()
+                .iter()
+                .map(|receipt| f64::from_bits(receipt.interval_infiltration_m_bits))
+                .sum::<f64>();
+            let excess = parent
+                .receipts()
+                .iter()
+                .map(|receipt| f64::from_bits(receipt.interval_excess_m_bits))
+                .sum::<f64>();
+            assert!((infiltrated + excess - supplied).abs() <= 1.0e-14);
+            assert!(
+                (parent.working().cumulative_supply_m
+                    - beginning.working().cumulative_supply_m
+                    - supplied)
+                    .abs()
+                    <= 1.0e-14
+            );
+            assert_eq!(
+                parent
+                    .finalize()
+                    .expect("complete")
+                    .persistent_cursor
+                    .next_interval_index,
+                8
+            );
+        }
+    }
+
+    #[test]
+    fn mixed_cadence_and_zero_supply_children_close_cumulatively() {
+        let beginning = parent_fixture();
+        let mut parent = accept_duration(&beginning, 900, 0.001_8);
+        let after_positive = parent.working();
+        for _ in 0..15 {
+            parent = accept_duration(&parent, 60, 0.0);
+        }
+        assert_eq!(parent.receipts().len(), 16);
+        assert_eq!(
+            parent.working().cumulative_supply_m.to_bits(),
+            after_positive.cumulative_supply_m.to_bits()
+        );
+        assert_eq!(
+            parent.working().cumulative_infiltration_m.to_bits(),
+            after_positive.cumulative_infiltration_m.to_bits()
+        );
+        let ending = parent.finalize().expect("mixed complete");
+        assert_eq!(ending.persistent_cursor.next_interval_index, 8);
+        assert_eq!(
+            ending.persistent_cursor.cumulative_supply_m.to_bits(),
+            0.003_8_f64.to_bits()
+        );
+        assert!(
+            ending.persistent_cursor.cumulative_infiltration_m
+                <= ending.persistent_cursor.cumulative_supply_m
+        );
+    }
+
+    #[test]
+    fn child_chronology_and_replay_poisons_preserve_parent_bytes() {
+        let parent = parent_fixture();
+        let original = parent.clone();
+        let start = parent.working().accepted_until_ns;
+        let chain = parent.working().receipt_chain_sha256;
+        let inputs = child_inputs(&parent, 900.0, 0.001);
+        for result in [
+            parent.accept_child(1, start, start + 900_000_000_000, chain, inputs),
+            parent.accept_child(0, start + 1, start + 900_000_000_000, chain, inputs),
+            parent.accept_child(0, start, start + 899_000_000_000, chain, inputs),
+            parent.accept_child(0, start, start + 900_000_000_000, [9; 32], inputs),
+        ] {
+            assert!(result.is_err());
+            assert_eq!(parent, original);
+        }
+        let accepted = accept_duration(&parent, 900, 0.001);
+        let accepted_start = accepted.working().accepted_until_ns;
+        let accepted_chain = accepted.working().receipt_chain_sha256;
+        let accepted_inputs = child_inputs(&accepted, 900.0, 0.001);
+        for result in [
+            accepted.accept_child(
+                1,
+                accepted_start + 60_000_000_000,
+                accepted_start + 960_000_000_000,
+                accepted_chain,
+                accepted_inputs,
+            ),
+            accepted.accept_child(
+                1,
+                accepted_start - 60_000_000_000,
+                accepted_start + 840_000_000_000,
+                accepted_chain,
+                accepted_inputs,
+            ),
+        ] {
+            assert_eq!(result, Err(DirectWb14ParentIntervalErrorV1::ChildSupport));
+        }
+        let replay = accepted.accept_child(0, start, start + 900_000_000_000, chain, inputs);
+        assert!(replay.is_err());
+        assert_eq!(parent, original);
+
+        let cursor = parent.beginning_cursor;
+        let substituted = DirectWb14ParentAuthorityV1 {
+            parent_id: [9; 32],
+            ..wb14_parent_authority_v1(
+                parent.authority.coupled_parent_transaction_sha256,
+                parent.authority.support_start_ns,
+                parent.authority.support_end_ns,
+                parent.authority.parent_beginning_owner_sha256,
+                cursor,
+            )
+            .expect("authority")
+        };
+        assert_eq!(
+            DirectWb14ParentIntervalV1::begin(substituted, cursor),
+            Err(DirectWb14ParentIntervalErrorV1::CursorIdentity)
+        );
+    }
+
+    #[test]
+    fn failure_after_child_and_parent_finalization_are_atomic_candidates() {
+        for fail_after in [1, 17] {
+            let beginning = parent_fixture();
+            let mut candidate = beginning.clone();
+            for ordinal in 0..fail_after {
+                candidate =
+                    accept_duration(&candidate, if fail_after == 1 { 900 } else { 60 }, 0.000_1);
+                assert_eq!(candidate.receipts().len(), ordinal + 1);
+            }
+            // Dropping the candidate is rollback: the authoritative beginning is untouched.
+            assert_eq!(beginning, parent_fixture());
+        }
+        let incomplete = accept_duration(&parent_fixture(), 900, 0.001);
+        assert_eq!(
+            incomplete.finalize(),
+            Err(DirectWb14ParentIntervalErrorV1::ParentIncomplete)
+        );
+        assert_eq!(parent_fixture(), parent_fixture());
+    }
+
+    #[test]
+    fn day_rollover_selects_next_day_zero_and_advances_once() {
+        let cursor = DirectWb14PersistentCursorV1 {
+            day_index: 3,
+            next_interval_index: 48,
+            cumulative_supply_m: 0.02,
+            cumulative_infiltration_m: 0.01,
+        };
+        let authority = wb14_parent_authority_v1(
+            [31; 32],
+            20_000_000_000_000,
+            21_800_000_000_000,
+            [37; 32],
+            cursor,
+        )
+        .expect("rollover authority");
+        assert_eq!(
+            (authority.parent_day_index, authority.parent_interval_index),
+            (4, 0)
+        );
+        let parent = DirectWb14ParentIntervalV1::begin(authority, cursor).expect("rollover parent");
+        assert_eq!(
+            parent.working().cumulative_supply_m.to_bits(),
+            0.0_f64.to_bits()
+        );
+        let ending = accept_duration(&parent, 1_800, 0.0)
+            .finalize()
+            .expect("rollover finalization");
+        assert_eq!(ending.persistent_cursor.day_index, 4);
+        assert_eq!(ending.persistent_cursor.next_interval_index, 1);
+    }
 
     fn independent_ponded_oracle(
         cumulative_m: f64,

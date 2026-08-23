@@ -607,6 +607,26 @@ execution. Required short-cadence fixtures, full attachment fixtures, rollback
 poisons, warnings-denied changed-file Clippy, authority/admission guards, and
 package terminal validation were not claimed or run after the authority gap
 was identified.
+
+## 2026-08-23 WB14 prospective parent authority
+
+| Gate | Result | Evidence |
+|---|---|---|
+| Exact clean start | PASS | `HEAD=8566ebd8a432b56c0ce60051175a9e3ce1872d03`; empty status before edits. |
+| Focused WB14 vectors | PASS | `cargo test ... surface_liquid_wb14::tests`: 13/13. |
+| Affected-crate nextest | PASS | Exact worktree: 774/774, one intentional skip. |
+| Affected-package check | PASS | Completed with 13 documented pre-existing dead-code warnings. |
+| Formatting / diff hygiene | PASS | `cargo fmt --all -- --check`; `git diff --check`. |
+| Warnings-denied Clippy | BLOCKED by baseline debt | Stopped in unchanged `openwepp-land-surface-energy` on four existing `too_many_lines`/`large_enum_variant` findings before the changed orchestrator file; no clean claim. |
+| Authority anti-evasion | PASS | Canonical shell guard passed. |
+| Required-suite guard | PASS | 3/3. |
+| Science-contract admission | PASS | `A0_ADMITTED`, 49 contracts, one changed science surface, base `8566ebd...`. |
+| Independent hydrology review | FAIL/HOLD | Complete-owner integration, dynamic cadence, and production parity absent. |
+| Independent terminal review | FAIL/HOLD | Complete rollback/install and attachment vectors absent. |
+| Child evaluator release | BLOCKED | Existing typed 900/60 pre-physics rejection retained. |
+| Green-Ampt/default/output/restart noninterference | PASS (static) | Only unreachable prospective state machine, tests, contract/evidence, and roadmap changed. |
+
+The package remains `EXECUTING / HOLD`; review failures are not waived.
 ## 2026-08-23 provider-atmosphere/lifecycle follow-on intake
 
 Static: the reviewed `71ecc65642aaec793dbb8fd82d177f232102978e`
