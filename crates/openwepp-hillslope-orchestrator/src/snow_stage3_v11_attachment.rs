@@ -36,10 +36,13 @@ use crate::runtime_inputs::{
     SnowFreeHalfHourProviderCursor, SnowFreePrecipitationParcelReceipt, direct_gsi_state,
 };
 use crate::snow_stage3_open_boundary::{
-    SealedOpenSnowExposureReceiptV1, SealedOpenSnowTileForcingInputsV1,
-    SealedOpenSnowTileForcingV1, SealedStage3TileBoundaryForcingV1,
+    FinalStage3TileBoundaryReceiptV1, SealedOpenSnowExposureReceiptV1,
+    SealedOpenSnowTileForcingInputsV1, SealedOpenSnowTileForcingV1,
+    SealedStage3TileBoundaryForcingV1,
 };
-use crate::snow_stage3_terminal_handoff::{SealedCoveredCarrierForcing, SnowStage3HandoffError};
+use crate::snow_stage3_terminal_handoff::{
+    LaneStage3BoundaryReceiptV1, SealedCoveredCarrierForcing, SnowStage3HandoffError,
+};
 use crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow;
 use crate::v9_real_consumer_shadow::{
     CoveredParentOwnerJoinReceiptV1, DirectV9ShadowIntervalInput, DirectV11RealConsumerError,
@@ -237,6 +240,20 @@ impl DirectSnowStage3V11PreparedSupport {
         self.snow_surface_forcing_by_destination.insert(
             destination,
             SealedStage3TileBoundaryForcingV1::V11CanopyCovered(forcing),
+        );
+        self
+    }
+
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) fn with_sealed_open_tile_forcing(
+        mut self,
+        destination: (OfeId, TileId),
+        forcing: SealedOpenSnowTileForcingV1,
+    ) -> Self {
+        self.snow_surface_forcing_by_destination.insert(
+            destination,
+            SealedStage3TileBoundaryForcingV1::OpenSnow(forcing),
         );
         self
     }
@@ -532,6 +549,118 @@ impl DirectSnowStage3V11PreparedSupport {
         &self,
     ) -> &BTreeMap<(OfeId, TileId), Stage3ParentAtmosphericReceiptV1> {
         &self.atmospheric_receipt_by_destination
+    }
+
+    fn coupled_subslab(
+        &self,
+        support: TimeSupport,
+    ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
+        if support.start_ns() < self.support.start_ns() || support.end_ns() > self.support.end_ns()
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Support(
+                "coupled subslab outside prepared parent support",
+            ));
+        }
+        let duration_seconds = f64::from_bits(support.duration_s_bits());
+        let segment_interval = |input: &DirectV9ShadowIntervalInput| {
+            let mut value = input.clone();
+            value.lse_forcing.interval_s = duration_seconds;
+            value.lse_forcing.forcing_sha256 =
+                value.lse_forcing.canonical_sha256().map_err(|_| {
+                    DirectSnowStage3V11AttachmentError::Identity(
+                        "coupled subslab LSE forcing digest",
+                    )
+                })?;
+            Ok::<_, DirectSnowStage3V11AttachmentError>(value)
+        };
+        let v11_interval = segment_interval(&self.v11_interval)?;
+        let covered_v11_interval = self
+            .covered_v11_interval
+            .as_ref()
+            .map(|input| {
+                let mut lse_forcing = input.lse_forcing.clone();
+                lse_forcing.interval_s = duration_seconds;
+                lse_forcing.forcing_sha256 = lse_forcing.canonical_sha256().map_err(|_| {
+                    DirectV11RealConsumerError::Identity(
+                        "coupled subslab covered LSE forcing digest",
+                    )
+                })?;
+                DirectV11SnowCoveredSegmentInput::try_new(
+                    lse_forcing,
+                    input.vegetation_forcing.clone(),
+                    input.wb14_parameters.clone(),
+                )
+            })
+            .transpose()?;
+        let support_forcing_by_lane = self
+            .support_forcing_by_lane
+            .iter()
+            .map(|(lane_id, forcing)| {
+                (
+                    *lane_id,
+                    DirectSnowStage3SupportInput {
+                        forcing: forcing.forcing,
+                        duration_seconds,
+                    },
+                )
+            })
+            .collect();
+        let snow_surface_forcing_by_destination = self
+            .snow_surface_forcing_by_destination
+            .iter()
+            .map(|(destination, forcing)| {
+                let projected = match forcing {
+                    SealedStage3TileBoundaryForcingV1::V11CanopyCovered(value) => {
+                        SealedStage3TileBoundaryForcingV1::V11CanopyCovered(value.clone())
+                    }
+                    SealedStage3TileBoundaryForcingV1::OpenSnow(value) => {
+                        let exposure = SealedOpenSnowExposureReceiptV1::try_new(
+                            support,
+                            destination.clone(),
+                            value.exposure.source_forcing_receipt_sha256,
+                            value.exposure.source_wind_provider_sha256,
+                            value.exposure.raw_or_projected_wind_m_s,
+                            value.exposure.projection_model_definition_sha256,
+                        )?;
+                        SealedStage3TileBoundaryForcingV1::OpenSnow(
+                            SealedOpenSnowTileForcingV1::try_new(
+                                SealedOpenSnowTileForcingInputsV1 {
+                                    support,
+                                    destination: destination.clone(),
+                                    forcing_receipt_sha256: value.forcing_receipt_sha256,
+                                    exposure,
+                                    reference_temperature_k: value.reference_temperature_k,
+                                    reference_specific_humidity_kg_kg: value
+                                        .reference_specific_humidity_kg_kg,
+                                    air_pressure_pa: value.air_pressure_pa,
+                                    atmospheric_downward_longwave_w_m2: value
+                                        .atmospheric_downward_longwave_w_m2,
+                                    direct_vis_w_m2: value.direct_vis_w_m2,
+                                    diffuse_vis_w_m2: value.diffuse_vis_w_m2,
+                                    direct_nir_w_m2: value.direct_nir_w_m2,
+                                    diffuse_nir_w_m2: value.diffuse_nir_w_m2,
+                                    rain_m: value.rain_m,
+                                    snowfall_m: value.snowfall_m,
+                                    precipitation_parcel_count: value.precipitation_parcel_count,
+                                },
+                            )?,
+                        )
+                    }
+                };
+                Ok((destination.clone(), projected))
+            })
+            .collect::<Result<BTreeMap<_, _>, DirectSnowStage3V11AttachmentError>>()?;
+        Ok(Self {
+            support,
+            snow_inputs_by_lane: self.snow_inputs_by_lane.clone(),
+            support_forcing_by_lane,
+            v11_interval,
+            snow_surface_forcing_by_destination,
+            open_snow_destination_requests: self.open_snow_destination_requests.clone(),
+            atmospheric_receipt_by_destination: self.atmospheric_receipt_by_destination.clone(),
+            covered_v11_interval,
+            support_identity_by_lane: self.support_identity_by_lane.clone(),
+        })
     }
 
     #[cfg(test)]
@@ -1401,6 +1530,47 @@ pub struct DirectSnowStage3V11ParentReceipt {
     pub ending_stage3_state_digests: BTreeMap<u32, Digest32>,
     pub complete_owner_bytes: BTreeMap<String, Vec<u8>>,
     pub covered_owner_joins: Vec<CoveredParentOwnerJoinReceiptV1>,
+    pub coupled_subslabs: Vec<Stage3CoupledSubslabReceiptV1>,
+    pub integrated_boundary_ledger: Stage3ParentIntegratedBoundaryLedgerV1,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Stage3CoupledSubslabReceiptV1 {
+    pub support: TimeSupport,
+    pub destination_receipts: BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
+    pub lane_receipts: BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
+    pub owner_join: CoveredParentOwnerJoinReceiptV1,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Stage3ParentIntegratedBoundaryLedgerV1 {
+    pub sensible_energy_into_snow_j_m2: f64,
+    pub vapor_mass_into_snow_kg_m2: f64,
+    pub latent_energy_into_snow_j_m2: f64,
+    pub shortwave_energy_into_snow_j_m2: f64,
+    pub net_longwave_energy_into_snow_j_m2: f64,
+}
+
+fn reconstruct_integrated_boundary_ledger(
+    subslabs: &[Stage3CoupledSubslabReceiptV1],
+) -> Stage3ParentIntegratedBoundaryLedgerV1 {
+    let mut ledger = Stage3ParentIntegratedBoundaryLedgerV1::default();
+    for subslab in subslabs {
+        let duration_s = f64::from_bits(subslab.support.duration_s_bits());
+        for receipt in subslab.lane_receipts.values() {
+            ledger.sensible_energy_into_snow_j_m2 +=
+                -receipt.aggregate_sensible_to_canopy_air_w_m2 * duration_s;
+            ledger.vapor_mass_into_snow_kg_m2 +=
+                -receipt.aggregate_vapor_to_canopy_air_kg_m2_s * duration_s;
+            ledger.latent_energy_into_snow_j_m2 +=
+                -receipt.aggregate_latent_energy_to_canopy_air_j_m2;
+            ledger.shortwave_energy_into_snow_j_m2 +=
+                receipt.aggregate_snow_absorbed_shortwave_w_m2 * duration_s;
+            ledger.net_longwave_energy_into_snow_j_m2 +=
+                receipt.aggregate_snow_net_longwave_w_m2 * duration_s;
+        }
+    }
+    ledger
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -1426,6 +1596,13 @@ pub struct DirectSnowStage3V11ShadowAttachment {
     pub static_context: DirectSnowStage3V11StaticContext,
     pub committed: DirectSnowStage3V11CommittedState,
     pending_candidate: Option<DirectSnowStage3V11ParentCandidate>,
+    failure_injection: Option<Stage3V11FailureInjection>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Stage3V11FailureInjection {
+    AfterSubslab(usize),
+    AfterFinalOwnerJoin,
 }
 
 impl DirectSnowStage3V11ShadowAttachment {
@@ -1482,7 +1659,26 @@ impl DirectSnowStage3V11ShadowAttachment {
             static_context,
             committed,
             pending_candidate: None,
+            failure_injection: None,
         })
+    }
+
+    #[cfg(test)]
+    #[allow(dead_code)]
+    pub(crate) fn inject_failure_after_subslab(&mut self, ordinal: usize) {
+        self.failure_injection = Some(Stage3V11FailureInjection::AfterSubslab(ordinal));
+    }
+
+    #[cfg(test)]
+    #[allow(dead_code)]
+    pub(crate) fn inject_failure_after_final_owner_join(&mut self) {
+        self.failure_injection = Some(Stage3V11FailureInjection::AfterFinalOwnerJoin);
+    }
+
+    #[cfg(test)]
+    #[allow(dead_code)]
+    pub(crate) const fn pending_candidate_is_none(&self) -> bool {
+        self.pending_candidate.is_none()
     }
 
     pub fn stage_prepared_day(
@@ -1522,6 +1718,7 @@ impl DirectSnowStage3V11ShadowAttachment {
         let mut candidate = self.committed.clone();
         let mut terminal_events = Vec::new();
         let mut covered_owner_joins = Vec::new();
+        let mut coupled_subslabs = Vec::new();
         for (support_index, support) in prepared.supports().iter().enumerate() {
             let beginning_stage3 = candidate.stage3_by_lane.clone();
             let active_snow_lanes = support.state_derived_active_snow_lanes(&beginning_stage3)?;
@@ -1594,7 +1791,7 @@ impl DirectSnowStage3V11ShadowAttachment {
                 candidate.next_parent_sequence,
             )?;
             let (parent, consumer, clock, finalized, covered_stage3) = if covered_support {
-                let (parent, consumer, clock, finalized, ending_stage3, owner_join) =
+                let (parent, consumer, clock, finalized, ending_stage3, owner_joins) =
                     execute_covered_real_v11_parent(
                         &self.static_context,
                         &beginning_parent,
@@ -1605,8 +1802,11 @@ impl DirectSnowStage3V11ShadowAttachment {
                         support_index,
                         forcing_receipt,
                         beginning_stage3,
+                        self.failure_injection,
                     )?;
-                covered_owner_joins.push(owner_join);
+                covered_owner_joins
+                    .extend(owner_joins.iter().map(|receipt| receipt.owner_join.clone()));
+                coupled_subslabs.extend(owner_joins);
                 (parent, consumer, clock, finalized, Some(ending_stage3))
             } else {
                 let (parent, consumer, clock, finalized) = execute_real_v11_parent(
@@ -1657,6 +1857,7 @@ impl DirectSnowStage3V11ShadowAttachment {
             "snow".to_owned(),
             canonical_stage3_snow_owner_bytes(&candidate.stage3_by_lane)?,
         );
+        let integrated_boundary_ledger = reconstruct_integrated_boundary_ledger(&coupled_subslabs);
         let receipt = DirectSnowStage3V11ParentReceipt {
             day_index: prepared.day_index(),
             support_count: prepared.supports().len(),
@@ -1664,6 +1865,8 @@ impl DirectSnowStage3V11ShadowAttachment {
             ending_stage3_state_digests: stage3_digests,
             complete_owner_bytes,
             covered_owner_joins,
+            coupled_subslabs,
+            integrated_boundary_ledger,
         };
         candidate.receipt_chain.push(receipt.clone());
         Ok(DirectSnowStage3V11ParentCandidate {
@@ -2049,7 +2252,8 @@ fn execute_real_v11_parent(
 > {
     if beginning_parent.parent_transaction_id() != beginning_clock.parent_transaction_id()
         || beginning_clock.accepted_until() != prepared.support.start_ns()
-        || beginning_clock.parent_support() != prepared.support
+        || prepared.support.start_ns() < beginning_clock.parent_support().start_ns()
+        || prepared.support.end_ns() > beginning_clock.parent_support().end_ns()
         || beginning_clock.owners().len()
             != openwepp_vegetation::v11::V11_COMPLETE_OWNER_MANIFEST.len()
     {
@@ -2181,7 +2385,108 @@ fn execute_real_v11_parent(
     clippy::too_many_lines,
     clippy::type_complexity
 )]
-fn execute_covered_real_v11_parent(
+pub(crate) fn execute_covered_real_v11_parent(
+    context: &DirectSnowStage3V11StaticContext,
+    beginning_parent: &V11ParentTransaction,
+    beginning_consumer: &DirectV10RealConsumerShadow,
+    beginning_clock: &CoupledClockStateV1,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    day_index: usize,
+    interval_index: usize,
+    forcing_receipt: Digest32,
+    beginning_stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    failure_injection: Option<Stage3V11FailureInjection>,
+) -> Result<
+    (
+        V11ParentTransaction,
+        DirectV10RealConsumerShadow,
+        CoupledClockStateV1,
+        V11ParentCandidate,
+        BTreeMap<u32, DirectSnowStage3PersistentState>,
+        Vec<Stage3CoupledSubslabReceiptV1>,
+    ),
+    DirectSnowStage3V11AttachmentError,
+> {
+    let mut parent = beginning_parent.clone();
+    let mut consumer = beginning_consumer.clone();
+    let mut clock = beginning_clock.clone();
+    let mut stage3 = beginning_stage3;
+    let mut owner_joins = Vec::new();
+    while clock.accepted_until() < prepared.support.end_ns() {
+        let selected_seconds = stage3
+            .values()
+            .filter(|state| stage3_is_resolved_thermal_domain(state))
+            .map(Wb11HydrologyKernel::project_stage3_surface_state_v1)
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
+            .map(|surface| surface.selected_substep_seconds)
+            .reduce(f64::min)
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "covered subslab requires an active Stage-3 lane",
+            ))?;
+        let selected_ns = match selected_seconds.to_bits() {
+            bits if bits == 1_800.0_f64.to_bits() => 1_800_000_000_000,
+            bits if bits == 900.0_f64.to_bits() || bits == 60.0_f64.to_bits() => {
+                return Err(DirectSnowStage3V11AttachmentError::Support(
+                    "WB14 parent-interval continuation has no admitted coupled-subslab projection",
+                ));
+            }
+            _ => {
+                return Err(DirectSnowStage3V11AttachmentError::Support(
+                    "unreleased Stage-3 coupled cadence",
+                ));
+            }
+        };
+        let end_ns = ModelTimeNs::new(
+            clock
+                .accepted_until()
+                .get()
+                .checked_add(selected_ns)
+                .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                    "coupled subslab end overflow",
+                ))?
+                .min(prepared.support.end_ns().get()),
+        );
+        let support = TimeSupport::new(clock.accepted_until(), end_ns)?;
+        let subslab = prepared.coupled_subslab(support)?;
+        let (next_parent, next_consumer, next_clock, next_stage3, owner_join) =
+            execute_covered_real_v11_subslab(
+                context,
+                &parent,
+                &consumer,
+                &clock,
+                &subslab,
+                day_index,
+                interval_index,
+                forcing_receipt,
+                stage3,
+            )?;
+        parent = next_parent;
+        consumer = next_consumer;
+        clock = next_clock;
+        stage3 = next_stage3;
+        owner_joins.push(owner_join);
+        if failure_injection == Some(Stage3V11FailureInjection::AfterSubslab(owner_joins.len())) {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "injected coupled subslab rollback",
+            ));
+        }
+    }
+    if failure_injection == Some(Stage3V11FailureInjection::AfterFinalOwnerJoin) {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "injected post-owner-join rollback",
+        ));
+    }
+    let finalized = parent.clone().finalize(&context.vegetation_configuration)?;
+    Ok((parent, consumer, clock, finalized, stage3, owner_joins))
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    clippy::too_many_lines,
+    clippy::type_complexity
+)]
+fn execute_covered_real_v11_subslab(
     context: &DirectSnowStage3V11StaticContext,
     beginning_parent: &V11ParentTransaction,
     beginning_consumer: &DirectV10RealConsumerShadow,
@@ -2196,21 +2501,33 @@ fn execute_covered_real_v11_parent(
         V11ParentTransaction,
         DirectV10RealConsumerShadow,
         CoupledClockStateV1,
-        V11ParentCandidate,
         BTreeMap<u32, DirectSnowStage3PersistentState>,
-        CoveredParentOwnerJoinReceiptV1,
+        Stage3CoupledSubslabReceiptV1,
     ),
     DirectSnowStage3V11AttachmentError,
 > {
-    if beginning_parent.parent_transaction_id() != beginning_clock.parent_transaction_id()
-        || beginning_clock.accepted_until() != prepared.support.start_ns()
-        || beginning_clock.parent_support() != prepared.support
-        || beginning_clock.owners().len()
-            != openwepp_vegetation::v11::V11_COMPLETE_OWNER_MANIFEST.len()
-        || !prepared.has_snow_surface_forcing()
+    if beginning_parent.parent_transaction_id() != beginning_clock.parent_transaction_id() {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "covered V11/coupled-time parent identity",
+        ));
+    }
+    if beginning_clock.accepted_until() != prepared.support.start_ns()
+        || prepared.support.start_ns() < beginning_clock.parent_support().start_ns()
+        || prepared.support.end_ns() > beginning_clock.parent_support().end_ns()
     {
         return Err(DirectSnowStage3V11AttachmentError::Identity(
-            "covered V11/coupled-time parent beginning",
+            "covered V11/coupled-time subslab support",
+        ));
+    }
+    if beginning_clock.owners().len() != openwepp_vegetation::v11::V11_COMPLETE_OWNER_MANIFEST.len()
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "covered V11/coupled-time complete owner set",
+        ));
+    }
+    if !prepared.has_snow_surface_forcing() {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "covered V11/coupled-time snow surface forcing",
         ));
     }
     let parent_id = beginning_parent.parent_transaction_id();
@@ -2317,6 +2634,20 @@ fn execute_covered_real_v11_parent(
     let ending_stage3 = final_executor.stack.take_staged_stage3().ok_or(
         DirectSnowStage3V11AttachmentError::Identity("missing staged covered Stage-3 ending"),
     )?;
+    let final_boundary_receipts = final_executor
+        .stack
+        .last_final_boundary_receipts()
+        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+            "missing final covered boundary receipt set",
+        ))?
+        .clone();
+    let final_lane_receipts = final_executor
+        .stack
+        .last_lane_boundary_receipts()
+        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+            "missing final covered lane-boundary receipt set",
+        ))?
+        .clone();
     let owner_join = CoveredParentOwnerJoinReceiptV1::try_new(
         context.run_identity,
         ParentIntervalId::derive(
@@ -2332,16 +2663,8 @@ fn execute_covered_real_v11_parent(
         forcing_receipt,
         ledger_digest,
         support,
-        final_executor.stack.last_final_boundary_receipts().ok_or(
-            DirectSnowStage3V11AttachmentError::Identity(
-                "missing final covered boundary receipt set",
-            ),
-        )?,
-        final_executor.stack.last_lane_boundary_receipts().ok_or(
-            DirectSnowStage3V11AttachmentError::Identity(
-                "missing final covered lane-boundary receipt set",
-            ),
-        )?,
+        &final_boundary_receipts,
+        &final_lane_receipts,
         final_executor
             .stack
             .last_component_carrier_receipts()
@@ -2352,16 +2675,8 @@ fn execute_covered_real_v11_parent(
         &final_segment.ending_resource_owners,
     )?;
     owner_join.validate(
-        final_executor.stack.last_final_boundary_receipts().ok_or(
-            DirectSnowStage3V11AttachmentError::Identity(
-                "missing final covered boundary receipt set",
-            ),
-        )?,
-        final_executor.stack.last_lane_boundary_receipts().ok_or(
-            DirectSnowStage3V11AttachmentError::Identity(
-                "missing final covered lane-boundary receipt set",
-            ),
-        )?,
+        &final_boundary_receipts,
+        &final_lane_receipts,
         final_executor
             .stack
             .last_component_carrier_receipts()
@@ -2376,15 +2691,19 @@ fn execute_covered_real_v11_parent(
     let consumer = final_executor.stack.take_staged_ending().ok_or(
         DirectSnowStage3V11AttachmentError::Identity("missing staged covered ending"),
     )?;
-    let parent_after_segment = parent.clone();
-    let finalized = parent.finalize(&context.vegetation_configuration)?;
+    let parent_after_segment = parent;
+    let subslab_receipt = Stage3CoupledSubslabReceiptV1 {
+        support,
+        destination_receipts: final_boundary_receipts,
+        lane_receipts: final_lane_receipts,
+        owner_join,
+    };
     Ok((
         parent_after_segment,
         consumer,
         final_clock,
-        finalized,
         ending_stage3,
-        owner_join,
+        subslab_receipt,
     ))
 }
 

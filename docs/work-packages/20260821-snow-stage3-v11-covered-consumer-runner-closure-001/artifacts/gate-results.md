@@ -588,6 +588,25 @@ model identities. The low-level scalar constructor remains crate-private.
 raw-wind provider identity, provider-rain full-owner rollback poison, and a
 two-lane snow/snow-free integration fixture remain unproven. This increment
 does not claim precipitation, restart, or terminal authority.
+
+## 2026-08-23 current-state projector / cadence HOLD
+
+`Ran:` `cargo nextest run -p openwepp-hillslope-orchestrator` passed 768/768
+with one intentional skip. `cargo check -p openwepp-hillslope-orchestrator`,
+`cargo fmt --all -- --check`, and `git diff --check` passed. Cargo retained 13
+unrelated baseline dead-code warnings.
+
+`Ran/negative discovery:` a real two-subslab execution reached the second V11
+physical call and was rejected by the existing WB14 continuation guard with
+`WB14 day or interval continuation mismatch`. This proves the current contract
+does not define how the shared WB14 owner maps internal subslabs onto one of its
+48 daily parent intervals.
+
+`HOLD:` The runtime rejects selected `900 s` or `60 s` cadence before physical
+execution. Required short-cadence fixtures, full attachment fixtures, rollback
+poisons, warnings-denied changed-file Clippy, authority/admission guards, and
+package terminal validation were not claimed or run after the authority gap
+was identified.
 ## 2026-08-23 provider-atmosphere/lifecycle follow-on intake
 
 Static: the reviewed `71ecc65642aaec793dbb8fd82d177f232102978e`

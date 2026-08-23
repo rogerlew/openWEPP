@@ -9,11 +9,11 @@ use openwepp_kernel_contract::TileId;
 use openwepp_land_surface_energy::OfeId;
 use openwepp_meteorology::surface_energy::{
     PositiveLengthMeters, PressurePascals, TurbulentFluxInputs, TurbulentTransferOptions,
-    latent_heat_for_surface_temperature, saturation_vapor_pressure_snobal_pa,
-    turbulent_fluxes_monin_obukhov_with_diagnostics,
+    saturation_vapor_pressure_snobal_pa, turbulent_fluxes_monin_obukhov_with_diagnostics,
 };
 use openwepp_unit_boundary::{LinearRateMetersPerSecond, TemperatureCelsius};
 
+use crate::Wb11HydrologyKernel;
 use crate::hydrology::{
     DirectActiveSnowPartitionInputs, DirectSnowStage3PersistentState, STAGE3_DEFAULT_SNOW_ALBEDO,
 };
@@ -557,8 +557,10 @@ pub fn evaluate_open_snow_tile_boundary(
             "open-snow beginning Stage 3 state",
         ));
     }
-    let snow_temperature_k = beginning_stage3.layers[0].temperature_c + 273.15;
-    let temperature = TemperatureCelsius::try_new(beginning_stage3.layers[0].temperature_c)
+    let surface = Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning_stage3)
+        .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow active-volume surface"))?;
+    let snow_temperature_k = surface.surface_temperature_k;
+    let temperature = TemperatureCelsius::try_new(surface.surface_temperature_k - 273.15)
         .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow temperature"))?;
     let saturation_pressure_pa = saturation_vapor_pressure_snobal_pa(temperature)
         .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow saturation pressure"))?
@@ -602,9 +604,7 @@ pub fn evaluate_open_snow_tile_boundary(
         .fluxes
         .mass_flux
         .as_kilograms_per_square_meter_second();
-    let latent_heat_j_kg = latent_heat_for_surface_temperature(temperature)
-        .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow latent heat"))?
-        .as_joules_per_kilogram();
+    let latent_heat_j_kg = surface.latent_heat_j_kg;
     let latent_energy_outward_j_m2 = vapor_outward_kg_m2_s
         * latent_heat_j_kg
         * f64::from_bits(forcing.support.duration_s_bits());

@@ -27,8 +27,10 @@ mod tests {
         SealedOpenSnowTileForcingV1, SealedStage3TileBoundaryForcingV1,
     };
     use crate::snow_stage3_v11_attachment::{
-        PreparedStage3V11DayV1, PreparedStage3V11SupportIdentityV1,
-        PreparedStage3V11SupportV1,
+        DirectSnowStage3V11StaticContext, PreparedStage3V11DayV1,
+        PreparedStage3V11SupportIdentityV1, PreparedStage3V11SupportV1,
+        STAGE3_V11_PARENT_SUPPORT_NS,
+        execute_covered_real_v11_parent,
     };
     use crate::v9_real_consumer_shadow::{
         DirectV11SnowCoveredRealConsumerStack, DirectV11SnowCoveredSegmentInput,
@@ -1193,6 +1195,117 @@ mod tests {
             .ordered_destinations
             .iter()
             .any(|value| value.boundary_class == crate::snow_stage3_terminal_handoff::Stage3TileBoundaryClassV1::V11CanopyCovered));
+
+        let identities = shadow
+            .inner
+            .surface_configuration
+            .records
+            .iter()
+            .map(|record| {
+                PreparedStage3V11SupportIdentityV1::new(
+                    record.key.ofe_id.as_str().to_owned(),
+                    record.key.tile_id.as_str().to_owned(),
+                    "a".repeat(64),
+                    Digest32::from_bytes([13; 32]),
+                    Vec::new(),
+                    Digest32::from_bytes([14; 32]),
+                )
+            })
+            .collect::<Vec<_>>();
+        let mut snow_free_parent_interval = base_interval.clone();
+        snow_free_parent_interval.lse_forcing.snow_present_at_beginning = false;
+        snow_free_parent_interval.lse_forcing.snow_present_at_end = false;
+        snow_free_parent_interval.lse_forcing.forcing_sha256 = snow_free_parent_interval
+            .lse_forcing
+            .canonical_sha256()
+            .expect("snow-free parent forcing digest");
+        let mut prepared = PreparedStage3V11SupportV1::try_new(
+            support,
+            stage3_inputs_by_lane.clone(),
+            stage3_forcing_by_lane.clone(),
+            snow_free_parent_interval,
+            BTreeMap::from([(1, identities)]),
+        )
+        .expect("coupled cadence prepared support")
+        .with_covered_v11_interval(covered_interval.clone());
+        for (destination, forcing) in &snow_surface_forcing_by_destination {
+            prepared = match forcing {
+                SealedStage3TileBoundaryForcingV1::V11CanopyCovered(value) => prepared
+                    .with_covered_tile_forcing(destination.clone(), value.clone()),
+                SealedStage3TileBoundaryForcingV1::OpenSnow(value) => prepared
+                    .with_sealed_open_tile_forcing(destination.clone(), value.clone()),
+            };
+        }
+        let beginning_owners = initial_v11_owners(&shadow, &migrated.state);
+        let beginning_owner_states = beginning_owners
+            .values()
+            .map(|owner| owner.to_owner_state().expect("beginning clock owner"))
+            .collect::<Vec<_>>();
+        let beginning_owner_digest =
+            complete_owner_set_digest(&beginning_owner_states).expect("beginning owner digest");
+        let authority = ParentAuthorityV1::new(
+            digest(1),
+            digest(2),
+            digest(3),
+            40,
+            support,
+            beginning_owner_digest,
+        )
+        .expect("coupled parent authority");
+        let participants = beginning_owner_states
+            .iter()
+            .map(|owner| owner.owner_id().to_owned())
+            .collect::<Vec<_>>();
+        let beginning_clock = CoupledClockStateV1::new(
+            authority,
+            beginning_owner_states,
+            "snow-covered".to_owned(),
+            participants,
+            digest(4),
+            Vec::new(),
+        )
+        .expect("covered beginning clock");
+        let context = DirectSnowStage3V11StaticContext {
+            run_identity: digest(1),
+            topology_identity: digest(9),
+            parent_duration_ns: STAGE3_V11_PARENT_SUPPORT_NS,
+            minimum_support_ns: 60_000_000_000,
+            calendar_receipt: digest(2),
+            controller_policy: digest(5),
+            parent_sequence: 40,
+            lane_ids: vec![1],
+            vegetation_configuration: migrated.configuration.clone(),
+            surface_liquid_configuration: shadow.inner.surface_configuration.clone(),
+            wb14_parameters: covered_interval.wb14_parameters.clone(),
+        };
+        let selected_seconds =
+            Wb11HydrologyKernel::project_stage3_surface_state_v1(&stage3_beginning)
+                .expect("coupled cadence projection")
+                .selected_substep_seconds;
+        let (_, _, ending_clock, finalized_parent, _, subslabs) =
+            execute_covered_real_v11_parent(
+                &context,
+                &parent,
+                &shadow,
+                &beginning_clock,
+                &prepared,
+                0,
+                0,
+                digest(3),
+                BTreeMap::from([(1, stage3_beginning.clone())]),
+                None,
+            )
+            .expect("synchronized covered parent cadence");
+        assert_eq!(ending_clock.accepted_until(), support.end_ns());
+        assert_eq!(
+            subslabs.len(),
+            (1_800.0 / selected_seconds) as usize,
+            "one ordered V11/Stage-3 segment per selected cadence"
+        );
+        assert_eq!(finalized_parent.accepted_segments.len(), subslabs.len());
+        for pair in subslabs.windows(2) {
+            assert_eq!(pair[0].support.end_ns(), pair[1].support.start_ns());
+        }
         let reconstructed_sensible = lane_receipt
             .ordered_destinations
             .iter()
@@ -1450,6 +1563,8 @@ mod tests {
             .diagnostic_sha256;
         let mut changed_layers = attachment_stage3_inputs().snow_layers;
         changed_layers[0].temperature_c -= 1.0;
+        changed_layers[0].cold_content_j_m2 +=
+            changed_layers[0].mass_swe_m * 1_000.0 * 2_100.0;
         let changed_stage3 = Wb11HydrologyKernel::initialize_stage3_persistent_state(
             1,
             changed_layers,

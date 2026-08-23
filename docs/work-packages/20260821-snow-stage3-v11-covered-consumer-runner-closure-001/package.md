@@ -117,6 +117,53 @@ fields.
 
 ## Progress log
 
+### 2026-08-23 current-state surface projection and coupled-cadence checkpoint
+
+Implementation intent: from exact clean commit
+`6bcbaf0e8a7acf480939d9da3f32f0ae090fc429`, close the reviewed mismatch
+between density-layer temperature and the canonical Marks/SNOBAL active-volume
+surface state, then make the covered V11/LSE adopter advance on the same
+mass-selected `1,800/900/60 s` subslabs as Stage 3. The external capability,
+provider support, and publication boundary remain one atomic 1,800-second
+parent. Ordered subslab receipts and independently reconstructed parent energy
+and vapor-mass ledgers are increment-scope acceptance evidence.
+
+This checkpoint may change only the active-volume projection, internal coupled
+segmentation, covered numerical-seed lineage, package-owned fixtures, typed
+rollback injection seams, and evidence needed for those behaviors. It does not
+admit precipitation chronology, snow-soil heat, terminal-liquid transfer,
+restart V2, selectors/defaults, production cutover, or output/API redesign.
+Provider-rain staging rollback remains `NOT APPLICABLE` because provider bind
+makes the contradictory capability structurally unrepresentable; its existing
+bind-time rejection evidence is preserved. Raw-wind claims remain limited to
+provider-interval numeric custody.
+
+Applicable terminal validation is focused contract-derived tests, complete
+affected-crate tests, affected-package check, formatting, changed-file
+warnings-denied Clippy with unrelated baseline debt recorded separately,
+authority anti-evasion and required-suite guards, science-contract admission,
+diff hygiene, package Markdown/evidence validation, exact write-set
+reconciliation, and line-count disposition. The package remains
+`EXECUTING / HOLD` after this bounded checkpoint.
+
+HOLD discovery: the current-state projector selects the released `900 s` and
+`60 s` Stage 3 cadences, but the complete V11 consumer also invokes WB14
+surface-liquid custody. That owner advances `next_interval_index` once per
+invocation and requires the next invocation to use the following one of the 48
+daily half-hour indices. No active contract or released receipt projects
+multiple internal coupled subslabs onto one WB14 parent interval while
+advancing that continuation exactly once. Treating a subslab as another WB14
+interval fails the existing continuation guard; silently carrying WB14 or
+incrementing it early would invent owner chronology and violate the seven-owner
+atomic parent contract. The attachment therefore rejects `900 s` and `60 s`
+before physical execution with a typed support failure. The canonical
+active-volume projector, exact open/covered T0 join, diagnostic-seed identity,
+and `1800 s` ordered-receipt path remain admissible. Short-cadence
+qualification, full attachment fixtures, and rollback injections remain open.
+Closure now requires authority for a parent-interval/subslab WB14 receipt and a
+final-only continuation transition; no tolerance, carry shortcut, or partial
+owner commit was invented.
+
 ### 2026-08-23 provider-atmosphere and lifecycle defect-closure increment
 
 Implementation intent: close the reviewed provider-custody defects before any

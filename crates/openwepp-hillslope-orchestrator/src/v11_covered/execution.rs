@@ -178,10 +178,9 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         .map_err(|_| DirectV11RealConsumerError::Identity("reference exposure"))?;
         let snow_resistance = reference_resistance;
         let snow_conductance = 1.0 / snow_resistance;
-        let snow_temperature_k = stage3_state
-            .layers
-            .first()
-            .map_or(273.15, |layer| layer.temperature_c + 273.15);
+        let surface = Wb11HydrologyKernel::project_stage3_surface_state_v1(stage3_state)
+            .map_err(|_| DirectV11RealConsumerError::Identity("snow active-volume surface"))?;
+        let snow_temperature_k = surface.surface_temperature_k;
         let snow_temperature = TemperatureCelsius::try_new(snow_temperature_k - 273.15)
             .map_err(|_| DirectV11RealConsumerError::Identity("snow temperature"))?;
         let saturation_pressure_pa = kilopascals_to_pascals(
@@ -640,10 +639,13 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             let beginning = self.stage3_beginning_by_lane.get(&lane_id).ok_or(
                 DirectV11RealConsumerError::Identity("open-snow beginning Stage-3 lane"),
             )?;
-            let beginning_digest =
-                digest_bytes(&canonical_stage3_snow_owner_bytes_v11(&BTreeMap::from([
-                    (lane_id, beginning.clone()),
-                ]))?);
+            let beginning_digest = Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning)
+                .map_err(|_| {
+                    DirectV11RealConsumerError::Identity(
+                        "open-snow beginning active-volume surface",
+                    )
+                })?
+                .beginning_stage3_state_sha256;
             let stage3_inputs = self.stage3_inputs_by_lane.get(&lane_id).ok_or(
                 DirectV11RealConsumerError::Identity("open-snow Stage-3 inputs"),
             )?;
@@ -978,9 +980,13 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 DirectV11RealConsumerError::Identity("covered final beginning Stage-3 state"),
             )?;
             let beginning_stage3_state_sha256 =
-                digest_bytes(&canonical_stage3_snow_owner_bytes_v11(&BTreeMap::from([
-                    (lane_id, beginning_stage3.clone()),
-                ]))?);
+                Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning_stage3)
+                    .map_err(|_| {
+                        DirectV11RealConsumerError::Identity(
+                            "covered final beginning active-volume surface",
+                        )
+                    })?
+                    .beginning_stage3_state_sha256;
             let optical_receipt_sha256 = digest32_from_lower_hex(optical.receipt_sha256.as_str())?;
             let reciprocal_longwave_receipt_sha256 =
                 reciprocal_longwave_receipt_digest(destination, input.support, *final_longwave);
@@ -1134,6 +1140,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 (lane_id, stage3_state.clone()),
             ]))?);
         let forcing_sha256 = stage3_support_forcing_digest(stage3_forcing)?;
+        let numerical_seed_context_sha256 = sealed.diagnostic_seed_context_digest();
         let duration_bits = interval_s.to_bits().to_be_bytes();
         guess.diagnostic_sha256 = openwepp_coupled_time::framed_sha256(
             "covered-carrier-initial-guess-diagnostic-v1",
@@ -1151,8 +1158,8 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                     value: &duration_bits,
                 },
                 openwepp_coupled_time::FramedField {
-                    tag: "exposure_receipt",
-                    value: sealed.exposure.receipt_id.as_bytes(),
+                    tag: "diagnostic_numerical_seed_context",
+                    value: numerical_seed_context_sha256.as_bytes(),
                 },
                 openwepp_coupled_time::FramedField {
                     tag: "forcing_receipt",
@@ -1287,24 +1294,14 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                         .ok_or(DirectV11RealConsumerError::Identity(
                             "covered Stage-3 state boundary lane",
                         ))?;
-                let snow_temperature_k = state
-                    .layers
-                    .first()
-                    .map_or(273.15, |layer| layer.temperature_c + 273.15);
-                let latent_heat_j_kg =
-                    openwepp_meteorology::surface_energy::latent_heat_for_surface_temperature(
-                        TemperatureCelsius::try_new(snow_temperature_k - 273.15).map_err(|_| {
-                            DirectV11RealConsumerError::Identity(
-                                "covered Stage-3 state boundary temperature",
-                            )
-                        })?,
-                    )
+                let surface = Wb11HydrologyKernel::project_stage3_surface_state_v1(state)
                     .map_err(|_| {
                         DirectV11RealConsumerError::Identity(
-                            "covered Stage-3 state boundary latent heat",
+                            "covered Stage-3 state boundary active-volume surface",
                         )
-                    })?
-                    .as_joules_per_kilogram();
+                    })?;
+                let snow_temperature_k = surface.surface_temperature_k;
+                let latent_heat_j_kg = surface.latent_heat_j_kg;
                 let mut merged = boundary.clone();
                 merged.snow_temperature_k = snow_temperature_k;
                 merged.latent_heat_j_kg = latent_heat_j_kg;

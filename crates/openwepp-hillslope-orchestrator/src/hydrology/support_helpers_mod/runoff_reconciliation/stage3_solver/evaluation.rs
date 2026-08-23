@@ -614,7 +614,7 @@ impl Wb11HydrologyKernel {
         Ok(summary)
     }
 
-    fn prepare_stage3_sequential_control_volume(
+    pub(super) fn prepare_stage3_sequential_control_volume(
         layers: &mut Vec<DirectSnowLayerState>,
         cold_content_by_layer: &mut Vec<f64>,
     ) -> usize {

@@ -232,11 +232,11 @@ pub use hydrology::{
     SnowLayerAggregateMismatchError, SnowMeltModel, SnowStage3ConductivityError,
     SnowStage3EvaluationOperator, SnowStage3LiquidRoutingModel, SnowStage3TurbulentTransferError,
     SnowSurfaceLongwaveModel, SnowSurfaceSublimationModel, SnowTerminalNumericsFailure,
-    Sturm1995ClimateClassAssignmentError, Sturm1995ClimateNormals, Sturm2010DensityParameters,
-    Wb11HydrologyKernel, Wb11HydrologyKernelGuardError, snow_density_compaction_v1_constants,
-    snow_density_shallow_guard_v1_constants, snow_density_spring_densification_v1_constants,
-    sturm1995_climate_class_from_normals, sturm2010_bulk_density_kg_m3,
-    sturm2010_density_parameters_for_class, update_snow_albedo_state,
+    Stage3SurfaceStateV1, Sturm1995ClimateClassAssignmentError, Sturm1995ClimateNormals,
+    Sturm2010DensityParameters, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
+    snow_density_compaction_v1_constants, snow_density_shallow_guard_v1_constants,
+    snow_density_spring_densification_v1_constants, sturm1995_climate_class_from_normals,
+    sturm2010_bulk_density_kg_m3, sturm2010_density_parameters_for_class, update_snow_albedo_state,
     update_snow_density_runtime_state,
 };
 pub use runtime_inputs::{

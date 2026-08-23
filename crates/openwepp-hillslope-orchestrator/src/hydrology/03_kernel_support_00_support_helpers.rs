@@ -363,6 +363,22 @@ pub struct DirectSnowStage3PersistentState {
     pub cumulative_terminal_unallocated_energy_j_m2: f64,
 }
 
+/// Canonical Marks/SNOBAL surface projection for one persistent Stage-3 lane.
+///
+/// The projection is derived from the complete represented upper thermal
+/// volume, never from a depositional-layer temperature.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Stage3SurfaceStateV1 {
+    pub active_mass_kg_m2: f64,
+    pub active_depth_m: f64,
+    pub active_cold_content_j_m2: f64,
+    pub surface_temperature_k: f64,
+    pub latent_heat_j_kg: f64,
+    pub selected_substep_seconds: f64,
+    pub active_lower_partition_sha256: openwepp_coupled_time::Digest32,
+    pub beginning_stage3_state_sha256: openwepp_coupled_time::Digest32,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectSnowStage3PersistentDayResult {
     pub start_state: Box<DirectSnowStage3PersistentState>,

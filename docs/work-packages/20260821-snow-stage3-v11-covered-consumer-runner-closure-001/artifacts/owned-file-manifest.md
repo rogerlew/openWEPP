@@ -87,6 +87,12 @@ outside this increment.
 
 Provider-atmosphere checkpoint additions:
 
+Current-state projector/HOLD additions modify only the already owned Stage 3
+hydrology support/solver, open-boundary, terminal-handoff, covered-execution,
+attachment, exports, package regression, and package evidence files. No
+selector, default, production output, precipitation, terminal-liquid,
+snow-soil-heat, restart, or cutover file is added.
+
 - `crates/openwepp-hillslope-orchestrator/src/stage3_parent_atmosphere.rs`:
   provider-derived parent-atmosphere receipt and canonical digest.
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/{receipt_sets,execution,fixed_point,regime,open_snow}.rs`:

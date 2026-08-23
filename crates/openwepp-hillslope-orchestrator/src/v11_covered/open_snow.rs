@@ -64,9 +64,14 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     .ok_or(DirectV11RealConsumerError::Identity(
                         "covered Stage-3 lane terms",
                     ))?;
-                let beginning_stage3_digest = canonical_stage3_snow_owner_bytes_v11(
-                    &BTreeMap::from([(*lane_id, beginning.clone())]),
-                )?;
+                let beginning_stage3_digest =
+                    Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning)
+                        .map_err(|_| {
+                            DirectV11RealConsumerError::Identity(
+                                "covered beginning active-volume surface",
+                            )
+                        })?
+                        .beginning_stage3_state_sha256;
                 let (
                     sensible_to_canopy_air_w_m2,
                     vapor_to_canopy_air_kg_m2_s,
@@ -149,7 +154,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         net_longwave_energy_j_m2: snow_net_longwave_w_m2 * interval_s,
                         precipitation_advection_j_m2: 0.0,
                         latent_heat_j_kg,
-                        beginning_stage3_state_sha256: digest_bytes(&beginning_stage3_digest),
+                        beginning_stage3_state_sha256: beginning_stage3_digest,
                         identity,
                     },
                 )?;
@@ -581,7 +586,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     )?;
                 let (installed_open_lower_boundaries, installed_open_boundary_receipts) = self
                     .seal_final_open_snow_boundaries(
-                        &final_ending_stage3,
+                        &final_stage3_candidate,
                         installed_stage3_digest,
                     )?;
                 let installed_boundary_receipts = self.complete_final_boundary_receipts(

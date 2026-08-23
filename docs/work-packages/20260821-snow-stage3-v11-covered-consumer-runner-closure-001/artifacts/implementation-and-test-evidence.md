@@ -321,3 +321,22 @@ longer available to external callers.
 skip after these changes. Test compilation, formatting, and diff hygiene also
 passed. Integrated open-only, heterogeneous-lane, and provider-rain rollback
 fixtures remain required and are not claimed here.
+
+## Current-state active-volume projection
+
+`Static:` `Stage3SurfaceStateV1` projects the existing Stage 3 sequential
+control-volume partition and binds active mass, depth, cold content, T0, latent
+heat, selected cadence, beginning-state identity, and active/lower partition
+identity. Open snow and covered carrier construction consume this projection;
+depositional `layers[0].temperature_c` is no longer their physical surface
+authority. A multilayer regression crosses a density-layer boundary inside the
+0.25 m active volume and proves canonical T0 differs from the first layer.
+
+`Static:` the covered numerical initialization receipt binds its complete
+rho/cp/reference-atmosphere/longwave/cover/participant/support/exposure context
+as diagnostic seed identity and does not claim carrier authority.
+
+`HOLD:` synchronized short cadence exposed missing WB14 parent/subslab
+continuation authority. The retained runtime admits the single `1800 s` parent
+segment and fails closed before shorter physical work. No partial owner
+transition or invented continuation rule is installed.

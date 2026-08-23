@@ -373,6 +373,36 @@ impl SealedCoveredCarrierForcing {
     pub fn exposure_identity(&self) -> Digest32 {
         self.exposure.diagnostic_digest()
     }
+
+    /// Complete diagnostic identity for the iteration initializer.
+    ///
+    /// This receipt is deliberately not carrier authority. It binds every
+    /// value capable of changing initialization, convergence, or failure
+    /// diagnostics so numerical-seed replay is reproducible.
+    pub(crate) fn diagnostic_seed_context_digest(&self) -> Digest32 {
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(b"OPENWEPP_COVERED_NUMERICAL_SEED_CONTEXT_V1\0");
+        for value in [
+            self.rho_air_kg_m3,
+            self.cp_air_j_kg_k,
+            self.reference_temperature_k,
+            self.reference_specific_humidity,
+            self.atmospheric_longwave_w_m2,
+            self.effective_canopy_cover,
+        ] {
+            bytes.extend_from_slice(&value.to_bits().to_be_bytes());
+        }
+        bytes.extend_from_slice(self.exposure.diagnostic_digest().as_bytes());
+        for participant in &self.active_participants {
+            append_framed_str(&mut bytes, participant);
+        }
+        for receipt in &self.support_receipts {
+            append_framed_str(&mut bytes, &receipt.participant_id);
+            append_framed_str(&mut bytes, &receipt.support_receipt_id);
+            bytes.extend_from_slice(&receipt.minimum_support_ns.get().to_be_bytes());
+        }
+        digest_bytes(&bytes)
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -817,12 +847,19 @@ impl LaneStage3BoundaryReceiptV1 {
                     "lane Stage-3 boundary contribution domain",
                 ));
             }
-            if contribution.beginning_stage3_state_sha256 != common.beginning_stage3_state_sha256
-                || contribution.snow_temperature_k.to_bits() != common.snow_temperature_k.to_bits()
-                || contribution.latent_heat_j_kg.to_bits() != common.latent_heat_j_kg.to_bits()
-            {
+            if contribution.beginning_stage3_state_sha256 != common.beginning_stage3_state_sha256 {
                 return Err(SnowStage3HandoffError::InvalidCarrier(
-                    "lane Stage-3 boundary common snow state",
+                    "lane Stage-3 boundary common beginning state",
+                ));
+            }
+            if contribution.snow_temperature_k.to_bits() != common.snow_temperature_k.to_bits() {
+                return Err(SnowStage3HandoffError::InvalidCarrier(
+                    "lane Stage-3 boundary common surface temperature",
+                ));
+            }
+            if contribution.latent_heat_j_kg.to_bits() != common.latent_heat_j_kg.to_bits() {
+                return Err(SnowStage3HandoffError::InvalidCarrier(
+                    "lane Stage-3 boundary common latent heat",
                 ));
             }
             let expected_latent_energy = contribution.vapor_to_canopy_air_kg_m2_s

@@ -6,6 +6,91 @@ mod support;
 mod terminal_event;
 
 impl Wb11HydrologyKernel {
+    /// Project the canonical current Stage-3 active thermal surface state.
+    pub fn project_stage3_surface_state_v1(
+        state: &DirectSnowStage3PersistentState,
+    ) -> Result<Stage3SurfaceStateV1, DirectSnowStage3EvaluationError> {
+        Self::validate_stage3_persistent_state(state)?;
+        let mut layers = state
+            .layers
+            .iter()
+            .copied()
+            .filter(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m))
+            .collect::<Vec<_>>();
+        if layers.is_empty() || !stage3_is_resolved_thermal_domain(state) {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_surface_state_resolved_domain",
+                stage3_total_represented_ice_swe_m(state),
+                Some(STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M),
+                None,
+            )
+            .into());
+        }
+        let mut cold_content_by_layer = layers
+            .iter()
+            .map(Self::stage3_layer_cold_content_j_m2)
+            .collect::<Vec<_>>();
+        let active_layer_count = Self::prepare_stage3_sequential_control_volume(
+            &mut layers,
+            &mut cold_content_by_layer,
+        );
+        let active_mass_swe_m = layers[..active_layer_count]
+            .iter()
+            .map(|layer| layer.mass_swe_m)
+            .sum::<f64>();
+        let active_depth_m = layers[..active_layer_count]
+            .iter()
+            .map(|layer| layer.thickness_m)
+            .sum::<f64>();
+        let active_cold_content_j_m2 = cold_content_by_layer[..active_layer_count]
+            .iter()
+            .sum::<f64>();
+        let surface_temperature_c = Self::stage3_temperature_from_cold_content_values(
+            active_mass_swe_m,
+            active_cold_content_j_m2,
+        );
+        let temperature = Self::stage3_temperature(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            surface_temperature_c,
+        )?;
+        let latent_heat_j_kg = latent_heat_for_surface_temperature(temperature)
+            .map_err(|_| {
+                Self::stage3_domain_error(
+                    HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                    "snow.stage3_surface_state_latent_heat",
+                    surface_temperature_c,
+                    Some(-273.15),
+                    Some(0.0),
+                )
+            })?
+            .as_joules_per_kilogram();
+        let beginning_stage3_state_sha256 = openwepp_coupled_time::digest_bytes(
+            &Self::serialize_stage3_persistent_state(state)?,
+        );
+        let mut partition_bytes = Vec::new();
+        partition_bytes.extend_from_slice(b"OPENWEPP_STAGE3_ACTIVE_LOWER_PARTITION_V1");
+        partition_bytes.extend_from_slice(&(active_layer_count as u64).to_le_bytes());
+        for (index, layer) in layers.iter().enumerate() {
+            partition_bytes.extend_from_slice(&(index as u64).to_le_bytes());
+            partition_bytes.extend_from_slice(&layer.mass_swe_m.to_bits().to_le_bytes());
+            partition_bytes.extend_from_slice(&layer.thickness_m.to_bits().to_le_bytes());
+            partition_bytes.extend_from_slice(&layer.density_kg_m3.to_bits().to_le_bytes());
+            partition_bytes.extend_from_slice(&cold_content_by_layer[index].to_bits().to_le_bytes());
+        }
+        Ok(Stage3SurfaceStateV1 {
+            active_mass_kg_m2: active_mass_swe_m * STAGE3_RHO_WATER_KG_M3,
+            active_depth_m,
+            active_cold_content_j_m2,
+            surface_temperature_k: surface_temperature_c + 273.15,
+            latent_heat_j_kg,
+            selected_substep_seconds: Self::stage3_substep_seconds(&layers, active_layer_count)
+                .min(1_800.0),
+            active_lower_partition_sha256: openwepp_coupled_time::digest_bytes(&partition_bytes),
+            beginning_stage3_state_sha256,
+        })
+    }
+
     pub fn initialize_stage3_persistent_state(
         lane_id: u32,
         layers: Vec<DirectSnowLayerState>,
@@ -2986,6 +3071,79 @@ mod stage3_evaluation_validation_tests {
             !status.evaluated && status.reason == "no_resolved_snow_at_day_start"
         }));
     }
+
+    #[test]
+    fn surface_projection_crosses_density_boundary_and_uses_active_cold_content() {
+        let layers = vec![
+            DirectSnowLayerState {
+                mass_swe_m: 0.02,
+                thickness_m: 0.10,
+                density_kg_m3: 200.0,
+                settle_day_count: 1.0,
+                temperature_c: -10.0,
+                liquid_water_m: 0.0,
+                cold_content_j_m2: 420_000.0,
+                refrozen_liquid_m: 0.0,
+            },
+            DirectSnowLayerState {
+                mass_swe_m: 0.14,
+                thickness_m: 0.30,
+                density_kg_m3: 466.666_666_666_666_7,
+                settle_day_count: 2.0,
+                temperature_c: -2.0,
+                liquid_water_m: 0.0,
+                cold_content_j_m2: 588_000.0,
+                refrozen_liquid_m: 0.0,
+            },
+        ];
+        let state = Wb11HydrologyKernel::initialize_stage3_persistent_state(17, layers)
+            .expect("multilayer persistent state");
+        let surface = Wb11HydrologyKernel::project_stage3_surface_state_v1(&state)
+            .expect("canonical active-volume surface");
+        assert_eq!(surface.active_depth_m.to_bits(), 0.25_f64.to_bits());
+        assert!((surface.active_mass_kg_m2 - 90.0).abs() <= 1.0e-12);
+        assert!((surface.surface_temperature_k - 269.372_222_222_222_2).abs() <= 1.0e-12);
+        assert_ne!(
+            surface.surface_temperature_k.to_bits(),
+            (state.layers[0].temperature_c + 273.15).to_bits()
+        );
+        assert!(matches!(surface.selected_substep_seconds, 1_800.0 | 900.0 | 60.0));
+        assert_ne!(surface.active_lower_partition_sha256, openwepp_coupled_time::Digest32::zero());
+        assert_ne!(surface.beginning_stage3_state_sha256, openwepp_coupled_time::Digest32::zero());
+    }
+
+    #[test]
+    fn surface_projection_selects_parent_medium_and_small_cadence() {
+        for (lane_id, mass_swe_m, expected_seconds) in
+            [(1, 0.08, 1_800.0_f64), (2, 0.02, 900.0_f64), (3, 0.005, 60.0_f64)]
+        {
+            let temperature_c = -3.0;
+            let state = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+                lane_id,
+                vec![DirectSnowLayerState {
+                    mass_swe_m,
+                    thickness_m: mass_swe_m * 2.0,
+                    density_kg_m3: 500.0,
+                    settle_day_count: 1.0,
+                    temperature_c,
+                    liquid_water_m: 0.0,
+                    cold_content_j_m2: mass_swe_m
+                        * STAGE3_RHO_WATER_KG_M3
+                        * STAGE3_SPECIFIC_HEAT_ICE_J_KG_K
+                        * -temperature_c,
+                    refrozen_liquid_m: 0.0,
+                }],
+            )
+            .expect("cadence persistent state");
+            let surface = Wb11HydrologyKernel::project_stage3_surface_state_v1(&state)
+                .expect("cadence surface projection");
+            assert_eq!(
+                surface.selected_substep_seconds.to_bits(),
+                expected_seconds.to_bits()
+            );
+        }
+    }
+
     #[path = "persistent_tests.rs"]
     mod persistent_tests;
 }
