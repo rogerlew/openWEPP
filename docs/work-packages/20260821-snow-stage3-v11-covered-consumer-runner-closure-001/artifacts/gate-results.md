@@ -107,8 +107,11 @@ is published. The final unsealed candidate is rerun, sealed, rerun again, and
 must self-reconstruct the accepted boundary exactly.
 
 `Static:` Destination carrier receipts are area-weighted by the exact surface
-configuration tile fraction into one lane Stage-3 boundary with an explicit
-`CoveredTileGround` basis, while keyed destination receipts remain available
+configuration tile fraction into one lane Stage-3 boundary. The prior
+`CoveredTileGround` evidence is superseded by the prospective Option-A
+authority: the only admitted basis is OFE ground, no covered-fraction
+normalization is performed, and an incomplete snow-surface tile set fails
+closed. Keyed destination receipts remain available
 for final receipt joins. Physical LSE forcing now consumes the matching keyed
 carrier receipt for each covered destination; no parent aggregate carrier is
 used as the physical LSE forcing source.
@@ -146,7 +149,8 @@ final physical flux identities.
 
 `Static:` Lane receipts bind ordered destinations, exact tile fractions,
 topology, provisional/destination/lane receipt identities, and the explicit
-`CoveredTileGround` area basis. Final receipt validation includes snow
+OFE-ground area basis. The receipt now uses a versioned framed digest rather
+than JSON serialization. Final receipt validation includes snow
 temperature, latent heat, support duration, latent mass/energy, and ending
 V11/Stage-3 joins. Partial final identity states are structurally rejected.
 

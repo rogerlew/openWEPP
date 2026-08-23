@@ -1242,6 +1242,21 @@ content, roughness, emissivity, and albedo. The carrier transaction owns one
 shared canopy-air temperature/humidity node and its coupled residual. Coupled
 time owns the segment support receipt and one complete-owner parent commit.
 
+Each production lane owns exactly one persistent Stage 3 snow column whose
+mass, depth, liquid, cumulative mass terms, cold content, energy, fluxes, and
+terminal liquid are expressed per unit OFE ground. Tile-level surface operands
+remain per unit tile ground and enter that column exactly once as
+`X_lane = sum_i(f_i * X_i)`, where the ordered complete snow-surface tile set
+closes to `sum_i(f_i) = 1` within the admitted topology tolerance. The sum is
+not divided by the covered fraction. A mixed open/covered OFE therefore
+requires both covered-canopy and open-snow boundary receipts; a missing,
+duplicate, or incomplete tile contribution is typed failure. Lane-wide
+precipitation enters once on the OFE-ground basis and any tile partition must
+independently reconstruct it. The area basis, lane/OFE identity, ordered tile
+fractions, and topology digest are restart identity. A future per-tile or
+per-routing-cell snow owner requires a new versioned topology and cannot
+reinterpret this lane state.
+
 The source authority is `SC-VEGETATION-001@26` for V11 shared-tile air,
 neutral momentum and canopy-surface conductances; `SC-SNOWENERGY-001` for
 Stage 3 virtual `z_T=z_q=z_u=5 m`, exposed-snow `z_0,aero=0.005 m`, and
@@ -1325,6 +1340,7 @@ turbulent residual; a stale or post-event snow temperature is invalid.
 | `INV-SNOWENERGY-038` | Canopy--snow--sky longwave uses one reciprocal current-trial state and exact-one exchange. | radiation lineage / `SNOWENERGY-E-LW-001` |
 | `INV-SNOWENERGY-039` | Snow fluxes stop at the accepted event and snow-free fluxes begin only on admitted successor support. | chronology / `SNOWENERGY-E-REGIME-001` |
 | `INV-SNOWENERGY-040` | Canopy-intercepted snow is outside this carrier and cannot enter its mass or energy ledgers. | scope guard / `SNOWENERGY-E-SCOPE-001` |
+| `INV-SNOWENERGY-041` | The single persistent Stage 3 lane owner is OFE-ground. Complete tile-ground snow-surface operands aggregate only as `sum_i(f_i X_i)` over an ordered tile set closing to one; covered-subset renormalization, missing/open-surface omission, duplicate tiles, or restart topology/basis substitution is prohibited. Uniform terminal-liquid projection preserves `sum_i(f_i M_i) = M_lane`; dividing the complete lane amount by every tile fraction is prohibited. | topology/area/restart guard / `SNOWENERGY-E-CARRIER-001` |
 
 ### Child 2C obligations and gaps
 
@@ -1332,6 +1348,10 @@ turbulent residual; a stale or post-event snow temperature is invalid.
 lineage, residuals, current-trial temperatures, and owner/support identities.
 `OBL-SNOWENERGY-C-017`: independently reconstruct snow, vapor, liquid, energy,
 longwave, and event-time closure and reject any alias or duplicate flux.
+`OBL-SNOWENERGY-C-018`: independently reconstruct each lane boundary and
+terminal-liquid handoff on OFE-ground basis from the complete ordered
+tile-ground contribution set, and reject any non-closing topology, covered-
+subset normalization, or restart area/topology substitution.
 
 The carrier is `AUTHORITY_ADMITTED / IMPLEMENTATION_MISSING` until the later
 default-off implementation package proves a real V11/Stage 3 consumer. The
@@ -1362,3 +1382,4 @@ efficacy, qualification, or empirical claim follows.
 | 2 | 2026-07-30 | Selected the Stage 3 top-layer thermal provider; bound `T_c=T_a`, polar-night typed unavailability, `R_a,min`, orthogonal default-off selectors, exact-one vapor/latent composition, snow-state mutation, and mass/energy closure obligations. Real S/LS execution then retained the seam as diagnostic/reproduction-only and opened `GAP-SNOWENERGY-007` because the common provider reaches `0 K` with material SWE remaining. | `SNOW-SURFACE-EB-03` contract-first implementation and terminal consumer evidence |
 | 1 | 2026-07-30 | Initial contract: atmospheric longwave, effective-cover-derived diffuse sky view, complementary canopy exchange, runtime hold, and analytical obligations. | `SNOW-SURFACE-EB-01A` and `SNOW-SURFACE-EB-02` static/analytical evidence |
 | 14 | 2026-08-20 | Bound the default-off shared V11/Stage 3 canopy-air carrier, complete turbulent residuals, reciprocal canopy--snow--sky longwave, sealed exposure wind, wrong-regime guards, and implementation-only disposition. | Child 2C authority package |
+| 15 | 2026-08-22 | Selected the prospective one-column-per-lane OFE-ground area basis, complete tile-set weighted boundary, uniform-depth terminal identity, and topology-bound restart rule; prohibited covered-subset renormalization. | Direct user authority in Stage-3/V11 covered consumer package |

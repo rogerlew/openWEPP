@@ -52,6 +52,10 @@ Exact source edits admitted in this increment:
   two-day provider-bound capability, GSI/cursor sequence poison regressions,
   and the persistent covered V11/Stage-3 shared-carrier test.
 - `crates/openwepp-hillslope-orchestrator/src/lib.rs`: public typed exports.
+- `docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md`:
+  prospective Option-A OFE-ground Stage 3 lane area authority, complete tile
+  closure, terminal identity, and restart topology rule admitted by direct
+  user decision on 2026-08-22.
 
 `Static:` Covered execution is admitted only through the distinct typed
 adopter and covered segment input. It derives live carrier operands internally,

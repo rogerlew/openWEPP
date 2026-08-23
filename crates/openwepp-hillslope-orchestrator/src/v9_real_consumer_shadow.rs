@@ -66,9 +66,10 @@ use crate::runtime_inputs::{
 };
 use crate::snow_stage3_terminal_handoff::{
     CanopyLongwaveComponent, CarrierSurface, FinalStage3CanopyBoundaryReceiptInputs,
-    FinalStage3CanopyBoundaryReceiptV1, LaneBoundaryAreaBasis, LaneBoundaryContributionV1,
+    FinalStage3CanopyBoundaryReceiptV1, LaneBoundaryContributionV1,
     LaneStage3BoundaryReceiptV1, SealedCoveredCarrierForcing, SharedCarrierInput,
     SharedCarrierReceipt, SnowCarrierLedgerInput, SnowStage3HandoffError, Stage3BoundaryIdentity,
+    Stage3LaneAreaBasisV1,
     Stage3SnowSurfaceBoundaryReceiptInputs, Stage3SnowSurfaceBoundaryReceiptV1,
     evaluate_shared_carrier,
 };
@@ -474,9 +475,9 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             .into_iter()
             .map(|(lane_id, values)| {
                 let fraction_sum = values.iter().map(|(_, fraction)| *fraction).sum::<f64>();
-                if !fraction_sum.is_finite() || fraction_sum <= 0.0 {
+                if !fraction_sum.is_finite() || (fraction_sum - 1.0).abs() > 1.0e-12 {
                     return Err(DirectV11RealConsumerError::Identity(
-                        "covered carrier lane covered fraction basis",
+                        "covered carrier lane is missing a Stage-3 snow-surface contribution",
                     ));
                 }
                 aggregate_weighted_carrier_receipts(values).map(|receipt| (lane_id, receipt))
@@ -549,19 +550,11 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             entry.latent_heat_j_kg += fraction * boundary.latent_heat_j_kg;
         }
         for terms in lanes.values_mut() {
-            if !terms.fractions.is_finite() || terms.fractions <= 0.0 {
+            if !terms.fractions.is_finite() || (terms.fractions - 1.0).abs() > 1.0e-12 {
                 return Err(DirectV11RealConsumerError::Identity(
-                    "covered Stage-3 lane covered fraction basis",
+                    "covered Stage-3 lane is missing a snow-surface contribution",
                 ));
             }
-            let normalization = 1.0 / terms.fractions;
-            terms.sensible_to_canopy_air_w_m2 *= normalization;
-            terms.vapor_to_canopy_air_kg_m2_s *= normalization;
-            terms.latent_energy_to_canopy_air_j_m2 *= normalization;
-            terms.snow_absorbed_shortwave_w_m2 *= normalization;
-            terms.snow_net_longwave_w_m2 *= normalization;
-            terms.snow_temperature_k *= normalization;
-            terms.latent_heat_j_kg *= normalization;
             terms.provisional_carrier_receipt_sha256 =
                 digest_bytes(&terms.provisional_carrier_bytes);
             if terms.vapor_to_canopy_air_kg_m2_s.abs() > 1.0e-15 {
@@ -607,9 +600,9 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                     DirectV11RealConsumerError::Identity("empty covered final lane boundary"),
                 )?;
                 let fraction_sum = values.iter().map(|value| value.1).sum::<f64>();
-                if !fraction_sum.is_finite() || fraction_sum <= 0.0 {
+                if !fraction_sum.is_finite() || (fraction_sum - 1.0).abs() > 1.0e-12 {
                     return Err(DirectV11RealConsumerError::Identity(
-                        "covered final lane boundary fraction basis",
+                        "covered final lane boundary is missing a snow-surface contribution",
                     ));
                 }
                 let mut contributions = Vec::with_capacity(values.len());
@@ -659,16 +652,12 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                     final_bytes.extend_from_slice(receipt.receipt_sha256.as_bytes());
                     contributions.push(contribution);
                 }
-                let normalization = 1.0 / fraction_sum;
-                for value in &mut aggregate {
-                    *value *= normalization;
-                }
                 let lane_receipt =
                     LaneStage3BoundaryReceiptV1::try_new(LaneStage3BoundaryReceiptV1 {
                         lane_id,
                         ofe_id,
                         support: input.support,
-                        area_basis: LaneBoundaryAreaBasis::CoveredTileGround,
+                        area_basis: Stage3LaneAreaBasisV1::OfeGround,
                         topology_configuration_sha256,
                         provisional_carrier_receipt_sha256: digest_bytes(&provisional_bytes),
                         optical_receipt_sha256: digest_bytes(&optical_bytes),
@@ -1368,30 +1357,10 @@ fn aggregate_weighted_carrier_receipts(
             *target += weight * source;
         }
     }
-    if !weight_sum.is_finite() || weight_sum <= 0.0 {
+    if !weight_sum.is_finite() || (weight_sum - 1.0).abs() > 1.0e-12 {
         return Err(DirectV11RealConsumerError::Identity(
-            "covered carrier aggregate weight",
+            "covered carrier aggregate must span OFE ground",
         ));
-    }
-    for value in [
-        &mut aggregate.shared_air_temperature_k,
-        &mut aggregate.shared_air_specific_humidity,
-        &mut aggregate.snow_temperature_k,
-        &mut aggregate.reference_sensible_into_node_w_m2,
-        &mut aggregate.canopy_sensible_into_surface_w_m2,
-        &mut aggregate.snow_sensible_into_surface_w_m2,
-        &mut aggregate.reference_vapor_into_node_kg_m2_s,
-        &mut aggregate.canopy_vapor_into_surface_kg_m2_s,
-        &mut aggregate.snow_vapor_into_surface_kg_m2_s,
-        &mut aggregate.snow_longwave_net_w_m2,
-        &mut aggregate.snow_canopy_longwave_exchange_w_m2,
-        &mut aggregate.snow_ice_end_kg_m2,
-        &mut aggregate.liquid_end_kg_m2,
-        &mut aggregate.vapor_net_kg_m2,
-        &mut aggregate.energy_closure_j_m2,
-        &mut aggregate.longwave_reciprocal_closure_j_m2,
-    ] {
-        *value /= weight_sum;
     }
     aggregate.receipt_id = Digest32::zero();
     aggregate.receipt_id = canonical_shared_carrier_receipt_digest(&aggregate);

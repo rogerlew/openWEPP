@@ -1,6 +1,21 @@
 # Contract impact and preimplementation gate
 
-Status: `PASS / IMPLEMENTATION MAP; PROSPECTIVE LOWER-BOUNDARY CLARIFICATION OPEN`.
+Status: `PASS / IMPLEMENTATION MAP; OFE-GROUND AUTHORITY ADMITTED; PROSPECTIVE LOWER-BOUNDARY CLARIFICATION OPEN`.
+
+## 2026-08-22 area-basis authority amendment
+
+Static: Direct user authority selects the single persistent Stage 3 lane
+owner as per-unit OFE ground and rejects the provisional covered-subarea
+normalization. `SC-SNOWENERGY-001` revision 15 now binds the complete ordered
+tile set, `sum(f_i X_i)` conversion without renormalization, lane-wide forcing,
+terminal-liquid identity, and restart topology/basis guards in
+`INV-SNOWENERGY-041` and `OBL-SNOWENERGY-C-018`.
+
+Static: Contract-derived regression was changed before production code. It
+admits an OFE-ground receipt only when its tile fractions close to one and
+rejects the previously accepted partial `0.38` covered subset. Production is
+expected to fail that regression until the runtime basis and aggregation are
+corrected.
 
 Required gate: prove that Child 2C already binds canopy temperatures and
 humidity, leaf/stem/wet-surface conductances, shared canopy-air state, snow

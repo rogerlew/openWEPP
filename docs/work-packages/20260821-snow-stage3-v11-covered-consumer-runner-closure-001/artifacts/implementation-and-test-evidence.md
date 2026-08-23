@@ -89,8 +89,9 @@ Stage-3 evaluator consumes `Stage3SnowSurfaceBoundaryReceiptV1`, and the
 covered adopter independently compares sensible, latent, vapor, longwave,
 advected, evaluated-duration, and lifecycle results before it stages any V11
 candidate. Per-destination receipts remain keyed by `(OFE, tile)`; lane
-aggregation is explicit and uses the declared `CoveredTileGround` basis. The
-runtime receipt digest uses typed framing rather than JSON.
+aggregation is explicit and uses the declared OFE-ground basis. The complete
+snow-surface tile fractions must close to one and are not renormalized. The
+lane receipt digest uses closed, versioned typed framing rather than JSON.
 
 `Static:` `CoveredColumnAuthority::V11SnowCovered` is selected on the covered
 candidate and the snow-free guard remains unchanged. The lower-boundary
@@ -126,8 +127,8 @@ optical and reciprocal-longwave identities are joined into the Stage-3
 boundary, the final digest is carried through the LSE operand set and the
 canonical snow owner bytes, and accepted final receipt maps are retained only
 after the complete V11 candidate is ready. Keyed destination carrier receipts
-are area-weighted into lane Stage-3 terms under the explicit
-`CoveredTileGround` basis and are also supplied directly to the matching
+are area-weighted into lane Stage-3 terms under the explicit OFE-ground basis,
+without covered-subset normalization, and are also supplied directly to the matching
 physical LSE tile solve.
 
 `Static:` The former provisional-correction sequence is now a bounded loop
@@ -173,10 +174,10 @@ sealed Stage-3 pass consumes lane-boundary sensible, vapor, latent, shortwave,
 and longwave values rather than the original provisional carrier fluxes.
 
 `Static:` Lane receipt aggregation binds ordered `(OFE, tile)` contributions,
-exact tile fractions, topology digest, receipt-set identities, and the explicit
-`CoveredTileGround` area basis. OFE-ground validation remains available and
-requires fractions to close to one; covered-subarea normalization is not
-implicit. Final receipts independently validate snow temperature, latent heat,
+exact tile fractions, topology digest, receipt-set identities, and the sole
+`Stage3LaneAreaBasisV1::OfeGround` basis. Fractions must close to one;
+covered-subarea normalization is prohibited and an absent open-snow surface
+therefore fails closed. Final receipts independently validate snow temperature, latent heat,
 support duration, latent mass/energy, and ending V11/Stage-3 state joins.
 
 `Static:` The convergence policy is explicit: maximum 32 iterations; separate
