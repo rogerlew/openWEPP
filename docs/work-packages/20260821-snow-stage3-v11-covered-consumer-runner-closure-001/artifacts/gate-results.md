@@ -395,3 +395,35 @@ diagnostic-only, but renaming/removing that canonical field requires a
 prospective contract revision before restart authority. Constitutive component
 receipt replay and installed-LSE semantic reconstruction likewise remain
 restart-scope obligations.
+
+## SC-SNOWENERGY-001@16 covered convergence and restart posture
+
+`Static:` Revision 16 admits absolute physical-class Stage-3 convergence
+bounds, independently reconstructed candidate fingerprints, and exact
+density/structural/count-like comparison. It explicitly makes the v15 lane
+receipt non-restorable and holds additive restart until a normative V2 wire and
+complete topology/owner replay join exist. The broader package remains
+`EXECUTING / HOLD`.
+
+`Static:` Two independent reviewers returned HOLD with findings. All findings
+were accepted and amended. Independent verification A returned
+`PASS-WITH-NOTES`; verification B returned `PASS` after the requested direct
+cumulative-mass threshold vector passed 4/4 focused convergence tests. The
+approved v15 artifact files remain byte-unchanged; v16 evidence is isolated in
+the revision-scoped directory.
+
+`Ran at final promoted worktree:`
+
+- two-crate nextest regression: 826 passed, 0 failed, one intentional skip;
+- `cargo check -p openwepp-hillslope-orchestrator --tests`: PASS with one
+  pre-existing dead-code warning;
+- focused approved-v16 contract test: 1/1 PASS;
+- strict binding exposure: PASS, 15 rows;
+- direct science-contract admission against `27146d851...`: `A0_ADMITTED`, 49
+  contracts and two changed science surfaces;
+- typed assurance source adoption: PASS, sequential transactions `34ec67f0...`
+  and `0a30310a...`, final generation `637f4522...`;
+- assurance `validate --all`: PASS;
+- assurance generation verification from retained genesis `15763d7f...`: PASS,
+  final generation `637f4522...`, 89 transitions;
+- `cargo fmt --all -- --check` and `git diff --check`: PASS.

@@ -16,8 +16,10 @@ struct CoveredFixedPointPolicy {
     flux_rel: f64,
     vapor_abs_kg_m2_s: f64,
     vapor_rel: f64,
-    state_abs: f64,
-    state_rel: f64,
+    depth_abs_m: f64,
+    state_temperature_abs_k: f64,
+    mass_abs_kg_m2: f64,
+    energy_abs_j_m2: f64,
 }
 
 // Reviewed execution policy for the covered outer solve. Each norm is kept in
@@ -32,8 +34,10 @@ const COVERED_FIXED_POINT_POLICY: CoveredFixedPointPolicy = CoveredFixedPointPol
     flux_rel: 1.0e-9,
     vapor_abs_kg_m2_s: 1.0e-12,
     vapor_rel: 1.0e-6,
-    state_abs: 1.0e-9,
-    state_rel: 1.0e-9,
+    depth_abs_m: 1.0e-9,
+    state_temperature_abs_k: 1.0e-8,
+    mass_abs_kg_m2: 1.0e-6,
+    energy_abs_j_m2: 1.0e-6,
 };
 
 #[derive(Clone, Debug, PartialEq)]
@@ -149,6 +153,7 @@ impl ComponentResolvedCarrierReceiptV1 {
         let mut sensible = 0.0;
         let mut vapor = 0.0;
         let mut emissive_area = 0.0;
+        let mut occupancy_ids = BTreeSet::new();
         for (index, component) in self.components.iter().enumerate() {
             let identity = (
                 component.vertical_occupancy_ordinal,
@@ -160,6 +165,7 @@ impl ComponentResolvedCarrierReceiptV1 {
                 || component.vertical_occupancy_ordinal != (index / 4) as u32
                 || (index % 4 != 0
                     && self.components[index - 1].occupancy_id != component.occupancy_id)
+                || (index % 4 == 0 && !occupancy_ids.insert(component.occupancy_id.as_str()))
                 || prior.is_some_and(|value| value >= identity)
                 || [
                     component.surface_area_m2_m2_tile,
@@ -1694,36 +1700,46 @@ fn covered_fixed_point_stage3_states_equal(
     left: &BTreeMap<u32, DirectSnowStage3PersistentState>,
     right: &BTreeMap<u32, DirectSnowStage3PersistentState>,
 ) -> bool {
+    let close_depth =
+        |left, right| close_with_policy(left, right, COVERED_FIXED_POINT_POLICY.depth_abs_m, 0.0);
+    let close_temperature = |left, right| {
+        close_with_policy(
+            left,
+            right,
+            COVERED_FIXED_POINT_POLICY.state_temperature_abs_k,
+            0.0,
+        )
+    };
+    let close_mass = |left, right| {
+        close_with_policy(left, right, COVERED_FIXED_POINT_POLICY.mass_abs_kg_m2, 0.0)
+    };
+    let close_energy = |left, right| {
+        close_with_policy(left, right, COVERED_FIXED_POINT_POLICY.energy_abs_j_m2, 0.0)
+    };
     left.keys().collect::<BTreeSet<_>>() == right.keys().collect::<BTreeSet<_>>()
         && left.iter().all(|(lane_id, lhs)| {
             let Some(rhs) = right.get(lane_id) else {
                 return false;
             };
+            if lhs.fingerprint != Wb11HydrologyKernel::stage3_persistent_state_fingerprint(lhs)
+                || rhs.fingerprint != Wb11HydrologyKernel::stage3_persistent_state_fingerprint(rhs)
+            {
+                return false;
+            }
             lhs.schema_version == rhs.schema_version
                 && lhs.terminal_event_model == rhs.terminal_event_model
                 && lhs.lane_id == rhs.lane_id
                 && lhs.next_interval_index == rhs.next_interval_index
                 && lhs.layers.len() == rhs.layers.len()
                 && lhs.layers.iter().zip(&rhs.layers).all(|(left, right)| {
-                    [
-                        (left.mass_swe_m, right.mass_swe_m),
-                        (left.thickness_m, right.thickness_m),
-                        (left.density_kg_m3, right.density_kg_m3),
-                        (left.settle_day_count, right.settle_day_count),
-                        (left.temperature_c, right.temperature_c),
-                        (left.liquid_water_m, right.liquid_water_m),
-                        (left.cold_content_j_m2, right.cold_content_j_m2),
-                        (left.refrozen_liquid_m, right.refrozen_liquid_m),
-                    ]
-                    .into_iter()
-                    .all(|(left, right)| {
-                        close_with_policy(
-                            left,
-                            right,
-                            COVERED_FIXED_POINT_POLICY.state_abs,
-                            COVERED_FIXED_POINT_POLICY.state_rel,
-                        )
-                    })
+                    close_depth(left.mass_swe_m, right.mass_swe_m)
+                        && close_depth(left.thickness_m, right.thickness_m)
+                        && left.density_kg_m3.to_bits() == right.density_kg_m3.to_bits()
+                        && left.settle_day_count.to_bits() == right.settle_day_count.to_bits()
+                        && close_temperature(left.temperature_c, right.temperature_c)
+                        && close_depth(left.liquid_water_m, right.liquid_water_m)
+                        && close_energy(left.cold_content_j_m2, right.cold_content_j_m2)
+                        && close_depth(left.refrozen_liquid_m, right.refrozen_liquid_m)
                 })
                 && [
                     (
@@ -1753,6 +1769,10 @@ fn covered_fixed_point_stage3_states_equal(
                         lhs.cumulative_unresolved_liquid_kg_m2,
                         rhs.cumulative_unresolved_liquid_kg_m2,
                     ),
+                ]
+                .into_iter()
+                .all(|(left, right)| close_mass(left, right))
+                && [
                     (
                         lhs.cumulative_complete_energy_j_m2,
                         rhs.cumulative_complete_energy_j_m2,
@@ -1767,14 +1787,7 @@ fn covered_fixed_point_stage3_states_equal(
                     ),
                 ]
                 .into_iter()
-                .all(|(left, right)| {
-                    close_with_policy(
-                        left,
-                        right,
-                        COVERED_FIXED_POINT_POLICY.state_abs,
-                        COVERED_FIXED_POINT_POLICY.state_rel,
-                    )
-                })
+                .all(|(left, right)| close_energy(left, right))
         })
 }
 
@@ -2528,5 +2541,110 @@ mod component_carrier_tests {
             &boundary,
         )
         .expect("physical vertical order is authoritative");
+    }
+
+    #[test]
+    fn component_carrier_rejects_duplicate_occupancy_across_vertical_ordinals() {
+        let boundary = make_boundary(6);
+        let mut physical = state();
+        let mut duplicate = physical.component_carrier_surfaces.clone();
+        for component in &mut duplicate {
+            component.vertical_occupancy_ordinal = 1;
+        }
+        physical.component_carrier_surfaces.extend(duplicate);
+        physical.canopy_sensible_w_m2 *= 2.0;
+        physical.canopy_vapor_kg_m2_s *= 2.0;
+        physical.sensible_to_reference_air_w_m2 =
+            physical.canopy_sensible_w_m2 + physical.snow_sensible_w_m2;
+        physical.vapor_to_reference_air_kg_m2_s =
+            physical.canopy_vapor_kg_m2_s + physical.snow_vapor_kg_m2_s;
+        assert!(
+            ComponentResolvedCarrierReceiptV1::try_new(
+                boundary.destination.clone(),
+                &physical,
+                &boundary,
+            )
+            .is_err()
+        );
+    }
+}
+
+#[cfg(test)]
+mod covered_convergence_policy_tests {
+    use super::*;
+    use crate::DirectSnowLayerState;
+
+    fn state() -> DirectSnowStage3PersistentState {
+        Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            7,
+            vec![DirectSnowLayerState::new(0.1, 0.2, 500.0, 3.0)],
+        )
+        .expect("persistent state")
+    }
+
+    fn equal(
+        left: DirectSnowStage3PersistentState,
+        right: DirectSnowStage3PersistentState,
+    ) -> bool {
+        covered_fixed_point_stage3_states_equal(
+            &BTreeMap::from([(7, left)]),
+            &BTreeMap::from([(7, right)]),
+        )
+    }
+
+    fn reseal(state: &mut DirectSnowStage3PersistentState) {
+        state.fingerprint = Wb11HydrologyKernel::stage3_persistent_state_fingerprint(state);
+    }
+
+    #[test]
+    fn structural_fingerprint_and_count_fields_are_exact() {
+        let original = state();
+        let mut changed = original.clone();
+        changed.fingerprint ^= 1;
+        assert!(!equal(original.clone(), changed));
+        let mut changed = original.clone();
+        changed.layers[0].settle_day_count =
+            f64::from_bits(changed.layers[0].settle_day_count.to_bits() + 1);
+        reseal(&mut changed);
+        assert!(!equal(original, changed));
+    }
+
+    #[test]
+    fn unit_specific_state_tolerances_do_not_share_one_scale() {
+        let original = state();
+        let mut within = original.clone();
+        within.layers[0].mass_swe_m += 0.5e-9;
+        within.layers[0].temperature_c += 0.5e-8;
+        within.layers[0].cold_content_j_m2 += 0.5e-6;
+        reseal(&mut within);
+        assert!(equal(original.clone(), within));
+        let mut outside = original.clone();
+        outside.layers[0].cold_content_j_m2 += 2.0e-6;
+        reseal(&mut outside);
+        assert!(!equal(original, outside));
+    }
+
+    #[test]
+    fn density_is_exact_after_each_state_fingerprint_is_reconstructed() {
+        let original = state();
+        let mut changed = original.clone();
+        changed.layers[0].density_kg_m3 =
+            f64::from_bits(changed.layers[0].density_kg_m3.to_bits() + 1);
+        reseal(&mut changed);
+        assert!(!equal(original, changed));
+    }
+
+    #[test]
+    fn cumulative_mass_uses_its_area_mass_tolerance() {
+        let original = state();
+        let mut within = original.clone();
+        within.cumulative_snowfall_kg_m2 += 0.5e-6;
+        reseal(&mut within);
+        assert!(equal(original.clone(), within));
+
+        let mut outside = original.clone();
+        outside.cumulative_snowfall_kg_m2 += 2.0e-6;
+        reseal(&mut outside);
+        assert!(!equal(original, outside));
     }
 }

@@ -151,23 +151,29 @@ fn canonical_contracts_bind_child_2c_authority_without_activation() {
 }
 
 #[test]
-fn snow_energy_v15_is_approved_and_binds_ofe_ground_lanes() {
+fn snow_energy_v16_is_approved_and_preserves_v15_ofe_ground_lanes() {
     let contract = read("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
     let registry = read("docs/specifications/science-contracts/index.md");
 
     for required in [
         "status: approved",
         "maturity: active",
-        "contract_version: 15",
+        "contract_version: 16",
         "last_reviewed: 2026-08-22",
         "INV-SNOWENERGY-042",
+        "INV-SNOWENERGY-043",
+        "INV-SNOWENERGY-044",
         "OBL-SNOWENERGY-C-018",
+        "OBL-SNOWENERGY-C-019",
+        "OBL-SNOWENERGY-C-020",
+        "TOL-SNOWENERGY-003",
+        "SCHEMA_UNDEFINED / IMPLEMENTATION_BLOCKED",
         "X_lane = sum_i(f_i * X_i)",
         "not divided by the covered fraction",
     ] {
         assert!(
             contract.contains(required),
-            "missing v15 authority: {required}"
+            "missing approved v16 authority: {required}"
         );
     }
     assert!(registry.contains(
@@ -177,6 +183,8 @@ fn snow_energy_v15_is_approved_and_binds_ofe_ground_lanes() {
     assert!(!registry.contains("v14 binds the default-off shared V11/Stage 3 carrier"));
     assert_eq!(contract.matches("| `INV-SNOWENERGY-041` |").count(), 1);
     assert_eq!(contract.matches("| `INV-SNOWENERGY-042` |").count(), 2);
+    assert_eq!(contract.matches("| `INV-SNOWENERGY-043` |").count(), 3);
+    assert_eq!(contract.matches("| `INV-SNOWENERGY-044` |").count(), 3);
     assert_eq!(
         contract
             .matches("| `OBL-SNOWENERGY-C-018` | OFE-ground lane-boundary consumer |")

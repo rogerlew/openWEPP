@@ -1175,6 +1175,16 @@
       "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
     },
     {
+      "entry_id": "covered-stage3-persistent-state-convergence-snow-energy",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "covered-stage3-persistent-state-convergence", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
       "entry_id": "covered-v11-final-owner-join-coupled-time",
       "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs" },
       "owner": "openwepp-coupled-time-owner", "semantic_surface": "covered-v11-final-owner-lineage", "risk_floor": "CRITICAL",

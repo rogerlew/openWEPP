@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 15
+contract_version: 16
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -807,6 +807,8 @@ divide/branch threshold.
 | `INV-SNOWENERGY-039` | Snow fluxes stop at the accepted event and snow-free fluxes begin only on admitted successor support. | Child 2C chronology authority | `[INFERENCE][Static]` | event/regime join | `SNOWENERGY-E-REGIME-001` |
 | `INV-SNOWENERGY-040` | Canopy-intercepted snow is outside this carrier and cannot enter its mass or energy ledgers. | Child 2C scope authority | `[INFERENCE][Static]` | scope guard | `SNOWENERGY-E-SCOPE-001` |
 | `INV-SNOWENERGY-042` | One persistent Stage 3 lane owner is OFE-ground. Complete typed tile-ground snow-surface fluxes aggregate exactly once as `sum_i(f_i X_i)` over an ordered tile set closing to one within `TOL-SNOWENERGY-002`; the tolerance never authorizes renormalization. Every contribution binds the same beginning lane-state identity, snow-surface temperature, and latent heat. Missing, duplicate, wrong-class, wrong-model, covered-subset-normalized, or restart topology/basis substitutions fail closed. Uniform terminal liquid preserves `sum_i(f_i M_i)=M_lane`; dividing the complete lane amount by every tile fraction is prohibited. | `REF-SNOWENERGY-USER-OFE-GROUND-V15`; single-column Stage 3 and terminal-receiver state semantics | `[DIRECT][Static] + [INFERENCE][Static]` | lane topology/source-set/common-state/restart guards | `SNOWENERGY-E-CARRIER-001` |
+| `INV-SNOWENERGY-043` | Covered fixed-point acceptance first reconstructs and validates each candidate fingerprint independently. Schema, terminal-event model, lane, interval, layer cardinality/order, density, and stored count-like settling chronology compare exactly. Numeric state compares only under the physical-class absolute bounds in `TOL-SNOWENERGY-003`; candidate fingerprint equality is neither required nor a substitute for those comparisons. | existing Stage 3 closure scales and covered carrier temperature policy | `[DIRECT][Static] + [INFERENCE][Static]` | typed convergence/nonconvergence and stale-fingerprint guards | `SNOWENERGY-E-CARRIER-001` |
+| `INV-SNOWENERGY-044` | Additive restart must not restore `OPENWEPP_LANE_STAGE3_BOUNDARY_RECEIPT_V1`. Before restart implementation, a normative V2 successor must exclude numerical initial-guess identity and exactly join configured lane/OFE and tile topology, covered/open final boundaries, component carrier, installed LSE owner, complete snow owner, wet-liquid authorization, and canonical parent/restart framing. Until its exact fields, framing, ordering, and test vectors are admitted, the successor is `SCHEMA_UNDEFINED / IMPLEMENTATION_BLOCKED`. | canonical receipt/restart governance; v15 adopter-wire limitation | `[INFERENCE][Static]` | schema/version/topology/owner replay guards | restart hard `HOLD` |
 
 ## Producer and Consumer Obligations
 
@@ -838,6 +840,8 @@ divide/branch threshold.
 | `OBL-SNOWENERGY-P-010` | shared carrier producer | Emit one carrier candidate with complete operand lineage, residuals, current-trial temperatures, and owner/support identities. |
 | `OBL-SNOWENERGY-C-017` | shared carrier consumer | Independently reconstruct snow, vapor, liquid, energy, longwave, and event-time closure and reject any alias or duplicate flux. |
 | `OBL-SNOWENERGY-C-018` | OFE-ground lane-boundary consumer | Independently reconstruct the complete ordered typed tile contribution set, all retained source-receipt-set identities, common Stage 3 state/temperature/latent heat, OFE-ground flux sums, terminal-liquid handoff, and topology/basis identity; reject omission, duplication, class/model substitution, covered-subset normalization, or restart topology substitution. |
+| `OBL-SNOWENERGY-C-019` | covered fixed-point consumer | Reconstruct each candidate fingerprint, compare structural and count-like state exactly, and apply only the physical-class absolute convergence bounds admitted by `TOL-SNOWENERGY-003`; reject stale fingerprints and nonconvergence without state repair. |
+| `OBL-SNOWENERGY-C-020` | additive-restart consumer | Refuse V1 lane receipts and any inferred successor wire. Restore only after a normative V2 schema and vectors exist and the restored receipt is rejoined to static topology, destination/lane/component receipts, installed LSE and snow owners, and wet-liquid authorization. |
 
 ## Symbol Alias Map
 
@@ -958,6 +962,7 @@ state, CoE exclusion, and recipient absence on failure are exact.
 |---|---|---|
 | `TOL-SNOWENERGY-001` | Terminal step-doubling, event-root, and independent mass/energy closure tolerances are distinct and never repair identity or state. | typed numerical failure |
 | `TOL-SNOWENERGY-002` | OFE tile-fraction closure residual `abs(sum_i(f_i)-1) <= 1e-12` (dimensionless) admits only floating-point summation roundoff; it never changes, rescales, or renormalizes any fraction or flux. Identity, ordering, cardinality, duplication, area basis, boundary class, model definition, and state joins remain exact. | typed topology failure |
+| `TOL-SNOWENERGY-003` | Covered fixed-point state convergence uses absolute bounds only: `1e-9 m` for SWE, thickness, liquid, and refrozen depth; `1e-8 K` for temperature difference; `1e-6 kg m^-2` for cumulative/detached mass; and `1e-6 J m^-2` for cold content and cumulative energy. Density and all structural/count-like fields are exact. No relative term, clamp, canonicalization, or cross-unit substitution is admitted. | typed nonconvergence |
 
 - Analytical evidence uses an absolute tolerance of `1e-9` for dimensionless
   identity checks and `1e-6 W m^-2` for independently reconstructed fluxes.
@@ -1102,19 +1107,25 @@ operands.
 |---|---|---|
 | `TOL-SNOWENERGY-001` | Terminal step-doubling, event-root, and independent mass/energy closure tolerances are distinct and never repair identity or state. | typed numerical failure |
 | `TOL-SNOWENERGY-002` | OFE tile fractions close within `1e-12` dimensionless summation residual without normalization; every nonnumeric topology join remains exact. | typed topology failure |
+| `TOL-SNOWENERGY-003` | Covered Stage 3 fixed-point state uses physical-class absolute bounds only; fingerprints are reconstructed per candidate, while density and structural/count-like state remain exact. | typed nonconvergence |
 | `OBL-SNOWENERGY-P-009` | Emit one immutable terminal receiver receipt or a typed failure; never partially commit. | receiver transaction |
 | `OBL-SNOWENERGY-C-016` | Reconstruct snow, liquid, vapor, fusion energy, and time without post-event snow operands or aliases. | receiver validator |
 | `INV-SNOWENERGY-041` | Terminal numerical tolerances are typed, distinct, and never repair identity, support, or state. | numerical validator |
+| `INV-SNOWENERGY-043` | Covered convergence reconstructs candidate fingerprints and separates exact structure/count/density from unit-specific absolute numeric residuals. | convergence validator |
+| `INV-SNOWENERGY-044` | Lane receipt V1 is non-restorable; V2 restart schema remains undefined and blocked pending exact normative framing and replay joins. | restart schema/version guard |
+| `OBL-SNOWENERGY-C-019` | Apply only `TOL-SNOWENERGY-003` after independent fingerprint validation. | covered fixed-point consumer |
+| `OBL-SNOWENERGY-C-020` | Reject V1/inferred restart wire and require the complete V2 topology/owner replay join. | additive-restart consumer |
 
 ## Binding Exposure Index
 
 The package rows below map active package-local binding residue through version
-15 to authority promoted into this canonical core.
+16 to authority promoted into this canonical core.
 
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
 |---|---|---|---|---|---|---|
 | `SNOWENERGY-CHILD2C-CARRIER` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-036, INV-SNOWENERGY-037, INV-SNOWENERGY-038, INV-SNOWENERGY-039, INV-SNOWENERGY-040, OBL-SNOWENERGY-P-010, OBL-SNOWENERGY-C-017` | `flagged-binding-addition` | Shared carrier topology, sealed exposure, weighted component longwave, typed flux lineage, and wrong-regime/scope rejection. |
 | `SNOWENERGY-V15-OFE-GROUND-LANE` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-042, OBL-SNOWENERGY-C-018` | `flagged-binding-addition` | Direct user selection of one-column-per-lane OFE-ground storage under `TOL-SNOWENERGY-002`, complete typed tile-surface flux aggregation without covered-subset renormalization, common lane snow state, terminal identity, and topology-bound restart posture; dual review and verification required. |
+| `SNOWENERGY-V16-COVERED-CONVERGENCE-RESTART` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-043, INV-SNOWENERGY-044, OBL-SNOWENERGY-C-019, OBL-SNOWENERGY-C-020` | `flagged-binding-addition` | Separates covered fixed-point comparisons under `TOL-SNOWENERGY-003`, reconstructs candidate fingerprints, and holds additive restart until a normative lane-receipt V2 wire and complete topology/owner replay join are admitted. |
 | `SNOWENERGY-EB02-AUTHORITY` | `docs/work-packages/20260730-snow-surface-eb-02-subcanopy-longwave-contract-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-001, INV-SNOWENERGY-002, INV-SNOWENERGY-003, INV-SNOWENERGY-004, INV-SNOWENERGY-005, INV-SNOWENERGY-006, INV-SNOWENERGY-007, INV-SNOWENERGY-008, INV-SNOWENERGY-009, INV-SNOWENERGY-010, INV-SNOWENERGY-011, INV-SNOWENERGY-012, INV-SNOWENERGY-013, INV-SNOWENERGY-014` | `none` | Package-local source reconciliation and analytical artifacts are evidence; all binding equations, guards, and obligations are in this canonical contract. |
 | `SNOWENERGY-EB03-COMPOSITION` | `docs/work-packages/20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-015, INV-SNOWENERGY-016, INV-SNOWENERGY-017, INV-SNOWENERGY-018, INV-SNOWENERGY-019` | `none` | Package evidence binds the Stage 3 provider, orthogonal selectors, and mass/energy composition implemented by version 2. |
 | `SNOWENERGY-EB03A-COUPLING` | `docs/work-packages/20260730-snow-surface-eb-03a-active-layer-thermal-coupling-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-020, INV-SNOWENERGY-021, INV-SNOWENERGY-022, INV-SNOWENERGY-023, INV-SNOWENERGY-024, INV-SNOWENERGY-025` | `none` | Package evidence must implement and verify the version-3 active thermal control volume and coupled substep solver. |
@@ -1371,6 +1382,30 @@ the repository canonical framed helper/domain and fixed vectors.
 | `INV-SNOWENERGY-039` | Snow fluxes stop at the accepted event and snow-free fluxes begin only on admitted successor support. | chronology / `SNOWENERGY-E-REGIME-001` |
 | `INV-SNOWENERGY-040` | Canopy-intercepted snow is outside this carrier and cannot enter its mass or energy ledgers. | scope guard / `SNOWENERGY-E-SCOPE-001` |
 | `INV-SNOWENERGY-042` | The single persistent Stage 3 lane owner is OFE-ground. Complete typed tile-ground snow-surface fluxes aggregate only as `sum_i(f_i X_i)` over an ordered tile set closing to one under `TOL-SNOWENERGY-002`; covered-subset renormalization, inconsistent common snow state, missing/open-surface omission, duplicate tiles, class/model substitution, or restart topology/basis substitution is prohibited. Uniform terminal-liquid projection preserves `sum_i(f_i M_i) = M_lane`; dividing the complete lane amount by every tile fraction is prohibited. | topology/area/source/state/restart guard / `SNOWENERGY-E-CARRIER-001` |
+| `INV-SNOWENERGY-043` | Covered fixed-point acceptance reconstructs each candidate fingerprint independently; schema, terminal-event model, lane, interval, layer cardinality/order, density, and count-like settling state compare exactly. Numeric state uses only `TOL-SNOWENERGY-003` by physical class; fingerprints need not equal when admitted numeric state differs. | typed convergence/nonconvergence guard / `SNOWENERGY-E-CARRIER-001` |
+| `INV-SNOWENERGY-044` | Lane receipt V1 is non-restorable. Additive restart is blocked until a normative V2 schema excludes initial-guess identity and defines exact canonical framing, topology/owner joins, and test vectors. | restart schema/version guard / hard `HOLD` |
+
+`TOL-SNOWENERGY-003` governs only covered outer fixed-point convergence. SWE,
+physical thickness, liquid depth, and refrozen depth use `1e-9 m` absolute;
+temperature difference uses `1e-8 K` absolute; cumulative/detached mass uses
+`1e-6 kg m^-2` absolute; cold-content and cumulative energy use `1e-6 J m^-2`
+absolute. The depth and corresponding water-equivalent area-mass scales, energy
+reconstruction scale, and covered-carrier temperature scale already exist in
+this contract or implementation authority. Density is bitwise exact. The
+stored `settle_day_count` chronology operand is bitwise exact despite its
+`f64` representation. No relative tolerance, state repair, or cross-unit
+substitution is admitted.
+
+A future `OPENWEPP_LANE_STAGE3_BOUNDARY_RECEIPT_V2` shall be the
+parent/restart successor. It must use repository canonical framing, omit all
+initial numerical guess identity, bind static topology context and ordered
+covered/open final-boundary sources, and require exact lane/OFE, map-key,
+class/model, fraction, and complete-destination joins. V1 remains historical
+adopter evidence and must never be restored. Restart replay must join V2,
+destination and component receipts, installed LSE and complete snow owners,
+static tile/occupancy topology, and wet-liquid authorization. The V2 schema is
+currently `SCHEMA_UNDEFINED / IMPLEMENTATION_BLOCKED`: no implementation may
+infer its exact fields, framing, ordering, or vectors from in-memory V1 types.
 
 ### Child 2C obligations and gaps
 
@@ -1382,6 +1417,12 @@ longwave, and event-time closure and reject any alias or duplicate flux.
 terminal-liquid handoff on OFE-ground basis from the complete ordered
 tile-ground contribution set, and reject any non-closing topology, covered-
 subset normalization, or restart area/topology substitution.
+`OBL-SNOWENERGY-C-019`: independently reconstruct every candidate fingerprint,
+then compare exact structure/count/density and only the unit-specific absolute
+state residuals admitted by `TOL-SNOWENERGY-003`.
+`OBL-SNOWENERGY-C-020`: reject V1 and inferred successor restart wires; require
+the normative V2 schema and the complete static-topology and ending-owner join
+before additive restore.
 
 The carrier is `AUTHORITY_ADMITTED / IMPLEMENTATION_MISSING` until the later
 default-off implementation package proves a real V11/Stage 3 consumer. The
@@ -1393,6 +1434,7 @@ efficacy, qualification, or empirical claim follows.
 |---|---|---|
 | `GAP-SNOWENERGY-014` | Default-off runtime carrier and actual V11 snow-covered consumer are not implemented. | later implementation package; current authority remains promotable |
 | `GAP-SNOWENERGY-015` | Deployed/server exposure receipt is not available for every retained forcing value. | typed runtime precondition; no proxy or attenuation admitted |
+| `GAP-SNOWENERGY-016` | Exact lane-receipt V2 fields, canonical framing, ordering, and test vectors are not yet defined. | `SCHEMA_UNDEFINED / IMPLEMENTATION_BLOCKED`; V1 is never restart authority |
 
 ## Change Log
 
@@ -1413,3 +1455,4 @@ efficacy, qualification, or empirical claim follows.
 | 1 | 2026-07-30 | Initial contract: atmospheric longwave, effective-cover-derived diffuse sky view, complementary canopy exchange, runtime hold, and analytical obligations. | `SNOW-SURFACE-EB-01A` and `SNOW-SURFACE-EB-02` static/analytical evidence |
 | 14 | 2026-08-20 | Bound the default-off shared V11/Stage 3 canopy-air carrier, complete turbulent residuals, reciprocal canopy--snow--sky longwave, sealed exposure wind, wrong-regime guards, and implementation-only disposition. | Child 2C authority package |
 | 15 | 2026-08-22 | Selected the prospective one-column-per-lane OFE-ground area basis, complete tile-set weighted boundary, uniform-depth terminal identity, and topology-bound restart rule; prohibited covered-subset renormalization. | Direct user authority in Stage-3/V11 covered consumer package |
+| 16 | 2026-08-22 | Admitted unit-specific covered fixed-point comparisons with independently reconstructed fingerprints and exact structural/density/count fields; reserved canonical lane receipt V2 without initial-guess identity and froze restart semantic joins. | Direct user authority and covered replay review |

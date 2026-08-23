@@ -366,7 +366,7 @@ impl Wb11HydrologyKernel {
         })
     }
 
-    fn validate_stage3_persistent_state(
+    pub(crate) fn validate_stage3_persistent_state(
         state: &DirectSnowStage3PersistentState,
     ) -> Result<(), DirectSnowStage3EvaluationError> {
         let phase = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
@@ -460,7 +460,9 @@ impl Wb11HydrologyKernel {
         Ok(())
     }
 
-    fn stage3_persistent_state_fingerprint(state: &DirectSnowStage3PersistentState) -> u64 {
+    pub(crate) fn stage3_persistent_state_fingerprint(
+        state: &DirectSnowStage3PersistentState,
+    ) -> u64 {
         let mut fingerprint = Self::stage3_fnv1a_start();
         fingerprint = Self::stage3_fnv1a_u64(fingerprint, u64::from(state.schema_version));
         fingerprint = Self::stage3_fnv1a_u64(fingerprint, u64::from(state.lane_id));
