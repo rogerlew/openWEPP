@@ -507,3 +507,33 @@ hygiene passed.
 provider-rain rollback poison matrix remain required before claiming the
 open-only regime closed. Precipitation physics, snow-soil heat, outcome ledger,
 terminal chronology, restart, scenarios, and independent review remain open.
+
+## State-derived regime and canonical open turbulence increment
+
+`Static:` Open-snow turbulent exchange now calls the existing Stage-3
+stability-aware Monin–Obukhov operator with the admitted 5 m transfer height
+and 0.005 m roughness. The former neutral logarithmic resistance fork is gone.
+Caller-supplied air density and heat capacity were removed from the open
+receipt because the canonical operator owns those atmospheric properties.
+
+`Static:` Active snow lanes are derived from immutable Stage-3 storage plus
+current snowfall. An active lane requires its complete configured destination
+set; a snow-free lane rejects any Stage-3 surface claim. The LSE projection can
+now combine Stage-3-owned destinations with ordinary snow-free destinations in
+one parent transaction, inactive Stage-3 lanes carry exactly, and the covered
+component set may be empty for an open-only support. The duplicate legacy
+lane-carrier map and digest were removed.
+
+`Ran at current worktree:` two-crate orchestrator/vegetation nextest passed
+1037/1037 with one intentional skip. `cargo check --tests`, `cargo fmt --all
+-- --check`, and `git diff --check` passed.
+
+`Static:` The public prepared-support builder now constructs the opaque open
+forcing from its retained LSE/provider projection, updates the destination
+exposure join, and accepts only the raw-wind-provider and admitted projection
+model identities. The low-level scalar constructor remains crate-private.
+
+`HOLD:` The real one-tile open-only parent fixture, independent proof of the
+raw-wind provider identity, provider-rain full-owner rollback poison, and a
+two-lane snow/snow-free integration fixture remain unproven. This increment
+does not claim precipitation, restart, or terminal authority.

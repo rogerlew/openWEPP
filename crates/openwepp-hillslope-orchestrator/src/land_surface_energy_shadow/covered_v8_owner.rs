@@ -152,11 +152,7 @@ impl UncommittedCoveredV8OwnerEnvelope {
             };
             let lower = match &covered.energy_operands.lower_boundary {
                 CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(value) => value,
-                CoveredLowerBoundaryEnergyOperands::SnowFree(_) => {
-                    return Err(CoveredV8OwnerEnvelopeError::Identity(
-                        "covered iteration state for snow-free payload",
-                    ));
-                }
+                CoveredLowerBoundaryEnergyOperands::SnowFree(_) => continue,
             };
             let column = &covered.energy_operands.column;
             let component_temperatures_k = column
@@ -253,11 +249,6 @@ impl UncommittedCoveredV8OwnerEnvelope {
                     "duplicate covered iteration destination",
                 ));
             }
-        }
-        if states.is_empty() {
-            return Err(CoveredV8OwnerEnvelopeError::Identity(
-                "empty covered iteration state set",
-            ));
         }
         Ok(states)
     }

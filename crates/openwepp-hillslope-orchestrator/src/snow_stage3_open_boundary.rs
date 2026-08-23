@@ -7,11 +7,12 @@
 use openwepp_coupled_time::{Digest32, FramedField, TimeSupport, framed_sha256};
 use openwepp_kernel_contract::TileId;
 use openwepp_land_surface_energy::OfeId;
-use openwepp_land_surface_energy::physics::{OpenNeutralGeometry, open_neutral_resistances};
 use openwepp_meteorology::surface_energy::{
+    PositiveLengthMeters, PressurePascals, TurbulentFluxInputs, TurbulentTransferOptions,
     latent_heat_for_surface_temperature, saturation_vapor_pressure_snobal_pa,
+    turbulent_fluxes_monin_obukhov_with_diagnostics,
 };
-use openwepp_unit_boundary::TemperatureCelsius;
+use openwepp_unit_boundary::{LinearRateMetersPerSecond, TemperatureCelsius};
 
 use crate::hydrology::{
     DirectActiveSnowPartitionInputs, DirectSnowStage3PersistentState, STAGE3_DEFAULT_SNOW_ALBEDO,
@@ -145,19 +146,19 @@ fn append_destination(bytes: &mut Vec<u8>, destination: &(OfeId, TileId)) {
 /// Destination-specific exposed-snow aerodynamic authority.
 #[derive(Clone, Debug, PartialEq)]
 pub struct SealedOpenSnowExposureReceiptV1 {
-    pub support: TimeSupport,
-    pub destination: (OfeId, TileId),
-    pub source_forcing_receipt_sha256: Digest32,
-    pub source_wind_provider_sha256: Digest32,
-    pub raw_or_projected_wind_m_s: f64,
-    pub transfer_height_m: f64,
-    pub roughness_m: f64,
-    pub projection_model_definition_sha256: Digest32,
-    pub receipt_sha256: Digest32,
+    pub(crate) support: TimeSupport,
+    pub(crate) destination: (OfeId, TileId),
+    pub(crate) source_forcing_receipt_sha256: Digest32,
+    pub(crate) source_wind_provider_sha256: Digest32,
+    pub(crate) raw_or_projected_wind_m_s: f64,
+    pub(crate) transfer_height_m: f64,
+    pub(crate) roughness_m: f64,
+    pub(crate) projection_model_definition_sha256: Digest32,
+    pub(crate) receipt_sha256: Digest32,
 }
 
 impl SealedOpenSnowExposureReceiptV1 {
-    pub fn try_new(
+    pub(crate) fn try_new(
         support: TimeSupport,
         destination: (OfeId, TileId),
         source_forcing_receipt_sha256: Digest32,
@@ -245,34 +246,30 @@ impl SealedOpenSnowExposureReceiptV1 {
 /// Sealed external operands for one open-snow tile.
 #[derive(Clone, Debug, PartialEq)]
 pub struct SealedOpenSnowTileForcingV1 {
-    pub support: TimeSupport,
-    pub destination: (OfeId, TileId),
-    pub forcing_receipt_sha256: Digest32,
-    pub exposure: SealedOpenSnowExposureReceiptV1,
-    pub rho_air_kg_m3: f64,
-    pub cp_air_j_kg_k: f64,
-    pub reference_temperature_k: f64,
-    pub reference_specific_humidity_kg_kg: f64,
-    pub air_pressure_pa: f64,
-    pub atmospheric_downward_longwave_w_m2: f64,
-    pub direct_vis_w_m2: f64,
-    pub diffuse_vis_w_m2: f64,
-    pub direct_nir_w_m2: f64,
-    pub diffuse_nir_w_m2: f64,
-    pub rain_m: f64,
-    pub snowfall_m: f64,
-    pub precipitation_parcel_count: usize,
-    pub receipt_sha256: Digest32,
+    pub(crate) support: TimeSupport,
+    pub(crate) destination: (OfeId, TileId),
+    pub(crate) forcing_receipt_sha256: Digest32,
+    pub(crate) exposure: SealedOpenSnowExposureReceiptV1,
+    pub(crate) reference_temperature_k: f64,
+    pub(crate) reference_specific_humidity_kg_kg: f64,
+    pub(crate) air_pressure_pa: f64,
+    pub(crate) atmospheric_downward_longwave_w_m2: f64,
+    pub(crate) direct_vis_w_m2: f64,
+    pub(crate) diffuse_vis_w_m2: f64,
+    pub(crate) direct_nir_w_m2: f64,
+    pub(crate) diffuse_nir_w_m2: f64,
+    pub(crate) rain_m: f64,
+    pub(crate) snowfall_m: f64,
+    pub(crate) precipitation_parcel_count: usize,
+    pub(crate) receipt_sha256: Digest32,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct SealedOpenSnowTileForcingInputsV1 {
+pub(crate) struct SealedOpenSnowTileForcingInputsV1 {
     pub support: TimeSupport,
     pub destination: (OfeId, TileId),
     pub forcing_receipt_sha256: Digest32,
     pub exposure: SealedOpenSnowExposureReceiptV1,
-    pub rho_air_kg_m3: f64,
-    pub cp_air_j_kg_k: f64,
     pub reference_temperature_k: f64,
     pub reference_specific_humidity_kg_kg: f64,
     pub air_pressure_pa: f64,
@@ -287,7 +284,7 @@ pub struct SealedOpenSnowTileForcingInputsV1 {
 }
 
 impl SealedOpenSnowTileForcingV1 {
-    pub fn try_new(
+    pub(crate) fn try_new(
         inputs: SealedOpenSnowTileForcingInputsV1,
     ) -> Result<Self, SnowStage3HandoffError> {
         if inputs.rain_m.to_bits() != 0.0_f64.to_bits()
@@ -303,8 +300,6 @@ impl SealedOpenSnowTileForcingV1 {
             destination: inputs.destination,
             forcing_receipt_sha256: inputs.forcing_receipt_sha256,
             exposure: inputs.exposure,
-            rho_air_kg_m3: inputs.rho_air_kg_m3,
-            cp_air_j_kg_k: inputs.cp_air_j_kg_k,
             reference_temperature_k: inputs.reference_temperature_k,
             reference_specific_humidity_kg_kg: inputs.reference_specific_humidity_kg_kg,
             air_pressure_pa: inputs.air_pressure_pa,
@@ -326,8 +321,6 @@ impl SealedOpenSnowTileForcingV1 {
     pub fn validate(&self) -> Result<(), SnowStage3HandoffError> {
         self.exposure.validate()?;
         let finite = [
-            self.rho_air_kg_m3,
-            self.cp_air_j_kg_k,
             self.reference_temperature_k,
             self.reference_specific_humidity_kg_kg,
             self.air_pressure_pa,
@@ -344,8 +337,6 @@ impl SealedOpenSnowTileForcingV1 {
             || self.forcing_receipt_sha256 == Digest32::zero()
             || self.forcing_receipt_sha256 != self.exposure.source_forcing_receipt_sha256
             || !finite
-            || self.rho_air_kg_m3 <= 0.0
-            || self.cp_air_j_kg_k <= 0.0
             || self.reference_temperature_k <= 0.0
             || !(0.0..=1.0).contains(&self.reference_specific_humidity_kg_kg)
             || self.air_pressure_pa <= 0.0
@@ -376,8 +367,6 @@ impl SealedOpenSnowTileForcingV1 {
         identity.extend_from_slice(&self.support.end_ns().get().to_be_bytes());
         append_destination(&mut identity, &self.destination);
         let scalars = [
-            self.rho_air_kg_m3,
-            self.cp_air_j_kg_k,
             self.reference_temperature_k,
             self.reference_specific_humidity_kg_kg,
             self.air_pressure_pa,
@@ -579,25 +568,40 @@ pub fn evaluate_open_snow_tile_boundary(
             "open-snow saturation specific humidity pressure",
         ));
     }
-    let surface_humidity =
-        0.622 * saturation_pressure_pa / (forcing.air_pressure_pa - 0.378 * saturation_pressure_pa);
-    let resistance = open_neutral_resistances(
-        OpenNeutralGeometry {
-            reference_height_m: forcing.exposure.transfer_height_m,
-            roughness_momentum_m: forcing.exposure.roughness_m,
-            roughness_heat_m: forcing.exposure.roughness_m,
-            roughness_vapor_m: forcing.exposure.roughness_m,
-        },
-        forcing.exposure.raw_or_projected_wind_m_s,
-    )
-    .map_err(|_| SnowStage3HandoffError::InvalidExposure("open-snow neutral resistance"))?;
-    let sensible_outward_w_m2 = forcing.rho_air_kg_m3
-        * forcing.cp_air_j_kg_k
-        * (snow_temperature_k - forcing.reference_temperature_k)
-        / resistance.heat_s_m;
-    let vapor_outward_kg_m2_s = forcing.rho_air_kg_m3
-        * (surface_humidity - forcing.reference_specific_humidity_kg_kg)
-        / resistance.vapor_s_m;
+    let air_vapor_pressure_pa = forcing.reference_specific_humidity_kg_kg * forcing.air_pressure_pa
+        / (0.622 + 0.378 * forcing.reference_specific_humidity_kg_kg);
+    let positive_length = |value| {
+        PositiveLengthMeters::try_new(value)
+            .map_err(|_| SnowStage3HandoffError::InvalidExposure("open-snow transfer geometry"))
+    };
+    let turbulent = turbulent_fluxes_monin_obukhov_with_diagnostics(TurbulentFluxInputs {
+        air_pressure: PressurePascals::try_new(forcing.air_pressure_pa)
+            .map_err(|_| SnowStage3HandoffError::InvalidCarrier("open-snow air pressure"))?,
+        air_temperature: TemperatureCelsius::try_new(forcing.reference_temperature_k - 273.15)
+            .map_err(|_| SnowStage3HandoffError::InvalidCarrier("open-snow air temperature"))?,
+        surface_temperature: temperature,
+        air_vapor_pressure: PressurePascals::try_new(air_vapor_pressure_pa)
+            .map_err(|_| SnowStage3HandoffError::InvalidCarrier("open-snow air vapor pressure"))?,
+        surface_vapor_pressure: PressurePascals::try_new(saturation_pressure_pa).map_err(|_| {
+            SnowStage3HandoffError::InvalidCarrier("open-snow surface vapor pressure")
+        })?,
+        air_temperature_height: positive_length(forcing.exposure.transfer_height_m)?,
+        vapor_pressure_height: positive_length(forcing.exposure.transfer_height_m)?,
+        wind_speed: LinearRateMetersPerSecond::try_new(forcing.exposure.raw_or_projected_wind_m_s)
+            .map_err(|_| SnowStage3HandoffError::InvalidExposure("open-snow wind"))?,
+        wind_speed_height: positive_length(forcing.exposure.transfer_height_m)?,
+        roughness_length: positive_length(forcing.exposure.roughness_m)?,
+        options: TurbulentTransferOptions::default(),
+    })
+    .map_err(|_| SnowStage3HandoffError::InvalidCarrier("open-snow turbulent transfer"))?;
+    // The canonical Stage-3 Monin-Obukhov operator is positive toward snow;
+    // destination tile receipts retain the producer convention positive
+    // outward from snow until the sole Stage-3 construction seam.
+    let sensible_outward_w_m2 = -turbulent.fluxes.sensible_heat.as_watts_per_square_meter();
+    let vapor_outward_kg_m2_s = -turbulent
+        .fluxes
+        .mass_flux
+        .as_kilograms_per_square_meter_second();
     let latent_heat_j_kg = latent_heat_for_surface_temperature(temperature)
         .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow latent heat"))?
         .as_joules_per_kilogram();
@@ -695,8 +699,6 @@ mod tests {
             destination: destination(tile),
             forcing_receipt_sha256: Digest32::from_bytes([1; 32]),
             exposure: exposure(tile),
-            rho_air_kg_m3: 1.2,
-            cp_air_j_kg_k: 1005.0,
             reference_temperature_k: 270.0,
             reference_specific_humidity_kg_kg: 0.002,
             air_pressure_pa: 90_000.0,

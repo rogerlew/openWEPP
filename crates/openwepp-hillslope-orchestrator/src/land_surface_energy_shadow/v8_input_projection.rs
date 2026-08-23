@@ -548,22 +548,21 @@ impl ValidatedV8RuntimeInputProjection {
                     }
                 }
                 if let V8SolverReadyTilePhysics::Covered(column) = &mut ready.physics {
-                    column.authority = authority;
                     if authority
                         == openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered
                     {
                         let boundaries = lower_boundaries.ok_or(
                             V8InputProjectionError::Identity("missing Stage-3 lower-boundary set"),
                         )?;
-                        column.stage3_lower_boundary = Some(
-                            boundaries
-                                .get(&(tile.ofe_id.clone(), tile.tile_id.clone()))
-                                .ok_or(V8InputProjectionError::Identity(
-                                    "missing Stage-3 lower-boundary destination",
-                                ))?
-                                .clone(),
-                        );
-                        column.top_rain_kg_m2_tile = 0.0;
+                        if let Some(boundary) =
+                            boundaries.get(&(tile.ofe_id.clone(), tile.tile_id.clone()))
+                        {
+                            column.authority = authority;
+                            column.stage3_lower_boundary = Some(boundary.clone());
+                            column.top_rain_kg_m2_tile = 0.0;
+                        }
+                    } else {
+                        column.authority = authority;
                     }
                 }
                 Ok(ready)

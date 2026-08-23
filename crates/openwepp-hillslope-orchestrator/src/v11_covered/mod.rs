@@ -1156,6 +1156,9 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         ),
         DirectV11RealConsumerError,
     > {
+        if base.is_empty() {
+            return Ok((BTreeMap::new(), BTreeMap::new(), BTreeMap::new()));
+        }
         let shortwave = envelope
             .covered_snow_shortwave_by_destination()
             .map_err(|_| DirectV11RealConsumerError::Identity("covered optical shortwave set"))?;
@@ -1272,6 +1275,14 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         ),
         DirectV11RealConsumerError,
     > {
+        if boundaries.is_empty() {
+            if !destination_receipts.is_empty() {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "open-only carrier receipt set",
+                ));
+            }
+            return Ok((BTreeMap::new(), BTreeMap::new()));
+        }
         let optical = envelope
             .covered_snow_optical_by_destination()
             .map_err(|_| DirectV11RealConsumerError::Identity("covered final optical receipts"))?;
@@ -1407,23 +1418,14 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
     }
 
     fn covered_expected_destinations(&self) -> BTreeSet<(OfeId, TileId)> {
-        let covered_tile_ids = self
-            .beginning
-            .vegetation_configuration
-            .strata
+        self.snow_surface_forcing_by_destination
             .iter()
-            .flat_map(|stratum| stratum.tile_ids.iter().cloned())
-            .collect::<BTreeSet<_>>();
-        self.beginning
-            .inner
-            .lse_configuration
-            .ofes
-            .iter()
-            .flat_map(|ofe| {
-                ofe.tiles
-                    .iter()
-                    .filter(|tile| covered_tile_ids.contains(&tile.vegetation_tile_id))
-                    .map(|tile| (ofe.ofe_id.clone(), tile.tile_id.clone()))
+            .filter_map(|(destination, forcing)| {
+                matches!(
+                    forcing,
+                    SealedStage3TileBoundaryForcingV1::V11CanopyCovered(_)
+                )
+                .then(|| destination.clone())
             })
             .collect()
     }
@@ -2077,8 +2079,11 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                 boundaries,
                 interval_s,
             )?;
-            let mut ending_stage3 = BTreeMap::new();
-            for (lane_id, beginning) in &self.stage3_beginning_by_lane {
+            let mut ending_stage3 = self.stage3_beginning_by_lane.clone();
+            for lane_id in terms.keys() {
+                let beginning = self.stage3_beginning_by_lane.get(lane_id).ok_or(
+                    DirectV11RealConsumerError::Identity("active Stage-3 beginning lane"),
+                )?;
                 let stage3_inputs = self.stage3_inputs_by_lane.get(lane_id).ok_or(
                     DirectV11RealConsumerError::Identity("covered Stage-3 input lane"),
                 )?;

@@ -105,11 +105,12 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 ));
             }
         }
-        if stage3_states.keys().collect::<Vec<_>>()
-            != final_lane_boundaries.keys().collect::<Vec<_>>()
+        if !final_lane_boundaries
+            .keys()
+            .all(|lane_id| stage3_states.contains_key(lane_id))
         {
             return Err(DirectV11RealConsumerError::Identity(
-                "covered lane/Stage-3 state key set",
+                "active lane receipt outside Stage-3 state set",
             ));
         }
         let mut joined_destinations = BTreeSet::new();

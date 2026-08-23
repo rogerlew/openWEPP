@@ -32,9 +32,10 @@ use crate::runtime_inputs::{
     SnowFreePrecipitationParcelReceipt, direct_gsi_state,
 };
 use crate::snow_stage3_open_boundary::{
+    SealedOpenSnowExposureReceiptV1, SealedOpenSnowTileForcingInputsV1,
     SealedOpenSnowTileForcingV1, SealedStage3TileBoundaryForcingV1,
 };
-use crate::snow_stage3_terminal_handoff::SealedCoveredCarrierForcing;
+use crate::snow_stage3_terminal_handoff::{SealedCoveredCarrierForcing, SnowStage3HandoffError};
 use crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow;
 use crate::v9_real_consumer_shadow::{
     CoveredParentOwnerJoinReceiptV1, DirectV9ShadowIntervalInput, DirectV11RealConsumerError,
@@ -67,6 +68,8 @@ pub enum DirectSnowStage3V11AttachmentError {
     V11Authority(#[from] openwepp_vegetation::v11::V11Error),
     #[error(transparent)]
     ForcingProvider(#[from] SnowFreeHalfHourForcingError),
+    #[error(transparent)]
+    SnowBoundary(#[from] SnowStage3HandoffError),
 }
 
 /// Static configuration and topology identity.  There is intentionally no
@@ -121,7 +124,6 @@ pub struct DirectSnowStage3V11PreparedSupport {
     /// Sealed Child-2C carrier inputs, keyed by production lane. A missing
     /// entry means this support is snow-free and must remain on the existing
     /// snow-free adopter.
-    covered_carrier_forcing_by_lane: BTreeMap<u32, SealedCoveredCarrierForcing>,
     /// Complete active snow-surface forcing topology, keyed by physical
     /// destination. Empty means the support is snow-free.
     snow_surface_forcing_by_destination:
@@ -180,24 +182,10 @@ impl DirectSnowStage3V11PreparedSupport {
             snow_inputs_by_lane,
             support_forcing_by_lane,
             v11_interval,
-            covered_carrier_forcing_by_lane: BTreeMap::new(),
             snow_surface_forcing_by_destination: BTreeMap::new(),
             covered_v11_interval: None,
             support_identity_by_lane,
         })
-    }
-
-    /// Attach the sealed covered lower-boundary carrier to a support draft.
-    /// The provider bind consumes the resulting draft and rechecks all joins.
-    #[must_use]
-    pub fn with_covered_carrier_forcing(
-        mut self,
-        lane_id: u32,
-        forcing: SealedCoveredCarrierForcing,
-    ) -> Self {
-        self.covered_carrier_forcing_by_lane
-            .insert(lane_id, forcing);
-        self
     }
 
     /// Attach a covered forcing to one typed physical destination.
@@ -224,6 +212,62 @@ impl DirectSnowStage3V11PreparedSupport {
         self
     }
 
+    /// Derive and seal one open-snow destination from the prepared provider
+    /// projection. Callers identify the retained raw-wind provider and the
+    /// admitted identity projection; all meteorological scalars come from the
+    /// interval that is subsequently joined to the provider day.
+    pub fn with_provider_open_snow_destination(
+        mut self,
+        destination: (OfeId, TileId),
+        source_wind_provider_sha256: Digest32,
+        projection_model_definition_sha256: Digest32,
+    ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
+        let identity = self
+            .support_identity_by_lane
+            .values_mut()
+            .flatten()
+            .find(|identity| {
+                identity.destination_ofe_id == destination.0.as_str()
+                    && identity.destination_tile_id == destination.1.as_str()
+            })
+            .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                "open-snow destination provider identity",
+            ))?;
+        let forcing_receipt_sha256 = identity.forcing_receipt_digest;
+        let forcing = &self.v11_interval.lse_forcing;
+        let exposure = SealedOpenSnowExposureReceiptV1::try_new(
+            self.support,
+            destination.clone(),
+            forcing_receipt_sha256,
+            source_wind_provider_sha256,
+            forcing.reference_wind_m_s,
+            projection_model_definition_sha256,
+        )?;
+        identity.exposure_identity = exposure.receipt_sha256;
+        let open = SealedOpenSnowTileForcingV1::try_new(SealedOpenSnowTileForcingInputsV1 {
+            support: self.support,
+            destination: destination.clone(),
+            forcing_receipt_sha256,
+            exposure,
+            reference_temperature_k: forcing.air_temperature_k,
+            reference_specific_humidity_kg_kg: forcing.air_specific_humidity_kg_kg,
+            air_pressure_pa: forcing.air_pressure_pa,
+            atmospheric_downward_longwave_w_m2: forcing.atmospheric_downward_longwave_w_m2,
+            direct_vis_w_m2: forcing.direct_vis_w_m2,
+            diffuse_vis_w_m2: forcing.diffuse_vis_w_m2,
+            direct_nir_w_m2: forcing.direct_nir_w_m2,
+            diffuse_nir_w_m2: forcing.diffuse_nir_w_m2,
+            rain_m: 0.0,
+            snowfall_m: 0.0,
+            precipitation_parcel_count: forcing.precipitation_parcels.len(),
+        })?;
+        self.snow_surface_forcing_by_destination.insert(
+            destination,
+            SealedStage3TileBoundaryForcingV1::OpenSnow(open),
+        );
+        Ok(self)
+    }
+
     /// Attach the distinct covered V11 atmospheric projection to this support.
     #[must_use]
     pub fn with_covered_v11_interval(mut self, interval: DirectV11SnowCoveredSegmentInput) -> Self {
@@ -237,11 +281,6 @@ impl DirectSnowStage3V11PreparedSupport {
     }
 
     #[must_use]
-    pub fn covered_carrier_forcing_by_lane(&self) -> &BTreeMap<u32, SealedCoveredCarrierForcing> {
-        &self.covered_carrier_forcing_by_lane
-    }
-
-    #[must_use]
     pub fn snow_surface_forcing_by_destination(
         &self,
     ) -> &BTreeMap<(OfeId, TileId), SealedStage3TileBoundaryForcingV1> {
@@ -250,7 +289,6 @@ impl DirectSnowStage3V11PreparedSupport {
 
     fn has_snow_surface_forcing(&self) -> bool {
         !self.snow_surface_forcing_by_destination.is_empty()
-            || !self.covered_carrier_forcing_by_lane.is_empty()
     }
 
     #[must_use]
@@ -287,19 +325,16 @@ impl DirectSnowStage3V11PreparedSupport {
                 ))
             })
             .collect::<Result<BTreeSet<_>, DirectSnowStage3V11AttachmentError>>()?;
-        if expected
-            != self
-                .snow_surface_forcing_by_destination
-                .keys()
-                .cloned()
-                .collect()
+        if !self
+            .snow_surface_forcing_by_destination
+            .keys()
+            .all(|destination| expected.contains(destination))
         {
             return Err(DirectSnowStage3V11AttachmentError::Support(
-                "complete destination-keyed snow-surface set",
+                "snow-surface destination outside configured topology",
             ));
         }
-        let mut covered_lanes = BTreeSet::new();
-        for (lane_id, identities) in &self.support_identity_by_lane {
+        for identities in self.support_identity_by_lane.values() {
             for identity in identities {
                 let destination = (
                     OfeId::try_new(identity.destination_ofe_id.clone()).map_err(|_| {
@@ -309,20 +344,12 @@ impl DirectSnowStage3V11PreparedSupport {
                         DirectSnowStage3V11AttachmentError::Support("snow-surface tile identity")
                     })?,
                 );
-                let physical = self
-                    .snow_surface_forcing_by_destination
-                    .get(&destination)
-                    .ok_or(DirectSnowStage3V11AttachmentError::Support(
-                        "snow-surface destination forcing",
-                    ))?;
+                let Some(physical) = self.snow_surface_forcing_by_destination.get(&destination)
+                else {
+                    continue;
+                };
                 let exposure_identity = match physical {
                     SealedStage3TileBoundaryForcingV1::V11CanopyCovered(forcing) => {
-                        covered_lanes.insert(*lane_id);
-                        if self.covered_carrier_forcing_by_lane.get(lane_id) != Some(forcing) {
-                            return Err(DirectSnowStage3V11AttachmentError::Support(
-                                "legacy lane carrier differs from destination authority",
-                            ));
-                        }
                         forcing.exposure_identity()
                     }
                     SealedStage3TileBoundaryForcingV1::OpenSnow(forcing) => {
@@ -343,17 +370,6 @@ impl DirectSnowStage3V11PreparedSupport {
                     ));
                 }
             }
-        }
-        if self
-            .covered_carrier_forcing_by_lane
-            .keys()
-            .copied()
-            .collect::<BTreeSet<_>>()
-            != covered_lanes
-        {
-            return Err(DirectSnowStage3V11AttachmentError::Support(
-                "legacy lane carrier set differs from covered destination subset",
-            ));
         }
         self.validate_zero_precipitation_custody()?;
         Ok(())
@@ -400,6 +416,75 @@ impl DirectSnowStage3V11PreparedSupport {
         Ok(())
     }
 
+    fn state_derived_active_snow_lanes(
+        &self,
+        beginning: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    ) -> Result<BTreeSet<u32>, DirectSnowStage3V11AttachmentError> {
+        let mut represented = BTreeMap::<u32, BTreeSet<(OfeId, TileId)>>::new();
+        for (lane_id, identities) in &self.support_identity_by_lane {
+            for identity in identities {
+                let destination = (
+                    OfeId::try_new(identity.destination_ofe_id.clone()).map_err(|_| {
+                        DirectSnowStage3V11AttachmentError::Support("snow regime OFE")
+                    })?,
+                    TileId::try_new(identity.destination_tile_id.clone()).map_err(|_| {
+                        DirectSnowStage3V11AttachmentError::Support("snow regime tile")
+                    })?,
+                );
+                if self
+                    .snow_surface_forcing_by_destination
+                    .contains_key(&destination)
+                {
+                    represented.entry(*lane_id).or_default().insert(destination);
+                }
+            }
+        }
+        let mut active = BTreeSet::new();
+        for (lane_id, state) in beginning {
+            let forcing = self.support_forcing_by_lane.get(lane_id).ok_or(
+                DirectSnowStage3V11AttachmentError::Support("snow regime lane forcing"),
+            )?;
+            let has_snow = state.layers.iter().any(|layer| {
+                layer.mass_swe_m > 0.0
+                    || layer.liquid_water_m > 0.0
+                    || layer.refrozen_liquid_m > 0.0
+            }) || state.detached_retained_liquid_kg_m2 > 0.0
+                || forcing.forcing.snowfall_m > 0.0;
+            let expected = self
+                .support_identity_by_lane
+                .get(lane_id)
+                .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                    "snow regime lane topology",
+                ))?
+                .iter()
+                .map(|identity| {
+                    Ok((
+                        OfeId::try_new(identity.destination_ofe_id.clone()).map_err(|_| {
+                            DirectSnowStage3V11AttachmentError::Support("snow regime OFE")
+                        })?,
+                        TileId::try_new(identity.destination_tile_id.clone()).map_err(|_| {
+                            DirectSnowStage3V11AttachmentError::Support("snow regime tile")
+                        })?,
+                    ))
+                })
+                .collect::<Result<BTreeSet<_>, DirectSnowStage3V11AttachmentError>>()?;
+            let actual = represented.get(lane_id).cloned().unwrap_or_default();
+            if has_snow {
+                active.insert(*lane_id);
+                if actual != expected {
+                    return Err(DirectSnowStage3V11AttachmentError::Support(
+                        "active snow lane requires complete destination boundary set",
+                    ));
+                }
+            } else if !actual.is_empty() {
+                return Err(DirectSnowStage3V11AttachmentError::Support(
+                    "snow-free lane cannot claim Stage-3 surface ownership",
+                ));
+            }
+        }
+        Ok(active)
+    }
+
     fn forcing_projections(&self) -> (Digest32, Digest32, Digest32, Digest32) {
         let stage3_support_forcing_sha256 =
             canonical_stage3_support_forcing_digest(&self.support_forcing_by_lane);
@@ -417,10 +502,8 @@ impl DirectSnowStage3V11PreparedSupport {
                     &self.v11_interval.vegetation_forcing,
                 )
             };
-        let carrier_configuration_sha256 = canonical_snow_surface_forcing_digest(
-            &self.covered_carrier_forcing_by_lane,
-            &self.snow_surface_forcing_by_destination,
-        );
+        let carrier_configuration_sha256 =
+            canonical_snow_surface_forcing_digest(&self.snow_surface_forcing_by_destination);
         (
             stage3_support_forcing_sha256,
             stage3_configuration_sha256,
@@ -593,53 +676,11 @@ fn canonical_v11_forcing_digest(
     digest_bytes(&bytes)
 }
 
-fn canonical_carrier_forcing_digest(
-    forcing_by_lane: &BTreeMap<u32, SealedCoveredCarrierForcing>,
-) -> Digest32 {
-    let mut bytes = Vec::new();
-    append_canonical_bytes(&mut bytes, b"OPENWEPP_COVERED_CARRIER_CONFIGURATION_V2");
-    for (lane, forcing) in forcing_by_lane {
-        bytes.extend_from_slice(&lane.to_be_bytes());
-        for value in [
-            forcing.rho_air_kg_m3,
-            forcing.cp_air_j_kg_k,
-            forcing.reference_temperature_k,
-            forcing.reference_specific_humidity,
-            forcing.atmospheric_longwave_w_m2,
-            forcing.effective_canopy_cover,
-            forcing.exposure.wind_m_s,
-            forcing.exposure.transfer_height_m,
-            forcing.exposure.roughness_m,
-        ] {
-            append_canonical_f64(&mut bytes, value);
-        }
-        for value in [
-            forcing.exposure.receipt_id.as_str(),
-            forcing.exposure.provider.as_str(),
-            forcing.exposure.provider_digest.as_str(),
-            forcing.exposure.source.as_str(),
-        ] {
-            append_canonical_str(&mut bytes, value);
-        }
-        for participant in &forcing.active_participants {
-            append_canonical_str(&mut bytes, participant);
-        }
-        for receipt in &forcing.support_receipts {
-            append_canonical_str(&mut bytes, &receipt.participant_id);
-            append_canonical_str(&mut bytes, &receipt.support_receipt_id);
-            bytes.extend_from_slice(&receipt.minimum_support_ns.get().to_be_bytes());
-        }
-    }
-    digest_bytes(&bytes)
-}
-
 fn canonical_snow_surface_forcing_digest(
-    covered_by_lane: &BTreeMap<u32, SealedCoveredCarrierForcing>,
     by_destination: &BTreeMap<(OfeId, TileId), SealedStage3TileBoundaryForcingV1>,
 ) -> Digest32 {
     let mut bytes = Vec::new();
     append_canonical_bytes(&mut bytes, b"OPENWEPP_STAGE3_SNOW_SURFACE_SET_V1");
-    bytes.extend_from_slice(canonical_carrier_forcing_digest(covered_by_lane).as_bytes());
     for (destination, forcing) in by_destination {
         append_canonical_str(&mut bytes, destination.0.as_str());
         append_canonical_str(&mut bytes, destination.1.as_str());
@@ -887,13 +928,6 @@ impl PreparedStage3V11DayV1 {
                     .copied()
                     .collect::<BTreeSet<_>>()
                     != expected_lanes
-                || (!support.covered_carrier_forcing_by_lane.is_empty()
-                    && support
-                        .covered_carrier_forcing_by_lane
-                        .keys()
-                        .copied()
-                        .collect::<BTreeSet<_>>()
-                        != expected_lanes)
                 || support.support_identity_by_lane.values().any(Vec::is_empty)
             {
                 return Err(DirectSnowStage3V11AttachmentError::Support(
@@ -1166,9 +1200,9 @@ impl DirectSnowStage3V11ShadowAttachment {
         let mut terminal_events = Vec::new();
         let mut covered_owner_joins = Vec::new();
         for (support_index, support) in prepared.supports().iter().enumerate() {
-            let covered_support =
-                support.snow_surface_regime() != Stage3SnowSurfaceRegime::SnowFree;
             let beginning_stage3 = candidate.stage3_by_lane.clone();
+            let active_snow_lanes = support.state_derived_active_snow_lanes(&beginning_stage3)?;
+            let covered_support = !active_snow_lanes.is_empty();
             if !covered_support {
                 for lane_id in &self.static_context.lane_ids {
                     let inputs = support.snow_inputs_by_lane.get(lane_id).ok_or(

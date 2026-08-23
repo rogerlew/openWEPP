@@ -300,3 +300,24 @@ checks across Stage 3, provider parcels, V11/LSE parcels/runon, and vegetation.
 `Ran:` The exact-worktree two-crate regression passed 1037 tests with one
 intentional skip. Direct sign vectors prove outward sensible/vapor/latent loss
 becomes negative Stage-3 input and inward exchange becomes positive input.
+
+## State-derived snow ownership and open constitutive alignment
+
+`Static:` Open-snow exchange now reuses the canonical Stage-3
+Monin–Obukhov implementation instead of a neutral-only fork. Snow ownership is
+selected per lane from the committed Stage-3 state and current snowfall, not
+from destination-map presence. Active lanes require complete tile coverage;
+inactive lanes reject Stage-3 boundary entries and remain exact carried state.
+
+`Static:` Destination-keyed covered forcing is the only carrier schema. The
+legacy lane map and its duplicate digest are removed. Covered-component
+extraction and final receipt construction admit an empty covered subset, which
+removes the internal canopy assumption from the open-only execution path.
+The public prepared-support builder derives the open atmospheric scalars from
+the retained interval projection; the low-level scalar sealing API is no
+longer available to external callers.
+
+`Ran:` The two-crate nextest regression passed 1037/1037 with one intentional
+skip after these changes. Test compilation, formatting, and diff hygiene also
+passed. Integrated open-only, heterogeneous-lane, and provider-rain rollback
+fixtures remain required and are not claimed here.

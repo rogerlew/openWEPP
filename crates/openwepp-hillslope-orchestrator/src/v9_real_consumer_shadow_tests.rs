@@ -1083,8 +1083,6 @@ mod tests {
                 destination: (open_record.key.ofe_id.clone(), open_record.key.tile_id.clone()),
                 forcing_receipt_sha256: Digest32::from_bytes([10; 32]),
                 exposure,
-                rho_air_kg_m3: 1.2,
-                cp_air_j_kg_k: 1005.0,
                 reference_temperature_k: covered_interval.lse_forcing.air_temperature_k,
                 reference_specific_humidity_kg_kg: covered_interval
                     .lse_forcing
