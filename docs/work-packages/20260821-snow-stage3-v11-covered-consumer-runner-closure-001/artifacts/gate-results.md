@@ -301,3 +301,38 @@ validation reconstructs every identity from those final objects.
 precipitation and soil-heat custody, independent outcome-ledger reconstruction,
 terminal chronology/liquid, additive restart, scenario closure, and final
 reviews remain open.
+
+## Authoritative component carrier and hardened owner joins
+
+`Static:` Reduced `SharedCarrierReceipt` values are retained only as the first
+unsealed boundary guess and provisional identity evidence. They no longer
+replace sealed reference-atmosphere temperature/humidity, no longer gate fixed-
+point acceptance, and are not consumed by Stage 3 after the first LSE solve.
+The component-resolved LSE sensible/vapor boundary drives every subsequent and
+final Stage 3 candidate and replay.
+
+`Static:` Leaf vapor conductance is reconstructed directly from dry area,
+boundary resistance, and stomatal resistance; wet conductance is wet area times
+wet boundary conductance; stem vapor conductance is zero. A separately typed
+wet-liquid authorization operand owns capped evaporation without reverse-
+deriving conductance from accepted flux.
+
+`Static:` Component receipts bind support, shared canopy-air state, final
+boundary digest, optical digest, reciprocal-longwave digest, canonical ordered
+component operands, and their own replayed seal. The outer join validates all
+nested receipts, reconstructs exact complete snow-owner bytes, and binds run,
+parent transaction, segment, accepted slab, forcing, and beginning complete-
+owner lineage. The former `ending_v11_state_sha256` boundary field is renamed
+to `ending_v8_physical_candidate_sha256`.
+
+`Ran:` focused stale-inner-seal/fresh-boundary-substitution, valid alternate
+snow-owner, and outer-owner digest poison tests all passed. The two-crate
+nextest regression passed 820/820 with one intentional skip. Exact-worktree
+qualification also passed:
+
+- `cargo fmt --all -- --check`;
+- two-crate `cargo check --tests`, with the pre-existing projection dead-code warning;
+- direct science-contract admission: `A0_ADMITTED`, 49 contracts and six science surfaces;
+- authority-suite anti-evasion guard;
+- required-suite obligation guard contract: 3/3;
+- `git diff --check`.

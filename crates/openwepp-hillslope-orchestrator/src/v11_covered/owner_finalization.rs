@@ -4,6 +4,13 @@ use super::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct CoveredParentOwnerJoinReceiptV1 {
+    pub run_identity: Digest32,
+    pub parent_interval_sha256: Digest32,
+    pub parent_transaction_sha256: Digest32,
+    pub segment_sha256: Digest32,
+    pub accepted_slab_sha256: Digest32,
+    pub forcing_receipt_sha256: Digest32,
+    pub beginning_complete_owner_set_sha256: Digest32,
     pub support: openwepp_coupled_time::TimeSupport,
     pub final_boundary_receipt_set_sha256: Digest32,
     pub component_carrier_receipt_set_sha256: Digest32,
@@ -29,12 +36,34 @@ impl CoveredParentOwnerJoinReceiptV1 {
     }
 
     pub(crate) fn try_new(
+        run_identity: Digest32,
+        parent_interval_sha256: Digest32,
+        parent_transaction_sha256: Digest32,
+        segment_sha256: Digest32,
+        accepted_slab_sha256: Digest32,
+        forcing_receipt_sha256: Digest32,
+        beginning_complete_owner_set_sha256: Digest32,
         support: openwepp_coupled_time::TimeSupport,
         final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3CanopyBoundaryReceiptV1>,
         component_carriers: &BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>,
         stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
         owners: &BTreeMap<String, V11OwnerEnvelope>,
     ) -> Result<Self, DirectV11RealConsumerError> {
+        if [
+            run_identity,
+            parent_interval_sha256,
+            parent_transaction_sha256,
+            segment_sha256,
+            accepted_slab_sha256,
+            forcing_receipt_sha256,
+            beginning_complete_owner_set_sha256,
+        ]
+        .contains(&Digest32::zero())
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered parent-owner transaction lineage",
+            ));
+        }
         let expected = [
             "vegetation",
             "snow",
@@ -59,6 +88,26 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 DirectV11RealConsumerError::Identity("covered parent-owner envelope")
             })?;
         }
+        for receipt in final_boundaries.values() {
+            receipt.validate()?;
+        }
+        for (destination, receipt) in component_carriers {
+            let boundary =
+                final_boundaries
+                    .get(destination)
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "component/final boundary destination",
+                    ))?;
+            receipt.validate(boundary)?;
+        }
+        let expected_snow_bytes =
+            canonical_stage3_snow_owner_bytes_v11_with_receipts(stage3_states, final_boundaries)?;
+        let snow_owner = owners
+            .get("snow")
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "covered parent-owner snow envelope",
+            ))?;
+        validate_exact_snow_owner_bytes(&expected_snow_bytes, snow_owner)?;
         let boundary_fields = final_boundaries
             .values()
             .map(|receipt| openwepp_coupled_time::FramedField {
@@ -91,6 +140,13 @@ impl CoveredParentOwnerJoinReceiptV1 {
             )
         };
         let mut value = Self {
+            run_identity,
+            parent_interval_sha256,
+            parent_transaction_sha256,
+            segment_sha256,
+            accepted_slab_sha256,
+            forcing_receipt_sha256,
+            beginning_complete_owner_set_sha256,
             support,
             final_boundary_receipt_set_sha256,
             component_carrier_receipt_set_sha256,
@@ -116,6 +172,13 @@ impl CoveredParentOwnerJoinReceiptV1 {
         owners: &BTreeMap<String, V11OwnerEnvelope>,
     ) -> Result<(), DirectV11RealConsumerError> {
         let expected = Self::try_new(
+            self.run_identity,
+            self.parent_interval_sha256,
+            self.parent_transaction_sha256,
+            self.segment_sha256,
+            self.accepted_slab_sha256,
+            self.forcing_receipt_sha256,
+            self.beginning_complete_owner_set_sha256,
             self.support,
             final_boundaries,
             component_carriers,
@@ -137,6 +200,34 @@ impl CoveredParentOwnerJoinReceiptV1 {
         openwepp_coupled_time::framed_sha256(
             "covered-parent-owner-join-v1",
             &[
+                openwepp_coupled_time::FramedField {
+                    tag: "run_identity",
+                    value: self.run_identity.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "parent_interval",
+                    value: self.parent_interval_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "parent_transaction",
+                    value: self.parent_transaction_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "segment",
+                    value: self.segment_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "accepted_slab",
+                    value: self.accepted_slab_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "forcing_receipt",
+                    value: self.forcing_receipt_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "beginning_complete_owner_set",
+                    value: self.beginning_complete_owner_set_sha256.as_bytes(),
+                },
                 openwepp_coupled_time::FramedField {
                     tag: "support_start_ns",
                     value: &start,
@@ -189,6 +280,21 @@ impl CoveredParentOwnerJoinReceiptV1 {
         )
         .map_err(|_| DirectV11RealConsumerError::Identity("covered parent-owner join digest"))
     }
+}
+
+fn validate_exact_snow_owner_bytes(
+    expected: &[u8],
+    snow_owner: &V11OwnerEnvelope,
+) -> Result<(), DirectV11RealConsumerError> {
+    snow_owner
+        .to_owner_state()
+        .map_err(|_| DirectV11RealConsumerError::Identity("covered snow owner envelope"))?;
+    if snow_owner.owner_id != "snow" || snow_owner.state_bytes != expected {
+        return Err(DirectV11RealConsumerError::Identity(
+            "covered parent-owner Stage-3/snow semantic join",
+        ));
+    }
+    Ok(())
 }
 
 pub(crate) fn canonical_stage3_snow_owner_bytes_v11(
@@ -920,6 +1026,13 @@ mod owner_join_tests {
         let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_800_000_000_000))
             .expect("support");
         let mut receipt = CoveredParentOwnerJoinReceiptV1 {
+            run_identity: Digest32::from_bytes([21; 32]),
+            parent_interval_sha256: Digest32::from_bytes([20; 32]),
+            parent_transaction_sha256: Digest32::from_bytes([22; 32]),
+            segment_sha256: Digest32::from_bytes([23; 32]),
+            accepted_slab_sha256: Digest32::from_bytes([24; 32]),
+            forcing_receipt_sha256: Digest32::from_bytes([25; 32]),
+            beginning_complete_owner_set_sha256: Digest32::from_bytes([26; 32]),
             support,
             final_boundary_receipt_set_sha256: Digest32::from_bytes([1; 32]),
             component_carrier_receipt_set_sha256: Digest32::from_bytes([2; 32]),
@@ -962,5 +1075,20 @@ mod owner_join_tests {
             mutate(&mut poisoned);
             assert!(poisoned.validate_seal().is_err());
         }
+    }
+
+    #[test]
+    fn valid_alternate_snow_owner_rejects_against_unchanged_physical_bytes() {
+        let expected = b"canonical-stage3-and-boundaries";
+        let expected_owner =
+            V11OwnerEnvelope::try_new("snow".into(), expected.to_vec()).expect("snow owner");
+        validate_exact_snow_owner_bytes(expected, &expected_owner).expect("exact snow join");
+
+        let alternate = V11OwnerEnvelope::try_new(
+            "snow".into(),
+            b"different-valid-canonical-snow-owner".to_vec(),
+        )
+        .expect("alternate valid snow owner");
+        assert!(validate_exact_snow_owner_bytes(expected, &alternate).is_err());
     }
 }

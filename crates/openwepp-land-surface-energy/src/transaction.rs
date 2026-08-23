@@ -1746,6 +1746,8 @@ fn covered_occupancy_energy_operands(
                 emissive_area_m2_m2_tile: accepted.component_emissive_areas_m2_m2_tile[index],
                 heat_conductance_m_s_tile: accepted.component_heat_conductance_m_s_tile[index],
                 vapor_conductance_m_s_tile: accepted.component_vapor_conductance_m_s_tile[index],
+                vapor_authorization_kg_m2_tile_s: accepted
+                    .component_vapor_authorization_kg_m2_tile_s[index],
                 surface_specific_humidity_kg_kg: accepted.component_surface_specific_humidity_kg_kg
                     [index],
                 absorbed_shortwave_w_m2_tile: accepted.absorbed_shortwave_w_m2[index],

@@ -38,8 +38,14 @@ const COVERED_FIXED_POINT_POLICY: CoveredFixedPointPolicy = CoveredFixedPointPol
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct ComponentResolvedCarrierReceiptV1 {
+    pub support: openwepp_coupled_time::TimeSupport,
     pub destination: (OfeId, TileId),
+    pub final_boundary_receipt_sha256: Digest32,
+    pub optical_receipt_sha256: Digest32,
+    pub reciprocal_longwave_receipt_sha256: Digest32,
     pub components: Vec<CoveredCarrierComponentState>,
+    pub shared_air_temperature_k: f64,
+    pub shared_air_specific_humidity_kg_kg: f64,
     pub canopy_sensible_w_m2: f64,
     pub canopy_vapor_kg_m2_s: f64,
     pub snow_sensible_to_canopy_air_w_m2: f64,
@@ -110,8 +116,14 @@ impl ComponentResolvedCarrierReceiptV1 {
             })
             .sum::<f64>();
         let mut value = Self {
+            support: boundary.support,
             destination,
+            final_boundary_receipt_sha256: boundary.receipt_sha256,
+            optical_receipt_sha256: boundary.optical_receipt_sha256,
+            reciprocal_longwave_receipt_sha256: boundary.reciprocal_longwave_receipt_sha256,
             components: state.component_carrier_surfaces.clone(),
+            shared_air_temperature_k: state.canopy_air_temperature_k,
+            shared_air_specific_humidity_kg_kg: state.canopy_air_specific_humidity_kg_kg,
             canopy_sensible_w_m2: sensible,
             canopy_vapor_kg_m2_s: vapor,
             snow_sensible_to_canopy_air_w_m2: state.snow_sensible_w_m2,
@@ -122,7 +134,70 @@ impl ComponentResolvedCarrierReceiptV1 {
             receipt_sha256: Digest32::zero(),
         };
         value.receipt_sha256 = value.reconstructed_digest()?;
+        value.validate(boundary)?;
         Ok(value)
+    }
+
+    fn validate(
+        &self,
+        boundary: &FinalStage3CanopyBoundaryReceiptV1,
+    ) -> Result<(), DirectV11RealConsumerError> {
+        boundary.validate()?;
+        if self.support != boundary.support
+            || self.destination != boundary.destination
+            || self.final_boundary_receipt_sha256 != boundary.receipt_sha256
+            || self.optical_receipt_sha256 != boundary.optical_receipt_sha256
+            || self.reciprocal_longwave_receipt_sha256
+                != boundary.reciprocal_longwave_receipt_sha256
+            || self.snow_sensible_to_canopy_air_w_m2.to_bits()
+                != boundary.sensible_to_canopy_air_w_m2.to_bits()
+            || self.snow_vapor_to_canopy_air_kg_m2_s.to_bits()
+                != boundary.vapor_to_canopy_air_kg_m2_s.to_bits()
+            || !self.shared_air_temperature_k.is_finite()
+            || !(200.0..=350.0).contains(&self.shared_air_temperature_k)
+            || !self.shared_air_specific_humidity_kg_kg.is_finite()
+            || self.shared_air_specific_humidity_kg_kg < 0.0
+            || self.receipt_sha256 != self.reconstructed_digest()?
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "component carrier boundary/seal join",
+            ));
+        }
+        let mut prior: Option<(&str, u8)> = None;
+        for component in &self.components {
+            let identity = (component.occupancy_id.as_str(), component.component_ordinal);
+            if component.occupancy_id.is_empty()
+                || component.component_ordinal > 3
+                || prior.is_some_and(|value| value >= identity)
+                || [
+                    component.surface_area_m2_m2_tile,
+                    component.emissive_area_m2_m2_tile,
+                    component.heat_conductance_m_s_tile,
+                    component.vapor_conductance_m_s_tile,
+                    component.temperature_k,
+                    component.specific_humidity_kg_kg,
+                    component.sensible_to_canopy_air_w_m2,
+                    component.vapor_to_canopy_air_kg_m2_s,
+                ]
+                .iter()
+                .any(|value| !value.is_finite())
+                || component
+                    .vapor_authorization_kg_m2_tile_s
+                    .is_some_and(|value| !value.is_finite() || value < 0.0)
+                || component.surface_area_m2_m2_tile < 0.0
+                || component.emissive_area_m2_m2_tile < 0.0
+                || component.heat_conductance_m_s_tile < 0.0
+                || component.vapor_conductance_m_s_tile < 0.0
+                || !(200.0..=350.0).contains(&component.temperature_k)
+                || component.specific_humidity_kg_kg < 0.0
+            {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "component carrier canonical component",
+                ));
+            }
+            prior = Some(identity);
+        }
+        Ok(())
     }
 
     fn reconstructed_digest(&self) -> Result<Digest32, DirectV11RealConsumerError> {
@@ -146,6 +221,13 @@ impl ComponentResolvedCarrierReceiptV1 {
                 ] {
                     bytes.extend_from_slice(&value.to_bits().to_be_bytes());
                 }
+                match surface.vapor_authorization_kg_m2_tile_s {
+                    Some(value) => {
+                        bytes.push(1);
+                        bytes.extend_from_slice(&value.to_bits().to_be_bytes());
+                    }
+                    None => bytes.push(0),
+                }
                 bytes
             })
             .collect::<Vec<_>>();
@@ -165,6 +247,14 @@ impl ComponentResolvedCarrierReceiptV1 {
             "component-resolved-covered-carrier-v1",
             &[
                 openwepp_coupled_time::FramedField {
+                    tag: "support_start_ns",
+                    value: &self.support.start_ns().get().to_be_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "support_end_ns",
+                    value: &self.support.end_ns().get().to_be_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
                     tag: "ofe_id",
                     value: self.destination.0.as_str().as_bytes(),
                 },
@@ -175,6 +265,29 @@ impl ComponentResolvedCarrierReceiptV1 {
                 openwepp_coupled_time::FramedField {
                     tag: "components",
                     value: &component_bytes,
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "final_boundary_receipt",
+                    value: self.final_boundary_receipt_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "optical_receipt",
+                    value: self.optical_receipt_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "reciprocal_longwave_receipt",
+                    value: self.reciprocal_longwave_receipt_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "shared_air_temperature_k",
+                    value: &self.shared_air_temperature_k.to_bits().to_be_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "shared_air_specific_humidity",
+                    value: &self
+                        .shared_air_specific_humidity_kg_kg
+                        .to_bits()
+                        .to_be_bytes(),
                 },
                 openwepp_coupled_time::FramedField {
                     tag: "fluxes",
@@ -1003,7 +1116,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         boundaries: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
         destination_receipts: &BTreeMap<(OfeId, TileId), SharedCarrierReceipt>,
         envelope: &UncommittedCoveredV8OwnerEnvelope,
-        ending_v11_state_sha256: Digest32,
+        ending_v8_physical_candidate_sha256: Digest32,
         ending_stage3_state_sha256: Digest32,
     ) -> Result<
         (
@@ -1071,7 +1184,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                     destination: destination.clone(),
                     beginning_v11_state_sha256,
                     beginning_stage3_state_sha256,
-                    ending_v11_state_sha256,
+                    ending_v8_physical_candidate_sha256,
                     ending_stage3_state_sha256,
                     provisional_carrier_receipt_sha256: carrier.receipt_id,
                     optical_receipt_sha256,
@@ -1651,6 +1764,14 @@ fn covered_fixed_point_lse_states_equal(
                             0.0,
                             COVERED_FIXED_POINT_POLICY.vapor_rel,
                         )
+                        && match (
+                            left.vapor_authorization_kg_m2_tile_s,
+                            right.vapor_authorization_kg_m2_tile_s,
+                        ) {
+                            (Some(left), Some(right)) => close_vapor(left, right),
+                            (None, None) => true,
+                            _ => false,
+                        }
                         && close_temperature(left.temperature_k, right.temperature_k)
                         && close_humidity(
                             left.specific_humidity_kg_kg,
@@ -1753,68 +1874,6 @@ fn covered_fixed_point_stage3_states_equal(
                         COVERED_FIXED_POINT_POLICY.state_rel,
                     )
                 })
-        })
-}
-
-fn covered_fixed_point_carrier_receipts_equal(
-    left: &BTreeMap<(OfeId, TileId), SharedCarrierReceipt>,
-    right: &BTreeMap<(OfeId, TileId), SharedCarrierReceipt>,
-) -> bool {
-    left.keys().collect::<BTreeSet<_>>() == right.keys().collect::<BTreeSet<_>>()
-        && left.iter().all(|(destination, lhs)| {
-            let Some(rhs) = right.get(destination) else {
-                return false;
-            };
-            [
-                (lhs.shared_air_temperature_k, rhs.shared_air_temperature_k),
-                (
-                    lhs.shared_air_specific_humidity,
-                    rhs.shared_air_specific_humidity,
-                ),
-                (lhs.snow_temperature_k, rhs.snow_temperature_k),
-                (
-                    lhs.snow_sensible_into_surface_w_m2,
-                    rhs.snow_sensible_into_surface_w_m2,
-                ),
-                (
-                    lhs.snow_vapor_into_surface_kg_m2_s,
-                    rhs.snow_vapor_into_surface_kg_m2_s,
-                ),
-                (lhs.snow_longwave_net_w_m2, rhs.snow_longwave_net_w_m2),
-            ]
-            .into_iter()
-            .enumerate()
-            .all(|(index, (left, right))| {
-                if index == 1 {
-                    close_with_policy(
-                        left,
-                        right,
-                        COVERED_FIXED_POINT_POLICY.humidity_abs_kg_kg,
-                        COVERED_FIXED_POINT_POLICY.humidity_rel,
-                    )
-                } else if index == 0 || index == 2 {
-                    close_with_policy(
-                        left,
-                        right,
-                        COVERED_FIXED_POINT_POLICY.temperature_abs_k,
-                        COVERED_FIXED_POINT_POLICY.temperature_rel,
-                    )
-                } else if index == 4 {
-                    close_with_policy(
-                        left,
-                        right,
-                        COVERED_FIXED_POINT_POLICY.vapor_abs_kg_m2_s,
-                        COVERED_FIXED_POINT_POLICY.vapor_rel,
-                    )
-                } else {
-                    close_with_policy(
-                        left,
-                        right,
-                        COVERED_FIXED_POINT_POLICY.flux_abs_w_m2,
-                        COVERED_FIXED_POINT_POLICY.flux_rel,
-                    )
-                }
-            })
         })
 }
 
@@ -2091,18 +2150,12 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     self.stage3_inputs_by_lane,
                     self.stage3_forcing_by_lane,
                 )?;
-                let mut current_boundaries = carrier_boundaries.clone();
-                if let Some(previous) = &iteration_boundaries {
-                    for (destination, boundary) in &mut current_boundaries {
-                        let prior = previous.get(destination).ok_or(
-                            DirectV11RealConsumerError::Identity(
-                                "covered fixed-point boundary destination",
-                            ),
-                        )?;
-                        boundary.shortwave_absorbed_w_m2 = prior.shortwave_absorbed_w_m2;
-                        boundary.net_longwave_w_m2 = prior.net_longwave_w_m2;
-                    }
-                }
+                // The reduced carrier supplies only the first numerical guess.
+                // After one LSE evaluation, the complete component-resolved
+                // boundary is the sole iterate consumed by Stage 3.
+                let current_boundaries = iteration_boundaries
+                    .clone()
+                    .unwrap_or_else(|| carrier_boundaries.clone());
                 let mut provisional_candidate = self.beginning.clone();
                 provisional_candidate.inner.authority = CoveredColumnAuthority::V11SnowCovered;
                 let provisional_envelope = provisional_candidate
@@ -2134,10 +2187,10 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                             "covered provisional LSE iteration state",
                         )
                     })?;
-                let stage3_candidate =
-                    evaluate_stage3(&destination_receipts, &next_boundaries, None)?;
                 let next_boundaries =
                     self.apply_lse_iteration_exchange(&next_boundaries, &lse_states)?;
+                let stage3_candidate =
+                    evaluate_stage3(&destination_receipts, &next_boundaries, None)?;
                 let next_vegetation_state =
                     provisional_envelope.vegetation().ending_state().clone();
                 let next_destination_receipts = self.carrier_receipts_by_destination(
@@ -2154,12 +2207,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                 });
                 let boundary_converged =
                     covered_fixed_point_boundaries_equal(&current_boundaries, &next_boundaries);
-                let carrier_converged = covered_fixed_point_carrier_receipts_equal(
-                    &destination_receipts,
-                    &next_destination_receipts,
-                );
-                let converged =
-                    lse_converged && stage3_converged && boundary_converged && carrier_converged;
+                let converged = lse_converged && stage3_converged && boundary_converged;
                 if !converged {
                     previous_lse_states = Some(lse_states);
                     previous_stage3_states = Some(stage3_candidate.clone());
@@ -2171,20 +2219,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
 
                 let mut final_candidate = self.beginning.clone();
                 final_candidate.inner.authority = CoveredColumnAuthority::V11SnowCovered;
-                let mut final_input_boundaries = self.stage3_lower_boundaries_by_destination(
-                    &next_destination_receipts,
-                    self.stage3_inputs_by_lane,
-                    self.stage3_forcing_by_lane,
-                )?;
-                for (destination, boundary) in &mut final_input_boundaries {
-                    let prior = next_boundaries.get(destination).ok_or(
-                        DirectV11RealConsumerError::Identity(
-                            "covered final carrier boundary destination",
-                        ),
-                    )?;
-                    boundary.shortwave_absorbed_w_m2 = prior.shortwave_absorbed_w_m2;
-                    boundary.net_longwave_w_m2 = prior.net_longwave_w_m2;
-                }
+                let final_input_boundaries = next_boundaries.clone();
                 let final_envelope = final_candidate
                     .inner
                     .construct_covered_interval_envelope_with_duration(
@@ -2212,13 +2247,10 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     .map_err(|_| {
                         DirectV11RealConsumerError::Identity("covered final LSE iteration state")
                     })?;
-                let final_stage3_candidate = evaluate_stage3(
-                    &next_destination_receipts,
-                    &final_corrected_boundaries,
-                    None,
-                )?;
                 let final_rebuilt_boundaries = self
                     .apply_lse_iteration_exchange(&final_corrected_boundaries, &final_lse_states)?;
+                let final_stage3_candidate =
+                    evaluate_stage3(&next_destination_receipts, &final_rebuilt_boundaries, None)?;
                 let final_next_vegetation_state =
                     final_envelope.vegetation().ending_state().clone();
                 let final_next_destination_receipts = self.carrier_receipts_by_destination(
@@ -2234,10 +2266,6 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     || !covered_fixed_point_stage3_states_equal(
                         &stage3_candidate,
                         &final_stage3_candidate,
-                    )
-                    || !covered_fixed_point_carrier_receipts_equal(
-                        &next_destination_receipts,
-                        &final_next_destination_receipts,
                     )
                 {
                     previous_lse_states = Some(final_lse_states);
@@ -2280,7 +2308,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     &sealed_source_corrected_boundaries,
                     &sealed_source_lse_states,
                 )?;
-                let ending_v11_state_sha256 = digest32_from_lower_hex(
+                let ending_v8_physical_candidate_sha256 = digest32_from_lower_hex(
                     &sealed_source_envelope
                         .vegetation()
                         .ending_state()
@@ -2295,7 +2323,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         &sealed_source_boundaries,
                         &final_next_destination_receipts,
                         &sealed_source_envelope,
-                        ending_v11_state_sha256,
+                        ending_v8_physical_candidate_sha256,
                         ending_stage3_state_sha256,
                     )?;
                 let final_lane_boundary_receipts =
@@ -2415,5 +2443,90 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
         self.ending_stage3_by_lane = Some(ending_stage3);
         self.ending = Some(candidate);
         Ok(output)
+    }
+}
+
+#[cfg(test)]
+mod component_carrier_tests {
+    use super::*;
+    use openwepp_coupled_time::{ModelTimeNs, TimeSupport};
+
+    fn make_boundary(optical: u8) -> FinalStage3CanopyBoundaryReceiptV1 {
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_000_000_000))
+            .expect("support");
+        FinalStage3CanopyBoundaryReceiptV1::try_new(FinalStage3CanopyBoundaryReceiptInputs {
+            support,
+            destination: (
+                OfeId::try_new("ofe-1").expect("OFE"),
+                TileId::try_new("forest").expect("tile"),
+            ),
+            beginning_v11_state_sha256: Digest32::from_bytes([1; 32]),
+            beginning_stage3_state_sha256: Digest32::from_bytes([2; 32]),
+            ending_v8_physical_candidate_sha256: Digest32::from_bytes([3; 32]),
+            ending_stage3_state_sha256: Digest32::from_bytes([4; 32]),
+            provisional_carrier_receipt_sha256: Digest32::from_bytes([5; 32]),
+            optical_receipt_sha256: Digest32::from_bytes([optical; 32]),
+            reciprocal_longwave_receipt_sha256: Digest32::from_bytes([7; 32]),
+            sensible_to_canopy_air_w_m2: 2.0,
+            vapor_to_canopy_air_kg_m2_s: 1.0e-6,
+            latent_energy_to_canopy_air_j_m2: 2.5,
+            snow_temperature_k: 270.0,
+            latent_heat_j_kg: 2_500_000.0,
+            snow_absorbed_shortwave_w_m2: 10.0,
+            snow_net_longwave_w_m2: -5.0,
+        })
+        .expect("boundary")
+    }
+
+    fn state() -> CoveredLseIterationState {
+        CoveredLseIterationState {
+            canopy_air_temperature_k: 290.0,
+            canopy_air_specific_humidity_kg_kg: 0.01,
+            snow_temperature_k: 270.0,
+            snow_sensible_w_m2: 2.0,
+            snow_vapor_kg_m2_s: 1.0e-6,
+            snow_latent_w_m2: 2.5,
+            snow_net_longwave_w_m2: -5.0,
+            component_temperatures_k: vec![("canopy".into(), [292.0; 4])],
+            component_carrier_surfaces: vec![CoveredCarrierComponentState {
+                occupancy_id: "canopy".into(),
+                component_ordinal: 0,
+                surface_area_m2_m2_tile: 1.0,
+                emissive_area_m2_m2_tile: 1.0,
+                heat_conductance_m_s_tile: 1.0,
+                vapor_conductance_m_s_tile: 1.0,
+                vapor_authorization_kg_m2_tile_s: None,
+                temperature_k: 292.0,
+                specific_humidity_kg_kg: 0.011,
+                sensible_to_canopy_air_w_m2: 3.0,
+                vapor_to_canopy_air_kg_m2_s: 2.0e-6,
+            }],
+            canopy_sensible_w_m2: 3.0,
+            canopy_vapor_kg_m2_s: 2.0e-6,
+            sensible_to_reference_air_w_m2: 5.0,
+            vapor_to_reference_air_kg_m2_s: 3.0e-6,
+        }
+    }
+
+    #[test]
+    fn component_carrier_rejects_stale_inner_seal_and_fresh_boundary_substitution() {
+        let boundary = make_boundary(6);
+        let mut receipt = ComponentResolvedCarrierReceiptV1::try_new(
+            boundary.destination.clone(),
+            &state(),
+            &boundary,
+        )
+        .expect("component receipt");
+        receipt.components[0].temperature_k += 1.0;
+        assert!(receipt.validate(&boundary).is_err());
+
+        let alternate_boundary = make_boundary(8);
+        let receipt = ComponentResolvedCarrierReceiptV1::try_new(
+            boundary.destination.clone(),
+            &state(),
+            &boundary,
+        )
+        .expect("component receipt");
+        assert!(receipt.validate(&alternate_boundary).is_err());
     }
 }

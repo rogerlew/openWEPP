@@ -17,6 +17,9 @@ pub struct CoveredSurfaceEnergyOperands {
     pub emissive_area_m2_m2_tile: f64,
     pub heat_conductance_m_s_tile: f64,
     pub vapor_conductance_m_s_tile: f64,
+    /// Present only when liquid authorization, rather than the constitutive
+    /// conductance, owns the accepted wet-surface vapor flux.
+    pub vapor_authorization_kg_m2_tile_s: Option<f64>,
     pub surface_specific_humidity_kg_kg: f64,
     pub absorbed_shortwave_w_m2_tile: f64,
     pub net_longwave_w_m2_tile: f64,
@@ -61,6 +64,14 @@ impl CoveredSurfaceEnergyOperands {
                 "covered surface energy domain",
             ));
         }
+        if self
+            .vapor_authorization_kg_m2_tile_s
+            .is_some_and(|value| !value.is_finite() || value < 0.0)
+        {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "covered vapor authorization domain",
+            ));
+        }
         let latent = self.latent_heat_j_kg * self.signed_vapor_to_canopy_air_kg_m2_tile_s;
         let residual = self.absorbed_shortwave_w_m2_tile + self.net_longwave_w_m2_tile
             - self.sensible_to_canopy_air_w_m2_tile
@@ -101,11 +112,14 @@ impl CoveredOccupancyEnergyOperands {
         self.shade_leaf.validate()?;
         self.wet_surface.validate()?;
         self.dry_stem.validate()?;
-        if self
-            .dry_stem
-            .signed_vapor_to_canopy_air_kg_m2_tile_s
-            .to_bits()
-            != 0.0_f64.to_bits()
+        if self.sun_leaf.vapor_authorization_kg_m2_tile_s.is_some()
+            || self.shade_leaf.vapor_authorization_kg_m2_tile_s.is_some()
+            || self.dry_stem.vapor_authorization_kg_m2_tile_s.is_some()
+            || self
+                .dry_stem
+                .signed_vapor_to_canopy_air_kg_m2_tile_s
+                .to_bits()
+                != 0.0_f64.to_bits()
         {
             return Err(LandSurfaceEnergyError::ComponentClosure(
                 "dry stem vapor ownership",
@@ -465,10 +479,13 @@ impl CoveredColumnEnergyOperands {
                 * air.cp_air_j_kg_k
                 * surface.heat_conductance_m_s_tile
                 * (surface.surface_temperature_k - air.canopy_air_temperature_k);
-            let reconstructed_vapor = air.rho_air_kg_m3
+            let constitutive_vapor = air.rho_air_kg_m3
                 * surface.vapor_conductance_m_s_tile
                 * (surface.surface_specific_humidity_kg_kg
                     - air.canopy_air_specific_humidity_kg_kg);
+            let reconstructed_vapor = surface
+                .vapor_authorization_kg_m2_tile_s
+                .unwrap_or(constitutive_vapor);
             if (reconstructed_sensible - surface.sensible_to_canopy_air_w_m2_tile).abs()
                 > energy_tolerance(
                     reconstructed_sensible.abs() + surface.sensible_to_canopy_air_w_m2_tile.abs(),
@@ -578,6 +595,7 @@ pub struct CoveredOccupancyEvaluation {
     pub component_emissive_areas_m2_m2_tile: [f64; 4],
     pub component_heat_conductance_m_s_tile: [f64; 4],
     pub component_vapor_conductance_m_s_tile: [f64; 4],
+    pub component_vapor_authorization_kg_m2_tile_s: [Option<f64>; 4],
     pub component_surface_specific_humidity_kg_kg: [f64; 4],
 }
 
@@ -634,6 +652,7 @@ mod tests {
             } else {
                 1.0
             },
+            vapor_authorization_kg_m2_tile_s: None,
             surface_specific_humidity_kg_kg: 0.01 + vapor,
             absorbed_shortwave_w_m2_tile: shortwave,
             net_longwave_w_m2_tile: longwave,
@@ -878,6 +897,18 @@ mod tests {
             .sun_leaf
             .surface_specific_humidity_kg_kg += 1.0e-4;
         assert!(wrong_component_humidity.validate().is_err());
+
+        let mut wrong_vapor_conductance = valid_tile();
+        wrong_vapor_conductance.column.occupancies[0]
+            .sun_leaf
+            .vapor_conductance_m_s_tile *= 0.5;
+        assert!(wrong_vapor_conductance.validate().is_err());
+
+        let mut misplaced_vapor_authorization = valid_tile();
+        misplaced_vapor_authorization.column.occupancies[0]
+            .sun_leaf
+            .vapor_authorization_kg_m2_tile_s = Some(2.0e-6);
+        assert!(misplaced_vapor_authorization.validate().is_err());
 
         let mut omitted_ground_air = valid_tile();
         omitted_ground_air

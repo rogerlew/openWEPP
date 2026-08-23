@@ -1388,22 +1388,19 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
                 .strata
                 .iter()
                 .any(|stratum| stratum.tile_ids.contains(&tile.vegetation_tile_id));
-            let mut tile_lse_forcing = lse_forcing.clone();
-            let mut tile_vegetation_forcing = canopy_forcing.forcing().clone();
+            let tile_lse_forcing = lse_forcing.clone();
+            let tile_vegetation_forcing = canopy_forcing.forcing().clone();
             if covered {
                 if let Some(carriers) = covered_carrier_receipts {
-                    let carrier = carriers
+                    // The reduced Child-2C evaluator is an unsealed numerical
+                    // initializer only. The sealed reference atmosphere must
+                    // remain the LSE/V11 forcing; the component-resolved LSE
+                    // canopy-air residual owns the physical shared node.
+                    carriers
                         .get(&(ofe.ofe_id.clone(), tile.tile_id.clone()))
                         .ok_or(V8InputProjectionError::Topology(
                             "missing keyed covered carrier receipt",
                         ))?;
-                    tile_lse_forcing.air_temperature_k = carrier.shared_air_temperature_k;
-                    tile_lse_forcing.air_specific_humidity_kg_kg =
-                        carrier.shared_air_specific_humidity;
-                    tile_lse_forcing.forcing_sha256 = tile_lse_forcing.canonical_sha256()?;
-                    tile_vegetation_forcing.air_temperature_k = carrier.shared_air_temperature_k;
-                    tile_vegetation_forcing.specific_humidity =
-                        carrier.shared_air_specific_humidity;
                 }
             }
             if covered {

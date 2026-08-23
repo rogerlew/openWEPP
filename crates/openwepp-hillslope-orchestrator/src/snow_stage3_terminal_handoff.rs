@@ -472,7 +472,7 @@ pub struct FinalStage3CanopyBoundaryReceiptV1 {
     pub destination: (OfeId, TileId),
     pub beginning_v11_state_sha256: Digest32,
     pub beginning_stage3_state_sha256: Digest32,
-    pub ending_v11_state_sha256: Digest32,
+    pub ending_v8_physical_candidate_sha256: Digest32,
     pub ending_stage3_state_sha256: Digest32,
     pub provisional_carrier_receipt_sha256: Digest32,
     pub optical_receipt_sha256: Digest32,
@@ -504,7 +504,7 @@ impl FinalStage3CanopyBoundaryReceiptV1 {
         .any(|value| !value.is_finite())
             || inputs.beginning_v11_state_sha256 == Digest32::zero()
             || inputs.beginning_stage3_state_sha256 == Digest32::zero()
-            || inputs.ending_v11_state_sha256 == Digest32::zero()
+            || inputs.ending_v8_physical_candidate_sha256 == Digest32::zero()
             || inputs.ending_stage3_state_sha256 == Digest32::zero()
             || inputs.provisional_carrier_receipt_sha256 == Digest32::zero()
             || inputs.optical_receipt_sha256 == Digest32::zero()
@@ -530,7 +530,7 @@ impl FinalStage3CanopyBoundaryReceiptV1 {
             destination: inputs.destination,
             beginning_v11_state_sha256: inputs.beginning_v11_state_sha256,
             beginning_stage3_state_sha256: inputs.beginning_stage3_state_sha256,
-            ending_v11_state_sha256: inputs.ending_v11_state_sha256,
+            ending_v8_physical_candidate_sha256: inputs.ending_v8_physical_candidate_sha256,
             ending_stage3_state_sha256: inputs.ending_stage3_state_sha256,
             provisional_carrier_receipt_sha256: inputs.provisional_carrier_receipt_sha256,
             optical_receipt_sha256: inputs.optical_receipt_sha256,
@@ -552,7 +552,7 @@ impl FinalStage3CanopyBoundaryReceiptV1 {
             destination: self.destination.clone(),
             beginning_v11_state_sha256: self.beginning_v11_state_sha256,
             beginning_stage3_state_sha256: self.beginning_stage3_state_sha256,
-            ending_v11_state_sha256: self.ending_v11_state_sha256,
+            ending_v8_physical_candidate_sha256: self.ending_v8_physical_candidate_sha256,
             ending_stage3_state_sha256: self.ending_stage3_state_sha256,
             provisional_carrier_receipt_sha256: self.provisional_carrier_receipt_sha256,
             optical_receipt_sha256: self.optical_receipt_sha256,
@@ -580,7 +580,7 @@ pub struct FinalStage3CanopyBoundaryReceiptInputs {
     pub destination: (OfeId, TileId),
     pub beginning_v11_state_sha256: Digest32,
     pub beginning_stage3_state_sha256: Digest32,
-    pub ending_v11_state_sha256: Digest32,
+    pub ending_v8_physical_candidate_sha256: Digest32,
     pub ending_stage3_state_sha256: Digest32,
     pub provisional_carrier_receipt_sha256: Digest32,
     pub optical_receipt_sha256: Digest32,
@@ -606,7 +606,7 @@ fn final_canopy_boundary_receipt_digest(
     for digest in [
         inputs.beginning_v11_state_sha256,
         inputs.beginning_stage3_state_sha256,
-        inputs.ending_v11_state_sha256,
+        inputs.ending_v8_physical_candidate_sha256,
         inputs.ending_stage3_state_sha256,
         inputs.provisional_carrier_receipt_sha256,
         inputs.optical_receipt_sha256,
@@ -2008,7 +2008,7 @@ mod tests {
                 ),
                 beginning_v11_state_sha256: Digest32::from_bytes([1; 32]),
                 beginning_stage3_state_sha256: Digest32::from_bytes([2; 32]),
-                ending_v11_state_sha256: Digest32::from_bytes([6; 32]),
+                ending_v8_physical_candidate_sha256: Digest32::from_bytes([6; 32]),
                 ending_stage3_state_sha256: Digest32::from_bytes([7; 32]),
                 provisional_carrier_receipt_sha256: Digest32::from_bytes([3; 32]),
                 optical_receipt_sha256: Digest32::from_bytes([4; 32]),

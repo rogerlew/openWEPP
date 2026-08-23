@@ -2038,14 +2038,16 @@ fn evaluate_covered_occupancy(
         occupancy.gb_stem_m_s * dry_stem,
     ];
     let vapor_flux = [sun_e, shade_e, wet_e, 0.0];
-    let vapor_conductance = std::array::from_fn(|index| {
-        let humidity_delta = surface_q[index] - canopy_air_q;
-        if humidity_delta.to_bits() == 0.0_f64.to_bits() {
-            heat_conductance[index]
-        } else {
-            (vapor_flux[index] / (rho * humidity_delta)).max(0.0)
-        }
-    });
+    // Retain direct constitutive conductances. These operands are independent
+    // of the accepted flux and therefore cannot pass validation merely by
+    // dividing and multiplying the same result. The wet authorization branch
+    // remains explicit in `wet_branch` and is validated against its liquid cap.
+    let vapor_conductance = [
+        dry_sun / (1.0 / occupancy.gb_leaf_m_s + sun.rs_s_m),
+        dry_shade / (1.0 / occupancy.gb_leaf_m_s + shade.rs_s_m),
+        occupancy.gb_wet_m_s * wet_area,
+        0.0,
+    ];
     Ok(CoveredOccupancyEvaluation {
         residuals,
         tolerances,
@@ -2079,6 +2081,12 @@ fn evaluate_covered_occupancy(
         component_emissive_areas_m2_m2_tile: component_areas,
         component_heat_conductance_m_s_tile: heat_conductance,
         component_vapor_conductance_m_s_tile: vapor_conductance,
+        component_vapor_authorization_kg_m2_tile_s: [
+            None,
+            None,
+            (wet_branch == WaterBranch::AuthorizationActiveOrTie).then_some(wet_e),
+            None,
+        ],
         component_surface_specific_humidity_kg_kg: surface_q,
     })
 }

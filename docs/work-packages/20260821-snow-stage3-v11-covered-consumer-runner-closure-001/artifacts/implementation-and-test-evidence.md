@@ -219,3 +219,18 @@ admission passed for 49 contracts and six changed science surfaces.
 `HOLD:` The package and Child 3 disposition are unchanged; this increment does
 not claim open-snow, precipitation, snow-soil heat, outcome-ledger, terminal,
 restart, scenario, or terminal-review closure.
+
+## Corrective carrier-authority and semantic-lineage increment
+
+`Static:` The reduced carrier is demoted to initialization; sealed atmospheric
+forcing plus the component-resolved LSE canopy-air residual now define the
+single physical carrier node, and Stage 3 consumes that boundary before each
+candidate evaluation. Nested carrier/boundary seals, exact complete snow bytes,
+all installed owners, and parent execution lineage are replayed before parent
+acceptance.
+
+`Ran:` 820 LSE/orchestrator tests passed with one intentional skip. Focused
+fresh-seal and alternate-valid-owner poisons passed. Package disposition remains
+`EXECUTING / HOLD` pending the complete mixed-surface physical producer and the
+remaining convergence, precipitation, soil-heat, ledger, terminal, restart,
+scenario, and review work.

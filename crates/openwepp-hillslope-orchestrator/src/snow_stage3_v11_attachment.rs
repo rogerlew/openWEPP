@@ -7,12 +7,11 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-#[cfg(test)]
-use openwepp_coupled_time::ParentIntervalId;
 use openwepp_coupled_time::{
     ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, Digest32, LedgerEntryV1,
-    ModelTimeNs, OwnerState, ParentAuthorityV1, StepConstraintV1, TimeSupport, accept_slab,
-    complete_owner_set_digest, digest_bytes, quantize_seconds_to_tick, reduce_constraints,
+    ModelTimeNs, OwnerState, ParentAuthorityV1, ParentIntervalId, StepConstraintV1, TimeSupport,
+    accept_slab, complete_owner_set_digest, digest_bytes, quantize_seconds_to_tick,
+    reduce_constraints,
 };
 use openwepp_vegetation::v11::{
     V11OwnerEnvelope, V11ParentCandidate, V11ParentTransaction, VegetationConfigurationV11,
@@ -1733,6 +1732,19 @@ fn execute_covered_real_v11_parent(
         DirectSnowStage3V11AttachmentError::Identity("missing staged covered Stage-3 ending"),
     )?;
     let owner_join = CoveredParentOwnerJoinReceiptV1::try_new(
+        context.run_identity,
+        ParentIntervalId::derive(
+            context.run_identity,
+            context.calendar_receipt,
+            forcing_receipt,
+            support,
+        )?
+        .digest(),
+        parent_id.digest(),
+        final_receipt.segment_id().digest(),
+        final_receipt.slab_id().digest(),
+        forcing_receipt,
+        ledger_digest,
         support,
         final_executor.stack.last_final_boundary_receipts().ok_or(
             DirectSnowStage3V11AttachmentError::Identity(
