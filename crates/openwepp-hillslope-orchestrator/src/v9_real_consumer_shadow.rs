@@ -76,7 +76,7 @@ use crate::snow_stage3_terminal_handoff::{
     STAGE3_OFE_TILE_FRACTION_CLOSURE_TOLERANCE, SealedCoveredCarrierForcing,
     SnowStage3HandoffError, Stage3BoundaryIdentity, Stage3LaneAreaBasisV1,
     Stage3SnowSurfaceBoundaryReceiptInputs, Stage3SnowSurfaceBoundaryReceiptV1,
-    Stage3TileBoundaryClassV1,
+    Stage3TileBoundaryClassV1, outward_snow_fluxes_to_stage3,
 };
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyShadowAdapter, RealHydrologyShadowError,

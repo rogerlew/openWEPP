@@ -30,6 +30,22 @@ pub const COMPLETE_OWNER_MANIFEST: [&str; 7] = [
 const SIGMA_W_M2_K4: f64 = 5.670_374_419e-8;
 const CLOSURE_TOLERANCE: f64 = 1.0e-9;
 
+/// Convert a tile-boundary convention that is positive outward from snow to
+/// the Stage-3 control-volume convention that is positive into snow.
+#[must_use]
+pub(crate) fn outward_snow_fluxes_to_stage3(
+    sensible_outward_w_m2: f64,
+    vapor_outward_kg_m2_s: f64,
+    latent_outward_j_m2: f64,
+    interval_s: f64,
+) -> (f64, f64, f64) {
+    (
+        -sensible_outward_w_m2 * interval_s,
+        -vapor_outward_kg_m2_s * interval_s,
+        -latent_outward_j_m2,
+    )
+}
+
 #[derive(Debug, Error, Clone, PartialEq)]
 pub enum SnowStage3HandoffError {
     #[error(transparent)]
@@ -1996,6 +2012,21 @@ impl SnowStage3HandoffRuntime {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn outward_snow_exchange_is_inverted_at_stage3_control_volume() {
+        let interval_s = 1_800.0;
+        let warm_dry_outward = outward_snow_fluxes_to_stage3(12.0, 2.0e-6, 10_000.0, interval_s);
+        assert_eq!(warm_dry_outward.0, -21_600.0);
+        assert_eq!(warm_dry_outward.1, -0.0036);
+        assert_eq!(warm_dry_outward.2, -10_000.0);
+
+        let cold_humid_inward =
+            outward_snow_fluxes_to_stage3(-12.0, -2.0e-6, -10_000.0, interval_s);
+        assert_eq!(cold_humid_inward.0, 21_600.0);
+        assert_eq!(cold_humid_inward.1, 0.0036);
+        assert_eq!(cold_humid_inward.2, 10_000.0);
+    }
 
     fn boundary_inputs(latent_energy_j_m2: f64) -> Stage3SnowSurfaceBoundaryReceiptInputs {
         Stage3SnowSurfaceBoundaryReceiptInputs {

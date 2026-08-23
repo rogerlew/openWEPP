@@ -1004,7 +1004,29 @@ mod tests {
         let stage3_inputs_by_lane = BTreeMap::from([(1, stage3_inputs)]);
         let stage3_forcing_by_lane = BTreeMap::from([(1, stage3_forcing)]);
         let carrier_forcing_by_lane = BTreeMap::from([(1, child2c_carrier_forcing())]);
-        let empty_snow_surface_forcing = BTreeMap::new();
+        let covered_tiles = shadow
+            .inner
+            .vegetation_configuration
+            .strata
+            .iter()
+            .flat_map(|stratum| stratum.tile_ids.iter().cloned())
+            .collect::<std::collections::BTreeSet<_>>();
+        let covered_record = shadow
+            .inner
+            .surface_configuration
+            .records
+            .iter()
+            .find(|record| covered_tiles.contains(&record.key.tile_id))
+            .expect("mixed fixture covered tile");
+        let covered_only_snow_surface_forcing = BTreeMap::from([(
+            (
+                covered_record.key.ofe_id.clone(),
+                covered_record.key.tile_id.clone(),
+            ),
+            SealedStage3TileBoundaryForcingV1::V11CanopyCovered(
+                carrier_forcing_by_lane[&1].clone(),
+            ),
+        )]);
         let mut missing_open_executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
             stack: DirectV11SnowCoveredRealConsumerStack::new(
                 &shadow,
@@ -1012,8 +1034,7 @@ mod tests {
                     interval: &covered_interval,
                     stage3_inputs_by_lane: &stage3_inputs_by_lane,
                     stage3_forcing_by_lane: &stage3_forcing_by_lane,
-                    carrier_forcing_by_lane: &carrier_forcing_by_lane,
-                    snow_surface_forcing_by_destination: &empty_snow_surface_forcing,
+                    snow_surface_forcing_by_destination: &covered_only_snow_surface_forcing,
                     stage3_beginning_by_lane: BTreeMap::from([(1, stage3_beginning.clone())]),
                     day_index: 0,
                     interval_index: 0,
@@ -1035,13 +1056,6 @@ mod tests {
         ));
         assert!(missing_open_executor.stack.take_staged_stage3().is_none());
         assert!(missing_open_executor.stack.take_staged_ending().is_none());
-        let covered_tiles = shadow
-            .inner
-            .vegetation_configuration
-            .strata
-            .iter()
-            .flat_map(|stratum| stratum.tile_ids.iter().cloned())
-            .collect::<std::collections::BTreeSet<_>>();
         let open_record = shadow
             .inner
             .surface_configuration
@@ -1089,10 +1103,21 @@ mod tests {
             },
         )
         .expect("open-snow forcing");
-        let snow_surface_forcing_by_destination = BTreeMap::from([(
-            open_forcing.destination.clone(),
-            SealedStage3TileBoundaryForcingV1::OpenSnow(open_forcing),
-        )]);
+        let snow_surface_forcing_by_destination = BTreeMap::from([
+            (
+                (
+                    covered_record.key.ofe_id.clone(),
+                    covered_record.key.tile_id.clone(),
+                ),
+                SealedStage3TileBoundaryForcingV1::V11CanopyCovered(
+                    carrier_forcing_by_lane[&1].clone(),
+                ),
+            ),
+            (
+                open_forcing.destination.clone(),
+                SealedStage3TileBoundaryForcingV1::OpenSnow(open_forcing),
+            ),
+        ]);
         let stage3_beginning_by_lane = BTreeMap::from([(1, stage3_beginning.clone())]);
         let stack = DirectV11SnowCoveredRealConsumerStack::new(
             &shadow,
@@ -1100,7 +1125,6 @@ mod tests {
                 interval: &covered_interval,
                 stage3_inputs_by_lane: &stage3_inputs_by_lane,
                 stage3_forcing_by_lane: &stage3_forcing_by_lane,
-                carrier_forcing_by_lane: &carrier_forcing_by_lane,
                 snow_surface_forcing_by_destination: &snow_surface_forcing_by_destination,
                 stage3_beginning_by_lane,
                 day_index: 0,
@@ -1168,7 +1192,6 @@ mod tests {
                 interval: &covered_interval,
                 stage3_inputs_by_lane: &stage3_inputs_by_lane,
                 stage3_forcing_by_lane: &stage3_forcing_by_lane,
-                carrier_forcing_by_lane: &carrier_forcing_by_lane,
                 snow_surface_forcing_by_destination: &snow_surface_forcing_by_destination,
                 stage3_beginning_by_lane: BTreeMap::from([(1, changed_stage3.clone())]),
                 day_index: 0,
@@ -1221,12 +1244,18 @@ mod tests {
             "carrier identity must depend on candidate canopy-air state"
         );
 
-        let mut poisoned_forcing = carrier_forcing_by_lane.clone();
-        poisoned_forcing
-            .get_mut(&1)
-            .expect("carrier lane")
-            .exposure
-            .wind_m_s = 0.0;
+        let mut poisoned_surface_forcing = snow_surface_forcing_by_destination.clone();
+        let SealedStage3TileBoundaryForcingV1::V11CanopyCovered(poisoned_forcing) =
+            poisoned_surface_forcing
+                .get_mut(&(
+                    covered_record.key.ofe_id.clone(),
+                    covered_record.key.tile_id.clone(),
+                ))
+                .expect("covered destination forcing")
+        else {
+            panic!("covered destination class");
+        };
+        poisoned_forcing.exposure.wind_m_s = 0.0;
         let mut poisoned = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
             stack: DirectV11SnowCoveredRealConsumerStack::new(
                 &shadow,
@@ -1234,8 +1263,7 @@ mod tests {
                     interval: &covered_interval,
                     stage3_inputs_by_lane: &stage3_inputs_by_lane,
                     stage3_forcing_by_lane: &stage3_forcing_by_lane,
-                    carrier_forcing_by_lane: &poisoned_forcing,
-                    snow_surface_forcing_by_destination: &snow_surface_forcing_by_destination,
+                    snow_surface_forcing_by_destination: &poisoned_surface_forcing,
                     stage3_beginning_by_lane: BTreeMap::from([(
                         1,
                         Wb11HydrologyKernel::initialize_stage3_persistent_state(

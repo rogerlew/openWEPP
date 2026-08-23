@@ -282,3 +282,21 @@ boundary classes, a common Stage-3 lane state, exact unnormalized OFE-ground
 aggregation, sealed replay, and atomic staging. The full orchestrator suite
 passed 764/764 and the orchestrator/vegetation suite passed 1036/1036; each
 scope retained one intentional skip.
+
+## Boundary orientation and forcing custody
+
+`Static:` Tile producers retain positive-outward exchange because the covered
+LSE column consumes that convention. A single typed conversion at the Stage-3
+receipt boundary negates sensible energy, vapor mass, and latent energy into
+the snow control volume. Both covered and open contributions use this same
+conversion after OFE-ground aggregation.
+
+`Static:` Destination forcing now owns covered physical operands. Any retained
+lane-keyed compatibility forcing must exactly reconstruct the covered subset.
+Open forcing stores its zero precipitation claims in its seal, joins the
+provider interval receipt, and is backed by support-wide zero-precipitation
+checks across Stage 3, provider parcels, V11/LSE parcels/runon, and vegetation.
+
+`Ran:` The exact-worktree two-crate regression passed 1037 tests with one
+intentional skip. Direct sign vectors prove outward sensible/vapor/latent loss
+becomes negative Stage-3 input and inward exchange becomes positive input.

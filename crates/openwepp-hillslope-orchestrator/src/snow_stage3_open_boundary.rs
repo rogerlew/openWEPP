@@ -109,6 +109,8 @@ impl FinalStage3TileBoundaryReceiptV1 {
     }
 
     #[must_use]
+    /// Returns tile-boundary exchange positive outward from the snow for the
+    /// first three operands, followed by snow-owned radiative/state operands.
     pub fn physical_operands(&self) -> [f64; 7] {
         match self {
             Self::V11Canopy(value) => [
@@ -257,6 +259,9 @@ pub struct SealedOpenSnowTileForcingV1 {
     pub diffuse_vis_w_m2: f64,
     pub direct_nir_w_m2: f64,
     pub diffuse_nir_w_m2: f64,
+    pub rain_m: f64,
+    pub snowfall_m: f64,
+    pub precipitation_parcel_count: usize,
     pub receipt_sha256: Digest32,
 }
 
@@ -308,6 +313,9 @@ impl SealedOpenSnowTileForcingV1 {
             diffuse_vis_w_m2: inputs.diffuse_vis_w_m2,
             direct_nir_w_m2: inputs.direct_nir_w_m2,
             diffuse_nir_w_m2: inputs.diffuse_nir_w_m2,
+            rain_m: inputs.rain_m,
+            snowfall_m: inputs.snowfall_m,
+            precipitation_parcel_count: inputs.precipitation_parcel_count,
             receipt_sha256: Digest32::zero(),
         };
         value.receipt_sha256 = value.reconstructed_digest()?;
@@ -341,6 +349,9 @@ impl SealedOpenSnowTileForcingV1 {
             || self.reference_temperature_k <= 0.0
             || !(0.0..=1.0).contains(&self.reference_specific_humidity_kg_kg)
             || self.air_pressure_pa <= 0.0
+            || self.rain_m.to_bits() != 0.0_f64.to_bits()
+            || self.snowfall_m.to_bits() != 0.0_f64.to_bits()
+            || self.precipitation_parcel_count != 0
             || [
                 self.atmospheric_downward_longwave_w_m2,
                 self.direct_vis_w_m2,
@@ -375,10 +386,13 @@ impl SealedOpenSnowTileForcingV1 {
             self.diffuse_vis_w_m2,
             self.direct_nir_w_m2,
             self.diffuse_nir_w_m2,
+            self.rain_m,
+            self.snowfall_m,
         ]
         .into_iter()
         .flat_map(|value| value.to_bits().to_be_bytes())
         .collect::<Vec<_>>();
+        let precipitation_count = (self.precipitation_parcel_count as u64).to_be_bytes();
         framed_sha256(
             "openwepp-stage3-open-snow-tile-forcing-v1",
             &[
@@ -397,6 +411,10 @@ impl SealedOpenSnowTileForcingV1 {
                 FramedField {
                     tag: "atmosphere",
                     value: &scalars,
+                },
+                FramedField {
+                    tag: "precipitation_count",
+                    value: &precipitation_count,
                 },
             ],
         )
@@ -729,5 +747,10 @@ mod tests {
         let mut parcel = forcing_inputs("open-a");
         parcel.precipitation_parcel_count = 1;
         assert!(SealedOpenSnowTileForcingV1::try_new(parcel).is_err());
+
+        let mut resealed_surface = SealedOpenSnowTileForcingV1::try_new(forcing_inputs("open-a"))
+            .expect("dry sealed forcing");
+        resealed_surface.rain_m = f64::from_bits(1);
+        assert!(resealed_surface.validate().is_err());
     }
 }

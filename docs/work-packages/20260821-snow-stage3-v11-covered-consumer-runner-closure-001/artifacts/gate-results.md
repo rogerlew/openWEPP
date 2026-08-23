@@ -475,3 +475,35 @@ without normalization.
 remaining exposure/model poison matrix, snow-soil heat, independent outcome
 ledger, terminal chronology, restart, scenarios, and independent review remain
 open.
+
+## Snow-boundary orientation and forcing-custody correction
+
+`Static:` Covered and open tile exchanges retain their positive-outward-from-
+snow producer convention. The sole Stage-3 construction boundary now negates
+sensible, vapor-mass, and latent-energy operands into Stage-3's positive-into-
+snow control-volume convention. Warm/dry outward exchange therefore removes
+snow energy and mass; cold/humid inward exchange adds them.
+
+`Static:` Open forcing now persists and revalidates its zero rain, snowfall,
+and parcel-count operands. Prepared snow-surface supports additionally reject
+nonzero Stage-3 rain/snow/active precipitation, provider/support parcels,
+V11/LSE precipitation or runon parcels, and vegetation rain. Open forcing is
+joined to the exact provider interval receipt. Destination-keyed covered
+forcing is the sole physical carrier source; the legacy lane map is admitted
+only when it exactly equals the covered destination subset.
+
+`Static:` The support exposes explicit `SnowFree`, `OpenSnowOnly`, and
+`CanopyCoveredOrMixed` regimes. Open-only no longer requires a fabricated
+covered carrier. Exact sealed replay re-merges the accepted Stage-3 snow state
+before final component/destination receipts, eliminating tolerance-level
+covered/open temperature divergence.
+
+`Ran at exact worktree:` two-crate orchestrator/vegetation nextest passed
+1037/1037 with one intentional skip. The real mixed covered/open regression
+and the direct outward-to-Stage-3 sign vectors passed. Formatting and diff
+hygiene passed.
+
+`HOLD:` A complete one-tile `1.0 open-snow` parent fixture and the full
+provider-rain rollback poison matrix remain required before claiming the
+open-only regime closed. Precipitation physics, snow-soil heat, outcome ledger,
+terminal chronology, restart, scenarios, and independent review remain open.
