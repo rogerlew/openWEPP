@@ -149,8 +149,10 @@ final physical flux identities.
 
 `Static:` Lane receipts bind ordered destinations, exact tile fractions,
 topology, provisional/destination/lane receipt identities, and the explicit
-OFE-ground area basis. The receipt now uses a versioned framed digest rather
-than JSON serialization. Final receipt validation includes snow
+OFE-ground area basis. The receipt now uses the explicitly specified,
+deterministic adopter wire rather than JSON serialization; it remains
+prohibited from restart/parent authority until canonical framed adoption.
+Final receipt validation includes snow
 temperature, latent heat, support duration, latent mass/energy, and ending
 V11/Stage-3 joins. Partial final identity states are structurally rejected.
 
@@ -167,3 +169,73 @@ check, passing formatting check, and passing `git diff --check`.
 `HOLD:` Precipitation custody, snow-soil heat, independent outcome-ledger
 closure, heterogeneous physical scenario matrix, runner construction,
 terminal liquid, restart, and reviews remain open.
+
+## Checkpoint amendment: OFE-ground authority and runtime basis
+
+Ran at `cf178f5a41313dc71416e68e654a9aa71f72a51f`:
+
+- `git diff --check`: `PASS` before commit.
+
+Not run at exact HEAD `cf178f5a41313dc71416e68e654a9aa71f72a51f`:
+
+- `cargo check`;
+- Rust tests;
+- `rustfmt`;
+- Clippy;
+- strict contract binding;
+- assurance identity verification.
+
+Reason: `cargo` and `rustfmt` were unavailable in that execution environment.
+Prior results above remain historical increment evidence and are not exact-head
+evidence for the enum rename, framed digest, changed validation, or new tests.
+
+## V15 review-amendment exact-worktree qualification
+
+Ran on the final in-review bytes before independent re-verification:
+
+- `nix develop --command cargo fmt --all -- --check`: `PASS`.
+- `nix develop --command cargo check -p openwepp-hillslope-orchestrator --tests`:
+  `PASS` with one pre-existing dead-code warning.
+- focused contract-derived v15 test: `PASS`, 1/1.
+- focused OFE receipt, mixed aggregation, and mixed runtime fail-closed tests:
+  `PASS`, 3/3.
+- strict contract binding exposure: `PASS`, 14 rows.
+- typed assurance `validate --all`: `PASS`.
+- typed assurance `verify-generation --base-ref
+  15763d7f6d5d4125333d9b7583424c714f5f5ea4`: `PASS`, generation
+  `4151ae2aaacbd389f6ab163459f09aeb314fddd00d250fc8a817a432267dd12c`,
+  86 transitions.
+- `git diff --check`: `PASS`.
+
+`Static:` The lane receipt constructor now requires an independently supplied
+ordered topology expectation and rejects fresh-seal tile fraction, boundary
+class, or boundary-model substitutions. The runtime expectation is projected
+from the configured covered topology and the admitted covered-boundary model;
+it cannot authorize an open-snow claim. Fresh-seal class and model poison tests
+cover the join.
+
+`FAIL (pre-existing):` Clippy with `-D warnings` remains blocked by existing
+large-enum and `too_many_lines` findings outside this amendment. No passing
+Clippy result is claimed.
+
+## V15 approved/active promotion qualification
+
+`Static:` Independent verification agents A and B each returned
+`PASS-WITH-NOTES` on the amended in-review checkpoint. All accepted findings
+closed before promotion. The package remains `EXECUTING / HOLD`.
+
+Ran after promotion to `approved / active / 2026-08-22`:
+
+- final typed assurance source adoption: `PASS`, transaction
+  `d107bb417ecd0e340eb8e0a4b96477f751aff4a044093a7b88087536d9f63979`,
+  generation `c88e6204e4f4fb5be440156d2764a63ae55646a55fcbcc563a98fe093522f182`;
+- assurance `validate --all`: `PASS`;
+- assurance generation verification: `PASS`, 87 transitions;
+- strict contract binding exposure: `PASS`, 14 rows;
+- science-contract admission against `cf178f5a`: `PASS`, `A0_ADMITTED`, 49
+  contracts and 3 changed science surfaces;
+- contract-derived approved-v15 test: `PASS`, 1/1;
+- `cargo check -p openwepp-hillslope-orchestrator --tests`: `PASS` with one
+  pre-existing dead-code warning;
+- `cargo fmt --all -- --check`: `PASS`;
+- `git diff --check`: `PASS`.

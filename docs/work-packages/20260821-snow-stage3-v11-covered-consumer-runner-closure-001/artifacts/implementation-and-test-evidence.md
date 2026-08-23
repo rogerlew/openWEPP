@@ -91,7 +91,9 @@ advected, evaluated-duration, and lifecycle results before it stages any V11
 candidate. Per-destination receipts remain keyed by `(OFE, tile)`; lane
 aggregation is explicit and uses the declared OFE-ground basis. The complete
 snow-surface tile fractions must close to one and are not renormalized. The
-lane receipt digest uses closed, versioned typed framing rather than JSON.
+lane receipt digest uses an explicitly specified deterministic adopter wire
+rather than JSON and is prohibited from restart/parent authority until a
+canonical framed domain is admitted.
 
 `Static:` `CoveredColumnAuthority::V11SnowCovered` is selected on the covered
 candidate and the snow-free guard remains unchanged. The lower-boundary

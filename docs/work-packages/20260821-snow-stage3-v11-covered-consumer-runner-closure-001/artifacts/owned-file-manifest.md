@@ -53,9 +53,17 @@ Exact source edits admitted in this increment:
   and the persistent covered V11/Stage-3 shared-carrier test.
 - `crates/openwepp-hillslope-orchestrator/src/lib.rs`: public typed exports.
 - `docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md`:
-  prospective Option-A OFE-ground Stage 3 lane area authority, complete tile
-  closure, terminal identity, and restart topology rule admitted by direct
-  user decision on 2026-08-22.
+  approved v15 Option-A OFE-ground Stage 3 lane area authority, complete typed
+  tile closure, terminal identity, and restart topology rule admitted by direct
+  user decision and dual review/verification on 2026-08-22.
+- `docs/specifications/science-contracts/index.md` and
+  `tests/integration/snow_stage3_shared_carrier_authority_contract.rs`: v15
+  lifecycle registry and contract-derived binding guards.
+- `tools/release/authority-policy/impact-map.json`: atomic
+  `SC-SNOWENERGY-001` binding for the Stage 3 terminal-handoff science surface.
+- `assurance/v2/identity.lock.json`, affected assurance review locks, and typed
+  `assurance/v2/transactions/*.json`: planner-authorized source-adoption chain;
+  no assurance identity was hand-edited.
 
 `Static:` Covered execution is admitted only through the distinct typed
 adopter and covered segment input. It derives live carrier operands internally,

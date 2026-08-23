@@ -638,10 +638,32 @@ pub enum Stage3LaneAreaBasisV1 {
     OfeGround,
 }
 
+pub const STAGE3_OFE_TILE_FRACTION_CLOSURE_TOLERANCE: f64 = 1.0e-12;
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum Stage3TileBoundaryClassV1 {
+    V11CanopyCovered,
+    OpenSnow,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct LaneBoundaryTopologyExpectationV1 {
+    pub tile_id: TileId,
+    pub tile_fraction_bits: u64,
+    pub boundary_class: Stage3TileBoundaryClassV1,
+    pub boundary_model_definition_sha256: Digest32,
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct LaneBoundaryContributionV1 {
     pub tile_id: TileId,
     pub tile_fraction: f64,
+    pub boundary_class: Stage3TileBoundaryClassV1,
+    pub boundary_model_definition_sha256: Digest32,
+    pub beginning_stage3_state_sha256: Digest32,
+    pub provisional_carrier_receipt_sha256: Digest32,
+    pub optical_receipt_sha256: Digest32,
+    pub reciprocal_longwave_receipt_sha256: Digest32,
     pub final_boundary_receipt_sha256: Digest32,
     pub sensible_to_canopy_air_w_m2: f64,
     pub vapor_to_canopy_air_kg_m2_s: f64,
@@ -675,9 +697,14 @@ pub struct LaneStage3BoundaryReceiptV1 {
 }
 
 impl LaneStage3BoundaryReceiptV1 {
-    pub fn try_new(mut value: Self) -> Result<Self, SnowStage3HandoffError> {
+    pub fn try_new(
+        mut value: Self,
+        expected_topology: &[LaneBoundaryTopologyExpectationV1],
+    ) -> Result<Self, SnowStage3HandoffError> {
         value.receipt_sha256 = Digest32::zero();
+        value.seal_source_set_digests();
         value.validate_body()?;
+        value.validate_topology(expected_topology)?;
         value.receipt_sha256 = lane_stage3_boundary_receipt_digest(&value);
         value.validate()?;
         Ok(value)
@@ -714,9 +741,20 @@ impl LaneStage3BoundaryReceiptV1 {
         }
         let mut sum = 0.0;
         let mut aggregates = [0.0; 7];
+        let common =
+            self.ordered_destinations
+                .first()
+                .ok_or(SnowStage3HandoffError::InvalidCarrier(
+                    "lane Stage-3 boundary topology",
+                ))?;
         let duration_s = f64::from_bits(self.support.duration_s_bits());
         for contribution in &self.ordered_destinations {
             if contribution.final_boundary_receipt_sha256 == Digest32::zero()
+                || contribution.boundary_model_definition_sha256 == Digest32::zero()
+                || contribution.beginning_stage3_state_sha256 == Digest32::zero()
+                || contribution.provisional_carrier_receipt_sha256 == Digest32::zero()
+                || contribution.optical_receipt_sha256 == Digest32::zero()
+                || contribution.reciprocal_longwave_receipt_sha256 == Digest32::zero()
                 || !contribution.tile_fraction.is_finite()
                 || contribution.tile_fraction <= 0.0
                 || contribution.tile_fraction > 1.0
@@ -736,6 +774,14 @@ impl LaneStage3BoundaryReceiptV1 {
             {
                 return Err(SnowStage3HandoffError::InvalidCarrier(
                     "lane Stage-3 boundary contribution domain",
+                ));
+            }
+            if contribution.beginning_stage3_state_sha256 != common.beginning_stage3_state_sha256
+                || contribution.snow_temperature_k.to_bits() != common.snow_temperature_k.to_bits()
+                || contribution.latent_heat_j_kg.to_bits() != common.latent_heat_j_kg.to_bits()
+            {
+                return Err(SnowStage3HandoffError::InvalidCarrier(
+                    "lane Stage-3 boundary common snow state",
                 ));
             }
             let expected_latent_energy = contribution.vapor_to_canopy_air_kg_m2_s
@@ -764,11 +810,13 @@ impl LaneStage3BoundaryReceiptV1 {
                 aggregates[index] += contribution.tile_fraction * value;
             }
         }
-        if !sum.is_finite() || (sum - 1.0).abs() > 1.0e-12 {
+        if !sum.is_finite() || (sum - 1.0).abs() > STAGE3_OFE_TILE_FRACTION_CLOSURE_TOLERANCE {
             return Err(SnowStage3HandoffError::InvalidCarrier(
                 "lane Stage-3 snow-surface fractions must close on OFE ground",
             ));
         }
+        aggregates[5] = common.snow_temperature_k;
+        aggregates[6] = common.latent_heat_j_kg;
         let expected = [
             self.aggregate_sensible_to_canopy_air_w_m2,
             self.aggregate_vapor_to_canopy_air_kg_m2_s,
@@ -791,20 +839,89 @@ impl LaneStage3BoundaryReceiptV1 {
                 "lane Stage-3 aggregate latent heat",
             ));
         }
-        let reconstructed_latent_heat =
-            if self.aggregate_vapor_to_canopy_air_kg_m2_s.abs() > 1.0e-15 {
-                self.aggregate_latent_energy_to_canopy_air_j_m2
-                    / (self.aggregate_vapor_to_canopy_air_kg_m2_s * duration_s)
-            } else {
-                aggregates[6]
-            };
-        if self.aggregate_latent_heat_j_kg.to_bits() != reconstructed_latent_heat.to_bits() {
+        if self.aggregate_latent_heat_j_kg.to_bits() != common.latent_heat_j_kg.to_bits() {
             return Err(SnowStage3HandoffError::InvalidCarrier(
                 "lane Stage-3 aggregate latent mass-energy identity",
             ));
         }
+        let expected_latent_energy =
+            self.aggregate_vapor_to_canopy_air_kg_m2_s * common.latent_heat_j_kg * duration_s;
+        if expected_latent_energy.to_bits()
+            != self.aggregate_latent_energy_to_canopy_air_j_m2.to_bits()
+        {
+            return Err(SnowStage3HandoffError::InvalidCarrier(
+                "lane Stage-3 aggregate latent mass-energy identity",
+            ));
+        }
+        let expected_source_sets = lane_source_set_digests(&self.ordered_destinations);
+        if self.provisional_carrier_receipt_sha256 != expected_source_sets[0]
+            || self.optical_receipt_sha256 != expected_source_sets[1]
+            || self.reciprocal_longwave_receipt_sha256 != expected_source_sets[2]
+            || self.final_destination_receipt_sha256 != expected_source_sets[3]
+        {
+            return Err(SnowStage3HandoffError::InvalidCarrier(
+                "lane Stage-3 source receipt-set reconstruction",
+            ));
+        }
         Ok(())
     }
+
+    pub fn validate_topology(
+        &self,
+        expected: &[LaneBoundaryTopologyExpectationV1],
+    ) -> Result<(), SnowStage3HandoffError> {
+        if expected.len() != self.ordered_destinations.len()
+            || expected
+                .iter()
+                .zip(&self.ordered_destinations)
+                .any(|(authority, contribution)| {
+                    authority.tile_id != contribution.tile_id
+                        || authority.tile_fraction_bits != contribution.tile_fraction.to_bits()
+                        || authority.boundary_class != contribution.boundary_class
+                        || authority.boundary_model_definition_sha256
+                            != contribution.boundary_model_definition_sha256
+                })
+        {
+            return Err(SnowStage3HandoffError::InvalidCarrier(
+                "lane Stage-3 boundary topology authority join",
+            ));
+        }
+        Ok(())
+    }
+
+    fn seal_source_set_digests(&mut self) {
+        let digests = lane_source_set_digests(&self.ordered_destinations);
+        self.provisional_carrier_receipt_sha256 = digests[0];
+        self.optical_receipt_sha256 = digests[1];
+        self.reciprocal_longwave_receipt_sha256 = digests[2];
+        self.final_destination_receipt_sha256 = digests[3];
+    }
+}
+
+fn lane_source_set_digests(contributions: &[LaneBoundaryContributionV1]) -> [Digest32; 4] {
+    std::array::from_fn(|source_index| {
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(b"OPENWEPP_LANE_STAGE3_SOURCE_SET_V1\0");
+        bytes.push(source_index as u8);
+        bytes.extend_from_slice(&(contributions.len() as u64).to_le_bytes());
+        for contribution in contributions {
+            append_framed_str(&mut bytes, contribution.tile_id.as_str());
+            bytes.extend_from_slice(&contribution.tile_fraction.to_bits().to_le_bytes());
+            bytes.push(match contribution.boundary_class {
+                Stage3TileBoundaryClassV1::V11CanopyCovered => 0,
+                Stage3TileBoundaryClassV1::OpenSnow => 1,
+            });
+            bytes.extend_from_slice(contribution.boundary_model_definition_sha256.as_bytes());
+            let source = match source_index {
+                0 => contribution.provisional_carrier_receipt_sha256,
+                1 => contribution.optical_receipt_sha256,
+                2 => contribution.reciprocal_longwave_receipt_sha256,
+                _ => contribution.final_boundary_receipt_sha256,
+            };
+            bytes.extend_from_slice(source.as_bytes());
+        }
+        digest_bytes(&bytes)
+    })
 }
 
 fn lane_stage3_boundary_receipt_digest(value: &LaneStage3BoundaryReceiptV1) -> Digest32 {
@@ -824,12 +941,19 @@ fn lane_stage3_boundary_receipt_digest(value: &LaneStage3BoundaryReceiptV1) -> D
     ] {
         bytes.extend_from_slice(digest.as_bytes());
     }
-    bytes.extend_from_slice(
-        &(value.ordered_destinations.len() as u64).to_le_bytes(),
-    );
+    bytes.extend_from_slice(&(value.ordered_destinations.len() as u64).to_le_bytes());
     for contribution in &value.ordered_destinations {
         append_framed_str(&mut bytes, contribution.tile_id.as_str());
         bytes.extend_from_slice(&contribution.tile_fraction.to_bits().to_le_bytes());
+        bytes.push(match contribution.boundary_class {
+            Stage3TileBoundaryClassV1::V11CanopyCovered => 0,
+            Stage3TileBoundaryClassV1::OpenSnow => 1,
+        });
+        bytes.extend_from_slice(contribution.boundary_model_definition_sha256.as_bytes());
+        bytes.extend_from_slice(contribution.beginning_stage3_state_sha256.as_bytes());
+        bytes.extend_from_slice(contribution.provisional_carrier_receipt_sha256.as_bytes());
+        bytes.extend_from_slice(contribution.optical_receipt_sha256.as_bytes());
+        bytes.extend_from_slice(contribution.reciprocal_longwave_receipt_sha256.as_bytes());
         bytes.extend_from_slice(contribution.final_boundary_receipt_sha256.as_bytes());
         for scalar in [
             contribution.sensible_to_canopy_air_w_m2,
@@ -1932,6 +2056,12 @@ mod tests {
         let contribution = LaneBoundaryContributionV1 {
             tile_id: TileId::try_new("tile-1").expect("tile"),
             tile_fraction: 1.0,
+            boundary_class: Stage3TileBoundaryClassV1::V11CanopyCovered,
+            boundary_model_definition_sha256: Digest32::from_bytes([9; 32]),
+            beginning_stage3_state_sha256: Digest32::from_bytes([10; 32]),
+            provisional_carrier_receipt_sha256: Digest32::from_bytes([11; 32]),
+            optical_receipt_sha256: Digest32::from_bytes([12; 32]),
+            reciprocal_longwave_receipt_sha256: Digest32::from_bytes([13; 32]),
             final_boundary_receipt_sha256: Digest32::from_bytes([1; 32]),
             sensible_to_canopy_air_w_m2: 1.0,
             vapor_to_canopy_air_kg_m2_s: 2.0e-6,
@@ -1941,29 +2071,42 @@ mod tests {
             snow_temperature_k: 268.0,
             latent_heat_j_kg: 2_500_000.0,
         };
-        let receipt = LaneStage3BoundaryReceiptV1::try_new(LaneStage3BoundaryReceiptV1 {
-            lane_id: 1,
-            ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
-            support,
-            area_basis: Stage3LaneAreaBasisV1::OfeGround,
-            topology_configuration_sha256: Digest32::from_bytes([2; 32]),
-            provisional_carrier_receipt_sha256: Digest32::from_bytes([3; 32]),
-            optical_receipt_sha256: Digest32::from_bytes([4; 32]),
-            reciprocal_longwave_receipt_sha256: Digest32::from_bytes([5; 32]),
-            final_destination_receipt_sha256: Digest32::from_bytes([6; 32]),
-            ordered_destinations: vec![contribution.clone()],
-            aggregate_sensible_to_canopy_air_w_m2: contribution.sensible_to_canopy_air_w_m2,
-            aggregate_vapor_to_canopy_air_kg_m2_s: contribution.vapor_to_canopy_air_kg_m2_s,
-            aggregate_latent_energy_to_canopy_air_j_m2: contribution
-                .latent_energy_to_canopy_air_j_m2,
-            aggregate_snow_absorbed_shortwave_w_m2: contribution.snow_absorbed_shortwave_w_m2,
-            aggregate_snow_net_longwave_w_m2: contribution.snow_net_longwave_w_m2,
-            aggregate_snow_temperature_k: contribution.snow_temperature_k,
-            aggregate_latent_heat_j_kg: contribution.latent_heat_j_kg,
-            receipt_sha256: Digest32::zero(),
-        })
+        let expected_topology = [LaneBoundaryTopologyExpectationV1 {
+            tile_id: contribution.tile_id.clone(),
+            tile_fraction_bits: contribution.tile_fraction.to_bits(),
+            boundary_class: contribution.boundary_class,
+            boundary_model_definition_sha256: contribution.boundary_model_definition_sha256,
+        }];
+        let receipt = LaneStage3BoundaryReceiptV1::try_new(
+            LaneStage3BoundaryReceiptV1 {
+                lane_id: 1,
+                ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+                support,
+                area_basis: Stage3LaneAreaBasisV1::OfeGround,
+                topology_configuration_sha256: Digest32::from_bytes([2; 32]),
+                provisional_carrier_receipt_sha256: Digest32::from_bytes([3; 32]),
+                optical_receipt_sha256: Digest32::from_bytes([4; 32]),
+                reciprocal_longwave_receipt_sha256: Digest32::from_bytes([5; 32]),
+                final_destination_receipt_sha256: Digest32::from_bytes([6; 32]),
+                ordered_destinations: vec![contribution.clone()],
+                aggregate_sensible_to_canopy_air_w_m2: contribution.sensible_to_canopy_air_w_m2,
+                aggregate_vapor_to_canopy_air_kg_m2_s: contribution.vapor_to_canopy_air_kg_m2_s,
+                aggregate_latent_energy_to_canopy_air_j_m2: contribution
+                    .latent_energy_to_canopy_air_j_m2,
+                aggregate_snow_absorbed_shortwave_w_m2: contribution.snow_absorbed_shortwave_w_m2,
+                aggregate_snow_net_longwave_w_m2: contribution.snow_net_longwave_w_m2,
+                aggregate_snow_temperature_k: contribution.snow_temperature_k,
+                aggregate_latent_heat_j_kg: contribution.latent_heat_j_kg,
+                receipt_sha256: Digest32::zero(),
+            },
+            &expected_topology,
+        )
         .expect("OFE-ground lane receipt");
         receipt.validate().expect("lane receipt validates");
+
+        let mut poisoned_source_set = receipt.clone();
+        poisoned_source_set.final_destination_receipt_sha256 = Digest32::from_bytes([99; 32]);
+        assert!(poisoned_source_set.validate().is_err());
 
         let mut poisoned_fraction = receipt;
         poisoned_fraction.ordered_destinations[0].tile_fraction = 0.38;
@@ -1974,46 +2117,99 @@ mod tests {
     fn mixed_open_covered_lane_uses_ofe_ground_sum_without_renormalization() {
         let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_800_000_000_000))
             .expect("valid support");
-        let contribution = |tile: &str, fraction: f64, sensible: f64, digest: u8| {
-            LaneBoundaryContributionV1 {
+        let contribution =
+            |tile: &str,
+             fraction: f64,
+             sensible: f64,
+             vapor: f64,
+             digest: u8,
+             boundary_class: Stage3TileBoundaryClassV1| LaneBoundaryContributionV1 {
                 tile_id: TileId::try_new(tile).expect("tile"),
                 tile_fraction: fraction,
+                boundary_class,
+                boundary_model_definition_sha256: Digest32::from_bytes([9 + digest; 32]),
+                beginning_stage3_state_sha256: Digest32::from_bytes([10; 32]),
+                provisional_carrier_receipt_sha256: Digest32::from_bytes([11 + digest; 32]),
+                optical_receipt_sha256: Digest32::from_bytes([12 + digest; 32]),
+                reciprocal_longwave_receipt_sha256: Digest32::from_bytes([13 + digest; 32]),
                 final_boundary_receipt_sha256: Digest32::from_bytes([digest; 32]),
                 sensible_to_canopy_air_w_m2: sensible,
-                vapor_to_canopy_air_kg_m2_s: 0.0,
-                latent_energy_to_canopy_air_j_m2: 0.0,
+                vapor_to_canopy_air_kg_m2_s: vapor,
+                latent_energy_to_canopy_air_j_m2: vapor * 2_500_000.0 * 1_800.0,
                 snow_absorbed_shortwave_w_m2: 0.0,
                 snow_net_longwave_w_m2: 0.0,
                 snow_temperature_k: 268.0,
                 latent_heat_j_kg: 2_500_000.0,
-            }
-        };
-        let receipt = LaneStage3BoundaryReceiptV1::try_new(LaneStage3BoundaryReceiptV1 {
-            lane_id: 1,
-            ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
-            support,
-            area_basis: Stage3LaneAreaBasisV1::OfeGround,
-            topology_configuration_sha256: Digest32::from_bytes([2; 32]),
-            provisional_carrier_receipt_sha256: Digest32::from_bytes([3; 32]),
-            optical_receipt_sha256: Digest32::from_bytes([4; 32]),
-            reciprocal_longwave_receipt_sha256: Digest32::from_bytes([5; 32]),
-            final_destination_receipt_sha256: Digest32::from_bytes([6; 32]),
-            ordered_destinations: vec![
-                contribution("covered", 0.6, 100.0, 7),
-                contribution("open", 0.4, 0.0, 8),
-            ],
-            aggregate_sensible_to_canopy_air_w_m2: 60.0,
-            aggregate_vapor_to_canopy_air_kg_m2_s: 0.0,
-            aggregate_latent_energy_to_canopy_air_j_m2: 0.0,
-            aggregate_snow_absorbed_shortwave_w_m2: 0.0,
-            aggregate_snow_net_longwave_w_m2: 0.0,
-            aggregate_snow_temperature_k: 268.0,
-            aggregate_latent_heat_j_kg: 2_500_000.0,
-            receipt_sha256: Digest32::zero(),
-        })
+            };
+        let contributions = vec![
+            contribution(
+                "covered",
+                0.6,
+                100.0,
+                1.0e-6,
+                7,
+                Stage3TileBoundaryClassV1::V11CanopyCovered,
+            ),
+            contribution(
+                "open",
+                0.4,
+                0.0,
+                -1.0e-6,
+                8,
+                Stage3TileBoundaryClassV1::OpenSnow,
+            ),
+        ];
+        let expected_topology = contributions
+            .iter()
+            .map(|item| LaneBoundaryTopologyExpectationV1 {
+                tile_id: item.tile_id.clone(),
+                tile_fraction_bits: item.tile_fraction.to_bits(),
+                boundary_class: item.boundary_class,
+                boundary_model_definition_sha256: item.boundary_model_definition_sha256,
+            })
+            .collect::<Vec<_>>();
+        let receipt = LaneStage3BoundaryReceiptV1::try_new(
+            LaneStage3BoundaryReceiptV1 {
+                lane_id: 1,
+                ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+                support,
+                area_basis: Stage3LaneAreaBasisV1::OfeGround,
+                topology_configuration_sha256: Digest32::from_bytes([2; 32]),
+                provisional_carrier_receipt_sha256: Digest32::from_bytes([3; 32]),
+                optical_receipt_sha256: Digest32::from_bytes([4; 32]),
+                reciprocal_longwave_receipt_sha256: Digest32::from_bytes([5; 32]),
+                final_destination_receipt_sha256: Digest32::from_bytes([6; 32]),
+                ordered_destinations: contributions,
+                aggregate_sensible_to_canopy_air_w_m2: 60.0,
+                aggregate_vapor_to_canopy_air_kg_m2_s: 0.6 * 1.0e-6 + 0.4 * -1.0e-6,
+                aggregate_latent_energy_to_canopy_air_j_m2: 0.6 * (1.0e-6 * 2_500_000.0 * 1_800.0)
+                    + 0.4 * (-1.0e-6 * 2_500_000.0 * 1_800.0),
+                aggregate_snow_absorbed_shortwave_w_m2: 0.0,
+                aggregate_snow_net_longwave_w_m2: 0.0,
+                aggregate_snow_temperature_k: 268.0,
+                aggregate_latent_heat_j_kg: 2_500_000.0,
+                receipt_sha256: Digest32::zero(),
+            },
+            &expected_topology,
+        )
         .expect("mixed OFE-ground receipt");
 
         assert_eq!(receipt.aggregate_sensible_to_canopy_air_w_m2, 60.0);
         receipt.validate().expect("mixed lane receipt validates");
+
+        let mut poisoned_common_state = receipt.clone();
+        poisoned_common_state.ordered_destinations[1].snow_temperature_k =
+            f64::from_bits(268.0_f64.to_bits() + 1);
+        assert!(poisoned_common_state.validate().is_err());
+
+        let mut poisoned_class = receipt.clone();
+        poisoned_class.ordered_destinations[1].boundary_class =
+            Stage3TileBoundaryClassV1::V11CanopyCovered;
+        assert!(LaneStage3BoundaryReceiptV1::try_new(poisoned_class, &expected_topology).is_err());
+
+        let mut poisoned_model = receipt;
+        poisoned_model.ordered_destinations[1].boundary_model_definition_sha256 =
+            Digest32::from_bytes([99; 32]);
+        assert!(LaneStage3BoundaryReceiptV1::try_new(poisoned_model, &expected_topology).is_err());
     }
 }

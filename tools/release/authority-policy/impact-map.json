@@ -1115,6 +1115,16 @@
       "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md"]
     },
     {
+      "entry_id": "snow-stage3-terminal-handoff-energy",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "stage3-ofe-ground-lane-boundary", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
       "entry_id": "v11-real-consumer-shadow-vegetation",
       "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs" },
       "owner": "openwepp-vegetation-process-owner", "semantic_surface": "c3-woody-v11-segmented-support", "risk_floor": "CRITICAL",

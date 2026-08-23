@@ -12,7 +12,7 @@ feedback topology while retaining package `EXECUTING / HOLD`.
 | Mixed-unit Stage 3 fixed-point tolerance | High | accepted | Open; replace with per-field units and exact categorical/count comparisons, then obtain independent numerics/science review. |
 | Predeclared outcome ledger enters physical solve | High | accepted | Open; separate carrier flux input from postcandidate independently reconstructed outcome ledger before precipitation. |
 | 5,608-line active implementation module | Closure blocker | accepted | Open; behavior-preserving split is required before further precipitation, soil-heat, terminal, or restart implementation. |
-| JSON lane receipt identity | Restart blocker | accepted | Corrected in the area-basis increment: `LaneStage3BoundaryReceiptV1` now uses the closed framed `OPENWEPP_LANE_STAGE3_BOUNDARY_RECEIPT_V1` preimage. Additive restart remains open. |
+| JSON lane receipt identity | Restart blocker | accepted | JSON was removed. v15 now normatively defines the deterministic adopter-specific `OPENWEPP_LANE_STAGE3_BOUNDARY_RECEIPT_V1` wire and explicitly prohibits its use as coupled parent/restart identity. Migration to the canonical framed helper/domain remains mandatory before additive restart. |
 
 Ran: no Rust test result is claimed for this amendment because no `cargo` or
 `rustfmt` executable is installed or discoverable in the current execution

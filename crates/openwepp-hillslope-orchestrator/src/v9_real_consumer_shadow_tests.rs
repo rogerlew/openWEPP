@@ -947,7 +947,7 @@ mod tests {
     }
 
     #[test]
-    fn v11_covered_stack_runs_persistent_snow_with_shared_carrier_and_stages_rollback() {
+    fn mixed_open_covered_stack_fails_closed_without_open_snow_receipt() {
         let (shadow, fixture) = v10_shadow_fixture();
         let base_interval = day_input(&fixture).intervals.remove(0);
         let interval = segment_interval(&base_interval, 1_800_000_000_000, 41, 0.0);
@@ -1014,19 +1014,39 @@ mod tests {
             },
         );
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-        let segment = execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
-            .expect("persistent covered V11 segment");
-        assert_eq!(segment.ending_resource_owners.len(), 7);
-        assert!(executor.stack.last_carrier_receipts().is_some());
-        assert_eq!(
-            executor.stack.take_staged_stage3().expect("Stage-3 ending")[&1]
-                .next_interval_index,
-            1
-        );
-        let ending = executor.stack.take_staged_ending().expect("V11 ending");
-        assert_eq!(ending.inner.accepted_interval_count(), 1);
+        let error = execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+            .expect_err("mixed OFE lacks its open-snow boundary receipt");
+        assert!(matches!(
+            error,
+            V11ExecutionError::Executor(DirectV11RealConsumerError::Identity(
+                "covered Stage-3 lane is missing a snow-surface contribution"
+            ))
+        ));
+        assert!(executor.stack.last_carrier_receipts().is_none());
+        assert!(executor.stack.take_staged_stage3().is_none());
+        assert!(executor.stack.take_staged_ending().is_none());
 
-        let original_carrier_receipt = executor.stack.last_carrier_receipts().expect("carrier")[&1]
+        let (_, original_vegetation_state) = project_v9_runtime_to_v8(
+            &executor.stack.beginning.inner.vegetation_configuration,
+            &executor.stack.beginning.inner.vegetation_state,
+        )
+        .expect("original V8 vegetation state");
+        let original_carrier_receipt =
+            crate::snow_stage3_terminal_handoff::evaluate_shared_carrier(
+                &executor
+                    .stack
+                    .derive_live_carrier_input(
+                        1,
+                        &stage3_beginning,
+                        &original_vegetation_state,
+                        stage3_forcing,
+                        &carrier_forcing_by_lane[&1],
+                        None,
+                        1_800.0,
+                    )
+                    .expect("original Stage-3 carrier operands"),
+            )
+            .expect("original Stage-3 carrier receipt")
             .receipt_id;
         let mut changed_layers = attachment_stage3_inputs().snow_layers;
         changed_layers[0].temperature_c -= 1.0;

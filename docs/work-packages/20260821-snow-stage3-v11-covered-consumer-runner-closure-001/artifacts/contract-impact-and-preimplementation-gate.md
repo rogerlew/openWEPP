@@ -9,7 +9,8 @@ owner as per-unit OFE ground and rejects the provisional covered-subarea
 normalization. `SC-SNOWENERGY-001` revision 15 now binds the complete ordered
 tile set, `sum(f_i X_i)` conversion without renormalization, lane-wide forcing,
 terminal-liquid identity, and restart topology/basis guards in
-`INV-SNOWENERGY-041` and `OBL-SNOWENERGY-C-018`.
+`INV-SNOWENERGY-042`, `OBL-SNOWENERGY-C-018`, and
+`TOL-SNOWENERGY-002`.
 
 Static: Contract-derived regression was changed before production code. It
 admits an OFE-ground receipt only when its tile fractions close to one and

@@ -151,6 +151,60 @@ fn canonical_contracts_bind_child_2c_authority_without_activation() {
 }
 
 #[test]
+fn snow_energy_v15_is_approved_and_binds_ofe_ground_lanes() {
+    let contract = read("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
+    let registry = read("docs/specifications/science-contracts/index.md");
+
+    for required in [
+        "status: approved",
+        "maturity: active",
+        "contract_version: 15",
+        "last_reviewed: 2026-08-22",
+        "INV-SNOWENERGY-042",
+        "OBL-SNOWENERGY-C-018",
+        "X_lane = sum_i(f_i * X_i)",
+        "not divided by the covered fraction",
+    ] {
+        assert!(
+            contract.contains(required),
+            "missing v15 authority: {required}"
+        );
+    }
+    assert!(registry.contains(
+        "| `SC-SNOWENERGY-001` | Snow-Surface Energy and Sub-Canopy Longwave Contract | `approved` | `active` |"
+    ));
+    assert!(registry.contains("v15 binds"));
+    assert!(!registry.contains("v14 binds the default-off shared V11/Stage 3 carrier"));
+    assert_eq!(contract.matches("| `INV-SNOWENERGY-041` |").count(), 1);
+    assert_eq!(contract.matches("| `INV-SNOWENERGY-042` |").count(), 2);
+    assert_eq!(
+        contract
+            .matches("| `OBL-SNOWENERGY-C-018` | OFE-ground lane-boundary consumer |")
+            .count(),
+        1
+    );
+    assert!(contract.contains("SNOWENERGY-V15-OFE-GROUND-LANE"));
+    assert!(contract.contains("TOL-SNOWENERGY-002"));
+    assert!(contract.contains("| `OBL-SNOWENERGY-C-018` | OFE-ground lane-boundary consumer |"));
+    assert!(contract.contains("REF-SNOWENERGY-USER-OFE-GROUND-V15"));
+
+    let receipt_source =
+        read("crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs");
+    let covered_source =
+        read("crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs");
+    assert!(!receipt_source.contains("CoveredTileGround"));
+    assert!(!covered_source.contains("CoveredTileGround"));
+    assert!(!covered_source.contains("1.0 / fraction_sum"));
+    assert!(receipt_source.contains("STAGE3_OFE_TILE_FRACTION_CLOSURE_TOLERANCE"));
+    assert!(receipt_source.contains("Stage3TileBoundaryClassV1"));
+    assert!(receipt_source.contains("LaneBoundaryTopologyExpectationV1"));
+    assert!(receipt_source.contains("lane Stage-3 boundary topology authority join"));
+    assert!(receipt_source.contains("LaneStage3BoundaryReceiptV1::try_new(poisoned_class"));
+    assert!(receipt_source.contains("LaneStage3BoundaryReceiptV1::try_new(poisoned_model"));
+    assert!(receipt_source.contains("lane_source_set_digests"));
+}
+
+#[test]
 fn independent_reference_model_reconstructs_carrier_boundary_and_ledgers() {
     let artifact = root().join(
         "docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/artifacts",
