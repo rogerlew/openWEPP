@@ -234,3 +234,19 @@ fresh-seal and alternate-valid-owner poisons passed. Package disposition remains
 `EXECUTING / HOLD` pending the complete mixed-surface physical producer and the
 remaining convergence, precipitation, soil-heat, ledger, terminal, restart,
 scenario, and review work.
+
+## Exact Stage-3 feedback and installed replay
+
+`Static:` Candidate Stage-3 surface temperature now feeds the next LSE solve;
+component LSE fluxes no longer freeze snow-owned operands. The outcome-bearing
+shared-carrier receipt and `last_carrier_receipts` evidence surface were removed
+from covered execution. A one-time outcome-free diagnostic guess seeds the
+solve without claiming melt, refreeze, runoff, ending mass, or ending energy.
+
+`Static:` The replay selected for installation is the source of the retained
+component and destination receipts. Its final lane receipts enter canonical
+snow-owner V3 bytes and the complete parent-owner receipt. Exact replay guards
+reject physical differences in LSE, vegetation, or Stage-3 endings.
+
+`Ran:` `cargo nextest run -p openwepp-hillslope-orchestrator` passed 754/754
+tests with one intentional skip during this increment.

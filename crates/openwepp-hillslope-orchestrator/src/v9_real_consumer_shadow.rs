@@ -68,10 +68,10 @@ use crate::snow_stage3_terminal_handoff::{
     CanopyLongwaveComponent, CarrierSurface, FinalStage3CanopyBoundaryReceiptInputs,
     FinalStage3CanopyBoundaryReceiptV1, LaneBoundaryContributionV1,
     LaneBoundaryTopologyExpectationV1, LaneStage3BoundaryReceiptV1,
-    STAGE3_OFE_TILE_FRACTION_CLOSURE_TOLERANCE, SealedCoveredCarrierForcing, SharedCarrierInput,
-    SharedCarrierReceipt, SnowCarrierLedgerInput, SnowStage3HandoffError, Stage3BoundaryIdentity,
-    Stage3LaneAreaBasisV1, Stage3SnowSurfaceBoundaryReceiptInputs,
-    Stage3SnowSurfaceBoundaryReceiptV1, Stage3TileBoundaryClassV1, evaluate_shared_carrier,
+    STAGE3_OFE_TILE_FRACTION_CLOSURE_TOLERANCE, SealedCoveredCarrierForcing, SharedCarrierReceipt,
+    SnowStage3HandoffError, Stage3BoundaryIdentity, Stage3LaneAreaBasisV1,
+    Stage3SnowSurfaceBoundaryReceiptInputs, Stage3SnowSurfaceBoundaryReceiptV1,
+    Stage3TileBoundaryClassV1,
 };
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyShadowAdapter, RealHydrologyShadowError,
@@ -1728,7 +1728,7 @@ impl DirectV9RealConsumerShadow {
             &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
         >,
         provisional_v11: bool,
-        covered_carrier_receipts: Option<&BTreeMap<(OfeId, TileId), SharedCarrierReceipt>>,
+        covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
     ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
         let transaction_id = TransactionId(
             self.vegetation_state
@@ -1825,8 +1825,8 @@ impl DirectV9RealConsumerShadow {
         };
         let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
         let envelope = match v11_duration_s_bits {
-            Some(bits) => match covered_carrier_receipts {
-                Some(carriers) => execute_v8_lse_runtime_shadow_v11_with_carriers(
+            Some(bits) => match covered_destinations {
+                Some(destinations) => execute_v8_lse_runtime_shadow_v11_with_carriers(
                     &v8_configuration,
                     &v8_beginning,
                     &self.vegetation_owner_id,
@@ -1846,7 +1846,7 @@ impl DirectV9RealConsumerShadow {
                     covered_lower_boundaries,
                     bits,
                     !provisional_v11,
-                    Some(carriers),
+                    Some(destinations),
                 )?,
                 None => crate::land_surface_energy_shadow::execute_v8_lse_runtime_shadow_v11(
                     &v8_configuration,
@@ -1908,7 +1908,7 @@ impl DirectV9RealConsumerShadow {
         input: &DirectV11SnowCoveredSegmentInput,
         interval_s: f64,
         v11_duration_s_bits: u64,
-        carrier_receipts: &BTreeMap<(OfeId, TileId), SharedCarrierReceipt>,
+        covered_destinations: &BTreeSet<(OfeId, TileId)>,
         lower_boundaries: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
         provisional_v11: bool,
     ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
@@ -1940,7 +1940,7 @@ impl DirectV9RealConsumerShadow {
             Some(v11_duration_s_bits),
             Some(lower_boundaries),
             provisional_v11,
-            Some(carrier_receipts),
+            Some(covered_destinations),
         )
     }
 

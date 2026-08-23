@@ -4,7 +4,7 @@
 //! arbitration, or a candidate solve. In particular, Emax is not a caller
 //! input: it is produced later by the admitted coupled solver.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_kernel_contract::{OccupancyId, ResourceOwnerId, TileId, TransactionId};
 use openwepp_land_surface_energy::UnderCanopyGeometry;
@@ -39,7 +39,6 @@ use thiserror::Error;
 
 use crate::{
     DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidStateRecord,
-    snow_stage3_terminal_handoff::SharedCarrierReceipt,
     vegetation_real_hydrology_shadow::{RealHydrologyLayerFact, RealHydrologySourceKey},
 };
 
@@ -1280,7 +1279,7 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
     interval_index: u8,
     authenticated_duration_s_bits: Option<u64>,
     covered_lower_boundaries: Option<&BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>>,
-    covered_carrier_receipts: Option<&BTreeMap<(OfeId, TileId), SharedCarrierReceipt>>,
+    covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
 ) -> Result<ValidatedV8RuntimeInputProjection, V8InputProjectionError> {
     vegetation_configuration.validate_v8()?;
     let configured_bindings = vegetation_configuration
@@ -1391,16 +1390,16 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
             let tile_lse_forcing = lse_forcing.clone();
             let tile_vegetation_forcing = canopy_forcing.forcing().clone();
             if covered {
-                if let Some(carriers) = covered_carrier_receipts {
+                if let Some(destinations) = covered_destinations {
                     // The reduced Child-2C evaluator is an unsealed numerical
                     // initializer only. The sealed reference atmosphere must
                     // remain the LSE/V11 forcing; the component-resolved LSE
                     // canopy-air residual owns the physical shared node.
-                    carriers
-                        .get(&(ofe.ofe_id.clone(), tile.tile_id.clone()))
-                        .ok_or(V8InputProjectionError::Topology(
-                            "missing keyed covered carrier receipt",
-                        ))?;
+                    if !destinations.contains(&(ofe.ofe_id.clone(), tile.tile_id.clone())) {
+                        return Err(V8InputProjectionError::Topology(
+                            "missing keyed covered destination",
+                        ));
+                    }
                 }
             }
             if covered {

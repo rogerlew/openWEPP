@@ -21,7 +21,6 @@ use thiserror::Error;
 use crate::{
     DirectGroundIngressMode, DirectIngressAmount, DirectOfeWb14Parameters,
     DirectOpenLiquidIngressParcel, DirectSurfaceLiquidParcelKind, DirectTileGroundIngress,
-    snow_stage3_terminal_handoff::SharedCarrierReceipt,
 };
 
 use super::covered_v8_owner::{
@@ -326,14 +325,11 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11_with_carriers(
     >,
     duration_s_bits: u64,
     validate_ofe_energy: bool,
-    covered_carrier_receipts: Option<
-        &BTreeMap<
-            (
-                openwepp_land_surface_energy::OfeId,
-                openwepp_kernel_contract::TileId,
-            ),
-            SharedCarrierReceipt,
-        >,
+    covered_destinations: Option<
+        &BTreeSet<(
+            openwepp_land_surface_energy::OfeId,
+            openwepp_kernel_contract::TileId,
+        )>,
     >,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let pending = RefCell::new(PendingEndpointEnvelopes::default());
@@ -359,7 +355,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11_with_carriers(
         &pending,
         Some(duration_s_bits),
         validate_ofe_energy,
-        covered_carrier_receipts,
+        covered_destinations,
     )
 }
 
@@ -418,14 +414,11 @@ fn execute_v8_lse_runtime_shadow_phases(
     pending: &RefCell<PendingEndpointEnvelopes>,
     duration_s_bits: Option<u64>,
     validate_ofe_energy: bool,
-    covered_carrier_receipts: Option<
-        &BTreeMap<
-            (
-                openwepp_land_surface_energy::OfeId,
-                openwepp_kernel_contract::TileId,
-            ),
-            SharedCarrierReceipt,
-        >,
+    covered_destinations: Option<
+        &BTreeSet<(
+            openwepp_land_surface_energy::OfeId,
+            openwepp_kernel_contract::TileId,
+        )>,
     >,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let projected = project_v8_runtime_inputs_with_carriers(
@@ -453,7 +446,7 @@ fn execute_v8_lse_runtime_shadow_phases(
         interval_index,
         duration_s_bits,
         covered_lower_boundaries,
-        covered_carrier_receipts,
+        covered_destinations,
     )?;
     injected(injection, V8EndpointFailureInjection::AfterProjection)?;
     let ingress_schedule = derive_ingress_schedule(

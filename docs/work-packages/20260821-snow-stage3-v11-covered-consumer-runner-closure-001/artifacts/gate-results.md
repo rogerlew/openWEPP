@@ -336,3 +336,33 @@ qualification also passed:
 - authority-suite anti-evasion guard;
 - required-suite obligation guard contract: 3/3;
 - `git diff --check`.
+
+## Exact Stage-3 feedback and sealed covered replay increment
+
+`Static:` Every LSE iteration merges snow temperature and temperature-derived
+latent heat from the latest persistent Stage-3 candidate with the radiative and
+turbulent fluxes from the preceding component-resolved LSE candidate. The
+reduced evaluator and its predeclared outcome ledger are absent from covered
+execution. A one-time `CoveredCarrierInitialGuessV1` contains only numerical
+snow heat/vapor/longwave guesses and a diagnostic digest.
+
+`Static:` Retained destination, component, lane, snow-owner, and parent-owner
+receipts are rebuilt from the replay selected for installation. A sealed replay
+requires exact LSE iteration-state, vegetation-ending, and Stage-3-ending
+identity. Canonical snow-owner V3 bytes and the parent-owner join bind the final
+lane-receipt set. The unjoined global canopy-emission scalar was removed.
+
+`Ran:` The complete orchestrator nextest regression passed during the increment:
+754 tests passed with one intentional skip. Final exact-worktree qualification
+is recorded in the terminal entry for this checkpoint.
+
+`HOLD:` Per-field Stage-3 convergence authority, real open-snow production,
+mixed-surface closure, precipitation, snow-soil heat, postcandidate outcome
+ledger, terminal chronology/liquid, restart, scenarios, and terminal reviews
+remain open.
+
+`Ran at exact checkpoint:`
+
+- `nix develop --command cargo nextest run -p openwepp-land-surface-energy -p openwepp-hillslope-orchestrator` — 820 passed, 0 failed, one intentional skip.
+- `nix develop --command cargo fmt --all -- --check` — passed.
+- `git diff --check` — passed.

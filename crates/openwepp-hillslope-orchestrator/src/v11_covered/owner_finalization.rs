@@ -13,6 +13,7 @@ pub struct CoveredParentOwnerJoinReceiptV1 {
     pub beginning_complete_owner_set_sha256: Digest32,
     pub support: openwepp_coupled_time::TimeSupport,
     pub final_boundary_receipt_set_sha256: Digest32,
+    pub final_lane_boundary_receipt_set_sha256: Digest32,
     pub component_carrier_receipt_set_sha256: Digest32,
     pub stage3_physical_state_sha256: Digest32,
     pub vegetation_owner_sha256: Digest32,
@@ -45,6 +46,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
         beginning_complete_owner_set_sha256: Digest32,
         support: openwepp_coupled_time::TimeSupport,
         final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3CanopyBoundaryReceiptV1>,
+        final_lane_boundaries: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
         component_carriers: &BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>,
         stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
         owners: &BTreeMap<String, V11OwnerEnvelope>,
@@ -76,6 +78,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
         if owners.keys().map(String::as_str).collect::<BTreeSet<_>>()
             != expected.into_iter().collect::<BTreeSet<_>>()
             || final_boundaries.is_empty()
+            || final_lane_boundaries.is_empty()
             || component_carriers.keys().collect::<Vec<_>>()
                 != final_boundaries.keys().collect::<Vec<_>>()
         {
@@ -91,6 +94,9 @@ impl CoveredParentOwnerJoinReceiptV1 {
         for receipt in final_boundaries.values() {
             receipt.validate()?;
         }
+        for receipt in final_lane_boundaries.values() {
+            receipt.validate()?;
+        }
         for (destination, receipt) in component_carriers {
             let boundary =
                 final_boundaries
@@ -100,8 +106,11 @@ impl CoveredParentOwnerJoinReceiptV1 {
                     ))?;
             receipt.validate(boundary)?;
         }
-        let expected_snow_bytes =
-            canonical_stage3_snow_owner_bytes_v11_with_receipts(stage3_states, final_boundaries)?;
+        let expected_snow_bytes = canonical_stage3_snow_owner_bytes_v11_with_receipts(
+            stage3_states,
+            final_lane_boundaries,
+            final_boundaries,
+        )?;
         let snow_owner = owners
             .get("snow")
             .ok_or(DirectV11RealConsumerError::Identity(
@@ -132,6 +141,18 @@ impl CoveredParentOwnerJoinReceiptV1 {
             &component_fields,
         )
         .map_err(|_| DirectV11RealConsumerError::Identity("component carrier receipt set"))?;
+        let lane_fields = final_lane_boundaries
+            .values()
+            .map(|receipt| openwepp_coupled_time::FramedField {
+                tag: "final_lane_boundary_receipt",
+                value: receipt.receipt_sha256.as_bytes(),
+            })
+            .collect::<Vec<_>>();
+        let final_lane_boundary_receipt_set_sha256 = openwepp_coupled_time::framed_sha256(
+            "covered-stage3-final-lane-boundary-set-v1",
+            &lane_fields,
+        )
+        .map_err(|_| DirectV11RealConsumerError::Identity("covered lane receipt set"))?;
         let stage3_physical_state_sha256 =
             digest_bytes(&canonical_stage3_snow_owner_bytes_v11(stage3_states)?);
         let owner_digest = |name: &'static str| {
@@ -149,6 +170,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
             beginning_complete_owner_set_sha256,
             support,
             final_boundary_receipt_set_sha256,
+            final_lane_boundary_receipt_set_sha256,
             component_carrier_receipt_set_sha256,
             stage3_physical_state_sha256,
             vegetation_owner_sha256: owner_digest("vegetation")?,
@@ -167,6 +189,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
     pub(crate) fn validate(
         &self,
         final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3CanopyBoundaryReceiptV1>,
+        final_lane_boundaries: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
         component_carriers: &BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>,
         stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
         owners: &BTreeMap<String, V11OwnerEnvelope>,
@@ -181,6 +204,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
             self.beginning_complete_owner_set_sha256,
             self.support,
             final_boundaries,
+            final_lane_boundaries,
             component_carriers,
             stage3_states,
             owners,
@@ -239,6 +263,10 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 openwepp_coupled_time::FramedField {
                     tag: "final_boundary_set",
                     value: self.final_boundary_receipt_set_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "final_lane_boundary_set",
+                    value: self.final_lane_boundary_receipt_set_sha256.as_bytes(),
                 },
                 openwepp_coupled_time::FramedField {
                     tag: "component_carrier_set",
@@ -314,12 +342,14 @@ pub(crate) fn canonical_stage3_snow_owner_bytes_v11(
 
 pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_receipts(
     states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    lane_receipts: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
     receipts: &BTreeMap<(OfeId, TileId), FinalStage3CanopyBoundaryReceiptV1>,
 ) -> Result<Vec<u8>, DirectV11RealConsumerError> {
     #[derive(Serialize)]
     struct CanonicalSnowOwner<'a> {
         schema: &'static str,
         lanes: Vec<(&'a u32, &'a DirectSnowStage3PersistentState)>,
+        final_lane_boundary_receipts: BTreeMap<u32, String>,
         final_boundary_receipts: BTreeMap<String, String>,
     }
     let final_boundary_receipts = receipts
@@ -331,9 +361,14 @@ pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_receipts(
             )
         })
         .collect();
+    let final_lane_boundary_receipts = lane_receipts
+        .iter()
+        .map(|(lane_id, receipt)| (*lane_id, digest32_hex(receipt.receipt_sha256)))
+        .collect();
     serde_json::to_vec(&CanonicalSnowOwner {
-        schema: "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V2",
+        schema: "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V3",
         lanes: states.iter().collect(),
+        final_lane_boundary_receipts,
         final_boundary_receipts,
     })
     .map_err(|_| DirectV11RealConsumerError::Identity("canonical Stage-3 snow bytes"))
@@ -1035,6 +1070,7 @@ mod owner_join_tests {
             beginning_complete_owner_set_sha256: Digest32::from_bytes([26; 32]),
             support,
             final_boundary_receipt_set_sha256: Digest32::from_bytes([1; 32]),
+            final_lane_boundary_receipt_set_sha256: Digest32::from_bytes([18; 32]),
             component_carrier_receipt_set_sha256: Digest32::from_bytes([2; 32]),
             stage3_physical_state_sha256: Digest32::from_bytes([3; 32]),
             vegetation_owner_sha256: Digest32::from_bytes([4; 32]),
@@ -1049,6 +1085,9 @@ mod owner_join_tests {
         receipt.receipt_sha256 = receipt.reconstructed_digest().expect("join digest");
         receipt.validate_seal().expect("valid join seal");
         for mutate in [
+            |value: &mut CoveredParentOwnerJoinReceiptV1| {
+                value.final_lane_boundary_receipt_set_sha256 = Digest32::from_bytes([19; 32]);
+            },
             |value: &mut CoveredParentOwnerJoinReceiptV1| {
                 value.vegetation_owner_sha256 = Digest32::from_bytes([11; 32]);
             },

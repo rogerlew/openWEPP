@@ -1751,6 +1751,11 @@ fn execute_covered_real_v11_parent(
                 "missing final covered boundary receipt set",
             ),
         )?,
+        final_executor.stack.last_lane_boundary_receipts().ok_or(
+            DirectSnowStage3V11AttachmentError::Identity(
+                "missing final covered lane-boundary receipt set",
+            ),
+        )?,
         final_executor
             .stack
             .last_component_carrier_receipts()
@@ -1764,6 +1769,11 @@ fn execute_covered_real_v11_parent(
         final_executor.stack.last_final_boundary_receipts().ok_or(
             DirectSnowStage3V11AttachmentError::Identity(
                 "missing final covered boundary receipt set",
+            ),
+        )?,
+        final_executor.stack.last_lane_boundary_receipts().ok_or(
+            DirectSnowStage3V11AttachmentError::Identity(
+                "missing final covered lane-boundary receipt set",
             ),
         )?,
         final_executor

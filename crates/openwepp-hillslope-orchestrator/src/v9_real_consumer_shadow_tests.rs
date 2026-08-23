@@ -1022,7 +1022,6 @@ mod tests {
                 "covered Stage-3 lane is missing a snow-surface contribution"
             ))
         ));
-        assert!(executor.stack.last_carrier_receipts().is_none());
         assert!(executor.stack.take_staged_stage3().is_none());
         assert!(executor.stack.take_staged_ending().is_none());
 
@@ -1031,11 +1030,9 @@ mod tests {
             &executor.stack.beginning.inner.vegetation_state,
         )
         .expect("original V8 vegetation state");
-        let original_carrier_receipt =
-            crate::snow_stage3_terminal_handoff::evaluate_shared_carrier(
-                &executor
-                    .stack
-                    .derive_live_carrier_input(
+        let original_carrier_receipt = executor
+            .stack
+            .derive_live_carrier_input(
                         1,
                         &stage3_beginning,
                         &original_vegetation_state,
@@ -1043,11 +1040,9 @@ mod tests {
                         &carrier_forcing_by_lane[&1],
                         None,
                         1_800.0,
-                    )
-                    .expect("original Stage-3 carrier operands"),
             )
-            .expect("original Stage-3 carrier receipt")
-            .receipt_id;
+            .expect("original Stage-3 carrier guess")
+            .diagnostic_sha256;
         let mut changed_layers = attachment_stage3_inputs().snow_layers;
         changed_layers[0].temperature_c -= 1.0;
         let changed_stage3 = Wb11HydrologyKernel::initialize_stage3_persistent_state(
@@ -1072,9 +1067,8 @@ mod tests {
             &changed_stack.beginning.inner.vegetation_state,
         )
         .expect("changed V8 vegetation state");
-        let changed_carrier_receipt = crate::snow_stage3_terminal_handoff::evaluate_shared_carrier(
-            &changed_stack
-                .derive_live_carrier_input(
+        let changed_carrier_receipt = changed_stack
+            .derive_live_carrier_input(
                     1,
                     &changed_stage3,
                     &changed_vegetation_state,
@@ -1082,11 +1076,9 @@ mod tests {
                     &carrier_forcing_by_lane[&1],
                     None,
                     1_800.0,
-                )
-                .expect("changed Stage-3 carrier operands"),
-        )
-        .expect("changed Stage-3 carrier receipt")
-        .receipt_id;
+            )
+            .expect("changed Stage-3 carrier guess")
+            .diagnostic_sha256;
         assert_ne!(
             changed_carrier_receipt,
             original_carrier_receipt,
@@ -1099,9 +1091,8 @@ mod tests {
             .next()
             .expect("canopy-air tile")
             .canopy_air_temperature_k += 1.0;
-        let changed_canopy_receipt = crate::snow_stage3_terminal_handoff::evaluate_shared_carrier(
-            &changed_stack
-                .derive_live_carrier_input(
+        let changed_canopy_receipt = changed_stack
+            .derive_live_carrier_input(
                     1,
                     &changed_stage3,
                     &changed_canopy_state,
@@ -1109,11 +1100,9 @@ mod tests {
                     &carrier_forcing_by_lane[&1],
                     None,
                     1_800.0,
-                )
-                .expect("changed canopy carrier operands"),
-        )
-        .expect("changed canopy carrier receipt")
-        .receipt_id;
+            )
+            .expect("changed canopy carrier guess")
+            .diagnostic_sha256;
         assert_ne!(
             changed_canopy_receipt, changed_carrier_receipt,
             "carrier identity must depend on candidate canopy-air state"
@@ -1147,7 +1136,6 @@ mod tests {
             ),
         };
         assert!(execute_v11_segment(&migrated.configuration, &parent, &slab, &mut poisoned).is_err());
-        assert!(poisoned.stack.last_carrier_receipts().is_none());
         assert!(poisoned.stack.take_staged_ending().is_none());
     }
 
