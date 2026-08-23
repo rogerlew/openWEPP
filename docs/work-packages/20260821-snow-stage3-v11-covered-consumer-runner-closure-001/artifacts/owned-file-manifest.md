@@ -31,6 +31,12 @@ Exact source edits admitted in this increment:
   lineage helpers; all active files are below the 3,000-line closure threshold.
 - `crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs`:
   sealed covered forcing and typed Stage-3 boundary-receipt inputs.
+- `crates/openwepp-hillslope-orchestrator/src/snow_stage3_open_boundary.rs`:
+  destination-specific sealed open exposure/forcing and the pure open-snow
+  turbulent, optical, and longwave boundary producer.
+- `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/{v8_input_projection.rs,strict_v8_endpoint.rs,multi_tile_runtime.rs}`:
+  Stage-3-owned open-snow pass-through projection, zero-demand transaction
+  identity, unchanged LSE/soil state, and zero local LSE energy ownership.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`:
   boundary reconciliation projection.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs`:

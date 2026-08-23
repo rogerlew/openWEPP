@@ -481,6 +481,10 @@ pub(crate) struct ValidatedV8RuntimeInputProjection {
 #[allow(clippy::large_enum_variant)]
 pub(crate) enum V8SolverReadyTilePhysics {
     Open(OpenSurfaceProblem),
+    /// The open tile's snow surface is owned by Stage 3. LSE retains the tile
+    /// only so the complete configured topology and unchanged owner state are
+    /// carried through the heterogeneous transaction.
+    Stage3OpenSnow(TileState),
     Covered(CoveredColumnInputs),
 }
 
@@ -532,6 +536,17 @@ impl ValidatedV8RuntimeInputProjection {
             .iter()
             .map(|tile| {
                 let mut ready = tile.solver_ready(vegetation_owner_id)?;
+                if authority == openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered
+                    && matches!(ready.physics, V8SolverReadyTilePhysics::Open(_))
+                {
+                    let boundaries = lower_boundaries.ok_or(V8InputProjectionError::Identity(
+                        "missing Stage-3 lower-boundary set",
+                    ))?;
+                    if boundaries.contains_key(&(tile.ofe_id.clone(), tile.tile_id.clone())) {
+                        ready.physics =
+                            V8SolverReadyTilePhysics::Stage3OpenSnow(tile.ground.state.clone());
+                    }
+                }
                 if let V8SolverReadyTilePhysics::Covered(column) = &mut ready.physics {
                     column.authority = authority;
                     if authority
@@ -2167,6 +2182,9 @@ mod tests {
                     problem.soil_nodes[0].conductivity_w_m_k,
                 ),
                 V8SolverReadyTilePhysics::Covered(_) => panic!("empty occupancy is open"),
+                V8SolverReadyTilePhysics::Stage3OpenSnow(_) => {
+                    panic!("historical V8 cannot project Stage-3 pass-through")
+                }
             }
         };
 

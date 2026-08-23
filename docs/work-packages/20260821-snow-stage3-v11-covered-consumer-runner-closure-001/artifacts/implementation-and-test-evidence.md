@@ -261,3 +261,24 @@ destination receipt and its source identities and physical operands.
 `Static:` Component receipt order now carries `vertical_occupancy_ordinal`.
 The focused nonlexical fixture admits `z-upper` before `a-lower`, proving that
 physical order rather than identifier spelling controls receipt order.
+
+## Real mixed covered/open OFE execution
+
+`Static:` The runtime now consumes a destination-keyed closed forcing sum and
+constructs a distinct sealed open-snow boundary from live Stage-3 state and a
+destination-specific open exposure. The installed owner join accepts component
+carrier receipts only for the covered subset while binding the complete typed
+covered/open destination and lane sets.
+
+`Static:` Open-snow destinations are Stage-3-owned pass-through members in the
+LSE transaction. Their LSE tile state and soil-thermal layers remain bitwise
+unchanged; a zero-demand protocol row preserves exact receiver topology but
+cannot authorize or finalize water use. Their local LSE energy operands are
+exactly zero, preventing the ordinary open-ground surface solve from becoming
+a second physical owner.
+
+`Ran:` The real `0.6 covered + 0.4 open` fixture passed with distinct tile
+boundary classes, a common Stage-3 lane state, exact unnormalized OFE-ground
+aggregation, sealed replay, and atomic staging. The full orchestrator suite
+passed 764/764 and the orchestrator/vegetation suite passed 1036/1036; each
+scope retained one intentional skip.

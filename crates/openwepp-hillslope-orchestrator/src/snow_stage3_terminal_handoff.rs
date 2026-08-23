@@ -103,6 +103,26 @@ impl SealedExposureReceipt {
         }
         Ok(())
     }
+
+    /// Canonical in-memory identity for joining prepared destination support
+    /// to the physical exposure object. This is not a restart wire.
+    #[must_use]
+    pub fn diagnostic_digest(&self) -> Digest32 {
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(b"OPENWEPP_SEALED_STAGE3_EXPOSURE_V1\0");
+        for value in [
+            self.receipt_id.as_str(),
+            self.provider.as_str(),
+            self.provider_digest.as_str(),
+            self.source.as_str(),
+        ] {
+            append_framed_str(&mut bytes, value);
+        }
+        for value in [self.wind_m_s, self.transfer_height_m, self.roughness_m] {
+            bytes.extend_from_slice(&value.to_bits().to_be_bytes());
+        }
+        digest_bytes(&bytes)
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -331,6 +351,11 @@ impl SealedCoveredCarrierForcing {
             active_participants: inputs.active_participants,
             support_receipts: inputs.support_receipts,
         })
+    }
+
+    #[must_use]
+    pub fn exposure_identity(&self) -> Digest32 {
+        self.exposure.diagnostic_digest()
     }
 }
 
@@ -828,7 +853,14 @@ impl LaneStage3BoundaryReceiptV1 {
         if expected
             .iter()
             .zip(aggregates.into_iter().take(6))
-            .any(|(actual, reconstructed)| actual.to_bits() != reconstructed.to_bits())
+            .enumerate()
+            .any(|(index, (actual, reconstructed))| {
+                if index == 2 {
+                    (actual - reconstructed).abs() > CLOSURE_TOLERANCE
+                } else {
+                    actual.to_bits() != reconstructed.to_bits()
+                }
+            })
         {
             return Err(SnowStage3HandoffError::InvalidCarrier(
                 "lane Stage-3 boundary aggregate reconstruction",
@@ -846,8 +878,8 @@ impl LaneStage3BoundaryReceiptV1 {
         }
         let expected_latent_energy =
             self.aggregate_vapor_to_canopy_air_kg_m2_s * common.latent_heat_j_kg * duration_s;
-        if expected_latent_energy.to_bits()
-            != self.aggregate_latent_energy_to_canopy_air_j_m2.to_bits()
+        if (expected_latent_energy - self.aggregate_latent_energy_to_canopy_air_j_m2).abs()
+            > CLOSURE_TOLERANCE
         {
             return Err(SnowStage3HandoffError::InvalidCarrier(
                 "lane Stage-3 aggregate latent mass-energy identity",

@@ -45,7 +45,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
         forcing_receipt_sha256: Digest32,
         beginning_complete_owner_set_sha256: Digest32,
         support: openwepp_coupled_time::TimeSupport,
-        final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3CanopyBoundaryReceiptV1>,
+        final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
         final_lane_boundaries: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
         component_carriers: &BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>,
         stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
@@ -79,8 +79,14 @@ impl CoveredParentOwnerJoinReceiptV1 {
             != expected.into_iter().collect::<BTreeSet<_>>()
             || final_boundaries.is_empty()
             || final_lane_boundaries.is_empty()
-            || component_carriers.keys().collect::<Vec<_>>()
-                != final_boundaries.keys().collect::<Vec<_>>()
+            || component_carriers.keys().collect::<BTreeSet<_>>()
+                != final_boundaries
+                    .iter()
+                    .filter_map(|(destination, receipt)| {
+                        matches!(receipt, FinalStage3TileBoundaryReceiptV1::V11Canopy(_))
+                            .then_some(destination)
+                    })
+                    .collect::<BTreeSet<_>>()
         {
             return Err(DirectV11RealConsumerError::Identity(
                 "covered parent-owner join topology",
@@ -93,7 +99,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
         }
         for (destination, receipt) in final_boundaries {
             receipt.validate()?;
-            if destination != &receipt.destination {
+            if destination != receipt.destination() {
                 return Err(DirectV11RealConsumerError::Identity(
                     "covered final boundary map key",
                 ));
@@ -124,29 +130,32 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 let boundary = final_boundaries.get(&destination).ok_or(
                     DirectV11RealConsumerError::Identity("covered lane/final boundary destination"),
                 )?;
-                if boundary.destination != destination
-                    || contribution.final_boundary_receipt_sha256 != boundary.receipt_sha256
-                    || contribution.provisional_carrier_receipt_sha256
-                        != boundary.provisional_carrier_receipt_sha256
-                    || contribution.optical_receipt_sha256 != boundary.optical_receipt_sha256
-                    || contribution.reciprocal_longwave_receipt_sha256
-                        != boundary.reciprocal_longwave_receipt_sha256
+                let sources = boundary.source_digests();
+                let physical = boundary.physical_operands();
+                let expected_class = match boundary {
+                    FinalStage3TileBoundaryReceiptV1::V11Canopy(_) => {
+                        Stage3TileBoundaryClassV1::V11CanopyCovered
+                    }
+                    FinalStage3TileBoundaryReceiptV1::OpenSnow(_) => {
+                        Stage3TileBoundaryClassV1::OpenSnow
+                    }
+                };
+                if boundary.destination() != &destination
+                    || contribution.boundary_class != expected_class
+                    || contribution.final_boundary_receipt_sha256 != sources.3
+                    || contribution.provisional_carrier_receipt_sha256 != sources.0
+                    || contribution.optical_receipt_sha256 != sources.1
+                    || contribution.reciprocal_longwave_receipt_sha256 != sources.2
                     || contribution.beginning_stage3_state_sha256
-                        != boundary.beginning_stage3_state_sha256
-                    || contribution.sensible_to_canopy_air_w_m2.to_bits()
-                        != boundary.sensible_to_canopy_air_w_m2.to_bits()
-                    || contribution.vapor_to_canopy_air_kg_m2_s.to_bits()
-                        != boundary.vapor_to_canopy_air_kg_m2_s.to_bits()
+                        != boundary.beginning_stage3_state_sha256()
+                    || contribution.sensible_to_canopy_air_w_m2.to_bits() != physical[0].to_bits()
+                    || contribution.vapor_to_canopy_air_kg_m2_s.to_bits() != physical[1].to_bits()
                     || contribution.latent_energy_to_canopy_air_j_m2.to_bits()
-                        != boundary.latent_energy_to_canopy_air_j_m2.to_bits()
-                    || contribution.snow_absorbed_shortwave_w_m2.to_bits()
-                        != boundary.snow_absorbed_shortwave_w_m2.to_bits()
-                    || contribution.snow_net_longwave_w_m2.to_bits()
-                        != boundary.snow_net_longwave_w_m2.to_bits()
-                    || contribution.snow_temperature_k.to_bits()
-                        != boundary.snow_temperature_k.to_bits()
-                    || contribution.latent_heat_j_kg.to_bits()
-                        != boundary.latent_heat_j_kg.to_bits()
+                        != physical[2].to_bits()
+                    || contribution.snow_absorbed_shortwave_w_m2.to_bits() != physical[3].to_bits()
+                    || contribution.snow_net_longwave_w_m2.to_bits() != physical[4].to_bits()
+                    || contribution.snow_temperature_k.to_bits() != physical[5].to_bits()
+                    || contribution.latent_heat_j_kg.to_bits() != physical[6].to_bits()
                 {
                     return Err(DirectV11RealConsumerError::Identity(
                         "covered lane/final boundary semantic join",
@@ -166,6 +175,11 @@ impl CoveredParentOwnerJoinReceiptV1 {
                     .ok_or(DirectV11RealConsumerError::Identity(
                         "component/final boundary destination",
                     ))?;
+            let FinalStage3TileBoundaryReceiptV1::V11Canopy(boundary) = boundary else {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "component carrier attached to open-snow boundary",
+                ));
+            };
             receipt.validate(boundary)?;
         }
         let expected_snow_bytes = canonical_stage3_snow_owner_bytes_v11_with_receipts(
@@ -183,7 +197,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
             .values()
             .map(|receipt| openwepp_coupled_time::FramedField {
                 tag: "final_boundary_receipt",
-                value: receipt.receipt_sha256.as_bytes(),
+                value: receipt.receipt_sha256().as_bytes(),
             })
             .collect::<Vec<_>>();
         let final_boundary_receipt_set_sha256 = openwepp_coupled_time::framed_sha256(
@@ -250,7 +264,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
 
     pub(crate) fn validate(
         &self,
-        final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3CanopyBoundaryReceiptV1>,
+        final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
         final_lane_boundaries: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
         component_carriers: &BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>,
         stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
@@ -405,7 +419,7 @@ pub(crate) fn canonical_stage3_snow_owner_bytes_v11(
 pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_receipts(
     states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
     lane_receipts: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
-    receipts: &BTreeMap<(OfeId, TileId), FinalStage3CanopyBoundaryReceiptV1>,
+    receipts: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
 ) -> Result<Vec<u8>, DirectV11RealConsumerError> {
     #[derive(Serialize)]
     struct CanonicalSnowOwner<'a> {
@@ -419,7 +433,7 @@ pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_receipts(
         .map(|(destination, receipt)| {
             (
                 format!("{}\0{}", destination.0.as_str(), destination.1.as_str()),
-                digest32_hex(receipt.receipt_sha256),
+                digest32_hex(receipt.source_digests().3),
             )
         })
         .collect();

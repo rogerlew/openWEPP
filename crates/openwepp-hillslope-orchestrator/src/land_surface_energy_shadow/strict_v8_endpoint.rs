@@ -29,7 +29,8 @@ use super::covered_v8_owner::{
 };
 use super::multi_tile_runtime::{
     MultiTileFailurePhase, PendingPayloadKind, StrictProjectedCoveredTile, StrictProjectedOpenTile,
-    StrictProjectedTileProblem, execute_multi_tile_runtime, execute_multi_tile_runtime_provisional,
+    StrictProjectedStage3OpenSnowTile, StrictProjectedTileProblem, execute_multi_tile_runtime,
+    execute_multi_tile_runtime_provisional,
 };
 use super::v8_input_projection::{
     V8SolverReadyTilePhysics, project_v8_runtime_inputs_with_carriers,
@@ -487,6 +488,13 @@ fn execute_v8_lse_runtime_shadow_phases(
                     beginning,
                     potential_initial_trial: Some(tile.beginning_trial.clone()),
                     final_initial_trial: Some(tile.beginning_trial),
+                    soil_thermal: soil_thermal.clone(),
+                })
+            }
+            V8SolverReadyTilePhysics::Stage3OpenSnow(beginning_state) => {
+                StrictProjectedTileProblem::Stage3OpenSnow(StrictProjectedStage3OpenSnowTile {
+                    identity: tile.identity,
+                    beginning_state,
                     soil_thermal: soil_thermal.clone(),
                 })
             }

@@ -13,9 +13,10 @@ use openwepp_land_surface_energy::{
     CoveredPotentialPhase, CoveredTileEnergyOperandSet, FinalCoveredTileCandidate,
     FinalTileCandidate, GroundWaterKey, OfeId, OpenPotentialPhase, OpenSurfaceProblem,
     PotentialWaterRequestBatch, RootRuntimeIdentity, RuntimeTileIdentity, SoilThermalSnapshot,
-    TileEnergyOperandSet, TileState, WaterAuthorization, WaterProtocol, WeightedTileEnergyOperands,
-    canonical_tile_fraction_sum_closes, finalize_covered_phase, finalize_open_phase,
-    solve_covered_potential_phase, solve_open_potential_phase, validate_weighted_ofe_energy,
+    StandGroundWaterAmountBasis, TileEnergyOperandSet, TileState, WaterAmount, WaterAuthorization,
+    WaterProtocol, WeightedTileEnergyOperands, canonical_tile_fraction_sum_closes,
+    finalize_covered_phase, finalize_open_phase, solve_covered_potential_phase,
+    solve_open_potential_phase, validate_weighted_ofe_energy,
 };
 
 use super::{
@@ -46,11 +47,21 @@ pub(crate) struct StrictProjectedCoveredTile {
     pub(crate) soil_thermal: SoilThermalSnapshot,
 }
 
+/// Topology-preserving member whose physical snow surface is owned entirely by
+/// Stage 3. It must not enter the ordinary open-ground solver.
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct StrictProjectedStage3OpenSnowTile {
+    pub(crate) identity: RuntimeTileIdentity,
+    pub(crate) beginning_state: TileState,
+    pub(crate) soil_thermal: SoilThermalSnapshot,
+}
+
 /// One member of the exact configured heterogeneous tile set.
 #[derive(Clone, Debug, PartialEq)]
 #[allow(clippy::large_enum_variant)]
 pub(crate) enum StrictProjectedTileProblem {
     Open(StrictProjectedOpenTile),
+    Stage3OpenSnow(StrictProjectedStage3OpenSnowTile),
     Covered(StrictProjectedCoveredTile),
 }
 
@@ -85,6 +96,7 @@ impl StrictProjectedTileProblem {
     fn identity(&self) -> &RuntimeTileIdentity {
         match self {
             Self::Open(value) => &value.identity,
+            Self::Stage3OpenSnow(value) => &value.identity,
             Self::Covered(value) => &value.identity,
         }
     }
@@ -97,6 +109,12 @@ pub(crate) enum PotentialTilePhase {
         final_initial_trial: Option<Vec<f64>>,
         soil_thermal: SoilThermalSnapshot,
     },
+    Stage3OpenSnow {
+        identity: RuntimeTileIdentity,
+        beginning_state: TileState,
+        soil_thermal: SoilThermalSnapshot,
+        request_batch: PotentialWaterRequestBatch,
+    },
     Covered {
         phase: CoveredPotentialPhase,
         final_initial_trial: Vec<f64>,
@@ -108,20 +126,23 @@ impl PotentialTilePhase {
     fn identity(&self) -> &RuntimeTileIdentity {
         match self {
             Self::Open { phase, .. } => &phase.identity,
+            Self::Stage3OpenSnow { identity, .. } => identity,
             Self::Covered { phase, .. } => phase.identity(),
         }
     }
 
-    fn request_batch(&self) -> &PotentialWaterRequestBatch {
+    fn request_batch(&self) -> Option<&PotentialWaterRequestBatch> {
         match self {
-            Self::Open { phase, .. } => &phase.request_batch,
-            Self::Covered { phase, .. } => phase.request_batch(),
+            Self::Open { phase, .. } => Some(&phase.request_batch),
+            Self::Stage3OpenSnow { request_batch, .. } => Some(request_batch),
+            Self::Covered { phase, .. } => Some(phase.request_batch()),
         }
     }
 
     pub(crate) fn covered(&self) -> Option<&CoveredPotentialPhase> {
         match self {
             Self::Open { .. } => None,
+            Self::Stage3OpenSnow { .. } => None,
             Self::Covered { phase, .. } => Some(phase),
         }
     }
@@ -131,6 +152,13 @@ impl PotentialTilePhase {
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum FinalizedRuntimeTile {
     Open(FinalTileCandidate<AcceptedOpenSurface>),
+    Stage3OpenSnow {
+        identity: RuntimeTileIdentity,
+        ending_tile_state_pre_ingress: TileState,
+        soil_thermal: SoilThermalTileCandidate,
+        water_protocol: WaterProtocol,
+        rollback_hashes: Vec<openwepp_land_surface_energy::OwnerRollbackHash>,
+    },
     Covered(FinalCoveredTileCandidate),
 }
 
@@ -139,6 +167,7 @@ impl FinalizedRuntimeTile {
     fn identity(&self) -> &RuntimeTileIdentity {
         match self {
             Self::Open(value) => &value.identity,
+            Self::Stage3OpenSnow { identity, .. } => identity,
             Self::Covered(value) => &value.identity,
         }
     }
@@ -146,15 +175,17 @@ impl FinalizedRuntimeTile {
     pub(crate) fn covered(&self) -> Option<&FinalCoveredTileCandidate> {
         match self {
             Self::Open(_) => None,
+            Self::Stage3OpenSnow { .. } => None,
             Self::Covered(value) => Some(value),
         }
     }
 
     #[must_use]
-    fn water_protocol(&self) -> &WaterProtocol {
+    fn water_protocol(&self) -> Option<&WaterProtocol> {
         match self {
-            Self::Open(value) => &value.water_protocol,
-            Self::Covered(value) => &value.water_protocol,
+            Self::Open(value) => Some(&value.water_protocol),
+            Self::Stage3OpenSnow { water_protocol, .. } => Some(water_protocol),
+            Self::Covered(value) => Some(&value.water_protocol),
         }
     }
 
@@ -162,6 +193,10 @@ impl FinalizedRuntimeTile {
     fn ending_tile_state_pre_ingress(&self) -> &TileState {
         match self {
             Self::Open(value) => &value.ending_tile_state_pre_ingress,
+            Self::Stage3OpenSnow {
+                ending_tile_state_pre_ingress,
+                ..
+            } => ending_tile_state_pre_ingress,
             Self::Covered(value) => &value.ending_tile_state_pre_ingress,
         }
     }
@@ -170,6 +205,7 @@ impl FinalizedRuntimeTile {
     fn soil_thermal(&self) -> &SoilThermalTileCandidate {
         match self {
             Self::Open(value) => &value.soil_thermal,
+            Self::Stage3OpenSnow { soil_thermal, .. } => soil_thermal,
             Self::Covered(value) => &value.soil_thermal,
         }
     }
@@ -178,6 +214,7 @@ impl FinalizedRuntimeTile {
     fn energy_operands(&self) -> RuntimeTileEnergyOperands<'_> {
         match self {
             Self::Open(value) => RuntimeTileEnergyOperands::Open(&value.energy_operands),
+            Self::Stage3OpenSnow { .. } => RuntimeTileEnergyOperands::Stage3OpenSnow,
             Self::Covered(value) => RuntimeTileEnergyOperands::Covered(&value.energy_operands),
         }
     }
@@ -187,6 +224,7 @@ impl FinalizedRuntimeTile {
 #[derive(Clone, Copy, Debug)]
 enum RuntimeTileEnergyOperands<'a> {
     Open(&'a TileEnergyOperandSet),
+    Stage3OpenSnow,
     Covered(&'a CoveredTileEnergyOperandSet),
 }
 
@@ -194,6 +232,7 @@ impl RuntimeTileEnergyOperands<'_> {
     fn validate(&self) -> Result<(), LandSurfaceEnergyShadowError> {
         match self {
             Self::Open(value) => value.validate()?,
+            Self::Stage3OpenSnow => {}
             Self::Covered(value) => value.validate()?,
         }
         Ok(())
@@ -370,7 +409,9 @@ fn execute_multi_tile_runtime_with_mode(
             let covered_final_tiles = final_tiles
                 .iter()
                 .filter_map(|tile| match tile {
-                    FinalizedRuntimeTile::Open(_) => None,
+                    FinalizedRuntimeTile::Open(_) | FinalizedRuntimeTile::Stage3OpenSnow { .. } => {
+                        None
+                    }
                     FinalizedRuntimeTile::Covered(value) => Some(value.clone()),
                 })
                 .collect::<Vec<_>>();
@@ -531,6 +572,7 @@ fn validate_projected_soil_order(
     let identity = tile.identity();
     let snapshot = match tile {
         StrictProjectedTileProblem::Open(value) => &value.soil_thermal,
+        StrictProjectedTileProblem::Stage3OpenSnow(value) => &value.soil_thermal,
         StrictProjectedTileProblem::Covered(value) => &value.soil_thermal,
     };
     snapshot.validate()?;
@@ -589,6 +631,40 @@ fn solve_all_potential(
                         soil_thermal: value.soil_thermal,
                     })
                 }
+                StrictProjectedTileProblem::Stage3OpenSnow(value) => {
+                    let request_batch = PotentialWaterRequestBatch::try_new(
+                        value.identity.transaction_id,
+                        value.identity.beginning_lse_state_sha256.clone(),
+                        vec![WaterAmount {
+                            key: GroundWaterKey {
+                                transaction_id: value.identity.transaction_id,
+                                requesting_owner_id: value.identity.lse_owner_id.clone(),
+                                requesting_component:
+                                    openwepp_land_surface_energy::RequestingComponent::GroundSurface,
+                                ofe_id: value.identity.ofe_id.clone(),
+                                requesting_tile_id: value.identity.tile_id.clone(),
+                                occupancy_id: None,
+                                surface_id: Some(value.identity.surface_id.clone()),
+                                surface_class: Some(value.identity.surface_class),
+                                source_type: value.identity.ground_source_type,
+                                source_id: value.identity.ground_source_id.clone(),
+                                source_tile_id: value.identity.ground_source_tile_id.clone(),
+                                soil_layer_id: value.identity.ground_soil_layer_id.clone(),
+                                amount_basis:
+                                    StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+                            },
+                            amount_kg_m2_stand_ground: 0.0,
+                        }],
+                    )?;
+                    Ok::<_, LandSurfaceEnergyShadowError>(
+                        PotentialTilePhase::Stage3OpenSnow {
+                            identity: value.identity,
+                            beginning_state: value.beginning_state,
+                            soil_thermal: value.soil_thermal,
+                            request_batch,
+                        },
+                    )
+                }
                 StrictProjectedTileProblem::Covered(value) => {
                     let phase = solve_covered_potential_phase(
                         value.identity,
@@ -619,7 +695,8 @@ fn combined_request_batch(
         ))?;
     let requests = phases
         .iter()
-        .flat_map(|phase| phase.request_batch().requests.iter().cloned())
+        .filter_map(PotentialTilePhase::request_batch)
+        .flat_map(|batch| batch.requests.iter().cloned())
         .collect();
     Ok(PotentialWaterRequestBatch::try_new(
         first.identity().transaction_id,
@@ -634,8 +711,8 @@ fn authorization_subset(
 ) -> Result<Vec<WaterAuthorization>, LandSurfaceEnergyShadowError> {
     let keys = phase
         .request_batch()
-        .requests
-        .iter()
+        .into_iter()
+        .flat_map(|batch| batch.requests.iter())
         .map(|row| row.key.clone())
         .collect::<BTreeSet<_>>();
     let subset = authorizations
@@ -683,6 +760,67 @@ fn finalize_all_tiles(
                         )?,
                     ))
                 }
+                PotentialTilePhase::Stage3OpenSnow {
+                    identity,
+                    beginning_state,
+                    soil_thermal,
+                    request_batch,
+                } => {
+                    if subset.len() != 1
+                        || subset[0].amount_kg_m2_stand_ground.to_bits() != 0.0f64.to_bits()
+                    {
+                        return Err(LandSurfaceEnergyShadowError::Identity(
+                            "Stage-3 open-snow pass-through authorization",
+                        ));
+                    }
+                    let ofe = soil_thermal
+                        .ofes
+                        .iter()
+                        .find(|row| row.ofe_id == identity.ofe_id)
+                        .ok_or(LandSurfaceEnergyShadowError::Identity(
+                            "Stage-3 open-snow soil-thermal OFE",
+                        ))?;
+                    let thermal = SoilThermalTileCandidate {
+                        owner_id: soil_thermal.owner_id.clone(),
+                        beginning_state_sha256: soil_thermal.state_sha256.clone(),
+                        ofe_id: identity.ofe_id.clone(),
+                        tile_id: identity.tile_id.clone(),
+                        layers: ofe
+                            .ordered_layers
+                            .iter()
+                            .map(
+                                |layer| openwepp_land_surface_energy::SoilThermalLayerCandidate {
+                                    layer_id: layer.layer_id.clone(),
+                                    beginning_enthalpy_j_m2_ofe_ground: layer
+                                        .enthalpy_j_m2_ofe_ground,
+                                    ground_heat_credit_j_m2_ofe_ground: 0.0,
+                                    infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
+                                    ending_enthalpy_j_m2_ofe_ground: layer.enthalpy_j_m2_ofe_ground,
+                                    ending_temperature_k: layer.temperature_k,
+                                },
+                            )
+                            .collect(),
+                    };
+                    let water_protocol = WaterProtocol {
+                        transaction_id: identity.transaction_id,
+                        hydrology_owner_id: identity.hydrology_owner_id.clone(),
+                        beginning_snapshot_sha256: identity
+                            .beginning_hydrology_snapshot_sha256
+                            .clone(),
+                        requests: request_batch.requests.clone(),
+                        authorizations: subset,
+                        finalized_uses: request_batch.requests.clone(),
+                        condensation_credits: Vec::new(),
+                    };
+                    water_protocol.validate()?;
+                    Ok::<_, LandSurfaceEnergyShadowError>(FinalizedRuntimeTile::Stage3OpenSnow {
+                        identity: identity.clone(),
+                        ending_tile_state_pre_ingress: beginning_state.clone(),
+                        soil_thermal: thermal,
+                        water_protocol,
+                        rollback_hashes: pass_through_rollback_hashes(identity),
+                    })
+                }
                 PotentialTilePhase::Covered {
                     phase,
                     final_initial_trial,
@@ -697,11 +835,9 @@ fn finalize_all_tiles(
                     )?,
                 )),
             }?;
-            publish_pending(
-                pending_hook,
-                PendingPayloadKind::FinalTileUse,
-                finalized.water_protocol(),
-            )?;
+            if let Some(protocol) = finalized.water_protocol() {
+                publish_pending(pending_hook, PendingPayloadKind::FinalTileUse, protocol)?;
+            }
             run_failure_hook(failure_hook, MultiTileFailurePhase::FinalTile(index))?;
             Ok(finalized)
         })
@@ -749,23 +885,31 @@ fn combined_protocol(
     authorizations: &[WaterAuthorization],
     final_tiles: &[FinalizedRuntimeTile],
 ) -> Result<WaterProtocol, LandSurfaceEnergyShadowError> {
-    let first = final_tiles
-        .first()
-        .ok_or(LandSurfaceEnergyShadowError::Identity(
+    if final_tiles.is_empty() {
+        return Err(LandSurfaceEnergyShadowError::Identity(
             "empty final tile set",
-        ))?;
+        ));
+    }
     let finalized_uses = final_tiles
         .iter()
-        .flat_map(|tile| tile.water_protocol().finalized_uses.iter().cloned())
+        .filter_map(FinalizedRuntimeTile::water_protocol)
+        .flat_map(|protocol| protocol.finalized_uses.iter().cloned())
         .collect();
     let condensation_credits = final_tiles
         .iter()
-        .flat_map(|tile| tile.water_protocol().condensation_credits.iter().cloned())
+        .filter_map(FinalizedRuntimeTile::water_protocol)
+        .flat_map(|protocol| protocol.condensation_credits.iter().cloned())
         .collect();
+    let first_protocol = final_tiles
+        .iter()
+        .find_map(FinalizedRuntimeTile::water_protocol)
+        .ok_or(LandSurfaceEnergyShadowError::Identity(
+            "Stage-3 open-only hydrology transaction is not yet admitted",
+        ))?;
     let protocol = WaterProtocol {
         transaction_id: request_batch.transaction_id,
-        hydrology_owner_id: first.water_protocol().hydrology_owner_id.clone(),
-        beginning_snapshot_sha256: first.water_protocol().beginning_snapshot_sha256.clone(),
+        hydrology_owner_id: first_protocol.hydrology_owner_id.clone(),
+        beginning_snapshot_sha256: first_protocol.beginning_snapshot_sha256.clone(),
         requests: request_batch.requests.clone(),
         authorizations: authorizations.to_vec(),
         finalized_uses,
@@ -773,6 +917,38 @@ fn combined_protocol(
     };
     protocol.validate()?;
     Ok(protocol)
+}
+
+fn pass_through_rollback_hashes(
+    identity: &RuntimeTileIdentity,
+) -> Vec<openwepp_land_surface_energy::OwnerRollbackHash> {
+    [
+        (
+            OwnerKind::LandSurfaceEnergy,
+            identity.lse_owner_id.as_str(),
+            &identity.beginning_lse_state_sha256,
+        ),
+        (
+            OwnerKind::Hydrology,
+            identity.hydrology_owner_id.as_str(),
+            &identity.beginning_hydrology_snapshot_sha256,
+        ),
+        (
+            OwnerKind::SoilThermal,
+            identity.soil_thermal_owner_id.as_str(),
+            &identity.beginning_soil_thermal_state_sha256,
+        ),
+    ]
+    .into_iter()
+    .map(
+        |(owner_kind, owner_id, digest)| openwepp_land_surface_energy::OwnerRollbackHash {
+            owner_kind,
+            owner_id: owner_id.to_owned(),
+            before_sha256: digest.clone(),
+            after_sha256: digest.clone(),
+        },
+    )
+    .collect()
 }
 
 fn common_owner_rollback_hashes(
@@ -786,6 +962,9 @@ fn common_owner_rollback_hashes(
     let selected = |tile: &FinalizedRuntimeTile| {
         let rows = match tile {
             FinalizedRuntimeTile::Open(value) => &value.rollback_hashes,
+            FinalizedRuntimeTile::Stage3OpenSnow {
+                rollback_hashes, ..
+            } => rollback_hashes,
             FinalizedRuntimeTile::Covered(value) => &value.rollback_hashes,
         };
         rows.iter()
@@ -840,6 +1019,7 @@ fn weighted_operand(
                     + ground.latent.vapor_energy_j_m2.abs(),
             )
         }
+        RuntimeTileEnergyOperands::Stage3OpenSnow => (0.0, 0.0, 0.0, 0.0),
         RuntimeTileEnergyOperands::Covered(covered) => {
             let column = &covered.column;
             let incident_shortwave = column.shortwave.incident_w_m2_tile.total();

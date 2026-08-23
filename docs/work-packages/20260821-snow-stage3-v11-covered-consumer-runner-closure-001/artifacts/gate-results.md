@@ -443,3 +443,35 @@ inside/outside vectors. The exact-worktree two-crate nextest regression passed
 `HOLD:` The next physical increment must introduce a destination-keyed sealed
 open-snow exposure and a real open-snow boundary producer. The existing
 lane-keyed covered/sub-canopy exposure is not an admissible substitute.
+
+## Destination-keyed open-snow boundary and mixed OFE checkpoint
+
+`Static:` Prepared Stage-3 snow surfaces are keyed by `(OFE, tile)` and use a
+closed covered/open forcing sum. Open exposure is independently sealed with
+support, destination, forcing, wind-provider, projection-model, wind, and
+geometry identity. The open producer derives snow temperature, ice-saturation
+humidity, latent heat, VIS/NIR absorption, atmospheric longwave, and turbulent
+exchange from the live Stage-3 state and sealed forcing; nonzero rain,
+snowfall, or precipitation parcels fail closed.
+
+`Static:` A Stage-3-owned open-snow tile is now an explicit pass-through member
+of the heterogeneous LSE transaction. It emits a zero-demand D/A/F row solely
+to preserve transactional topology, retains beginning LSE and soil-thermal
+state exactly, contributes zero local LSE energy, and never invokes the
+ordinary open-ground solver. Covered and open boundary candidates participate
+in the same Stage-3 fixed point and aggregate as `sum(tile_fraction * flux)`
+without normalization.
+
+`Ran at exact worktree:`
+
+- `cargo check -p openwepp-hillslope-orchestrator --tests`: PASS.
+- focused real mixed `0.6 covered + 0.4 open` execution: 1/1 PASS.
+- orchestrator nextest regression: 764/764 PASS, one intentional skip.
+- two-crate orchestrator/vegetation nextest regression: 1036/1036 PASS, one
+  intentional skip.
+- `cargo fmt --all -- --check`: PASS after formatting.
+
+`HOLD:` Precipitation custody is deliberately unavailable. Open-only and the
+remaining exposure/model poison matrix, snow-soil heat, independent outcome
+ledger, terminal chronology, restart, scenarios, and independent review remain
+open.

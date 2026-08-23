@@ -64,6 +64,11 @@ use crate::runtime_inputs::{
     SnowFreeHalfHourStaticConfiguration, SnowFreePrecipitationParcelReceipt,
     ValidatedSnowFreeHalfHourForcingReceipts,
 };
+use crate::snow_stage3_open_boundary::{
+    FinalStage3OpenSnowBoundaryReceiptV1, FinalStage3TileBoundaryReceiptV1,
+    OpenSnowTileBoundaryCandidateV1, SealedStage3TileBoundaryForcingV1,
+    evaluate_open_snow_tile_boundary,
+};
 use crate::snow_stage3_terminal_handoff::{
     CanopyLongwaveComponent, CarrierSurface, FinalStage3CanopyBoundaryReceiptInputs,
     FinalStage3CanopyBoundaryReceiptV1, LaneBoundaryContributionV1,

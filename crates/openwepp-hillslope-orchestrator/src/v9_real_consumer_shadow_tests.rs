@@ -22,6 +22,10 @@ mod tests {
         SnowStage3TerminalHandoffRequest, TerminalEventInput,
         TerminalStateRates,
     };
+    use crate::snow_stage3_open_boundary::{
+        SealedOpenSnowExposureReceiptV1, SealedOpenSnowTileForcingInputsV1,
+        SealedOpenSnowTileForcingV1, SealedStage3TileBoundaryForcingV1,
+    };
     use crate::snow_stage3_v11_attachment::{
         PreparedStage3V11DayV1, PreparedStage3V11SupportIdentityV1,
         PreparedStage3V11SupportV1,
@@ -947,7 +951,7 @@ mod tests {
     }
 
     #[test]
-    fn mixed_open_covered_stack_fails_closed_without_open_snow_receipt() {
+    fn mixed_open_covered_stack_executes_complete_ofe_ground_boundary() {
         let (shadow, fixture) = v10_shadow_fixture();
         let base_interval = day_input(&fixture).intervals.remove(0);
         let interval = segment_interval(&base_interval, 1_800_000_000_000, 41, 0.0);
@@ -1000,6 +1004,95 @@ mod tests {
         let stage3_inputs_by_lane = BTreeMap::from([(1, stage3_inputs)]);
         let stage3_forcing_by_lane = BTreeMap::from([(1, stage3_forcing)]);
         let carrier_forcing_by_lane = BTreeMap::from([(1, child2c_carrier_forcing())]);
+        let empty_snow_surface_forcing = BTreeMap::new();
+        let mut missing_open_executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
+            stack: DirectV11SnowCoveredRealConsumerStack::new(
+                &shadow,
+                DirectV11SnowCoveredStackInputs {
+                    interval: &covered_interval,
+                    stage3_inputs_by_lane: &stage3_inputs_by_lane,
+                    stage3_forcing_by_lane: &stage3_forcing_by_lane,
+                    carrier_forcing_by_lane: &carrier_forcing_by_lane,
+                    snow_surface_forcing_by_destination: &empty_snow_surface_forcing,
+                    stage3_beginning_by_lane: BTreeMap::from([(1, stage3_beginning.clone())]),
+                    day_index: 0,
+                    interval_index: 0,
+                },
+            ),
+        };
+        let missing_error = execute_v11_segment(
+            &migrated.configuration,
+            &parent,
+            &slab,
+            &mut missing_open_executor,
+        )
+        .expect_err("mixed OFE without its open-snow boundary must reject");
+        assert!(matches!(
+            missing_error,
+            V11ExecutionError::Executor(DirectV11RealConsumerError::Identity(
+                "covered Stage-3 lane is missing a snow-surface contribution"
+            ))
+        ));
+        assert!(missing_open_executor.stack.take_staged_stage3().is_none());
+        assert!(missing_open_executor.stack.take_staged_ending().is_none());
+        let covered_tiles = shadow
+            .inner
+            .vegetation_configuration
+            .strata
+            .iter()
+            .flat_map(|stratum| stratum.tile_ids.iter().cloned())
+            .collect::<std::collections::BTreeSet<_>>();
+        let open_record = shadow
+            .inner
+            .surface_configuration
+            .records
+            .iter()
+            .find(|record| !covered_tiles.contains(&record.key.tile_id))
+            .expect("mixed fixture open tile");
+        let support = TimeSupport::new(
+            ModelTimeNs::new(0),
+            ModelTimeNs::new(1_800_000_000_000),
+        )
+        .expect("open-snow support");
+        let exposure = SealedOpenSnowExposureReceiptV1::try_new(
+            support,
+            (open_record.key.ofe_id.clone(), open_record.key.tile_id.clone()),
+            Digest32::from_bytes([10; 32]),
+            Digest32::from_bytes([11; 32]),
+            covered_interval.lse_forcing.reference_wind_m_s,
+            Digest32::from_bytes([12; 32]),
+        )
+        .expect("open-snow exposure");
+        let open_forcing = SealedOpenSnowTileForcingV1::try_new(
+            SealedOpenSnowTileForcingInputsV1 {
+                support,
+                destination: (open_record.key.ofe_id.clone(), open_record.key.tile_id.clone()),
+                forcing_receipt_sha256: Digest32::from_bytes([10; 32]),
+                exposure,
+                rho_air_kg_m3: 1.2,
+                cp_air_j_kg_k: 1005.0,
+                reference_temperature_k: covered_interval.lse_forcing.air_temperature_k,
+                reference_specific_humidity_kg_kg: covered_interval
+                    .lse_forcing
+                    .air_specific_humidity_kg_kg,
+                air_pressure_pa: covered_interval.lse_forcing.air_pressure_pa,
+                atmospheric_downward_longwave_w_m2: covered_interval
+                    .lse_forcing
+                    .atmospheric_downward_longwave_w_m2,
+                direct_vis_w_m2: covered_interval.lse_forcing.direct_vis_w_m2,
+                diffuse_vis_w_m2: covered_interval.lse_forcing.diffuse_vis_w_m2,
+                direct_nir_w_m2: covered_interval.lse_forcing.direct_nir_w_m2,
+                diffuse_nir_w_m2: covered_interval.lse_forcing.diffuse_nir_w_m2,
+                rain_m: 0.0,
+                snowfall_m: 0.0,
+                precipitation_parcel_count: 0,
+            },
+        )
+        .expect("open-snow forcing");
+        let snow_surface_forcing_by_destination = BTreeMap::from([(
+            open_forcing.destination.clone(),
+            SealedStage3TileBoundaryForcingV1::OpenSnow(open_forcing),
+        )]);
         let stage3_beginning_by_lane = BTreeMap::from([(1, stage3_beginning.clone())]);
         let stack = DirectV11SnowCoveredRealConsumerStack::new(
             &shadow,
@@ -1008,22 +1101,41 @@ mod tests {
                 stage3_inputs_by_lane: &stage3_inputs_by_lane,
                 stage3_forcing_by_lane: &stage3_forcing_by_lane,
                 carrier_forcing_by_lane: &carrier_forcing_by_lane,
+                snow_surface_forcing_by_destination: &snow_surface_forcing_by_destination,
                 stage3_beginning_by_lane,
                 day_index: 0,
                 interval_index: 0,
             },
         );
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-        let error = execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
-            .expect_err("mixed OFE lacks its open-snow boundary receipt");
-        assert!(matches!(
-            error,
-            V11ExecutionError::Executor(DirectV11RealConsumerError::Identity(
-                "covered Stage-3 lane is missing a snow-surface contribution"
-            ))
-        ));
-        assert!(executor.stack.take_staged_stage3().is_none());
-        assert!(executor.stack.take_staged_ending().is_none());
+        execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+            .expect("real mixed covered/open OFE execution");
+        let lane_receipt = executor
+            .stack
+            .last_lane_boundary_receipts()
+            .and_then(|receipts| receipts.get(&1))
+            .expect("mixed OFE final lane receipt");
+        assert_eq!(lane_receipt.ordered_destinations.len(), 2);
+        assert!(lane_receipt
+            .ordered_destinations
+            .iter()
+            .any(|value| value.boundary_class == crate::snow_stage3_terminal_handoff::Stage3TileBoundaryClassV1::OpenSnow));
+        assert!(lane_receipt
+            .ordered_destinations
+            .iter()
+            .any(|value| value.boundary_class == crate::snow_stage3_terminal_handoff::Stage3TileBoundaryClassV1::V11CanopyCovered));
+        let reconstructed_sensible = lane_receipt
+            .ordered_destinations
+            .iter()
+            .map(|value| value.tile_fraction * value.sensible_to_canopy_air_w_m2)
+            .sum::<f64>();
+        assert_eq!(
+            lane_receipt.aggregate_sensible_to_canopy_air_w_m2.to_bits(),
+            reconstructed_sensible.to_bits(),
+            "mixed OFE flux is the unnormalized sum of tile-fraction contributions",
+        );
+        assert!(executor.stack.take_staged_stage3().is_some());
+        assert!(executor.stack.take_staged_ending().is_some());
 
         let (_, original_vegetation_state) = project_v9_runtime_to_v8(
             &executor.stack.beginning.inner.vegetation_configuration,
@@ -1057,6 +1169,7 @@ mod tests {
                 stage3_inputs_by_lane: &stage3_inputs_by_lane,
                 stage3_forcing_by_lane: &stage3_forcing_by_lane,
                 carrier_forcing_by_lane: &carrier_forcing_by_lane,
+                snow_surface_forcing_by_destination: &snow_surface_forcing_by_destination,
                 stage3_beginning_by_lane: BTreeMap::from([(1, changed_stage3.clone())]),
                 day_index: 0,
                 interval_index: 0,
@@ -1122,6 +1235,7 @@ mod tests {
                     stage3_inputs_by_lane: &stage3_inputs_by_lane,
                     stage3_forcing_by_lane: &stage3_forcing_by_lane,
                     carrier_forcing_by_lane: &poisoned_forcing,
+                    snow_surface_forcing_by_destination: &snow_surface_forcing_by_destination,
                     stage3_beginning_by_lane: BTreeMap::from([(
                         1,
                         Wb11HydrologyKernel::initialize_stage3_persistent_state(
