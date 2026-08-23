@@ -1746,11 +1746,6 @@ fn covered_fixed_point_stage3_states_equal(
                         lhs.detached_retained_liquid_kg_m2,
                         rhs.detached_retained_liquid_kg_m2,
                     ),
-                    (lhs.initial_ice_kg_m2, rhs.initial_ice_kg_m2),
-                    (
-                        lhs.initial_retained_liquid_kg_m2,
-                        rhs.initial_retained_liquid_kg_m2,
-                    ),
                     (lhs.cumulative_snowfall_kg_m2, rhs.cumulative_snowfall_kg_m2),
                     (
                         lhs.cumulative_external_liquid_kg_m2,
@@ -1772,6 +1767,9 @@ fn covered_fixed_point_stage3_states_equal(
                 ]
                 .into_iter()
                 .all(|(left, right)| close_mass(left, right))
+                && lhs.initial_ice_kg_m2.to_bits() == rhs.initial_ice_kg_m2.to_bits()
+                && lhs.initial_retained_liquid_kg_m2.to_bits()
+                    == rhs.initial_retained_liquid_kg_m2.to_bits()
                 && [
                     (
                         lhs.cumulative_complete_energy_j_m2,
@@ -2646,5 +2644,25 @@ mod covered_convergence_policy_tests {
         outside.cumulative_snowfall_kg_m2 += 2.0e-6;
         reseal(&mut outside);
         assert!(!equal(original, outside));
+    }
+
+    #[test]
+    fn immutable_initial_mass_lineage_is_bitwise_exact() {
+        let original = state();
+        let mutations: [fn(&mut DirectSnowStage3PersistentState); 2] = [
+            |state: &mut DirectSnowStage3PersistentState| {
+                state.initial_ice_kg_m2 = f64::from_bits(state.initial_ice_kg_m2.to_bits() + 1);
+            },
+            |state: &mut DirectSnowStage3PersistentState| {
+                state.initial_retained_liquid_kg_m2 =
+                    f64::from_bits(state.initial_retained_liquid_kg_m2.to_bits() + 1);
+            },
+        ];
+        for mutate in mutations {
+            let mut changed = original.clone();
+            mutate(&mut changed);
+            reseal(&mut changed);
+            assert!(!equal(original.clone(), changed));
+        }
     }
 }

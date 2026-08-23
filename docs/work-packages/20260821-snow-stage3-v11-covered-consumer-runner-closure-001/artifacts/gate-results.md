@@ -427,3 +427,19 @@ the revision-scoped directory.
 - assurance generation verification from retained genesis `15763d7f...`: PASS,
   final generation `637f4522...`, 89 transitions;
 - `cargo fmt --all -- --check` and `git diff --check`: PASS.
+
+## Immutable Stage-3 beginning-mass convergence join
+
+`Static:` `initial_ice_kg_m2` and `initial_retained_liquid_kg_m2` now compare
+bitwise exactly after each candidate fingerprint is independently
+reconstructed. Only detached retained liquid and cumulative mass fields use the
+`1e-6 kg m^-2` v16 convergence bound.
+
+`Ran:` Five focused convergence-policy tests passed, including resealed one-ULP
+poisons for both immutable initial-mass fields and the retained cumulative-mass
+inside/outside vectors. The exact-worktree two-crate nextest regression passed
+827/827 with one intentional skip. Formatting and diff hygiene passed.
+
+`HOLD:` The next physical increment must introduce a destination-keyed sealed
+open-snow exposure and a real open-snow boundary producer. The existing
+lane-keyed covered/sub-canopy exposure is not an admissible substitute.
