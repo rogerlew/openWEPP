@@ -78,6 +78,25 @@ pub(crate) struct CoveredLseIterationState {
     pub snow_latent_w_m2: f64,
     pub snow_net_longwave_w_m2: f64,
     pub component_temperatures_k: Vec<(String, [f64; 4])>,
+    pub component_carrier_surfaces: Vec<CoveredCarrierComponentState>,
+    pub canopy_sensible_w_m2: f64,
+    pub canopy_vapor_kg_m2_s: f64,
+    pub sensible_to_reference_air_w_m2: f64,
+    pub vapor_to_reference_air_kg_m2_s: f64,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct CoveredCarrierComponentState {
+    pub occupancy_id: String,
+    pub component_ordinal: u8,
+    pub surface_area_m2_m2_tile: f64,
+    pub emissive_area_m2_m2_tile: f64,
+    pub heat_conductance_m_s_tile: f64,
+    pub vapor_conductance_m_s_tile: f64,
+    pub temperature_k: f64,
+    pub specific_humidity_kg_kg: f64,
+    pub sensible_to_canopy_air_w_m2: f64,
+    pub vapor_to_canopy_air_kg_m2_s: f64,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -153,6 +172,42 @@ impl UncommittedCoveredV8OwnerEnvelope {
                     )
                 })
                 .collect();
+            let component_carrier_surfaces = column
+                .occupancies
+                .iter()
+                .flat_map(|occupancy| {
+                    [
+                        occupancy.sun_leaf,
+                        occupancy.shade_leaf,
+                        occupancy.wet_surface,
+                        occupancy.dry_stem,
+                    ]
+                    .into_iter()
+                    .enumerate()
+                    .map(|(ordinal, surface)| CoveredCarrierComponentState {
+                        occupancy_id: occupancy.occupancy_id.clone(),
+                        component_ordinal: ordinal as u8,
+                        surface_area_m2_m2_tile: surface.surface_area_m2_m2_tile,
+                        emissive_area_m2_m2_tile: surface.emissive_area_m2_m2_tile,
+                        heat_conductance_m_s_tile: surface.heat_conductance_m_s_tile,
+                        vapor_conductance_m_s_tile: surface.vapor_conductance_m_s_tile,
+                        temperature_k: surface.surface_temperature_k,
+                        specific_humidity_kg_kg: surface.surface_specific_humidity_kg_kg,
+                        sensible_to_canopy_air_w_m2: surface.sensible_to_canopy_air_w_m2_tile,
+                        vapor_to_canopy_air_kg_m2_s: surface
+                            .signed_vapor_to_canopy_air_kg_m2_tile_s,
+                    })
+                    .collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>();
+            let canopy_sensible_w_m2 = component_carrier_surfaces
+                .iter()
+                .map(|surface| surface.sensible_to_canopy_air_w_m2)
+                .sum();
+            let canopy_vapor_kg_m2_s = component_carrier_surfaces
+                .iter()
+                .map(|surface| surface.vapor_to_canopy_air_kg_m2_s)
+                .sum();
             let key = (
                 covered.identity.ofe_id.clone(),
                 covered.identity.tile_id.clone(),
@@ -176,6 +231,15 @@ impl UncommittedCoveredV8OwnerEnvelope {
                             * lower.latent_heat_j_kg,
                         snow_net_longwave_w_m2: column.longwave.ground_net_w_m2_tile,
                         component_temperatures_k,
+                        component_carrier_surfaces,
+                        canopy_sensible_w_m2,
+                        canopy_vapor_kg_m2_s,
+                        sensible_to_reference_air_w_m2: column
+                            .canopy_air
+                            .sensible_to_reference_air_w_m2_tile,
+                        vapor_to_reference_air_kg_m2_s: column
+                            .canopy_air
+                            .vapor_to_reference_air_kg_m2_tile_s,
                     },
                 )
                 .is_some()

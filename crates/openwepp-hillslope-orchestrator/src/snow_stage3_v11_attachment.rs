@@ -33,9 +33,9 @@ use crate::runtime_inputs::{
 use crate::snow_stage3_terminal_handoff::SealedCoveredCarrierForcing;
 use crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow;
 use crate::v9_real_consumer_shadow::{
-    DirectV9ShadowIntervalInput, DirectV11RealConsumerError, DirectV11RealConsumerStack,
-    DirectV11SnowCoveredRealConsumerStack, DirectV11SnowCoveredSegmentInput,
-    DirectV11SnowCoveredStackInputs,
+    CoveredParentOwnerJoinReceiptV1, DirectV9ShadowIntervalInput, DirectV11RealConsumerError,
+    DirectV11RealConsumerStack, DirectV11SnowCoveredRealConsumerStack,
+    DirectV11SnowCoveredSegmentInput, DirectV11SnowCoveredStackInputs,
 };
 use crate::{DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidConfigurationRecord};
 
@@ -816,6 +816,7 @@ pub struct DirectSnowStage3V11ParentReceipt {
     pub terminal_events: Vec<DirectSnowStage3V11TerminalReceipt>,
     pub ending_stage3_state_digests: BTreeMap<u32, Digest32>,
     pub complete_owner_bytes: BTreeMap<String, Vec<u8>>,
+    pub covered_owner_joins: Vec<CoveredParentOwnerJoinReceiptV1>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -936,6 +937,7 @@ impl DirectSnowStage3V11ShadowAttachment {
         validate_prepared_day_against_committed_provider(&self.committed, prepared)?;
         let mut candidate = self.committed.clone();
         let mut terminal_events = Vec::new();
+        let mut covered_owner_joins = Vec::new();
         for (support_index, support) in prepared.supports().iter().enumerate() {
             let covered_support = !support.covered_carrier_forcing_by_lane.is_empty();
             let beginning_stage3 = candidate.stage3_by_lane.clone();
@@ -1007,7 +1009,7 @@ impl DirectSnowStage3V11ShadowAttachment {
                 candidate.next_parent_sequence,
             )?;
             let (parent, consumer, clock, finalized, covered_stage3) = if covered_support {
-                let (parent, consumer, clock, finalized, ending_stage3) =
+                let (parent, consumer, clock, finalized, ending_stage3, owner_join) =
                     execute_covered_real_v11_parent(
                         &self.static_context,
                         &beginning_parent,
@@ -1019,6 +1021,7 @@ impl DirectSnowStage3V11ShadowAttachment {
                         forcing_receipt,
                         beginning_stage3,
                     )?;
+                covered_owner_joins.push(owner_join);
                 (parent, consumer, clock, finalized, Some(ending_stage3))
             } else {
                 let (parent, consumer, clock, finalized) = execute_real_v11_parent(
@@ -1075,6 +1078,7 @@ impl DirectSnowStage3V11ShadowAttachment {
             terminal_events,
             ending_stage3_state_digests: stage3_digests,
             complete_owner_bytes,
+            covered_owner_joins,
         };
         candidate.receipt_chain.push(receipt.clone());
         Ok(DirectSnowStage3V11ParentCandidate {
@@ -1609,6 +1613,7 @@ fn execute_covered_real_v11_parent(
         CoupledClockStateV1,
         V11ParentCandidate,
         BTreeMap<u32, DirectSnowStage3PersistentState>,
+        CoveredParentOwnerJoinReceiptV1,
     ),
     DirectSnowStage3V11AttachmentError,
 > {
@@ -1724,11 +1729,42 @@ fn execute_covered_real_v11_parent(
             "covered V11 ending owner fixed point",
         ));
     }
-    let mut parent = beginning_parent.clone();
-    parent.accept_segment(&context.vegetation_configuration, final_segment)?;
     let ending_stage3 = final_executor.stack.take_staged_stage3().ok_or(
         DirectSnowStage3V11AttachmentError::Identity("missing staged covered Stage-3 ending"),
     )?;
+    let owner_join = CoveredParentOwnerJoinReceiptV1::try_new(
+        support,
+        final_executor.stack.last_final_boundary_receipts().ok_or(
+            DirectSnowStage3V11AttachmentError::Identity(
+                "missing final covered boundary receipt set",
+            ),
+        )?,
+        final_executor
+            .stack
+            .last_component_carrier_receipts()
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "missing component-resolved carrier receipt set",
+            ))?,
+        &ending_stage3,
+        &final_segment.ending_resource_owners,
+    )?;
+    owner_join.validate(
+        final_executor.stack.last_final_boundary_receipts().ok_or(
+            DirectSnowStage3V11AttachmentError::Identity(
+                "missing final covered boundary receipt set",
+            ),
+        )?,
+        final_executor
+            .stack
+            .last_component_carrier_receipts()
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "missing component-resolved carrier receipt set",
+            ))?,
+        &ending_stage3,
+        &final_segment.ending_resource_owners,
+    )?;
+    let mut parent = beginning_parent.clone();
+    parent.accept_segment(&context.vegetation_configuration, final_segment)?;
     let consumer = final_executor.stack.take_staged_ending().ok_or(
         DirectSnowStage3V11AttachmentError::Identity("missing staged covered ending"),
     )?;
@@ -1740,6 +1776,7 @@ fn execute_covered_real_v11_parent(
         final_clock,
         finalized,
         ending_stage3,
+        owner_join,
     ))
 }
 

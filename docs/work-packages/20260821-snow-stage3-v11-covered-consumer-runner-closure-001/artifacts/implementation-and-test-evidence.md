@@ -201,3 +201,21 @@ fixtures, precipitation custody, snow-soil heat, independent outcome-ledger
 closure, runner-owned 48-support construction, terminal chronology/liquid,
 additive restart, or the full physical scenario matrix. Child 3 remains
 blocked.
+
+## Component-resolved carrier and final-owner join
+
+`Static:` The accepted component-authority and installed-owner-lineage findings
+are implemented. Actual final LSE component surfaces—not midpoint or equal-
+occupancy reductions—own the carrier proof. A separate post-finalization
+canonical receipt replays the final physical receipt sets and all seven actual
+installed resource-owner envelopes.
+
+`Ran:` `cargo fmt --all -- --check`, `git diff --check`, the two-crate test
+check, focused owner substitution and mixed-surface fail-closed tests, and the
+complete LSE/orchestrator nextest regression all passed. The complete regression
+ran 818 tests successfully with one intentional skip. Direct science-contract
+admission passed for 49 contracts and six changed science surfaces.
+
+`HOLD:` The package and Child 3 disposition are unchanged; this increment does
+not claim open-snow, precipitation, snow-soil heat, outcome-ledger, terminal,
+restart, scenario, or terminal-review closure.

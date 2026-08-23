@@ -2029,6 +2029,23 @@ fn evaluate_covered_occupancy(
             CoveredLiquidPass::Potential
         },
     )?;
+    let wet_surface_q = canopy_saturation_q(twet, column.pressure_pa)?;
+    let surface_q = [sun.surface_q, shade.surface_q, wet_surface_q, canopy_air_q];
+    let heat_conductance = [
+        occupancy.gb_leaf_m_s * dry_sun,
+        occupancy.gb_leaf_m_s * dry_shade,
+        occupancy.gb_wet_m_s * wet_area,
+        occupancy.gb_stem_m_s * dry_stem,
+    ];
+    let vapor_flux = [sun_e, shade_e, wet_e, 0.0];
+    let vapor_conductance = std::array::from_fn(|index| {
+        let humidity_delta = surface_q[index] - canopy_air_q;
+        if humidity_delta.to_bits() == 0.0_f64.to_bits() {
+            heat_conductance[index]
+        } else {
+            (vapor_flux[index] / (rho * humidity_delta)).max(0.0)
+        }
+    });
     Ok(CoveredOccupancyEvaluation {
         residuals,
         tolerances,
@@ -2057,7 +2074,12 @@ fn evaluate_covered_occupancy(
         absorbed_shortwave_w_m2: component_operands,
         net_longwave_w_m2: component_longwave_w_m2,
         sensible_to_canopy_air_w_m2: sensible,
-        signed_vapor_to_canopy_air_kg_m2_s: [sun_e, shade_e, wet_e, 0.0],
+        signed_vapor_to_canopy_air_kg_m2_s: vapor_flux,
+        component_areas_m2_m2_tile: component_areas,
+        component_emissive_areas_m2_m2_tile: component_areas,
+        component_heat_conductance_m_s_tile: heat_conductance,
+        component_vapor_conductance_m_s_tile: vapor_conductance,
+        component_surface_specific_humidity_kg_kg: surface_q,
     })
 }
 

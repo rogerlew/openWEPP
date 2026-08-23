@@ -2,6 +2,195 @@
 
 use super::*;
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct CoveredParentOwnerJoinReceiptV1 {
+    pub support: openwepp_coupled_time::TimeSupport,
+    pub final_boundary_receipt_set_sha256: Digest32,
+    pub component_carrier_receipt_set_sha256: Digest32,
+    pub stage3_physical_state_sha256: Digest32,
+    pub vegetation_owner_sha256: Digest32,
+    pub snow_owner_sha256: Digest32,
+    pub land_surface_energy_owner_sha256: Digest32,
+    pub hydrology_owner_sha256: Digest32,
+    pub biogeochemistry_owner_sha256: Digest32,
+    pub soil_thermal_owner_sha256: Digest32,
+    pub surface_liquid_owner_sha256: Digest32,
+    pub receipt_sha256: Digest32,
+}
+
+impl CoveredParentOwnerJoinReceiptV1 {
+    pub fn validate_seal(&self) -> Result<(), DirectV11RealConsumerError> {
+        if self.reconstructed_digest()? != self.receipt_sha256 {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered parent-owner join seal",
+            ));
+        }
+        Ok(())
+    }
+
+    pub(crate) fn try_new(
+        support: openwepp_coupled_time::TimeSupport,
+        final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3CanopyBoundaryReceiptV1>,
+        component_carriers: &BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>,
+        stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+        owners: &BTreeMap<String, V11OwnerEnvelope>,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        let expected = [
+            "vegetation",
+            "snow",
+            "land_surface_energy",
+            "hydrology",
+            "bgc",
+            "soil_thermal",
+            "surface_liquid",
+        ];
+        if owners.keys().map(String::as_str).collect::<BTreeSet<_>>()
+            != expected.into_iter().collect::<BTreeSet<_>>()
+            || final_boundaries.is_empty()
+            || component_carriers.keys().collect::<Vec<_>>()
+                != final_boundaries.keys().collect::<Vec<_>>()
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered parent-owner join topology",
+            ));
+        }
+        for owner in owners.values() {
+            owner.to_owner_state().map_err(|_| {
+                DirectV11RealConsumerError::Identity("covered parent-owner envelope")
+            })?;
+        }
+        let boundary_fields = final_boundaries
+            .values()
+            .map(|receipt| openwepp_coupled_time::FramedField {
+                tag: "final_boundary_receipt",
+                value: receipt.receipt_sha256.as_bytes(),
+            })
+            .collect::<Vec<_>>();
+        let final_boundary_receipt_set_sha256 = openwepp_coupled_time::framed_sha256(
+            "covered-stage3-final-boundary-set-v1",
+            &boundary_fields,
+        )
+        .map_err(|_| DirectV11RealConsumerError::Identity("covered boundary receipt set"))?;
+        let component_fields = component_carriers
+            .values()
+            .map(|receipt| openwepp_coupled_time::FramedField {
+                tag: "component_carrier_receipt",
+                value: receipt.receipt_sha256.as_bytes(),
+            })
+            .collect::<Vec<_>>();
+        let component_carrier_receipt_set_sha256 = openwepp_coupled_time::framed_sha256(
+            "covered-component-carrier-set-v1",
+            &component_fields,
+        )
+        .map_err(|_| DirectV11RealConsumerError::Identity("component carrier receipt set"))?;
+        let stage3_physical_state_sha256 =
+            digest_bytes(&canonical_stage3_snow_owner_bytes_v11(stage3_states)?);
+        let owner_digest = |name: &'static str| {
+            owners.get(name).map(|owner| owner.state_sha256).ok_or(
+                DirectV11RealConsumerError::Identity("covered parent-owner join owner"),
+            )
+        };
+        let mut value = Self {
+            support,
+            final_boundary_receipt_set_sha256,
+            component_carrier_receipt_set_sha256,
+            stage3_physical_state_sha256,
+            vegetation_owner_sha256: owner_digest("vegetation")?,
+            snow_owner_sha256: owner_digest("snow")?,
+            land_surface_energy_owner_sha256: owner_digest("land_surface_energy")?,
+            hydrology_owner_sha256: owner_digest("hydrology")?,
+            biogeochemistry_owner_sha256: owner_digest("bgc")?,
+            soil_thermal_owner_sha256: owner_digest("soil_thermal")?,
+            surface_liquid_owner_sha256: owner_digest("surface_liquid")?,
+            receipt_sha256: Digest32::zero(),
+        };
+        value.receipt_sha256 = value.reconstructed_digest()?;
+        Ok(value)
+    }
+
+    pub(crate) fn validate(
+        &self,
+        final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3CanopyBoundaryReceiptV1>,
+        component_carriers: &BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>,
+        stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+        owners: &BTreeMap<String, V11OwnerEnvelope>,
+    ) -> Result<(), DirectV11RealConsumerError> {
+        let expected = Self::try_new(
+            self.support,
+            final_boundaries,
+            component_carriers,
+            stage3_states,
+            owners,
+        )?;
+        if &expected != self {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered parent-owner join replay",
+            ));
+        }
+        self.validate_seal()?;
+        Ok(())
+    }
+
+    fn reconstructed_digest(&self) -> Result<Digest32, DirectV11RealConsumerError> {
+        let start = self.support.start_ns().get().to_be_bytes();
+        let end = self.support.end_ns().get().to_be_bytes();
+        openwepp_coupled_time::framed_sha256(
+            "covered-parent-owner-join-v1",
+            &[
+                openwepp_coupled_time::FramedField {
+                    tag: "support_start_ns",
+                    value: &start,
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "support_end_ns",
+                    value: &end,
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "final_boundary_set",
+                    value: self.final_boundary_receipt_set_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "component_carrier_set",
+                    value: self.component_carrier_receipt_set_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "stage3_physical_state",
+                    value: self.stage3_physical_state_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "vegetation_owner",
+                    value: self.vegetation_owner_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "snow_owner",
+                    value: self.snow_owner_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "land_surface_energy_owner",
+                    value: self.land_surface_energy_owner_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "hydrology_owner",
+                    value: self.hydrology_owner_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "biogeochemistry_owner",
+                    value: self.biogeochemistry_owner_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "soil_thermal_owner",
+                    value: self.soil_thermal_owner_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "surface_liquid_owner",
+                    value: self.surface_liquid_owner_sha256.as_bytes(),
+                },
+            ],
+        )
+        .map_err(|_| DirectV11RealConsumerError::Identity("covered parent-owner join digest"))
+    }
+}
+
 pub(crate) fn canonical_stage3_snow_owner_bytes_v11(
     states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
 ) -> Result<Vec<u8>, DirectV11RealConsumerError> {
@@ -719,4 +908,59 @@ pub(crate) fn v11_water_resource_debits(
             .map_err(|_| DirectV11RealConsumerError::Identity("V11 water debit"))
         })
         .collect()
+}
+
+#[cfg(test)]
+mod owner_join_tests {
+    use super::*;
+    use openwepp_coupled_time::{ModelTimeNs, TimeSupport};
+
+    #[test]
+    fn final_owner_join_seal_rejects_each_owner_digest_substitution() {
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_800_000_000_000))
+            .expect("support");
+        let mut receipt = CoveredParentOwnerJoinReceiptV1 {
+            support,
+            final_boundary_receipt_set_sha256: Digest32::from_bytes([1; 32]),
+            component_carrier_receipt_set_sha256: Digest32::from_bytes([2; 32]),
+            stage3_physical_state_sha256: Digest32::from_bytes([3; 32]),
+            vegetation_owner_sha256: Digest32::from_bytes([4; 32]),
+            snow_owner_sha256: Digest32::from_bytes([5; 32]),
+            land_surface_energy_owner_sha256: Digest32::from_bytes([6; 32]),
+            hydrology_owner_sha256: Digest32::from_bytes([7; 32]),
+            biogeochemistry_owner_sha256: Digest32::from_bytes([8; 32]),
+            soil_thermal_owner_sha256: Digest32::from_bytes([9; 32]),
+            surface_liquid_owner_sha256: Digest32::from_bytes([10; 32]),
+            receipt_sha256: Digest32::zero(),
+        };
+        receipt.receipt_sha256 = receipt.reconstructed_digest().expect("join digest");
+        receipt.validate_seal().expect("valid join seal");
+        for mutate in [
+            |value: &mut CoveredParentOwnerJoinReceiptV1| {
+                value.vegetation_owner_sha256 = Digest32::from_bytes([11; 32]);
+            },
+            |value: &mut CoveredParentOwnerJoinReceiptV1| {
+                value.snow_owner_sha256 = Digest32::from_bytes([12; 32]);
+            },
+            |value: &mut CoveredParentOwnerJoinReceiptV1| {
+                value.land_surface_energy_owner_sha256 = Digest32::from_bytes([13; 32]);
+            },
+            |value: &mut CoveredParentOwnerJoinReceiptV1| {
+                value.hydrology_owner_sha256 = Digest32::from_bytes([14; 32]);
+            },
+            |value: &mut CoveredParentOwnerJoinReceiptV1| {
+                value.biogeochemistry_owner_sha256 = Digest32::from_bytes([15; 32]);
+            },
+            |value: &mut CoveredParentOwnerJoinReceiptV1| {
+                value.soil_thermal_owner_sha256 = Digest32::from_bytes([16; 32]);
+            },
+            |value: &mut CoveredParentOwnerJoinReceiptV1| {
+                value.surface_liquid_owner_sha256 = Digest32::from_bytes([17; 32]);
+            },
+        ] {
+            let mut poisoned = receipt.clone();
+            mutate(&mut poisoned);
+            assert!(poisoned.validate_seal().is_err());
+        }
+    }
 }

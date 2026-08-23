@@ -64,7 +64,8 @@ Exact source edits admitted in this increment:
   `tests/integration/snow_stage3_shared_carrier_authority_contract.rs`: v15
   lifecycle registry and contract-derived binding guards.
 - `tools/release/authority-policy/impact-map.json`: atomic
-  `SC-SNOWENERGY-001` binding for the Stage 3 terminal-handoff science surface.
+  current-contract bindings for the Stage 3 terminal handoff, covered parent
+  attachment, component carrier, and post-finalization coupled-time owner join.
 - `assurance/v2/identity.lock.json`, affected assurance review locks, and typed
   `assurance/v2/transactions/*.json`: planner-authorized source-adoption chain;
   no assurance identity was hand-edited.

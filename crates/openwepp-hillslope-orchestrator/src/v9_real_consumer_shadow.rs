@@ -50,10 +50,10 @@ use crate::hydrology::{
     Wb11HydrologyKernel,
 };
 use crate::land_surface_energy_shadow::{
-    CoveredLseIterationState, CoveredV8OwnerEnvelopeError, ExecuteV8LseRuntimeShadowError,
-    LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError,
-    UncommittedCoveredV8OwnerEnvelope, V8CanopyForcingReceipt, V8InputProjectionError,
-    V10RootZoneLayerReceipt, V10RootZoneReceiptKey, V10RootZoneReceiptSet,
+    CoveredCarrierComponentState, CoveredLseIterationState, CoveredV8OwnerEnvelopeError,
+    ExecuteV8LseRuntimeShadowError, LandSurfaceEnergyRealHydrologyAdapter,
+    LandSurfaceEnergyShadowError, UncommittedCoveredV8OwnerEnvelope, V8CanopyForcingReceipt,
+    V8InputProjectionError, V10RootZoneLayerReceipt, V10RootZoneReceiptKey, V10RootZoneReceiptSet,
     execute_v8_lse_runtime_shadow_internal, execute_v8_lse_runtime_shadow_v11_with_carriers,
     unified_beginning_hydrology_snapshot_sha256,
 };
@@ -88,8 +88,8 @@ mod v11_covered;
 
 use v11_covered::*;
 pub use v11_covered::{
-    DirectV11RealConsumerStack, DirectV11SnowCoveredRealConsumerStack,
-    DirectV11SnowCoveredStackInputs,
+    CoveredParentOwnerJoinReceiptV1, DirectV11RealConsumerStack,
+    DirectV11SnowCoveredRealConsumerStack, DirectV11SnowCoveredStackInputs,
 };
 
 const INTERVALS_PER_DAY: usize = 48;

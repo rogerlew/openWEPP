@@ -1742,6 +1742,12 @@ fn covered_occupancy_energy_operands(
         .zip(&evaluation.occupancies)
         .map(|(input, accepted)| {
             let surface = |index| CoveredSurfaceEnergyOperands {
+                surface_area_m2_m2_tile: accepted.component_areas_m2_m2_tile[index],
+                emissive_area_m2_m2_tile: accepted.component_emissive_areas_m2_m2_tile[index],
+                heat_conductance_m_s_tile: accepted.component_heat_conductance_m_s_tile[index],
+                vapor_conductance_m_s_tile: accepted.component_vapor_conductance_m_s_tile[index],
+                surface_specific_humidity_kg_kg: accepted.component_surface_specific_humidity_kg_kg
+                    [index],
                 absorbed_shortwave_w_m2_tile: accepted.absorbed_shortwave_w_m2[index],
                 net_longwave_w_m2_tile: accepted.net_longwave_w_m2[index],
                 sensible_to_canopy_air_w_m2_tile: accepted.sensible_to_canopy_air_w_m2[index],
@@ -1846,6 +1852,9 @@ fn build_covered_energy_operands(
         column: CoveredColumnEnergyOperands {
             occupancies,
             canopy_air: CoveredCanopyAirEnergyOperands {
+                rho_air_kg_m3: phase.beginning.pressure_pa
+                    / (287.05 * evaluation.canopy_air_temperature_k),
+                cp_air_j_kg_k: 1_004.64,
                 canopy_air_temperature_k: evaluation.canopy_air_temperature_k,
                 canopy_air_specific_humidity_kg_kg: evaluation.canopy_air_specific_humidity_kg_kg,
                 ground_sensible_to_canopy_air_w_m2_tile: evaluation

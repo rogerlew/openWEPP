@@ -6,8 +6,8 @@ feedback topology while retaining package `EXECUTING / HOLD`.
 
 | Finding | Severity | Decision | Current action/status |
 |---|---|---|---|
-| Component-authoritative canopy carrier | Critical | accepted | Open; component-area conductance, temperature, humidity, and emissive-area longwave reconstruction remain required. |
-| Final receipts do not bind installed V11 and complete snow owners | Critical | accepted | Open; split physical-boundary and post-finalization complete-owner join receipts. |
+| Component-authoritative canopy carrier | Critical | accepted | Closed for the covered checkpoint: final LSE output now retains sunlit leaf, shaded leaf, wet canopy, and stem/WAI area, emissive area, conductance, temperature, humidity, sensible flux, and vapor flux. Validation independently reconstructs component flux sums and emissive-area longwave, and the final carrier cross-joins canopy, reference-atmosphere, and Stage 3 snow fluxes. |
+| Final receipts do not bind installed V11 and complete snow owners | Critical | accepted | Closed for the covered checkpoint: physical boundary receipts remain noncircular, while `CoveredParentOwnerJoinReceiptV1` is constructed after finalization and canonically binds the actual installed vegetation, complete snow, LSE, hydrology, BGC, soil-thermal, and surface-liquid envelopes plus the Stage 3 physical-state and final boundary/component receipt sets. |
 | Stage 3 lane area basis | High | accepted | Option A admitted prospectively in `SC-SNOWENERGY-001@15`. Runtime alternate basis removed; complete OFE-ground tile closure and no-renormalization guards implemented. Mixed open/covered execution now remains fail-closed until the open-snow producer exists. |
 | Mixed-unit Stage 3 fixed-point tolerance | High | accepted | Open; replace with per-field units and exact categorical/count comparisons, then obtain independent numerics/science review. |
 | Predeclared outcome ledger enters physical solve | High | accepted | Open; separate carrier flux input from postcandidate independently reconstructed outcome ledger before precipitation. |

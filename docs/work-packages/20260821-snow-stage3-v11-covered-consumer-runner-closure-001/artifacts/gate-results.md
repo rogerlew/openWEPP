@@ -267,3 +267,37 @@ Also ran after extraction:
   same pre-existing dead-code warning;
 - `cargo fmt --all -- --check`: `PASS`;
 - `git diff --check`: `PASS`.
+
+## Component-resolved carrier and post-finalization owner lineage
+
+`Static:` The final covered LSE candidate retains exact sunlit-leaf,
+shaded-leaf, wet-canopy, and stem/WAI component area, emissive area,
+conductance, temperature, humidity, sensible-flux, and vapor-flux operands.
+Validation reconstructs every component turbulent flux and the reciprocal
+longwave exchange from emissive-area weights. The sealed carrier independently
+proves component-to-canopy, canopy-plus-snow-to-reference-atmosphere, and
+snow-to-final-Stage-3 boundary equality.
+
+`Static:` `CoveredParentOwnerJoinReceiptV1` is created only after the imported
+V11 segment returns all final candidates. Its canonical framed seal binds the
+final destination-boundary and component-carrier receipt sets, the Stage 3
+physical-state digest, and the actual complete vegetation, snow, LSE,
+hydrology, BGC, soil-thermal, and surface-liquid owner envelopes. Replay
+validation reconstructs every identity from those final objects.
+
+`Ran:` on the exact worktree based on `580986051bbb9213bfb0937d69d88da0f23eb387`:
+
+- `cargo fmt --all -- --check`: `PASS`.
+- `cargo check -p openwepp-land-surface-energy -p openwepp-hillslope-orchestrator --tests`: `PASS` with existing dead-code warnings.
+- two-crate nextest regression: `PASS`, 818 passed, 0 failed, 1 skipped.
+- final-owner substitution replay: `PASS`, 1/1.
+- mixed open/covered incomplete-surface fail-closed regression: `PASS`, 1/1.
+- `git diff --check`: `PASS`.
+- direct science-contract admission: `PASS`, `A0_ADMITTED`, 49 contracts and 6 changed science surfaces.
+- authority-suite anti-evasion guard: `PASS`.
+- `auth11_required_suite_obligation_guards_contract`: `PASS`, 3/3.
+
+`HOLD:` Open-snow production, per-field Stage 3 convergence authority,
+precipitation and soil-heat custody, independent outcome-ledger reconstruction,
+terminal chronology/liquid, additive restart, scenario closure, and final
+reviews remain open.
