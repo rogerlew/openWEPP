@@ -952,6 +952,154 @@
         assert_eq!(finalized.ending_complete_owners.len(), 7);
         assert_eq!(ending.inner.accepted_interval_count(), shadow.inner.accepted_interval_count() + 1);
     }
+    #[test]
+    fn snow_free_two_ofe_parent_executes_two_routed_900_second_children() {
+        let (shadow, fixture) = v10_shadow_fixture_from(two_ofe_routed_endpoint_fixture());
+        let mut shadow = open_only_complete_owner_shadow(shadow);
+        let full_surface = shadow
+            .inner
+            .surface_configuration
+            .records
+            .iter()
+            .map(|record| (record.key.clone(), record.capacity_kg_m2_tile))
+            .collect::<BTreeMap<_, _>>();
+        shadow.inner.hydrology_frame.surface_liquid_shadow = Some(Box::new(
+            crate::DirectSurfaceLiquidOwnedState::new_initial(
+                &shadow.inner.surface_configuration,
+                &full_surface,
+                0,
+            )
+            .expect("full short-parent surface state"),
+        ));
+        let mut parent = day_input(&fixture).intervals.remove(0);
+        parent.wb14_parameters[0].effective_conductivity_m_s = 1.0e-10;
+        parent.wb14_parameters[0].infiltration_storage_capacity_m = 1.0e-8;
+        parent.wb14_parameters.push(DirectOfeWb14Parameters {
+            ofe_id: OfeId::try_new("ofe-2").expect("lower OFE"),
+            effective_conductivity_m_s: 1.0e-10,
+            matric_potential_m: 0.1,
+            infiltration_storage_capacity_m: 1.0e-8,
+        });
+        parent.lse_forcing.reference_wind_m_s = 1.0e-6;
+        parent.vegetation_forcing.wind_m_s = 1.0e-6;
+        parent.vegetation_forcing.soil_layers.clear();
+        parent.lse_forcing.precipitation_parcels.push(openwepp_land_surface_energy::LiquidParcel {
+            parcel_kind: openwepp_land_surface_energy::LiquidParcelKind::Precipitation,
+            parcel_id: openwepp_land_surface_energy::ParcelId::try_new("short-parent-upper-rain").expect("parcel"),
+            source_owner_id: ResourceOwnerId::try_new("meteorology").expect("owner"),
+            source_ofe_id: OfeId::try_new("ofe-1").expect("upper"),
+            source_tile_id: TileId::try_new("atmosphere").expect("source tile"),
+            destination_ofe_id: OfeId::try_new("ofe-1").expect("upper"),
+            destination_tile_id: TileId::try_new("open").expect("upper tile"),
+            start_s: 0.0, end_s: 1_800.0,
+            amount_kg_m2_destination_tile_ground: 20.0,
+            temperature_provider: openwepp_land_surface_energy::LiquidTemperatureProvider::HarderPomeroyHourly,
+            temperature_k: Some(280.0),
+            specific_liquid_enthalpy_j_kg: Some(4_218.0 * (280.0 - 273.15)),
+            source_state_sha256: Some(Sha256Digest::try_new("e".repeat(64)).expect("source")),
+        });
+        parent.lse_forcing.forcing_sha256 = parent.lse_forcing.canonical_sha256().expect("forcing");
+        let beginning_cursor = shadow.inner.hydrology_frame.surface_liquid_shadow.as_deref()
+            .expect("beginning surface").continuations.clone();
+        let migrated =
+            migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
+                .expect("short-child V11 migration");
+        let owners = initial_v11_owners(&shadow, &migrated.state);
+        let clock_owners = owners
+            .values()
+            .map(|owner| owner.to_owner_state().expect("clock owner"))
+            .collect::<Vec<_>>();
+        let beginning_owner_digest =
+            complete_owner_set_digest(&clock_owners).expect("beginning owner digest");
+        let (parent_id, slabs) =
+            accepted_v11_slabs(&clock_owners, &[900_000_000_000, 1_800_000_000_000]);
+        let mut v11_parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("short-child complete parent");
+        let mut child_receipts = Vec::new();
+        for ordinal in 0..2_u128 {
+            let child_transaction = shadow.inner.vegetation_state.0.last_transaction_id + 1;
+            let mut input = segment_interval(
+                &parent,
+                900_000_000_000,
+                u128::from(child_transaction),
+                0.0,
+            );
+            let mut rain = parent.lse_forcing.precipitation_parcels.last()
+                .expect("upper parent rain").clone();
+            rain.parcel_id = openwepp_land_surface_energy::ParcelId::try_new(format!(
+                "short-parent-upper-rain-{ordinal}"
+            ))
+            .expect("child parcel");
+            rain.start_s = 0.0;
+            rain.end_s = 900.0;
+            rain.amount_kg_m2_destination_tile_ground = 10.0;
+            input.lse_forcing.precipitation_parcels.push(rain);
+            input.lse_forcing.forcing_sha256 = input.lse_forcing.canonical_sha256().expect("child forcing");
+            let final_child = ordinal == 1;
+            let slab = &slabs[usize::try_from(ordinal).expect("slab ordinal")];
+            let binding = crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                proposed_upper_bound_s_bits: 900.0_f64.to_bits(),
+                coupled_parent_transaction_sha256: *parent_id.digest().as_bytes(),
+                accepted_slab_sha256: *slab.slab_id().digest().as_bytes(),
+                parent_beginning_complete_owner_set_sha256: *beginning_owner_digest.as_bytes(),
+                parent_support_start_ns: 0,
+                parent_support_end_ns: 1_800_000_000_000,
+                child_support_start_ns: ordinal * 900_000_000_000,
+                child_support_end_ns: (ordinal + 1) * 900_000_000_000,
+            };
+            let stack = DirectV11RealConsumerStack::new_parent_child(
+                &shadow,
+                &input,
+                0,
+                0,
+                final_child,
+                binding,
+            );
+            let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
+            let segment = execute_v11_segment(
+                &migrated.configuration,
+                &v11_parent,
+                slab,
+                &mut executor,
+            )
+            .unwrap_or_else(|error| panic!("snow-free complete-owner short child {ordinal}: {error:?}"));
+            v11_parent
+                .accept_segment(&migrated.configuration, segment)
+                .expect("accept short child");
+            let ingress = executor
+                .stack
+                .last_hydrology_candidate()
+                .expect("short-child hydrology candidate")
+                .surface_ingress();
+            assert!(ingress.receipts().iter().any(|receipt| {
+                receipt.disposition == crate::direct_runtime::DirectSurfaceLiquidReceiptDisposition::RoutedRunoff
+            }), "child {ordinal} routes upper excess downstream");
+            let lower = ingress.ledgers().iter().find(|ledger| ledger.ofe_id.as_str() == "ofe-2")
+                .expect("lower ledger");
+            assert!(lower.ingress_mass_kg_m2_ofe_ground > 0.0, "same-child downstream runon");
+            child_receipts.push(ingress.wb14_child_replay_bytes().to_vec());
+            assert_eq!(ingress.wb14_parent_receipt_set_sha256().is_some(), final_child);
+            shadow = executor.stack.take_staged_ending().expect("seven-owner child ending");
+            let cursor = &shadow.inner.hydrology_frame.surface_liquid_shadow.as_deref()
+                .expect("surface owner").continuations;
+            if !final_child { assert_eq!(cursor, &beginning_cursor); }
+        }
+        let finalized = v11_parent.finalize(&migrated.configuration).expect("finalize short parent");
+        assert_eq!(finalized.ending_complete_owners.len(), 7);
+        let ending = shadow.inner.hydrology_frame.surface_liquid_shadow.as_deref().expect("ending surface");
+        assert!(ending.continuations.iter().all(|row| row.next_interval_index == 1));
+        for replay in child_receipts {
+            let rows: serde_json::Value = serde_json::from_slice(&replay).expect("replay");
+            assert_eq!(rows[0][0], "ofe-1");
+            assert_eq!(rows[1][0], "ofe-2");
+        }
+    }
     fn open_only_complete_owner_shadow(
         mut shadow: DirectV10RealConsumerShadow,
     ) -> DirectV10RealConsumerShadow {

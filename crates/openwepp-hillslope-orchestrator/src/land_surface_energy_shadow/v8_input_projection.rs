@@ -679,23 +679,12 @@ impl V8ProjectedTileRuntimeInput {
                     top_layer_initial_water_content_m3_m3,
                     ..
                 } => {
-                    let top_id = self.ground.soil_interface_layers[0].layer_id.clone();
-                    let top = self
-                        .vegetation_forcing
-                        .soil_layers
-                        .iter()
-                        .find(|layer| layer.layer_id == top_id)
-                        .ok_or(V8InputProjectionError::Topology(
-                            "missing top soil water owner",
-                        ))?;
-                    let (water, frozen) = if self.root_zone_hydraulics.is_some() {
-                        (
-                            self.ground.top_hydrology.liquid_supply_kg_m2,
-                            self.ground.top_hydrology.frozen,
-                        )
-                    } else {
-                        (top.water_beginning_kg_m2, top.frozen)
-                    };
+                    // Bare-soil water is owned by the exact OFE hydrology
+                    // snapshot. The vegetation forcing layer is a root uptake
+                    // surface and cannot represent distinct same-named layers
+                    // on multiple OFEs.
+                    let water = self.ground.top_hydrology.liquid_supply_kg_m2;
+                    let frozen = self.ground.top_hydrology.frozen;
                     let (liquid, ice) = if frozen { (0.0, water) } else { (water, 0.0) };
                     (
                         SurfaceClassKind::BareMineralSoil,
@@ -1551,30 +1540,71 @@ fn validate_cross_owner_lineage(
     day_index: usize,
     interval_index: u8,
 ) -> Result<(), V8InputProjectionError> {
-    if lse_configuration
-        .vegetation_configuration
-        .configuration_sha256
-        .as_str()
-        != vegetation_configuration.configuration_sha256
-        || vegetation_state.configuration_sha256 != vegetation_configuration.configuration_sha256
-        || lse_configuration
+    let cross_owner = |valid: bool, detail: &'static str| {
+        valid
+            .then_some(())
+            .ok_or(V8InputProjectionError::Identity(detail))
+    };
+    cross_owner(
+        lse_configuration
+            .vegetation_configuration
+            .configuration_sha256
+            .as_str()
+            == vegetation_configuration.configuration_sha256,
+        "cross-owner vegetation configuration",
+    )?;
+    cross_owner(
+        vegetation_state.configuration_sha256 == vegetation_configuration.configuration_sha256,
+        "cross-owner vegetation state configuration",
+    )?;
+    cross_owner(
+        lse_configuration
             .soil_thermal_configuration
             .configuration_sha256
-            != soil_thermal.configuration_sha256
-        || lse_forcing.transaction_id != transaction_id
-        || soil_adapter.owner.transaction_id() != transaction_id
-        || soil_adapter.owner.interval_s().to_bits() != lse_forcing.interval_s.to_bits()
-        || canopy_forcing.vegetation_configuration_sha256
-            != vegetation_configuration.configuration_sha256
-        || canopy_forcing.vegetation_beginning_state_sha256 != vegetation_state.state_sha256
-        || canopy_forcing.lse_configuration_sha256 != lse_configuration.configuration_sha256
-        || canopy_forcing.lse_forcing_sha256 != lse_forcing.forcing_sha256
-        || &canopy_forcing.hydrology_snapshot_sha256 != hydrology_snapshot_sha256
-        || canopy_forcing.soil_thermal_snapshot_sha256 != soil_thermal.snapshot_sha256
-        || canopy_forcing.transaction_id != transaction_id
-    {
-        return Err(V8InputProjectionError::Identity("cross-owner lineage"));
-    }
+            == soil_thermal.configuration_sha256,
+        "cross-owner soil-thermal configuration",
+    )?;
+    cross_owner(
+        lse_forcing.transaction_id == transaction_id,
+        "cross-owner LSE forcing transaction",
+    )?;
+    cross_owner(
+        soil_adapter.owner.transaction_id() == transaction_id,
+        "cross-owner hydrology transaction",
+    )?;
+    cross_owner(
+        soil_adapter.owner.interval_s().to_bits() == lse_forcing.interval_s.to_bits(),
+        "cross-owner hydrology support",
+    )?;
+    cross_owner(
+        canopy_forcing.vegetation_configuration_sha256
+            == vegetation_configuration.configuration_sha256,
+        "cross-owner canopy vegetation configuration",
+    )?;
+    cross_owner(
+        canopy_forcing.vegetation_beginning_state_sha256 == vegetation_state.state_sha256,
+        "cross-owner canopy vegetation state",
+    )?;
+    cross_owner(
+        canopy_forcing.lse_configuration_sha256 == lse_configuration.configuration_sha256,
+        "cross-owner canopy LSE configuration",
+    )?;
+    cross_owner(
+        canopy_forcing.lse_forcing_sha256 == lse_forcing.forcing_sha256,
+        "cross-owner canopy LSE forcing",
+    )?;
+    cross_owner(
+        &canopy_forcing.hydrology_snapshot_sha256 == hydrology_snapshot_sha256,
+        "cross-owner canopy hydrology snapshot",
+    )?;
+    cross_owner(
+        canopy_forcing.soil_thermal_snapshot_sha256 == soil_thermal.snapshot_sha256,
+        "cross-owner canopy soil-thermal snapshot",
+    )?;
+    cross_owner(
+        canopy_forcing.transaction_id == transaction_id,
+        "cross-owner canopy transaction",
+    )?;
     if let Some(root) = &canopy_forcing.root_zone_hydraulics {
         if root.owner_id != ROOT_ZONE_OWNER_ID
             || root.model_definition_sha256 != ROOT_ZONE_MODEL_SHA256

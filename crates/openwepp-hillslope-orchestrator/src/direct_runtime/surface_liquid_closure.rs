@@ -152,6 +152,7 @@ fn contextual_ofe_comparison_failure(
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectSurfaceLiquidClosureOperands {
     transaction_id: TransactionId,
+    interval_s: f64,
     stores: Vec<DirectSurfaceLiquidStoreClosureOperands>,
     source_parcels: Vec<DirectSurfaceLiquidParcelClosureOperands>,
     partition_inputs: Vec<DirectSurfaceLiquidPartitionClosureOperands>,
@@ -808,9 +809,17 @@ pub(super) fn capture_and_validate_surface_liquid_closure(
     input: &DirectSurfaceLiquidIngressInput,
     ending: &DirectSurfaceLiquidOwnedState,
     receipts: &[DirectSurfaceLiquidParcelReceipt],
+    wb14_beginnings: &BTreeMap<OfeId, (f64, f64)>,
 ) -> Result<DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidError> {
     (|| {
-        let operands = capture_operands(configuration, resource, input, ending, receipts)?;
+        let operands = capture_operands(
+            configuration,
+            resource,
+            input,
+            ending,
+            receipts,
+            wb14_beginnings,
+        )?;
         validate_surface_liquid_closure_operands_with_input(
             configuration,
             resource,
@@ -844,6 +853,7 @@ fn capture_operands(
     input: &DirectSurfaceLiquidIngressInput,
     ending: &DirectSurfaceLiquidOwnedState,
     receipts: &[DirectSurfaceLiquidParcelReceipt],
+    wb14_beginnings: &BTreeMap<OfeId, (f64, f64)>,
 ) -> Result<DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidError> {
     let mut stores = Vec::with_capacity(configuration.records.len());
     for configured in &configuration.records {
@@ -944,50 +954,39 @@ fn capture_operands(
         });
     }
     let source_parcels = capture_source_parcels(configuration, resource, input)?;
-    let partition_inputs = configuration
-        .ofe_topology
-        .iter()
-        .map(|ofe_id| {
-            let parameter = input
-                .wb14_parameters
-                .iter()
-                .find(|row| &row.ofe_id == ofe_id)
-                .ok_or(DirectSurfaceLiquidError::Identity(
-                    "closure WB14 parameter missing",
-                ))?;
-            let continuation = resource
-                .beginning_state()
-                .continuations
-                .iter()
-                .find(|row| &row.ofe_id == ofe_id)
-                .ok_or(DirectSurfaceLiquidError::Identity(
-                    "closure beginning continuation missing",
-                ))?;
-            let (beginning_cumulative_supply_m, beginning_cumulative_infiltration_m) =
-                if continuation.next_interval_index == 48 {
-                    (0.0, 0.0)
-                } else {
-                    (
-                        continuation.cumulative_supply_m,
-                        continuation.cumulative_infiltration_m,
-                    )
-                };
-            Ok(DirectSurfaceLiquidPartitionClosureOperands {
-                ofe_id: ofe_id.clone(),
-                effective_conductivity_m_s: parameter.effective_conductivity_m_s,
-                matric_potential_m: parameter.matric_potential_m,
-                infiltration_storage_capacity_m: parameter.infiltration_storage_capacity_m,
-                beginning_cumulative_supply_m,
-                beginning_cumulative_infiltration_m,
-                ending_day_index: input.day_index,
-                ending_next_interval_index: input.interval_index.checked_add(1).ok_or(
-                    DirectSurfaceLiquidError::Closure("closure interval index overflow"),
-                )?,
+    let partition_inputs =
+        configuration
+            .ofe_topology
+            .iter()
+            .map(|ofe_id| {
+                let parameter = input
+                    .wb14_parameters
+                    .iter()
+                    .find(|row| &row.ofe_id == ofe_id)
+                    .ok_or(DirectSurfaceLiquidError::Identity(
+                        "closure WB14 parameter missing",
+                    ))?;
+                let (beginning_cumulative_supply_m, beginning_cumulative_infiltration_m) =
+                    wb14_beginnings.get(ofe_id).copied().ok_or(
+                        DirectSurfaceLiquidError::Identity("closure WB14 beginning missing"),
+                    )?;
+                Ok(DirectSurfaceLiquidPartitionClosureOperands {
+                    ofe_id: ofe_id.clone(),
+                    effective_conductivity_m_s: parameter.effective_conductivity_m_s,
+                    matric_potential_m: parameter.matric_potential_m,
+                    infiltration_storage_capacity_m: parameter.infiltration_storage_capacity_m,
+                    beginning_cumulative_supply_m,
+                    beginning_cumulative_infiltration_m,
+                    ending_day_index: input.day_index,
+                    ending_next_interval_index: input.interval_index.checked_add(1).ok_or(
+                        DirectSurfaceLiquidError::Closure("closure interval index overflow"),
+                    )?,
+                })
             })
-        })
-        .collect::<Result<Vec<_>, DirectSurfaceLiquidError>>()?;
+            .collect::<Result<Vec<_>, DirectSurfaceLiquidError>>()?;
     Ok(DirectSurfaceLiquidClosureOperands {
         transaction_id: input.transaction_id,
+        interval_s: input.interval_s,
         stores,
         source_parcels,
         partition_inputs,
@@ -1062,7 +1061,11 @@ fn capture_source_parcels(
         }
     }
     for overflow in resource.condensation_overflow() {
-        result.push(capture_overflow(input.transaction_id, overflow)?);
+        result.push(capture_overflow(
+            input.transaction_id,
+            input.interval_s,
+            overflow,
+        )?);
     }
     result.sort_by(frozen_parcel_order);
     Ok(result)
@@ -1142,6 +1145,7 @@ fn capture_amount(
 
 fn capture_overflow(
     transaction_id: TransactionId,
+    interval_s: f64,
     overflow: &DirectCondensationOverflow,
 ) -> Result<DirectSurfaceLiquidParcelClosureOperands, DirectSurfaceLiquidError> {
     let enthalpy = checked_surface_liquid_mul(
@@ -1167,7 +1171,7 @@ fn capture_overflow(
         basis_ofe_id: overflow.store_key.ofe_id.clone(),
         kind: DirectSurfaceLiquidParcelKind::CondensationOverflow,
         start_s: 0.0,
-        end_s: INTERVAL_S,
+        end_s: interval_s,
         temperature_k: overflow.temperature_k,
         specific_liquid_enthalpy_j_kg: overflow.specific_liquid_enthalpy_j_kg,
         mass_kg_m2_basis_ofe_ground: overflow.amount_kg_m2_ofe_ground,
@@ -1269,7 +1273,7 @@ fn validate_frozen_source_identities(
             origin_store_key: overflow.store_key.clone(),
             basis_ofe_id: overflow.store_key.ofe_id.clone(),
             start_s_bits: 0.0_f64.to_bits(),
-            end_s_bits: INTERVAL_S.to_bits(),
+            end_s_bits: operands.interval_s.to_bits(),
         });
     }
     if input.is_none() {
@@ -1612,7 +1616,7 @@ fn project_parcel_arithmetic(
             .iter()
             .flat_map(|segment| [segment.start_s, segment.end_s])
             .collect::<Vec<_>>();
-        boundaries.extend([0.0, INTERVAL_S]);
+        boundaries.extend([0.0, operands.interval_s]);
         boundaries.sort_by(f64::total_cmp);
         boundaries.dedup_by(|left, right| left.to_bits() == right.to_bits());
 
@@ -2536,7 +2540,7 @@ pub(super) fn preflight_surface_liquid_closure_arithmetic(
             && parcel.end_s.is_finite()
             && parcel.start_s >= 0.0
             && parcel.start_s < parcel.end_s
-            && parcel.end_s <= INTERVAL_S;
+            && parcel.end_s <= operands.interval_s;
         let amount_valid = parcel.mass_kg_m2_basis_ofe_ground.is_finite()
             && parcel.mass_kg_m2_basis_ofe_ground >= 0.0
             && parcel.enthalpy_j_m2_basis_ofe_ground.is_finite();
@@ -2574,7 +2578,7 @@ pub(super) fn preflight_surface_liquid_closure_arithmetic(
             && receipt.end_s.is_finite()
             && receipt.start_s >= 0.0
             && receipt.start_s < receipt.end_s
-            && receipt.end_s <= INTERVAL_S;
+            && receipt.end_s <= operands.interval_s;
         let amount_valid = receipt.mass_kg_m2_basis_ofe_ground.is_finite()
             && receipt.mass_kg_m2_basis_ofe_ground >= 0.0
             && receipt.enthalpy_j_m2_basis_ofe_ground.is_finite();

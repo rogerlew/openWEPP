@@ -1018,6 +1018,19 @@ fn execute_surface_liquid_ingress_inner(
         || proposed_upper_bound_s(input.interval_s),
         |binding| Ok(f64::from_bits(binding.proposed_upper_bound_s_bits)),
     )?;
+    let closure_wb14_beginnings = per_ofe_authorities
+        .iter()
+        .map(|(ofe_id, authority)| {
+            let working = authority.working();
+            (
+                ofe_id.clone(),
+                (
+                    working.cumulative_supply_m,
+                    working.cumulative_infiltration_m,
+                ),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
     if !selected_upper_bound_s.is_finite()
         || !matches!(
             selected_upper_bound_s.to_bits(),
@@ -1289,6 +1302,7 @@ fn execute_surface_liquid_ingress_inner(
         input,
         &closure_physical_ending,
         &receipts,
+        &closure_wb14_beginnings,
     )?;
     Ok(DirectSurfaceLiquidIngressCandidate {
         transaction_id: input.transaction_id,

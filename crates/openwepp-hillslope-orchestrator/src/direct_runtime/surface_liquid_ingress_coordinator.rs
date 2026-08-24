@@ -179,6 +179,11 @@ fn wb14_parent_binding(
 }
 
 impl DirectWb14ParentWorkingState {
+    #[must_use]
+    pub(crate) const fn candidate_state(&self) -> &DirectSurfaceLiquidOwnedState {
+        &self.candidate_state
+    }
+
     pub(crate) fn validate_receiving_owner(
         &self,
         current: &DirectSurfaceLiquidOwnedState,

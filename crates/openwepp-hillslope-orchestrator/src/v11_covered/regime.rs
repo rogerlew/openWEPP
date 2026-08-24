@@ -11,12 +11,29 @@ impl<'a> DirectV11RealConsumerStack<'a> {
             interval,
             day_index,
             interval_index,
+            finalize_wb14_parent_interval: true,
+            wb14_coupled_child_binding: None,
             ending: None,
             last_support_receipt: None,
             #[cfg(test)]
             last_hydrology_candidate: None,
             ending_snow_owner_bytes: None,
         }
+    }
+
+    #[must_use]
+    pub fn new_parent_child(
+        beginning: &DirectV10RealConsumerShadow,
+        interval: &'a DirectV9ShadowIntervalInput,
+        day_index: usize,
+        interval_index: usize,
+        finalize_wb14_parent_interval: bool,
+        wb14_coupled_child_binding: crate::direct_runtime::DirectWb14CoupledChildBindingV1,
+    ) -> Self {
+        let mut value = Self::new(beginning, interval, day_index, interval_index);
+        value.finalize_wb14_parent_interval = finalize_wb14_parent_interval;
+        value.wb14_coupled_child_binding = Some(wb14_coupled_child_binding);
+        value
     }
 
     /// Bind the Stage-3 state that the shared parent transaction has already

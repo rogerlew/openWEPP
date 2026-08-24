@@ -5,6 +5,9 @@ pub struct DirectV11RealConsumerStack<'a> {
     pub interval: &'a DirectV9ShadowIntervalInput,
     pub day_index: usize,
     pub interval_index: usize,
+    pub(super) finalize_wb14_parent_interval: bool,
+    pub(super) wb14_coupled_child_binding:
+        Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
     pub(super) ending: Option<DirectV10RealConsumerShadow>,
     pub(super) last_support_receipt: Option<LseSupportAdmissibilityReceiptV1>,
     #[cfg(test)]

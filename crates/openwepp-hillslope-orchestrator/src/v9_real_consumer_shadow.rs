@@ -587,12 +587,14 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
         let mut candidate = self.beginning.clone();
         let envelope = candidate
             .inner
-            .construct_snow_free_interval_envelope_with_duration(
+            .construct_snow_free_parent_child_envelope_with_duration(
                 self.day_index,
                 self.interval_index,
                 self.interval,
                 f64::from_bits(input.duration_s_bits),
                 Some(input.duration_s_bits),
+                self.finalize_wb14_parent_interval,
+                self.wb14_coupled_child_binding,
             )
             .map_err(|error| {
                 DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
@@ -1758,6 +1760,28 @@ impl DirectV9RealConsumerShadow {
         interval_s: f64,
         v11_duration_s_bits: Option<u64>,
     ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
+        self.construct_snow_free_parent_child_envelope_with_duration(
+            day_index,
+            interval_index,
+            input,
+            interval_s,
+            v11_duration_s_bits,
+            true,
+            None,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn construct_snow_free_parent_child_envelope_with_duration(
+        &self,
+        day_index: usize,
+        interval_index: usize,
+        input: &DirectV9ShadowIntervalInput,
+        interval_s: f64,
+        v11_duration_s_bits: Option<u64>,
+        finalize_wb14_parent_interval: bool,
+        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
+    ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
         self.construct_canopy_soil_interval_envelope_with_duration(
             day_index,
             interval_index,
@@ -1767,8 +1791,8 @@ impl DirectV9RealConsumerShadow {
             None,
             false,
             None,
-            true,
-            None,
+            finalize_wb14_parent_interval,
+            wb14_coupled_child_binding,
         )
     }
 
@@ -1838,8 +1862,13 @@ impl DirectV9RealConsumerShadow {
                 "V9/V8/LSE configuration join",
             ));
         }
+        let mut effective_hydrology_frame = self.hydrology_frame.clone();
+        if let Some(parent) = &self.wb14_parent_working_state {
+            effective_hydrology_frame.surface_liquid_shadow =
+                Some(Box::new(parent.candidate_state().clone()));
+        }
         let hydrology = RealHydrologyShadowAdapter::try_from_day_start(
-            &self.hydrology_frame,
+            &effective_hydrology_frame,
             day_index,
             transaction_id,
             interval_s,
@@ -1938,6 +1967,9 @@ impl DirectV9RealConsumerShadow {
                     covered_lower_boundaries,
                     bits,
                     !provisional_v11,
+                    finalize_wb14_parent_interval,
+                    self.wb14_parent_working_state.as_ref(),
+                    wb14_coupled_child_binding,
                 )?,
             },
             None => execute_v8_lse_runtime_shadow_internal(

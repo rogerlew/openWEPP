@@ -275,6 +275,9 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11(
     >,
     duration_s_bits: u64,
     validate_ofe_energy: bool,
+    finalize_wb14_parent_interval: bool,
+    wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
+    wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     execute_v8_lse_runtime_shadow_v11_with_carriers(
         vegetation_configuration,
@@ -297,9 +300,9 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11(
         duration_s_bits,
         validate_ofe_energy,
         None,
-        true,
-        None,
-        None,
+        finalize_wb14_parent_interval,
+        wb14_parent_working_state,
+        wb14_coupled_child_binding,
     )
 }
 
