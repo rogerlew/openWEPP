@@ -782,20 +782,29 @@ impl DirectWb14ParentIntervalV1 {
         {
             return Err(DirectWb14ParentIntervalErrorV1::ChildIdentity);
         }
-        let transition_duration_ns = inputs.iter().try_fold(0_u128, |sum, input| {
-            let nanoseconds = input.interval_duration_s * 1_000_000_000.0;
-            if !nanoseconds.is_finite()
-                || nanoseconds <= 0.0
-                || nanoseconds.round() != nanoseconds
-                || nanoseconds > u128::MAX as f64
-            {
-                return None;
+        // Timed-parcel durations arrive as differences of binary64 endpoints,
+        // so integerizing each window independently would reject valid spans
+        // such as [0.2, 0.3). Reconstruct their total with compensated
+        // summation, then join that total once to the exact outer support.
+        let mut transition_duration_s = 0.0_f64;
+        let mut duration_compensation_s = 0.0_f64;
+        for input in inputs {
+            if !input.interval_duration_s.is_finite() || input.interval_duration_s <= 0.0 {
+                return Err(DirectWb14ParentIntervalErrorV1::ChildSupport);
             }
-            sum.checked_add(nanoseconds as u128)
-        });
+            let corrected = input.interval_duration_s - duration_compensation_s;
+            let next = transition_duration_s + corrected;
+            duration_compensation_s = (next - transition_duration_s) - corrected;
+            transition_duration_s = next;
+        }
+        let transition_duration_ns = transition_duration_s * 1_000_000_000.0;
+        let reconstructed_duration_ns = (transition_duration_ns.is_finite()
+            && transition_duration_ns > 0.0
+            && transition_duration_ns <= u128::MAX as f64)
+            .then(|| transition_duration_ns.round() as u128);
         if support_start_ns != self.working.accepted_until_ns
             || support_end_ns > self.authority.support_end_ns
-            || transition_duration_ns != Some(duration_ns)
+            || reconstructed_duration_ns != Some(duration_ns)
         {
             return Err(DirectWb14ParentIntervalErrorV1::ChildSupport);
         }
@@ -1802,6 +1811,32 @@ mod tests {
             1_800.0_f64.to_bits()
         );
         ending.validate().expect("dense partition receipt replay");
+    }
+
+    #[test]
+    fn endpoint_subtraction_partition_joins_exact_outer_support() {
+        let beginning = parent_fixture();
+        let start = beginning.working().accepted_until_ns;
+        let mut first = child_inputs(&beginning, 0.3 - 0.2, 0.0);
+        first.interval_duration_s = 0.3_f64 - 0.2_f64;
+        let second = child_inputs(&beginning, 1_799.9, 0.0);
+        let (ending, _) = beginning
+            .accept_child_transitions(
+                0,
+                start,
+                start + 1_800_000_000_000,
+                beginning.working().receipt_chain_sha256,
+                1_800.0,
+                &[first, second],
+            )
+            .expect("binary64 endpoint-subtraction partition");
+        assert_eq!(
+            ending.working().accepted_until_ns,
+            start + 1_800_000_000_000
+        );
+        ending
+            .validate()
+            .expect("endpoint-subtraction receipt replay");
     }
 
     #[test]
