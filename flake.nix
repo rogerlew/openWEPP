@@ -23,6 +23,7 @@
         gh
         hyperfine
         jq
+        llvmPackages_21.llvm
         mold
         nixfmt
         pkg-config
@@ -40,6 +41,8 @@
       devShells.${system}.default = pkgs.mkShell {
         packages = devTools;
         LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ];
+        LLVM_COV = "${pkgs.llvmPackages_21.llvm}/bin/llvm-cov";
+        LLVM_PROFDATA = "${pkgs.llvmPackages_21.llvm}/bin/llvm-profdata";
 
         shellHook = ''
           source ${./tools/dev/openwepp-env} || exit $?
@@ -60,6 +63,8 @@
                 rustc --version
                 cargo nextest --version
                 cargo deny --version
+                "$LLVM_COV" --version
+                "$LLVM_PROFDATA" --version
                 python3.12 --version
                 uv --version
                 sccache --version
