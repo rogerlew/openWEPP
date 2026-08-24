@@ -35,7 +35,8 @@ does not introduce an alternative evaporation, infiltration, or runoff law.
 
 In scope are strict per-OFE/tile/surface/source state, restart identity, one
 immutable beginning snapshot, proportional maximum authorization, finalized
-debit, signed condensation credit, one chronological WB14 call per OFE,
+debit, signed condensation credit, one chronological WB14 call per OFE per
+accepted child inside one immutable half-hour parent,
 post-infiltration capacity retention, overflow/runoff routing, parcel
 mass/enthalpy joins, candidate isolation, and rollback.
 
@@ -73,7 +74,9 @@ canonical authorities.
 | `T_p` | `K` | parcel temperature |
 | `Q_p` | `J m^-2 basis-OFE-ground` | parcel sensible enthalpy relative to `T_ref` |
 | `h_l(T)` | `J kg^-1` | `C_w*(T-T_ref)` |
-| `dt` | `s` | exact `1800 s` LSE/hydrology shadow transaction interval |
+| `Delta t_parent` | `s` | immutable `1800 s` WB14 parent interval and persistent cursor unit |
+| `Delta t_proposed` | `s` | Stage-3 maximum-step proposal, exactly one of `1800`, `900`, or `60 s` |
+| `Delta t_child` | `s` | exact positive coupled-time-selected child support, no greater than `Delta t_proposed` or the parent remainder |
 | `surface_liquid.store_mass` | `kg H2O m^-2 tile-ground` | machine-readable registry symbol for `W` |
 | `surface_liquid.store_capacity` | `kg H2O m^-2 tile-ground` | machine-readable registry symbol for `W_max` |
 | `surface_liquid.resource_amount` | `kg H2O m^-2 OFE-ground interval` | machine-readable registry symbol for `D/A/F` |
@@ -230,9 +233,11 @@ and LSE surface enthalpy are not aliases of this state.
 
 ### Transaction inputs and outputs
 
-Inputs are one immutable owner state, exact transaction/predecessor/interval,
-typed LSE requests, authorizations, finalized uses, condensation credits, timed
-current-ingress parcels, and the actual WB14 production inputs for each OFE.
+Inputs are one immutable owner state, exact parent transaction/predecessor and
+support, typed LSE requests, authorizations, finalized uses, condensation
+credits, timed current-ingress parcels, the accepted coupled child support and
+receipt, the latest Stage-3 upper-bound proposal, and the actual immutable WB14
+production inputs for each OFE.
 
 Outputs are the one authorization batch, one uncommitted ending owner
 candidate, actual production soil-liquid candidate credit, typed soil-thermal
@@ -241,14 +246,20 @@ retained/infiltration/routed/outlet receipts, independent ledger operands,
 state digest, and rollback hashes. No function in this contract independently
 commits production state.
 
-The shadow cadence is exactly 48 consecutive `1800 s` transactions per direct
-runtime day. Configuration or forcing with another interval is unsupported.
+The runtime day is exactly 48 consecutive `Delta t_parent=1800 s` parent
+transactions. Each parent contains one or more contiguous accepted children.
+`Delta t_proposed` is selected from `{1800,900,60} s` using the latest accepted
+Stage-3 state; coupled time selects exact `Delta t_child`, which may be shorter
+at an event, restart, output, or parent endpoint and must not exceed the
+proposal. Zero duration is an event transaction, never a physics child.
 The hydrology owner carries the day-local continuation above. It initializes
 to exact zero only at the start of a new direct-runtime day,
-advances exactly once per accepted 1800-second interval, and is included in
+advances exactly once per finalized parent interval, and is included in
 restart bytes, state digest, transaction lineage, rollback, and ending state.
-The next interval must equal the retained index. No interval may be replayed,
-skipped, or evaluated with a reset cumulative infiltration state.
+Children advance only parent-local slab lineage and WB14 cumulative working
+state. The next parent interval must equal the retained index. No parent or
+child may be replayed, skipped, reordered, or evaluated with a reset cumulative
+infiltration state.
 
 ### Exact relationship to legacy depression retention
 
@@ -270,10 +281,13 @@ authorize that cutover.
 ### 1. Validate identity and freeze the beginning snapshot
 
 Validate strict configuration/state bytes and digests, exact key set,
-owner/run/OFE/tile/surface/source identity, topology, transaction lineage,
-the exact `1800 s` interval and daily continuation index, finite domains,
-units, and snow-free branch before calculation.
-Freeze `W_0`. The snapshot precedes current precipitation, runon, throughfall,
+owner/run/OFE/tile/surface/source identity, topology, persistent parent lineage,
+the exact `Delta t_parent=1800 s` support and daily continuation index, selected
+upper bound, exact accepted child support/receipt, child ordinal and receipt
+predecessor, finite domains, units, and admitted branch before calculation.
+The effective beginning owner is the latest accepted parent-local complete
+candidate, or the persistent beginning owner for child zero. Freeze its `W_0`.
+The snapshot precedes current precipitation, runon, throughfall,
 drainage, stemflow, infiltration, and runoff. Those masses cannot satisfy
 same-interval withdrawal.
 
@@ -358,7 +372,7 @@ authorization.
 
 ### 4. Construct exact tile-weighted ground ingress
 
-For each 1800-second interval, precipitation has exactly one ground recipient:
+For each accepted child support, precipitation has exactly one ground recipient:
 
 ```text
 P_ground,o = sum_open_tiles(f_t * P_raw,t)
@@ -374,17 +388,16 @@ unmodified precipitation remains available separately to the erosion-rainfall
 owner; it is not a second infiltration supply.
 
 Add upstream runon and condensation overflow to this ground-ingress set.
-Every parcel retains exact `[start_s,end_s)` support within the current
-1800-second interval. Canopy and condensation amounts are uniform on that
-support because the accepted LSE/V8 outputs are interval amounts. Upstream
+Every parcel retains exact `[start_s,end_s)` support within the current child.
+Canopy and condensation amounts are uniform on that support because the
+accepted LSE/V8 outputs are child amounts. Upstream
 runon preserves the producing support.
 
 ### 5. Advance one stateful production WB14 continuation per OFE
 
-Process OFEs once in strict topology order within each 1800-second interval.
+Process OFEs once in strict topology order within each accepted child.
 An OFE is eligible only after every upstream OFE has inserted its routed
-parcel for that interval. For exactly one continuation call per OFE per
-interval:
+parcel for that child. For exactly one continuation call per OFE per child:
 
 1. slice all tile-weighted ground-ingress parcels to the current exact support;
 2. convert `kg m^-2 OFE-ground` to metres once with
@@ -406,7 +419,7 @@ The shared production transition is extracted from
 `compute_wb14_infiltration_depression_with_profile`; the existing daily WB14
 wrapper and the shadow continuation must call that same function. Extraction
 requires parity vectors proving the legacy daily wrapper is unchanged. The
-shadow calls it once per OFE per 1800-second interval, never once per source
+runtime calls it once per OFE per accepted child, never once per source
 parcel and never once with a replayed full-day hyetograph. At interval 48 the
 continuation is the direct day's accepted cumulative result; only the next
 day may reset it to zero. No proportional infiltration proxy, scalar daily
@@ -481,7 +494,7 @@ enthalpy; its inverse is never applied in the same route. This preserves
 absolute mass and energy for
 unequal OFE areas. The parcel is inserted before downstream eligibility.
 Final-OFE runoff is outlet runoff. Strictly increasing topology indices make
-the queue finite; every OFE executes once per 1800-second interval and every
+the queue finite; every OFE executes once per child and every
 routed parcel terminates downstream or at the outlet.
 
 ### 8. Validate ending state and owner joins
@@ -498,10 +511,14 @@ infiltration, retention, routed runoff, and outlet runoff. Infiltration credits
 the exact bound production lane through the shared same-pass transition. Its
 enthalpy credits the exact named soil-thermal layer candidate. Retained
 enthalpy credits the exact LSE tile state after one OFE-to-tile conversion.
-Recompute the strict
-state and WB14-continuation digest, set accepted transaction lineage, and
-validate all owner joins. All operations use clones. No fallible operation may
-follow the later all-owner atomic replacement.
+Recompute the strict state, parent-local WB14 continuation, ordered per-OFE
+child-receipt-set digest, and complete beginning/ending owner-set digests. Join
+surface, hydrology, soil, soil-thermal, LSE, V11, Stage 3, and coupled-clock
+candidate identities. Intermediate children update only the complete
+parent-local candidate and child receipt chain. The final child additionally
+seals the ordered per-OFE parent-receipt set and projects one persistent
+transaction lineage and cursor advance. All operations use clones. No fallible
+operation may follow the later all-owner atomic replacement.
 
 ## Branch And Guard Table
 
@@ -514,10 +531,12 @@ follow the later all-owner atomic replacement.
 | 5 | duplicate/missing request, authorization, use, credit, or parcel | protocol cardinality | Reject complete protocol. | `SURFACELIQUID-E-005` |
 | 6 | `F>A`, `A>D`, negative amount, or wrong basis | resource bound | Reject; no tolerance repairs it. | `SURFACELIQUID-E-006` |
 | 7 | legacy depression retention nonzero in native shadow | exact-one owner | Reject duplicate storage custody. | `SURFACELIQUID-E-007` |
-| 8 | wrong 1800-second cadence, continuation index/carry, or more/fewer than one WB14 continuation call per OFE/interval | production-producer binding | Reject reset, replay, proxy, or incomplete partition; only a tagged INV-011 remaining segment inside one identified base bin may use `0<=d<=1800`. | `SURFACELIQUID-E-008` |
+| 8 | wrong parent support, inadmissible proposal, zero/oversized/noncontiguous child support, coupled-receipt mismatch, continuation carry, or more/fewer than one WB14 call per OFE/child | production-producer binding | Reject reset, replay, proxy, incomplete partition, or early persistent-cursor advance. A tagged INV-011 terminal segment and an INV-012 child each consume their exact accepted support. | `SURFACELIQUID-E-008` |
 | 9 | capacity, attribution, routing, or parcel enthalpy mismatch | candidate closure | Reject candidate. | `SURFACELIQUID-E-009` |
 | 10 | local/owner/soil join closure failure | independent closure | Reject candidate. | `SURFACELIQUID-E-010` |
 | 11 | rollback or complete-owner mismatch | atomic envelope | Reject envelope. | `SURFACELIQUID-E-011` |
+| 12 | OFE/lane/configuration/model/parameter/ordinal/support/predecessor or scalar-receipt substitution | parent/child receipt authority | Reject before accepting the child; discard the complete candidate. | `SURFACELIQUID-E-002` / `SURFACELIQUID-E-011` |
+| 13 | incomplete parent, child-receipt reconstruction failure, parent-receipt mismatch, or persistent cursor advancement before finalization | parent finalization | Reject publication and preserve all persistent owners and cursors byte-for-byte. | `SURFACELIQUID-E-011` |
 
 Errors use this precedence. Every public failure exposes its exact
 `SURFACELIQUID-E-001..011` code, phase, transaction when available, OFE, tile,
@@ -532,7 +551,8 @@ string. A generic category plus prose detail is not the canonical payload.
 | LSE | Exact `GroundWaterKey` request/use and `CondensationCredit` with OFE-ground basis, surface/source identity, accepted temperature, and enthalpy. | Negative request, authorization-as-use, tile-basis credit, clipped condensation. |
 | Vegetation/forcing/upstream OFE | Timed, typed ingress parcels with exact OFE/tile/source and mass/enthalpy identity. | Untimed daily scalar, wrong destination, air-temperature enthalpy fallback. |
 | Hydrology configuration/state | Strict complete persistent store, capacities, topology, predecessor lineage, and digest. | Residue, WAT5, snow, soil-layer, or legacy depression-delta alias. |
-| WB14 adapter | One actual shared-kernel continuation call per OFE/1800-second interval, retained day carry, zero legacy depression capacity, and exact ground-ingress records. | Full-day replay, per-parcel Green-Ampt, copied formula, proportional infiltration proxy, raw-rain plus canopy duplication. |
+| Coupled Stage-3 controller | Select `Delta t_proposed` from the latest accepted Stage-3 state and supply the exact coupled accepted-slab receipt/support. | Infer proposal from elapsed duration, reuse beginning Stage-3 state, or treat a zero-time event as physics. |
+| WB14 parent coordinator | One sealed scalar authority per configured OFE, one actual shared-kernel call per OFE/child in topology order, immutable parameter/model identity, ordered child receipts, final parent receipts, retained day carry, zero legacy depression capacity, and exact ground-ingress records. | Independent per-OFE publication, full-day replay, per-parcel Green-Ampt, copied formula, proportional infiltration proxy, raw-rain plus canopy duplication. |
 
 ## Consumer Obligations
 
@@ -542,6 +562,7 @@ string. A generic category plus prose detail is not the canonical payload.
 | Soil liquid/thermal owners | Independently receive attributed infiltration mass and enthalpy. | Accept producer residual or unmatched energy. |
 | Routed hydrology | Preserve timing/source/destination and insert only before a later topology lane. | Cycle, backward route, scalar carry, duplicate debit. |
 | Shadow orchestrator/restart | Validate the complete candidate and replace the whole shadow state only after all joins pass. | Partial owner commit, production mutation, synthesized state. |
+| Coupled owner join | Bind exact beginning/ending complete-owner sets, coupled slab, ordered WB14 child receipts, and final-only parent receipts/cursor transition. | Digest-only trust, inactive-owner mutation, omitted receipt, or child-local persistent lineage. |
 
 ## Invariants And Invariant Guard Map
 
@@ -552,12 +573,15 @@ string. A generic category plus prose detail is not the canonical payload.
 | `INV-SURFACELIQUID-003` | One immutable beginning snapshot supplies one proportional authorization; a representational aggregate overshoot may use only the common, symmetric, bounded binary64 scale in section 2. | LSE transaction + WATBAL Stage B + IEEE-754 representability under physical conservation | resource arbiter | arithmetic/cardinality/bound; `E-003,E-005..006` | zero/full/partial/competition, joint-supply and order-reversal vectors |
 | `INV-SURFACELIQUID-004` | Exact identity and `0<=F<=A<=D`; aggregate finalized use in complete key order, debit it once, and credit condensation once. | LSE water protocol | candidate protocol validator | arithmetic/identity/bound; `E-003,E-005..006` | D/A/F, caller-order and condensation vectors |
 | `INV-SURFACELIQUID-005` | Persistent ponding replaces the native shadow's legacy depression retention. | exact-one ownership | WB14 input/profile validator | duplicate owner; `E-007` | zero-capacity and nonzero-delta poison |
-| `INV-SURFACELIQUID-006` | Each OFE/1800-second interval uses one actual stateful shared WB14 transition; open raw rain and covered canopy release are mutually exclusive ground supplies. | WB14 production path + V8 canopy ownership | direct-runtime adapter | producer binding; `E-008` | cadence-state and no-duplication contract vectors; executed 48-step/daily parity required at implementation gate |
+| `INV-SURFACELIQUID-006` | Each OFE/accepted child uses one actual stateful shared WB14 transition; open raw rain and covered canopy release are mutually exclusive ground supplies. | WB14 production path + V8 canopy ownership | receipt-owned parent coordinator | producer binding; `E-008` | parent/child cadence-state, no-duplication, 48-parent daily parity, and short-child attachment vectors |
 | `INV-SURFACELIQUID-007` | Mixed post-infiltration excess retains exact tile/source custody; remainder routes once with basis re-keying and OFE-area conversion. | runoff/routing authority + conservative mixing | retention/routing candidate | closure/topology; `E-009` | multi-temperature, multi-tile, unequal-area multi-OFE vectors |
 | `INV-SURFACELIQUID-008` | Mass, enthalpy, infiltration, storage, and runoff are independently reconstructed without producer residuals. | physical conservation | external ledger validators | closure; `E-009..010` | independent numerical vectors |
 | `INV-SURFACELIQUID-009` | All work is candidate-only and every failure preserves complete beginning and production bytes. | transaction atomicity | shadow owner envelope | rollback; `E-011` | phase-injection hashes |
 | `INV-SURFACELIQUID-010` | One fingerprinted 0 C parcel equals retained snow liquid plus snow-support rain plus melt less refreeze; atomic snow debit, surface credit, and consumed marker prevent replay. | snow/physical conservation | terminal receipt validator | identity/cardinality/closure; `E-003,E-005,E-011` | numeric equation, replay, alias, rollback vectors |
 | `INV-SURFACELIQUID-011` | A tagged remaining segment calls the actual shared Green-Ampt/Mein-Larsen transition over exact half-open wall support and advances base-bin continuation only at its endpoint. | WB14 production path | direct-runtime adapter | cadence/support; `E-008` | nonlinear segment, endpoint, ponding, restart vectors |
+| `INV-SURFACELIQUID-012` | One immutable `1800 s` WB14 parent contains contiguous positive children accepted at or below latest-state proposals of `1800/900/60 s`; children do not advance the persistent cursor and complete finalization advances it exactly once. | coupled-time authority + WB14 chronology | receipt-owned multi-OFE parent coordinator and finalizer | cadence/support/finalization; `E-008,E-011` | 1x1800, 2x900, 30x60, dynamic proposal, truncation, one-cursor vectors |
+| `INV-SURFACELIQUID-013` | Every child binds coupled support, immutable OFE/lane/configuration/model/parameter identity, exact Green-Ampt inputs and working progression, complete beginning/ending owner sets, and a reconstructable predecessor receipt chain. | transaction identity + correctness authority model | child and parent receipt `validate()` replay | identity/cardinality/replay; `E-002,E-005,E-011` | substitution, omission, reorder, replay, restart, and receipt-byte poisons |
+| `INV-SURFACELIQUID-014` | The complete parent candidate processes all OFEs in topology order and atomically stages surface storage, attributed liquid/enthalpy, routing, soil, soil thermal, LSE, V11, Stage 3, clock, provider/GSI, event, and receipt owners. | physical conservation + atomic owner authority | complete-owner coordinator and covered owner join | closure/rollback; `E-009..011` | complete parity, short-child two-OFE routing, child/final-join rollback vectors |
 
 ## Symbol Alias Map
 
@@ -572,7 +596,9 @@ string. A generic category plus prose detail is not the canonical payload.
 | `m_p` | `surface_liquid.parcel_mass_kg_m2_basis_ofe` | WB14/routing | `kg H2O m^-2 basis-OFE-ground` | scalar runoff or un-rekeyed destination depth |
 | `T_p` | `surface_liquid.parcel_temperature_k` | WB14/routing | `K` | Celsius or untyped temperature |
 | `Q_p` | `surface_liquid.parcel_enthalpy_j_m2_basis_ofe` | WB14/routing | `J m^-2 basis-OFE-ground` | power rate or un-rekeyed destination energy |
-| `dt` | `surface_liquid.interval_s` | cadence | `s` | arbitrary interval or daily scalar |
+| `Delta t_parent` | `DirectWb14ParentAuthorityV1.parent_support` | persistent cadence | exact `1800 s` | child duration or daily scalar |
+| `Delta t_proposed` | `selected_upper_bound_s_bits` | Stage-3 proposal | exact `s` bits in `{1800,900,60}` | accepted duration inferred as proposal |
+| `Delta t_child` | coupled slab `TimeSupport` / `accepted_duration_s_bits` | child physics | exact positive `s` support | zero-time event or proposed maximum |
 | `wall_t*,wall_end,d` | terminal receiver absolute support | wall-time identity | `s` plus calendar/bin identity | transaction ID, full-bin duration, proportional scale |
 | `m_terminal_liquid` | terminal receipt mass | exact-one ingress | `kg H2O m^-2 OFE-ground` | store level/change, runoff, rain-only, CoE melt |
 
@@ -583,7 +609,8 @@ string. A generic category plus prose detail is not the canonical payload.
 | `T_ref` | `273.15 K` | `SC-LANDSURFACEENERGY-001` version 3 |
 | `C_w` | `4218 J kg^-1 K^-1` | `SC-LANDSURFACEENERGY-001` version 3 |
 | `rho_w` | `1000 kg m^-3` | `SC-LANDSURFACEENERGY-001` version 3 water-mass conversion |
-| shadow interval | `1800 s` | admitted LSE V1 configuration and runtime vectors |
+| WB14 parent interval | `1800 s` | admitted direct-runtime cadence and persistent cursor unit |
+| Stage-3 upper-bound proposals | `{1800,900,60} s` | coupled Stage-3 cadence authority; maximum step, not guaranteed accepted duration |
 | intervals per direct day | `48` | `86400 s / 1800 s` |
 | topology tolerance | `64*epsilon*max(abs(sum(f_t)),1)` | Exact LSE runtime configuration rule |
 | mass closure absolute term | `1e-14 kg m^-2` | Existing vegetation/owner closure convention |
@@ -602,7 +629,7 @@ capacity, inferred capacity, or executable default is admitted.
 | `m_p` | `kg H2O m^-2 basis-OFE-ground` | registry symbol `surface_liquid.parcel_mass` | typed parcel field with `basis_ofe_id` | `ofe_ground_water_mass_to_depth_m(x)=x/rho_w` |
 | `T_p` | `K` | registry symbol `surface_liquid.parcel_temperature` | typed parcel field; finite domain | no Celsius/raw temperature substitution |
 | `Q_p` | `J m^-2 basis-OFE-ground` | registry symbol `surface_liquid.parcel_enthalpy` | typed parcel field with `basis_ofe_id` | amount, never W m^-2 rate |
-| `dt,start_s,end_s` | `s` | registry symbol `surface_liquid.interval` | typed/validated scalar seam | exact 1800-second cadence and support |
+| `Delta t_parent,Delta t_proposed,Delta t_child,start_s,end_s` | `s` | registry symbol `surface_liquid.interval` | typed coupled support plus exact binary64 duration bits | parent exact 1800; proposal in 1800/900/60; child exact positive accepted support |
 | `f_t` | dimensionless | topology semantic entry | strict config scalar | only named tile/OFE helpers consume it |
 | `A_o` | `m2` | registry symbol `surface_liquid.ofe_area` | typed configuration field | only `route_ofe_ground_amount` consumes area ratio |
 
@@ -631,7 +658,8 @@ comparison and cannot admit an overdraw.
 
 ## Calibration And Identifiability Posture
 
-`science_implementation_status=IMPLEMENTATION_MISSING` until package closure.
+`science_implementation_status=IMPLEMENTED` for the default-off complete-owner
+surface-liquid/WB14 parent coordinator governed here.
 `calibration_evidence_status=NOT_CALIBRATION_READY` and
 `identifiability_status=NOT_ASSESSED`.
 
@@ -645,7 +673,7 @@ not a calibration fallback.
 
 | Readiness obligation | Status | Evidence/disposition |
 |---|---|---|
-| Scientific implementation | `IMPLEMENTATION_MISSING` | Dependency-lift package implementation/gates pending. |
+| Scientific implementation | `IMPLEMENTED` | Receipt-owned multi-OFE parent coordinator, complete-owner joins, replay, rollback, restart, and exact attachment vectors. |
 | Capacity parameter provenance | `NOT_CALIBRATION_READY` | Required external site/surface input; no recommended values in this package. |
 | Observation operator | `DEFINED_NOT_EVALUATED` | Beginning/ending store, infiltration, and routed/outlet runoff operands above. |
 | Synthetic recovery | `NOT_APPLICABLE_TO_CUSTODY` | No fitted custody coefficient; capacity remains external. |
@@ -665,7 +693,9 @@ tile/OFE conversion; precipitation, runon, and every canopy release class;
 48 stateful timed nonlinear WB14 continuations with daily-wrapper parity;
 no-duplication open/covered precipitation; mixed-temperature partition;
 post-infiltration proportional-capacity retention; infiltration; unequal-area
-routed multi-OFE and outlet runoff;
+routed multi-OFE and outlet runoff; two unequal-area OFEs across two accepted
+900-second children with same-child runon in both children, ordered per-OFE
+child receipts, one final parent-receipt set, and one persistent cursor advance;
 mass/enthalpy split; restart equivalence; and byte-identical rollback.
 
 Poison vectors must reject incompatible LSE identity; residue/depression/WAT5/
@@ -675,31 +705,37 @@ request inflation; second authorization; authorization-as-use; wrong
 OFE/tile/surface/source/basis; omitted/doubled `f_t`; clipped condensation;
 canonical-last remainder or any row-specific authorization correction;
 missing temperature/enthalpy; per-parcel or copied Green-Ampt; proportional
-infiltration proxy; reset/replayed continuation; wrong cadence; raw rain plus
-canopy release; multiple calls per OFE/interval; untimed daily scalar;
+infiltration proxy; reset/replayed continuation; wrong parent/proposal/accepted-
+child cadence or coupled receipt; raw rain plus canopy release; multiple calls
+per OFE/child; untimed daily scalar;
 omitted/doubled OFE area ratio; cycle/backward route; producer residual;
-partial mutation; and production selector/default
-reachability.
+partial mutation; OFE/lane/K/matric-potential/storage/model/ordinal/support/
+predecessor substitution; early parent cursor advancement; and production
+selector/default reachability.
 
 Expected values are independently reconstructed from frozen operands rather
 than generated by production Rust.
 
 ## Binding Exposure Index
 
-Every binding rule is exposed by `INV-SURFACELIQUID-001..009`. The package's
-review and gate artifacts are evidence only; no binding residue is hidden in
-them.
+| Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
+|---|---|---|---|---|---|---|
+| `SURFACELIQUID-V7-TERMINAL` | Terminal Meltout Receipt And Partial-WB14 details below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-010, INV-SURFACELIQUID-011` | `none` | Released terminal receiver and partial-bin rules retained unchanged. |
+| `SURFACELIQUID-V8-CHILD-SLAB` | WB14 Parent/Child Receipt Schema Details below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-006, INV-SURFACELIQUID-012, INV-SURFACELIQUID-013, INV-SURFACELIQUID-014` | `flagged-binding-addition` | Version-8 rules are exposed in the core algorithm, guards, obligations, invariants, aliases, units, vectors, and gaps and undergo this cycle's dual review. |
 
 ## Gap Register And Promotability
 
 | Gap | Status | Disposition |
 |---|---|---|
-| `GAP-SURFACELIQUID-001` persistent owner absent | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` | Independent contract/profile and hydrology reviews passed; the dependency-lift package may implement the exact admitted owner. |
-| `GAP-SURFACELIQUID-002` runtime owner implementation | `IMPLEMENTATION_MISSING` | This package must implement/review exact state and candidate operations after the authority gate. |
+| `GAP-SURFACELIQUID-001` persistent owner absent | `CLOSED` | Persistent owner, canonical state/restart, and complete-owner projection are implemented and tested. |
+| `GAP-SURFACELIQUID-002` runtime owner implementation | `CLOSED` | Exact state/candidate operations, receipt-owned parent coordination, reconstruction, and rollback are implemented and reviewed. |
 | `GAP-SURFACELIQUID-003` production selector/cutover | `NOT_AUTHORIZED` | Later separately governed package required. |
 | `GAP-SURFACELIQUID-004` snow/frozen/thawing custody | `AUTHORITY_MISSING`, `NON_PROMOTABLE` | Typed unsupported; snow contracts own that domain. |
+| `GAP-SURFACELIQUID-005` multi-production-lane Stage-3 parent energy aggregation | `DEFERRED`, `NON_PROMOTABLE_FOR_MULTI-LANE-COVERED` | Stage-3 lane fluxes are per-OFE-ground. Covered multi-lane execution remains fail-closed until the parent ledger is represented as `BTreeMap<LaneId, Stage3IntegratedBoundaryLedgerV1>`; an optional hillslope diagnostic may use `sum(A_ofe*Q_ofe)/sum(A_ofe)`. Unweighted cross-OFE scalar addition is prohibited. This does not block snow-free multi-OFE surface routing or single-lane child-slab release. Owner: Child-1 Stage-3 package; next gate: genuine two-production-lane snow scenario. |
 
-This contract authorizes no production activation or publication.
+This contract authorizes the default-off child-slab attachment after v8
+promotion. It does not authorize output publication, selector cutover, or the
+deferred multi-lane covered Stage-3 energy path.
 
 ## Terminal Meltout Receipt And Partial-WB14 Amendment
 
@@ -722,11 +758,11 @@ full bin. A cross-midnight endpoint advances continuation once. Restart
 before/after meltout or at an accepted terminal substep restores the same
 partial continuation and produces byte-identical final owner state.
 
-The fixed production base remains exactly 48 wall bins of 1800 seconds and,
-outside the prospective parent transaction described below,
-`SURFACELIQUID-E-008` still rejects every ordinary call whose duration is not
-1800 seconds. The terminal exception is a tagged receiver segment inside one
-identified base wall bin. Let `D=1800 s`, `d=wall_end-wall_t*`,
+The fixed production base remains exactly 48 parent wall bins of 1800 seconds.
+Ordinary calls are accepted only as sealed children of the INV-012 parent;
+unsealed variable-duration calls remain `SURFACELIQUID-E-008`. The terminal
+exception is a tagged receiver segment inside one identified base wall bin.
+Let `D=1800 s`, `d=wall_end-wall_t*`,
 `0<=d<=D`. Time-varying forcing is partitioned on the half-open absolute
 support `[wall_t*,wall_end)`; it is not scaled from a full-bin aggregate and
 does not replay `[wall_start,wall_t*)`. A parcel exactly at `wall_t*` belongs
@@ -753,7 +789,7 @@ claim, qualification, or cutover.
 | Canonical surface | Binding |
 |---|---|
 | Algorithm | validate receipt/support; split endpoint forcing; run existing WB14 equations with `Delta t=d`; close/route; advance wall continuation |
-| Branch/guard | `d=0` no-op; tagged `0<d<=1800` allowed; every other non-1800 call `E-008`; receipt replay `E-003/E-011` |
+| Branch/guard | `d=0` no-op; tagged `0<d<=1800` terminal support and sealed positive INV-012 children are allowed; every other variable-duration call is `E-008`; receipt replay `E-003/E-011` |
 | Alias/unit | wall support is absolute date/seconds; transaction ID orders commits only; receipt is `kg m^-2 OFE-ground`, never storage/runoff |
 | Tolerance | existing WB14/mass bounds apply to independently integrated segment operands; none repairs support/cardinality/identity |
 | Tests | endpoint rain/runon, nonlinear unequal full-bin/segment forcing, zero/full remainder, midnight, restart/replay, debit-credit marker, rollback |
@@ -763,13 +799,11 @@ claim, qualification, or cutover.
 Frozen-liquid constitutive physics beyond that receipt remains
 `AUTHORITY_MISSING` and non-promotable.
 
-## WB14 Parent-Interval Child-Slab Amendment (Version 8 In Review)
+## WB14 Parent/Child Receipt Schema Details
 
-The following version-8 rules describe a default-off transaction over exactly
-one existing half-hour WB14 interval. They are **in review and not released
-runtime authority** until the version-8 review, disposition, verification, and
-promotion gates pass; production continues to enforce the released version-7
-`INV-SURFACELIQUID-006/011` guards. Every child calls the unchanged shared Green-Ampt transition
+The following details define the canonical version-8 receipt wire for one
+default-off transaction over exactly one existing half-hour WB14 parent. Every
+child calls the unchanged shared Green-Ampt transition
 with its exact duration and current accepted cumulative state. It changes no
 equation, parameter, clamp, tolerance, forcing selector, output, or restart
 wire.
@@ -828,7 +862,7 @@ replays every immutable identity, ordinal, support, working-state transition,
 complete-owner join, closure operand, and receipt digest, and derives the final
 cursor. A stored digest or producer-only self-check is insufficient.
 
-The current v8 integration candidate installs the accepted parent-local
+The runtime installs the accepted parent-local
 surface state before hydrology snapshot construction and every LSE resource
 request, authorization, debit, condensation credit, and ingress operation. It
 uses one sealed scalar parent authority per OFE and records the exact ordered
@@ -840,11 +874,8 @@ actual coupled parent transaction, accepted
 slab, complete beginning owner set, and selected Stage 3 upper bound; none is
 inferred from accepted duration or a local counter. Final evidence retains and
 seals replayable ordered scalar-authority/finalization bytes, and parent-local
-physical plus scalar custody has a validated restart encoding. These facts do not
-promote v8 by themselves; the terminal review and verification disposition
-controls promotion. The released production attachment retains its
-short-cadence guard while v8 remains in review; package-local integrated
-fixtures exercise the candidate coordinator beneath that guard.
+physical plus scalar custody has a validated restart encoding. These are
+binding runtime requirements and are independently reconstructed.
 
 Required vectors are one 1800-second child bit-identical complete production-
 owner parity; two 900-second children;
@@ -857,11 +888,11 @@ substitution; zero-digest and invalid-cumulative poisons; omission,
 duplication, reorder, overlap, gap, and replay poisons; and exactly one
 persistent continuation advance.
 
-| Prospective rule | Proposed binding | Release blocker |
-|---|---|---|
-| `INV-SURFACELIQUID-012` (v8 in review) | One WB14 parent covers exactly one existing 1800-second day/interval continuation; persistent cursor is immutable during children accepted at or below a selected 1800/900/60-second upper bound and advances once at complete finalization. | Fresh v8 dual review, verification, integrated owner evidence, and promotion. |
-| `INV-SURFACELIQUID-013` (v8 in review) | Every child binds coupled support, immutable OFE/lane/configuration/model/parameter identity, complete Green-Ampt inputs, per-OFE working progression, complete beginning/ending owner sets, and canonical reconstructable receipt chain. | Fresh v8 dual review, verification, poisons, and rollback evidence. |
-| `INV-SURFACELIQUID-014` (v8 in review) | The complete parent candidate processes all OFEs in topology order and atomically stages surface storage, attributed liquid/enthalpy, routing, production soil, soil thermal, LSE, V11, Stage 3, clock, provider/GSI, event, and receipt owners. | Production-owner parity, two-OFE closure, rollback, and real-consumer proof. |
+| Canonical rule | Binding |
+|---|---|
+| `INV-SURFACELIQUID-012` | One WB14 parent covers exactly one existing 1800-second day/interval continuation; persistent cursor is immutable during children accepted at or below a selected 1800/900/60-second upper bound and advances once at complete finalization. |
+| `INV-SURFACELIQUID-013` | Every child binds coupled support, immutable OFE/lane/configuration/model/parameter identity, complete Green-Ampt inputs, per-OFE working progression, complete beginning/ending owner sets, and canonical reconstructable receipt chain. |
+| `INV-SURFACELIQUID-014` | The complete parent candidate processes all OFEs in topology order and atomically stages surface storage, attributed liquid/enthalpy, routing, production soil, soil thermal, LSE, V11, Stage 3, clock, provider/GSI, event, and receipt owners. |
 
 ## Change Log
 

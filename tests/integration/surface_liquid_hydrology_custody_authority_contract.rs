@@ -407,7 +407,7 @@ fn open_and_covered_ingress_are_mutually_exclusive_and_routing_scales_area() {
         "P_ground,o = sum_open_tiles",
         "no raw precipitation",
         "DirectWb14ContinuationState",
-        "exactly 48 consecutive `1800 s` transactions",
+        "exactly 48 consecutive `Delta t_parent=1800 s` parent",
         "m_runon,d = m_runoff,u * A_u/A_d",
         "Q_retained,k,tile",
         "rho_w` | `1000 kg m^-3`",
@@ -448,7 +448,7 @@ fn independent_48_step_continuation_and_day_reset_vector() {
         "Continuation records serialize after store records",
         "basis_ofe_id=d",
         "No excess crosses tile or source identity",
-        "executed 48-step/daily parity required at implementation gate",
+        "48-parent daily parity, and short-child attachment vectors",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
