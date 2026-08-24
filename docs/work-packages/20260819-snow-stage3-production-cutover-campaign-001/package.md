@@ -1,6 +1,6 @@
 # Coordinate Stage 3 Production Cutover
 
-Status: `active / Child 2A, Child 2B, and Child 2C authority complete; Child 1 constitutive successor executing`
+Status: `active / Child 2A, Child 2B, and Child 2C authority complete; Child 1 V11 covered-consumer/runner successor executing HOLD`
 
 Date: `2026-08-19`
 
@@ -39,9 +39,10 @@ children or use a later child to pass a current child's required gate.
    [`20260821-snow-stage3-terminal-handoff-live-owner-closure-001`](../20260821-snow-stage3-terminal-handoff-live-owner-closure-001/package.md),
    is also EXECUTED HOLD: the scheduler/publication scaffold landed, but the
    actual Stage-3/V11 coupled terminal chronology and typed owner custody are
-   still required. Its constitutive successor
-   [`20260821-snow-stage3-terminal-handoff-constitutive-closure-001`](../20260821-snow-stage3-terminal-handoff-constitutive-closure-001/package.md)
-   is now the active Child-1 task.
+   still required. Its constitutive successor is retained as historical
+   execution evidence. The
+   [`20260821-snow-stage3-v11-covered-consumer-runner-closure-001`](../20260821-snow-stage3-v11-covered-consumer-runner-closure-001/package.md)
+   package is now the sole active Child-1 task.
 2. Child 2 is a continuously executed three-increment coordinator:
    - **2A** [`COUPLED-TIME-AUTHORITY-IMPLEMENTATION`](../20260820-coupled-time-authority-implementation-001/package.md)
      admits and implements exact-one coupled clock custody, exact integer

@@ -65,6 +65,29 @@ pub struct VegetationConfigurationV11 {
     pub imported_v10: VegetationConfiguration,
 }
 
+/// External, configuration-derived authority joining each admitted BGC
+/// stratum to its exact vegetation-tile-resolved OFE.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct V11BgcDebitScope {
+    stratum_ofe_ids: BTreeMap<String, String>,
+}
+
+impl V11BgcDebitScope {
+    pub fn try_new(stratum_ofe_ids: BTreeMap<String, String>) -> Result<Self, V11Error> {
+        if stratum_ofe_ids
+            .iter()
+            .any(|(stratum, ofe)| stratum.is_empty() || ofe.is_empty())
+        {
+            return Err(V11Error::ResourceDebit);
+        }
+        Ok(Self { stratum_ofe_ids })
+    }
+
+    fn expected_ofe(&self, stratum_id: &str) -> Option<&str> {
+        self.stratum_ofe_ids.get(stratum_id).map(String::as_str)
+    }
+}
+
 impl VegetationConfigurationV11 {
     pub fn validate(&self) -> Result<(), V11Error> {
         self.imported_v10
@@ -643,6 +666,16 @@ pub fn execute_v11_segment<E: V11ConstitutiveExecutor>(
     accepted_slab_receipt: &AcceptedSlabReceiptV1,
     executor: &mut E,
 ) -> Result<V11AcceptedSegmentCandidate, V11ExecutionError<E::Error>> {
+    execute_v11_segment_with_bgc_scope(configuration, parent, accepted_slab_receipt, None, executor)
+}
+
+pub fn execute_v11_segment_with_bgc_scope<E: V11ConstitutiveExecutor>(
+    configuration: &VegetationConfigurationV11,
+    parent: &V11ParentTransaction,
+    accepted_slab_receipt: &AcceptedSlabReceiptV1,
+    bgc_scope: Option<&V11BgcDebitScope>,
+    executor: &mut E,
+) -> Result<V11AcceptedSegmentCandidate, V11ExecutionError<E::Error>> {
     configuration.validate().map_err(V11ExecutionError::V11)?;
     parent
         .validate(configuration)
@@ -709,6 +742,8 @@ pub fn execute_v11_segment<E: V11ConstitutiveExecutor>(
     )
     .map_err(V11ExecutionError::V11)?;
     validate_resource_custody(
+        configuration,
+        bgc_scope,
         accepted_slab_receipt.parent_transaction_id(),
         accepted_slab_receipt.segment_id(),
         accepted_slab_receipt.slab_id(),
@@ -804,6 +839,15 @@ impl V11ParentTransaction {
         configuration: &VegetationConfigurationV11,
         candidate: V11AcceptedSegmentCandidate,
     ) -> Result<(), V11Error> {
+        self.accept_segment_with_bgc_scope(configuration, candidate, None)
+    }
+
+    pub fn accept_segment_with_bgc_scope(
+        &mut self,
+        configuration: &VegetationConfigurationV11,
+        candidate: V11AcceptedSegmentCandidate,
+        bgc_scope: Option<&V11BgcDebitScope>,
+    ) -> Result<(), V11Error> {
         self.validate(configuration)?;
         let support = candidate.accepted_slab_receipt.support();
         if self.finalized
@@ -852,6 +896,8 @@ impl V11ParentTransaction {
             .last()
             .map(|segment| segment.shared_resource_transitions.as_slice());
         validate_resource_custody(
+            configuration,
+            bgc_scope,
             candidate.accepted_slab_receipt.parent_transaction_id(),
             candidate.accepted_slab_receipt.segment_id(),
             candidate.accepted_slab_receipt.slab_id(),
@@ -1068,6 +1114,14 @@ impl V11ParentTransaction {
         configuration: &VegetationConfigurationV11,
         checkpoint: V11ParentTransactionCheckpoint,
     ) -> Result<Self, V11Error> {
+        Self::restore_with_bgc_scope(configuration, checkpoint, None)
+    }
+
+    pub fn restore_with_bgc_scope(
+        configuration: &VegetationConfigurationV11,
+        checkpoint: V11ParentTransactionCheckpoint,
+        bgc_scope: Option<&V11BgcDebitScope>,
+    ) -> Result<Self, V11Error> {
         if checkpoint.schema != "OPENWEPP_C3_WOODY_V11_PARENT_CHECKPOINT_V1"
             || checkpoint.finalized
             || checkpoint.accepted_segments.is_empty()
@@ -1134,6 +1188,8 @@ impl V11ParentTransaction {
                 return Err(V11Error::RestartCheckpoint);
             }
             validate_resource_custody(
+                configuration,
+                bgc_scope,
                 segment.parent_transaction_id,
                 segment.segment_id,
                 segment.slab_id,
@@ -1380,6 +1436,8 @@ fn build_complete_owner_candidates(
 #[allow(clippy::too_many_arguments)]
 #[allow(clippy::too_many_lines)]
 fn validate_resource_custody(
+    configuration: &VegetationConfigurationV11,
+    bgc_scope: Option<&V11BgcDebitScope>,
     parent: ParentTransactionId,
     segment: SegmentId,
     slab: AcceptedSlabId,
@@ -1392,6 +1450,7 @@ fn validate_resource_custody(
     predecessors: Option<&[V11SharedResourceOwnerTransition]>,
 ) -> Result<(), V11Error> {
     validate_debits(debits)?;
+    validate_bgc_debit_configuration(configuration, bgc_scope, debits)?;
     validate_fluxes(fluxes)?;
     let domain = |p, s, a, t| p == parent && s == segment && a == slab && t == support;
     if debits.iter().any(|d| {
@@ -1449,7 +1508,9 @@ fn validate_resource_custody(
         canonical.transition_id = Digest32::zero();
         if t.transition_id != digest_canonical(b"OPENWEPP_V11_TRANSITION_V1\0", &canonical)?
             || t.debit_receipt_ids.is_empty()
-            || !is_sorted_unique(&t.debit_receipt_ids)
+            || (!is_bgc_mineral_transition(t) && !is_sorted_unique(&t.debit_receipt_ids))
+            || (is_bgc_mineral_transition(t)
+                && !bgc_transition_ids_are_semantically_ordered(t, &debit_by_id))
             || !is_sorted_unique(&t.admitted_flux_receipt_ids)
             || !t.beginning_amount.is_finite()
             || !t.ending_amount.is_finite()
@@ -1526,6 +1587,122 @@ fn validate_resource_custody(
         || linked_fluxes != flux_by_id.keys().copied().collect::<Vec<_>>()
     {
         return Err(V11Error::ResourceCustody);
+    }
+    Ok(())
+}
+
+fn is_bgc_mineral_transition(value: &V11SharedResourceOwnerTransition) -> bool {
+    value.shared_resource_key.owner_id == "bgc"
+        && matches!(
+            value.shared_resource_key.resource,
+            V11SharedResourceKind::Ammonium | V11SharedResourceKind::Nitrate
+        )
+}
+
+fn bgc_transition_ids_are_semantically_ordered(
+    transition: &V11SharedResourceOwnerTransition,
+    debit_by_id: &BTreeMap<Digest32, &V11ResourceDebit>,
+) -> bool {
+    let mut expected = transition.debit_receipt_ids.clone();
+    expected.sort_by(|left, right| {
+        let Some(left) = debit_by_id.get(left) else {
+            return left.cmp(right);
+        };
+        let Some(right) = debit_by_id.get(right) else {
+            return left.receipt_id.cmp(right);
+        };
+        left.occupancy_id
+            .cmp(&right.occupancy_id)
+            .then_with(|| left.layer_id.cmp(&right.layer_id))
+            .then_with(|| left.resource_key.cmp(&right.resource_key))
+    });
+    expected == transition.debit_receipt_ids
+        && transition
+            .debit_receipt_ids
+            .iter()
+            .collect::<BTreeSet<_>>()
+            .len()
+            == transition.debit_receipt_ids.len()
+}
+
+fn validate_bgc_debit_configuration(
+    configuration: &VegetationConfigurationV11,
+    bgc_scope: Option<&V11BgcDebitScope>,
+    debits: &[V11ResourceDebit],
+) -> Result<(), V11Error> {
+    use openwepp_kernel_contract::MineralNitrogenSpecies;
+
+    let configured_strata = configuration
+        .imported_v10
+        .expected_occupancies()
+        .into_iter()
+        .map(|occupancy| occupancy.stratum_id.as_str().to_owned())
+        .collect::<BTreeSet<_>>();
+    let expected_identities = configuration
+        .imported_v10
+        .strata
+        .iter()
+        .flat_map(|stratum| {
+            stratum.root_layers.iter().flat_map(move |root| {
+                [
+                    MineralNitrogenSpecies::Ammonium,
+                    MineralNitrogenSpecies::Nitrate,
+                ]
+                .into_iter()
+                .map(move |species| {
+                    (
+                        stratum.stratum_id.as_str().to_owned(),
+                        root.layer_id.as_str().to_owned(),
+                        species,
+                    )
+                })
+            })
+        })
+        .collect::<BTreeSet<_>>();
+    let mut actual_identities = BTreeSet::new();
+    let mut bgc_ofe = None::<&str>;
+    let mut prior_semantic_key = None::<(&str, &str, &V11ResourceKey)>;
+    for debit in debits {
+        let V11ResourceKey::MineralNitrogen(key) = &debit.resource_key else {
+            if debit.owner_id == "bgc" {
+                return Err(V11Error::ResourceDebit);
+            }
+            continue;
+        };
+        let expected_source = match key.species {
+            MineralNitrogenSpecies::Ammonium => "nh4",
+            MineralNitrogenSpecies::Nitrate => "no3",
+        };
+        if debit.owner_id != "bgc"
+            || debit.tile_id != "stratum_scoped"
+            || !configured_strata.contains(&debit.occupancy_id)
+            || debit.layer_id != key.layer_id.as_str()
+            || debit.source_id != expected_source
+            || debit.amount_basis != "kg_n_m2"
+            || bgc_scope.and_then(|scope| scope.expected_ofe(&debit.occupancy_id))
+                != Some(debit.ofe_id.as_str())
+            || bgc_ofe.is_some_and(|ofe| ofe != debit.ofe_id)
+        {
+            return Err(V11Error::ResourceDebit);
+        }
+        actual_identities.insert((
+            debit.occupancy_id.clone(),
+            debit.layer_id.clone(),
+            key.species,
+        ));
+        let semantic_key = (
+            debit.occupancy_id.as_str(),
+            debit.layer_id.as_str(),
+            &debit.resource_key,
+        );
+        if prior_semantic_key.is_some_and(|prior| prior >= semantic_key) {
+            return Err(V11Error::ResourceDebit);
+        }
+        prior_semantic_key = Some(semantic_key);
+        bgc_ofe = Some(&debit.ofe_id);
+    }
+    if !actual_identities.is_empty() && actual_identities != expected_identities {
+        return Err(V11Error::ResourceDebit);
     }
     Ok(())
 }
@@ -2171,7 +2348,9 @@ mod tests {
             owners,
         )
         .expect("parent");
-        let layer = SoilLayerId::try_new("l1").expect("layer");
+        let layer = migrated.configuration.imported_v10.strata[0].root_layers[0]
+            .layer_id
+            .clone();
         let keys = [
             V11ResourceKey::Water(WaterResourceKey {
                 occupancy_id: OccupancyId {
@@ -2309,19 +2488,42 @@ mod tests {
         ));
         assert_eq!(parent.checkpoint(), before);
     }
-
+    #[path = "v11_bgc_tests.rs"]
+    mod bgc_tests;
     #[test]
     #[allow(clippy::too_many_lines)]
     fn closed_multi_occupancy_water_and_mineral_n_custody_rejects_aliases() {
-        use openwepp_kernel_contract::{
-            MineralNitrogenSpecies, OccupancyId, SoilLayerId, StratumId, TileId,
-        };
-        let (v10_configuration, v10_state) = v10_fixture();
+        use openwepp_kernel_contract::{MineralNitrogenSpecies, OccupancyId, StratumId, TileId};
+        let (mut v10_configuration, mut v10_state) = v10_fixture();
+        v10_configuration.strata[0].root_layers.truncate(1);
+        v10_configuration.configuration_sha256 =
+            v10_configuration.canonical_sha256().expect("config");
+        v10_state.0.configuration_sha256 = v10_configuration.configuration_sha256.clone();
+        v10_state.0.state_sha256 = v10_state.0.canonical_sha256();
+        v10_configuration.initial_state_sha256 = v10_state.0.state_sha256.clone();
         let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
         let owners = complete_owners(&migrated.state);
         let (_, receipts) = accepted_receipts(&owners, &[1_800_000_000_000]);
         let receipt = &receipts[0];
-        let layer = SoilLayerId::try_new("l1").expect("layer");
+        let configured_stratum = migrated
+            .configuration
+            .imported_v10
+            .expected_occupancies()
+            .into_iter()
+            .next()
+            .expect("configured occupancy")
+            .stratum_id
+            .as_str()
+            .to_owned();
+        let bgc_scope = V11BgcDebitScope::try_new(BTreeMap::from([(
+            configured_stratum.clone(),
+            "ofe-1".into(),
+        )]))
+        .expect("BGC scope");
+        let layer = migrated.configuration.imported_v10.strata[0].root_layers[0]
+            .layer_id
+            .clone();
+        let layer_id = layer.as_str().to_owned();
         let water_key = V11ResourceKey::Water(WaterResourceKey {
             occupancy_id: OccupancyId {
                 stratum_id: StratumId::try_new("s1").expect("s"),
@@ -2348,11 +2550,19 @@ mod tests {
                     owner_id: owner.into(),
                     resource_key: key,
                     ofe_id: "ofe-1".into(),
-                    tile_id: format!("tile-{occupancy}"),
+                    tile_id: if owner == "bgc" {
+                        "stratum_scoped".into()
+                    } else {
+                        format!("tile-{occupancy}")
+                    },
                     occupancy_id: occupancy.into(),
-                    layer_id: "l1".into(),
+                    layer_id: layer_id.clone(),
                     source_id: source.into(),
-                    amount_basis: "kg_m2".into(),
+                    amount_basis: if owner == "bgc" {
+                        "kg_n_m2".into()
+                    } else {
+                        "kg_m2".into()
+                    },
                     request: amount,
                     authorization: amount,
                     final_use: amount,
@@ -2362,10 +2572,21 @@ mod tests {
         let mut debits = vec![
             make("a", water_key.clone(), "hydrology", "soil_water", 4.0),
             make("b", water_key, "hydrology", "soil_water", 4.0),
-            make("n", nh4.clone(), "bgc", "nh4", 0.1),
-            make("n", no3.clone(), "bgc", "no3", 0.2),
+            make(&configured_stratum, nh4.clone(), "bgc", "nh4", 0.1),
+            make(&configured_stratum, no3.clone(), "bgc", "no3", 0.2),
         ];
-        debits.sort_by_key(|d| d.receipt_id);
+        debits.sort_by(|left, right| {
+            left.owner_id.cmp(&right.owner_id).then_with(|| {
+                if left.owner_id == "bgc" {
+                    left.occupancy_id
+                        .cmp(&right.occupancy_id)
+                        .then_with(|| left.layer_id.cmp(&right.layer_id))
+                        .then_with(|| left.resource_key.cmp(&right.resource_key))
+                } else {
+                    left.receipt_id.cmp(&right.receipt_id)
+                }
+            })
+        });
         let transition = |owner: &str,
                           key: V11ResourceKey,
                           source: &str,
@@ -2389,9 +2610,13 @@ mod tests {
                     resource,
                     owner_id: owner.into(),
                     ofe_id: "ofe-1".into(),
-                    layer_id: "l1".into(),
+                    layer_id: layer_id.clone(),
                     source_id: source.into(),
-                    amount_basis: "kg_m2".into(),
+                    amount_basis: if owner == "bgc" {
+                        "kg_n_m2".into()
+                    } else {
+                        "kg_m2".into()
+                    },
                 },
                 beginning_amount: begin,
                 ending_amount: end,
@@ -2452,6 +2677,8 @@ mod tests {
         let candidates =
             build_complete_owner_candidates(receipt, &owners, &transitions).expect("candidates");
         validate_resource_custody(
+            &migrated.configuration,
+            Some(&bgc_scope),
             receipt.parent_transaction_id(),
             receipt.segment_id(),
             receipt.slab_id(),
@@ -2473,6 +2700,8 @@ mod tests {
                         .expect("poison candidates");
                 assert!(
                     validate_resource_custody(
+                        &migrated.configuration,
+                        Some(&bgc_scope),
                         receipt.parent_transaction_id(),
                         receipt.segment_id(),
                         receipt.slab_id(),
@@ -2507,6 +2736,32 @@ mod tests {
         substituted.sort_by_key(|debit| debit.receipt_id);
         assert_poison(&substituted, &transitions);
 
+        let assert_resealed_bgc_scope_poison = |mutate: fn(&mut V11ResourceDebit)| {
+            let mut poisoned_debits = debits.clone();
+            let debit = poisoned_debits
+                .iter_mut()
+                .find(|debit| debit.source_id == "nh4")
+                .expect("NH4 debit");
+            let old_id = debit.receipt_id;
+            mutate(debit);
+            *debit = V11ResourceDebit::new(debit.clone()).expect("resealed debit");
+            let new_id = debit.receipt_id;
+            let mut poisoned_transitions = transitions.clone();
+            let transition = poisoned_transitions
+                .iter_mut()
+                .find(|transition| transition.debit_receipt_ids.contains(&old_id))
+                .expect("linked transition");
+            transition.debit_receipt_ids = vec![new_id];
+            *transition = V11SharedResourceOwnerTransition::new(transition.clone())
+                .expect("resealed transition");
+            assert_poison(&poisoned_debits, &poisoned_transitions);
+        };
+        assert_resealed_bgc_scope_poison(|debit| debit.tile_id = "occupancy_scoped".into());
+        assert_resealed_bgc_scope_poison(|debit| debit.occupancy_id = "unknown-stratum".into());
+        assert_resealed_bgc_scope_poison(|debit| debit.source_id = "no3".into());
+        assert_resealed_bgc_scope_poison(|debit| debit.layer_id = "wrong-layer".into());
+        assert_resealed_bgc_scope_poison(|debit| debit.amount_basis = "kg_m2".into());
+
         let mut reversed = transitions.clone();
         let water = reversed
             .iter_mut()
@@ -2540,6 +2795,8 @@ mod tests {
         overbook.sort_by_key(|d| d.receipt_id);
         assert!(
             validate_resource_custody(
+                &migrated.configuration,
+                Some(&bgc_scope),
                 receipt.parent_transaction_id(),
                 receipt.segment_id(),
                 receipt.slab_id(),

@@ -204,7 +204,7 @@
                 },
             ),
         };
-        let missing_error = execute_v11_segment(
+        let missing_error = execute_direct_v11_segment(
             &migrated.configuration,
             &parent,
             &slab,
@@ -353,7 +353,7 @@
             },
         );
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-        execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+        execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
             .expect("real mixed covered/open OFE execution");
         let lane_receipt = executor
             .stack
@@ -812,7 +812,7 @@
                     },
                 ),
             };
-        execute_v11_segment(
+        execute_direct_v11_segment(
             &open_migrated.configuration,
             &open_parent,
             &open_slab,
@@ -966,7 +966,7 @@
                 },
             ),
         };
-        assert!(execute_v11_segment(&migrated.configuration, &parent, &slab, &mut poisoned).is_err());
+        assert!(execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut poisoned).is_err());
         assert!(poisoned.stack.take_staged_ending().is_none());
     }
 
@@ -1111,11 +1111,15 @@
         .expect("two-OFE complete parent");
         let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-        let segment = execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+        let segment = execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
             .expect("two-OFE complete-owner child");
-        parent
-            .accept_segment(&migrated.configuration, segment)
-            .expect("accept two-OFE child");
+        accept_direct_v11_segment(
+            &mut parent,
+            &migrated.configuration,
+            segment,
+            &executor.stack.beginning,
+        )
+        .expect("accept two-OFE child");
         let finalized = parent.finalize(&migrated.configuration).expect("finalize parent");
         let hydrology = executor
             .stack
@@ -1292,16 +1296,20 @@
                 binding,
             );
             let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-            let segment = execute_v11_segment(
+            let segment = execute_direct_v11_segment(
                 &migrated.configuration,
                 &v11_parent,
                 slab,
                 &mut executor,
             )
             .unwrap_or_else(|error| panic!("snow-free complete-owner short child {ordinal}: {error:?}"));
-            v11_parent
-                .accept_segment(&migrated.configuration, segment)
-                .expect("accept short child");
+            accept_direct_v11_segment(
+                &mut v11_parent,
+                &migrated.configuration,
+                segment,
+                &executor.stack.beginning,
+            )
+            .expect("accept short child");
             let ingress = executor
                 .stack
                 .last_hydrology_candidate()

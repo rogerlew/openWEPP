@@ -60,19 +60,26 @@ in `gate-results.md`. Package disposition remains `EXECUTING / HOLD`.
 
 | Finding | Severity | Decision | Current action/status |
 |---|---|---|---|
-| `CHILD1-BGC-OFE-001` | Major | `accepted / fixed` | `SC-VEGETATION-001@27` now binds the existing hillslope-global BGC owner to exactly one BGC-bearing OFE. Production resolves every occupancy through the explicit LSE `vegetation_tile_id`, admits multi-tile strata only within one common OFE, rejects missing/ambiguous/multiple-bearing-OFE mappings, uses canonical stratum-scoped debit identity, and no longer reads either `first()` source. V11 custody now requires exact debit linkage and bitwise mineral-pool delta closure. Focused mapping, full actual-segment, poison, rollback, affected-crate, authority, and exact-head workspace gates pass. |
+| `CHILD1-BGC-OFE-001` | Major | `reopened / superseded by CHILD1-BGC-FOLD-002, CHILD1-BGC-SCOPE-003, CHILD1-BGC-ENDPOINT-004` | The exact-one-bearing-OFE selection fix remains accepted, but terminal closure was overstated because v27 did not make physical fold order machine-readable, generic live/restore custody did not independently enforce stratum-scoped debit semantics, and the triggering topology had no complete real-consumer fixture. |
+| `CHILD1-BGC-FOLD-002` | Major | `accepted / corrected` | `SC-VEGETATION-001@28` binds `(stratum_id,soil_layer_id,species)` pre-hash order. Candidate accumulation, emitted debits, transition linkage, live custody, and restore use it. Producer, live parent, transition-link, rollback, and checkpoint-order tests cover the adversarial three-stratum vector. |
+| `CHILD1-BGC-SCOPE-003` | Major | `accepted / corrected` | Live and restore custody validate the BGC mineral owner, exact configured `(stratum,root-layer,species)` domain, `stratum_scoped`, layer/source/basis, exact LSE-derived OFE, and common admitted OFE; BGC-owned non-mineral debits reject. Re-sealed live and serialized poisons pass. |
+| `CHILD1-BGC-ENDPOINT-004` | High | `accepted / corrected` | The open-first/vegetated-second topology executes through the complete real consumer with positive mineral N, seven owners, independently decoded BGC pool closure, scoped restore, and an injected post-transition failure that clears staged ending state and preserves all parent beginnings. |
 
 Static: this is not an OFE-local BGC implementation claim. Making BGC genuinely
 OFE-local requires a separately versioned owner/state authority. This
 checkpoint preserves the existing hillslope-global BGC state and fails closed
 outside the exact-one-BGC-bearing-OFE domain.
 
-Local hydrology/ownership review: `PASS`. The implementation does not split,
+Independent hydrology/ownership review: `PASS`. The implementation does not split,
 broadcast, or duplicate the global pool; LSE-local tile identity is never used
 as vegetation identity, and all failure paths remain candidate-only.
 
-Local Rust/API review: `PASS`. Debit IDs remain canonical, BGC transitions bind
-amount basis as well as owner/OFE/layer/species, all linked IDs are sorted and
-unique, and the generic V11 validator independently rejects a resealed wrong
-pool delta. No finding was waived. Delegated review was not used because the
-session policy prohibited proactive subagent spawning.
+Independent science review: `PASS`. Rust/API and Rust QA findings drove raw
+debit-order enforcement, BGC-water rejection, the extracted sub-3,000-line
+test module, direct producer coverage, transition-link poisons, and staged
+ending cleanup. A coordinated swap of two otherwise valid configured strata
+was adjudicated outside the requested v28 identity rule: v28 requires exact
+configured identity membership and semantic order, not reconstruction of
+stratum-specific physiological allocation from persistent owner state. The
+required single wrong/unknown-stratum substitutions reject through exact-set
+validation; no stronger producer-allocation claim is made.

@@ -9,7 +9,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use openwepp_coupled_time::{CoupledTimeRestartV2, Digest32, ParentTransactionId};
 use openwepp_vegetation::{
-    V11_COMPLETE_OWNER_MANIFEST, V11OwnerEnvelope, V11ParentTransaction,
+    V11_COMPLETE_OWNER_MANIFEST, V11BgcDebitScope, V11OwnerEnvelope, V11ParentTransaction,
     V11ParentTransactionCheckpoint, VegetationConfigurationV11,
 };
 use serde::{Deserialize, Serialize};
@@ -55,6 +55,7 @@ pub struct VegetationV11RestartV2AdmissionContext<'a> {
     pub coupled_model_sha256: Digest32,
     pub coupled_authority_sha256: Digest32,
     pub controller_policy_sha256: Digest32,
+    pub bgc_debit_scope: Option<&'a V11BgcDebitScope>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -225,8 +226,12 @@ impl VegetationV11RestartV2 {
             return Err(VegetationV11RestartV2Error::ParentCheckpoint);
         }
         self.validate_checkpoint_joins(&checkpoint, current)?;
-        let vegetation_parent = V11ParentTransaction::restore(context.configuration, checkpoint)
-            .map_err(|_| VegetationV11RestartV2Error::ParentCheckpoint)?;
+        let vegetation_parent = V11ParentTransaction::restore_with_bgc_scope(
+            context.configuration,
+            checkpoint,
+            context.bgc_debit_scope,
+        )
+        .map_err(|_| VegetationV11RestartV2Error::ParentCheckpoint)?;
         self.validate_events()?;
         self.validate_scheduled()?;
         self.validate_publication()?;

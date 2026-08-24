@@ -889,3 +889,20 @@ slow, with six configured skips and zero failures.
 remains `EXECUTING`; precipitation, snow--soil heat, independent outcome,
 terminal chronology, runner-owned 48-support day, exact-once terminal liquid,
 additive restart, and the remaining scenario/review sequence are unchanged.
+# 2026-08-24 BGC corrective increment (in progress)
+
+| Evidence | Result |
+| --- | --- |
+| `nix develop --command cargo fmt --all -- --check` | PASS |
+| `nix develop --command tools/dev/heavy cargo nextest run -p openwepp-vegetation --no-fail-fast` | PASS: 273/273 |
+| `nix develop --command tools/dev/heavy cargo nextest run -p openwepp-hillslope-orchestrator --no-fail-fast` | PASS: 798/798, one configured skip |
+| Three-stratum nonassociative live acceptance/restart vector | PASS: semantic order accepted/restored; reordered live/checkpoint forms rejected; rollback exact |
+| Open-first/vegetated-second complete real-consumer fixture | PASS: decoded pool closure, injected post-transition rollback, scoped restore and serialized poisons |
+| Two affected authority binaries | PASS: 36/36 |
+| Authority anti-evasion / required-suite obligation guard | PASS / PASS: 3/3 |
+| Science-contract admission | `A0_ADMITTED`: 49 contracts, 11 science surfaces, base `564d59bef6283db0aabf967fb3f97f634c3f9e2a` |
+| Stable-diff full workspace | PASS: 3,280/3,280, ten slow, six configured skips |
+
+Diff/write-set hygiene passed. Independent science, ownership, Rust/API, and
+Rust QA reviews returned Static PASS. Commit/exact-head verification remains
+required before this corrective increment is dispositioned.

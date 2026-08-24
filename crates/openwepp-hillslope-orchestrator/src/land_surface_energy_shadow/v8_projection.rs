@@ -232,11 +232,10 @@ fn project_multi_tile_v8_passes_with_duration(
         for occupancy in &potential.occupancies {
             let component = component_id(&occupancy.occupancy_id)?;
             let occupancy_id = mapped_occupancy(&binding_map, &occupancy.occupancy_id)?;
-            if occupancy_id.tile_id != potential.tile_id
-                || occupancy.liquid.beginning_store_kg_m2_tile.to_bits()
-                    != beginning.occupancies[&occupancy_id]
-                        .canopy_liquid_kg_h2o_m2_tile_ground
-                        .to_bits()
+            if occupancy.liquid.beginning_store_kg_m2_tile.to_bits()
+                != beginning.occupancies[&occupancy_id]
+                    .canopy_liquid_kg_h2o_m2_tile_ground
+                    .to_bits()
                 || !potential_components.insert(component)
             {
                 return Err(V8ProjectionError::Identity(
@@ -262,14 +261,15 @@ fn project_multi_tile_v8_passes_with_duration(
         }
 
         let mut final_occupancies = Vec::new();
+        let mut final_vegetation_tile_ids = BTreeSet::new();
         for occupancy in &final_value.occupancies {
             let component = component_id(&occupancy.occupancy_id)?;
             let occupancy_id = mapped_occupancy(&binding_map, &occupancy.occupancy_id)?;
-            if occupancy_id.tile_id != final_value.tile_id
-                || occupancy.liquid.beginning_store_kg_m2_tile.to_bits()
-                    != beginning.occupancies[&occupancy_id]
-                        .canopy_liquid_kg_h2o_m2_tile_ground
-                        .to_bits()
+            final_vegetation_tile_ids.insert(occupancy_id.tile_id.clone());
+            if occupancy.liquid.beginning_store_kg_m2_tile.to_bits()
+                != beginning.occupancies[&occupancy_id]
+                    .canopy_liquid_kg_h2o_m2_tile_ground
+                    .to_bits()
                 || !final_components.insert(component.clone())
             {
                 return Err(V8ProjectionError::Identity(
@@ -318,6 +318,14 @@ fn project_multi_tile_v8_passes_with_duration(
                     .collect::<Result<Vec<_>, V8ProjectionError>>()?,
             });
         }
+        let vegetation_tile_count = final_vegetation_tile_ids.len();
+        let vegetation_tile_id = final_vegetation_tile_ids
+            .into_iter()
+            .next()
+            .filter(|_| vegetation_tile_count == 1)
+            .ok_or(V8ProjectionError::Identity(
+                "multi-tile final vegetation-tile mapping",
+            ))?;
         final_occupancies.sort_by(|left, right| left.component_id.cmp(&right.component_id));
         final_tiles.push(V8FinalTileReceipt {
             pass: V8PhysicalReceiptPass::FixedAuthorizationFinal,
@@ -329,7 +337,7 @@ fn project_multi_tile_v8_passes_with_duration(
             vegetation_beginning_state_sha256: beginning.state_sha256.clone(),
             lse_configuration_sha256: final_value.lse_configuration_sha256.as_str().to_owned(),
             lse_beginning_state_sha256: final_value.beginning_lse_state_sha256.as_str().to_owned(),
-            tile_id: final_value.tile_id.clone(),
+            tile_id: vegetation_tile_id,
             tile_fraction: final_value.tile_fraction,
             interval_s: final_value.interval_s,
             canopy_air_temperature_k: final_value.canopy_air_temperature_k,

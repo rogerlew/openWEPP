@@ -147,7 +147,7 @@ fn all_owner_failure_rolls_back_and_index_records_lifecycle() {
     for required in [
         "v136 admits a separate default-off terminal receiver chronology",
         "v16 governs unit-specific covered convergence",
-        "v27 retains the shared Child 2C carrier",
+        "v28 retains the exact-one-bearing-OFE domain",
     ] {
         assert!(index.contains(required), "{INDEX} missing {required}");
     }

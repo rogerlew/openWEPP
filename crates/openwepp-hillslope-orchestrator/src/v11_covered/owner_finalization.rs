@@ -896,7 +896,14 @@ pub(crate) fn v11_nitrogen_resource_debits(
     }
     let occupancies = input.configuration.expected_occupancies();
     let bgc_ofe_id = v11_bgc_bearing_ofe(&occupancies, lse_configuration)?;
-    uses.iter()
+    let mut ordered_uses = uses.iter().collect::<Vec<_>>();
+    ordered_uses.sort_by(|left, right| {
+        left.owner_id
+            .cmp(&right.owner_id)
+            .then_with(|| left.key.cmp(&right.key))
+    });
+    ordered_uses
+        .into_iter()
         .map(|used| {
             let request = requests
                 .iter()
@@ -978,6 +985,46 @@ fn v11_bgc_bearing_ofe(
         .ok_or(DirectV11RealConsumerError::Identity(
             "V11 exact-one BGC-bearing OFE",
         ))
+}
+
+pub(crate) fn v11_bgc_debit_scope(
+    vegetation_configuration: &VegetationConfiguration,
+    lse_configuration: &openwepp_land_surface_energy::LandSurfaceEnergyConfiguration,
+) -> Result<V11BgcDebitScope, DirectV11RealConsumerError> {
+    let occupancies = vegetation_configuration.expected_occupancies();
+    let mut stratum_ofe_ids = BTreeMap::new();
+    let mut ambiguous_strata = BTreeSet::new();
+    for occupancy in occupancies {
+        let matching = lse_configuration
+            .ofes
+            .iter()
+            .filter(|ofe| {
+                ofe.tiles
+                    .iter()
+                    .any(|tile| tile.vegetation_tile_id == occupancy.tile_id)
+            })
+            .map(|ofe| ofe.ofe_id.as_str())
+            .collect::<BTreeSet<_>>();
+        if matching.len() != 1 {
+            ambiguous_strata.insert(occupancy.stratum_id.as_str().to_owned());
+            continue;
+        }
+        let ofe = (*matching.iter().next().ok_or(DirectV11RealConsumerError::Identity(
+            "V11 BGC stratum/OFE scope",
+        ))?)
+        .to_owned();
+        if stratum_ofe_ids
+            .insert(occupancy.stratum_id.as_str().to_owned(), ofe.clone())
+            .is_some_and(|prior| prior != ofe)
+        {
+            ambiguous_strata.insert(occupancy.stratum_id.as_str().to_owned());
+        }
+    }
+    for stratum in ambiguous_strata {
+        stratum_ofe_ids.remove(&stratum);
+    }
+    V11BgcDebitScope::try_new(stratum_ofe_ids)
+        .map_err(|_| DirectV11RealConsumerError::Identity("V11 BGC stratum/OFE scope"))
 }
 
 fn validate_v11_nitrogen_protocol_cardinality(
@@ -1091,6 +1138,72 @@ mod nitrogen_protocol_cardinality_tests {
             .expect("repeated local LSE IDs with unique vegetation mapping"),
             "ofe-2"
         );
+    }
+
+    #[test]
+    fn bgc_linkage_uses_pre_hash_three_stratum_nonassociative_order() {
+        use openwepp_coupled_time::{
+            AcceptedSlabId, ModelTimeNs, ParentTransactionId, SegmentId, TimeSupport,
+        };
+        use openwepp_kernel_contract::{MineralNitrogenKey, SoilLayerId};
+
+        let key = MineralNitrogenKey {
+            layer_id: SoilLayerId::try_new("layer-1").expect("layer"),
+            species: MineralNitrogenSpecies::Ammonium,
+        };
+        let shared = V11SharedResourceKey {
+            resource: V11SharedResourceKind::Ammonium,
+            owner_id: "bgc".into(),
+            ofe_id: "ofe-2".into(),
+            layer_id: "layer-1".into(),
+            source_id: "nh4".into(),
+            amount_basis: "kg_n_m2".into(),
+        };
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1))
+            .expect("support");
+        let values = [
+            0.001_626_199_161_107_315_3,
+            0.000_000_038_444_775_879_237_09,
+            0.000_000_016_590_450_830_746_63,
+        ];
+        let make = |ordinal: u8, stratum: &str, amount: f64| V11ResourceDebit {
+            receipt_id: Digest32::from_bytes([ordinal; 32]),
+            parent_transaction_id: ParentTransactionId::from_digest(Digest32::from_bytes([9; 32])),
+            segment_id: SegmentId::from_digest(Digest32::from_bytes([8; 32])),
+            accepted_slab_id: AcceptedSlabId::from_digest(Digest32::from_bytes([7; 32])),
+            support,
+            owner_id: "bgc".into(),
+            resource_key: V11ResourceKey::MineralNitrogen(key.clone()),
+            ofe_id: "ofe-2".into(),
+            tile_id: "stratum_scoped".into(),
+            occupancy_id: stratum.into(),
+            layer_id: "layer-1".into(),
+            source_id: "nh4".into(),
+            amount_basis: "kg_n_m2".into(),
+            request: amount,
+            authorization: amount,
+            final_use: amount,
+        };
+        let debits = vec![
+            make(2, "stratum-b", values[1]),
+            make(1, "stratum-c", values[2]),
+            make(3, "stratum-a", values[0]),
+        ];
+        let ids = v11_linked_debit_ids(&debits, &shared, true);
+        assert_eq!(ids, vec![Digest32::from_bytes([3; 32]), Digest32::from_bytes([2; 32]), Digest32::from_bytes([1; 32])]);
+        let semantic = ids.iter().fold(0.0_f64, |sum, id| {
+            sum + debits.iter().find(|debit| debit.receipt_id == *id).expect("linked").final_use
+        });
+        let alternate_permutation = debits
+            .iter()
+            .map(|debit| debit.final_use)
+            .fold(0.0_f64, |sum, value| sum + value);
+        assert_eq!(semantic.to_bits(), 0.001_626_254_196_334_025_4_f64.to_bits());
+        assert_eq!(
+            alternate_permutation.to_bits(),
+            0.001_626_254_196_334_025_1_f64.to_bits()
+        );
+        assert_ne!(semantic.to_bits(), alternate_permutation.to_bits());
     }
 }
 
@@ -1250,11 +1363,18 @@ pub(crate) fn v11_bgc_owner_transitions(
             MineralNitrogenSpecies::Ammonium => beginning_layer.ammonium_n,
             MineralNitrogenSpecies::Nitrate => beginning_layer.nitrate_n,
         };
-        let linked_use = debits
+        let linked_use = ids
             .iter()
-            .filter(|debit| debit_shared_bgc_key_matches(debit, &key))
+            .map(|id| {
+                debits
+                    .iter()
+                    .find(|debit| debit.receipt_id == *id)
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "V11 BGC linked debit identity",
+                    ))
+            })
             .try_fold(0.0_f64, |sum, debit| {
-                let next = sum + debit.final_use;
+                let next = sum + debit?.final_use;
                 next.is_finite()
                     .then_some(next)
                     .ok_or(DirectV11RealConsumerError::Identity(
@@ -1280,20 +1400,12 @@ pub(crate) fn v11_bgc_owner_transitions(
     Ok(rows)
 }
 
-fn debit_shared_bgc_key_matches(debit: &V11ResourceDebit, key: &V11SharedResourceKey) -> bool {
-    debit.owner_id == key.owner_id
-        && debit.ofe_id == key.ofe_id
-        && debit.layer_id == key.layer_id
-        && debit.source_id == key.source_id
-        && debit.amount_basis == key.amount_basis
-}
-
 pub(crate) fn v11_linked_debit_ids(
     debits: &[V11ResourceDebit],
     key: &V11SharedResourceKey,
     bind_amount_basis: bool,
 ) -> Vec<Digest32> {
-    let mut ids = debits
+    let mut linked = debits
         .iter()
         .filter(|debit| {
             debit.owner_id == key.owner_id
@@ -1302,10 +1414,23 @@ pub(crate) fn v11_linked_debit_ids(
                 && debit.source_id == key.source_id
                 && (!bind_amount_basis || debit.amount_basis == key.amount_basis)
         })
-        .map(|debit| debit.receipt_id)
         .collect::<Vec<_>>();
-    ids.sort_unstable();
-    ids
+    if key.owner_id == "bgc"
+        && matches!(
+            key.resource,
+            V11SharedResourceKind::Ammonium | V11SharedResourceKind::Nitrate
+        )
+    {
+        linked.sort_by(|left, right| {
+            left.occupancy_id
+                .cmp(&right.occupancy_id)
+                .then_with(|| left.layer_id.cmp(&right.layer_id))
+                .then_with(|| left.resource_key.cmp(&right.resource_key))
+        });
+    } else {
+        linked.sort_by_key(|debit| debit.receipt_id);
+    }
+    linked.into_iter().map(|debit| debit.receipt_id).collect()
 }
 
 pub(crate) fn v11_shared_transition(

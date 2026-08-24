@@ -1366,17 +1366,19 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
                 "missing production OFE binding",
             ))?;
         for tile in &ofe.tiles {
-            let vegetation_tile = vegetation_configuration
-                .topology_tiles
-                .iter()
-                .find(|value| value.tile_id == tile.vegetation_tile_id)
-                .ok_or(V8InputProjectionError::Topology("missing vegetation tile"))?;
             let covered = vegetation_configuration
                 .strata
                 .iter()
                 .any(|stratum| stratum.tile_ids.contains(&tile.vegetation_tile_id));
-            if covered && tile.fraction_ofe_ground.to_bits() != vegetation_tile.fraction.to_bits() {
-                return Err(V8InputProjectionError::Identity("tile fraction mismatch"));
+            if covered {
+                let vegetation_tile = vegetation_configuration
+                    .topology_tiles
+                    .iter()
+                    .find(|value| value.tile_id == tile.vegetation_tile_id)
+                    .ok_or(V8InputProjectionError::Topology("missing vegetation tile"))?;
+                if tile.fraction_ofe_ground.to_bits() != vegetation_tile.fraction.to_bits() {
+                    return Err(V8InputProjectionError::Identity("tile fraction mismatch"));
+                }
             }
             let tile_state = lse_state
                 .tiles

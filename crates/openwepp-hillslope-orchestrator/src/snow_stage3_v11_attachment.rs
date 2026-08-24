@@ -20,7 +20,6 @@ use openwepp_meteorology::snow_free_forcing::{celsius_to_kelvin, kilopascals_to_
 use openwepp_unit_boundary::TemperatureCelsius;
 use openwepp_vegetation::v11::{
     V11OwnerEnvelope, V11ParentCandidate, V11ParentTransaction, VegetationConfigurationV11,
-    execute_v11_segment,
 };
 use serde::Serialize;
 use thiserror::Error;
@@ -49,6 +48,7 @@ use crate::v9_real_consumer_shadow::{
     DirectV11RealConsumerStack, DirectV11SnowCoveredRealConsumerStack,
     DirectV11SnowCoveredSegmentInput, DirectV11SnowCoveredStackInputs,
 };
+use crate::v11_vegetation_consumer::{accept_direct_v11_segment, execute_direct_v11_segment};
 use crate::{DirectSurfaceLiquidConfiguration, DirectSurfaceLiquidConfigurationRecord};
 
 pub const STAGE3_V11_PARENT_SUPPORT_NS: u128 = 1_800_000_000_000;
@@ -2383,7 +2383,7 @@ fn execute_real_v11_parent(
     let mut provisional_executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
         stack: provisional_stack,
     };
-    let provisional_segment = execute_v11_segment(
+    let provisional_segment = execute_direct_v11_segment(
         &context.vegetation_configuration,
         &provisional_parent,
         &provisional_receipt,
@@ -2409,7 +2409,7 @@ fn execute_real_v11_parent(
     );
     let mut final_executor =
         crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack: final_stack };
-    let final_segment = execute_v11_segment(
+    let final_segment = execute_direct_v11_segment(
         &context.vegetation_configuration,
         beginning_parent,
         &final_receipt,
@@ -2421,7 +2421,12 @@ fn execute_real_v11_parent(
         ));
     }
     let mut parent = beginning_parent.clone();
-    parent.accept_segment(&context.vegetation_configuration, final_segment)?;
+    accept_direct_v11_segment(
+        &mut parent,
+        &context.vegetation_configuration,
+        final_segment,
+        beginning_consumer,
+    )?;
     let consumer = final_executor.stack.take_staged_ending().ok_or(
         DirectSnowStage3V11AttachmentError::Identity("missing staged real-consumer ending"),
     )?;
@@ -2671,7 +2676,7 @@ fn execute_covered_real_v11_subslab(
     let mut provisional_executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
         stack: provisional_stack,
     };
-    let provisional_segment = execute_v11_segment(
+    let provisional_segment = execute_direct_v11_segment(
         &context.vegetation_configuration,
         beginning_parent,
         &provisional_receipt,
@@ -2714,7 +2719,7 @@ fn execute_covered_real_v11_subslab(
     );
     let mut final_executor =
         crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack: final_stack };
-    let final_segment = execute_v11_segment(
+    let final_segment = execute_direct_v11_segment(
         &context.vegetation_configuration,
         beginning_parent,
         &final_receipt,
@@ -2793,7 +2798,12 @@ fn execute_covered_real_v11_subslab(
         &final_segment.ending_resource_owners,
     )?;
     let mut parent = beginning_parent.clone();
-    parent.accept_segment(&context.vegetation_configuration, final_segment)?;
+    accept_direct_v11_segment(
+        &mut parent,
+        &context.vegetation_configuration,
+        final_segment,
+        beginning_consumer,
+    )?;
     let consumer = final_executor.stack.take_staged_ending().ok_or(
         DirectSnowStage3V11AttachmentError::Identity("missing staged covered ending"),
     )?;

@@ -60,7 +60,7 @@ fn typed_attachment_excludes_rejected_live_carrier_and_rate_surfaces() {
         );
     }
     assert!(attachment.contains("evaluate_stage3_persistent_support"));
-    assert!(attachment.contains("execute_v11_segment"));
+    assert!(attachment.contains("execute_direct_v11_segment"));
     assert!(attachment.contains("terminal_parcels_from_event"));
     assert!(attachment.contains("DirectV11RealConsumerStack"));
 }

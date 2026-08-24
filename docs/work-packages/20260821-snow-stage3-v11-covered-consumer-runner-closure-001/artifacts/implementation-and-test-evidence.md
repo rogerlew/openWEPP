@@ -372,3 +372,43 @@ Ran: `cargo check -p openwepp-hillslope-orchestrator` — PASS; existing non-fat
 Ran: `cargo fmt --all` and `git diff --check` — PASS.
 
 Static: all refactored/touched Rust modules are below the 3,000-line closure ceiling. The fixture proves positive upstream supply, positive downstream same-child supply/infiltration, seven finalized ending owners, and one persistent interval advance.
+# 2026-08-24 BGC fold, scope, and endpoint corrective increment
+
+`Static:` Review confirmed `CHILD1-BGC-FOLD-002`: the BGC candidate folded
+configured protocol order while transition linkage and generic V11 custody
+folded SHA-256 receipt order. `SC-VEGETATION-001@28` defines the pre-hash
+semantic tuple `(stratum_id,soil_layer_id,species)` and prohibits digest-order
+physical arithmetic. The BGC candidate, emitted debits, transition linkage,
+live validator, and restore validator now use that order.
+
+`Static:` `CHILD1-BGC-SCOPE-003` is corrected in the generic V11 custody path.
+Live acceptance and checkpoint restoration independently validate the BGC
+owner/mineral key, `stratum_scoped` literal, configured stratum identity,
+layer, species/source, basis, and common admitted OFE. Re-sealed live and
+serialized-checkpoint poisons cover wrong literal, unknown stratum, source,
+layer, and basis.
+
+`Ran:` The adversarial three-stratum vector distinguishes
+`0.0016262541963340254` from `0.0016262541963340251` and proves semantic linkage
+selection through live parent acceptance, atomic changed-order rejection,
+positive checkpoint restoration, and reordered-checkpoint rejection. The
+generic validator also requires the exact configured
+`(stratum,root-layer,species)` identity set and rejects BGC-owned non-mineral
+debits. The complete real consumer now executes OFE 1 open and OFE 2
+vegetated with distinct LSE/vegetation tile IDs, positive mineral-N use, seven
+ending owners, independently decoded transition/pool reconstruction, and an
+injected failure after BGC transition construction with all parent beginnings
+unchanged. This fixture exposed and corrected two stale LSE assumptions that
+local LSE tile identity equaled
+vegetation tile identity, plus open-tile projection requiring a nonexistent
+vegetation topology tile.
+
+`Static / line-count WARN disposition:` `v11.rs` is 2,814 lines after the
+adversarial fixture moved to `v11/tests/v11_bgc_tests.rs` (279 lines), clearing
+the mandatory 3,000-line ceiling. The remaining 2,000-line warning is accepted
+for this corrective increment because `v11.rs` is the single transaction and
+checkpoint custody boundary whose private validators share canonical receipt
+types. Follow-on decomposition should extract the remaining generic custody
+tests and then the private receipt-validation helpers without changing their
+visibility or arithmetic order; that mechanical split is not mixed into this
+science correction.

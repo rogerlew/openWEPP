@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 27
+contract_version: 28
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -2642,9 +2642,27 @@ literal `stratum_scoped` and the exact stratum ID respectively; they never name
 an arbitrarily selected occupancy. Every nonzero finalized use has exactly one
 debit, every such debit links exactly once to the matching BGC transition, and
 every linked BGC transition satisfies bitwise
-`ending = beginning - sum(finalized_use)` in canonical debit order. Omission,
+`ending = beginning - sum(finalized_use)` in canonical debit order. The exact
+intra-segment mineral-N debit order is ascending semantic tuple
+`(stratum_id,soil_layer_id,species)`, where species uses the typed canonical
+enum order `ammonium` before `nitrate`. This order is available before receipt
+hashing and is used unchanged by BGC candidate accumulation, emitted debit
+order, transition `debit_receipt_ids`, live V11 validation, and V11 checkpoint
+restoration. Each sum is an ordinary binary64 left fold seeded by exact `+0.0`;
+receipt-digest order is never physical arithmetic authority. Receipt digests
+remain independently unique and authentic. Omission,
 substitution, duplicate linkage, extra linkage, or a changed transition order
 rejects and preserves all beginning owners byte-identically.
+
+Live V11 acceptance and checkpoint restoration independently validate every
+mineral-N debit against the admitted vegetation configuration: `owner_id` is
+the literal `bgc`; the resource key is typed mineral N; `tile_id` is the
+literal `stratum_scoped`; `occupancy_id` is an exact configured stratum ID;
+`layer_id` equals the mineral key layer; `source_id` is exactly `nh4` for
+ammonium or `no3` for nitrate; and `amount_basis` is the literal `kg_n_m2`.
+All mineral-N debits in the segment carry the same producer-admitted common
+BGC OFE identity. A re-sealed receipt or checkpoint does not weaken these
+semantic checks.
 
 All resource amount bits are finite binary64 values in their contract-declared
 basis. For each exact debit-receipt key, receipts are ordered by accepted
@@ -2932,6 +2950,7 @@ constitutive behavior unchanged.
 | 2026-08-20 | 19 | Codex | Made sequential staged subtraction authoritative and separated it from the ordered cumulative-debit diagnostic fold; prohibited regrouped owner-ending aliases. |
 | 2026-08-20 | 20 | Codex | Separated occupancy debit receipts from shared hydrology/BGC owner transitions and bound debit links, owner-candidate lineage, authorization, and cross-segment shared-owner continuity. |
 | 2026-08-24 | 27 | Codex | Bound the existing hillslope-global mineral-N owner to an exact-one-BGC-bearing-OFE V11 domain; required explicit LSE vegetation-tile mapping, stratum-wide resolution, canonical stratum-scoped debit identity, debit/transition/pool-delta bijection, ambiguity/order poisons, and atomic rollback. |
+| 2026-08-24 | 28 | Codex | Defined the pre-hash `(stratum_id,soil_layer_id,species)` mineral-N debit order for every producer, transition, live validator, and restore fold; prohibited digest-order arithmetic; and required configuration-aware stratum-scope semantic validation for live and checkpoint custody. |
 | 2026-08-20 | 24 | Codex | Joined every V3 custody body to the decoded V2 receipt domain, closed typed flux mappings/exact-once links, and replaced checkpoint-derived comparison with a parent-beginning independent uninterrupted oracle. |
 | 2026-08-20 | 25 | Codex | Prospective LSE positive-support adoption: structural nanosecond identity, sealed slab-specific support receipt, minimum/one-tick-below populations, and typed rollback/restart semantics. |
 | 2026-08-20 | 23 | Codex | Restricted Restart V3 to the exact V2-accepted custody prefix, made seven-owner candidate cardinality cursor-derived, and required runtime-only suffix execution with full uninterrupted equality. |

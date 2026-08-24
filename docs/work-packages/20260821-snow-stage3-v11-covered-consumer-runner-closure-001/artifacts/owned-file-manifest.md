@@ -173,3 +173,19 @@ BGC/OFE identity corrective expansion:
 - `tests/integration/snow_stage3_terminal_receiver_authority_contract.rs`:
   lifecycle-only registry wording reconciliation from vegetation v26 to v27;
   terminal receiver authority and assertions remain unchanged.
+
+BGC fold/scope corrective expansion:
+
+- `crates/openwepp-biogeochemistry/src/lib.rs`: canonical pre-hash semantic
+  ordering of the stratum-scoped mineral-N protocol before pool accumulation.
+- `crates/openwepp-vegetation/src/v11.rs`: configuration-aware live and restore
+  validation of BGC debit scope plus semantic transition-link fold ordering.
+- `crates/openwepp-vegetation/src/v11/tests/v11_bgc_tests.rs`: extracted
+  adversarial live/restore ordering and scope fixtures; keeps the production
+  module below the 3,000-line closure ceiling.
+- `crates/openwepp-persisted-restart-v1/src/vegetation_v11.rs`: carries the
+  caller-derived BGC scope into V11 checkpoint custody validation.
+- `tests/integration/snow_stage3_v11_constitutive_boundary_contract.rs`:
+  source guard reconciliation to the scoped direct-consumer wrapper.
+- Existing vegetation contract, registry, authority guard, covered-owner
+  finalization, package tests/evidence, roadmap, campaign pointer, and catalog.

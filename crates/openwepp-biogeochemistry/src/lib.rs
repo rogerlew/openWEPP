@@ -275,8 +275,18 @@ pub fn construct_biogeochemistry_candidate(
         ));
     }
     let available = available_by_key(beginning)?;
+    let mut protocol = requests
+        .iter()
+        .zip(authorizations)
+        .zip(uses)
+        .collect::<Vec<_>>();
+    protocol.sort_by(|((left, _), _), ((right, _), _)| {
+        left.owner_id
+            .cmp(&right.owner_id)
+            .then_with(|| left.key.cmp(&right.key))
+    });
     let mut use_by_key = BTreeMap::<MineralNitrogenKey, f64>::new();
-    for ((r, a), u) in requests.iter().zip(authorizations).zip(uses) {
+    for ((r, a), u) in protocol {
         validate_resource_protocol(r, a, u).map_err(bgc_protocol_error)?;
         if r.transaction_id != transaction_id {
             return Err(BiogeochemistryError::InvalidRequest(
@@ -677,6 +687,88 @@ mod tests {
             }
         );
         candidate.validate().expect("independent owner ledgers");
+    }
+
+    #[test]
+    fn mineral_candidate_uses_semantic_three_stratum_binary64_fold() {
+        let tx = TransactionId(1);
+        let key = MineralNitrogenKey {
+            layer_id: SoilLayerId::try_new("layer-1").expect("layer"),
+            species: MineralNitrogenSpecies::Ammonium,
+        };
+        let rows = [
+            ("stratum-b", 0.000_000_038_444_775_879_237_09),
+            ("stratum-c", 0.000_000_016_590_450_830_746_63),
+            ("stratum-a", 0.001_626_199_161_107_315_3),
+        ];
+        let requests = rows
+            .iter()
+            .map(|(owner, amount)| NitrogenRequest {
+                transaction_id: tx,
+                owner_id: ResourceOwnerId::try_new(*owner).expect("owner"),
+                key: key.clone(),
+                amount: *amount,
+                basis: ResourceAmountBasis::NitrogenKgPerSquareMeterInterval,
+            })
+            .collect::<Vec<_>>();
+        let authorizations = requests
+            .iter()
+            .map(|request| NitrogenAuthorization {
+                transaction_id: tx,
+                owner_id: request.owner_id.clone(),
+                key: key.clone(),
+                amount: request.amount,
+                basis: request.basis,
+            })
+            .collect::<Vec<_>>();
+        let uses = requests
+            .iter()
+            .map(|request| NitrogenUse {
+                transaction_id: tx,
+                owner_id: request.owner_id.clone(),
+                key: key.clone(),
+                amount: request.amount,
+                basis: request.basis,
+            })
+            .collect::<Vec<_>>();
+        let beginning = BiogeochemistryState {
+            layers: BTreeMap::from([(
+                "layer-1".into(),
+                MineralLayer {
+                    ammonium_n: 0.01,
+                    nitrate_n: 0.0,
+                },
+            )]),
+            ..BiogeochemistryState::default()
+        };
+        let candidate = construct_biogeochemistry_candidate(
+            &beginning,
+            tx,
+            &requests,
+            &authorizations,
+            &uses,
+            &[],
+            TransformationsMode::Disabled,
+        )
+        .expect("candidate");
+        let semantic = rows
+            .iter()
+            .map(|(owner, amount)| (*owner, *amount))
+            .collect::<BTreeMap<_, _>>();
+        let used = semantic.values().fold(0.0_f64, |sum, amount| sum + amount);
+        let alternate = rows.iter().fold(0.0_f64, |sum, (_, amount)| sum + amount);
+        assert_ne!(used.to_bits(), alternate.to_bits());
+        assert_eq!(
+            candidate.mineral_operands()[0]
+                .finalized_use_kg_n_m2
+                .to_bits(),
+            used.to_bits()
+        );
+        assert_eq!(
+            candidate.ending().layers["layer-1"].ammonium_n.to_bits(),
+            (0.01_f64 - used).to_bits()
+        );
+        candidate.validate().expect("candidate closure");
     }
 
     #[test]

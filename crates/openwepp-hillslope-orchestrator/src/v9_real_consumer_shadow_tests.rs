@@ -45,7 +45,8 @@ mod tests {
     use crate::winter_column::DirectSnowLayerState;
     use openwepp_vegetation::v11::{
         V11_COMPLETE_OWNER_MANIFEST, V11ExecutionError, V11OwnerEnvelope, V11ParentCandidate,
-        V11ParentTransaction, execute_v11_segment, migrate_v10_runtime_to_v11,
+        V11ParentTransaction, V11ResourceDebit, V11SharedResourceOwnerTransition,
+        migrate_v10_runtime_to_v11,
         v11_vegetation_owner_envelope,
     };
 
@@ -902,7 +903,7 @@ mod tests {
             let mut executor =
                 crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
             let segment =
-                execute_v11_segment(&migrated.configuration, &parent, receipt, &mut executor)
+                execute_direct_v11_segment(&migrated.configuration, &parent, receipt, &mut executor)
                     .expect("actual segmented V11 execution");
             for transition in &segment.shared_resource_transitions {
                 let owner = segment
@@ -950,9 +951,13 @@ mod tests {
                     );
                 }
             }
-            parent
-                .accept_segment(&migrated.configuration, segment)
-                .expect("accept actual segmented V11 execution");
+            accept_direct_v11_segment(
+                &mut parent,
+                &migrated.configuration,
+                segment,
+                &executor.stack.beginning,
+            )
+            .expect("accept actual segmented V11 execution");
             let support_receipt = executor
                 .stack
                 .last_support_receipt()
@@ -1005,11 +1010,15 @@ mod tests {
         .expect("parent");
         let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-        let segment = execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+        let segment = execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
             .expect("actual V11 segment");
-        parent
-            .accept_segment(&migrated.configuration, segment)
-            .expect("accept segment");
+        accept_direct_v11_segment(
+            &mut parent,
+            &migrated.configuration,
+            segment,
+            &executor.stack.beginning,
+        )
+        .expect("accept segment");
         let candidate = parent.finalize(&migrated.configuration).expect("finalize");
 
         let mut expected = shadow.clone();
@@ -1156,7 +1165,7 @@ mod tests {
         let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
         let before = parent.staged_state().clone();
-        let error = execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+        let error = execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
             .expect_err("one tick below the LSE minimum must be rejected");
         assert!(matches!(
             error,
@@ -1196,6 +1205,236 @@ mod tests {
                 shadow.vegetation_state.0.last_transaction_id + 1
             );
         }
+    }
+
+    #[test]
+    fn v11_open_first_vegetated_second_executes_complete_bgc_consumer_atomically() {
+        let mut fixture = two_ofe_routed_endpoint_fixture();
+        for tile in &mut fixture.lse_configuration.ofes[0].tiles {
+            tile.vegetation_tile_id = openwepp_kernel_contract::TileId::try_new(format!(
+                "upper-open-{}",
+                tile.tile_id.as_str()
+            ))
+            .expect("upper open vegetation tile");
+        }
+        let mut surface_records = fixture.surface_configuration.records.clone();
+        for record in surface_records
+            .iter_mut()
+            .filter(|record| record.key.ofe_id.as_str() == "ofe-1")
+        {
+            record.ground_ingress_mode =
+                crate::direct_runtime::DirectGroundIngressMode::OpenRawPrecipitation;
+        }
+        fixture.surface_configuration =
+            crate::direct_runtime::DirectSurfaceLiquidConfiguration::new(
+                fixture.surface_configuration.owner_id.clone(),
+                fixture.surface_configuration.run_id,
+                fixture.surface_configuration.ofe_topology.clone(),
+                fixture.surface_configuration.ofe_bindings.clone(),
+                surface_records,
+            )
+            .expect("open-first surface configuration");
+        let mut rebound_frame = fixture.hydrology.beginning_frame().clone();
+        let surface = rebound_frame
+            .surface_liquid_shadow
+            .as_mut()
+            .expect("surface owner");
+        surface
+            .configuration_sha256
+            .clone_from(&fixture.surface_configuration.configuration_sha256);
+        surface.state_sha256 = surface.recomputed_sha256().expect("surface digest");
+        fixture.hydrology = crate::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter::try_from_day_start(
+            &rebound_frame,
+            fixture.hydrology.day_index(),
+            fixture.hydrology.transaction_id(),
+            fixture.hydrology.interval_s(),
+            fixture.hydrology.hydrology_owner_id().clone(),
+            fixture.hydrology.layer_maps(),
+        )
+        .expect("rebound open-first surface owner");
+        let lower = fixture.lse_configuration.ofes[1]
+            .tiles
+            .iter()
+            .find(|tile| tile.tile_id.as_str() == "lower-forest")
+            .expect("lower vegetation tile");
+        assert_ne!(lower.tile_id, lower.vegetation_tile_id);
+        let (shadow, fixture) = v10_shadow_fixture_from(fixture);
+        let mut interval = day_input(&fixture).intervals.remove(0);
+        interval.wb14_parameters = ["ofe-1", "ofe-2"]
+            .into_iter()
+            .map(|ofe_id| DirectOfeWb14Parameters {
+                ofe_id: OfeId::try_new(ofe_id).expect("OFE"),
+                effective_conductivity_m_s: 1e-6,
+                matric_potential_m: 0.1,
+                infiltration_storage_capacity_m: 0.04,
+            })
+            .collect();
+        let migrated =
+            migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
+                .expect("migration");
+        let owners = initial_v11_owners(&shadow, &migrated.state);
+        let owner_bytes = owners.clone();
+        let clock_owners = owners
+            .values()
+            .map(|owner| owner.to_owner_state().expect("clock owner"))
+            .collect::<Vec<_>>();
+        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 1_800_000_000_000);
+        let mut parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
+        let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
+        let injected = crate::v11_vegetation_consumer::execute_direct_v11_segment_with_post_bgc_fault(
+            &migrated.configuration,
+            &parent,
+            &slab,
+            &mut executor,
+        );
+        let injected_debug = format!("{injected:?}");
+        assert!(matches!(
+            injected,
+            Err(V11ExecutionError::Executor(DirectV11RealConsumerError::Identity(
+                "injected post-BGC-transition fault"
+            )))
+        ), "{injected_debug}");
+        assert_eq!(parent.staged_resource_owners(), &owner_bytes);
+        assert_eq!(parent.staged_state(), &migrated.state);
+        assert_eq!(executor.stack.beginning, shadow);
+        assert!(executor.stack.take_staged_ending().is_none());
+        let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
+        let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
+        let candidate = execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+            .expect("open-first/vegetated-second real consumer");
+        assert_eq!(candidate.ending_resource_owners.len(), 7);
+        let bgc_debits = candidate
+            .resource_debits
+            .iter()
+            .filter(|debit| debit.owner_id == "bgc" && debit.final_use > 0.0)
+            .collect::<Vec<_>>();
+        assert!(!bgc_debits.is_empty(), "fixture must exercise mineral-N use");
+        assert!(bgc_debits.iter().all(|debit| {
+            debit.ofe_id == "ofe-2"
+                && debit.tile_id == "stratum_scoped"
+                && debit.amount_basis == "kg_n_m2"
+        }));
+        for transition in candidate
+            .shared_resource_transitions
+            .iter()
+            .filter(|transition| transition.shared_resource_key.owner_id == "bgc")
+        {
+            let ending_bgc: openwepp_biogeochemistry::BiogeochemistryState = serde_json::from_slice(
+                &candidate.ending_resource_owners["bgc"].state_bytes,
+            )
+            .expect("decoded ending BGC owner");
+            let beginning_layer = shadow
+                .inner
+                .biogeochemistry()
+                .layers
+                .get(&transition.shared_resource_key.layer_id)
+                .expect("beginning BGC layer");
+            let ending_layer = ending_bgc
+                .layers
+                .get(&transition.shared_resource_key.layer_id)
+                .expect("ending BGC layer");
+            let (beginning_pool, ending_pool) = match transition.shared_resource_key.resource {
+                openwepp_vegetation::v11::V11SharedResourceKind::Ammonium => {
+                    (beginning_layer.ammonium_n, ending_layer.ammonium_n)
+                }
+                openwepp_vegetation::v11::V11SharedResourceKind::Nitrate => {
+                    (beginning_layer.nitrate_n, ending_layer.nitrate_n)
+                }
+                _ => panic!("BGC transition must be mineral nitrogen"),
+            };
+            let used = transition.debit_receipt_ids.iter().fold(0.0_f64, |sum, id| {
+                sum + candidate
+                    .resource_debits
+                    .iter()
+                    .find(|debit| debit.receipt_id == *id)
+                    .expect("linked BGC debit")
+                    .final_use
+            });
+            assert_eq!(
+                (beginning_pool - used).to_bits(),
+                ending_pool.to_bits()
+            );
+            assert_eq!(transition.beginning_amount.to_bits(), beginning_pool.to_bits());
+            assert_eq!(transition.ending_amount.to_bits(), ending_pool.to_bits());
+        }
+        assert_eq!(parent.staged_resource_owners(), &owner_bytes);
+        assert_eq!(parent.staged_state(), &migrated.state);
+        assert_eq!(executor.stack.beginning, shadow);
+
+        accept_direct_v11_segment(
+            &mut parent,
+            &migrated.configuration,
+            candidate,
+            &executor.stack.beginning,
+        )
+        .expect("accept endpoint candidate");
+        let checkpoint = parent.checkpoint();
+        let bgc_scope = v11_bgc_debit_scope(
+            &migrated.configuration.imported_v10,
+            &executor.stack.beginning.inner.lse_configuration,
+        )
+        .expect("checkpoint BGC scope");
+        V11ParentTransaction::restore_with_bgc_scope(
+            &migrated.configuration,
+            checkpoint.clone(),
+            Some(&bgc_scope),
+        )
+        .expect("positive scoped checkpoint restore");
+        let assert_checkpoint_poison = |mutate: fn(&mut V11ResourceDebit)| {
+            let mut poison = checkpoint.clone();
+            let segment = &mut poison.accepted_segments[0];
+            let debit = segment
+                .resource_debits
+                .iter_mut()
+                .find(|debit| debit.owner_id == "bgc")
+                .expect("checkpoint BGC debit");
+            let old_id = debit.receipt_id;
+            mutate(debit);
+            *debit = V11ResourceDebit::new(debit.clone()).expect("resealed checkpoint debit");
+            let new_id = debit.receipt_id;
+            let transition = segment
+                .shared_resource_transitions
+                .iter_mut()
+                .find(|transition| transition.debit_receipt_ids.contains(&old_id))
+                .expect("checkpoint BGC transition");
+            for id in &mut transition.debit_receipt_ids {
+                if *id == old_id {
+                    *id = new_id;
+                }
+            }
+            *transition = V11SharedResourceOwnerTransition::new(transition.clone())
+                .expect("resealed checkpoint transition");
+            for candidate in &mut segment.complete_owner_candidates {
+                for component in &mut candidate.components {
+                    for id in &mut component.debit_receipt_ids {
+                        if *id == old_id {
+                            *id = new_id;
+                        }
+                    }
+                }
+            }
+            let bytes = serde_json::to_vec(&poison).expect("serialized checkpoint poison");
+            let decoded = serde_json::from_slice(&bytes).expect("decoded checkpoint poison");
+            assert!(V11ParentTransaction::restore_with_bgc_scope(
+                &migrated.configuration,
+                decoded,
+                Some(&bgc_scope),
+            )
+            .is_err());
+        };
+        assert_checkpoint_poison(|debit| debit.tile_id = "occupancy_scoped".into());
+        assert_checkpoint_poison(|debit| debit.occupancy_id = "unknown-stratum".into());
+        assert_checkpoint_poison(|debit| debit.source_id = "no3".into());
+        assert_checkpoint_poison(|debit| debit.layer_id = "wrong-layer".into());
+        assert_checkpoint_poison(|debit| debit.amount_basis = "kg_m2".into());
     }
 
     #[test]
@@ -1264,7 +1503,7 @@ mod tests {
         let segmented = segment_interval(&interval, 599_999_999, 41, 0.0);
         let stack = DirectV11RealConsumerStack::new(&shadow, &segmented, 0, 0);
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-        let error = execute_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+        let error = execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
             .expect_err("one tick below the LSE minimum must be rejected");
         assert!(matches!(
             error,

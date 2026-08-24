@@ -6,6 +6,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 
+#[cfg(test)]
+use crate::v11_vegetation_consumer::{accept_direct_v11_segment, execute_direct_v11_segment};
 use openwepp_biogeochemistry::{BiogeochemistryError, BiogeochemistryState, available_by_key};
 use openwepp_coupled_time::{Digest32, digest_bytes};
 use openwepp_kernel_contract::{
@@ -30,9 +32,9 @@ use openwepp_vegetation::energy::{
     canopy_surface_friction_velocity, leaf_boundary_conductance, neutral_resistance,
 };
 use openwepp_vegetation::v11::{
-    V11AdmittedResourceFlux, V11ImportedV10SegmentInput, V11ImportedV10SegmentOutput,
-    V11LseSupportReceiptEnvelope, V11OwnerEnvelope, V11ResourceDebit, V11ResourceKey,
-    V11SharedResourceKey, V11SharedResourceKind, V11SharedResourceOwnerTransition,
+    V11AdmittedResourceFlux, V11BgcDebitScope, V11ImportedV10SegmentInput,
+    V11ImportedV10SegmentOutput, V11LseSupportReceiptEnvelope, V11OwnerEnvelope, V11ResourceDebit,
+    V11ResourceKey, V11SharedResourceKey, V11SharedResourceKind, V11SharedResourceOwnerTransition,
 };
 use openwepp_vegetation::{
     NitrogenArbiter, NitrogenAuthorization, NitrogenRequest, SnowFreeForcing, V8CoupledOwnedState,
@@ -96,6 +98,13 @@ pub use v11_covered::{
     CoveredParentOwnerJoinReceiptV1, DirectV11RealConsumerStack,
     DirectV11SnowCoveredRealConsumerStack, DirectV11SnowCoveredStackInputs,
 };
+
+pub(crate) fn direct_v11_bgc_debit_scope(
+    vegetation_configuration: &VegetationConfiguration,
+    lse_configuration: &LandSurfaceEnergyConfiguration,
+) -> Result<V11BgcDebitScope, DirectV11RealConsumerError> {
+    v11_bgc_debit_scope(vegetation_configuration, lse_configuration)
+}
 
 const INTERVALS_PER_DAY: usize = 48;
 const INTERVAL_S: f64 = 1_800.0;

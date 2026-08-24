@@ -13,8 +13,71 @@ use openwepp_coupled_time::AcceptedSlabReceiptV1;
 use openwepp_vegetation::v11::{
     V11ConstitutiveExecutor, V11ExecutionError, V11ImportedV10SegmentInput,
     V11ImportedV10SegmentOutput, V11ParentTransaction, VegetationConfigurationV11,
-    execute_v11_segment,
 };
+
+pub(crate) fn execute_direct_v11_segment<
+    S: DirectV11ImportedStack<Error = DirectV11RealConsumerError> + DirectV11BgcScopeProvider,
+>(
+    configuration: &openwepp_vegetation::v11::VegetationConfigurationV11,
+    parent: &V11ParentTransaction,
+    receipt: &openwepp_coupled_time::AcceptedSlabReceiptV1,
+    executor: &mut DirectV11VegetationExecutor<S>,
+) -> Result<
+    openwepp_vegetation::v11::V11AcceptedSegmentCandidate,
+    V11ExecutionError<DirectV11RealConsumerError>,
+> {
+    let scope = executor
+        .stack
+        .v11_bgc_debit_scope(&configuration.imported_v10)
+        .map_err(V11ExecutionError::Executor)?;
+    openwepp_vegetation::v11::execute_v11_segment_with_bgc_scope(
+        configuration,
+        parent,
+        receipt,
+        Some(&scope),
+        executor,
+    )
+}
+
+#[cfg(test)]
+pub(crate) fn execute_direct_v11_segment_with_post_bgc_fault<
+    S: DirectV11ImportedStack<Error = DirectV11RealConsumerError> + DirectV11BgcScopeProvider,
+>(
+    configuration: &openwepp_vegetation::v11::VegetationConfigurationV11,
+    parent: &V11ParentTransaction,
+    receipt: &openwepp_coupled_time::AcceptedSlabReceiptV1,
+    executor: &mut DirectV11VegetationExecutor<S>,
+) -> Result<
+    openwepp_vegetation::v11::V11AcceptedSegmentCandidate,
+    V11ExecutionError<DirectV11RealConsumerError>,
+> {
+    let candidate = execute_direct_v11_segment(configuration, parent, receipt, executor)?;
+    if candidate
+        .shared_resource_transitions
+        .iter()
+        .any(|transition| transition.shared_resource_key.owner_id == "bgc")
+    {
+        let _ = executor.stack.take_staged_ending();
+        return Err(V11ExecutionError::Executor(
+            DirectV11RealConsumerError::Identity("injected post-BGC-transition fault"),
+        ));
+    }
+    Ok(candidate)
+}
+
+pub(crate) fn accept_direct_v11_segment(
+    parent: &mut V11ParentTransaction,
+    configuration: &openwepp_vegetation::v11::VegetationConfigurationV11,
+    candidate: openwepp_vegetation::v11::V11AcceptedSegmentCandidate,
+    beginning: &DirectV10RealConsumerShadow,
+) -> Result<(), openwepp_vegetation::v11::V11Error> {
+    let scope = crate::v9_real_consumer_shadow::direct_v11_bgc_debit_scope(
+        &configuration.imported_v10,
+        beginning.lse_configuration(),
+    )
+    .map_err(|_| openwepp_vegetation::v11::V11Error::ResourceDebit)?;
+    parent.accept_segment_with_bgc_scope(configuration, candidate, Some(&scope))
+}
 use thiserror::Error;
 
 use crate::snow_stage3_terminal_handoff::{
@@ -37,6 +100,52 @@ pub trait DirectV11ImportedStack {
         &mut self,
         input: &V11ImportedV10SegmentInput,
     ) -> Result<V11ImportedV10SegmentOutput, Self::Error>;
+}
+
+pub(crate) trait DirectV11BgcScopeProvider {
+    fn v11_bgc_debit_scope(
+        &self,
+        vegetation_configuration: &openwepp_vegetation::VegetationConfiguration,
+    ) -> Result<openwepp_vegetation::v11::V11BgcDebitScope, DirectV11RealConsumerError>;
+
+    #[cfg(test)]
+    fn take_staged_ending(&mut self) -> Option<DirectV10RealConsumerShadow>;
+}
+
+impl DirectV11BgcScopeProvider for DirectV11RealConsumerStack<'_> {
+    fn v11_bgc_debit_scope(
+        &self,
+        vegetation_configuration: &openwepp_vegetation::VegetationConfiguration,
+    ) -> Result<openwepp_vegetation::v11::V11BgcDebitScope, DirectV11RealConsumerError> {
+        crate::v9_real_consumer_shadow::direct_v11_bgc_debit_scope(
+            vegetation_configuration,
+            self.beginning.lse_configuration(),
+        )
+    }
+
+    #[cfg(test)]
+    fn take_staged_ending(&mut self) -> Option<DirectV10RealConsumerShadow> {
+        DirectV11RealConsumerStack::take_staged_ending(self)
+    }
+}
+
+impl DirectV11BgcScopeProvider
+    for crate::v9_real_consumer_shadow::DirectV11SnowCoveredRealConsumerStack<'_>
+{
+    fn v11_bgc_debit_scope(
+        &self,
+        vegetation_configuration: &openwepp_vegetation::VegetationConfiguration,
+    ) -> Result<openwepp_vegetation::v11::V11BgcDebitScope, DirectV11RealConsumerError> {
+        crate::v9_real_consumer_shadow::direct_v11_bgc_debit_scope(
+            vegetation_configuration,
+            self.beginning.lse_configuration(),
+        )
+    }
+
+    #[cfg(test)]
+    fn take_staged_ending(&mut self) -> Option<DirectV10RealConsumerShadow> {
+        Self::take_staged_ending(self)
+    }
 }
 
 /// Explicit default-off adapter; no production selector references this type.
@@ -161,7 +270,8 @@ impl SnowStage3OwnerExecutor for DirectV11SnowStage3OwnerExecutor<'_> {
                 "typed owner stack is unavailable",
             ))?;
         let mut executor = DirectV11VegetationExecutor { stack };
-        let segment = execute_v11_segment(
+        let acceptance_beginning = executor.stack.beginning.clone();
+        let segment = execute_direct_v11_segment(
             &self.configuration,
             &self.parent,
             &self.accepted_slab,
@@ -175,7 +285,12 @@ impl SnowStage3OwnerExecutor for DirectV11SnowStage3OwnerExecutor<'_> {
                     "typed owner stack did not return a staged ending",
                 ))?;
         let mut parent = self.parent.clone();
-        parent.accept_segment(&self.configuration, segment.clone())?;
+        accept_direct_v11_segment(
+            &mut parent,
+            &self.configuration,
+            segment.clone(),
+            &acceptance_beginning,
+        )?;
         let ending_owners = Self::ending_owner_set(&segment.ending_resource_owners)?;
         let receipt = SnowStage3OwnerExecutionReceipt::from_owner_set(
             "direct-v11-real-consumer-stack",
