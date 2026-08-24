@@ -1500,6 +1500,15 @@ fn validate_resource_custody(
         if auth > t.beginning_amount + inflow || used > t.beginning_amount + inflow {
             return Err(V11Error::ResourceCustody);
         }
+        if t.shared_resource_key.owner_id == "bgc"
+            && matches!(
+                t.shared_resource_key.resource,
+                V11SharedResourceKind::Ammonium | V11SharedResourceKind::Nitrate
+            )
+            && (t.beginning_amount - used).to_bits() != t.ending_amount.to_bits()
+        {
+            return Err(V11Error::ResourceCustody);
+        }
         if let Some(previous) = predecessors {
             if let Some(p) = previous
                 .iter()
@@ -2455,6 +2464,72 @@ mod tests {
             None,
         )
         .expect("valid custody");
+
+        let assert_poison =
+            |poisoned_debits: &[V11ResourceDebit],
+             poisoned_transitions: &[V11SharedResourceOwnerTransition]| {
+                let poisoned_candidates =
+                    build_complete_owner_candidates(receipt, &owners, poisoned_transitions)
+                        .expect("poison candidates");
+                assert!(
+                    validate_resource_custody(
+                        receipt.parent_transaction_id(),
+                        receipt.segment_id(),
+                        receipt.slab_id(),
+                        receipt.slab_ordinal(),
+                        receipt.support(),
+                        poisoned_debits,
+                        &[],
+                        poisoned_transitions,
+                        &poisoned_candidates,
+                        None,
+                    )
+                    .is_err()
+                );
+            };
+
+        let mut wrong_delta = transitions.clone();
+        wrong_delta[0].ending_amount = 0.8;
+        wrong_delta[0] = V11SharedResourceOwnerTransition::new(wrong_delta[0].clone())
+            .expect("rebind wrong delta");
+        assert_poison(&debits, &wrong_delta);
+
+        let omitted = transitions[1..].to_vec();
+        assert_poison(&debits, &omitted);
+
+        let mut substituted = debits.clone();
+        let nitrogen = substituted
+            .iter_mut()
+            .find(|debit| debit.source_id == "nh4")
+            .expect("nitrogen debit");
+        nitrogen.ofe_id = "ofe-2".into();
+        *nitrogen = V11ResourceDebit::new(nitrogen.clone()).expect("rebind substituted OFE");
+        substituted.sort_by_key(|debit| debit.receipt_id);
+        assert_poison(&substituted, &transitions);
+
+        let mut reversed = transitions.clone();
+        let water = reversed
+            .iter_mut()
+            .find(|transition| transition.shared_resource_key.owner_id == "hydrology")
+            .expect("water transition");
+        water.debit_receipt_ids.reverse();
+        *water = V11SharedResourceOwnerTransition::new(water.clone()).expect("rebind order");
+        assert_poison(&debits, &reversed);
+
+        let mut duplicate = transitions.clone();
+        let nh4_transition = duplicate
+            .iter_mut()
+            .find(|transition| {
+                transition.shared_resource_key.resource == V11SharedResourceKind::Ammonium
+            })
+            .expect("NH4 transition");
+        nh4_transition
+            .debit_receipt_ids
+            .push(nh4_transition.debit_receipt_ids[0]);
+        *nh4_transition = V11SharedResourceOwnerTransition::new(nh4_transition.clone())
+            .expect("rebind duplicate");
+        assert_poison(&debits, &duplicate);
+
         let mut overbook = debits.clone();
         for d in overbook.iter_mut().filter(|d| d.owner_id == "hydrology") {
             d.request = 6.;

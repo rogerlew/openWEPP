@@ -834,3 +834,58 @@ completed all `3,272` tests across `243` binaries: `3,272` passed, nine were
 reported slow, and six configured skips remained. There were zero failures.
 The multi-lane release is green; the package remains `EXECUTING` only for its
 later precipitation, heat, outcome, terminal, and successor-restart sequence.
+
+## 2026-08-24 BGC/OFE identity corrective checkpoint
+
+`Static / authority:` `SC-VEGETATION-001@27` records that the current BGC
+mineral owner is hillslope-global and therefore admits V11 nitrogen custody
+only for exactly one BGC-bearing OFE. The explicit LSE
+`(ofe_id,lse_tile_id,vegetation_tile_id)` mapping resolves occupancy; LSE and
+vegetation tile IDs need not equal. A stratum may occupy multiple vegetation
+tiles only when all resolve to the same OFE. Two BGC-bearing OFEs require a
+future versioned OFE-local BGC owner and fail closed now.
+
+`Static / implementation:` Neither previous order-dependent rule remains.
+Nitrogen debits carry canonical `stratum_scoped` tile posture plus exact
+stratum identity. BGC transition construction derives its OFE exclusively from
+the complete debit set, binds amount basis, rejects missing links, and compares
+the canonical linked-use fold with both the BGC candidate operand and the exact
+beginning-minus-use ending bits. The independent V11 custody validator repeats
+the exact mineral-pool delta check. No physics, BGC state schema, selector,
+default, CoE owner, restart wire, or surface-liquid authority changed.
+
+`Ran / focused:` Four new resolver tests passed for open first OFE/vegetated
+second OFE with nonempty mineral inventory and distinct LSE/vegetation tile
+IDs, one stratum across multiple vegetation tiles in one OFE, two covered
+vegetated OFE rejection, and repeated local LSE tile IDs. The actual sequential
+V11 stack additionally proved canonical stratum-scoped debits, one-to-one
+transition links, and exact mineral-pool deltas. The V11 poison matrix rejects
+omission, OFE substitution, reordered links, duplicate links, and a
+digest-resealed wrong ending delta; existing parent acceptance rollback tests
+retain byte-identical beginnings on rejection.
+
+`Ran / affected and authority:` `openwepp-vegetation` passed `272/272`.
+`openwepp-hillslope-orchestrator` passed `796/796` with one configured skip.
+The two lifecycle/authority integration binaries passed `36/36`; authority
+anti-evasion passed; required-suite obligation guards passed `3/3`;
+science-contract admission against `465dcd88749abd97b8a1514e99f4c16d21fa2b58`
+returned `A0_ADMITTED` for 49 contracts and four science surfaces. Assurance
+`validate --all` passed for all three V2 reports; no assurance source depended
+on the changed contract, so no source-adoption transaction was generated.
+
+`Ran / Clippy baseline:` warnings-denied all-target no-deps Clippy still emits
+the recorded 92 production-target findings and 94 test-target findings. No
+finding names either touched production file, and the touched vegetation crate
+introduced none. The crate is not claimed Clippy-clean.
+
+`Ran / full workspace:` The first no-fail-fast run completed all `3,276` tests
+with `3,274` passed, two stale v26/text assertions failed, and six configured
+skips. Those two lifecycle-only assertions were reconciled to v27 without
+weakening their obligations; their focused `36/36` rerun passed. The terminal
+exact-head no-fail-fast workspace rerun then completed `3,276/3,276`, seven
+slow, with six configured skips and zero failures.
+
+`Disposition:` `CHILD1-BGC-OFE-001` is closed. The active Child-1 package
+remains `EXECUTING`; precipitation, snow--soil heat, independent outcome,
+terminal chronology, runner-owned 48-support day, exact-once terminal liquid,
+additive restart, and the remaining scenario/review sequence are unchanged.

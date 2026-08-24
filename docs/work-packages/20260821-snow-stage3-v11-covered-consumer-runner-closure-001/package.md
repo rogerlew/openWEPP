@@ -117,6 +117,29 @@ fields.
 
 ## Progress log
 
+### 2026-08-24 BGC/OFE identity corrective checkpoint
+
+Implementation intent: close `CHILD1-BGC-OFE-001` before further physical,
+terminal, or restart work. The current BGC owner is hillslope-global because
+its mineral pools have only layer/species identity; it is neither OFE-local nor
+safe to broadcast across OFEs. This checkpoint will amend V11 authority to an
+explicit exact-one-BGC-bearing-OFE domain, resolve vegetation occupancy through
+the LSE tile's explicit `vegetation_tile_id` rather than either tile namespace
+alone, require every occupancy of one stratum to resolve to the same admitted
+OFE, and reject ambiguous or multi-bearing-OFE parents before candidate
+publication. It will bind each nonzero stratum use bijectively to one debit and
+one linked BGC transition and require the transition's exact beginning-to-ending
+mineral delta to equal the linked finalized uses.
+
+The increment owns contract-derived positive cases for an open first OFE with
+vegetation on the second, distinct LSE/vegetation tile IDs, and a stratum on
+multiple vegetation tiles within one OFE. Two covered vegetated OFEs and
+repeated local LSE tile IDs without a unique vegetation-to-OFE mapping are
+fail-closed poisons, along with omission, substitution, ambiguity, order, and
+rollback mutations. It changes no physics equation, selector, default,
+production activation, CoE owner, frozen restart wire, or released
+surface-liquid authority.
+
 ### 2026-08-24 multi-lane Stage-3 parent transaction qualification
 
 Implementation intent: qualify and release the existing lane-keyed parent

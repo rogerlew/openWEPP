@@ -567,7 +567,11 @@ pub(crate) fn finalize_v11_imported_segment(
     envelope.validate().map_err(|error| {
         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
     })?;
-    let mut resource_debits = v11_nitrogen_resource_debits(envelope, input)?;
+    let mut resource_debits = v11_nitrogen_resource_debits(
+        envelope,
+        &beginning.inner.lse_configuration,
+        input,
+    )?;
     resource_debits.extend(v11_water_resource_debits(
         envelope,
         &input.configuration,
@@ -879,6 +883,7 @@ pub(crate) fn normalize_v8_parent_lineage(
 
 pub(crate) fn v11_nitrogen_resource_debits(
     envelope: &UncommittedCoveredV8OwnerEnvelope,
+    lse_configuration: &openwepp_land_surface_energy::LandSurfaceEnergyConfiguration,
     input: &V11ImportedV10SegmentInput,
 ) -> Result<Vec<V11ResourceDebit>, DirectV11RealConsumerError> {
     let (requests, authorizations, uses) = envelope.vegetation().nitrogen_protocol();
@@ -890,6 +895,7 @@ pub(crate) fn v11_nitrogen_resource_debits(
         return Ok(Vec::new());
     }
     let occupancies = input.configuration.expected_occupancies();
+    let bgc_ofe_id = v11_bgc_bearing_ofe(&occupancies, lse_configuration)?;
     uses.iter()
         .map(|used| {
             let request = requests
@@ -904,27 +910,14 @@ pub(crate) fn v11_nitrogen_resource_debits(
                 .ok_or(DirectV11RealConsumerError::Identity(
                     "V11 nitrogen authorization binding",
                 ))?;
-            let occupancy = occupancies
+            if !occupancies
                 .iter()
-                .find(|id| id.stratum_id.as_str() == used.owner_id.as_str())
-                .ok_or(DirectV11RealConsumerError::Identity(
-                    "V11 nitrogen occupancy binding",
-                ))?;
-            let matching_ofes = envelope
-                .hydrology()
-                .receiver_closure_operands()
-                .lse_tiles
-                .iter()
-                .filter(|row| row.tile_id == occupancy.tile_id)
-                .map(|row| row.ofe_id.as_str())
-                .collect::<BTreeSet<_>>();
-            let ofe_id = matching_ofes
-                .iter()
-                .next()
-                .filter(|_| matching_ofes.len() == 1)
-                .ok_or(DirectV11RealConsumerError::Identity(
-                    "V11 BGC occupancy/OFE binding",
-                ))?;
+                .any(|id| id.stratum_id.as_str() == used.owner_id.as_str())
+            {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "V11 nitrogen stratum binding",
+                ));
+            }
             V11ResourceDebit::new(V11ResourceDebit {
                 receipt_id: Digest32::zero(),
                 parent_transaction_id: input.parent_transaction_id,
@@ -933,13 +926,9 @@ pub(crate) fn v11_nitrogen_resource_debits(
                 support: input.support,
                 owner_id: "bgc".into(),
                 resource_key: V11ResourceKey::MineralNitrogen(used.key.clone()),
-                ofe_id: (*ofe_id).to_owned(),
-                tile_id: occupancy.tile_id.as_str().to_owned(),
-                occupancy_id: format!(
-                    "{}::{}",
-                    occupancy.stratum_id.as_str(),
-                    occupancy.tile_id.as_str()
-                ),
+                ofe_id: bgc_ofe_id.clone(),
+                tile_id: "stratum_scoped".into(),
+                occupancy_id: used.owner_id.as_str().to_owned(),
                 layer_id: used.key.layer_id.as_str().to_owned(),
                 source_id: match used.key.species {
                     MineralNitrogenSpecies::Ammonium => "nh4",
@@ -954,6 +943,41 @@ pub(crate) fn v11_nitrogen_resource_debits(
             .map_err(|_| DirectV11RealConsumerError::Identity("V11 nitrogen debit"))
         })
         .collect()
+}
+
+fn v11_bgc_bearing_ofe(
+    occupancies: &BTreeSet<openwepp_kernel_contract::OccupancyId>,
+    lse_configuration: &openwepp_land_surface_energy::LandSurfaceEnergyConfiguration,
+) -> Result<String, DirectV11RealConsumerError> {
+    let mut resolved = BTreeSet::new();
+    for occupancy in occupancies {
+        let matching = lse_configuration
+            .ofes
+            .iter()
+            .flat_map(|ofe| {
+                ofe.tiles
+                    .iter()
+                    .filter(|tile| tile.vegetation_tile_id == occupancy.tile_id)
+                    .map(move |_| ofe.ofe_id.as_str())
+            })
+            .collect::<BTreeSet<_>>();
+        let ofe = matching
+            .iter()
+            .next()
+            .filter(|_| matching.len() == 1)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "V11 BGC vegetation-tile/OFE binding",
+            ))?;
+        resolved.insert((*ofe).to_owned());
+    }
+    let resolved_count = resolved.len();
+    resolved
+        .into_iter()
+        .next()
+        .filter(|_| resolved_count == 1)
+        .ok_or(DirectV11RealConsumerError::Identity(
+            "V11 exact-one BGC-bearing OFE",
+        ))
 }
 
 fn validate_v11_nitrogen_protocol_cardinality(
@@ -975,6 +999,9 @@ fn validate_v11_nitrogen_protocol_cardinality(
 #[cfg(test)]
 mod nitrogen_protocol_cardinality_tests {
     use super::*;
+    use crate::land_surface_energy_shadow::strict_v8_endpoint::endpoint_rollback_tests::{
+        endpoint_fixture, two_ofe_routed_endpoint_fixture,
+    };
 
     #[test]
     fn empty_protocol_is_admissible_and_every_partial_empty_protocol_rejects() {
@@ -988,6 +1015,81 @@ mod nitrogen_protocol_cardinality_tests {
         assert!(
             !validate_v11_nitrogen_protocol_cardinality(1, 1, 1)
                 .expect("nonempty protocol")
+        );
+    }
+
+    #[test]
+    fn bgc_ofe_resolution_uses_explicit_vegetation_tile_mapping() {
+        let mut fixture = two_ofe_routed_endpoint_fixture();
+        for tile in &mut fixture.lse_configuration.ofes[0].tiles {
+            tile.vegetation_tile_id = openwepp_kernel_contract::TileId::try_new(format!(
+                "upper-open-{}",
+                tile.tile_id.as_str()
+            ))
+            .expect("upper open vegetation tile");
+        }
+        let lower_forest = fixture.lse_configuration.ofes[1]
+            .tiles
+            .iter_mut()
+            .find(|tile| tile.tile_id.as_str() == "lower-forest")
+            .expect("lower forest tile");
+        assert_ne!(lower_forest.tile_id, lower_forest.vegetation_tile_id);
+        assert_eq!(
+            v11_bgc_bearing_ofe(
+                &fixture.vegetation_configuration.expected_occupancies(),
+                &fixture.lse_configuration,
+            )
+            .expect("open first OFE and vegetated second OFE"),
+            "ofe-2"
+        );
+    }
+
+    #[test]
+    fn bgc_ofe_resolution_admits_multi_tile_stratum_within_one_ofe() {
+        let mut fixture = endpoint_fixture();
+        let second_tile = openwepp_kernel_contract::TileId::try_new("open").expect("tile");
+        fixture.vegetation_configuration.strata[0]
+            .tile_ids
+            .push(second_tile);
+        assert_eq!(
+            v11_bgc_bearing_ofe(
+                &fixture.vegetation_configuration.expected_occupancies(),
+                &fixture.lse_configuration,
+            )
+            .expect("one stratum on multiple vegetation tiles"),
+            "ofe-1"
+        );
+    }
+
+    #[test]
+    fn bgc_ofe_resolution_rejects_two_covered_vegetated_ofes() {
+        let fixture = two_ofe_routed_endpoint_fixture();
+        assert!(v11_bgc_bearing_ofe(
+            &fixture.vegetation_configuration.expected_occupancies(),
+            &fixture.lse_configuration,
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn repeated_local_lse_tile_ids_do_not_replace_vegetation_mapping() {
+        let mut fixture = two_ofe_routed_endpoint_fixture();
+        for tile in &mut fixture.lse_configuration.ofes[0].tiles {
+            tile.vegetation_tile_id = openwepp_kernel_contract::TileId::try_new(format!(
+                "upper-open-{}",
+                tile.tile_id.as_str()
+            ))
+            .expect("upper open vegetation tile");
+        }
+        let repeated = fixture.lse_configuration.ofes[0].tiles[0].tile_id.clone();
+        fixture.lse_configuration.ofes[1].tiles[0].tile_id = repeated;
+        assert_eq!(
+            v11_bgc_bearing_ofe(
+                &fixture.vegetation_configuration.expected_occupancies(),
+                &fixture.lse_configuration,
+            )
+            .expect("repeated local LSE IDs with unique vegetation mapping"),
+            "ofe-2"
         );
     }
 }
@@ -1019,22 +1121,34 @@ pub(crate) fn v11_shared_resource_transitions(
         .get("bgc")
         .ok_or(DirectV11RealConsumerError::Identity("V11 BGC candidate"))?
         .state_sha256;
-    let ofe_id = envelope
-        .hydrology()
-        .receiver_closure_operands()
-        .production_soil
-        .first()
-        .ok_or(DirectV11RealConsumerError::Identity("V11 BGC OFE"))?
-        .ofe_id
-        .as_str();
-    rows.extend(v11_bgc_owner_transitions(
-        envelope,
-        input,
-        debits,
-        beginning_bgc,
-        ofe_id,
-        bgc_digest,
-    )?);
+    let bgc_ofes = debits
+        .iter()
+        .filter(|debit| matches!(&debit.resource_key, V11ResourceKey::MineralNitrogen(_)))
+        .map(|debit| debit.ofe_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let ofe_id = bgc_ofes
+        .iter()
+        .next()
+        .filter(|_| bgc_ofes.len() == 1)
+        .copied();
+    if envelope.biogeochemistry().mineral_operands().iter().any(|operand| {
+        operand.finalized_use_kg_n_m2 > 0.0
+    }) && ofe_id.is_none()
+    {
+        return Err(DirectV11RealConsumerError::Identity(
+            "V11 exact-one BGC transition OFE",
+        ));
+    }
+    if let Some(ofe_id) = ofe_id {
+        rows.extend(v11_bgc_owner_transitions(
+            envelope,
+            input,
+            debits,
+            beginning_bgc,
+            ofe_id,
+            bgc_digest,
+        )?);
+    }
     Ok(rows)
 }
 
@@ -1117,8 +1231,13 @@ pub(crate) fn v11_bgc_owner_transitions(
             source_id: source_id.into(),
             amount_basis: "kg_n_m2".into(),
         };
-        let ids = v11_linked_debit_ids(debits, &key, false);
+        let ids = v11_linked_debit_ids(debits, &key, true);
         if ids.is_empty() {
+            if operand.finalized_use_kg_n_m2 > 0.0 {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "V11 BGC debit omission",
+                ));
+            }
             continue;
         }
         let beginning_layer = beginning_bgc
@@ -1131,6 +1250,24 @@ pub(crate) fn v11_bgc_owner_transitions(
             MineralNitrogenSpecies::Ammonium => beginning_layer.ammonium_n,
             MineralNitrogenSpecies::Nitrate => beginning_layer.nitrate_n,
         };
+        let linked_use = debits
+            .iter()
+            .filter(|debit| debit_shared_bgc_key_matches(debit, &key))
+            .try_fold(0.0_f64, |sum, debit| {
+                let next = sum + debit.final_use;
+                next.is_finite()
+                    .then_some(next)
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "V11 BGC finalized-use sum",
+                    ))
+            })?;
+        if linked_use.to_bits() != operand.finalized_use_kg_n_m2.to_bits()
+            || (beginning_amount - linked_use).to_bits() != operand.ending_kg_n_m2.to_bits()
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "V11 BGC mineral-pool delta",
+            ));
+        }
         rows.push(v11_shared_transition(
             input,
             key,
@@ -1141,6 +1278,14 @@ pub(crate) fn v11_bgc_owner_transitions(
         )?);
     }
     Ok(rows)
+}
+
+fn debit_shared_bgc_key_matches(debit: &V11ResourceDebit, key: &V11SharedResourceKey) -> bool {
+    debit.owner_id == key.owner_id
+        && debit.ofe_id == key.ofe_id
+        && debit.layer_id == key.layer_id
+        && debit.source_id == key.source_id
+        && debit.amount_basis == key.amount_basis
 }
 
 pub(crate) fn v11_linked_debit_ids(

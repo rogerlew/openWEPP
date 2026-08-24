@@ -225,7 +225,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "contract_version: 26",
+        "contract_version: 27",
         "Version 13 admits `OPENWEPP_C3_WOODY_V9`",
         "Version 7 admits the constitutive equations, topology inheritance, and V3",
         "Earlier-version statements limiting admission to",
@@ -248,8 +248,8 @@ fn canonical_schema_and_registry_entry_are_bound() {
     for field in [
         lifecycle,
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
-        "| `static+independent_oracle+contract_vectors` | `2026-08-20` |",
-        "v26 binds forest-covered V11",
+        "| `static+independent_oracle+contract_vectors` | `2026-08-24` |",
+        "v27 retains the shared Child 2C carrier",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -673,7 +673,7 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 26",
+        "contract_version: 27",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
         "OPENWEPP_C3_WOODY_V3",
@@ -688,6 +688,10 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
         "INV-VEGETATION-062",
         "INV-VEGETATION-072",
         "science_implementation_status = NOT_IMPLEMENTED",
+        "exactly one common BGC-bearing OFE",
+        "`(ofe_id,lse_tile_id,vegetation_tile_id)`",
+        "`stratum_scoped`",
+        "debit, every such debit links exactly once",
         "003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157",
     ] {
         assert!(

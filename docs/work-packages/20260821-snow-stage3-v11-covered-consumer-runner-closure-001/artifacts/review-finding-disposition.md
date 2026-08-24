@@ -55,3 +55,24 @@ in `gate-results.md`. Package disposition remains `EXECUTING / HOLD`.
   root-zone join, open-tile fraction, soil-temperature, and BGC single-OFE
   assumptions. No finding was waived. Reviews were performed locally because
   this session did not have explicit user authorization to spawn reviewers.
+
+## 2026-08-24 BGC/OFE identity corrective review
+
+| Finding | Severity | Decision | Current action/status |
+|---|---|---|---|
+| `CHILD1-BGC-OFE-001` | Major | `accepted / fixed` | `SC-VEGETATION-001@27` now binds the existing hillslope-global BGC owner to exactly one BGC-bearing OFE. Production resolves every occupancy through the explicit LSE `vegetation_tile_id`, admits multi-tile strata only within one common OFE, rejects missing/ambiguous/multiple-bearing-OFE mappings, uses canonical stratum-scoped debit identity, and no longer reads either `first()` source. V11 custody now requires exact debit linkage and bitwise mineral-pool delta closure. Focused mapping, full actual-segment, poison, rollback, affected-crate, authority, and exact-head workspace gates pass. |
+
+Static: this is not an OFE-local BGC implementation claim. Making BGC genuinely
+OFE-local requires a separately versioned owner/state authority. This
+checkpoint preserves the existing hillslope-global BGC state and fails closed
+outside the exact-one-BGC-bearing-OFE domain.
+
+Local hydrology/ownership review: `PASS`. The implementation does not split,
+broadcast, or duplicate the global pool; LSE-local tile identity is never used
+as vegetation identity, and all failure paths remain candidate-only.
+
+Local Rust/API review: `PASS`. Debit IDs remain canonical, BGC transitions bind
+amount basis as well as owner/OFE/layer/species, all linked IDs are sorted and
+unique, and the generic V11 validator independently rejects a resealed wrong
+pool delta. No finding was waived. Delegated review was not used because the
+session policy prohibited proactive subagent spawning.

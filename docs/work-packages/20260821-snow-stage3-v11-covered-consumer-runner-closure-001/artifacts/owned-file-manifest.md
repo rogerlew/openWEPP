@@ -159,3 +159,17 @@ Multi-lane Stage-3 parent qualification expansion:
   exact source-path and current v16 contract-registry reconciliation exposed
   by the mechanical split/frost profile; authority anti-evasion remains
   unchanged and was rerun.
+
+BGC/OFE identity corrective expansion:
+
+- `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md`, its
+  lifecycle row, contract guard, and typed assurance source-adoption records:
+  exact-one BGC-bearing-OFE authority for the existing hillslope-global BGC
+  owner; no BGC state-schema or physics change.
+- `crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs`
+  and package-owned orchestrator tests: explicit LSE
+  `vegetation_tile_id` joins, stratum-wide OFE resolution, BGC transition/debit
+  bijection and exact pool-delta checks, plus ambiguity/order/rollback poisons.
+- `tests/integration/snow_stage3_terminal_receiver_authority_contract.rs`:
+  lifecycle-only registry wording reconciliation from vegetation v26 to v27;
+  terminal receiver authority and assertions remain unchanged.

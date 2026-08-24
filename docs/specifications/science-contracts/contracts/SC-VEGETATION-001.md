@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 26
+contract_version: 27
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -2622,6 +2622,30 @@ Authorization uses current staged BGC inventory and cannot overbook. Mineral-N
 debit receipts and shared BGC-owner transitions use the same separation unless
 the admitted BGC key is proven to be the exact shared owner key.
 
+The released BGC owner is hillslope-global: its mineral inventory is keyed by
+`(soil_layer_id,species)` and has no OFE axis. V11 therefore admits mineral-N
+custody only when every vegetation occupancy participating in a nonempty
+mineral-N protocol resolves to exactly one common BGC-bearing OFE. Resolution
+uses the explicit LSE mapping `(ofe_id,lse_tile_id,vegetation_tile_id)` and the
+vegetation occupancy's `vegetation_tile_id`; equality between LSE-local and
+vegetation tile IDs is neither required nor inferred. Every occupancy of a
+stratum must resolve, and all must resolve to the same OFE. Missing, duplicate,
+ambiguous, order-dependent, or multiple-bearing-OFE resolution rejects before
+candidate publication. Repeated LSE-local tile IDs across OFEs are admissible
+only when the complete vegetation-tile mapping still yields one unique bearing
+OFE. A future OFE-local BGC owner requires a separately versioned state and is
+not synthesized by splitting or broadcasting the global pools.
+
+One stratum-scoped mineral-N use produces one debit receipt per layer/species,
+not one per occupancy. Its tile/occupancy wire fields carry the canonical
+literal `stratum_scoped` and the exact stratum ID respectively; they never name
+an arbitrarily selected occupancy. Every nonzero finalized use has exactly one
+debit, every such debit links exactly once to the matching BGC transition, and
+every linked BGC transition satisfies bitwise
+`ending = beginning - sum(finalized_use)` in canonical debit order. Omission,
+substitution, duplicate linkage, extra linkage, or a changed transition order
+rejects and preserves all beginning owners byte-identically.
+
 All resource amount bits are finite binary64 values in their contract-declared
 basis. For each exact debit-receipt key, receipts are ordered by accepted
 chronology and cumulative vegetation use is an ordinary IEEE-754 binary64 left
@@ -2907,6 +2931,7 @@ constitutive behavior unchanged.
 | 2026-08-20 | 18 | Codex | Bound restart V2 segments to predecessor V11 state and terminal complete-owner equality across segment, checkpoint, and outer wire. |
 | 2026-08-20 | 19 | Codex | Made sequential staged subtraction authoritative and separated it from the ordered cumulative-debit diagnostic fold; prohibited regrouped owner-ending aliases. |
 | 2026-08-20 | 20 | Codex | Separated occupancy debit receipts from shared hydrology/BGC owner transitions and bound debit links, owner-candidate lineage, authorization, and cross-segment shared-owner continuity. |
+| 2026-08-24 | 27 | Codex | Bound the existing hillslope-global mineral-N owner to an exact-one-BGC-bearing-OFE V11 domain; required explicit LSE vegetation-tile mapping, stratum-wide resolution, canonical stratum-scoped debit identity, debit/transition/pool-delta bijection, ambiguity/order poisons, and atomic rollback. |
 | 2026-08-20 | 24 | Codex | Joined every V3 custody body to the decoded V2 receipt domain, closed typed flux mappings/exact-once links, and replaced checkpoint-derived comparison with a parent-beginning independent uninterrupted oracle. |
 | 2026-08-20 | 25 | Codex | Prospective LSE positive-support adoption: structural nanosecond identity, sealed slab-specific support receipt, minimum/one-tick-below populations, and typed rollback/restart semantics. |
 | 2026-08-20 | 23 | Codex | Restricted Restart V3 to the exact V2-accepted custody prefix, made seven-owner candidate cardinality cursor-derived, and required runtime-only suffix execution with full uninterrupted equality. |

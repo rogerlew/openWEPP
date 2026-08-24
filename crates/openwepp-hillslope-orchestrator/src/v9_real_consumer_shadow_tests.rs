@@ -927,6 +927,28 @@ mod tests {
                         "next shared-owner beginning must be the prior staged ending"
                     );
                 }
+                if transition.shared_resource_key.owner_id == "bgc" {
+                    let linked = segment
+                        .resource_debits
+                        .iter()
+                        .filter(|debit| {
+                            transition.debit_receipt_ids.contains(&debit.receipt_id)
+                        })
+                        .collect::<Vec<_>>();
+                    assert_eq!(linked.len(), transition.debit_receipt_ids.len());
+                    let used = linked.iter().fold(0.0_f64, |sum, debit| {
+                        assert_eq!(debit.tile_id, "stratum_scoped");
+                        assert!(migrated.configuration.imported_v10.strata.iter().any(
+                            |stratum| stratum.stratum_id.as_str() == debit.occupancy_id
+                        ));
+                        sum + debit.final_use
+                    });
+                    assert_eq!(
+                        (transition.beginning_amount - used).to_bits(),
+                        transition.ending_amount.to_bits(),
+                        "linked BGC debits must exactly reconstruct the mineral-pool delta"
+                    );
+                }
             }
             parent
                 .accept_segment(&migrated.configuration, segment)

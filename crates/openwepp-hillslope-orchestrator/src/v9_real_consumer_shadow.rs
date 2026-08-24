@@ -603,7 +603,11 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
             DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
         })?;
 
-        let mut resource_debits = v11_nitrogen_resource_debits(&envelope, input)?;
+        let mut resource_debits = v11_nitrogen_resource_debits(
+            &envelope,
+            &self.beginning.inner.lse_configuration,
+            input,
+        )?;
         resource_debits.extend(v11_water_resource_debits(
             &envelope,
             &input.configuration,
