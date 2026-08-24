@@ -1011,9 +1011,13 @@ fn execute_surface_liquid_ingress_inner(
             || parent.wb14_model_definition_sha256 != wb14_model_definition_sha256
             || parent.production_lane_ids != production_lane_ids
             || parent.parameters != input.wb14_parameters
-            || !parent.accepted_duration_s.is_finite()
-            || parent.accepted_duration_s <= 0.0
-            || parent.accepted_duration_s + input.interval_s > INTERVAL_S
+            || parent.accepted_until_ns
+                <= u128::try_from(parent.parent_support_start_ns)
+                    .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 parent support"))?
+            || parent.accepted_until_ns
+                != coupled_binding.map_or(parent.accepted_until_ns, |binding| {
+                    binding.child_support_start_ns
+                })
             || parent.candidate_state.continuations.len() != ending.continuations.len()
             || resource.beginning_state() != &parent.candidate_state
         {
@@ -1228,9 +1232,20 @@ fn execute_surface_liquid_ingress_inner(
     for record in &mut ending.records {
         record.last_accepted_transaction_id = Some(input.transaction_id);
     }
-    let accepted_duration_s = parent_working_state.map_or(input.interval_s, |parent| {
-        parent.accepted_duration_s + input.interval_s
-    });
+    let accepted_until_ns = coupled_binding
+        .map_or_else(
+            || {
+                let duration_ns = (input.interval_s * 1_000_000_000.0).round();
+                parent_working_state
+                    .map(|parent| parent.accepted_until_ns)
+                    .or_else(|| u128::try_from(parent_support_start_ns).ok())
+                    .and_then(|start| start.checked_add(duration_ns as u128))
+            },
+            |binding| Some(binding.child_support_end_ns),
+        )
+        .ok_or(DirectSurfaceLiquidError::Identity(
+            "WB14 accepted child support overflow",
+        ))?;
     ending.state_sha256 = ending.recomputed_sha256()?;
     let closure_physical_ending = ending.clone();
     let mut physical_ending = ending.clone();
@@ -1278,7 +1293,10 @@ fn execute_surface_liquid_ingress_inner(
     let next_parent_working_state = if !parent_child_mode {
         None
     } else if finalize_parent_interval {
-        if accepted_duration_s.to_bits() != INTERVAL_S.to_bits() {
+        if accepted_until_ns
+            != u128::try_from(parent_support_end_ns)
+                .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 parent support"))?
+        {
             return Err(production_binding_failure(
                 input.transaction_id,
                 None,
@@ -1320,7 +1338,7 @@ fn execute_surface_liquid_ingress_inner(
             wb14_configuration_sha256,
             wb14_model_definition_sha256,
             production_lane_ids,
-            accepted_duration_s,
+            accepted_until_ns,
             parameters: input.wb14_parameters.clone(),
             persistent_beginning_state: persistent_beginning_state.clone(),
             candidate_state: physical_ending.clone(),

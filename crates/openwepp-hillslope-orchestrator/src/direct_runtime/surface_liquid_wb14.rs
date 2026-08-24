@@ -782,16 +782,20 @@ impl DirectWb14ParentIntervalV1 {
         {
             return Err(DirectWb14ParentIntervalErrorV1::ChildIdentity);
         }
-        let transition_duration_s = inputs
-            .iter()
-            .try_fold(0.0, |sum, input| {
-                let next = sum + input.interval_duration_s;
-                next.is_finite().then_some(next)
-            })
-            .ok_or(DirectWb14ParentIntervalErrorV1::Arithmetic)?;
+        let transition_duration_ns = inputs.iter().try_fold(0_u128, |sum, input| {
+            let nanoseconds = input.interval_duration_s * 1_000_000_000.0;
+            if !nanoseconds.is_finite()
+                || nanoseconds <= 0.0
+                || nanoseconds.round() != nanoseconds
+                || nanoseconds > u128::MAX as f64
+            {
+                return None;
+            }
+            sum.checked_add(nanoseconds as u128)
+        });
         if support_start_ns != self.working.accepted_until_ns
             || support_end_ns > self.authority.support_end_ns
-            || transition_duration_s.to_bits() != selected_seconds.to_bits()
+            || transition_duration_ns != Some(duration_ns)
         {
             return Err(DirectWb14ParentIntervalErrorV1::ChildSupport);
         }
@@ -1181,15 +1185,10 @@ impl DirectWb14ParentIntervalV1 {
         parameter_bits: (u64, u64, u64),
         support_start_ns: u128,
         support_end_ns: u128,
-        accepted_duration_s_bits: u64,
+        accepted_until_ns: u128,
         beginning_cursor: DirectWb14PersistentCursorV1,
     ) -> Result<(), DirectWb14ParentIntervalErrorV1> {
         self.validate()?;
-        let accepted_ns = self
-            .working
-            .accepted_until_ns
-            .checked_sub(support_start_ns)
-            .ok_or(DirectWb14ParentIntervalErrorV1::ReceiptValidation)?;
         if self.authority.ofe_id_sha256 != expected_ofe_id_sha256
             || self.authority.production_lane_id != production_lane_id
             || self.authority.surface_liquid_configuration_sha256 != surface_configuration_sha256
@@ -1202,7 +1201,7 @@ impl DirectWb14ParentIntervalV1 {
             ) != parameter_bits
             || self.authority.support_start_ns != support_start_ns
             || self.authority.support_end_ns != support_end_ns
-            || (accepted_ns as f64 / 1_000_000_000.0).to_bits() != accepted_duration_s_bits
+            || self.working.accepted_until_ns != accepted_until_ns
             || self.beginning_cursor != beginning_cursor
         {
             return Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation);
@@ -1775,6 +1774,34 @@ mod tests {
                 Err(DirectWb14ParentIntervalErrorV1::ChildCadence)
             );
         }
+    }
+
+    #[test]
+    fn dense_decimal_transition_partition_uses_exact_nanosecond_support() {
+        let beginning = parent_fixture();
+        let start = beginning.working().accepted_until_ns;
+        let template = child_inputs(&beginning, 0.1, 0.0);
+        let transitions = vec![template; 18_000];
+        let (ending, outcome) = beginning
+            .accept_child_transitions(
+                0,
+                start,
+                start + 1_800_000_000_000,
+                beginning.working().receipt_chain_sha256,
+                1_800.0,
+                &transitions,
+            )
+            .expect("dense exact-nanosecond transition partition");
+        assert_eq!(
+            ending.working().accepted_until_ns,
+            start + 1_800_000_000_000
+        );
+        assert_eq!(outcome.interval_infiltration_m.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(
+            ending.receipts()[0].accepted_duration_s_bits,
+            1_800.0_f64.to_bits()
+        );
+        ending.validate().expect("dense partition receipt replay");
     }
 
     #[test]

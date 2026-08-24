@@ -1350,6 +1350,21 @@ fn second_child_resource_phase_starts_from_parent_local_surface_candidate() {
         DirectWb14ParentWorkingState::from_restart_bytes(&configuration, &restart_bytes)
             .expect("restore open parent");
     assert_eq!(&restored_parent, parent, "mid-parent restart must be exact");
+    for (field, replacement) in [
+        ("production_lane_ids", serde_json::json!([])),
+        ("parameters", serde_json::json!([])),
+        ("parent_finalizations", serde_json::json!({})),
+    ] {
+        let mut malformed: serde_json::Value =
+            serde_json::from_slice(&restart_bytes).expect("restart JSON");
+        malformed[field] = replacement;
+        let malformed_bytes = serde_json::to_vec(&malformed).expect("malformed restart JSON");
+        assert!(
+            DirectWb14ParentWorkingState::from_restart_bytes(&configuration, &malformed_bytes,)
+                .is_err(),
+            "malformed {field} must fail closed without indexing panic",
+        );
+    }
     let effective = parent
         .effective_surface_state(&configuration)
         .expect("validated effective beginning");

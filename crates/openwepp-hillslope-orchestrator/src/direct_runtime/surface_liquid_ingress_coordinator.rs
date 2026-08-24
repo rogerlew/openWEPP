@@ -99,7 +99,7 @@ pub(crate) struct DirectWb14ParentWorkingState {
     wb14_configuration_sha256: String,
     wb14_model_definition_sha256: String,
     production_lane_ids: Vec<u32>,
-    accepted_duration_s: f64,
+    accepted_until_ns: u128,
     parameters: Vec<DirectOfeWb14Parameters>,
     persistent_beginning_state: DirectSurfaceLiquidOwnedState,
     candidate_state: DirectSurfaceLiquidOwnedState,
@@ -242,6 +242,8 @@ impl DirectWb14ParentWorkingState {
         if self.surface_liquid_configuration_sha256 != configuration.configuration_sha256
             || self.per_ofe_authorities.len() != configuration.ofe_topology.len()
             || self.parameters.len() != configuration.ofe_topology.len()
+            || self.production_lane_ids.len() != configuration.ofe_topology.len()
+            || self.parent_finalizations.is_some()
         {
             return Err(DirectSurfaceLiquidError::Identity(
                 "WB14 restart configuration join",
@@ -258,8 +260,8 @@ impl DirectWb14ParentWorkingState {
                 .ok_or(DirectSurfaceLiquidError::Identity("WB14 restart OFE map"))?;
             let parameter = self
                 .parameters
-                .iter()
-                .find(|value| &value.ofe_id == ofe_id)
+                .get(index)
+                .filter(|value| &value.ofe_id == ofe_id)
                 .ok_or(DirectSurfaceLiquidError::Identity(
                     "WB14 restart parameter map",
                 ))?;
@@ -285,7 +287,7 @@ impl DirectWb14ParentWorkingState {
                     ),
                     support_start,
                     support_end,
-                    self.accepted_duration_s.to_bits(),
+                    self.accepted_until_ns,
                     DirectWb14PersistentCursorV1 {
                         day_index: continuation.day_index,
                         next_interval_index: continuation.next_interval_index,
@@ -326,7 +328,7 @@ impl DirectWb14ParentWorkingState {
             wb14_configuration_sha256: &'a str,
             wb14_model_definition_sha256: &'a str,
             production_lane_ids: &'a [u32],
-            accepted_duration_s_bits: u64,
+            accepted_until_ns: u128,
             parameters: &'a [DirectOfeWb14Parameters],
             persistent_beginning_state_sha256: &'a str,
             candidate_state_sha256: &'a str,
@@ -381,7 +383,7 @@ impl DirectWb14ParentWorkingState {
             wb14_configuration_sha256: &self.wb14_configuration_sha256,
             wb14_model_definition_sha256: &self.wb14_model_definition_sha256,
             production_lane_ids: &self.production_lane_ids,
-            accepted_duration_s_bits: self.accepted_duration_s.to_bits(),
+            accepted_until_ns: self.accepted_until_ns,
             parameters: &self.parameters,
             persistent_beginning_state_sha256: &self.persistent_beginning_state.state_sha256,
             candidate_state_sha256: &self.candidate_state.state_sha256,
