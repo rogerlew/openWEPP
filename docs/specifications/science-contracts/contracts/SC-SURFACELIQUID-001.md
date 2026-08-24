@@ -4,7 +4,7 @@ title: Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology/land-surface-energy reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Persistent snow-free bare-surface and forest-litter liquid hydrology state
   - Same-snapshot withdrawal authorization and finalized debit
@@ -14,7 +14,7 @@ consumer_scope:
   - Production WB14 infiltration/runoff and routed-runon owners
   - Restart and atomic shadow-state consumers
 evidence_level: static+contract_vectors
-last_reviewed: 2026-08-23
+last_reviewed: 2026-08-24
 supersedes: []
 superseded_by: []
 ---
@@ -627,7 +627,7 @@ string. A generic category plus prose detail is not the canonical payload.
 | `INV-SURFACELIQUID-011` | A tagged remaining segment calls the actual shared Green-Ampt/Mein-Larsen transition over exact half-open wall support and advances base-bin continuation only at its endpoint. | WB14 production path | direct-runtime adapter | cadence/support; `E-008` | `[DIRECT][Static + Ran]` nonlinear segment, endpoint, ponding, restart vectors |
 | `INV-SURFACELIQUID-012` | One immutable `1800 s` WB14 parent contains contiguous positive children accepted at or below latest-state proposals of `1800/900/60 s`; children do not advance the persistent cursor and complete finalization advances it exactly once. | `REF-SURFACELIQUID-COUPLED-TIME`, `REF-SURFACELIQUID-STAGE3-CADENCE`, WB14 chronology | receipt-owned multi-OFE parent coordinator and finalizer | cadence/support/finalization; `E-008,E-011` | `[DIRECT][Static + Ran]` 1x1800, 2x900, 30x60, dynamic proposal, truncation, one-cursor vectors |
 | `INV-SURFACELIQUID-013` | Every child binds coupled support, immutable OFE/lane/configuration/model/parameter identity, exact Green-Ampt inputs and working progression, complete beginning/ending owner sets, and a reconstructable predecessor receipt chain. | `REF-SURFACELIQUID-COUPLED-TIME` + correctness authority model | child and parent receipt `validate()` replay | identity/cardinality/replay; `E-002,E-005,E-011` | `[DIRECT][Static + Ran]` substitution, omission, reorder, replay, restart, and receipt-byte poisons |
-| `INV-SURFACELIQUID-014` | The complete parent candidate processes all OFEs in topology order and atomically stages surface storage, attributed liquid/enthalpy, routing, soil, soil thermal, LSE, V11, Stage 3, clock, provider/GSI, event, and receipt owners. | physical conservation + `REF-SURFACELIQUID-COUPLED-TIME` | complete-owner coordinator and covered owner join | closure/rollback; `E-009..011` | `[DIRECT][Static + Ran] + [INFERENCE][Static]` complete parity, short-child two-OFE routing, child/final-join rollback vectors |
+| `INV-SURFACELIQUID-014` | The complete parent candidate processes all OFEs in topology order and atomically stages surface storage, attributed liquid/enthalpy, routing, soil, soil thermal, LSE, V11, Stage 3, clock, provider/GSI, event, and receipt owners. When multiple lanes have resolved snow, each lane retains its own OFE-ground Stage-3 owner and boundary ledger; cadence is the common earliest latest-state proposal and no cross-lane energy, vapor, or snow scalar is admissible. | physical conservation + `REF-SURFACELIQUID-COUPLED-TIME` + `SC-SNOWENERGY-001#INV-SNOWENERGY-042` | complete-owner coordinator and covered owner join | closure/rollback; `E-009..011` | `[DIRECT][Static + Ran] + [INFERENCE][Static]` complete parity, snow/snow-free and dual-resolved-snow lane parents, independent per-lane ledgers, short-child two-OFE routing, child/final-join rollback vectors |
 
 ## Producer Obligations
 
@@ -970,7 +970,8 @@ persistent continuation advance.
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
 |---|---|---|---|---|---|---|
 | `SURFACELIQUID-V7-TERMINAL` | Terminal Meltout Receipt And Partial-WB14 details above | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-010, INV-SURFACELIQUID-011` | `none` | Released terminal receiver and partial-bin rules retained unchanged. |
-| `SURFACELIQUID-V8-CHILD-SLAB` | WB14 Parent/Child Receipt Schema Details above | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-006, INV-SURFACELIQUID-012, INV-SURFACELIQUID-013, INV-SURFACELIQUID-014` | `flagged-binding-addition` | Version-8 rules are exposed in the core algorithm, guards, obligations, invariants, aliases, units, vectors, and gaps and undergo this cycle's dual review. |
+| `SURFACELIQUID-V8-CHILD-SLAB` | WB14 Parent/Child Receipt Schema Details above | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-006, INV-SURFACELIQUID-012, INV-SURFACELIQUID-013, INV-SURFACELIQUID-014` | `none` | Version-8 child-slab rules remain released and unchanged. |
+| `SURFACELIQUID-V9-MULTI-LANE-STAGE3` | Multi-lane clause of `INV-SURFACELIQUID-014` | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-012, INV-SURFACELIQUID-013, INV-SURFACELIQUID-014` | `flagged-binding-addition` | Version 9 admits multiple resolved-snow production lanes only after real attachment fixtures prove common-earliest cadence, per-lane boundary closure, topology-ordered routing, atomic publication, and complete rollback. |
 
 ## Gap Register And Promotability
 
@@ -980,16 +981,17 @@ persistent continuation advance.
 | `GAP-SURFACELIQUID-002` runtime owner implementation | `CLOSED` | Exact state/candidate operations, receipt-owned parent coordination, reconstruction, rollback, dual review, and independent verification passed for v8. |
 | `GAP-SURFACELIQUID-003` production selector/cutover | `NOT_AUTHORIZED` | Later separately governed package required. |
 | `GAP-SURFACELIQUID-004` snow/frozen/thawing custody | `AUTHORITY_MISSING`, `NON_PROMOTABLE` | Typed unsupported; snow contracts own that domain. |
-| `GAP-SURFACELIQUID-005` multi-production-lane covered Stage-3 parent execution | `NOT_AUTHORIZED` | The parent ledger representation is lane-keyed and contains no unweighted cross-OFE scalar, but production rejects more than one active covered Stage-3 lane with a typed support error. Genuine multi-lane covered execution requires its own fixture and review cycle. Snow-free multi-OFE topology remains admitted. |
+| `GAP-SURFACELIQUID-005` multi-production-lane covered Stage-3 parent execution | `CLOSED` | Version 9 admits the lane-keyed parent after real snow/snow-free and dual-resolved-snow attachment fixtures, independent per-lane boundary-ledger closure, common-earliest cadence, topology-ordered WB14/runon closure, atomic publication, and child/final-join rollback verification. |
 
-This contract authorizes the default-off child-slab attachment after v8
-promotion. It does not authorize output publication, selector cutover, or
-multi-lane covered Stage-3 execution.
+This contract authorizes the default-off child-slab attachment, including
+lane-keyed multi-lane covered Stage-3 execution after version-9 promotion. It
+does not authorize output publication or selector cutover.
 
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---|---|---|
+| 2026-08-24 | 9 | Codex | Admitted lane-keyed multi-production-lane covered Stage-3 parents with common-earliest cadence, independent per-lane boundary ledgers, topology-ordered WB14/runon, one atomic publication, and complete rollback gates. |
 | 2026-08-19 | 7 | Codex | Added exact-one 0 C terminal receipt and partial-WB14 continuation/restart authority (`INV-SURFACELIQUID-010/011`) for the default-off terminal receiver transaction. |
 | 2026-08-23 | 8 | Codex | Promoted exact coupled child supports beneath Stage-3 cadence proposals after dual review and verification; bound OFE/lane/configuration/model/parameter and complete-owner identity, topology-ordered staging and routed-queue seals, final-only cursor publication, parity, truncation, routing, poison, and rollback gates. |
 | 2026-08-23 | 8 (integration candidate) | Codex | Installed parent-local surface state before child resource physics; connected live topology-ordered ingress to per-OFE reconstructable scalar receipt authorities; bound child and final parent receipt sets into complete-owner joins; separated slab and persistent-parent counters; added actual 30x60 and rollback evidence. Promotion remains review-gated. |

@@ -1282,7 +1282,7 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
     interval_index: u8,
     authenticated_duration_s_bits: Option<u64>,
     covered_lower_boundaries: Option<&BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>>,
-    covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
+    _covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
 ) -> Result<ValidatedV8RuntimeInputProjection, V8InputProjectionError> {
     vegetation_configuration.validate_v8()?;
     let configured_bindings = vegetation_configuration
@@ -1371,7 +1371,11 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
                 .iter()
                 .find(|value| value.tile_id == tile.vegetation_tile_id)
                 .ok_or(V8InputProjectionError::Topology("missing vegetation tile"))?;
-            if tile.fraction_ofe_ground.to_bits() != vegetation_tile.fraction.to_bits() {
+            let covered = vegetation_configuration
+                .strata
+                .iter()
+                .any(|stratum| stratum.tile_ids.contains(&tile.vegetation_tile_id));
+            if covered && tile.fraction_ofe_ground.to_bits() != vegetation_tile.fraction.to_bits() {
                 return Err(V8InputProjectionError::Identity("tile fraction mismatch"));
             }
             let tile_state = lse_state
@@ -1386,25 +1390,11 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
                 .ok_or(V8InputProjectionError::Topology(
                     "missing surface-liquid tile state",
                 ))?;
-            let covered = vegetation_configuration
-                .strata
-                .iter()
-                .any(|stratum| stratum.tile_ids.contains(&tile.vegetation_tile_id));
             let tile_lse_forcing = lse_forcing.clone();
             let tile_vegetation_forcing = canopy_forcing.forcing().clone();
-            if covered {
-                if let Some(destinations) = covered_destinations {
-                    // The reduced Child-2C evaluator is an unsealed numerical
-                    // initializer only. The sealed reference atmosphere must
-                    // remain the LSE/V11 forcing; the component-resolved LSE
-                    // canopy-air residual owns the physical shared node.
-                    if !destinations.contains(&(ofe.ofe_id.clone(), tile.tile_id.clone())) {
-                        return Err(V8InputProjectionError::Topology(
-                            "missing keyed covered destination",
-                        ));
-                    }
-                }
-            }
+            // The covered adopter independently requires the complete
+            // destination set for each active Stage-3 lane. Vegetation-covered
+            // tiles on inactive lanes retain this ordinary LSE projection.
             if covered {
                 validate_covered_precipitation_join(
                     lse_forcing,

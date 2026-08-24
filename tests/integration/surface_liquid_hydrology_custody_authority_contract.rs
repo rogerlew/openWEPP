@@ -102,7 +102,7 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
     let contract = read(CONTRACT);
     for required in [
         "contract_id: SC-SURFACELIQUID-001",
-        "contract_version: 8",
+        "contract_version: 9",
         "status: approved",
         "maturity: active",
         "INV-SURFACELIQUID-001",
@@ -171,6 +171,24 @@ fn version_8_child_slab_authority_binds_complete_transaction_before_release() {
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
+}
+
+#[test]
+fn version_9_binds_multi_lane_stage3_parent_release() {
+    let contract = read(CONTRACT);
+    let registry = read("docs/specifications/science-contracts/index.md");
+    for required in [
+        "SURFACELIQUID-V9-MULTI-LANE-STAGE3",
+        "multiple lanes have resolved snow",
+        "common earliest latest-state proposal",
+        "no cross-lane energy, vapor, or snow scalar",
+        "dual-resolved-snow attachment fixtures",
+        "GAP-SURFACELIQUID-005` multi-production-lane covered Stage-3 parent execution | `CLOSED`",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+    assert!(registry.contains("v9 releases lane-keyed multi-lane covered Stage-3 parents"));
+    assert!(!registry.contains("multi-lane covered Stage-3 remains unauthorized"));
 }
 
 #[test]

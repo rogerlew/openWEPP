@@ -117,6 +117,31 @@ fields.
 
 ## Progress log
 
+### 2026-08-24 multi-lane Stage-3 parent transaction qualification
+
+Implementation intent: qualify and release the existing lane-keyed parent
+transaction without changing selectors, defaults, physics equations, restart,
+or publication surfaces. `SC-SURFACELIQUID-001@9` now binds multiple resolved
+snow lanes to a common-earliest latest-state cadence while retaining separate
+OFE-ground Stage-3 owners and boundary ledgers.
+
+The production cap of one resolved-snow lane is removed. A genuine two-OFE
+fixture proves one resolved-snow plus one snow-free lane and two distinct
+resolved-snow lanes through the complete V11/LSE/hydrology/WB14 owner path.
+The mixed case retains the inactive Stage-3 state exactly. The dual case selects
+thirty common 60-second children from distinct 1800/60-second proposals, retains
+lane-keyed receipts for both lanes in every child, processes WB14 in topology
+order, publishes one parent continuation, and exercises rollback after child 1,
+child 17, and the final owner join. Multi-OFE projection now preserves ordinary
+lower boundaries on snow-free lanes, root receipts skip OFEs without the named
+occupancy, and nitrogen debit identity is resolved from the occupancy's actual
+LSE tile rather than a single-OFE assumption.
+
+Local hydrology/ownership and Rust/API review found no unresolved blocking
+finding in this increment. The broader Child-1 package remains `EXECUTING` for
+precipitation custody, snow--soil heat, outcome ledger, terminal chronology,
+and successor restart.
+
 ### 2026-08-23 complete-owner two-OFE routing and monolith split closure
 
 The final WB14 integration blockers are implemented. A two-OFE, unequal-area,

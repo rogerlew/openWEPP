@@ -3,25 +3,25 @@
     #[test]
     #[allow(clippy::too_many_lines)]
     fn mixed_open_covered_stack_executes_complete_ofe_ground_boundary() {
-        exercise_complete_wb14_cadence(0.005, 8.0, true, None, false);
+        exercise_complete_wb14_cadence(0.005, 8.0, true, None, false, None);
     }
 
     #[test]
     #[allow(clippy::too_many_lines)]
     fn two_900_second_complete_owner_children_publish_one_parent() {
-        exercise_complete_wb14_cadence(0.02, 8.0, false, None, false);
+        exercise_complete_wb14_cadence(0.02, 8.0, false, None, false, None);
     }
 
     #[test]
     #[allow(clippy::too_many_lines)]
     fn one_1800_second_child_matches_complete_historical_candidate() {
-        exercise_complete_wb14_cadence(0.08, 8.0, false, None, false);
+        exercise_complete_wb14_cadence(0.08, 8.0, false, None, false, None);
     }
 
     #[test]
     #[allow(clippy::too_many_lines)]
     fn coupled_hard_boundary_truncates_selected_900_second_child() {
-        exercise_complete_wb14_cadence(0.02, 8.0, false, Some(60_000_000_000), false);
+        exercise_complete_wb14_cadence(0.02, 8.0, false, Some(60_000_000_000), false, None);
     }
 
     #[test]
@@ -33,20 +33,55 @@
             false,
             Some(60_000_000_000),
             true,
+            None,
         );
     }
 
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn resolved_snow_and_snow_free_lanes_publish_one_atomic_parent() {
+        exercise_complete_wb14_cadence(0.08, 8.0, false, None, false, Some(0.0));
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn two_resolved_snow_lanes_choose_common_earliest_cadence() {
+        exercise_complete_wb14_cadence(0.08, 8.0, true, None, false, Some(0.005));
+    }
+
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        clippy::too_many_lines
+    )]
     fn exercise_complete_wb14_cadence(
         runtime_swe_m: f64,
         initial_cold_delta_k: f64,
         include_child_17: bool,
         hard_boundary_ns: Option<u128>,
         expect_dynamic_proposal: bool,
+        second_lane_swe_m: Option<f64>,
     ) {
-        let (shadow, fixture) = v10_shadow_fixture();
+        let (shadow, fixture) = second_lane_swe_m.map_or_else(v10_shadow_fixture, |_| {
+            v10_shadow_fixture_from(two_lane_stage3_endpoint_fixture())
+        });
         let base_interval = day_input(&fixture).intervals.remove(0);
         let interval = segment_interval(&base_interval, 1_800_000_000_000, 41, 0.0);
         let mut interval = interval;
+        if second_lane_swe_m.is_some() {
+            interval.wb14_parameters = shadow
+                .inner
+                .lse_configuration
+                .ofes
+                .iter()
+                .map(|ofe| DirectOfeWb14Parameters {
+                    ofe_id: ofe.ofe_id.clone(),
+                    effective_conductivity_m_s: 1e-6,
+                    matric_potential_m: 0.1,
+                    infiltration_storage_capacity_m: 0.04,
+                })
+                .collect();
+        }
         interval.lse_forcing.snow_present_at_beginning = true;
         interval.lse_forcing.snow_present_at_end = true;
         interval.lse_forcing.forcing_sha256 = interval
@@ -102,9 +137,34 @@
             forcing: DirectSnowHourlyForcing::zero(),
             duration_seconds: 1_800.0,
         };
-        let stage3_inputs_by_lane = BTreeMap::from([(1, stage3_inputs)]);
-        let stage3_forcing_by_lane = BTreeMap::from([(1, stage3_forcing)]);
+        let mut stage3_inputs_by_lane = BTreeMap::from([(1, stage3_inputs.clone())]);
+        let mut stage3_forcing_by_lane = BTreeMap::from([(1, stage3_forcing)]);
         let carrier_forcing_by_lane = BTreeMap::from([(1, child2c_carrier_forcing())]);
+        let mut stage3_beginning_by_lane = BTreeMap::from([(1, stage3_beginning.clone())]);
+        if let Some(second_swe) = second_lane_swe_m {
+            let mut second_inputs = stage3_inputs;
+            second_inputs.runtime_swe_m = second_swe;
+            second_inputs.runtime_depth_m = second_swe * 10.0;
+            second_inputs.runtime_density_kg_m3 = if second_swe == 0.0 { 0.0 } else { 100.0 };
+            second_inputs.snow_layers = if second_swe == 0.0 {
+                Vec::new()
+            } else {
+                let mut layer = second_inputs.snow_layers[0];
+                layer.mass_swe_m = second_swe;
+                layer.thickness_m = second_swe * 10.0;
+                layer.density_kg_m3 = 100.0;
+                layer.cold_content_j_m2 = second_swe * 1_000.0 * 2_100.0 * 8.0;
+                vec![layer]
+            };
+            let second_state = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+                2,
+                second_inputs.snow_layers.clone(),
+            )
+            .expect("second persistent Stage-3 beginning");
+            stage3_inputs_by_lane.insert(2, second_inputs);
+            stage3_forcing_by_lane.insert(2, stage3_forcing);
+            stage3_beginning_by_lane.insert(2, second_state);
+        }
         let covered_tiles = shadow
             .inner
             .vegetation_configuration
@@ -136,7 +196,7 @@
                     stage3_inputs_by_lane: &stage3_inputs_by_lane,
                     stage3_forcing_by_lane: &stage3_forcing_by_lane,
                     snow_surface_forcing_by_destination: &covered_only_snow_surface_forcing,
-                    stage3_beginning_by_lane: BTreeMap::from([(1, stage3_beginning.clone())]),
+                    stage3_beginning_by_lane: stage3_beginning_by_lane.clone(),
                     day_index: 0,
                     interval_index: 0,
                     finalize_wb14_parent_interval: true,
@@ -151,12 +211,14 @@
             &mut missing_open_executor,
         )
         .expect_err("mixed OFE without its open-snow boundary must reject");
-        assert!(matches!(
-            missing_error,
-            V11ExecutionError::Executor(DirectV11RealConsumerError::Identity(
-                "covered Stage-3 lane is missing a snow-surface contribution"
-            ))
-        ));
+        if second_lane_swe_m.is_none() {
+            assert!(matches!(
+                missing_error,
+                V11ExecutionError::Executor(DirectV11RealConsumerError::Identity(
+                    "covered Stage-3 lane is missing a snow-surface contribution"
+                ))
+            ));
+        }
         assert!(missing_open_executor.stack.take_staged_stage3().is_none());
         assert!(missing_open_executor.stack.take_staged_ending().is_none());
         let open_record = shadow
@@ -204,7 +266,7 @@
             },
         )
         .expect("open-snow forcing");
-        let snow_surface_forcing_by_destination = BTreeMap::from([
+        let mut snow_surface_forcing_by_destination = BTreeMap::from([
             (
                 (
                     covered_record.key.ofe_id.clone(),
@@ -219,7 +281,63 @@
                 SealedStage3TileBoundaryForcingV1::OpenSnow(open_forcing),
             ),
         ]);
-        let stage3_beginning_by_lane = BTreeMap::from([(1, stage3_beginning.clone())]);
+        for binding in &shadow.inner.surface_configuration.ofe_bindings {
+            if !stage3_beginning_by_lane
+                .get(&binding.production_lane_id)
+                .is_some_and(stage3_is_resolved_thermal_domain)
+            {
+                continue;
+            }
+            for record in shadow
+                .inner
+                .surface_configuration
+                .records
+                .iter()
+                .filter(|record| record.key.ofe_id == binding.ofe_id)
+            {
+                let destination = (record.key.ofe_id.clone(), record.key.tile_id.clone());
+                if snow_surface_forcing_by_destination.contains_key(&destination) {
+                    continue;
+                }
+                let exposure = SealedOpenSnowExposureReceiptV1::try_new(
+                    support,
+                    destination.clone(),
+                    Digest32::from_bytes([10; 32]),
+                    Digest32::from_bytes([11; 32]),
+                    covered_interval.lse_forcing.reference_wind_m_s,
+                    Digest32::from_bytes([12; 32]),
+                )
+                .expect("additional open-snow exposure");
+                let forcing = SealedOpenSnowTileForcingV1::try_new(
+                    SealedOpenSnowTileForcingInputsV1 {
+                        support,
+                        destination: destination.clone(),
+                        forcing_receipt_sha256: Digest32::from_bytes([10; 32]),
+                        exposure,
+                        reference_temperature_k: covered_interval.lse_forcing.air_temperature_k,
+                        reference_specific_humidity_kg_kg: covered_interval
+                            .lse_forcing
+                            .air_specific_humidity_kg_kg,
+                        air_pressure_pa: covered_interval.lse_forcing.air_pressure_pa,
+                        atmospheric_downward_longwave_w_m2: covered_interval
+                            .lse_forcing
+                            .atmospheric_downward_longwave_w_m2,
+                        direct_vis_w_m2: covered_interval.lse_forcing.direct_vis_w_m2,
+                        diffuse_vis_w_m2: covered_interval.lse_forcing.diffuse_vis_w_m2,
+                        direct_nir_w_m2: covered_interval.lse_forcing.direct_nir_w_m2,
+                        diffuse_nir_w_m2: covered_interval.lse_forcing.diffuse_nir_w_m2,
+                        rain_m: 0.0,
+                        snowfall_m: 0.0,
+                        precipitation_parcel_count: 0,
+                    },
+                )
+                .expect("additional open-snow forcing");
+                snow_surface_forcing_by_destination.insert(
+                    destination,
+                    SealedStage3TileBoundaryForcingV1::OpenSnow(forcing),
+                );
+            }
+        }
         let stack = DirectV11SnowCoveredRealConsumerStack::new(
             &shadow,
             DirectV11SnowCoveredStackInputs {
@@ -227,7 +345,7 @@
                 stage3_inputs_by_lane: &stage3_inputs_by_lane,
                 stage3_forcing_by_lane: &stage3_forcing_by_lane,
                 snow_surface_forcing_by_destination: &snow_surface_forcing_by_destination,
-                stage3_beginning_by_lane,
+                stage3_beginning_by_lane: stage3_beginning_by_lane.clone(),
                 day_index: 0,
                 interval_index: 0,
                 finalize_wb14_parent_interval: true,
@@ -260,8 +378,11 @@
         let identities = shadow
             .inner
             .surface_configuration
-            .records
+            .ofe_bindings
             .iter()
+            .map(|binding| (binding.production_lane_id, shadow
+            .inner.surface_configuration.records.iter()
+            .filter(|record| record.key.ofe_id == binding.ofe_id)
             .map(|record| {
                 PreparedStage3V11SupportIdentityV1::new(
                     record.key.ofe_id.as_str().to_owned(),
@@ -272,7 +393,8 @@
                     Digest32::from_bytes([14; 32]),
                 )
             })
-            .collect::<Vec<_>>();
+            .collect::<Vec<_>>()))
+            .collect::<BTreeMap<_, _>>();
         let mut snow_free_parent_interval = base_interval.clone();
         snow_free_parent_interval.lse_forcing.snow_present_at_beginning = false;
         snow_free_parent_interval.lse_forcing.snow_present_at_end = false;
@@ -285,7 +407,7 @@
             stage3_inputs_by_lane.clone(),
             stage3_forcing_by_lane.clone(),
             snow_free_parent_interval,
-            BTreeMap::from([(1, identities)]),
+            identities,
         )
         .expect("coupled cadence prepared support")
         .with_covered_v11_interval(covered_interval.clone());
@@ -339,15 +461,21 @@
             calendar_receipt: digest(2),
             controller_policy: digest(5),
             parent_sequence: 40,
-            lane_ids: vec![1],
+            lane_ids: stage3_beginning_by_lane.keys().copied().collect(),
             vegetation_configuration: migrated.configuration.clone(),
             surface_liquid_configuration: shadow.inner.surface_configuration.clone(),
             wb14_parameters: covered_interval.wb14_parameters.clone(),
         };
-        let selected_seconds =
-            Wb11HydrologyKernel::project_stage3_surface_state_v1(&stage3_beginning)
-                .expect("coupled cadence projection")
-                .selected_substep_seconds;
+        let selected_seconds = stage3_beginning_by_lane
+            .values()
+            .filter(|state| stage3_is_resolved_thermal_domain(state))
+            .map(|state| {
+                Wb11HydrologyKernel::project_stage3_surface_state_v1(state)
+                    .expect("coupled cadence projection")
+                    .selected_substep_seconds
+            })
+            .reduce(f64::min)
+            .expect("active Stage-3 cadence");
         let rollback_parent = parent.clone();
         let rollback_consumer = shadow.clone();
         let rollback_clock = beginning_clock.clone();
@@ -367,7 +495,7 @@
                 0,
                 0,
                 digest(3),
-                BTreeMap::from([(1, stage3_beginning.clone())]),
+                stage3_beginning_by_lane.clone(),
                 Some(injection),
             )
             .is_err());
@@ -376,7 +504,7 @@
             assert_eq!(beginning_clock, rollback_clock);
             assert_eq!(stage3_beginning, rollback_stage3);
         }
-        let (_, ending_consumer, ending_clock, finalized_parent, _, subslabs) =
+        let (_, ending_consumer, ending_clock, finalized_parent, ending_stage3, subslabs) =
             execute_covered_real_v11_parent(
                 &context,
                 &parent,
@@ -386,7 +514,7 @@
                 0,
                 0,
                 digest(3),
-                BTreeMap::from([(1, stage3_beginning.clone())]),
+                stage3_beginning_by_lane.clone(),
                 None,
             )
             .expect("synchronized covered parent cadence");
@@ -414,7 +542,7 @@
             shadow.inner.accepted_interval_count() + 1,
             "thirty coupled slabs publish exactly one persistent parent interval",
         );
-        if selected_seconds.to_bits() == 1_800.0_f64.to_bits() {
+        if selected_seconds.to_bits() == 1_800.0_f64.to_bits() && second_lane_swe_m.is_none() {
             assert_eq!(
                 ending_consumer, historical_complete_candidate,
                 "one-child coordinator must be bit-identical to the complete historical candidate",
@@ -429,6 +557,27 @@
                 && receipt.owner_join.wb14_child_receipt_set_sha256
                     == receipt.wb14_child_receipt_set_sha256
         }));
+        if let Some(second_swe) = second_lane_swe_m {
+            let expected_active_lanes = if second_swe == 0.0 {
+                BTreeSet::from([1])
+            } else {
+                BTreeSet::from([1, 2])
+            };
+            assert!(subslabs.iter().all(|receipt| {
+                receipt.lane_receipts.keys().copied().collect::<BTreeSet<_>>()
+                    == expected_active_lanes
+            }));
+            assert_eq!(ending_stage3.len(), 2);
+            if second_swe == 0.0 {
+                assert_eq!(ending_stage3[&2], stage3_beginning_by_lane[&2]);
+            } else {
+                assert!(subslabs.iter().all(|receipt| {
+                    receipt.selected_upper_bound_s_bits == 60.0_f64.to_bits()
+                        && receipt.lane_receipts[&1].lane_id == 1
+                        && receipt.lane_receipts[&2].lane_id == 2
+                }));
+            }
+        }
         assert!(subslabs[..subslabs.len() - 1]
             .iter()
             .all(|receipt| receipt.wb14_parent_receipt_set_sha256.is_none()));
@@ -464,6 +613,10 @@
             "mixed OFE flux is the unnormalized sum of tile-fraction contributions",
         );
         assert!(executor.stack.take_staged_stage3().is_some());
+
+        if second_lane_swe_m.is_some() {
+            return;
+        }
 
         let mut open_shadow = shadow.clone();
         for record in &mut open_shadow.inner.surface_configuration.records {
@@ -815,6 +968,84 @@
         };
         assert!(execute_v11_segment(&migrated.configuration, &parent, &slab, &mut poisoned).is_err());
         assert!(poisoned.stack.take_staged_ending().is_none());
+    }
+
+    fn two_lane_stage3_endpoint_fixture() -> EndpointFixture {
+        let mut fixture = two_ofe_routed_endpoint_fixture();
+        let lower_ofe = OfeId::try_new("ofe-2").expect("lower OFE");
+        let lower_open = TileId::try_new("lower-open").expect("lower open tile");
+        let mut surface_records = fixture.surface_configuration.records.clone();
+        surface_records.retain(|record| {
+            record.key.ofe_id != lower_ofe || record.key.tile_id == lower_open
+        });
+        surface_records
+            .iter_mut()
+            .find(|record| record.key.ofe_id == lower_ofe)
+            .expect("lower open surface record")
+            .tile_fraction = 1.0;
+        fixture.surface_configuration = DirectSurfaceLiquidConfiguration::new(
+            fixture.surface_configuration.owner_id.clone(),
+            fixture.surface_configuration.run_id,
+            fixture.surface_configuration.ofe_topology.clone(),
+            fixture.surface_configuration.ofe_bindings.clone(),
+            surface_records,
+        )
+        .expect("two-lane Stage-3 surface configuration");
+        let initial_surface = fixture
+            .surface_configuration
+            .records
+            .iter()
+            .map(|record| (record.key.clone(), 0.0))
+            .collect();
+        let surface_state = crate::DirectSurfaceLiquidOwnedState::new_initial(
+            &fixture.surface_configuration,
+            &initial_surface,
+            0,
+        )
+        .expect("two-lane Stage-3 surface state");
+        let mut frame = fixture.hydrology.beginning_frame().clone();
+        frame
+            .configure_surface_liquid_shadow(&fixture.surface_configuration, surface_state)
+            .expect("install two-lane Stage-3 surface owner");
+        fixture.hydrology = crate::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter::try_from_day_start(
+            &frame,
+            fixture.hydrology.day_index(),
+            fixture.hydrology.transaction_id(),
+            fixture.hydrology.interval_s(),
+            fixture.hydrology.hydrology_owner_id().clone(),
+            fixture.hydrology.layer_maps(),
+        )
+        .expect("two-lane Stage-3 hydrology owner");
+        let lower_lse = fixture
+            .lse_configuration
+            .ofes
+            .iter_mut()
+            .find(|ofe| ofe.ofe_id == lower_ofe)
+            .expect("lower LSE OFE");
+        lower_lse.tiles.retain(|tile| tile.tile_id == lower_open);
+        lower_lse.tiles[0].fraction_ofe_ground = 1.0;
+        fixture.lse_configuration.configuration_sha256 = fixture
+            .lse_configuration
+            .canonical_sha256()
+            .expect("two-lane LSE configuration digest");
+        fixture.lse_configuration.validate().expect("two-lane LSE configuration");
+        fixture
+            .lse_state
+            .tiles
+            .retain(|tile| tile.ofe_id != lower_ofe || tile.tile_id == lower_open);
+        fixture
+            .lse_state
+            .configuration_sha256
+            .clone_from(&fixture.lse_configuration.configuration_sha256);
+        fixture.lse_state.state_sha256 = fixture
+            .lse_state
+            .canonical_sha256()
+            .expect("two-lane LSE state digest");
+        fixture
+            .lse_state
+            .validate(&fixture.lse_configuration)
+            .expect("two-lane LSE state");
+        fixture
     }
 
 

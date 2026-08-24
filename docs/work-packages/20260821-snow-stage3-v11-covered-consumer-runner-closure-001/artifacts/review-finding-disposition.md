@@ -38,3 +38,20 @@ in `gate-results.md`. Package disposition remains `EXECUTING / HOLD`.
 - Hydrology/ownership: `PASS`. The exact child candidate proves OFE-1 routed runoff to OFE-2, downstream source lineage, exact 100/200 area-scaled mass and enthalpy, seven ending owners, and one persistent interval advance. The initial cumulative-only finding was accepted and corrected.
 - Rust/API: `PASS`. Include splits preserve module/API semantics; the unreachable duplicate fixture branch was removed; hydrology-candidate retention is test-only; all partial-empty nitrogen protocol poisons reject; all touched/refactored Rust files are below 3,000 lines. The initial public/runtime-retention finding was accepted and corrected.
 - Verification: final affected suite `786 passed, 1 configured skip`; production check, formatting, and diff hygiene pass.
+
+## 2026-08-24 multi-lane Stage-3 parent reviews
+
+- Hydrology/ownership review: `PASS`. The exact diff contains no cross-OFE
+  Stage-3 scalar. Every accepted dual-snow child retains keyed lane receipts;
+  the snow-free lane carries its Stage-3 owner exactly; WB14 remains one
+  topology-ordered candidate; injected child/final-join failures leave all
+  caller-owned beginnings unchanged.
+- Rust/API review: `PASS`. The removed guard was the only production lane-count
+  cap. Multi-OFE corrections preserve fail-closed occupancy/tile joins while
+  removing only false single-OFE assumptions: ordinary lower boundaries remain
+  ordinary, non-owning root/OFE pairs emit no receipt, and nonempty BGC debits
+  bind through a unique actual `(ofe,tile,occupancy)` join.
+- Finding disposition: `accepted/fixed` for the initial non-bijective fixture,
+  root-zone join, open-tile fraction, soil-temperature, and BGC single-OFE
+  assumptions. No finding was waived. Reviews were performed locally because
+  this session did not have explicit user authorization to spawn reviewers.

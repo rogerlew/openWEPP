@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
+    use std::collections::{BTreeMap, BTreeSet};
 
     use openwepp_coupled_time::{
         ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, Digest32, LedgerEntryV1,
@@ -40,7 +40,7 @@ mod tests {
         DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowStage3SupportInput,
         DirectSnowSurfaceEnergyOptions,
         SnowDensityModel, SnowMeltModel, SnowStage3LiquidRoutingModel, SnowSurfaceLongwaveModel,
-        Wb11HydrologyKernel,
+        Wb11HydrologyKernel, stage3_is_resolved_thermal_domain,
     };
     use crate::winter_column::DirectSnowLayerState;
     use openwepp_vegetation::v11::{

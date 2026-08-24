@@ -68,20 +68,21 @@ mod tests {
     }
 
     #[test]
-    fn multi_lane_covered_scope_rejects_before_candidate_mutation() {
+    fn multi_lane_covered_lifecycle_is_lane_keyed_without_candidate_mutation() {
         let first = lifecycle_state(Some(0.002), 0.0, 0.0);
         let mut second = first.clone();
         second.lane_id = 2;
         let lanes = BTreeMap::from([(1, first), (2, second)]);
         let frozen = lanes.clone();
 
-        assert!(matches!(
-            validate_covered_stage3_lane_scope(&lanes),
-            Err(DirectSnowStage3V11AttachmentError::Support(
-                "unreleased multi-lane covered Stage-3 parent ledger"
-            ))
-        ));
-        assert_eq!(lanes, frozen, "guard must not mutate candidate owners");
+        assert_eq!(
+            lanes
+                .values()
+                .filter(|state| stage3_is_resolved_thermal_domain(state))
+                .count(),
+            2
+        );
+        assert_eq!(lanes, frozen, "admission must not mutate candidate owners");
     }
 
     fn support_identity(ofe_id: &str, tile_id: &str) -> PreparedStage3V11SupportIdentityV1 {

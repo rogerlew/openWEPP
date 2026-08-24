@@ -122,6 +122,20 @@ Complete surface-liquid WB14 child-slab integration checkpoint expansion:
 
 Restart V1 fail-closed and exact-head assurance reconciliation expansion:
 
+Multi-lane Stage-3 parent qualification expansion:
+
+- `docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md`,
+  registry, and its integration guard: version-9 lane-keyed authority release.
+- `snow_stage3_v11_attachment{.rs,_tests.rs}`: removal of the released
+  one-resolved-lane cap and retained lifecycle coverage.
+- `land_surface_energy_shadow/v8_input_projection.rs`,
+  `v9_real_consumer_shadow.rs`, and `v11_covered/owner_finalization.rs`:
+  exact multi-OFE ordinary-boundary, root/OFE, soil-temperature, and BGC
+  identity corrections exposed by the real parent fixture.
+- `v9_real_consumer_shadow{_tests.rs,_wb14_tests.rs}`: genuine two-OFE
+  snow/snow-free and dual-resolved-snow parent fixtures, cadence, lane receipt,
+  inactive-owner, topology, publication, and rollback evidence.
+
 - `crates/openwepp-persisted-restart-v1/src/hydrology_restart.rs` and
   `tests/integration/direct_v10_real_consumer_checkpoint_v1_contract.rs`:
   reject both legacy and production Stage-3 owners at the frozen V1 boundary,

@@ -890,18 +890,6 @@ pub(crate) fn v11_nitrogen_resource_debits(
         return Ok(Vec::new());
     }
     let occupancies = input.configuration.expected_occupancies();
-    let ofes = envelope
-        .hydrology()
-        .receiver_closure_operands()
-        .production_soil
-        .iter()
-        .map(|row| row.ofe_id.as_str())
-        .collect::<BTreeSet<_>>();
-    let ofe_id = ofes
-        .iter()
-        .next()
-        .filter(|_| ofes.len() == 1)
-        .ok_or(DirectV11RealConsumerError::Identity("V11 BGC OFE binding"))?;
     uses.iter()
         .map(|used| {
             let request = requests
@@ -921,6 +909,21 @@ pub(crate) fn v11_nitrogen_resource_debits(
                 .find(|id| id.stratum_id.as_str() == used.owner_id.as_str())
                 .ok_or(DirectV11RealConsumerError::Identity(
                     "V11 nitrogen occupancy binding",
+                ))?;
+            let matching_ofes = envelope
+                .hydrology()
+                .receiver_closure_operands()
+                .lse_tiles
+                .iter()
+                .filter(|row| row.tile_id == occupancy.tile_id)
+                .map(|row| row.ofe_id.as_str())
+                .collect::<BTreeSet<_>>();
+            let ofe_id = matching_ofes
+                .iter()
+                .next()
+                .filter(|_| matching_ofes.len() == 1)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "V11 BGC occupancy/OFE binding",
                 ))?;
             V11ResourceDebit::new(V11ResourceDebit {
                 receipt_id: Digest32::zero(),
@@ -975,20 +978,16 @@ mod nitrogen_protocol_cardinality_tests {
 
     #[test]
     fn empty_protocol_is_admissible_and_every_partial_empty_protocol_rejects() {
-        assert_eq!(
-            validate_v11_nitrogen_protocol_cardinality(0, 0, 0).expect("empty protocol"),
-            true,
-        );
+        assert!(validate_v11_nitrogen_protocol_cardinality(0, 0, 0).expect("empty protocol"));
         for counts in [(0, 0, 1), (0, 1, 0), (1, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0)] {
             assert!(
                 validate_v11_nitrogen_protocol_cardinality(counts.0, counts.1, counts.2).is_err(),
                 "partial-empty poison {counts:?}",
             );
         }
-        assert_eq!(
-            validate_v11_nitrogen_protocol_cardinality(1, 1, 1)
-                .expect("nonempty protocol"),
-            false,
+        assert!(
+            !validate_v11_nitrogen_protocol_cardinality(1, 1, 1)
+                .expect("nonempty protocol")
         );
     }
 }

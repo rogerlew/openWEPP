@@ -2301,10 +2301,19 @@ fn project_live_vegetation_forcing(
         } else {
             common_provider_value(&water_values, "vegetation soil-water projection")?
         };
-        let temperature = common_provider_value(
-            &temperature_values,
-            "vegetation soil-temperature projection",
-        )?;
+        let temperature = if root_zone.is_some() {
+            temperature_values
+                .first()
+                .copied()
+                .ok_or(DirectV9RealConsumerError::Identity(
+                    "vegetation soil-temperature projection",
+                ))?
+        } else {
+            common_provider_value(
+                &temperature_values,
+                "vegetation soil-temperature projection",
+            )?
+        };
         layer.water_beginning_kg_m2 = water;
         layer.temperature_k = temperature;
     }
@@ -2395,11 +2404,11 @@ fn project_live_vegetation_forcing(
                                 })
                         })
                         .collect::<Vec<_>>();
-                    if matching_ofes.is_empty() {
-                        return Err(DirectV9RealConsumerError::Identity(
-                            "root-zone OFE/lane join",
-                        ));
-                    }
+                    // Root-zone configuration is complete over production
+                    // lanes, while a vegetation occupancy exists only on OFEs
+                    // containing that configured topology tile. A snow-free
+                    // or open-only lane therefore contributes no receipt for
+                    // this occupancy; it is not an identity failure.
                     for ofe in matching_ofes {
                         receipts.push(root_zone_hydraulic_receipt(
                             V10RootZoneReceiptKey {
