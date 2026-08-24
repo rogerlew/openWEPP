@@ -1592,6 +1592,22 @@ pub(crate) enum Stage3V11FailureInjection {
     AfterFinalOwnerJoin,
 }
 
+fn validate_covered_stage3_lane_scope(
+    stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+) -> Result<(), DirectSnowStage3V11AttachmentError> {
+    if stage3
+        .values()
+        .filter(|state| stage3_is_resolved_thermal_domain(state))
+        .count()
+        > 1
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Support(
+            "unreleased multi-lane covered Stage-3 parent ledger",
+        ));
+    }
+    Ok(())
+}
+
 impl DirectSnowStage3V11ShadowAttachment {
     pub fn new(
         static_context: DirectSnowStage3V11StaticContext,
@@ -1778,11 +1794,7 @@ impl DirectSnowStage3V11ShadowAttachment {
                 candidate.next_parent_sequence,
             )?;
             let (parent, consumer, clock, finalized, covered_stage3) = if covered_support {
-                if beginning_stage3.len() > 1 {
-                    return Err(DirectSnowStage3V11AttachmentError::Support(
-                        "unreleased multi-lane covered Stage-3 parent ledger",
-                    ));
-                }
+                validate_covered_stage3_lane_scope(&beginning_stage3)?;
                 if beginning_stage3
                     .values()
                     .filter(|state| stage3_is_resolved_thermal_domain(state))

@@ -530,12 +530,13 @@ absolute mass and energy for
 unequal OFE areas. The parcel is inserted before downstream eligibility.
 At each topology rank the child receipt seals canonical ordered
 `pending_routed_parcels_before_sha256` and
-`pending_routed_parcels_after_sha256`. Their preimages contain each parcel's
-support, origin/source/destination/basis identities, mass bits, enthalpy bits,
-and predecessor receipt in complete parcel identity order. Reconstruction
-requires the prior rank's `after` digest to equal the next rank's `before`
-digest and proves that every newly routed parcel is present before downstream
-WB14 eligibility.
+`pending_routed_parcels_after_sha256`. Their preimages contain the ordered OFE
+queue keys and, for each parcel, parcel ID, origin and recipient OFE/tile,
+basis OFE, kind, support bits, mass bits, and enthalpy bits. The enclosing
+scalar child receipt seals both queue digests together with its predecessor
+receipt. Reconstruction requires the prior rank's `after` digest to equal the
+next rank's `before` digest and proves that every newly routed parcel is
+present before downstream WB14 eligibility.
 Final-OFE runoff is outlet runoff. Strictly increasing topology indices make
 the queue finite; every OFE executes once per child and every
 routed parcel terminates downstream or at the outlet.
@@ -968,8 +969,8 @@ persistent continuation advance.
 
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
 |---|---|---|---|---|---|---|
-| `SURFACELIQUID-V7-TERMINAL` | Terminal Meltout Receipt And Partial-WB14 details below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-010, INV-SURFACELIQUID-011` | `none` | Released terminal receiver and partial-bin rules retained unchanged. |
-| `SURFACELIQUID-V8-CHILD-SLAB` | WB14 Parent/Child Receipt Schema Details below | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-006, INV-SURFACELIQUID-012, INV-SURFACELIQUID-013, INV-SURFACELIQUID-014` | `flagged-binding-addition` | Version-8 rules are exposed in the core algorithm, guards, obligations, invariants, aliases, units, vectors, and gaps and undergo this cycle's dual review. |
+| `SURFACELIQUID-V7-TERMINAL` | Terminal Meltout Receipt And Partial-WB14 details above | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-010, INV-SURFACELIQUID-011` | `none` | Released terminal receiver and partial-bin rules retained unchanged. |
+| `SURFACELIQUID-V8-CHILD-SLAB` | WB14 Parent/Child Receipt Schema Details above | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-006, INV-SURFACELIQUID-012, INV-SURFACELIQUID-013, INV-SURFACELIQUID-014` | `flagged-binding-addition` | Version-8 rules are exposed in the core algorithm, guards, obligations, invariants, aliases, units, vectors, and gaps and undergo this cycle's dual review. |
 
 ## Gap Register And Promotability
 
