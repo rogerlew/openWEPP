@@ -29,7 +29,7 @@ mod tests {
     use crate::snow_stage3_v11_attachment::{
         DirectSnowStage3V11StaticContext, PreparedStage3V11DayV1,
         PreparedStage3V11SupportIdentityV1, PreparedStage3V11SupportV1,
-        STAGE3_V11_PARENT_SUPPORT_NS,
+        STAGE3_V11_PARENT_SUPPORT_NS, Stage3V11FailureInjection,
         execute_covered_real_v11_parent,
     };
     use crate::v9_real_consumer_shadow::{
@@ -48,6 +48,19 @@ mod tests {
         V11ParentTransaction, execute_v11_segment, migrate_v10_runtime_to_v11,
         v11_vegetation_owner_envelope,
     };
+
+    fn test_wb14_coupled_binding() -> crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+        crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+            proposed_upper_bound_s_bits: 1_800.0_f64.to_bits(),
+            coupled_parent_transaction_sha256: [1; 32],
+            accepted_slab_sha256: [2; 32],
+            parent_beginning_complete_owner_set_sha256: [3; 32],
+            parent_support_start_ns: 0,
+            parent_support_end_ns: 1_800_000_000_000,
+            child_support_start_ns: 0,
+            child_support_end_ns: 1_800_000_000_000,
+        }
+    }
     use openwepp_vegetation::{
         V8CoupledOwnedState, V9_MODEL_SHA256, V9CoupledOwnedState, V10_MODEL_SHA256,
         V10CoupledOwnedState,
@@ -1001,6 +1014,46 @@ mod tests {
     #[test]
     #[allow(clippy::too_many_lines)]
     fn mixed_open_covered_stack_executes_complete_ofe_ground_boundary() {
+        exercise_complete_wb14_cadence(0.005, 8.0, true, None, false);
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn two_900_second_complete_owner_children_publish_one_parent() {
+        exercise_complete_wb14_cadence(0.02, 8.0, false, None, false);
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn one_1800_second_child_matches_complete_historical_candidate() {
+        exercise_complete_wb14_cadence(0.08, 8.0, false, None, false);
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn coupled_hard_boundary_truncates_selected_900_second_child() {
+        exercise_complete_wb14_cadence(0.02, 8.0, false, Some(60_000_000_000), false);
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn latest_accepted_stage3_state_changes_next_wb14_proposal() {
+        exercise_complete_wb14_cadence(
+            0.010_000_001,
+            0.0,
+            false,
+            Some(60_000_000_000),
+            true,
+        );
+    }
+
+    fn exercise_complete_wb14_cadence(
+        runtime_swe_m: f64,
+        initial_cold_delta_k: f64,
+        include_child_17: bool,
+        hard_boundary_ns: Option<u128>,
+        expect_dynamic_proposal: bool,
+    ) {
         let (shadow, fixture) = v10_shadow_fixture();
         let base_interval = day_input(&fixture).intervals.remove(0);
         let interval = segment_interval(&base_interval, 1_800_000_000_000, 41, 0.0);
@@ -1041,6 +1094,16 @@ mod tests {
             .surface_energy_options
             .daily_extraterrestrial_radiation_mj_m2 = 0.0;
         stage3_inputs.surface_energy_options.daylight = false;
+        // Exercise the live small-mass Stage-3 proposal through thirty
+        // 60-second complete-owner/WB14 children, not only the scalar oracle.
+        stage3_inputs.runtime_swe_m = runtime_swe_m;
+        stage3_inputs.runtime_depth_m = runtime_swe_m * 10.0;
+        stage3_inputs.runtime_density_kg_m3 = 100.0;
+        stage3_inputs.snow_layers[0].mass_swe_m = runtime_swe_m;
+        stage3_inputs.snow_layers[0].thickness_m = runtime_swe_m * 10.0;
+        stage3_inputs.snow_layers[0].density_kg_m3 = 100.0;
+        stage3_inputs.snow_layers[0].cold_content_j_m2 =
+            runtime_swe_m * 1_000.0 * 2_100.0 * initial_cold_delta_k;
         let stage3_beginning = Wb11HydrologyKernel::initialize_stage3_persistent_state(
             1,
             stage3_inputs.snow_layers.clone(),
@@ -1088,6 +1151,7 @@ mod tests {
                     day_index: 0,
                     interval_index: 0,
                     finalize_wb14_parent_interval: true,
+                    wb14_coupled_child_binding: test_wb14_coupled_binding(),
                 },
             ),
         };
@@ -1178,6 +1242,7 @@ mod tests {
                 day_index: 0,
                 interval_index: 0,
                 finalize_wb14_parent_interval: true,
+                wb14_coupled_child_binding: test_wb14_coupled_binding(),
             },
         );
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
@@ -1187,7 +1252,8 @@ mod tests {
             .stack
             .last_lane_boundary_receipts()
             .and_then(|receipts| receipts.get(&1))
-            .expect("mixed OFE final lane receipt");
+            .expect("mixed OFE final lane receipt")
+            .clone();
         assert_eq!(lane_receipt.ordered_destinations.len(), 2);
         assert!(lane_receipt
             .ordered_destinations
@@ -1197,6 +1263,10 @@ mod tests {
             .ordered_destinations
             .iter()
             .any(|value| value.boundary_class == crate::snow_stage3_terminal_handoff::Stage3TileBoundaryClassV1::V11CanopyCovered));
+        let historical_complete_candidate = executor
+            .stack
+            .take_staged_ending()
+            .expect("historical one-child complete candidate");
 
         let identities = shadow
             .inner
@@ -1237,6 +1307,11 @@ mod tests {
                 SealedStage3TileBoundaryForcingV1::OpenSnow(value) => prepared
                     .with_sealed_open_tile_forcing(destination.clone(), value.clone()),
             };
+        }
+        if let Some(boundary_ns) = hard_boundary_ns {
+            prepared = prepared
+                .with_hard_boundaries(vec![ModelTimeNs::new(boundary_ns)])
+                .expect("accepted coupled hard boundary");
         }
         let beginning_owners = initial_v11_owners(&shadow, &migrated.state);
         let beginning_owner_states = beginning_owners
@@ -1284,7 +1359,36 @@ mod tests {
             Wb11HydrologyKernel::project_stage3_surface_state_v1(&stage3_beginning)
                 .expect("coupled cadence projection")
                 .selected_substep_seconds;
-        let (_, _, ending_clock, finalized_parent, _, subslabs) =
+        let rollback_parent = parent.clone();
+        let rollback_consumer = shadow.clone();
+        let rollback_clock = beginning_clock.clone();
+        let rollback_stage3 = stage3_beginning.clone();
+        let mut injections = vec![Stage3V11FailureInjection::AfterSubslab(1)];
+        if include_child_17 {
+            injections.push(Stage3V11FailureInjection::AfterSubslab(17));
+        }
+        injections.push(Stage3V11FailureInjection::AfterFinalOwnerJoin);
+        for injection in injections {
+            assert!(execute_covered_real_v11_parent(
+                &context,
+                &parent,
+                &shadow,
+                &beginning_clock,
+                &prepared,
+                0,
+                0,
+                digest(3),
+                BTreeMap::from([(1, stage3_beginning.clone())]),
+                true,
+                Some(injection),
+            )
+            .is_err());
+            assert_eq!(parent, rollback_parent);
+            assert_eq!(shadow, rollback_consumer);
+            assert_eq!(beginning_clock, rollback_clock);
+            assert_eq!(stage3_beginning, rollback_stage3);
+        }
+        let (_, ending_consumer, ending_clock, finalized_parent, _, subslabs) =
             execute_covered_real_v11_parent(
                 &context,
                 &parent,
@@ -1295,16 +1399,70 @@ mod tests {
                 0,
                 digest(3),
                 BTreeMap::from([(1, stage3_beginning.clone())]),
+                true,
                 None,
             )
             .expect("synchronized covered parent cadence");
         assert_eq!(ending_clock.accepted_until(), support.end_ns());
-        assert_eq!(
-            subslabs.len(),
-            (1_800.0 / selected_seconds) as usize,
-            "one ordered V11/Stage-3 segment per selected cadence"
-        );
+        let expected_children = if expect_dynamic_proposal {
+            subslabs.len()
+        } else if hard_boundary_ns.is_some() {
+            3
+        } else {
+            (1_800.0 / selected_seconds) as usize
+        };
+        assert_eq!(subslabs.len(), expected_children);
+        if hard_boundary_ns.is_some() {
+            assert_eq!(subslabs[0].selected_upper_bound_s_bits, 900.0_f64.to_bits());
+            assert_eq!(subslabs[0].support.duration_s_bits(), 60.0_f64.to_bits());
+        }
+        if expect_dynamic_proposal {
+            assert!(subslabs.iter().skip(1).any(|receipt| {
+                receipt.selected_upper_bound_s_bits == 60.0_f64.to_bits()
+            }), "latest accepted Stage-3 state must change the next proposal");
+        }
         assert_eq!(finalized_parent.accepted_segments.len(), subslabs.len());
+        assert_eq!(
+            ending_consumer.inner.accepted_interval_count(),
+            shadow.inner.accepted_interval_count() + 1,
+            "thirty coupled slabs publish exactly one persistent parent interval",
+        );
+        if selected_seconds.to_bits() == 1_800.0_f64.to_bits() {
+            assert_eq!(
+                ending_consumer, historical_complete_candidate,
+                "one-child coordinator must be bit-identical to the complete historical candidate",
+            );
+        }
+        assert!(subslabs.iter().all(|receipt| {
+            receipt.validate().is_ok()
+                && digest_bytes(&receipt.wb14_child_replay_bytes)
+                    == receipt.wb14_child_receipt_set_sha256
+                &&
+            receipt.wb14_child_receipt_set_sha256 != Digest32::zero()
+                && receipt.owner_join.wb14_child_receipt_set_sha256
+                    == receipt.wb14_child_receipt_set_sha256
+        }));
+        assert!(subslabs[..subslabs.len() - 1]
+            .iter()
+            .all(|receipt| receipt.wb14_parent_receipt_set_sha256.is_none()));
+        assert!(subslabs
+            .last()
+            .and_then(|receipt| receipt.wb14_parent_receipt_set_sha256)
+            .is_some());
+        let mut poisoned = subslabs[0].clone();
+        poisoned.selected_upper_bound_s_bits = if selected_seconds.to_bits() == 900.0_f64.to_bits()
+        {
+            60.0_f64.to_bits()
+        } else {
+            900.0_f64.to_bits()
+        };
+        assert!(poisoned.validate().is_err(), "proposal substitution must reject");
+        let mut poisoned = subslabs[0].clone();
+        poisoned.wb14_child_replay_bytes[0] ^= 1;
+        assert!(poisoned.validate().is_err(), "replay payload substitution must reject");
+        let mut poisoned = subslabs[0].clone();
+        poisoned.accepted_slab_sha256 = digest(99);
+        assert!(poisoned.validate().is_err(), "accepted-slab substitution must reject");
         for pair in subslabs.windows(2) {
             assert_eq!(pair[0].support.end_ns(), pair[1].support.start_ns());
         }
@@ -1319,7 +1477,6 @@ mod tests {
             "mixed OFE flux is the unnormalized sum of tile-fraction contributions",
         );
         assert!(executor.stack.take_staged_stage3().is_some());
-        assert!(executor.stack.take_staged_ending().is_some());
 
         let mut open_shadow = shadow.clone();
         for record in &mut open_shadow.inner.surface_configuration.records {
@@ -1511,6 +1668,7 @@ mod tests {
                         day_index: 0,
                         interval_index: 0,
                         finalize_wb14_parent_interval: true,
+                        wb14_coupled_child_binding: test_wb14_coupled_binding(),
                     },
                 ),
             };
@@ -1584,6 +1742,7 @@ mod tests {
                 day_index: 0,
                 interval_index: 0,
                 finalize_wb14_parent_interval: true,
+                wb14_coupled_child_binding: test_wb14_coupled_binding(),
             },
         );
         let (_, changed_vegetation_state) = project_v9_runtime_to_v8(
@@ -1663,6 +1822,7 @@ mod tests {
                     day_index: 0,
                     interval_index: 0,
                     finalize_wb14_parent_interval: true,
+                    wb14_coupled_child_binding: test_wb14_coupled_binding(),
                 },
             ),
         };

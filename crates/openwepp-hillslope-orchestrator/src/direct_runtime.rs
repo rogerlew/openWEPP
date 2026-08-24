@@ -396,6 +396,7 @@ pub use surface_liquid_closure::{
     DirectSurfaceLiquidClosureOperands, DirectSurfaceLiquidParcelClosureOperands,
     DirectSurfaceLiquidStoreClosureOperands,
 };
+pub use surface_liquid_ingress::DirectWb14CoupledChildBindingV1;
 pub(crate) use surface_liquid_ingress::preflight_surface_liquid_ingress_input_identities;
 pub use surface_liquid_ingress::{
     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
@@ -406,8 +407,9 @@ pub use surface_liquid_ingress::{
     DirectTileGroundIngress, execute_surface_liquid_ingress,
 };
 pub(crate) use surface_liquid_ingress::{
-    DirectWb14ParentWorkingState, execute_surface_liquid_ingress_with_parent_finalization,
-    execute_surface_liquid_ingress_with_parent_state,
+    DirectWb14ParentWorkingState,
+    execute_surface_liquid_ingress_with_parent_state_and_coupled_binding,
+    validate_wb14_child_replay_binding, validate_wb14_parent_replay,
 };
 pub use surface_liquid_owner::{
     DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,

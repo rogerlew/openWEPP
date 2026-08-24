@@ -288,6 +288,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         &current_execution_boundaries,
                         true,
                         self.finalize_wb14_parent_interval,
+                        self.wb14_coupled_child_binding,
                     )
                     .map_err(|error| {
                         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
@@ -369,6 +370,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         &final_execution_boundaries,
                         false,
                         self.finalize_wb14_parent_interval,
+                        self.wb14_coupled_child_binding,
                     )
                     .map_err(|error| {
                         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
@@ -447,6 +449,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         },
                         false,
                         self.finalize_wb14_parent_interval,
+                        self.wb14_coupled_child_binding,
                     )
                     .map_err(|error| {
                         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
@@ -520,6 +523,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         },
                         false,
                         self.finalize_wb14_parent_interval,
+                        self.wb14_coupled_child_binding,
                     )
                     .map_err(|error| {
                         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
@@ -639,6 +643,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         },
                         false,
                         self.finalize_wb14_parent_interval,
+                        self.wb14_coupled_child_binding,
                     )
                     .map_err(|error| {
                         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
@@ -697,6 +702,26 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
             &final_lane_boundary_receipts,
             &final_boundary_receipts,
         )?;
+        self.last_wb14_child_receipt_set_sha256 = Some(
+            envelope
+                .hydrology()
+                .surface_ingress()
+                .wb14_child_receipt_set_sha256()
+                .to_string(),
+        );
+        self.last_wb14_parent_receipt_set_sha256 = envelope
+            .hydrology()
+            .surface_ingress()
+            .wb14_parent_receipt_set_sha256()
+            .map(ToString::to_string);
+        self.last_wb14_child_replay_bytes = Some(
+            envelope.hydrology().surface_ingress().wb14_child_replay_bytes().to_vec(),
+        );
+        self.last_wb14_parent_replay_bytes = envelope
+            .hydrology()
+            .surface_ingress()
+            .wb14_parent_replay_bytes()
+            .map(ToOwned::to_owned);
         let (output, candidate, support_receipt) = finalize_v11_imported_segment(
             &candidate,
             input,

@@ -28,6 +28,8 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     pub day_index: usize,
     pub interval_index: usize,
     pub finalize_wb14_parent_interval: bool,
+    pub wb14_coupled_child_binding:
+        crate::direct_runtime::DirectWb14CoupledChildBindingV1,
     ending: Option<DirectV10RealConsumerShadow>,
     ending_stage3_by_lane: Option<BTreeMap<u32, DirectSnowStage3PersistentState>>,
     last_support_receipt: Option<LseSupportAdmissibilityReceiptV1>,
@@ -36,6 +38,10 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     last_lane_boundary_receipts: Option<BTreeMap<u32, LaneStage3BoundaryReceiptV1>>,
     last_component_carrier_receipts:
         Option<BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>>,
+    last_wb14_child_receipt_set_sha256: Option<String>,
+    last_wb14_parent_receipt_set_sha256: Option<String>,
+    last_wb14_child_replay_bytes: Option<Vec<u8>>,
+    last_wb14_parent_replay_bytes: Option<Vec<u8>>,
 }
 
 pub struct DirectV11SnowCoveredStackInputs<'a> {
@@ -48,6 +54,8 @@ pub struct DirectV11SnowCoveredStackInputs<'a> {
     pub day_index: usize,
     pub interval_index: usize,
     pub finalize_wb14_parent_interval: bool,
+    pub wb14_coupled_child_binding:
+        crate::direct_runtime::DirectWb14CoupledChildBindingV1,
 }
 
 impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
@@ -66,12 +74,17 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             day_index: inputs.day_index,
             interval_index: inputs.interval_index,
             finalize_wb14_parent_interval: inputs.finalize_wb14_parent_interval,
+            wb14_coupled_child_binding: inputs.wb14_coupled_child_binding,
             ending: None,
             ending_stage3_by_lane: None,
             last_support_receipt: None,
             last_final_boundary_receipts: None,
             last_lane_boundary_receipts: None,
             last_component_carrier_receipts: None,
+            last_wb14_child_receipt_set_sha256: None,
+            last_wb14_parent_receipt_set_sha256: None,
+            last_wb14_child_replay_bytes: None,
+            last_wb14_parent_replay_bytes: None,
         }
     }
 
@@ -1343,5 +1356,17 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         &self,
     ) -> Option<&BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>> {
         self.last_component_carrier_receipts.as_ref()
+    }
+
+    pub(crate) fn last_wb14_receipt_sets(&self) -> Option<(&str, Option<&str>)> {
+        self.last_wb14_child_receipt_set_sha256.as_deref().map(|child| {
+            (child, self.last_wb14_parent_receipt_set_sha256.as_deref())
+        })
+    }
+
+    pub(crate) fn last_wb14_replay_bytes(&self) -> Option<(&[u8], Option<&[u8]>)> {
+        self.last_wb14_child_replay_bytes.as_deref().map(|child| {
+            (child, self.last_wb14_parent_replay_bytes.as_deref())
+        })
     }
 }

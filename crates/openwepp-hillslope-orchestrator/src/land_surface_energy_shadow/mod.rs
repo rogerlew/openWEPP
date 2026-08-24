@@ -50,8 +50,8 @@ use crate::direct_runtime::{
     checked_surface_liquid_sum,
 };
 use crate::direct_runtime::{
-    DirectWb14ParentWorkingState, execute_surface_liquid_ingress_with_parent_finalization,
-    execute_surface_liquid_ingress_with_parent_state,
+    DirectWb14ParentWorkingState,
+    execute_surface_liquid_ingress_with_parent_state_and_coupled_binding,
 };
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyShadowAdapter, RealHydrologyShadowError, RealHydrologySourceKey,
@@ -995,6 +995,7 @@ where
         ingress,
         true,
         None,
+        None,
     )
     .map_err(|error| canonicalize_finalized_error(error, &finalized_protocol))
 }
@@ -1441,6 +1442,7 @@ fn construct_unified_candidate(
     ingress: &DirectSurfaceLiquidIngressInput,
     finalize_wb14_parent_interval: bool,
     wb14_parent_working_state: Option<&DirectWb14ParentWorkingState>,
+    wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
 ) -> Result<UnifiedRealHydrologyCandidate, LandSurfaceEnergyShadowError> {
     let UnifiedLseFinalization {
         water_protocol,
@@ -1458,21 +1460,14 @@ fn construct_unified_candidate(
         &surface_uses,
         &water_protocol.condensation_credits,
     )?;
-    let surface_ingress = match wb14_parent_working_state {
-        Some(parent) => execute_surface_liquid_ingress_with_parent_state(
-            surface_configuration,
-            &surface_resource,
-            ingress,
-            Some(parent),
-            finalize_wb14_parent_interval,
-        )?,
-        None => execute_surface_liquid_ingress_with_parent_finalization(
-            surface_configuration,
-            &surface_resource,
-            ingress,
-            finalize_wb14_parent_interval,
-        )?,
-    };
+    let surface_ingress = execute_surface_liquid_ingress_with_parent_state_and_coupled_binding(
+        surface_configuration,
+        &surface_resource,
+        ingress,
+        wb14_parent_working_state,
+        finalize_wb14_parent_interval,
+        wb14_coupled_child_binding,
+    )?;
     let mut ending_frame = soil_candidate.ending_frame().clone();
     let receiver_closure_operands = apply_ingress_to_real_receivers(
         soil_adapter.owner,

@@ -42,6 +42,8 @@ pub(crate) struct CoveredIngressSchedule {
     pub(super) finalize_wb14_parent_interval: bool,
     pub(super) wb14_parent_working_state:
         Option<crate::direct_runtime::DirectWb14ParentWorkingState>,
+    pub(super) wb14_coupled_child_binding:
+        Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
 }
 
 fn ingress_amount(mass: f64, temperature_k: f64, interval_s: f64) -> DirectIngressAmount {
@@ -475,6 +477,7 @@ where
         &ingress,
         schedule.finalize_wb14_parent_interval,
         schedule.wb14_parent_working_state.as_ref(),
+        schedule.wb14_coupled_child_binding,
     )
     .map_err(|error| canonicalize_finalized_error(error, &finalized_protocol))
 }

@@ -16,6 +16,8 @@ pub struct CoveredParentOwnerJoinReceiptV1 {
     pub final_boundary_receipt_set_sha256: Digest32,
     pub final_lane_boundary_receipt_set_sha256: Digest32,
     pub component_carrier_receipt_set_sha256: Digest32,
+    pub wb14_child_receipt_set_sha256: Digest32,
+    pub wb14_parent_receipt_set_sha256: Option<Digest32>,
     pub stage3_physical_state_sha256: Digest32,
     pub vegetation_owner_sha256: Digest32,
     pub snow_owner_sha256: Digest32,
@@ -28,6 +30,51 @@ pub struct CoveredParentOwnerJoinReceiptV1 {
 }
 
 impl CoveredParentOwnerJoinReceiptV1 {
+    pub(crate) fn validate_retained_boundary_sets(
+        &self,
+        final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
+        final_lane_boundaries: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
+    ) -> Result<(), DirectV11RealConsumerError> {
+        for (destination, receipt) in final_boundaries {
+            receipt.validate()?;
+            if destination != receipt.destination() {
+                return Err(DirectV11RealConsumerError::Identity("covered boundary map key"));
+            }
+        }
+        for (lane_id, receipt) in final_lane_boundaries {
+            receipt.validate()?;
+            if *lane_id != receipt.lane_id {
+                return Err(DirectV11RealConsumerError::Identity("covered lane map key"));
+            }
+        }
+        let boundary_fields = final_boundaries.values().map(|receipt| {
+            openwepp_coupled_time::FramedField {
+                tag: "final_boundary_receipt",
+                value: receipt.receipt_sha256().as_bytes(),
+            }
+        }).collect::<Vec<_>>();
+        let lane_fields = final_lane_boundaries.values().map(|receipt| {
+            openwepp_coupled_time::FramedField {
+                tag: "final_lane_boundary_receipt",
+                value: receipt.receipt_sha256.as_bytes(),
+            }
+        }).collect::<Vec<_>>();
+        if openwepp_coupled_time::framed_sha256(
+            "covered-stage3-final-boundary-set-v1", &boundary_fields,
+        ).map_err(|_| DirectV11RealConsumerError::Identity("covered boundary receipt set"))?
+            != self.final_boundary_receipt_set_sha256
+            || openwepp_coupled_time::framed_sha256(
+                "covered-stage3-final-lane-boundary-set-v1", &lane_fields,
+            ).map_err(|_| DirectV11RealConsumerError::Identity("covered lane receipt set"))?
+                != self.final_lane_boundary_receipt_set_sha256
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered retained boundary receipt set",
+            ));
+        }
+        Ok(())
+    }
+
     pub fn validate_seal(&self) -> Result<(), DirectV11RealConsumerError> {
         if self.reconstructed_digest()? != self.receipt_sha256 {
             return Err(DirectV11RealConsumerError::Identity(
@@ -45,6 +92,8 @@ impl CoveredParentOwnerJoinReceiptV1 {
         accepted_slab_sha256: Digest32,
         forcing_receipt_sha256: Digest32,
         beginning_complete_owner_set_sha256: Digest32,
+        wb14_child_receipt_set_sha256: Digest32,
+        wb14_parent_receipt_set_sha256: Option<Digest32>,
         support: openwepp_coupled_time::TimeSupport,
         final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
         final_lane_boundaries: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
@@ -60,6 +109,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
             accepted_slab_sha256,
             forcing_receipt_sha256,
             beginning_complete_owner_set_sha256,
+            wb14_child_receipt_set_sha256,
         ]
         .contains(&Digest32::zero())
         {
@@ -260,6 +310,8 @@ impl CoveredParentOwnerJoinReceiptV1 {
             final_boundary_receipt_set_sha256,
             final_lane_boundary_receipt_set_sha256,
             component_carrier_receipt_set_sha256,
+            wb14_child_receipt_set_sha256,
+            wb14_parent_receipt_set_sha256,
             stage3_physical_state_sha256,
             vegetation_owner_sha256: owner_digest("vegetation")?,
             snow_owner_sha256: owner_digest("snow")?,
@@ -290,6 +342,8 @@ impl CoveredParentOwnerJoinReceiptV1 {
             self.accepted_slab_sha256,
             self.forcing_receipt_sha256,
             self.beginning_complete_owner_set_sha256,
+            self.wb14_child_receipt_set_sha256,
+            self.wb14_parent_receipt_set_sha256,
             self.support,
             final_boundaries,
             final_lane_boundaries,
@@ -363,6 +417,17 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 openwepp_coupled_time::FramedField {
                     tag: "component_carrier_set",
                     value: self.component_carrier_receipt_set_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "wb14_child_receipt_set",
+                    value: self.wb14_child_receipt_set_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "wb14_parent_receipt_set",
+                    value: self
+                        .wb14_parent_receipt_set_sha256
+                        .unwrap_or(Digest32::zero())
+                        .as_bytes(),
                 },
                 openwepp_coupled_time::FramedField {
                     tag: "stage3_physical_state",
@@ -1167,6 +1232,8 @@ mod owner_join_tests {
             final_boundary_receipt_set_sha256: Digest32::from_bytes([1; 32]),
             final_lane_boundary_receipt_set_sha256: Digest32::from_bytes([18; 32]),
             component_carrier_receipt_set_sha256: Digest32::from_bytes([2; 32]),
+            wb14_child_receipt_set_sha256: Digest32::from_bytes([29; 32]),
+            wb14_parent_receipt_set_sha256: None,
             stage3_physical_state_sha256: Digest32::from_bytes([3; 32]),
             vegetation_owner_sha256: Digest32::from_bytes([4; 32]),
             snow_owner_sha256: Digest32::from_bytes([5; 32]),

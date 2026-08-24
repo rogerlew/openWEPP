@@ -257,6 +257,26 @@ pub struct RealHydrologyShadowAdapter {
 }
 
 impl RealHydrologyShadowAdapter {
+    /// Rebuild this immutable adapter with a parent-local surface-liquid
+    /// candidate as the effective beginning owner. Production soil custody is
+    /// unchanged; only the default-off surface owner and its snapshot bytes
+    /// are replaced before any child physics or authorization is constructed.
+    pub(crate) fn with_effective_surface_liquid_state(
+        &self,
+        surface_state: crate::DirectSurfaceLiquidOwnedState,
+    ) -> Result<Self, RealHydrologyShadowError> {
+        let mut frame = self.beginning_frame.clone();
+        frame.surface_liquid_shadow = Some(Box::new(surface_state));
+        Self::try_from_day_start(
+            &frame,
+            self.day_index,
+            self.transaction_id,
+            self.interval_s,
+            self.hydrology_owner_id.clone(),
+            &self.layer_maps,
+        )
+    }
+
     /// Freeze the real day-start owner. `layer_maps` must exactly cover every
     /// production lane and its configured layer order.
     pub fn try_from_day_start(

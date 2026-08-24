@@ -164,7 +164,7 @@ pub use direct_runtime::{
     DirectSurfaceLiquidParcelKind, DirectSurfaceLiquidParcelReceipt,
     DirectSurfaceLiquidReceiptDisposition, DirectSurfaceLiquidReceiptRecipient,
     DirectSurfaceLiquidStoreClosureOperands, DirectTileGroundIngress,
-    execute_surface_liquid_ingress,
+    DirectWb14CoupledChildBindingV1, execute_surface_liquid_ingress,
 };
 
 pub use direct_runtime::{

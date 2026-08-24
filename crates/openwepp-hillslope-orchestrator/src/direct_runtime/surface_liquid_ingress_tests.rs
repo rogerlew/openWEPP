@@ -1315,6 +1315,80 @@ fn short_complete_owner_children_advance_persistent_cursor_once() {
 }
 
 #[test]
+fn second_child_resource_phase_starts_from_parent_local_surface_candidate() {
+    let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+    let persistent = initial_state(&configuration, 0.20);
+    let transaction_id = TransactionId(9_001);
+    let first_resource = resource_candidate(&configuration, &persistent, transaction_id, None, &[]);
+    let record = &configuration.records[0];
+    let first_input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: 900.0,
+        tile_ingress: vec![DirectTileGroundIngress::OpenRawPrecipitation {
+            ofe_id: record.key.ofe_id.clone(),
+            tile_id: record.key.tile_id.clone(),
+            surface_id: record.key.surface_id.clone(),
+            raw_precipitation: amount(0.20, 285.0, 0.0, 900.0),
+        }],
+        wb14_parameters: parameters(&configuration),
+    };
+    let first = execute_surface_liquid_ingress_with_parent_state(
+        &configuration,
+        &first_resource,
+        &first_input,
+        None,
+        false,
+    )
+    .expect("first parent-local child");
+    let parent = first.parent_working_state().expect("open parent");
+    let restart_bytes = parent
+        .restart_bytes(&configuration)
+        .expect("serialize open parent");
+    let restored_parent =
+        DirectWb14ParentWorkingState::from_restart_bytes(&configuration, &restart_bytes)
+            .expect("restore open parent");
+    assert_eq!(&restored_parent, parent, "mid-parent restart must be exact");
+    let effective = parent
+        .effective_surface_state(&configuration)
+        .expect("validated effective beginning");
+    assert!(
+        effective.records[0].liquid_kg_m2_tile > persistent.records[0].liquid_kg_m2_tile,
+        "child-one retention must be visible before child-two resource physics",
+    );
+
+    let condensation = CondensationCredit {
+        transaction_id,
+        hydrology_owner_id: configuration.owner_id.clone(),
+        ofe_id: record.key.ofe_id.clone(),
+        tile_id: record.key.tile_id.clone(),
+        surface_id: record.key.surface_id.clone(),
+        amount_kg_m2_stand_ground: 0.10,
+        amount_basis: StandGroundWaterAmountBasis::KgH2oM2StandGroundInterval,
+        temperature_k: 284.0,
+        specific_liquid_enthalpy_j_kg: liquid_specific_enthalpy(284.0),
+    };
+    let second_resource = resource_candidate(
+        &configuration,
+        &effective,
+        transaction_id,
+        None,
+        &[condensation],
+    );
+    assert!(
+        second_resource.working_state().records[0].liquid_kg_m2_tile
+            >= effective.records[0].liquid_kg_m2_tile,
+        "current-child condensation is applied on top of child-one state",
+    );
+    assert_eq!(
+        second_resource.beginning_state(),
+        &effective,
+        "resource authorization/debit-credit begins from child one, not persistent state",
+    );
+}
+
+#[test]
 fn one_1800_second_parent_child_is_bit_identical_to_production_owner_candidate() {
     let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
     let state = initial_state(&configuration, 0.25);

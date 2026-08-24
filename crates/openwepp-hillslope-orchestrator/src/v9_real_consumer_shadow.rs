@@ -755,6 +755,11 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
 
 impl DirectV10RealConsumerShadow {
     #[must_use]
+    pub const fn v11_next_day_index(&self) -> usize {
+        self.inner.next_day_index()
+    }
+
+    #[must_use]
     pub const fn hydrology_frame(&self) -> &DirectRunFrame {
         self.inner.hydrology_frame()
     }
@@ -1578,6 +1583,44 @@ impl DirectV9RealConsumerShadow {
         }
     }
 
+    pub fn wb14_parent_restart_bytes(&self) -> Result<Option<Vec<u8>>, DirectV9RealConsumerError> {
+        self.wb14_parent_working_state
+            .as_ref()
+            .map(|state| state.restart_bytes(&self.surface_configuration))
+            .transpose()
+            .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))
+    }
+
+    pub fn restore_wb14_parent_restart_bytes(
+        &mut self,
+        bytes: Option<&[u8]>,
+    ) -> Result<(), DirectV9RealConsumerError> {
+        let restored = bytes
+            .map(|bytes| {
+                crate::direct_runtime::DirectWb14ParentWorkingState::from_restart_bytes(
+                    &self.surface_configuration,
+                    bytes,
+                )
+            })
+            .transpose()
+            .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
+        if let Some(restored) = &restored {
+            let current = self
+                .hydrology_frame
+                .surface_liquid_shadow
+                .as_deref()
+                .ok_or(DirectV9RealConsumerError::Identity(
+                    "missing restart receiving surface owner",
+                ))?;
+            restored
+                .validate_receiving_owner(current)
+                .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
+        }
+        self.validate_complete_owner_set()?;
+        self.wb14_parent_working_state = restored;
+        Ok(())
+    }
+
     pub fn restore(
         checkpoint: DirectV9RealConsumerCheckpoint,
     ) -> Result<Self, DirectV9RealConsumerError> {
@@ -1721,6 +1764,7 @@ impl DirectV9RealConsumerShadow {
             false,
             None,
             true,
+            None,
         )
     }
 
@@ -1738,6 +1782,7 @@ impl DirectV9RealConsumerShadow {
         provisional_v11: bool,
         covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
         finalize_wb14_parent_interval: bool,
+        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
     ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
         let transaction_id = TransactionId(
             self.vegetation_state
@@ -1867,6 +1912,7 @@ impl DirectV9RealConsumerShadow {
                     Some(destinations),
                     finalize_wb14_parent_interval,
                     self.wb14_parent_working_state.as_ref(),
+                    wb14_coupled_child_binding,
                 )?,
                 None => crate::land_surface_energy_shadow::execute_v8_lse_runtime_shadow_v11(
                     &v8_configuration,
@@ -1932,6 +1978,7 @@ impl DirectV9RealConsumerShadow {
         lower_boundaries: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
         provisional_v11: bool,
         finalize_wb14_parent_interval: bool,
+        wb14_coupled_child_binding: crate::direct_runtime::DirectWb14CoupledChildBindingV1,
     ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
         if !input.lse_forcing.snow_present_at_beginning
             || !input.lse_forcing.snow_present_at_end
@@ -1963,6 +2010,7 @@ impl DirectV9RealConsumerShadow {
             provisional_v11,
             Some(covered_destinations),
             finalize_wb14_parent_interval,
+            Some(wb14_coupled_child_binding),
         )
     }
 
@@ -1997,9 +2045,15 @@ impl DirectV9RealConsumerShadow {
             .surface_ingress()
             .parent_working_state()
             .cloned();
-        self.accepted_interval_count = self.accepted_interval_count.checked_add(1).ok_or(
-            DirectV9RealConsumerError::Identity("accepted interval count overflow"),
-        )?;
+        if envelope
+            .hydrology()
+            .surface_ingress()
+            .advances_persistent_parent_interval()
+        {
+            self.accepted_interval_count = self.accepted_interval_count.checked_add(1).ok_or(
+                DirectV9RealConsumerError::Identity("accepted parent interval count overflow"),
+            )?;
+        }
         Ok(())
     }
 

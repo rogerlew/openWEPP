@@ -1589,14 +1589,203 @@ pub struct DirectSnowStage3V11ParentReceipt {
     pub covered_owner_joins: Vec<CoveredParentOwnerJoinReceiptV1>,
     pub coupled_subslabs: Vec<Stage3CoupledSubslabReceiptV1>,
     pub integrated_boundary_ledger: Stage3ParentIntegratedBoundaryLedgerV1,
+    pub ending_coupled_owner_set_sha256: Digest32,
+    pub ending_coupled_accepted_until_ns: ModelTimeNs,
+    pub ending_next_parent_sequence: u128,
+    pub ending_event_ordinal: u64,
+    pub ending_v11_parent_state: V11ParentTransaction,
+    pub ending_last_v11_parent_candidate: Option<V11ParentCandidate>,
+}
+
+impl DirectSnowStage3V11ParentReceipt {
+    fn validate_against_ending(
+        &self,
+        ending: &DirectSnowStage3V11CommittedState,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        for subslab in &self.coupled_subslabs {
+            subslab.validate()?;
+        }
+        for pair in self.coupled_subslabs.windows(2) {
+            if pair[0].support.end_ns() != pair[1].support.start_ns()
+                || pair[0].owner_join.ending_complete_owner_set_sha256
+                    != pair[1].owner_join.beginning_complete_owner_set_sha256
+            {
+                return Err(DirectSnowStage3V11AttachmentError::Identity(
+                    "parent subslab chronology/owner adjacency",
+                ));
+            }
+        }
+        if self
+            .coupled_subslabs
+            .iter()
+            .enumerate()
+            .any(|(index, value)| {
+                value.wb14_parent_replay_bytes.is_some()
+                    != (index + 1 == self.coupled_subslabs.len()
+                        || self.coupled_subslabs[index + 1].parent_support != value.parent_support)
+            })
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "parent WB14 finalization placement",
+            ));
+        }
+        if self.covered_owner_joins
+            != self
+                .coupled_subslabs
+                .iter()
+                .map(|value| value.owner_join.clone())
+                .collect::<Vec<_>>()
+            || self.integrated_boundary_ledger
+                != reconstruct_integrated_boundary_ledger(&self.coupled_subslabs)
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "parent receipt reconstruction",
+            ));
+        }
+        let stage3_digests = ending
+            .stage3_by_lane
+            .iter()
+            .map(|(lane, state)| {
+                let bytes = Wb11HydrologyKernel::serialize_stage3_persistent_state(state).map_err(
+                    |_| DirectSnowStage3V11AttachmentError::Identity("Stage-3 restart bytes"),
+                )?;
+                Ok((*lane, digest_bytes(&bytes)))
+            })
+            .collect::<Result<BTreeMap<_, _>, DirectSnowStage3V11AttachmentError>>()?;
+        let mut owner_bytes = ending
+            .real_consumer
+            .canonical_owner_state_bytes()
+            .map_err(|_| {
+                DirectSnowStage3V11AttachmentError::Identity("canonical V11 owner bytes")
+            })?;
+        owner_bytes.insert(
+            "snow".to_owned(),
+            canonical_stage3_snow_owner_bytes(&ending.stage3_by_lane)?,
+        );
+        if stage3_digests != self.ending_stage3_state_digests
+            || owner_bytes != self.complete_owner_bytes
+            || complete_owner_set_digest(ending.coupled_clock.owners())?
+                != self.ending_coupled_owner_set_sha256
+            || ending.coupled_clock.accepted_until() != self.ending_coupled_accepted_until_ns
+            || ending.next_parent_sequence != self.ending_next_parent_sequence
+            || ending.accepted_event_ordinal != self.ending_event_ordinal
+            || ending.v11_parent_state != self.ending_v11_parent_state
+            || ending.last_v11_parent_candidate != self.ending_last_v11_parent_candidate
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "parent receipt ending owner join",
+            ));
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Stage3CoupledSubslabReceiptV1 {
+    pub parent_support: TimeSupport,
     pub support: TimeSupport,
+    pub selected_upper_bound_s_bits: u64,
+    pub accepted_slab_sha256: Digest32,
+    pub wb14_child_receipt_set_sha256: Digest32,
+    pub wb14_parent_receipt_set_sha256: Option<Digest32>,
+    pub wb14_child_replay_bytes: Vec<u8>,
+    pub wb14_parent_replay_bytes: Option<Vec<u8>>,
     pub destination_receipts: BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
     pub lane_receipts: BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
     pub owner_join: CoveredParentOwnerJoinReceiptV1,
+    pub receipt_sha256: Digest32,
+}
+
+impl Stage3CoupledSubslabReceiptV1 {
+    fn reconstructed_digest(&self) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
+        self.owner_join.validate_seal().map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Identity("covered subslab owner-join seal")
+        })?;
+        self.owner_join
+            .validate_retained_boundary_sets(&self.destination_receipts, &self.lane_receipts)
+            .map_err(|_| {
+                DirectSnowStage3V11AttachmentError::Identity(
+                    "covered subslab retained boundary sets",
+                )
+            })?;
+        crate::direct_runtime::validate_wb14_child_replay_binding(
+            &self.wb14_child_replay_bytes,
+            crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                proposed_upper_bound_s_bits: self.selected_upper_bound_s_bits,
+                coupled_parent_transaction_sha256: *self
+                    .owner_join
+                    .parent_transaction_sha256
+                    .as_bytes(),
+                accepted_slab_sha256: *self.accepted_slab_sha256.as_bytes(),
+                parent_beginning_complete_owner_set_sha256: *self
+                    .owner_join
+                    .beginning_complete_owner_set_sha256
+                    .as_bytes(),
+                parent_support_start_ns: self.parent_support.start_ns().get(),
+                parent_support_end_ns: self.parent_support.end_ns().get(),
+                child_support_start_ns: self.support.start_ns().get() as u128,
+                child_support_end_ns: self.support.end_ns().get() as u128,
+            },
+        )
+        .map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Identity("covered subslab WB14 replay/coupled join")
+        })?;
+        if let Some(parent_bytes) = &self.wb14_parent_replay_bytes {
+            crate::direct_runtime::validate_wb14_parent_replay(
+                &self.wb14_child_replay_bytes,
+                parent_bytes,
+            )
+            .map_err(|_| {
+                DirectSnowStage3V11AttachmentError::Identity(
+                    "covered subslab WB14 parent finalization replay",
+                )
+            })?;
+        }
+        if self.accepted_slab_sha256 != self.owner_join.accepted_slab_sha256
+            || self.wb14_child_receipt_set_sha256 != self.owner_join.wb14_child_receipt_set_sha256
+            || self.wb14_parent_receipt_set_sha256 != self.owner_join.wb14_parent_receipt_set_sha256
+            || self.support != self.owner_join.support
+            || digest_bytes(&self.wb14_child_replay_bytes) != self.wb14_child_receipt_set_sha256
+            || self
+                .wb14_parent_replay_bytes
+                .as_ref()
+                .map(|bytes| digest_bytes(bytes))
+                != self.wb14_parent_receipt_set_sha256
+            || f64::from_bits(self.support.duration_s_bits())
+                > f64::from_bits(self.selected_upper_bound_s_bits)
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "covered subslab semantic join",
+            ));
+        }
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(b"openwepp.stage3-coupled-subslab-receipt.v1\0");
+        bytes.extend_from_slice(&self.parent_support.start_ns().get().to_be_bytes());
+        bytes.extend_from_slice(&self.parent_support.end_ns().get().to_be_bytes());
+        bytes.extend_from_slice(&self.support.start_ns().get().to_be_bytes());
+        bytes.extend_from_slice(&self.support.end_ns().get().to_be_bytes());
+        bytes.extend_from_slice(&self.selected_upper_bound_s_bits.to_be_bytes());
+        bytes.extend_from_slice(self.accepted_slab_sha256.as_bytes());
+        bytes.extend_from_slice(self.wb14_child_receipt_set_sha256.as_bytes());
+        match self.wb14_parent_receipt_set_sha256 {
+            Some(digest) => {
+                bytes.push(1);
+                bytes.extend_from_slice(digest.as_bytes());
+            }
+            None => bytes.push(0),
+        }
+        bytes.extend_from_slice(self.owner_join.receipt_sha256.as_bytes());
+        Ok(digest_bytes(&bytes))
+    }
+
+    pub fn validate(&self) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        if self.receipt_sha256 != self.reconstructed_digest()? {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "covered subslab receipt seal",
+            ));
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -1848,6 +2037,20 @@ impl DirectSnowStage3V11ShadowAttachment {
                 candidate.next_parent_sequence,
             )?;
             let (parent, consumer, clock, finalized, covered_stage3) = if covered_support {
+                if beginning_stage3
+                    .values()
+                    .filter(|state| stage3_is_resolved_thermal_domain(state))
+                    .map(Wb11HydrologyKernel::project_stage3_surface_state_v1)
+                    .collect::<Result<Vec<_>, _>>()?
+                    .iter()
+                    .any(|surface| {
+                        surface.selected_substep_seconds.to_bits() != 1_800.0_f64.to_bits()
+                    })
+                {
+                    return Err(DirectSnowStage3V11AttachmentError::Support(
+                        "unreleased v8 short-cadence production attachment",
+                    ));
+                }
                 let (parent, consumer, clock, finalized, ending_stage3, owner_joins) =
                     execute_covered_real_v11_parent(
                         &self.static_context,
@@ -1859,6 +2062,7 @@ impl DirectSnowStage3V11ShadowAttachment {
                         support_index,
                         forcing_receipt,
                         beginning_stage3,
+                        false,
                         self.failure_injection,
                     )?;
                 covered_owner_joins
@@ -1924,6 +2128,14 @@ impl DirectSnowStage3V11ShadowAttachment {
             covered_owner_joins,
             coupled_subslabs,
             integrated_boundary_ledger,
+            ending_coupled_owner_set_sha256: complete_owner_set_digest(
+                candidate.coupled_clock.owners(),
+            )?,
+            ending_coupled_accepted_until_ns: candidate.coupled_clock.accepted_until(),
+            ending_next_parent_sequence: candidate.next_parent_sequence,
+            ending_event_ordinal: candidate.accepted_event_ordinal,
+            ending_v11_parent_state: candidate.v11_parent_state.clone(),
+            ending_last_v11_parent_candidate: candidate.last_v11_parent_candidate.clone(),
         };
         candidate.receipt_chain.push(receipt.clone());
         Ok(DirectSnowStage3V11ParentCandidate {
@@ -1938,9 +2150,64 @@ impl DirectSnowStage3V11ShadowAttachment {
         &mut self,
         candidate: DirectSnowStage3V11ParentCandidate,
     ) -> Result<(), DirectSnowStage3V11AttachmentError> {
-        if candidate.ending_state.receipt_chain.len() != self.committed.receipt_chain.len() + 1 {
+        if candidate.ending_state.receipt_chain.len() != self.committed.receipt_chain.len() + 1
+            || candidate.ending_state.receipt_chain[..self.committed.receipt_chain.len()]
+                != self.committed.receipt_chain
+            || candidate.ending_state.receipt_chain.last() != Some(&candidate.parent_receipt)
+        {
             return Err(DirectSnowStage3V11AttachmentError::Identity(
                 "parent receipt chain installation",
+            ));
+        }
+        candidate
+            .parent_receipt
+            .validate_against_ending(&candidate.ending_state)?;
+        let expected_beginning_owner =
+            complete_owner_set_digest(self.committed.coupled_clock.owners())?;
+        if candidate.parent_receipt.day_index != self.committed.real_consumer.v11_next_day_index()
+            || candidate.parent_receipt.support_count as u128
+                != candidate
+                    .ending_state
+                    .next_parent_sequence
+                    .checked_sub(self.committed.next_parent_sequence)
+                    .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                        "parent sequence installation",
+                    ))?
+            || candidate.parent_receipt.terminal_events.len() as u64
+                != candidate
+                    .ending_state
+                    .accepted_event_ordinal
+                    .checked_sub(self.committed.accepted_event_ordinal)
+                    .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                        "event ordinal installation",
+                    ))?
+            || candidate
+                .parent_receipt
+                .coupled_subslabs
+                .first()
+                .is_some_and(|first| {
+                    first.owner_join.beginning_complete_owner_set_sha256 != expected_beginning_owner
+                        || first.support.start_ns() != self.committed.coupled_clock.accepted_until()
+                })
+            || candidate
+                .parent_receipt
+                .coupled_subslabs
+                .last()
+                .is_some_and(|last| {
+                    last.owner_join.ending_complete_owner_set_sha256
+                        != candidate.parent_receipt.ending_coupled_owner_set_sha256
+                })
+            || candidate
+                .parent_receipt
+                .terminal_events
+                .iter()
+                .any(|event| {
+                    !event.candidate_ticks.contains(&event.accepted_event_tick)
+                        || !self.static_context.lane_ids.contains(&event.lane_id)
+                })
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "parent receipt committed-state installation join",
             ));
         }
         self.committed = candidate.ending_state;
@@ -2452,6 +2719,7 @@ pub(crate) fn execute_covered_real_v11_parent(
     interval_index: usize,
     forcing_receipt: Digest32,
     beginning_stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    review_short_cadence: bool,
     failure_injection: Option<Stage3V11FailureInjection>,
 ) -> Result<
     (
@@ -2492,9 +2760,9 @@ pub(crate) fn execute_covered_real_v11_parent(
                 ));
             }
         };
-        if selected_ns != 1_800_000_000_000 {
+        if !review_short_cadence && selected_ns != 1_800_000_000_000 {
             return Err(DirectSnowStage3V11AttachmentError::Support(
-                "unreleased Stage-3 coupled cadence",
+                "unreleased v8 short-cadence production attachment",
             ));
         }
         let proposed_end_ns = ModelTimeNs::new(
@@ -2514,11 +2782,6 @@ pub(crate) fn execute_covered_real_v11_parent(
             .find(|boundary| *boundary > clock.accepted_until() && *boundary < proposed_end_ns)
             .unwrap_or(proposed_end_ns);
         let support = TimeSupport::new(clock.accepted_until(), end_ns)?;
-        if support.duration_ns() != 1_800_000_000_000 {
-            return Err(DirectSnowStage3V11AttachmentError::Support(
-                "unreleased Stage-3 coupled cadence",
-            ));
-        }
         let child_ordinal = u32::try_from(owner_joins.len()).map_err(|_| {
             DirectSnowStage3V11AttachmentError::Identity("coupled subslab ordinal overflow")
         })?;
@@ -2534,6 +2797,7 @@ pub(crate) fn execute_covered_real_v11_parent(
                 interval_index,
                 forcing_receipt,
                 stage3,
+                selected_seconds,
             )?;
         if owner_join.owner_join.beginning_complete_owner_set_sha256 != expected_child_beginning {
             return Err(DirectSnowStage3V11AttachmentError::Identity(
@@ -2581,6 +2845,7 @@ fn execute_covered_real_v11_subslab(
     interval_index: usize,
     forcing_receipt: Digest32,
     beginning_stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    selected_upper_bound_s: f64,
 ) -> Result<
     (
         V11ParentTransaction,
@@ -2671,6 +2936,16 @@ fn execute_covered_real_v11_subslab(
             interval_index,
             finalize_wb14_parent_interval: support.end_ns()
                 == beginning_clock.parent_support().end_ns(),
+            wb14_coupled_child_binding: crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                proposed_upper_bound_s_bits: selected_upper_bound_s.to_bits(),
+                coupled_parent_transaction_sha256: *parent_id.digest().as_bytes(),
+                accepted_slab_sha256: *provisional_receipt.slab_id().digest().as_bytes(),
+                parent_beginning_complete_owner_set_sha256: *ledger_digest.as_bytes(),
+                parent_support_start_ns: beginning_clock.parent_support().start_ns().get(),
+                parent_support_end_ns: beginning_clock.parent_support().end_ns().get(),
+                child_support_start_ns: support.start_ns().get() as u128,
+                child_support_end_ns: support.end_ns().get() as u128,
+            },
         },
     );
     let mut provisional_executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
@@ -2705,6 +2980,16 @@ fn execute_covered_real_v11_subslab(
             interval_index,
             finalize_wb14_parent_interval: support.end_ns()
                 == beginning_clock.parent_support().end_ns(),
+            wb14_coupled_child_binding: crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                proposed_upper_bound_s_bits: selected_upper_bound_s.to_bits(),
+                coupled_parent_transaction_sha256: *parent_id.digest().as_bytes(),
+                accepted_slab_sha256: *final_receipt.slab_id().digest().as_bytes(),
+                parent_beginning_complete_owner_set_sha256: *ledger_digest.as_bytes(),
+                parent_support_start_ns: beginning_clock.parent_support().start_ns().get(),
+                parent_support_end_ns: beginning_clock.parent_support().end_ns().get(),
+                child_support_start_ns: support.start_ns().get() as u128,
+                child_support_end_ns: support.end_ns().get() as u128,
+            },
         },
     );
     let mut final_executor =
@@ -2737,6 +3022,16 @@ fn execute_covered_real_v11_subslab(
             "missing final covered lane-boundary receipt set",
         ))?
         .clone();
+    let (wb14_child_receipt_set, wb14_parent_receipt_set) = final_executor
+        .stack
+        .last_wb14_receipt_sets()
+        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+            "missing live WB14 receipt-set attachment",
+        ))?;
+    let wb14_child_receipt_set = parse_lower_hex_digest(wb14_child_receipt_set)?;
+    let wb14_parent_receipt_set = wb14_parent_receipt_set
+        .map(parse_lower_hex_digest)
+        .transpose()?;
     let owner_join = CoveredParentOwnerJoinReceiptV1::try_new(
         context.run_identity,
         ParentIntervalId::derive(
@@ -2751,6 +3046,8 @@ fn execute_covered_real_v11_subslab(
         final_receipt.slab_id().digest(),
         forcing_receipt,
         ledger_digest,
+        wb14_child_receipt_set,
+        wb14_parent_receipt_set,
         support,
         &final_boundary_receipts,
         &final_lane_receipts,
@@ -2780,13 +3077,29 @@ fn execute_covered_real_v11_subslab(
     let consumer = final_executor.stack.take_staged_ending().ok_or(
         DirectSnowStage3V11AttachmentError::Identity("missing staged covered ending"),
     )?;
+    let (wb14_child_replay_bytes, wb14_parent_replay_bytes) =
+        final_executor.stack.last_wb14_replay_bytes().ok_or(
+            DirectSnowStage3V11AttachmentError::Identity("missing WB14 replay receipt payload"),
+        )?;
+    let wb14_child_replay_bytes = wb14_child_replay_bytes.to_vec();
+    let wb14_parent_replay_bytes = wb14_parent_replay_bytes.map(ToOwned::to_owned);
     let parent_after_segment = parent;
-    let subslab_receipt = Stage3CoupledSubslabReceiptV1 {
+    let mut subslab_receipt = Stage3CoupledSubslabReceiptV1 {
+        parent_support: beginning_clock.parent_support(),
         support,
+        selected_upper_bound_s_bits: selected_upper_bound_s.to_bits(),
+        accepted_slab_sha256: final_receipt.slab_id().digest(),
+        wb14_child_receipt_set_sha256: owner_join.wb14_child_receipt_set_sha256,
+        wb14_parent_receipt_set_sha256: owner_join.wb14_parent_receipt_set_sha256,
+        wb14_child_replay_bytes,
+        wb14_parent_replay_bytes,
         destination_receipts: final_boundary_receipts,
         lane_receipts: final_lane_receipts,
         owner_join,
+        receipt_sha256: Digest32::zero(),
     };
+    subslab_receipt.receipt_sha256 = subslab_receipt.reconstructed_digest()?;
+    subslab_receipt.validate()?;
     Ok((
         parent_after_segment,
         consumer,

@@ -54,6 +54,9 @@
   live queue.
 - Do not add fallback wrappers that silently mask missing required dependencies; prefer explicit failures.
 - Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
+- Execute the full authorized checkpoint through gates, review, disposition,
+  and delivery; intermediate progress or HOLD is not a stopping condition
+  while safe in-scope corrective work remains.
 - Inherit the agentic governance posture from wepppy. openWEPP is the simulation engine, not a separate culture.
 
 ## Kernel and Science Authority

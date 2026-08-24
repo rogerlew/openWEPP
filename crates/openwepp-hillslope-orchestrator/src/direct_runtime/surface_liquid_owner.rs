@@ -914,7 +914,8 @@ pub struct DirectSurfaceLiquidContinuationState {
     pub last_accepted_transaction_id: Option<TransactionId>,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct DirectSurfaceLiquidOwnedState {
     pub owner_id: ResourceOwnerId,
     pub configuration_sha256: String,

@@ -828,6 +828,24 @@ replays every immutable identity, ordinal, support, working-state transition,
 complete-owner join, closure operand, and receipt digest, and derives the final
 cursor. A stored digest or producer-only self-check is insufficient.
 
+The current v8 integration candidate installs the accepted parent-local
+surface state before hydrology snapshot construction and every LSE resource
+request, authorization, debit, condensation credit, and ingress operation. It
+uses one sealed scalar parent authority per OFE and records the exact ordered
+Green--Ampt transition windows used by timed parcel partitioning. Every
+complete-owner child join binds the ordered per-OFE child-receipt-set digest;
+the final child alone additionally binds the ordered parent-receipt-set digest
+and projects the persistent interval cursor. The scalar authority consumes the
+actual coupled parent transaction, accepted
+slab, complete beginning owner set, and selected Stage 3 upper bound; none is
+inferred from accepted duration or a local counter. Final evidence retains and
+seals replayable ordered scalar-authority/finalization bytes, and parent-local
+physical plus scalar custody has a validated restart encoding. These facts do not
+promote v8 by themselves; the terminal review and verification disposition
+controls promotion. The released production attachment retains its
+short-cadence guard while v8 remains in review; package-local integrated
+fixtures exercise the candidate coordinator beneath that guard.
+
 Required vectors are one 1800-second child bit-identical complete production-
 owner parity; two 900-second children;
 thirty 60-second children; a latest-state-selected mixed cadence; zero-supply
@@ -851,6 +869,7 @@ persistent continuation advance.
 |---|---|---|---|
 | 2026-08-19 | 7 | Codex | Added exact-one 0 C terminal receipt and partial-WB14 continuation/restart authority (`INV-SURFACELIQUID-010/011`) for the default-off terminal receiver transaction. |
 | 2026-08-23 | 8 (in review) | Codex | Formalized child slabs as exact coupled supports beneath Stage-3 cadence proposals; bound OFE/lane/configuration/model/parameter and complete-owner identity; required topology-ordered complete transaction staging, receipt reconstruction, final-only cursor publication, parity, truncation, routing, poison, and rollback gates. Version 7 remains released until promotion. |
+| 2026-08-23 | 8 (integration candidate) | Codex | Installed parent-local surface state before child resource physics; connected live topology-ordered ingress to per-OFE reconstructable scalar receipt authorities; bound child and final parent receipt sets into complete-owner joins; separated slab and persistent-parent counters; added actual 30x60 and rollback evidence. Promotion remains review-gated. |
 | 2026-08-23 | prospective | Codex | Recorded the unreleased WB14 parent/child transaction design and contract vectors. Independent reviews held release on complete-owner integration, dynamic Stage 3 cadence, and rollback evidence; v7 authority and the production guard remain unchanged. |
 | 2026-08-14 | 1 | Codex | Initial contract-first draft. |
 | 2026-08-14 | 2 | Codex | Align exact LSE surface/source identities and OFE condensation basis; bind one actual timed aggregate WB14 call per OFE, zero legacy depression retention, post-infiltration persistent retention, routed topology, canonical digests, profile sections, unit governance, and independent vector obligations. |

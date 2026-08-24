@@ -117,6 +117,46 @@ fields.
 
 ## Progress log
 
+### 2026-08-23 receipt-owned multi-OFE WB14 parent coordinator checkpoint
+
+Implementation intent: replace the parallel live WB14 chronology identified
+by the prior HOLD with direct ownership of the sealed scalar authorities. The
+effective parent-local surface candidate is installed before snapshot,
+request, authorization, debit/credit, and ingress physics. Exact timed-parcel
+Green--Ampt transition windows are retained and replayed in one scalar parent
+authority per topology-ordered OFE. Complete-owner joins bind each ordered
+child receipt set; the final join alone binds parent receipt finalizations and
+publishes one persistent interval/counter transition.
+
+The increment includes an actual seven-owner thirty-by-sixty-second covered
+parent, final-only counter/receipt assertions, nonzero parent-local surface and
+current-child condensation evidence, and rollback injections after child 1,
+child 17, and the final owner join. The short-cadence guard is removed only in
+this review candidate. Fresh independent reviews determine promotion or guard
+restoration; v8 remains `in_review / draft` until that disposition is recorded.
+
+Review correction: the live coordinator now consumes the actual coupled parent
+transaction digest, accepted-slab digest, complete beginning owner-set digest,
+and exact Stage 3 selected upper bound. Final evidence retains serialized,
+ordered per-OFE child authorities and parent finalizations rather than only
+summary digests; the coupled subslab receipt seals and validates those replay
+payloads against the complete-owner join. Parent-local physical and scalar
+state also round-trips through an independently validated restart encoding.
+The affected-crate suite passes 784 tests with one skip, including actual
+1x1800 complete historical-candidate parity, 2x900 and 30x60 complete-owner
+paths, latest-state 900-to-60 proposal change,
+an accepted hard-boundary truncation, and all three rollback injections.
+Decoded child and parent replay is cross-joined to coupled support and complete
+owners before installation. The production short-cadence guard is restored;
+v8 remains `in_review / draft` pending terminal disposition.
+
+Terminal disposition: `EXECUTING / HOLD`. Independent hydrology/ownership
+review passed and the final Rust review found no remaining critical runtime
+defect. Promotion remains blocked by the package-mandated complete-owner
+two-OFE same-child runoff-to-runon fixture and refactoring the three touched
+nonexempt Rust files that exceed the 3,000-line closure ceiling. The restored
+production guard is retained until those gates close.
+
 ### 2026-08-23 complete surface-liquid WB14 child-slab integration checkpoint
 
 Implementation intent: lift the reviewed WB14 HOLD by integrating accepted

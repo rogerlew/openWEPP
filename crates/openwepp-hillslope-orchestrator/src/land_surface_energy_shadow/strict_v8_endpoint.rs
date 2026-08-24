@@ -193,6 +193,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
         None,
         true,
         None,
+        None,
     );
     if let Err(error) = &result {
         pending.borrow_mut().diagnostic = error.to_string().into_bytes();
@@ -298,6 +299,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11(
         None,
         true,
         None,
+        None,
     )
 }
 
@@ -338,6 +340,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11_with_carriers(
     >,
     finalize_wb14_parent_interval: bool,
     wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
+    wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let pending = RefCell::new(PendingEndpointEnvelopes::default());
     execute_v8_lse_runtime_shadow_phases(
@@ -365,6 +368,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11_with_carriers(
         covered_destinations,
         finalize_wb14_parent_interval,
         wb14_parent_working_state,
+        wb14_coupled_child_binding,
     )
 }
 
@@ -431,7 +435,25 @@ fn execute_v8_lse_runtime_shadow_phases(
     >,
     finalize_wb14_parent_interval: bool,
     wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
+    wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
+    // A coupled child after ordinal zero begins from the accepted parent-local
+    // physical surface candidate. Install that projection before snapshot
+    // construction, requests, authorization, debit/credit, or ingress; the
+    // persistent frame remains untouched until parent finalization.
+    let effective_owner = wb14_parent_working_state
+        .map(|parent| {
+            let state = parent.effective_surface_state(surface_configuration)?;
+            soil_adapter
+                .owner
+                .with_effective_surface_liquid_state(state)
+                .map_err(LandSurfaceEnergyShadowError::from)
+        })
+        .transpose()?;
+    let effective_adapter = effective_owner
+        .as_ref()
+        .map(LandSurfaceEnergyRealHydrologyAdapter::new);
+    let soil_adapter = effective_adapter.as_ref().unwrap_or(soil_adapter);
     let projected = project_v8_runtime_inputs_with_carriers(
         vegetation_configuration,
         vegetation_beginning,
@@ -468,6 +490,7 @@ fn execute_v8_lse_runtime_shadow_phases(
         wb14_parameters,
         finalize_wb14_parent_interval,
         wb14_parent_working_state,
+        wb14_coupled_child_binding,
     )?;
     let receiver_expectations = receiver_expectations(
         lse_configuration,
@@ -713,6 +736,7 @@ fn derive_ingress_schedule(
     wb14_parameters: &[DirectOfeWb14Parameters],
     finalize_wb14_parent_interval: bool,
     wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
+    wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
 ) -> Result<CoveredIngressSchedule, ExecuteV8LseRuntimeShadowError> {
     let mut open_tile_ingress = Vec::new();
     let mut covered_runon = BTreeMap::new();
@@ -782,6 +806,7 @@ fn derive_ingress_schedule(
         wb14_parameters: wb14_parameters.to_vec(),
         finalize_wb14_parent_interval,
         wb14_parent_working_state: wb14_parent_working_state.cloned(),
+        wb14_coupled_child_binding,
     })
 }
 
