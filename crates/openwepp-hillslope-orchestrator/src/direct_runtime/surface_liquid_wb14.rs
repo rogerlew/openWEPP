@@ -251,6 +251,8 @@ pub(super) struct DirectWb14ChildReceiptV1 {
     pub predecessor_receipt_sha256: [u8; 32],
     pub accepted_coupled_slab_sha256: [u8; 32],
     pub child_beginning_complete_owner_set_sha256: [u8; 32],
+    pub pending_routed_parcels_before_sha256: [u8; 32],
+    pub pending_routed_parcels_after_sha256: [u8; 32],
     pub child_inputs_sha256: [u8; 32],
     pub transitions: Vec<DirectWb14ChildTransitionV1>,
     pub proposed_upper_bound_s_bits: u64,
@@ -741,6 +743,8 @@ impl DirectWb14ParentIntervalV1 {
             predecessor_receipt_sha256,
             [0; 32],
             [0; 32],
+            [0; 32],
+            [0; 32],
             proposed_upper_bound_s,
             inputs,
         )
@@ -754,6 +758,8 @@ impl DirectWb14ParentIntervalV1 {
         predecessor_receipt_sha256: [u8; 32],
         accepted_coupled_slab_sha256: [u8; 32],
         child_beginning_complete_owner_set_sha256: [u8; 32],
+        pending_routed_parcels_before_sha256: [u8; 32],
+        pending_routed_parcels_after_sha256: [u8; 32],
         proposed_upper_bound_s: f64,
         inputs: &[DirectWb14ContinuationIntervalInputs],
     ) -> Result<(Self, DirectWb14ContinuationIntervalOutcome), DirectWb14ParentIntervalErrorV1>
@@ -924,6 +930,14 @@ impl DirectWb14ParentIntervalV1 {
                     tag: "child_beginning_complete_owner_set_sha256",
                     value: &child_beginning_complete_owner_set_sha256,
                 },
+                FramedField {
+                    tag: "pending_routed_parcels_before_sha256",
+                    value: &pending_routed_parcels_before_sha256,
+                },
+                FramedField {
+                    tag: "pending_routed_parcels_after_sha256",
+                    value: &pending_routed_parcels_after_sha256,
+                },
             ],
         )?;
         let ending_chain_sha256 = wb14_hash(
@@ -989,6 +1003,8 @@ impl DirectWb14ParentIntervalV1 {
             predecessor_receipt_sha256,
             accepted_coupled_slab_sha256,
             child_beginning_complete_owner_set_sha256,
+            pending_routed_parcels_before_sha256,
+            pending_routed_parcels_after_sha256,
             child_inputs_sha256,
             transitions,
             proposed_upper_bound_s_bits: proposed_upper_bound_s.to_bits(),
@@ -1214,6 +1230,8 @@ impl DirectWb14ChildReceiptV1 {
             self.predecessor_receipt_sha256,
             self.accepted_coupled_slab_sha256,
             self.child_beginning_complete_owner_set_sha256,
+            self.pending_routed_parcels_before_sha256,
+            self.pending_routed_parcels_after_sha256,
             f64::from_bits(self.proposed_upper_bound_s_bits),
             &inputs,
         )?;
@@ -1885,6 +1903,12 @@ mod tests {
         poisoned.receipts[0].interval_supply_m_bits = 0.002_f64.to_bits();
         assert_eq!(
             poisoned.validate(),
+            Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation)
+        );
+        let mut queue_poisoned = ending.clone();
+        queue_poisoned.receipts[0].pending_routed_parcels_after_sha256 = [91; 32];
+        assert_eq!(
+            queue_poisoned.validate(),
             Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation)
         );
         let mut parent_receipt = finalized.receipt;

@@ -20,6 +20,7 @@ pub(crate) fn validate_wb14_child_replay_binding(
         return Err(DirectSurfaceLiquidError::Identity("empty WB14 replay set"));
     }
     let mut predecessor: Option<OfeId> = None;
+    let mut previous_queue_after = None;
     for (ofe_id, authority) in rows {
         if predecessor.as_ref().is_some_and(|value| value >= &ofe_id) {
             return Err(DirectSurfaceLiquidError::Identity("WB14 replay OFE order"));
@@ -38,6 +39,18 @@ pub(crate) fn validate_wb14_child_replay_binding(
                 Sha256::digest(ofe_id.as_str().as_bytes()).into(),
             )
             .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 replay/coupled join"))?;
+        let child = authority
+            .receipts()
+            .last()
+            .ok_or(DirectSurfaceLiquidError::Identity("WB14 replay child receipt"))?;
+        if previous_queue_after.is_some_and(|digest| {
+            digest != child.pending_routed_parcels_before_sha256
+        }) {
+            return Err(DirectSurfaceLiquidError::Identity(
+                "WB14 replay routed-queue adjacency",
+            ));
+        }
+        previous_queue_after = Some(child.pending_routed_parcels_after_sha256);
     }
     Ok(())
 }

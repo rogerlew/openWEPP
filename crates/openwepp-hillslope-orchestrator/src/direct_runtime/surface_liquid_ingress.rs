@@ -803,6 +803,40 @@ struct OfeAdvance {
     wb14_transitions: Vec<DirectWb14ContinuationIntervalInputs>,
 }
 
+fn pending_routed_queue_sha256(pending: &BTreeMap<OfeId, Vec<TimedParcel>>) -> [u8; 32] {
+    let mut digest = Sha256::new();
+    digest.update(b"openwepp-surface-liquid-routed-queue-v1\0");
+    for (ofe_id, parcels) in pending {
+        digest.update((ofe_id.as_str().len() as u64).to_be_bytes());
+        digest.update(ofe_id.as_str().as_bytes());
+        digest.update((parcels.len() as u64).to_be_bytes());
+        for parcel in parcels {
+            for identity in [
+                parcel.parcel_id.as_str(),
+                parcel.origin_store_key.ofe_id.as_str(),
+                parcel.origin_store_key.tile_id.as_str(),
+                parcel.recipient_store_key.ofe_id.as_str(),
+                parcel.recipient_store_key.tile_id.as_str(),
+                parcel.basis_ofe_id.as_str(),
+            ] {
+                digest.update((identity.len() as u64).to_be_bytes());
+                digest.update(identity.as_bytes());
+            }
+            digest.update((parcel.kind as u8).to_be_bytes());
+            digest.update(parcel.start_s.to_bits().to_be_bytes());
+            digest.update(parcel.end_s.to_bits().to_be_bytes());
+            digest.update(parcel.mass_kg_m2_basis_ofe_ground.to_bits().to_be_bytes());
+            digest.update(
+                parcel
+                    .enthalpy_j_m2_basis_ofe_ground
+                    .to_bits()
+                    .to_be_bytes(),
+            );
+        }
+    }
+    digest.finalize().into()
+}
+
 /// Execute the admitted post-resource ingress transaction against a cloned owner state.
 pub fn execute_surface_liquid_ingress(
     configuration: &DirectSurfaceLiquidConfiguration,
@@ -1047,6 +1081,7 @@ fn execute_surface_liquid_ingress_inner(
     let mut call_count = BTreeMap::new();
 
     for ofe_id in &configuration.ofe_topology {
+        let pending_routed_parcels_before_sha256 = pending_routed_queue_sha256(&pending);
         let continuation_index = ending
             .continuations
             .iter()
@@ -1072,7 +1107,7 @@ fn execute_surface_liquid_ingress_inner(
             .ok_or(DirectSurfaceLiquidError::Identity(
                 "missing WB14 parameters",
             ))?;
-        let advanced = advance_one_ofe(
+        let mut advanced = advance_one_ofe(
             configuration,
             &mut ending,
             ofe_id,
@@ -1083,6 +1118,15 @@ fn execute_surface_liquid_ingress_inner(
             input.transaction_id,
             input.interval_s,
         )?;
+        route_runoff(
+            configuration,
+            ofe_id,
+            std::mem::take(&mut advanced.runoff),
+            &mut pending,
+            &mut receipts,
+            input.transaction_id,
+        )?;
+        let pending_routed_parcels_after_sha256 = pending_routed_queue_sha256(&pending);
         let scalar_beginning =
             per_ofe_authorities
                 .get(ofe_id)
@@ -1125,6 +1169,8 @@ fn execute_surface_liquid_ingress_inner(
                 coupled_binding.map_or([0; 32], |binding| {
                     binding.parent_beginning_complete_owner_set_sha256
                 }),
+                pending_routed_parcels_before_sha256,
+                pending_routed_parcels_after_sha256,
                 selected_upper_bound_s,
                 &advanced.wb14_transitions,
             )
@@ -1171,14 +1217,6 @@ fn execute_surface_liquid_ingress_inner(
         if let Some(ledger) = advanced.ledger {
             ledgers.push(ledger);
         }
-        route_runoff(
-            configuration,
-            ofe_id,
-            advanced.runoff,
-            &mut pending,
-            &mut receipts,
-            input.transaction_id,
-        )?;
     }
     if pending.values().any(|rows| !rows.is_empty()) {
         return Err(candidate_failure(

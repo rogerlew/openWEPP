@@ -1778,6 +1778,11 @@ impl DirectSnowStage3V11ShadowAttachment {
                 candidate.next_parent_sequence,
             )?;
             let (parent, consumer, clock, finalized, covered_stage3) = if covered_support {
+                if beginning_stage3.len() > 1 {
+                    return Err(DirectSnowStage3V11AttachmentError::Support(
+                        "unreleased multi-lane covered Stage-3 parent ledger",
+                    ));
+                }
                 if beginning_stage3
                     .values()
                     .filter(|state| stage3_is_resolved_thermal_domain(state))

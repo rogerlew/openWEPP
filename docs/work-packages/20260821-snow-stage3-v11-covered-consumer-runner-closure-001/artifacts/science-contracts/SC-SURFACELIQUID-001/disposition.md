@@ -8,16 +8,16 @@ these amendments and the implementation evidence below.
 
 | Finding | Disposition | Resolution |
 |---|---|---|
-| `A-001`, `B-004` | Accepted / resolved | Replaced the dimensionally invalid cross-OFE scalar Stage-3 parent ledger with a lane-keyed ledger. The complete-owner two-OFE/two-child fixture exercises unequal OFE areas. |
+| `A-001`, `B-004` | Accepted / resolved by scope guard | Replaced the dimensionally invalid cross-OFE scalar Stage-3 parent ledger with a lane-keyed ledger and retained a typed production guard against more than one active covered Stage-3 lane. The complete-owner two-OFE/two-child fixture verifies the separately admitted snow-free multi-OFE domain; genuine multi-lane covered execution remains unauthorized. |
 | `A-002`, `B-007` | Accepted / resolved | Restored `last_reviewed: pending`, candidate lifecycle language, and implementation-awaiting-verification gap states. Promotion is deferred until dual verification passes. |
 | `A-003` | Accepted / resolved | Added exact coupled-time and Stage-3 cadence invariant anchors. |
-| `A-004` | Accepted / resolved | Added the complete ADR-0042 readiness matrix with `PASS` and `NOT_APPLICABLE` dispositions and explicit non-calibratable custody scope. |
-| `A-005` | Accepted / resolved | Reordered invariants before producer/consumer obligations and consolidated v8 binding rules into the canonical algorithm, guards, obligations, invariant map, Binding Exposure Index, vectors, and gaps. Later schema sections elaborate those same invariant IDs and do not create a parallel authority. |
+| `A-004` | Accepted / resolved | Added the complete ADR-0042 readiness matrix, canonical `science_implementation_status=IMPLEMENTED`, and explicit non-calibratable custody scope. Lifecycle/gap fields separately retain pending promotion. |
+| `A-005` | Accepted / resolved | Reordered invariants before producer/consumer obligations, placed mapped schema elaborations before the Binding Exposure Index, and made the Gap Register immediately precede the Change Log. |
 | `A-006`, `B-006` | Accepted / resolved | Added runtime aliases, units, provenance, invariant evidence tags, and strict Binding Exposure coverage. |
 | `B-001` | Accepted / resolved | Defined proposal-bounded pre-event child, zero-time event, and fresh post-event child chronology with final-only parent cursor publication. |
-| `B-002` | Accepted / resolved | Defined `DirectWb14ConfigurationIdentityV1`, canonical preimage ordering, digest ownership, immutable parameter bits, and per-child reconstruction. |
+| `B-002` | Accepted / resolved | Defined the runtime-aligned `DirectWb14ImmutableIdentityV1` and exact tagged `framed_sha256` parent preimage, including field encodings, digest derivations, immutable parameter bits, and per-child reconstruction. |
 | `B-003` | Accepted / resolved | Defined the seven-owner manifest, auxiliary cursor/receipt lineage, inactive-owner carries, restart wire, and atomic replacement order. Runtime now installs the parent-local surface candidate before snapshot/request/debit/credit/ingress physics. |
-| `B-005` | Accepted / resolved | Child receipts bind topology-rank ordered routed-queue before/after digests and replay validates queue eligibility. |
+| `B-005` | Accepted / resolved | Child receipts store topology-rank ordered routed-queue before/after digests inside the scalar receipt seal; replay validates adjacency between consecutive OFE ranks. |
 
 Implementation evidence prepared for verification:
 
