@@ -1,4 +1,5 @@
 use serde_json::Value;
+use std::process::Command;
 use std::{fs, path::Path};
 
 use openwepp_persisted_restart_v1::{
@@ -44,21 +45,33 @@ fn production_codec_rejects_noncanonical_and_duplicate_bytes() {
 #[test]
 fn v1_rejects_explicit_stage3_null_as_an_extra_member() {
     let bytes = fs::read(Path::new(ARTIFACTS).join("checkpoint-in-progress-vector.json")).unwrap();
-    let marker = b"\"surface_liquid_owned_state\":";
-    let start = bytes
-        .windows(marker.len())
-        .position(|window| window == marker)
-        .unwrap();
-    let value: Value = serde_json::from_slice(&bytes).unwrap();
-    let surface = serde_json::to_vec(
-        &value["phase"]["staged_scientific"]["direct_hydrology"]["surface_liquid_owned_state"],
-    )
-    .unwrap();
-    let insert = start + marker.len() + surface.len();
-    let mut poisoned = bytes;
-    poisoned.splice(
-        insert..insert,
-        b",\"snow_stage3_shadow\":null".iter().copied(),
+    let mut value: Value = serde_json::from_slice(&bytes).unwrap();
+    value["phase"]["staged_scientific"]["direct_hydrology"]
+        .as_object_mut()
+        .unwrap()
+        .insert("snow_stage3_shadow".into(), Value::Null);
+    let poisoned = serde_json::to_vec(&value).unwrap();
+    let parsed: Value = serde_json::from_slice(&poisoned).expect("poison remains valid JSON");
+    assert_eq!(
+        parsed["phase"]["staged_scientific"]["direct_hydrology"]["snow_stage3_shadow"],
+        Value::Null
+    );
+    assert!(from_canonical_bytes::<DirectV10RealConsumerCheckpointV1>(&poisoned).is_err());
+}
+
+#[test]
+fn v1_rejects_explicit_v11_attachment_null_as_an_extra_member() {
+    let bytes = fs::read(Path::new(ARTIFACTS).join("checkpoint-in-progress-vector.json")).unwrap();
+    let mut value: Value = serde_json::from_slice(&bytes).unwrap();
+    value["phase"]["staged_scientific"]["direct_hydrology"]
+        .as_object_mut()
+        .unwrap()
+        .insert("snow_stage3_v11_attachment".into(), Value::Null);
+    let poisoned = serde_json::to_vec(&value).unwrap();
+    let parsed: Value = serde_json::from_slice(&poisoned).expect("poison remains valid JSON");
+    assert_eq!(
+        parsed["phase"]["staged_scientific"]["direct_hydrology"]["snow_stage3_v11_attachment"],
+        Value::Null
     );
     assert!(from_canonical_bytes::<DirectV10RealConsumerCheckpointV1>(&poisoned).is_err());
 }
@@ -99,4 +112,34 @@ fn production_v1_direct_hydrology_shape_matches_frozen_authority_schema() {
         authority_owner["required"].as_array().unwrap().len(),
         authority_members.len()
     );
+}
+
+#[test]
+fn complete_generated_v1_schema_matches_frozen_authority_schema() {
+    let output =
+        std::env::temp_dir().join(format!("openwepp-restart-v1-schema-{}", std::process::id()));
+    if output.exists() {
+        fs::remove_dir_all(&output).unwrap();
+    }
+    fs::create_dir(&output).unwrap();
+    let status = Command::new("cargo")
+        .args([
+            "run",
+            "--offline",
+            "--quiet",
+            "--manifest-path",
+            "docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/Cargo.toml",
+            "--bin",
+            "generate_authority_artifacts",
+            "--",
+        ])
+        .arg(&output)
+        .status()
+        .expect("execute complete V1 schema generator");
+    assert!(status.success());
+    assert_eq!(
+        fs::read(output.join("checkpoint-schema.json")).unwrap(),
+        fs::read(Path::new(ARTIFACTS).join("checkpoint-schema.json")).unwrap()
+    );
+    fs::remove_dir_all(output).unwrap();
 }

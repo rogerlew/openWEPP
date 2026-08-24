@@ -1,5 +1,6 @@
 use std::process::Command;
 
+use openwepp_vegetation::{V10_MODEL_BYTES, V10_MODEL_SHA256};
 use sha2::{Digest, Sha256};
 
 const PACKAGE: &str = "docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts";
@@ -10,12 +11,6 @@ fn sha256(bytes: &[u8]) -> String {
 
 #[test]
 fn definitions_bind_exact_v10_and_lse_v2_authority() {
-    let vegetation_contract = include_bytes!(
-        "../../docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"
-    );
-    let lse_contract = include_bytes!(
-        "../../docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
-    );
     let calculator = include_bytes!(concat!(
         "../../",
         "docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/reference_nighttime_ci.py"
@@ -37,14 +32,20 @@ fn definitions_bind_exact_v10_and_lse_v2_authority() {
         "docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/openwepp_snow_free_lse_v2_definition.json"
     )))
     .expect("LSE-V2 definition JSON");
+    assert_eq!(v10["canonical_contract"], "SC-VEGETATION-001@14");
     assert_eq!(
         v10["canonical_contract_sha256"],
-        sha256(vegetation_contract)
+        "3a9f0a373259934e35472d90c07d6a54062b1407e576cd0b57dfbf66d12db174"
     );
+    assert_eq!(sha256(V10_MODEL_BYTES), V10_MODEL_SHA256);
     assert_eq!(v10["oracle"]["calculator_sha256"], sha256(calculator));
     assert_eq!(v10["oracle"]["vectors_sha256"], sha256(vectors));
     assert_eq!(v10["closure_evidence_sha256"], sha256(closure));
-    assert_eq!(lse_v2["canonical_contract_sha256"], sha256(lse_contract));
+    assert_eq!(lse_v2["canonical_contract"], "SC-LANDSURFACEENERGY-001@4");
+    assert_eq!(
+        lse_v2["canonical_contract_sha256"],
+        "9b6b12864e74bef5ef73eb56346c2527eb259e26bc73170b1347d1f27968b551"
+    );
     assert_eq!(lse_v2["closure_evidence_sha256"], sha256(closure));
     assert_eq!(lse_v2["coupled_vegetation_model"], "OPENWEPP_C3_WOODY_V10");
 }

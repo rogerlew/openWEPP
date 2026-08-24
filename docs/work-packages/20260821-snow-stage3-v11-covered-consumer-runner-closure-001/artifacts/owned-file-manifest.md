@@ -120,6 +120,20 @@ Complete surface-liquid WB14 child-slab integration checkpoint expansion:
   may be added only after a package-manifest amendment naming the discovered
   direct dependency.
 
+Restart V1 fail-closed and exact-head assurance reconciliation expansion:
+
+- `crates/openwepp-persisted-restart-v1/src/hydrology_restart.rs` and
+  `tests/integration/direct_v10_real_consumer_checkpoint_v1_contract.rs`:
+  reject both legacy and production Stage-3 owners at the frozen V1 boundary,
+  validate explicit-null poison syntax, and execute complete generated-schema
+  identity.
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver{.rs,/persistent_state.rs}`:
+  behavior-preserving persistent-state responsibility split required by the
+  existing 3,000-line structural guard.
+- Exact-head stale contract/registry/immutable-definition guards in
+  `tests/integration/{snow_stage3_terminal_receiver_authority_contract.rs,snow_stage3_turbulent_operator_reconciliation_contract.rs,snow_stage3_wind_source_custody_contract.rs,snow_surface_eb03_contract.rs,v10_nighttime_authority_contract.rs,vegetation_boundary_authority_contract.rs}`.
+  Historical V10/LSE authority bytes and digests remain unchanged.
+
 - `crates/openwepp-hillslope-orchestrator/src/stage3_parent_atmosphere.rs`:
   provider-derived parent-atmosphere receipt and canonical digest.
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/{receipt_sets,execution,fixed_point,regime,open_snow}.rs`:

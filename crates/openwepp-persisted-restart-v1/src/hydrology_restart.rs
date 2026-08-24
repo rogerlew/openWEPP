@@ -31,6 +31,22 @@ pub enum HydrologyRestartError {
 fn nested(error: impl std::fmt::Display) -> HydrologyRestartError {
     HydrologyRestartError::Nested(error.to_string())
 }
+fn reject_unsupported_stage3_restart_surfaces(
+    has_legacy_shadow: bool,
+    has_v11_attachment: bool,
+) -> Result<(), HydrologyRestartError> {
+    if has_legacy_shadow {
+        return Err(HydrologyRestartError::Unsupported(
+            "snow_stage3_shadow_requires_successor_restart",
+        ));
+    }
+    if has_v11_attachment {
+        return Err(HydrologyRestartError::Unsupported(
+            "snow_stage3_v11_attachment_requires_successor_restart",
+        ));
+    }
+    Ok(())
+}
 fn hexify_floats(value: &mut serde_json::Value) {
     match value {
         serde_json::Value::Number(number) if number.is_f64() => {
@@ -321,11 +337,10 @@ impl DirectHydrologyRestartV1 {
         phase_plan_sha256: Sha256Hex,
         day_input_digests: &[Sha256Hex],
     ) -> Result<Self, HydrologyRestartError> {
-        if value.snow_stage3_shadow.is_some() {
-            return Err(HydrologyRestartError::Unsupported(
-                "snow_stage3_shadow_requires_successor_restart",
-            ));
-        }
+        reject_unsupported_stage3_restart_surfaces(
+            value.snow_stage3_shadow.is_some(),
+            value.snow_stage3_v11_attachment.is_some(),
+        )?;
         let DirectRunFrame {
             identity,
             lanes,
@@ -706,6 +721,33 @@ mod tests {
                 "snow_stage3_shadow_requires_successor_restart"
             ))
         ));
+    }
+
+    #[test]
+    fn production_v11_only_runtime_requires_a_versioned_successor_restart() {
+        assert!(matches!(
+            reject_unsupported_stage3_restart_surfaces(false, true),
+            Err(HydrologyRestartError::Unsupported(
+                "snow_stage3_v11_attachment_requires_successor_restart"
+            ))
+        ));
+        assert!(reject_unsupported_stage3_restart_surfaces(false, false).is_ok());
+
+        let scheduler = include_str!(
+            "../../openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler.rs"
+        );
+        let production_configure = scheduler
+            .split("pub fn configure_snow_stage3_v11_attachment")
+            .nth(1)
+            .unwrap()
+            .split("pub(crate) fn prepare_snow_stage3_v11_day")
+            .next()
+            .unwrap();
+        assert!(
+            production_configure
+                .contains("self.snow_stage3_v11_attachment = Some(Box::new(attachment));")
+        );
+        assert!(!production_configure.contains("self.snow_stage3_shadow"));
     }
 
     #[test]

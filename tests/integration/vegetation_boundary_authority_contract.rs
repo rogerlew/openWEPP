@@ -225,7 +225,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "contract_version: 14",
+        "contract_version: 26",
         "Version 13 admits `OPENWEPP_C3_WOODY_V9`",
         "Version 7 admits the constitutive equations, topology inheritance, and V3",
         "Earlier-version statements limiting admission to",
@@ -248,8 +248,8 @@ fn canonical_schema_and_registry_entry_are_bound() {
     for field in [
         lifecycle,
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
-        "| `static` | `2026-08-14` |",
-        "OPENWEPP_C3_WOODY_V8",
+        "| `static+independent_oracle+contract_vectors` | `2026-08-20` |",
+        "v26 binds forest-covered V11",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -449,7 +449,7 @@ fn canonical_authority_and_test_vector_references_resolve() {
     }
     for invariant in identifiers(vectors, "INV-") {
         assert!(
-            contains_table_row(invariants, &invariant),
+            contains_table_row(&contract, &invariant),
             "unresolved test-vector invariant {invariant}"
         );
     }
@@ -639,7 +639,11 @@ fn assurance_receipts_form_the_recorded_generation_chain() {
     ] {
         assert!(terminal_residue.contains(required));
     }
-    assert!(identity.contains("41b142902d22e139ea732288ed40a504931a1fb54ab27c891d56891910229dd3"));
+    let identity: Value = serde_json::from_str(&identity).expect("typed assurance identity lock");
+    assert_eq!(
+        identity["generation_id"],
+        "637f45224b280b5328c190d05114f3dba2e24922943f6bade70d7afb7c26bc4f"
+    );
     assert!(impact.contains(
         "initial `SC-PLANT-001.md` | `3208ab181e5eb9261a51bb3d8ea63d25c133244b8cf25b6949b4f4eb3a26cc1f`"
     ));
@@ -669,7 +673,7 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 14",
+        "contract_version: 26",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
         "OPENWEPP_C3_WOODY_V3",

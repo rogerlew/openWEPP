@@ -297,7 +297,7 @@ fn v130_retains_production_and_claim_holds() {
     }
     for required in [
         "v136",
-        "v14 binds the default-off shared V11/Stage 3 carrier",
+        "v16 governs unit-specific covered convergence",
         "production",
         "cutover",
     ] {
@@ -572,7 +572,7 @@ fn v131_binds_raw_opportunity_separately_from_bounded_transfer() {
         assert!(snow.contains(required), "{CONTRACT} missing {required}");
     }
     for required in [
-        "contract_version: 14",
+        "contract_version: 16",
         "`m_v,raw`",
         "Signed bounded vapor transfer",
         "INV-SNOWENERGY-032",
@@ -729,5 +729,5 @@ fn v131_retains_fail_closed_authority_gaps_and_protected_boundaries() {
     assert!(package.contains("Quantify an isolated consequence only if"));
     assert!(package.contains("otherwise record implementation/reference parity"));
     assert!(index.contains("v136 admits a separate default-off terminal receiver chronology"));
-    assert!(index.contains("v14 binds the default-off shared V11/Stage 3 carrier"));
+    assert!(index.contains("v16 governs unit-specific covered convergence"));
 }

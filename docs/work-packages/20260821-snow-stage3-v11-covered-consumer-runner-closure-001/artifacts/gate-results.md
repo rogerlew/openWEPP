@@ -730,3 +730,78 @@ solver line-count guard, stale snow/vegetation contract-index assertions,
 stale assurance identity/digest bindings, and the V10 definition digest.
 Therefore the active Child-1 package truthfully remains `EXECUTING / HOLD`;
 this result does not reopen V1 wire authority or the retained WB14 v8 release.
+
+## 2026-08-24 restart V1 fail-closed and exact-head assurance closure
+
+`Static / correction:` V1 projection now rejects both unsupported runtime
+surfaces before DTO construction:
+`snow_stage3_shadow_requires_successor_restart` and
+`snow_stage3_v11_attachment_requires_successor_restart`. The production-only
+posture regression binds the real V11 installer to the V11 field, proves the
+legacy field remains absent from that installation path, and exercises the
+V1 rejection predicate with only the V11 surface present. Neither unsupported
+owner is restored by V1; an owner-free frame retains exact project/restore/
+reproject behavior.
+
+`Ran / restart authority:` `openwepp-persisted-restart-v1` passed `28/28`.
+The root V1 checkpoint integration now passes `6/6`: all four frozen vectors
+round-trip byte-identically; explicit legacy-shadow and production-V11
+attachment nulls remain valid, duplicate-free JSON before typed extra-member
+rejection; and the complete
+authority generator runs as an integration test and compares the entire
+generated schema byte-for-byte with frozen `checkpoint-schema.json`. No frozen
+authority artifact changed.
+
+`Static / exact prior failure inventory:` The preceding no-fail-fast run had
+these 13 failures, all unrelated to the V1 wire patch but still unresolved
+exact-head repository assurance and governance failures at that boundary:
+
+1. `snow_stage3_shadow_observability_contract::runtime_uses_typed_operators_and_bounded_extracted_modules`
+2. `snow_stage3_terminal_receiver_authority_contract::all_owner_failure_rolls_back_and_index_records_lifecycle`
+3. `snow_stage3_terminal_receiver_authority_contract::partial_wb14_is_a_narrow_reconciled_exception_not_a_scaled_proxy`
+4. `snow_stage3_turbulent_operator_reconciliation_contract::v130_retains_production_and_claim_holds`
+5. `snow_stage3_turbulent_operator_reconciliation_contract::v131_binds_raw_opportunity_separately_from_bounded_transfer`
+6. `snow_stage3_turbulent_operator_reconciliation_contract::v131_retains_fail_closed_authority_gaps_and_protected_boundaries`
+7. `snow_stage3_wind_source_custody_contract::v11_v134_separate_source_adjusted_and_virtual_wind`
+8. `snow_surface_eb03_contract::eb03_contract_binds_provider_selectors_and_exact_one_exchange`
+9. `v10_nighttime_authority_contract::definitions_bind_exact_v10_and_lse_v2_authority`
+10. `vegetation_boundary_authority_contract::assurance_receipts_form_the_recorded_generation_chain`
+11. `vegetation_boundary_authority_contract::canonical_authority_and_test_vector_references_resolve`
+12. `vegetation_boundary_authority_contract::canonical_schema_and_registry_entry_are_bound`
+13. `vegetation_boundary_authority_contract::coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted`
+
+`Static / assurance disposition:` Current guards bind approved
+`SC-SNOWENERGY-001@16`, approved `SC-VEGETATION-001@26`, and their current
+registry rows. Historical V10 and LSE-V2 definitions continue to bind the
+contract versions/digests under which they were released rather than the
+mutable current contract files. The checked-in V10 bytes were not modified;
+their SHA-256 remains
+`0c42b025b6f9282d85afd5c8819ec9cc60d66a2b79ac6d5922bfdcc8026dd182`
+and equals `V10_MODEL_SHA256`. `openwepp-assurance verify-generation --base-ref
+15763d7f6d5d4125333d9b7583424c714f5f5ea4` passed the complete 89-transition
+chain at generation
+`637f45224b280b5328c190d05114f3dba2e24922943f6bade70d7afb7c26bc4f`;
+no assurance identity or receipt was hand-edited.
+
+`Static / structural disposition:` Stage-3 persistent-state initialization,
+projection, serialization, and restoration moved without behavior changes to
+`stage3_solver/persistent_state.rs` (`214` lines). The solver core is now
+`2,939` lines, below the existing strict `< 3,000` guard; no lint or line-count
+exemption was added.
+
+`Ran / focused and affected:` The eight affected integration binaries passed
+`76/76`; the hillslope orchestrator passed `790/790` with one configured skip;
+and `cargo fmt --all -- --check` passed. Warnings-denied Clippy for
+`openwepp-persisted-restart-v1` with `--all-targets --no-deps` passed; ordinary
+dependency compilation continued to report the already visible orchestrator
+dead-code warnings. Assurance generation verification passed as recorded above.
+
+`Ran / exact-head workspace PASS:` From the terminal diff based on
+`9a2acf534efd3438dbd84814a60a95eb349500c0`,
+`nix develop --command tools/dev/heavy cargo nextest run --workspace --no-fail-fast`
+completed all `3,269` tests across `243` binaries: `3,269` passed, seven were
+reported slow, and six configured skips remained. There were no failures.
+The prior workspace regression HOLD is lifted. The broader Child-1 package
+remains `EXECUTING` for the already declared physical/restart sequence; this
+checkpoint does not claim that successor additive restart or physical campaign
+closure is complete.

@@ -146,8 +146,8 @@ fn all_owner_failure_rolls_back_and_index_records_lifecycle() {
     }
     for required in [
         "v136 admits a separate default-off terminal receiver chronology",
-        "v7 admits exact-one terminal liquid receipt",
-        "v14 binds the default-off shared V11/Stage 3 carrier",
+        "v16 governs unit-specific covered convergence",
+        "v26 binds forest-covered V11 to the shared Child 2C carrier",
     ] {
         assert!(index.contains(required), "{INDEX} missing {required}");
     }
@@ -168,9 +168,12 @@ fn terminal_liquid_and_energy_have_closed_non_aliasing_semantics() {
 #[test]
 fn partial_wb14_is_a_narrow_reconciled_exception_not_a_scaled_proxy() {
     let liquid = read(LIQUID);
-    assert!(liquid.contains("fixed production base remains exactly 48 wall bins of 1800 seconds"));
-    assert!(liquid.contains("only exception is a tagged terminal receiver segment"));
-    assert!(liquid.contains("every other non-1800 call `E-008`"));
+    assert!(
+        liquid
+            .contains("fixed production base remains exactly 48 parent wall bins of 1800 seconds")
+    );
+    assert!(liquid.contains("terminal exception is a tagged receiver segment"));
+    assert!(liquid.contains("unsealed variable-duration calls remain `SURFACELIQUID-E-008`"));
     assert!(liquid.contains("compute_green_ampt_interval_infiltration"));
     assert!(liquid.contains("beginning ponded water"));
     assert!(liquid.contains("No copied equation, per-parcel solve"));
