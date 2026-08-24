@@ -1,8 +1,8 @@
 ---
 contract_id: SC-SURFACELIQUID-001
 title: Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
-status: in_review
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP maintainers + hydrology/land-surface-energy reviewer
 contract_version: 8
 producer_scope:
@@ -14,15 +14,15 @@ consumer_scope:
   - Production WB14 infiltration/runoff and routed-runon owners
   - Restart and atomic shadow-state consumers
 evidence_level: static+contract_vectors
-last_reviewed: pending
+last_reviewed: 2026-08-23
 supersedes: []
 superseded_by: []
 ---
 
 # SC-SURFACELIQUID-001 Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
 
-Status: `in_review` (version 7 remains the released runtime baseline)
-Maturity: `draft`
+Status: `approved`
+Maturity: `active`
 Evidence mode: `Static + contract vectors`
 
 ## Purpose And Scientific Scope
@@ -977,7 +977,7 @@ persistent continuation advance.
 | Gap | Status | Disposition |
 |---|---|---|
 | `GAP-SURFACELIQUID-001` persistent owner absent | `CLOSED` | Persistent owner, canonical state/restart, and complete-owner projection are implemented and tested. |
-| `GAP-SURFACELIQUID-002` runtime owner implementation | `IMPLEMENTED_AWAITING_PROMOTION_VERIFICATION` | Exact state/candidate operations, receipt-owned parent coordination, reconstruction, and rollback are implementation candidates; closure awaits this cycle's disposition and verification. |
+| `GAP-SURFACELIQUID-002` runtime owner implementation | `CLOSED` | Exact state/candidate operations, receipt-owned parent coordination, reconstruction, rollback, dual review, and independent verification passed for v8. |
 | `GAP-SURFACELIQUID-003` production selector/cutover | `NOT_AUTHORIZED` | Later separately governed package required. |
 | `GAP-SURFACELIQUID-004` snow/frozen/thawing custody | `AUTHORITY_MISSING`, `NON_PROMOTABLE` | Typed unsupported; snow contracts own that domain. |
 | `GAP-SURFACELIQUID-005` multi-production-lane covered Stage-3 parent execution | `NOT_AUTHORIZED` | The parent ledger representation is lane-keyed and contains no unweighted cross-OFE scalar, but production rejects more than one active covered Stage-3 lane with a typed support error. Genuine multi-lane covered execution requires its own fixture and review cycle. Snow-free multi-OFE topology remains admitted. |
@@ -991,7 +991,7 @@ multi-lane covered Stage-3 execution.
 | Date | Version | Author | Change |
 |---|---|---|---|
 | 2026-08-19 | 7 | Codex | Added exact-one 0 C terminal receipt and partial-WB14 continuation/restart authority (`INV-SURFACELIQUID-010/011`) for the default-off terminal receiver transaction. |
-| 2026-08-23 | 8 (in review) | Codex | Formalized child slabs as exact coupled supports beneath Stage-3 cadence proposals; bound OFE/lane/configuration/model/parameter and complete-owner identity; required topology-ordered complete transaction staging, receipt reconstruction, final-only cursor publication, parity, truncation, routing, poison, and rollback gates. Version 7 remains released until promotion. |
+| 2026-08-23 | 8 | Codex | Promoted exact coupled child supports beneath Stage-3 cadence proposals after dual review and verification; bound OFE/lane/configuration/model/parameter and complete-owner identity, topology-ordered staging and routed-queue seals, final-only cursor publication, parity, truncation, routing, poison, and rollback gates. |
 | 2026-08-23 | 8 (integration candidate) | Codex | Installed parent-local surface state before child resource physics; connected live topology-ordered ingress to per-OFE reconstructable scalar receipt authorities; bound child and final parent receipt sets into complete-owner joins; separated slab and persistent-parent counters; added actual 30x60 and rollback evidence. Promotion remains review-gated. |
 | 2026-08-23 | prospective | Codex | Recorded the unreleased WB14 parent/child transaction design and contract vectors. Independent reviews held release on complete-owner integration, dynamic Stage 3 cadence, and rollback evidence; v7 authority and the production guard remain unchanged. |
 | 2026-08-14 | 1 | Codex | Initial contract-first draft. |

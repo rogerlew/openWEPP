@@ -34,4 +34,5 @@ Implementation evidence prepared for verification:
   suite passed 11/11, and the orchestrator suite passed 787/787 with one
   configured skip.
 
-Promotion decision: pending two independent verification passes.
+Promotion decision: approved after independent verification A and B both
+returned PASS at exact head `a35bf816858ea754bf6f000468377c4acbaca659`.

@@ -103,8 +103,8 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
     for required in [
         "contract_id: SC-SURFACELIQUID-001",
         "contract_version: 8",
-        "status: in_review",
-        "version 7 remains the released runtime baseline",
+        "status: approved",
+        "maturity: active",
         "INV-SURFACELIQUID-001",
         "INV-SURFACELIQUID-002",
         "(run_id, ofe_id, tile_id, surface_id, surface_class, source_type, source_id)",
