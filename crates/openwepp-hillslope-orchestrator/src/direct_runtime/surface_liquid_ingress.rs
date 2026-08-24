@@ -1118,6 +1118,7 @@ fn execute_surface_liquid_ingress_inner(
             input.transaction_id,
             input.interval_s,
         )?;
+        receipts.extend(std::mem::take(&mut advanced.receipts));
         route_runoff(
             configuration,
             ofe_id,
@@ -1213,7 +1214,6 @@ fn execute_surface_liquid_ingress_inner(
             advanced.cumulative_infiltration_m;
         ending.continuations[continuation_index].last_accepted_transaction_id =
             Some(input.transaction_id);
-        receipts.extend(advanced.receipts);
         if let Some(ledger) = advanced.ledger {
             ledgers.push(ledger);
         }
