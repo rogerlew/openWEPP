@@ -902,7 +902,10 @@ additive restart, and the remaining scenario/review sequence are unchanged.
 | Authority anti-evasion / required-suite obligation guard | PASS / PASS: 3/3 |
 | Science-contract admission | `A0_ADMITTED`: 49 contracts, 11 science surfaces, base `564d59bef6283db0aabf967fb3f97f634c3f9e2a` |
 | Stable-diff full workspace | PASS: 3,280/3,280, ten slow, six configured skips |
+| Exact clean implementation SHA `d2a605e13fef0f9e93ea6585fca40c774dda0f7e` | PASS: 3,280/3,280, seven slow, six configured skips |
 
 Diff/write-set hygiene passed. Independent science, ownership, Rust/API, and
-Rust QA reviews returned Static PASS. Commit/exact-head verification remains
-required before this corrective increment is dispositioned.
+Rust QA reviews returned Static PASS. The BGC corrective increment is
+dispositioned `PASS`; the encompassing Child 1 package remains `EXECUTING /
+HOLD` on its unchanged physics, chronology, runner, terminal-liquid, restart,
+matrix, and terminal-review obligations.
