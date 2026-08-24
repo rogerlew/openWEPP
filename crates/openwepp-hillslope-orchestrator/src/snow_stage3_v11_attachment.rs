@@ -144,6 +144,7 @@ pub struct DirectSnowStage3V11PreparedSupport {
     /// precipitation parcel remains sealed input; it is not a terminal parcel
     /// and cannot contain an ending owner or event time.
     support_identity_by_lane: BTreeMap<u32, Vec<PreparedStage3V11SupportIdentityV1>>,
+    hard_boundaries: Vec<ModelTimeNs>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -227,7 +228,28 @@ impl DirectSnowStage3V11PreparedSupport {
             atmospheric_receipt_by_destination: BTreeMap::new(),
             covered_v11_interval: None,
             support_identity_by_lane,
+            hard_boundaries: Vec::new(),
         })
+    }
+
+    /// Add exact coupled-time event/restart/output boundaries that may
+    /// truncate a Stage-3 cadence proposal without creating a zero-duration
+    /// physics child.
+    pub fn with_hard_boundaries(
+        mut self,
+        mut boundaries: Vec<ModelTimeNs>,
+    ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
+        boundaries.sort_unstable();
+        boundaries.dedup();
+        if boundaries.iter().any(|boundary| {
+            *boundary <= self.support.start_ns() || *boundary >= self.support.end_ns()
+        }) {
+            return Err(DirectSnowStage3V11AttachmentError::Support(
+                "coupled hard boundary outside parent interior",
+            ));
+        }
+        self.hard_boundaries = boundaries;
+        Ok(self)
     }
 
     /// Attach a covered forcing to one typed physical destination.
@@ -554,6 +576,7 @@ impl DirectSnowStage3V11PreparedSupport {
     fn coupled_subslab(
         &self,
         support: TimeSupport,
+        _child_ordinal: u32,
     ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
         if support.start_ns() < self.support.start_ns() || support.end_ns() > self.support.end_ns()
         {
@@ -562,9 +585,33 @@ impl DirectSnowStage3V11PreparedSupport {
             ));
         }
         let duration_seconds = f64::from_bits(support.duration_s_bits());
+        let parent_duration_seconds = f64::from_bits(self.support.duration_s_bits());
+        let child_offset_seconds =
+            (support.start_ns().get() - self.support.start_ns().get()) as f64 / 1_000_000_000.0;
+        let partition_parcels = |parcels: &[openwepp_land_surface_energy::LiquidParcel]| {
+            parcels
+                .iter()
+                .filter_map(|parcel| {
+                    let overlap_start = parcel.start_s.max(child_offset_seconds);
+                    let overlap_end = parcel.end_s.min(child_offset_seconds + duration_seconds);
+                    (overlap_end > overlap_start).then(|| {
+                        let mut child = parcel.clone();
+                        let fraction =
+                            (overlap_end - overlap_start) / (parcel.end_s - parcel.start_s);
+                        child.start_s = overlap_start - child_offset_seconds;
+                        child.end_s = overlap_end - child_offset_seconds;
+                        child.amount_kg_m2_destination_tile_ground *= fraction;
+                        child
+                    })
+                })
+                .collect::<Vec<_>>()
+        };
         let segment_interval = |input: &DirectV9ShadowIntervalInput| {
             let mut value = input.clone();
             value.lse_forcing.interval_s = duration_seconds;
+            value.lse_forcing.precipitation_parcels =
+                partition_parcels(&input.lse_forcing.precipitation_parcels);
+            value.lse_forcing.runon_parcels = partition_parcels(&input.lse_forcing.runon_parcels);
             value.lse_forcing.forcing_sha256 =
                 value.lse_forcing.canonical_sha256().map_err(|_| {
                     DirectSnowStage3V11AttachmentError::Identity(
@@ -580,6 +627,9 @@ impl DirectSnowStage3V11PreparedSupport {
             .map(|input| {
                 let mut lse_forcing = input.lse_forcing.clone();
                 lse_forcing.interval_s = duration_seconds;
+                lse_forcing.precipitation_parcels =
+                    partition_parcels(&input.lse_forcing.precipitation_parcels);
+                lse_forcing.runon_parcels = partition_parcels(&input.lse_forcing.runon_parcels);
                 lse_forcing.forcing_sha256 = lse_forcing.canonical_sha256().map_err(|_| {
                     DirectV11RealConsumerError::Identity(
                         "coupled subslab covered LSE forcing digest",
@@ -596,10 +646,16 @@ impl DirectSnowStage3V11PreparedSupport {
             .support_forcing_by_lane
             .iter()
             .map(|(lane_id, forcing)| {
+                let mut child_forcing = forcing.forcing;
+                let support_fraction = duration_seconds / parent_duration_seconds;
+                child_forcing.active_precipitation_m *= support_fraction;
+                child_forcing.rain_m *= support_fraction;
+                child_forcing.snowfall_m *= support_fraction;
+                child_forcing.radiation_mj_m2 *= support_fraction;
                 (
                     *lane_id,
                     DirectSnowStage3SupportInput {
-                        forcing: forcing.forcing,
+                        forcing: child_forcing,
                         duration_seconds,
                     },
                 )
@@ -660,6 +716,7 @@ impl DirectSnowStage3V11PreparedSupport {
             atmospheric_receipt_by_destination: self.atmospheric_receipt_by_destination.clone(),
             covered_v11_interval,
             support_identity_by_lane: self.support_identity_by_lane.clone(),
+            hard_boundaries: self.hard_boundaries.clone(),
         })
     }
 
@@ -2412,6 +2469,7 @@ pub(crate) fn execute_covered_real_v11_parent(
     let mut clock = beginning_clock.clone();
     let mut stage3 = beginning_stage3;
     let mut owner_joins = Vec::new();
+    let mut expected_child_beginning = complete_owner_set_digest(beginning_clock.owners())?;
     while clock.accepted_until() < prepared.support.end_ns() {
         let selected_seconds = stage3
             .values()
@@ -2426,18 +2484,20 @@ pub(crate) fn execute_covered_real_v11_parent(
             ))?;
         let selected_ns = match selected_seconds.to_bits() {
             bits if bits == 1_800.0_f64.to_bits() => 1_800_000_000_000,
-            bits if bits == 900.0_f64.to_bits() || bits == 60.0_f64.to_bits() => {
-                return Err(DirectSnowStage3V11AttachmentError::Support(
-                    "WB14 parent-interval continuation has no admitted coupled-subslab projection",
-                ));
-            }
+            bits if bits == 900.0_f64.to_bits() => 900_000_000_000,
+            bits if bits == 60.0_f64.to_bits() => 60_000_000_000,
             _ => {
                 return Err(DirectSnowStage3V11AttachmentError::Support(
                     "unreleased Stage-3 coupled cadence",
                 ));
             }
         };
-        let end_ns = ModelTimeNs::new(
+        if selected_ns != 1_800_000_000_000 {
+            return Err(DirectSnowStage3V11AttachmentError::Support(
+                "unreleased Stage-3 coupled cadence",
+            ));
+        }
+        let proposed_end_ns = ModelTimeNs::new(
             clock
                 .accepted_until()
                 .get()
@@ -2447,8 +2507,22 @@ pub(crate) fn execute_covered_real_v11_parent(
                 ))?
                 .min(prepared.support.end_ns().get()),
         );
+        let end_ns = prepared
+            .hard_boundaries
+            .iter()
+            .copied()
+            .find(|boundary| *boundary > clock.accepted_until() && *boundary < proposed_end_ns)
+            .unwrap_or(proposed_end_ns);
         let support = TimeSupport::new(clock.accepted_until(), end_ns)?;
-        let subslab = prepared.coupled_subslab(support)?;
+        if support.duration_ns() != 1_800_000_000_000 {
+            return Err(DirectSnowStage3V11AttachmentError::Support(
+                "unreleased Stage-3 coupled cadence",
+            ));
+        }
+        let child_ordinal = u32::try_from(owner_joins.len()).map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Identity("coupled subslab ordinal overflow")
+        })?;
+        let subslab = prepared.coupled_subslab(support, child_ordinal)?;
         let (next_parent, next_consumer, next_clock, next_stage3, owner_join) =
             execute_covered_real_v11_subslab(
                 context,
@@ -2461,6 +2535,17 @@ pub(crate) fn execute_covered_real_v11_parent(
                 forcing_receipt,
                 stage3,
             )?;
+        if owner_join.owner_join.beginning_complete_owner_set_sha256 != expected_child_beginning {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "covered child complete-owner predecessor join",
+            ));
+        }
+        expected_child_beginning = owner_join.owner_join.ending_complete_owner_set_sha256;
+        if complete_owner_set_digest(next_clock.owners())? != expected_child_beginning {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "covered child ending complete-owner clock join",
+            ));
+        }
         parent = next_parent;
         consumer = next_consumer;
         clock = next_clock;
@@ -2584,6 +2669,8 @@ fn execute_covered_real_v11_subslab(
             stage3_beginning_by_lane: beginning_stage3.clone(),
             day_index,
             interval_index,
+            finalize_wb14_parent_interval: support.end_ns()
+                == beginning_clock.parent_support().end_ns(),
         },
     );
     let mut provisional_executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
@@ -2616,6 +2703,8 @@ fn execute_covered_real_v11_subslab(
             stage3_beginning_by_lane: beginning_stage3,
             day_index,
             interval_index,
+            finalize_wb14_parent_interval: support.end_ns()
+                == beginning_clock.parent_support().end_ns(),
         },
     );
     let mut final_executor =

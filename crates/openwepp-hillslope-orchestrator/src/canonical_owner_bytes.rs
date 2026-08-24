@@ -67,6 +67,34 @@ impl DirectV10RealConsumerShadow {
                 .ok_or(DirectV11RealConsumerError::Identity(
                     "canonical surface-liquid owner",
                 ))?;
+        #[derive(Serialize)]
+        struct SurfaceLiquidProjection {
+            schema: &'static str,
+            persistent_owner_bytes: Vec<u8>,
+            wb14_parent_working_state_sha256: Option<String>,
+        }
+        let surface_projection = SurfaceLiquidProjection {
+            schema: "OPENWEPP_SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V2",
+            persistent_owner_bytes: surface
+                .canonical_bytes(&self.inner.surface_configuration)
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                        DirectV9RealConsumerError::Serialization(error.to_string()),
+                    ))
+                })?,
+            wb14_parent_working_state_sha256: self
+                .inner
+                .wb14_parent_working_state
+                .as_ref()
+                .map(crate::direct_runtime::DirectWb14ParentWorkingState::canonical_sha256)
+                .transpose()
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                        DirectV9RealConsumerError::Serialization(error.to_string()),
+                    ))
+                })?
+                .map(|digest| digest.as_str().to_owned()),
+        };
         let mut owners = BTreeMap::new();
         owners.insert(
             "vegetation".to_owned(),
@@ -78,13 +106,7 @@ impl DirectV10RealConsumerShadow {
         );
         owners.insert(
             "surface_liquid".to_owned(),
-            surface
-                .canonical_bytes(&self.inner.surface_configuration)
-                .map_err(|error| {
-                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                        DirectV9RealConsumerError::Serialization(error.to_string()),
-                    ))
-                })?,
+            serde_json::to_vec(&surface_projection)?,
         );
         owners.insert("hydrology".to_owned(), serde_json::to_vec(&hydrology)?);
         owners.insert(

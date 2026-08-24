@@ -1268,6 +1268,83 @@ fn continuation_advances_48_intervals_then_requires_new_day_zero() {
 }
 
 #[test]
+fn short_complete_owner_children_advance_persistent_cursor_once() {
+    for (child_count, duration_s, transaction_base) in
+        [(2_u128, 900.0, 900_u128), (30, 60.0, 6_000)]
+    {
+        let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+        let mut state = initial_state(&configuration, 0.0);
+        let mut parent_working = None;
+        for ordinal in 0..child_count {
+            let finalize = ordinal + 1 == child_count;
+            let transaction_id = TransactionId(transaction_base);
+            let resource = resource_candidate(&configuration, &state, transaction_id, None, &[]);
+            let record = &configuration.records[0];
+            let input = DirectSurfaceLiquidIngressInput {
+                transaction_id,
+                day_index: 3,
+                interval_index: 0,
+                interval_s: duration_s,
+                tile_ingress: vec![DirectTileGroundIngress::OpenRawPrecipitation {
+                    ofe_id: record.key.ofe_id.clone(),
+                    tile_id: record.key.tile_id.clone(),
+                    surface_id: record.key.surface_id.clone(),
+                    raw_precipitation: amount(0.0, 285.0, 0.0, duration_s),
+                }],
+                wb14_parameters: parameters(&configuration),
+            };
+            let candidate = execute_surface_liquid_ingress_with_parent_state(
+                &configuration,
+                &resource,
+                &input,
+                parent_working.as_ref(),
+                finalize,
+            )
+            .expect("accepted complete-owner child");
+            assert_eq!(
+                candidate.ending_state.continuations[0].next_interval_index,
+                if finalize { 1 } else { 0 },
+                "only parent finalization publishes the persistent cursor"
+            );
+            parent_working = candidate.parent_working_state.clone();
+            state = candidate.ending_state;
+        }
+        assert_eq!(state.continuations[0].next_interval_index, 1);
+        assert!(parent_working.is_none());
+    }
+}
+
+#[test]
+fn one_1800_second_parent_child_is_bit_identical_to_production_owner_candidate() {
+    let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
+    let state = initial_state(&configuration, 0.25);
+    let transaction_id = TransactionId(8_800);
+    let resource = resource_candidate(&configuration, &state, transaction_id, None, &[]);
+    let input = DirectSurfaceLiquidIngressInput {
+        transaction_id,
+        day_index: 3,
+        interval_index: 0,
+        interval_s: INTERVAL_S,
+        tile_ingress: vec![open_ingress(&configuration.records[0], 0.4)],
+        wb14_parameters: parameters(&configuration),
+    };
+    let historical = execute_surface_liquid_ingress(&configuration, &resource, &input)
+        .expect("historical complete owner");
+    let parent_child = execute_surface_liquid_ingress_with_parent_finalization(
+        &configuration,
+        &resource,
+        &input,
+        true,
+    )
+    .expect("one-child complete owner");
+    assert_eq!(parent_child.ending_state, historical.ending_state);
+    assert_eq!(parent_child.receipts, historical.receipts);
+    assert_eq!(parent_child.ledgers, historical.ledgers);
+    assert_eq!(parent_child.closure_operands, historical.closure_operands);
+    assert_eq!(parent_child.wb14_calls_by_ofe, historical.wb14_calls_by_ofe);
+}
+
+#[test]
 fn independent_closure_rejects_wrong_infiltration_recipient() {
     let configuration = one_tile_configuration(DirectGroundIngressMode::OpenRawPrecipitation);
     let beginning = initial_state(&configuration, 0.0);

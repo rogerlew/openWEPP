@@ -49,6 +49,10 @@ use crate::direct_runtime::{
     checked_surface_liquid_div, checked_surface_liquid_mul, checked_surface_liquid_sub,
     checked_surface_liquid_sum,
 };
+use crate::direct_runtime::{
+    DirectWb14ParentWorkingState, execute_surface_liquid_ingress_with_parent_finalization,
+    execute_surface_liquid_ingress_with_parent_state,
+};
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyShadowAdapter, RealHydrologyShadowError, RealHydrologySourceKey,
 };
@@ -60,7 +64,6 @@ use crate::{
     DirectSurfaceLiquidReceiptDisposition, DirectSurfaceLiquidReceiptRecipient,
     DirectSurfaceLiquidResourceCandidate, DirectSurfaceLiquidRollbackHashes,
     apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
-    execute_surface_liquid_ingress,
 };
 
 mod covered_derived_ingress;
@@ -990,6 +993,8 @@ where
         arbitration,
         finalized,
         ingress,
+        true,
+        None,
     )
     .map_err(|error| canonicalize_finalized_error(error, &finalized_protocol))
 }
@@ -1434,6 +1439,8 @@ fn construct_unified_candidate(
     arbitration: UnifiedRealHydrologyArbitration,
     finalized: UnifiedLseFinalization,
     ingress: &DirectSurfaceLiquidIngressInput,
+    finalize_wb14_parent_interval: bool,
+    wb14_parent_working_state: Option<&DirectWb14ParentWorkingState>,
 ) -> Result<UnifiedRealHydrologyCandidate, LandSurfaceEnergyShadowError> {
     let UnifiedLseFinalization {
         water_protocol,
@@ -1451,8 +1458,21 @@ fn construct_unified_candidate(
         &surface_uses,
         &water_protocol.condensation_credits,
     )?;
-    let surface_ingress =
-        execute_surface_liquid_ingress(surface_configuration, &surface_resource, ingress)?;
+    let surface_ingress = match wb14_parent_working_state {
+        Some(parent) => execute_surface_liquid_ingress_with_parent_state(
+            surface_configuration,
+            &surface_resource,
+            ingress,
+            Some(parent),
+            finalize_wb14_parent_interval,
+        )?,
+        None => execute_surface_liquid_ingress_with_parent_finalization(
+            surface_configuration,
+            &surface_resource,
+            ingress,
+            finalize_wb14_parent_interval,
+        )?,
+    };
     let mut ending_frame = soil_candidate.ending_frame().clone();
     let receiver_closure_operands = apply_ingress_to_real_receivers(
         soil_adapter.owner,

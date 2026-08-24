@@ -287,6 +287,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         &covered_destinations,
                         &current_execution_boundaries,
                         true,
+                        self.finalize_wb14_parent_interval,
                     )
                     .map_err(|error| {
                         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
@@ -367,6 +368,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         &covered_destinations,
                         &final_execution_boundaries,
                         false,
+                        self.finalize_wb14_parent_interval,
                     )
                     .map_err(|error| {
                         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
@@ -444,6 +446,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                             complete
                         },
                         false,
+                        self.finalize_wb14_parent_interval,
                     )
                     .map_err(|error| {
                         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
@@ -516,6 +519,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                             complete
                         },
                         false,
+                        self.finalize_wb14_parent_interval,
                     )
                     .map_err(|error| {
                         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
@@ -634,6 +638,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                             complete
                         },
                         false,
+                        self.finalize_wb14_parent_interval,
                     )
                     .map_err(|error| {
                         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(

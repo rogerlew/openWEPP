@@ -101,6 +101,25 @@ evidence, and `docs/ROADMAP.md`. No production ingress, attachment, selector,
 output, restart, precipitation, terminal-liquid, snow-soil heat, or Richards
 source is modified.
 
+Complete surface-liquid WB14 child-slab integration checkpoint expansion:
+
+- `docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md`,
+  `docs/specifications/science-contracts/index.md`, and package-local v8 cycle
+  artifacts: formal in-review authority and lifecycle evidence.
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/{surface_liquid_wb14.rs,surface_liquid_ingress.rs,surface_liquid_owner.rs}`:
+  immutable identity, exact child support, receipt reconstruction, complete
+  surface transaction staging, and final-only persistent continuation.
+- `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/{mod.rs,covered_derived_ingress.rs,strict_v8_endpoint.rs}`:
+  explicit parent-local child context carried through the existing unified
+  hydrology candidate.
+- `crates/openwepp-hillslope-orchestrator/src/{snow_stage3_v11_attachment.rs,v11_covered/*.rs}`:
+  dynamic coupled cadence, complete-owner child joins, parent finalization,
+  rollback injections, and package-owned fixtures.
+- Package-owned unit/integration tests, contract guards, and evidence files
+  required by the exact terminal diff. Restart/provider/GSI or assurance files
+  may be added only after a package-manifest amendment naming the discovered
+  direct dependency.
+
 - `crates/openwepp-hillslope-orchestrator/src/stage3_parent_atmosphere.rs`:
   provider-derived parent-atmosphere receipt and canonical digest.
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/{receipt_sets,execution,fixed_point,regime,open_snow}.rs`:

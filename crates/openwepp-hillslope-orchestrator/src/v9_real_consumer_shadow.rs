@@ -308,6 +308,7 @@ pub struct DirectV9RealConsumerShadow {
     hydrology_frame: DirectRunFrame,
     next_day_index: usize,
     accepted_interval_count: u64,
+    wb14_parent_working_state: Option<crate::direct_runtime::DirectWb14ParentWorkingState>,
     root_zone_hydraulic_configuration: Option<DirectRootZoneHydraulicConfiguration>,
 }
 
@@ -1563,6 +1564,7 @@ impl DirectV9RealConsumerShadow {
             hydrology_frame,
             next_day_index,
             accepted_interval_count: 0,
+            wb14_parent_working_state: None,
             root_zone_hydraulic_configuration: None,
         };
         value.validate_complete_owner_set()?;
@@ -1718,6 +1720,7 @@ impl DirectV9RealConsumerShadow {
             None,
             false,
             None,
+            true,
         )
     }
 
@@ -1734,6 +1737,7 @@ impl DirectV9RealConsumerShadow {
         >,
         provisional_v11: bool,
         covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
+        finalize_wb14_parent_interval: bool,
     ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
         let transaction_id = TransactionId(
             self.vegetation_state
@@ -1746,10 +1750,19 @@ impl DirectV9RealConsumerShadow {
         );
         let interval_index = u8::try_from(interval_index)
             .map_err(|_| DirectV9RealConsumerError::Identity("interval index overflow"))?;
-        if input.lse_forcing.transaction_id != transaction_id
-            || input.lse_forcing.interval_s.to_bits() != interval_s.to_bits()
+        if input.lse_forcing.transaction_id != transaction_id {
+            return Err(DirectV9RealConsumerError::Unsupported(
+                "forcing transaction, cadence, or snow domain",
+            ));
+        }
+        if input.lse_forcing.interval_s.to_bits() != interval_s.to_bits()
             || v11_duration_s_bits.is_some_and(|bits| bits != interval_s.to_bits())
-            || input.lse_forcing.snow_present_at_beginning
+        {
+            return Err(DirectV9RealConsumerError::Unsupported(
+                "forcing transaction, cadence, or snow domain",
+            ));
+        }
+        if input.lse_forcing.snow_present_at_beginning
             || input.lse_forcing.snow_present_at_end
             || input.lse_forcing.snow_terminal_payload_present
         {
@@ -1852,6 +1865,8 @@ impl DirectV9RealConsumerShadow {
                     bits,
                     !provisional_v11,
                     Some(destinations),
+                    finalize_wb14_parent_interval,
+                    self.wb14_parent_working_state.as_ref(),
                 )?,
                 None => crate::land_surface_energy_shadow::execute_v8_lse_runtime_shadow_v11(
                     &v8_configuration,
@@ -1916,6 +1931,7 @@ impl DirectV9RealConsumerShadow {
         covered_destinations: &BTreeSet<(OfeId, TileId)>,
         lower_boundaries: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
         provisional_v11: bool,
+        finalize_wb14_parent_interval: bool,
     ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
         if !input.lse_forcing.snow_present_at_beginning
             || !input.lse_forcing.snow_present_at_end
@@ -1946,6 +1962,7 @@ impl DirectV9RealConsumerShadow {
             Some(lower_boundaries),
             provisional_v11,
             Some(covered_destinations),
+            finalize_wb14_parent_interval,
         )
     }
 
@@ -1975,6 +1992,11 @@ impl DirectV9RealConsumerShadow {
         self.soil_thermal = soil_thermal;
         self.biogeochemistry = envelope.biogeochemistry().ending().clone();
         self.hydrology_frame = envelope.hydrology().ending_frame().clone();
+        self.wb14_parent_working_state = envelope
+            .hydrology()
+            .surface_ingress()
+            .parent_working_state()
+            .cloned();
         self.accepted_interval_count = self.accepted_interval_count.checked_add(1).ok_or(
             DirectV9RealConsumerError::Identity("accepted interval count overflow"),
         )?;

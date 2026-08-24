@@ -191,6 +191,8 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
         None,
         true,
         None,
+        true,
+        None,
     );
     if let Err(error) = &result {
         pending.borrow_mut().diagnostic = error.to_string().into_bytes();
@@ -294,6 +296,8 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11(
         duration_s_bits,
         validate_ofe_energy,
         None,
+        true,
+        None,
     )
 }
 
@@ -332,6 +336,8 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11_with_carriers(
             openwepp_kernel_contract::TileId,
         )>,
     >,
+    finalize_wb14_parent_interval: bool,
+    wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let pending = RefCell::new(PendingEndpointEnvelopes::default());
     execute_v8_lse_runtime_shadow_phases(
@@ -357,6 +363,8 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11_with_carriers(
         Some(duration_s_bits),
         validate_ofe_energy,
         covered_destinations,
+        finalize_wb14_parent_interval,
+        wb14_parent_working_state,
     )
 }
 
@@ -421,6 +429,8 @@ fn execute_v8_lse_runtime_shadow_phases(
             openwepp_kernel_contract::TileId,
         )>,
     >,
+    finalize_wb14_parent_interval: bool,
+    wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
 ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
     let projected = project_v8_runtime_inputs_with_carriers(
         vegetation_configuration,
@@ -456,6 +466,8 @@ fn execute_v8_lse_runtime_shadow_phases(
         day_index,
         interval_index,
         wb14_parameters,
+        finalize_wb14_parent_interval,
+        wb14_parent_working_state,
     )?;
     let receiver_expectations = receiver_expectations(
         lse_configuration,
@@ -699,6 +711,8 @@ fn derive_ingress_schedule(
     day_index: usize,
     interval_index: u8,
     wb14_parameters: &[DirectOfeWb14Parameters],
+    finalize_wb14_parent_interval: bool,
+    wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
 ) -> Result<CoveredIngressSchedule, ExecuteV8LseRuntimeShadowError> {
     let mut open_tile_ingress = Vec::new();
     let mut covered_runon = BTreeMap::new();
@@ -766,6 +780,8 @@ fn derive_ingress_schedule(
         open_tile_ingress,
         covered_runon,
         wb14_parameters: wb14_parameters.to_vec(),
+        finalize_wb14_parent_interval,
+        wb14_parent_working_state: wb14_parent_working_state.cloned(),
     })
 }
 

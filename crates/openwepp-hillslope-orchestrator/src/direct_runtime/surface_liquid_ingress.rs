@@ -7,6 +7,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
 use openwepp_land_surface_energy::{OfeId, ParcelId, Sha256Digest, SurfaceId};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 
 use super::runoff::{DirectWb14ContinuationIntervalInputs, advance_wb14_continuation_interval};
 use super::surface_liquid_closure::{
@@ -267,6 +268,103 @@ pub struct DirectSurfaceLiquidIngressInput {
     pub wb14_parameters: Vec<DirectOfeWb14Parameters>,
 }
 
+/// Parent-local Green--Ampt state. This is candidate state, never a
+/// persistent surface-liquid continuation: covered children carry it until
+/// the child whose accepted support closes the coupled parent.
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct DirectWb14ParentWorkingState {
+    schema: &'static str,
+    parent_day_index: usize,
+    parent_interval_index: u8,
+    parent_support_start_ns: i128,
+    parent_support_end_ns: i128,
+    surface_liquid_configuration_sha256: String,
+    wb14_configuration_sha256: String,
+    wb14_model_definition_sha256: String,
+    production_lane_ids: Vec<u32>,
+    accepted_duration_s: f64,
+    parameters: Vec<DirectOfeWb14Parameters>,
+    candidate_state: DirectSurfaceLiquidOwnedState,
+}
+
+const WB14_PARENT_WORKING_SCHEMA: &str = "OPENWEPP_DIRECT_WB14_PARENT_WORKING_STATE_V2";
+const WB14_MODEL_DEFINITION: &[u8] =
+    b"OPENWEPP_WB14_GREEN_AMPT_MODEL_DEFINITION_V1:advance_wb14_continuation_interval";
+
+fn wb14_parent_binding(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    input: &DirectSurfaceLiquidIngressInput,
+) -> Result<(i128, i128, String, Vec<u32>), DirectSurfaceLiquidError> {
+    let interval_ordinal = input
+        .day_index
+        .checked_mul(48)
+        .and_then(|value| value.checked_add(usize::from(input.interval_index)))
+        .ok_or(DirectSurfaceLiquidError::Identity(
+            "WB14 parent support overflow",
+        ))?;
+    let start_ns = i128::try_from(interval_ordinal)
+        .map_err(|_| DirectSurfaceLiquidError::Identity("WB14 parent support overflow"))?
+        .checked_mul(1_800_000_000_000)
+        .ok_or(DirectSurfaceLiquidError::Identity(
+            "WB14 parent support overflow",
+        ))?;
+    let end_ns =
+        start_ns
+            .checked_add(1_800_000_000_000)
+            .ok_or(DirectSurfaceLiquidError::Identity(
+                "WB14 parent support overflow",
+            ))?;
+    let parameter_bytes = serde_json::to_vec(&input.wb14_parameters)
+        .map_err(|_| DirectSurfaceLiquidError::Schema("WB14 configuration serialization"))?;
+    Ok((
+        start_ns,
+        end_ns,
+        format!("{:x}", Sha256::digest(parameter_bytes)),
+        configuration
+            .ofe_bindings
+            .iter()
+            .map(|binding| binding.production_lane_id)
+            .collect(),
+    ))
+}
+
+impl DirectWb14ParentWorkingState {
+    pub(crate) fn canonical_sha256(&self) -> Result<Sha256Digest, DirectSurfaceLiquidError> {
+        #[derive(Serialize)]
+        struct Projection<'a> {
+            schema: &'a str,
+            parent_day_index: usize,
+            parent_interval_index: u8,
+            parent_support_start_ns: i128,
+            parent_support_end_ns: i128,
+            surface_liquid_configuration_sha256: &'a str,
+            wb14_configuration_sha256: &'a str,
+            wb14_model_definition_sha256: &'a str,
+            production_lane_ids: &'a [u32],
+            accepted_duration_s_bits: u64,
+            parameters: &'a [DirectOfeWb14Parameters],
+            candidate_state_sha256: &'a str,
+        }
+        let bytes = serde_json::to_vec(&Projection {
+            schema: self.schema,
+            parent_day_index: self.parent_day_index,
+            parent_interval_index: self.parent_interval_index,
+            parent_support_start_ns: self.parent_support_start_ns,
+            parent_support_end_ns: self.parent_support_end_ns,
+            surface_liquid_configuration_sha256: &self.surface_liquid_configuration_sha256,
+            wb14_configuration_sha256: &self.wb14_configuration_sha256,
+            wb14_model_definition_sha256: &self.wb14_model_definition_sha256,
+            production_lane_ids: &self.production_lane_ids,
+            accepted_duration_s_bits: self.accepted_duration_s.to_bits(),
+            parameters: &self.parameters,
+            candidate_state_sha256: &self.candidate_state.state_sha256,
+        })
+        .map_err(|_| DirectSurfaceLiquidError::Schema("WB14 parent-state serialization"))?;
+        Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes)))
+            .map_err(|_| DirectSurfaceLiquidError::Schema("WB14 parent-state digest"))
+    }
+}
+
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum DirectSurfaceLiquidReceiptDisposition {
@@ -342,9 +440,23 @@ pub struct DirectSurfaceLiquidIngressCandidate {
     wb14_calls_by_ofe: BTreeMap<OfeId, u8>,
     closure_operands: DirectSurfaceLiquidClosureOperands,
     open_ingress_parcels: Vec<DirectOpenLiquidIngressParcel>,
+    parent_child_mode: bool,
+    finalize_parent_interval: bool,
+    input_parent_working_state: Option<DirectWb14ParentWorkingState>,
+    parent_working_state: Option<DirectWb14ParentWorkingState>,
 }
 
 impl DirectSurfaceLiquidIngressCandidate {
+    fn closure_ending_state(
+        &self,
+    ) -> Result<DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidError> {
+        let mut state = self.ending_state.clone();
+        if let Some(parent) = &self.parent_working_state {
+            state = parent.candidate_state.clone();
+        }
+        Ok(state)
+    }
+
     #[must_use]
     pub const fn transaction_id(&self) -> TransactionId {
         self.transaction_id
@@ -378,6 +490,11 @@ impl DirectSurfaceLiquidIngressCandidate {
     #[must_use]
     pub const fn closure_operands(&self) -> &DirectSurfaceLiquidClosureOperands {
         &self.closure_operands
+    }
+
+    #[must_use]
+    pub(crate) const fn parent_working_state(&self) -> Option<&DirectWb14ParentWorkingState> {
+        self.parent_working_state.as_ref()
     }
 
     /// Exact accepted LSE forcing lineage retained alongside the partition
@@ -431,21 +548,28 @@ impl DirectSurfaceLiquidIngressCandidate {
                 ));
             }
         }
-        let expected = execute_surface_liquid_ingress_inner(configuration, resource, input)
-            .map_err(|error| {
-                let code = error.code();
-                error.complete_context(
-                    code,
-                    DirectSurfaceLiquidPhase::IngressCandidate,
-                    DirectSurfaceLiquidErrorContext {
-                        transaction_id: Some(input.transaction_id),
-                        owner_id: Some(configuration.owner_id.clone()),
-                        ..DirectSurfaceLiquidErrorContext::default()
-                    },
-                    Some(resource.beginning_state().state_sha256.clone()),
-                    self.ending_state.recomputed_sha256().ok(),
-                )
-            })?;
+        let expected = execute_surface_liquid_ingress_inner(
+            configuration,
+            resource,
+            input,
+            self.parent_child_mode,
+            self.finalize_parent_interval,
+            self.input_parent_working_state.as_ref(),
+        )
+        .map_err(|error| {
+            let code = error.code();
+            error.complete_context(
+                code,
+                DirectSurfaceLiquidPhase::IngressCandidate,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                },
+                Some(resource.beginning_state().state_sha256.clone()),
+                self.ending_state.recomputed_sha256().ok(),
+            )
+        })?;
         if let Some(context) = self.producer_mismatch_context(&expected, configuration, input) {
             return Err(DirectSurfaceLiquidError::canonical_failure(
                 DirectSurfaceLiquidErrorCode::E009,
@@ -458,13 +582,14 @@ impl DirectSurfaceLiquidIngressCandidate {
                 "ingress candidate does not reconstruct from immutable inputs",
             ));
         }
+        let closure_ending_state = self.closure_ending_state()?;
         super::surface_liquid_closure::validate_surface_liquid_closure_operands_with_input(
             configuration,
             resource,
             input,
             &self.closure_operands,
             &self.receipts,
-            &self.ending_state,
+            &closure_ending_state,
         )
         .map_err(|error| {
             let code = error.code();
@@ -745,7 +870,70 @@ pub fn execute_surface_liquid_ingress(
     resource: &DirectSurfaceLiquidResourceCandidate,
     input: &DirectSurfaceLiquidIngressInput,
 ) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
-    execute_surface_liquid_ingress_inner(configuration, resource, input).map_err(|error| {
+    execute_surface_liquid_ingress_inner(configuration, resource, input, false, true, None).map_err(
+        |error| {
+            let code = error.code();
+            let phase = match code {
+                DirectSurfaceLiquidErrorCode::E010 => DirectSurfaceLiquidPhase::IndependentClosure,
+                _ => DirectSurfaceLiquidPhase::IngressCandidate,
+            };
+            error.complete_context(
+                code,
+                phase,
+                DirectSurfaceLiquidErrorContext {
+                    transaction_id: Some(input.transaction_id),
+                    owner_id: Some(configuration.owner_id.clone()),
+                    ..DirectSurfaceLiquidErrorContext::default()
+                },
+                Some(resource.beginning_state().state_sha256.clone()),
+                resource.working_state().recomputed_sha256().ok(),
+            )
+        },
+    )
+}
+
+/// Execute one complete-owner child of an enclosing WB14 parent interval.
+/// The persistent day/interval cursor advances only for the child that closes
+/// the coupled parent; cumulative Green-Ampt state remains available to every
+/// accepted child candidate.
+pub(crate) fn execute_surface_liquid_ingress_with_parent_finalization(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    resource: &DirectSurfaceLiquidResourceCandidate,
+    input: &DirectSurfaceLiquidIngressInput,
+    finalize_parent_interval: bool,
+) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
+    execute_surface_liquid_ingress_with_parent_state(
+        configuration,
+        resource,
+        input,
+        None,
+        finalize_parent_interval,
+    )
+}
+
+pub(crate) fn execute_surface_liquid_ingress_with_parent_state(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    resource: &DirectSurfaceLiquidResourceCandidate,
+    input: &DirectSurfaceLiquidIngressInput,
+    parent_working_state: Option<&DirectWb14ParentWorkingState>,
+    finalize_parent_interval: bool,
+) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
+    // Existing callers may use the V11 endpoint for an independently accepted
+    // short slab. With no predecessor parent state and an immediate finalize,
+    // that remains an ordinary ingress transaction rather than inventing a
+    // partial 1,800-second WB14 parent.
+    let parent_child_mode = parent_working_state.is_some()
+        || !finalize_parent_interval
+        || input.interval_s.to_bits() == INTERVAL_S.to_bits();
+    execute_surface_liquid_ingress_inner(
+        configuration,
+        resource,
+        input,
+        parent_child_mode,
+        finalize_parent_interval,
+        parent_working_state,
+    )
+    .map_err(|error| {
         let code = error.code();
         let phase = match code {
             DirectSurfaceLiquidErrorCode::E010 => DirectSurfaceLiquidPhase::IndependentClosure,
@@ -770,6 +958,9 @@ fn execute_surface_liquid_ingress_inner(
     configuration: &DirectSurfaceLiquidConfiguration,
     resource: &DirectSurfaceLiquidResourceCandidate,
     input: &DirectSurfaceLiquidIngressInput,
+    parent_child_mode: bool,
+    finalize_parent_interval: bool,
+    parent_working_state: Option<&DirectWb14ParentWorkingState>,
 ) -> Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError> {
     preflight_surface_liquid_ingress_public_identities(configuration, resource, input)?;
     configuration.validate()?;
@@ -788,9 +979,46 @@ fn execute_surface_liquid_ingress_inner(
         input.transaction_id,
         &input.wb14_parameters,
     )?;
-    validate_cadence(resource.beginning_state(), input)?;
+    validate_cadence(
+        resource.beginning_state(),
+        input,
+        parent_child_mode,
+        finalize_parent_interval,
+    )?;
     let mut pending = validate_and_build_local_ingress(configuration, resource, input)?;
     let mut ending = resource.working_state().clone();
+    let persistent_ending = ending.clone();
+    let (
+        parent_support_start_ns,
+        parent_support_end_ns,
+        wb14_configuration_sha256,
+        production_lane_ids,
+    ) = wb14_parent_binding(configuration, input)?;
+    let wb14_model_definition_sha256 = format!("{:x}", Sha256::digest(WB14_MODEL_DEFINITION));
+    if let Some(parent) = parent_working_state {
+        if parent.schema != WB14_PARENT_WORKING_SCHEMA
+            || parent.parent_day_index != input.day_index
+            || parent.parent_interval_index != input.interval_index
+            || parent.parent_support_start_ns != parent_support_start_ns
+            || parent.parent_support_end_ns != parent_support_end_ns
+            || parent.surface_liquid_configuration_sha256 != configuration.configuration_sha256
+            || parent.wb14_configuration_sha256 != wb14_configuration_sha256
+            || parent.wb14_model_definition_sha256 != wb14_model_definition_sha256
+            || parent.production_lane_ids != production_lane_ids
+            || parent.parameters != input.wb14_parameters
+            || !parent.accepted_duration_s.is_finite()
+            || parent.accepted_duration_s <= 0.0
+            || parent.accepted_duration_s + input.interval_s > INTERVAL_S
+            || parent.candidate_state.continuations.len() != ending.continuations.len()
+        {
+            return Err(production_binding_failure(
+                input.transaction_id,
+                None,
+                "WB14 parent-local identity, chronology, or immutable parameters",
+            ));
+        }
+        ending = parent.candidate_state.clone();
+    }
     let mut receipts = Vec::new();
     let mut ledgers = Vec::new();
     let mut call_count = BTreeMap::new();
@@ -807,7 +1035,7 @@ fn execute_surface_liquid_ingress_inner(
                     "missing WB14 continuation",
                 )
             })?;
-        let beginning_continuation = &resource.beginning_state().continuations[continuation_index];
+        let beginning_continuation = &ending.continuations[continuation_index].clone();
         let (cumulative_supply_m, cumulative_infiltration_m) =
             continuation_start(beginning_continuation, input)?;
         let ofe_parcels = pending.remove(ofe_id).unwrap_or_default();
@@ -871,13 +1099,49 @@ fn execute_surface_liquid_ingress_inner(
     for record in &mut ending.records {
         record.last_accepted_transaction_id = Some(input.transaction_id);
     }
+    let accepted_duration_s = parent_working_state.map_or(input.interval_s, |parent| {
+        parent.accepted_duration_s + input.interval_s
+    });
     ending.state_sha256 = ending.recomputed_sha256()?;
-    ending.validate(configuration)?;
+    let physical_ending = ending.clone();
+    let next_parent_working_state = if !parent_child_mode {
+        None
+    } else if finalize_parent_interval {
+        if accepted_duration_s.to_bits() != INTERVAL_S.to_bits() {
+            return Err(production_binding_failure(
+                input.transaction_id,
+                None,
+                "final WB14 child does not close exact parent support",
+            ));
+        }
+        None
+    } else {
+        let working = DirectWb14ParentWorkingState {
+            schema: WB14_PARENT_WORKING_SCHEMA,
+            parent_day_index: input.day_index,
+            parent_interval_index: input.interval_index,
+            parent_support_start_ns,
+            parent_support_end_ns,
+            surface_liquid_configuration_sha256: configuration.configuration_sha256.clone(),
+            wb14_configuration_sha256,
+            wb14_model_definition_sha256,
+            production_lane_ids,
+            accepted_duration_s,
+            parameters: input.wb14_parameters.clone(),
+            candidate_state: ending.clone(),
+        };
+        ending = persistent_ending;
+        Some(working)
+    };
+    ending.state_sha256 = ending.recomputed_sha256()?;
+    if !parent_child_mode || finalize_parent_interval {
+        ending.validate(configuration)?;
+    }
     let closure_operands = capture_and_validate_surface_liquid_closure(
         configuration,
         resource,
         input,
-        &ending,
+        &physical_ending,
         &receipts,
     )?;
     Ok(DirectSurfaceLiquidIngressCandidate {
@@ -903,6 +1167,10 @@ fn execute_surface_liquid_ingress_inner(
             .flatten()
             .cloned()
             .collect(),
+        parent_child_mode,
+        finalize_parent_interval,
+        input_parent_working_state: parent_working_state.cloned(),
+        parent_working_state: next_parent_working_state,
     })
 }
 
@@ -993,6 +1261,8 @@ fn validate_resource_working_state_domains(
 fn validate_cadence(
     beginning: &DirectSurfaceLiquidOwnedState,
     input: &DirectSurfaceLiquidIngressInput,
+    parent_child_mode: bool,
+    finalize_parent_interval: bool,
 ) -> Result<(), DirectSurfaceLiquidError> {
     if input.interval_s > INTERVAL_S {
         return Err(production_binding_failure(
@@ -1014,7 +1284,7 @@ fn validate_cadence(
             && (continuation.next_interval_index != 0
                 || continuation.cumulative_supply_m.to_bits() != 0.0_f64.to_bits()
                 || continuation.cumulative_infiltration_m.to_bits() != 0.0_f64.to_bits()))
-            || (!initial && continuation.next_interval_index == 0)
+            || (!initial && continuation.next_interval_index == 0 && input.interval_index != 0)
         {
             return Err(production_binding_failure(
                 input.transaction_id,
@@ -1030,11 +1300,24 @@ fn validate_cadence(
                 continuation.next_interval_index,
             )
         };
-        if expected.0 != Some(input.day_index) || expected.1 != input.interval_index {
+        let projected_parent_index = input.interval_index.checked_add(1);
+        let accepted_parent_local_projection = parent_child_mode
+            && continuation.day_index == input.day_index
+            && Some(continuation.next_interval_index) == projected_parent_index;
+        if (expected.0 != Some(input.day_index) || expected.1 != input.interval_index)
+            && !accepted_parent_local_projection
+        {
             return Err(production_binding_failure(
                 input.transaction_id,
                 Some(continuation.ofe_id.clone()),
                 "WB14 day or interval continuation mismatch",
+            ));
+        }
+        if !finalize_parent_interval && input.interval_s >= INTERVAL_S {
+            return Err(production_binding_failure(
+                input.transaction_id,
+                Some(continuation.ofe_id.clone()),
+                "non-final WB14 child must be shorter than its parent interval",
             ));
         }
     }

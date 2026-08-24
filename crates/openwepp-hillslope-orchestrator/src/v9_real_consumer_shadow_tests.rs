@@ -1087,6 +1087,7 @@ mod tests {
                     stage3_beginning_by_lane: BTreeMap::from([(1, stage3_beginning.clone())]),
                     day_index: 0,
                     interval_index: 0,
+                    finalize_wb14_parent_interval: true,
                 },
             ),
         };
@@ -1176,6 +1177,7 @@ mod tests {
                 stage3_beginning_by_lane,
                 day_index: 0,
                 interval_index: 0,
+                finalize_wb14_parent_interval: true,
             },
         );
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
@@ -1508,6 +1510,7 @@ mod tests {
                         stage3_beginning_by_lane: BTreeMap::from([(1, stage3_beginning.clone())]),
                         day_index: 0,
                         interval_index: 0,
+                        finalize_wb14_parent_interval: true,
                     },
                 ),
             };
@@ -1580,6 +1583,7 @@ mod tests {
                 stage3_beginning_by_lane: BTreeMap::from([(1, changed_stage3.clone())]),
                 day_index: 0,
                 interval_index: 0,
+                finalize_wb14_parent_interval: true,
             },
         );
         let (_, changed_vegetation_state) = project_v9_runtime_to_v8(
@@ -1658,6 +1662,7 @@ mod tests {
                     )]),
                     day_index: 0,
                     interval_index: 0,
+                    finalize_wb14_parent_interval: true,
                 },
             ),
         };

@@ -11,6 +11,7 @@ pub struct CoveredParentOwnerJoinReceiptV1 {
     pub accepted_slab_sha256: Digest32,
     pub forcing_receipt_sha256: Digest32,
     pub beginning_complete_owner_set_sha256: Digest32,
+    pub ending_complete_owner_set_sha256: Digest32,
     pub support: openwepp_coupled_time::TimeSupport,
     pub final_boundary_receipt_set_sha256: Digest32,
     pub final_lane_boundary_receipt_set_sha256: Digest32,
@@ -97,6 +98,15 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 DirectV11RealConsumerError::Identity("covered parent-owner envelope")
             })?;
         }
+        let ending_owner_states = owners
+            .values()
+            .map(V11OwnerEnvelope::to_owner_state)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| DirectV11RealConsumerError::Identity("covered ending owner set"))?;
+        let ending_complete_owner_set_sha256 =
+            openwepp_coupled_time::complete_owner_set_digest(&ending_owner_states).map_err(|_| {
+                DirectV11RealConsumerError::Identity("covered ending complete-owner digest")
+            })?;
         for (destination, receipt) in final_boundaries {
             receipt.validate()?;
             if destination != receipt.destination() {
@@ -245,6 +255,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
             accepted_slab_sha256,
             forcing_receipt_sha256,
             beginning_complete_owner_set_sha256,
+            ending_complete_owner_set_sha256,
             support,
             final_boundary_receipt_set_sha256,
             final_lane_boundary_receipt_set_sha256,
@@ -328,6 +339,10 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 openwepp_coupled_time::FramedField {
                     tag: "beginning_complete_owner_set",
                     value: self.beginning_complete_owner_set_sha256.as_bytes(),
+                },
+                openwepp_coupled_time::FramedField {
+                    tag: "ending_complete_owner_set",
+                    value: self.ending_complete_owner_set_sha256.as_bytes(),
                 },
                 openwepp_coupled_time::FramedField {
                     tag: "support_start_ns",
@@ -743,17 +758,19 @@ pub(crate) fn normalize_v11_staged_parent_lineage(
         .ok_or(DirectV11RealConsumerError::Identity(
             "missing staged surface-liquid owner",
         ))?;
-    for record in &mut surface.records {
-        record.last_accepted_transaction_id = transaction;
+    if staged.inner.wb14_parent_working_state.is_none() {
+        for record in &mut surface.records {
+            record.last_accepted_transaction_id = transaction;
+        }
+        for continuation in &mut surface.continuations {
+            continuation.last_accepted_transaction_id = transaction;
+        }
+        surface.state_sha256 = surface.recomputed_sha256().map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Serialization(error.to_string()),
+            ))
+        })?;
     }
-    for continuation in &mut surface.continuations {
-        continuation.last_accepted_transaction_id = transaction;
-    }
-    surface.state_sha256 = surface.recomputed_sha256().map_err(|error| {
-        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-            DirectV9RealConsumerError::Serialization(error.to_string()),
-        ))
-    })?;
     staged.inner.biogeochemistry.last_transaction_id = parent;
     staged.inner.soil_thermal.last_accepted_transaction_id = transaction;
     let soil_transaction = transaction.ok_or(DirectV11RealConsumerError::Identity(
@@ -1145,6 +1162,7 @@ mod owner_join_tests {
             accepted_slab_sha256: Digest32::from_bytes([24; 32]),
             forcing_receipt_sha256: Digest32::from_bytes([25; 32]),
             beginning_complete_owner_set_sha256: Digest32::from_bytes([26; 32]),
+            ending_complete_owner_set_sha256: Digest32::from_bytes([27; 32]),
             support,
             final_boundary_receipt_set_sha256: Digest32::from_bytes([1; 32]),
             final_lane_boundary_receipt_set_sha256: Digest32::from_bytes([18; 32]),
@@ -1162,6 +1180,9 @@ mod owner_join_tests {
         receipt.receipt_sha256 = receipt.reconstructed_digest().expect("join digest");
         receipt.validate_seal().expect("valid join seal");
         for mutate in [
+            |value: &mut CoveredParentOwnerJoinReceiptV1| {
+                value.ending_complete_owner_set_sha256 = Digest32::from_bytes([28; 32]);
+            },
             |value: &mut CoveredParentOwnerJoinReceiptV1| {
                 value.final_lane_boundary_receipt_set_sha256 = Digest32::from_bytes([19; 32]);
             },

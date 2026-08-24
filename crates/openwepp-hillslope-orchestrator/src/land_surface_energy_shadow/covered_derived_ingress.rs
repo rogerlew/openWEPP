@@ -39,6 +39,9 @@ pub(crate) struct CoveredIngressSchedule {
     pub(super) open_tile_ingress: Vec<DirectTileGroundIngress>,
     pub(super) covered_runon: BTreeMap<(OfeId, TileId), Vec<crate::DirectOpenLiquidIngressParcel>>,
     pub(super) wb14_parameters: Vec<DirectOfeWb14Parameters>,
+    pub(super) finalize_wb14_parent_interval: bool,
+    pub(super) wb14_parent_working_state:
+        Option<crate::direct_runtime::DirectWb14ParentWorkingState>,
 }
 
 fn ingress_amount(mass: f64, temperature_k: f64, interval_s: f64) -> DirectIngressAmount {
@@ -470,6 +473,8 @@ where
         arbitration,
         finalized,
         &ingress,
+        schedule.finalize_wb14_parent_interval,
+        schedule.wb14_parent_working_state.as_ref(),
     )
     .map_err(|error| canonicalize_finalized_error(error, &finalized_protocol))
 }

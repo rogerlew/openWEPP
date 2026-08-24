@@ -405,6 +405,10 @@ pub use surface_liquid_ingress::{
     DirectSurfaceLiquidReceiptDisposition, DirectSurfaceLiquidReceiptRecipient,
     DirectTileGroundIngress, execute_surface_liquid_ingress,
 };
+pub(crate) use surface_liquid_ingress::{
+    DirectWb14ParentWorkingState, execute_surface_liquid_ingress_with_parent_finalization,
+    execute_surface_liquid_ingress_with_parent_state,
+};
 pub use surface_liquid_owner::{
     DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidContinuationState,

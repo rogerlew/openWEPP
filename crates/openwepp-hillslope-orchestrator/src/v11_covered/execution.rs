@@ -27,6 +27,7 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     pub stage3_beginning_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
     pub day_index: usize,
     pub interval_index: usize,
+    pub finalize_wb14_parent_interval: bool,
     ending: Option<DirectV10RealConsumerShadow>,
     ending_stage3_by_lane: Option<BTreeMap<u32, DirectSnowStage3PersistentState>>,
     last_support_receipt: Option<LseSupportAdmissibilityReceiptV1>,
@@ -46,6 +47,7 @@ pub struct DirectV11SnowCoveredStackInputs<'a> {
     pub stage3_beginning_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
     pub day_index: usize,
     pub interval_index: usize,
+    pub finalize_wb14_parent_interval: bool,
 }
 
 impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
@@ -63,6 +65,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             stage3_beginning_by_lane: inputs.stage3_beginning_by_lane,
             day_index: inputs.day_index,
             interval_index: inputs.interval_index,
+            finalize_wb14_parent_interval: inputs.finalize_wb14_parent_interval,
             ending: None,
             ending_stage3_by_lane: None,
             last_support_receipt: None,

@@ -117,6 +117,34 @@ fields.
 
 ## Progress log
 
+### 2026-08-23 complete surface-liquid WB14 child-slab integration checkpoint
+
+Implementation intent: lift the reviewed WB14 HOLD by integrating accepted
+coupled-time child slabs into the existing complete
+`UnifiedRealHydrologyCandidate` and covered V11/Stage-3 parent candidate. This
+checkpoint is a formal `SC-SURFACELIQUID-001@8` in-review cycle. Version 7
+remains the released runtime baseline and the existing 900/60-second
+pre-physics rejection remains until the v8 contract, production-owner parity,
+complete rollback, dual review, and dual verification gates pass.
+
+The authority envelope includes immutable OFE/lane/surface-configuration/WB14
+parameter/model identity; Stage-3 1800/900/60-second upper-bound proposals;
+exact positive coupled supports at or below the selected proposal; topology-
+ordered same-child routing; timed parcel attribution and enthalpy; staged
+surface, hydrology, soil, soil-thermal, LSE, V11, Stage-3, clock, provider/GSI,
+event, and receipt owners; canonical complete-owner child lineage; and
+final-only persistent WB14 cursor advancement. Zero-duration events remain
+separate transactions. No physics equation, parameter, tolerance, selector,
+default, output, or production activation change is authorized.
+
+Required increment gates are one-child complete production-owner parity; two
+900-second and thirty 60-second children with one cursor advance; dynamically
+selected mixed cadence; a coupled-boundary-truncated child; two-OFE same-child
+runoff/runon; OFE/lane/configuration/parameter/model substitution poisons;
+receipt reconstruction; independent water/enthalpy closure; and byte-identical
+rollback after child 1/2, child 17/30, and the final owner join. Any unmet gate
+retains `EXECUTING / HOLD` and the pre-physics guard.
+
 ### 2026-08-23 WB14 parent-interval authority checkpoint
 
 From exact clean `8566ebd8a432b56c0ce60051175a9e3ce1872d03`, this

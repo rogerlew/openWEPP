@@ -26,6 +26,13 @@
 ## Core Directives
 - `??` in a prompt means provide critical analysis only; do not implement code.
 - Ask for clarification when requirements or debug context are ambiguous.
+- Do not stop at an internal milestone, intake result, contract-first gate,
+  partial implementation, or validation subset when the user authorized a
+  larger end-to-end checkpoint. Continue autonomously through the full
+  authorized objective, reviews, verification, and truthful disposition while
+  safe in-scope work remains. Hand back early only for a genuine authority,
+  safety, external-state, or user-decision blocker; context length, effort,
+  elapsed time, or a convenient progress boundary are not blockers.
 - Keep docs terse: Codex loads context in bulk and does not compress verbose guidance.
 - Work packages are autonomous execution specs; front-load enough planning, context, evidence, review, verification, and gates for no-intervention execution.
 - Do not split work into tiny diagnostic-only packages unless authority, safety, validation-cost, or write-set boundaries require it.

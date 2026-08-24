@@ -164,6 +164,20 @@ pub(super) struct DirectWb14PersistentCursorV1 {
     pub cumulative_infiltration_m: f64,
 }
 
+#[allow(dead_code)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) struct DirectWb14ImmutableIdentityV1 {
+    pub schema_sha256: [u8; 32],
+    pub ofe_id: u32,
+    pub production_lane_id: u32,
+    pub surface_liquid_configuration_sha256: [u8; 32],
+    pub wb14_configuration_sha256: [u8; 32],
+    pub wb14_model_definition_sha256: [u8; 32],
+    pub effective_conductivity_m_s_bits: u64,
+    pub matric_potential_m_bits: u64,
+    pub storage_capacity_m_bits: u64,
+}
+
 /// Immutable authority for one existing 1,800-second WB14 interval.
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -176,6 +190,32 @@ pub(super) struct DirectWb14ParentAuthorityV1 {
     pub support_end_ns: u128,
     pub parent_beginning_owner_sha256: [u8; 32],
     pub beginning_cursor_sha256: [u8; 32],
+    pub schema_sha256: [u8; 32],
+    pub ofe_id: u32,
+    pub production_lane_id: u32,
+    pub surface_liquid_configuration_sha256: [u8; 32],
+    pub wb14_configuration_sha256: [u8; 32],
+    pub wb14_model_definition_sha256: [u8; 32],
+    pub effective_conductivity_m_s_bits: u64,
+    pub matric_potential_m_bits: u64,
+    pub storage_capacity_m_bits: u64,
+}
+
+#[allow(dead_code)]
+impl DirectWb14ParentAuthorityV1 {
+    const fn immutable_identity(self) -> DirectWb14ImmutableIdentityV1 {
+        DirectWb14ImmutableIdentityV1 {
+            schema_sha256: self.schema_sha256,
+            ofe_id: self.ofe_id,
+            production_lane_id: self.production_lane_id,
+            surface_liquid_configuration_sha256: self.surface_liquid_configuration_sha256,
+            wb14_configuration_sha256: self.wb14_configuration_sha256,
+            wb14_model_definition_sha256: self.wb14_model_definition_sha256,
+            effective_conductivity_m_s_bits: self.effective_conductivity_m_s_bits,
+            matric_potential_m_bits: self.matric_potential_m_bits,
+            storage_capacity_m_bits: self.storage_capacity_m_bits,
+        }
+    }
 }
 
 #[allow(dead_code)]
@@ -192,6 +232,14 @@ pub(super) struct DirectWb14ParentWorkingStateV1 {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) struct DirectWb14ChildReceiptV1 {
     pub parent_id: [u8; 32],
+    pub ofe_id: u32,
+    pub production_lane_id: u32,
+    pub surface_liquid_configuration_sha256: [u8; 32],
+    pub wb14_configuration_sha256: [u8; 32],
+    pub wb14_model_definition_sha256: [u8; 32],
+    pub effective_conductivity_m_s_bits: u64,
+    pub matric_potential_m_bits: u64,
+    pub storage_capacity_m_bits: u64,
     pub parent_beginning_owner_sha256: [u8; 32],
     pub parent_beginning_cursor_sha256: [u8; 32],
     pub ordinal: u32,
@@ -201,6 +249,10 @@ pub(super) struct DirectWb14ChildReceiptV1 {
     pub ending_working_state_sha256: [u8; 32],
     pub predecessor_receipt_sha256: [u8; 32],
     pub child_inputs_sha256: [u8; 32],
+    pub proposed_upper_bound_s_bits: u64,
+    pub accepted_duration_s_bits: u64,
+    pub cumulative_supply_m_bits: u64,
+    pub cumulative_infiltration_m_bits: u64,
     pub interval_supply_m_bits: u64,
     pub interval_infiltration_m_bits: u64,
     pub interval_excess_m_bits: u64,
@@ -247,7 +299,7 @@ pub(super) enum DirectWb14ParentIntervalErrorV1 {
     ParentSupport,
     #[error("WB14 parent does not match the persistent day/interval cursor")]
     CursorIdentity,
-    #[error("WB14 child cadence is not an admitted 1,800/900/60-second cadence")]
+    #[error("WB14 proposed upper bound is not an admitted 1,800/900/60-second cadence")]
     ChildCadence,
     #[error("WB14 child support is not the next contiguous parent support")]
     ChildSupport,
@@ -259,6 +311,12 @@ pub(super) enum DirectWb14ParentIntervalErrorV1 {
     Arithmetic,
     #[error("WB14 parent identity framing failed")]
     IdentityHash,
+    #[error("WB14 immutable identity or parameter binding is invalid")]
+    ImmutableIdentity,
+    #[error("WB14 beginning cursor cumulatives are invalid")]
+    BeginningState,
+    #[error("WB14 receipt reconstruction failed")]
+    ReceiptValidation,
 }
 
 #[allow(dead_code)]
@@ -340,6 +398,7 @@ fn parent_id(
     support_end_ns: u128,
     parent_beginning_owner_sha256: [u8; 32],
     beginning_cursor_sha256: [u8; 32],
+    identity: DirectWb14ImmutableIdentityV1,
 ) -> Result<[u8; 32], DirectWb14ParentIntervalErrorV1> {
     let parent_day_index =
         u64::try_from(parent_day_index).map_err(|_| DirectWb14ParentIntervalErrorV1::Arithmetic)?;
@@ -374,6 +433,42 @@ fn parent_id(
                 tag: "beginning_cursor_sha256",
                 value: &beginning_cursor_sha256,
             },
+            FramedField {
+                tag: "schema_sha256",
+                value: &identity.schema_sha256,
+            },
+            FramedField {
+                tag: "ofe_id",
+                value: &identity.ofe_id.to_be_bytes(),
+            },
+            FramedField {
+                tag: "production_lane_id",
+                value: &identity.production_lane_id.to_be_bytes(),
+            },
+            FramedField {
+                tag: "surface_liquid_configuration_sha256",
+                value: &identity.surface_liquid_configuration_sha256,
+            },
+            FramedField {
+                tag: "wb14_configuration_sha256",
+                value: &identity.wb14_configuration_sha256,
+            },
+            FramedField {
+                tag: "wb14_model_definition_sha256",
+                value: &identity.wb14_model_definition_sha256,
+            },
+            FramedField {
+                tag: "effective_conductivity_m_s_bits",
+                value: &identity.effective_conductivity_m_s_bits.to_be_bytes(),
+            },
+            FramedField {
+                tag: "matric_potential_m_bits",
+                value: &identity.matric_potential_m_bits.to_be_bytes(),
+            },
+            FramedField {
+                tag: "storage_capacity_m_bits",
+                value: &identity.storage_capacity_m_bits.to_be_bytes(),
+            },
         ],
     )
 }
@@ -385,6 +480,7 @@ pub(super) fn wb14_parent_authority_v1(
     support_end_ns: u128,
     parent_beginning_owner_sha256: [u8; 32],
     cursor: DirectWb14PersistentCursorV1,
+    identity: DirectWb14ImmutableIdentityV1,
 ) -> Result<DirectWb14ParentAuthorityV1, DirectWb14ParentIntervalErrorV1> {
     let beginning_cursor_sha256 = cursor_digest(cursor)?;
     let (parent_day_index, parent_interval_index) = if cursor.next_interval_index == 48 {
@@ -407,6 +503,7 @@ pub(super) fn wb14_parent_authority_v1(
             support_end_ns,
             parent_beginning_owner_sha256,
             beginning_cursor_sha256,
+            identity,
         )?,
         coupled_parent_transaction_sha256,
         parent_day_index,
@@ -415,6 +512,15 @@ pub(super) fn wb14_parent_authority_v1(
         support_end_ns,
         parent_beginning_owner_sha256,
         beginning_cursor_sha256,
+        schema_sha256: identity.schema_sha256,
+        ofe_id: identity.ofe_id,
+        production_lane_id: identity.production_lane_id,
+        surface_liquid_configuration_sha256: identity.surface_liquid_configuration_sha256,
+        wb14_configuration_sha256: identity.wb14_configuration_sha256,
+        wb14_model_definition_sha256: identity.wb14_model_definition_sha256,
+        effective_conductivity_m_s_bits: identity.effective_conductivity_m_s_bits,
+        matric_potential_m_bits: identity.matric_potential_m_bits,
+        storage_capacity_m_bits: identity.storage_capacity_m_bits,
     })
 }
 
@@ -424,6 +530,42 @@ impl DirectWb14ParentIntervalV1 {
         authority: DirectWb14ParentAuthorityV1,
         cursor: DirectWb14PersistentCursorV1,
     ) -> Result<Self, DirectWb14ParentIntervalErrorV1> {
+        let identity = authority.immutable_identity();
+        if [
+            authority.coupled_parent_transaction_sha256,
+            authority.parent_beginning_owner_sha256,
+            authority.beginning_cursor_sha256,
+            identity.schema_sha256,
+            identity.surface_liquid_configuration_sha256,
+            identity.wb14_configuration_sha256,
+            identity.wb14_model_definition_sha256,
+        ]
+        .iter()
+        .any(|digest| *digest == [0; 32])
+        {
+            return Err(DirectWb14ParentIntervalErrorV1::ImmutableIdentity);
+        }
+        if !cursor.cumulative_supply_m.is_finite()
+            || !cursor.cumulative_infiltration_m.is_finite()
+            || cursor.cumulative_supply_m < 0.0
+            || cursor.cumulative_infiltration_m < 0.0
+            || cursor.cumulative_infiltration_m > cursor.cumulative_supply_m
+        {
+            return Err(DirectWb14ParentIntervalErrorV1::BeginningState);
+        }
+        let conductivity = f64::from_bits(identity.effective_conductivity_m_s_bits);
+        let matric = f64::from_bits(identity.matric_potential_m_bits);
+        let capacity = f64::from_bits(identity.storage_capacity_m_bits);
+        if !conductivity.is_finite()
+            || conductivity <= 0.0
+            || !matric.is_finite()
+            || matric < 0.0
+            || !capacity.is_finite()
+            || capacity < 0.0
+            || cursor.cumulative_infiltration_m > capacity
+        {
+            return Err(DirectWb14ParentIntervalErrorV1::ImmutableIdentity);
+        }
         if authority
             .support_end_ns
             .checked_sub(authority.support_start_ns)
@@ -454,6 +596,7 @@ impl DirectWb14ParentIntervalV1 {
                     authority.support_end_ns,
                     authority.parent_beginning_owner_sha256,
                     authority.beginning_cursor_sha256,
+                    identity,
                 )?
         {
             return Err(DirectWb14ParentIntervalErrorV1::CursorIdentity);
@@ -497,18 +640,23 @@ impl DirectWb14ParentIntervalV1 {
         support_start_ns: u128,
         support_end_ns: u128,
         predecessor_receipt_sha256: [u8; 32],
+        proposed_upper_bound_s: f64,
         inputs: DirectWb14ContinuationIntervalInputs,
     ) -> Result<(Self, DirectWb14ContinuationIntervalOutcome), DirectWb14ParentIntervalErrorV1>
     {
         let duration_ns = support_end_ns
             .checked_sub(support_start_ns)
             .ok_or(DirectWb14ParentIntervalErrorV1::ChildSupport)?;
-        let selected_seconds: f64 = match duration_ns {
-            1_800_000_000_000 => 1_800.0,
-            900_000_000_000 => 900.0,
-            60_000_000_000 => 60.0,
-            _ => return Err(DirectWb14ParentIntervalErrorV1::ChildCadence),
-        };
+        let admitted_proposal = [1_800.0_f64, 900.0, 60.0]
+            .iter()
+            .any(|candidate| candidate.to_bits() == proposed_upper_bound_s.to_bits());
+        if !admitted_proposal || duration_ns == 0 {
+            return Err(DirectWb14ParentIntervalErrorV1::ChildCadence);
+        }
+        let selected_seconds = duration_ns as f64 / 1_000_000_000.0;
+        if selected_seconds > proposed_upper_bound_s {
+            return Err(DirectWb14ParentIntervalErrorV1::ChildCadence);
+        }
         if ordinal != self.working.next_child_ordinal
             || predecessor_receipt_sha256 != self.working.receipt_chain_sha256
         {
@@ -520,6 +668,10 @@ impl DirectWb14ParentIntervalV1 {
             || inputs.cumulative_supply_m.to_bits() != self.working.cumulative_supply_m.to_bits()
             || inputs.cumulative_infiltration_m.to_bits()
                 != self.working.cumulative_infiltration_m.to_bits()
+            || inputs.effective_conductivity_m_s.to_bits()
+                != self.authority.effective_conductivity_m_s_bits
+            || inputs.matric_potential_m.to_bits() != self.authority.matric_potential_m_bits
+            || inputs.storage_capacity_m.to_bits() != self.authority.storage_capacity_m_bits
         {
             return Err(DirectWb14ParentIntervalErrorV1::ChildSupport);
         }
@@ -556,6 +708,10 @@ impl DirectWb14ParentIntervalV1 {
                     tag: "storage_capacity_m_bits",
                     value: &inputs.storage_capacity_m.to_bits().to_be_bytes(),
                 },
+                FramedField {
+                    tag: "proposed_upper_bound_s_bits",
+                    value: &proposed_upper_bound_s.to_bits().to_be_bytes(),
+                },
             ],
         )?;
         let beginning_digest = working_digest(self.working)?;
@@ -575,6 +731,26 @@ impl DirectWb14ParentIntervalV1 {
                 FramedField {
                     tag: "parent_id",
                     value: &self.authority.parent_id,
+                },
+                FramedField {
+                    tag: "ofe_id",
+                    value: &self.authority.ofe_id.to_be_bytes(),
+                },
+                FramedField {
+                    tag: "production_lane_id",
+                    value: &self.authority.production_lane_id.to_be_bytes(),
+                },
+                FramedField {
+                    tag: "surface_liquid_configuration_sha256",
+                    value: &self.authority.surface_liquid_configuration_sha256,
+                },
+                FramedField {
+                    tag: "wb14_configuration_sha256",
+                    value: &self.authority.wb14_configuration_sha256,
+                },
+                FramedField {
+                    tag: "wb14_model_definition_sha256",
+                    value: &self.authority.wb14_model_definition_sha256,
                 },
                 FramedField {
                     tag: "ordinal",
@@ -651,6 +827,14 @@ impl DirectWb14ParentIntervalV1 {
         )?;
         let receipt = DirectWb14ChildReceiptV1 {
             parent_id: self.authority.parent_id,
+            ofe_id: self.authority.ofe_id,
+            production_lane_id: self.authority.production_lane_id,
+            surface_liquid_configuration_sha256: self.authority.surface_liquid_configuration_sha256,
+            wb14_configuration_sha256: self.authority.wb14_configuration_sha256,
+            wb14_model_definition_sha256: self.authority.wb14_model_definition_sha256,
+            effective_conductivity_m_s_bits: inputs.effective_conductivity_m_s.to_bits(),
+            matric_potential_m_bits: inputs.matric_potential_m.to_bits(),
+            storage_capacity_m_bits: inputs.storage_capacity_m.to_bits(),
             parent_beginning_owner_sha256: self.authority.parent_beginning_owner_sha256,
             parent_beginning_cursor_sha256: self.authority.beginning_cursor_sha256,
             ordinal,
@@ -660,6 +844,10 @@ impl DirectWb14ParentIntervalV1 {
             ending_working_state_sha256: ending_digest,
             predecessor_receipt_sha256,
             child_inputs_sha256,
+            proposed_upper_bound_s_bits: proposed_upper_bound_s.to_bits(),
+            accepted_duration_s_bits: selected_seconds.to_bits(),
+            cumulative_supply_m_bits: inputs.cumulative_supply_m.to_bits(),
+            cumulative_infiltration_m_bits: inputs.cumulative_infiltration_m.to_bits(),
             interval_supply_m_bits: inputs.interval_supply_m.to_bits(),
             interval_infiltration_m_bits: outcome.interval_infiltration_m.to_bits(),
             interval_excess_m_bits: outcome.interval_excess_m.to_bits(),
@@ -674,6 +862,7 @@ impl DirectWb14ParentIntervalV1 {
     pub(super) fn finalize(
         &self,
     ) -> Result<DirectWb14ParentFinalizationV1, DirectWb14ParentIntervalErrorV1> {
+        self.validate()?;
         if self.working.accepted_until_ns != self.authority.support_end_ns
             || self.receipts.is_empty()
         {
@@ -760,12 +949,72 @@ impl DirectWb14ParentIntervalV1 {
         })
     }
 
+    /// Reconstruct every accepted transition from the immutable authority and
+    /// compare all canonical receipt and working-state bytes.
+    pub(super) fn validate(&self) -> Result<(), DirectWb14ParentIntervalErrorV1> {
+        let mut reconstructed = Self::begin(self.authority, self.beginning_cursor)?;
+        for receipt in &self.receipts {
+            reconstructed = receipt.validate(&reconstructed)?;
+        }
+        if reconstructed.working != self.working || reconstructed.receipts != self.receipts {
+            return Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation);
+        }
+        Ok(())
+    }
+
     pub(super) const fn working(&self) -> DirectWb14ParentWorkingStateV1 {
         self.working
     }
 
     pub(super) fn receipts(&self) -> &[DirectWb14ChildReceiptV1] {
         &self.receipts
+    }
+}
+
+#[allow(dead_code)]
+impl DirectWb14ChildReceiptV1 {
+    pub(super) fn validate(
+        &self,
+        beginning: &DirectWb14ParentIntervalV1,
+    ) -> Result<DirectWb14ParentIntervalV1, DirectWb14ParentIntervalErrorV1> {
+        let inputs = DirectWb14ContinuationIntervalInputs {
+            cumulative_supply_m: f64::from_bits(self.cumulative_supply_m_bits),
+            cumulative_infiltration_m: f64::from_bits(self.cumulative_infiltration_m_bits),
+            interval_supply_m: f64::from_bits(self.interval_supply_m_bits),
+            interval_duration_s: f64::from_bits(self.accepted_duration_s_bits),
+            effective_conductivity_m_s: f64::from_bits(
+                beginning.authority.effective_conductivity_m_s_bits,
+            ),
+            matric_potential_m: f64::from_bits(beginning.authority.matric_potential_m_bits),
+            storage_capacity_m: f64::from_bits(beginning.authority.storage_capacity_m_bits),
+        };
+        let (ending, _) = beginning.accept_child(
+            self.ordinal,
+            self.support_start_ns,
+            self.support_end_ns,
+            self.predecessor_receipt_sha256,
+            f64::from_bits(self.proposed_upper_bound_s_bits),
+            inputs,
+        )?;
+        if ending.receipts.last() != Some(self) {
+            return Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation);
+        }
+        Ok(ending)
+    }
+}
+
+#[allow(dead_code)]
+impl DirectWb14ParentReceiptV1 {
+    pub(super) fn validate(
+        &self,
+        parent: &DirectWb14ParentIntervalV1,
+    ) -> Result<(), DirectWb14ParentIntervalErrorV1> {
+        parent.validate()?;
+        let rebuilt = parent.finalize()?.receipt;
+        if rebuilt != *self {
+            return Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation);
+        }
+        Ok(())
     }
 }
 
@@ -776,6 +1025,20 @@ mod tests {
         DC01_HOUR_BIN_COUNT, DirectWb14HyetographInterval, DirectWb14InfiltrationProducerInputs,
         compute_wb14_infiltration_depression_with_profile,
     };
+
+    fn identity_fixture() -> DirectWb14ImmutableIdentityV1 {
+        DirectWb14ImmutableIdentityV1 {
+            schema_sha256: [41; 32],
+            ofe_id: 12,
+            production_lane_id: 4,
+            surface_liquid_configuration_sha256: [42; 32],
+            wb14_configuration_sha256: [43; 32],
+            wb14_model_definition_sha256: [44; 32],
+            effective_conductivity_m_s_bits: 1.1e-7_f64.to_bits(),
+            matric_potential_m_bits: 0.12_f64.to_bits(),
+            storage_capacity_m_bits: 0.02_f64.to_bits(),
+        }
+    }
 
     fn parent_fixture() -> DirectWb14ParentIntervalV1 {
         let cursor = DirectWb14PersistentCursorV1 {
@@ -791,6 +1054,7 @@ mod tests {
                 11_800_000_000_000,
                 [17; 32],
                 cursor,
+                identity_fixture(),
             )
             .expect("authority"),
             cursor,
@@ -827,6 +1091,7 @@ mod tests {
                 start,
                 end,
                 parent.working().receipt_chain_sha256,
+                duration_s as f64,
                 child_inputs(parent, duration_s as f64, supply_m),
             )
             .expect("accepted child")
@@ -844,6 +1109,7 @@ mod tests {
                 10_000_000_000_000,
                 11_800_000_000_000,
                 beginning.working().receipt_chain_sha256,
+                1_800.0,
                 inputs,
             )
             .expect("one child parent");
@@ -944,10 +1210,10 @@ mod tests {
         let chain = parent.working().receipt_chain_sha256;
         let inputs = child_inputs(&parent, 900.0, 0.001);
         for result in [
-            parent.accept_child(1, start, start + 900_000_000_000, chain, inputs),
-            parent.accept_child(0, start + 1, start + 900_000_000_000, chain, inputs),
-            parent.accept_child(0, start, start + 899_000_000_000, chain, inputs),
-            parent.accept_child(0, start, start + 900_000_000_000, [9; 32], inputs),
+            parent.accept_child(1, start, start + 900_000_000_000, chain, 900.0, inputs),
+            parent.accept_child(0, start + 1, start + 900_000_000_000, chain, 900.0, inputs),
+            parent.accept_child(0, start, start + 899_000_000_000, chain, 900.0, inputs),
+            parent.accept_child(0, start, start + 900_000_000_000, [9; 32], 900.0, inputs),
         ] {
             assert!(result.is_err());
             assert_eq!(parent, original);
@@ -962,6 +1228,7 @@ mod tests {
                 accepted_start + 60_000_000_000,
                 accepted_start + 960_000_000_000,
                 accepted_chain,
+                900.0,
                 accepted_inputs,
             ),
             accepted.accept_child(
@@ -969,12 +1236,13 @@ mod tests {
                 accepted_start - 60_000_000_000,
                 accepted_start + 840_000_000_000,
                 accepted_chain,
+                900.0,
                 accepted_inputs,
             ),
         ] {
             assert_eq!(result, Err(DirectWb14ParentIntervalErrorV1::ChildSupport));
         }
-        let replay = accepted.accept_child(0, start, start + 900_000_000_000, chain, inputs);
+        let replay = accepted.accept_child(0, start, start + 900_000_000_000, chain, 900.0, inputs);
         assert!(replay.is_err());
         assert_eq!(parent, original);
 
@@ -987,6 +1255,7 @@ mod tests {
                 parent.authority.support_end_ns,
                 parent.authority.parent_beginning_owner_sha256,
                 cursor,
+                identity_fixture(),
             )
             .expect("authority")
         };
@@ -1031,6 +1300,7 @@ mod tests {
             21_800_000_000_000,
             [37; 32],
             cursor,
+            identity_fixture(),
         )
         .expect("rollover authority");
         assert_eq!(
@@ -1220,6 +1490,188 @@ mod tests {
             ..above_supply
         };
         assert!(assert_core_continuation_parity(above_storage).is_err());
+    }
+
+    #[test]
+    fn accepted_support_may_be_truncated_below_the_selected_upper_bound() {
+        let beginning = parent_fixture();
+        let start = beginning.working().accepted_until_ns;
+        let duration_s = 437.0;
+        let (ending, _) = beginning
+            .accept_child(
+                0,
+                start,
+                start + 437_000_000_000,
+                beginning.working().receipt_chain_sha256,
+                900.0,
+                child_inputs(&beginning, duration_s, 0.000_7),
+            )
+            .expect("event-truncated accepted support");
+        assert_eq!(ending.working().accepted_until_ns, start + 437_000_000_000);
+        assert_eq!(
+            ending.receipts()[0].proposed_upper_bound_s_bits,
+            900.0_f64.to_bits()
+        );
+        assert_eq!(
+            ending.receipts()[0].accepted_duration_s_bits,
+            duration_s.to_bits()
+        );
+        ending
+            .validate()
+            .expect("independently reconstructed child");
+
+        for (proposal, end) in [
+            (437.0, start + 437_000_000_000),
+            (60.0, start + 61_000_000_000),
+        ] {
+            assert_eq!(
+                beginning.accept_child(
+                    0,
+                    start,
+                    end,
+                    beginning.working().receipt_chain_sha256,
+                    proposal,
+                    child_inputs(&beginning, (end - start) as f64 / 1.0e9, 0.000_1),
+                ),
+                Err(DirectWb14ParentIntervalErrorV1::ChildCadence)
+            );
+        }
+    }
+
+    #[test]
+    fn immutable_identity_parameter_and_beginning_state_poisons_reject() {
+        let valid = parent_fixture();
+        let cursor = valid.beginning_cursor;
+        for (coupled, owner) in [([0; 32], [17; 32]), ([29; 32], [0; 32])] {
+            let authority = wb14_parent_authority_v1(
+                coupled,
+                valid.authority.support_start_ns,
+                valid.authority.support_end_ns,
+                owner,
+                cursor,
+                identity_fixture(),
+            )
+            .expect("zero identity authority framing");
+            assert_eq!(
+                DirectWb14ParentIntervalV1::begin(authority, cursor),
+                Err(DirectWb14ParentIntervalErrorV1::ImmutableIdentity)
+            );
+        }
+        for digest_poison in 0..6 {
+            let mut identity = identity_fixture();
+            match digest_poison {
+                0 => identity.schema_sha256 = [0; 32],
+                1 => identity.surface_liquid_configuration_sha256 = [0; 32],
+                2 => identity.wb14_configuration_sha256 = [0; 32],
+                3 => identity.wb14_model_definition_sha256 = [0; 32],
+                4 => identity.wb14_configuration_sha256 = [99; 32],
+                _ => identity.ofe_id += 1,
+            }
+            let authority = wb14_parent_authority_v1(
+                valid.authority.coupled_parent_transaction_sha256,
+                valid.authority.support_start_ns,
+                valid.authority.support_end_ns,
+                valid.authority.parent_beginning_owner_sha256,
+                cursor,
+                identity,
+            )
+            .expect("framed authority");
+            if digest_poison < 4 {
+                assert!(DirectWb14ParentIntervalV1::begin(authority, cursor).is_err());
+            } else {
+                assert_ne!(authority.parent_id, valid.authority.parent_id);
+            }
+        }
+
+        for poisoned in [
+            DirectWb14PersistentCursorV1 {
+                cumulative_supply_m: f64::NAN,
+                ..cursor
+            },
+            DirectWb14PersistentCursorV1 {
+                cumulative_infiltration_m: f64::INFINITY,
+                ..cursor
+            },
+            DirectWb14PersistentCursorV1 {
+                cumulative_supply_m: -0.1,
+                ..cursor
+            },
+            DirectWb14PersistentCursorV1 {
+                cumulative_infiltration_m: -0.1,
+                ..cursor
+            },
+            DirectWb14PersistentCursorV1 {
+                cumulative_supply_m: 0.0,
+                cumulative_infiltration_m: 0.1,
+                ..cursor
+            },
+        ] {
+            let authority = wb14_parent_authority_v1(
+                [29; 32],
+                valid.authority.support_start_ns,
+                valid.authority.support_end_ns,
+                [17; 32],
+                poisoned,
+                identity_fixture(),
+            )
+            .expect("poison authority framing");
+            assert_eq!(
+                DirectWb14ParentIntervalV1::begin(authority, poisoned),
+                Err(DirectWb14ParentIntervalErrorV1::BeginningState)
+            );
+        }
+
+        let start = valid.working().accepted_until_ns;
+        for inputs in [
+            DirectWb14ContinuationIntervalInputs {
+                effective_conductivity_m_s: 2.2e-7,
+                ..child_inputs(&valid, 900.0, 0.001)
+            },
+            DirectWb14ContinuationIntervalInputs {
+                matric_potential_m: 0.13,
+                ..child_inputs(&valid, 900.0, 0.001)
+            },
+            DirectWb14ContinuationIntervalInputs {
+                storage_capacity_m: 0.021,
+                ..child_inputs(&valid, 900.0, 0.001)
+            },
+        ] {
+            assert_eq!(
+                valid.accept_child(
+                    0,
+                    start,
+                    start + 900_000_000_000,
+                    valid.working().receipt_chain_sha256,
+                    900.0,
+                    inputs
+                ),
+                Err(DirectWb14ParentIntervalErrorV1::ChildSupport)
+            );
+        }
+    }
+
+    #[test]
+    fn child_and_parent_receipts_validate_and_detect_substitution() {
+        let ending = accept_duration(&parent_fixture(), 1_800, 0.001);
+        ending.validate().expect("complete reconstructed chain");
+        let finalized = ending.finalize().expect("complete parent");
+        finalized
+            .receipt
+            .validate(&ending)
+            .expect("parent receipt reconstruction");
+
+        let mut poisoned = ending.clone();
+        poisoned.receipts[0].interval_supply_m_bits = 0.002_f64.to_bits();
+        assert_eq!(
+            poisoned.validate(),
+            Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation)
+        );
+        let mut parent_receipt = finalized.receipt;
+        parent_receipt.receipt_chain_sha256 = [77; 32];
+        assert_eq!(
+            parent_receipt.validate(&ending),
+            Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation)
+        );
     }
 
     #[test]

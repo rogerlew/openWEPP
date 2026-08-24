@@ -102,7 +102,9 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
     let contract = read(CONTRACT);
     for required in [
         "contract_id: SC-SURFACELIQUID-001",
-        "contract_version: 7",
+        "contract_version: 8",
+        "status: in_review",
+        "version 7 remains the released runtime baseline",
         "INV-SURFACELIQUID-001",
         "INV-SURFACELIQUID-002",
         "(run_id, ofe_id, tile_id, surface_id, surface_class, source_type, source_id)",
@@ -143,6 +145,32 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
         read(LSE)
             .contains("Hydrology exclusively owns ponded, litter-held and soil-layer water mass")
     );
+}
+
+#[test]
+fn version_8_child_slab_authority_binds_complete_transaction_before_release() {
+    let contract = read(CONTRACT);
+    for required in [
+        "INV-SURFACELIQUID-012",
+        "INV-SURFACELIQUID-013",
+        "INV-SURFACELIQUID-014",
+        "production-lane identity",
+        "WB14 model-definition identity",
+        "effective-conductivity",
+        "matric-potential",
+        "storage-capacity",
+        "may be shorter because of an event, restart, output, parent",
+        "processes all OFEs in topology order",
+        "upstream runoff becomes",
+        "downstream runon within that child",
+        "Inactive owners are byte-identical carries",
+        "Independent `validate()` reconstruction",
+        "one 1800-second child bit-identical complete production-",
+        "two unequal-area OFEs",
+        "final-owner-join rollback",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
 }
 
 #[test]

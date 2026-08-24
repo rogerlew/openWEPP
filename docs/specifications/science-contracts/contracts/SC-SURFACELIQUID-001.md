@@ -1,10 +1,10 @@
 ---
 contract_id: SC-SURFACELIQUID-001
 title: Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
-status: approved
-maturity: active
+status: in_review
+maturity: draft
 owner: openWEPP maintainers + hydrology/land-surface-energy reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Persistent snow-free bare-surface and forest-litter liquid hydrology state
   - Same-snapshot withdrawal authorization and finalized debit
@@ -14,15 +14,15 @@ consumer_scope:
   - Production WB14 infiltration/runoff and routed-runon owners
   - Restart and atomic shadow-state consumers
 evidence_level: static+contract_vectors
-last_reviewed: 2026-08-19
+last_reviewed: 2026-08-23
 supersedes: []
 superseded_by: []
 ---
 
 # SC-SURFACELIQUID-001 Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
 
-Status: `approved`
-Maturity: `active`
+Status: `in_review` (version 7 remains the released runtime baseline)
+Maturity: `draft`
 Evidence mode: `Static + contract vectors`
 
 ## Purpose And Scientific Scope
@@ -763,32 +763,53 @@ claim, qualification, or cutover.
 Frozen-liquid constitutive physics beyond that receipt remains
 `AUTHORITY_MISSING` and non-promotable.
 
-## WB14 Parent-Interval Child-Slab Amendment
+## WB14 Parent-Interval Child-Slab Amendment (Version 8 In Review)
 
-The following proposed rules describe a default-off transaction over exactly
-one existing half-hour WB14 interval. They are **not released authority** while
-the independent reviews remain in `HOLD`; production continues to enforce
-`INV-SURFACELIQUID-006/011`. This is prospective transaction and custody design
-only: every child calls the unchanged shared Green-Ampt transition
+The following version-8 rules describe a default-off transaction over exactly
+one existing half-hour WB14 interval. They are **in review and not released
+runtime authority** until the version-8 review, disposition, verification, and
+promotion gates pass; production continues to enforce the released version-7
+`INV-SURFACELIQUID-006/011` guards. Every child calls the unchanged shared Green-Ampt transition
 with its exact duration and current accepted cumulative state. It changes no
 equation, parameter, clamp, tolerance, forcing selector, output, or restart
 wire.
 
-The immutable parent authority binds the exact 1800-second half-open support,
-the complete parent-beginning owner digest, the persistent day/next-interval
-cursor digest, and a framed parent identity.
+The immutable parent authority binds the enclosing coupled-parent identity and
+exact 1800-second half-open support, schema and WB14 model-definition identity,
+the complete parent-beginning owner-set digest, the surface-liquid
+configuration digest and ordered OFE topology, the persistent
+day/next-interval cursor digest, and for every OFE the exact `ofe_id`,
+production-lane identity, WB14 configuration digest, effective-conductivity
+bits, matric-potential bits, and storage-capacity bits. Zero identity digests,
+nonfinite or negative beginning cumulatives, and cumulative infiltration above
+cumulative supply reject before physics.
 The parent-local working state contains accepted support end, next child
 ordinal, cumulative supply, cumulative infiltration, and receipt-chain head.
 It is a candidate and is never a second persistent cursor.
 
-Each child duration is exactly 1800, 900, or 60 seconds. Its support must begin
-at the latest accepted endpoint, remain within the parent, and carry the next
-ordinal and current chain head. Its receipt binds parent identity,
-parent-beginning owner and cursor, child support/ordinal, complete Green-Ampt
-input bits, beginning and ending physical working states, predecessor chain,
-and its own digest. Only accepted child
+Stage 3 proposes an upper bound of exactly 1800, 900, or 60 seconds from the
+latest accepted Stage-3 state. Coupled time selects the actual positive child
+support, which may be shorter because of an event, restart, output, parent
+endpoint, or another hard boundary and must not exceed the proposal. The child
+consumes the exact accepted-duration bits. A zero-duration event is a separate
+event transaction. Child support must begin at the latest accepted endpoint,
+remain within the parent, and carry the next ordinal and current chain head.
+Its receipt binds parent identity, parent-beginning owner and cursor, selected
+upper bound, accepted coupled-time receipt, immutable OFE/WB14 identities,
+complete Green-Ampt input bits, beginning and ending per-OFE working states,
+predecessor chain, complete beginning and ending owner-set digests, staged
+surface/hydrology/soil/soil-thermal/LSE/V11/Stage-3/clock digests, and its own
+digest. Only accepted child
 candidates become the next parent-local beginning. Omission, duplication,
 reorder, overlap, gap, altered beginning, or replay rejects exactly.
+
+The parent candidate owns the real topology-ordered surface transaction:
+surface stores, timed source parcels and enthalpy, per-OFE WB14 working states,
+pending routed parcels, production-soil and soil-thermal candidates, LSE, V11,
+Stage 3, clock, provider/GSI cursor, event, and receipt-chain candidates. Every
+child processes all OFEs in topology order so upstream runoff becomes
+downstream runon within that child. Inactive owners are byte-identical carries,
+and child `n` beginning complete-owner identity equals child `n-1` ending.
 
 Finalization is legal only after one or more accepted children exactly cover
 the parent. It copies the parent-local cumulative state and advances the
@@ -802,22 +823,34 @@ from the latest accepted Stage 3 state. WB14 validates the selected child's
 closed cadence and chronology but does not infer snow mass or select cadence.
 One 1800-second child must return the historical interval outcome bitwise.
 
-Required vectors are one 1800-second child parity; two 900-second children;
+Independent `validate()` reconstruction begins at the canonical parent chain,
+replays every immutable identity, ordinal, support, working-state transition,
+complete-owner join, closure operand, and receipt digest, and derives the final
+cursor. A stored digest or producer-only self-check is insufficient.
+
+Required vectors are one 1800-second child bit-identical complete production-
+owner parity; two 900-second children;
 thirty 60-second children; a latest-state-selected mixed cadence; zero-supply
-no-op children; positive cumulative closure; rollback after child 1/2 and
-17/30; finalization rollback; omission, duplication, reorder, overlap, gap,
-and replay poisons; and exactly one persistent continuation advance.
+no-op children; an event-truncated child; two unequal-area OFEs with same-child
+routing/runon, parcel attribution, and enthalpy closure; positive cumulative
+closure independently reconstructed; rollback after child 1/2 and 17/30;
+final-owner-join rollback; OFE/lane/configuration/K/psi/storage/model
+substitution; zero-digest and invalid-cumulative poisons; omission,
+duplication, reorder, overlap, gap, and replay poisons; and exactly one
+persistent continuation advance.
 
 | Prospective rule | Proposed binding | Release blocker |
 |---|---|---|
-| `PROSPECTIVE-INV-SURFACELIQUID-012` | One WB14 parent covers exactly one existing 1800-second day/interval continuation; persistent cursor is immutable during ordered 1800/900/60-second children and advances once at finalization. | Complete staged-owner integration and exact-once installation evidence. |
-| `PROSPECTIVE-INV-SURFACELIQUID-013` | Every child binds enclosing coupled parent, complete parent beginning, support/ordinal, complete Green-Ampt inputs, beginning/ending working state, and canonical receipt chain; failures roll back the complete owner envelope. | Dynamic Stage 3 cadence fixture, complete owner rollback injections, and terminal re-review. |
+| `INV-SURFACELIQUID-012` (v8 in review) | One WB14 parent covers exactly one existing 1800-second day/interval continuation; persistent cursor is immutable during children accepted at or below a selected 1800/900/60-second upper bound and advances once at complete finalization. | Fresh v8 dual review, verification, integrated owner evidence, and promotion. |
+| `INV-SURFACELIQUID-013` (v8 in review) | Every child binds coupled support, immutable OFE/lane/configuration/model/parameter identity, complete Green-Ampt inputs, per-OFE working progression, complete beginning/ending owner sets, and canonical reconstructable receipt chain. | Fresh v8 dual review, verification, poisons, and rollback evidence. |
+| `INV-SURFACELIQUID-014` (v8 in review) | The complete parent candidate processes all OFEs in topology order and atomically stages surface storage, attributed liquid/enthalpy, routing, production soil, soil thermal, LSE, V11, Stage 3, clock, provider/GSI, event, and receipt owners. | Production-owner parity, two-OFE closure, rollback, and real-consumer proof. |
 
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---|---|---|
 | 2026-08-19 | 7 | Codex | Added exact-one 0 C terminal receipt and partial-WB14 continuation/restart authority (`INV-SURFACELIQUID-010/011`) for the default-off terminal receiver transaction. |
+| 2026-08-23 | 8 (in review) | Codex | Formalized child slabs as exact coupled supports beneath Stage-3 cadence proposals; bound OFE/lane/configuration/model/parameter and complete-owner identity; required topology-ordered complete transaction staging, receipt reconstruction, final-only cursor publication, parity, truncation, routing, poison, and rollback gates. Version 7 remains released until promotion. |
 | 2026-08-23 | prospective | Codex | Recorded the unreleased WB14 parent/child transaction design and contract vectors. Independent reviews held release on complete-owner integration, dynamic Stage 3 cadence, and rollback evidence; v7 authority and the production guard remain unchanged. |
 | 2026-08-14 | 1 | Codex | Initial contract-first draft. |
 | 2026-08-14 | 2 | Codex | Align exact LSE surface/source identities and OFE condensation basis; bind one actual timed aggregate WB14 call per OFE, zero legacy depression retention, post-infiltration persistent retention, routed topology, canonical digests, profile sections, unit governance, and independent vector obligations. |
