@@ -1,4 +1,5 @@
 
+    // Contract binding: SC-SURFACELIQUID-001@8 INV-SURFACELIQUID-012..014.
     #[test]
     #[allow(clippy::too_many_lines)]
     fn mixed_open_covered_stack_executes_complete_ofe_ground_boundary() {
@@ -367,7 +368,6 @@
                 0,
                 digest(3),
                 BTreeMap::from([(1, stage3_beginning.clone())]),
-                true,
                 Some(injection),
             )
             .is_err());
@@ -387,7 +387,6 @@
                 0,
                 digest(3),
                 BTreeMap::from([(1, stage3_beginning.clone())]),
-                true,
                 None,
             )
             .expect("synchronized covered parent cadence");

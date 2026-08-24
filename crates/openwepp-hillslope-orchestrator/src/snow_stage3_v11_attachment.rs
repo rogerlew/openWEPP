@@ -1795,20 +1795,6 @@ impl DirectSnowStage3V11ShadowAttachment {
             )?;
             let (parent, consumer, clock, finalized, covered_stage3) = if covered_support {
                 validate_covered_stage3_lane_scope(&beginning_stage3)?;
-                if beginning_stage3
-                    .values()
-                    .filter(|state| stage3_is_resolved_thermal_domain(state))
-                    .map(Wb11HydrologyKernel::project_stage3_surface_state_v1)
-                    .collect::<Result<Vec<_>, _>>()?
-                    .iter()
-                    .any(|surface| {
-                        surface.selected_substep_seconds.to_bits() != 1_800.0_f64.to_bits()
-                    })
-                {
-                    return Err(DirectSnowStage3V11AttachmentError::Support(
-                        "unreleased v8 short-cadence production attachment",
-                    ));
-                }
                 let (parent, consumer, clock, finalized, ending_stage3, owner_joins) =
                     execute_covered_real_v11_parent(
                         &self.static_context,
@@ -1820,7 +1806,6 @@ impl DirectSnowStage3V11ShadowAttachment {
                         support_index,
                         forcing_receipt,
                         beginning_stage3,
-                        false,
                         self.failure_injection,
                     )?;
                 covered_owner_joins
@@ -2477,7 +2462,6 @@ pub(crate) fn execute_covered_real_v11_parent(
     interval_index: usize,
     forcing_receipt: Digest32,
     beginning_stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
-    review_short_cadence: bool,
     failure_injection: Option<Stage3V11FailureInjection>,
 ) -> Result<
     (
@@ -2518,11 +2502,6 @@ pub(crate) fn execute_covered_real_v11_parent(
                 ));
             }
         };
-        if !review_short_cadence && selected_ns != 1_800_000_000_000 {
-            return Err(DirectSnowStage3V11AttachmentError::Support(
-                "unreleased v8 short-cadence production attachment",
-            ));
-        }
         let proposed_end_ns = ModelTimeNs::new(
             clock
                 .accepted_until()

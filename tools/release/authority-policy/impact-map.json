@@ -1145,6 +1145,16 @@
       "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"]
     },
     {
+      "entry_id": "v11-real-consumer-shadow-wb14-tests",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "receipt-owned-surface-liquid-child-slab-tests", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
       "entry_id": "covered-v11-parent-attachment-snow-energy",
       "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs" },
       "owner": "openwepp-snow-energy-owner", "semantic_surface": "covered-v11-stage3-parent-attachment", "risk_floor": "CRITICAL",
