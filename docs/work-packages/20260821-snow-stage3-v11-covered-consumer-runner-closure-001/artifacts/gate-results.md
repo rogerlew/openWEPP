@@ -681,3 +681,52 @@ and passed 1/1 in 238.649 seconds.
 fixture must be reconciled with its canonical schema and the full exact-head
 workspace run repeated before this result can support package closure. The
 LLVM tooling defect is closed and is no longer the blocker.
+
+## 2026-08-23 persisted-restart V1 wire reconciliation
+
+`Static:` Starting identity was clean `HEAD=origin/main=c29b8f38fcff24e0e6058a167b0b690dd653647d`.
+The exact failure was production DTO drift: `DirectHydrologyRestartV1`
+serialized optional runtime-only `snow_stage3_shadow`, while the frozen V1
+schema and vectors omit that closed-object member. Missing input admitted as
+`None`, then typed serialization emitted explicit `null` and failed exact
+canonical-byte admission.
+
+`Static / correction:` The frozen V1 DTO again contains only its released
+members. Projection rejects a configured Stage-3 attachment with typed
+`HydrologyRestartError::Unsupported("snow_stage3_shadow_requires_successor_restart")`;
+an absent attachment continues to project, restore, and reproject exactly.
+The candidate Stage-3 payload is documented as requiring a versioned successor
+restart. No frozen schema or vector byte changed, and no short-cadence guard,
+selector, default, or `SC-SURFACELIQUID-001@8` authority changed.
+
+`Ran / PASS:` The isolated formerly failing implementation contract passed
+`1/1`. `openwepp-persisted-restart-v1` passed `27/27`. The production V1
+checkpoint contract passed `4/4`, including all four frozen byte-identical
+round trips, explicit `snow_stage3_shadow:null` rejection, duplicate and
+noncanonical poisons, and a production-member-set versus frozen closed-schema
+guard. The implementation contract passed `1/1`; restart authority integration
+passed `7/7`; and the package-local authority reference passed `28/28` plus
+doc tests. A fresh generated schema was byte-identical to the frozen schema.
+Fresh vector generation was deliberately not installed: current unrelated
+vegetation calculations differ by one-bit floating results, confirming that
+regeneration is not an admissible V1 correction.
+
+`Ran / PASS:` The affected hillslope-orchestrator suite passed `790/790` with
+one configured skip. `cargo fmt --all -- --check` passed. The independent
+LLVM/CQR self-test passed `1/1` in `237.624s`.
+
+`Ran / unrelated Clippy debt:` Warnings-denied Clippy for the affected restart
+package stopped in the reverse dependency `openwepp-land-surface-energy` on
+four pre-existing findings: three `too_many_lines` findings and one
+`large_enum_variant`. No restart-owned Clippy finding was emitted before that
+failure.
+
+`Ran / full workspace HOLD:`
+`nix develop --command tools/dev/heavy cargo nextest run --workspace --no-fail-fast`
+completed all `3,266` tests across `243` binaries: `3,253` passed, `13` failed,
+and six were configured skips. The persisted-restart failure is closed and no
+restart test failed. The remaining failures are the already unrelated Stage-3
+solver line-count guard, stale snow/vegetation contract-index assertions,
+stale assurance identity/digest bindings, and the V10 definition digest.
+Therefore the active Child-1 package truthfully remains `EXECUTING / HOLD`;
+this result does not reopen V1 wire authority or the retained WB14 v8 release.

@@ -10,8 +10,7 @@ use crate::{
 use openwepp_hillslope_orchestrator::{
     DirectDayConstructorInputs, DirectLaneFrame, DirectLaneTransferLedger, DirectPhaseKind,
     DirectPhasePlan, DirectPublicationFrame, DirectRunFrame, DirectRunIdentity,
-    DirectRunTransferShadowProjection, DirectSnowStage3ShadowRestartV1,
-    DirectSurfaceLiquidConfiguration,
+    DirectRunTransferShadowProjection, DirectSurfaceLiquidConfiguration,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -306,7 +305,6 @@ pub struct DirectHydrologyRestartV1 {
     pub lane_transfer_downstream_operands: DirectRunTransferDownstreamOperandsRestartV1,
     pub groundwater: DirectGroundwaterRunStateRestartV1,
     pub surface_liquid_owned_state: Option<Box<DirectSurfaceLiquidOwnedStateRestartV1>>,
-    pub snow_stage3_shadow: Option<Box<DirectSnowStage3ShadowRestartV1>>,
 }
 
 pub struct ExpectedDirectHydrologyRestartContext<'a> {
@@ -323,6 +321,11 @@ impl DirectHydrologyRestartV1 {
         phase_plan_sha256: Sha256Hex,
         day_input_digests: &[Sha256Hex],
     ) -> Result<Self, HydrologyRestartError> {
+        if value.snow_stage3_shadow.is_some() {
+            return Err(HydrologyRestartError::Unsupported(
+                "snow_stage3_shadow_requires_successor_restart",
+            ));
+        }
         let DirectRunFrame {
             identity,
             lanes,
@@ -333,7 +336,7 @@ impl DirectHydrologyRestartV1 {
             lane_transfer_shadow_projection,
             groundwater,
             surface_liquid_shadow,
-            snow_stage3_shadow,
+            snow_stage3_shadow: _,
             snow_stage3_v11_attachment: _,
             laned_active,
             laned_active_summary,
@@ -417,12 +420,6 @@ impl DirectHydrologyRestartV1 {
                 .transpose()
                 .map_err(nested)?
                 .map(Box::new),
-            snow_stage3_shadow: snow_stage3_shadow
-                .as_deref()
-                .map(|attachment| attachment.restart_v1())
-                .transpose()
-                .map_err(nested)?
-                .map(Box::new),
         })
     }
 
@@ -502,7 +499,7 @@ impl DirectHydrologyRestartV1 {
         {
             return Err(HydrologyRestartError::Join("lane_transfer_ledger"));
         }
-        let mut frame = DirectRunFrame {
+        let frame = DirectRunFrame {
             identity: DirectRunIdentity::new(
                 self.run_id,
                 self.hillslope_id,
@@ -534,11 +531,6 @@ impl DirectHydrologyRestartV1 {
             laned_active: None,
             laned_active_summary: None,
         };
-        if let Some(restart) = self.snow_stage3_shadow.clone() {
-            frame
-                .restore_snow_stage3_shadow(*restart, context.surface_liquid_configuration.clone())
-                .map_err(nested)?;
-        }
         Ok(frame)
     }
 }
@@ -546,10 +538,19 @@ impl DirectHydrologyRestartV1 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use openwepp_hillslope_orchestrator::{
-        DirectLaneConstructorInputs, DirectRunConstructorInputs, DirectSurfaceLiquidConfiguration,
+    use openwepp_hillslope_orchestrator::DirectGroundIngressMode;
+    use openwepp_hillslope_orchestrator::snow_stage3_terminal_handoff::{
+        CanopyLongwaveComponent, SealedExposureReceipt,
     };
-    use openwepp_kernel_contract::ResourceOwnerId;
+    use openwepp_hillslope_orchestrator::{
+        DirectLaneConstructorInputs, DirectOfeWb14Parameters, DirectRunConstructorInputs,
+        DirectSnowStage3SealedForcing, DirectSnowStage3ShadowConfiguration,
+        DirectSnowStage3StagedSurfaceReceipt, DirectSurfaceLiquidConfiguration,
+        DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidOfeBinding,
+        DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidStoreKey,
+    };
+    use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId};
+    use openwepp_land_surface_energy::{OfeId, SourceId, SurfaceClass, SurfaceId, WaterSourceType};
 
     fn frame() -> DirectRunFrame {
         let identity = DirectRunIdentity::new(9, 4, 2, 1).unwrap();
@@ -591,14 +592,38 @@ mod tests {
         frame
     }
     fn surface_configuration() -> DirectSurfaceLiquidConfiguration {
-        DirectSurfaceLiquidConfiguration {
-            owner_id: ResourceOwnerId::try_new("surface").unwrap(),
-            run_id: 9,
-            configuration_sha256: "a".repeat(64),
-            ofe_topology: vec![],
-            ofe_bindings: vec![],
-            records: vec![],
-        }
+        let ofe_id = OfeId::try_new("only").unwrap();
+        let tile_id = TileId::try_new("tile").unwrap();
+        DirectSurfaceLiquidConfiguration::new(
+            ResourceOwnerId::try_new("surface").unwrap(),
+            9,
+            vec![ofe_id.clone()],
+            vec![DirectSurfaceLiquidOfeBinding {
+                ofe_id: ofe_id.clone(),
+                production_lane_index: 0,
+                production_lane_id: 1,
+                ordered_soil_layer_ids: vec![SoilLayerId::try_new("soil-top").unwrap()],
+                infiltration_soil_thermal_layer_id: SoilLayerId::try_new("soil-top").unwrap(),
+            }],
+            vec![DirectSurfaceLiquidConfigurationRecord {
+                key: DirectSurfaceLiquidStoreKey {
+                    run_id: 9,
+                    ofe_id,
+                    tile_id,
+                    surface_id: SurfaceId::try_new("surface").unwrap(),
+                    surface_class: SurfaceClass::BareMineralSoil,
+                    source_type: WaterSourceType::SurfaceLiquid,
+                    source_id: SourceId::try_new("source").unwrap(),
+                },
+                tile_fraction: 1.0,
+                capacity_kg_m2_tile: 1.0,
+                ofe_area_m2: 10.0,
+                ground_ingress_mode: DirectGroundIngressMode::OpenRawPrecipitation,
+                runon_destination_ofe_id: None,
+                runon_destination_tile_id: None,
+            }],
+        )
+        .unwrap()
     }
     fn cache_digests(source: &DirectRunFrame) -> (Sha256Hex, Vec<Sha256Hex>) {
         let phase = canonical_phase_plan_sha256(&source.phase_plan).unwrap();
@@ -610,6 +635,77 @@ mod tests {
             })
             .collect();
         (phase, days)
+    }
+
+    fn stage3_configuration(
+        surface_liquid_configuration: DirectSurfaceLiquidConfiguration,
+    ) -> DirectSnowStage3ShadowConfiguration {
+        let receipt = DirectSnowStage3StagedSurfaceReceipt {
+            receipt_id: "restart-v1-poison".into(),
+            temperature_k: 273.15,
+            specific_humidity: 0.001,
+            heat_transfer_m_s: 0.01,
+            vapor_transfer_m_s: 0.01,
+        };
+        DirectSnowStage3ShadowConfiguration {
+            enabled: true,
+            event_lane_index: 0,
+            event_day_index: 0,
+            parent_duration_ns: 1_800_000_000,
+            event_elapsed_ns: 1_200_000_000,
+            minimum_support_ns: 600_000_000,
+            sealed_forcing: DirectSnowStage3SealedForcing {
+                exposure: SealedExposureReceipt {
+                    receipt_id: "restart-v1-exposure".into(),
+                    provider: "sealed-stage3-exposure".into(),
+                    provider_digest: "restart-v1-provider".into(),
+                    source: "sealed-exposure-v1".into(),
+                    wind_m_s: 2.0,
+                    transfer_height_m: 5.0,
+                    roughness_m: 0.005,
+                },
+                air_temperature_k: 273.15,
+                air_specific_humidity: 0.001,
+                atmospheric_longwave_w_m2: 300.0,
+                canopy: receipt.clone(),
+                snow: receipt,
+                canopy_longwave_components: vec![CanopyLongwaveComponent {
+                    temperature_k: 273.15,
+                    emissive_area_weight: 1.0,
+                }],
+            },
+            surface_liquid_configuration,
+            wb14_parameters: vec![DirectOfeWb14Parameters {
+                ofe_id: OfeId::try_new("only").unwrap(),
+                effective_conductivity_m_s: 1.0e-6,
+                matric_potential_m: 0.1,
+                infiltration_storage_capacity_m: 1.0,
+            }],
+        }
+    }
+
+    #[test]
+    fn stage3_runtime_requires_a_versioned_successor_restart() {
+        let mut source = frame();
+        let surface = surface_configuration();
+        let initial_liquid = surface
+            .records
+            .iter()
+            .map(|record| (record.key.clone(), 0.0))
+            .collect();
+        source.surface_liquid_shadow = Some(Box::new(
+            DirectSurfaceLiquidOwnedState::new_initial(&surface, &initial_liquid, 0).unwrap(),
+        ));
+        source
+            .configure_snow_stage3_shadow(stage3_configuration(surface))
+            .unwrap();
+        let (phase, days) = cache_digests(&source);
+        assert!(matches!(
+            DirectHydrologyRestartV1::project(&source, phase, &days),
+            Err(HydrologyRestartError::Unsupported(
+                "snow_stage3_shadow_requires_successor_restart"
+            ))
+        ));
     }
 
     #[test]

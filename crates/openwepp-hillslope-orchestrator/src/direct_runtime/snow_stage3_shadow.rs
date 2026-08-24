@@ -68,10 +68,11 @@ pub struct DirectSnowStage3ShadowConfiguration {
     pub wb14_parameters: Vec<DirectOfeWb14Parameters>,
 }
 
-/// Additive restart payload for the attachment.  The surface-liquid owner is
-/// persisted by `DirectHydrologyRestartV1`; this payload carries the Stage-3
-/// runtime and its sealed/static configuration so the two owners can be
-/// restored together without reopening any science contract.
+/// Candidate additive restart payload for a versioned Stage-3 successor.
+///
+/// The frozen `DirectHydrologyRestartV1` wire is snow-free and deliberately
+/// does not carry this payload. Projection to that wire rejects a configured
+/// attachment instead of silently discarding its state.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct DirectSnowStage3ShadowRestartV1 {
     pub enabled: bool,
