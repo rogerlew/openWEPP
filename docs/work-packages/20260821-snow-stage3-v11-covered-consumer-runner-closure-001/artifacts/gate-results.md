@@ -652,3 +652,32 @@ the covered solver, while the two pending classes fail closed. Atmospheric
 receipt construction, exact atmosphere joins, full fixtures/poisons, module
 split, Clippy, and frost regression remain not run, so this is not checkpoint
 closure evidence.
+
+## 2026-08-23 exact-head workspace regression after LLVM tooling repair
+
+`Ran:` At clean `HEAD=e47b028a57b2dbedf8821bb8d82de3c13bb0f224`,
+`nix develop --command tools/dev/heavy cargo nextest run --workspace`
+discovered 3,263 tests across 243 binaries with six configured skips. The run
+advanced beyond the former `cargo llvm-cov` discovery failure after the Nix
+shell supplied LLVM 21.1.8 `llvm-cov` and `llvm-profdata`, matching the LLVM
+version used by the shell's Rust compiler.
+
+`FAIL:` Nextest stopped fail-fast after 269 passes and one deterministic
+failure; 2,993 tests were consequently not run. The failing test was
+`direct_hydrology_persisted_restart_implementation_contract::production_checkpoint_contains_complete_typed_direct_hydrology_owner`.
+It rejected
+`docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-in-progress-vector.json`
+with `NoncanonicalBytes` while decoding
+`DirectV10RealConsumerCheckpointV1`.
+
+`Ran / confirmation:` The failing integration test was rerun alone with
+`cargo nextest run --test direct_hydrology_persisted_restart_implementation_contract --no-capture`
+and failed identically, proving this was deterministic rather than parallel
+test interference. The formerly blocked LLVM-dependent
+`cqr_quality_evidence_self_test_passes` was also run alone after the shell fix
+and passed 1/1 in 238.649 seconds.
+
+`HOLD:` The workspace correctness gate is not passed. The persisted-restart
+fixture must be reconciled with its canonical schema and the full exact-head
+workspace run repeated before this result can support package closure. The
+LLVM tooling defect is closed and is no longer the blocker.
