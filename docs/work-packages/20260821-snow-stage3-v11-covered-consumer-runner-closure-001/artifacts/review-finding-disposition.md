@@ -33,3 +33,8 @@ Historical checkpoint note: no Rust test or `rustfmt` result was available for
 the original `8712e272` amendment. That limitation was superseded by the v15
 promotion qualification and the later mechanical-split qualification recorded
 in `gate-results.md`. Package disposition remains `EXECUTING / HOLD`.
+# 2026-08-23 two-OFE/refactor terminal reviews
+
+- Hydrology/ownership: `PASS`. The exact child candidate proves OFE-1 routed runoff to OFE-2, downstream source lineage, exact 100/200 area-scaled mass and enthalpy, seven ending owners, and one persistent interval advance. The initial cumulative-only finding was accepted and corrected.
+- Rust/API: `PASS`. Include splits preserve module/API semantics; the unreachable duplicate fixture branch was removed; hydrology-candidate retention is test-only; all partial-empty nitrogen protocol poisons reject; all touched/refactored Rust files are below 3,000 lines. The initial public/runtime-retention finding was accepted and corrected.
+- Verification: final affected suite `786 passed, 1 configured skip`; production check, formatting, and diff hygiene pass.

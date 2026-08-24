@@ -7,6 +7,9 @@ pub struct DirectV11RealConsumerStack<'a> {
     pub interval_index: usize,
     pub(super) ending: Option<DirectV10RealConsumerShadow>,
     pub(super) last_support_receipt: Option<LseSupportAdmissibilityReceiptV1>,
+    #[cfg(test)]
+    pub(super) last_hydrology_candidate:
+        Option<crate::land_surface_energy_shadow::UnifiedRealHydrologyCandidate>,
     pub(super) ending_snow_owner_bytes: Option<Vec<u8>>,
 }
 

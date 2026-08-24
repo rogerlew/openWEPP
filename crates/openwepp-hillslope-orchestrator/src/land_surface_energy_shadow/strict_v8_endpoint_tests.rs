@@ -600,6 +600,189 @@ pub fn endpoint_fixture() -> EndpointFixture {
     }
 }
 
+#[cfg_attr(test, allow(unreachable_pub))]
+pub fn two_ofe_routed_endpoint_fixture() -> EndpointFixture {
+    let (vegetation_configuration, vegetation_state) = vegetation();
+    let (mut surface_configuration, _) = surface();
+    let upper_ofe = OfeId::try_new("ofe-1").expect("upper OFE");
+    let lower_ofe = OfeId::try_new("ofe-2").expect("lower OFE");
+    let lower_tile = TileId::try_new("lower-open").expect("lower tile");
+    let lower_forest_tile = TileId::try_new("lower-forest").expect("lower forest tile");
+    let lower_layers = [
+        "thermal-1",
+        "thermal-2",
+        "soil-1",
+        "soil-2",
+        "soil-dry",
+        "soil-frozen",
+    ]
+    .map(|id| SoilLayerId::try_new(id).expect("lower layer"))
+    .to_vec();
+    let mut records = surface_configuration.records.clone();
+    for record in &mut records {
+        record.runon_destination_ofe_id = Some(lower_ofe.clone());
+        record.runon_destination_tile_id = Some(lower_tile.clone());
+    }
+    let mut lower_record = records
+        .iter()
+        .find(|record| record.key.tile_id.as_str() == "open")
+        .expect("upper open template")
+        .clone();
+    lower_record.key.ofe_id = lower_ofe.clone();
+    lower_record.key.tile_id = lower_tile.clone();
+    lower_record.key.surface_id =
+        SurfaceId::try_new("surface:ofe-2:lower-open").expect("lower surface");
+    lower_record.key.source_id =
+        SourceId::try_new("liquid:ofe-2:lower-open").expect("lower source");
+    lower_record.tile_fraction = 1.0 - COVER;
+    lower_record.capacity_kg_m2_tile = 0.01;
+    lower_record.ofe_area_m2 = 200.0;
+    lower_record.runon_destination_ofe_id = None;
+    lower_record.runon_destination_tile_id = None;
+    records.push(lower_record);
+    let mut lower_forest_record = records
+        .iter()
+        .find(|record| record.key.ofe_id == upper_ofe && record.key.tile_id.as_str() == "forest")
+        .expect("upper forest template")
+        .clone();
+    lower_forest_record.key.ofe_id = lower_ofe.clone();
+    lower_forest_record.key.tile_id = lower_forest_tile.clone();
+    lower_forest_record.key.surface_id =
+        SurfaceId::try_new("surface:ofe-2:lower-forest").expect("lower forest surface");
+    lower_forest_record.key.source_id =
+        SourceId::try_new("liquid:ofe-2:lower-forest").expect("lower forest source");
+    lower_forest_record.ofe_area_m2 = 200.0;
+    lower_forest_record.runon_destination_ofe_id = None;
+    lower_forest_record.runon_destination_tile_id = None;
+    records.push(lower_forest_record);
+    surface_configuration = DirectSurfaceLiquidConfiguration::new(
+        surface_configuration.owner_id.clone(),
+        surface_configuration.run_id,
+        vec![upper_ofe.clone(), lower_ofe.clone()],
+        vec![
+            surface_configuration.ofe_bindings[0].clone(),
+            DirectSurfaceLiquidOfeBinding {
+                ofe_id: lower_ofe.clone(),
+                production_lane_index: 1,
+                production_lane_id: 2,
+                ordered_soil_layer_ids: lower_layers.clone(),
+                infiltration_soil_thermal_layer_id: SoilLayerId::try_new("thermal-1")
+                    .expect("lower thermal layer"),
+            },
+        ],
+        records,
+    )
+    .expect("two-OFE routed surface configuration");
+
+    let mut frame =
+        DirectRunFrame::skeleton(DirectRunIdentity::new(83, 11, 2, 1).expect("identity"))
+            .expect("two-lane frame");
+    for (index, lane) in frame.lanes.iter_mut().enumerate() {
+        lane.area_m2 = if index == 0 { 100.0 } else { 200.0 };
+        lane.subsurface_layers = (0..6).map(|_| subsurface_layer()).collect();
+        lane.water.soil_water_m = lane
+            .subsurface_layers
+            .iter()
+            .map(|layer| layer.theta_m)
+            .sum();
+    }
+    let initial = surface_configuration
+        .records
+        .iter()
+        .map(|record| {
+            let liquid =
+                if record.key.ofe_id == upper_ofe && record.key.tile_id.as_str() == "forest" {
+                    4.0
+                } else {
+                    0.0
+                };
+            (record.key.clone(), liquid)
+        })
+        .collect();
+    let surface_state =
+        DirectSurfaceLiquidOwnedState::new_initial(&surface_configuration, &initial, 0)
+            .expect("two-OFE surface state");
+    frame
+        .configure_surface_liquid_shadow(&surface_configuration, surface_state)
+        .expect("two-OFE surface owner");
+    let layer_maps = [0_usize, 1]
+        .into_iter()
+        .map(|lane_index| RealHydrologyLaneLayerMap {
+            ofe_lane: RealHydrologyOfeLaneId {
+                lane_index,
+                lane_id: u32::try_from(lane_index + 1).expect("lane id"),
+            },
+            layer_ids: lower_layers.clone(),
+        })
+        .collect::<Vec<_>>();
+    let hydrology = RealHydrologyShadowAdapter::try_from_day_start(
+        &frame,
+        0,
+        TransactionId(41),
+        DT,
+        ResourceOwnerId::try_new("production-hydrology").expect("owner"),
+        &layer_maps,
+    )
+    .expect("two-OFE hydrology");
+
+    let mut lse_configuration = lse_cfg(&vegetation_configuration);
+    let mut lower_lse = lse_configuration.ofes[0].clone();
+    lower_lse.ofe_id = lower_ofe.clone();
+    lower_lse.area_m2 = 200.0;
+    lower_lse.tiles[0].tile_id = lower_forest_tile.clone();
+    lower_lse.tiles[1].tile_id = lower_tile.clone();
+    lse_configuration.ofes.push(lower_lse);
+    lse_configuration.configuration_sha256 = lse_configuration
+        .canonical_sha256()
+        .expect("two-OFE LSE digest");
+    lse_configuration.validate().expect("two-OFE LSE config");
+    let mut lse_state = lse_state(&lse_configuration);
+    let mut lower_forest_state = lse_state.tiles[0].clone();
+    lower_forest_state.ofe_id = lower_ofe.clone();
+    lower_forest_state.tile_id = lower_forest_tile;
+    let mut lower_open_state = lse_state.tiles[1].clone();
+    lower_open_state.ofe_id = lower_ofe.clone();
+    lower_open_state.tile_id = lower_tile;
+    lse_state
+        .tiles
+        .extend([lower_forest_state, lower_open_state]);
+    lse_state.state_sha256 = lse_state.canonical_sha256().expect("two-OFE LSE state");
+    lse_state
+        .validate(&lse_configuration)
+        .expect("two-OFE LSE state validation");
+
+    let mut thermal = full_thermal();
+    let mut lower_thermal = thermal.ofes[0].clone();
+    lower_thermal.ofe_id = lower_ofe;
+    thermal.ofes.push(lower_thermal);
+    let forcing = lse_forcing();
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hydrology);
+    let receipt = V8CanopyForcingReceipt::try_new(
+        vegetation_configuration.configuration_sha256.clone(),
+        vegetation_state.state_sha256.clone(),
+        lse_configuration.configuration_sha256.clone(),
+        forcing.forcing_sha256.clone(),
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &surface_configuration)
+            .expect("two-OFE snapshot"),
+        thermal.snapshot_sha256.clone(),
+        TransactionId(41),
+        snow_forcing(&hydrology),
+    )
+    .expect("two-OFE forcing receipt");
+    EndpointFixture {
+        vegetation_configuration,
+        vegetation_state,
+        surface_configuration,
+        hydrology,
+        lse_configuration,
+        lse_state,
+        forcing,
+        thermal,
+        receipt,
+        biogeochemistry: biogeochemistry(),
+    }
+}
+
 const fn failure_phases() -> [V8EndpointFailureInjection; 19] {
     [
         V8EndpointFailureInjection::AfterProjection,

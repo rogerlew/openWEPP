@@ -361,3 +361,14 @@ skip; exact terminal results are recorded separately.
 `HOLD:` complete physical-owner staging, exact-once installation, dynamic
 latest-Stage-3 cadence, actual production-owner parity, and complete-owner
 rollback remain absent.
+# 2026-08-23 two-OFE and refactor closure increment
+
+Ran: `cargo test -p openwepp-hillslope-orchestrator complete_owner_two_ofe_child_routes_upstream_runoff_as_downstream_runon -- --nocapture` — PASS, 1/1.
+
+Ran: `cargo nextest run -p openwepp-hillslope-orchestrator` — PASS, 786 passed, 1 configured skip, 96.396 seconds (final test-gated diff).
+
+Ran: `cargo check -p openwepp-hillslope-orchestrator` — PASS; existing non-fatal dead-code warnings remain.
+
+Ran: `cargo fmt --all` and `git diff --check` — PASS.
+
+Static: all refactored/touched Rust modules are below the 3,000-line closure ceiling. The fixture proves positive upstream supply, positive downstream same-child supply/infiltration, seven finalized ending owners, and one persistent interval advance.

@@ -77,7 +77,7 @@ mod raw_boundary_contract_tests;
 mod receiver_failure;
 mod receiver_preflight;
 mod receiver_validation;
-mod strict_v8_endpoint;
+pub(crate) mod strict_v8_endpoint;
 #[cfg(feature = "restart-authority-evidence")]
 pub use strict_v8_endpoint::endpoint_rollback_tests::{EndpointFixture, endpoint_fixture};
 mod unified_entry_preflight;

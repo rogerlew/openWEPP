@@ -13,6 +13,8 @@ impl<'a> DirectV11RealConsumerStack<'a> {
             interval_index,
             ending: None,
             last_support_receipt: None,
+            #[cfg(test)]
+            last_hydrology_candidate: None,
             ending_snow_owner_bytes: None,
         }
     }
@@ -42,5 +44,13 @@ impl<'a> DirectV11RealConsumerStack<'a> {
     #[must_use]
     pub fn last_support_receipt(&self) -> Option<&LseSupportAdmissibilityReceiptV1> {
         self.last_support_receipt.as_ref()
+    }
+
+    #[must_use]
+    #[cfg(test)]
+    pub fn last_hydrology_candidate(
+        &self,
+    ) -> Option<&crate::land_surface_energy_shadow::UnifiedRealHydrologyCandidate> {
+        self.last_hydrology_candidate.as_ref()
     }
 }

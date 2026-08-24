@@ -748,6 +748,10 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
             material_transfers: envelope.vegetation().material_proposals().to_vec(),
         };
         self.last_support_receipt = Some(support_receipt);
+        #[cfg(test)]
+        {
+            self.last_hydrology_candidate = Some(envelope.hydrology().clone());
+        }
         self.ending = Some(candidate);
         Ok(output)
     }

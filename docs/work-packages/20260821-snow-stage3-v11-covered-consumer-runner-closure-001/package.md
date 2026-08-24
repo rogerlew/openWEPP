@@ -117,6 +117,35 @@ fields.
 
 ## Progress log
 
+### 2026-08-23 complete-owner two-OFE routing and monolith split closure
+
+The final WB14 integration blockers are implemented. A two-OFE, unequal-area,
+open-surface fixture now executes one actual V11 child with all seven complete
+owners. Ten kilograms per square metre of upper-OFE precipitation exceeds a
+deliberately small upper Green--Ampt capacity; the topology-ordered surface
+transaction routes that excess to the downstream OFE in the same child. The
+ending complete surface owner proves positive downstream cumulative supply and
+infiltration, the finalized V11 parent contains seven ending owners, and the
+persistent interval counter advances exactly once. Empty vegetation nitrogen
+protocols now bypass the single-OFE BGC debit projection; nonempty protocols
+retain the existing fail-closed OFE binding.
+
+The surface ingress coordinator, ingress preflight validators, Stage-3 receipt
+and replay types, Stage-3 helpers/tests, complete-owner WB14 cadence tests, and
+large ingress projection tests were moved into responsibility-specific include
+modules without changing public APIs or physics. All affected/refactored Rust
+files are below 3,000 lines; the unrelated pre-existing Stage-3 solver remains
+outside this increment. `cargo nextest run -p openwepp-hillslope-orchestrator`
+passed 786 tests with one configured skip, including the new two-OFE fixture.
+Terminal independent reviews and final disposition follow this exact diff.
+
+Terminal disposition for this checkpoint: `PASS`. Independent
+hydrology/ownership and Rust/API reviews found no remaining blocker after
+source-lineage, mass/enthalpy, partial-empty nitrogen, unreachable-test-branch,
+and test-only-retention corrections. This closes the two blockers named by the
+prior receipt-owned coordinator HOLD; it does not by itself promote the draft
+v8 contract or remove the retained production short-cadence guard.
+
 ### 2026-08-23 receipt-owned multi-OFE WB14 parent coordinator checkpoint
 
 Implementation intent: replace the parallel live WB14 chronology identified

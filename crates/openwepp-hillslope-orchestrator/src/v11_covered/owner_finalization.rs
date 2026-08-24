@@ -882,6 +882,13 @@ pub(crate) fn v11_nitrogen_resource_debits(
     input: &V11ImportedV10SegmentInput,
 ) -> Result<Vec<V11ResourceDebit>, DirectV11RealConsumerError> {
     let (requests, authorizations, uses) = envelope.vegetation().nitrogen_protocol();
+    if validate_v11_nitrogen_protocol_cardinality(
+        requests.len(),
+        authorizations.len(),
+        uses.len(),
+    )? {
+        return Ok(Vec::new());
+    }
     let occupancies = input.configuration.expected_occupancies();
     let ofes = envelope
         .hydrology()
@@ -944,6 +951,46 @@ pub(crate) fn v11_nitrogen_resource_debits(
             .map_err(|_| DirectV11RealConsumerError::Identity("V11 nitrogen debit"))
         })
         .collect()
+}
+
+fn validate_v11_nitrogen_protocol_cardinality(
+    request_count: usize,
+    authorization_count: usize,
+    use_count: usize,
+) -> Result<bool, DirectV11RealConsumerError> {
+    if request_count == 0 && authorization_count == 0 && use_count == 0 {
+        return Ok(true);
+    }
+    if request_count == 0 || authorization_count == 0 || use_count == 0 {
+        return Err(DirectV11RealConsumerError::Identity(
+            "V11 nitrogen protocol cardinality",
+        ));
+    }
+    Ok(false)
+}
+
+#[cfg(test)]
+mod nitrogen_protocol_cardinality_tests {
+    use super::*;
+
+    #[test]
+    fn empty_protocol_is_admissible_and_every_partial_empty_protocol_rejects() {
+        assert_eq!(
+            validate_v11_nitrogen_protocol_cardinality(0, 0, 0).expect("empty protocol"),
+            true,
+        );
+        for counts in [(0, 0, 1), (0, 1, 0), (1, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0)] {
+            assert!(
+                validate_v11_nitrogen_protocol_cardinality(counts.0, counts.1, counts.2).is_err(),
+                "partial-empty poison {counts:?}",
+            );
+        }
+        assert_eq!(
+            validate_v11_nitrogen_protocol_cardinality(1, 1, 1)
+                .expect("nonempty protocol"),
+            false,
+        );
+    }
 }
 
 pub(crate) fn v11_shared_resource_transitions(
