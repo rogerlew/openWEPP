@@ -797,14 +797,10 @@ impl DirectWb14ParentIntervalV1 {
             duration_compensation_s = (next - transition_duration_s) - corrected;
             transition_duration_s = next;
         }
-        let transition_duration_ns = transition_duration_s * 1_000_000_000.0;
-        let reconstructed_duration_ns = (transition_duration_ns.is_finite()
-            && transition_duration_ns > 0.0
-            && transition_duration_ns <= u128::MAX as f64)
-            .then(|| transition_duration_ns.round() as u128);
+        let accepted_duration_s = duration_ns as f64 / 1_000_000_000.0;
         if support_start_ns != self.working.accepted_until_ns
             || support_end_ns > self.authority.support_end_ns
-            || reconstructed_duration_ns != Some(duration_ns)
+            || transition_duration_s.to_bits() != accepted_duration_s.to_bits()
         {
             return Err(DirectWb14ParentIntervalErrorV1::ChildSupport);
         }
@@ -1837,6 +1833,20 @@ mod tests {
         ending
             .validate()
             .expect("endpoint-subtraction receipt replay");
+
+        let altered = child_inputs(&beginning, 1_799.900_000_000_25, 0.0);
+        assert_eq!(
+            beginning.accept_child_transitions(
+                0,
+                start,
+                start + 1_800_000_000_000,
+                beginning.working().receipt_chain_sha256,
+                1_800.0,
+                &[first, altered],
+            ),
+            Err(DirectWb14ParentIntervalErrorV1::ChildSupport),
+            "sub-nanosecond transition alteration must not round into exact support",
+        );
     }
 
     #[test]
