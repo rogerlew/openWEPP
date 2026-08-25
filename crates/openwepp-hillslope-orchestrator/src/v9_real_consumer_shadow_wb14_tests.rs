@@ -333,6 +333,7 @@ fn exercise_complete_wb14_cadence(
                 stage3_forcing_by_lane: &stage3_forcing_by_lane,
                 snow_surface_forcing_by_destination: &covered_only_snow_surface_forcing,
                 stage3_beginning_by_lane: preliminary_stage3_beginning_by_lane.clone(),
+                pending_terminal_parcels: BTreeMap::new(),
                 day_index: 0,
                 interval_index: 0,
                 finalize_wb14_parent_interval: true,
@@ -479,6 +480,7 @@ fn exercise_complete_wb14_cadence(
             stage3_forcing_by_lane: &stage3_forcing_by_lane,
             snow_surface_forcing_by_destination: &snow_surface_forcing_by_destination,
             stage3_beginning_by_lane: preliminary_stage3_beginning_by_lane.clone(),
+            pending_terminal_parcels: BTreeMap::new(),
             day_index: 0,
             interval_index: 0,
             finalize_wb14_parent_interval: true,
@@ -864,6 +866,7 @@ fn exercise_complete_wb14_cadence(
                 0,
                 digest(3),
                 stage3_beginning_by_lane.clone(),
+                BTreeMap::new(),
                 Some(injection),
             )
             .is_err()
@@ -896,6 +899,7 @@ fn exercise_complete_wb14_cadence(
             0,
             digest(3),
             stage3_beginning_by_lane.clone(),
+            BTreeMap::new(),
             None,
         )
         .expect("synchronized covered parent cadence");
@@ -1214,6 +1218,7 @@ fn exercise_complete_wb14_cadence(
                 stage3_forcing_by_lane: &stage3_forcing_by_lane,
                 snow_surface_forcing_by_destination: &open_only_forcing,
                 stage3_beginning_by_lane: BTreeMap::from([(1, stage3_beginning.clone())]),
+                pending_terminal_parcels: BTreeMap::new(),
                 day_index: 0,
                 interval_index: 0,
                 finalize_wb14_parent_interval: true,
@@ -1295,6 +1300,7 @@ fn exercise_complete_wb14_cadence(
             stage3_forcing_by_lane: &stage3_forcing_by_lane,
             snow_surface_forcing_by_destination: &snow_surface_forcing_by_destination,
             stage3_beginning_by_lane: BTreeMap::from([(1, changed_stage3.clone())]),
+            pending_terminal_parcels: BTreeMap::new(),
             day_index: 0,
             interval_index: 0,
             finalize_wb14_parent_interval: true,
@@ -1374,6 +1380,7 @@ fn exercise_complete_wb14_cadence(
                     )
                     .expect("rollback Stage-3 beginning"),
                 )]),
+                pending_terminal_parcels: BTreeMap::new(),
                 day_index: 0,
                 interval_index: 0,
                 finalize_wb14_parent_interval: true,

@@ -154,7 +154,7 @@ impl Wb11HydrologyKernel {
     }
 
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-    pub(super) fn solve_terminal_enthalpy_event<F, J>(
+    pub(super) fn solve_terminal_enthalpy_event<F, G, J>(
         _phase_class: HillslopeKernelPhaseClass,
         hour_index: usize,
         hour_offset_seconds: f64,
@@ -162,6 +162,7 @@ impl Wb11HydrologyKernel {
         start: TerminalState,
         initial_joint: J,
         mut flux_integral: F,
+        mut join_hydrology_ending: G,
     ) -> Result<DirectSnowTerminalEventResult, DirectSnowStage3EvaluationError>
     where
         F: FnMut(
@@ -172,6 +173,7 @@ impl Wb11HydrologyKernel {
             CoveredTerminalTrialRoleV1,
             u32,
         ) -> Result<(TerminalFluxIntegral, J), DirectSnowStage3EvaluationError>,
+        G: FnMut(TerminalState, J) -> Result<J, DirectSnowStage3EvaluationError>,
         J: Clone,
     {
         if !requested_seconds.is_finite()
@@ -223,7 +225,7 @@ impl Wb11HydrologyKernel {
             } else {
                 CoveredTerminalTrialRoleV1::Retry
             };
-            let (full_flux, _full_joint) = flux_integral(
+            let (full_flux, full_carrier_joint) = flux_integral(
                 state,
                 &accepted_joint,
                 elapsed,
@@ -233,6 +235,7 @@ impl Wb11HydrologyKernel {
             )?;
             attempt_ordinal = next_attempt(attempt_ordinal)?;
             let full = Self::terminal_transition(state, full_flux);
+            let _full_joint = join_hydrology_ending(full.state, full_carrier_joint)?;
             let half_dt = 0.5 * dt;
             let (first_flux, first_joint) = flux_integral(
                 state,
@@ -244,6 +247,7 @@ impl Wb11HydrologyKernel {
             )?;
             attempt_ordinal = next_attempt(attempt_ordinal)?;
             let first = Self::terminal_transition(state, first_flux);
+            let first_joint = join_hydrology_ending(first.state, first_joint)?;
             let (second_flux, second_joint) = flux_integral(
                 first.state,
                 &first_joint,
@@ -253,6 +257,7 @@ impl Wb11HydrologyKernel {
                 attempt_ordinal,
             )?;
             let second = Self::terminal_transition(first.state, second_flux);
+            let second_joint = join_hydrology_ending(second.state, second_joint)?;
             attempt_ordinal = next_attempt(attempt_ordinal)?;
             let refined = TerminalTrial {
                 state: second.state,
@@ -513,6 +518,7 @@ mod tests {
                     (),
                 ))
             },
+            |_, joint| Ok(joint),
         )
         .unwrap()
     }
@@ -568,6 +574,7 @@ mod tests {
                     (),
                 ))
             },
+            |_, joint| Ok(joint),
         )
         .unwrap();
         assert!(event.event_occurred);
@@ -624,6 +631,7 @@ mod tests {
                     joint + 1,
                 ))
             },
+            |_, joint| Ok(joint),
         )
         .unwrap();
         assert!(!result.event_occurred);

@@ -419,6 +419,8 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     last_physical_outcome_ledgers:
         Option<BTreeMap<u32, physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1>>,
     last_terminal_events: Option<BTreeMap<u32, DirectSnowTerminalEventResult>>,
+    pending_terminal_parcels:
+        BTreeMap<Digest32, crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcel>,
     last_wb14_child_receipt_set_sha256: Option<String>,
     last_wb14_parent_receipt_set_sha256: Option<String>,
     last_wb14_child_replay_bytes: Option<Vec<u8>>,
@@ -432,6 +434,8 @@ pub struct DirectV11SnowCoveredStackInputs<'a> {
     pub snow_surface_forcing_by_destination:
         &'a BTreeMap<(OfeId, TileId), SealedStage3TileBoundaryForcingV1>,
     pub stage3_beginning_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    pub pending_terminal_parcels:
+        BTreeMap<Digest32, crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcel>,
     pub day_index: usize,
     pub interval_index: usize,
     pub finalize_wb14_parent_interval: bool,
@@ -452,6 +456,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             stage3_forcing_by_lane: inputs.stage3_forcing_by_lane,
             snow_surface_forcing_by_destination: inputs.snow_surface_forcing_by_destination,
             stage3_beginning_by_lane: inputs.stage3_beginning_by_lane,
+            pending_terminal_parcels: inputs.pending_terminal_parcels,
             day_index: inputs.day_index,
             interval_index: inputs.interval_index,
             finalize_wb14_parent_interval: inputs.finalize_wb14_parent_interval,

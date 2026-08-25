@@ -59,7 +59,9 @@ impl Wb11HydrologyKernel {
             terminal_request,
             state.detached_retained_liquid_kg_m2,
             boundary,
-            terminal_trial_context,
+            terminal_trial_context.map(|(support, joint, provider)| {
+                (lane_id, support, joint, provider)
+            }),
         )?;
         Self::validate_stage3_shadow_summary(
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,

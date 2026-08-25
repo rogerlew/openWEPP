@@ -127,6 +127,7 @@ impl Wb11HydrologyKernel {
         mut terminal_detached_liquid_kg_m2: f64,
         boundary: Option<Stage3SnowSurfaceBoundaryReceiptV1>,
         mut terminal_trial_context: Option<(
+            u32,
             TimeSupport,
             CoveredTerminalJointTrialStateV1,
             &mut CoveredTerminalTrialProviderV1<'_>,
@@ -224,7 +225,10 @@ impl Wb11HydrologyKernel {
                         let remaining_seconds = support_seconds - elapsed_seconds;
                         let initial_joint = terminal_trial_context
                             .as_ref()
-                            .map(|(_, joint, _)| joint.clone());
+                            .map(|(_, _, joint, _)| joint.clone());
+                        let terminal_lane_id = terminal_trial_context
+                            .as_ref()
+                            .map(|(lane_id, _, _, _)| *lane_id);
                         let mut terminal = Self::solve_terminal_enthalpy_event(
                             phase_class,
                             hour_index,
@@ -252,7 +256,7 @@ impl Wb11HydrologyKernel {
                                 } else {
                                     0.0
                                 };
-                                let trial_transition = if let Some((base_support, _, provider)) =
+                                let trial_transition = if let Some((lane_id, base_support, _, provider)) =
                                     terminal_trial_context.as_mut()
                                 {
                                     let start_offset_ns = seconds_to_exact_ns(
@@ -319,6 +323,7 @@ impl Wb11HydrologyKernel {
                                         )
                                     })?;
                                     let receipt = (**provider)(CoveredTerminalTrialRequestV1 {
+                                        lane_id: *lane_id,
                                         support: trial_support,
                                         role,
                                         attempt_ordinal,
@@ -407,6 +412,23 @@ impl Wb11HydrologyKernel {
                                     |value| Some(value.ending_joint),
                                 );
                                 Ok((flux, ending_joint))
+                            },
+                            |state, joint| {
+                                joint
+                                    .map(|value| {
+                                        let lane_id = terminal_lane_id.ok_or(
+                                            DirectSnowStage3EvaluationError::TerminalCustody(
+                                                "terminal joint lane identity",
+                                            ),
+                                        )?;
+                                        value.with_terminal_hydrology_state(
+                                            lane_id,
+                                            state.ice_kg_m2,
+                                            state.liquid_kg_m2,
+                                            state.cold_content_j_m2,
+                                        )
+                                    })
+                                    .transpose()
                             },
                         )?;
                         terminal.entry_solid_precipitation_kg_m2 =

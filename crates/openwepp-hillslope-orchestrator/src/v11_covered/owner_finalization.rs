@@ -2,6 +2,60 @@
 
 use super::*;
 
+fn validate_terminal_custody_lane_sets(
+    persistent: &BTreeSet<u32>,
+    terminal: &BTreeSet<u32>,
+    events: &BTreeSet<u32>,
+    ledgers: &BTreeSet<u32>,
+) -> Result<(), DirectV11RealConsumerError> {
+    if terminal != events
+        || !terminal.is_disjoint(persistent)
+        || !terminal.iter().all(|lane_id| ledgers.contains(lane_id))
+    {
+        return Err(DirectV11RealConsumerError::Identity(
+            "terminal snow-soil/event/ledger required-lane set",
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod terminal_custody_lane_set_tests {
+    use super::*;
+
+    #[test]
+    fn terminal_receipts_require_exact_event_set_and_ledgers() {
+        let persistent = BTreeSet::from([1]);
+        let terminal = BTreeSet::from([2]);
+        let events = BTreeSet::from([2]);
+        let ledgers = BTreeSet::from([1, 2]);
+        validate_terminal_custody_lane_sets(&persistent, &terminal, &events, &ledgers)
+            .expect("exact terminal custody set");
+    }
+
+    #[test]
+    fn terminal_receipt_extra_lane_is_rejected() {
+        assert!(validate_terminal_custody_lane_sets(
+            &BTreeSet::from([1]),
+            &BTreeSet::from([2, 3]),
+            &BTreeSet::from([2]),
+            &BTreeSet::from([1, 2, 3]),
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn terminal_lane_without_physical_ledger_is_rejected() {
+        assert!(validate_terminal_custody_lane_sets(
+            &BTreeSet::from([1]),
+            &BTreeSet::from([2]),
+            &BTreeSet::from([2]),
+            &BTreeSet::from([1]),
+        )
+        .is_err());
+    }
+}
+
 pub(crate) fn soil_thermal_owner_with_top_boundary_credit_join_sha256(
     ending_soil_owner_sha256: Digest32,
     accepted_credit_set_sha256: &openwepp_land_surface_energy::Sha256Digest,
@@ -33,6 +87,8 @@ pub struct CoveredParentOwnerJoinReceiptV1 {
     pub final_lane_boundary_receipt_set_sha256: Digest32,
     pub component_carrier_receipt_set_sha256: Digest32,
     pub snow_soil_heat_receipt_set_sha256: Digest32,
+    pub terminal_snow_soil_heat_receipt_set_sha256: Digest32,
+    pub physical_outcome_ledger_set_sha256: Digest32,
     pub wb14_child_receipt_set_sha256: Digest32,
     pub wb14_parent_receipt_set_sha256: Option<Digest32>,
     pub stage3_physical_state_sha256: Digest32,
@@ -48,8 +104,17 @@ pub struct CoveredParentOwnerJoinReceiptV1 {
 
 pub(crate) struct CoveredPhysicalCustodyJoinInputs<'a> {
     pub snow_soil_heat_receipts: &'a BTreeMap<u32, SnowSoilHeatReceiptV1>,
+    pub terminal_snow_soil_heat_receipts:
+        &'a BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1>,
+    pub terminal_events: &'a BTreeMap<u32, DirectSnowTerminalEventResult>,
+    pub physical_outcome_ledgers:
+        &'a BTreeMap<u32, physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1>,
     pub beginning_stage3_states: &'a BTreeMap<u32, DirectSnowStage3PersistentState>,
     pub ending_stage3_states: &'a BTreeMap<u32, DirectSnowStage3PersistentState>,
+    pub pending_terminal_parcels: &'a BTreeMap<
+        Digest32,
+        crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcel,
+    >,
 }
 
 impl CoveredParentOwnerJoinReceiptV1 {
@@ -153,7 +218,9 @@ impl CoveredParentOwnerJoinReceiptV1 {
             != expected.into_iter().collect::<BTreeSet<_>>()
             || final_boundaries.is_empty()
             || final_lane_boundaries.is_empty()
-            || physical_custody.snow_soil_heat_receipts.is_empty()
+            || (physical_custody.snow_soil_heat_receipts.is_empty()
+                && physical_custody.terminal_snow_soil_heat_receipts.is_empty())
+            || physical_custody.physical_outcome_ledgers.is_empty()
             || component_carriers.keys().collect::<BTreeSet<_>>()
                 != final_boundaries
                     .iter()
@@ -267,8 +334,9 @@ impl CoveredParentOwnerJoinReceiptV1 {
             };
             receipt.validate(boundary)?;
         }
-        let expected_snow_bytes = canonical_stage3_snow_owner_bytes_v11_with_receipts(
+        let expected_snow_bytes = canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
             physical_custody.ending_stage3_states,
+            physical_custody.pending_terminal_parcels,
             final_lane_boundaries,
             final_boundaries,
         )?;
@@ -325,6 +393,36 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 "snow-soil receipt active-lane set",
             ));
         }
+        let required_terminal_lanes = physical_custody
+            .terminal_events
+            .keys()
+            .copied()
+            .collect::<BTreeSet<_>>();
+        if physical_custody
+            .terminal_events
+            .values()
+            .any(|event| !event.event_occurred || event.unevaluated_seconds.abs() > 1.0e-6)
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "terminal event exact endpoint custody",
+            ));
+        }
+        let terminal_receipt_lanes = physical_custody
+            .terminal_snow_soil_heat_receipts
+            .keys()
+            .copied()
+            .collect::<BTreeSet<_>>();
+        let ledger_lanes = physical_custody
+            .physical_outcome_ledgers
+            .keys()
+            .copied()
+            .collect::<BTreeSet<_>>();
+        validate_terminal_custody_lane_sets(
+            &required_snow_soil_lanes,
+            &terminal_receipt_lanes,
+            &required_terminal_lanes,
+            &ledger_lanes,
+        )?;
         let mut snow_soil_fields =
             Vec::with_capacity(physical_custody.snow_soil_heat_receipts.len());
         for (lane_id, receipt) in physical_custody.snow_soil_heat_receipts {
@@ -345,6 +443,38 @@ impl CoveredParentOwnerJoinReceiptV1 {
             &snow_soil_fields,
         )
         .map_err(|_| DirectV11RealConsumerError::Identity("snow-soil receipt set"))?;
+        let mut terminal_snow_soil_fields = Vec::with_capacity(
+            physical_custody.terminal_snow_soil_heat_receipts.len(),
+        );
+        for (lane_id, receipt) in physical_custody.terminal_snow_soil_heat_receipts {
+            receipt.validate().map_err(|_| {
+                DirectV11RealConsumerError::Identity("terminal snow-soil receipt")
+            })?;
+            if *lane_id != receipt.lane_id {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "terminal snow-soil parent receipt lane key",
+                ));
+            }
+            terminal_snow_soil_fields.push(openwepp_coupled_time::FramedField {
+                tag: "terminal_snow_soil_heat_receipt",
+                value: receipt.receipt_sha256.as_bytes(),
+            });
+        }
+        let terminal_snow_soil_heat_receipt_set_sha256 =
+            openwepp_coupled_time::framed_sha256(
+                "covered-terminal-snow-soil-heat-receipt-set-v1",
+                &terminal_snow_soil_fields,
+            )
+            .map_err(|_| {
+                DirectV11RealConsumerError::Identity("terminal snow-soil receipt set")
+            })?;
+        let physical_outcome_ledger_set_sha256 =
+            physical_outcome_ledger::ledger_set_digest(physical_custody.physical_outcome_ledgers);
+        if physical_outcome_ledger_set_sha256 == Digest32::zero() {
+            return Err(DirectV11RealConsumerError::Identity(
+                "physical outcome ledger set",
+            ));
+        }
         let lane_fields = final_lane_boundaries
             .values()
             .map(|receipt| openwepp_coupled_time::FramedField {
@@ -378,6 +508,8 @@ impl CoveredParentOwnerJoinReceiptV1 {
             final_lane_boundary_receipt_set_sha256,
             component_carrier_receipt_set_sha256,
             snow_soil_heat_receipt_set_sha256,
+            terminal_snow_soil_heat_receipt_set_sha256,
+            physical_outcome_ledger_set_sha256,
             wb14_child_receipt_set_sha256,
             wb14_parent_receipt_set_sha256,
             stage3_physical_state_sha256,
@@ -451,6 +583,8 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 digest_field("final_lane_boundary_set", self.final_lane_boundary_receipt_set_sha256.as_bytes()),
                 digest_field("component_carrier_set", self.component_carrier_receipt_set_sha256.as_bytes()),
                 digest_field("snow_soil_heat_receipt_set", self.snow_soil_heat_receipt_set_sha256.as_bytes()),
+                digest_field("terminal_snow_soil_heat_receipt_set", self.terminal_snow_soil_heat_receipt_set_sha256.as_bytes()),
+                digest_field("physical_outcome_ledger_set", self.physical_outcome_ledger_set_sha256.as_bytes()),
                 digest_field("wb14_child_receipt_set", self.wb14_child_receipt_set_sha256.as_bytes()),
                 digest_field("wb14_parent_receipt_set", wb14_parent.as_bytes()),
                 digest_field("stage3_physical_state", self.stage3_physical_state_sha256.as_bytes()),
@@ -506,32 +640,72 @@ pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_receipts(
     lane_receipts: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
     receipts: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
 ) -> Result<Vec<u8>, DirectV11RealConsumerError> {
-    #[derive(Serialize)]
-    struct CanonicalSnowOwner<'a> {
-        schema: &'static str,
-        lanes: Vec<(&'a u32, &'a DirectSnowStage3PersistentState)>,
-        final_lane_boundary_receipts: BTreeMap<u32, String>,
-        final_boundary_receipts: BTreeMap<String, String>,
+    canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
+        states,
+        &BTreeMap::new(),
+        lane_receipts,
+        receipts,
+    )
+}
+
+pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
+    states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    pending_terminal_parcels: &BTreeMap<
+        Digest32,
+        crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcel,
+    >,
+    lane_receipts: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
+    receipts: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
+) -> Result<Vec<u8>, DirectV11RealConsumerError> {
+    if pending_terminal_parcels.is_empty() {
+        #[derive(Serialize)]
+        struct CanonicalSnowOwner<'a> {
+            schema: &'static str,
+            lanes: Vec<(&'a u32, &'a DirectSnowStage3PersistentState)>,
+            final_lane_boundary_receipts: BTreeMap<u32, String>,
+            final_boundary_receipts: BTreeMap<String, String>,
+        }
+        return serde_json::to_vec(&CanonicalSnowOwner {
+            schema: "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V3",
+            lanes: states.iter().collect(),
+            final_lane_boundary_receipts: lane_receipts
+                .iter()
+                .map(|(lane_id, receipt)| (*lane_id, digest32_hex(receipt.receipt_sha256)))
+                .collect(),
+            final_boundary_receipts: receipts
+                .iter()
+                .map(|(destination, receipt)| {
+                    (
+                        format!("{}\0{}", destination.0.as_str(), destination.1.as_str()),
+                        digest32_hex(receipt.source_digests().3),
+                    )
+                })
+                .collect(),
+        })
+        .map_err(|_| DirectV11RealConsumerError::Identity("canonical Stage-3 snow bytes"));
     }
     let final_boundary_receipts = receipts
         .iter()
         .map(|(destination, receipt)| {
             (
-                format!("{}\0{}", destination.0.as_str(), destination.1.as_str()),
-                digest32_hex(receipt.source_digests().3),
+                (
+                    destination.0.as_str().to_owned(),
+                    destination.1.as_str().to_owned(),
+                ),
+                receipt.source_digests().3,
             )
         })
         .collect();
     let final_lane_boundary_receipts = lane_receipts
         .iter()
-        .map(|(lane_id, receipt)| (*lane_id, digest32_hex(receipt.receipt_sha256)))
+        .map(|(lane_id, receipt)| (*lane_id, receipt.receipt_sha256))
         .collect();
-    serde_json::to_vec(&CanonicalSnowOwner {
-        schema: "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V3",
-        lanes: states.iter().collect(),
-        final_lane_boundary_receipts,
-        final_boundary_receipts,
-    })
+    crate::snow_owner_v4::canonical_stage3_snow_owner_v4_bytes(
+        states,
+        pending_terminal_parcels,
+        &final_lane_boundary_receipts,
+        &final_boundary_receipts,
+    )
     .map_err(|_| DirectV11RealConsumerError::Identity("canonical Stage-3 snow bytes"))
 }
 
@@ -1567,6 +1741,8 @@ mod owner_join_tests {
             final_lane_boundary_receipt_set_sha256: Digest32::from_bytes([18; 32]),
             component_carrier_receipt_set_sha256: Digest32::from_bytes([2; 32]),
             snow_soil_heat_receipt_set_sha256: Digest32::from_bytes([19; 32]),
+            terminal_snow_soil_heat_receipt_set_sha256: Digest32::from_bytes([30; 32]),
+            physical_outcome_ledger_set_sha256: Digest32::from_bytes([31; 32]),
             wb14_child_receipt_set_sha256: Digest32::from_bytes([29; 32]),
             wb14_parent_receipt_set_sha256: None,
             stage3_physical_state_sha256: Digest32::from_bytes([3; 32]),

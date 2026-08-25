@@ -25,6 +25,22 @@ fn canonical_stage3_snow_owner_bytes(
     .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("canonical Stage-3 snow bytes"))
 }
 
+fn canonical_stage3_snow_owner_bytes_with_pending(
+    states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    pending_terminal_parcels: &BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
+) -> Result<Vec<u8>, DirectSnowStage3V11AttachmentError> {
+    if pending_terminal_parcels.is_empty() {
+        return canonical_stage3_snow_owner_bytes(states);
+    }
+    crate::snow_owner_v4::canonical_stage3_snow_owner_v4_bytes(
+        states,
+        pending_terminal_parcels,
+        &BTreeMap::new(),
+        &BTreeMap::new(),
+    )
+    .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("canonical Stage-3 snow bytes"))
+}
+
 fn parse_lower_hex_digest(value: &str) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
     if value.len() != 64
         || value

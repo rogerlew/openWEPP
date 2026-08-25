@@ -232,6 +232,7 @@ pub(crate) enum CoveredTerminalExecutionMode {
 /// beginning at the supplied trial state; it is never a scaled parent receipt.
 #[derive(Clone, Debug)]
 pub(crate) struct CoveredTerminalTrialRequestV1 {
+    pub lane_id: u32,
     pub support: TimeSupport,
     pub role: CoveredTerminalTrialRoleV1,
     pub attempt_ordinal: u32,
@@ -289,6 +290,47 @@ impl CoveredTerminalJointTrialStateV1 {
     }
     pub(crate) const fn receipt_sha256(&self) -> Digest32 {
         self.receipt_sha256
+    }
+
+    /// Seal the hydrology-owned aggregate snow candidate after one carrier
+    /// trial. The carrier may evolve the other six unpublished candidates,
+    /// but it cannot claim an ending snow owner before the terminal operator
+    /// has applied the accepted flux integral.
+    pub(super) fn with_terminal_hydrology_state(
+        &self,
+        lane_id: u32,
+        ice_kg_m2: f64,
+        liquid_kg_m2: f64,
+        cold_content_j_m2: f64,
+    ) -> Result<Self, DirectSnowStage3EvaluationError> {
+        if [ice_kg_m2, liquid_kg_m2, cold_content_j_m2]
+            .iter()
+            .any(|value| !value.is_finite() || *value < 0.0)
+        {
+            return Err(Wb11HydrologyKernel::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.terminal_joint_trial_hydrology_state",
+                1.0,
+                Some(0.0),
+                Some(0.0),
+            )
+            .into());
+        }
+        let prior_snow = self.owner_bytes.get("snow").ok_or_else(|| {
+            DirectSnowStage3EvaluationError::TerminalCustody(
+                "terminal joint missing snow owner",
+            )
+        })?;
+        let mut snow = Vec::with_capacity(100);
+        snow.extend_from_slice(b"OPENWEPP_STAGE3_TERMINAL_TRIAL_SNOW_V1\0");
+        snow.extend_from_slice(&lane_id.to_be_bytes());
+        snow.extend_from_slice(openwepp_coupled_time::digest_bytes(prior_snow).as_bytes());
+        snow.extend_from_slice(&ice_kg_m2.to_bits().to_be_bytes());
+        snow.extend_from_slice(&liquid_kg_m2.to_bits().to_be_bytes());
+        snow.extend_from_slice(&cold_content_j_m2.to_bits().to_be_bytes());
+        let mut owners = self.owner_bytes.clone();
+        owners.insert("snow".to_owned(), snow);
+        Self::try_new(owners)
     }
 }
 

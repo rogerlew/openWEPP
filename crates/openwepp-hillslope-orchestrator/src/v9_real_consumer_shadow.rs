@@ -98,8 +98,10 @@ use crate::{
 mod canonical_owner_bytes;
 #[path = "v11_covered/mod.rs"]
 mod v11_covered;
+pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
 pub(crate) use v11_covered::physical_outcome_ledger::ledger_set_digest as stage3_physical_outcome_ledger_set_digest;
 
+pub(crate) use v11_covered::CoveredCarrierEphemeralCandidatesV1;
 pub(crate) use v11_covered::CoveredPhysicalCustodyJoinInputs;
 use v11_covered::*;
 pub use v11_covered::{

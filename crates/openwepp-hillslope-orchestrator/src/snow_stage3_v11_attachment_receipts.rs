@@ -11,12 +11,14 @@ pub struct DirectSnowStage3V11TerminalReceipt {
 pub struct DirectSnowStage3V11TerminalParcel {
     pub support: TimeSupport,
     pub source_lane_id: u32,
-    pub event_ordinal: u64,
-    pub event_receipt_sha256: Digest32,
-    pub terminal_snow_state_sha256: Digest32,
+    pub parent_transaction_id: Digest32,
+    pub event_ordinal: u32,
+    pub terminal_event_proposal_core_id: Digest32,
+    pub event_result_digest: Digest32,
     pub receiver_topology_sha256: Digest32,
     pub destination_ofe_id: String,
     pub destination_tile_id: String,
+    pub destination_fraction: f64,
     pub mass_kg_m2_tile_ground: f64,
     pub temperature_k: f64,
     pub specific_liquid_enthalpy_j_kg: f64,
@@ -44,7 +46,6 @@ pub struct DirectSnowStage3V11ParentReceipt {
     pub ending_coupled_accepted_until_ns: ModelTimeNs,
     pub ending_next_parent_sequence: u128,
     pub ending_event_ordinal: u64,
-    pub ending_terminal_parcels: BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
     pub ending_v11_parent_state: V11ParentTransaction,
     pub ending_last_v11_parent_candidate: Option<V11ParentCandidate>,
 }
@@ -56,6 +57,43 @@ impl DirectSnowStage3V11ParentReceipt {
     ) -> Result<(), DirectSnowStage3V11AttachmentError> {
         for subslab in &self.coupled_subslabs {
             subslab.validate()?;
+        }
+        let terminal_subslabs = self
+            .coupled_subslabs
+            .iter()
+            .filter(|subslab| !subslab.terminal_events.is_empty())
+            .collect::<Vec<_>>();
+        if terminal_subslabs.len() != self.terminal_event_groups.len() {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "terminal group/subslab cardinality",
+            ));
+        }
+        let mut accepted_ids = BTreeSet::new();
+        for (subslab, group) in terminal_subslabs
+            .into_iter()
+            .zip(&self.terminal_event_groups)
+        {
+            let accepted = group.accepted_event_receipt.as_ref().ok_or(
+                DirectSnowStage3V11AttachmentError::Identity(
+                    "terminal group accepted-event receipt",
+                ),
+            )?;
+            if group.accepted_group_receipt_sha256.is_none()
+                || accepted.tick() != group.tick
+                || u64::from(accepted.ordinal()) != group.ordinal
+                || accepted.event_context_digest() != group.receipt_sha256
+                || !accepted_ids.insert(accepted.id())
+                || group.candidates.len() != subslab.terminal_events.len()
+                || group.candidates.iter().any(|candidate| {
+                    subslab.terminal_events.get(&candidate.lane_id) != Some(&candidate.event)
+                        || canonical_terminal_event_result_digest(&candidate.event).ok()
+                            != Some(candidate.event_result_digest)
+                })
+            {
+                return Err(DirectSnowStage3V11AttachmentError::Identity(
+                    "terminal group accepted-event reconstruction",
+                ));
+            }
         }
         for pair in self.coupled_subslabs.windows(2) {
             if pair[0].support.end_ns() != pair[1].support.start_ns()
@@ -112,7 +150,10 @@ impl DirectSnowStage3V11ParentReceipt {
             })?;
         owner_bytes.insert(
             "snow".to_owned(),
-            canonical_stage3_snow_owner_bytes(&ending.stage3_by_lane)?,
+            canonical_stage3_snow_owner_bytes_with_pending(
+                &ending.stage3_by_lane,
+                &ending.terminal_parcels,
+            )?,
         );
         if stage3_digests != self.ending_stage3_state_digests
             || owner_bytes != self.complete_owner_bytes
@@ -121,7 +162,6 @@ impl DirectSnowStage3V11ParentReceipt {
             || ending.coupled_clock.accepted_until() != self.ending_coupled_accepted_until_ns
             || ending.next_parent_sequence != self.ending_next_parent_sequence
             || ending.accepted_event_ordinal != self.ending_event_ordinal
-            || ending.terminal_parcels != self.ending_terminal_parcels
             || ending.v11_parent_state != self.ending_v11_parent_state
             || ending.last_v11_parent_candidate != self.ending_last_v11_parent_candidate
         {

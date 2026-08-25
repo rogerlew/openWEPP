@@ -1703,8 +1703,9 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                 DirectV11RealConsumerError::from_stage3_physical_custody(&error)
             })?;
         }
-        let ending_snow_owner_bytes = canonical_stage3_snow_owner_bytes_v11_with_receipts(
+        let ending_snow_owner_bytes = canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
             &ending_stage3,
+            &self.pending_terminal_parcels,
             &final_lane_boundary_receipts,
             &final_boundary_receipts,
         )?;

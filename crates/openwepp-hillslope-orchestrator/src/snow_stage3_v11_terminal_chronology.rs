@@ -7,9 +7,38 @@ pub struct Stage3V11ActualTerminalCandidateV1 {
     pub tick: ModelTimeNs,
     pub support: TimeSupport,
     pub event: DirectSnowTerminalEventResult,
+    pub event_result_digest: Digest32,
     pub terminal_state_sha256: Digest32,
     pub shortened_forcing_sha256: Digest32,
     pub shortened_owner_set_sha256: Digest32,
+}
+
+pub(crate) fn canonical_terminal_event_result_digest(
+    event: &DirectSnowTerminalEventResult,
+) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
+    let mut bytes = b"OPENWEPP_STAGE3_TERMINAL_EVENT_RESULT_V1\0".to_vec();
+    bytes.push(0); // EnthalpyEventV1
+    bytes.push(u8::from(event.event_occurred));
+    bytes.extend_from_slice(&u64::try_from(event.hour_index).map_err(|_| DirectSnowStage3V11AttachmentError::Identity("terminal event hour width"))?.to_be_bytes());
+    macro_rules! floats { ($($field:ident),+ $(,)?) => { $(bytes.extend_from_slice(&event.$field.to_bits().to_be_bytes());)+ }; }
+    floats!(terminal_entry_offset_seconds, requested_seconds, entry_solid_precipitation_kg_m2,
+        hour_offset_seconds, evaluated_seconds, unevaluated_seconds, start_ice_kg_m2,
+        start_liquid_kg_m2, start_cold_content_j_m2, end_ice_kg_m2, terminal_liquid_kg_m2,
+        end_cold_content_j_m2, complete_energy_j_m2, shortwave_energy_j_m2, longwave_energy_j_m2,
+        sensible_energy_j_m2, latent_energy_j_m2, advected_energy_j_m2, snow_soil_heat_energy_j_m2,
+        external_liquid_kg_m2, cold_energy_change_j_m2, refrozen_kg_m2, deposition_kg_m2,
+        sublimation_kg_m2, melt_kg_m2, terminal_unallocated_energy_j_m2,
+        solid_mass_closure_residual_kg_m2, liquid_mass_closure_residual_kg_m2,
+        energy_closure_residual_j_m2, event_bracket_width_seconds, event_bracket_lower_seconds,
+        event_bracket_upper_seconds, event_bracket_lower_solid_kg_m2, event_bracket_upper_solid_kg_m2,
+        lte_coarse_ice_kg_m2, lte_fine_ice_kg_m2, lte_coarse_liquid_kg_m2,
+        lte_fine_liquid_kg_m2, lte_coarse_cold_content_j_m2, lte_fine_cold_content_j_m2,
+        lte_coarse_complete_energy_j_m2, lte_fine_complete_energy_j_m2,
+        lte_coarse_unallocated_energy_j_m2, lte_fine_unallocated_energy_j_m2);
+    bytes.extend_from_slice(&event.accepted_trials.to_be_bytes());
+    bytes.extend_from_slice(&event.rejected_trials.to_be_bytes());
+    bytes.extend_from_slice(&event.maximum_scaled_error.to_bits().to_be_bytes());
+    Ok(digest_bytes(&bytes))
 }
 
 impl Stage3V11ActualTerminalCandidateV1 {
@@ -28,6 +57,7 @@ impl Stage3V11ActualTerminalCandidateV1 {
             || !self.event.evaluated_seconds.is_finite()
             || self.event.evaluated_seconds < 0.0
             || self.event.unevaluated_seconds < 0.0
+            || canonical_terminal_event_result_digest(&self.event)? != self.event_result_digest
         {
             return Err(DirectSnowStage3V11AttachmentError::Terminal(
                 "actual terminal candidate identity/support",
@@ -60,7 +90,11 @@ pub struct Stage3V11TerminalEventGroupV1 {
     pub pre_active_lanes: BTreeSet<u32>,
     pub post_active_lanes: BTreeSet<u32>,
     pub candidates: Vec<Stage3V11ActualTerminalCandidateV1>,
+    pub discovery_receipt_sha256: Digest32,
+    pub proposal_core_sha256: Option<Digest32>,
     pub receipt_sha256: Digest32,
+    pub accepted_event_receipt: Option<AcceptedEventReceiptV1>,
+    pub accepted_group_receipt_sha256: Option<Digest32>,
 }
 
 fn terminal_event_group_digest(
@@ -88,6 +122,7 @@ fn terminal_event_group_digest(
     }
     for candidate in candidates {
         bytes.extend_from_slice(&candidate.lane_id.to_be_bytes());
+        bytes.extend_from_slice(candidate.event_result_digest.as_bytes());
         bytes.extend_from_slice(candidate.terminal_state_sha256.as_bytes());
         bytes.extend_from_slice(candidate.shortened_forcing_sha256.as_bytes());
         bytes.extend_from_slice(candidate.shortened_owner_set_sha256.as_bytes());
@@ -162,6 +197,10 @@ pub fn select_common_earliest_actual_terminal_group_v1(
         pre_active_lanes: active_lanes.clone(),
         post_active_lanes,
         candidates: selected,
+        discovery_receipt_sha256: receipt_sha256,
+        proposal_core_sha256: None,
         receipt_sha256,
+        accepted_event_receipt: None,
+        accepted_group_receipt_sha256: None,
     }))
 }

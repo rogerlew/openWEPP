@@ -40,6 +40,18 @@ impl TerminalSnowSoilHeatReceiptV1 {
         Ok(self)
     }
 
+    pub(crate) fn validate(&self) -> Result<(), Stage3PhysicalOutcomeLedgerError> {
+        let mut unsealed = self.clone();
+        unsealed.receipt_sha256 = Digest32::zero();
+        let expected = unsealed.seal()?;
+        if &expected != self {
+            return Err(Stage3PhysicalOutcomeLedgerError::Identity(
+                "terminal snow-soil receipt seal",
+            ));
+        }
+        Ok(())
+    }
+
     fn digest(&self) -> Digest32 {
         let mut bytes = b"OPENWEPP_TERMINAL_SNOW_SOIL_HEAT_RECEIPT_V1".to_vec();
         bytes.extend_from_slice(&self.support.start_ns().get().to_le_bytes());
