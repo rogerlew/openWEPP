@@ -421,11 +421,32 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     last_terminal_events: Option<BTreeMap<u32, DirectSnowTerminalEventResult>>,
     pending_terminal_parcels:
         BTreeMap<Digest32, crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcel>,
+    precomputed_terminal_accepted: Option<PrecomputedTerminalAcceptedEndpointV1>,
     last_wb14_child_receipt_set_sha256: Option<String>,
     last_wb14_parent_receipt_set_sha256: Option<String>,
     last_wb14_child_replay_bytes: Option<Vec<u8>>,
     last_wb14_parent_replay_bytes: Option<Vec<u8>>,
 }
+
+/// Fully accepted positive-duration terminal endpoint.  Every field is
+/// value evidence produced before this executor is entered; consuming it must
+/// not rerun Stage 3, LSE, or probe/root physics.
+#[derive(Clone)]
+pub(crate) struct PrecomputedTerminalAcceptedEndpointV1 {
+    pub carrier_phase: CoveredCarrierPhaseResultV1,
+    pub ending_stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    pub terminal_events: BTreeMap<u32, DirectSnowTerminalEventResult>,
+    pub terminal_snow_soil_trial_receipts:
+        BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1>,
+    /// Parcels already pending at the positive-support beginning.  Newly
+    /// produced event parcels belong to the later zero-duration transition.
+    pub beginning_pending_terminal_parcels:
+        BTreeMap<Digest32, crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcel>,
+    pub accepted_slab_sha256: Digest32,
+    pub wb14_child_receipt_set_sha256: Digest32,
+    pub wb14_parent_receipt_set_sha256: Option<Digest32>,
+}
+
 
 pub struct DirectV11SnowCoveredStackInputs<'a> {
     pub interval: &'a DirectV11SnowCoveredSegmentInput,
@@ -457,6 +478,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             snow_surface_forcing_by_destination: inputs.snow_surface_forcing_by_destination,
             stage3_beginning_by_lane: inputs.stage3_beginning_by_lane,
             pending_terminal_parcels: inputs.pending_terminal_parcels,
+            precomputed_terminal_accepted: None,
             day_index: inputs.day_index,
             interval_index: inputs.interval_index,
             finalize_wb14_parent_interval: inputs.finalize_wb14_parent_interval,
@@ -480,14 +502,16 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         }
     }
 
-    /// Admit a terminal event only when it is independently reproduced at the
-    /// exact end of this shortened support. Ordinary persistent execution
-    /// retains its fail-closed rejection.
     #[must_use]
-    pub(crate) fn with_terminal_endpoint_mode(mut self) -> Self {
+    pub(crate) fn with_precomputed_terminal_accepted_endpoint(
+        mut self,
+        endpoint: PrecomputedTerminalAcceptedEndpointV1,
+    ) -> Self {
         self.terminal_endpoint_mode = true;
+        self.precomputed_terminal_accepted = Some(endpoint);
         self
     }
+
 
     fn precipitation_parcel_sets(
         &self,

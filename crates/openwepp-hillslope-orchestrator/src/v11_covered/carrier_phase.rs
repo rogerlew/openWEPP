@@ -143,6 +143,12 @@ impl CoveredCarrierEphemeralCandidatesV1 {
     ) -> &BTreeMap<u32, DirectSnowStage3PersistentState> {
         &self.stage3_by_lane
     }
+
+    pub(crate) const fn terminal_snow_soil_trial_receipt(
+        &self,
+    ) -> Option<&physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1> {
+        self.terminal_snow_soil_trial_receipt.as_ref()
+    }
 }
 
 /// Result of one genuine carrier-only mapping at an exact trial support.
@@ -151,6 +157,23 @@ pub(crate) struct CoveredCarrierPhaseResultV1 {
     pub transition: CoveredTerminalTrialTransitionV1,
     pub ending_candidates: CoveredCarrierEphemeralCandidatesV1,
     pub precipitation_sets: BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>,
+    /// Winning unpublished carrier envelope retained for exact accepted
+    /// evidence sealing. Publication must not rerun LSE to recover it.
+    pub carrier_envelope: UncommittedCoveredV8OwnerEnvelope,
+    /// Complete covered/open lower-boundary candidate consumed by Stage 3.
+    pub complete_lower_boundaries:
+        BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+    /// Reduced-carrier source receipts needed to seal final destination
+    /// evidence without recomputing carrier physics.
+    pub carrier_source_receipts:
+        BTreeMap<(OfeId, TileId), CoveredCarrierInitialGuessV1>,
+    pub covered_lse_states: BTreeMap<(OfeId, TileId), CoveredLseIterationState>,
+    pub soil_candidate: SoilThermalSnapshot,
+    pub soil_top_boundary_credit: SoilThermalTopBoundaryCreditV1,
+    pub wb14_child_receipt_set_sha256: String,
+    pub wb14_parent_receipt_set_sha256: Option<String>,
+    pub wb14_child_replay_bytes: Vec<u8>,
+    pub wb14_parent_replay_bytes: Option<Vec<u8>>,
 }
 
 impl DirectV11SnowCoveredRealConsumerStack<'_> {
@@ -286,7 +309,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 finalize_wb14_parent_interval: false,
             },
         )?;
-        let (corrected, _lse_states) = self.rebuild_covered_lse_carrier_value_v1(
+        let (corrected, lse_states) = self.rebuild_covered_lse_carrier_value_v1(
             &seed,
             &envelope,
             &beginning.stage3_by_lane,
@@ -448,11 +471,32 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             .accept_envelope_with_soil_top_boundary_credits(
                 envelope.transaction_id(),
                 &envelope,
-                &[terminal_soil_credit],
+                &[terminal_soil_credit.clone()],
             )
             .map_err(|error| {
                 DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
             })?;
+        let soil_candidate = candidate.inner.soil_thermal.clone();
+        let wb14_child_receipt_set_sha256 = envelope
+            .hydrology()
+            .surface_ingress()
+            .wb14_child_receipt_set_sha256()
+            .to_string();
+        let wb14_parent_receipt_set_sha256 = envelope
+            .hydrology()
+            .surface_ingress()
+            .wb14_parent_receipt_set_sha256()
+            .map(ToString::to_string);
+        let wb14_child_replay_bytes = envelope
+            .hydrology()
+            .surface_ingress()
+            .wb14_child_replay_bytes()
+            .to_vec();
+        let wb14_parent_replay_bytes = envelope
+            .hydrology()
+            .surface_ingress()
+            .wb14_parent_replay_bytes()
+            .map(ToOwned::to_owned);
         let mut ending_owner_bytes = candidate.canonical_owner_state_bytes()?;
         let trial_snow = request
             .beginning_joint
@@ -483,6 +527,16 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             transition,
             ending_candidates,
             precipitation_sets,
+            carrier_envelope: envelope,
+            complete_lower_boundaries: corrected,
+            carrier_source_receipts: carrier_receipts,
+            covered_lse_states: lse_states,
+            soil_candidate,
+            soil_top_boundary_credit: terminal_soil_credit,
+            wb14_child_receipt_set_sha256,
+            wb14_parent_receipt_set_sha256,
+            wb14_child_replay_bytes,
+            wb14_parent_replay_bytes,
         })
     }
 }

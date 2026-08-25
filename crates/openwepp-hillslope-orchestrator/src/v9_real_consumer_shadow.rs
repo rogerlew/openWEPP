@@ -103,7 +103,9 @@ pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilTrialReceip
 pub(crate) use v11_covered::physical_outcome_ledger::ledger_set_digest as stage3_physical_outcome_ledger_set_digest;
 
 pub(crate) use v11_covered::CoveredCarrierEphemeralCandidatesV1;
+pub(crate) use v11_covered::CoveredCarrierPhaseResultV1;
 pub(crate) use v11_covered::CoveredPhysicalCustodyJoinInputs;
+pub(crate) use v11_covered::PrecomputedTerminalAcceptedEndpointV1;
 use v11_covered::*;
 pub use v11_covered::{
     CoveredParentOwnerJoinReceiptV1, DirectV11RealConsumerStack,
@@ -791,6 +793,22 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
 }
 
 impl DirectV10RealConsumerShadow {
+    pub(crate) fn next_lse_transaction_id(
+        &self,
+    ) -> Result<TransactionId, DirectV10RealConsumerError> {
+        Ok(TransactionId(
+            self.inner
+                .vegetation_state
+                .0
+                .last_transaction_id
+                .checked_add(1)
+                .ok_or_else(|| {
+                    DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(
+                        "next LSE transaction overflow",
+                    ))
+                })?,
+        ))
+    }
     #[must_use]
     pub const fn v11_next_day_index(&self) -> usize {
         self.inner.next_day_index()
@@ -1856,14 +1874,14 @@ impl DirectV9RealConsumerShadow {
             .map_err(|_| DirectV9RealConsumerError::Identity("interval index overflow"))?;
         if input.lse_forcing.transaction_id != transaction_id {
             return Err(DirectV9RealConsumerError::Unsupported(
-                "forcing transaction, cadence, or snow domain",
+                "forcing transaction identity",
             ));
         }
         if input.lse_forcing.interval_s.to_bits() != interval_s.to_bits()
             || v11_duration_s_bits.is_some_and(|bits| bits != interval_s.to_bits())
         {
             return Err(DirectV9RealConsumerError::Unsupported(
-                "forcing transaction, cadence, or snow domain",
+                "forcing cadence identity",
             ));
         }
         if input.lse_forcing.snow_present_at_beginning
@@ -1871,7 +1889,7 @@ impl DirectV9RealConsumerShadow {
             || input.lse_forcing.snow_terminal_payload_present
         {
             return Err(DirectV9RealConsumerError::Unsupported(
-                "forcing transaction, cadence, or snow domain",
+                "forcing snow domain",
             ));
         }
         if !input.lse_forcing.runon_parcels.is_empty() {

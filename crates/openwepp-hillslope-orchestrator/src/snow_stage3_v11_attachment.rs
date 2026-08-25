@@ -585,7 +585,7 @@ impl DirectSnowStage3V11PreparedSupport {
     fn coupled_subslab(
         &self,
         support: TimeSupport,
-        _child_ordinal: u32,
+        child_ordinal: u32,
     ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
         if support.start_ns() < self.support.start_ns() || support.end_ns() > self.support.end_ns()
         {
@@ -617,6 +617,16 @@ impl DirectSnowStage3V11PreparedSupport {
         };
         let segment_interval = |input: &DirectV9ShadowIntervalInput| {
             let mut value = input.clone();
+            value.lse_forcing.transaction_id = openwepp_kernel_contract::TransactionId(
+                input
+                    .lse_forcing
+                    .transaction_id
+                    .0
+                    .checked_add(u128::from(child_ordinal))
+                    .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                        "coupled subslab transaction ordinal overflow",
+                    ))?,
+            );
             value.lse_forcing.interval_s = duration_seconds;
             value.lse_forcing.precipitation_parcels =
                 partition_parcels(&input.lse_forcing.precipitation_parcels);
@@ -635,6 +645,16 @@ impl DirectSnowStage3V11PreparedSupport {
             .as_ref()
             .map(|input| {
                 let mut lse_forcing = input.lse_forcing.clone();
+                lse_forcing.transaction_id = openwepp_kernel_contract::TransactionId(
+                    input
+                        .lse_forcing
+                        .transaction_id
+                        .0
+                        .checked_add(u128::from(child_ordinal))
+                        .ok_or(DirectV11RealConsumerError::Identity(
+                            "coupled covered subslab transaction ordinal overflow",
+                        ))?,
+                );
                 lse_forcing.interval_s = duration_seconds;
                 lse_forcing.precipitation_parcels =
                     partition_parcels(&input.lse_forcing.precipitation_parcels);
@@ -2588,7 +2608,7 @@ pub(crate) fn execute_covered_real_v11_parent(
                 stage3,
                 &pending_terminal_parcels,
                 selected_seconds,
-                false,
+                None,
             )?;
         if failure_injection
             == Some(Stage3V11FailureInjection::OutcomeLedgerBuilt(

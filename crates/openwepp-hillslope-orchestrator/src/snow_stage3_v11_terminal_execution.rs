@@ -8,6 +8,421 @@ struct ActualTerminalSubslabV1 {
     parcels: Vec<DirectSnowStage3V11TerminalParcel>,
 }
 
+#[derive(Clone)]
+struct ExactCoveredTerminalEndpointV1 {
+    support: TimeSupport,
+    lane_id: u32,
+    event: DirectSnowTerminalEventResult,
+    event_result_digest: Digest32,
+    forcing_sha256: Digest32,
+    ending: crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1,
+    carrier_phase: crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1,
+    terminal_snow_soil_trial_receipt:
+        crate::v9_real_consumer_shadow::TerminalSnowSoilTrialReceiptV1,
+    endpoint_receipt_sha256: Digest32,
+}
+
+fn prepare_exact_terminal_endpoint_v1(
+    discovery: &Stage3V11ActualTerminalCandidateV1,
+    exact_result: &crate::hydrology::DirectSnowStage3PersistentDayResult,
+    exact_forcing_sha256: Digest32,
+    candidates_by_joint: &BTreeMap<
+        Digest32,
+        crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1,
+    >,
+    carrier_phases_by_joint: &BTreeMap<
+        Digest32,
+        crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1,
+    >,
+) -> Result<ExactCoveredTerminalEndpointV1, DirectSnowStage3V11AttachmentError> {
+    let ending = bind_exact_terminal_endpoint_candidate_v1(
+        discovery.lane_id,
+        exact_result,
+        candidates_by_joint,
+    )?;
+    let event = exact_result.terminal_event.ok_or(
+        DirectSnowStage3V11AttachmentError::Terminal(
+            "exact endpoint event-result custody",
+        ),
+    )?;
+    let carrier_phase = carrier_phases_by_joint
+        .get(&ending.joint().receipt_sha256())
+        .cloned()
+        .ok_or(DirectSnowStage3V11AttachmentError::Terminal(
+            "exact endpoint converged carrier value evidence",
+        ))?;
+    let event_result_digest = canonical_terminal_event_result_digest(&event)?;
+    let ending_state = ending.stage3_by_lane().get(&discovery.lane_id).ok_or(
+        DirectSnowStage3V11AttachmentError::Identity(
+            "exact endpoint ending snow lane",
+        ),
+    )?;
+    let ending_state_sha256 = digest_bytes(
+        &Wb11HydrologyKernel::serialize_stage3_persistent_state(ending_state)?,
+    );
+    if event_result_digest != discovery.event_result_digest
+        || event != discovery.event
+        || exact_forcing_sha256 != discovery.shortened_forcing_sha256
+        || ending_state_sha256 != discovery.terminal_state_sha256
+        || event.hour_offset_seconds.to_bits()
+            != f64::from_bits(discovery.support.duration_s_bits()).to_bits()
+        || event.evaluated_seconds.to_bits()
+            != f64::from_bits(discovery.support.duration_s_bits()).to_bits()
+        || event.unevaluated_seconds.to_bits() != 0.0_f64.to_bits()
+        || event.terminal_unallocated_energy_j_m2 < 0.0
+        || event.terminal_unallocated_energy_j_m2 > 1.0e-6
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Terminal(
+            "probe/exact terminal endpoint cross-join",
+        ));
+    }
+    let trial_receipt = ending
+        .terminal_snow_soil_trial_receipt()
+        .cloned()
+        .ok_or(DirectSnowStage3V11AttachmentError::Terminal(
+            "exact endpoint terminal snow-soil trial receipt",
+        ))?;
+    trial_receipt.validate().map_err(|_| {
+        DirectSnowStage3V11AttachmentError::Terminal(
+            "exact endpoint terminal snow-soil trial receipt seal",
+        )
+    })?;
+    if trial_receipt.support != discovery.support
+        || trial_receipt.lane_id != discovery.lane_id
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Terminal(
+            "exact endpoint terminal snow-soil support join",
+        ));
+    }
+    let endpoint_receipt_sha256 = framed_sha256(
+        "stage3-v11-exact-terminal-endpoint-v1",
+        &[
+            FramedField {
+                tag: "support_start",
+                value: &discovery.support.start_ns().get().to_be_bytes(),
+            },
+            FramedField {
+                tag: "support_end",
+                value: &discovery.support.end_ns().get().to_be_bytes(),
+            },
+            FramedField {
+                tag: "lane",
+                value: &discovery.lane_id.to_be_bytes(),
+            },
+            FramedField {
+                tag: "event",
+                value: event_result_digest.as_bytes(),
+            },
+            FramedField {
+                tag: "forcing",
+                value: exact_forcing_sha256.as_bytes(),
+            },
+            FramedField {
+                tag: "ending_joint",
+                value: ending.joint().receipt_sha256().as_bytes(),
+            },
+            FramedField {
+                tag: "snow_soil_trial",
+                value: trial_receipt.receipt_sha256.as_bytes(),
+            },
+        ],
+    )?;
+    Ok(ExactCoveredTerminalEndpointV1 {
+        support: discovery.support,
+        lane_id: discovery.lane_id,
+        event,
+        event_result_digest,
+        forcing_sha256: exact_forcing_sha256,
+        ending,
+        carrier_phase,
+        terminal_snow_soil_trial_receipt: trial_receipt,
+        endpoint_receipt_sha256,
+    })
+}
+
+/// Join the exact hydrology-selected event root back to the unpublished typed
+/// carrier candidate that produced its six non-snow owners.  Root search may
+/// evaluate and discard many previews, so installation is keyed exclusively
+/// by the selected joint returned by the solver; provider call order is not
+/// authority.
+fn bind_exact_terminal_endpoint_candidate_v1(
+    lane_id: u32,
+    result: &crate::hydrology::DirectSnowStage3PersistentDayResult,
+    candidates_by_joint: &BTreeMap<
+        Digest32,
+        crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1,
+    >,
+) -> Result<
+    crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1,
+    DirectSnowStage3V11AttachmentError,
+> {
+    let event = result.terminal_event.as_ref().ok_or(
+        DirectSnowStage3V11AttachmentError::Terminal(
+            "exact covered endpoint missing terminal event",
+        ),
+    )?;
+    if !event.event_occurred
+        || event.unevaluated_seconds.abs() > 1.0e-6
+        || !result.state.layers.is_empty()
+        || result.state.lane_id != lane_id
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Terminal(
+            "exact covered endpoint physical disposition",
+        ));
+    }
+    let selected_joint = result.covered_terminal_ending_joint.as_ref().ok_or(
+        DirectSnowStage3V11AttachmentError::Terminal(
+            "exact covered endpoint selected joint",
+        ),
+    )?;
+    let carrier = if let Some(exact) = candidates_by_joint
+        .get(&selected_joint.receipt_sha256())
+        .cloned()
+    {
+        exact
+    } else {
+        let matching = candidates_by_joint
+            .values()
+            .filter(|candidate| {
+                selected_joint.owner_bytes().iter().all(|(owner_id, bytes)| {
+                    owner_id == "snow"
+                        || candidate
+                            .joint()
+                            .owner_bytes()
+                            .get(owner_id)
+                            .is_some_and(|candidate_bytes| candidate_bytes == bytes)
+                })
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        if matching.len() != 1 {
+            return Err(DirectSnowStage3V11AttachmentError::Terminal(
+                "exact covered endpoint typed carrier selection",
+            ));
+        }
+        matching[0].clone()
+    };
+    let mut stage3 = carrier.stage3_by_lane().clone();
+    if stage3.insert(lane_id, result.state.clone()).is_none() {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "exact covered endpoint lane candidate",
+        ));
+    }
+    crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1::try_new(
+        selected_joint.clone(),
+        carrier.shadow().clone(),
+        stage3,
+    )
+    .map_err(DirectSnowStage3V11AttachmentError::Owner)
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn evaluate_covered_terminal_candidate_v1(
+    beginning_consumer: &DirectV10RealConsumerShadow,
+    beginning_clock: &CoupledClockStateV1,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    day_index: usize,
+    interval_index: usize,
+    beginning_stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    beginning_terminal_parcels: &BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
+    selected_upper_bound_s: f64,
+    current_child_ordinal: u32,
+    lane_id: u32,
+    mode: CoveredTerminalExecutionMode,
+) -> Result<
+    (
+        crate::hydrology::DirectSnowStage3PersistentDayResult,
+        BTreeMap<Digest32, crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1>,
+        BTreeMap<Digest32, crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1>,
+    ),
+    DirectSnowStage3V11AttachmentError,
+> {
+    let state = beginning_stage3.get(&lane_id).ok_or(
+        DirectSnowStage3V11AttachmentError::Identity("terminal beginning lane"),
+    )?;
+    let inputs = prepared.snow_inputs_by_lane.get(&lane_id).ok_or(
+        DirectSnowStage3V11AttachmentError::Identity("terminal input lane"),
+    )?;
+    let forcing = prepared.support_forcing_by_lane.get(&lane_id).copied().ok_or(
+        DirectSnowStage3V11AttachmentError::Identity("terminal forcing lane"),
+    )?;
+    let mut initial_owner_bytes = beginning_consumer.canonical_owner_state_bytes()?;
+    initial_owner_bytes.insert(
+        "snow".to_owned(),
+        canonical_stage3_snow_owner_bytes_with_pending(
+            beginning_stage3,
+            beginning_terminal_parcels,
+        )?,
+    );
+    let initial_joint = CoveredTerminalJointTrialStateV1::try_new(initial_owner_bytes)?;
+    let initial_candidates =
+        crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1::try_new(
+            initial_joint.clone(),
+            beginning_consumer.clone(),
+            beginning_stage3.clone(),
+        )?;
+    let candidates_by_joint = std::cell::RefCell::new(BTreeMap::from([(
+        initial_joint.receipt_sha256(),
+        initial_candidates,
+    )]));
+    let parent_id = beginning_clock.parent_transaction_id();
+    let parent_owner_digest = complete_owner_set_digest(beginning_clock.owners())?;
+    let carrier_failure = std::cell::RefCell::new(None);
+    let carrier_phases_by_joint = std::cell::RefCell::new(BTreeMap::new());
+    let mut provider = |request: crate::hydrology::CoveredTerminalTrialRequestV1| {
+        let beginning = if let Some(exact) = candidates_by_joint
+            .borrow()
+            .get(&request.beginning_joint.receipt_sha256())
+            .cloned()
+        {
+            exact
+        } else {
+            let matching = candidates_by_joint
+                .borrow()
+                .values()
+                .filter(|candidate| {
+                    request.beginning_joint.owner_bytes().iter().all(|(owner_id, bytes)| {
+                        owner_id == "snow"
+                            || candidate
+                                .joint()
+                                .owner_bytes()
+                                .get(owner_id)
+                                .is_some_and(|candidate_bytes| candidate_bytes == bytes)
+                    })
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            if matching.len() != 1 {
+                return Err(DirectSnowStage3EvaluationError::TerminalCustody(
+                    "covered probe typed beginning joint",
+                ));
+            }
+            let carrier = &matching[0];
+            crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1::try_new(
+                request.beginning_joint.clone(),
+                carrier.shadow().clone(),
+                carrier.stage3_by_lane().clone(),
+            )
+            .map_err(|_| {
+                DirectSnowStage3EvaluationError::TerminalCustody(
+                    "covered probe post-hydrology typed joint",
+                )
+            })?
+        };
+        let mut projected = prepared
+            .coupled_subslab(request.support, current_child_ordinal)
+            .map_err(|_| {
+                DirectSnowStage3EvaluationError::TerminalCustody(
+                    "covered probe exact support projection",
+                )
+            })?;
+        if let Some(interval) = projected.covered_v11_interval.as_mut() {
+            interval.lse_forcing.transaction_id = beginning
+                .shadow()
+                .next_lse_transaction_id()
+                .map_err(|_| {
+                    DirectSnowStage3EvaluationError::TerminalCustody(
+                        "covered probe typed transaction projection",
+                    )
+                })?;
+            interval.lse_forcing.forcing_sha256 = interval
+                .lse_forcing
+                .canonical_sha256()
+                .map_err(|_| {
+                    DirectSnowStage3EvaluationError::TerminalCustody(
+                        "covered probe typed forcing reseal",
+                    )
+                })?;
+        }
+        let child = CoveredProbeChildIdentityV1::try_new(
+            beginning_clock.parent_support(),
+            request.support,
+            current_child_ordinal,
+            request.role,
+            request.attempt_ordinal,
+            request.beginning_joint.receipt_sha256(),
+        )?;
+        let covered_interval = projected.covered_v11_interval.as_ref().ok_or(
+            DirectSnowStage3EvaluationError::TerminalCustody(
+                "covered probe V11 interval projection",
+            ),
+        )?;
+        let stack = DirectV11SnowCoveredRealConsumerStack::new(
+            beginning.shadow(),
+            DirectV11SnowCoveredStackInputs {
+                interval: covered_interval,
+                stage3_inputs_by_lane: &projected.snow_inputs_by_lane,
+                stage3_forcing_by_lane: &projected.support_forcing_by_lane,
+                snow_surface_forcing_by_destination:
+                    &projected.snow_surface_forcing_by_destination,
+                stage3_beginning_by_lane: beginning.stage3_by_lane().clone(),
+                pending_terminal_parcels: beginning_terminal_parcels.clone(),
+                day_index,
+                interval_index,
+                finalize_wb14_parent_interval: false,
+                wb14_coupled_child_binding:
+                    crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                        proposed_upper_bound_s_bits: selected_upper_bound_s.to_bits(),
+                        coupled_parent_transaction_sha256: *parent_id.digest().as_bytes(),
+                        accepted_slab_sha256: *child.receipt_sha256.as_bytes(),
+                        parent_beginning_complete_owner_set_sha256:
+                            *parent_owner_digest.as_bytes(),
+                        parent_support_start_ns: beginning_clock
+                            .parent_support()
+                            .start_ns()
+                            .get(),
+                        parent_support_end_ns: beginning_clock.parent_support().end_ns().get(),
+                        child_support_start_ns: request.support.start_ns().get(),
+                        child_support_end_ns: request.support.end_ns().get(),
+                    },
+            },
+        );
+        let result = stack
+            .execute_covered_carrier_phase_v1(&beginning, &request, child)
+            .map_err(|error| {
+                if carrier_failure.borrow().is_none() {
+                    *carrier_failure.borrow_mut() = Some(error);
+                }
+                DirectSnowStage3EvaluationError::TerminalCustody(
+                    "covered probe carrier fixed point",
+                )
+            })?;
+        let ending_joint_sha256 = result.ending_candidates.joint().receipt_sha256();
+        candidates_by_joint
+            .borrow_mut()
+            .insert(ending_joint_sha256, result.ending_candidates.clone());
+        carrier_phases_by_joint
+            .borrow_mut()
+            .insert(ending_joint_sha256, result.clone());
+        Ok(result.transition)
+    };
+    let result = Wb11HydrologyKernel::evaluate_stage3_terminal_support_with_trial_provider_v1(
+        inputs,
+        state,
+        lane_id,
+        state.next_interval_index,
+        forcing,
+        prepared.support,
+        mode,
+        initial_joint,
+        &mut provider,
+    );
+    match result {
+        Ok(result) => Ok((
+            result,
+            candidates_by_joint.into_inner(),
+            carrier_phases_by_joint.into_inner(),
+        )),
+        Err(error) => {
+            if let Some(carrier_error) = carrier_failure.into_inner() {
+                Err(DirectSnowStage3V11AttachmentError::Owner(carrier_error))
+            } else {
+                Err(DirectSnowStage3V11AttachmentError::Stage3(error))
+            }
+        }
+    }
+}
+
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn try_actual_terminal_subslab(
     context: &DirectSnowStage3V11StaticContext,
@@ -33,187 +448,59 @@ fn try_actual_terminal_subslab(
         })
         .collect::<BTreeSet<_>>();
     let mut candidate_ticks = BTreeSet::new();
+    let mut discovery_candidates = BTreeMap::new();
     for lane_id in &active_lanes {
-        let state =
-            beginning_stage3
-                .get(lane_id)
-                .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                    "terminal beginning lane",
-                ))?;
-        let inputs = prepared.snow_inputs_by_lane.get(lane_id).ok_or(
-            DirectSnowStage3V11AttachmentError::Identity("terminal input lane"),
-        )?;
-        let forcing = prepared
-            .support_forcing_by_lane
-            .get(lane_id)
-            .copied()
-            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                "terminal forcing lane",
-            ))?;
-        let mut initial_owner_bytes = beginning_consumer.canonical_owner_state_bytes()?;
-        initial_owner_bytes.insert(
-            "snow".to_owned(),
-            canonical_stage3_snow_owner_bytes_with_pending(
-                beginning_stage3,
-                beginning_terminal_parcels,
-            )?,
-        );
-        let initial_joint = CoveredTerminalJointTrialStateV1::try_new(initial_owner_bytes)?;
-        let initial_candidates = crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1::try_new(
-            initial_joint.clone(),
-            beginning_consumer.clone(),
-            beginning_stage3.clone(),
-        )?;
-        let candidates_by_joint = std::cell::RefCell::new(BTreeMap::from([(
-            initial_joint.receipt_sha256(),
-            initial_candidates,
-        )]));
-        let parent_id = beginning_clock.parent_transaction_id();
-        let parent_owner_digest = complete_owner_set_digest(beginning_clock.owners())?;
-        // The hydrology provider surface is intentionally restricted to
-        // Stage-3 errors. Retain the exact covered-carrier failure beside the
-        // probe so the attachment boundary can restore its typed owner cause
-        // instead of collapsing it to a generic terminal-custody label.
-        let carrier_failure = std::cell::RefCell::new(None);
-        let mut provider = |request: crate::hydrology::CoveredTerminalTrialRequestV1| {
-            let beginning = if let Some(exact) = candidates_by_joint
-                .borrow()
-                .get(&request.beginning_joint.receipt_sha256())
-                .cloned()
-            {
-                exact
-            } else {
-                // The hydrology post-flux join changes only the canonical
-                // snow member after the carrier has returned its six-owner
-                // candidate. Rebind that typed candidate to the exact joined
-                // seven-owner identity before Half2/retry/root execution.
-                // Rejected previews remain local to this probe map.
-                let matching = candidates_by_joint
-                    .borrow()
-                    .values()
-                    .filter(|candidate| {
-                        request.beginning_joint.owner_bytes().iter().all(
-                            |(owner_id, bytes)| {
-                                owner_id == "snow"
-                                    || candidate
-                                        .joint()
-                                        .owner_bytes()
-                                        .get(owner_id)
-                                        .is_some_and(|candidate_bytes| candidate_bytes == bytes)
-                            },
-                        )
-                    })
-                    .cloned()
-                    .collect::<Vec<_>>();
-                if matching.len() != 1 {
-                    return Err(DirectSnowStage3EvaluationError::TerminalCustody(
-                        "covered probe typed beginning joint",
-                    ));
-                }
-                let carrier = &matching[0];
-                crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1::try_new(
-                    request.beginning_joint.clone(),
-                    carrier.shadow().clone(),
-                    carrier.stage3_by_lane().clone(),
-                )
-                .map_err(|_| {
-                    DirectSnowStage3EvaluationError::TerminalCustody(
-                        "covered probe post-hydrology typed joint",
-                    )
-                })?
-            };
-            let projected = prepared
-                .coupled_subslab(request.support, current_child_ordinal)
-                .map_err(|_| {
-                    DirectSnowStage3EvaluationError::TerminalCustody(
-                        "covered probe exact support projection",
-                    )
-                })?;
-            let child = CoveredProbeChildIdentityV1::try_new(
-                beginning_clock.parent_support(),
-                request.support,
-                current_child_ordinal,
-                request.role,
-                request.attempt_ordinal,
-                request.beginning_joint.receipt_sha256(),
-            )?;
-            let covered_interval = projected.covered_v11_interval.as_ref().ok_or(
-                DirectSnowStage3EvaluationError::TerminalCustody(
-                    "covered probe V11 interval projection",
-                ),
-            )?;
-            let stack = DirectV11SnowCoveredRealConsumerStack::new(
-                beginning.shadow(),
-                DirectV11SnowCoveredStackInputs {
-                    interval: covered_interval,
-                    stage3_inputs_by_lane: &projected.snow_inputs_by_lane,
-                    stage3_forcing_by_lane: &projected.support_forcing_by_lane,
-                    snow_surface_forcing_by_destination:
-                        &projected.snow_surface_forcing_by_destination,
-                    stage3_beginning_by_lane: beginning.stage3_by_lane().clone(),
-                    pending_terminal_parcels: beginning_terminal_parcels.clone(),
-                    day_index,
-                    interval_index,
-                    finalize_wb14_parent_interval: false,
-                    wb14_coupled_child_binding:
-                        crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
-                            proposed_upper_bound_s_bits: selected_upper_bound_s.to_bits(),
-                            coupled_parent_transaction_sha256: *parent_id.digest().as_bytes(),
-                            accepted_slab_sha256: *child.receipt_sha256.as_bytes(),
-                            parent_beginning_complete_owner_set_sha256:
-                                *parent_owner_digest.as_bytes(),
-                            parent_support_start_ns: beginning_clock
-                                .parent_support()
-                                .start_ns()
-                                .get(),
-                            parent_support_end_ns: beginning_clock
-                                .parent_support()
-                                .end_ns()
-                                .get(),
-                            child_support_start_ns: request.support.start_ns().get(),
-                            child_support_end_ns: request.support.end_ns().get(),
-                        },
-                },
-            );
-            let result = stack
-                .execute_covered_carrier_phase_v1(&beginning, &request, child)
-                .map_err(|error| {
-                    if carrier_failure.borrow().is_none() {
-                        *carrier_failure.borrow_mut() = Some(error);
-                    }
-                    DirectSnowStage3EvaluationError::TerminalCustody(
-                        "covered probe carrier fixed point",
-                    )
-                })?;
-            candidates_by_joint.borrow_mut().insert(
-                result.ending_candidates.joint().receipt_sha256(),
-                result.ending_candidates,
-            );
-            Ok(result.transition)
-        };
-        let result = Wb11HydrologyKernel::evaluate_stage3_terminal_support_with_trial_provider_v1(
-            inputs,
-            state,
+        let (result, _, _) = evaluate_covered_terminal_candidate_v1(
+            beginning_consumer,
+            beginning_clock,
+            prepared,
+            day_index,
+            interval_index,
+            beginning_stage3,
+            beginning_terminal_parcels,
+            selected_upper_bound_s,
+            current_child_ordinal,
             *lane_id,
-            state.next_interval_index,
-            forcing,
-            prepared.support,
             CoveredTerminalExecutionMode::DiscoveryProbe,
-            initial_joint,
-            &mut provider,
-        );
-        let result = match result {
-            Ok(result) => result,
-            Err(error) => {
-                if let Some(carrier_error) = carrier_failure.into_inner() {
-                    return Err(DirectSnowStage3V11AttachmentError::Owner(carrier_error));
-                }
-                return Err(DirectSnowStage3V11AttachmentError::Stage3(error));
-            }
-        };
+        )?;
         let Some(event) = result.terminal_event else {
             continue;
         };
+        let event_relative = quantize_seconds_to_tick(
+            ModelTimeNs::new(0),
+            ModelTimeNs::new(prepared.support.duration_ns()),
+            event.hour_offset_seconds,
+        )?;
+        let event_tick = ModelTimeNs::new(
+            prepared.support.start_ns().get() + event_relative.get(),
+        );
+        let event_support = TimeSupport::new(prepared.support.start_ns(), event_tick)?;
+        let event_projected = prepared.coupled_subslab(event_support, current_child_ordinal)?;
+        discovery_candidates.insert(
+            (event_tick, *lane_id),
+            Stage3V11ActualTerminalCandidateV1 {
+                lane_id: *lane_id,
+                tick: event_tick,
+                support: event_support,
+                event,
+                event_result_digest: canonical_terminal_event_result_digest(&event)?,
+                terminal_state_sha256: digest_bytes(
+                    &Wb11HydrologyKernel::serialize_stage3_persistent_state(&result.state)?,
+                ),
+                shortened_forcing_sha256: canonical_stage3_support_forcing_digest(
+                    &event_projected.support_forcing_by_lane,
+                ),
+                shortened_owner_set_sha256: result
+                    .covered_terminal_ending_joint
+                    .as_ref()
+                    .map(CoveredTerminalJointTrialStateV1::receipt_sha256)
+                    .ok_or(DirectSnowStage3V11AttachmentError::Terminal(
+                        "covered discovery selected joint",
+                    ))?,
+                exact_endpoint_receipt_sha256: None,
+                terminal_snow_soil_trial_receipt_sha256: None,
+            },
+        );
         for seconds in [
             event.hour_offset_seconds,
             event.event_bracket_lower_seconds,
@@ -244,6 +531,45 @@ fn try_actual_terminal_subslab(
         }
         let support = TimeSupport::new(prepared.support.start_ns(), tick)?;
         let projected = prepared.coupled_subslab(support, current_child_ordinal)?;
+        let exact_discovery = discovery_candidates
+            .iter()
+            .filter(|((candidate_tick, _), _)| *candidate_tick == tick)
+            .map(|(_, candidate)| candidate.clone())
+            .collect::<Vec<_>>();
+        if exact_discovery.is_empty() {
+            continue;
+        }
+        let mut exact_endpoints = Vec::new();
+        for discovery in &exact_discovery {
+            let (exact_result, exact_candidates, exact_carrier_phases) =
+                evaluate_covered_terminal_candidate_v1(
+                beginning_consumer,
+                beginning_clock,
+                &projected,
+                day_index,
+                interval_index,
+                beginning_stage3,
+                beginning_terminal_parcels,
+                selected_upper_bound_s,
+                current_child_ordinal,
+                discovery.lane_id,
+                CoveredTerminalExecutionMode::ExactEndpoint {
+                    expected_tick: tick,
+                },
+                )?;
+            exact_endpoints.push(prepare_exact_terminal_endpoint_v1(
+                discovery,
+                &exact_result,
+                canonical_stage3_support_forcing_digest(
+                    &projected.support_forcing_by_lane,
+                ),
+                &exact_candidates,
+                &exact_carrier_phases,
+            )?);
+        }
+        let exact = exact_endpoints.first().ok_or(
+            DirectSnowStage3V11AttachmentError::Terminal("missing exact endpoint value"),
+        )?;
         let trial = execute_covered_real_v11_subslab(
             context,
             beginning_parent,
@@ -256,37 +582,52 @@ fn try_actual_terminal_subslab(
             beginning_stage3.clone(),
             beginning_terminal_parcels,
             selected_upper_bound_s,
-            true,
+            Some(exact),
         );
-        let Ok((parent, consumer, clock, stage3, receipt)) = trial else {
+        let Ok((parent, installed_consumer, clock, installed_stage3, receipt)) = trial else {
             continue;
         };
         if receipt.terminal_events.is_empty() {
             continue;
         }
-        let candidates = receipt
-            .terminal_events
+        if exact_endpoints.len() != 1
+            || exact.support != support
+            || exact.forcing_sha256
+                != canonical_stage3_support_forcing_digest(&projected.support_forcing_by_lane)
+            || exact.ending.shadow().canonical_owner_state_bytes()?
+                != installed_consumer.canonical_owner_state_bytes()?
+            || exact.ending.stage3_by_lane() != &installed_stage3
+            || receipt.terminal_events.get(&exact.lane_id) != Some(&exact.event)
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Terminal(
+                "exact endpoint/precomputed installer value divergence",
+            ));
+        }
+        let consumer = exact.ending.shadow().clone();
+        let stage3 = exact.ending.stage3_by_lane().clone();
+        let candidates = exact_endpoints
             .iter()
-            .map(|(lane_id, event)| {
-                let state =
-                    stage3
-                        .get(lane_id)
-                        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                            "terminal ending lane",
-                        ))?;
+            .map(|endpoint| {
+                let state = endpoint.ending.stage3_by_lane().get(&endpoint.lane_id).ok_or(
+                    DirectSnowStage3V11AttachmentError::Identity(
+                        "exact endpoint installed snow lane",
+                    ),
+                )?;
                 Ok(Stage3V11ActualTerminalCandidateV1 {
-                    lane_id: *lane_id,
+                    lane_id: endpoint.lane_id,
                     tick,
                     support,
-                    event: *event,
-                    event_result_digest: canonical_terminal_event_result_digest(event)?,
+                    event: endpoint.event,
+                    event_result_digest: endpoint.event_result_digest,
                     terminal_state_sha256: digest_bytes(
                         &Wb11HydrologyKernel::serialize_stage3_persistent_state(state)?,
                     ),
-                    shortened_forcing_sha256: canonical_stage3_support_forcing_digest(
-                        &projected.support_forcing_by_lane,
+                    shortened_forcing_sha256: endpoint.forcing_sha256,
+                    shortened_owner_set_sha256: endpoint.ending.joint().receipt_sha256(),
+                    exact_endpoint_receipt_sha256: Some(endpoint.endpoint_receipt_sha256),
+                    terminal_snow_soil_trial_receipt_sha256: Some(
+                        endpoint.terminal_snow_soil_trial_receipt.receipt_sha256,
                     ),
-                    shortened_owner_set_sha256: complete_owner_set_digest(clock.owners())?,
                 })
             })
             .collect::<Result<Vec<_>, DirectSnowStage3V11AttachmentError>>()?;
@@ -823,7 +1164,7 @@ fn execute_covered_real_v11_subslab(
     beginning_stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
     pending_terminal_parcels: &BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
     selected_upper_bound_s: f64,
-    terminal_endpoint_mode: bool,
+    terminal_endpoint: Option<&ExactCoveredTerminalEndpointV1>,
 ) -> Result<
     (
         V11ParentTransaction,
@@ -927,8 +1268,29 @@ fn execute_covered_real_v11_subslab(
             },
         },
     );
-    if terminal_endpoint_mode {
-        provisional_stack = provisional_stack.with_terminal_endpoint_mode();
+    if let Some(endpoint) = terminal_endpoint {
+        provisional_stack = provisional_stack.with_precomputed_terminal_accepted_endpoint(
+            crate::v9_real_consumer_shadow::PrecomputedTerminalAcceptedEndpointV1 {
+                carrier_phase: endpoint.carrier_phase.clone(),
+                ending_stage3_by_lane: endpoint.ending.stage3_by_lane().clone(),
+                terminal_events: BTreeMap::from([(endpoint.lane_id, endpoint.event)]),
+                terminal_snow_soil_trial_receipts: BTreeMap::from([(
+                    endpoint.lane_id,
+                    endpoint.terminal_snow_soil_trial_receipt.clone(),
+                )]),
+                beginning_pending_terminal_parcels: pending_terminal_parcels.clone(),
+                accepted_slab_sha256: provisional_receipt.slab_id().digest(),
+                wb14_child_receipt_set_sha256: parse_lower_hex_digest(
+                    &endpoint.carrier_phase.wb14_child_receipt_set_sha256,
+                )?,
+                wb14_parent_receipt_set_sha256: endpoint
+                    .carrier_phase
+                    .wb14_parent_receipt_set_sha256
+                    .as_deref()
+                    .map(parse_lower_hex_digest)
+                    .transpose()?,
+            },
+        );
     }
     let mut provisional_executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
         stack: provisional_stack,
@@ -975,8 +1337,29 @@ fn execute_covered_real_v11_subslab(
             },
         },
     );
-    if terminal_endpoint_mode {
-        final_stack = final_stack.with_terminal_endpoint_mode();
+    if let Some(endpoint) = terminal_endpoint {
+        final_stack = final_stack.with_precomputed_terminal_accepted_endpoint(
+            crate::v9_real_consumer_shadow::PrecomputedTerminalAcceptedEndpointV1 {
+                carrier_phase: endpoint.carrier_phase.clone(),
+                ending_stage3_by_lane: endpoint.ending.stage3_by_lane().clone(),
+                terminal_events: BTreeMap::from([(endpoint.lane_id, endpoint.event)]),
+                terminal_snow_soil_trial_receipts: BTreeMap::from([(
+                    endpoint.lane_id,
+                    endpoint.terminal_snow_soil_trial_receipt.clone(),
+                )]),
+                beginning_pending_terminal_parcels: pending_terminal_parcels.clone(),
+                accepted_slab_sha256: final_receipt.slab_id().digest(),
+                wb14_child_receipt_set_sha256: parse_lower_hex_digest(
+                    &endpoint.carrier_phase.wb14_child_receipt_set_sha256,
+                )?,
+                wb14_parent_receipt_set_sha256: endpoint
+                    .carrier_phase
+                    .wb14_parent_receipt_set_sha256
+                    .as_deref()
+                    .map(parse_lower_hex_digest)
+                    .transpose()?,
+            },
+        );
     }
     let mut final_executor =
         crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack: final_stack };
@@ -1250,6 +1633,21 @@ fn execute_covered_real_v11_subslab(
         ending_stage3,
         subslab_receipt,
     ))
+}
+
+#[cfg(test)]
+mod terminal_exact_installation_source_guards {
+    #[test]
+    fn exact_terminal_installation_uses_only_precomputed_executor() {
+        let source = include_str!("snow_stage3_v11_terminal_execution.rs");
+        assert!(source.contains("with_precomputed_terminal_accepted_endpoint"));
+        assert!(!source.contains(&["with_terminal", "_endpoint_mode"].concat()));
+        assert!(!source.contains(&[
+            "evaluate_stage3_",
+            "persistent_support(",
+        ]
+        .concat()));
+    }
 }
 
 include!("snow_stage3_v11_attachment_helpers.rs");

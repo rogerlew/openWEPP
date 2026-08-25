@@ -131,6 +131,194 @@ struct PhysicalOutcomeLedgerInputs<'a> {
 
 impl DirectV11SnowCoveredRealConsumerStack<'_> {
     #[allow(clippy::too_many_lines)]
+    fn execute_precomputed_terminal_accepted_endpoint(
+        &mut self,
+        input: &V11ImportedV10SegmentInput,
+        endpoint: PrecomputedTerminalAcceptedEndpointV1,
+    ) -> Result<V11ImportedV10SegmentOutput, DirectV11RealConsumerError> {
+        let terminal_lanes = endpoint.terminal_events.keys().copied().collect::<BTreeSet<_>>();
+        if terminal_lanes.is_empty()
+            || terminal_lanes
+                != endpoint
+                    .terminal_snow_soil_trial_receipts
+                    .keys()
+                    .copied()
+                    .collect::<BTreeSet<_>>()
+            || endpoint.accepted_slab_sha256 != input.accepted_slab_receipt.slab_id().digest()
+            || endpoint.carrier_phase.transition.boundary.support != input.support
+            || endpoint
+                .carrier_phase
+                .transition
+                .probe_child_identity
+                .physical_child_ordinal
+                != input.accepted_slab_receipt.slab_ordinal()
+            || endpoint.beginning_pending_terminal_parcels != self.pending_terminal_parcels
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "precomputed terminal accepted identity",
+            ));
+        }
+        let phase_child = digest32_from_lower_hex(
+            &endpoint.carrier_phase.wb14_child_receipt_set_sha256,
+        )?;
+        let phase_parent = endpoint
+            .carrier_phase
+            .wb14_parent_receipt_set_sha256
+            .as_deref()
+            .map(digest32_from_lower_hex)
+            .transpose()?;
+        if phase_child != endpoint.wb14_child_receipt_set_sha256
+            || phase_parent != endpoint.wb14_parent_receipt_set_sha256
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "precomputed terminal WB14 binding",
+            ));
+        }
+        for (lane_id, event) in &endpoint.terminal_events {
+            let ending = endpoint.ending_stage3_by_lane.get(lane_id).ok_or(
+                DirectV11RealConsumerError::Identity("precomputed terminal ending lane"),
+            )?;
+            let trial = endpoint.terminal_snow_soil_trial_receipts.get(lane_id).ok_or(
+                DirectV11RealConsumerError::Identity("precomputed terminal trial receipt"),
+            )?;
+            trial.validate().map_err(|_| {
+                DirectV11RealConsumerError::Identity("precomputed terminal trial seal")
+            })?;
+            if !event.event_occurred
+                || event.unevaluated_seconds.abs() > 1.0e-6
+                || trial.support != input.support
+                || trial.lane_id != *lane_id
+                || crate::hydrology::stage3_has_represented_ice(ending)
+                || !ending.layers.is_empty()
+                || ending.detached_retained_liquid_kg_m2.to_bits() != 0.0_f64.to_bits()
+            {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "precomputed terminal physical endpoint",
+                ));
+            }
+        }
+
+        let evidence = self.seal_accepted_carrier_evidence_v1(
+            &endpoint.carrier_phase,
+            input,
+            &endpoint.ending_stage3_by_lane,
+        )?;
+        let mut terminal_receipts = BTreeMap::new();
+        for (lane_id, trial) in &endpoint.terminal_snow_soil_trial_receipts {
+            let beginning = self.stage3_beginning_by_lane.get(lane_id).ok_or(
+                DirectV11RealConsumerError::Identity("accepted terminal beginning lane"),
+            )?;
+            let ending = endpoint.ending_stage3_by_lane.get(lane_id).ok_or(
+                DirectV11RealConsumerError::Identity("accepted terminal ending lane"),
+            )?;
+            let ending_soil = endpoint
+                .carrier_phase
+                .soil_candidate
+                .ofes
+                .iter()
+                .find(|value| value.ofe_id == trial.ofe_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "accepted terminal ending soil OFE",
+                ))?;
+            let receipt = physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1 {
+                support: input.support,
+                lane_id: *lane_id,
+                ofe_id: trial.ofe_id.clone(),
+                beginning_snow_owner_sha256: digest_bytes(
+                    &Wb11HydrologyKernel::serialize_stage3_persistent_state(beginning)?,
+                ),
+                ending_dormant_snow_owner_sha256: digest_bytes(
+                    &Wb11HydrologyKernel::serialize_stage3_persistent_state(ending)?,
+                ),
+                ending_soil_owner_sha256: digest_bytes(
+                    &serde_json::to_vec(ending_soil).map_err(|_| {
+                        DirectV11RealConsumerError::Identity(
+                            "accepted terminal ending soil identity",
+                        )
+                    })?,
+                ),
+                limiting_boundary_receipt_sha256: trial.receipt_sha256,
+                snow_heat_j_m2: trial.snow_heat_j_m2,
+                soil_heat_j_m2: trial.soil_heat_j_m2,
+                receipt_sha256: Digest32::zero(),
+            }
+            .seal()
+            .map_err(|_| {
+                DirectV11RealConsumerError::Identity("accepted terminal snow-soil receipt")
+            })?;
+            terminal_receipts.insert(*lane_id, receipt);
+        }
+        let diagnostics = endpoint
+            .terminal_events
+            .keys()
+            .map(|lane_id| {
+                let trial = endpoint
+                    .terminal_snow_soil_trial_receipts
+                    .get(lane_id)
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "accepted terminal ledger trial",
+                    ))?;
+                Ok((*lane_id, (0.0, 0.0, 0.0, trial.snow_heat_j_m2)))
+            })
+            .collect::<Result<BTreeMap<_, _>, DirectV11RealConsumerError>>()?;
+        let persistent_receipts = BTreeMap::new();
+        let physical_ledgers = self.physical_outcome_ledgers(&PhysicalOutcomeLedgerInputs {
+            support: input.support,
+            ending: &endpoint.ending_stage3_by_lane,
+            lanes: &evidence.final_lanes,
+            destinations: &evidence.final_boundaries,
+            precipitation: &endpoint.carrier_phase.precipitation_sets,
+            soil: &persistent_receipts,
+            terminal_soil: &terminal_receipts,
+            diagnostics: &diagnostics,
+        })?;
+        if !terminal_lanes
+            .iter()
+            .all(|lane_id| physical_ledgers.contains_key(lane_id))
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "accepted terminal physical ledger set",
+            ));
+        }
+        let ending_snow_owner_bytes = canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
+            &endpoint.ending_stage3_by_lane,
+            &endpoint.beginning_pending_terminal_parcels,
+            &evidence.final_lanes,
+            &evidence.final_boundaries,
+        )?;
+        let (output, candidate, support_receipt) = finalize_v11_imported_segment(
+            &self.beginning,
+            input,
+            &endpoint.carrier_phase.carrier_envelope,
+            ending_snow_owner_bytes,
+            self.day_index,
+            std::slice::from_ref(&endpoint.carrier_phase.soil_top_boundary_credit),
+        )?;
+
+        // Publication fields are assigned only after every acceptance and
+        // finalization guard above has succeeded.
+        self.last_support_receipt = Some(support_receipt);
+        self.last_final_boundary_receipts = Some(evidence.final_boundaries);
+        self.last_lane_boundary_receipts = Some(evidence.final_lanes);
+        self.last_component_carrier_receipts = Some(evidence.component_receipts);
+        self.last_snow_soil_heat_receipts = Some(persistent_receipts);
+        self.last_terminal_snow_soil_heat_receipts = Some(terminal_receipts);
+        self.last_precipitation_parcel_sets =
+            Some(endpoint.carrier_phase.precipitation_sets);
+        self.last_physical_outcome_ledgers = Some(physical_ledgers);
+        self.last_terminal_events = Some(endpoint.terminal_events);
+        self.last_wb14_child_receipt_set_sha256 =
+            Some(evidence.wb14_child_receipt_set_sha256);
+        self.last_wb14_parent_receipt_set_sha256 =
+            evidence.wb14_parent_receipt_set_sha256;
+        self.last_wb14_child_replay_bytes = Some(evidence.wb14_child_replay_bytes);
+        self.last_wb14_parent_replay_bytes = evidence.wb14_parent_replay_bytes;
+        self.ending_stage3_by_lane = Some(endpoint.ending_stage3_by_lane);
+        self.ending = Some(candidate);
+        Ok(output)
+    }
+
+    #[allow(clippy::too_many_lines)]
     fn physical_outcome_ledgers(
         &self,
         inputs: &PhysicalOutcomeLedgerInputs<'_>,
@@ -747,6 +935,9 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
             return Err(DirectV11RealConsumerError::Identity(
                 "covered support / DirectV10 beginning join",
             ));
+        }
+        if let Some(endpoint) = self.precomputed_terminal_accepted.take() {
+            return self.execute_precomputed_terminal_accepted_endpoint(input, endpoint);
         }
         let interval_s = f64::from_bits(input.duration_s_bits);
         for stage3_forcing in self.stage3_forcing_by_lane.values() {
@@ -1867,6 +2058,87 @@ mod component_carrier_tests {
             )
             .is_err()
         );
+    }
+}
+
+#[cfg(test)]
+mod precomputed_terminal_accepted_executor_tests {
+    fn accepted_branch_source() -> &'static str {
+        let source = include_str!("open_snow.rs");
+        source
+            .split("fn execute_precomputed_terminal_accepted_endpoint")
+            .nth(1)
+            .expect("accepted branch")
+            .split("fn physical_outcome_ledgers")
+            .next()
+            .expect("accepted branch end")
+    }
+
+    #[test]
+    fn accepted_branch_seals_then_finalizes_then_publishes() {
+        let source = accepted_branch_source();
+        let seal = source
+            .find("seal_accepted_carrier_evidence_v1")
+            .expect("seal evidence");
+        let ledger = source
+            .find("self.physical_outcome_ledgers")
+            .expect("terminal ledger");
+        let finalize = source
+            .find("finalize_v11_imported_segment")
+            .expect("finalize");
+        let publish = source
+            .find("self.last_support_receipt =")
+            .expect("publication");
+        assert!(seal < ledger && ledger < finalize && finalize < publish);
+        assert!(!source[..publish].contains("self.ending ="));
+    }
+
+    #[test]
+    fn identity_poisons_precede_acceptance_and_physics_rerun_is_absent() {
+        let source = accepted_branch_source();
+        let seal = source
+            .find("seal_accepted_carrier_evidence_v1")
+            .expect("seal evidence");
+        let preflight = &source[..seal];
+        for poison in [
+            "accepted_slab_sha256",
+            "physical_child_ordinal",
+            "beginning_pending_terminal_parcels",
+            "wb14_child_receipt_set_sha256",
+            "terminal_snow_soil_trial_receipts",
+            "stage3_has_represented_ice",
+        ] {
+            assert!(preflight.contains(poison), "missing poison guard: {poison}");
+        }
+        for forbidden in [
+            "evaluate_stage3_persistent_support",
+            "evaluate_stage3_terminal_support",
+            "execute_covered_carrier_phase_v1",
+        ] {
+            assert!(!source.contains(forbidden), "reran physics: {forbidden}");
+        }
+    }
+
+    #[test]
+    fn pre_finalize_failure_has_no_publication_or_new_parcel_mutation() {
+        let source = accepted_branch_source();
+        let finalize = source
+            .find("finalize_v11_imported_segment")
+            .expect("finalize");
+        let before_finalize = &source[..finalize];
+        for forbidden in [
+            "self.last_",
+            "self.ending =",
+            "self.ending_stage3_by_lane =",
+            "self.pending_terminal_parcels.insert",
+            "self.pending_terminal_parcels =",
+        ] {
+            assert!(
+                !before_finalize.contains(forbidden),
+                "pre-finalize rollback surface mutated: {forbidden}"
+            );
+        }
+        assert!(source.contains("endpoint.beginning_pending_terminal_parcels"));
     }
 }
 

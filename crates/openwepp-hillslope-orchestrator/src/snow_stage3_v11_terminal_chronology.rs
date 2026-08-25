@@ -11,6 +11,8 @@ pub struct Stage3V11ActualTerminalCandidateV1 {
     pub terminal_state_sha256: Digest32,
     pub shortened_forcing_sha256: Digest32,
     pub shortened_owner_set_sha256: Digest32,
+    pub exact_endpoint_receipt_sha256: Option<Digest32>,
+    pub terminal_snow_soil_trial_receipt_sha256: Option<Digest32>,
 }
 
 pub(crate) fn canonical_terminal_event_result_digest(
@@ -58,6 +60,8 @@ impl Stage3V11ActualTerminalCandidateV1 {
             || self.event.evaluated_seconds < 0.0
             || self.event.unevaluated_seconds < 0.0
             || canonical_terminal_event_result_digest(&self.event)? != self.event_result_digest
+            || self.exact_endpoint_receipt_sha256.is_none()
+            || self.terminal_snow_soil_trial_receipt_sha256.is_none()
         {
             return Err(DirectSnowStage3V11AttachmentError::Terminal(
                 "actual terminal candidate identity/support",
@@ -126,6 +130,22 @@ fn terminal_event_group_digest(
         bytes.extend_from_slice(candidate.terminal_state_sha256.as_bytes());
         bytes.extend_from_slice(candidate.shortened_forcing_sha256.as_bytes());
         bytes.extend_from_slice(candidate.shortened_owner_set_sha256.as_bytes());
+        bytes.extend_from_slice(
+            candidate
+                .exact_endpoint_receipt_sha256
+                .ok_or(DirectSnowStage3V11AttachmentError::Terminal(
+                    "terminal group exact endpoint receipt",
+                ))?
+                .as_bytes(),
+        );
+        bytes.extend_from_slice(
+            candidate
+                .terminal_snow_soil_trial_receipt_sha256
+                .ok_or(DirectSnowStage3V11AttachmentError::Terminal(
+                    "terminal group snow-soil trial receipt",
+                ))?
+                .as_bytes(),
+        );
     }
     Ok(openwepp_coupled_time::digest_bytes(&bytes))
 }
