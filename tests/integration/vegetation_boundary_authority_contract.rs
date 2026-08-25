@@ -642,7 +642,7 @@ fn assurance_receipts_form_the_recorded_generation_chain() {
     let identity: Value = serde_json::from_str(&identity).expect("typed assurance identity lock");
     assert_eq!(
         identity["generation_id"],
-        "637f45224b280b5328c190d05114f3dba2e24922943f6bade70d7afb7c26bc4f"
+        "bddd853e1e723231ce6bf9ec8b9be863eafbf277b98ab991031dc6ed6c4d3274"
     );
     assert!(impact.contains(
         "initial `SC-PLANT-001.md` | `3208ab181e5eb9261a51bb3d8ea63d25c133244b8cf25b6949b4f4eb3a26cc1f`"
