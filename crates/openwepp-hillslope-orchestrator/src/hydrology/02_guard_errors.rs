@@ -567,6 +567,7 @@ impl Error for Wb11HydrologyKernelGuardError {
 pub enum SnowTerminalNumericsFailure {
     DomainOrNonFinite,
     StepUnderflow,
+    BelowCarrierDomain,
     RejectionLimit,
     InvalidEventBracket,
     EventIterationLimit,
