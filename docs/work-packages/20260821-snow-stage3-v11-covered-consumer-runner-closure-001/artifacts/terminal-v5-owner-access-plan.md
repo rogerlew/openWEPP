@@ -1,0 +1,60 @@
+# Terminal V5 owner-access plan
+
+No helper is authorized before two GO reviews.
+
+- `chronology | snow_stage3_v11_terminal_execution | schema node snapshot_set_v5 tag clock | private cfg(test) access required`
+- `coupling-evaluation | hydrology::runoff_reconciliation | schema node coupling_iteration_v5 tag incoming_hint | private cfg(test) access required`
+- `coupling-evaluation | hydrology::runoff_reconciliation | schema node coupling_iteration_v5 tag outgoing_hint | private cfg(test) access required`
+- `coupling-evaluation | openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::runoff_reconciliation::stage3_solver::terminal_event | crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/terminal_event.rs | private cfg(test) adapter required`
+- `coupling-evaluation | stage3_solver::evaluation | schema node coupling_iteration_v5 tag combined_converged | private cfg(test) access required`
+- `coupling-evaluation | stage3_solver::evaluation | schema node coupling_iteration_v5 tag component_checks | private cfg(test) access required`
+- `coupling-evaluation | stage3_solver::evaluation | schema node coupling_iteration_v5 tag identity | private cfg(test) access required`
+- `coupling-evaluation | stage3_solver::evaluation | schema node rejected_prefix_v5 tag iterations | private cfg(test) access required`
+- `coupling-evaluation | stage3_solver::terminal_event | schema node coupling_iteration_v5 tag flux | private cfg(test) access required`
+- `coupling-evaluation | stage3_solver::terminal_event | schema node coupling_iteration_v5 tag preview | private cfg(test) access required`
+- `coupling-selection | stage3_solver | schema node coupling_selection_v5 tag identity | private cfg(test) access required`
+- `coupling-selection | stage3_solver | schema node coupling_selection_v5 tag iteration_keys | private cfg(test) access required`
+- `coupling-selection | stage3_solver | schema node coupling_selection_v5 tag returned_digests | private cfg(test) access required`
+- `coupling-selection | stage3_solver | schema node coupling_selection_v5 tag selected_converged | private cfg(test) access required`
+- `coupling-selection | stage3_solver | schema node coupling_selection_v5 tag selected_keys | private cfg(test) access required`
+- `coupling-selection | stage3_solver | schema node rejected_prefix_v5 tag selections | private cfg(test) access required`
+- `identity | snow_stage3_v11_terminal_execution | schema node prefix_identity_v5 tag parent | private cfg(test) access required`
+- `multiple | owner access plan | schema node snapshot_set_v5 tag named_noninterference_fields | private cfg(test) access required`
+- `owner-set | snow_stage3_v11_terminal_execution | schema node snapshot_set_v5 tag owner_set | private cfg(test) access required`
+- `provider | snow_stage3_v11_terminal_execution | schema node snapshot_set_v5 tag provider_cursor_and_calls | private cfg(test) access required`
+- `provider | snow_stage3_v11_terminal_execution | schema node trial_admission_v5 tag provider_calls_after | private cfg(test) access required`
+- `provider | snow_stage3_v11_terminal_execution | schema node trial_admission_v5 tag provider_calls_before | private cfg(test) access required`
+- `provider-carrier | hydrology::runoff_reconciliation | schema node carrier_phase_v5 tag child | private cfg(test) access required`
+- `provider-carrier | hydrology::runoff_reconciliation | schema node carrier_phase_v5 tag request | private cfg(test) access required`
+- `provider-carrier | openwepp_hillslope_orchestrator::v11_covered::carrier_phase | crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs | private cfg(test) adapter required`
+- `provider-carrier | snow_stage3_v11_precipitation | schema node snapshot_set_v5 tag parcels | private cfg(test) access required`
+- `provider-carrier | stage3_solver::evaluation | schema node carrier_phase_v5 tag key | private cfg(test) access required`
+- `provider-carrier | v11_covered::carrier_phase | schema node carrier_phase_v5 tag projection | private cfg(test) access required`
+- `provider-carrier | v11_covered::carrier_phase | schema node rejected_prefix_v5 tag carrier_arena | private cfg(test) access required`
+- `receipt-owners | v11_covered::receipt_sets | schema node snapshot_set_v5 tag receipts | private cfg(test) access required`
+- `terminal-solver | hydrology::runoff_reconciliation | schema node snapshot_set_v5 tag joint | private cfg(test) access required`
+- `terminal-solver | openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::runoff_reconciliation::stage3_solver::terminal_event | crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/terminal_event.rs | private cfg(test) adapter required`
+- `terminal-solver | snow_stage3_v11_terminal_execution | schema node prefix_identity_v5 tag lane_id | private cfg(test) access required`
+- `terminal-solver | snow_stage3_v11_terminal_execution | schema node prefix_identity_v5 tag prefix | private cfg(test) access required`
+- `terminal-solver | snow_stage3_v11_terminal_execution | schema node rejected_prefix_v5 tag beginning_snapshots | private cfg(test) access required`
+- `terminal-solver | snow_stage3_v11_terminal_execution | schema node rejected_prefix_v5 tag ending_snapshots | private cfg(test) access required`
+- `terminal-solver | snow_stage3_v11_terminal_execution | schema node rejected_prefix_v5 tag prefix_identity | private cfg(test) access required`
+- `terminal-solver | snow_stage3_v11_terminal_execution | schema node snapshot_set_v5 tag execution_cursor | private cfg(test) access required`
+- `terminal-solver | stage3_solver::support | schema node rejected_prefix_v5 tag admissions | private cfg(test) access required`
+- `terminal-solver | stage3_solver::support | schema node trial_admission_v5 tag decision | private cfg(test) access required`
+- `terminal-solver | stage3_solver::support | schema node trial_admission_v5 tag ordinal | private cfg(test) access required`
+- `terminal-solver | stage3_solver::support | schema node trial_admission_v5 tag proposed_duration_bits | private cfg(test) access required`
+- `terminal-solver | stage3_solver::support | schema node trial_admission_v5 tag proposed_duration_finite | private cfg(test) access required`
+- `terminal-solver | stage3_solver::support | schema node trial_admission_v5 tag support_end | private cfg(test) access required`
+- `terminal-solver | stage3_solver::support | schema node trial_admission_v5 tag support_start | private cfg(test) access required`
+- `terminal-solver | stage3_solver::terminal_event | schema node pair_component_error_v5 tag component | private cfg(test) access required`
+- `terminal-solver | stage3_solver::terminal_event | schema node pair_component_error_v5 tag values | private cfg(test) access required`
+- `terminal-solver | stage3_solver::terminal_event | schema node pair_decision_v5 tag component_errors | private cfg(test) access required`
+- `terminal-solver | stage3_solver::terminal_event | schema node pair_decision_v5 tag current_duration | private cfg(test) access required`
+- `terminal-solver | stage3_solver::terminal_event | schema node pair_decision_v5 tag decision | private cfg(test) access required`
+- `terminal-solver | stage3_solver::terminal_event | schema node pair_decision_v5 tag identity | private cfg(test) access required`
+- `terminal-solver | stage3_solver::terminal_event | schema node pair_decision_v5 tag maximum_scaled | private cfg(test) access required`
+- `terminal-solver | stage3_solver::terminal_event | schema node pair_decision_v5 tag proposed_next | private cfg(test) access required`
+- `terminal-solver | stage3_solver::terminal_event | schema node pair_decision_v5 tag refined_digests | private cfg(test) access required`
+- `terminal-solver | stage3_solver::terminal_event | schema node pair_decision_v5 tag winner | private cfg(test) access required`
+- `terminal-solver | stage3_solver::terminal_event | schema node rejected_prefix_v5 tag pair_decisions | private cfg(test) access required`
