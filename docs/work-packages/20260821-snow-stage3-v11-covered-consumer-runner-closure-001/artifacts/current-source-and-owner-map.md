@@ -27,9 +27,9 @@ lower-boundary branch. It suppresses covered ground water, sensible/vapor,
 soil-storage, and WB14-facing operators while keeping the snow-free branch
 unchanged. The live path now consumes destination-keyed physical boundaries,
 includes Stage-3 shortwave, and closes the bounded covered fixed point using
-the accepted current-trial boundary receipts. Persistent-support closure is
-still blocked on precipitation mass/advection custody, the heterogeneous
+the accepted current-trial boundary receipts. Persistent-support closure now
+also includes sealed precipitation mass/advection custody, the heterogeneous
 snow--soil conductive-heat transaction, and an independent postcandidate
-physical outcome ledger. Those remaining owners, rather than keyed
-consumption, shortwave, or fixed-point availability, define the next
-implementation checkpoint.
+physical outcome ledger. Terminal chronology is the next implementation
+checkpoint, followed by runner construction, exact-once terminal-liquid
+consumption, and additive restart.

@@ -117,6 +117,31 @@ fields.
 
 ## Progress log
 
+### 2026-08-24 persistent covered physical-custody checkpoint PASS
+
+The released `SC-SNOWENERGY-001@18` and `SC-LANDSURFACEENERGY-001@8`
+implementation closes sealed precipitation mass/advection custody, the exact
+snow--soil conductive transaction, installed snow/soil owner joins, and the
+independent postcandidate physical outcome ledger. Receipt poisons and atomic
+rollback pass. Independent science, ownership, Rust/API, and Rust QA reviews
+all passed; exact-clean implementation `43cc9bbea2fbf5fe6ab6596cee4162de75cef999`
+passed the full workspace (`3,300/3,300`). This checkpoint is closed and must
+not be reopened without new failing evidence. Child 1 remains executing for
+terminal chronology and its ordered successors.
+
+### 2026-08-24 terminal-chronology implementation intent
+
+Implement the distinct terminal-aware parent chronology authorized by
+`SC-COUPLEDTIME-001` and `SC-SNOWFREEZE-001`: project every candidate support,
+rerun the actual covered fixed point from immutable beginnings, select the
+common earliest reproduced lane event, stage all owners to that tick, apply a
+zero-duration participant/regime/custody transition, retain terminal parcels
+as `ProducedUnconsumed`, and continue each lane in its actual successor regime.
+Same-tick events coalesce deterministically and later lane events create later
+boundaries inside the same 1,800-second parent. Persistent execution guards,
+solid-precipitation/reappearance rejection, selectors, defaults, production
+ownership, CoE, restart wires, and terminal-liquid consumers remain unchanged.
+
 ### 2026-08-24 covered physical-custody intake and authority gate
 
 Implementation intent: close one bounded persistent covered-physical-custody
