@@ -448,6 +448,13 @@ manifest tests prove exact custody for both routes. A forced live drainage
 configuration was not claimed because its LSE state correctly rejected as
 singular/outside-domain.
 
+`Ran / assurance:` typed source adoption for the amended snow-energy contract
+created transaction `607a5e68b2ff34cdd18b8ac83c4ad9748e5721ea369741373dbe6b742686584c`,
+generation `bddd853e1e723231ce6bf9ec8b9be863eafbf277b98ab991031dc6ed6c4d3274`.
+`validate --all` passed and the retained-genesis verification passed all 90
+transitions. The generator, not a hand edit, updated the identity and review
+locks.
+
 `Static / QA:` warnings-denied orchestrator Clippy remains non-green on the
 documented baseline, with no net-new finding (91 preceding diagnostics at the
 current tree versus 92 at the clean base). Touched production files are below

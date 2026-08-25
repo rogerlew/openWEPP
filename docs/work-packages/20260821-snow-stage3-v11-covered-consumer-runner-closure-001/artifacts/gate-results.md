@@ -923,6 +923,7 @@ matrix, and terminal-review obligations.
 | Authority anti-evasion / required-suite guard | PASS / PASS: 3/3 |
 | Science-contract admission | `A0_ADMITTED`: 49 contracts, 30 science surfaces, base `91bc971f415d36fb7fef4dcafa81479ac1522820` |
 | Final frost workspace profile | PASS: 422/422, one slow, 2,884 profile skips |
+| Typed assurance source adoption | PASS: transaction `607a5e68...`, generation `bddd853e...`, 90-transition chain verified |
 | Warnings-denied affected Clippy | Retained documented baseline; no net-new finding |
 | Structural ceiling | PASS: touched production sources 2,976 / 2,907 / 2,995 lines |
 
@@ -933,3 +934,9 @@ outcome custody are closed. Child 1 remains `EXECUTING / HOLD` on terminal
 chronology, runner-owned day construction, terminal-liquid consumption,
 restart, and terminal qualification. Stage 3 remains default-off; selectors,
 production outputs, CoE, frozen restart wires, and publication are unchanged.
+
+The first exact-clean implementation-SHA workspace run exposed only the stale
+assurance binding for the amended snow-energy contract and one retained EB03
+lifecycle assertion naming v16. The typed source-adoption transaction and the
+v18 lifecycle reconciliation correct those closure defects without changing
+physics; the superseded 3,218/3,300 result is not claimed as passing evidence.
