@@ -243,6 +243,33 @@ mapping, separate retry-pair versus subsequent floor-decision custody, signed
 error/tie semantics, and complete receipt-adapter schemas. No diagnostic seam,
 capture, matrix or production implementation intent is authorized.
 
+### 2026-08-25 rejected-pair evidence-correlation authority V3 intent
+
+Preserve V2 unchanged and close its numerical HOLD through a distinct V3
+authority. New finding `TDCV2-NUM-006` separates provider-owned immutable
+carrier phase, evaluation-owned flux/preview, coupling-owned selection and
+terminal-solver-owned hydrology ending. V3 also separates pair position from
+the exact live role enum, represents the rejected pair and subsequent
+pre-provider floor decision independently, freezes the signed error and
+binary64 maximum/winner convention, and binds a complete A1--A10 adapter-schema
+manifest using big-endian framed primitives and `ModelTimeNs` as `u128`.
+
+Only authority-stage gates and two independent exact-hash reviews are
+authorized. Either HOLD stops before source edits. Two `GO-to-evidence`
+reviews authorize only a later exact-file implementation intent naming the
+complete private forwarding chain; they do not themselves authorize source
+implementation.
+
+Review disposition: both exact-hash V3 reviews returned `HOLD`. Reviewers
+accepted the provider/coupling/selection/hydrology split, exact live-role and
+pair-position mapping, separate pair/floor decisions, and frozen binary64
+error convention. The gate failed because A9 contradicts that ownership split,
+A4/A5/A7/A8 do not match or completely enumerate live Rust payloads, the exact
+owner-module file boundary is absent, and non-carrier record/error encodings
+remain incomplete. No exact-file implementation intent or source edit is
+authorized; the existing `BelowCarrierDomain` result and all downstream holds
+remain exact.
+
 ### 2026-08-24 covered physical-custody intake and authority gate
 
 Implementation intent: close one bounded persistent covered-physical-custody
