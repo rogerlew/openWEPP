@@ -1,6 +1,6 @@
+use super::terminal_event::{TerminalFluxIntegral, TerminalState};
 #[allow(clippy::wildcard_imports)]
 use super::*;
-use super::terminal_event::{TerminalFluxIntegral, TerminalState};
 
 #[allow(clippy::cast_precision_loss)]
 fn support_duration_seconds(duration_ns: u128) -> f64 {
@@ -46,8 +46,7 @@ impl Wb11HydrologyKernel {
             dewpoint_c: inputs.dewpoint_c,
             wind_speed_m_s: inputs.wind_m_s,
             air_pressure_pa: inputs.surface_energy_options.atmospheric_pressure_pa,
-            hourly_radiation_mj_m2: shortwave_flux_w_m2 * STAGE3_SECONDS_PER_HOUR
-                / 1_000_000.0,
+            hourly_radiation_mj_m2: shortwave_flux_w_m2 * STAGE3_SECONDS_PER_HOUR / 1_000_000.0,
             daily_solar_radiation_mj_m2: 0.0,
             daily_extraterrestrial_radiation_mj_m2: 0.0,
             daylight: false,
@@ -78,9 +77,18 @@ impl Wb11HydrologyKernel {
             net_longwave_w_m2,
             longwave_model_id: "dilley_unsworth_subcanopy_v1",
             sublimation_model_id: "disabled",
-            air_temperature_height_m: inputs.surface_energy_options.turbulent_geometry.air_temperature_height_m,
-            vapor_pressure_height_m: inputs.surface_energy_options.turbulent_geometry.vapor_pressure_height_m,
-            wind_speed_height_m: inputs.surface_energy_options.turbulent_geometry.wind_speed_height_m,
+            air_temperature_height_m: inputs
+                .surface_energy_options
+                .turbulent_geometry
+                .air_temperature_height_m,
+            vapor_pressure_height_m: inputs
+                .surface_energy_options
+                .turbulent_geometry
+                .vapor_pressure_height_m,
+            wind_speed_height_m: inputs
+                .surface_energy_options
+                .turbulent_geometry
+                .wind_speed_height_m,
             aerodynamic_roughness_length_m: inputs
                 .surface_energy_options
                 .turbulent_geometry
@@ -103,7 +111,11 @@ impl Wb11HydrologyKernel {
         }
     }
 
-    #[allow(clippy::cast_precision_loss, clippy::too_many_lines, clippy::too_many_arguments)]
+    #[allow(
+        clippy::cast_precision_loss,
+        clippy::too_many_lines,
+        clippy::too_many_arguments
+    )]
     pub(super) fn evaluate_stage3_sequential_melt_shadow(
         phase_class: HillslopeKernelPhaseClass,
         tag: Stage3EvaluationTag,
@@ -116,6 +128,7 @@ impl Wb11HydrologyKernel {
         boundary: Option<Stage3SnowSurfaceBoundaryReceiptV1>,
         mut terminal_trial_context: Option<(
             TimeSupport,
+            CoveredTerminalJointTrialStateV1,
             &mut CoveredTerminalTrialProviderV1<'_>,
         )>,
     ) -> Result<Stage3ShadowSummary, DirectSnowStage3EvaluationError> {
@@ -146,19 +159,13 @@ impl Wb11HydrologyKernel {
             .iter()
             .map(|support| support.duration_seconds)
             .sum::<f64>();
-        Self::stage3_shadow_fingerprints(
-            inputs,
-            &layers,
-            &cold_content_by_layer,
-            &mut summary,
-        );
-        summary.complete_arm_non_formulation_fingerprint =
-            summary.non_formulation_fingerprint;
+        Self::stage3_shadow_fingerprints(inputs, &layers, &cold_content_by_layer, &mut summary);
+        summary.complete_arm_non_formulation_fingerprint = summary.non_formulation_fingerprint;
         for (hour, support) in summary.hourly.iter_mut().zip(supports) {
             hour.requested_seconds = support.duration_seconds;
         }
-        let resolved_at_day_start = Self::stage3_total_ice_mass_swe_m(&layers)
-            > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M;
+        let resolved_at_day_start =
+            Self::stage3_total_ice_mass_swe_m(&layers) > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M;
         let mut prepared_active_layer_count = None;
         'hours: for (hour_index, support) in supports.iter().copied().enumerate() {
             let hourly = support.forcing;
@@ -199,8 +206,8 @@ impl Wb11HydrologyKernel {
                         && tag.operator
                             == SnowStage3EvaluationOperator::PersistentAccumulationShadowV1
                     {
-                        let start_ice_kg_m2 = Self::stage3_total_ice_mass_swe_m(&layers)
-                            * STAGE3_RHO_WATER_KG_M3;
+                        let start_ice_kg_m2 =
+                            Self::stage3_total_ice_mass_swe_m(&layers) * STAGE3_RHO_WATER_KG_M3;
                         let start_liquid_kg_m2 = layers
                             .iter()
                             .map(|layer| layer.liquid_water_m * STAGE3_RHO_WATER_KG_M3)
@@ -215,6 +222,9 @@ impl Wb11HydrologyKernel {
                             inputs.newsnw_kg_m3
                         };
                         let remaining_seconds = support_seconds - elapsed_seconds;
+                        let initial_joint = terminal_trial_context
+                            .as_ref()
+                            .map(|(_, joint, _)| joint.clone());
                         let mut terminal = Self::solve_terminal_enthalpy_event(
                             phase_class,
                             hour_index,
@@ -225,7 +235,9 @@ impl Wb11HydrologyKernel {
                                 liquid_kg_m2: start_liquid_kg_m2,
                                 cold_content_j_m2: start_cold_content_j_m2,
                             },
+                            initial_joint,
                             |trial_state,
+                             beginning_joint,
                              relative_start_seconds,
                              duration_seconds,
                              role,
@@ -240,7 +252,7 @@ impl Wb11HydrologyKernel {
                                 } else {
                                     0.0
                                 };
-                                let trial_boundary = if let Some((base_support, provider)) =
+                                let trial_transition = if let Some((base_support, _, provider)) =
                                     terminal_trial_context.as_mut()
                                 {
                                     let start_offset_ns = seconds_to_exact_ns(
@@ -297,6 +309,15 @@ impl Wb11HydrologyKernel {
                                                 None,
                                             )
                                         })?;
+                                    let beginning_joint = beginning_joint.as_ref().ok_or_else(|| {
+                                        Wb11HydrologyKernel::stage3_domain_error(
+                                            phase_class,
+                                            "snow.terminal_trial_missing_joint_state",
+                                            1.0,
+                                            Some(0.0),
+                                            Some(0.0),
+                                        )
+                                    })?;
                                     let receipt = (**provider)(CoveredTerminalTrialRequestV1 {
                                         support: trial_support,
                                         role,
@@ -307,8 +328,18 @@ impl Wb11HydrologyKernel {
                                         surface_temperature_c,
                                         snow_depth_m: trial_depth_m,
                                         snow_density_kg_m3: density_kg_m3,
+                                        beginning_joint: beginning_joint.clone(),
                                     })?;
-                                    if receipt.support != trial_support {
+                                    if receipt.boundary.support != trial_support
+                                        || receipt.beginning_joint != *beginning_joint
+                                        || receipt.probe_child_identity.trial_support
+                                            != trial_support
+                                        || receipt.probe_child_identity.role != role
+                                        || receipt.probe_child_identity.attempt_ordinal
+                                            != attempt_ordinal
+                                        || receipt.probe_child_identity.beginning_joint_sha256
+                                            != beginning_joint.receipt_sha256()
+                                    {
                                         return Err(Wb11HydrologyKernel::stage3_domain_error(
                                             phase_class,
                                             "snow.terminal_trial_boundary_support_join",
@@ -322,6 +353,9 @@ impl Wb11HydrologyKernel {
                                 } else {
                                     None
                                 };
+                                let trial_boundary = trial_transition
+                                    .as_ref()
+                                    .map(|transition| transition.boundary.clone());
                                 let carrier = Self::stage3_hourly_surface_energy(
                                     phase_class,
                                     inputs,
@@ -345,9 +379,8 @@ impl Wb11HydrologyKernel {
                                         ),
                                     }
                                 })?;
-                                Ok(TerminalFluxIntegral {
-                                    complete_energy_j_m2: surface
-                                        .shadow_complete_energy_j_m2,
+                                let flux = TerminalFluxIntegral {
+                                    complete_energy_j_m2: surface.shadow_complete_energy_j_m2,
                                     vapor_mass_exchange_kg_m2: surface
                                         .shadow_vapor_mass_exchange_kg_m2,
                                     shortwave_energy_j_m2: carrier.shortwave_j_m2,
@@ -368,7 +401,12 @@ impl Wb11HydrologyKernel {
                                         * STAGE3_RHO_WATER_KG_M3
                                         * duration_seconds
                                         / support_seconds,
-                                })
+                                };
+                                let ending_joint = trial_transition.map_or_else(
+                                    || beginning_joint.clone(),
+                                    |value| Some(value.ending_joint),
+                                );
+                                Ok((flux, ending_joint))
                             },
                         )?;
                         terminal.entry_solid_precipitation_kg_m2 =
@@ -377,12 +415,9 @@ impl Wb11HydrologyKernel {
                         hour.complete_energy_j_m2 += terminal.complete_energy_j_m2;
                         hour.shortwave_energy_j_m2 += terminal.shortwave_energy_j_m2;
                         hour.longwave_energy_j_m2 += terminal.longwave_energy_j_m2;
-                        hour.sensible_flux_w_m2 += terminal.sensible_energy_j_m2
-                            / support_seconds;
-                        hour.latent_flux_w_m2 += terminal.latent_energy_j_m2
-                            / support_seconds;
-                        hour.advected_flux_w_m2 += terminal.advected_energy_j_m2
-                            / support_seconds;
+                        hour.sensible_flux_w_m2 += terminal.sensible_energy_j_m2 / support_seconds;
+                        hour.latent_flux_w_m2 += terminal.latent_energy_j_m2 / support_seconds;
+                        hour.advected_flux_w_m2 += terminal.advected_energy_j_m2 / support_seconds;
                         hour.cold_required_j_m2 += terminal.start_cold_content_j_m2;
                         hour.cold_energy_change_j_m2 += terminal.cold_energy_change_j_m2;
                         hour.excess_energy_j_m2 += (terminal.complete_energy_j_m2
@@ -392,8 +427,7 @@ impl Wb11HydrologyKernel {
                         hour.melt_kg_m2 += terminal.melt_kg_m2;
                         hour.unallocated_after_exhaustion_j_m2 +=
                             terminal.terminal_unallocated_energy_j_m2;
-                        hour.energy_closure_residual_j_m2 +=
-                            terminal.energy_closure_residual_j_m2;
+                        hour.energy_closure_residual_j_m2 += terminal.energy_closure_residual_j_m2;
                         hour.complete_carrier_evaluated = terminal.evaluated_seconds > 0.0;
                         hour.evaluated_seconds += terminal.evaluated_seconds;
                         summary.evaluated_seconds += terminal.evaluated_seconds;
@@ -443,8 +477,7 @@ impl Wb11HydrologyKernel {
                             layers.clear();
                             cold_content_by_layer.clear();
                             layers.push(DirectSnowLayerState {
-                                mass_swe_m: terminal.end_ice_kg_m2
-                                    / STAGE3_RHO_WATER_KG_M3,
+                                mass_swe_m: terminal.end_ice_kg_m2 / STAGE3_RHO_WATER_KG_M3,
                                 thickness_m: terminal.end_ice_kg_m2 / density_kg_m3,
                                 density_kg_m3,
                                 settle_day_count: layer.settle_day_count,
@@ -455,8 +488,7 @@ impl Wb11HydrologyKernel {
                                 liquid_water_m: terminal.terminal_liquid_kg_m2
                                     / STAGE3_RHO_WATER_KG_M3,
                                 cold_content_j_m2: terminal.end_cold_content_j_m2,
-                                refrozen_liquid_m: terminal.refrozen_kg_m2
-                                    / STAGE3_RHO_WATER_KG_M3,
+                                refrozen_liquid_m: terminal.refrozen_kg_m2 / STAGE3_RHO_WATER_KG_M3,
                             });
                             cold_content_by_layer.push(terminal.end_cold_content_j_m2);
                         }
@@ -517,9 +549,7 @@ impl Wb11HydrologyKernel {
                 let carrier_reconciliation = carrier.reconciliation.ok_or_else(|| {
                     Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
                         phase_class,
-                        symbol: BoundarySymbol::from(
-                            "snow.stage3_operator_reconciliation_carrier",
-                        ),
+                        symbol: BoundarySymbol::from("snow.stage3_operator_reconciliation_carrier"),
                     }
                 })?;
                 let conduction = Self::apply_stage3_active_lower_conduction(
@@ -540,8 +570,7 @@ impl Wb11HydrologyKernel {
                     0,
                     active_layer_count,
                 );
-                let cold_after_surface_energy_j_m2 = cold_content_by_layer
-                    [..active_layer_count]
+                let cold_after_surface_energy_j_m2 = cold_content_by_layer[..active_layer_count]
                     .iter()
                     .sum::<f64>();
                 let cold_energy_change_before_refreeze_j_m2 =
@@ -549,8 +578,7 @@ impl Wb11HydrologyKernel {
                 let lower_cold_after_j_m2 = cold_content_by_layer[active_layer_count..]
                     .iter()
                     .sum::<f64>();
-                let lower_cold_energy_change_j_m2 =
-                    lower_cold_before_j_m2 - lower_cold_after_j_m2;
+                let lower_cold_energy_change_j_m2 = lower_cold_before_j_m2 - lower_cold_after_j_m2;
                 let excess_energy_j_m2 =
                     (q_complete_j_m2 - cold_energy_change_before_refreeze_j_m2).max(0.0);
                 let active_ice_kg_m2 = layers[..active_layer_count]
@@ -560,13 +588,11 @@ impl Wb11HydrologyKernel {
                 let sublimation_kg_m2 = (-surface.shadow_vapor_mass_exchange_kg_m2)
                     .max(0.0)
                     .min(active_ice_kg_m2);
-                let ice_available_kg_m2 =
-                    (active_ice_kg_m2 - sublimation_kg_m2).max(0.0);
-                let melt_kg_m2 = (excess_energy_j_m2 / STAGE3_LATENT_HEAT_FUSION_J_KG)
-                    .min(ice_available_kg_m2);
-                let unallocated_j_m2 = (excess_energy_j_m2
-                    - STAGE3_LATENT_HEAT_FUSION_J_KG * melt_kg_m2)
-                    .max(0.0);
+                let ice_available_kg_m2 = (active_ice_kg_m2 - sublimation_kg_m2).max(0.0);
+                let melt_kg_m2 =
+                    (excess_energy_j_m2 / STAGE3_LATENT_HEAT_FUSION_J_KG).min(ice_available_kg_m2);
+                let unallocated_j_m2 =
+                    (excess_energy_j_m2 - STAGE3_LATENT_HEAT_FUSION_J_KG * melt_kg_m2).max(0.0);
                 let mut removal_active_count = active_layer_count;
                 let mut cold_content_export_j_m2 = 0.0;
                 if melt_kg_m2 > 0.0 {
@@ -578,9 +604,8 @@ impl Wb11HydrologyKernel {
                     );
                     cold_content_export_j_m2 += exported_j_m2;
                 }
-                let external_rain_kg_m2 = hourly.rain_m * STAGE3_RHO_WATER_KG_M3
-                    * substep_seconds
-                    / support_seconds;
+                let external_rain_kg_m2 =
+                    hourly.rain_m * STAGE3_RHO_WATER_KG_M3 * substep_seconds / support_seconds;
                 let (routed_liquid_kg_m2, retained_liquid_kg_m2, refrozen_kg_m2) =
                     Self::route_stage3_persistent_liquid_through_layers(
                         phase_class,
@@ -599,8 +624,7 @@ impl Wb11HydrologyKernel {
                     Some(0.0),
                     Some(1.0e-12),
                 )?;
-                let refreeze_energy_j_m2 =
-                    STAGE3_LATENT_HEAT_FUSION_J_KG * refrozen_kg_m2;
+                let refreeze_energy_j_m2 = STAGE3_LATENT_HEAT_FUSION_J_KG * refrozen_kg_m2;
                 let actual_cold_energy_change_j_m2 =
                     cold_energy_change_before_refreeze_j_m2 + refreeze_energy_j_m2;
                 let cold_energy_change_j_m2 = cold_energy_change_before_refreeze_j_m2;
@@ -629,8 +653,8 @@ impl Wb11HydrologyKernel {
                 if deposition_kg_m2 > 0.0 && !layers.is_empty() {
                     let deposition_swe_m = deposition_kg_m2 / STAGE3_RHO_WATER_KG_M3;
                     layers[0].mass_swe_m += deposition_swe_m;
-                    layers[0].thickness_m = layers[0].mass_swe_m * STAGE3_RHO_WATER_KG_M3
-                        / layers[0].density_kg_m3;
+                    layers[0].thickness_m =
+                        layers[0].mass_swe_m * STAGE3_RHO_WATER_KG_M3 / layers[0].density_kg_m3;
                 }
 
                 let resolved_before_preparation = !layers.is_empty()
@@ -699,8 +723,7 @@ impl Wb11HydrologyKernel {
                 hour.longwave_energy_j_m2 += carrier.longwave_j_m2;
                 hour.internal_active_lower_conduction_j_m2 += conduction.active_energy;
                 hour.complete_energy_j_m2 += q_complete_j_m2;
-                hour.vapor_mass_exchange_kg_m2 +=
-                    surface.shadow_vapor_mass_exchange_kg_m2;
+                hour.vapor_mass_exchange_kg_m2 += surface.shadow_vapor_mass_exchange_kg_m2;
                 hour.cold_required_j_m2 += cold_required_j_m2;
                 hour.cold_energy_change_j_m2 += cold_energy_change_j_m2;
                 hour.cold_content_export_j_m2 += cold_content_export_j_m2;
@@ -717,8 +740,7 @@ impl Wb11HydrologyKernel {
                 summary.complete_longwave_j_m2 += carrier.longwave_j_m2;
                 summary.complete_sensible_j_m2 +=
                     surface.shadow_sensible_flux_w_m2 * substep_seconds;
-                summary.complete_latent_j_m2 +=
-                    surface.shadow_latent_flux_w_m2 * substep_seconds;
+                summary.complete_latent_j_m2 += surface.shadow_latent_flux_w_m2 * substep_seconds;
                 summary.complete_advected_j_m2 +=
                     surface.shadow_advected_flux_w_m2 * substep_seconds;
                 summary.complete_snow_soil_heat_j_m2 +=
@@ -753,13 +775,14 @@ impl Wb11HydrologyKernel {
                     };
             }
         }
-        for (layer, cold_content_j_m2) in layers
-            .iter_mut()
-            .zip(cold_content_by_layer.iter().copied())
+        for (layer, cold_content_j_m2) in
+            layers.iter_mut().zip(cold_content_by_layer.iter().copied())
         {
             layer.cold_content_j_m2 = cold_content_j_m2;
-            layer.temperature_c =
-                Self::stage3_temperature_from_cold_content_values(layer.mass_swe_m, cold_content_j_m2);
+            layer.temperature_c = Self::stage3_temperature_from_cold_content_values(
+                layer.mass_swe_m,
+                cold_content_j_m2,
+            );
         }
         summary.final_layers = layers;
         Ok(summary)
@@ -781,30 +804,25 @@ impl Wb11HydrologyKernel {
         let mut liquid_to_route_kg_m2 = incoming_liquid_kg_m2;
         let mut retained_kg_m2 = 0.0;
         let mut refrozen_kg_m2 = 0.0;
-        for (layer, cold_content_j_m2) in
-            layers.iter_mut().zip(cold_content_by_layer.iter_mut())
-        {
+        for (layer, cold_content_j_m2) in layers.iter_mut().zip(cold_content_by_layer.iter_mut()) {
             let refreeze_capacity_kg_m2 =
                 (*cold_content_j_m2 / STAGE3_LATENT_HEAT_FUSION_J_KG).max(0.0);
             let refrozen_here_kg_m2 = liquid_to_route_kg_m2.min(refreeze_capacity_kg_m2);
             liquid_to_route_kg_m2 -= refrozen_here_kg_m2;
-            *cold_content_j_m2 -=
-                refrozen_here_kg_m2 * STAGE3_LATENT_HEAT_FUSION_J_KG;
+            *cold_content_j_m2 -= refrozen_here_kg_m2 * STAGE3_LATENT_HEAT_FUSION_J_KG;
             let refrozen_here_m = refrozen_here_kg_m2 / STAGE3_RHO_WATER_KG_M3;
             layer.mass_swe_m += refrozen_here_m;
             layer.refrozen_liquid_m += refrozen_here_m;
-            layer.thickness_m = layer.mass_swe_m * STAGE3_RHO_WATER_KG_M3
-                / layer.density_kg_m3;
+            layer.thickness_m = layer.mass_swe_m * STAGE3_RHO_WATER_KG_M3 / layer.density_kg_m3;
             refrozen_kg_m2 += refrozen_here_kg_m2;
 
             let capacity_kg_m2 = Self::stage3_layer_liquid_holding_capacity_m(
                 layer.thickness_m,
                 layer.density_kg_m3,
             ) * STAGE3_RHO_WATER_KG_M3;
-            let existing_liquid_kg_m2 =
-                layer.liquid_water_m * STAGE3_RHO_WATER_KG_M3;
-            let retained_here_kg_m2 = liquid_to_route_kg_m2
-                .min((capacity_kg_m2 - existing_liquid_kg_m2).max(0.0));
+            let existing_liquid_kg_m2 = layer.liquid_water_m * STAGE3_RHO_WATER_KG_M3;
+            let retained_here_kg_m2 =
+                liquid_to_route_kg_m2.min((capacity_kg_m2 - existing_liquid_kg_m2).max(0.0));
             liquid_to_route_kg_m2 -= retained_here_kg_m2;
             layer.liquid_water_m += retained_here_kg_m2 / STAGE3_RHO_WATER_KG_M3;
             retained_kg_m2 += retained_here_kg_m2;
@@ -837,11 +855,7 @@ impl Wb11HydrologyKernel {
             &mut layers[active_layer_count..],
             &mut cold_content_by_layer[active_layer_count..],
         );
-        Self::coalesce_stage3_thermal_fragments(
-            layers,
-            cold_content_by_layer,
-            active_layer_count,
-        )
+        Self::coalesce_stage3_thermal_fragments(layers, cold_content_by_layer, active_layer_count)
     }
 
     #[allow(clippy::too_many_lines)]
@@ -860,9 +874,7 @@ impl Wb11HydrologyKernel {
         for hour in &mut summary.hourly {
             hour.requested_seconds = STAGE3_SECONDS_PER_HOUR;
         }
-        if Self::stage3_total_ice_mass_swe_m(layers)
-            <= STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
-        {
+        if Self::stage3_total_ice_mass_swe_m(layers) <= STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M {
             for status in &mut summary.reconciliation.hourly_status {
                 *status = DirectSnowStage3ReconciliationHourStatus {
                     evaluated: false,
@@ -932,14 +944,10 @@ impl Wb11HydrologyKernel {
             summary.surface_arm_total_j_m2 += carrier.total_j_m2;
             summary.complete_shortwave_j_m2 += carrier.shortwave_j_m2;
             summary.complete_longwave_j_m2 += carrier.longwave_j_m2;
-            summary.complete_sensible_j_m2 +=
-                hour.sensible_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
-            summary.complete_latent_j_m2 +=
-                hour.latent_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
-            summary.complete_advected_j_m2 +=
-                hour.advected_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
-            summary.complete_vapor_mass_exchange_kg_m2 +=
-                hour.vapor_mass_exchange_kg_m2;
+            summary.complete_sensible_j_m2 += hour.sensible_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
+            summary.complete_latent_j_m2 += hour.latent_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
+            summary.complete_advected_j_m2 += hour.advected_flux_w_m2 * STAGE3_SECONDS_PER_HOUR;
+            summary.complete_vapor_mass_exchange_kg_m2 += hour.vapor_mass_exchange_kg_m2;
             summary.complete_energy_j_m2 += hour.complete_energy_j_m2;
             summary.reconciliation.hourly_status[hour_index] =
                 DirectSnowStage3ReconciliationHourStatus {
@@ -1007,7 +1015,8 @@ impl Wb11HydrologyKernel {
             forcing = Self::stage3_fnv1a_bytes(forcing, hour.phase_model.id().as_bytes());
             forcing = Self::stage3_fnv1a_u64(
                 forcing,
-                hour.hydrometeor_temperature_c.map_or(u64::MAX, f64::to_bits),
+                hour.hydrometeor_temperature_c
+                    .map_or(u64::MAX, f64::to_bits),
             );
         }
         for value in [
@@ -1023,17 +1032,19 @@ impl Wb11HydrologyKernel {
         ] {
             forcing = Self::stage3_fnv1a_u64(forcing, value.to_bits());
         }
-        forcing = Self::stage3_fnv1a_u64(
-            forcing,
-            u64::from(inputs.surface_energy_options.daylight),
-        );
+        forcing =
+            Self::stage3_fnv1a_u64(forcing, u64::from(inputs.surface_energy_options.daylight));
         forcing = Self::stage3_fnv1a_bytes(
             forcing,
             inputs.surface_energy_options.longwave_model.id().as_bytes(),
         );
         forcing = Self::stage3_fnv1a_bytes(
             forcing,
-            inputs.surface_energy_options.sublimation_model.id().as_bytes(),
+            inputs
+                .surface_energy_options
+                .sublimation_model
+                .id()
+                .as_bytes(),
         );
         match inputs.snow_albedo_state {
             Some(state) => {
@@ -1142,10 +1153,7 @@ impl Wb11HydrologyKernel {
             0.0
         };
         let surface_temperature_c = if active_mass_swe_m > 0.0 {
-            Self::stage3_temperature_from_cold_content_values(
-                active_mass_swe_m,
-                active_cold_j_m2,
-            )
+            Self::stage3_temperature_from_cold_content_values(active_mass_swe_m, active_cold_j_m2)
         } else {
             0.0
         };
@@ -1241,10 +1249,8 @@ impl Wb11HydrologyKernel {
                 .then_some(after.active_density_kg_m3),
             active_cold_before_j_m2: before.active_cold_j_m2,
             active_cold_after_j_m2: after_surface_applicable.then_some(after.active_cold_j_m2),
-            lower_cold_before_conduction_j_m2: transfer
-                .lower_cold_before_conduction_j_m2,
-            lower_cold_after_conduction_j_m2: transfer
-                .lower_cold_after_conduction_j_m2,
+            lower_cold_before_conduction_j_m2: transfer.lower_cold_before_conduction_j_m2,
+            lower_cold_after_conduction_j_m2: transfer.lower_cold_after_conduction_j_m2,
             total_cold_before_j_m2: before.total_cold_j_m2,
             total_cold_after_j_m2: after.total_cold_j_m2,
             surface_temperature_before_c: before.surface_temperature_c,
@@ -1256,8 +1262,7 @@ impl Wb11HydrologyKernel {
             air_pressure_pa: carrier.air_pressure_pa,
             hourly_radiation_mj_m2: carrier.hourly_radiation_mj_m2,
             daily_solar_radiation_mj_m2: carrier.daily_solar_radiation_mj_m2,
-            daily_extraterrestrial_radiation_mj_m2: carrier
-                .daily_extraterrestrial_radiation_mj_m2,
+            daily_extraterrestrial_radiation_mj_m2: carrier.daily_extraterrestrial_radiation_mj_m2,
             daylight: carrier.daylight,
             canopy_cover_fraction: carrier.canopy_cover_fraction,
             rain_m: carrier.rain_m,
@@ -1290,11 +1295,10 @@ impl Wb11HydrologyKernel {
             wind_speed_height_m: carrier.wind_speed_height_m,
             aerodynamic_roughness_length_m: carrier.aerodynamic_roughness_length_m,
             turbulent_max_iterations: carrier.turbulent_options.max_iterations,
-            turbulent_convergence_tolerance: carrier
-                .turbulent_options
-                .convergence_tolerance,
+            turbulent_convergence_tolerance: carrier.turbulent_options.convergence_tolerance,
             surface_vapor_pressure_pa: carrier.surface_vapor_pressure_pa,
-            air_potential_temperature_k: turbulent.and_then(|value| value.air_potential_temperature_k),
+            air_potential_temperature_k: turbulent
+                .and_then(|value| value.air_potential_temperature_k),
             surface_temperature_k: turbulent.and_then(|value| value.surface_temperature_k),
             specific_humidity_air_kg_kg: turbulent
                 .and_then(|value| value.specific_humidity_air_kg_kg),
@@ -1307,7 +1311,8 @@ impl Wb11HydrologyKernel {
             log_latent: turbulent.and_then(|value| value.log_latent),
             turbulent_termination_status: turbulent
                 .map_or("shared_boundary_v1", |value| value.termination_status.id()),
-            stability_class: turbulent.map_or("shared_boundary_v1", |value| value.stability_class.id()),
+            stability_class: turbulent
+                .map_or("shared_boundary_v1", |value| value.stability_class.id()),
             obukhov_length_m: fluxes.and_then(|value| value.obukhov_length_m),
             psi_momentum: turbulent.map_or(0.0, |value| value.momentum_stability_correction),
             psi_sensible: turbulent.map_or(0.0, |value| value.sensible_stability_correction),
@@ -1333,8 +1338,7 @@ impl Wb11HydrologyKernel {
             active_cold_energy_change_j_m2: transfer.active_cold_energy_change_j_m2,
             lower_cold_energy_change_j_m2: transfer.lower_cold_energy_change_j_m2,
             cold_content_export_j_m2: transfer.cold_content_export_j_m2,
-            internal_active_lower_conduction_j_m2: transfer
-                .internal_active_lower_conduction_j_m2,
+            internal_active_lower_conduction_j_m2: transfer.internal_active_lower_conduction_j_m2,
             legacy_sequential_complete_j_m2: transfer.legacy_sequential_complete_j_m2,
             energy_closure_residual_j_m2: transfer.energy_closure_residual_j_m2,
         }
@@ -1389,9 +1393,7 @@ impl Wb11HydrologyKernel {
                 + longwave_j_m2
                 + advected_j_m2
                 + snow_soil_heat_j_m2;
-            let sublimation_m = (-vapor_mass_exchange_kg_m2
-                / STAGE3_RHO_WATER_KG_M3)
-                .max(0.0);
+            let sublimation_m = (-vapor_mass_exchange_kg_m2 / STAGE3_RHO_WATER_KG_M3).max(0.0);
             let diagnostics = capture.is_verbose().then(|| {
                 let mut diagnostics = DirectSnowSurfaceEnergyHourDiagnostics::zero();
                 diagnostics.surface_temperature_c = surface_temperature_c;
@@ -1417,8 +1419,8 @@ impl Wb11HydrologyKernel {
                 vapor_mass_exchange_kg_m2,
                 latent_mass_energy_j_m2: vapor_mass_exchange_kg_m2 * latent_heat_j_kg,
                 sublimation_m,
-                mass_latent_identity_residual_j_m2:
-                    latent_j_m2 - vapor_mass_exchange_kg_m2 * latent_heat_j_kg,
+                mass_latent_identity_residual_j_m2: latent_j_m2
+                    - vapor_mass_exchange_kg_m2 * latent_heat_j_kg,
                 diagnostics,
                 reconciliation: Some(Self::boundary_reconciliation(
                     inputs,
@@ -1431,17 +1433,15 @@ impl Wb11HydrologyKernel {
         let albedo_value = inputs
             .snow_albedo_state
             .map_or(STAGE3_DEFAULT_SNOW_ALBEDO, |state| state.albedo);
-        let (snow_albedo_source_id, snow_albedo_model_id, snow_albedo_temperature_state) =
-            inputs.snow_albedo_state.map_or(
-                ("stage3_default_snow_albedo_0p82", None, None),
-                |state| {
-                    (
-                        "snow_albedo_state",
-                        Some(state.model.id()),
-                        Some(state.accumulated_positive_temperature_c_day),
-                    )
-                },
-            );
+        let (snow_albedo_source_id, snow_albedo_model_id, snow_albedo_temperature_state) = inputs
+            .snow_albedo_state
+            .map_or(("stage3_default_snow_albedo_0p82", None, None), |state| {
+                (
+                    "snow_albedo_state",
+                    Some(state.model.id()),
+                    Some(state.accumulated_positive_temperature_c_day),
+                )
+            });
         let albedo = FractionUnitInterval::try_new(albedo_value).map_err(|_| {
             Self::stage3_domain_error(
                 phase_class,
@@ -1459,8 +1459,7 @@ impl Wb11HydrologyKernel {
             None,
         )?;
         // UNIT-CONVERSION-ALLOW: contract-bound MJ m^-2 hourly energy to W m^-2.
-        let incoming_w_m2 =
-            hourly.radiation_mj_m2 * 1_000_000.0 / forcing_duration_seconds;
+        let incoming_w_m2 = hourly.radiation_mj_m2 * 1_000_000.0 / forcing_duration_seconds;
         let shortwave = net_shortwave_radiation(
             RadiativeFluxWattsPerSquareMeter::try_new(incoming_w_m2).map_err(|_| {
                 Self::stage3_domain_error(
@@ -1489,33 +1488,31 @@ impl Wb11HydrologyKernel {
         let mut canopy_longwave_w_m2 = 0.0;
         let mut subcanopy_longwave_w_m2 = 0.0;
         let mut outgoing_longwave_w_m2 = 0.0;
-        let mut diagnostics = capture.is_verbose().then(|| {
-            DirectSnowSurfaceEnergyHourDiagnostics {
-                surface_temperature_c,
-                net_shortwave_w_m2: shortwave.as_watts_per_square_meter(),
-                ..DirectSnowSurfaceEnergyHourDiagnostics::zero()
-            }
-        });
+        let mut diagnostics =
+            capture
+                .is_verbose()
+                .then(|| DirectSnowSurfaceEnergyHourDiagnostics {
+                    surface_temperature_c,
+                    net_shortwave_w_m2: shortwave.as_watts_per_square_meter(),
+                    ..DirectSnowSurfaceEnergyHourDiagnostics::zero()
+                });
         if inputs.surface_energy_options.longwave_model
             == SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1
         {
             let air_temperature = Self::stage3_temperature(phase_class, hourly.air_temperature_c)?;
-            let surface_temperature =
-                Self::stage3_temperature(phase_class, surface_temperature_c)?;
-            let actual_vapor_pressure =
-                saturation_vapor_pressure_snobal_pa(Self::stage3_temperature(
+            let surface_temperature = Self::stage3_temperature(phase_class, surface_temperature_c)?;
+            let actual_vapor_pressure = saturation_vapor_pressure_snobal_pa(
+                Self::stage3_temperature(phase_class, inputs.dewpoint_c)?,
+            )
+            .map_err(|_| {
+                Self::stage3_domain_error(
                     phase_class,
+                    "snow.actual_vapor_pressure",
                     inputs.dewpoint_c,
-                )?)
-                .map_err(|_| {
-                    Self::stage3_domain_error(
-                        phase_class,
-                        "snow.actual_vapor_pressure",
-                        inputs.dewpoint_c,
-                        None,
-                        None,
-                    )
-                })?;
+                    None,
+                    None,
+                )
+            })?;
             let fluxes = snow_longwave_dilley_unsworth(SnowLongwaveInputs {
                 air_temperature,
                 surface_temperature,
@@ -1527,8 +1524,8 @@ impl Wb11HydrologyKernel {
                     .surface_energy_options
                     .daily_extraterrestrial_radiation_mj_m2,
                 daylight: inputs.surface_energy_options.daylight,
-                canopy_cover: FractionUnitInterval::try_new(inputs.canopy_cover_fraction)
-                    .map_err(|_| {
+                canopy_cover: FractionUnitInterval::try_new(inputs.canopy_cover_fraction).map_err(
+                    |_| {
                         Self::stage3_domain_error(
                             phase_class,
                             "snow.canopy_cover_fraction",
@@ -1536,7 +1533,8 @@ impl Wb11HydrologyKernel {
                             Some(0.0),
                             Some(1.0),
                         )
-                    })?,
+                    },
+                )?,
             })
             .map_err(|error| match error {
                 openwepp_meteorology::MeteorologyError::CloudForcingUnavailable => {
@@ -1567,8 +1565,7 @@ impl Wb11HydrologyKernel {
             longwave_w_m2 = fluxes.net_longwave.as_watts_per_square_meter();
             longwave_cloud_fraction = fluxes.cloud_fraction.as_fraction();
             sky_view_fraction = fluxes.sky_view_fraction.as_fraction();
-            atmospheric_longwave_w_m2 =
-                fluxes.atmospheric_longwave.as_watts_per_square_meter();
+            atmospheric_longwave_w_m2 = fluxes.atmospheric_longwave.as_watts_per_square_meter();
             canopy_longwave_w_m2 = fluxes.canopy_longwave.as_watts_per_square_meter();
             subcanopy_longwave_w_m2 = fluxes.subcanopy_longwave.as_watts_per_square_meter();
             outgoing_longwave_w_m2 = fluxes.outgoing_longwave.as_watts_per_square_meter();
@@ -1602,10 +1599,9 @@ impl Wb11HydrologyKernel {
                 snow_depth_m,
                 surface_temperature_c,
                 true,
-            )?
-            * (duration_seconds / forcing_duration_seconds);
-            sublimation_m = sublimation_m
-            .min(snow_depth_m * snow_density_kg_m3 / STAGE3_RHO_WATER_KG_M3);
+            )? * (duration_seconds / forcing_duration_seconds);
+            sublimation_m =
+                sublimation_m.min(snow_depth_m * snow_density_kg_m3 / STAGE3_RHO_WATER_KG_M3);
             let mass_flux = MassFluxKilogramsPerSquareMeterSecond::try_new(
                 -sublimation_m * STAGE3_RHO_WATER_KG_M3 / duration_seconds,
             )
@@ -1665,11 +1661,11 @@ impl Wb11HydrologyKernel {
             }
             let geometry = inputs.surface_energy_options.turbulent_geometry;
             let air_temperature = Self::stage3_temperature(phase_class, hourly.air_temperature_c)?;
-            let surface_temperature =
-                Self::stage3_temperature(phase_class, surface_temperature_c)?;
-            let air_vapor_pressure = saturation_vapor_pressure_snobal_pa(
-                Self::stage3_temperature(phase_class, inputs.dewpoint_c)?,
-            )
+            let surface_temperature = Self::stage3_temperature(phase_class, surface_temperature_c)?;
+            let air_vapor_pressure = saturation_vapor_pressure_snobal_pa(Self::stage3_temperature(
+                phase_class,
+                inputs.dewpoint_c,
+            )?)
             .map_err(|_| {
                 Self::stage3_domain_error(
                     phase_class,
@@ -1681,23 +1677,17 @@ impl Wb11HydrologyKernel {
             })?;
             let surface_vapor_pressure = saturation_vapor_pressure_snobal_pa(surface_temperature)
                 .map_err(|_| {
-                    Self::stage3_domain_error(
-                        phase_class,
-                        "snow.stage3_shadow_surface_vapor_pressure",
-                        surface_temperature_c,
-                        None,
-                        None,
-                    )
-                })?;
+                Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_shadow_surface_vapor_pressure",
+                    surface_temperature_c,
+                    None,
+                    None,
+                )
+            })?;
             let length = |symbol: &'static str, value: f64| {
                 PositiveLengthMeters::try_new(value).map_err(|_| {
-                    Self::stage3_domain_error(
-                        phase_class,
-                        symbol,
-                        value,
-                        Some(0.0),
-                        None,
-                    )
+                    Self::stage3_domain_error(phase_class, symbol, value, Some(0.0), None)
                 })
             };
             let turbulent_options = TurbulentTransferOptions::default();
@@ -1780,10 +1770,9 @@ impl Wb11HydrologyKernel {
             // Hourly precipitation is a forcing total. Hold its rate across
             // stability substeps so the hour's mass and advected heat are
             // integrated exactly once.
-            let rain_mass_flux =
-                hourly.rain_m * STAGE3_RHO_WATER_KG_M3 / forcing_duration_seconds;
-            let snow_mass_flux = hourly.snowfall_m * 0.1 * STAGE3_RHO_WATER_KG_M3
-                / forcing_duration_seconds;
+            let rain_mass_flux = hourly.rain_m * STAGE3_RHO_WATER_KG_M3 / forcing_duration_seconds;
+            let snow_mass_flux =
+                hourly.snowfall_m * 0.1 * STAGE3_RHO_WATER_KG_M3 / forcing_duration_seconds;
             let advected = precipitation_advected_heat_flux(PrecipitationAdvectedHeatInputs {
                 rain_mass_flux: PrecipitationMassFluxKilogramsPerSquareMeterSecond::try_new(
                     rain_mass_flux,
@@ -1875,8 +1864,7 @@ impl Wb11HydrologyKernel {
                 snow_albedo_fraction: albedo_value,
                 snow_albedo_source_id,
                 snow_albedo_model_id,
-                snow_albedo_accumulated_positive_temperature_c_day:
-                    snow_albedo_temperature_state,
+                snow_albedo_accumulated_positive_temperature_c_day: snow_albedo_temperature_state,
                 net_shortwave_w_m2: shortwave.as_watts_per_square_meter(),
                 actual_vapor_pressure_pa: air_vapor_pressure.as_pascals(),
                 longwave_cloud_fraction,
@@ -1914,12 +1902,11 @@ impl Wb11HydrologyKernel {
                 diagnostics.shadow_advected_flux_w_m2 = advected.as_watts_per_square_meter();
                 diagnostics.shadow_complete_energy_j_m2 =
                     shadow_surface_flux_w_m2 * duration_seconds;
-                diagnostics.shadow_vapor_mass_exchange_kg_m2 =
-                    turbulent
-                        .fluxes
-                        .mass_flux
-                        .as_kilograms_per_square_meter_second()
-                        * duration_seconds;
+                diagnostics.shadow_vapor_mass_exchange_kg_m2 = turbulent
+                    .fluxes
+                    .mass_flux
+                    .as_kilograms_per_square_meter_second()
+                    * duration_seconds;
                 diagnostics.shadow_complete_carrier_evaluated = true;
             }
         }
@@ -1979,5 +1966,4 @@ impl Wb11HydrologyKernel {
             reconciliation,
         })
     }
-
 }

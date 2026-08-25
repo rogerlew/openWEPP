@@ -146,10 +146,8 @@ impl Wb11HydrologyKernel {
             .iter()
             .map(Self::stage3_layer_cold_content_j_m2)
             .collect::<Vec<_>>();
-        let active_layer_count = Self::prepare_stage3_sequential_control_volume(
-            &mut layers,
-            &mut cold_content_by_layer,
-        );
+        let active_layer_count =
+            Self::prepare_stage3_sequential_control_volume(&mut layers, &mut cold_content_by_layer);
         let active_mass_swe_m = layers[..active_layer_count]
             .iter()
             .map(|layer| layer.mass_swe_m)
@@ -180,9 +178,8 @@ impl Wb11HydrologyKernel {
                 )
             })?
             .as_joules_per_kilogram();
-        let beginning_stage3_state_sha256 = openwepp_coupled_time::digest_bytes(
-            &Self::serialize_stage3_persistent_state(state)?,
-        );
+        let beginning_stage3_state_sha256 =
+            openwepp_coupled_time::digest_bytes(&Self::serialize_stage3_persistent_state(state)?);
         let mut partition_bytes = Vec::new();
         partition_bytes.extend_from_slice(b"OPENWEPP_STAGE3_ACTIVE_LOWER_PARTITION_V1");
         partition_bytes.extend_from_slice(&(active_layer_count as u64).to_le_bytes());
@@ -191,7 +188,8 @@ impl Wb11HydrologyKernel {
             partition_bytes.extend_from_slice(&layer.mass_swe_m.to_bits().to_le_bytes());
             partition_bytes.extend_from_slice(&layer.thickness_m.to_bits().to_le_bytes());
             partition_bytes.extend_from_slice(&layer.density_kg_m3.to_bits().to_le_bytes());
-            partition_bytes.extend_from_slice(&cold_content_by_layer[index].to_bits().to_le_bytes());
+            partition_bytes
+                .extend_from_slice(&cold_content_by_layer[index].to_bits().to_le_bytes());
         }
         Ok(Stage3SurfaceStateV1 {
             active_mass_kg_m2: active_mass_swe_m * STAGE3_RHO_WATER_KG_M3,
@@ -254,9 +252,8 @@ impl Wb11HydrologyKernel {
                 )
             })?
             .as_joules_per_kilogram();
-        let beginning_stage3_state_sha256 = openwepp_coupled_time::digest_bytes(
-            &Self::serialize_stage3_persistent_state(state)?,
-        );
+        let beginning_stage3_state_sha256 =
+            openwepp_coupled_time::digest_bytes(&Self::serialize_stage3_persistent_state(state)?);
         let mut partition_bytes = Vec::new();
         partition_bytes.extend_from_slice(b"OPENWEPP_STAGE3_TERMINAL_COMPLETE_VOLUME_V1");
         for (index, layer) in layers.iter().enumerate() {
@@ -265,7 +262,9 @@ impl Wb11HydrologyKernel {
             partition_bytes.extend_from_slice(&layer.thickness_m.to_bits().to_le_bytes());
             partition_bytes.extend_from_slice(&layer.density_kg_m3.to_bits().to_le_bytes());
             partition_bytes.extend_from_slice(
-                &Self::stage3_layer_cold_content_j_m2(layer).to_bits().to_le_bytes(),
+                &Self::stage3_layer_cold_content_j_m2(layer)
+                    .to_bits()
+                    .to_le_bytes(),
             );
         }
         Ok(Stage3SurfaceStateV1 {
@@ -320,8 +319,7 @@ impl Wb11HydrologyKernel {
         layers: Vec<DirectSnowLayerState>,
         detached_retained_liquid_kg_m2: f64,
     ) -> Result<DirectSnowStage3PersistentState, DirectSnowStage3EvaluationError> {
-        let initial_ice_kg_m2 =
-            Self::stage3_total_ice_mass_swe_m(&layers) * STAGE3_RHO_WATER_KG_M3;
+        let initial_ice_kg_m2 = Self::stage3_total_ice_mass_swe_m(&layers) * STAGE3_RHO_WATER_KG_M3;
         let initial_retained_liquid_kg_m2 = layers
             .iter()
             .map(|layer| layer.liquid_water_m * STAGE3_RHO_WATER_KG_M3)
@@ -361,15 +359,14 @@ impl Wb11HydrologyKernel {
         terminal_liquid_kg_m2: f64,
     ) -> Result<DirectSnowStage3PersistentState, DirectSnowStage3EvaluationError> {
         Self::validate_stage3_persistent_state(state)?;
-        let represented_ice = Self::stage3_total_ice_mass_swe_m(&state.layers)
-            * STAGE3_RHO_WATER_KG_M3;
+        let represented_ice =
+            Self::stage3_total_ice_mass_swe_m(&state.layers) * STAGE3_RHO_WATER_KG_M3;
         let represented_liquid = state.detached_retained_liquid_kg_m2
             + state
                 .layers
                 .iter()
                 .map(|layer| {
-                    (layer.liquid_water_m + layer.refrozen_liquid_m)
-                        * STAGE3_RHO_WATER_KG_M3
+                    (layer.liquid_water_m + layer.refrozen_liquid_m) * STAGE3_RHO_WATER_KG_M3
                 })
                 .sum::<f64>();
         let tolerance = 1.0e-12_f64.max(1.0e-12 * represented_liquid.abs());

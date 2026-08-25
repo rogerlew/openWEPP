@@ -177,8 +177,7 @@ impl Wb11HydrologyKernel {
     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
         if !support.duration_seconds.is_finite()
             || support.duration_seconds <= 0.0
-            || boundary.support.duration_ns()
-                != duration_seconds_to_ns(support.duration_seconds)?
+            || boundary.support.duration_ns() != duration_seconds_to_ns(support.duration_seconds)?
         {
             return Err(Self::stage3_domain_error(
                 HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
@@ -224,8 +223,7 @@ impl Wb11HydrologyKernel {
     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
         if !support.duration_seconds.is_finite()
             || support.duration_seconds <= 0.0
-            || boundary.support.duration_ns()
-                != duration_seconds_to_ns(support.duration_seconds)?
+            || boundary.support.duration_ns() != duration_seconds_to_ns(support.duration_seconds)?
         {
             return Err(Self::stage3_domain_error(
                 HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
@@ -272,6 +270,7 @@ impl Wb11HydrologyKernel {
         support_input: DirectSnowStage3SupportInput,
         support: TimeSupport,
         mode: CoveredTerminalExecutionMode,
+        initial_joint: CoveredTerminalJointTrialStateV1,
         provider: &mut CoveredTerminalTrialProviderV1<'_>,
     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
         if mode == CoveredTerminalExecutionMode::PersistentReject
@@ -292,8 +291,7 @@ impl Wb11HydrologyKernel {
         if state.lane_id != lane_id
             || state.next_interval_index != interval_index
             || state.schema_version != 2
-            || state.terminal_event_model
-                != Some(DirectSnowTerminalEventModel::EnthalpyEventV1)
+            || state.terminal_event_model != Some(DirectSnowTerminalEventModel::EnthalpyEventV1)
         {
             return Err(Self::stage3_domain_error(
                 HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
@@ -312,7 +310,7 @@ impl Wb11HydrologyKernel {
             &[support_input],
             Some(DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1),
             None,
-            Some((support, provider)),
+            Some((support, initial_joint, provider)),
         )?;
         if let CoveredTerminalExecutionMode::ExactEndpoint { expected_tick } = mode {
             let exact = result.terminal_event.as_ref().is_some_and(|event| {

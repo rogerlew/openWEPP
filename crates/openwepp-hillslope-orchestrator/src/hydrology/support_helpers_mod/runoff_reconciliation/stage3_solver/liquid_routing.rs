@@ -12,17 +12,19 @@ impl Wb11HydrologyKernel {
         let mut retained_delta_m = 0.0;
         let mut refrozen_liquid_m = 0.0;
         for (layer, cold_content) in layers.iter_mut().zip(cold_content_by_layer.iter_mut()) {
-            let refreeze_capacity_m =
-                (*cold_content / (STAGE3_LATENT_HEAT_FUSION_J_KG * STAGE3_RHO_WATER_KG_M3))
-                    .max(0.0);
+            let refreeze_capacity_m = (*cold_content
+                / (STAGE3_LATENT_HEAT_FUSION_J_KG * STAGE3_RHO_WATER_KG_M3))
+                .max(0.0);
             let refrozen_here_m = liquid_to_route_m.min(refreeze_capacity_m);
             liquid_to_route_m -= refrozen_here_m;
             *cold_content -=
                 refrozen_here_m * STAGE3_LATENT_HEAT_FUSION_J_KG * STAGE3_RHO_WATER_KG_M3;
             refrozen_liquid_m += refrozen_here_m;
 
-            let capacity_m =
-                Self::stage3_layer_liquid_holding_capacity_m(layer.thickness_m, layer.density_kg_m3);
+            let capacity_m = Self::stage3_layer_liquid_holding_capacity_m(
+                layer.thickness_m,
+                layer.density_kg_m3,
+            );
             let available_capacity_m = (capacity_m - layer.liquid_water_m).max(0.0);
             let retained_here_m = liquid_to_route_m.min(available_capacity_m);
             liquid_to_route_m -= retained_here_m;
@@ -35,7 +37,11 @@ impl Wb11HydrologyKernel {
                 layer.temperature_c = Self::stage3_temperature_from_cold_content(layer);
             }
         }
-        (liquid_to_route_m.max(0.0), retained_delta_m, refrozen_liquid_m)
+        (
+            liquid_to_route_m.max(0.0),
+            retained_delta_m,
+            refrozen_liquid_m,
+        )
     }
 
     pub(super) fn validate_stage3_layer(
@@ -118,8 +124,7 @@ impl Wb11HydrologyKernel {
     }
 
     pub(crate) fn stage3_lower_volume_is_subresolution_swe_m(lower_mass_swe_m: f64) -> bool {
-        lower_mass_swe_m > 0.0
-            && lower_mass_swe_m < STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
+        lower_mass_swe_m > 0.0 && lower_mass_swe_m < STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
     }
 
     pub(super) fn stage3_layer_cold_content_j_m2(layer: &DirectSnowLayerState) -> f64 {

@@ -1,26 +1,24 @@
 #[allow(clippy::wildcard_imports)]
 use super::super::*;
-use openwepp_meteorology::surface_energy::{
-    conductive_heat_flux, latent_heat_flux_from_mass_flux,
-    latent_heat_for_surface_temperature, net_shortwave_radiation,
-    precipitation_advected_heat_flux, saturation_vapor_pressure_snobal_pa,
-    snow_effective_thermal_conductivity_snobal, snow_longwave_dilley_unsworth, specific_heat_ice,
-    specific_heat_water, surface_energy_balance,
-    turbulent_fluxes_monin_obukhov_with_diagnostics, EnergyFluxWattsPerSquareMeter,
-    MassFluxKilogramsPerSquareMeterSecond, PositiveLengthMeters,
-    PrecipitationAdvectedHeatInputs, PrecipitationMassFluxKilogramsPerSquareMeterSecond,
-    PressurePascals, RadiativeFluxWattsPerSquareMeter, SnowLongwaveInputs,
-    SurfaceEnergyBalanceTerms, ThermalConductivityWattsPerMeterKelvin, TurbulentFluxDiagnostics,
-    TurbulentFluxInputs, TurbulentTransferOptions,
-};
-use openwepp_unit_boundary::{
-    FractionUnitInterval, LinearRateMetersPerSecond, TemperatureCelsius,
-};
-use openwepp_coupled_time::{ModelTimeNs, TimeSupport};
-use crate::snow_stage3_terminal_handoff::Stage3SnowSurfaceBoundaryReceiptV1;
 use super::snow_mass_transition::{
     SNOW_SOLID_TO_LIQUID_CLOSURE_TOLERANCE_M, SNOW_STAGE3_LIQUID_CLOSURE_TOLERANCE_M,
 };
+use crate::snow_stage3_terminal_handoff::Stage3SnowSurfaceBoundaryReceiptV1;
+use openwepp_coupled_time::{Digest32, FramedField, framed_sha256};
+use openwepp_coupled_time::{ModelTimeNs, TimeSupport};
+use openwepp_meteorology::surface_energy::{
+    EnergyFluxWattsPerSquareMeter, MassFluxKilogramsPerSquareMeterSecond, PositiveLengthMeters,
+    PrecipitationAdvectedHeatInputs, PrecipitationMassFluxKilogramsPerSquareMeterSecond,
+    PressurePascals, RadiativeFluxWattsPerSquareMeter, SnowLongwaveInputs,
+    SurfaceEnergyBalanceTerms, ThermalConductivityWattsPerMeterKelvin, TurbulentFluxDiagnostics,
+    TurbulentFluxInputs, TurbulentTransferOptions, conductive_heat_flux,
+    latent_heat_flux_from_mass_flux, latent_heat_for_surface_temperature, net_shortwave_radiation,
+    precipitation_advected_heat_flux, saturation_vapor_pressure_snobal_pa,
+    snow_effective_thermal_conductivity_snobal, snow_longwave_dilley_unsworth, specific_heat_ice,
+    specific_heat_water, surface_energy_balance, turbulent_fluxes_monin_obukhov_with_diagnostics,
+};
+use openwepp_unit_boundary::{FractionUnitInterval, LinearRateMetersPerSecond, TemperatureCelsius};
+use std::collections::BTreeMap;
 
 mod stage3_solver;
 
@@ -34,9 +32,7 @@ const STAGE3_NORMAL_TIMESTEP_MASS_KG_M2: f64 = 60.0;
 const STAGE3_MEDIUM_TIMESTEP_MASS_KG_M2: f64 = 10.0;
 pub(crate) const STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M: f64 = 0.001;
 
-pub(crate) fn stage3_total_represented_ice_swe_m(
-    state: &DirectSnowStage3PersistentState,
-) -> f64 {
+pub(crate) fn stage3_total_represented_ice_swe_m(state: &DirectSnowStage3PersistentState) -> f64 {
     state
         .layers
         .iter()
@@ -52,21 +48,15 @@ pub(crate) fn stage3_has_represented_ice(state: &DirectSnowStage3PersistentState
         .any(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m))
 }
 
-pub(crate) fn stage3_is_resolved_thermal_domain(
-    state: &DirectSnowStage3PersistentState,
-) -> bool {
-    stage3_total_represented_ice_swe_m(state)
-        > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
+pub(crate) fn stage3_is_resolved_thermal_domain(state: &DirectSnowStage3PersistentState) -> bool {
+    stage3_total_represented_ice_swe_m(state) > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
 }
 
-pub(crate) fn stage3_is_terminal_event_domain(
-    state: &DirectSnowStage3PersistentState,
-) -> bool {
+pub(crate) fn stage3_is_terminal_event_domain(state: &DirectSnowStage3PersistentState) -> bool {
     state.schema_version == 2
         && state.terminal_event_model == Some(DirectSnowTerminalEventModel::EnthalpyEventV1)
         && stage3_has_represented_ice(state)
-        && stage3_total_represented_ice_swe_m(state)
-            <= STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
+        && stage3_total_represented_ice_swe_m(state) <= STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
 }
 const STAGE3_MEDIUM_TIMESTEP_SECONDS: f64 = 900.0;
 const STAGE3_SMALL_TIMESTEP_SECONDS: f64 = 60.0;
@@ -83,10 +73,8 @@ impl SnowStage3ConductivityError {
     /// outside the primitive's domain.
     pub fn replay(
         &self,
-    ) -> Result<
-        ThermalConductivityWattsPerMeterKelvin,
-        openwepp_meteorology::MeteorologyError,
-    > {
+    ) -> Result<ThermalConductivityWattsPerMeterKelvin, openwepp_meteorology::MeteorologyError>
+    {
         let pressure = PressurePascals::try_new(self.atmospheric_pressure_pa)?;
         snow_effective_thermal_conductivity_snobal(
             self.layer.density_kg_m3,
@@ -242,7 +230,7 @@ pub(crate) enum CoveredTerminalExecutionMode {
 /// Pure input presented to the covered carrier for every adaptive and
 /// event-root terminal trial.  The support is the exact absolute interval
 /// beginning at the supplied trial state; it is never a scaled parent receipt.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub(crate) struct CoveredTerminalTrialRequestV1 {
     pub support: TimeSupport,
     pub role: CoveredTerminalTrialRoleV1,
@@ -253,6 +241,188 @@ pub(crate) struct CoveredTerminalTrialRequestV1 {
     pub surface_temperature_c: f64,
     pub snow_depth_m: f64,
     pub snow_density_kg_m3: f64,
+    pub beginning_joint: CoveredTerminalJointTrialStateV1,
+}
+
+/// Immutable, unpublished seven-owner candidate carried between covered
+/// terminal trials. These bytes are never installed by the hydrology solver.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) struct CoveredTerminalJointTrialStateV1 {
+    owner_bytes: BTreeMap<String, Vec<u8>>,
+    receipt_sha256: Digest32,
+}
+
+impl CoveredTerminalJointTrialStateV1 {
+    pub(crate) fn try_new(
+        owner_bytes: BTreeMap<String, Vec<u8>>,
+    ) -> Result<Self, DirectSnowStage3EvaluationError> {
+        const OWNER_IDS: [&str; 7] = [
+            "vegetation",
+            "snow",
+            "land_surface_energy",
+            "hydrology",
+            "bgc",
+            "soil_thermal",
+            "surface_liquid",
+        ];
+        if owner_bytes.len() != OWNER_IDS.len()
+            || OWNER_IDS.iter().any(|id| !owner_bytes.contains_key(*id))
+        {
+            return Err(Wb11HydrologyKernel::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.terminal_joint_trial_complete_owner_set",
+                owner_bytes.len() as f64,
+                Some(7.0),
+                Some(7.0),
+            )
+            .into());
+        }
+        let receipt_sha256 = covered_terminal_joint_digest(&owner_bytes)?;
+        Ok(Self {
+            owner_bytes,
+            receipt_sha256,
+        })
+    }
+
+    pub(crate) fn owner_bytes(&self) -> &BTreeMap<String, Vec<u8>> {
+        &self.owner_bytes
+    }
+    pub(crate) const fn receipt_sha256(&self) -> Digest32 {
+        self.receipt_sha256
+    }
+}
+
+fn covered_terminal_joint_digest(
+    owner_bytes: &BTreeMap<String, Vec<u8>>,
+) -> Result<Digest32, DirectSnowStage3EvaluationError> {
+    let mut fields = Vec::with_capacity(owner_bytes.len() * 2);
+    for (owner_id, bytes) in owner_bytes {
+        fields.push(FramedField {
+            tag: "owner_id",
+            value: owner_id.as_bytes(),
+        });
+        fields.push(FramedField {
+            tag: "owner_bytes",
+            value: bytes,
+        });
+    }
+    framed_sha256("covered-terminal-joint-trial-state-v1", &fields).map_err(|_| {
+        Wb11HydrologyKernel::stage3_domain_error(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            "snow.terminal_joint_trial_canonical_framing",
+            1.0,
+            Some(0.0),
+            Some(0.0),
+        )
+        .into()
+    })
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) struct CoveredProbeChildIdentityV1 {
+    pub enclosing_parent_support: TimeSupport,
+    pub trial_support: TimeSupport,
+    pub physical_child_ordinal: u32,
+    pub role: CoveredTerminalTrialRoleV1,
+    pub attempt_ordinal: u32,
+    pub beginning_joint_sha256: Digest32,
+    pub receipt_sha256: Digest32,
+}
+
+impl CoveredProbeChildIdentityV1 {
+    pub(crate) fn try_new(
+        enclosing_parent_support: TimeSupport,
+        trial_support: TimeSupport,
+        physical_child_ordinal: u32,
+        role: CoveredTerminalTrialRoleV1,
+        attempt_ordinal: u32,
+        beginning_joint_sha256: Digest32,
+    ) -> Result<Self, DirectSnowStage3EvaluationError> {
+        if trial_support.start_ns() < enclosing_parent_support.start_ns()
+            || trial_support.end_ns() > enclosing_parent_support.end_ns()
+        {
+            return Err(Wb11HydrologyKernel::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.terminal_probe_child_support",
+                1.0,
+                Some(0.0),
+                Some(0.0),
+            )
+            .into());
+        }
+        let ordinal = physical_child_ordinal.to_be_bytes();
+        let role_byte = [role as u8];
+        let attempt = attempt_ordinal.to_be_bytes();
+        let parent_start = enclosing_parent_support.start_ns().get().to_be_bytes();
+        let parent_end = enclosing_parent_support.end_ns().get().to_be_bytes();
+        let trial_start = trial_support.start_ns().get().to_be_bytes();
+        let trial_end = trial_support.end_ns().get().to_be_bytes();
+        let receipt_sha256 = framed_sha256(
+            "covered-probe-child-identity-v1",
+            &[
+                FramedField {
+                    tag: "parent_start_ns",
+                    value: &parent_start,
+                },
+                FramedField {
+                    tag: "parent_end_ns",
+                    value: &parent_end,
+                },
+                FramedField {
+                    tag: "trial_start_ns",
+                    value: &trial_start,
+                },
+                FramedField {
+                    tag: "trial_end_ns",
+                    value: &trial_end,
+                },
+                FramedField {
+                    tag: "physical_child_ordinal",
+                    value: &ordinal,
+                },
+                FramedField {
+                    tag: "trial_role",
+                    value: &role_byte,
+                },
+                FramedField {
+                    tag: "attempt_ordinal",
+                    value: &attempt,
+                },
+                FramedField {
+                    tag: "beginning_joint",
+                    value: beginning_joint_sha256.as_bytes(),
+                },
+            ],
+        )
+        .map_err(|_| {
+            Wb11HydrologyKernel::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.terminal_probe_child_canonical_framing",
+                1.0,
+                Some(0.0),
+                Some(0.0),
+            )
+        })?;
+        Ok(Self {
+            enclosing_parent_support,
+            trial_support,
+            physical_child_ordinal,
+            role,
+            attempt_ordinal,
+            beginning_joint_sha256,
+            receipt_sha256,
+        })
+    }
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct CoveredTerminalTrialTransitionV1 {
+    pub boundary: Stage3SnowSurfaceBoundaryReceiptV1,
+    pub beginning_joint: CoveredTerminalJointTrialStateV1,
+    pub ending_joint: CoveredTerminalJointTrialStateV1,
+    pub probe_child_identity: CoveredProbeChildIdentityV1,
+    pub terminal_snow_soil_receipt:
+        Option<crate::v9_real_consumer_shadow::TerminalSnowSoilHeatReceiptV1>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -269,7 +439,7 @@ pub(crate) enum CoveredTerminalTrialRoleV1 {
 
 pub(crate) type CoveredTerminalTrialProviderV1<'a> = dyn FnMut(
         CoveredTerminalTrialRequestV1,
-    ) -> Result<Stage3SnowSurfaceBoundaryReceiptV1, DirectSnowStage3EvaluationError>
+    ) -> Result<CoveredTerminalTrialTransitionV1, DirectSnowStage3EvaluationError>
     + 'a;
 
 #[derive(Clone, Copy)]
@@ -363,8 +533,7 @@ impl Stage3EvaluationTag {
             },
             coverage_id: "evaluated_seconds_over_requested_seconds_v1",
             claim_class: operator.claim_class(),
-            unresolved_boundaries_id:
-                "snow_ground_cross_day_terminal_recipient_unresolved_v1",
+            unresolved_boundaries_id: "snow_ground_cross_day_terminal_recipient_unresolved_v1",
             pairing_id: if paired {
                 Some("stage3_carrier_pair_v1")
             } else {
@@ -425,48 +594,48 @@ struct Stage3ShadowSummary {
 impl Stage3ShadowSummary {
     const fn new(tag: Stage3EvaluationTag) -> Self {
         Self {
-        tag,
-        source_fingerprint: 0,
-        forcing_fingerprint: 0,
-        geometry_fingerprint: 0,
-        non_formulation_fingerprint: 0,
-        surface_arm_non_formulation_fingerprint: 0,
-        complete_arm_non_formulation_fingerprint: 0,
-        requested_seconds: 24.0 * STAGE3_SECONDS_PER_HOUR,
-        evaluated_seconds: 0.0,
-        surface_arm_shortwave_j_m2: 0.0,
-        surface_arm_longwave_j_m2: 0.0,
-        surface_arm_latent_j_m2: 0.0,
-        surface_arm_total_j_m2: 0.0,
-        complete_shortwave_j_m2: 0.0,
-        complete_longwave_j_m2: 0.0,
-        complete_sensible_j_m2: 0.0,
-        complete_latent_j_m2: 0.0,
-        complete_advected_j_m2: 0.0,
-        complete_snow_soil_heat_j_m2: 0.0,
-        internal_active_lower_conduction_j_m2: 0.0,
-        complete_vapor_mass_exchange_kg_m2: 0.0,
-        cold_content_export_j_m2: 0.0,
-        available_ice_kg_m2: 0.0,
-        complete_energy_j_m2: 0.0,
-        cold_energy_change_j_m2: 0.0,
-        excess_energy_j_m2: 0.0,
-        sublimation_kg_m2: 0.0,
-        melt_kg_m2: 0.0,
-        unallocated_after_exhaustion_j_m2: 0.0,
-        maximum_energy_closure_residual_j_m2: 0.0,
-        hourly: [DirectSnowStage3EvaluationHourDiagnostics::zero(); 24],
-        reconciliation: DirectSnowStage3OperatorReconciliation {
-            schema_version: 6,
-            hourly_status: [DirectSnowStage3ReconciliationHourStatus::not_selected(); 24],
-            tuples: Vec::new(),
-        },
-        final_layers: Vec::new(),
-        terminal_event: None,
-        terminal_intervals: Vec::new(),
-        terminal_refrozen_kg_m2: 0.0,
-        persistent_refrozen_kg_m2: 0.0,
-        terminal_deposition_kg_m2: 0.0,
+            tag,
+            source_fingerprint: 0,
+            forcing_fingerprint: 0,
+            geometry_fingerprint: 0,
+            non_formulation_fingerprint: 0,
+            surface_arm_non_formulation_fingerprint: 0,
+            complete_arm_non_formulation_fingerprint: 0,
+            requested_seconds: 24.0 * STAGE3_SECONDS_PER_HOUR,
+            evaluated_seconds: 0.0,
+            surface_arm_shortwave_j_m2: 0.0,
+            surface_arm_longwave_j_m2: 0.0,
+            surface_arm_latent_j_m2: 0.0,
+            surface_arm_total_j_m2: 0.0,
+            complete_shortwave_j_m2: 0.0,
+            complete_longwave_j_m2: 0.0,
+            complete_sensible_j_m2: 0.0,
+            complete_latent_j_m2: 0.0,
+            complete_advected_j_m2: 0.0,
+            complete_snow_soil_heat_j_m2: 0.0,
+            internal_active_lower_conduction_j_m2: 0.0,
+            complete_vapor_mass_exchange_kg_m2: 0.0,
+            cold_content_export_j_m2: 0.0,
+            available_ice_kg_m2: 0.0,
+            complete_energy_j_m2: 0.0,
+            cold_energy_change_j_m2: 0.0,
+            excess_energy_j_m2: 0.0,
+            sublimation_kg_m2: 0.0,
+            melt_kg_m2: 0.0,
+            unallocated_after_exhaustion_j_m2: 0.0,
+            maximum_energy_closure_residual_j_m2: 0.0,
+            hourly: [DirectSnowStage3EvaluationHourDiagnostics::zero(); 24],
+            reconciliation: DirectSnowStage3OperatorReconciliation {
+                schema_version: 6,
+                hourly_status: [DirectSnowStage3ReconciliationHourStatus::not_selected(); 24],
+                tuples: Vec::new(),
+            },
+            final_layers: Vec::new(),
+            terminal_event: None,
+            terminal_intervals: Vec::new(),
+            terminal_refrozen_kg_m2: 0.0,
+            persistent_refrozen_kg_m2: 0.0,
+            terminal_deposition_kg_m2: 0.0,
         }
     }
 }
@@ -688,27 +857,27 @@ impl Wb11HydrologyKernel {
         ) {
             Ok(result) => Ok(result.authoritative),
             Err(DirectSnowStage3EvaluationError::Kernel(source)) => Err(*source),
-            Err(DirectSnowStage3EvaluationError::TurbulentTransfer(snapshot)) => Err(
-                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+            Err(DirectSnowStage3EvaluationError::TurbulentTransfer(snapshot)) => {
+                Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                     phase_class: snapshot.phase_class,
                     symbol: BoundarySymbol::from("snow.stage3_shadow_turbulent_flux"),
                     value: snapshot.wind_speed_m_s,
                     minimum: Some(0.0),
                     maximum: None,
-                },
-            ),
-            Err(DirectSnowStage3EvaluationError::TerminalNumerics(_)) => Err(
-                Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                })
+            }
+            Err(DirectSnowStage3EvaluationError::TerminalNumerics(_)) => {
+                Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
                     phase_class: HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
                     symbol: BoundarySymbol::from("snow.unreachable_terminal_numerics"),
-                },
-            ),
-            Err(DirectSnowStage3EvaluationError::TerminalCustody(_)) => Err(
-                Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                })
+            }
+            Err(DirectSnowStage3EvaluationError::TerminalCustody(_)) => {
+                Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
                     phase_class: HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
                     symbol: BoundarySymbol::from("snow.terminal_custody"),
-                },
-            ),
+                })
+            }
         }
     }
 
@@ -771,13 +940,13 @@ impl Wb11HydrologyKernel {
         } else {
             Self::inactive_snow_coupling_from_typed(phase_class, inputs, capture)?
         };
-        let (routed_melt_m, post_winter_rain_m) =
-            Self::resolve_snow_partition_terms(phase_class, inputs.hyetograph_rainfall_m, &snow_coupling)?;
-        let density_outcome = Self::resolve_typed_snow_density_outcome(
+        let (routed_melt_m, post_winter_rain_m) = Self::resolve_snow_partition_terms(
             phase_class,
-            inputs,
+            inputs.hyetograph_rainfall_m,
             &snow_coupling,
         )?;
+        let density_outcome =
+            Self::resolve_typed_snow_density_outcome(phase_class, inputs, &snow_coupling)?;
         let mut density_process_diagnostics = density_outcome.density_process_diagnostics;
         let mut snow_layers_after = density_outcome.layers_after;
         let stage3_resolution = Self::resolve_stage3_liquid_routing(
@@ -794,10 +963,10 @@ impl Wb11HydrologyKernel {
             capture,
             evaluation_operator,
         )?;
-        snow_layers_after
-            .retain(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m));
-        let runtime_swe_after_m =
-            (density_outcome.runtime_swe_after_m - stage3_resolution.outcome.sublimation_m).max(0.0);
+        snow_layers_after.retain(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m));
+        let runtime_swe_after_m = (density_outcome.runtime_swe_after_m
+            - stage3_resolution.outcome.sublimation_m)
+            .max(0.0);
         let runtime_depth_after_m = if stage3_resolution.outcome.enabled {
             snow_layers_after
                 .iter()
@@ -834,74 +1003,82 @@ impl Wb11HydrologyKernel {
                     &inputs.snow_layers,
                 )
             })?;
-        let accumulation_melt_diagnostics = snow_coupling.verbose_diagnostics.as_deref().map(|verbose| DirectSnowAccumulationMeltDiagnostics {
-            wind_m_s: inputs.wind_m_s,
-            dewpoint_c: inputs.dewpoint_c,
-            canopy_cover_fraction: inputs.canopy_cover_fraction,
-            hourly_active_precipitation_m: std::array::from_fn(|index| {
-                inputs.hourly[index].active_precipitation_m
-            }),
-            hourly_rain_m: std::array::from_fn(|index| inputs.hourly[index].rain_m),
-            hourly_snowfall_depth_m: std::array::from_fn(|index| {
-                inputs.hourly[index].snowfall_m
-            }),
-            hourly_snowfall_swe_m: std::array::from_fn(|index| {
-                inputs.hourly[index].snowfall_m * 0.1
-            }),
-            hourly_air_temperature_c: std::array::from_fn(|index| {
-                inputs.hourly[index].air_temperature_c
-            }),
-            hourly_radiation_mj_m2: std::array::from_fn(|index| {
-                inputs.hourly[index].radiation_mj_m2
-            }),
-            hourly_cloud_fraction: std::array::from_fn(|index| {
-                inputs.hourly[index].cloud_fraction
-            }),
-            hourly_rain_fraction: std::array::from_fn(|index| {
-                inputs.hourly[index].rain_fraction
-            }),
-            hourly_snow_fraction: std::array::from_fn(|index| {
-                inputs.hourly[index].snow_fraction
-            }),
-            hourly_phase_model: std::array::from_fn(|index| {
-                inputs.hourly[index].phase_model
-            }),
-            hourly_hydrometeor_temperature_c: std::array::from_fn(|index| {
-                inputs.hourly[index].hydrometeor_temperature_c
-            }),
-            hourly_melt: verbose.hourly_melt,
-            hourly_routed_melt_m: snow_coupling.hourly_routed_melt,
-            hourly_liquid_holding_capacity_m: verbose.hourly_trace.liquid_holding_capacity,
-            hourly_liquid_water_retained_before_m: verbose.hourly_trace.liquid_water_retained_before,
-            hourly_liquid_water_retained_after_m: verbose.hourly_trace.liquid_water_retained_after,
-            hourly_liquid_water_released_m: verbose.hourly_trace.liquid_water_released,
-            hourly_rain_released_m: verbose.hourly_trace.rain_released,
-            hourly_sublimation_m: verbose.hourly_trace.sublimation,
-            hourly_pack_depth_before_m: verbose.hourly_trace.pack_depth_before,
-            hourly_pack_depth_after_m: verbose.hourly_trace.pack_depth_after,
-            hourly_pack_density_before_kg_m3: verbose.hourly_trace.pack_density_before,
-            hourly_pack_density_after_kg_m3: verbose.hourly_trace.pack_density_after,
-            modeled_wind_redistribution_m: [0.0; 24],
-        });
-        let verbose_diagnostics = match (
-            accumulation_melt_diagnostics,
-            stage3_resolution.diagnostics,
-        ) {
-            (Some(accumulation_melt), Some(stage3)) => Some(Box::new(
-                DirectSnowVerboseDiagnostics { accumulation_melt, stage3 },
-            )),
-            (None, None) => None,
-            _ => {
-                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                    phase_class,
-                    symbol: BoundarySymbol::from("snow.verbose_diagnostic_capture_mismatch"),
-                    value: 1.0,
-                    minimum: Some(0.0),
-                    maximum: Some(0.0),
+        let accumulation_melt_diagnostics =
+            snow_coupling.verbose_diagnostics.as_deref().map(|verbose| {
+                DirectSnowAccumulationMeltDiagnostics {
+                    wind_m_s: inputs.wind_m_s,
+                    dewpoint_c: inputs.dewpoint_c,
+                    canopy_cover_fraction: inputs.canopy_cover_fraction,
+                    hourly_active_precipitation_m: std::array::from_fn(|index| {
+                        inputs.hourly[index].active_precipitation_m
+                    }),
+                    hourly_rain_m: std::array::from_fn(|index| inputs.hourly[index].rain_m),
+                    hourly_snowfall_depth_m: std::array::from_fn(|index| {
+                        inputs.hourly[index].snowfall_m
+                    }),
+                    hourly_snowfall_swe_m: std::array::from_fn(|index| {
+                        inputs.hourly[index].snowfall_m * 0.1
+                    }),
+                    hourly_air_temperature_c: std::array::from_fn(|index| {
+                        inputs.hourly[index].air_temperature_c
+                    }),
+                    hourly_radiation_mj_m2: std::array::from_fn(|index| {
+                        inputs.hourly[index].radiation_mj_m2
+                    }),
+                    hourly_cloud_fraction: std::array::from_fn(|index| {
+                        inputs.hourly[index].cloud_fraction
+                    }),
+                    hourly_rain_fraction: std::array::from_fn(|index| {
+                        inputs.hourly[index].rain_fraction
+                    }),
+                    hourly_snow_fraction: std::array::from_fn(|index| {
+                        inputs.hourly[index].snow_fraction
+                    }),
+                    hourly_phase_model: std::array::from_fn(|index| {
+                        inputs.hourly[index].phase_model
+                    }),
+                    hourly_hydrometeor_temperature_c: std::array::from_fn(|index| {
+                        inputs.hourly[index].hydrometeor_temperature_c
+                    }),
+                    hourly_melt: verbose.hourly_melt,
+                    hourly_routed_melt_m: snow_coupling.hourly_routed_melt,
+                    hourly_liquid_holding_capacity_m: verbose.hourly_trace.liquid_holding_capacity,
+                    hourly_liquid_water_retained_before_m: verbose
+                        .hourly_trace
+                        .liquid_water_retained_before,
+                    hourly_liquid_water_retained_after_m: verbose
+                        .hourly_trace
+                        .liquid_water_retained_after,
+                    hourly_liquid_water_released_m: verbose.hourly_trace.liquid_water_released,
+                    hourly_rain_released_m: verbose.hourly_trace.rain_released,
+                    hourly_sublimation_m: verbose.hourly_trace.sublimation,
+                    hourly_pack_depth_before_m: verbose.hourly_trace.pack_depth_before,
+                    hourly_pack_depth_after_m: verbose.hourly_trace.pack_depth_after,
+                    hourly_pack_density_before_kg_m3: verbose.hourly_trace.pack_density_before,
+                    hourly_pack_density_after_kg_m3: verbose.hourly_trace.pack_density_after,
+                    modeled_wind_redistribution_m: [0.0; 24],
                 }
-                .into());
-            }
-        };
+            });
+        let verbose_diagnostics =
+            match (accumulation_melt_diagnostics, stage3_resolution.diagnostics) {
+                (Some(accumulation_melt), Some(stage3)) => {
+                    Some(Box::new(DirectSnowVerboseDiagnostics {
+                        accumulation_melt,
+                        stage3,
+                    }))
+                }
+                (None, None) => None,
+                _ => {
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: BoundarySymbol::from("snow.verbose_diagnostic_capture_mismatch"),
+                        value: 1.0,
+                        minimum: Some(0.0),
+                        maximum: Some(0.0),
+                    }
+                    .into());
+                }
+            };
 
         let solid_to_liquid_ledger = DirectSnowSolidToLiquidLedger {
             raw_signed_melt_m: snow_coupling.raw_melt,
@@ -969,9 +1146,7 @@ impl Wb11HydrologyKernel {
             .iter()
             .map(|hour| hour.snowfall_m * 0.1)
             .sum::<f64>();
-        let residual_m = inputs.runtime_swe_m
-            + typed_snowfall_swe_m
-            + partition.rain_retained_m
+        let residual_m = inputs.runtime_swe_m + typed_snowfall_swe_m + partition.rain_retained_m
             - partition
                 .mass_transition_ledgers
                 .solid_to_liquid()
@@ -1051,12 +1226,12 @@ impl Wb11HydrologyKernel {
             redistributed_melt: 0.0,
             wet_compaction_liquid_input_m: 0.0,
             hourly_routed_melt: [0.0; 24],
-            verbose_diagnostics: capture.is_verbose().then(|| Box::new(
-                SnowCouplingVerboseDiagnostics {
+            verbose_diagnostics: capture.is_verbose().then(|| {
+                Box::new(SnowCouplingVerboseDiagnostics {
                     hourly_melt: [DirectSnowMeltHourDiagnostics::default(); 24],
                     hourly_trace: SnowHourlyTrace::default(),
-                },
-            )),
+                })
+            }),
             snowpack_state_loss: 0.0,
             runtime_swe: inputs.runtime_swe_m,
             runtime_depth_m: inputs.runtime_depth_m,
@@ -1173,9 +1348,7 @@ impl Wb11HydrologyKernel {
                 tolerance_kg_m3,
             } => Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
-                symbol: BoundarySymbol::from(
-                    "snow_density_process_closure_residual_kg_m3",
-                ),
+                symbol: BoundarySymbol::from("snow_density_process_closure_residual_kg_m3"),
                 value: *residual_kg_m3,
                 minimum: Some(-*tolerance_kg_m3),
                 maximum: Some(*tolerance_kg_m3),
@@ -1253,45 +1426,42 @@ mod cqr_row5_tests {
             0.0,
             SNOW_SOLID_TO_LIQUID_CLOSURE_TOLERANCE_M,
         ] {
-            Wb11HydrologyKernel::validate_direct_snow_storage_residual(
-                phase_class,
-                residual_m,
-            )
-            .expect("exact-tolerance daily snow closure residual must be accepted");
+            Wb11HydrologyKernel::validate_direct_snow_storage_residual(phase_class, residual_m)
+                .expect("exact-tolerance daily snow closure residual must be accepted");
         }
 
         for residual_m in [
             f64::from_bits(SNOW_SOLID_TO_LIQUID_CLOSURE_TOLERANCE_M.to_bits() + 1),
             -f64::from_bits(SNOW_SOLID_TO_LIQUID_CLOSURE_TOLERANCE_M.to_bits() + 1),
         ] {
-            let error = Wb11HydrologyKernel::validate_direct_snow_storage_residual(
-                phase_class,
-                residual_m,
-            )
-            .expect_err("over-tolerance daily snow closure residual must fail closed");
+            let error =
+                Wb11HydrologyKernel::validate_direct_snow_storage_residual(phase_class, residual_m)
+                    .expect_err("over-tolerance daily snow closure residual must fail closed");
             assert!(matches!(
                 error,
                 Wb11HydrologyKernelGuardError::StateSymbolOutOfRange { .. }
             ));
             assert_eq!(error.code(), "HKERNEL-WB14-RUNOFF-E-003");
-            assert!(error
-                .to_string()
-                .contains("snow.daily_storage_closure_residual_m"));
+            assert!(
+                error
+                    .to_string()
+                    .contains("snow.daily_storage_closure_residual_m")
+            );
         }
 
-        let error = Wb11HydrologyKernel::validate_direct_snow_storage_residual(
-            phase_class,
-            f64::NAN,
-        )
-        .expect_err("non-finite daily snow closure residual must fail closed");
+        let error =
+            Wb11HydrologyKernel::validate_direct_snow_storage_residual(phase_class, f64::NAN)
+                .expect_err("non-finite daily snow closure residual must fail closed");
         assert!(matches!(
             error,
             Wb11HydrologyKernelGuardError::NonFiniteStateSymbol { .. }
         ));
         assert_eq!(error.code(), "HKERNEL-WB14-RUNOFF-E-002");
-        assert!(error
-            .to_string()
-            .contains("snow.daily_storage_closure_residual_m"));
+        assert!(
+            error
+                .to_string()
+                .contains("snow.daily_storage_closure_residual_m")
+        );
     }
 
     #[test]
@@ -1300,15 +1470,9 @@ mod cqr_row5_tests {
         let just_below = f64::from_bits(threshold.to_bits() - 1);
         let just_above = f64::from_bits(threshold.to_bits() + 1);
 
-        assert!(Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(
-            just_below
-        ));
-        assert!(!Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(
-            threshold
-        ));
-        assert!(!Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(
-            just_above
-        ));
+        assert!(Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(just_below));
+        assert!(!Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(threshold));
+        assert!(!Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(just_above));
     }
 
     #[test]
@@ -1373,12 +1537,29 @@ mod cqr_row5_tests {
         let retained_fraction = retained.mass_swe_m / original_mass_swe_m;
         assert!((retained.mass_swe_m - represented_remainder_swe_m).abs() <= 1.0e-15);
         assert!(snow_density_layer_has_resolved_mass(retained.mass_swe_m));
-        assert!((retained.liquid_water_m - surface.liquid_water_m * retained_fraction).abs() <= 1.0e-18);
-        assert!((retained.refrozen_liquid_m - surface.refrozen_liquid_m * retained_fraction).abs() <= 1.0e-18);
-        assert!((retained.cold_content_j_m2 - surface.cold_content_j_m2 * retained_fraction).abs() <= 1.0e-15);
-        assert_eq!(retained.density_kg_m3.to_bits(), surface.density_kg_m3.to_bits());
-        assert_eq!(retained.temperature_c.to_bits(), surface.temperature_c.to_bits());
-        assert_eq!(retained.settle_day_count.to_bits(), surface.settle_day_count.to_bits());
+        assert!(
+            (retained.liquid_water_m - surface.liquid_water_m * retained_fraction).abs() <= 1.0e-18
+        );
+        assert!(
+            (retained.refrozen_liquid_m - surface.refrozen_liquid_m * retained_fraction).abs()
+                <= 1.0e-18
+        );
+        assert!(
+            (retained.cold_content_j_m2 - surface.cold_content_j_m2 * retained_fraction).abs()
+                <= 1.0e-15
+        );
+        assert_eq!(
+            retained.density_kg_m3.to_bits(),
+            surface.density_kg_m3.to_bits()
+        );
+        assert_eq!(
+            retained.temperature_c.to_bits(),
+            surface.temperature_c.to_bits()
+        );
+        assert_eq!(
+            retained.settle_day_count.to_bits(),
+            surface.settle_day_count.to_bits()
+        );
         let reconstructed_swe_m = layers.iter().map(|layer| layer.mass_swe_m).sum::<f64>();
         assert!((reconstructed_swe_m - target_swe_m).abs() <= 1.0e-15);
     }
@@ -1410,12 +1591,29 @@ mod cqr_row5_tests {
         let retained_fraction = 0.75;
         assert!((result.mass_swe_m - target_swe_m).abs() <= 1.0e-18);
         assert!(snow_density_layer_has_resolved_mass(result.mass_swe_m));
-        assert!((result.liquid_water_m - retained.liquid_water_m * retained_fraction).abs() <= 1.0e-18);
-        assert!((result.refrozen_liquid_m - retained.refrozen_liquid_m * retained_fraction).abs() <= 1.0e-18);
-        assert!((result.cold_content_j_m2 - retained.cold_content_j_m2 * retained_fraction).abs() <= 1.0e-15);
-        assert_eq!(result.density_kg_m3.to_bits(), retained.density_kg_m3.to_bits());
-        assert_eq!(result.temperature_c.to_bits(), retained.temperature_c.to_bits());
-        assert_eq!(result.settle_day_count.to_bits(), retained.settle_day_count.to_bits());
+        assert!(
+            (result.liquid_water_m - retained.liquid_water_m * retained_fraction).abs() <= 1.0e-18
+        );
+        assert!(
+            (result.refrozen_liquid_m - retained.refrozen_liquid_m * retained_fraction).abs()
+                <= 1.0e-18
+        );
+        assert!(
+            (result.cold_content_j_m2 - retained.cold_content_j_m2 * retained_fraction).abs()
+                <= 1.0e-15
+        );
+        assert_eq!(
+            result.density_kg_m3.to_bits(),
+            retained.density_kg_m3.to_bits()
+        );
+        assert_eq!(
+            result.temperature_c.to_bits(),
+            retained.temperature_c.to_bits()
+        );
+        assert_eq!(
+            result.settle_day_count.to_bits(),
+            retained.settle_day_count.to_bits()
+        );
     }
 
     #[test]
@@ -1433,12 +1631,8 @@ mod cqr_row5_tests {
                 minimum: Some(0.0),
                 maximum: Some(1.0),
             },
-            SnowDensityError::MissingClimateClassAssignment {
-                model: "sturm2010",
-            },
-            SnowDensityError::MissingSturmDayOfYear {
-                model: "sturm2010",
-            },
+            SnowDensityError::MissingClimateClassAssignment { model: "sturm2010" },
+            SnowDensityError::MissingSturmDayOfYear { model: "sturm2010" },
             SnowDensityError::MissingClimateClassDensityParameters { class: "alpine" },
             SnowDensityError::LayerAggregateMismatch {
                 symbol: "prior_layers.thickness_m",
@@ -1477,12 +1671,16 @@ mod cqr_row5_tests {
             Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol { .. }
         ));
         assert!(mapped[2].to_string().contains("snow_climate_class"));
-        assert!(mapped[3]
-            .to_string()
-            .contains("sturm2010_density_day_of_year"));
-        assert!(mapped[4]
-            .to_string()
-            .contains("sturm2010_density_parameters"));
+        assert!(
+            mapped[3]
+                .to_string()
+                .contains("sturm2010_density_day_of_year")
+        );
+        assert!(
+            mapped[4]
+                .to_string()
+                .contains("sturm2010_density_parameters")
+        );
         assert!(matches!(
             mapped[5],
             Wb11HydrologyKernelGuardError::SnowLayerAggregateMismatch(_)
@@ -1502,8 +1700,10 @@ mod cqr_row5_tests {
                 .sum::<f64>();
             assert!((replay_swe_m - snapshot.prior_swe_m).abs() <= f64::EPSILON);
         }
-        assert!(mapped[5]
-            .to_string()
-            .contains("prior_layers.thickness_m=0.4 does not match expected 0.5"));
+        assert!(
+            mapped[5]
+                .to_string()
+                .contains("prior_layers.thickness_m=0.4 does not match expected 0.5")
+        );
     }
 }

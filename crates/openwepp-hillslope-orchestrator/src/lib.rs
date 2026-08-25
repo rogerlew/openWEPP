@@ -6,6 +6,7 @@ extern crate self as openwepp_hillslope_orchestrator;
 pub mod coupled_time_reference;
 pub mod land_surface_energy_shadow;
 pub mod runtime_inputs;
+mod snow_owner_v4;
 pub mod snow_stage3_open_boundary;
 pub mod snow_stage3_terminal_handoff;
 pub mod snow_stage3_v11_attachment;
