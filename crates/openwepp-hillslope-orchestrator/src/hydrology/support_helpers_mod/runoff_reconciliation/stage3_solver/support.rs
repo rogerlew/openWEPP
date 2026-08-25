@@ -206,6 +206,55 @@ impl Wb11HydrologyKernel {
             Some(boundary),
         )
     }
+
+    /// Evaluate one covered support with the terminal enthalpy-event operator
+    /// enabled and the exact sealed surface boundary used by the coupled solve.
+    pub fn evaluate_stage3_terminal_support_with_boundary_v1(
+        inputs: &DirectActiveSnowPartitionInputs,
+        state: &DirectSnowStage3PersistentState,
+        lane_id: u32,
+        interval_index: u64,
+        support: DirectSnowStage3SupportInput,
+        boundary: Stage3SnowSurfaceBoundaryReceiptV1,
+    ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
+        if !support.duration_seconds.is_finite()
+            || support.duration_seconds <= 0.0
+            || boundary.support.duration_ns()
+                != duration_seconds_to_ns(support.duration_seconds)?
+        {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_terminal_covered_boundary_support_join",
+                support.duration_seconds,
+                Some(f64::MIN_POSITIVE),
+                None,
+            )
+            .into());
+        }
+        Self::validate_stage3_persistent_state(state)?;
+        if state.lane_id != lane_id
+            || state.next_interval_index != interval_index
+            || !stage3_is_terminal_event_domain(state)
+        {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_terminal_persistent_identity_or_order",
+                1.0,
+                Some(0.0),
+                Some(0.0),
+            )
+            .into());
+        }
+        Self::evaluate_stage3_persistent_day_internal(
+            inputs,
+            state,
+            lane_id,
+            interval_index,
+            &[support],
+            Some(DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1),
+            Some(boundary),
+        )
+    }
 }
 
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]

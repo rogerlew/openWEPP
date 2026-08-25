@@ -402,6 +402,7 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     pub finalize_wb14_parent_interval: bool,
     pub wb14_coupled_child_binding:
         crate::direct_runtime::DirectWb14CoupledChildBindingV1,
+    terminal_endpoint_mode: bool,
     ending: Option<DirectV10RealConsumerShadow>,
     ending_stage3_by_lane: Option<BTreeMap<u32, DirectSnowStage3PersistentState>>,
     last_support_receipt: Option<LseSupportAdmissibilityReceiptV1>,
@@ -414,6 +415,7 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     last_precipitation_parcel_sets: Option<BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>>,
     last_physical_outcome_ledgers:
         Option<BTreeMap<u32, physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1>>,
+    last_terminal_events: Option<BTreeMap<u32, DirectSnowTerminalEventResult>>,
     last_wb14_child_receipt_set_sha256: Option<String>,
     last_wb14_parent_receipt_set_sha256: Option<String>,
     last_wb14_child_replay_bytes: Option<Vec<u8>>,
@@ -451,6 +453,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             interval_index: inputs.interval_index,
             finalize_wb14_parent_interval: inputs.finalize_wb14_parent_interval,
             wb14_coupled_child_binding: inputs.wb14_coupled_child_binding,
+            terminal_endpoint_mode: false,
             ending: None,
             ending_stage3_by_lane: None,
             last_support_receipt: None,
@@ -460,11 +463,21 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             last_snow_soil_heat_receipts: None,
             last_precipitation_parcel_sets: None,
             last_physical_outcome_ledgers: None,
+            last_terminal_events: None,
             last_wb14_child_receipt_set_sha256: None,
             last_wb14_parent_receipt_set_sha256: None,
             last_wb14_child_replay_bytes: None,
             last_wb14_parent_replay_bytes: None,
         }
+    }
+
+    /// Admit a terminal event only when it is independently reproduced at the
+    /// exact end of this shortened support. Ordinary persistent execution
+    /// retains its fail-closed rejection.
+    #[must_use]
+    pub(crate) fn with_terminal_endpoint_mode(mut self) -> Self {
+        self.terminal_endpoint_mode = true;
+        self
     }
 
     fn precipitation_parcel_sets(
@@ -636,7 +649,11 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         .map_err(|_| DirectV11RealConsumerError::Identity("reference exposure"))?;
         let snow_resistance = reference_resistance;
         let snow_conductance = 1.0 / snow_resistance;
-        let surface = Wb11HydrologyKernel::project_stage3_surface_state_v1(stage3_state)
+        let surface = if crate::hydrology::stage3_is_terminal_event_domain(stage3_state) {
+            Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(stage3_state)
+        } else {
+            Wb11HydrologyKernel::project_stage3_surface_state_v1(stage3_state)
+        }
             .map_err(|_| DirectV11RealConsumerError::Identity("snow active-volume surface"))?;
         let snow_temperature_k = surface.surface_temperature_k;
         let snow_temperature = TemperatureCelsius::try_new(snow_temperature_k - 273.15)
@@ -1104,7 +1121,11 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             let beginning = self.stage3_beginning_by_lane.get(&lane_id).ok_or(
                 DirectV11RealConsumerError::Identity("open-snow beginning Stage-3 lane"),
             )?;
-            let beginning_digest = Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning)
+            let beginning_digest = if crate::hydrology::stage3_is_terminal_event_domain(beginning) {
+                Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(beginning)
+            } else {
+                Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning)
+            }
                 .map_err(|_| {
                     DirectV11RealConsumerError::Identity(
                         "open-snow beginning active-volume surface",
@@ -1445,7 +1466,11 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 DirectV11RealConsumerError::Identity("covered final beginning Stage-3 state"),
             )?;
             let beginning_stage3_state_sha256 =
-                Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning_stage3)
+                if crate::hydrology::stage3_is_terminal_event_domain(beginning_stage3) {
+                    Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(beginning_stage3)
+                } else {
+                    Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning_stage3)
+                }
                     .map_err(|_| {
                         DirectV11RealConsumerError::Identity(
                             "covered final beginning active-volume surface",
@@ -1759,14 +1784,23 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                         .ok_or(DirectV11RealConsumerError::Identity(
                             "covered Stage-3 state boundary lane",
                         ))?;
-                let surface = Wb11HydrologyKernel::project_stage3_surface_state_v1(state)
-                    .map_err(|_| {
-                        DirectV11RealConsumerError::Identity(
-                            "covered Stage-3 state boundary active-volume surface",
-                        )
-                    })?;
-                let snow_temperature_k = surface.surface_temperature_k;
-                let latent_heat_j_kg = surface.latent_heat_j_kg;
+                let projected = if crate::hydrology::stage3_is_terminal_event_domain(state) {
+                    Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(state)
+                } else {
+                    Wb11HydrologyKernel::project_stage3_surface_state_v1(state)
+                };
+                let (snow_temperature_k, latent_heat_j_kg) =
+                    match projected {
+                        Ok(surface) => (surface.surface_temperature_k, surface.latent_heat_j_kg),
+                        Err(_) if self.terminal_endpoint_mode => {
+                            (273.15, boundary.latent_heat_j_kg)
+                        }
+                        Err(_) => {
+                            return Err(DirectV11RealConsumerError::Identity(
+                                "covered Stage-3 state boundary active-volume surface",
+                            ));
+                        }
+                    };
                 let mut merged = boundary.clone();
                 merged.snow_temperature_k = snow_temperature_k;
                 merged.latent_heat_j_kg = latent_heat_j_kg;
@@ -1784,6 +1818,13 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
 
     pub fn take_staged_stage3(&mut self) -> Option<BTreeMap<u32, DirectSnowStage3PersistentState>> {
         self.ending_stage3_by_lane.take()
+    }
+
+    #[must_use]
+    pub(crate) fn last_terminal_events(
+        &self,
+    ) -> Option<&BTreeMap<u32, DirectSnowTerminalEventResult>> {
+        self.last_terminal_events.as_ref()
     }
 
     #[must_use]

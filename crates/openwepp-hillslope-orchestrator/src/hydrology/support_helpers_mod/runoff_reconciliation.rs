@@ -57,6 +57,16 @@ pub(crate) fn stage3_is_resolved_thermal_domain(
     stage3_total_represented_ice_swe_m(state)
         > STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
 }
+
+pub(crate) fn stage3_is_terminal_event_domain(
+    state: &DirectSnowStage3PersistentState,
+) -> bool {
+    state.schema_version == 2
+        && state.terminal_event_model == Some(DirectSnowTerminalEventModel::EnthalpyEventV1)
+        && stage3_has_represented_ice(state)
+        && stage3_total_represented_ice_swe_m(state)
+            <= STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
+}
 const STAGE3_MEDIUM_TIMESTEP_SECONDS: f64 = 900.0;
 const STAGE3_SMALL_TIMESTEP_SECONDS: f64 = 60.0;
 const STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2: f64 = 1.0e-6;
@@ -648,6 +658,12 @@ impl Wb11HydrologyKernel {
                 Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
                     phase_class: HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
                     symbol: BoundarySymbol::from("snow.unreachable_terminal_numerics"),
+                },
+            ),
+            Err(DirectSnowStage3EvaluationError::TerminalCustody(_)) => Err(
+                Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class: HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                    symbol: BoundarySymbol::from("snow.terminal_custody"),
                 },
             ),
         }

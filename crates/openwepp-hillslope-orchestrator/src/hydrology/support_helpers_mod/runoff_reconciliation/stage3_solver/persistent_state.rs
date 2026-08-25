@@ -10,6 +10,58 @@ pub(crate) struct Stage3BottomVolumeProjectionV1 {
 }
 
 impl Wb11HydrologyKernel {
+    /// Project the complete terminal-domain control volume at the soil
+    /// boundary. The terminal evaluator collapses the full represented column,
+    /// so its surface and bottom are the same canonical volume.
+    pub(crate) fn project_stage3_terminal_bottom_volume_v1(
+        state: &DirectSnowStage3PersistentState,
+        atmospheric_pressure_pa: f64,
+    ) -> Result<Stage3BottomVolumeProjectionV1, DirectSnowStage3EvaluationError> {
+        Self::validate_stage3_persistent_state(state)?;
+        if !stage3_is_terminal_event_domain(state) {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_bottom_volume_terminal_domain",
+                stage3_total_represented_ice_swe_m(state),
+                Some(0.0),
+                Some(STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M),
+            )
+            .into());
+        }
+        let layers = state
+            .layers
+            .iter()
+            .copied()
+            .filter(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m))
+            .collect::<Vec<_>>();
+        let cold_content = layers
+            .iter()
+            .map(Self::stage3_layer_cold_content_j_m2)
+            .collect::<Vec<_>>();
+        let volume = Self::stage3_control_volume_state(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            &layers,
+            &cold_content,
+            atmospheric_pressure_pa,
+        )?;
+        let temperature_c = Self::stage3_temperature_from_cold_content_values(
+            volume.mass_swe_m,
+            volume.cold_content_j_m2,
+        );
+        Self::stage3_temperature(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            temperature_c,
+        )?;
+        Ok(Stage3BottomVolumeProjectionV1 {
+            temperature_k: temperature_c + 273.15,
+            thickness_m: volume.depth_m,
+            thermal_conductivity_w_m_k: volume.conductivity_w_m_k,
+            beginning_stage3_state_sha256: openwepp_coupled_time::digest_bytes(
+                &Self::serialize_stage3_persistent_state(state)?,
+            ),
+        })
+    }
+
     /// Project the bottom represented thermal volume of a resolved Stage-3 column.
     pub(crate) fn project_stage3_bottom_volume_v1(
         state: &DirectSnowStage3PersistentState,
@@ -154,6 +206,80 @@ impl Wb11HydrologyKernel {
         })
     }
 
+    /// Project the complete one-volume surface admitted only by the terminal
+    /// enthalpy-event schema. This is deliberately separate from the resolved
+    /// thermal projection so the ordinary Stage-3 domain remains fail-closed.
+    pub fn project_stage3_terminal_surface_state_v1(
+        state: &DirectSnowStage3PersistentState,
+    ) -> Result<Stage3SurfaceStateV1, DirectSnowStage3EvaluationError> {
+        Self::validate_stage3_persistent_state(state)?;
+        let layers = state
+            .layers
+            .iter()
+            .copied()
+            .filter(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m))
+            .collect::<Vec<_>>();
+        if !stage3_is_terminal_event_domain(state) {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_surface_state_terminal_domain",
+                stage3_total_represented_ice_swe_m(state),
+                Some(0.0),
+                Some(STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M),
+            )
+            .into());
+        }
+        let active_mass_swe_m = layers.iter().map(|layer| layer.mass_swe_m).sum::<f64>();
+        let active_depth_m = layers.iter().map(|layer| layer.thickness_m).sum::<f64>();
+        let active_cold_content_j_m2 = layers
+            .iter()
+            .map(Self::stage3_layer_cold_content_j_m2)
+            .sum::<f64>();
+        let surface_temperature_c = Self::stage3_temperature_from_cold_content_values(
+            active_mass_swe_m,
+            active_cold_content_j_m2,
+        );
+        let temperature = Self::stage3_temperature(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            surface_temperature_c,
+        )?;
+        let latent_heat_j_kg = latent_heat_for_surface_temperature(temperature)
+            .map_err(|_| {
+                Self::stage3_domain_error(
+                    HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                    "snow.stage3_terminal_surface_state_latent_heat",
+                    surface_temperature_c,
+                    Some(-273.15),
+                    Some(0.0),
+                )
+            })?
+            .as_joules_per_kilogram();
+        let beginning_stage3_state_sha256 = openwepp_coupled_time::digest_bytes(
+            &Self::serialize_stage3_persistent_state(state)?,
+        );
+        let mut partition_bytes = Vec::new();
+        partition_bytes.extend_from_slice(b"OPENWEPP_STAGE3_TERMINAL_COMPLETE_VOLUME_V1");
+        for (index, layer) in layers.iter().enumerate() {
+            partition_bytes.extend_from_slice(&(index as u64).to_le_bytes());
+            partition_bytes.extend_from_slice(&layer.mass_swe_m.to_bits().to_le_bytes());
+            partition_bytes.extend_from_slice(&layer.thickness_m.to_bits().to_le_bytes());
+            partition_bytes.extend_from_slice(&layer.density_kg_m3.to_bits().to_le_bytes());
+            partition_bytes.extend_from_slice(
+                &Self::stage3_layer_cold_content_j_m2(layer).to_bits().to_le_bytes(),
+            );
+        }
+        Ok(Stage3SurfaceStateV1 {
+            active_mass_kg_m2: active_mass_swe_m * STAGE3_RHO_WATER_KG_M3,
+            active_depth_m,
+            active_cold_content_j_m2,
+            surface_temperature_k: surface_temperature_c + 273.15,
+            latent_heat_j_kg,
+            selected_substep_seconds: STAGE3_SMALL_TIMESTEP_SECONDS,
+            active_lower_partition_sha256: openwepp_coupled_time::digest_bytes(&partition_bytes),
+            beginning_stage3_state_sha256,
+        })
+    }
+
     pub fn initialize_stage3_persistent_state(
         lane_id: u32,
         layers: Vec<DirectSnowLayerState>,
@@ -224,6 +350,44 @@ impl Wb11HydrologyKernel {
         state.fingerprint = Self::stage3_persistent_state_fingerprint(&state);
         Self::validate_stage3_persistent_state(&state)?;
         Ok(state)
+    }
+
+    /// Apply the zero-duration terminal custody transition after the accepted
+    /// physical endpoint. This integrates no rate: it removes exactly the
+    /// already-censored liquid handed to the terminal parcel and reseals the
+    /// dormant Stage-3 owner at the same interval cursor.
+    pub fn consume_stage3_terminal_liquid_v1(
+        state: &DirectSnowStage3PersistentState,
+        terminal_liquid_kg_m2: f64,
+    ) -> Result<DirectSnowStage3PersistentState, DirectSnowStage3EvaluationError> {
+        Self::validate_stage3_persistent_state(state)?;
+        let represented_ice = Self::stage3_total_ice_mass_swe_m(&state.layers)
+            * STAGE3_RHO_WATER_KG_M3;
+        let represented_liquid = state.detached_retained_liquid_kg_m2
+            + state
+                .layers
+                .iter()
+                .map(|layer| {
+                    (layer.liquid_water_m + layer.refrozen_liquid_m)
+                        * STAGE3_RHO_WATER_KG_M3
+                })
+                .sum::<f64>();
+        let tolerance = 1.0e-12_f64.max(1.0e-12 * represented_liquid.abs());
+        if !terminal_liquid_kg_m2.is_finite()
+            || terminal_liquid_kg_m2 < 0.0
+            || represented_ice.abs() > 1.0e-12
+            || (represented_liquid - terminal_liquid_kg_m2).abs() > tolerance
+        {
+            return Err(DirectSnowStage3EvaluationError::TerminalCustody(
+                "terminal liquid custody does not match the terminal owner",
+            ));
+        }
+        let mut ending = state.clone();
+        ending.layers.clear();
+        ending.detached_retained_liquid_kg_m2 = 0.0;
+        ending.fingerprint = Self::stage3_persistent_state_fingerprint(&ending);
+        Self::validate_stage3_persistent_state(&ending)?;
+        Ok(ending)
     }
 
     pub fn restore_stage3_persistent_state(

@@ -557,8 +557,12 @@ pub fn evaluate_open_snow_tile_boundary(
             "open-snow beginning Stage 3 state",
         ));
     }
-    let surface = Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning_stage3)
-        .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow active-volume surface"))?;
+    let surface = if crate::hydrology::stage3_is_terminal_event_domain(beginning_stage3) {
+        Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(beginning_stage3)
+    } else {
+        Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning_stage3)
+    }
+    .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow active-volume surface"))?;
     let snow_temperature_k = surface.surface_temperature_k;
     let temperature = TemperatureCelsius::try_new(surface.surface_temperature_k - 273.15)
         .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow temperature"))?;

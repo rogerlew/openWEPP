@@ -48,8 +48,8 @@ use thiserror::Error;
 
 use crate::hydrology::{
     DirectActiveSnowPartitionInputs, DirectSnowStage3EvaluationError,
-    DirectSnowStage3PersistentState, DirectSnowStage3SupportInput, STAGE3_DEFAULT_SNOW_ALBEDO,
-    Wb11HydrologyKernel,
+    DirectSnowStage3PersistentState, DirectSnowStage3SupportInput, DirectSnowTerminalEventResult,
+    STAGE3_DEFAULT_SNOW_ALBEDO, Wb11HydrologyKernel,
 };
 use crate::land_surface_energy_shadow::{
     CoveredCarrierComponentState, CoveredLseIterationState, CoveredV8OwnerEnvelopeError,

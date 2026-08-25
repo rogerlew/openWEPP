@@ -71,6 +71,10 @@ pub struct CoupledClockStateV1 {
 
 impl CoupledClockStateV1 {
     #[must_use]
+    pub const fn event_ordinal(&self) -> u32 {
+        self.event_ordinal
+    }
+    #[must_use]
     pub fn scheduled_once_receipts(&self) -> &[ScheduledOnceReceiptV1] {
         &self.scheduled_once_receipts
     }

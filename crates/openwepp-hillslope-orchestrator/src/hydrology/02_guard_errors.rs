@@ -586,6 +586,7 @@ pub enum DirectSnowStage3EvaluationError {
     Kernel(Box<Wb11HydrologyKernelGuardError>),
     TurbulentTransfer(Box<SnowStage3TurbulentTransferError>),
     TerminalNumerics(SnowTerminalNumericsFailure),
+    TerminalCustody(&'static str),
 }
 
 impl From<Wb11HydrologyKernelGuardError> for DirectSnowStage3EvaluationError {
@@ -614,6 +615,7 @@ impl fmt::Display for DirectSnowStage3EvaluationError {
                 snapshot.geometry,
             ),
             Self::TerminalNumerics(source) => source.fmt(f),
+            Self::TerminalCustody(message) => write!(f, "snow terminal custody failure: {message}"),
         }
     }
 }
@@ -624,6 +626,7 @@ impl Error for DirectSnowStage3EvaluationError {
             Self::Kernel(source) => Some(source.as_ref()),
             Self::TurbulentTransfer(snapshot) => Some(&snapshot.source),
             Self::TerminalNumerics(source) => Some(source),
+            Self::TerminalCustody(_) => None,
         }
     }
 }

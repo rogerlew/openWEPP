@@ -121,7 +121,7 @@ fn select_actual_terminal_candidate(
     lane_id: u32,
     interval_index: u64,
     support: &DirectSnowStage3V11PreparedSupport,
-    support_forcing: DirectSnowStage3SupportInput,
+    _support_forcing: DirectSnowStage3SupportInput,
     full_result: DirectSnowTerminalEventResult,
     minimum_support_ns: u128,
 ) -> Result<
@@ -166,19 +166,24 @@ fn select_actual_terminal_candidate(
         if pre != 0 && pre < minimum_support_ns || post != 0 && post < minimum_support_ns {
             continue;
         }
-        let duration_seconds = (tick.get() - start.get()) as f64 / 1.0e9;
-        if duration_seconds <= 0.0 {
+        if *tick == start {
             continue;
         }
+        let trial_support = TimeSupport::new(start, *tick)?;
+        let projected = support.coupled_subslab(trial_support, 0)?;
+        let projected_forcing = projected
+            .support_forcing_by_lane
+            .get(&lane_id)
+            .copied()
+            .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                "terminal projected lane forcing",
+            ))?;
         let trial = Wb11HydrologyKernel::evaluate_stage3_persistent_support(
             inputs,
             state,
             lane_id,
             interval_index,
-            DirectSnowStage3SupportInput {
-                forcing: support_forcing.forcing,
-                duration_seconds,
-            },
+            projected_forcing,
             DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
         )?;
         let Some(result) = trial.terminal_event else {

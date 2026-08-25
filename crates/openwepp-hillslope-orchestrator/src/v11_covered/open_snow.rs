@@ -444,19 +444,38 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         // Preserve its carried owner unchanged and emit no heat receipt or
         // soil credit; fabricating a bottom temperature/conductivity would
         // violate the canonical Stage-3 lifecycle boundary.
+        let beginning_terminal = crate::hydrology::stage3_is_terminal_event_domain(beginning_stage);
         if !crate::hydrology::stage3_is_resolved_thermal_domain(beginning_stage)
-            || !crate::hydrology::stage3_is_resolved_thermal_domain(ending_stage)
+            && !beginning_terminal
         {
             return Ok(None);
         }
-        let beginning_bottom = Wb11HydrologyKernel::project_stage3_bottom_volume_v1(
-            beginning_stage,
-            inputs.surface_energy_options.atmospheric_pressure_pa,
-        )?;
-        let ending_bottom = Wb11HydrologyKernel::project_stage3_bottom_volume_v1(
-            ending_stage,
-            inputs.surface_energy_options.atmospheric_pressure_pa,
-        )?;
+        let beginning_bottom = if beginning_terminal {
+            Wb11HydrologyKernel::project_stage3_terminal_bottom_volume_v1(
+                beginning_stage,
+                inputs.surface_energy_options.atmospheric_pressure_pa,
+            )?
+        } else {
+            Wb11HydrologyKernel::project_stage3_bottom_volume_v1(
+                beginning_stage,
+                inputs.surface_energy_options.atmospheric_pressure_pa,
+            )?
+        };
+        let ending_bottom_temperature_k = if crate::hydrology::stage3_is_resolved_thermal_domain(ending_stage) {
+            Wb11HydrologyKernel::project_stage3_bottom_volume_v1(
+                ending_stage,
+                inputs.surface_energy_options.atmospheric_pressure_pa,
+            )?.temperature_k
+        } else if crate::hydrology::stage3_is_terminal_event_domain(ending_stage) {
+            Wb11HydrologyKernel::project_stage3_terminal_bottom_volume_v1(
+                ending_stage,
+                inputs.surface_energy_options.atmospheric_pressure_pa,
+            )?.temperature_k
+        } else if self.terminal_endpoint_mode {
+            273.15
+        } else {
+            return Ok(None);
+        };
         let configured_ofe = self
             .beginning
             .inner
@@ -524,7 +543,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             beginning_bottom_thickness_m: beginning_bottom.thickness_m,
             beginning_bottom_conductivity_w_m_k: beginning_bottom.thermal_conductivity_w_m_k,
             beginning_snow_owner_sha256: beginning_bottom.beginning_stage3_state_sha256,
-            ending_bottom_temperature_k: ending_bottom.temperature_k,
+            ending_bottom_temperature_k,
         })
         .map(Some)
     }
@@ -633,6 +652,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                 DirectV9RealConsumerError::V9(error),
             ))
         })?;
+        let terminal_events = std::cell::RefCell::new(BTreeMap::new());
         let evaluate_stage3 = |destination_receipts: &BTreeMap<(OfeId, TileId), Digest32>,
                                boundaries: &BTreeMap<
             (OfeId, TileId),
@@ -646,6 +666,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
             u32,
             Stage3PrecipitationPhaseParcelSetV1,
         >| {
+            terminal_events.borrow_mut().clear();
             let terms = self.lane_stage3_terms_from_boundaries(
                 destination_receipts,
                 boundaries,
@@ -710,7 +731,11 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         "covered Stage-3 lane terms",
                     ))?;
                 let beginning_stage3_digest =
-                    Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning)
+                    if crate::hydrology::stage3_is_terminal_event_domain(beginning) {
+                        Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(beginning)
+                    } else {
+                        Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning)
+                    }
                         .map_err(|_| {
                             DirectV11RealConsumerError::Identity(
                                 "covered beginning active-volume surface",
@@ -811,45 +836,65 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         identity,
                     },
                 )?;
-                let result = Wb11HydrologyKernel::evaluate_stage3_persistent_support_with_boundary(
-                    stage3_inputs,
-                    beginning,
-                    *lane_id,
-                    beginning.next_interval_index,
-                    stage3_forcing,
-                    boundary,
-                )?;
+                let result = if self.terminal_endpoint_mode
+                    && crate::hydrology::stage3_is_terminal_event_domain(beginning)
+                {
+                    Wb11HydrologyKernel::evaluate_stage3_terminal_support_with_boundary_v1(
+                        stage3_inputs,
+                        beginning,
+                        *lane_id,
+                        beginning.next_interval_index,
+                        stage3_forcing,
+                        boundary,
+                    )?
+                } else {
+                    Wb11HydrologyKernel::evaluate_stage3_persistent_support_with_boundary(
+                        stage3_inputs,
+                        beginning,
+                        *lane_id,
+                        beginning.next_interval_index,
+                        stage3_forcing,
+                        boundary,
+                    )?
+                };
                 let flux_tolerance = 1.0e-6_f64;
                 let evaluation = &result.evaluation;
-                if (evaluation.complete_arm_sensible_j_m2 - boundary.sensible_energy_j_m2).abs()
-                    > flux_tolerance
-                    || (evaluation.complete_arm_shortwave_j_m2 - boundary.shortwave_energy_j_m2)
-                        .abs()
-                        > flux_tolerance
-                    || (evaluation.complete_arm_latent_j_m2 - boundary.latent_energy_j_m2).abs()
-                        > flux_tolerance
-                    || (evaluation.complete_arm_longwave_j_m2 - boundary.net_longwave_energy_j_m2)
-                        .abs()
-                        > flux_tolerance
-                    || (evaluation.complete_arm_advected_j_m2
-                        - boundary.precipitation_advection_j_m2)
-                        .abs()
-                        > flux_tolerance
-                    || (evaluation.complete_arm_snow_soil_heat_j_m2 - boundary.snow_soil_heat_j_m2)
-                        .abs()
-                        > flux_tolerance
+                let accepted_terminal_endpoint = result.terminal_event.as_ref().is_some_and(|event| {
+                    self.terminal_endpoint_mode
+                        && event.event_occurred
+                        && event.unevaluated_seconds.abs() <= 1.0e-6
+                        && (event.evaluated_seconds - interval_s).abs() <= 1.0e-6
+                });
+                let joined = [
+                    (evaluation.complete_arm_sensible_j_m2, boundary.sensible_energy_j_m2),
+                    (evaluation.complete_arm_shortwave_j_m2, boundary.shortwave_energy_j_m2),
+                    (evaluation.complete_arm_latent_j_m2, boundary.latent_energy_j_m2),
+                    (evaluation.complete_arm_longwave_j_m2, boundary.net_longwave_energy_j_m2),
+                    (evaluation.complete_arm_advected_j_m2, boundary.precipitation_advection_j_m2),
+                    (evaluation.complete_arm_snow_soil_heat_j_m2, boundary.snow_soil_heat_j_m2),
+                ];
+                if joined.iter().any(|(actual, expected)| (actual - expected).abs() > flux_tolerance)
                     || (evaluation.complete_arm_vapor_mass_exchange_kg_m2
                         - boundary.vapor_mass_kg_m2)
                         .abs()
                         > 1.0e-9
-                    || result.evaluation.evaluated_seconds.to_bits() != interval_s.to_bits()
-                    || result.lifecycle != "active"
+                    || (!accepted_terminal_endpoint
+                        && result.evaluation.evaluated_seconds.to_bits() != interval_s.to_bits())
+                    || (result.lifecycle != "active" && !accepted_terminal_endpoint)
                 {
                     return Err(DirectV11RealConsumerError::Identity(
                         "Stage-3 covered boundary/result ledger join",
                     ));
                 }
-                if result.terminal_event.is_some() {
+                if let Some(event) = result.terminal_event.as_ref() {
+                    let endpoint = event.event_occurred
+                        && event.unevaluated_seconds.abs() <= 1.0e-6
+                        && (event.evaluated_seconds - interval_s).abs() <= 1.0e-6;
+                    if self.terminal_endpoint_mode && endpoint {
+                        terminal_events.borrow_mut().insert(*lane_id, event.clone());
+                        ending_stage3.insert(*lane_id, result.state);
+                        continue;
+                    }
                     return Err(DirectV11RealConsumerError::Identity(
                         "covered adopter received terminal event before terminal chronology",
                     ));
@@ -1576,6 +1621,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
         self.last_snow_soil_heat_receipts = Some(accepted_snow_soil_receipts);
         self.last_precipitation_parcel_sets = Some(installed_precipitation_sets);
         self.last_physical_outcome_ledgers = Some(physical_outcome_ledgers);
+        self.last_terminal_events = Some(terminal_events.into_inner());
         self.ending_stage3_by_lane = Some(ending_stage3);
         self.ending = Some(candidate);
         Ok(output)

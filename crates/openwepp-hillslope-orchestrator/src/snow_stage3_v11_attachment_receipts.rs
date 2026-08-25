@@ -9,19 +9,32 @@ pub struct DirectSnowStage3V11TerminalReceipt {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectSnowStage3V11TerminalParcel {
+    pub support: TimeSupport,
     pub source_lane_id: u32,
+    pub event_ordinal: u64,
+    pub event_receipt_sha256: Digest32,
+    pub terminal_snow_state_sha256: Digest32,
+    pub receiver_topology_sha256: Digest32,
     pub destination_ofe_id: String,
     pub destination_tile_id: String,
     pub mass_kg_m2_tile_ground: f64,
     pub temperature_k: f64,
     pub specific_liquid_enthalpy_j_kg: f64,
+    pub posture: DirectSnowStage3V11TerminalParcelPosture,
     pub parcel_digest: Digest32,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum DirectSnowStage3V11TerminalParcelPosture {
+    ProducedUnconsumed,
+    Consumed,
 }
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectSnowStage3V11ParentReceipt {
     pub day_index: usize,
     pub support_count: usize,
     pub terminal_events: Vec<DirectSnowStage3V11TerminalReceipt>,
+    pub terminal_event_groups: Vec<Stage3V11TerminalEventGroupV1>,
     pub ending_stage3_state_digests: BTreeMap<u32, Digest32>,
     pub complete_owner_bytes: BTreeMap<String, Vec<u8>>,
     pub covered_owner_joins: Vec<CoveredParentOwnerJoinReceiptV1>,
@@ -31,6 +44,7 @@ pub struct DirectSnowStage3V11ParentReceipt {
     pub ending_coupled_accepted_until_ns: ModelTimeNs,
     pub ending_next_parent_sequence: u128,
     pub ending_event_ordinal: u64,
+    pub ending_terminal_parcels: BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
     pub ending_v11_parent_state: V11ParentTransaction,
     pub ending_last_v11_parent_candidate: Option<V11ParentCandidate>,
 }
@@ -107,6 +121,7 @@ impl DirectSnowStage3V11ParentReceipt {
             || ending.coupled_clock.accepted_until() != self.ending_coupled_accepted_until_ns
             || ending.next_parent_sequence != self.ending_next_parent_sequence
             || ending.accepted_event_ordinal != self.ending_event_ordinal
+            || ending.terminal_parcels != self.ending_terminal_parcels
             || ending.v11_parent_state != self.ending_v11_parent_state
             || ending.last_v11_parent_candidate != self.ending_last_v11_parent_candidate
         {
@@ -130,6 +145,7 @@ pub struct Stage3CoupledSubslabReceiptV1 {
     pub destination_receipts: BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
     pub lane_receipts: BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
     pub physical_outcome_ledger_set_sha256: Digest32,
+    pub terminal_events: BTreeMap<u32, DirectSnowTerminalEventResult>,
     pub owner_join: CoveredParentOwnerJoinReceiptV1,
     pub receipt_sha256: Digest32,
 }
@@ -219,6 +235,10 @@ impl Stage3CoupledSubslabReceiptV1 {
             ));
         }
         bytes.extend_from_slice(self.physical_outcome_ledger_set_sha256.as_bytes());
+        let terminal_event_bytes = serde_json::to_vec(&self.terminal_events).map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Identity("terminal event receipt bytes")
+        })?;
+        bytes.extend_from_slice(digest_bytes(&terminal_event_bytes).as_bytes());
         Ok(digest_bytes(&bytes))
     }
 

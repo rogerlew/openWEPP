@@ -834,6 +834,40 @@ impl V11ParentTransaction {
         &self.staged_resource_owners
     }
 
+    /// Install a zero-duration coupled-time event owner set at the current
+    /// accepted cursor. Constitutive rates and vegetation state are unchanged;
+    /// the caller-owned coupled event receipt authenticates chronology and
+    /// replay exclusion.
+    pub fn accept_zero_duration_owner_transition(
+        &mut self,
+        configuration: &VegetationConfigurationV11,
+        tick: ModelTimeNs,
+        ending_owners: BTreeMap<String, V11OwnerEnvelope>,
+        mutation_set: &[String],
+    ) -> Result<(), V11Error> {
+        self.validate(configuration)?;
+        validate_complete_owners(&ending_owners)?;
+        if self.finalized
+            || tick.get() != self.accepted_until_ns
+            || mutation_set.is_empty()
+            || mutation_set.windows(2).any(|pair| pair[0] >= pair[1])
+            || ending_owners.get("vegetation")
+                != Some(&v11_vegetation_owner_envelope(&self.staged_state)?)
+        {
+            return Err(V11Error::ResourceOwnerCandidate);
+        }
+        for (owner_id, beginning) in &self.staged_resource_owners {
+            let ending = ending_owners
+                .get(owner_id)
+                .ok_or(V11Error::ResourceOwnerCandidate)?;
+            if (beginning != ending) != mutation_set.iter().any(|value| value == owner_id) {
+                return Err(V11Error::ResourceOwnerCandidate);
+            }
+        }
+        self.staged_resource_owners = ending_owners;
+        Ok(())
+    }
+
     pub fn accept_segment(
         &mut self,
         configuration: &VegetationConfigurationV11,

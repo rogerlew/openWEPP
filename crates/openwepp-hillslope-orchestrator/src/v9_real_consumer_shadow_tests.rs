@@ -27,10 +27,11 @@ mod tests {
         SealedOpenSnowTileForcingV1, SealedStage3TileBoundaryForcingV1,
     };
     use crate::snow_stage3_v11_attachment::{
-        DirectSnowStage3V11StaticContext, PreparedStage3V11DayV1,
+        DirectSnowStage3V11StaticContext, DirectSnowStage3V11TerminalParcelPosture,
+        PreparedStage3V11DayV1,
         PreparedStage3V11SupportIdentityV1, PreparedStage3V11SupportV1,
-        STAGE3_V11_PARENT_SUPPORT_NS, Stage3V11FailureInjection,
-        execute_covered_real_v11_parent,
+        STAGE3_V11_PARENT_SUPPORT_NS, Stage3LaneLifecycleV1, Stage3V11FailureInjection,
+        execute_covered_real_v11_parent, stage3_lane_lifecycle,
     };
     use crate::v9_real_consumer_shadow::{
         DirectV11SnowCoveredRealConsumerStack, DirectV11SnowCoveredSegmentInput,
@@ -38,7 +39,7 @@ mod tests {
     };
     use crate::hydrology::{
         DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowStage3SupportInput,
-        DirectSnowSurfaceEnergyOptions,
+        DirectSnowSurfaceEnergyOptions, DirectSnowTerminalEventRequest,
         SnowDensityModel, SnowMeltModel, SnowStage3LiquidRoutingModel, SnowSurfaceLongwaveModel,
         Wb11HydrologyKernel, stage3_is_resolved_thermal_domain,
     };

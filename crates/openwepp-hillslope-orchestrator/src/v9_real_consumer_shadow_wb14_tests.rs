@@ -2,43 +2,49 @@
 #[test]
 #[allow(clippy::too_many_lines)]
 fn mixed_open_covered_stack_executes_complete_ofe_ground_boundary() {
-    exercise_complete_wb14_cadence(0.005, 8.0, true, None, false, None);
+    exercise_complete_wb14_cadence(0.005, 8.0, true, None, false, None, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn two_900_second_complete_owner_children_publish_one_parent() {
-    exercise_complete_wb14_cadence(0.02, 8.0, false, None, false, None);
+    exercise_complete_wb14_cadence(0.02, 8.0, false, None, false, None, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn one_1800_second_child_matches_complete_historical_candidate() {
-    exercise_complete_wb14_cadence(0.08, 8.0, false, None, false, None);
+    exercise_complete_wb14_cadence(0.08, 8.0, false, None, false, None, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn coupled_hard_boundary_truncates_selected_900_second_child() {
-    exercise_complete_wb14_cadence(0.02, 8.0, false, Some(60_000_000_000), false, None);
+    exercise_complete_wb14_cadence(0.02, 8.0, false, Some(60_000_000_000), false, None, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn latest_accepted_stage3_state_changes_next_wb14_proposal() {
-    exercise_complete_wb14_cadence(0.010_000_001, 0.0, false, Some(60_000_000_000), true, None);
+    exercise_complete_wb14_cadence(0.010_000_001, 0.0, false, Some(60_000_000_000), true, None, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn resolved_snow_and_snow_free_lanes_publish_one_atomic_parent() {
-    exercise_complete_wb14_cadence(0.08, 8.0, false, None, false, Some(0.0));
+    exercise_complete_wb14_cadence(0.08, 8.0, false, None, false, Some(0.0), false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn two_resolved_snow_lanes_choose_common_earliest_cadence() {
-    exercise_complete_wb14_cadence(0.08, 8.0, true, None, false, Some(0.005));
+    exercise_complete_wb14_cadence(0.08, 8.0, true, None, false, Some(0.005), false);
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn interior_terminal_event_runs_covered_event_and_snow_free_remainder() {
+    exercise_complete_wb14_cadence(0.000_6, 0.0, false, None, false, None, true);
 }
 
 #[allow(
@@ -53,6 +59,7 @@ fn exercise_complete_wb14_cadence(
     hard_boundary_ns: Option<u128>,
     expect_dynamic_proposal: bool,
     second_lane_swe_m: Option<f64>,
+    terminal_event: bool,
 ) {
     let positive_covered_rain = runtime_swe_m.to_bits() == 0.005_f64.to_bits()
         && include_child_17
@@ -218,10 +225,18 @@ fn exercise_complete_wb14_cadence(
     stage3_inputs.snow_layers[0].temperature_c = -stage3_cold_delta_k;
     stage3_inputs.snow_layers[0].cold_content_j_m2 =
         runtime_swe_m * 1_000.0 * 2_100.0 * stage3_cold_delta_k;
-    let stage3_beginning = Wb11HydrologyKernel::initialize_stage3_persistent_state(
-        1,
-        stage3_inputs.snow_layers.clone(),
-    )
+    let stage3_beginning = if terminal_event {
+        Wb11HydrologyKernel::initialize_stage3_persistent_state_with_terminal_event(
+            1,
+            stage3_inputs.snow_layers.clone(),
+            DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
+        )
+    } else {
+        Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            1,
+            stage3_inputs.snow_layers.clone(),
+        )
+    }
     .expect("persistent Stage-3 beginning");
     let mut stage3_hourly = DirectSnowHourlyForcing::zero();
     if positive_covered_rain {
@@ -231,6 +246,9 @@ fn exercise_complete_wb14_cadence(
         stage3_hourly.rain_fraction = 1.0;
         stage3_hourly.hydrometeor_temperature_c = Some(-1.0);
     }
+    if terminal_event {
+        stage3_hourly.radiation_mj_m2 = 1_000.0;
+    }
     let stage3_forcing = DirectSnowStage3SupportInput {
         forcing: stage3_hourly,
         duration_seconds: support_seconds,
@@ -239,6 +257,28 @@ fn exercise_complete_wb14_cadence(
     let mut stage3_forcing_by_lane = BTreeMap::from([(1, stage3_forcing)]);
     let carrier_forcing_by_lane = BTreeMap::from([(1, child2c_carrier_forcing())]);
     let mut stage3_beginning_by_lane = BTreeMap::from([(1, stage3_beginning.clone())]);
+    let preliminary_stage3_inputs_by_lane = if terminal_event {
+        let mut value = stage3_inputs.clone();
+        value.runtime_swe_m = 0.005;
+        value.runtime_depth_m = 0.05;
+        value.snow_layers[0].mass_swe_m = 0.005;
+        value.snow_layers[0].thickness_m = 0.05;
+        BTreeMap::from([(1, value)])
+    } else {
+        stage3_inputs_by_lane.clone()
+    };
+    let preliminary_stage3_beginning_by_lane = if terminal_event {
+        BTreeMap::from([(
+            1,
+            Wb11HydrologyKernel::initialize_stage3_persistent_state(
+                1,
+                preliminary_stage3_inputs_by_lane[&1].snow_layers.clone(),
+            )
+            .expect("ordinary preliminary Stage-3 beginning"),
+        )])
+    } else {
+        stage3_beginning_by_lane.clone()
+    };
     if let Some(second_swe) = second_lane_swe_m {
         let mut second_inputs = stage3_inputs;
         second_inputs.runtime_swe_m = second_swe;
@@ -289,10 +329,10 @@ fn exercise_complete_wb14_cadence(
             &shadow,
             DirectV11SnowCoveredStackInputs {
                 interval: &covered_interval,
-                stage3_inputs_by_lane: &stage3_inputs_by_lane,
+                stage3_inputs_by_lane: &preliminary_stage3_inputs_by_lane,
                 stage3_forcing_by_lane: &stage3_forcing_by_lane,
                 snow_surface_forcing_by_destination: &covered_only_snow_surface_forcing,
-                stage3_beginning_by_lane: stage3_beginning_by_lane.clone(),
+                stage3_beginning_by_lane: preliminary_stage3_beginning_by_lane.clone(),
                 day_index: 0,
                 interval_index: 0,
                 finalize_wb14_parent_interval: true,
@@ -307,7 +347,7 @@ fn exercise_complete_wb14_cadence(
         &mut missing_open_executor,
     )
     .expect_err("mixed OFE without its open-snow boundary must reject");
-    if second_lane_swe_m.is_none() && !positive_covered_rain {
+    if second_lane_swe_m.is_none() && !positive_covered_rain && !terminal_event {
         assert!(matches!(
             missing_error,
             V11ExecutionError::Executor(DirectV11RealConsumerError::Identity(
@@ -435,10 +475,10 @@ fn exercise_complete_wb14_cadence(
         &shadow,
         DirectV11SnowCoveredStackInputs {
             interval: &covered_interval,
-            stage3_inputs_by_lane: &stage3_inputs_by_lane,
+            stage3_inputs_by_lane: &preliminary_stage3_inputs_by_lane,
             stage3_forcing_by_lane: &stage3_forcing_by_lane,
             snow_surface_forcing_by_destination: &snow_surface_forcing_by_destination,
-            stage3_beginning_by_lane: stage3_beginning_by_lane.clone(),
+            stage3_beginning_by_lane: preliminary_stage3_beginning_by_lane.clone(),
             day_index: 0,
             interval_index: 0,
             finalize_wb14_parent_interval: true,
@@ -783,9 +823,16 @@ fn exercise_complete_wb14_cadence(
     };
     let selected_seconds = stage3_beginning_by_lane
         .values()
-        .filter(|state| stage3_is_resolved_thermal_domain(state))
+        .filter(|state| {
+            stage3_is_resolved_thermal_domain(state)
+                || crate::hydrology::stage3_is_terminal_event_domain(state)
+        })
         .map(|state| {
-            Wb11HydrologyKernel::project_stage3_surface_state_v1(state)
+            if crate::hydrology::stage3_is_terminal_event_domain(state) {
+                Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(state)
+            } else {
+                Wb11HydrologyKernel::project_stage3_surface_state_v1(state)
+            }
                 .expect("coupled cadence projection")
                 .selected_substep_seconds
         })
@@ -829,7 +876,16 @@ fn exercise_complete_wb14_cadence(
     if positive_covered_rain {
         return;
     }
-    let (_, ending_consumer, ending_clock, finalized_parent, ending_stage3, subslabs) =
+    let (
+        _,
+        ending_consumer,
+        ending_clock,
+        finalized_parent,
+        ending_stage3,
+        subslabs,
+        event_groups,
+        terminal_parcels,
+    ) =
         execute_covered_real_v11_parent(
             &context,
             &parent,
@@ -843,6 +899,15 @@ fn exercise_complete_wb14_cadence(
             None,
         )
         .expect("synchronized covered parent cadence");
+    if terminal_event {
+        assert_eq!(event_groups.len(), 1);
+        assert!(!terminal_parcels.is_empty());
+        assert!(terminal_parcels.iter().all(|parcel| {
+            parcel.posture == DirectSnowStage3V11TerminalParcelPosture::ProducedUnconsumed
+        }));
+        assert_eq!(stage3_lane_lifecycle(&ending_stage3[&1], 0.0), Stage3LaneLifecycleV1::SnowFree);
+        return;
+    }
     assert_eq!(ending_clock.accepted_until(), support.end_ns());
     let expected_children = if expect_dynamic_proposal {
         subslabs.len()
