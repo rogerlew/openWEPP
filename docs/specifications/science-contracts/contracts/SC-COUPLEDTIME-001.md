@@ -145,6 +145,7 @@ forbidden. Closed domain tags are `parent-interval`, `parent-transaction`,
 `publication-receipt`. Candidate version 4 adds the closed domain tags
 `stage3-v11-terminal-group-preaccept`,
 `stage3-v11-terminal-group-accepted`,
+`stage3-v11-terminal-event-proposal-core`,
 `covered-terminal-joint-trial-state`, and
 `covered-probe-child-identity`; their ordered fields are defined in the
 version-4 amendment and use this same framed preimage, not raw concatenation.
@@ -884,7 +885,22 @@ covered probe bracket evidence
 -> parent receipt
 ```
 
-The preaccept group binds enclosing parent, current search support, event tick, physical
+Parcel and V4 owner bytes bind `terminal_event_proposal_core_id`, not a
+preaccept/accepted group or event-receipt ID. The proposal-core preimage is
+`OPENWEPP_CANONICAL_FRAMED_SHA256_V1` with closed domain tag
+`stage3-v11-terminal-event-proposal-core`, beginning with schema `u32(1)`, then
+parent transaction, enclosing/current support, event tick, physical-child and
+event ordinals, ordered event-result/probe/forcing/topology digests, and
+terminal liquid/enthalpy bits only. No parcel-set or ending-owner digest is
+present. The preaccept group then binds that core plus proposed parcels and
+ending owner. `EventProposalV1` uses the preaccept digest as event context and
+the ending owners; its accepted receipt binds both. The accepted-group receipt
+finally binds preaccept, accepted receipt, ending owner and parcel-set digest.
+Accepted receipt, preaccept/accepted group, or ordinary event-proposal IDs
+inside parcel/ending-owner bytes are prohibited self-referential preimages and
+fail `ERR-CT-025`.
+
+The preaccept group binds proposal core, enclosing parent, current search support, event tick, physical
 child ordinal, complete covered forcing digest, receiver topology, canonical
 event-result bytes/digests, terminal liquid and enthalpy, complete beginning
 and proposed ending physical owner sets, exact physical mutation set, and
@@ -900,7 +916,12 @@ ticks are big-endian `u128`; ordinals, child IDs and counts are big-endian
 ordered collections are a `u32` count followed by canonical elements; digest
 algorithm is SHA-256.
 
-The preaccept ordered tagged fields are: `schema=u32(1)`,
+The proposal-core ordered tagged fields are: `schema=u32(1)`,
+`parent_transaction`, `enclosing_start`, `enclosing_end`, `search_start`,
+`search_end`, `event_tick`, `child_ordinal`, `event_ordinal`, `forcing`,
+`topology`, and ordered candidate event-result/probe/terminal-liquid/enthalpy
+members. No parcel-set or ending-owner digest is present. The preaccept ordered
+tagged fields are: `schema=u32(1)`, `proposal_core`,
 `parent_transaction`, `enclosing_start`, `enclosing_end`, `search_start`,
 `search_end`, `event_tick`, `child_ordinal`, `event_ordinal`, `forcing`,
 `topology`, `begin_owner_set`, `proposed_end_owner_set`, `mutations` as ordered

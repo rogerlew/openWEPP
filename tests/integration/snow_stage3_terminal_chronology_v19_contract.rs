@@ -142,11 +142,17 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
     assert!(lse.contains("q_ss,k,1+q_ss,k,2"));
     assert!(lse.contains("snow energy includes\n`-Q_ss`"));
     assert!(snow_freeze.contains("OPENWEPP_STAGE3_TERMINAL_PARCEL_V1\\0"));
+    assert!(snow_freeze.contains("terminal_event_proposal_core_id:[u8;32]"));
+    assert!(snow_freeze.contains("closed domain tag\n`stage3-v11-terminal-event-proposal-core`"));
+    assert!(snow_freeze.contains("would create a digest self-reference"));
+    assert!(!snow_freeze.contains("accepted_event_receipt_id:[u8;32]"));
+    assert!(!snow_freeze.contains("event_group_receipt_digest:[u8;32]"));
     assert!(snow_freeze.contains("abs(sum_i(f_i*m_i)-m_terminal_liquid) <= a_terminal_mass"));
     assert!(coupled_time.contains("stage3-v11-terminal-group-preaccept"));
     assert!(coupled_time.contains("stage3-v11-terminal-group-accepted"));
     assert!(coupled_time.contains("probe identities never authorize accepted WB14/publication"));
     assert!(!coupled_time.contains("coalesced event-group digest\n-> accepted"));
+    assert!(coupled_time.contains("No parcel-set or ending-owner digest is\npresent"));
 }
 
 #[test]

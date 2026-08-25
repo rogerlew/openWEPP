@@ -4118,8 +4118,8 @@ tile_receipt_count:u32
 parcel_count:u32
   repeated parcel_digest:[u8;32], source_lane_id:u32,
            parent_transaction_id:[u8;32], event_ordinal:u32,
-           accepted_event_receipt_id:[u8;32], event_result_digest:[u8;32],
-           event_group_receipt_digest:[u8;32], receiver_topology_digest:[u8;32],
+           terminal_event_proposal_core_id:[u8;32], event_result_digest:[u8;32],
+           receiver_topology_digest:[u8;32],
            support_start_ns:u128, support_end_ns:u128,
            destination_ofe_len:u32, destination_ofe_bytes,
            destination_tile_len:u32, destination_tile_bytes,
@@ -4130,7 +4130,20 @@ parcel_count:u32
 
 `parcel_digest` is SHA-256 of domain
 `OPENWEPP_STAGE3_TERMINAL_PARCEL_V1\0` followed by the same parcel fields after
-the digest. Pending physical mass is
+the digest. `terminal_event_proposal_core_id` is a canonical precursor using
+`SC-COUPLEDTIME-001#OPENWEPP_CANONICAL_FRAMED_SHA256_V1`, closed domain tag
+`stage3-v11-terminal-event-proposal-core`, and leading schema `u32(1)`. Its
+remaining preimage contains only parent transaction, enclosing/current support, event
+tick, physical-child/event ordinals, ordered event-result/probe/forcing/
+topology digests, and terminal liquid/enthalpy bits. It excludes parcel,
+ending-owner, preaccept-group, ordinary event-proposal, accepted-event, and
+accepted-group identities. A parcel must not
+contain `AcceptedEventReceiptV1::receipt_id`, because that receipt binds the
+ending owner containing the parcel and would create a digest self-reference.
+It must not contain an ambiguous event-group receipt digest. The preaccept
+group subsequently binds proposal core plus proposed parcels/ending owner; the
+accepted-group receipt joins preaccept, accepted receipt, ending owner and
+parcel-set digests. Pending physical mass is
 `sum_i(f_i*m_i)` per lane/OFE; fractions close to one only under
 `SC-SNOWENERGY-001#TOL-SNOWENERGY-002`, and the sum must satisfy
 `abs(sum_i(f_i*m_i)-m_terminal_liquid) <= a_terminal_mass`, where
