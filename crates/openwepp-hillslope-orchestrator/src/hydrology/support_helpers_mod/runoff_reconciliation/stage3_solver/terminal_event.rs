@@ -128,17 +128,9 @@ impl Wb11HydrologyKernel {
             ),
         )?;
         let transition = Self::terminal_transition(start, flux);
-        let mut state = transition.state;
-        let mut ledger = transition.ledger;
+        let state = transition.state;
+        let ledger = transition.ledger;
         let joint = join_hydrology_ending(state, carrier_joint)?;
-        if state.ice_kg_m2 > 0.0 && state.ice_kg_m2 <= 1.0e-14 {
-            let residual_ice = state.ice_kg_m2;
-            state.ice_kg_m2 = 0.0;
-            state.liquid_kg_m2 += residual_ice;
-            ledger.melt_kg_m2 += residual_ice;
-            ledger.unallocated_energy_j_m2 -=
-                STAGE3_LATENT_HEAT_FUSION_J_KG * residual_ice;
-        }
         Ok((TerminalTrial { state, ledger }, joint))
     }
 

@@ -990,3 +990,22 @@ It admits production implementation of the bounded terminal-chronology
 checkpoint but is not runtime, exact-head, or terminal PASS evidence. Child 1
 remains `EXECUTING / HOLD`; all later runner/receiver/restart/cutover work
 remains unauthorized.
+
+# 2026-08-24 terminal forward-correction gates (HOLD)
+
+| Evidence | Result |
+| --- | --- |
+| Full-prefix root authority amendment | PASS / independent `GO`; structural 2/2 |
+| Terminal solver/root scheduling | PASS: 8/8, `cdc85423-2cf5-4e6d-9552-08847483e6d4` |
+| Shared carrier / persistent replay / terminal CN | PASS: 5/5, `f80bddfd-6619-46d9-83a8-7365dbb8be4f` |
+| Precomputed executor publication/poison/rollback | PASS: 3/3, `91069656-d2f7-4542-b794-64882c2f4112` |
+| Attachment structural ceiling | PASS: 2,686 lines |
+| Original interior terminal fixture | HARD HOLD: typed `BelowCarrierDomain`; no subminimum provider call |
+| Exact-head crate/workspace qualification | NOT RUN / not claimable while focused HOLD remains |
+
+`Static:` raw Stage-3 discovery, boundary=None terminal trials, duplicate
+terminal storage consumption, out-of-owner pending parcels, fabricated dormant
+snow temperature, empty terminal ledgers, and the legacy terminal installation
+rerun are removed from the staged terminal path. The last admissible LTE
+comparison remains physically nonconverged before the common carrier minimum;
+terminal PASS and all later checkpoints remain unauthorized.

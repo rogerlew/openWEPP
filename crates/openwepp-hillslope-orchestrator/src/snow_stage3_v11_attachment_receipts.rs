@@ -31,6 +31,27 @@ pub enum DirectSnowStage3V11TerminalParcelPosture {
     ProducedUnconsumed,
     Consumed,
 }
+
+fn advance_canonical_terminal_event_ordinal(
+    next_by_parent: &mut BTreeMap<ParentTransactionId, u32>,
+    parent: ParentTransactionId,
+    accepted_ordinal: u32,
+) -> Result<(), DirectSnowStage3V11AttachmentError> {
+    let expected = next_by_parent.get(&parent).copied().unwrap_or(0);
+    if accepted_ordinal != expected {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "terminal accepted-event receipt ordinal sequence",
+        ));
+    }
+    let next = expected.checked_add(1).ok_or(
+        DirectSnowStage3V11AttachmentError::Identity(
+            "terminal accepted-event receipt ordinal overflow",
+        ),
+    )?;
+    next_by_parent.insert(parent, next);
+    Ok(())
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectSnowStage3V11ParentReceipt {
     pub day_index: usize,
@@ -45,7 +66,6 @@ pub struct DirectSnowStage3V11ParentReceipt {
     pub ending_coupled_owner_set_sha256: Digest32,
     pub ending_coupled_accepted_until_ns: ModelTimeNs,
     pub ending_next_parent_sequence: u128,
-    pub ending_event_ordinal: u64,
     pub ending_v11_parent_state: V11ParentTransaction,
     pub ending_last_v11_parent_candidate: Option<V11ParentCandidate>,
 }
@@ -69,6 +89,7 @@ impl DirectSnowStage3V11ParentReceipt {
             ));
         }
         let mut accepted_ids = BTreeSet::new();
+        let mut next_ordinal_by_parent = BTreeMap::new();
         for (subslab, group) in terminal_subslabs
             .into_iter()
             .zip(&self.terminal_event_groups)
@@ -78,11 +99,51 @@ impl DirectSnowStage3V11ParentReceipt {
                     "terminal group accepted-event receipt",
                 ),
             )?;
-            if group.accepted_group_receipt_sha256.is_none()
+            advance_canonical_terminal_event_ordinal(
+                &mut next_ordinal_by_parent,
+                accepted.parent_transaction_id(),
+                accepted.ordinal(),
+            )?;
+            let ledger = group.terminal_physical_ledger.as_ref().ok_or(
+                DirectSnowStage3V11AttachmentError::Identity(
+                    "terminal group physical ledger",
+                ),
+            )?;
+            let proposal_core = group.proposal_core_sha256.ok_or(
+                DirectSnowStage3V11AttachmentError::Identity(
+                    "terminal group proposal core",
+                ),
+            )?;
+            let mut group_parcel_digests = ending
+                .terminal_parcels
+                .values()
+                .filter(|parcel| {
+                    parcel.event_ordinal == accepted.ordinal()
+                        && parcel.terminal_event_proposal_core_id == proposal_core
+                        && parcel.posture
+                            == DirectSnowStage3V11TerminalParcelPosture::ProducedUnconsumed
+                })
+                .map(|parcel| parcel.parcel_digest)
+                .collect::<Vec<_>>();
+            group_parcel_digests.sort_unstable();
+            let group_parcel_fields = group_parcel_digests
+                .iter()
+                .map(|digest| FramedField {
+                    tag: "parcel",
+                    value: digest.as_bytes(),
+                })
+                .collect::<Vec<_>>();
+            let reconstructed_parcel_set =
+                framed_sha256("stage3-v11-terminal-parcel-set", &group_parcel_fields)?;
+            if group.accepted_group_receipt_sha256
+                != Some(accepted_terminal_group_digest(group)?)
                 || accepted.tick() != group.tick
                 || u64::from(accepted.ordinal()) != group.ordinal
                 || accepted.event_context_digest() != group.receipt_sha256
                 || !accepted_ids.insert(accepted.id())
+                || ledger.produced_unconsumed_parcel_set_sha256 != reconstructed_parcel_set
+                || accepted.beginning_owner_set_digest()
+                    != subslab.owner_join.ending_complete_owner_set_sha256
                 || group.candidates.len() != subslab.terminal_events.len()
                 || group.candidates.iter().any(|candidate| {
                     subslab.terminal_events.get(&candidate.lane_id) != Some(&candidate.event)
@@ -96,8 +157,19 @@ impl DirectSnowStage3V11ParentReceipt {
             }
         }
         for pair in self.coupled_subslabs.windows(2) {
+            let expected_beginning_owner = self
+                .terminal_event_groups
+                .iter()
+                .find(|group| {
+                    group.tick == pair[0].support.end_ns()
+                        && !pair[0].terminal_events.is_empty()
+                })
+                .and_then(|group| group.accepted_event_receipt.as_ref())
+                .map_or(pair[0].owner_join.ending_complete_owner_set_sha256, |accepted| {
+                    accepted.ending_owner_set_digest()
+                });
             if pair[0].support.end_ns() != pair[1].support.start_ns()
-                || pair[0].owner_join.ending_complete_owner_set_sha256
+                || expected_beginning_owner
                     != pair[1].owner_join.beginning_complete_owner_set_sha256
             {
                 return Err(DirectSnowStage3V11AttachmentError::Identity(
@@ -150,10 +222,23 @@ impl DirectSnowStage3V11ParentReceipt {
             })?;
         owner_bytes.insert(
             "snow".to_owned(),
-            canonical_stage3_snow_owner_bytes_with_pending(
-                &ending.stage3_by_lane,
-                &ending.terminal_parcels,
-            )?,
+            if ending.terminal_parcels.is_empty() {
+                canonical_stage3_snow_owner_bytes_with_pending(
+                    &ending.stage3_by_lane,
+                    &ending.terminal_parcels,
+                )?
+            } else {
+                ending
+                    .coupled_clock
+                    .owners()
+                    .iter()
+                    .find(|owner| owner.owner_id() == "snow")
+                    .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                        "terminal ending coupled snow owner",
+                    ))?
+                    .state_bytes()
+                    .to_vec()
+            },
         );
         if stage3_digests != self.ending_stage3_state_digests
             || owner_bytes != self.complete_owner_bytes
@@ -161,7 +246,6 @@ impl DirectSnowStage3V11ParentReceipt {
                 != self.ending_coupled_owner_set_sha256
             || ending.coupled_clock.accepted_until() != self.ending_coupled_accepted_until_ns
             || ending.next_parent_sequence != self.ending_next_parent_sequence
-            || ending.accepted_event_ordinal != self.ending_event_ordinal
             || ending.v11_parent_state != self.ending_v11_parent_state
             || ending.last_v11_parent_candidate != self.ending_last_v11_parent_candidate
         {
@@ -170,6 +254,37 @@ impl DirectSnowStage3V11ParentReceipt {
             ));
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod terminal_event_ordinal_tests {
+    use super::*;
+
+    fn parent(byte: u8) -> ParentTransactionId {
+        ParentTransactionId::from_digest(Digest32::from_bytes([byte; 32]))
+    }
+
+    #[test]
+    fn coupled_receipt_ordinals_are_parent_local_and_contiguous() {
+        let mut next = BTreeMap::new();
+        assert!(advance_canonical_terminal_event_ordinal(&mut next, parent(1), 0).is_ok());
+        assert!(advance_canonical_terminal_event_ordinal(&mut next, parent(1), 1).is_ok());
+        assert!(advance_canonical_terminal_event_ordinal(&mut next, parent(2), 0).is_ok());
+    }
+
+    #[test]
+    fn coupled_receipt_ordinal_duplicate_gap_and_nonzero_start_fail() {
+        let mut next = BTreeMap::new();
+        let beginning = next.clone();
+        assert!(advance_canonical_terminal_event_ordinal(&mut next, parent(1), 1).is_err());
+        assert_eq!(next, beginning, "failed first receipt must retain no state");
+        assert!(advance_canonical_terminal_event_ordinal(&mut next, parent(2), 0).is_ok());
+        let accepted = next.clone();
+        assert!(advance_canonical_terminal_event_ordinal(&mut next, parent(2), 0).is_err());
+        assert_eq!(next, accepted, "duplicate rejection must roll back exactly");
+        assert!(advance_canonical_terminal_event_ordinal(&mut next, parent(2), 2).is_err());
+        assert_eq!(next, accepted, "gap rejection must roll back exactly");
     }
 }
 #[derive(Clone, Debug, PartialEq)]

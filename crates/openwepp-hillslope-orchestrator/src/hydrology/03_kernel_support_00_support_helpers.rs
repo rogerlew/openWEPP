@@ -1467,8 +1467,13 @@ pub use support_helpers_mod::{
 pub(crate) use support_helpers_mod::DirectSnowStage3Resolution;
 pub(crate) use support_helpers_mod::{
     CoveredProbeChildIdentityV1, CoveredTerminalExecutionMode,
+    CoveredTerminalBatchCarrierCandidatesV2, CoveredTerminalBatchHydrologyJoinV2,
+    CoveredTerminalBatchJoinedResultV2, CoveredTerminalBatchPrefixRequestV2,
+    CoveredTerminalBatchProviderV2, CoveredTerminalBatchTrialProviderV2,
+    CoveredTerminalBatchTrialRequestV2, CoveredTerminalBatchTrialResultV2,
+    CoveredTerminalLaneTrialStateV2,
     CoveredTerminalEndingSnowHintV1, CoveredTerminalJointTrialStateV1,
-    CoveredTerminalTrialProviderV1,
+    CoveredTerminalTrialProviderV1, JointTrialAuthorityV1, ProbeChildAuthorityV1,
     CoveredTerminalTrialRequestV1, CoveredTerminalTrialRoleV1,
     CoveredTerminalTrialTransitionV1, STAGE3_DEFAULT_SNOW_ALBEDO,
     stage3_has_represented_ice,

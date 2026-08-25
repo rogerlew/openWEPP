@@ -10,8 +10,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use openwepp_coupled_time::{
     AcceptedEventReceiptV1, ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, Digest32,
     EventClass, EventProposalV1, EventQueueV1, FramedField, LedgerEntryV1, ModelTimeNs, OwnerState,
-    ParentAuthorityV1, ParentIntervalId, StepConstraintV1, TimeSupport, accept_slab,
-    complete_owner_set_digest, digest_bytes, framed_sha256, quantize_seconds_to_tick,
+    ParentAuthorityV1, ParentIntervalId, ParentTransactionId, StepConstraintV1, TimeSupport,
+    accept_slab, complete_owner_set_digest, digest_bytes, framed_sha256, quantize_seconds_to_tick,
     reduce_constraints,
 };
 use openwepp_kernel_contract::{SoilLayerId, TileId};
@@ -30,7 +30,8 @@ use crate::hydrology::{
     DirectActiveSnowPartitionInputs, DirectSnowStage3EvaluationError,
     DirectSnowStage3PersistentDayResult, DirectSnowStage3PersistentState,
     DirectSnowStage3SupportInput, DirectSnowTerminalEventRequest, DirectSnowTerminalEventResult,
-    Wb11HydrologyKernel, stage3_has_represented_ice, stage3_is_resolved_thermal_domain,
+    JointTrialAuthorityV1, ProbeChildAuthorityV1, Wb11HydrologyKernel, stage3_has_represented_ice,
+    stage3_is_resolved_thermal_domain,
 };
 use crate::runtime_inputs::{
     PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError, SnowFreeHalfHourIntervalReceipt,
@@ -1648,7 +1649,6 @@ pub struct DirectSnowStage3V11CommittedState {
     pub coupled_clock: CoupledClockStateV1,
     pub next_parent_sequence: u128,
     pub last_v11_parent_candidate: Option<V11ParentCandidate>,
-    pub accepted_event_ordinal: u64,
     pub terminal_parcels: BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
     pub receipt_chain: Vec<DirectSnowStage3V11ParentReceipt>,
 }
@@ -1847,12 +1847,6 @@ impl DirectSnowStage3V11ShadowAttachment {
                     };
                     candidate.stage3_by_lane.insert(*lane_id, ending.clone());
                     if let Some(event) = event {
-                        candidate.accepted_event_ordinal = candidate
-                            .accepted_event_ordinal
-                            .checked_add(1)
-                            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                                "terminal event ordinal overflow",
-                            ))?;
                         terminal_events.push(event);
                     }
                 }
@@ -1920,10 +1914,23 @@ impl DirectSnowStage3V11ShadowAttachment {
                     prepared.day_index(),
                     support_index,
                     forcing_receipt,
-                    canonical_stage3_snow_owner_bytes_with_pending(
-                        &candidate.stage3_by_lane,
-                        &candidate.terminal_parcels,
-                    )?,
+                    if candidate.terminal_parcels.is_empty() {
+                        canonical_stage3_snow_owner_bytes_with_pending(
+                            &candidate.stage3_by_lane,
+                            &candidate.terminal_parcels,
+                        )?
+                    } else {
+                        candidate
+                            .coupled_clock
+                            .owners()
+                            .iter()
+                            .find(|owner| owner.owner_id() == "snow")
+                            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                                "retained terminal V4 snow owner",
+                            ))?
+                            .state_bytes()
+                            .to_vec()
+                    },
                 )?;
                 (parent, consumer, clock, finalized, None)
             };
@@ -1958,13 +1965,17 @@ impl DirectSnowStage3V11ShadowAttachment {
                 DirectSnowStage3V11AttachmentError::Identity("canonical V11 owner bytes")
             })?;
         let mut complete_owner_bytes = complete_owner_bytes;
-        complete_owner_bytes.insert(
-            "snow".to_owned(),
-            canonical_stage3_snow_owner_bytes_with_pending(
-                &candidate.stage3_by_lane,
-                &candidate.terminal_parcels,
-            )?,
-        );
+        let ending_snow_bytes = candidate
+            .coupled_clock
+            .owners()
+            .iter()
+            .find(|owner| owner.owner_id() == "snow")
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "ending coupled snow owner",
+            ))?
+            .state_bytes()
+            .to_vec();
+        complete_owner_bytes.insert("snow".to_owned(), ending_snow_bytes);
         let integrated_boundary_ledger = reconstruct_integrated_boundary_ledger(&coupled_subslabs);
         let receipt = DirectSnowStage3V11ParentReceipt {
             day_index: prepared.day_index(),
@@ -1981,7 +1992,6 @@ impl DirectSnowStage3V11ShadowAttachment {
             )?,
             ending_coupled_accepted_until_ns: candidate.coupled_clock.accepted_until(),
             ending_next_parent_sequence: candidate.next_parent_sequence,
-            ending_event_ordinal: candidate.accepted_event_ordinal,
             ending_v11_parent_state: candidate.v11_parent_state.clone(),
             ending_last_v11_parent_candidate: candidate.last_v11_parent_candidate.clone(),
         };
@@ -2020,14 +2030,6 @@ impl DirectSnowStage3V11ShadowAttachment {
                     .checked_sub(self.committed.next_parent_sequence)
                     .ok_or(DirectSnowStage3V11AttachmentError::Identity(
                         "parent sequence installation",
-                    ))?
-            || candidate.parent_receipt.terminal_events.len() as u64
-                != candidate
-                    .ending_state
-                    .accepted_event_ordinal
-                    .checked_sub(self.committed.accepted_event_ordinal)
-                    .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                        "event ordinal installation",
                     ))?
             || candidate
                 .parent_receipt
@@ -2498,8 +2500,36 @@ pub(crate) fn execute_covered_real_v11_parent(
                 day_index,
                 interval_index,
                 forcing_receipt,
-                canonical_stage3_snow_owner_bytes(&stage3)?,
+                if pending_terminal_parcels.is_empty() {
+                    canonical_stage3_snow_owner_bytes(&stage3)?
+                } else {
+                    clock
+                        .owners()
+                        .iter()
+                        .find(|owner| owner.owner_id() == "snow")
+                        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                            "snow-free successor terminal V4 owner",
+                        ))?
+                        .state_bytes()
+                        .to_vec()
+                },
             )?;
+            if !pending_terminal_parcels.is_empty()
+                && next_clock
+                    .owners()
+                    .iter()
+                    .find(|owner| owner.owner_id() == "snow")
+                    .map(OwnerState::state_bytes)
+                    != clock
+                        .owners()
+                        .iter()
+                        .find(|owner| owner.owner_id() == "snow")
+                        .map(OwnerState::state_bytes)
+            {
+                return Err(DirectSnowStage3V11AttachmentError::Identity(
+                    "snow-free successor changed pending terminal V4 custody",
+                ));
+            }
             parent = next_parent;
             consumer = next_consumer;
             clock = next_clock;

@@ -263,12 +263,24 @@ pub(crate) struct CoveredTerminalEndingSnowHintV1 {
 /// terminal trials. These bytes are never installed by the hydrology solver.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct CoveredTerminalJointTrialStateV1 {
+    authority: JointTrialAuthorityV1,
     owner_bytes: BTreeMap<String, Vec<u8>>,
     receipt_sha256: Digest32,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) struct JointTrialAuthorityV1 {
+    pub source_owner_set_sha256: Digest32,
+    pub lane_id: u32,
+    pub source_snow_owner_sha256: Digest32,
+    pub interval_index: u64,
+    pub state_support: TimeSupport,
+    pub accepted_predecessors: Vec<Digest32>,
+}
+
 impl CoveredTerminalJointTrialStateV1 {
     pub(crate) fn try_new(
+        authority: JointTrialAuthorityV1,
         owner_bytes: BTreeMap<String, Vec<u8>>,
     ) -> Result<Self, DirectSnowStage3EvaluationError> {
         const OWNER_IDS: [&str; 7] = [
@@ -292,8 +304,21 @@ impl CoveredTerminalJointTrialStateV1 {
             )
             .into());
         }
-        let receipt_sha256 = covered_terminal_joint_digest(&owner_bytes)?;
+        if authority.source_owner_set_sha256 == Digest32::zero()
+            || authority.source_snow_owner_sha256 == Digest32::zero()
+            || authority.accepted_predecessors.contains(&Digest32::zero())
+            || authority
+                .accepted_predecessors
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != authority.accepted_predecessors.len()
+        {
+            return Err(DirectSnowStage3EvaluationError::TerminalCustody("terminal joint authority"));
+        }
+        let receipt_sha256 = covered_terminal_joint_digest(&authority, &owner_bytes)?;
         Ok(Self {
+            authority,
             owner_bytes,
             receipt_sha256,
         })
@@ -304,6 +329,9 @@ impl CoveredTerminalJointTrialStateV1 {
     }
     pub(crate) const fn receipt_sha256(&self) -> Digest32 {
         self.receipt_sha256
+    }
+    pub(crate) const fn authority(&self) -> &JointTrialAuthorityV1 {
+        &self.authority
     }
 
     /// Seal the hydrology-owned aggregate snow candidate after one carrier
@@ -344,15 +372,55 @@ impl CoveredTerminalJointTrialStateV1 {
         snow.extend_from_slice(&cold_content_j_m2.to_bits().to_be_bytes());
         let mut owners = self.owner_bytes.clone();
         owners.insert("snow".to_owned(), snow);
-        Self::try_new(owners)
+        let mut authority = self.authority.clone();
+        // `self` is the carrier-complete trial result presented to the
+        // hydrology join. Its identity is the accepted fine predecessor;
+        // discarded coarse/retry alternatives never reach the returned chain.
+        let predecessor = self.receipt_sha256;
+        if authority.accepted_predecessors.contains(&predecessor) {
+            return Err(DirectSnowStage3EvaluationError::TerminalCustody(
+                "duplicate terminal predecessor",
+            ));
+        }
+        authority.accepted_predecessors.push(predecessor);
+        Self::try_new(authority, owners)
     }
 }
 
 fn covered_terminal_joint_digest(
+    authority: &JointTrialAuthorityV1,
     owner_bytes: &BTreeMap<String, Vec<u8>>,
 ) -> Result<Digest32, DirectSnowStage3EvaluationError> {
-    let mut fields = Vec::with_capacity(owner_bytes.len() * 2);
-    for (owner_id, bytes) in owner_bytes {
+    const OWNER_IDS: [&str; 7] = [
+        "vegetation", "snow", "land_surface_energy", "hydrology", "bgc",
+        "soil_thermal", "surface_liquid",
+    ];
+    let schema = 1_u32.to_be_bytes();
+    let mut fields = Vec::with_capacity(8 + owner_bytes.len() * 2);
+    fields.push(FramedField { tag: "schema", value: &schema });
+    let lane = authority.lane_id.to_be_bytes();
+    let interval = authority.interval_index.to_be_bytes();
+    let start = authority.state_support.start_ns().get().to_be_bytes();
+    let end = authority.state_support.end_ns().get().to_be_bytes();
+    let mut predecessors = (authority.accepted_predecessors.len() as u32).to_be_bytes().to_vec();
+    for predecessor in &authority.accepted_predecessors {
+        predecessors.extend_from_slice(predecessor.as_bytes());
+    }
+    fields.extend([
+        FramedField { tag: "source_owner_set", value: authority.source_owner_set_sha256.as_bytes() },
+        FramedField { tag: "lane", value: &lane },
+        FramedField { tag: "source_snow_owner", value: authority.source_snow_owner_sha256.as_bytes() },
+        FramedField { tag: "interval_index", value: &interval },
+        FramedField { tag: "state_support_start", value: &start },
+        FramedField { tag: "state_support_end", value: &end },
+        FramedField { tag: "accepted_predecessors", value: &predecessors },
+    ]);
+    for owner_id in OWNER_IDS {
+        let bytes = owner_bytes.get(owner_id).ok_or(
+            DirectSnowStage3EvaluationError::TerminalCustody(
+                "terminal joint canonical owner order",
+            ),
+        )?;
         fields.push(FramedField {
             tag: "owner_id",
             value: owner_id.as_bytes(),
@@ -362,7 +430,7 @@ fn covered_terminal_joint_digest(
             value: bytes,
         });
     }
-    framed_sha256("covered-terminal-joint-trial-state-v1", &fields).map_err(|_| {
+    framed_sha256("covered-terminal-joint-trial-state", &fields).map_err(|_| {
         Wb11HydrologyKernel::stage3_domain_error(
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
             "snow.terminal_joint_trial_canonical_framing",
@@ -376,25 +444,40 @@ fn covered_terminal_joint_digest(
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct CoveredProbeChildIdentityV1 {
+    pub parent_transaction_sha256: Digest32,
     pub enclosing_parent_support: TimeSupport,
     pub trial_support: TimeSupport,
     pub physical_child_ordinal: u32,
     pub role: CoveredTerminalTrialRoleV1,
     pub attempt_ordinal: u32,
     pub beginning_joint_sha256: Digest32,
+    pub beginning_owner_set_sha256: Digest32,
+    pub complete_forcing_sha256: Digest32,
+    pub topology_sha256: Digest32,
     pub receipt_sha256: Digest32,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) struct ProbeChildAuthorityV1 {
+    pub parent_transaction_sha256: Digest32,
+    pub enclosing_parent_support: TimeSupport,
+    pub trial_support: TimeSupport,
+    pub physical_child_ordinal: u32,
+    pub attempt_ordinal: u32,
+    pub role: CoveredTerminalTrialRoleV1,
+    pub beginning_joint_sha256: Digest32,
+    pub beginning_owner_set_sha256: Digest32,
+    pub complete_forcing_sha256: Digest32,
+    pub topology_sha256: Digest32,
 }
 
 impl CoveredProbeChildIdentityV1 {
     pub(crate) fn try_new(
-        enclosing_parent_support: TimeSupport,
-        trial_support: TimeSupport,
-        physical_child_ordinal: u32,
-        role: CoveredTerminalTrialRoleV1,
-        attempt_ordinal: u32,
-        beginning_joint_sha256: Digest32,
+        authority: ProbeChildAuthorityV1,
     ) -> Result<Self, DirectSnowStage3EvaluationError> {
-        if trial_support.start_ns() < enclosing_parent_support.start_ns()
+        let ProbeChildAuthorityV1 { parent_transaction_sha256, enclosing_parent_support, trial_support, physical_child_ordinal, attempt_ordinal, role, beginning_joint_sha256, beginning_owner_set_sha256, complete_forcing_sha256, topology_sha256 } = authority;
+        if [parent_transaction_sha256, beginning_joint_sha256, beginning_owner_set_sha256, complete_forcing_sha256, topology_sha256].contains(&Digest32::zero())
+            || trial_support.start_ns() < enclosing_parent_support.start_ns()
             || trial_support.end_ns() > enclosing_parent_support.end_ns()
         {
             return Err(Wb11HydrologyKernel::stage3_domain_error(
@@ -413,23 +496,32 @@ impl CoveredProbeChildIdentityV1 {
         let parent_end = enclosing_parent_support.end_ns().get().to_be_bytes();
         let trial_start = trial_support.start_ns().get().to_be_bytes();
         let trial_end = trial_support.end_ns().get().to_be_bytes();
+        let schema = 1_u32.to_be_bytes();
         let receipt_sha256 = framed_sha256(
-            "covered-probe-child-identity-v1",
+            "covered-probe-child-identity",
             &[
                 FramedField {
-                    tag: "parent_start_ns",
+                    tag: "schema",
+                    value: &schema,
+                },
+                FramedField {
+                    tag: "parent_transaction",
+                    value: parent_transaction_sha256.as_bytes(),
+                },
+                FramedField {
+                    tag: "enclosing_support_start",
                     value: &parent_start,
                 },
                 FramedField {
-                    tag: "parent_end_ns",
+                    tag: "enclosing_support_end",
                     value: &parent_end,
                 },
                 FramedField {
-                    tag: "trial_start_ns",
+                    tag: "trial_support_start",
                     value: &trial_start,
                 },
                 FramedField {
-                    tag: "trial_end_ns",
+                    tag: "trial_support_end",
                     value: &trial_end,
                 },
                 FramedField {
@@ -437,17 +529,20 @@ impl CoveredProbeChildIdentityV1 {
                     value: &ordinal,
                 },
                 FramedField {
-                    tag: "trial_role",
-                    value: &role_byte,
+                    tag: "attempt",
+                    value: &attempt,
                 },
                 FramedField {
-                    tag: "attempt_ordinal",
-                    value: &attempt,
+                    tag: "role",
+                    value: &role_byte,
                 },
                 FramedField {
                     tag: "beginning_joint",
                     value: beginning_joint_sha256.as_bytes(),
                 },
+                FramedField { tag: "beginning_owner_set", value: beginning_owner_set_sha256.as_bytes() },
+                FramedField { tag: "complete_forcing", value: complete_forcing_sha256.as_bytes() },
+                FramedField { tag: "topology", value: topology_sha256.as_bytes() },
             ],
         )
         .map_err(|_| {
@@ -460,12 +555,16 @@ impl CoveredProbeChildIdentityV1 {
             )
         })?;
         Ok(Self {
+            parent_transaction_sha256,
             enclosing_parent_support,
             trial_support,
             physical_child_ordinal,
             role,
             attempt_ordinal,
             beginning_joint_sha256,
+            beginning_owner_set_sha256,
+            complete_forcing_sha256,
+            topology_sha256,
             receipt_sha256,
         })
     }
@@ -497,6 +596,66 @@ pub(crate) type CoveredTerminalTrialProviderV1<'a> = dyn FnMut(
         CoveredTerminalTrialRequestV1,
     ) -> Result<CoveredTerminalTrialTransitionV1, DirectSnowStage3EvaluationError>
     + 'a;
+
+#[derive(Clone, Debug)]
+pub(crate) struct CoveredTerminalLaneTrialStateV2 {
+    pub lane_id: u32,
+    pub ice_kg_m2: f64,
+    pub liquid_kg_m2: f64,
+    pub cold_content_j_m2: f64,
+    pub surface_temperature_c: f64,
+    pub snow_depth_m: f64,
+    pub snow_density_kg_m3: f64,
+    pub resolved_beginning: bool,
+    pub candidate_event_tick: Option<ModelTimeNs>,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct CoveredTerminalBatchTrialRequestV2 {
+    pub support: TimeSupport,
+    pub role: CoveredTerminalTrialRoleV1,
+    pub attempt_ordinal: u32,
+    pub lanes: BTreeMap<u32, CoveredTerminalLaneTrialStateV2>,
+    pub beginning_joint: CoveredTerminalJointTrialStateV1,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct CoveredTerminalBatchCarrierCandidatesV2 {
+    pub support: TimeSupport,
+    pub beginning_joint_sha256: Digest32,
+    pub carrier_joint: CoveredTerminalJointTrialStateV1,
+    pub boundaries_by_lane: BTreeMap<u32, Stage3SnowSurfaceBoundaryReceiptV1>,
+    pub ordered_q_ss_receipts_by_lane: BTreeMap<
+        u32,
+        crate::v9_real_consumer_shadow::TerminalSnowSoilTrialReceiptV1,
+    >,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct CoveredTerminalBatchTrialResultV2 {
+    pub support: TimeSupport,
+    pub hydrology_endings_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    pub carrier_candidates: CoveredTerminalBatchCarrierCandidatesV2,
+    pub ending_joint: CoveredTerminalJointTrialStateV1,
+}
+
+pub(crate) type CoveredTerminalBatchTrialProviderV2<'a> = dyn FnMut(
+        &CoveredTerminalBatchTrialRequestV2,
+    ) -> Result<CoveredTerminalBatchCarrierCandidatesV2, DirectSnowStage3EvaluationError>
+    + 'a;
+
+pub(crate) type CoveredTerminalBatchHydrologyJoinV2<'a> = dyn FnMut(
+        &CoveredTerminalBatchTrialRequestV2,
+        &CoveredTerminalBatchCarrierCandidatesV2,
+        &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    ) -> Result<CoveredTerminalJointTrialStateV1, DirectSnowStage3EvaluationError>
+    + 'a;
+
+// Transitional aliases keep the already-landed solver call sites source-compatible while
+// carrier integration moves to the canonical trial terminology above.
+pub(crate) type CoveredTerminalBatchPrefixRequestV2 = CoveredTerminalBatchTrialRequestV2;
+pub(crate) type CoveredTerminalBatchJoinedResultV2 = CoveredTerminalBatchTrialResultV2;
+pub(crate) type CoveredTerminalBatchProviderV2<'a> = CoveredTerminalBatchTrialProviderV2<'a>;
 
 #[derive(Clone, Copy)]
 struct Stage3ThermalControlVolume {

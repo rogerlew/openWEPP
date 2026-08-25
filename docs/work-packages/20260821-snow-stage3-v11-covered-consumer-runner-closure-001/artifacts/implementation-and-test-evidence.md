@@ -503,3 +503,44 @@ six affected historical contract binaries passed 36/36. `git diff --check`
 passed. These executions validate contract structure and lifecycle only. The
 focused runtime terminal test remains at its recorded WIP failure until the
 now-authorized terminal implementation correction is made.
+
+# 2026-08-24 terminal-chronology forward-correction evidence (HOLD)
+
+`Static:` forward commits through `5d8e9bf5f` remove both raw covered-carrier
+seams and the legacy stateful terminal installation rerun. Discovery and exact
+endpoint execution use immutable covered joint trials; every outer root
+candidate replays the absolute full prefix from the current cursor. Accepted
+installation consumes retained exact carrier evidence, seals terminal
+snow--soil custody and a nonempty physical ledger, finalizes canonical V4 snow
+owner bytes, and applies ProducedUnconsumed parcels only in the subsequent
+zero-duration event. The attachment source is 2,686 lines.
+
+`Static / authority correction:` coordinated amendments at `1ac59fd33` define
+absolute-tick full-prefix root replay and preserve the LSE physical minimum of
+600,000,000 ns. Independent review returned `GO`; the structural guard passed
+2/2. Root candidates never use bracket-local carrier support, zero uses the
+sealed cursor branch, and fresh positive subminimum supports fail typed.
+
+`Ran:` terminal solver tests passed 8/8 (nextest
+`cdc85423-2cf5-4e6d-9552-08847483e6d4`). Shared carrier/persistent parity and
+terminal CN tests passed 5/5 (`f80bddfd-6619-46d9-83a8-7365dbb8be4f`). The
+accepted precomputed executor publication/poison/rollback tests passed 3/3
+(`91069656-d2f7-4542-b794-64882c2f4112`). `cargo check`, formatting, and diff
+hygiene passed on the staged implementation.
+
+`Ran / focused HOLD:` the original interior fixture no longer reaches raw
+cloud, shortwave-authority, transaction-lineage, selected-joint, or legacy
+installer failures. It now fails deterministically after about 18 seconds with
+`Stage3(TerminalNumerics(BelowCarrierDomain))`, before any subminimum provider
+call. The last admissible 1.875-second full versus two-half comparison differs
+by 27.2131278332233 J m^-2 in complete energy (scaled LTE
+1.9181115296775517e6); neither path is exhausted or terminal, and the next
+required half support would be 468.75 ms, below LSE authority. No tolerance,
+fallback, topology omission, or snow-only interpolation was introduced.
+
+`Disposition:` terminal chronology remains `EXECUTING / HARD HOLD`. The
+focused fixture cannot qualify without a separately reviewed temporal operator
+that meets current LTE bounds while every constitutive support remains
+admitted. Exact-head crate/workspace qualification is not claimed;
+`43cc9bbe...` remains the last qualified physical implementation. Later
+runner/receiver/restart/cutover work remains unauthorized.

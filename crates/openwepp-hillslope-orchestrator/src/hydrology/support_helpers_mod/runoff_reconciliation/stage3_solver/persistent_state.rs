@@ -350,43 +350,6 @@ impl Wb11HydrologyKernel {
         Ok(state)
     }
 
-    /// Apply the zero-duration terminal custody transition after the accepted
-    /// physical endpoint. This integrates no rate: it removes exactly the
-    /// already-censored liquid handed to the terminal parcel and reseals the
-    /// dormant Stage-3 owner at the same interval cursor.
-    pub fn consume_stage3_terminal_liquid_v1(
-        state: &DirectSnowStage3PersistentState,
-        terminal_liquid_kg_m2: f64,
-    ) -> Result<DirectSnowStage3PersistentState, DirectSnowStage3EvaluationError> {
-        Self::validate_stage3_persistent_state(state)?;
-        let represented_ice =
-            Self::stage3_total_ice_mass_swe_m(&state.layers) * STAGE3_RHO_WATER_KG_M3;
-        let represented_liquid = state.detached_retained_liquid_kg_m2
-            + state
-                .layers
-                .iter()
-                .map(|layer| {
-                    (layer.liquid_water_m + layer.refrozen_liquid_m) * STAGE3_RHO_WATER_KG_M3
-                })
-                .sum::<f64>();
-        let tolerance = 1.0e-12_f64.max(1.0e-12 * represented_liquid.abs());
-        if !terminal_liquid_kg_m2.is_finite()
-            || terminal_liquid_kg_m2 < 0.0
-            || represented_ice.abs() > 1.0e-12
-            || (represented_liquid - terminal_liquid_kg_m2).abs() > tolerance
-        {
-            return Err(DirectSnowStage3EvaluationError::TerminalCustody(
-                "terminal liquid custody does not match the terminal owner",
-            ));
-        }
-        let mut ending = state.clone();
-        ending.layers.clear();
-        ending.detached_retained_liquid_kg_m2 = 0.0;
-        ending.fingerprint = Self::stage3_persistent_state_fingerprint(&ending);
-        Self::validate_stage3_persistent_state(&ending)?;
-        Ok(ending)
-    }
-
     pub fn restore_stage3_persistent_state(
         snapshot: DirectSnowStage3PersistentState,
         lane_id: u32,

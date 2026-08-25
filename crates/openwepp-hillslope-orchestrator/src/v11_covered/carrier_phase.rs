@@ -507,7 +507,8 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             ))?
             .clone();
         ending_owner_bytes.insert("snow".to_owned(), trial_snow);
-        let ending_joint = CoveredTerminalJointTrialStateV1::try_new(ending_owner_bytes)
+        let ending_joint = CoveredTerminalJointTrialStateV1::try_new(
+            beginning.joint.authority().clone(), ending_owner_bytes)
             .map_err(|_| DirectV11RealConsumerError::Identity("covered carrier ending joint"))?;
         let mut ending_candidates = CoveredCarrierEphemeralCandidatesV1::try_new(
             ending_joint,

@@ -2,6 +2,90 @@
 use super::*;
 
 impl Wb11HydrologyKernel {
+    pub(crate) fn covered_terminal_batch_common_earliest_lanes_v2(
+        request: &CoveredTerminalBatchTrialRequestV2,
+    ) -> Option<(ModelTimeNs, Vec<u32>)> {
+        let tick = request
+            .lanes
+            .values()
+            .filter_map(|lane| lane.candidate_event_tick)
+            .min()?;
+        let lanes = request
+            .lanes
+            .iter()
+            .filter_map(|(lane_id, lane)| (lane.candidate_event_tick == Some(tick)).then_some(*lane_id))
+            .collect();
+        Some((tick, lanes))
+    }
+
+    pub(crate) fn join_covered_terminal_batch_prefix_v2(
+        request: &CoveredTerminalBatchTrialRequestV2,
+        hydrology_endings_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+        provider: &mut CoveredTerminalBatchTrialProviderV2<'_>,
+        join_hydrology: &mut CoveredTerminalBatchHydrologyJoinV2<'_>,
+    ) -> Result<CoveredTerminalBatchTrialResultV2, DirectSnowStage3EvaluationError> {
+        if request.lanes.is_empty()
+            || request
+                .lanes
+                .iter()
+                .any(|(lane_id, lane)| lane.lane_id != *lane_id)
+            || request.lanes.values().any(|lane| {
+                !lane.ice_kg_m2.is_finite()
+                    || !lane.liquid_kg_m2.is_finite()
+                    || !lane.cold_content_j_m2.is_finite()
+                    || !lane.surface_temperature_c.is_finite()
+                    || !lane.snow_depth_m.is_finite()
+                    || !lane.snow_density_kg_m3.is_finite()
+                    || lane.ice_kg_m2 < 0.0
+                    || lane.liquid_kg_m2 < 0.0
+                    || lane.cold_content_j_m2 < 0.0
+                    || lane.snow_depth_m < 0.0
+                    || lane.snow_density_kg_m3 <= 0.0
+                    || (lane.resolved_beginning && lane.snow_depth_m <= 0.0)
+            })
+            || hydrology_endings_by_lane.keys().ne(request.lanes.keys())
+        {
+            return Err(DirectSnowStage3EvaluationError::TerminalCustody(
+                "covered terminal batch lane topology",
+            ));
+        }
+        let candidates = provider(request)?;
+        if candidates.support != request.support
+            || candidates.beginning_joint_sha256 != request.beginning_joint.receipt_sha256()
+            || candidates.boundaries_by_lane.keys().ne(request.lanes.keys())
+            || candidates
+                .boundaries_by_lane
+                .values()
+                .any(|boundary| boundary.support != request.support)
+            || candidates
+                .ordered_q_ss_receipts_by_lane
+                .keys()
+                .any(|lane_id| !request.lanes.contains_key(lane_id))
+        {
+            return Err(DirectSnowStage3EvaluationError::TerminalCustody(
+                "covered terminal batch carrier join",
+            ));
+        }
+        for (lane_id, ending) in &hydrology_endings_by_lane {
+            if ending.lane_id != *lane_id {
+                return Err(DirectSnowStage3EvaluationError::TerminalCustody(
+                    "covered terminal batch hydrology ending identity",
+                ));
+            }
+        }
+        let ending_joint = join_hydrology(
+            request,
+            &candidates,
+            &hydrology_endings_by_lane,
+        )?;
+        Ok(CoveredTerminalBatchTrialResultV2 {
+            support: request.support,
+            hydrology_endings_by_lane,
+            carrier_candidates: candidates,
+            ending_joint,
+        })
+    }
+
     #[allow(clippy::too_many_lines)]
     pub fn evaluate_stage3_persistent_day(
         inputs: &DirectActiveSnowPartitionInputs,
@@ -348,4 +432,207 @@ fn duration_seconds_to_ns(seconds: f64) -> Result<u128, DirectSnowStage3Evaluati
         .into());
     }
     Ok(nanos as u128)
+}
+
+#[cfg(test)]
+mod batch_prefix_tests {
+    use super::*;
+
+    fn owners() -> BTreeMap<String, Vec<u8>> {
+        BTreeMap::from([
+            ("vegetation".to_owned(), vec![1]),
+            ("snow".to_owned(), vec![2]),
+            ("land_surface_energy".to_owned(), vec![3]),
+            ("hydrology".to_owned(), vec![4]),
+            ("bgc".to_owned(), vec![5]),
+            ("soil_thermal".to_owned(), vec![6]),
+            ("surface_liquid".to_owned(), vec![7]),
+        ])
+    }
+
+    fn authority() -> JointTrialAuthorityV1 {
+        JointTrialAuthorityV1 {
+            source_owner_set_sha256: Digest32::from_bytes([8; 32]),
+            lane_id: 1,
+            source_snow_owner_sha256: Digest32::from_bytes([9; 32]),
+            interval_index: 0,
+            state_support: TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(10)).unwrap(),
+            accepted_predecessors: Vec::new(),
+        }
+    }
+
+    fn joint() -> CoveredTerminalJointTrialStateV1 {
+        CoveredTerminalJointTrialStateV1::try_new(authority(), owners()).unwrap()
+    }
+
+    fn request(ticks: [Option<u128>; 3]) -> CoveredTerminalBatchTrialRequestV2 {
+        CoveredTerminalBatchTrialRequestV2 {
+            support: TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(10)).unwrap(),
+            role: CoveredTerminalTrialRoleV1::Root,
+            attempt_ordinal: 0,
+            lanes: ticks.into_iter().enumerate().map(|(index, tick)| {
+                let lane_id = index as u32 + 1;
+                (lane_id, CoveredTerminalLaneTrialStateV2 {
+                    lane_id,
+                    ice_kg_m2: 1.0,
+                    liquid_kg_m2: 0.0,
+                    cold_content_j_m2: 0.0,
+                    surface_temperature_c: 0.0,
+                    snow_depth_m: 0.01,
+                    snow_density_kg_m3: 100.0,
+                    resolved_beginning: index == 2,
+                    candidate_event_tick: tick.map(ModelTimeNs::new),
+                })
+            }).collect(),
+            beginning_joint: joint(),
+        }
+    }
+
+    #[test]
+    fn joint_authority_poisoning_changes_wire_identity_and_duplicate_predecessors_fail() {
+        let baseline = joint();
+        assert_eq!(baseline.receipt_sha256(), joint().receipt_sha256());
+        let mut poisons = Vec::new();
+        let mut poison = authority();
+        poison.source_owner_set_sha256 = Digest32::from_bytes([10; 32]);
+        poisons.push(poison);
+        let mut poison = authority();
+        poison.lane_id = 2;
+        poisons.push(poison);
+        let mut poison = authority();
+        poison.source_snow_owner_sha256 = Digest32::from_bytes([11; 32]);
+        poisons.push(poison);
+        let mut poison = authority();
+        poison.interval_index = 1;
+        poisons.push(poison);
+        let mut poison = authority();
+        poison.state_support =
+            TimeSupport::new(ModelTimeNs::new(1), ModelTimeNs::new(10)).unwrap();
+        poisons.push(poison);
+        let mut poison = authority();
+        poison.accepted_predecessors = vec![Digest32::from_bytes([12; 32])];
+        poisons.push(poison);
+        for poison in poisons {
+            let poisoned =
+                CoveredTerminalJointTrialStateV1::try_new(poison, owners()).unwrap();
+            assert_ne!(baseline.receipt_sha256(), poisoned.receipt_sha256());
+        }
+        let mut poisoned_owners = owners();
+        poisoned_owners.insert("hydrology".to_owned(), vec![44]);
+        assert_ne!(
+            baseline.receipt_sha256(),
+            CoveredTerminalJointTrialStateV1::try_new(authority(), poisoned_owners)
+                .unwrap()
+                .receipt_sha256()
+        );
+
+        let duplicate = Digest32::from_bytes([3; 32]);
+        let mut duplicate_authority = authority();
+        duplicate_authority.accepted_predecessors = vec![duplicate, duplicate];
+        assert!(CoveredTerminalJointTrialStateV1::try_new(duplicate_authority, owners()).is_err());
+    }
+
+    #[test]
+    fn accepted_hydrology_state_preserves_authority_and_appends_one_predecessor() {
+        let beginning = joint();
+        let ending = beginning
+            .with_terminal_hydrology_state(1, 0.5, 0.1, 12.0)
+            .unwrap();
+        assert_eq!(
+            ending.authority().source_owner_set_sha256,
+            beginning.authority().source_owner_set_sha256
+        );
+        assert_eq!(ending.authority().lane_id, beginning.authority().lane_id);
+        assert_eq!(
+            ending.authority().source_snow_owner_sha256,
+            beginning.authority().source_snow_owner_sha256
+        );
+        assert_eq!(
+            ending.authority().state_support,
+            beginning.authority().state_support
+        );
+        assert_eq!(ending.authority().accepted_predecessors.len(), 1);
+    }
+
+    #[test]
+    fn probe_child_identity_binds_every_authority_operand_and_support() {
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(10)).unwrap();
+        let trial = TimeSupport::new(ModelTimeNs::new(2), ModelTimeNs::new(8)).unwrap();
+        let base = ProbeChildAuthorityV1 {
+            parent_transaction_sha256: Digest32::from_bytes([1; 32]),
+            enclosing_parent_support: support,
+            trial_support: trial,
+            physical_child_ordinal: 2,
+            attempt_ordinal: 3,
+            role: CoveredTerminalTrialRoleV1::Root,
+            beginning_joint_sha256: Digest32::from_bytes([2; 32]),
+            beginning_owner_set_sha256: Digest32::from_bytes([3; 32]),
+            complete_forcing_sha256: Digest32::from_bytes([4; 32]),
+            topology_sha256: Digest32::from_bytes([5; 32]),
+        };
+        let baseline = CoveredProbeChildIdentityV1::try_new(base).unwrap();
+        assert_eq!(
+            baseline.receipt_sha256,
+            CoveredProbeChildIdentityV1::try_new(base)
+                .unwrap()
+                .receipt_sha256
+        );
+        let mut poisons = Vec::new();
+        let mut poison = base;
+        poison.parent_transaction_sha256 = Digest32::from_bytes([6; 32]);
+        poisons.push(poison);
+        let mut poison = base;
+        poison.physical_child_ordinal += 1;
+        poisons.push(poison);
+        let mut poison = base;
+        poison.attempt_ordinal += 1;
+        poisons.push(poison);
+        let mut poison = base;
+        poison.role = CoveredTerminalTrialRoleV1::BracketUpper;
+        poisons.push(poison);
+        let mut poison = base;
+        poison.beginning_joint_sha256 = Digest32::from_bytes([7; 32]);
+        poisons.push(poison);
+        let mut poison = base;
+        poison.beginning_owner_set_sha256 = Digest32::from_bytes([8; 32]);
+        poisons.push(poison);
+        let mut poison = base;
+        poison.complete_forcing_sha256 = Digest32::from_bytes([9; 32]);
+        poisons.push(poison);
+        let mut poison = base;
+        poison.topology_sha256 = Digest32::from_bytes([10; 32]);
+        poisons.push(poison);
+        for poison in poisons {
+            assert_ne!(
+                baseline.receipt_sha256,
+                CoveredProbeChildIdentityV1::try_new(poison)
+                    .unwrap()
+                    .receipt_sha256
+            );
+        }
+        let mut outside = base;
+        outside.trial_support =
+            TimeSupport::new(ModelTimeNs::new(9), ModelTimeNs::new(11)).unwrap();
+        assert!(CoveredProbeChildIdentityV1::try_new(outside).is_err());
+    }
+
+    #[test]
+    fn same_tick_lanes_are_one_ordered_common_group() {
+        let request = request([Some(6), Some(6), None]);
+        assert_eq!(
+            Wb11HydrologyKernel::covered_terminal_batch_common_earliest_lanes_v2(&request),
+            Some((ModelTimeNs::new(6), vec![1, 2]))
+        );
+    }
+
+    #[test]
+    fn different_ticks_select_only_common_earliest_and_preserve_survivors() {
+        let request = request([Some(8), Some(5), None]);
+        assert_eq!(
+            Wb11HydrologyKernel::covered_terminal_batch_common_earliest_lanes_v2(&request),
+            Some((ModelTimeNs::new(5), vec![2]))
+        );
+        assert!(request.lanes[&3].resolved_beginning);
+        assert_eq!(request.beginning_joint.owner_bytes()["snow"], vec![2]);
+    }
 }

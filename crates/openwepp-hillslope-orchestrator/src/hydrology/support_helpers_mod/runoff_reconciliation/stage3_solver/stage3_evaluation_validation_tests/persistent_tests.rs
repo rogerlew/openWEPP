@@ -232,6 +232,87 @@ fn persistent_support_evaluator_runs_one_admitted_parent_support() {
 }
 
 #[test]
+fn resolved_terminal_model_calls_covered_provider_before_any_raw_carrier() {
+    let mut inputs = reconciliation_inputs();
+    inputs.snow_layers[0].mass_swe_m = 0.01;
+    inputs.snow_layers[0].thickness_m = 0.02;
+    inputs.snow_layers[0].cold_content_j_m2 = 0.0;
+    inputs.snow_layers[0].temperature_c = 0.0;
+    let state = Wb11HydrologyKernel::initialize_stage3_persistent_state_with_terminal_event(
+        31,
+        inputs.snow_layers.clone(),
+        DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
+    )
+    .expect("resolved terminal-model state");
+    let support = DirectSnowStage3SupportInput {
+        forcing: inputs.hourly[0],
+        duration_seconds: 1_800.0,
+    };
+    let time_support = TimeSupport::new(
+        ModelTimeNs::new(0),
+        ModelTimeNs::new(1_800_000_000_000),
+    )
+    .expect("exact support");
+    let joint = CoveredTerminalJointTrialStateV1::try_new(JointTrialAuthorityV1 {
+        source_owner_set_sha256: Digest32::from_bytes([8; 32]), lane_id: 1,
+        source_snow_owner_sha256: Digest32::from_bytes([9; 32]), interval_index: 0,
+        state_support: TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(3_600_000_000_000)).unwrap(),
+        accepted_predecessors: Vec::new(),
+    }, BTreeMap::from([
+        ("vegetation".to_owned(), vec![1]),
+        ("snow".to_owned(), vec![2]),
+        ("land_surface_energy".to_owned(), vec![3]),
+        ("hydrology".to_owned(), vec![4]),
+        ("bgc".to_owned(), vec![5]),
+        ("soil_thermal".to_owned(), vec![6]),
+        ("surface_liquid".to_owned(), vec![7]),
+    ]))
+    .expect("complete ephemeral owner set");
+    let mut calls = 0_u32;
+    let mut provider = |request: CoveredTerminalTrialRequestV1| {
+        calls += 1;
+        assert_eq!(request.lane_id, 31);
+        assert_eq!(request.support.start_ns(), time_support.start_ns());
+        Err(DirectSnowStage3EvaluationError::TerminalCustody(
+            "resolved-covered-provider-called",
+        ))
+    };
+    let result = Wb11HydrologyKernel::evaluate_stage3_terminal_support_with_trial_provider_v1(
+        &inputs,
+        &state,
+        31,
+        0,
+        support,
+        time_support,
+        CoveredTerminalExecutionMode::DiscoveryProbe,
+        joint,
+        &mut provider,
+    );
+    assert_eq!(calls, 1, "{result:?}");
+    assert!(matches!(
+        result,
+        Err(DirectSnowStage3EvaluationError::TerminalCustody(
+            "resolved-covered-provider-called"
+        ))
+    ));
+}
+
+#[test]
+fn covered_resolved_source_routes_provider_boundary_into_carrier() {
+    let source = include_str!("../evaluation.rs");
+    let resolved = source
+        .split("let covered_substep_boundary")
+        .nth(1)
+        .expect("covered resolved seam");
+    let before_next_function = resolved
+        .split("fn ")
+        .next()
+        .expect("resolved evaluator body");
+    assert!(before_next_function.contains("(**provider)(CoveredTerminalTrialRequestV1"));
+    assert!(before_next_function.contains("boundary: covered_substep_boundary"));
+}
+
+#[test]
 fn terminal_no_event_refreeze_closes_persistent_day() {
     let mut inputs = reconciliation_inputs();
     inputs.snow_layers.truncate(1);

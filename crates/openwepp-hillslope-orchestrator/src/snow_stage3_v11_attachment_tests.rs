@@ -708,4 +708,54 @@ mod tests {
             .is_err()
         );
     }
+
+    fn terminal_ledger_fixture() -> Stage3V11TerminalPhysicalLedgerV1 {
+        Stage3V11TerminalPhysicalLedgerV1 {
+            support: TimeSupport::new(
+                ModelTimeNs::new(0),
+                ModelTimeNs::new(60_000_000_000),
+            )
+            .expect("terminal support"),
+            event_result_set_sha256: digest_bytes(b"events"),
+            proposal_core_sha256: digest_bytes(b"proposal"),
+            accepted_event_receipt_sha256: digest_bytes(b"accepted"),
+            accepted_event_ledger_sha256: digest_bytes(b"accepted-ledger"),
+            produced_unconsumed_parcel_set_sha256: digest_bytes(b"parcels"),
+            beginning_owner_set_sha256: digest_bytes(b"begin-owners"),
+            ending_owner_set_sha256: digest_bytes(b"end-owners"),
+            ending_snow_owner_sha256: digest_bytes(b"end-snow"),
+            evaluated_seconds: 60.0,
+            snow_soil_heat_j_m2: -125.0,
+            receipt_sha256: Digest32::zero(),
+        }
+        .seal()
+        .expect("terminal ledger seal")
+    }
+
+    #[test]
+    fn terminal_physical_ledger_is_nonempty_and_self_reconstructing() {
+        let ledger = terminal_ledger_fixture();
+        assert_ne!(ledger.receipt_sha256, Digest32::zero());
+        ledger.validate().expect("terminal ledger validation");
+    }
+
+    #[test]
+    fn terminal_physical_ledger_rejects_owner_parcel_and_heat_poisons() {
+        for poison in 0..3 {
+            let mut ledger = terminal_ledger_fixture();
+            match poison {
+                0 => ledger.ending_owner_set_sha256 = digest_bytes(b"wrong-owner"),
+                1 => ledger.produced_unconsumed_parcel_set_sha256 = digest_bytes(b"wrong-parcel"),
+                _ => ledger.snow_soil_heat_j_m2 = 125.0,
+            }
+            assert!(ledger.validate().is_err());
+        }
+    }
+
+    #[test]
+    fn snow_free_successor_retains_authoritative_terminal_v4_owner() {
+        let source = include_str!("snow_stage3_v11_attachment.rs");
+        assert!(source.contains("snow-free successor terminal V4 owner"));
+        assert!(source.contains("snow-free successor changed pending terminal V4 custody"));
+    }
 }

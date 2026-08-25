@@ -99,6 +99,134 @@ pub struct Stage3V11TerminalEventGroupV1 {
     pub receipt_sha256: Digest32,
     pub accepted_event_receipt: Option<AcceptedEventReceiptV1>,
     pub accepted_group_receipt_sha256: Option<Digest32>,
+    pub terminal_physical_ledger: Option<Stage3V11TerminalPhysicalLedgerV1>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Stage3V11TerminalPhysicalLedgerV1 {
+    pub support: TimeSupport,
+    pub event_result_set_sha256: Digest32,
+    pub proposal_core_sha256: Digest32,
+    pub accepted_event_receipt_sha256: Digest32,
+    pub accepted_event_ledger_sha256: Digest32,
+    pub produced_unconsumed_parcel_set_sha256: Digest32,
+    pub beginning_owner_set_sha256: Digest32,
+    pub ending_owner_set_sha256: Digest32,
+    pub ending_snow_owner_sha256: Digest32,
+    pub evaluated_seconds: f64,
+    pub snow_soil_heat_j_m2: f64,
+    pub receipt_sha256: Digest32,
+}
+
+impl Stage3V11TerminalPhysicalLedgerV1 {
+    fn reconstructed_digest(&self) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
+        if self.support.duration_ns() == 0
+            || !self.evaluated_seconds.is_finite()
+            || self.evaluated_seconds <= 0.0
+            || !self.snow_soil_heat_j_m2.is_finite()
+            || [
+                self.event_result_set_sha256,
+                self.proposal_core_sha256,
+                self.accepted_event_receipt_sha256,
+                self.accepted_event_ledger_sha256,
+                self.produced_unconsumed_parcel_set_sha256,
+                self.beginning_owner_set_sha256,
+                self.ending_owner_set_sha256,
+                self.ending_snow_owner_sha256,
+            ]
+            .contains(&Digest32::zero())
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "terminal physical ledger domain",
+            ));
+        }
+        Ok(framed_sha256(
+            "stage3-v11-terminal-physical-ledger-v1",
+            &[
+                FramedField { tag: "support_start", value: &self.support.start_ns().get().to_be_bytes() },
+                FramedField { tag: "support_end", value: &self.support.end_ns().get().to_be_bytes() },
+                FramedField { tag: "event_results", value: self.event_result_set_sha256.as_bytes() },
+                FramedField { tag: "proposal_core", value: self.proposal_core_sha256.as_bytes() },
+                FramedField { tag: "accepted_event", value: self.accepted_event_receipt_sha256.as_bytes() },
+                FramedField { tag: "accepted_event_ledger", value: self.accepted_event_ledger_sha256.as_bytes() },
+                FramedField { tag: "parcel_set", value: self.produced_unconsumed_parcel_set_sha256.as_bytes() },
+                FramedField { tag: "begin_owner_set", value: self.beginning_owner_set_sha256.as_bytes() },
+                FramedField { tag: "end_owner_set", value: self.ending_owner_set_sha256.as_bytes() },
+                FramedField { tag: "ending_snow_owner", value: self.ending_snow_owner_sha256.as_bytes() },
+                FramedField { tag: "evaluated_seconds", value: &self.evaluated_seconds.to_bits().to_be_bytes() },
+                FramedField { tag: "snow_soil_heat", value: &self.snow_soil_heat_j_m2.to_bits().to_be_bytes() },
+            ],
+        )?)
+    }
+
+    pub fn validate(&self) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        if self.receipt_sha256 != self.reconstructed_digest()? {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "terminal physical ledger seal",
+            ));
+        }
+        Ok(())
+    }
+
+    pub(crate) fn seal(mut self) -> Result<Self, DirectSnowStage3V11AttachmentError> {
+        self.receipt_sha256 = self.reconstructed_digest()?;
+        Ok(self)
+    }
+}
+
+fn terminal_event_result_set_digest(
+    candidates: &[Stage3V11ActualTerminalCandidateV1],
+) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
+    let fields = candidates
+        .iter()
+        .map(|candidate| FramedField {
+            tag: "event_result",
+            value: candidate.event_result_digest.as_bytes(),
+        })
+        .collect::<Vec<_>>();
+    Ok(framed_sha256("stage3-v11-terminal-event-result-set", &fields)?)
+}
+
+pub(crate) fn accepted_terminal_group_digest(
+    group: &Stage3V11TerminalEventGroupV1,
+) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
+    let accepted = group.accepted_event_receipt.as_ref().ok_or(
+        DirectSnowStage3V11AttachmentError::Identity("terminal accepted event missing"),
+    )?;
+    let ledger = group.terminal_physical_ledger.as_ref().ok_or(
+        DirectSnowStage3V11AttachmentError::Identity("terminal physical ledger missing"),
+    )?;
+    ledger.validate()?;
+    if accepted.tick() != group.tick
+        || u64::from(accepted.ordinal()) != group.ordinal
+        || accepted.event_context_digest() != group.receipt_sha256
+        || accepted.id().digest() != ledger.accepted_event_receipt_sha256
+        || accepted.ledger_digest() != ledger.accepted_event_ledger_sha256
+        || accepted.beginning_owner_set_digest() != ledger.beginning_owner_set_sha256
+        || accepted.ending_owner_set_digest() != ledger.ending_owner_set_sha256
+        || group.proposal_core_sha256 != Some(ledger.proposal_core_sha256)
+        || terminal_event_result_set_digest(&group.candidates)?
+            != ledger.event_result_set_sha256
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "terminal accepted group cross-join",
+        ));
+    }
+    Ok(framed_sha256(
+        "stage3-v11-terminal-group-accepted-v2",
+        &[
+            FramedField { tag: "preaccept", value: group.receipt_sha256.as_bytes() },
+            FramedField { tag: "proposal", value: ledger.proposal_core_sha256.as_bytes() },
+            FramedField { tag: "accepted_event", value: accepted.id().digest().as_bytes() },
+            FramedField { tag: "accepted_event_ledger", value: accepted.ledger_digest().as_bytes() },
+            FramedField { tag: "event_results", value: ledger.event_result_set_sha256.as_bytes() },
+            FramedField { tag: "parcels", value: ledger.produced_unconsumed_parcel_set_sha256.as_bytes() },
+            FramedField { tag: "begin_owner_set", value: ledger.beginning_owner_set_sha256.as_bytes() },
+            FramedField { tag: "end_owner_set", value: ledger.ending_owner_set_sha256.as_bytes() },
+            FramedField { tag: "ending_snow_owner", value: ledger.ending_snow_owner_sha256.as_bytes() },
+            FramedField { tag: "terminal_physical_ledger", value: ledger.receipt_sha256.as_bytes() },
+        ],
+    )?)
 }
 
 fn terminal_event_group_digest(
@@ -222,5 +350,6 @@ pub fn select_common_earliest_actual_terminal_group_v1(
         receipt_sha256,
         accepted_event_receipt: None,
         accepted_group_receipt_sha256: None,
+        terminal_physical_ledger: None,
     }))
 }

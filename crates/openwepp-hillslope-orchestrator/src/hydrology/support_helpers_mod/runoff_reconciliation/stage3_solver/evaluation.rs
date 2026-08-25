@@ -632,6 +632,96 @@ impl Wb11HydrologyKernel {
                     active_state.mass_swe_m,
                     active_state.cold_content_j_m2,
                 );
+                let covered_substep_boundary = if let Some((
+                    lane_id,
+                    base_support,
+                    accepted_joint,
+                    provider,
+                )) = terminal_trial_context.as_mut()
+                {
+                    let start_offset_ns = seconds_to_exact_ns(phase_class, elapsed_seconds)?;
+                    let end_offset_ns = seconds_to_exact_ns(
+                        phase_class,
+                        elapsed_seconds + substep_seconds,
+                    )?;
+                    let trial_start = ModelTimeNs::new(
+                        base_support.start_ns().get().checked_add(start_offset_ns).ok_or_else(
+                            || Self::stage3_domain_error(
+                                phase_class,
+                                "snow.resolved_terminal_trial_start_overflow",
+                                elapsed_seconds,
+                                Some(0.0),
+                                None,
+                            ),
+                        )?,
+                    );
+                    let trial_end = ModelTimeNs::new(
+                        base_support.start_ns().get().checked_add(end_offset_ns).ok_or_else(
+                            || Self::stage3_domain_error(
+                                phase_class,
+                                "snow.resolved_terminal_trial_end_overflow",
+                                substep_seconds,
+                                Some(0.0),
+                                None,
+                            ),
+                        )?,
+                    );
+                    let trial_support = TimeSupport::new(trial_start, trial_end).map_err(|_| {
+                        Self::stage3_domain_error(
+                            phase_class,
+                            "snow.resolved_terminal_trial_support",
+                            substep_seconds,
+                            Some(f64::MIN_POSITIVE),
+                            None,
+                        )
+                    })?;
+                    let liquid_kg_m2 = layers[..active_layer_count]
+                        .iter()
+                        .map(|layer| layer.liquid_water_m * STAGE3_RHO_WATER_KG_M3)
+                        .sum();
+                    let transition = (**provider)(CoveredTerminalTrialRequestV1 {
+                        lane_id: *lane_id,
+                        support: trial_support,
+                        role: CoveredTerminalTrialRoleV1::Full,
+                        attempt_ordinal: u32::try_from(substep_index).map_err(|_| {
+                            Self::stage3_domain_error(
+                                phase_class,
+                                "snow.resolved_terminal_trial_attempt_ordinal",
+                                substep_index as f64,
+                                Some(0.0),
+                                Some(f64::from(u32::MAX)),
+                            )
+                        })?,
+                        coupling_iteration: 0,
+                        ice_kg_m2: active_state.mass_swe_m * STAGE3_RHO_WATER_KG_M3,
+                        liquid_kg_m2,
+                        cold_content_j_m2: active_state.cold_content_j_m2,
+                        surface_temperature_c,
+                        snow_depth_m: active_state.depth_m,
+                        snow_density_kg_m3: active_state.density_kg_m3,
+                        ending_snow_hint: None,
+                        beginning_joint: accepted_joint.clone(),
+                    })?;
+                    if transition.boundary.support != trial_support
+                        || transition.beginning_joint != *accepted_joint
+                        || transition.probe_child_identity.trial_support != trial_support
+                        || transition.probe_child_identity.role
+                            != CoveredTerminalTrialRoleV1::Full
+                    {
+                        return Err(Self::stage3_domain_error(
+                            phase_class,
+                            "snow.resolved_terminal_trial_boundary_join",
+                            substep_seconds,
+                            Some(substep_seconds),
+                            Some(substep_seconds),
+                        )
+                        .into());
+                    }
+                    *accepted_joint = transition.ending_joint;
+                    Some(transition.boundary)
+                } else {
+                    boundary.clone()
+                };
                 let carrier = Self::stage3_hourly_surface_energy(
                     phase_class,
                     inputs,
@@ -642,7 +732,7 @@ impl Wb11HydrologyKernel {
                         snow_density_kg_m3: active_state.density_kg_m3,
                         duration_seconds: substep_seconds,
                         forcing_duration_seconds: support_seconds,
-                        boundary,
+                        boundary: covered_substep_boundary,
                     },
                     Some(tag.operator),
                     DirectSnowDiagnosticCapture::Verbose,

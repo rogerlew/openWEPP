@@ -41,6 +41,34 @@ fn canonical_stage3_snow_owner_bytes_with_pending(
     .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("canonical Stage-3 snow bytes"))
 }
 
+fn canonical_stage3_snow_owner_bytes_with_pending_and_receipts(
+    states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    pending_terminal_parcels: &BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
+    lane_receipts: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
+    tile_receipts: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
+) -> Result<Vec<u8>, DirectSnowStage3V11AttachmentError> {
+    let lane_digests = lane_receipts
+        .iter()
+        .map(|(lane, receipt)| (*lane, receipt.receipt_sha256))
+        .collect::<BTreeMap<_, _>>();
+    let tile_digests = tile_receipts
+        .iter()
+        .map(|((ofe, tile), receipt)| {
+            (
+                (ofe.as_str().to_owned(), tile.as_str().to_owned()),
+                *receipt.receipt_sha256(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    crate::snow_owner_v4::canonical_stage3_snow_owner_v4_bytes(
+        states,
+        pending_terminal_parcels,
+        &lane_digests,
+        &tile_digests,
+    )
+    .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("canonical Stage-3 snow bytes"))
+}
+
 fn parse_lower_hex_digest(value: &str) -> Result<Digest32, DirectSnowStage3V11AttachmentError> {
     if value.len() != 64
         || value
