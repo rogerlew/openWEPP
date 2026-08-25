@@ -198,6 +198,27 @@ current rejection path does not retain the last admitted 1.875-second
 component receipt set; v20/v10 make that read-only evidence a required
 contract-derived characterization surface and no missing component is inferred.
 
+### 2026-08-25 corrected v21/v11/v139/v6 authority intent
+
+Close `TBTV20-NUM-001..006` and `TBTV20-OWN-001..004` without rewriting held
+v20/v10/v138/v5. The corrected cycle first formats the old guard, constructs a
+same-support SCC/forcing graph, defines installed-high estimator and exact
+controller/nonlinear authority, closes every wire preimage, splits
+`O_begin -> O_prefix -> O_event`, and excludes terminal liquid from pre-event
+hydrology/WB14/surface ingress.
+
+A separate rejected-trial diagnostic mini-gate precedes any operator work. It
+may authorize only a private `cfg(test)` read-only observer after two
+GO-to-evidence reviews. Production temporal/Batch/event/receiver/restart code,
+public APIs, acceptance, output and the 600 ms floor remain unchanged.
+
+Static review disposition: both independent mini-gate reviews returned HOLD on
+the same exact hash. The rejection decision and complete carrier receipts do
+not coexist at a read-only observation point, and correlating them requires a
+prohibited production temporal-control edit or duplicated decision logic. No
+diagnostic implementation, receipt capture, effectivity matrix, final
+candidate review or production implementation intent is authorized.
+
 ### 2026-08-24 covered physical-custody intake and authority gate
 
 Implementation intent: close one bounded persistent covered-physical-custody

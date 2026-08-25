@@ -570,3 +570,24 @@ ambiguous prefix/event owner joins and missing terminal-liquid exclusion from
 hydrology. No implementation intent follows. `BelowCarrierDomain` remains the
 correct runtime result and `43cc9bbe...` remains the last qualified physical
 implementation.
+
+## 2026-08-25 corrected successor evidence boundary
+
+Static: v21/v11/v139/v6 now distinguish the complete same-support SCC,
+prescribed versus arm-generated amounts, state-dependent rates, installed-high
+estimators, deterministic nonlinear authority, closed Batch/event wire DAG,
+split prefix/event owner joins and terminal-liquid exclusion. No production
+Rust was edited.
+
+Ran: formatting and diff hygiene passed; the historical v19 and corrected v21
+contract guards passed 5/5; anti-evasion passed; and the required-suite guard
+passed 3/3. Strict binding, admission and assurance checks were executed and
+failed truthfully on retained lifecycle/identity boundaries recorded in
+`gate-results.md`; none is claimed as PASS.
+
+Static / diagnostic HOLD: two independent reviewers matched the exact frozen
+mini-gate hash and found the promised complete read-only evidence unreachable.
+The final error decision and complete carrier receipts exist at different
+layers, so correlation requires a prohibited production temporal-control edit
+or duplicated solver logic. The component receipt/effectivity matrix and final
+candidate reviews remain `NOT RUN`; no implementation intent is recorded.

@@ -6,7 +6,7 @@ maturity: active
 owner: openWEPP maintainers + time/numerics + transaction/restart reviewers
 contract_version: 3
 released_contract_version: 3
-candidate_contract_version: 5
+candidate_contract_version: 6
 producer_scope:
   - OPENWEPP_COUPLED_TIME_SUPPORT_V1
   - Coupled parent-interval coordinator and staged clock
@@ -34,6 +34,9 @@ reviewed covered terminal chain candidate. Version 5 is a distinct
 `in_review / draft` Batch V2, group-topology, and zero-prefix successor and
 does not rewrite version 4. It requires its own mandatory review, verification,
 implementation, and exact-head gates.
+
+Version 6 is the corrected successor to held v5 and requires a new manifest,
+executed evidence and independent reviews.
 
 ## Purpose and scientific scope
 
@@ -1066,10 +1069,79 @@ survivor, mixed destinations, no event, topology/ordinal/hash substitution,
 zero-prefix signed-zero/provider/parcel/replay poisons, and rollback at every
 boundary. This draft admits no implementation before coordinated dual `GO`.
 
+## Candidate version 6 — closed terminal wire DAG and split owner transitions
+
+Version 6 supersedes held v5 only as a new candidate. Every node uses
+`OPENWEPP_CANONICAL_FRAMED_SHA256_V1`, a closed domain tag below, `schema=u32`
+first, then the exact ordered fields listed. Common encoding remains big-endian
+`u32/u128`, raw 32-byte digests, IEEE-754 `u64` bits, and `u32` count followed
+by canonical elements. No optional/unknown/JSON field is allowed.
+
+### Wire DAG and exact preimages
+
+| Node / closed domain tag | Schema | Exact ordered fields after schema |
+|---|---:|---|
+| Batch request / `covered-terminal-batch-request-v3` | 3 | parent transaction; enclosing start/end; prefix start/end; arm tag; attempt; coupling ordinal; forcing; topology; beginning owner set; beginning joint; lane count; repeated lane ID, OFE, beginning snow digest, typed-state digest, receiver-set digest |
+| Prescribed amount set / `covered-terminal-prescribed-amount-set-v1` | 1 | provider transaction; exact support; forcing; count; repeated class, source, destination, units tag, value bits, source receipt |
+| Rate evaluation set / `covered-terminal-rate-evaluation-set-v1` | 1 | parent; support; absolute tick; arm/stage; typed SCC state; prescribed set; topology; count; repeated component identity, class, units, direction, value bits, primitive receipt; algebraic residual; AD Jacobian identity |
+| Arm-generated amount set / `covered-terminal-generated-amount-set-v1` | 1 | parent; support; arm/stage; beginning SCC; ending SCC; count; repeated producer owner/component, consumer owner/component, units, value bits, producer receipt |
+| Temporal arm / `covered-terminal-temporal-arm-v1` | 1 | request; method tag (`CN_FULL`, `CN_HALF_1`, `CN_HALF_2`, `CN_FLOOR_HIGH`); support; beginning joint; prescribed set; ordered rate sets; generated set; active-set tag; nonlinear receipt; ending typed SCC; follower receipt set; ending owner set; ending joint; conservation receipt |
+| High estimator / `covered-terminal-high-estimator-v1` | 1 | request; selector tag (`CN_STEP_DOUBLE`, `FULL_DEFECT`); coarse/full arm; ordered fine-half arms or floor-high arm; defect/collocation rate sets; error-transport receipt; enclosure-factor bits; ordered component signed estimates; scaled maximum; accepted flag; controller factor bits; proposed nanoseconds |
+| Batch result / `covered-terminal-batch-result-v3` | 3 | request; installable high arm; estimator; ordered lane evidence set; ending owner set; ending joint; selected candidate tick or explicit none; typed failure or explicit none |
+| Ending joint / `covered-terminal-ending-joint-v3` | 3 | source owner set; source joint; exact support; installable arm; ordered seven owner IDs/digests; ordered lane ending digests; predecessor count/list; receipt-set digest |
+| Lane event evidence / `covered-terminal-lane-event-v2` | 2 | batch result; lane; OFE; prefix support; beginning/ending solid/liquid/cold content bits; event posture; candidate tick or none; monotone bracket evidence; component/ledger digest |
+| Group topology / `covered-terminal-group-topology-v3` | 3 | parent; prefix; event tick; terminating lane count; repeated lane, OFE, destination tile, fraction bits, receiver class/model, receiver receipt |
+| Positive-prefix owner receipt / `covered-terminal-positive-prefix-owner-v1` | 1 | parent; request; batch result; support `O_begin->O_prefix`; beginning owner set; prefix owner set; exact physical mutation set; installed high arm; ending joint; no-terminal-ingress receipt |
+| Cursor event-intent core / `covered-terminal-cursor-event-intent-v1` | 1 | parent; enclosing/current support; cursor/event tick; child/event ordinals; forcing; group topology; sealed predecessor result; ordered lane event evidence and terminal mass/enthalpy bits |
+| Zero-prefix witness / `covered-terminal-zero-prefix-receipt-v2` | 2 | event-intent core; parent; enclosing/current support; child/event ordinals; prefix owner set; prefix joint; source snow-owner V4; predecessor count/list; provider call count zero; mutation count zero; exact +0 ledgers; Unapplied posture |
+| Event proposal core / `stage3-v11-terminal-event-proposal-core-v2` | 2 | event-intent core; positive-prefix receipt; zero witness when cursor event, otherwise explicit absent tag; group topology; ordered event evidence; terminal mass/enthalpy bits |
+| Preaccept group / `stage3-v11-terminal-group-preaccept-v2` | 2 | proposal core; parent; event tick/ordinals; prefix owner set; proposed event owner set; mutation set exactly `{snow}`; parcel set; candidates |
+| Accepted group / `stage3-v11-terminal-group-accepted-v2` | 2 | preaccept; accepted event receipt; accepted ordinal/context; prefix owner set; event owner set; zero-event ledger; parcel set |
+| Parcel set / `openwepp-stage3-terminal-parcel-set-v2` | 2 | proposal core; prefix snow owner; group topology; count; repeated canonical V4 ProducedUnconsumed parcel fields |
+| Parent chain / `covered-terminal-parent-chain-v2` | 2 | parent; ordered positive-prefix receipts; ordered accepted groups; final owner set; final clock; no orphan/duplicate digest |
+
+The DAG order is request/forcing -> arms -> estimator -> batch result/ending
+joint/lane evidence -> positive-prefix receipt -> cursor event-intent -> optional
+zero witness -> proposal core -> parcel/preaccept -> accepted event/group ->
+parent. A node may reference only nodes to its left; validators reject cycles,
+orphans, duplication and substitution.
+
+### Split owner chronology
+
+`O_begin -> O_prefix` is the accepted positive support and may mutate every
+typed owner proven by the high batch result. `O_prefix -> O_event` is a separate
+zero-duration transition whose complete physical mutation set is exactly
+`{snow}` and whose only physical change is insertion of ProducedUnconsumed
+parcels. Clock acceptance is separate chronology authority. The positive-prefix
+receipt and accepted-group receipt bind the intermediate `O_prefix` digest
+identically; no single begin/end pair may stand for both transitions.
+
+The no-terminal-ingress receipt proves zero matching parcel/core membership in
+hydrology supply, WB14 authorization/debit and surface-liquid ingress through
+`O_prefix`, and bit-identical hydrology/surface-liquid owners across
+`O_prefix -> O_event`.
+
+### Guards
+
+| ID | Binding correction |
+|---|---|
+| `INV-COUPLEDTIME-032` | Every terminal wire node has the exact closed preimage and acyclic order above. |
+| `INV-COUPLEDTIME-033` | Cursor event-intent core precedes and is bound by zero witness, preventing cross-core substitution without a cycle. |
+| `INV-COUPLEDTIME-034` | Positive prefix and zero event are separate owner transitions joined at identical `O_prefix`. |
+| `INV-COUPLEDTIME-035` | No-terminal-ingress receipt proves pending terminal liquid cannot reach hydrology/WB14/surface liquid before receiver authority. |
+| `INV-COUPLEDTIME-036` | Estimator/controller receipts bind installed high state, exact quantized retry and typed unsupported result. |
+| `OBL-COUPLEDTIME-014` | Independently reconstruct the entire DAG, every preimage and both owner transitions. |
+
+Required vectors mutate every field, order, count, tag and predecessor edge;
+exercise cross-core zero substitution, cycle/orphan/duplicate, distinct-OFE
+group topology, survivor installation, terminal-ingress poisons and rollback.
+Implementation remains prohibited.
+
 ## Change log
 
 | Date | Version | Change |
 |---|---|---|
+| 2026-08-25 | `6` | Corrected held v5 with the exact closed terminal wire DAG, core-bound zero witness, split positive-prefix/zero-event owner receipts and terminal-ingress exclusion. |
 | 2026-08-25 | `5` | Defined distinct Batch V2 absolute-prefix results, common group topology, exact survivor installation, sealed zero-prefix witness and typed unsupported rollback while preserving v4. |
 | 2026-08-20 | `1-rc1` | Authored complete coupled-time identity, event, participant, controller, restart, atomicity, and publication authority for independent review. |
 | 2026-08-20 | `1-rc2` | Added complete accepted-slab receipt chronology to restart after implementation exposed that reductions/publications cannot reconstruct parent finalization. |

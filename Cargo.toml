@@ -882,6 +882,10 @@ name = "snow_stage3_terminal_batch_temporal_v20_contract"
 path = "tests/integration/snow_stage3_terminal_batch_temporal_v20_contract.rs"
 
 [[test]]
+name = "snow_stage3_terminal_batch_temporal_v21_contract"
+path = "tests/integration/snow_stage3_terminal_batch_temporal_v21_contract.rs"
+
+[[test]]
 name = "snow_stage3_shared_carrier_terminal_handoff_implementation"
 path = "tests/integration/snow_stage3_shared_carrier_terminal_handoff_implementation.rs"
 

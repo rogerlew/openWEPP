@@ -5,7 +5,7 @@ status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
 contract_version: 137
-candidate_contract_version: 138
+candidate_contract_version: 139
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -29,6 +29,9 @@ Evidence mode: `static`
 Lifecycle: version 137 remains the reviewed staged terminal V4-owner
 candidate. Version 138 is a distinct `in_review / draft` Batch V2 temporal and
 active-set successor; it does not rewrite or promote version 137.
+
+Version 139 is the corrected successor to held v138 and requires a new
+manifest, executed evidence and independent reviews.
 
 ## Purpose
 
@@ -4256,11 +4259,49 @@ continuation, terminal plus survivor, mixed covered/open topology, no-event
 compatibility, positive physiology/mineral N, framing poisons and rollback.
 This draft admits no production wiring before coordinated dual `GO`.
 
+## Candidate version 139 — corrected core/follower and terminal-liquid custody
+
+Version 139 supersedes held v138 only as a new candidate. The implicit SCC is
+snow, vegetation/LSE/shared carrier, participating soil thermal, surface liquid
+and hydrology whenever same-support root-water or routing feedback exists. BGC
+is an exact follower only under the beginning-pool-only domain proven by a
+follower receipt; any feedback moves it into the SCC. Serialization, hashes and
+diagnostics are discrete followers.
+
+Each temporal arm receipt contains ordered implicit-core unknown/residual
+components with units, active set, nonlinear evidence, one complete beginning
+owner set, one converged typed ending per owner, follower inputs/outputs and an
+exact complete ending owner set. Followers cannot be used as seeds or feedback
+inside the arm.
+
+Terminal-event liquid remains internal to the high snow endpoint through the
+positive prefix. It is excluded by exact zero cardinality from every pre-event
+surface-liquid ingress set, WB14 authorization/debit, hydrology supply and
+ending non-snow owner receipt. Only after prefix acceptance does the zero-event
+transition add the ProducedUnconsumed pending parcel to the snow owner. Surface
+liquid, WB14 and hydrology remain bit-identical across that zero event. The
+later receiver remains unauthorized.
+
+| ID | Binding correction |
+|---|---|
+| `INV-SNOWFREEZE-111` | Same-support feedback defines SCC membership; no lagged/frozen/post-hoc follower edge is allowed. |
+| `INV-SNOWFREEZE-112` | Each BE/high/coarse/fine arm constructs all typed owners from one beginning and serializes once without owner-byte differentiation. |
+| `INV-SNOWFREEZE-113` | A follower receipt proves no same-support path back to the core; otherwise the owner is in the core. |
+| `INV-SNOWFREEZE-114` | Terminal liquid is absent from pre-event hydrology/WB14/surface ingress and remains snow-owned until the separate zero event creates its pending parcel. |
+| `OBL-SNOWFREEZE-P-076` | Produce SCC/follower, arm-generated transfer and terminal-liquid exclusion receipts. |
+| `OBL-SNOWFREEZE-C-017` | Reconstruct feedback classification, complete owners, internal transfers and two-stage terminal custody. |
+
+Required vectors include root-water feedback forcing hydrology into the SCC,
+beginning-pool-only BGC follower and feedback poison, cross-arm generated-
+amount substitution, terminal-liquid ingress/WB14/hydrology poisons, and exact
+prefix/event rollback. Implementation remains prohibited.
+
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
 
+| `2026-08-25` | `139` | `Codex` | Corrected held v138 with explicit SCC/follower proof, complete typed owner construction and exact exclusion of terminal liquid from pre-event hydrology/WB14/surface ingress. |
 | `2026-08-25` | `138` | `Codex` | Added distinct Batch V2 all-lane/seven-owner carrier, hydrology and joint semantics; phase-active-set agreement; canonical hashes; and exact survivor installation while preserving v137. |
 | `2026-08-24` | `137` | `Codex` | Added the staged canonical snow-owner V4 with pending ProducedUnconsumed parcel custody, sole coupled-event ordinal authority, exact snow-only zero-duration mutation, and reconstructable terminal ledger/receipt chain; immediate receiver consumption remains separate and held. |
 | `2026-08-19` | `136` | `Codex` | Added separate default-off terminal receiver chronology (`INV-SNOWFREEZE-102`) with actual-surface selection, partial-interval continuation/restart, and atomic all-owner rollback/error precedence; preserved evaluation-only INV-101 and all production/cutover holds. |

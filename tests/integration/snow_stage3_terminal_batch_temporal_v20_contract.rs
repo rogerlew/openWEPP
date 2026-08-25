@@ -10,10 +10,12 @@ fn coordinated_v20_v10_v138_v5_define_the_complete_authority_surface() {
     let lse = read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
     let freeze = read("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
     let time = read("docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md");
-    let inventory = read("docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/terminal-residual-state-inventory-v1.md");
+    let inventory = read(
+        "docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/terminal-residual-state-inventory-v1.md",
+    );
 
     for required in [
-        "candidate_contract_version: 20",
+        "Candidate version 20 — owner-complete same-support terminal pair",
         "S(x1)-S(x0) - I_prescribed(H) - Q_endpoint",
         "BE: Q_endpoint = h F(t1,x_BE)",
         "CN: Q_endpoint = h/2 [F(t0,x0)+F(t1,x_CN)]",
@@ -33,7 +35,7 @@ fn coordinated_v20_v10_v138_v5_define_the_complete_authority_surface() {
     }
 
     for required in [
-        "candidate_contract_version: 10",
+        "Candidate version 10 — same-support endpoint-flux receipt",
         "CoveredLseEndpointFluxSetV1",
         "never converted to endpoint\nrates",
         "LSEB-E-046",
@@ -47,7 +49,7 @@ fn coordinated_v20_v10_v138_v5_define_the_complete_authority_surface() {
     }
 
     for required in [
-        "candidate_contract_version: 138",
+        "Candidate version 138 — Batch V2 terminal state and phase authority",
         "CoveredTerminalBatchTrialRequestV2",
         "Caller-supplied event\nticks or ending hints are prohibited",
         "advances shared\nvegetation, LSE, surface-liquid, hydrology, BGC and soil-thermal owners exactly\nonce",
@@ -59,11 +61,14 @@ fn coordinated_v20_v10_v138_v5_define_the_complete_authority_surface() {
         "INV-SNOWFREEZE-109",
         "INV-SNOWFREEZE-110",
     ] {
-        assert!(freeze.contains(required), "SnowFreeze v138 missing {required}");
+        assert!(
+            freeze.contains(required),
+            "SnowFreeze v138 missing {required}"
+        );
     }
 
     for required in [
-        "candidate_contract_version: 5",
+        "Candidate version 5 — Batch V2 event and zero-prefix chronology",
         "CoveredTerminalBatchTrialResultV2",
         "CoveredTerminalGroupTopologySetV2",
         "CoveredTerminalZeroPrefixReceiptV1",

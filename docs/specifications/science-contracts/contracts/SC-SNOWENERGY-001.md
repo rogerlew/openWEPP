@@ -6,7 +6,7 @@ maturity: active
 owner: openWEPP maintainers + snow-process reviewer
 contract_version: 18
 released_contract_version: 18
-candidate_contract_version: 20
+candidate_contract_version: 21
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -32,6 +32,10 @@ reviewed terminal full/two-half candidate. Version 20 is a distinct
 `in_review / draft` batch same-support successor and does not rewrite or
 promote version 19. It requires its own dual review, verification,
 implementation, and exact-head gates.
+
+Version 21 is the corrected successor to held v20. It preserves v20 text and
+findings, is `in_review / draft`, and requires a new manifest, executed
+evidence and independent reviews.
 
 ## Purpose
 
@@ -1864,10 +1868,108 @@ This version is `in_review / draft`. It authorizes no Rust implementation until
 the coordinated v20/v10/v138/v5 exact candidate receives both required `GO`
 reviews.
 
+## Candidate version 21 — installed-high estimator and complete SCC solve
+
+Version 21 supersedes held v20 only as a new review candidate. The normative
+dependency and forcing classification is the package artifact
+`terminal-same-support-scc-and-forcing-inventory-v2.md`; its rules are repeated
+here as binding authority: prescribed upstream amounts, arm-generated amounts,
+state-dependent rates, algebraic variables and discrete event outputs are
+distinct. Incident radiation is not absorbed shortwave. Atmospheric parcels
+are not vegetation releases. Owner bytes are never numerical unknowns.
+
+### Estimator selector and installed state
+
+For `h>=1.2 s`, solve one full-support CN candidate `X_C` and two sequential CN
+half candidates `X_F`; every constitutive half support is at least `0.6 s`.
+Install only `X_F`. For each typed norm component, the signed high-state error
+estimate is `(X_F-X_C)/3`. Exact/discrete predicates must agree across coarse
+and fine paths and are not divided by three.
+
+For `0.6<=h<1.2 s`, solve one full-support CN high candidate `X_H`. Construct
+two read-only same-active-set storage collocation states at
+`c=1/2-sqrt(3)/6` and `c=1/2+sqrt(3)/6` by linear interpolation in each
+invertible physical storage map, followed by a complete algebraic carrier solve
+at the exact collocation tick. No collocation state is installed and no
+positive sub-support is evaluated. Reconstruct the full SCC defect `d_H` using
+two-point Gauss integration of state-dependent rates, identical prescribed
+amounts and arm-generated internal-transfer amounts. Solve the scaled linear
+error-transport system `J_H e_H=-d_H`, where `J_H` is the exact automatic-
+differentiation Jacobian of the CN residual on the selected active set.
+
+The floor estimator is `gamma*e_H`, with prospective enclosure factor
+`gamma=2`. It is admitted only after the independent effectivity matrix proves
+for every required smooth-domain vector that the independently referenced CN
+endpoint error is componentwise no larger than `gamma*abs(e_H)`, and that the
+ratio remains finite and nonzero where reference error is nonzero. Failure of
+storage inversion, algebraic closure, Jacobian solve, effectivity admission or
+active-set identity is typed unsupported. This draft does not claim that
+evidence has executed.
+
+The unit-scaled maximum estimator `E` includes every implicit-SCC storage and
+generated-transfer conservation component; followers are exact predicates.
+Acceptance is exactly `E<=1`. All v19 mass/energy/state tolerances remain
+unchanged.
+
+### Controller and floor
+
+For accepted `E=0`, factor is `2`. Otherwise accepted factor is
+`clamp(0.5,2.0,0.8*E^(-1/3))`; rejected factor is
+`clamp(0.2,0.8,0.8*E^(-1/3))`. Multiply in binary64, reject non-finite, then
+quantize by floor to an integer nanosecond. Positive proposals below
+`600000000 ns` are never evaluated. If rejection at the floor cannot produce a
+smaller admitted support, fail typed unsupported. Maximum rejected attempts per
+absolute prefix is `16`; maximum accepted/rejected temporal trials per prefix
+is `64`. The `1.2 s` selector is exact integer nanoseconds; no blend exists.
+
+### Complete nonlinear solve
+
+Unknown/residual order and units are exactly those in the v2 SCC inventory.
+Finite active-set tags are the Cartesian product of enumerated layer lifecycle,
+vapor direction, cold-only/melt, refreeze/retention/routing, wet/dry component,
+surface route and terminal posture after rejecting impossible combinations by
+existing contracts. Tags are tried in canonical numeric order.
+
+Each tag uses two deterministic seeds: the feasible beginning-storage state
+with algebraic variables solved at `t0`, then the owning-contract physical
+predictor from prescribed amounts only. Damped Newton uses the exact AD
+Jacobian, scaled residual and step infinity norms, maximum `32` iterations,
+Armijo constant `1e-4`, backtracking multiplier `0.5`, maximum `16`
+backtracks, and rejects a step leaving the tag's physical domain. Convergence
+requires residual norm `<=1` under owning closure scales and step norm `<=1`
+under `TOL-SNOWENERGY-003` for two successive iterations.
+
+Roots with the same active tag are equivalent only when every typed field is
+within its owning convergence tolerance and every exact field matches. All
+seeds/tags must complete or fail typed; exactly one equivalence class may pass.
+Zero classes, multiple nonequivalent classes, singular Jacobian, exhausted
+globalization or iteration limit is typed unsupported. Event-switch precedence
+is layer lifecycle, vapor direction, cold-content exhaustion, melt, refreeze/
+retention/routing, then terminal posture. An event-containing candidate is
+localized by complete absolute-prefix high solves; it is never accepted as a
+smooth floor-defect vector across a switch.
+
+### Findings and evidence
+
+| ID | Binding correction |
+|---|---|
+| `INV-SNOWENERGY-061` | Use CN step doubling with `(fine-coarse)/3` and fine installation for `h>=1.2 s`; use the admitted full-support defect/error-transport estimator below it. |
+| `INV-SNOWENERGY-062` | Acceptance/controller/floor/retry rules are exact as above; no subminimum call or estimator blend. |
+| `INV-SNOWENERGY-063` | Complete SCC unknown/residual order, finite active sets, seeds, AD Jacobian, globalization, convergence and root equivalence are deterministic. |
+| `INV-SNOWENERGY-064` | Prescribed, arm-generated, endpoint/collocation and discrete classes remain separate; internal arm-generated transfers close both owning storages. |
+| `INV-SNOWENERGY-065` | Floor estimator requires prospective componentwise enclosure/effectivity evidence; absence retains typed unsupported. |
+| `OBL-SNOWENERGY-P-016` | Produce arm, collocation, defect, error-transport, controller and complete SCC receipts. |
+| `OBL-SNOWENERGY-C-024` | Independently reconstruct installed-high error, effectivity, conservation, active set, nonlinear root and controller decision. |
+
+Required evidence adds estimator effectivity/reference error, 1.2-second
+selector continuity, stiff linear DAE and active-set-local vectors to the v20
+matrix. Production implementation remains prohibited.
+
 ## Change Log
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 21 | 2026-08-25 | Corrected held v20 with installed-high CN step-doubling above 1.2 s, a full-support defect/error-transport floor estimator, exact controller, complete SCC/Newton/root semantics and forcing classes. | Review/evidence pending; v20 history retained |
 | 20 | 2026-08-25 | Defined a distinct complete-state same-support BE/CN candidate, residual-class partition, deterministic root/active-set guards, rejected-trial evidence and full-domain vectors while retaining v19 and the 600 ms floor. | Terminal residual inventory and Child-1 authority package; review pending |
 | 19 | 2026-08-24 | Defined covered terminal execution modes, exact per-trial covered-carrier reconstruction, resolved crossing, dormant endpoint and ProducedUnconsumed snow-owner custody, terminal snow--soil receipt join, and mandatory terminal physical ledger. Immediate receiver consumption, restart, activation and cutover remain excluded. | Static WIP review at `3fda26f0`; Child-1 contract-first correction |
 | 18 | 2026-08-24 | Admitted persistent snow--soil boundary authority: one OFE/lane interface, bottom snow volume to first OFE soil node, two-half-layer series resistance, Crank--Nicolson beginning/end evaluation inside the covered fixed point, exact equal/opposite candidate custody, reconstructable receipt, and atomic rollback. | Pinned `frostn.for`/`tmpadj.for` series-resistance provenance; `SC-LANDSURFACEENERGY-001@8`; Child-1 contract-derived guards |

@@ -1054,3 +1054,30 @@ seven-owner DAE construction or required physical evidence. Its Batch V2 hash
 preimages and zero-prefix core bind are incomplete; positive-prefix versus
 zero-event owner joins and terminal-liquid exclusion are ambiguous. Terminal
 chronology remains HARD HOLD and `BelowCarrierDomain` remains correct.
+
+## 2026-08-25 corrected successor and diagnostic authority review (HOLD)
+
+Evidence class: `Static + Ran`.
+
+| Gate | Result |
+|---|---|
+| Fresh v21/v11/v139/v6 candidate manifest | PASS; held v20/v10/v138/v5 preserved at `83fb00514...` |
+| `cargo fmt --all -- --check` / `git diff --check` | PASS / PASS |
+| v19 preservation plus v21 corrected guards | PASS: 5/5, nextest `b608d819-22ac-4e0f-a45d-2a86c500cdd0` |
+| Authority-suite anti-evasion | PASS |
+| Required-suite obligation guard | PASS: 3/3, nextest `eda9a9d3-4483-4354-a57a-fe0b6b834661` |
+| Strict binding exposure | FAIL before candidate rows: retained SnowEnergy v17/v18 rows use historical `approved_active`, outside the current linter enum |
+| Science-contract admission | FAIL as expected for an authority-only candidate: changed SnowFreeze remains `in_review/draft` |
+| Assurance `validate --all` | FAIL: assurance still binds the prior SnowFreeze source hash |
+| Assurance generation verification from `83fb00514...` | FAIL: the changed SnowEnergy identity member is intentionally unadopted |
+| Two independent diagnostic mini-gate reviews | HOLD / HOLD on exact hash `af381f66...` |
+| Component receipt capture/effectivity matrix | NOT RUN; prohibited seam not authorized |
+| Final candidate reviews | NOT RUN; executed-evidence prerequisite absent |
+| Production implementation intent | NOT RECORDED |
+
+No existing read-only observation point owns both the final pair-level error
+decision and the complete carrier receipts. Capturing a canonical record would
+require a production temporal-control correlation mechanism or duplicated
+solver logic. Both are outside the mini-gate and the user's write prohibition.
+Terminal chronology therefore remains HARD HOLD with `BelowCarrierDomain` and
+the 600 ms floor unchanged.

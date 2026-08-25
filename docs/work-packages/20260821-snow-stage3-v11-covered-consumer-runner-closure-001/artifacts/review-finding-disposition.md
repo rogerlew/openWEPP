@@ -134,3 +134,7 @@ manifest and returned `HOLD`. Numerical findings `TBTV20-NUM-001..005` and
 ownership findings `TBTV20-OWN-001..004` are accepted/open; see
 `terminal-batch-temporal-v20-review-disposition.md`. No production Rust was
 edited and no implementation intent is admitted.
+
+| Finding | Severity | Decision | Current action/status |
+|---|---:|---|---|
+| `TBTV20-NUM-006` | Critical | `accepted / correction in v21 intake` | V20 incompletely separated prescribed upstream amounts, arm-generated amounts and state-dependent absorption. The v21 SCC/forcing inventory now distinguishes provider amounts/series, arm-generated transfers, state-dependent endpoint/collocation rates, algebraic variables and discrete outputs; final authority/review remains open. |

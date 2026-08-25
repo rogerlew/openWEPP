@@ -6,7 +6,7 @@ maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
 contract_version: 8
 released_contract_version: 8
-candidate_contract_version: 10
+candidate_contract_version: 11
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
@@ -30,6 +30,9 @@ reviewed terminal full/two-half endpoint candidate. Version 10 is a distinct
 `in_review / draft` same-support endpoint-flux successor and does not rewrite
 version 9. It requires its own mandatory review, verification, implementation,
 and exact-head gates.
+
+Version 11 is the corrected successor to held v10 and requires a new manifest,
+executed evidence and independent reviews.
 
 ## Purpose
 
@@ -1179,10 +1182,49 @@ anti-requadrature, snow--soil equal/opposite energy,
 permutation, and the real 1.875-second covered component receipt set. This draft
 authorizes no production implementation before coordinated dual `GO`.
 
+## Candidate version 11 — corrected forcing and collocation authority
+
+Version 11 supersedes held v10 only as a new candidate. Each input is tagged
+exactly `PrescribedAmount`, `PrescribedSeries`, `ArmGeneratedAmount`,
+`StateDependentRate`, `Algebraic`, or `DiscreteOutput`; unknown/multiple tags
+fail `LSEB-E-047`.
+
+Incident provider radiation is a prescribed amount/series according to its
+own receipt. Absorbed snow/canopy shortwave is a state-dependent rate because
+optics/recipient state can differ by arm. Atmospheric precipitation parcels
+are prescribed amounts; throughfall, drainage and stemflow are arm-generated
+amounts and remain joined to the producing vegetation candidate. No generated
+amount may be reused across arms.
+
+Endpoint and v21 Gauss-collocation evaluations are read-only rate/algebraic
+evaluations at exact absolute ticks against typed admissible storage states.
+They are not positive supports and cannot advance owners or create interval
+amount receipts. Every positive support solve remains `>=600000000 ns`.
+`CoveredLseRateEvaluationReceiptV2` binds schema, evaluation class, absolute
+tick, enclosing support, arm/stage tag, prescribed set, typed state, topology,
+primitive operands, ordered component rates/units/directions, algebraic
+residual and AD-Jacobian identity. `CoveredLseAmountSetReceiptV2` separately
+binds prescribed and arm-generated amounts, producer state and support.
+
+| ID | Binding correction |
+|---|---|
+| `INV-LANDSURFACEENERGY-134` | Incident versus absorbed radiation and atmospheric versus vegetation-produced parcels are distinct classes. |
+| `INV-LANDSURFACEENERGY-135` | Endpoint/collocation rate evaluation is read-only at an absolute tick, not a subminimum support. |
+| `INV-LANDSURFACEENERGY-136` | Prescribed and arm-generated amount sets have distinct producer/arm identities and are never re-quadratured or cross-arm reused. |
+| `INV-LANDSURFACEENERGY-137` | V21 rate/algebraic residuals expose exact AD Jacobian identity and complete ordered units. |
+| `OBL-LANDSURFACEENERGY-P-022` | Produce V2 rate-evaluation and amount-set receipts for every temporal arm/stage. |
+| `OBL-LANDSURFACEENERGY-C-022` | Reconstruct classifications, rates, amounts, algebraic closure, Jacobian and no-mutation posture. |
+
+Required vectors cover state-dependent albedo absorption with identical
+incident radiation, distinct arm-generated drainage, collocation no-mutation,
+amount/rate alias poisons, floor admission, and the 1.875-second diagnostic
+component capture. Implementation remains prohibited pending evidence/review.
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-25 | 11 | Codex | Corrected held v10 with exact forcing classes, incident/absorbed separation, arm-generated amount custody, read-only collocation evaluations and AD-Jacobian receipt identity. |
 | 2026-08-25 | 10 | Codex | Added a distinct same-support endpoint-flux/amount classifier and canonical batch receipt surface for SnowEnergy v20; preserved v9 and the 600 ms domain. |
 | 2026-08-24 | 9 | Codex | Added a terminal-specific snow--soil receipt integrated only through the accepted event, with limiting pre-event snow-state custody, exact soil credit, dormant endpoint validation, and no fabricated terminal snow temperature. |
 | 2026-08-24 | 8 | Codex | Admitted the persistent Stage 3 OFE/lane snow--soil interface as a specialization of the existing node-centered Crank--Nicolson soil authority: bottom snow volume to first OFE soil node, half-layer series resistance, positive-downward exact snow debit/soil credit, sealed receipt, independent reconstruction, and atomic rollback; no tile averaging or duplicated flux. |
