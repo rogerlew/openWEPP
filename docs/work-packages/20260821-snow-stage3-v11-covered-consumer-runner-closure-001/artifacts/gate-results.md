@@ -1009,3 +1009,31 @@ snow temperature, empty terminal ledgers, and the legacy terminal installation
 rerun are removed from the staged terminal path. The last admissible LTE
 comparison remains physically nonconverged before the common carrier minimum;
 terminal PASS and all later checkpoints remain unauthorized.
+
+## 2026-08-25 fresh-handoff HOLD reproduction
+
+| Evidence | Result |
+| --- | --- |
+| `HEAD` / `origin/main` | exact `1117c588636cd195b931e6b68d1d4cd03801d9ee` |
+| Worktree before execution | clean |
+| Focused interior terminal fixture | expected HARD HOLD: `Stage3(TerminalNumerics(BelowCarrierDomain))` |
+| Nextest run | `0ca3f747-9239-401d-9ae6-1736b5ac560f`, 0 passed / 1 failed / 853 skipped |
+| Exact-head crate/workspace qualification | NOT RUN; prohibited as PASS evidence while terminal operator authority remains open |
+
+Ran: `nix develop --command cargo nextest run -p
+openwepp-hillslope-orchestrator
+interior_terminal_event_runs_covered_event_and_snow_free_remainder
+--no-fail-fast` reproduced the reviewed failure in 18.106 seconds. Treating the
+typed carrier-floor rejection as a tolerance or fixture defect remains
+prohibited. Open findings are `CHILD1-TERM-TEMPORAL-005`,
+`CHILD1-TERM-BATCH-006`, `CHILD1-TERM-ZERO-007`, and
+`CHILD1-TERM-QUAL-008`.
+
+Static: two independently prompted authority reviewers returned `HOLD`. Both
+found that BE/CN remains conceptual because no canonical complete-owner
+residual exists; Batch V2 lacks executable canonical chronology; and
+cursor-zero lacks a canonical witness wire. Per the package's two-`GO`
+pre-production gate, no Rust production edit was made. See
+`terminal-batch-temporal-contract-review-a.md`,
+`terminal-batch-temporal-contract-review-b.md`, and
+`terminal-batch-temporal-contract-review-disposition.md`.

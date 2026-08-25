@@ -105,3 +105,24 @@ validation; no stronger producer-allocation claim is made.
 All findings were accepted and corrected; none was waived. This PASS is only
 for persistent covered physical custody and does not disposition later Child-1
 chronology, runner, terminal-liquid, restart, or terminal-review obligations.
+
+## 2026-08-25 terminal forward-correction review
+
+Static: Independent review accepts pushed `1117c588636cd195b931e6b68d1d4cd03801d9ee`
+as a truthful forward-corrected WIP and retains every forward commit. The raw
+covered-carrier, duplicate-liquid, out-of-owner parcel, fabricated dormant
+temperature, empty-ledger, and legacy installation-rerun corrections remain
+closed absent new evidence. This disposition does not promote candidate
+v19/v9/v137/v4 or authorize runner, receiver, restart, Child 3, or cutover.
+
+Ran: From exact `1117c588636cd195b931e6b68d1d4cd03801d9ee`, focused
+nextest run `0ca3f747-9239-401d-9ae6-1736b5ac560f` reproduced the expected
+`Stage3(TerminalNumerics(BelowCarrierDomain))` result. No repository or
+environment drift was observed.
+
+| Finding | Severity | Decision | Current action/status |
+|---|---|---|---|
+| `CHILD1-TERM-TEMPORAL-005` | Critical | `accepted / open` | No admitted error-controlled operator exists at the carrier floor for the focused fixture. The last admissible `1.875 s` full/two-half comparison differs by `27.2131278332233 J m^-2`; the next dyadic half-support is `468.75 ms`, below the unchanged `600 ms` LSE/carrier domain. Requires a separately versioned, independently reviewed batch temporal-operator successor. |
+| `CHILD1-TERM-BATCH-006` | Critical | `accepted / open` | Batch V2 types and validators exist, but live terminal execution remains per-lane V1. Production qualification requires one joint batch carrier/hydrology trial over every active lane and the complete seven-owner joint, including canonical group topology, common-earliest coalescence, and exact surviving-lane state. |
+| `CHILD1-TERM-ZERO-007` | Major | `accepted / open` | Exact-zero cursor replay calls no provider but lacks a sealed canonical unapplied-predecessor witness. Event-at-start and later restart safety require a zero-prefix receipt plus replay/substitution poisons. |
+| `CHILD1-TERM-QUAL-008` | Closure blocker | `accepted / open` | Exact-head affected-crate and workspace qualification have not run and are not claimable while the focused terminal fixture remains on hard HOLD. `43cc9bbea2fbf5fe6ab6596cee4162de75cef999` remains the last qualified physical implementation. |

@@ -154,6 +154,27 @@ boundaries inside the same 1,800-second parent. Persistent execution guards,
 solid-precipitation/reappearance rejection, selectors, defaults, production
 ownership, CoE, restart wires, and terminal-liquid consumers remain unchanged.
 
+### 2026-08-25 terminal batch temporal-operator authority intent
+
+Close `CHILD1-TERM-TEMPORAL-005`, `CHILD1-TERM-BATCH-006`, and
+`CHILD1-TERM-ZERO-007` as one contract-first terminal checkpoint. First freeze
+the exact failing owner vector and result-blind floor-boundary vectors. Then
+version coordinated successors to candidate SnowEnergy v19, LSE v9,
+SnowFreeze v137, and CoupledTime v4 without rewriting their reviewed semantics.
+The successor must define an error estimator over the complete admitted
+support domain while every constitutive carrier call is at least `600 ms`,
+advance every active lane and all seven owners in one Batch V2 joint trial,
+install only an actual accepted physical candidate, preserve absolute-tick
+full-prefix replay, retain all current tolerances, and fail typed when no
+authorized operator converges. A canonical exact-zero unapplied-predecessor
+witness is part of the same authority increment.
+
+Production wiring remains gated on two independent contract reviews returning
+`GO`. Runner construction, receiver consumption, restart implementation,
+selectors/defaults, activation, CoE retirement, Child 3, and cutover remain
+unauthorized. Exact-head affected-crate/workspace qualification
+(`CHILD1-TERM-QUAL-008`) follows only after the terminal matrix passes.
+
 ### 2026-08-24 covered physical-custody intake and authority gate
 
 Implementation intent: close one bounded persistent covered-physical-custody
