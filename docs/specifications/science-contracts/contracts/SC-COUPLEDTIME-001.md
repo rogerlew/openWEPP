@@ -143,8 +143,10 @@ forbidden. Closed domain tags are `parent-interval`, `parent-transaction`,
 `segment`, `accepted-slab`, `attempt`, `event`, `constraint`, `owner-set`,
 `event-receipt`, `slab-receipt`, `parent-receipt`, and
 `publication-receipt`. Candidate version 4 adds the closed domain tags
-`stage3-v11-terminal-group-preaccept` and
-`stage3-v11-terminal-group-accepted`; their ordered fields are defined in the
+`stage3-v11-terminal-group-preaccept`,
+`stage3-v11-terminal-group-accepted`,
+`covered-terminal-joint-trial-state`, and
+`covered-probe-child-identity`; their ordered fields are defined in the
 version-4 amendment and use this same framed preimage, not raw concatenation.
 
 The V1 field lists are closed and ordered:
@@ -553,6 +555,7 @@ one family are simultaneously true.
 | INV-COUPLEDTIME-023 | Discovery is read-only; endpoint and event operations share one rollback envelope. | version-3 attempt/event atomicity | `[DIRECT][Static] + [INFERENCE][Static]` | attempt-state validator | `ERR-CT-023` |
 | INV-COUPLEDTIME-024 | Physical mutation set is exact and clock accepted receipts are sole ordinal authority. | complete-owner/event receipt authority | `[DIRECT][Static] + [INFERENCE][Static]` | mutation/ordinal validator | `ERR-CT-024` |
 | INV-COUPLEDTIME-025 | Terminal result through parent receipt uses the exact acyclic canonical group chain. | canonical receipt governance | `[INFERENCE][Static]` | receipt/replay validator | `ERR-CT-025` |
+| INV-COUPLEDTIME-026 | Read-only probes use role/attempt-distinct canonical identities; exact endpoint receipts cross-join every shared field and probe identities never authorize accepted WB14/publication state. | attempt/slab identity and rollback authority | `[INFERENCE][Static]` | probe framing/cross-join/non-substitution validator | `ERR-CT-026` |
 
 ## Canonical obligations
 
@@ -698,7 +701,7 @@ contradiction.
 | `BEI-CT-002` | terminal snow HOLD timing findings | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-002, INV-COUPLEDTIME-007, INV-COUPLEDTIME-008, INV-COUPLEDTIME-010` | `flagged-binding-addition` | Preserves event, participant, and restart residue. |
 | `BEI-CT-003` | Richards assessment timing recommendation | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-003, INV-COUPLEDTIME-009, INV-COUPLEDTIME-016, OBL-COUPLEDTIME-007` | `flagged-binding-addition` | Imports chronology only, not Richards numerics. |
 | `BEI-CT-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-017, INV-COUPLEDTIME-018, INV-COUPLEDTIME-019, INV-COUPLEDTIME-020, OBL-COUPLEDTIME-008` | `flagged-binding-addition` | Active-participant support, canonical event receipt, deterministic coalescing, and atomic no-candidate retry. |
-| `BEI-CT-V4-COVERED-TERMINAL-CHAIN` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-021, INV-COUPLEDTIME-022, INV-COUPLEDTIME-023, INV-COUPLEDTIME-024, INV-COUPLEDTIME-025, OBL-COUPLEDTIME-009, OBL-COUPLEDTIME-010, OBL-COUPLEDTIME-011` | `flagged-binding-addition` | Candidate v4 current-search, physical-child, read-only discovery, mutation/ordinal and acyclic terminal receipt-chain binding under review. |
+| `BEI-CT-V4-COVERED-TERMINAL-CHAIN` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-021, INV-COUPLEDTIME-022, INV-COUPLEDTIME-023, INV-COUPLEDTIME-024, INV-COUPLEDTIME-025, INV-COUPLEDTIME-026, OBL-COUPLEDTIME-009, OBL-COUPLEDTIME-010, OBL-COUPLEDTIME-011` | `flagged-binding-addition` | Candidate v4 current-search, physical-child, role-distinct read-only probe identity, exact endpoint cross-join, mutation/ordinal and acyclic terminal receipt-chain binding under review. |
 
 ## Child 2C shared-carrier and event-boundary amendment
 
@@ -829,6 +832,32 @@ operations. `mutation_set` equals the canonical set of owner IDs whose bytes
 differ: both missing changed owners and extra/nonexistent members fail. The
 coupled clock's ordered `AcceptedEventReceiptV1` records and their parent
 transaction identity are the sole event-ordinal authority.
+
+Discovery identifies a physical child with
+`CoveredProbeChildIdentityV1`, not an accepted-slab receipt. Its canonical
+SHA-256 preimage uses exactly `OPENWEPP_CANONICAL_FRAMED_SHA256_V1`: prefix,
+version, length-framed closed domain tag `covered-probe-child-identity`, then
+the ordinary ordered tagged fields. No NUL is part of the domain tag. Ordered fields are schema
+`u32(1)`, parent transaction digest, enclosing parent start/end `u128`, exact
+trial start/end `u128`, current physical-child ordinal `u32`, attempt ordinal
+`u32`, trial role tag `u8` (`0=full`, `1=half-1`, `2=half-2`, `3=retry`,
+`4=bracket-lower`, `5=bracket-upper`, `6=root`), beginning joint-trial-state
+digest, beginning complete-owner-set digest, complete projected forcing digest,
+and receiver-topology digest. Unknown roles, noncanonical framing and duplicate
+attempt/role identities fail. Construction is pure and does not call
+`accept_slab`. It is probe evidence only and cannot
+authorize WB14 publication, owner mutation, cursor advance or restart.
+
+The exact endpoint creates the ordinary accepted slab using the same parent,
+support, ordinal, beginning owner set, forcing and topology. The terminal
+event-result contains `discovery_probe_identity_digest`; the preaccept group
+contains the same digest and the ordinary accepted-slab receipt ID. Validation
+reconstructs parent, support, child ordinal, beginning owner set and forcing
+from the accepted receipt/slab context, reconstructs topology from the exact
+endpoint input, and requires bit-identical equality with the corresponding
+probe fields. Any mismatch,
+use of an accepted receipt during discovery, or use of a probe identity as an
+accepted WB14/publication identity fails atomically with `ERR-CT-026`.
 
 At event acceptance, coupled chronology appends exactly one accepted receipt
 and increments its ordinal. In the separately joined seven-owner physical

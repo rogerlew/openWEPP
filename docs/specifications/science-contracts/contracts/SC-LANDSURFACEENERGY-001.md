@@ -1046,6 +1046,15 @@ soil-thermal, transaction, and receipt owners byte-identical.
 
 ## Version 9 Terminal Snow--Soil Endpoint Amendment
 
+Terminal adaptive/root evaluation carries the first-soil-node candidate inside
+`SC-SNOWENERGY-001#CoveredTerminalJointTrialStateV1`. Accepted second halves
+begin from the first half's ending joint state; they never reuse the immutable
+accepted beginning soil node. Full/coarse, rejected and discarded root
+alternatives do not advance that joint state. The accepted endpoint installs
+only the ending candidate proven by the accepted fine chain. This is the
+trial-state realization of `INV-LANDSURFACEENERGY-127..129`; stale-soil reuse
+fails `LSEB-E-043` and all accepted owners remain unchanged on failure.
+
 Version 8 remains the persistent resolved-to-resolved receipt. A support whose
 accepted Stage-3 endpoint is dormant uses the separate
 `TerminalSnowSoilHeatReceiptV1`; it cannot be validated as a persistent receipt

@@ -861,6 +861,7 @@ divide/branch threshold.
 | `INV-SNOWENERGY-052` | Candidate-v19 admits terminal-domain and resolved crossings; positive endpoints are exact and cursor events only replay a prior accepted exact-zero endpoint. | `INV-026/034`; endpoint-root identity | `[INFERENCE][Static]` | lifecycle/endpoint guard | `SNOWENERGY-E-TERMINAL-ENDPOINT-001` |
 | `INV-SNOWENERGY-053` | Dormant endpoint, non-storage cumulative lineage, area-weighted ProducedUnconsumed parcel mass, solid refreeze, and tolerance-bounded terminal energy form one exact custody rule without immediate receiver credit. | `INV-030/035/042`; conservation | `[DIRECT][Static] + [INFERENCE][Static]` | mass/energy/owner guards | `SNOWENERGY-E-TERMINAL-CUSTODY-001`, `SNOWENERGY-E-TERMINAL-ENERGY-001` |
 | `INV-SNOWENERGY-054` | Every terminating lane emits a present nonempty independently reconstructable terminal physical ledger, including explicit-zero cursor replay. | independent conservation obligations | `[INFERENCE][Static]` | ledger/receipt guard | `SNOWENERGY-E-TERMINAL-LEDGER-001` |
+| `INV-SNOWENERGY-055` | Every adaptive/root covered evaluation uses a complete canonical ephemeral seven-owner joint state; accepted half chains advance coupled candidates, rejected alternatives escape nowhere, and terminal aggregate snow is never installed as a persistent owner. | `INV-034/051`; `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-127`; released one-volume cold-content equation | `[DIRECT][Static] + [INFERENCE][Static]` | joint-state schema/Markov/lineage/domain guard | `SNOWENERGY-E-TERMINAL-TRIAL-STATE-001` |
 
 ## Producer and Consumer Obligations
 
@@ -1192,7 +1193,7 @@ The package rows below map active package-local binding residue through version
 | `SNOWENERGY-V16-COVERED-CONVERGENCE-RESTART` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-043, INV-SNOWENERGY-044, OBL-SNOWENERGY-C-019, OBL-SNOWENERGY-C-020` | `flagged-binding-addition` | Separates covered fixed-point comparisons under `TOL-SNOWENERGY-003`, reconstructs candidate fingerprints, and holds additive restart until a normative lane-receipt V2 wire and complete topology/owner replay join are admitted. |
 | `SNOWENERGY-V17-PRECIPITATION-CUSTODY` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `approved_active` | `maps-to-existing-INV` | `INV-SNOWENERGY-045, INV-SNOWENERGY-046, INV-SNOWENERGY-047, OBL-SNOWENERGY-P-011, OBL-SNOWENERGY-C-021` | `dual-review+exact-clean-gates` | Seals the ordered precipitation phase-parcel set, binds open-versus-covered liquid exclusivity and solid bypass, and requires mass/advection same-set reconstruction on the OFE-ground lane basis. |
 | `SNOWENERGY-V18-SNOW-SOIL-BOUNDARY` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `approved_active` | `maps-to-existing-INV` | `INV-SNOWENERGY-048, INV-SNOWENERGY-049, INV-SNOWENERGY-050, OBL-SNOWENERGY-P-012, OBL-SNOWENERGY-C-022` | `dual-review+exact-clean-gates` | Binds one OFE/lane bottom-snow-to-first-soil-node Crank--Nicolson interface, exact equal/opposite custody, reconstructable receipt, and atomic rollback without tile aggregation or duplication. |
-| `SNOWENERGY-V19-COVERED-TERMINAL-CHRONOLOGY` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-051, INV-SNOWENERGY-052, INV-SNOWENERGY-053, INV-SNOWENERGY-054, OBL-SNOWENERGY-P-013, OBL-SNOWENERGY-P-014, OBL-SNOWENERGY-C-023, OBL-SNOWENERGY-C-024` | `flagged-binding-addition` | Candidate v19 binding is under mandatory review; it covers exact per-trial carrier, dormant endpoint, pending parcels, terminal snow--soil disposition and terminal ledger. Receiver consumption and cutover remain held. |
+| `SNOWENERGY-V19-COVERED-TERMINAL-CHRONOLOGY` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-051, INV-SNOWENERGY-052, INV-SNOWENERGY-053, INV-SNOWENERGY-054, INV-SNOWENERGY-055, OBL-SNOWENERGY-P-013, OBL-SNOWENERGY-P-014, OBL-SNOWENERGY-C-023, OBL-SNOWENERGY-C-024` | `flagged-binding-addition` | Candidate v19 binding is under mandatory review; it covers exact per-trial carrier and complete ephemeral joint state, dormant endpoint, pending parcels, terminal snow--soil disposition and terminal ledger. Receiver consumption and cutover remain held. |
 | `SNOWENERGY-EB02-AUTHORITY` | `docs/work-packages/20260730-snow-surface-eb-02-subcanopy-longwave-contract-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-001, INV-SNOWENERGY-002, INV-SNOWENERGY-003, INV-SNOWENERGY-004, INV-SNOWENERGY-005, INV-SNOWENERGY-006, INV-SNOWENERGY-007, INV-SNOWENERGY-008, INV-SNOWENERGY-009, INV-SNOWENERGY-010, INV-SNOWENERGY-011, INV-SNOWENERGY-012, INV-SNOWENERGY-013, INV-SNOWENERGY-014` | `none` | Package-local source reconciliation and analytical artifacts are evidence; all binding equations, guards, and obligations are in this canonical contract. |
 | `SNOWENERGY-EB03-COMPOSITION` | `docs/work-packages/20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-015, INV-SNOWENERGY-016, INV-SNOWENERGY-017, INV-SNOWENERGY-018, INV-SNOWENERGY-019` | `none` | Package evidence binds the Stage 3 provider, orthogonal selectors, and mass/energy composition implemented by version 2. |
 | `SNOWENERGY-EB03A-COUPLING` | `docs/work-packages/20260730-snow-surface-eb-03a-active-layer-thermal-coupling-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-020, INV-SNOWENERGY-021, INV-SNOWENERGY-022, INV-SNOWENERGY-023, INV-SNOWENERGY-024, INV-SNOWENERGY-025` | `none` | Package evidence must implement and verify the version-3 active thermal control volume and coupled substep solver. |
@@ -1643,6 +1644,44 @@ new forcing integral. It has no positive-duration
 snow--soil receipt and `Q_ss=0`, but still emits one present, nonempty terminal
 physical ledger whose flux operands are explicit zeros and whose mass,
 enthalpy, event, parcel, group, and owner-transition fields are complete.
+
+Adaptive covered trials do not fabricate a full persistent snow owner from
+their aggregate numerical state. They use a complete ephemeral
+`CoveredTerminalJointTrialStateV1`. Its canonical SHA-256 preimage uses exactly
+`SC-COUPLEDTIME-001#OPENWEPP_CANONICAL_FRAMED_SHA256_V1` with registered domain
+tag `covered-terminal-joint-trial-state` (no NUL in the tag), followed in order by:
+schema `u32(1)`; source accepted complete-owner-set digest; lane `u32`; source
+persistent-snow-owner digest; interval index `u64` (the lane's unchanged
+`next_interval_index` lineage); exact state support start/end `u128`; accepted
+trial-chain length `u32`; ordered accepted predecessor trial-result digests;
+then seven ordered owner members. Six members contain owner-ID length/bytes and
+the exact canonical ephemeral candidate bytes produced by their released
+constitutive transition. The snow member instead contains
+`TerminalTrialSnowStateV1`: ice and liquid `kg m^-2`, cold content `J m^-2`,
+depth `m`, density `kg m^-3`, and temperature `K`, each as big-endian finite
+`f64` bits. Nonfinite values, negative zero, negative mass/depth/density,
+temperature outside the released snow domain, or an owner set other than the
+canonical seven fail typed before evaluation.
+
+The snow fields satisfy `ice=rho_snow*depth`, positive ice iff positive depth
+and density, and the released one-volume cold-content/temperature equation;
+liquid and cold content satisfy the terminal model domain. The full seven
+members, exact support and accepted predecessor chain are the complete Markov
+state for terminal covered trials. Every full, half, retry and root alternative
+starts from an explicit joint-state digest and returns a new joint state plus
+boundary/result digest. The second half starts from the first half's ending
+joint state, including advanced first-soil-node and other coupled candidates.
+Only the accepted fine chain advances the ephemeral state; coarse, rejected
+and discarded root alternatives are deleted. The immutable accepted owners are
+never changed by discovery.
+
+`TerminalTrialSnowStateV1` is authorized only inside that joint trial state and
+cannot be installed, serialized as a persistent lane, used for restart, or
+substituted for the exact dormant endpoint. Under released one-volume terminal
+authority (`INV-SNOWENERGY-034` and the one-volume cold-content equation), its
+finite temperature is both surface and limiting bottom-snow temperature. This
+does not alter resolved multi-volume authority. Violations fail
+`SNOWENERGY-E-TERMINAL-TRIAL-STATE-001` and roll back all ephemeral state.
 
 ### Version 19 kernel-profile integration
 

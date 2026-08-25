@@ -38,3 +38,15 @@ single canonical invariant/obligation authority, conservation and snow--soil
 debit/credit consistency, the snow-only physical mutation boundary, acyclic
 framed receipt authority, and truthful exclusion of runtime/exact-head/PASS
 claims. Runtime implementation and exact-head qualification remain pending.
+
+## Trial-state/probe authority-gap review
+
+Evidence: `Static`
+
+Final verdict: `GO`. Initial review held on stale soil/joint-state completeness
+and then on canonical domain framing. The final amendment advances all coupled
+candidates across accepted half chains, discards alternatives, registers both
+new closed domains under the exact global framed SHA-256 profile with no NUL
+tag ambiguity, and prevents probe identity from authorizing WB14/publication.
+No remaining Markov, conservation, framing, ownership or rollback blocker was
+found. Runtime remains unassessed.

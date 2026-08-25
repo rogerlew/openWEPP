@@ -45,3 +45,14 @@ A final narrow verification after those corrections returned `GO`: the
 structural test binds both exact SnowEnergy predicates to their unit-bearing
 components, the SnowFreeze parcel equation remains asserted, and the retained
 review chronology is complete. Static only; no runtime or exact-head claim.
+
+## Trial-state/probe authority-gap review
+
+Evidence: `Static`
+
+Final verdict: `GO`. The reviewed amendment defines the complete canonical
+seven-owner ephemeral joint Markov state, accepted-half advancement and
+rejected-alternative disposal, terminal-snow non-installability, evolving soil
+candidate, role/attempt-distinct probe identity, exact endpoint cross-join,
+typed failures, invariant/BEI mappings, and structural guards. Runtime remains
+unassessed.

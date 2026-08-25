@@ -38,6 +38,11 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
         "INV-SNOWENERGY-054",
         "OBL-SNOWENERGY-C-024",
         "nonempty,\nindependently reconstructed physical ledger",
+        "CoveredTerminalJointTrialStateV1",
+        "The second half starts from the first half's ending\njoint state",
+        "tag `covered-terminal-joint-trial-state` (no NUL in the tag)",
+        "SNOWENERGY-E-TERMINAL-TRIAL-STATE-001",
+        "cannot be installed, serialized as a persistent lane",
     ] {
         assert!(
             snow_energy.contains(required),
@@ -53,6 +58,7 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
         "INV-LANDSURFACEENERGY-128",
         "INV-LANDSURFACEENERGY-129",
         "dormant installed-owner validation",
+        "they never reuse the immutable\naccepted beginning soil node",
     ] {
         assert!(lse.contains(required), "LSE missing {required}");
     }
@@ -85,6 +91,14 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
         "INV-COUPLEDTIME-024",
         "INV-COUPLEDTIME-025",
         "ProducedUnconsumed parcel-set digest",
+        "CoveredProbeChildIdentityV1",
+        "does not call\n`accept_slab`",
+        "bit-identical equality with the corresponding\nprobe fields",
+        "`0=full`, `1=half-1`, `2=half-2`, `3=retry`",
+        "discovery_probe_identity_digest",
+        "ERR-CT-026",
+        "`covered-terminal-joint-trial-state`, and\n`covered-probe-child-identity`",
+        "No NUL is part of the domain tag",
     ] {
         assert!(
             coupled_time.contains(required),
@@ -131,6 +145,7 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
     assert!(snow_freeze.contains("abs(sum_i(f_i*m_i)-m_terminal_liquid) <= a_terminal_mass"));
     assert!(coupled_time.contains("stage3-v11-terminal-group-preaccept"));
     assert!(coupled_time.contains("stage3-v11-terminal-group-accepted"));
+    assert!(coupled_time.contains("probe identities never authorize accepted WB14/publication"));
     assert!(!coupled_time.contains("coalesced event-group digest\n-> accepted"));
 }
 
