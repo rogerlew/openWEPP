@@ -270,6 +270,29 @@ remain incomplete. No exact-file implementation intent or source edit is
 authorized; the existing `BelowCarrierDomain` result and all downstream holds
 remain exact.
 
+### 2026-08-25 AST-census-bound evidence-correlation authority V4 intent
+
+Preserve reviewed-HOLD V3 and replace its hand-authored adapter assumptions
+with a `syn` AST-generated live-type census, normalized declaration
+fingerprints and regeneration guard. Record `TDCV3-WIRE-007`,
+`TDCV3-OWN-008` and `TDCV3-OWN-009`; use the actual framed primitive; separate
+provider-generated from terminal-transition amounts; exclude accepted-event
+snow--soil custody from rejected provider evidence; and enumerate every new
+diagnostic record wire. V4 names both the six fixed-size forwarding files and
+all census-discovered private owner modules, including external LSE files.
+
+Only package-local authority tooling, generated census, docs, guards and two
+independent reviews are authorized. Either HOLD stops before source edits. Two
+GO reviews authorize only a later exact-file diagnostic implementation intent.
+
+Review disposition: both exact-hash V4 reviews returned `HOLD`. The AST census
+and guard are reproducible, and reviewers accepted the corrected framing and
+ownership/control semantics, but the generator's replay/ownership inference is
+file-text heuristic, its target graph is not recursively closed, its carrier
+projection is not an exact type, and nested/new-record wires and private owner
+files remain incomplete. No implementation intent or source edit is
+authorized; `BelowCarrierDomain` and all downstream holds remain exact.
+
 ### 2026-08-24 covered physical-custody intake and authority gate
 
 Implementation intent: close one bounded persistent covered-physical-custody
