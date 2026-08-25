@@ -1731,6 +1731,7 @@ mod stage3_trace_field_tests {
             complete_arm_sensible_j_m2: 4.0,
             complete_arm_latent_j_m2: 5.0,
             complete_arm_advected_j_m2: 6.0,
+            complete_arm_snow_soil_heat_j_m2: 0.0,
             complete_arm_internal_active_lower_conduction_j_m2: 0.0,
             complete_arm_applicable: true,
             complete_arm_internal_conduction_applicable: false,

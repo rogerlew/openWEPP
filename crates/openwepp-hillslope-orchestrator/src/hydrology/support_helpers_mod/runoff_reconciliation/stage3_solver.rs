@@ -2,6 +2,7 @@
 use super::*;
 
 mod evaluation;
+mod liquid_routing;
 mod persistent_state;
 mod support;
 mod terminal_event;
@@ -74,7 +75,8 @@ impl Wb11HydrologyKernel {
             .filter_map(|tuple| tuple.deposition_kg_m2)
             .sum::<f64>()
             + summary.terminal_deposition_kg_m2;
-        let refrozen_kg_m2 = summary.terminal_refrozen_kg_m2;
+        let refrozen_kg_m2 =
+            summary.terminal_refrozen_kg_m2 + summary.persistent_refrozen_kg_m2;
         let end_ice_kg_m2 = Self::stage3_total_ice_mass_swe_m(&summary.final_layers)
             * STAGE3_RHO_WATER_KG_M3;
         let end_retained_liquid_kg_m2 = summary
@@ -84,16 +86,11 @@ impl Wb11HydrologyKernel {
             .sum::<f64>();
         let retained_liquid_censored_loss_kg_m2 =
             (start_retained_liquid_kg_m2 - end_retained_liquid_kg_m2).max(0.0);
-        let unresolved_liquid_kg_m2 = if terminal_request.is_some() {
+        let unresolved_liquid_kg_m2 =
             (external_liquid_kg_m2 + summary.melt_kg_m2 + start_retained_liquid_kg_m2
                 - refrozen_kg_m2
                 - end_retained_liquid_kg_m2)
-                .max(0.0)
-        } else {
-            external_liquid_kg_m2
-                + summary.melt_kg_m2
-                + retained_liquid_censored_loss_kg_m2
-        };
+                .max(0.0);
         let residual = start_ice_kg_m2 + snowfall_kg_m2 + deposition_kg_m2 + refrozen_kg_m2
             - summary.sublimation_kg_m2
             - summary.melt_kg_m2
@@ -896,6 +893,7 @@ impl Wb11HydrologyKernel {
             + shadow.complete_sensible_j_m2
             + shadow.complete_latent_j_m2
             + shadow.complete_advected_j_m2
+            + shadow.complete_snow_soil_heat_j_m2
             + shadow.internal_active_lower_conduction_j_m2;
         DirectSnowStage3EvaluationDiagnostics {
             operator: tag.operator,
@@ -933,6 +931,7 @@ impl Wb11HydrologyKernel {
             complete_arm_sensible_j_m2: shadow.complete_sensible_j_m2,
             complete_arm_latent_j_m2: shadow.complete_latent_j_m2,
             complete_arm_advected_j_m2: shadow.complete_advected_j_m2,
+            complete_arm_snow_soil_heat_j_m2: shadow.complete_snow_soil_heat_j_m2,
             complete_arm_internal_active_lower_conduction_j_m2: shadow
                 .internal_active_lower_conduction_j_m2,
             complete_arm_applicable: true,
@@ -1134,6 +1133,7 @@ impl Wb11HydrologyKernel {
                     - summary.complete_sensible_j_m2
                     - summary.complete_latent_j_m2
                     - summary.complete_advected_j_m2
+                    - summary.complete_snow_soil_heat_j_m2
                     - summary.internal_active_lower_conduction_j_m2,
             ),
         ] {
@@ -1290,7 +1290,8 @@ impl Wb11HydrologyKernel {
                 + tuple.net_longwave_w_m2
                 + tuple.sensible_flux_w_m2
                 + tuple.latent_flux_w_m2
-                + tuple.precipitation_advected_flux_w_m2;
+                + tuple.precipitation_advected_flux_w_m2
+                + tuple.snow_soil_heat_flux_w_m2;
             let vapor_mass_reconstructed = tuple.vapor_mass_flux_kg_m2_s * duration_seconds;
             let reconstruction = [
                 (
@@ -1337,6 +1338,7 @@ impl Wb11HydrologyKernel {
                             tuple.sensible_flux_w_m2,
                             tuple.latent_flux_w_m2,
                             tuple.precipitation_advected_flux_w_m2,
+                            tuple.snow_soil_heat_flux_w_m2,
                         ],
                     ),
                 ),
@@ -1412,6 +1414,7 @@ impl Wb11HydrologyKernel {
                     && tuple.sublimation_kg_m2.is_none()
                     && tuple.deposition_kg_m2.is_none()
                     && tuple.melt_kg_m2.is_none()
+                    && tuple.refrozen_kg_m2.is_none()
                     && tuple.active_cold_energy_change_j_m2.is_none()
                     && tuple.lower_cold_energy_change_j_m2.is_none()
                     && tuple.cold_content_export_j_m2.is_none()
@@ -1431,6 +1434,7 @@ impl Wb11HydrologyKernel {
                 Some(melt_kg_m2),
                 Some(sublimation_kg_m2),
                 Some(deposition_kg_m2),
+                Some(refrozen_kg_m2),
                 Some(active_cold_change_j_m2),
                 Some(lower_cold_change_j_m2),
                 Some(cold_export_j_m2),
@@ -1441,6 +1445,7 @@ impl Wb11HydrologyKernel {
                 tuple.melt_kg_m2,
                 tuple.sublimation_kg_m2,
                 tuple.deposition_kg_m2,
+                tuple.refrozen_kg_m2,
                 tuple.active_cold_energy_change_j_m2,
                 tuple.lower_cold_energy_change_j_m2,
                 tuple.cold_content_export_j_m2,
@@ -1484,7 +1489,8 @@ impl Wb11HydrologyKernel {
                             - tuple.total_ice_mass_before_kg_m2
                             + melt_kg_m2
                             + sublimation_kg_m2
-                            - deposition_kg_m2,
+                            - deposition_kg_m2
+                            - refrozen_kg_m2,
                     ),
                     (
                         "snow.stage3_reconciliation_cold_endpoint",
@@ -1522,6 +1528,7 @@ impl Wb11HydrologyKernel {
                                     melt_kg_m2,
                                     sublimation_kg_m2,
                                     deposition_kg_m2,
+                                    refrozen_kg_m2,
                                 ],
                             )
                         } else {
@@ -1801,140 +1808,6 @@ impl Wb11HydrologyKernel {
             None,
             Some(STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M),
         )
-    }
-
-    fn route_stage3_liquid_through_layers(
-        incoming_liquid_m: f64,
-        layers: &mut [DirectSnowLayerState],
-        cold_content_by_layer: &mut [f64],
-        reconstruct_temperature: bool,
-    ) -> (f64, f64, f64) {
-        let mut liquid_to_route_m = incoming_liquid_m;
-        let mut retained_delta_m = 0.0;
-        let mut refrozen_liquid_m = 0.0;
-        for (layer, cold_content) in layers.iter_mut().zip(cold_content_by_layer.iter_mut()) {
-            let refreeze_capacity_m =
-                (*cold_content / (STAGE3_LATENT_HEAT_FUSION_J_KG * STAGE3_RHO_WATER_KG_M3))
-                    .max(0.0);
-            let refrozen_here_m = liquid_to_route_m.min(refreeze_capacity_m);
-            liquid_to_route_m -= refrozen_here_m;
-            *cold_content -=
-                refrozen_here_m * STAGE3_LATENT_HEAT_FUSION_J_KG * STAGE3_RHO_WATER_KG_M3;
-            refrozen_liquid_m += refrozen_here_m;
-
-            let capacity_m =
-                Self::stage3_layer_liquid_holding_capacity_m(layer.thickness_m, layer.density_kg_m3);
-            let available_capacity_m = (capacity_m - layer.liquid_water_m).max(0.0);
-            let retained_here_m = liquid_to_route_m.min(available_capacity_m);
-            liquid_to_route_m -= retained_here_m;
-            retained_delta_m += retained_here_m;
-
-            layer.liquid_water_m += retained_here_m;
-            layer.refrozen_liquid_m += refrozen_here_m;
-            layer.cold_content_j_m2 = (*cold_content).max(0.0);
-            if reconstruct_temperature {
-                layer.temperature_c = Self::stage3_temperature_from_cold_content(layer);
-            }
-        }
-        (liquid_to_route_m.max(0.0), retained_delta_m, refrozen_liquid_m)
-    }
-
-    fn validate_stage3_layer(
-        phase_class: HillslopeKernelPhaseClass,
-        layer: &DirectSnowLayerState,
-    ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        Self::require_direct_typed_snow_value_with(
-            phase_class,
-            || BoundarySymbol::from("snow.stage3_layer_mass_swe_m"),
-            layer.mass_swe_m,
-            Some(0.0),
-            None,
-        )?;
-        Self::require_direct_typed_snow_value_with(
-            phase_class,
-            || BoundarySymbol::from("snow.stage3_layer_thickness_m"),
-            layer.thickness_m,
-            Some(0.0),
-            None,
-        )?;
-        Self::require_direct_typed_snow_value_with(
-            phase_class,
-            || BoundarySymbol::from("snow.stage3_layer_density_kg_m3"),
-            layer.density_kg_m3,
-            Some(0.0),
-            Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
-        )?;
-        Self::require_direct_typed_snow_value_with(
-            phase_class,
-            || BoundarySymbol::from("snow.stage3_layer_settle_day_count"),
-            layer.settle_day_count,
-            Some(0.0),
-            None,
-        )?;
-        Self::require_direct_typed_snow_value_with(
-            phase_class,
-            || BoundarySymbol::from("snow.stage3_layer_temperature_c"),
-            layer.temperature_c,
-            None,
-            Some(0.0),
-        )?;
-        Self::require_direct_typed_snow_value_with(
-            phase_class,
-            || BoundarySymbol::from("snow.stage3_layer_liquid_water_m"),
-            layer.liquid_water_m,
-            Some(0.0),
-            None,
-        )?;
-        Self::require_direct_typed_snow_value_with(
-            phase_class,
-            || BoundarySymbol::from("snow.stage3_layer_cold_content_j_m2"),
-            layer.cold_content_j_m2,
-            Some(0.0),
-            None,
-        )?;
-        Self::require_direct_typed_snow_value_with(
-            phase_class,
-            || BoundarySymbol::from("snow.stage3_layer_refrozen_liquid_m"),
-            layer.refrozen_liquid_m,
-            Some(0.0),
-            None,
-        )
-    }
-
-    fn stage3_total_ice_mass_swe_m(layers: &[DirectSnowLayerState]) -> f64 {
-        layers.iter().map(|layer| layer.mass_swe_m).sum()
-    }
-
-    fn stage3_control_volume_masses_swe_m(
-        layers: &[DirectSnowLayerState],
-        active_layer_count: usize,
-    ) -> (f64, f64) {
-        let active_mass_swe_m = Self::stage3_total_ice_mass_swe_m(&layers[..active_layer_count]);
-        let lower_mass_swe_m = if active_layer_count < layers.len() {
-            Self::stage3_total_ice_mass_swe_m(&layers[active_layer_count..])
-        } else {
-            0.0
-        };
-        (active_mass_swe_m, lower_mass_swe_m)
-    }
-
-    pub(super) fn stage3_lower_volume_is_subresolution_swe_m(lower_mass_swe_m: f64) -> bool {
-        lower_mass_swe_m > 0.0
-            && lower_mass_swe_m < STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M
-    }
-
-    fn stage3_layer_cold_content_j_m2(layer: &DirectSnowLayerState) -> f64 {
-        let cold_content = if layer.cold_content_j_m2 > WB11_ZERO_THRESHOLD {
-            layer.cold_content_j_m2
-        } else if layer.temperature_c >= 0.0 || layer.mass_swe_m <= WB11_ZERO_THRESHOLD {
-            0.0
-        } else {
-            layer.mass_swe_m
-                * STAGE3_RHO_WATER_KG_M3
-                * STAGE3_SPECIFIC_HEAT_ICE_J_KG_K
-                * (-layer.temperature_c)
-        };
-        cold_content.max(0.0)
     }
 
     // This contract adapter keeps the independently reconstructable longwave,
@@ -2932,6 +2805,101 @@ mod stage3_evaluation_validation_tests {
                 expected_seconds.to_bits()
             );
         }
+    }
+
+    #[test]
+    fn bottom_volume_projection_uses_whole_pack_for_one_layer() {
+        let state = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            21,
+            vec![DirectSnowLayerState {
+                mass_swe_m: 0.08,
+                thickness_m: 0.20,
+                density_kg_m3: 400.0,
+                settle_day_count: 1.0,
+                temperature_c: -4.0,
+                liquid_water_m: 0.0,
+                cold_content_j_m2: 672_000.0,
+                refrozen_liquid_m: 0.0,
+            }],
+        )
+        .expect("one-layer persistent state");
+        let projection = Wb11HydrologyKernel::project_stage3_bottom_volume_v1(&state, 101_324.6)
+            .expect("one-layer bottom volume");
+
+        assert_eq!(projection.thickness_m.to_bits(), 0.20_f64.to_bits());
+        assert_eq!(projection.temperature_k.to_bits(), 269.15_f64.to_bits());
+        assert!(projection.thermal_conductivity_w_m_k.is_finite());
+        assert!(projection.thermal_conductivity_w_m_k > 0.0);
+        assert_eq!(
+            projection.beginning_stage3_state_sha256,
+            openwepp_coupled_time::digest_bytes(
+                &Wb11HydrologyKernel::serialize_stage3_persistent_state(&state)
+                    .expect("serialize beginning state"),
+            )
+        );
+    }
+
+    #[test]
+    fn bottom_volume_projection_selects_lower_partition_for_multiple_layers() {
+        let state = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            22,
+            vec![
+                DirectSnowLayerState {
+                    mass_swe_m: 0.02,
+                    thickness_m: 0.10,
+                    density_kg_m3: 200.0,
+                    settle_day_count: 1.0,
+                    temperature_c: -10.0,
+                    liquid_water_m: 0.0,
+                    cold_content_j_m2: 420_000.0,
+                    refrozen_liquid_m: 0.0,
+                },
+                DirectSnowLayerState {
+                    mass_swe_m: 0.14,
+                    thickness_m: 0.30,
+                    density_kg_m3: 466.666_666_666_666_7,
+                    settle_day_count: 2.0,
+                    temperature_c: -2.0,
+                    liquid_water_m: 0.0,
+                    cold_content_j_m2: 588_000.0,
+                    refrozen_liquid_m: 0.0,
+                },
+            ],
+        )
+        .expect("multilayer persistent state");
+        let projection = Wb11HydrologyKernel::project_stage3_bottom_volume_v1(&state, 101_324.6)
+            .expect("lower bottom volume");
+
+        assert!((projection.thickness_m - 0.15).abs() <= 1.0e-12);
+        assert!((projection.temperature_k - 271.15).abs() <= 1.0e-12);
+        assert!(projection.thermal_conductivity_w_m_k.is_finite());
+        assert!(projection.thermal_conductivity_w_m_k > 0.0);
+    }
+
+    #[test]
+    fn bottom_volume_projection_rejects_invalid_state_and_pressure() {
+        let state = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            23,
+            vec![DirectSnowLayerState {
+                mass_swe_m: 0.08,
+                thickness_m: 0.20,
+                density_kg_m3: 400.0,
+                settle_day_count: 1.0,
+                temperature_c: -4.0,
+                liquid_water_m: 0.0,
+                cold_content_j_m2: 672_000.0,
+                refrozen_liquid_m: 0.0,
+            }],
+        )
+        .expect("valid persistent state");
+        let mut corrupt = state.clone();
+        corrupt.layers[0].thickness_m = f64::NAN;
+
+        assert!(
+            Wb11HydrologyKernel::project_stage3_bottom_volume_v1(&corrupt, 101_324.6,).is_err()
+        );
+        assert!(Wb11HydrologyKernel::project_stage3_bottom_volume_v1(&state, f64::NAN).is_err());
+        assert!(Wb11HydrologyKernel::project_stage3_bottom_volume_v1(&state, 0.0).is_err());
     }
 
     #[path = "persistent_tests.rs"]

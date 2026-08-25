@@ -2,6 +2,477 @@
 mod tests {
     use super::*;
 
+    fn precipitation_test_digest(label: &[u8]) -> Digest32 {
+        digest_bytes(label)
+    }
+
+    fn precipitation_test_set() -> Stage3PrecipitationPhaseParcelSetV1 {
+        let ofe_id = OfeId::try_new("ofe-precip").expect("OFE");
+        let open_tile = TileId::try_new("open").expect("tile");
+        let covered_tile = TileId::try_new("covered").expect("tile");
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_800_000_000_000))
+            .expect("support");
+        let destinations = vec![
+            Stage3PrecipitationDestinationV1 {
+                topology_index: 0,
+                ofe_id: ofe_id.clone(),
+                tile_id: open_tile.clone(),
+                fraction_of_ofe: 0.25,
+                canopy_covered: false,
+                destination_identity_sha256: precipitation_test_digest(b"open-destination"),
+            },
+            Stage3PrecipitationDestinationV1 {
+                topology_index: 1,
+                ofe_id: ofe_id.clone(),
+                tile_id: covered_tile.clone(),
+                fraction_of_ofe: 0.75,
+                canopy_covered: true,
+                destination_identity_sha256: precipitation_test_digest(b"covered-destination"),
+            },
+        ];
+        let parcel = |destination_topology_index,
+                      destination_tile_id,
+                      phase,
+                      source,
+                      mass,
+                      _receipt: &'static [u8]| {
+            Stage3PrecipitationPhaseParcelV1 {
+                support,
+                lane_id: 7,
+                destination_topology_index,
+                destination_ofe_id: ofe_id.clone(),
+                destination_tile_id,
+                phase,
+                source,
+                semantic_receipt_ordinal: 0,
+                mass_kg_m2_tile_ground: mass,
+                enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::SpecificEnthalpy {
+                    specific_enthalpy_j_kg: 100.0,
+                    provider_receipt_sha256: precipitation_test_digest(b"enthalpy-provider"),
+                },
+                source_identity_sha256: precipitation_test_digest(b"source"),
+                producer_beginning_state_sha256: precipitation_test_digest(b"producer-beginning"),
+                receipt_sha256: Digest32::zero(),
+            }
+            .seal()
+            .expect("sealed parcel")
+        };
+        Stage3PrecipitationPhaseParcelSetV1 {
+            schema_version: 1,
+            support,
+            lane_id: 7,
+            ofe_id: ofe_id.clone(),
+            ofe_ground_basis: true,
+            beginning_snow_state_sha256: precipitation_test_digest(b"beginning-snow"),
+            topology_identity_sha256: precipitation_test_digest(b"topology"),
+            destinations,
+            parcels: vec![
+                parcel(
+                    0,
+                    open_tile.clone(),
+                    Stage3PrecipitationPhaseV1::Solid,
+                    Stage3PrecipitationSourceV1::AtmosphericGroundSnow,
+                    2.0,
+                    b"open-solid",
+                ),
+                parcel(
+                    0,
+                    open_tile,
+                    Stage3PrecipitationPhaseV1::Liquid,
+                    Stage3PrecipitationSourceV1::OpenRawRain,
+                    4.0,
+                    b"open-liquid",
+                ),
+                parcel(
+                    1,
+                    covered_tile.clone(),
+                    Stage3PrecipitationPhaseV1::Solid,
+                    Stage3PrecipitationSourceV1::AtmosphericGroundSnow,
+                    2.0,
+                    b"covered-solid",
+                ),
+                parcel(
+                    1,
+                    covered_tile.clone(),
+                    Stage3PrecipitationPhaseV1::Liquid,
+                    Stage3PrecipitationSourceV1::VegetationTerminalThroughfall,
+                    3.0,
+                    b"covered-throughfall",
+                ),
+                parcel(
+                    1,
+                    covered_tile.clone(),
+                    Stage3PrecipitationPhaseV1::Liquid,
+                    Stage3PrecipitationSourceV1::VegetationTerminalInitialDrainage,
+                    0.5,
+                    b"covered-initial-drainage",
+                ),
+                parcel(
+                    1,
+                    covered_tile.clone(),
+                    Stage3PrecipitationPhaseV1::Liquid,
+                    Stage3PrecipitationSourceV1::VegetationTerminalSecondDrainage,
+                    0.5,
+                    b"covered-second-drainage",
+                ),
+                parcel(
+                    1,
+                    covered_tile,
+                    Stage3PrecipitationPhaseV1::Liquid,
+                    Stage3PrecipitationSourceV1::VegetationTerminalStemflow,
+                    1.0,
+                    b"covered-stemflow",
+                ),
+            ],
+            receipt_sha256: Digest32::zero(),
+        }
+        .seal()
+        .expect("sealed precipitation set")
+    }
+
+    #[test]
+    fn precipitation_phase_parcel_set_closes_mass_and_advection_from_same_ordered_set() {
+        let set = precipitation_test_set();
+        validate_precipitation_phase_parcel_set(&set).expect("valid set");
+        let (mass, heat) =
+            reconstruct_precipitation_mass_and_advected_heat(&set).expect("reconstruction");
+        assert_eq!(mass.to_bits(), 6.75_f64.to_bits());
+        assert_eq!(heat.to_bits(), 675.0_f64.to_bits());
+
+        let mut empty = set.clone();
+        empty.parcels.clear();
+        empty.receipt_sha256 = Digest32::zero();
+        let empty = empty.seal().expect("complete empty set");
+        assert_eq!(
+            reconstruct_precipitation_mass_and_advected_heat(&empty).expect("empty reconstruction"),
+            (0.0, 0.0)
+        );
+    }
+
+    #[test]
+    fn precipitation_phase_parcel_set_rejects_exclusivity_order_and_identity_poisons() {
+        let valid = precipitation_test_set();
+
+        let mut covered_raw_rain = valid.clone();
+        covered_raw_rain.parcels[3].source = Stage3PrecipitationSourceV1::OpenRawRain;
+        covered_raw_rain.receipt_sha256 =
+            precipitation_parcel_set_digest(&covered_raw_rain).expect("digest");
+        assert!(matches!(
+            validate_precipitation_phase_parcel_set(&covered_raw_rain),
+            Err(DirectSnowStage3V11AttachmentError::Precipitation(_))
+        ));
+
+        let mut intercepted_solid = valid.clone();
+        intercepted_solid.parcels[2].source =
+            Stage3PrecipitationSourceV1::VegetationTerminalThroughfall;
+        intercepted_solid.receipt_sha256 =
+            precipitation_parcel_set_digest(&intercepted_solid).expect("digest");
+        assert!(matches!(
+            validate_precipitation_phase_parcel_set(&intercepted_solid),
+            Err(DirectSnowStage3V11AttachmentError::Precipitation(_))
+        ));
+
+        let mut reordered = valid.clone();
+        reordered.parcels.swap(0, 1);
+        reordered.receipt_sha256 = precipitation_parcel_set_digest(&reordered).expect("digest");
+        assert!(matches!(
+            validate_precipitation_phase_parcel_set(&reordered),
+            Err(DirectSnowStage3V11AttachmentError::Precipitation(_))
+        ));
+
+        let mut wrong_beginning = valid;
+        wrong_beginning.beginning_snow_state_sha256 = Digest32::zero();
+        wrong_beginning.receipt_sha256 =
+            precipitation_parcel_set_digest(&wrong_beginning).expect("digest");
+        assert!(matches!(
+            validate_precipitation_phase_parcel_set(&wrong_beginning),
+            Err(DirectSnowStage3V11AttachmentError::Precipitation(_))
+        ));
+
+        let mut nonfinite_mass = precipitation_test_set();
+        nonfinite_mass.parcels[0].mass_kg_m2_tile_ground = f64::NAN;
+        nonfinite_mass.receipt_sha256 =
+            precipitation_parcel_set_digest(&nonfinite_mass).expect("digest");
+        assert!(matches!(
+            validate_precipitation_phase_parcel_set(&nonfinite_mass),
+            Err(DirectSnowStage3V11AttachmentError::Precipitation(_))
+        ));
+
+        let mut substituted_receipt = precipitation_test_set();
+        substituted_receipt.parcels[0].receipt_sha256 = precipitation_test_digest(b"substitute");
+        assert!(matches!(
+            validate_precipitation_phase_parcel_set(&substituted_receipt),
+            Err(DirectSnowStage3V11AttachmentError::Precipitation(_))
+        ));
+
+        let mut omitted_route = precipitation_test_set();
+        omitted_route.parcels.remove(4);
+        assert!(matches!(
+            validate_precipitation_phase_parcel_set(&omitted_route),
+            Err(DirectSnowStage3V11AttachmentError::Precipitation(_))
+        ));
+
+        let mut duplicate_route = precipitation_test_set();
+        let mut duplicate = duplicate_route.parcels[3].clone();
+        duplicate.mass_kg_m2_tile_ground = 0.25;
+        duplicate.source_identity_sha256 = precipitation_test_digest(b"duplicate-source");
+        duplicate = duplicate.seal().expect("duplicate parcel seal");
+        duplicate_route.parcels.push(duplicate);
+        duplicate_route
+            .parcels
+            .sort_by_key(precipitation_parcel_key);
+        duplicate_route.receipt_sha256 =
+            precipitation_parcel_set_digest(&duplicate_route).expect("digest");
+        assert!(matches!(
+            validate_precipitation_phase_parcel_set(&duplicate_route),
+            Err(DirectSnowStage3V11AttachmentError::Precipitation(_))
+        ));
+
+        let mut repeated_raw = precipitation_test_set();
+        let first_raw = repeated_raw.parcels[1].clone();
+        let mut second_raw = first_raw.clone();
+        second_raw.semantic_receipt_ordinal = 1;
+        second_raw.mass_kg_m2_tile_ground = 0.125;
+        let second_raw = (0_u32..10_000)
+            .find_map(|nonce| {
+                let mut candidate = second_raw.clone();
+                candidate.source_identity_sha256 = digest_bytes(&nonce.to_be_bytes());
+                let candidate = candidate.seal().ok()?;
+                (candidate.receipt_sha256 < first_raw.receipt_sha256).then_some(candidate)
+            })
+            .expect("opposite hash order fixture");
+        assert!(second_raw.receipt_sha256 < first_raw.receipt_sha256);
+        repeated_raw.parcels.push(second_raw);
+        repeated_raw.parcels.sort_by_key(precipitation_parcel_key);
+        repeated_raw.receipt_sha256 =
+            precipitation_parcel_set_digest(&repeated_raw).expect("digest");
+        validate_precipitation_phase_parcel_set(&repeated_raw)
+            .expect("semantic order ignores receipt hash order");
+
+        let mut wrong_support = precipitation_test_set();
+        wrong_support.parcels[0].support =
+            TimeSupport::new(ModelTimeNs::new(1), ModelTimeNs::new(1_800_000_000_001))
+                .expect("shifted support");
+        wrong_support.parcels[0] = wrong_support.parcels[0]
+            .clone()
+            .seal()
+            .expect("resealed parcel");
+        wrong_support.receipt_sha256 =
+            precipitation_parcel_set_digest(&wrong_support).expect("digest");
+        assert!(matches!(
+            validate_precipitation_phase_parcel_set(&wrong_support),
+            Err(DirectSnowStage3V11AttachmentError::Precipitation(_))
+        ));
+
+        let mut sealed_zero_mass = precipitation_test_set();
+        let mut zero_parcel = sealed_zero_mass.parcels[0].clone();
+        zero_parcel.mass_kg_m2_tile_ground = 0.0;
+        sealed_zero_mass.parcels = vec![zero_parcel.seal().expect("sealed zero-mass parcel")];
+        sealed_zero_mass.receipt_sha256 =
+            precipitation_parcel_set_digest(&sealed_zero_mass).expect("set digest");
+        assert!(matches!(
+            validate_precipitation_phase_parcel_set(&sealed_zero_mass),
+            Err(DirectSnowStage3V11AttachmentError::Precipitation(_))
+        ));
+
+        let mut negative_zero = precipitation_test_set();
+        negative_zero.parcels[0].mass_kg_m2_tile_ground = -0.0;
+        negative_zero.parcels[0] = negative_zero.parcels[0]
+            .clone()
+            .seal()
+            .expect("sealed negative-zero parcel");
+        negative_zero.receipt_sha256 =
+            precipitation_parcel_set_digest(&negative_zero).expect("set digest");
+        assert!(matches!(
+            validate_precipitation_phase_parcel_set(&negative_zero),
+            Err(DirectSnowStage3V11AttachmentError::Precipitation(_))
+        ));
+    }
+
+    fn snow_soil_test_receipt() -> SnowSoilHeatReceiptV1 {
+        let (beginning, ending, accepted) =
+            snow_soil_heat_w_m2_ofe_ground(0.1, 0.2, 0.2, 0.4, 274.0, 272.0, 273.0, 272.0)
+                .expect("snow-soil heat");
+        SnowSoilHeatReceiptV1 {
+            schema_version: 1,
+            model_identity_sha256: digest_bytes(b"snow-soil-model"),
+            support: TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_800_000_000_000))
+                .expect("support"),
+            support_duration_ns: 1_800_000_000_000,
+            lane_id: 7,
+            ofe_id: OfeId::try_new("ofe-soil-heat").expect("OFE"),
+            ofe_ground_basis: true,
+            topology_identity_sha256: digest_bytes(b"soil-heat-topology"),
+            configuration_identity_sha256: digest_bytes(b"soil-heat-configuration"),
+            beginning_snow_owner_identity_sha256: digest_bytes(b"beginning-snow-owner"),
+            beginning_soil_owner_identity_sha256: digest_bytes(b"beginning-soil-owner"),
+            bottom_snow_layer_id: 1,
+            first_soil_layer_id: SoilLayerId::try_new("thermal-top").expect("soil layer"),
+            bottom_snow_half_thickness_m: 0.1,
+            bottom_snow_conductivity_w_m_k: 0.2,
+            top_soil_half_thickness_m: 0.2,
+            top_soil_conductivity_w_m_k: 0.4,
+            beginning_bottom_snow_temperature_k: 274.0,
+            beginning_top_soil_temperature_k: 272.0,
+            ending_bottom_snow_temperature_k: 273.0,
+            ending_top_soil_temperature_k: 272.0,
+            beginning_heat_flux_w_m2_ofe_ground: beginning,
+            ending_heat_flux_w_m2_ofe_ground: ending,
+            accepted_heat_flux_w_m2_ofe_ground: accepted,
+            accepted_heat_j_m2_ofe_ground: accepted * 1_800.0,
+            snow_candidate_heat_j_m2_ofe_ground: -accepted * 1_800.0,
+            soil_candidate_heat_j_m2_ofe_ground: accepted * 1_800.0,
+            snow_candidate_ending_identity_sha256: digest_bytes(b"ending-snow-candidate"),
+            soil_candidate_ending_identity_sha256: digest_bytes(b"ending-soil-candidate"),
+            receipt_sha256: Digest32::zero(),
+        }
+        .seal()
+        .expect("sealed snow-soil receipt")
+    }
+
+    #[test]
+    fn snow_soil_heat_reconstructs_positive_zero_and_negative_cn_flux() {
+        let receipt = snow_soil_test_receipt();
+        validate_snow_soil_heat_receipt(&receipt).expect("valid receipt");
+        assert_eq!(
+            receipt.beginning_heat_flux_w_m2_ofe_ground.to_bits(),
+            2.0_f64.to_bits()
+        );
+        assert_eq!(
+            receipt.ending_heat_flux_w_m2_ofe_ground.to_bits(),
+            1.0_f64.to_bits()
+        );
+        assert_eq!(
+            receipt.accepted_heat_flux_w_m2_ofe_ground.to_bits(),
+            1.5_f64.to_bits()
+        );
+        assert_eq!(
+            receipt.accepted_heat_j_m2_ofe_ground.to_bits(),
+            2_700.0_f64.to_bits()
+        );
+        assert_eq!(
+            receipt.snow_candidate_heat_j_m2_ofe_ground.to_bits(),
+            (-2_700.0_f64).to_bits()
+        );
+        assert_eq!(
+            receipt.soil_candidate_heat_j_m2_ofe_ground.to_bits(),
+            2_700.0_f64.to_bits()
+        );
+
+        let zero = snow_soil_heat_w_m2_ofe_ground(0.1, 0.2, 0.2, 0.4, 273.0, 273.0, 272.0, 272.0)
+            .expect("zero heat");
+        assert_eq!(zero, (0.0, 0.0, 0.0));
+
+        let upward = snow_soil_heat_w_m2_ofe_ground(0.1, 0.2, 0.2, 0.4, 271.0, 273.0, 272.0, 273.0)
+            .expect("upward heat");
+        assert_eq!(upward.0.to_bits(), (-2.0_f64).to_bits());
+        assert_eq!(upward.1.to_bits(), (-1.0_f64).to_bits());
+        assert_eq!(upward.2.to_bits(), (-1.5_f64).to_bits());
+    }
+
+    #[test]
+    fn snow_soil_heat_rejects_substitution_nonfinite_and_one_bit_poisons() {
+        let valid = snow_soil_test_receipt();
+
+        let mut substituted_owner = valid.clone();
+        substituted_owner.beginning_soil_owner_identity_sha256 = digest_bytes(b"substitute");
+        assert!(matches!(
+            validate_snow_soil_heat_receipt(&substituted_owner),
+            Err(DirectSnowStage3V11AttachmentError::SnowSoilHeat(_))
+        ));
+
+        let valid = snow_soil_test_receipt();
+        validate_snow_soil_heat_receipt_installed_join(
+            &valid,
+            &valid.first_soil_layer_id,
+            valid.snow_candidate_ending_identity_sha256,
+            valid.soil_candidate_ending_identity_sha256,
+        )
+        .expect("exact installed join");
+        let wrong_node = SoilLayerId::try_new("adjacent-layer").expect("wrong node");
+        assert!(matches!(
+            validate_snow_soil_heat_receipt_installed_join(
+                &valid,
+                &wrong_node,
+                valid.snow_candidate_ending_identity_sha256,
+                valid.soil_candidate_ending_identity_sha256,
+            ),
+            Err(DirectSnowStage3V11AttachmentError::SnowSoilHeat(
+                "typed node or canonical installed candidate identity"
+            ))
+        ));
+        let mut one_bit_snow = *valid.snow_candidate_ending_identity_sha256.as_bytes();
+        one_bit_snow[0] ^= 1;
+        assert!(
+            validate_snow_soil_heat_receipt_installed_join(
+                &valid,
+                &valid.first_soil_layer_id,
+                Digest32::from_bytes(one_bit_snow),
+                valid.soil_candidate_ending_identity_sha256,
+            )
+            .is_err()
+        );
+        let stale_soil = digest_bytes(b"stale installed soil OFE");
+        assert!(
+            validate_snow_soil_heat_receipt_installed_join(
+                &valid,
+                &valid.first_soil_layer_id,
+                valid.snow_candidate_ending_identity_sha256,
+                stale_soil,
+            )
+            .is_err()
+        );
+
+        let mut wrong_sign = valid.clone();
+        wrong_sign.accepted_heat_flux_w_m2_ofe_ground =
+            -wrong_sign.accepted_heat_flux_w_m2_ofe_ground;
+        wrong_sign.receipt_sha256 = snow_soil_heat_receipt_digest(&wrong_sign).expect("digest");
+        assert!(matches!(
+            validate_snow_soil_heat_receipt(&wrong_sign),
+            Err(DirectSnowStage3V11AttachmentError::SnowSoilHeat(_))
+        ));
+
+        let mut wrong_candidate_debit = valid.clone();
+        wrong_candidate_debit.snow_candidate_heat_j_m2_ofe_ground =
+            wrong_candidate_debit.accepted_heat_j_m2_ofe_ground;
+        wrong_candidate_debit.receipt_sha256 =
+            snow_soil_heat_receipt_digest(&wrong_candidate_debit).expect("digest");
+        assert!(matches!(
+            validate_snow_soil_heat_receipt(&wrong_candidate_debit),
+            Err(DirectSnowStage3V11AttachmentError::SnowSoilHeat(_))
+        ));
+
+        let mut nonfinite = valid.clone();
+        nonfinite.ending_top_soil_temperature_k = f64::NAN;
+        nonfinite.receipt_sha256 = snow_soil_heat_receipt_digest(&nonfinite).expect("digest");
+        assert!(matches!(
+            validate_snow_soil_heat_receipt(&nonfinite),
+            Err(DirectSnowStage3V11AttachmentError::SnowSoilHeat(_))
+        ));
+
+        let mut one_bit_operand = valid.clone();
+        one_bit_operand.bottom_snow_half_thickness_m =
+            f64::from_bits(one_bit_operand.bottom_snow_half_thickness_m.to_bits() ^ 1);
+        assert!(matches!(
+            validate_snow_soil_heat_receipt(&one_bit_operand),
+            Err(DirectSnowStage3V11AttachmentError::SnowSoilHeat(_))
+        ));
+
+        let mut one_bit_seal = valid;
+        let mut bytes = *one_bit_seal.receipt_sha256.as_bytes();
+        bytes[31] ^= 1;
+        one_bit_seal.receipt_sha256 = Digest32::from_bytes(bytes);
+        assert!(matches!(
+            validate_snow_soil_heat_receipt(&one_bit_seal),
+            Err(DirectSnowStage3V11AttachmentError::SnowSoilHeat(_))
+        ));
+
+        assert!(matches!(
+            snow_soil_heat_w_m2_ofe_ground(0.1, 0.2, 0.2, 0.4, f64::INFINITY, 273.0, 273.0, 273.0,),
+            Err(DirectSnowStage3V11AttachmentError::SnowSoilHeat(_))
+        ));
+    }
+
     fn lifecycle_state(
         mass_swe_m: Option<f64>,
         layer_liquid_m: f64,

@@ -559,7 +559,6 @@ impl ValidatedV8RuntimeInputProjection {
                         {
                             column.authority = authority;
                             column.stage3_lower_boundary = Some(boundary.clone());
-                            column.top_rain_kg_m2_tile = 0.0;
                         }
                     } else {
                         column.authority = authority;

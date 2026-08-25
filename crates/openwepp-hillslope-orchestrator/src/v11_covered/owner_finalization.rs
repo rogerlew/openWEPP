@@ -2,6 +2,22 @@
 
 use super::*;
 
+pub(crate) fn soil_thermal_owner_with_top_boundary_credit_join_sha256(
+    ending_soil_owner_sha256: Digest32,
+    accepted_credit_set_sha256: &openwepp_land_surface_energy::Sha256Digest,
+) -> Result<Digest32, DirectV11RealConsumerError> {
+    if ending_soil_owner_sha256 == Digest32::zero() {
+        return Err(DirectV11RealConsumerError::Identity("soil top-boundary owner join"));
+    }
+    openwepp_coupled_time::framed_sha256(
+        "covered-soil-top-boundary-owner-join-v1",
+        &[
+            openwepp_coupled_time::FramedField { tag: "ending_soil_owner", value: ending_soil_owner_sha256.as_bytes() },
+            openwepp_coupled_time::FramedField { tag: "accepted_credit_set", value: accepted_credit_set_sha256.as_str().as_bytes() },
+        ],
+    ).map_err(|_| DirectV11RealConsumerError::Identity("soil top-boundary owner join digest"))
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct CoveredParentOwnerJoinReceiptV1 {
     pub run_identity: Digest32,
@@ -16,6 +32,7 @@ pub struct CoveredParentOwnerJoinReceiptV1 {
     pub final_boundary_receipt_set_sha256: Digest32,
     pub final_lane_boundary_receipt_set_sha256: Digest32,
     pub component_carrier_receipt_set_sha256: Digest32,
+    pub snow_soil_heat_receipt_set_sha256: Digest32,
     pub wb14_child_receipt_set_sha256: Digest32,
     pub wb14_parent_receipt_set_sha256: Option<Digest32>,
     pub stage3_physical_state_sha256: Digest32,
@@ -27,6 +44,12 @@ pub struct CoveredParentOwnerJoinReceiptV1 {
     pub soil_thermal_owner_sha256: Digest32,
     pub surface_liquid_owner_sha256: Digest32,
     pub receipt_sha256: Digest32,
+}
+
+pub(crate) struct CoveredPhysicalCustodyJoinInputs<'a> {
+    pub snow_soil_heat_receipts: &'a BTreeMap<u32, SnowSoilHeatReceiptV1>,
+    pub beginning_stage3_states: &'a BTreeMap<u32, DirectSnowStage3PersistentState>,
+    pub ending_stage3_states: &'a BTreeMap<u32, DirectSnowStage3PersistentState>,
 }
 
 impl CoveredParentOwnerJoinReceiptV1 {
@@ -98,7 +121,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
         final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
         final_lane_boundaries: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
         component_carriers: &BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>,
-        stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+        physical_custody: &CoveredPhysicalCustodyJoinInputs<'_>,
         owners: &BTreeMap<String, V11OwnerEnvelope>,
     ) -> Result<Self, DirectV11RealConsumerError> {
         if [
@@ -130,6 +153,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
             != expected.into_iter().collect::<BTreeSet<_>>()
             || final_boundaries.is_empty()
             || final_lane_boundaries.is_empty()
+            || physical_custody.snow_soil_heat_receipts.is_empty()
             || component_carriers.keys().collect::<BTreeSet<_>>()
                 != final_boundaries
                     .iter()
@@ -167,7 +191,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
         }
         if !final_lane_boundaries
             .keys()
-            .all(|lane_id| stage3_states.contains_key(lane_id))
+            .all(|lane_id| physical_custody.ending_stage3_states.contains_key(lane_id))
         {
             return Err(DirectV11RealConsumerError::Identity(
                 "active lane receipt outside Stage-3 state set",
@@ -244,7 +268,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
             receipt.validate(boundary)?;
         }
         let expected_snow_bytes = canonical_stage3_snow_owner_bytes_v11_with_receipts(
-            stage3_states,
+            physical_custody.ending_stage3_states,
             final_lane_boundaries,
             final_boundaries,
         )?;
@@ -278,6 +302,49 @@ impl CoveredParentOwnerJoinReceiptV1 {
             &component_fields,
         )
         .map_err(|_| DirectV11RealConsumerError::Identity("component carrier receipt set"))?;
+        if physical_custody.beginning_stage3_states.keys().copied().collect::<BTreeSet<_>>()
+            != physical_custody.ending_stage3_states.keys().copied().collect::<BTreeSet<_>>()
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "snow-soil beginning/ending lane set",
+            ));
+        }
+        let required_snow_soil_lanes = physical_custody.beginning_stage3_states
+            .iter()
+            .filter_map(|(lane_id, beginning)| {
+                let ending = physical_custody.ending_stage3_states.get(lane_id)?;
+                (crate::hydrology::stage3_is_resolved_thermal_domain(beginning)
+                    && crate::hydrology::stage3_is_resolved_thermal_domain(ending))
+                .then_some(*lane_id)
+            })
+            .collect::<BTreeSet<_>>();
+        if physical_custody.snow_soil_heat_receipts.keys().copied().collect::<BTreeSet<_>>()
+            != required_snow_soil_lanes
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "snow-soil receipt active-lane set",
+            ));
+        }
+        let mut snow_soil_fields =
+            Vec::with_capacity(physical_custody.snow_soil_heat_receipts.len());
+        for (lane_id, receipt) in physical_custody.snow_soil_heat_receipts {
+            crate::snow_stage3_v11_attachment::validate_snow_soil_heat_receipt(receipt)
+                .map_err(|error| DirectV11RealConsumerError::from_stage3_physical_custody(&error))?;
+            if *lane_id != receipt.lane_id {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "snow-soil parent receipt lane key",
+                ));
+            }
+            snow_soil_fields.push(openwepp_coupled_time::FramedField {
+                tag: "snow_soil_heat_receipt",
+                value: receipt.receipt_sha256.as_bytes(),
+            });
+        }
+        let snow_soil_heat_receipt_set_sha256 = openwepp_coupled_time::framed_sha256(
+            "covered-snow-soil-heat-receipt-set-v1",
+            &snow_soil_fields,
+        )
+        .map_err(|_| DirectV11RealConsumerError::Identity("snow-soil receipt set"))?;
         let lane_fields = final_lane_boundaries
             .values()
             .map(|receipt| openwepp_coupled_time::FramedField {
@@ -291,7 +358,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
         )
         .map_err(|_| DirectV11RealConsumerError::Identity("covered lane receipt set"))?;
         let stage3_physical_state_sha256 =
-            digest_bytes(&canonical_stage3_snow_owner_bytes_v11(stage3_states)?);
+            digest_bytes(&canonical_stage3_snow_owner_bytes_v11(physical_custody.ending_stage3_states)?);
         let owner_digest = |name: &'static str| {
             owners.get(name).map(|owner| owner.state_sha256).ok_or(
                 DirectV11RealConsumerError::Identity("covered parent-owner join owner"),
@@ -310,6 +377,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
             final_boundary_receipt_set_sha256,
             final_lane_boundary_receipt_set_sha256,
             component_carrier_receipt_set_sha256,
+            snow_soil_heat_receipt_set_sha256,
             wb14_child_receipt_set_sha256,
             wb14_parent_receipt_set_sha256,
             stage3_physical_state_sha256,
@@ -331,7 +399,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
         final_boundaries: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
         final_lane_boundaries: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
         component_carriers: &BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>,
-        stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+        physical_custody: &CoveredPhysicalCustodyJoinInputs<'_>,
         owners: &BTreeMap<String, V11OwnerEnvelope>,
     ) -> Result<(), DirectV11RealConsumerError> {
         let expected = Self::try_new(
@@ -348,7 +416,7 @@ impl CoveredParentOwnerJoinReceiptV1 {
             final_boundaries,
             final_lane_boundaries,
             component_carriers,
-            stage3_states,
+            physical_custody,
             owners,
         )?;
         if &expected != self {
@@ -363,108 +431,44 @@ impl CoveredParentOwnerJoinReceiptV1 {
     fn reconstructed_digest(&self) -> Result<Digest32, DirectV11RealConsumerError> {
         let start = self.support.start_ns().get().to_be_bytes();
         let end = self.support.end_ns().get().to_be_bytes();
+        let wb14_parent = self
+            .wb14_parent_receipt_set_sha256
+            .unwrap_or(Digest32::zero());
         openwepp_coupled_time::framed_sha256(
             "covered-parent-owner-join-v1",
             &[
-                openwepp_coupled_time::FramedField {
-                    tag: "run_identity",
-                    value: self.run_identity.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "parent_interval",
-                    value: self.parent_interval_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "parent_transaction",
-                    value: self.parent_transaction_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "segment",
-                    value: self.segment_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "accepted_slab",
-                    value: self.accepted_slab_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "forcing_receipt",
-                    value: self.forcing_receipt_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "beginning_complete_owner_set",
-                    value: self.beginning_complete_owner_set_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "ending_complete_owner_set",
-                    value: self.ending_complete_owner_set_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "support_start_ns",
-                    value: &start,
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "support_end_ns",
-                    value: &end,
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "final_boundary_set",
-                    value: self.final_boundary_receipt_set_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "final_lane_boundary_set",
-                    value: self.final_lane_boundary_receipt_set_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "component_carrier_set",
-                    value: self.component_carrier_receipt_set_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "wb14_child_receipt_set",
-                    value: self.wb14_child_receipt_set_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "wb14_parent_receipt_set",
-                    value: self
-                        .wb14_parent_receipt_set_sha256
-                        .unwrap_or(Digest32::zero())
-                        .as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "stage3_physical_state",
-                    value: self.stage3_physical_state_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "vegetation_owner",
-                    value: self.vegetation_owner_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "snow_owner",
-                    value: self.snow_owner_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "land_surface_energy_owner",
-                    value: self.land_surface_energy_owner_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "hydrology_owner",
-                    value: self.hydrology_owner_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "biogeochemistry_owner",
-                    value: self.biogeochemistry_owner_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "soil_thermal_owner",
-                    value: self.soil_thermal_owner_sha256.as_bytes(),
-                },
-                openwepp_coupled_time::FramedField {
-                    tag: "surface_liquid_owner",
-                    value: self.surface_liquid_owner_sha256.as_bytes(),
-                },
+                digest_field("run_identity", self.run_identity.as_bytes()),
+                digest_field("parent_interval", self.parent_interval_sha256.as_bytes()),
+                digest_field("parent_transaction", self.parent_transaction_sha256.as_bytes()),
+                digest_field("segment", self.segment_sha256.as_bytes()),
+                digest_field("accepted_slab", self.accepted_slab_sha256.as_bytes()),
+                digest_field("forcing_receipt", self.forcing_receipt_sha256.as_bytes()),
+                digest_field("beginning_complete_owner_set", self.beginning_complete_owner_set_sha256.as_bytes()),
+                digest_field("ending_complete_owner_set", self.ending_complete_owner_set_sha256.as_bytes()),
+                digest_field("support_start_ns", &start),
+                digest_field("support_end_ns", &end),
+                digest_field("final_boundary_set", self.final_boundary_receipt_set_sha256.as_bytes()),
+                digest_field("final_lane_boundary_set", self.final_lane_boundary_receipt_set_sha256.as_bytes()),
+                digest_field("component_carrier_set", self.component_carrier_receipt_set_sha256.as_bytes()),
+                digest_field("snow_soil_heat_receipt_set", self.snow_soil_heat_receipt_set_sha256.as_bytes()),
+                digest_field("wb14_child_receipt_set", self.wb14_child_receipt_set_sha256.as_bytes()),
+                digest_field("wb14_parent_receipt_set", wb14_parent.as_bytes()),
+                digest_field("stage3_physical_state", self.stage3_physical_state_sha256.as_bytes()),
+                digest_field("vegetation_owner", self.vegetation_owner_sha256.as_bytes()),
+                digest_field("snow_owner", self.snow_owner_sha256.as_bytes()),
+                digest_field("land_surface_energy_owner", self.land_surface_energy_owner_sha256.as_bytes()),
+                digest_field("hydrology_owner", self.hydrology_owner_sha256.as_bytes()),
+                digest_field("biogeochemistry_owner", self.biogeochemistry_owner_sha256.as_bytes()),
+                digest_field("soil_thermal_owner", self.soil_thermal_owner_sha256.as_bytes()),
+                digest_field("surface_liquid_owner", self.surface_liquid_owner_sha256.as_bytes()),
             ],
         )
         .map_err(|_| DirectV11RealConsumerError::Identity("covered parent-owner join digest"))
     }
+}
+
+fn digest_field<'a>(tag: &'static str, value: &'a [u8]) -> openwepp_coupled_time::FramedField<'a> {
+    openwepp_coupled_time::FramedField { tag, value }
 }
 
 fn validate_exact_snow_owner_bytes(
@@ -541,6 +545,7 @@ pub(crate) fn finalize_v11_imported_segment(
     envelope: &UncommittedCoveredV8OwnerEnvelope,
     ending_snow_owner_bytes: Vec<u8>,
     day_index: usize,
+    soil_top_boundary_credits: &[SoilThermalTopBoundaryCreditV1],
 ) -> Result<
     (
         V11ImportedV10SegmentOutput,
@@ -579,12 +584,25 @@ pub(crate) fn finalize_v11_imported_segment(
     )?);
 
     let mut candidate = beginning.clone();
-    candidate
+    let accepted_soil_credit_set = candidate
         .inner
-        .accept_envelope(envelope.transaction_id(), envelope)
+        .accept_envelope_with_soil_top_boundary_credits(
+            envelope.transaction_id(),
+            envelope,
+            soil_top_boundary_credits,
+        )
         .map_err(|error| {
             DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
         })?;
+    let joined_soil_owner = soil_thermal_owner_with_top_boundary_credit_join_sha256(
+        digest32_from_lower_hex(candidate.inner.soil_thermal.snapshot_sha256.as_str())?,
+        &accepted_soil_credit_set.accepted_credit_set_sha256,
+    )?;
+    if joined_soil_owner == Digest32::zero() {
+        return Err(DirectV11RealConsumerError::Identity(
+            "covered soil top-boundary owner join",
+        ));
+    }
     candidate.vegetation_state = project_v9_runtime_to_v10(
         candidate.inner.vegetation_state(),
         &candidate.vegetation_configuration,
@@ -1548,6 +1566,7 @@ mod owner_join_tests {
             final_boundary_receipt_set_sha256: Digest32::from_bytes([1; 32]),
             final_lane_boundary_receipt_set_sha256: Digest32::from_bytes([18; 32]),
             component_carrier_receipt_set_sha256: Digest32::from_bytes([2; 32]),
+            snow_soil_heat_receipt_set_sha256: Digest32::from_bytes([19; 32]),
             wb14_child_receipt_set_sha256: Digest32::from_bytes([29; 32]),
             wb14_parent_receipt_set_sha256: None,
             stage3_physical_state_sha256: Digest32::from_bytes([3; 32]),

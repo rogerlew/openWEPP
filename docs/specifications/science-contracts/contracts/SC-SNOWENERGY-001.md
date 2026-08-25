@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 16
+contract_version: 18
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -14,7 +14,7 @@ consumer_scope:
   - Snow sublimation and melt components
   - Snow-energy diagnostics and assurance outputs
 evidence_level: static+independent_oracle+contract_vectors
-last_reviewed: 2026-08-22
+last_reviewed: 2026-08-24
 supersedes: []
 superseded_by: []
 ---
@@ -106,6 +106,22 @@ pixel-selection rule, exact pixel, timezone/day boundary, fill policy, or
 aerodynamic exposure. Modeled evergreen-forest landuse and `cancov=0.9`
 establish target model intent only, not physical exposure or representativeness.
 
+Version 17 defines the precipitation-custody input to the persistent Stage 3
+lane. It admits one sealed, canonically ordered phase-parcel set per support;
+binds precipitation mass and precipitation-advected heat to that same set;
+and makes open raw rain mutually exclusive with covered vegetation terminal
+liquid at each ground destination. It imports the interception, throughfall,
+stemflow, and drainage chronology from `SC-VEGETATION-001@28` and the
+destination topology from `SC-LANDSURFACEENERGY-001`; it adds no interception
+equation or canopy-snow process.
+
+Version 18 defines the persistent Stage 3 snow--soil conductive boundary. One
+OFE-ground lane column couples its bottom represented snow thermal volume to
+the first ordered OFE soil-thermal node. The interface uses the same
+center-to-center, two-half-layer series resistance and Crank--Nicolson endpoint
+evaluation already admitted by `SC-LANDSURFACEENERGY-001`; tile temperatures
+are neither averaged nor assigned duplicate shares of the lane flux.
+
 ## Scientific Scope
 
 In scope:
@@ -158,6 +174,8 @@ gaps/edges/trunks, terrain-obstructed sky, or anisotropic diffuse radiation.
 | `REF-SNOWENERGY-PHYSICAL` | Stefan-Boltzmann law and bounded-fraction physical invariants | Thermal emission, finite-temperature, and bounded-transmission requirements. | `[INFERENCE][Static]` |
 | `REF-SNOWENERGY-21N` | `docs/work-packages/20260804-snow-coe-stage3-melt-owner-authority-reconciliation-001/` with frozen 21M evidence and pinned libsnobal commit `bf8b41c71e3e54ae654ae04005ddf72566c47ee6` (`_e_bal.c`, `_snowmelt.c`, `_advec.c`, `_mass_bal.c`, `_runoff.c`, `envphys.h`, `snow.h`) | Result-blind CoE-envelope adjudication; energy-to-melt derivation; exact energy, solid-to-liquid, and liquid-disposition chronology; current-runtime hold. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `REF-SNOWENERGY-USER-OFE-GROUND-V15` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/science-contracts/SC-SNOWENERGY-001/authority-decision.md` | Direct prospective user selection of one persistent Stage 3 column per lane on OFE-ground basis, with complete tile-ground flux summation, no covered-subset renormalization, uniform-depth terminal identity, and topology-bound restart semantics. Repository state/terminal architecture supports the selection; future per-tile/routing-cell ownership requires a new version. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `REF-SNOWENERGY-PRECIP-CUSTODY-V17` | `SC-VEGETATION-001@28`; `SC-LANDSURFACEENERGY-001`; user-directed Child-1 covered physical-custody checkpoint | Imports the admitted vegetation liquid interception/release chronology and typed LSE destination topology, then binds their terminal parcels to the OFE-ground Stage 3 lane without adding canopy-snow or interception physics. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `REF-SNOWENERGY-SOIL-BOUNDARY-V18` | pinned `dac3c950...:src/frostn.for`, lines 476-607; `src/tmpadj.for`, lines 266-353; `SC-LANDSURFACEENERGY-001@8` | Legacy WEPP establishes additive snow/soil thermal resistance and harmonic conduction; current LSE supplies the authoritative node-centered two-half-layer interface, Crank--Nicolson endpoint evaluation, and OFE soil-thermal owner. Legacy zero-flux fallbacks, calibrated factors, and frost-front approximations are not imported. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Variables and Units
 
@@ -216,6 +234,13 @@ gaps/edges/trunks, terrain-obstructed sky, or anisotropic diffuse radiation.
 | `delta_m_retained` | `kg m^-2` | Signed retained-liquid store change, `m_liquid_phase_end-m_liquid_phase_start`. | Stage 3 liquid state | liquid-disposition ledger |
 | `m_refrozen`, `m_routed` | `kg m^-2` | Same-substep liquid refrozen to ice and liquid exported after holding-capacity disposition. | Stage 3 phase/liquid solve | linked mass ledgers |
 | `m_solid_precip`, `m_deposition`, `m_sublimation` | `kg m^-2` | Same-substep solid precipitation, vapor deposition to ice, and sublimation from ice, each non-negative and distinct. | precipitation and signed vapor exchange | complete solid ledger |
+| `P_phase` | ordered set | Sealed precipitation phase parcels for one exact support, in canonical destination then phase/source order. Every parcel binds lane/OFE, destination tile, phase, mass basis, support, atmospheric or vegetation producer-state identity, temperature/enthalpy provider, and receipt identity. | atmospheric forcing plus vegetation terminal-liquid owner | Stage 3 precipitation mass and advection consumers |
+| `m_precip,p`, `Q_adv,p` | `kg m^-2 tile-ground`, `J m^-2 tile-ground` | Parcel mass and precipitation-advected heat reconstructed from the same parcel identity; OFE-ground lane values are `sum_p(f_destination,p * value_p)` with each parcel consumed exactly once. | sealed phase parcel | Stage 3 mass and complete-energy ledgers |
+| `T_sb,0`, `T_sb,1` | `K` | Beginning and candidate-ending temperatures of the bottom represented Stage 3 snow thermal volume. | Stage 3 lane owner | snow side of lower boundary |
+| `dz_sb`, `lambda_sb` | `m`, `W m^-1 K^-1` | Positive physical thickness and conductivity of that bottom snow thermal volume. | Stage 3 configuration/state | lower-boundary resistance |
+| `T_1,0`, `T_1,1` | `K` | Beginning and candidate-ending temperatures of the first ordered OFE soil-thermal node. | soil-thermal owner | soil side of lower boundary |
+| `dz_1`, `lambda_1` | `m`, `W m^-1 K^-1` | Positive thickness and conductivity of the first ordered OFE soil-thermal node. | LSE/soil-thermal configuration | lower-boundary resistance |
+| `G_ss` | `W m^-2 OFE-ground` | Snow--soil conductive heat, positive downward from snow to soil; Stage 3 is debited and soil thermal is credited by the identical accepted amount. | joined Stage 3/soil-thermal candidate | complete energy and soil ledgers |
 | `Q_unallocated_after_exhaustion` | `J m^-2` | `Q_excess-L_f m_melt`, non-negative energy remaining only when the available-ice bound saturates. | future energy/phase ledger | terminal meltout hold |
 | `m_res` | `kg m^-2` | Total ice-mass boundary above which the Marks/SNOBAL Stage 3 thermal layer is resolved. | fixed libsnobal threshold | Stage 3 domain branch |
 | `t_unres` | `s` | Duration for which CoE snow exists below the resolved Stage 3 thermal domain. | Stage 3 domain branch | diagnostics and runtime evidence |
@@ -239,6 +264,7 @@ gaps/edges/trunks, terrain-obstructed sky, or anisotropic diffuse radiation.
 | Thermal provider | supported internal `layered_thermal_liquid_v1`; finite active-layer `T_0 > 0 K`, non-negative finite active/lower cold content, conservative depositional-to-thermal partition, and `T_c=T_a` with the named approximation identity |
 | Future melt-owner energy producers | finite, unit-explicit, same-substep net shortwave/longwave radiation, sensible heat, bounded latent exchange, ground/interlayer conduction, and precipitation-advected heat with exact-one lineage; unavailable components block cutover |
 | Future phase/liquid inputs | active/lower ice and retained liquid at substep start, solid/liquid precipitation, and one signed vapor exchange, all in explicit area-mass units and chronology |
+| Stage 3 precipitation custody | One sealed ordered `P_phase` for every support, including a complete empty set for zero precipitation; exact LSE destination topology and fractions; open raw-liquid or covered vegetation-terminal-liquid source selected exclusively per destination; solid atmospheric precipitation bypasses canopy and remains ground-snow precipitation. |
 
 ### Required outputs
 
@@ -809,6 +835,12 @@ divide/branch threshold.
 | `INV-SNOWENERGY-042` | One persistent Stage 3 lane owner is OFE-ground. Complete typed tile-ground snow-surface fluxes aggregate exactly once as `sum_i(f_i X_i)` over an ordered tile set closing to one within `TOL-SNOWENERGY-002`; the tolerance never authorizes renormalization. Every contribution binds the same beginning lane-state identity, snow-surface temperature, and latent heat. Missing, duplicate, wrong-class, wrong-model, covered-subset-normalized, or restart topology/basis substitutions fail closed. Uniform terminal liquid preserves `sum_i(f_i M_i)=M_lane`; dividing the complete lane amount by every tile fraction is prohibited. | `REF-SNOWENERGY-USER-OFE-GROUND-V15`; single-column Stage 3 and terminal-receiver state semantics | `[DIRECT][Static] + [INFERENCE][Static]` | lane topology/source-set/common-state/restart guards | `SNOWENERGY-E-CARRIER-001` |
 | `INV-SNOWENERGY-043` | Covered fixed-point acceptance first reconstructs and validates each candidate fingerprint independently. Schema, terminal-event model, lane, interval, layer cardinality/order, density, and stored count-like settling chronology compare exactly. Numeric state compares only under the physical-class absolute bounds in `TOL-SNOWENERGY-003`; candidate fingerprint equality is neither required nor a substitute for those comparisons. | existing Stage 3 closure scales and covered carrier temperature policy | `[DIRECT][Static] + [INFERENCE][Static]` | typed convergence/nonconvergence and stale-fingerprint guards | `SNOWENERGY-E-CARRIER-001` |
 | `INV-SNOWENERGY-044` | Additive restart must not restore `OPENWEPP_LANE_STAGE3_BOUNDARY_RECEIPT_V1`. Before restart implementation, a normative V2 successor must exclude numerical initial-guess identity and exactly join configured lane/OFE and tile topology, covered/open final boundaries, component carrier, installed LSE owner, complete snow owner, wet-liquid authorization, and canonical parent/restart framing. Until its exact fields, framing, ordering, and test vectors are admitted, the successor is `SCHEMA_UNDEFINED / IMPLEMENTATION_BLOCKED`. | canonical receipt/restart governance; v15 adopter-wire limitation | `[INFERENCE][Static]` | schema/version/topology/owner replay guards | restart hard `HOLD` |
+| `INV-SNOWENERGY-045` | Each accepted support owns exactly one sealed, canonically ordered precipitation phase-parcel set. A parcel binds support, lane/OFE, destination tile, phase, tile-ground mass basis, source and destination identities, temperature/enthalpy provider, producer beginning-state identity, and receipt identity. Zero precipitation is a present, complete empty set, never an omitted owner. | `REF-SNOWENERGY-PRECIP-CUSTODY-V17` | `[DIRECT][Static] + [INFERENCE][Static]` | parcel-set schema/order/cardinality/identity guard | `SNOWENERGY-E-PRECIP-001` |
+| `INV-SNOWENERGY-046` | At each ground destination, liquid custody is exclusive: an open destination receives its sealed raw atmospheric rain parcel, while a covered destination receives only terminal throughfall/drainage and stemflow parcels produced under `SC-VEGETATION-001@28`. Raw rain and vegetation release cannot both be delivered to one destination. Solid atmospheric precipitation bypasses vegetation, remains ground-snow precipitation, and canopy-intercepted snow remains excluded. | `SC-VEGETATION-001@28`; `REF-SNOWENERGY-PRECIP-CUSTODY-V17` | `[DIRECT][Static]` | destination/source/phase exclusivity guard | `SNOWENERGY-E-PRECIP-001` |
+| `INV-SNOWENERGY-047` | Stage 3 reconstructs precipitation mass and precipitation-advected heat from the identical accepted parcel identities. Tile-ground parcel operands aggregate once to the lane as `sum_p(f_destination,p * X_p)` on the existing OFE-ground basis, without covered-fraction renormalization. Missing, duplicate, substituted, differently ordered, or mass-only/advection-only parcel use fails before candidate publication. | `INV-SNOWENERGY-042`; `REF-SNOWENERGY-PRECIP-CUSTODY-V17` | `[INFERENCE][Static]` | same-set/area-basis/exact-once reconstruction guard | `SNOWENERGY-E-PRECIP-001` |
+| `INV-SNOWENERGY-048` | The persistent lower boundary is exactly one OFE/lane interface from the bottom represented snow thermal volume to the first ordered OFE soil-thermal node. No tile soil temperature participates; first-tile selection, tile averaging, covered-only averaging, tile-fraction weighting, duplicated lane flux, or silent zero heat is prohibited. | `REF-SNOWENERGY-SOIL-BOUNDARY-V18`; `SC-LANDSURFACEENERGY-001@8` | `[DIRECT][Static] + [INFERENCE][Static]` | topology/node/owner/basis guard | `SNOWENERGY-E-SOIL-HEAT-001` |
+| `INV-SNOWENERGY-049` | With positive finite `dz_sb,lambda_sb,dz_1,lambda_1`, `g_ss=1/(dz_sb/(2*lambda_sb)+dz_1/(2*lambda_1))=2/(dz_sb/lambda_sb+dz_1/lambda_1)`. `G_ss,e=g_ss*(T_sb,e-T_1,e)` for endpoint `e in {0,1}` and the accepted support flux is `bar(G_ss)=0.5*(G_ss,0+G_ss,1)`, positive downward. Both ending temperatures participate in the covered fixed point; beginning values come only from sealed beginning owners. | `REF-SNOWENERGY-SOIL-BOUNDARY-V18`; LSE Crank--Nicolson authority | `[DIRECT][Static] + [INFERENCE][Static]` | physical-operand/endpoint/convergence guard | `SNOWENERGY-E-SOIL-HEAT-001` |
+| `INV-SNOWENERGY-050` | The Stage 3 candidate records exactly `-bar(G_ss)` and the first-node soil-thermal candidate records exactly `+bar(G_ss)` on the same support and OFE-ground basis. One sealed `SnowSoilHeatReceiptV1` binds support, lane/OFE, topology/configuration digests, both beginning-owner identities, the four resistance operands, both endpoint temperature pairs, accepted flux, both candidate-ending identities, and a reconstructable digest. Independent validation reconstructs the receipt and equal/opposite debits from primitives before atomic publication; any omission, substitution, sign/basis error, nonconvergence, or later failure rolls back both owners and all receipt state. | physical conservation; `SC-LANDSURFACEENERGY-001@8` | `[INFERENCE][Static]` | receipt/reconstruction/atomic-owner guard | `SNOWENERGY-E-SOIL-HEAT-001` |
 
 ## Producer and Consumer Obligations
 
@@ -842,6 +874,10 @@ divide/branch threshold.
 | `OBL-SNOWENERGY-C-018` | OFE-ground lane-boundary consumer | Independently reconstruct the complete ordered typed tile contribution set, all retained source-receipt-set identities, common Stage 3 state/temperature/latent heat, OFE-ground flux sums, terminal-liquid handoff, and topology/basis identity; reject omission, duplication, class/model substitution, covered-subset normalization, or restart topology substitution. |
 | `OBL-SNOWENERGY-C-019` | covered fixed-point consumer | Reconstruct each candidate fingerprint, compare structural and count-like state exactly, and apply only the physical-class absolute convergence bounds admitted by `TOL-SNOWENERGY-003`; reject stale fingerprints and nonconvergence without state repair. |
 | `OBL-SNOWENERGY-C-020` | additive-restart consumer | Refuse V1 lane receipts and any inferred successor wire. Restore only after a normative V2 schema and vectors exist and the restored receipt is rejoined to static topology, destination/lane/component receipts, installed LSE and snow owners, and wet-liquid authorization. |
+| `OBL-SNOWENERGY-P-011` | precipitation parcel-set producer | Seal the complete ordered phase-parcel set, including a present empty set, only after joining atmospheric phase custody, vegetation terminal-liquid custody, support, topology, and producer beginning-state identities. |
+| `OBL-SNOWENERGY-C-021` | Stage 3 precipitation consumer | Independently validate destination exclusivity and reconstruct OFE-ground precipitation mass and precipitation-advected heat from the same exact parcel set before accepting a physical candidate. |
+| `OBL-SNOWENERGY-P-012` | joined snow/soil boundary producer | Build one lane-level lower-boundary receipt from immutable Stage 3 and OFE soil-thermal beginnings plus the accepted coupled candidate; publish neither candidate independently. |
+| `OBL-SNOWENERGY-C-022` | snow/soil boundary consumer | Independently reconstruct half-layer series conductance, both endpoint fluxes, Crank--Nicolson accepted heat, exact snow debit/soil credit, receipt digest, and candidate-ending joins before the complete-owner commit. |
 
 ## Symbol Alias Map
 
@@ -1126,6 +1162,8 @@ The package rows below map active package-local binding residue through version
 | `SNOWENERGY-CHILD2C-CARRIER` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-036, INV-SNOWENERGY-037, INV-SNOWENERGY-038, INV-SNOWENERGY-039, INV-SNOWENERGY-040, OBL-SNOWENERGY-P-010, OBL-SNOWENERGY-C-017` | `flagged-binding-addition` | Shared carrier topology, sealed exposure, weighted component longwave, typed flux lineage, and wrong-regime/scope rejection. |
 | `SNOWENERGY-V15-OFE-GROUND-LANE` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-042, OBL-SNOWENERGY-C-018` | `flagged-binding-addition` | Direct user selection of one-column-per-lane OFE-ground storage under `TOL-SNOWENERGY-002`, complete typed tile-surface flux aggregation without covered-subset renormalization, common lane snow state, terminal identity, and topology-bound restart posture; dual review and verification required. |
 | `SNOWENERGY-V16-COVERED-CONVERGENCE-RESTART` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-043, INV-SNOWENERGY-044, OBL-SNOWENERGY-C-019, OBL-SNOWENERGY-C-020` | `flagged-binding-addition` | Separates covered fixed-point comparisons under `TOL-SNOWENERGY-003`, reconstructs candidate fingerprints, and holds additive restart until a normative lane-receipt V2 wire and complete topology/owner replay join are admitted. |
+| `SNOWENERGY-V17-PRECIPITATION-CUSTODY` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `in_review` | `maps-to-existing-INV` | `INV-SNOWENERGY-045, INV-SNOWENERGY-046, INV-SNOWENERGY-047, OBL-SNOWENERGY-P-011, OBL-SNOWENERGY-C-021` | `flagged-binding-addition` | Seals the ordered precipitation phase-parcel set, binds open-versus-covered liquid exclusivity and solid bypass, and requires mass/advection same-set reconstruction on the OFE-ground lane basis. |
+| `SNOWENERGY-V18-SNOW-SOIL-BOUNDARY` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `in_review` | `maps-to-existing-INV` | `INV-SNOWENERGY-048, INV-SNOWENERGY-049, INV-SNOWENERGY-050, OBL-SNOWENERGY-P-012, OBL-SNOWENERGY-C-022` | `flagged-binding-addition` | Binds one OFE/lane bottom-snow-to-first-soil-node Crank--Nicolson interface, exact equal/opposite custody, reconstructable receipt, and atomic rollback without tile aggregation or duplication. |
 | `SNOWENERGY-EB02-AUTHORITY` | `docs/work-packages/20260730-snow-surface-eb-02-subcanopy-longwave-contract-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-001, INV-SNOWENERGY-002, INV-SNOWENERGY-003, INV-SNOWENERGY-004, INV-SNOWENERGY-005, INV-SNOWENERGY-006, INV-SNOWENERGY-007, INV-SNOWENERGY-008, INV-SNOWENERGY-009, INV-SNOWENERGY-010, INV-SNOWENERGY-011, INV-SNOWENERGY-012, INV-SNOWENERGY-013, INV-SNOWENERGY-014` | `none` | Package-local source reconciliation and analytical artifacts are evidence; all binding equations, guards, and obligations are in this canonical contract. |
 | `SNOWENERGY-EB03-COMPOSITION` | `docs/work-packages/20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-015, INV-SNOWENERGY-016, INV-SNOWENERGY-017, INV-SNOWENERGY-018, INV-SNOWENERGY-019` | `none` | Package evidence binds the Stage 3 provider, orthogonal selectors, and mass/energy composition implemented by version 2. |
 | `SNOWENERGY-EB03A-COUPLING` | `docs/work-packages/20260730-snow-surface-eb-03a-active-layer-thermal-coupling-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-020, INV-SNOWENERGY-021, INV-SNOWENERGY-022, INV-SNOWENERGY-023, INV-SNOWENERGY-024, INV-SNOWENERGY-025` | `none` | Package evidence must implement and verify the version-3 active thermal control volume and coupled substep solver. |
@@ -1436,10 +1474,64 @@ efficacy, qualification, or empirical claim follows.
 | `GAP-SNOWENERGY-015` | Deployed/server exposure receipt is not available for every retained forcing value. | typed runtime precondition; no proxy or attenuation admitted |
 | `GAP-SNOWENERGY-016` | Exact lane-receipt V2 fields, canonical framing, ordering, and test vectors are not yet defined. | `SCHEMA_UNDEFINED / IMPLEMENTATION_BLOCKED`; V1 is never restart authority |
 
+## Version 17 precipitation phase-parcel custody amendment
+
+This approved amendment governs only the mass/enthalpy handoff into the
+persistent Stage 3 support. `SC-VEGETATION-001@28` remains sole authority for
+liquid interception, persistent canopy storage, initial and second drainage,
+throughfall, and stemflow. `SC-LANDSURFACEENERGY-001` remains authority for
+the ordered destination topology. No raw precipitation amount may be passed
+around the parcel set, and no rule here intercepts solid precipitation in a
+canopy.
+
+The canonical parcel key is
+`(lane_id, destination_topology_index, phase_rank, source_rank,
+semantic_receipt_ordinal)`.
+`phase_rank` is `0=solid`, `1=liquid`; `source_rank` is
+`0=atmospheric_ground_snow`, `1=open_raw_rain`,
+`2=vegetation_terminal_throughfall`,
+`3=vegetation_initial_drainage`,
+`4=vegetation_second_drainage`, and
+`5=vegetation_terminal_stemflow`. Each vegetation route remains a distinct
+parcel with its own mass, enthalpy provider, producer-state identity, and
+receipt identity; aggregating drainage into throughfall is prohibited. Keys
+are unique and strictly increasing.
+The semantic ordinal distinguishes repeated parcels from the same route in
+their producer order. Receipt hashes authenticate already ordered semantic
+records; hash value order is never the semantic or arithmetic order. The
+sealed set binds its schema, exact half-open
+support, lane/OFE, OFE-ground basis, ordered destination topology/fractions,
+parcel count, ordered keys and parcel receipts, and producer beginning-state
+identities. An empty ordered vector sealed under the same set schema and
+support/topology identity is the only representation of zero precipitation.
+
+For each open destination, atmospheric solid and liquid are separately sealed:
+solid uses `atmospheric_ground_snow`, and liquid uses `open_raw_rain`. For each
+covered destination, solid likewise uses `atmospheric_ground_snow`, while all
+ground-reaching liquid is imported only from the vegetation terminal release
+owner as the distinct admitted throughfall, initial-drainage, second-drainage,
+and stemflow parcels. A covered raw
+rain parcel, an open vegetation-release parcel, or both liquid source classes
+at one destination is invalid. Persistent canopy storage is not ground
+precipitation. Canopy-intercepted snow remains outside the supported domain.
+
+Each parcel carries finite non-negative tile-ground mass and a finite
+temperature or specific-enthalpy provider sufficient to reconstruct its
+advected heat. The Stage 3 candidate independently validates the set and then
+uses its parcel identities exactly once for both mass and advected energy.
+It aggregates each physical value to the lane with the destination fractions
+from the sealed topology. The mass consumer set and advection consumer set
+must be identical in key order and cardinality; equality of aggregate numbers
+or set digests cannot excuse a missing, duplicated, or substituted parcel.
+Validation completes before snow or soil owner mutation, and any failure uses
+`SNOWENERGY-E-PRECIP-001` with complete rollback.
+
 ## Change Log
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 18 | 2026-08-24 | Admitted persistent snow--soil boundary authority: one OFE/lane interface, bottom snow volume to first OFE soil node, two-half-layer series resistance, Crank--Nicolson beginning/end evaluation inside the covered fixed point, exact equal/opposite candidate custody, reconstructable receipt, and atomic rollback. | Pinned `frostn.for`/`tmpadj.for` series-resistance provenance; `SC-LANDSURFACEENERGY-001@8`; Child-1 contract-derived guards |
+| 17 | 2026-08-24 | Admitted persistent-support precipitation custody: sealed ordered phase-parcel sets, present empty-set zero, open raw-rain versus covered route-distinct vegetation-terminal-liquid exclusivity, solid ground-snow bypass, OFE-ground aggregation, and exact same-set mass/advection consumption. No interception or canopy-snow physics was added. | Direct Child-1 checkpoint authority; `SC-VEGETATION-001@28`; `SC-LANDSURFACEENERGY-001`; contract-derived source guards |
 | 13 | 2026-08-19 | Added fresh default-off `terminal_receiver_v1` authority (`INV-SNOWENERGY-035`) for earliest-event closure, exact-one 0 C liquid/enthalpy custody, remaining-time support, and post-event snow-operand exclusion while preserving all carrier/efficacy/production holds and evaluation-only INV-034 semantics. | Contract-first terminal handoff package |
 | 12 | 2026-08-07 | Admitted a persistent-evaluation-only one-volume shallow-snow enthalpy solve, deterministic step-doubling policy, safeguarded earliest solid-exhaustion event, schema-v8 reconstruction, and explicit censoring of terminal liquid, energy, and remaining time. | CC0 libsnobal shallow-pack/cadence/phase chronology, conservation, and independent numerical review |
 | 11 | 2026-08-07 | Recovered byte-identical WEPPpy lineage, retained centroids/flags, and exact parquet-to-CLI equality; separately labeled the nearby historical centroid/GRIDMET/share/format code path as static reconstruction and narrowed missing authority to deployed request/server semantics and two-sided aerodynamic exposure linkage. | Surviving `/wc1` run records, provider source/history, retained parquet/CLI equality, and independent custody/exposure reviews |

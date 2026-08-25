@@ -129,6 +129,7 @@ pub struct Stage3CoupledSubslabReceiptV1 {
     pub wb14_parent_replay_bytes: Option<Vec<u8>>,
     pub destination_receipts: BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
     pub lane_receipts: BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
+    pub physical_outcome_ledger_set_sha256: Digest32,
     pub owner_join: CoveredParentOwnerJoinReceiptV1,
     pub receipt_sha256: Digest32,
 }
@@ -212,6 +213,12 @@ impl Stage3CoupledSubslabReceiptV1 {
             None => bytes.push(0),
         }
         bytes.extend_from_slice(self.owner_join.receipt_sha256.as_bytes());
+        if self.physical_outcome_ledger_set_sha256 == Digest32::zero() {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "physical outcome ledger set",
+            ));
+        }
+        bytes.extend_from_slice(self.physical_outcome_ledger_set_sha256.as_bytes());
         Ok(digest_bytes(&bytes))
     }
 

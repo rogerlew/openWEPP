@@ -78,6 +78,7 @@ fn protected_external_struct_literals_remain_exhaustive(authoritative: DirectSno
         complete_arm_sensible_j_m2: 0.0,
         complete_arm_latent_j_m2: 0.0,
         complete_arm_advected_j_m2: 0.0,
+        complete_arm_snow_soil_heat_j_m2: 0.0,
         complete_arm_internal_active_lower_conduction_j_m2: 0.0,
         complete_arm_applicable: false,
         complete_arm_internal_conduction_applicable: false,
@@ -297,7 +298,7 @@ fn v130_retains_production_and_claim_holds() {
     }
     for required in [
         "v136",
-        "v16 governs unit-specific covered convergence",
+        "v18 admits OFE/lane snow--soil boundary custody and preserves v17 precipitation custody, v16 convergence, and restart holds",
         "production",
         "cutover",
     ] {
@@ -572,7 +573,7 @@ fn v131_binds_raw_opportunity_separately_from_bounded_transfer() {
         assert!(snow.contains(required), "{CONTRACT} missing {required}");
     }
     for required in [
-        "contract_version: 16",
+        "contract_version: 18",
         "`m_v,raw`",
         "Signed bounded vapor transfer",
         "INV-SNOWENERGY-032",
@@ -729,5 +730,7 @@ fn v131_retains_fail_closed_authority_gaps_and_protected_boundaries() {
     assert!(package.contains("Quantify an isolated consequence only if"));
     assert!(package.contains("otherwise record implementation/reference parity"));
     assert!(index.contains("v136 admits a separate default-off terminal receiver chronology"));
-    assert!(index.contains("v16 governs unit-specific covered convergence"));
+    assert!(index.contains(
+        "v18 admits OFE/lane snow--soil boundary custody and preserves v17 precipitation custody, v16 convergence, and restart holds"
+    ));
 }

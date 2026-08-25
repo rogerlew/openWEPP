@@ -727,6 +727,7 @@ pub struct DirectSnowStage3EvaluationDiagnostics {
     pub complete_arm_sensible_j_m2: f64,
     pub complete_arm_latent_j_m2: f64,
     pub complete_arm_advected_j_m2: f64,
+    pub complete_arm_snow_soil_heat_j_m2: f64,
     pub complete_arm_internal_active_lower_conduction_j_m2: f64,
     pub complete_arm_applicable: bool,
     pub complete_arm_internal_conduction_applicable: bool,
@@ -844,6 +845,12 @@ pub struct DirectSnowStage3ReconciliationTuple {
     pub active_density_after_kg_m3: Option<f64>,
     pub active_cold_before_j_m2: f64,
     pub active_cold_after_j_m2: Option<f64>,
+    /// Immutable lower-control-volume material state immediately before the
+    /// internal active/lower conduction operation.
+    pub lower_cold_before_conduction_j_m2: Option<f64>,
+    /// Immutable lower-control-volume material state immediately after the
+    /// internal active/lower conduction operation.
+    pub lower_cold_after_conduction_j_m2: Option<f64>,
     pub total_cold_before_j_m2: f64,
     pub total_cold_after_j_m2: f64,
     pub surface_temperature_before_c: f64,
@@ -912,11 +919,13 @@ pub struct DirectSnowStage3ReconciliationTuple {
     pub sensible_flux_w_m2: f64,
     pub latent_flux_w_m2: f64,
     pub precipitation_advected_flux_w_m2: f64,
+    pub snow_soil_heat_flux_w_m2: f64,
     pub complete_external_flux_w_m2: f64,
     pub vapor_mass_exchange_kg_m2: f64,
     pub sublimation_kg_m2: Option<f64>,
     pub deposition_kg_m2: Option<f64>,
     pub melt_kg_m2: Option<f64>,
+    pub refrozen_kg_m2: Option<f64>,
     pub active_cold_energy_change_j_m2: Option<f64>,
     pub lower_cold_energy_change_j_m2: Option<f64>,
     pub cold_content_export_j_m2: Option<f64>,

@@ -2330,11 +2330,6 @@ pub fn evaluate_covered_column(
                     "Stage-3 snow optical/lower-boundary identity",
                 ));
             }
-            if column.top_rain_kg_m2_tile != 0.0 {
-                return Err(LandSurfaceEnergyError::UnsupportedDomain(
-                    "covered precipitation must be owned by Stage-3",
-                ));
-            }
             Some(boundary)
         } else {
             None
@@ -2724,11 +2719,7 @@ pub fn evaluate_covered_column(
         ground_storage_w_m2_tile: ground_storage,
         ending_surface_enthalpy_j_m2_tile: ending_enthalpy,
         whole_column_longwave: longwave,
-        ground_canopy_release_kg_m2_tile: if stage3_boundary.is_some() {
-            0.0
-        } else {
-            incident_rain
-        },
+        ground_canopy_release_kg_m2_tile: incident_rain,
         ground_stemflow_kg_m2_tile: ground_stemflow,
         ground_sensible_to_canopy_air_w_m2: lower_boundary_sensible,
         lower_boundary_vapor_to_canopy_air_kg_m2_s: lower_boundary_vapor,

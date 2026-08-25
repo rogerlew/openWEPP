@@ -82,7 +82,7 @@ fn mass_weighted_temperature(
     }
 }
 
-fn derive_release_from_ledgers<'a>(
+pub(crate) fn derive_release_from_ledgers<'a>(
     ledgers: impl IntoIterator<Item = (&'a str, &'a CoveredOccupancyLiquidLedger)>,
     expected_ground_release: f64,
     expected_stemflow: f64,

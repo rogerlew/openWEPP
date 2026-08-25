@@ -64,6 +64,28 @@ fn close_with_policy(left: f64, right: f64, absolute: f64, relative: f64) -> boo
         && (left - right).abs() <= absolute + relative * left.abs().max(right.abs())
 }
 
+fn covered_fixed_point_soil_states_equal(
+    left: &SoilThermalSnapshot,
+    right: &SoilThermalSnapshot,
+) -> bool {
+    left.ofes.len() == right.ofes.len()
+        && left.ofes.iter().zip(&right.ofes).all(|(left_ofe, right_ofe)| {
+            left_ofe.ofe_id == right_ofe.ofe_id
+                && left_ofe.ordered_layers.len() == right_ofe.ordered_layers.len()
+                && left_ofe.ordered_layers.iter().zip(&right_ofe.ordered_layers).all(
+                    |(left_layer, right_layer)| {
+                        left_layer.layer_id == right_layer.layer_id
+                            && close_with_policy(
+                                left_layer.temperature_k,
+                                right_layer.temperature_k,
+                                COVERED_FIXED_POINT_POLICY.temperature_abs_k,
+                                COVERED_FIXED_POINT_POLICY.temperature_rel,
+                            )
+                    },
+                )
+        })
+}
+
 fn covered_fixed_point_lse_states_equal(
     left: &BTreeMap<(OfeId, TileId), CoveredLseIterationState>,
     right: &BTreeMap<(OfeId, TileId), CoveredLseIterationState>,

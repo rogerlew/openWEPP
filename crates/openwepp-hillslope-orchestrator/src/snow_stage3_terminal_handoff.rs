@@ -468,6 +468,9 @@ pub struct Stage3SnowSurfaceBoundaryReceiptV1 {
     pub shortwave_energy_j_m2: f64,
     pub net_longwave_energy_j_m2: f64,
     pub precipitation_advection_j_m2: f64,
+    /// Signed energy into snow from the lower soil interface. Positive-downward
+    /// snow-to-soil heat is therefore represented as a negative snow amount.
+    pub snow_soil_heat_j_m2: f64,
     pub latent_heat_j_kg: f64,
     pub beginning_stage3_state_sha256: Digest32,
     pub identity: Stage3BoundaryIdentity,
@@ -482,6 +485,7 @@ pub struct Stage3SnowSurfaceBoundaryReceiptInputs {
     pub shortwave_energy_j_m2: f64,
     pub net_longwave_energy_j_m2: f64,
     pub precipitation_advection_j_m2: f64,
+    pub snow_soil_heat_j_m2: f64,
     pub latent_heat_j_kg: f64,
     pub beginning_stage3_state_sha256: Digest32,
     pub identity: Stage3BoundaryIdentity,
@@ -498,6 +502,7 @@ impl Stage3SnowSurfaceBoundaryReceiptV1 {
             inputs.shortwave_energy_j_m2,
             inputs.net_longwave_energy_j_m2,
             inputs.precipitation_advection_j_m2,
+            inputs.snow_soil_heat_j_m2,
             inputs.latent_heat_j_kg,
         ]
         .iter()
@@ -524,6 +529,7 @@ impl Stage3SnowSurfaceBoundaryReceiptV1 {
             shortwave_energy_j_m2: inputs.shortwave_energy_j_m2,
             net_longwave_energy_j_m2: inputs.net_longwave_energy_j_m2,
             precipitation_advection_j_m2: inputs.precipitation_advection_j_m2,
+            snow_soil_heat_j_m2: inputs.snow_soil_heat_j_m2,
             latent_heat_j_kg: inputs.latent_heat_j_kg,
             beginning_stage3_state_sha256: inputs.beginning_stage3_state_sha256,
             identity: inputs.identity,
@@ -756,6 +762,7 @@ pub struct LaneStage3BoundaryReceiptV1 {
     pub optical_receipt_sha256: Digest32,
     pub reciprocal_longwave_receipt_sha256: Digest32,
     pub final_destination_receipt_sha256: Digest32,
+    pub precipitation_parcel_set_sha256: Digest32,
     pub ordered_destinations: Vec<LaneBoundaryContributionV1>,
     pub aggregate_sensible_to_canopy_air_w_m2: f64,
     pub aggregate_vapor_to_canopy_air_kg_m2_s: f64,
@@ -800,6 +807,7 @@ impl LaneStage3BoundaryReceiptV1 {
             || self.optical_receipt_sha256 == Digest32::zero()
             || self.reciprocal_longwave_receipt_sha256 == Digest32::zero()
             || self.final_destination_receipt_sha256 == Digest32::zero()
+            || self.precipitation_parcel_set_sha256 == Digest32::zero()
             || self.ordered_destinations.is_empty()
             || self
                 .ordered_destinations
@@ -1023,6 +1031,7 @@ fn lane_stage3_boundary_receipt_digest(value: &LaneStage3BoundaryReceiptV1) -> D
         value.optical_receipt_sha256,
         value.reciprocal_longwave_receipt_sha256,
         value.final_destination_receipt_sha256,
+        value.precipitation_parcel_set_sha256,
     ] {
         bytes.extend_from_slice(digest.as_bytes());
     }
@@ -2075,6 +2084,7 @@ mod tests {
             shortwave_energy_j_m2: 0.0,
             net_longwave_energy_j_m2: 0.0,
             precipitation_advection_j_m2: 0.0,
+            snow_soil_heat_j_m2: 0.0,
             latent_heat_j_kg: 2_500_000.0,
             beginning_stage3_state_sha256: Digest32::from_bytes([1; 32]),
             identity: Stage3BoundaryIdentity::Provisional {
@@ -2095,6 +2105,21 @@ mod tests {
                 "Stage-3 covered latent mass-energy identity"
             ))
         ));
+    }
+
+    #[test]
+    fn covered_boundary_preserves_signed_snow_soil_energy_as_distinct_operand() {
+        let mut inputs = boundary_inputs(2_500.0);
+        inputs.snow_soil_heat_j_m2 = -725.0;
+        let receipt =
+            Stage3SnowSurfaceBoundaryReceiptV1::try_new(inputs).expect("signed snow-soil boundary");
+        assert_eq!(
+            receipt.snow_soil_heat_j_m2.to_bits(),
+            (-725.0_f64).to_bits()
+        );
+
+        inputs.snow_soil_heat_j_m2 = f64::NAN;
+        assert!(Stage3SnowSurfaceBoundaryReceiptV1::try_new(inputs).is_err());
     }
 
     #[test]
@@ -2188,6 +2213,7 @@ mod tests {
                 optical_receipt_sha256: Digest32::from_bytes([4; 32]),
                 reciprocal_longwave_receipt_sha256: Digest32::from_bytes([5; 32]),
                 final_destination_receipt_sha256: Digest32::from_bytes([6; 32]),
+                precipitation_parcel_set_sha256: Digest32::from_bytes([7; 32]),
                 ordered_destinations: vec![contribution.clone()],
                 aggregate_sensible_to_canopy_air_w_m2: contribution.sensible_to_canopy_air_w_m2,
                 aggregate_vapor_to_canopy_air_kg_m2_s: contribution.vapor_to_canopy_air_kg_m2_s,
@@ -2279,6 +2305,7 @@ mod tests {
                 optical_receipt_sha256: Digest32::from_bytes([4; 32]),
                 reciprocal_longwave_receipt_sha256: Digest32::from_bytes([5; 32]),
                 final_destination_receipt_sha256: Digest32::from_bytes([6; 32]),
+                precipitation_parcel_set_sha256: Digest32::from_bytes([7; 32]),
                 ordered_destinations: contributions,
                 aggregate_sensible_to_canopy_air_w_m2: 60.0,
                 aggregate_vapor_to_canopy_air_kg_m2_s: 0.6 * 1.0e-6 + 0.4 * -1.0e-6,

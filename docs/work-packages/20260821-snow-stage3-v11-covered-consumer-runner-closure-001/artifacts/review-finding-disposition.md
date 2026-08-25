@@ -83,3 +83,25 @@ configured identity membership and semantic order, not reconstruction of
 stratum-specific physiological allocation from persistent owner state. The
 required single wrong/unknown-stratum substitutions reject through exact-set
 validation; no stronger producer-allocation claim is made.
+
+## 2026-08-24 persistent covered physical-custody reviews
+
+- Science: `PASS`. The approved v18/v8 authority defines complete
+  precipitation/advection and heterogeneous OFE/lane snow--soil custody
+  without inventing canopy-snow or tile-averaging physics.
+- Hydrology/ownership: `PASS`. Producer manifests, destination exclusivity,
+  equal/opposite soil credit, independent postcandidate ledger, exact owner
+  joins, and rollback preserve complete custody.
+- Rust/API: `PASS`. Typed receipts and errors remain private to the bounded
+  adopter, and behavior-preserving includes keep all touched production files
+  below 3,000 lines.
+- Rust QA: `PASS`. The rainy real-parent fixture proves both positive live
+  vegetation release routes, refreeze, direct receipt poisons, and five exact
+  rollback seams. Positive initial/second drainage is established by the real
+  V8 producer tests together with exact parcel/manifest custody; no invalid LSE
+  configuration was forced merely to manufacture a live drainage outcome.
+  Warnings-denied Clippy has no net-new finding relative to the clean base.
+
+All findings were accepted and corrected; none was waived. This PASS is only
+for persistent covered physical custody and does not disposition later Child-1
+chronology, runner, terminal-liquid, restart, or terminal-review obligations.

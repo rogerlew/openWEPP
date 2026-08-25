@@ -151,15 +151,15 @@ fn canonical_contracts_bind_child_2c_authority_without_activation() {
 }
 
 #[test]
-fn snow_energy_v16_is_approved_and_preserves_v15_ofe_ground_lanes() {
+fn snow_energy_v18_physical_custody_is_approved_and_preserves_v17_precipitation() {
     let contract = read("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
     let registry = read("docs/specifications/science-contracts/index.md");
 
     for required in [
         "status: approved",
         "maturity: active",
-        "contract_version: 16",
-        "last_reviewed: 2026-08-22",
+        "contract_version: 18",
+        "last_reviewed: 2026-08-24",
         "INV-SNOWENERGY-042",
         "INV-SNOWENERGY-043",
         "INV-SNOWENERGY-044",
@@ -170,16 +170,42 @@ fn snow_energy_v16_is_approved_and_preserves_v15_ofe_ground_lanes() {
         "SCHEMA_UNDEFINED / IMPLEMENTATION_BLOCKED",
         "X_lane = sum_i(f_i * X_i)",
         "not divided by the covered fraction",
+        "INV-SNOWENERGY-045",
+        "INV-SNOWENERGY-046",
+        "INV-SNOWENERGY-047",
+        "OBL-SNOWENERGY-P-011",
+        "OBL-SNOWENERGY-C-021",
+        "SNOWENERGY-E-PRECIP-001",
+        "complete empty set",
+        "Raw rain and vegetation release cannot both be delivered",
+        "Solid atmospheric precipitation bypasses vegetation",
+        "identical accepted parcel identities",
+        "sum_p(f_destination,p * X_p)",
+        "SC-VEGETATION-001@28",
+        "SC-LANDSURFACEENERGY-001",
+        "INV-SNOWENERGY-048",
+        "INV-SNOWENERGY-049",
+        "INV-SNOWENERGY-050",
+        "OBL-SNOWENERGY-P-012",
+        "OBL-SNOWENERGY-C-022",
+        "SNOWENERGY-E-SOIL-HEAT-001",
+        "bottom represented Stage 3 snow thermal volume",
+        "first ordered OFE soil-thermal node",
+        "dz_sb/(2*lambda_sb)+dz_1/(2*lambda_1)",
+        "bar(G_ss)=0.5*(G_ss,0+G_ss,1)",
+        "SnowSoilHeatReceiptV1",
+        "first-tile selection",
+        "duplicated lane flux",
     ] {
         assert!(
             contract.contains(required),
-            "missing approved v16 authority: {required}"
+            "missing in-review v17 precipitation authority: {required}"
         );
     }
     assert!(registry.contains(
         "| `SC-SNOWENERGY-001` | Snow-Surface Energy and Sub-Canopy Longwave Contract | `approved` | `active` |"
     ));
-    assert!(registry.contains("v15 binds"));
+    assert!(registry.contains("v18 admits OFE/lane snow--soil boundary custody"));
     assert!(!registry.contains("v14 binds the default-off shared V11/Stage 3 carrier"));
     assert_eq!(contract.matches("| `INV-SNOWENERGY-041` |").count(), 1);
     assert_eq!(contract.matches("| `INV-SNOWENERGY-042` |").count(), 2);
@@ -195,6 +221,47 @@ fn snow_energy_v16_is_approved_and_preserves_v15_ofe_ground_lanes() {
     assert!(contract.contains("TOL-SNOWENERGY-002"));
     assert!(contract.contains("| `OBL-SNOWENERGY-C-018` | OFE-ground lane-boundary consumer |"));
     assert!(contract.contains("REF-SNOWENERGY-USER-OFE-GROUND-V15"));
+    assert!(contract.contains("REF-SNOWENERGY-PRECIP-CUSTODY-V17"));
+    assert!(contract.contains("REF-SNOWENERGY-SOIL-BOUNDARY-V18"));
+
+    let lse_contract =
+        read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
+    for required in [
+        "contract_version: 8",
+        "INV-LANDSURFACEENERGY-124",
+        "INV-LANDSURFACEENERGY-125",
+        "INV-LANDSURFACEENERGY-126",
+        "R_ss       = dz_sb/(2*lambda_sb) + dz_1/(2*lambda_1)",
+        "SnowSoilHeatReceiptV1",
+        "LSEB-E-044",
+    ] {
+        assert!(
+            lse_contract.contains(required),
+            "missing in-review LSE v8 snow-soil authority: {required}"
+        );
+    }
+
+    let attachment = format!(
+        "{}\n{}\n{}",
+        read("crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs"),
+        read("crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_precipitation.rs"),
+        read("crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_snow_soil_heat.rs")
+    );
+    for required in [
+        "Stage3PrecipitationPhaseParcelSetV1",
+        "validate_precipitation_phase_parcel_set",
+        "precipitation_advected_heat_j_m2_tile_ground",
+        "SNOWENERGY-E-PRECIP-001",
+        "SnowSoilHeatReceiptV1",
+        "validate_snow_soil_heat_receipt",
+        "snow_soil_heat_w_m2_ofe_ground",
+        "SNOWENERGY-E-SOIL-HEAT-001",
+    ] {
+        assert!(
+            attachment.contains(required),
+            "missing v18 production source guard: {required}"
+        );
+    }
 
     let receipt_source =
         read("crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs");

@@ -2217,6 +2217,73 @@ mod tests {
         );
     }
 
+    fn top_boundary_credit(fixture: &EndpointFixture) -> SoilThermalTopBoundaryCreditV1 {
+        SoilThermalTopBoundaryCreditV1 {
+            lane_id: 7,
+            ofe_id: fixture.thermal.ofes[0].ofe_id.clone(),
+            first_layer_id: fixture.thermal.ofes[0].ordered_layers[0].layer_id.clone(),
+            beginning_owner_id: fixture.thermal.owner_id.clone(),
+            beginning_configuration_sha256: fixture.thermal.configuration_sha256.clone(),
+            beginning_state_sha256: fixture.thermal.state_sha256.clone(),
+            support_start_ns: 0,
+            support_end_ns: 1_800_000_000_000,
+            accepted_positive_downward_j_m2_ofe_ground: 125.0,
+            soil_thermal_credit_j_m2_ofe_ground: 125.0,
+            snow_soil_heat_receipt_sha256: Sha256Digest::try_new("a".repeat(64)).expect("receipt"),
+        }
+    }
+
+    #[test]
+    fn ofe_top_boundary_credit_is_applied_once_and_is_tile_order_independent() {
+        let (_, fixture) = shadow_fixture();
+        let candidates = soil_candidates(&fixture);
+        let credit = top_boundary_credit(&fixture);
+        let beginning = fixture.thermal.ofes[0].ordered_layers[0].enthalpy_j_m2_ofe_ground;
+        let tile_credit = candidates.iter()
+            .map(|candidate| candidate.layers[0].ground_heat_credit_j_m2_ofe_ground).sum::<f64>();
+        let accepted = aggregate_soil_thermal_ending_with_top_boundary_credits(
+            &fixture.thermal, &fixture.lse_configuration, TransactionId(41), &candidates,
+            std::slice::from_ref(&credit),
+        ).expect("OFE credit");
+        assert_eq!(accepted.ending.ofes[0].ordered_layers[0].enthalpy_j_m2_ofe_ground.to_bits(),
+            (beginning + tile_credit + 125.0).to_bits());
+        let mut reversed = candidates;
+        reversed.reverse();
+        assert_eq!(aggregate_soil_thermal_ending_with_top_boundary_credits(
+            &fixture.thermal, &fixture.lse_configuration, TransactionId(41), &reversed, &[credit],
+        ).expect("tile-order-independent OFE credit"), accepted);
+    }
+
+    #[test]
+    fn ofe_top_boundary_credit_rejects_identity_duplicate_sign_and_support_poisons() {
+        let (_, fixture) = shadow_fixture();
+        let candidates = soil_candidates(&fixture);
+        let valid = top_boundary_credit(&fixture);
+        let beginning = fixture.thermal.clone();
+        let reject = |credits: &[SoilThermalTopBoundaryCreditV1]| {
+            aggregate_soil_thermal_ending_with_top_boundary_credits(
+                &fixture.thermal, &fixture.lse_configuration, TransactionId(41), &candidates, credits,
+            ).is_err()
+        };
+        let mut wrong_ofe = valid.clone();
+        wrong_ofe.ofe_id = OfeId::try_new("wrong-ofe").expect("OFE");
+        assert!(reject(&[wrong_ofe]));
+        let mut wrong_layer = valid.clone();
+        wrong_layer.first_layer_id = SoilLayerId::try_new("wrong-layer").expect("layer");
+        assert!(reject(&[wrong_layer]));
+        let mut wrong_owner = valid.clone();
+        wrong_owner.beginning_owner_id = ResourceOwnerId::try_new("wrong-owner").expect("owner");
+        assert!(reject(&[wrong_owner]));
+        let mut wrong_sign = valid.clone();
+        wrong_sign.soil_thermal_credit_j_m2_ofe_ground = -125.0;
+        assert!(reject(&[wrong_sign]));
+        let mut wrong_support = valid.clone();
+        wrong_support.support_end_ns = wrong_support.support_start_ns;
+        assert!(reject(&[wrong_support]));
+        assert!(reject(&[valid.clone(), valid]));
+        assert_eq!(fixture.thermal, beginning);
+    }
+
     #[test]
     fn mixed_complete_owner_lineage_is_rejected_before_execution() {
         let (mut shadow, _) = shadow_fixture();

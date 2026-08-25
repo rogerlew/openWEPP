@@ -16,6 +16,372 @@ pub struct DirectV11RealConsumerStack<'a> {
     pub(super) ending_snow_owner_bytes: Option<Vec<u8>>,
 }
 
+#[derive(Clone)]
+pub(crate) struct PrecipitationProducerManifestRowV1 {
+    pub destination_topology_index: u32,
+    pub source: Stage3PrecipitationSourceV1,
+    pub semantic_receipt_ordinal: u32,
+    pub mass_kg_m2_tile_ground: f64,
+    pub enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1,
+    pub source_identity_sha256: Digest32,
+    pub producer_beginning_state_sha256: Digest32,
+}
+
+pub(crate) fn validate_precipitation_producer_manifest(
+    set: &Stage3PrecipitationPhaseParcelSetV1,
+    manifest: &[PrecipitationProducerManifestRowV1],
+) -> Result<(), DirectV11RealConsumerError> {
+    let actual_keys = set
+        .parcels
+        .iter()
+        .map(|parcel| {
+            (
+                parcel.destination_topology_index,
+                parcel.source,
+                parcel.semantic_receipt_ordinal,
+            )
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    let positive_manifest_keys = manifest
+        .iter()
+        .filter(|row| row.mass_kg_m2_tile_ground > 0.0)
+        .map(|row| {
+            (
+                row.destination_topology_index,
+                row.source,
+                row.semantic_receipt_ordinal,
+            )
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    if actual_keys.len() != set.parcels.len()
+        || positive_manifest_keys.len()
+            != manifest
+                .iter()
+                .filter(|row| row.mass_kg_m2_tile_ground > 0.0)
+                .count()
+        || actual_keys != positive_manifest_keys
+    {
+        return Err(DirectV11RealConsumerError::Identity(
+            "precipitation producer route parcel cardinality",
+        ));
+    }
+    for expected in manifest {
+        let matching = set.parcels.iter().filter(|parcel| {
+            parcel.destination_topology_index == expected.destination_topology_index
+                && parcel.source == expected.source
+                && parcel.semantic_receipt_ordinal == expected.semantic_receipt_ordinal
+        }).collect::<Vec<_>>();
+        if expected.mass_kg_m2_tile_ground == 0.0 {
+            if !matching.is_empty() {
+                return Err(DirectV11RealConsumerError::Identity("zero precipitation producer route parcel"));
+            }
+            continue;
+        }
+        let [parcel] = matching.as_slice() else {
+            return Err(DirectV11RealConsumerError::Identity("precipitation producer route parcel cardinality"));
+        };
+        let provider_matches = parcel.enthalpy_provider == expected.enthalpy_provider;
+        if parcel.mass_kg_m2_tile_ground.to_bits() != expected.mass_kg_m2_tile_ground.to_bits()
+            || parcel.source_identity_sha256 != expected.source_identity_sha256
+            || parcel.producer_beginning_state_sha256 != expected.producer_beginning_state_sha256
+            || !provider_matches
+        {
+            return Err(DirectV11RealConsumerError::Identity("precipitation producer route parcel manifest"));
+        }
+    }
+    Ok(())
+}
+
+const STAGE3_SNOW_DENSITY_KG_M3: f64 = 100.0;
+
+struct LanePrecipitationBuildContext<'a, 'stack> {
+    stack: &'a DirectV11SnowCoveredRealConsumerStack<'stack>,
+    envelope: &'a UncommittedCoveredV8OwnerEnvelope,
+    interval_s: f64,
+    support: openwepp_coupled_time::TimeSupport,
+    lane_id: u32,
+    ofe_id: OfeId,
+    forcing: DirectSnowStage3SupportInput,
+    beginning_snow_state_sha256: Digest32,
+    beginning_vegetation_state_sha256: Digest32,
+    forcing_identity_sha256: Digest32,
+    temperature_k: f64,
+    solid_specific_heat_j_kg_k: f64,
+}
+
+fn seal_precipitation_parcel(
+    parcel: Stage3PrecipitationPhaseParcelV1,
+) -> Result<Stage3PrecipitationPhaseParcelV1, DirectV11RealConsumerError> {
+    parcel
+        .seal()
+        .map_err(|error| DirectV11RealConsumerError::from_stage3_physical_custody(&error))
+}
+
+fn append_precipitation_parcel(
+    parcels: &mut Vec<Stage3PrecipitationPhaseParcelV1>,
+    parcel: Stage3PrecipitationPhaseParcelV1,
+) -> Result<(), DirectV11RealConsumerError> {
+    if parcel.mass_kg_m2_tile_ground != 0.0 {
+        parcels.push(seal_precipitation_parcel(parcel)?);
+    }
+    Ok(())
+}
+
+fn append_covered_liquid_routes(
+    context: &LanePrecipitationBuildContext<'_, '_>,
+    destination: &Stage3PrecipitationDestinationV1,
+    parcels: &mut Vec<Stage3PrecipitationPhaseParcelV1>,
+) -> Result<(), DirectV11RealConsumerError> {
+    let key = (destination.ofe_id.clone(), destination.tile_id.clone());
+    let releases = context
+        .envelope
+        .fixed_cap_canopy_releases_by_destination(context.interval_s)
+        .map_err(|_| DirectV11RealConsumerError::Identity("fixed-cap precipitation release"))?;
+    let (release, source_identity) = releases.get(&key).ok_or(
+        DirectV11RealConsumerError::Identity("covered precipitation release destination"),
+    )?;
+    for (source, amount) in [
+        (Stage3PrecipitationSourceV1::VegetationTerminalThroughfall, &release.throughfall),
+        (Stage3PrecipitationSourceV1::VegetationTerminalInitialDrainage, &release.initial_drainage),
+        (Stage3PrecipitationSourceV1::VegetationTerminalSecondDrainage, &release.second_drainage),
+        (Stage3PrecipitationSourceV1::VegetationTerminalStemflow, &release.stemflow),
+    ] {
+        append_precipitation_parcel(parcels, Stage3PrecipitationPhaseParcelV1 {
+            support: context.support,
+            lane_id: context.lane_id,
+            destination_topology_index: destination.topology_index,
+            destination_ofe_id: destination.ofe_id.clone(),
+            destination_tile_id: destination.tile_id.clone(),
+            phase: Stage3PrecipitationPhaseV1::Liquid,
+            source,
+            semantic_receipt_ordinal: 0,
+            mass_kg_m2_tile_ground: amount.mass_kg_m2_tile_ground,
+            enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::SpecificEnthalpy {
+                specific_enthalpy_j_kg: amount.specific_liquid_enthalpy_j_kg,
+                provider_receipt_sha256: *source_identity,
+            },
+            source_identity_sha256: *source_identity,
+            producer_beginning_state_sha256: context.beginning_vegetation_state_sha256,
+            receipt_sha256: Digest32::zero(),
+        })?;
+    }
+    Ok(())
+}
+
+fn append_open_raw_rain_routes(
+    context: &LanePrecipitationBuildContext<'_, '_>,
+    destination: &Stage3PrecipitationDestinationV1,
+    parcels: &mut Vec<Stage3PrecipitationPhaseParcelV1>,
+) -> Result<(), DirectV11RealConsumerError> {
+    for (ordinal, atmospheric) in context.stack.interval.lse_forcing.precipitation_parcels.iter()
+        .filter(|parcel| parcel.destination_ofe_id == destination.ofe_id
+            && parcel.destination_tile_id == destination.tile_id).enumerate()
+    {
+        let source_identity = digest_bytes(&serde_json::to_vec(atmospheric).map_err(|_| {
+            DirectV11RealConsumerError::Identity("open rain source framing")
+        })?);
+        append_precipitation_parcel(parcels, Stage3PrecipitationPhaseParcelV1 {
+            support: context.support,
+            lane_id: context.lane_id,
+            destination_topology_index: destination.topology_index,
+            destination_ofe_id: destination.ofe_id.clone(),
+            destination_tile_id: destination.tile_id.clone(),
+            phase: Stage3PrecipitationPhaseV1::Liquid,
+            source: Stage3PrecipitationSourceV1::OpenRawRain,
+            semantic_receipt_ordinal: u32::try_from(ordinal).map_err(|_| {
+                DirectV11RealConsumerError::Identity("open rain semantic ordinal")
+            })?,
+            mass_kg_m2_tile_ground: atmospheric.amount_kg_m2_destination_tile_ground,
+            enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::SpecificEnthalpy {
+                specific_enthalpy_j_kg: atmospheric.specific_liquid_enthalpy_j_kg.ok_or(
+                    DirectV11RealConsumerError::Identity("open rain enthalpy provider"))?,
+                provider_receipt_sha256: source_identity,
+            },
+            source_identity_sha256: source_identity,
+            producer_beginning_state_sha256: digest32_from_lower_hex(atmospheric
+                .source_state_sha256.as_ref().ok_or(DirectV11RealConsumerError::Identity(
+                    "open rain source-state identity"))?.as_str())?,
+            receipt_sha256: Digest32::zero(),
+        })?;
+    }
+    Ok(())
+}
+
+fn build_destination_parcels(
+    context: &LanePrecipitationBuildContext<'_, '_>,
+    destination: &Stage3PrecipitationDestinationV1,
+) -> Result<Vec<Stage3PrecipitationPhaseParcelV1>, DirectV11RealConsumerError> {
+    let mut parcels = Vec::new();
+    append_precipitation_parcel(&mut parcels, Stage3PrecipitationPhaseParcelV1 {
+        support: context.support,
+        lane_id: context.lane_id,
+        destination_topology_index: destination.topology_index,
+        destination_ofe_id: destination.ofe_id.clone(),
+        destination_tile_id: destination.tile_id.clone(),
+        phase: Stage3PrecipitationPhaseV1::Solid,
+        source: Stage3PrecipitationSourceV1::AtmosphericGroundSnow,
+        semantic_receipt_ordinal: 0,
+        mass_kg_m2_tile_ground: context.forcing.forcing.snowfall_m * STAGE3_SNOW_DENSITY_KG_M3,
+        enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::Temperature {
+            temperature_k: context.temperature_k,
+            reference_temperature_k: 273.16,
+            specific_heat_j_kg_k: context.solid_specific_heat_j_kg_k,
+            provider_receipt_sha256: context.forcing_identity_sha256,
+        },
+        source_identity_sha256: context.forcing_identity_sha256,
+        producer_beginning_state_sha256: context.forcing_identity_sha256,
+        receipt_sha256: Digest32::zero(),
+    })?;
+    if destination.canopy_covered {
+        append_covered_liquid_routes(context, destination, &mut parcels)?;
+    } else {
+        append_open_raw_rain_routes(context, destination, &mut parcels)?;
+    }
+    Ok(parcels)
+}
+
+fn append_open_producer_manifest(
+    context: &LanePrecipitationBuildContext<'_, '_>,
+    destination: &Stage3PrecipitationDestinationV1,
+    manifest: &mut Vec<PrecipitationProducerManifestRowV1>,
+) -> Result<(), DirectV11RealConsumerError> {
+    for (ordinal, atmospheric) in context.stack.interval.lse_forcing.precipitation_parcels.iter()
+        .filter(|parcel| parcel.destination_ofe_id == destination.ofe_id
+            && parcel.destination_tile_id == destination.tile_id).enumerate()
+    {
+        let source_identity = digest_bytes(&serde_json::to_vec(atmospheric).map_err(|_| {
+            DirectV11RealConsumerError::Identity("open rain producer manifest framing")
+        })?);
+        manifest.push(PrecipitationProducerManifestRowV1 {
+            destination_topology_index: destination.topology_index,
+            source: Stage3PrecipitationSourceV1::OpenRawRain,
+            semantic_receipt_ordinal: u32::try_from(ordinal).map_err(|_| {
+                DirectV11RealConsumerError::Identity("open rain producer manifest ordinal")
+            })?,
+            mass_kg_m2_tile_ground: atmospheric.amount_kg_m2_destination_tile_ground,
+            enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::SpecificEnthalpy {
+                specific_enthalpy_j_kg: atmospheric.specific_liquid_enthalpy_j_kg.ok_or(
+                    DirectV11RealConsumerError::Identity("open rain producer manifest enthalpy"))?,
+                provider_receipt_sha256: source_identity,
+            },
+            source_identity_sha256: source_identity,
+            producer_beginning_state_sha256: digest32_from_lower_hex(atmospheric
+                .source_state_sha256.as_ref().ok_or(DirectV11RealConsumerError::Identity(
+                    "open rain producer manifest state"))?.as_str())?,
+        });
+    }
+    Ok(())
+}
+
+fn append_covered_producer_manifest(
+    context: &LanePrecipitationBuildContext<'_, '_>,
+    destination: &Stage3PrecipitationDestinationV1,
+    manifest: &mut Vec<PrecipitationProducerManifestRowV1>,
+) -> Result<(), DirectV11RealConsumerError> {
+    let key = (destination.ofe_id.clone(), destination.tile_id.clone());
+    let releases = context
+        .envelope
+        .fixed_cap_canopy_releases_by_destination(context.interval_s)
+        .map_err(|_| DirectV11RealConsumerError::Identity("fixed-cap precipitation release"))?;
+    let (release, source_identity) = releases.get(&key).ok_or(
+        DirectV11RealConsumerError::Identity("covered precipitation producer manifest destination"),
+    )?;
+    for (source, amount) in [
+        (Stage3PrecipitationSourceV1::VegetationTerminalThroughfall, &release.throughfall),
+        (Stage3PrecipitationSourceV1::VegetationTerminalInitialDrainage, &release.initial_drainage),
+        (Stage3PrecipitationSourceV1::VegetationTerminalSecondDrainage, &release.second_drainage),
+        (Stage3PrecipitationSourceV1::VegetationTerminalStemflow, &release.stemflow),
+    ] {
+        manifest.push(PrecipitationProducerManifestRowV1 {
+            destination_topology_index: destination.topology_index,
+            source,
+            semantic_receipt_ordinal: 0,
+            mass_kg_m2_tile_ground: amount.mass_kg_m2_tile_ground,
+            enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::SpecificEnthalpy {
+                specific_enthalpy_j_kg: amount.specific_liquid_enthalpy_j_kg,
+                provider_receipt_sha256: *source_identity,
+            },
+            source_identity_sha256: *source_identity,
+            producer_beginning_state_sha256: context.beginning_vegetation_state_sha256,
+        });
+    }
+    Ok(())
+}
+
+fn construct_precipitation_producer_manifest(
+    context: &LanePrecipitationBuildContext<'_, '_>,
+    destinations: &[Stage3PrecipitationDestinationV1],
+) -> Result<Vec<PrecipitationProducerManifestRowV1>, DirectV11RealConsumerError> {
+    let mut manifest = Vec::new();
+    for destination in destinations {
+        manifest.push(PrecipitationProducerManifestRowV1 {
+            destination_topology_index: destination.topology_index,
+            source: Stage3PrecipitationSourceV1::AtmosphericGroundSnow,
+            semantic_receipt_ordinal: 0,
+            mass_kg_m2_tile_ground: context.forcing.forcing.snowfall_m * STAGE3_SNOW_DENSITY_KG_M3,
+            enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::Temperature {
+                temperature_k: context.temperature_k,
+                reference_temperature_k: 273.16,
+                specific_heat_j_kg_k: context.solid_specific_heat_j_kg_k,
+                provider_receipt_sha256: context.forcing_identity_sha256,
+            },
+            source_identity_sha256: context.forcing_identity_sha256,
+            producer_beginning_state_sha256: context.forcing_identity_sha256,
+        });
+        if !destination.canopy_covered {
+            append_open_producer_manifest(context, destination, &mut manifest)?;
+        }
+    }
+    for destination in destinations.iter().filter(|value| value.canopy_covered) {
+        append_covered_producer_manifest(context, destination, &mut manifest)?;
+    }
+    Ok(manifest)
+}
+
+fn build_lane_precipitation_set(
+    context: &LanePrecipitationBuildContext<'_, '_>,
+) -> Result<Stage3PrecipitationPhaseParcelSetV1, DirectV11RealConsumerError> {
+    let mut destinations = Vec::new();
+    let mut parcels = Vec::new();
+    for record in context.stack.beginning.inner.surface_configuration.records.iter()
+        .filter(|record| record.key.ofe_id == context.ofe_id)
+    {
+        let topology_index = u32::try_from(destinations.len()).map_err(|_| {
+            DirectV11RealConsumerError::Identity("precipitation topology width")
+        })?;
+        let key = (record.key.ofe_id.clone(), record.key.tile_id.clone());
+        let destination = Stage3PrecipitationDestinationV1 {
+            topology_index,
+            ofe_id: record.key.ofe_id.clone(),
+            tile_id: record.key.tile_id.clone(),
+            fraction_of_ofe: record.tile_fraction,
+            canopy_covered: matches!(context.stack.snow_surface_forcing_by_destination.get(&key),
+                Some(SealedStage3TileBoundaryForcingV1::V11CanopyCovered(_))),
+            destination_identity_sha256: digest_bytes(&serde_json::to_vec(record).map_err(|_| {
+                DirectV11RealConsumerError::Identity("precipitation topology framing")
+            })?),
+        };
+        parcels.extend(build_destination_parcels(context, &destination)?);
+        destinations.push(destination);
+    }
+    parcels.sort_by_key(|parcel| (parcel.lane_id, parcel.destination_topology_index,
+        parcel.phase, parcel.source, parcel.semantic_receipt_ordinal));
+    let topology_identity_sha256 = digest_bytes(&destinations.iter().flat_map(|destination|
+        destination.destination_identity_sha256.as_bytes().iter().copied()).collect::<Vec<_>>());
+    Stage3PrecipitationPhaseParcelSetV1 {
+        schema_version: 1,
+        support: context.support,
+        lane_id: context.lane_id,
+        ofe_id: context.ofe_id.clone(),
+        ofe_ground_basis: true,
+        beginning_snow_state_sha256: context.beginning_snow_state_sha256,
+        topology_identity_sha256,
+        destinations,
+        parcels,
+        receipt_sha256: Digest32::zero(),
+    }.seal().map_err(|error| DirectV11RealConsumerError::from_stage3_physical_custody(&error))
+}
+
 /// Explicit covered lower-boundary adopter for the V11 imported transaction.
 ///
 /// This type is intentionally separate from [`DirectV11RealConsumerStack`].
@@ -44,6 +410,10 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     last_lane_boundary_receipts: Option<BTreeMap<u32, LaneStage3BoundaryReceiptV1>>,
     last_component_carrier_receipts:
         Option<BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>>,
+    last_snow_soil_heat_receipts: Option<BTreeMap<u32, SnowSoilHeatReceiptV1>>,
+    last_precipitation_parcel_sets: Option<BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>>,
+    last_physical_outcome_ledgers:
+        Option<BTreeMap<u32, physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1>>,
     last_wb14_child_receipt_set_sha256: Option<String>,
     last_wb14_parent_receipt_set_sha256: Option<String>,
     last_wb14_child_replay_bytes: Option<Vec<u8>>,
@@ -87,11 +457,77 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             last_final_boundary_receipts: None,
             last_lane_boundary_receipts: None,
             last_component_carrier_receipts: None,
+            last_snow_soil_heat_receipts: None,
+            last_precipitation_parcel_sets: None,
+            last_physical_outcome_ledgers: None,
             last_wb14_child_receipt_set_sha256: None,
             last_wb14_parent_receipt_set_sha256: None,
             last_wb14_child_replay_bytes: None,
             last_wb14_parent_replay_bytes: None,
         }
+    }
+
+    fn precipitation_parcel_sets(
+        &self,
+        support: openwepp_coupled_time::TimeSupport,
+        envelope: &UncommittedCoveredV8OwnerEnvelope,
+    ) -> Result<BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>, DirectV11RealConsumerError> {
+        let interval_s = f64::from_bits(self.interval.lse_forcing.interval_s.to_bits());
+        let beginning_vegetation_state_sha256 = digest32_from_lower_hex(
+            self.beginning.vegetation_state.0.state_sha256.as_str(),
+        )?;
+        let mut sets = BTreeMap::new();
+        for (lane_id, ofe_id) in self.covered_lane_to_ofe(&self.stage3_beginning_by_lane)? {
+            let forcing = self.stage3_forcing_by_lane.get(&lane_id).copied().ok_or(
+                DirectV11RealConsumerError::Identity("precipitation forcing lane"),
+            )?;
+            let beginning_snow = self.stage3_beginning_by_lane.get(&lane_id).ok_or(
+                DirectV11RealConsumerError::Identity("precipitation beginning snow lane"),
+            )?;
+            let beginning_snow_state_sha256 = digest_bytes(
+                &Wb11HydrologyKernel::serialize_stage3_persistent_state(beginning_snow).map_err(
+                    |_| DirectV11RealConsumerError::Identity("precipitation beginning snow seal"),
+                )?,
+            );
+            let forcing_identity_sha256 = digest32_from_lower_hex(
+                stage3_support_forcing_digest(forcing)?.as_str(),
+            )?;
+            let has_precipitation =
+                forcing.forcing.rain_m > 0.0 || forcing.forcing.snowfall_m > 0.0;
+            let temperature_c = match forcing.forcing.hydrometeor_temperature_c {
+                Some(value) => value,
+                None if has_precipitation => return Err(DirectV11RealConsumerError::Identity(
+                    "precipitation temperature provider",
+                )),
+                None => 0.0,
+            };
+            let temperature = TemperatureCelsius::try_new(temperature_c).map_err(|_| {
+                DirectV11RealConsumerError::Identity("precipitation temperature provider")
+            })?;
+            let context = LanePrecipitationBuildContext {
+                stack: self,
+                envelope,
+                interval_s,
+                support,
+                lane_id,
+                ofe_id,
+                forcing,
+                beginning_snow_state_sha256,
+                beginning_vegetation_state_sha256,
+                forcing_identity_sha256,
+                temperature_k: celsius_to_kelvin(temperature_c),
+                solid_specific_heat_j_kg_k: openwepp_meteorology::surface_energy::specific_heat_ice(
+                    temperature,
+                )
+                .map_err(|_| DirectV11RealConsumerError::Identity("snow specific heat"))?
+                .as_joules_per_kilogram_kelvin(),
+            };
+            let set = build_lane_precipitation_set(&context)?;
+            let manifest = construct_precipitation_producer_manifest(&context, &set.destinations)?;
+            validate_precipitation_producer_manifest(&set, &manifest)?;
+            sets.insert(lane_id, set);
+        }
+        Ok(sets)
     }
 
     #[allow(clippy::too_many_lines)]
@@ -425,6 +861,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         &self,
         input: &V11ImportedV10SegmentInput,
         final_receipts: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
+        precipitation_sets: &BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>,
     ) -> Result<BTreeMap<u32, LaneStage3BoundaryReceiptV1>, DirectV11RealConsumerError> {
         let topology_configuration_sha256 = self.covered_topology_digest();
         let mut grouped =
@@ -539,6 +976,12 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                         optical_receipt_sha256: Digest32::zero(),
                         reciprocal_longwave_receipt_sha256: Digest32::zero(),
                         final_destination_receipt_sha256: Digest32::zero(),
+                        precipitation_parcel_set_sha256: precipitation_sets
+                            .get(&lane_id)
+                            .ok_or(DirectV11RealConsumerError::Identity(
+                                "lane precipitation parcel-set receipt",
+                            ))?
+                            .receipt_sha256,
                         ordered_destinations: contributions,
                         aggregate_sensible_to_canopy_air_w_m2: aggregate[0],
                         aggregate_vapor_to_canopy_air_kg_m2_s: aggregate[1],
@@ -1362,6 +1805,25 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         &self,
     ) -> Option<&BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>> {
         self.last_component_carrier_receipts.as_ref()
+    }
+
+    pub(crate) fn last_snow_soil_heat_receipts(
+        &self,
+    ) -> Option<&BTreeMap<u32, SnowSoilHeatReceiptV1>> {
+        self.last_snow_soil_heat_receipts.as_ref()
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn last_precipitation_parcel_sets(
+        &self,
+    ) -> Option<&BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>> {
+        self.last_precipitation_parcel_sets.as_ref()
+    }
+
+    pub(crate) fn last_physical_outcome_ledgers(
+        &self,
+    ) -> Option<&BTreeMap<u32, physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1>> {
+        self.last_physical_outcome_ledgers.as_ref()
     }
 
     pub(crate) fn last_wb14_receipt_sets(&self) -> Option<(&str, Option<&str>)> {

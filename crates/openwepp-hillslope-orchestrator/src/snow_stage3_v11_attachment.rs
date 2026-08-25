@@ -8,12 +8,12 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_coupled_time::{
-    ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, Digest32, LedgerEntryV1,
-    ModelTimeNs, OwnerState, ParentAuthorityV1, ParentIntervalId, StepConstraintV1, TimeSupport,
-    accept_slab, complete_owner_set_digest, digest_bytes, quantize_seconds_to_tick,
-    reduce_constraints,
+    ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, Digest32, FramedField,
+    LedgerEntryV1, ModelTimeNs, OwnerState, ParentAuthorityV1, ParentIntervalId, StepConstraintV1,
+    TimeSupport, accept_slab, complete_owner_set_digest, digest_bytes, framed_sha256,
+    quantize_seconds_to_tick, reduce_constraints,
 };
-use openwepp_kernel_contract::TileId;
+use openwepp_kernel_contract::{SoilLayerId, TileId};
 use openwepp_land_surface_energy::OfeId;
 use openwepp_meteorology::psychrometrics::saturation_vapor_pressure_water_kpa;
 use openwepp_meteorology::snow_free_forcing::{celsius_to_kelvin, kilopascals_to_pascals};
@@ -44,8 +44,8 @@ use crate::snow_stage3_terminal_handoff::{
 };
 use crate::v9_real_consumer_shadow::DirectV10RealConsumerShadow;
 use crate::v9_real_consumer_shadow::{
-    CoveredParentOwnerJoinReceiptV1, DirectV9ShadowIntervalInput, DirectV11RealConsumerError,
-    DirectV11RealConsumerStack, DirectV11SnowCoveredRealConsumerStack,
+    CoveredParentOwnerJoinReceiptV1, CoveredPhysicalCustodyJoinInputs, DirectV9ShadowIntervalInput,
+    DirectV11RealConsumerError, DirectV11RealConsumerStack, DirectV11SnowCoveredRealConsumerStack,
     DirectV11SnowCoveredSegmentInput, DirectV11SnowCoveredStackInputs,
 };
 use crate::v11_vegetation_consumer::{accept_direct_v11_segment, execute_direct_v11_segment};
@@ -63,6 +63,10 @@ pub enum DirectSnowStage3V11AttachmentError {
     Support(&'static str),
     #[error("Stage-3/V11 attachment terminal candidate failure: {0}")]
     Terminal(&'static str),
+    #[error("SNOWENERGY-E-PRECIP-001: {0}")]
+    Precipitation(&'static str),
+    #[error("SNOWENERGY-E-SOIL-HEAT-001: {0}")]
+    SnowSoilHeat(&'static str),
     #[error(transparent)]
     Stage3(#[from] crate::hydrology::DirectSnowStage3EvaluationError),
     #[error(transparent)]
@@ -162,6 +166,8 @@ pub enum Stage3LaneLifecycleV1 {
     SolidPrecipitationPending,
 }
 
+include!("snow_stage3_v11_precipitation.rs");
+include!("snow_stage3_v11_snow_soil_heat.rs");
 include!("stage3_parent_atmosphere.rs");
 
 fn stage3_lane_lifecycle(
@@ -1588,8 +1594,11 @@ pub struct DirectSnowStage3V11ShadowAttachment {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Stage3V11FailureInjection {
-    AfterSubslab(usize),
-    AfterFinalOwnerJoin,
+    SubslabAccepted(usize),
+    OutcomeLedgerBuilt(usize),
+    PrecipitationReceiptRejected(usize),
+    SnowSoilHeatReceiptRejected(usize),
+    FinalOwnerJoinCompleted,
 }
 
 impl DirectSnowStage3V11ShadowAttachment {
@@ -1653,13 +1662,19 @@ impl DirectSnowStage3V11ShadowAttachment {
     #[cfg(test)]
     #[allow(dead_code)]
     pub(crate) fn inject_failure_after_subslab(&mut self, ordinal: usize) {
-        self.failure_injection = Some(Stage3V11FailureInjection::AfterSubslab(ordinal));
+        self.failure_injection = Some(Stage3V11FailureInjection::SubslabAccepted(ordinal));
+    }
+
+    #[cfg(test)]
+    #[allow(dead_code)]
+    pub(crate) fn inject_failure_after_outcome_ledger(&mut self, ordinal: usize) {
+        self.failure_injection = Some(Stage3V11FailureInjection::OutcomeLedgerBuilt(ordinal));
     }
 
     #[cfg(test)]
     #[allow(dead_code)]
     pub(crate) fn inject_failure_after_final_owner_join(&mut self) {
-        self.failure_injection = Some(Stage3V11FailureInjection::AfterFinalOwnerJoin);
+        self.failure_injection = Some(Stage3V11FailureInjection::FinalOwnerJoinCompleted);
     }
 
     #[cfg(test)]
@@ -2524,6 +2539,33 @@ pub(crate) fn execute_covered_real_v11_parent(
                 stage3,
                 selected_seconds,
             )?;
+        if failure_injection
+            == Some(Stage3V11FailureInjection::OutcomeLedgerBuilt(
+                owner_joins.len() + 1,
+            ))
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "injected post-outcome-ledger rollback",
+            ));
+        }
+        if failure_injection
+            == Some(Stage3V11FailureInjection::PrecipitationReceiptRejected(
+                owner_joins.len() + 1,
+            ))
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Precipitation(
+                "injected live precipitation-receipt rejection",
+            ));
+        }
+        if failure_injection
+            == Some(Stage3V11FailureInjection::SnowSoilHeatReceiptRejected(
+                owner_joins.len() + 1,
+            ))
+        {
+            return Err(DirectSnowStage3V11AttachmentError::SnowSoilHeat(
+                "injected live snow-soil-receipt rejection",
+            ));
+        }
         if owner_join.owner_join.beginning_complete_owner_set_sha256 != expected_child_beginning {
             return Err(DirectSnowStage3V11AttachmentError::Identity(
                 "covered child complete-owner predecessor join",
@@ -2540,13 +2582,17 @@ pub(crate) fn execute_covered_real_v11_parent(
         clock = next_clock;
         stage3 = next_stage3;
         owner_joins.push(owner_join);
-        if failure_injection == Some(Stage3V11FailureInjection::AfterSubslab(owner_joins.len())) {
+        if failure_injection
+            == Some(Stage3V11FailureInjection::SubslabAccepted(
+                owner_joins.len(),
+            ))
+        {
             return Err(DirectSnowStage3V11AttachmentError::Identity(
                 "injected coupled subslab rollback",
             ));
         }
     }
-    if failure_injection == Some(Stage3V11FailureInjection::AfterFinalOwnerJoin) {
+    if failure_injection == Some(Stage3V11FailureInjection::FinalOwnerJoinCompleted) {
         return Err(DirectSnowStage3V11AttachmentError::Identity(
             "injected post-owner-join rollback",
         ));
@@ -2757,6 +2803,84 @@ fn execute_covered_real_v11_subslab(
     let wb14_parent_receipt_set = wb14_parent_receipt_set
         .map(parse_lower_hex_digest)
         .transpose()?;
+    let snow_soil_heat_receipts = final_executor.stack.last_snow_soil_heat_receipts().ok_or(
+        DirectSnowStage3V11AttachmentError::Identity("missing snow-soil heat receipt set"),
+    )?;
+    let installed_soil: openwepp_land_surface_energy::SoilThermalSnapshot = serde_json::from_slice(
+        &final_segment
+            .ending_resource_owners
+            .get("soil_thermal")
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "missing installed soil owner",
+            ))?
+            .state_bytes,
+    )
+    .map_err(|_| DirectSnowStage3V11AttachmentError::Identity("installed soil owner bytes"))?;
+    for (lane_id, receipt) in snow_soil_heat_receipts {
+        let state =
+            ending_stage3
+                .get(lane_id)
+                .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                    "snow-soil installed snow lane",
+                ))?;
+        let inputs = final_executor
+            .stack
+            .stage3_inputs_by_lane
+            .get(lane_id)
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "snow-soil installed lane inputs",
+            ))?;
+        let installed_snow_bottom = Wb11HydrologyKernel::project_stage3_bottom_volume_v1(
+            state,
+            inputs.surface_energy_options.atmospheric_pressure_pa,
+        )?;
+        let soil_ofe = installed_soil
+            .ofes
+            .iter()
+            .find(|value| value.ofe_id == receipt.ofe_id)
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "snow-soil installed soil OFE",
+            ))?;
+        let installed_soil_top =
+            soil_ofe
+                .ordered_layers
+                .first()
+                .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                    "snow-soil installed top soil node",
+                ))?;
+        let installed_snow_identity = digest_bytes(&serde_json::to_vec(state).map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Identity("installed Stage-3 lane identity")
+        })?);
+        let installed_soil_identity =
+            digest_bytes(&serde_json::to_vec(soil_ofe).map_err(|_| {
+                DirectSnowStage3V11AttachmentError::Identity("installed soil OFE identity")
+            })?);
+        let close_temperature = |left: f64, right: f64| {
+            left.is_finite() && right.is_finite() && (left - right).abs() <= 1.0e-8
+        };
+        validate_snow_soil_heat_receipt_installed_join(
+            receipt,
+            &installed_soil_top.layer_id,
+            installed_snow_identity,
+            installed_soil_identity,
+        )?;
+        if !close_temperature(
+            installed_snow_bottom.temperature_k,
+            receipt.ending_bottom_snow_temperature_k,
+        ) || !close_temperature(
+            installed_soil_top.temperature_k,
+            receipt.ending_top_soil_temperature_k,
+        ) {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "snow-soil receipt/installed ending join",
+            ));
+        }
+    }
+    let physical_custody_join = CoveredPhysicalCustodyJoinInputs {
+        snow_soil_heat_receipts,
+        beginning_stage3_states: &final_executor.stack.stage3_beginning_by_lane,
+        ending_stage3_states: &ending_stage3,
+    };
     let owner_join = CoveredParentOwnerJoinReceiptV1::try_new(
         context.run_identity,
         ParentIntervalId::derive(
@@ -2782,7 +2906,7 @@ fn execute_covered_real_v11_subslab(
             .ok_or(DirectSnowStage3V11AttachmentError::Identity(
                 "missing component-resolved carrier receipt set",
             ))?,
-        &ending_stage3,
+        &physical_custody_join,
         &final_segment.ending_resource_owners,
     )?;
     owner_join.validate(
@@ -2794,7 +2918,7 @@ fn execute_covered_real_v11_subslab(
             .ok_or(DirectSnowStage3V11AttachmentError::Identity(
                 "missing component-resolved carrier receipt set",
             ))?,
-        &ending_stage3,
+        &physical_custody_join,
         &final_segment.ending_resource_owners,
     )?;
     let mut parent = beginning_parent.clone();
@@ -2825,6 +2949,14 @@ fn execute_covered_real_v11_subslab(
         wb14_parent_replay_bytes,
         destination_receipts: final_boundary_receipts,
         lane_receipts: final_lane_receipts,
+        physical_outcome_ledger_set_sha256:
+            crate::v9_real_consumer_shadow::stage3_physical_outcome_ledger_set_digest(
+                final_executor.stack.last_physical_outcome_ledgers().ok_or(
+                    DirectSnowStage3V11AttachmentError::Identity(
+                        "missing physical outcome ledger set",
+                    ),
+                )?,
+            ),
         owner_join,
         receipt_sha256: Digest32::zero(),
     };

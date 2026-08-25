@@ -15,7 +15,7 @@ fn v11_v134_separate_source_adjusted_and_virtual_wind() {
     let snow = read(SNOW);
 
     for required in [
-        "contract_version: 16",
+        "contract_version: 18",
         "INV-SNOWENERGY-033",
         "`z_u,source`",
         "nominal `10 m`",

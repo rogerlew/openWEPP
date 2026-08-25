@@ -889,7 +889,7 @@ slow, with six configured skips and zero failures.
 remains `EXECUTING`; precipitation, snow--soil heat, independent outcome,
 terminal chronology, runner-owned 48-support day, exact-once terminal liquid,
 additive restart, and the remaining scenario/review sequence are unchanged.
-# 2026-08-24 BGC corrective increment (in progress)
+# 2026-08-24 BGC corrective increment (PASS)
 
 | Evidence | Result |
 | --- | --- |
@@ -909,3 +909,27 @@ Rust QA reviews returned Static PASS. The BGC corrective increment is
 dispositioned `PASS`; the encompassing Child 1 package remains `EXECUTING /
 HOLD` on its unchanged physics, chronology, runner, terminal-liquid, restart,
 matrix, and terminal-review obligations.
+
+# 2026-08-24 persistent covered physical-custody checkpoint (PASS)
+
+| Evidence | Result |
+| --- | --- |
+| Formatting / diff hygiene | PASS: `cargo fmt --all -- --check`; `git diff --check` |
+| `openwepp-land-surface-energy` | PASS: 66/66 |
+| `openwepp-hillslope-orchestrator` | PASS: 818/818, one configured skip |
+| Mixed open/covered rainy physical transaction | PASS: throughfall, stemflow, refreeze, exact parcel mass/advection, independent ledger, complete rollback |
+| Initial/second drainage | PASS: positive V8 producer tests plus exact route/parcel/manifest custody tests |
+| Five affected authority binaries | PASS: 36/36 |
+| Authority anti-evasion / required-suite guard | PASS / PASS: 3/3 |
+| Science-contract admission | `A0_ADMITTED`: 49 contracts, 30 science surfaces, base `91bc971f415d36fb7fef4dcafa81479ac1522820` |
+| Final frost workspace profile | PASS: 422/422, one slow, 2,884 profile skips |
+| Warnings-denied affected Clippy | Retained documented baseline; no net-new finding |
+| Structural ceiling | PASS: touched production sources 2,976 / 2,907 / 2,995 lines |
+
+Independent science, hydrology/ownership, Rust/API, and secondary Rust QA
+reviews returned `PASS`; all review findings were accepted and corrected.
+Persistent precipitation/advection, snow--soil heat, and independent physical
+outcome custody are closed. Child 1 remains `EXECUTING / HOLD` on terminal
+chronology, runner-owned day construction, terminal-liquid consumption,
+restart, and terminal qualification. Stage 3 remains default-off; selectors,
+production outputs, CoE, frozen restart wires, and publication are unchanged.

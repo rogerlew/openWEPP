@@ -154,6 +154,7 @@ struct Stage3CarrierReconciliation {
     sensible_flux_w_m2: f64,
     latent_flux_w_m2: f64,
     precipitation_advected_flux_w_m2: f64,
+    snow_soil_heat_flux_w_m2: f64,
     complete_external_flux_w_m2: f64,
 }
 
@@ -177,11 +178,14 @@ struct Stage3ReconciliationState {
 #[allow(clippy::struct_field_names)]
 #[derive(Clone, Copy)]
 struct Stage3ReconciliationTransfer {
+    lower_cold_before_conduction_j_m2: Option<f64>,
+    lower_cold_after_conduction_j_m2: Option<f64>,
     active_cold_energy_change_j_m2: Option<f64>,
     lower_cold_energy_change_j_m2: Option<f64>,
     cold_content_export_j_m2: Option<f64>,
     internal_active_lower_conduction_j_m2: Option<f64>,
     melt_kg_m2: Option<f64>,
+    refrozen_kg_m2: Option<f64>,
     sublimation_kg_m2: Option<f64>,
     deposition_kg_m2: Option<f64>,
     legacy_sequential_complete_j_m2: Option<f64>,
@@ -190,11 +194,14 @@ struct Stage3ReconciliationTransfer {
 
 impl Stage3ReconciliationTransfer {
     const SAME_STATE: Self = Self {
+        lower_cold_before_conduction_j_m2: None,
+        lower_cold_after_conduction_j_m2: None,
         active_cold_energy_change_j_m2: None,
         lower_cold_energy_change_j_m2: None,
         cold_content_export_j_m2: None,
         internal_active_lower_conduction_j_m2: None,
         melt_kg_m2: None,
+        refrozen_kg_m2: None,
         sublimation_kg_m2: None,
         deposition_kg_m2: None,
         legacy_sequential_complete_j_m2: None,
@@ -340,6 +347,7 @@ struct Stage3ShadowSummary {
     complete_sensible_j_m2: f64,
     complete_latent_j_m2: f64,
     complete_advected_j_m2: f64,
+    complete_snow_soil_heat_j_m2: f64,
     internal_active_lower_conduction_j_m2: f64,
     complete_vapor_mass_exchange_kg_m2: f64,
     cold_content_export_j_m2: f64,
@@ -357,6 +365,7 @@ struct Stage3ShadowSummary {
     terminal_event: Option<DirectSnowTerminalEventResult>,
     terminal_intervals: Vec<DirectSnowTerminalEventResult>,
     terminal_refrozen_kg_m2: f64,
+    persistent_refrozen_kg_m2: f64,
     terminal_deposition_kg_m2: f64,
 }
 
@@ -381,6 +390,7 @@ impl Stage3ShadowSummary {
         complete_sensible_j_m2: 0.0,
         complete_latent_j_m2: 0.0,
         complete_advected_j_m2: 0.0,
+        complete_snow_soil_heat_j_m2: 0.0,
         internal_active_lower_conduction_j_m2: 0.0,
         complete_vapor_mass_exchange_kg_m2: 0.0,
         cold_content_export_j_m2: 0.0,
@@ -402,6 +412,7 @@ impl Stage3ShadowSummary {
         terminal_event: None,
         terminal_intervals: Vec::new(),
         terminal_refrozen_kg_m2: 0.0,
+        persistent_refrozen_kg_m2: 0.0,
         terminal_deposition_kg_m2: 0.0,
         }
     }

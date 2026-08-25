@@ -19,8 +19,9 @@ impl Wb11HydrologyKernel {
         let latent_flux_w_m2 = boundary.latent_energy_j_m2 / support_seconds;
         let shortwave_flux_w_m2 = boundary.shortwave_energy_j_m2 / support_seconds;
         let net_longwave_w_m2 = boundary.net_longwave_energy_j_m2 / support_seconds;
-            let precipitation_advected_flux_w_m2 =
+        let precipitation_advected_flux_w_m2 =
             boundary.precipitation_advection_j_m2 / support_seconds;
+        let snow_soil_heat_flux_w_m2 = boundary.snow_soil_heat_j_m2 / support_seconds;
         Stage3CarrierReconciliation {
             air_temperature_c: hourly.air_temperature_c,
             dewpoint_c: inputs.dewpoint_c,
@@ -73,11 +74,13 @@ impl Wb11HydrologyKernel {
             sensible_flux_w_m2,
             latent_flux_w_m2,
             precipitation_advected_flux_w_m2,
+            snow_soil_heat_flux_w_m2,
             complete_external_flux_w_m2: shortwave_flux_w_m2
                 + sensible_flux_w_m2
                 + latent_flux_w_m2
                 + net_longwave_w_m2
-                + precipitation_advected_flux_w_m2,
+                + precipitation_advected_flux_w_m2
+                + snow_soil_heat_flux_w_m2,
         }
     }
 
@@ -422,17 +425,19 @@ impl Wb11HydrologyKernel {
                     0,
                     active_layer_count,
                 );
-                let cold_after_j_m2 = cold_content_by_layer[..active_layer_count]
+                let cold_after_surface_energy_j_m2 = cold_content_by_layer
+                    [..active_layer_count]
                     .iter()
                     .sum::<f64>();
-                let cold_energy_change_j_m2 = cold_required_j_m2 - cold_after_j_m2;
+                let cold_energy_change_before_refreeze_j_m2 =
+                    cold_required_j_m2 - cold_after_surface_energy_j_m2;
                 let lower_cold_after_j_m2 = cold_content_by_layer[active_layer_count..]
                     .iter()
                     .sum::<f64>();
                 let lower_cold_energy_change_j_m2 =
                     lower_cold_before_j_m2 - lower_cold_after_j_m2;
                 let excess_energy_j_m2 =
-                    (q_complete_j_m2 - cold_energy_change_j_m2).max(0.0);
+                    (q_complete_j_m2 - cold_energy_change_before_refreeze_j_m2).max(0.0);
                 let active_ice_kg_m2 = layers[..active_layer_count]
                     .iter()
                     .map(|layer| layer.mass_swe_m * STAGE3_RHO_WATER_KG_M3)
@@ -447,18 +452,6 @@ impl Wb11HydrologyKernel {
                 let unallocated_j_m2 = (excess_energy_j_m2
                     - STAGE3_LATENT_HEAT_FUSION_J_KG * melt_kg_m2)
                     .max(0.0);
-                let closure_residual_j_m2 = q_complete_j_m2
-                    - cold_energy_change_j_m2
-                    - STAGE3_LATENT_HEAT_FUSION_J_KG * melt_kg_m2
-                    - unallocated_j_m2;
-                Self::require_direct_typed_snow_value_with(
-                    phase_class,
-                    || BoundarySymbol::from("snow.stage3_shadow_energy_residual_j_m2"),
-                    closure_residual_j_m2.abs(),
-                    None,
-                    Some(STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2),
-                )?;
-
                 let mut removal_active_count = active_layer_count;
                 let mut cold_content_export_j_m2 = 0.0;
                 if melt_kg_m2 > 0.0 {
@@ -470,6 +463,43 @@ impl Wb11HydrologyKernel {
                     );
                     cold_content_export_j_m2 += exported_j_m2;
                 }
+                let external_rain_kg_m2 = hourly.rain_m * STAGE3_RHO_WATER_KG_M3
+                    * substep_seconds
+                    / support_seconds;
+                let (routed_liquid_kg_m2, retained_liquid_kg_m2, refrozen_kg_m2) =
+                    Self::route_stage3_persistent_liquid_through_layers(
+                        phase_class,
+                        external_rain_kg_m2 + melt_kg_m2,
+                        &mut layers,
+                        &mut cold_content_by_layer,
+                    )?;
+                let liquid_closure_residual_kg_m2 = external_rain_kg_m2 + melt_kg_m2
+                    - refrozen_kg_m2
+                    - retained_liquid_kg_m2
+                    - routed_liquid_kg_m2;
+                Self::require_direct_typed_snow_value_with(
+                    phase_class,
+                    || BoundarySymbol::from("snow.stage3_persistent_liquid_residual_kg_m2"),
+                    liquid_closure_residual_kg_m2.abs(),
+                    Some(0.0),
+                    Some(1.0e-12),
+                )?;
+                let refreeze_energy_j_m2 =
+                    STAGE3_LATENT_HEAT_FUSION_J_KG * refrozen_kg_m2;
+                let actual_cold_energy_change_j_m2 =
+                    cold_energy_change_before_refreeze_j_m2 + refreeze_energy_j_m2;
+                let cold_energy_change_j_m2 = cold_energy_change_before_refreeze_j_m2;
+                let closure_residual_j_m2 = q_complete_j_m2 + refreeze_energy_j_m2
+                    - actual_cold_energy_change_j_m2
+                    - STAGE3_LATENT_HEAT_FUSION_J_KG * melt_kg_m2
+                    - unallocated_j_m2;
+                Self::require_direct_typed_snow_value_with(
+                    phase_class,
+                    || BoundarySymbol::from("snow.stage3_shadow_energy_residual_j_m2"),
+                    closure_residual_j_m2.abs(),
+                    None,
+                    Some(STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2),
+                )?;
                 if sublimation_kg_m2 > 0.0 && !layers.is_empty() {
                     removal_active_count = removal_active_count.min(layers.len());
                     let (_, exported_j_m2, _) = Self::remove_stage3_active_sublimation(
@@ -524,11 +554,14 @@ impl Wb11HydrologyKernel {
                     after_surface_applicable,
                     &carrier_reconciliation,
                     Stage3ReconciliationTransfer {
-                        active_cold_energy_change_j_m2: Some(cold_energy_change_j_m2),
+                        lower_cold_before_conduction_j_m2: Some(lower_cold_before_j_m2),
+                        lower_cold_after_conduction_j_m2: Some(lower_cold_after_j_m2),
+                        active_cold_energy_change_j_m2: Some(actual_cold_energy_change_j_m2),
                         lower_cold_energy_change_j_m2: Some(lower_cold_energy_change_j_m2),
                         cold_content_export_j_m2: Some(cold_content_export_j_m2),
                         internal_active_lower_conduction_j_m2: Some(conduction.active_energy),
                         melt_kg_m2: Some(melt_kg_m2),
+                        refrozen_kg_m2: Some(refrozen_kg_m2),
                         sublimation_kg_m2: Some(sublimation_kg_m2),
                         deposition_kg_m2: Some(deposition_kg_m2),
                         legacy_sequential_complete_j_m2: Some(q_complete_j_m2),
@@ -573,6 +606,8 @@ impl Wb11HydrologyKernel {
                     surface.shadow_latent_flux_w_m2 * substep_seconds;
                 summary.complete_advected_j_m2 +=
                     surface.shadow_advected_flux_w_m2 * substep_seconds;
+                summary.complete_snow_soil_heat_j_m2 +=
+                    carrier_reconciliation.snow_soil_heat_flux_w_m2 * substep_seconds;
                 summary.internal_active_lower_conduction_j_m2 += conduction.active_energy;
                 summary.complete_vapor_mass_exchange_kg_m2 +=
                     surface.shadow_vapor_mass_exchange_kg_m2;
@@ -583,6 +618,7 @@ impl Wb11HydrologyKernel {
                 summary.excess_energy_j_m2 += excess_energy_j_m2;
                 summary.sublimation_kg_m2 += sublimation_kg_m2;
                 summary.melt_kg_m2 += melt_kg_m2;
+                summary.persistent_refrozen_kg_m2 += refrozen_kg_m2;
                 summary.unallocated_after_exhaustion_j_m2 += unallocated_j_m2;
                 summary.maximum_energy_closure_residual_j_m2 = summary
                     .maximum_energy_closure_residual_j_m2
@@ -612,6 +648,59 @@ impl Wb11HydrologyKernel {
         }
         summary.final_layers = layers;
         Ok(summary)
+    }
+
+    pub(super) fn route_stage3_persistent_liquid_through_layers(
+        phase_class: HillslopeKernelPhaseClass,
+        incoming_liquid_kg_m2: f64,
+        layers: &mut [DirectSnowLayerState],
+        cold_content_by_layer: &mut [f64],
+    ) -> Result<(f64, f64, f64), DirectSnowStage3EvaluationError> {
+        Self::require_direct_typed_snow_value_with(
+            phase_class,
+            || BoundarySymbol::from("snow.stage3_persistent_incoming_liquid_kg_m2"),
+            incoming_liquid_kg_m2,
+            Some(0.0),
+            None,
+        )?;
+        let mut liquid_to_route_kg_m2 = incoming_liquid_kg_m2;
+        let mut retained_kg_m2 = 0.0;
+        let mut refrozen_kg_m2 = 0.0;
+        for (layer, cold_content_j_m2) in
+            layers.iter_mut().zip(cold_content_by_layer.iter_mut())
+        {
+            let refreeze_capacity_kg_m2 =
+                (*cold_content_j_m2 / STAGE3_LATENT_HEAT_FUSION_J_KG).max(0.0);
+            let refrozen_here_kg_m2 = liquid_to_route_kg_m2.min(refreeze_capacity_kg_m2);
+            liquid_to_route_kg_m2 -= refrozen_here_kg_m2;
+            *cold_content_j_m2 -=
+                refrozen_here_kg_m2 * STAGE3_LATENT_HEAT_FUSION_J_KG;
+            let refrozen_here_m = refrozen_here_kg_m2 / STAGE3_RHO_WATER_KG_M3;
+            layer.mass_swe_m += refrozen_here_m;
+            layer.refrozen_liquid_m += refrozen_here_m;
+            layer.thickness_m = layer.mass_swe_m * STAGE3_RHO_WATER_KG_M3
+                / layer.density_kg_m3;
+            refrozen_kg_m2 += refrozen_here_kg_m2;
+
+            let capacity_kg_m2 = Self::stage3_layer_liquid_holding_capacity_m(
+                layer.thickness_m,
+                layer.density_kg_m3,
+            ) * STAGE3_RHO_WATER_KG_M3;
+            let existing_liquid_kg_m2 =
+                layer.liquid_water_m * STAGE3_RHO_WATER_KG_M3;
+            let retained_here_kg_m2 = liquid_to_route_kg_m2
+                .min((capacity_kg_m2 - existing_liquid_kg_m2).max(0.0));
+            liquid_to_route_kg_m2 -= retained_here_kg_m2;
+            layer.liquid_water_m += retained_here_kg_m2 / STAGE3_RHO_WATER_KG_M3;
+            retained_kg_m2 += retained_here_kg_m2;
+            layer.cold_content_j_m2 = (*cold_content_j_m2).max(0.0);
+            layer.temperature_c = Self::stage3_temperature_from_cold_content(layer);
+        }
+        Ok((
+            liquid_to_route_kg_m2.max(0.0),
+            retained_kg_m2,
+            refrozen_kg_m2,
+        ))
     }
 
     pub(super) fn prepare_stage3_sequential_control_volume(
@@ -1037,6 +1126,10 @@ impl Wb11HydrologyKernel {
                 .then_some(after.active_density_kg_m3),
             active_cold_before_j_m2: before.active_cold_j_m2,
             active_cold_after_j_m2: after_surface_applicable.then_some(after.active_cold_j_m2),
+            lower_cold_before_conduction_j_m2: transfer
+                .lower_cold_before_conduction_j_m2,
+            lower_cold_after_conduction_j_m2: transfer
+                .lower_cold_after_conduction_j_m2,
             total_cold_before_j_m2: before.total_cold_j_m2,
             total_cold_after_j_m2: after.total_cold_j_m2,
             surface_temperature_before_c: before.surface_temperature_c,
@@ -1115,11 +1208,13 @@ impl Wb11HydrologyKernel {
             sensible_flux_w_m2: carrier.sensible_flux_w_m2,
             latent_flux_w_m2: carrier.latent_flux_w_m2,
             precipitation_advected_flux_w_m2: carrier.precipitation_advected_flux_w_m2,
+            snow_soil_heat_flux_w_m2: carrier.snow_soil_heat_flux_w_m2,
             complete_external_flux_w_m2: carrier.complete_external_flux_w_m2,
             vapor_mass_exchange_kg_m2: carrier.vapor_mass_flux_kg_m2_s * duration_seconds,
             sublimation_kg_m2: transfer.sublimation_kg_m2,
             deposition_kg_m2: transfer.deposition_kg_m2,
             melt_kg_m2: transfer.melt_kg_m2,
+            refrozen_kg_m2: transfer.refrozen_kg_m2,
             active_cold_energy_change_j_m2: transfer.active_cold_energy_change_j_m2,
             lower_cold_energy_change_j_m2: transfer.lower_cold_energy_change_j_m2,
             cold_content_export_j_m2: transfer.cold_content_export_j_m2,
@@ -1172,8 +1267,13 @@ impl Wb11HydrologyKernel {
             let longwave_j_m2 = boundary.net_longwave_energy_j_m2 * scale;
             let sensible_j_m2 = boundary.sensible_energy_j_m2 * scale;
             let advected_j_m2 = boundary.precipitation_advection_j_m2 * scale;
-            let total_j_m2 =
-                shortwave_j_m2 + sensible_j_m2 + latent_j_m2 + longwave_j_m2 + advected_j_m2;
+            let snow_soil_heat_j_m2 = boundary.snow_soil_heat_j_m2 * scale;
+            let total_j_m2 = shortwave_j_m2
+                + sensible_j_m2
+                + latent_j_m2
+                + longwave_j_m2
+                + advected_j_m2
+                + snow_soil_heat_j_m2;
             let sublimation_m = (-vapor_mass_exchange_kg_m2
                 / STAGE3_RHO_WATER_KG_M3)
                 .max(0.0);
@@ -1688,6 +1788,7 @@ impl Wb11HydrologyKernel {
                 sensible_flux_w_m2: turbulent.fluxes.sensible_heat.as_watts_per_square_meter(),
                 latent_flux_w_m2: turbulent.fluxes.latent_heat.as_watts_per_square_meter(),
                 precipitation_advected_flux_w_m2: advected.as_watts_per_square_meter(),
+                snow_soil_heat_flux_w_m2: 0.0,
                 complete_external_flux_w_m2: shadow_surface_flux_w_m2,
             });
             if let Some(diagnostics) = diagnostics.as_mut() {

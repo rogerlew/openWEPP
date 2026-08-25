@@ -4,14 +4,15 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
+  - Persistent Stage 3 snow--soil lower-boundary evaluator
 consumer_scope:
   - Future soil-heat/frost boundary, evaporation, infiltration/runoff, and surface-water ledgers
 evidence_level: static+independent_oracle
-last_reviewed: 2026-08-20
+last_reviewed: 2026-08-24
 supersedes: []
 superseded_by: []
 ---
@@ -966,10 +967,71 @@ Newton; it never scales a longer result or freezes a state.
 liquid, and equal/opposite `G` ledgers remain binding; Child 2C adds no new
 storage arithmetic and does not admit compensated or sub-ULP increments.
 
+## Version 8 persistent snow--soil boundary amendment
+
+This amendment admits one lower boundary for a persistent Stage 3 column. The
+boundary is OFE/lane-level because the snow owner and the existing
+soil-thermal snapshot are each OFE-ground owners. It couples the bottom
+represented Stage 3 thermal volume directly to ordered soil node `k=1`. Tile
+surface temperatures and tile LSE thermal nodes do not participate. Selecting
+one tile, averaging any tile subset, weighting the OFE soil node by tile
+fractions, or applying one lane flux separately to every tile is invalid.
+
+Pinned `frostn.for` lines 476--607 and `tmpadj.for` lines 266--353 establish
+additive layer resistance and harmonic snow/soil conduction. They do not
+define the current node-owner interface and their silent zero-flux fallbacks,
+calibrated conductivity factors, frost-front paths, and prescribed surface
+temperature are not imported. The current LSE node-centered authority supplies
+the exact interface specialization. Let the bottom snow volume and top OFE
+soil node have positive finite `(dz_sb,lambda_sb)` and `(dz_1,lambda_1)`:
+
+```text
+R_ss       = dz_sb/(2*lambda_sb) + dz_1/(2*lambda_1)
+g_ss       = 1/R_ss = 2/(dz_sb/lambda_sb + dz_1/lambda_1)
+G_ss,0     = g_ss*(T_sb,0-T_1,0)
+G_ss,1     = g_ss*(T_sb,1-T_1,1)
+bar(G_ss)  = 0.5*(G_ss,0+G_ss,1).
+```
+
+`G_ss` is positive downward from snow to soil and has units `W m^-2
+OFE-ground`. The beginning endpoint uses only the sealed beginning Stage 3 and
+soil-thermal owners. The ending endpoint uses the current candidate bottom
+snow and first-soil-node temperatures. Consequently `bar(G_ss)` participates
+inside the existing covered fixed point and cannot be calculated after it or
+held fixed from a stale trial. The Stage 3 energy candidate contains
+`-bar(G_ss)` exactly once; the first soil-node Crank--Nicolson equation and
+candidate enthalpy contain `+bar(G_ss)` exactly once. Deeper node conduction
+and the zero lower boundary retain the existing LSE equations unchanged.
+
+One sealed `SnowSoilHeatReceiptV1` binds schema/model identity, exact half-open
+support and duration, lane/OFE and OFE-ground basis, ordered topology and
+configuration digests, beginning Stage 3 and soil-thermal owner IDs/digests,
+bottom-snow and first-soil layer IDs, all four positive resistance operands,
+both endpoint temperature pairs, both endpoint fluxes, accepted
+`bar(G_ss)`, and both candidate-ending owner IDs/digests. Its digest uses the
+repository canonical framed encoding and is reconstructed from those semantic
+fields; receipt-hash order is not operand order.
+
+Independent validation recomputes the resistance, endpoint fluxes,
+Crank--Nicolson flux, Stage 3 debit, first-soil-node credit/storage equation,
+receipt digest, and beginning/candidate owner joins from primitive operands.
+Producer residuals are diagnostic only. Any missing, duplicate, stale,
+nonfinite, nonpositive-resistance, wrong-node, wrong-sign, wrong-basis,
+substituted-receipt, convergence, reconstruction, or later transaction failure
+returns `LSEB-E-044` / `SNOWENERGY-E-SOIL-HEAT-001` and leaves Stage 3,
+soil-thermal, transaction, and receipt owners byte-identical.
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-LANDSURFACEENERGY-124` | The persistent snow boundary joins the bottom Stage 3 volume to first ordered OFE soil node only; no tile selection, aggregation, weighting, or duplication is allowed. | topology/node/area guard / `LSEB-E-044` |
+| `INV-LANDSURFACEENERGY-125` | Half-snow plus half-soil series resistance and beginning/ending Crank--Nicolson evaluation produce one positive-downward `bar(G_ss)` inside the covered fixed point. | operand/endpoint/convergence guard / `LSEB-E-044` |
+| `INV-LANDSURFACEENERGY-126` | Exact `-bar(G_ss)` snow custody and `+bar(G_ss)` first-soil-node custody share one reconstructable receipt and commit or roll back together. | independent receipt/owner transaction guard / `LSEB-E-044` |
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-24 | 8 | Codex | Admitted the persistent Stage 3 OFE/lane snow--soil interface as a specialization of the existing node-centered Crank--Nicolson soil authority: bottom snow volume to first OFE soil node, half-layer series resistance, positive-downward exact snow debit/soil credit, sealed receipt, independent reconstruction, and atomic rollback; no tile averaging or duplicated flux. |
 | 2026-08-19 | 5 | Codex | Admitted default-off terminal remaining-support LSE-V2 authority (`INV-LANDSURFACEENERGY-114/115`) with actual receiver selection, complete flux rebuild, no post-event snow operands, and atomic rollback. |
 | 2026-08-18 | 4 | Codex | Admitted `OPENWEPP_SNOW_FREE_LSE_V2`, binding V10 exact-zero-PAR physiology and deterministic FullSupply iteration-zero final reevaluation; V1 remains immutable. |
 | 2026-08-14 | 3 | Codex | Admitted `OPENWEPP_SNOW_FREE_LSE_V1`: explicit bare-soil and forest-litter thermal state, reciprocal V8 canopy-ground radiation/turbulence, hydrology-owned water mass, liquid enthalpy, coupled potential/final solve, strict numerics and independent closure; no runtime or cutover. |

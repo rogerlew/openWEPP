@@ -99,18 +99,19 @@ canonical framed domain is admitted.
 candidate and the snow-free guard remains unchanged. The lower-boundary
 implementation now has an explicit covered branch that holds covered ground
 water, ground sensible/vapor, soil storage, and WB14-facing state, but it is
-not closure-complete: precipitation advection, soil coupling, per-tile physical
-LSE consumption, and independent outcome-ledger
-custody are still open. The bounded covered fixed-point iteration is now
+not closure-complete: precipitation advection, snow--soil coupling, and
+independent outcome-ledger custody are still open. Destination-keyed physical
+LSE consumption and the bounded covered fixed-point iteration are now
 implemented and tested. No claim is made that Stage 3 is already the sole lower-surface
 heat/vapor/radiation owner on the V11 side.
 
 `Ran:` after the lower-boundary refactor, land-surface-energy lib tests passed
 63/63, the orchestrator lib suite passed 745/745 executed tests with 0
 failures and 2 ignored, and focused `cargo check` passed. The persistent
-covered integration test is intentionally ignored with the reason
-`covered V11 energy closure still needs released Stage-3 shortwave/soil
-boundary custody`; its explicit run fails at
+covered integration test remains historical non-closure evidence; its former
+reason named missing Stage-3 shortwave even though shortwave has since landed.
+The accurate current blockers are precipitation/advection, snow--soil heat,
+and independent outcome custody. Its historical explicit run failed at
 `ControlVolumeClosure("weighted_ofe_energy")`, and it is not a passing
 covered-physics claim. Warnings-denied
 Clippy remains blocked by pre-existing direct-runtime shadow and scheduler
@@ -412,3 +413,50 @@ types. Follow-on decomposition should extract the remaining generic custody
 tests and then the private receipt-validation helpers without changing their
 visibility or arithmetic order; that mechanical split is not mixed into this
 science correction.
+
+# 2026-08-24 persistent covered physical-custody checkpoint
+
+`Static:` `SC-SNOWENERGY-001@18` and `SC-LANDSURFACEENERGY-001@8` admit the
+complete persistent-support precipitation and OFE/lane snow--soil boundary.
+The real covered consumer now builds an exact producer manifest of sealed
+atmospheric snow/open-rain and vegetation terminal throughfall, stemflow, and
+initial/second drainage parcels. Stage 3 derives mass and precipitation
+advection from that same set; raw rain and canopy release are destination-
+exclusive. Zero precipitation is a complete empty set.
+
+`Static:` the snow--soil Crank--Nicolson receipt uses typed participating soil
+nodes, explicit conductivity/path operands, OFE-ground aggregation, positive-
+to-snow sign, and equal-and-opposite soil credits. Installed snow and soil
+owner identities are joined in the same candidate-only transaction. The
+postcandidate physical ledger independently reconstructs beginning/end snow
+ice, liquid, cold content, enthalpy, precipitation, vapor, melt/refreeze,
+terminal liquid, and every admitted energy component; it cannot feed either
+the solve or acceptance residual.
+
+`Ran:` the final affected LSE suite passed 66/66 and the final affected
+orchestrator suite passed 818/818 with one configured skip. Five affected
+authority binaries passed 36/36; anti-evasion and required-suite guards passed
+(3/3); science-contract admission returned `A0_ADMITTED` for 49 contracts and
+30 changed science surfaces; the final frost profile passed 422/422. The mixed
+open/covered rainy fixture proves
+positive throughfall and stemflow, destination exclusion, parcel-set
+mass/advection, rain-on-snow refreeze, independent ledger closure, direct
+receipt poisons, and exact parent rollback at ledger, precipitation-rejection,
+snow--soil-rejection, accepted-subslab, and final-owner-join seams. Existing
+V8 producer tests prove positive initial and second drainage; the parcel and
+manifest tests prove exact custody for both routes. A forced live drainage
+configuration was not claimed because its LSE state correctly rejected as
+singular/outside-domain.
+
+`Static / QA:` warnings-denied orchestrator Clippy remains non-green on the
+documented baseline, with no net-new finding (91 preceding diagnostics at the
+current tree versus 92 at the clean base). Touched production files are below
+the hard 3,000-line ceiling: attachment 2,976, Stage-3 solver 2,907, and real
+consumer 2,995 lines. Same-module includes preserve private scope; further
+decomposition is deferred to avoid mixing an architectural refactor into the
+custody correction.
+
+`Disposition:` the bounded persistent physical-custody checkpoint is `PASS`.
+Child 1 remains `EXECUTING / HOLD`; terminal chronology, runner-owned 48-
+support construction, exact-once terminal liquid, additive restart, remaining
+matrices, and terminal package closure remain open.

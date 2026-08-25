@@ -52,10 +52,10 @@ fn persistent_shadow_accumulates_snow_and_censors_external_liquid() {
     assert_eq!(day.snowfall_kg_m2.to_bits(), 2.0_f64.to_bits());
     assert_eq!(day.external_liquid_kg_m2.to_bits(), 3.0_f64.to_bits());
     assert!(
-        (day.unresolved_liquid_kg_m2
-            - day.external_liquid_kg_m2
-            - day.melt_kg_m2
-            - day.retained_liquid_censored_loss_kg_m2)
+        (day.external_liquid_kg_m2 + day.melt_kg_m2 + day.start_retained_liquid_kg_m2
+            - day.refrozen_kg_m2
+            - day.end_retained_liquid_kg_m2
+            - day.unresolved_liquid_kg_m2)
             .abs()
             <= 1.0e-12
     );
@@ -297,4 +297,83 @@ fn terminal_no_event_refreeze_closes_persistent_day() {
     assert!(day.total_water_closure_residual_kg_m2.abs() <= 1.0e-12);
     assert!(!day.terminal_intervals.is_empty());
     assert!(!day.terminal_intervals.last().unwrap().event_occurred);
+}
+
+#[test]
+fn persistent_cold_rain_on_snow_refreezes_and_closes_linked_ledgers() {
+    let mut inputs = reconciliation_inputs();
+    inputs.snow_layers.truncate(1);
+    inputs.snow_layers[0].mass_swe_m = 0.05;
+    inputs.snow_layers[0].thickness_m = 0.10;
+    inputs.snow_layers[0].cold_content_j_m2 = 1_000_000.0;
+    inputs.snow_layers[0].temperature_c = -10.0;
+    inputs.hourly = [DirectSnowHourlyForcing {
+        air_temperature_c: -10.0,
+        ..DirectSnowHourlyForcing::zero()
+    }; 24];
+    inputs.hourly[0].rain_m = 0.001;
+    inputs.hourly[0].hydrometeor_temperature_c = Some(-5.0);
+    let initial = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+        31,
+        inputs.snow_layers.clone(),
+    )
+    .expect("valid cold persistent snow");
+
+    let day = Wb11HydrologyKernel::evaluate_stage3_persistent_day(&inputs, &initial, 31, 0)
+        .expect("cold rain-on-snow must use the persistent liquid disposition");
+
+    assert_eq!(day.external_liquid_kg_m2.to_bits(), 1.0_f64.to_bits());
+    assert!(day.refrozen_kg_m2 > 0.0, "{day:?}");
+    assert!(day.end_ice_kg_m2 > day.start_ice_kg_m2);
+    assert!(day.ice_mass_closure_residual_kg_m2.abs() <= 1.0e-9);
+    assert!(day.total_water_closure_residual_kg_m2.abs() <= 1.0e-9);
+}
+
+#[test]
+fn persistent_warm_rain_on_isothermal_snow_does_not_refreeze() {
+    let mut layers = vec![DirectSnowLayerState {
+        mass_swe_m: 0.05,
+        thickness_m: 0.10,
+        density_kg_m3: 500.0,
+        settle_day_count: 1.0,
+        temperature_c: 0.0,
+        liquid_water_m: 0.0,
+        cold_content_j_m2: 0.0,
+        refrozen_liquid_m: 0.0,
+    }];
+    let mut cold_content = vec![0.0];
+    let beginning_ice_kg_m2 = layers[0].mass_swe_m * STAGE3_RHO_WATER_KG_M3;
+    let (routed, retained, refrozen) =
+        Wb11HydrologyKernel::route_stage3_persistent_liquid_through_layers(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            1.0,
+            &mut layers,
+            &mut cold_content,
+        )
+        .expect("isothermal snow must disposition warm rain without refreezing");
+
+    assert_eq!(refrozen.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(
+        (layers[0].mass_swe_m * STAGE3_RHO_WATER_KG_M3).to_bits(),
+        beginning_ice_kg_m2.to_bits()
+    );
+    assert!((1.0 - routed - retained).abs() <= 1.0e-12);
+}
+
+#[test]
+fn persistent_rain_disposition_failure_preserves_beginning_owner() {
+    let mut inputs = reconciliation_inputs();
+    inputs.hourly[0].rain_m = f64::NAN;
+    let beginning = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+        33,
+        inputs.snow_layers.clone(),
+    )
+    .expect("valid beginning owner");
+    let immutable_snapshot = beginning.clone();
+
+    assert!(
+        Wb11HydrologyKernel::evaluate_stage3_persistent_day(&inputs, &beginning, 33, 0)
+            .is_err()
+    );
+    assert_eq!(beginning, immutable_snapshot);
 }

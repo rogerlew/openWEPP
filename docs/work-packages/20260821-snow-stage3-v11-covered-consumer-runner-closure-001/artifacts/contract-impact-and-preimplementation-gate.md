@@ -1,6 +1,31 @@
 # Contract impact and preimplementation gate
 
-Status: `PASS / IMPLEMENTATION MAP; OFE-GROUND AUTHORITY ADMITTED; PROSPECTIVE LOWER-BOUNDARY CLARIFICATION OPEN`.
+Status: `PASS / PERSISTENT PHYSICAL AUTHORITY ADMITTED AND IMPLEMENTED`.
+
+## 2026-08-24 persistent physical-custody intake
+
+Static: the complete operand census is recorded in
+`physical-ownership-map.md`. `SC-SNOWENERGY-001@18` and
+`SC-LANDSURFACEENERGY-001@8` select the OFE/lane bottom-snow-to-first-soil-node
+interface, resistance/sign/fixed-point rules, receipt, and equal-and-opposite
+installation. First-tile selection, averaging, duplication, and zero-flux
+suppression remain prohibited.
+
+Static: precipitation interception/release laws are already authoritative, but
+the common Stage-3 parcel-set identity was genuinely unspecified.
+`SC-SNOWENERGY-001@17` is an approved amendment defining the
+ordered set, complete empty-set zero, open/raw versus covered/release
+exclusivity, solid bypass, OFE-ground aggregation, and mass/advection same-set
+custody.
+
+Ran: the contract-derived source guard, affected crate suites, producer-
+manifest omission/extra poisons, snow--soil receipt poisons, and independent
+outcome-ledger cases pass after implementation.
+
+Disposition: `PASS` for the bounded persistent physical-custody checkpoint.
+The canonical pinned baseline is present at
+`/workdir/wepp-forest_260430_baseline` and verified at
+`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`. No provisional physics was used.
 
 ## 2026-08-22 area-basis authority amendment
 

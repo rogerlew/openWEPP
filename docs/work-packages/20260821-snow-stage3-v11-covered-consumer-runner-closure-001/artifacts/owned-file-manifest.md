@@ -189,3 +189,22 @@ BGC fold/scope corrective expansion:
   source guard reconciliation to the scoped direct-consumer wrapper.
 - Existing vegetation contract, registry, authority guard, covered-owner
   finalization, package tests/evidence, roadmap, campaign pointer, and catalog.
+
+Persistent covered physical-custody expansion:
+
+- `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_precipitation.rs`
+  and `snow_stage3_v11_snow_soil_heat.rs`: sealed phase-parcel and OFE/lane
+  conductive-boundary receipts, including exact support, topology, beginning
+  owner, physical operands, candidate endings, and reconstructable digests.
+- `crates/openwepp-hillslope-orchestrator/src/v11_covered/physical_outcome_ledger.rs`:
+  independent postcandidate mass, vapor, and energy reconstruction that cannot
+  feed solver operands or acceptance residuals.
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/liquid_routing.rs`
+  plus `v9_real_consumer_shadow_physical_custody_error.rs` and
+  `v9_real_consumer_shadow_serialization.rs`: behavior-preserving
+  same-module splits keeping touched production sources below the hard
+  3,000-line ceiling.
+- The affected Stage-3 reconciliation, covered execution/fixed-point/owner,
+  LSE boundary, runner input, tests, contract, registry, authority guards, and
+  package evidence files shown by the terminal diff. No selector, default,
+  production output, CoE, frozen restart wire, or publication behavior changes.

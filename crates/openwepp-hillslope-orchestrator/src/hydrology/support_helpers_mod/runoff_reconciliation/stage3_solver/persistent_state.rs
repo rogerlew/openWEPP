@@ -1,7 +1,74 @@
 #[allow(clippy::wildcard_imports)]
 use super::*;
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct Stage3BottomVolumeProjectionV1 {
+    pub(crate) temperature_k: f64,
+    pub(crate) thickness_m: f64,
+    pub(crate) thermal_conductivity_w_m_k: f64,
+    pub(crate) beginning_stage3_state_sha256: openwepp_coupled_time::Digest32,
+}
+
 impl Wb11HydrologyKernel {
+    /// Project the bottom represented thermal volume of a resolved Stage-3 column.
+    pub(crate) fn project_stage3_bottom_volume_v1(
+        state: &DirectSnowStage3PersistentState,
+        atmospheric_pressure_pa: f64,
+    ) -> Result<Stage3BottomVolumeProjectionV1, DirectSnowStage3EvaluationError> {
+        Self::validate_stage3_persistent_state(state)?;
+        let mut layers = state
+            .layers
+            .iter()
+            .copied()
+            .filter(|layer| snow_density_layer_has_resolved_mass(layer.mass_swe_m))
+            .collect::<Vec<_>>();
+        if layers.is_empty() || !stage3_is_resolved_thermal_domain(state) {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_bottom_volume_resolved_domain",
+                stage3_total_represented_ice_swe_m(state),
+                Some(STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M),
+                None,
+            )
+            .into());
+        }
+        let mut cold_content_by_layer = layers
+            .iter()
+            .map(Self::stage3_layer_cold_content_j_m2)
+            .collect::<Vec<_>>();
+        let active_layer_count =
+            Self::prepare_stage3_sequential_control_volume(&mut layers, &mut cold_content_by_layer);
+        let bottom_start = if active_layer_count < layers.len() {
+            active_layer_count
+        } else {
+            0
+        };
+        let bottom_layers = &layers[bottom_start..];
+        let bottom_cold_content = &cold_content_by_layer[bottom_start..];
+        let bottom = Self::stage3_control_volume_state(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            bottom_layers,
+            bottom_cold_content,
+            atmospheric_pressure_pa,
+        )?;
+        let temperature_c = Self::stage3_temperature_from_cold_content_values(
+            bottom.mass_swe_m,
+            bottom.cold_content_j_m2,
+        );
+        Self::stage3_temperature(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            temperature_c,
+        )?;
+        Ok(Stage3BottomVolumeProjectionV1 {
+            temperature_k: temperature_c + 273.15,
+            thickness_m: bottom.depth_m,
+            thermal_conductivity_w_m_k: bottom.conductivity_w_m_k,
+            beginning_stage3_state_sha256: openwepp_coupled_time::digest_bytes(
+                &Self::serialize_stage3_persistent_state(state)?,
+            ),
+        })
+    }
+
     /// Project the canonical current Stage-3 active thermal surface state.
     pub fn project_stage3_surface_state_v1(
         state: &DirectSnowStage3PersistentState,

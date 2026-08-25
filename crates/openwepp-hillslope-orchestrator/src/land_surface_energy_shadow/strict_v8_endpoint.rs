@@ -485,9 +485,12 @@ fn execute_v8_lse_runtime_shadow_phases(
         covered_destinations,
     )?;
     injected(injection, V8EndpointFailureInjection::AfterProjection)?;
+    let stage3_snow_destinations = covered_lower_boundaries
+        .map_or_else(BTreeSet::new, |values| values.keys().cloned().collect());
     let ingress_schedule = derive_ingress_schedule(
         lse_forcing,
         surface_configuration,
+        &stage3_snow_destinations,
         day_index,
         interval_index,
         wb14_parameters,
@@ -734,6 +737,10 @@ fn injected(
 fn derive_ingress_schedule(
     forcing: &LandSurfaceForcing,
     configuration: &DirectSurfaceLiquidConfiguration,
+    stage3_snow_destinations: &BTreeSet<(
+        openwepp_land_surface_energy::OfeId,
+        openwepp_kernel_contract::TileId,
+    )>,
     day_index: usize,
     interval_index: u8,
     wb14_parameters: &[DirectOfeWb14Parameters],
@@ -755,12 +762,21 @@ fn derive_ingress_schedule(
             .collect::<Vec<_>>();
         match record.ground_ingress_mode {
             DirectGroundIngressMode::OpenRawPrecipitation => {
+                let stage3_owns_precipitation = stage3_snow_destinations
+                    .contains(&(record.key.ofe_id.clone(), record.key.tile_id.clone()));
                 open_tile_ingress.push(DirectTileGroundIngress::OpenLiquidParcels {
                     ofe_id: record.key.ofe_id.clone(),
                     tile_id: record.key.tile_id.clone(),
                     surface_id: record.key.surface_id.clone(),
                     parcels: parcels
                         .into_iter()
+                        .filter(|parcel| {
+                            !stage3_owns_precipitation
+                                || forcing.runon_parcels.iter().any(|runon| {
+                                    runon.parcel_id == parcel.parcel_id
+                                        && runon.source_owner_id == parcel.source_owner_id
+                                })
+                        })
                         .filter(|parcel| parcel.amount_kg_m2_destination_tile_ground != 0.0)
                         .map(strict_open_ingress_parcel)
                         .collect::<Result<Vec<_>, _>>()?,

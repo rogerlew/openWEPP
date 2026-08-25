@@ -117,6 +117,29 @@ fields.
 
 ## Progress log
 
+### 2026-08-24 covered physical-custody intake and authority gate
+
+Implementation intent: close one bounded persistent covered-physical-custody
+checkpoint covering sealed precipitation mass/advection parcels, an exact
+snow--soil conductive transaction, and an independent postcandidate physical
+outcome ledger. The intended source/test write set is the existing frozen
+Stage-3 attachment, covered execution, lower-boundary/soil-thermal owner,
+contract-guard, and package-owned regression surfaces; selectors, defaults,
+outputs, CoE, frozen restart wires, and publication behavior remain excluded.
+
+Static intake froze every required physical operand in
+`artifacts/physical-ownership-map.md`. It found that precipitation interception
+and thermodynamic laws are authoritative but their shared Stage-3 parcel-set
+schema was unbound, so `SC-SNOWENERGY-001@17` is now an in-review contract-first
+amendment and its source guard fails prospectively as required. Intake also
+found a distinct authority blocker: beginning soil thermal state is OFE/layer
+resolved, but neither `SC-SNOWENERGY-001@16` nor current LSE authority defines
+the covered snow--soil boundary granularity, participating nodes,
+conductivity/path, fixed-point chronology, or equal-and-opposite owner receipt.
+The pinned legacy baseline named by repository authority is absent from this
+workspace, so no baseline-authoritative decision could be recovered. No
+snow--soil production equation or convenience aggregation has been added.
+
 ### 2026-08-24 BGC/OFE identity corrective checkpoint
 
 Implementation intent: close `CHILD1-BGC-OFE-001` before further physical,
@@ -369,11 +392,13 @@ diff/write-set reconciliation, and line-count evidence. The package remains
   the final Stage-3 boundary. Covered latent mass/energy is exact, weighted
   OFE exposes a typed residual decomposition with primitive boundary scale,
   and the persistent positive-radiation case closes through the provisional /
-  final reciprocal-longwave correction. Released precipitation-advection and
-  soil custody, a component-resolved carrier with heterogeneous physical
-  closure, reviewed per-field fixed-point convergence policy, and independent
-  ledger closure remain blockers. The keyed candidate-feedback iteration is
+  final reciprocal-longwave correction. Route-distinct precipitation and
+  advection custody, equal-and-opposite snow--soil heat, interlayer bracket
+  reconstruction, complete producer manifests, and the independent physical
+  outcome ledger now pass. The keyed candidate-feedback iteration is
   implemented; terminal chronology remains open.
 - [~] Runner-owned 48-support capability/provider bind; physical support
   construction and complete restart remain open.
-- [ ] Scenario matrix, reviews, exact-head gates, and disposition.
+- [~] Scenario matrix and independent physical-custody reviews pass; terminal
+  scenarios and exact Child-1 closure gates remain open after this bounded
+  checkpoint.

@@ -32,6 +32,14 @@ use super::{
     v8_projection::{V8CoveredProjection, project_covered_forest_v8_passes},
 };
 
+pub(crate) type FixedCapCanopyReleasesByDestination = BTreeMap<
+    (OfeId, TileId),
+    (
+        crate::DirectCanopyLiquidRelease,
+        openwepp_coupled_time::Digest32,
+    ),
+>;
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum V8OwnerFailurePhase {
     Persistent,
@@ -131,6 +139,62 @@ impl UncommittedCoveredV8OwnerEnvelope {
     #[must_use]
     pub fn hydrology(&self) -> &UnifiedRealHydrologyCandidate {
         self.physical.hydrology()
+    }
+
+    pub(crate) fn fixed_cap_canopy_releases_by_destination(
+        &self,
+        interval_s: f64,
+    ) -> Result<FixedCapCanopyReleasesByDestination, CoveredV8OwnerEnvelopeError> {
+        let physical = match &self.physical {
+            CoveredV8PhysicalOwner::MultiTile(value) => value,
+            CoveredV8PhysicalOwner::Legacy(_) => {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "fixed-cap release requires multi-tile physical owner",
+                ));
+            }
+        };
+        let mut releases = BTreeMap::new();
+        for tile in physical.finalized_tiles() {
+            let Some(covered) = tile.covered() else {
+                continue;
+            };
+            covered.vegetation_operands.validate()?;
+            let release = super::covered_derived_ingress::derive_release_from_ledgers(
+                covered
+                    .vegetation_operands
+                    .occupancies
+                    .iter()
+                    .map(|row| (row.occupancy_id.as_str(), &row.liquid)),
+                covered
+                    .vegetation_operands
+                    .ground_canopy_release_kg_m2_tile_ground,
+                covered
+                    .vegetation_operands
+                    .ground_stemflow_kg_m2_tile_ground,
+                interval_s,
+            )
+            .map_err(|_| {
+                CoveredV8OwnerEnvelopeError::Identity("fixed-cap release reconstruction")
+            })?;
+            let source_identity = openwepp_coupled_time::digest_bytes(
+                &serde_json::to_vec(&covered.vegetation_operands).map_err(|_| {
+                    CoveredV8OwnerEnvelopeError::Identity("fixed-cap release source framing")
+                })?,
+            );
+            let destination = (
+                covered.identity.ofe_id.clone(),
+                covered.identity.tile_id.clone(),
+            );
+            if releases
+                .insert(destination, (release, source_identity))
+                .is_some()
+            {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "duplicate fixed-cap release destination",
+                ));
+            }
+        }
+        Ok(releases)
     }
 
     pub(crate) fn covered_lse_iteration_state_by_destination(

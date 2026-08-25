@@ -2,6 +2,7 @@ use super::*;
 
 mod owner_finalization;
 pub use owner_finalization::CoveredParentOwnerJoinReceiptV1;
+pub(crate) use owner_finalization::CoveredPhysicalCustodyJoinInputs;
 pub(super) use owner_finalization::*;
 
 struct CoveredFixedPointPolicy {

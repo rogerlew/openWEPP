@@ -80,6 +80,12 @@ use crate::snow_stage3_terminal_handoff::{
     Stage3SnowSurfaceBoundaryReceiptInputs, Stage3SnowSurfaceBoundaryReceiptV1,
     Stage3TileBoundaryClassV1, outward_snow_fluxes_to_stage3,
 };
+use crate::snow_stage3_v11_attachment::{
+    DirectSnowStage3V11AttachmentError, SnowSoilHeatReceiptV1, Stage3PrecipitationDestinationV1,
+    Stage3PrecipitationEnthalpyProviderV1, Stage3PrecipitationPhaseParcelSetV1,
+    Stage3PrecipitationPhaseParcelV1, Stage3PrecipitationPhaseV1, Stage3PrecipitationSourceV1,
+    reconstruct_precipitation_mass_and_advected_heat,
+};
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyShadowAdapter, RealHydrologyShadowError,
 };
@@ -92,7 +98,9 @@ use crate::{
 mod canonical_owner_bytes;
 #[path = "v11_covered/mod.rs"]
 mod v11_covered;
+pub(crate) use v11_covered::physical_outcome_ledger::ledger_set_digest as stage3_physical_outcome_ledger_set_digest;
 
+pub(crate) use v11_covered::CoveredPhysicalCustodyJoinInputs;
 use v11_covered::*;
 pub use v11_covered::{
     CoveredParentOwnerJoinReceiptV1, DirectV11RealConsumerStack,
@@ -122,7 +130,14 @@ pub enum DirectV11RealConsumerError {
     CoveredBoundary(#[from] SnowStage3HandoffError),
     #[error(transparent)]
     Stage3(#[from] DirectSnowStage3EvaluationError),
+    #[error("SNOWENERGY-E-PRECIP-001: {0}")]
+    Stage3PrecipitationCustody(&'static str),
+    #[error("SNOWENERGY-E-SOIL-HEAT-001: {0}")]
+    Stage3SnowSoilHeatCustody(&'static str),
 }
+
+include!("v9_real_consumer_shadow_physical_custody_error.rs");
+include!("v9_real_consumer_shadow_serialization.rs");
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectV9ShadowIntervalInput {
@@ -2106,6 +2121,32 @@ impl DirectV9RealConsumerShadow {
         Ok(())
     }
 
+    fn accept_envelope_with_soil_top_boundary_credits(
+        &mut self,
+        transaction_id: TransactionId,
+        envelope: &UncommittedCoveredV8OwnerEnvelope,
+        credits: &[SoilThermalTopBoundaryCreditV1],
+    ) -> Result<SoilThermalTopBoundaryCreditSetV1, DirectV9RealConsumerError> {
+        for credit in credits {
+            if credit.snow_soil_heat_receipt_sha256.as_str().len() != 64 {
+                return Err(DirectV9RealConsumerError::OwnerClosure(
+                    "snow-soil receipt digest encoding",
+                ));
+            }
+        }
+        let beginning_soil = self.soil_thermal.clone();
+        self.accept_envelope(transaction_id, envelope)?;
+        let accepted = aggregate_soil_thermal_ending_with_top_boundary_credits(
+            &beginning_soil,
+            &self.lse_configuration,
+            transaction_id,
+            envelope.hydrology().soil_thermal_candidates(),
+            credits,
+        )?;
+        self.soil_thermal = accepted.ending.clone();
+        Ok(accepted)
+    }
+
     fn validate_complete_owner_set(&self) -> Result<(), DirectV9RealConsumerError> {
         self.vegetation_state
             .validate(&self.vegetation_configuration)?;
@@ -2612,7 +2653,46 @@ fn aggregate_soil_thermal_ending(
     transaction_id: TransactionId,
     candidates: &[SoilThermalTileCandidate],
 ) -> Result<SoilThermalSnapshot, DirectV9RealConsumerError> {
+    aggregate_soil_thermal_ending_with_top_boundary_credits(
+        beginning,
+        configuration,
+        transaction_id,
+        candidates,
+        &[],
+    )
+    .map(|value| value.ending)
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub(crate) struct SoilThermalTopBoundaryCreditV1 {
+    pub lane_id: u32,
+    pub ofe_id: OfeId,
+    pub first_layer_id: SoilLayerId,
+    pub beginning_owner_id: ResourceOwnerId,
+    pub beginning_configuration_sha256: Sha256Digest,
+    pub beginning_state_sha256: Sha256Digest,
+    pub support_start_ns: i64,
+    pub support_end_ns: i64,
+    pub accepted_positive_downward_j_m2_ofe_ground: f64,
+    pub soil_thermal_credit_j_m2_ofe_ground: f64,
+    pub snow_soil_heat_receipt_sha256: Sha256Digest,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct SoilThermalTopBoundaryCreditSetV1 {
+    pub ending: SoilThermalSnapshot,
+    pub accepted_credit_set_sha256: Sha256Digest,
+}
+
+pub(crate) fn aggregate_soil_thermal_ending_with_top_boundary_credits(
+    beginning: &SoilThermalSnapshot,
+    configuration: &LandSurfaceEnergyConfiguration,
+    transaction_id: TransactionId,
+    candidates: &[SoilThermalTileCandidate],
+    top_boundary_credits: &[SoilThermalTopBoundaryCreditV1],
+) -> Result<SoilThermalTopBoundaryCreditSetV1, DirectV9RealConsumerError> {
     validate_soil_thermal_candidate_set(beginning, configuration, candidates)?;
+    let credits = validate_top_boundary_credit_set(beginning, top_boundary_credits)?;
     let mut ofes = Vec::with_capacity(beginning.ofes.len());
     for beginning_ofe in &beginning.ofes {
         ofes.push(aggregate_soil_thermal_ofe(
@@ -2620,6 +2700,7 @@ fn aggregate_soil_thermal_ending(
             beginning_ofe,
             configuration,
             candidates,
+            credits.get(&beginning_ofe.ofe_id).copied(),
         )?);
     }
     let state_sha256 = digest_soil_state(&beginning.owner_id, transaction_id, &ofes)?;
@@ -2639,7 +2720,58 @@ fn aggregate_soil_thermal_ending(
         ofes,
     };
     ending.validate()?;
-    Ok(ending)
+    let ordered_credits = credits.values().copied().collect::<Vec<_>>();
+    let accepted_credit_set_sha256 = digest_serialized(&(
+        "OPENWEPP_SOIL_TOP_BOUNDARY_CREDIT_SET_V1",
+        transaction_id,
+        ordered_credits,
+    ))?;
+    Ok(SoilThermalTopBoundaryCreditSetV1 {
+        ending,
+        accepted_credit_set_sha256,
+    })
+}
+
+fn validate_top_boundary_credit_set<'a>(
+    beginning: &SoilThermalSnapshot,
+    credits: &'a [SoilThermalTopBoundaryCreditV1],
+) -> Result<BTreeMap<OfeId, &'a SoilThermalTopBoundaryCreditV1>, DirectV9RealConsumerError> {
+    let mut by_ofe = BTreeMap::new();
+    let mut lanes = BTreeSet::new();
+    for credit in credits {
+        let beginning_ofe = beginning
+            .ofes
+            .iter()
+            .find(|ofe| ofe.ofe_id == credit.ofe_id)
+            .ok_or(DirectV9RealConsumerError::OwnerClosure(
+                "soil top-boundary OFE",
+            ))?;
+        let first_layer =
+            beginning_ofe
+                .ordered_layers
+                .first()
+                .ok_or(DirectV9RealConsumerError::OwnerClosure(
+                    "soil top-boundary first layer",
+                ))?;
+        if credit.beginning_owner_id != beginning.owner_id
+            || credit.beginning_configuration_sha256 != beginning.configuration_sha256
+            || credit.beginning_state_sha256 != beginning.state_sha256
+            || credit.first_layer_id != first_layer.layer_id
+            || credit.support_end_ns <= credit.support_start_ns
+            || !credit
+                .accepted_positive_downward_j_m2_ofe_ground
+                .is_finite()
+            || credit.soil_thermal_credit_j_m2_ofe_ground.to_bits()
+                != credit.accepted_positive_downward_j_m2_ofe_ground.to_bits()
+            || !lanes.insert(credit.lane_id)
+            || by_ofe.insert(credit.ofe_id.clone(), credit).is_some()
+        {
+            return Err(DirectV9RealConsumerError::OwnerClosure(
+                "soil top-boundary credit identity or sign",
+            ));
+        }
+    }
+    Ok(by_ofe)
 }
 
 fn validate_soil_thermal_candidate_set(
@@ -2690,6 +2822,7 @@ fn aggregate_soil_thermal_ofe(
     beginning_ofe: &SoilThermalOfeSnapshot,
     configuration: &LandSurfaceEnergyConfiguration,
     candidates: &[SoilThermalTileCandidate],
+    top_boundary_credit: Option<&SoilThermalTopBoundaryCreditV1>,
 ) -> Result<SoilThermalOfeSnapshot, DirectV9RealConsumerError> {
     let configured_ofe = configuration
         .ofes
@@ -2752,6 +2885,11 @@ fn aggregate_soil_thermal_ofe(
             }
             ending_enthalpy +=
                 layer.ending_enthalpy_j_m2_ofe_ground - layer.beginning_enthalpy_j_m2_ofe_ground;
+        }
+        if layer_index == 0 {
+            if let Some(credit) = top_boundary_credit {
+                ending_enthalpy += credit.soil_thermal_credit_j_m2_ofe_ground;
+            }
         }
         let ending_temperature_k = beginning_layer.temperature_k
             + (ending_enthalpy - beginning_layer.enthalpy_j_m2_ofe_ground)
@@ -2851,12 +2989,6 @@ pub fn restart_authority_seal_soil_thermal_digests(
         &snapshot.ofes,
     )?;
     Ok(())
-}
-
-fn digest_serialized<T: Serialize>(value: &T) -> Result<Sha256Digest, DirectV9RealConsumerError> {
-    let bytes = serde_json::to_vec(value)
-        .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
-    Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes))).map_err(Into::into)
 }
 
 #[cfg(test)]

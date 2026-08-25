@@ -7,6 +7,66 @@
   "unknown_path_action": "ESCALATE_CRITICAL",
   "entries": [
     {
+      "entry_id": "child1-stage3-diagnostics-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "persistent-stage3-physical-diagnostics", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-stage3-reconciliation-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "persistent-stage3-physical-reconciliation", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-stage3-evaluation-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "persistent-stage3-rain-refreeze-evaluation", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-stage3-persistent-state-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/persistent_state.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "persistent-stage3-rain-refreeze-state", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-stage3-persistent-tests-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/stage3_evaluation_validation_tests/persistent_tests.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "persistent-stage3-rain-refreeze-tests", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-covered-physical-execution-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "covered-persistent-physical-transaction", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-covered-fixed-point-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v11_covered/fixed_point.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "covered-persistent-bounded-fixed-point", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-covered-open-snow-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "covered-persistent-snow-soil-boundary", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-covered-outcome-ledger-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v11_covered/physical_outcome_ledger.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "covered-persistent-independent-outcome-ledger", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-covered-receipt-sets-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v11_covered/receipt_sets.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "covered-persistent-receipt-sets", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-stage3-liquid-routing-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/liquid_routing.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "persistent-stage3-liquid-routing", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-stage3-precipitation-custody-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_precipitation.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "persistent-stage3-precipitation-custody", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-stage3-snow-soil-custody-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_snow_soil_heat.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "persistent-stage3-snow-soil-heat-custody", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-stage3-physical-error-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_physical_custody_error.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "persistent-stage3-physical-custody-errors", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
+      "entry_id": "child1-stage3-real-consumer-serialization-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_serialization.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "persistent-stage3-real-consumer-serialization", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
+    {
       "entry_id": "child3-retired-covered-v8-transaction", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_v8_transaction.rs" },
       "owner": "openwepp-land-surface-energy-owner", "semantic_surface": "snow-free-land-surface-energy", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-LANDSURFACEENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"]
     },

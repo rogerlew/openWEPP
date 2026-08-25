@@ -22,12 +22,14 @@ capability bind; it does not yet construct the covered physical support from
 staged owners. Terminal parcel installation, restart, and publication
 consumers remain open.
 
-`Static:` `CoveredColumnAuthority::V11SnowCovered` now selects an explicit LSE
+`Static:` `CoveredColumnAuthority::V11SnowCovered` selects an explicit LSE
 lower-boundary branch. It suppresses covered ground water, sensible/vapor,
-soil-storage, and WB14-facing operators, while keeping the snow-free branch
-unchanged. Generic ground/shortwave accounting structures remain in the
-transaction, and released Stage-3 shortwave, precipitation-advection,
-soil-coupling, fixed-point, and independent ledger joins are not yet present.
-The current parent-level carrier aggregate is therefore not proof of a fully
-keyed heterogeneous covered solve. This remains the next implementation
-blocker.
+soil-storage, and WB14-facing operators while keeping the snow-free branch
+unchanged. The live path now consumes destination-keyed physical boundaries,
+includes Stage-3 shortwave, and closes the bounded covered fixed point using
+the accepted current-trial boundary receipts. Persistent-support closure is
+still blocked on precipitation mass/advection custody, the heterogeneous
+snow--soil conductive-heat transaction, and an independent postcandidate
+physical outcome ledger. Those remaining owners, rather than keyed
+consumption, shortwave, or fixed-point availability, define the next
+implementation checkpoint.
