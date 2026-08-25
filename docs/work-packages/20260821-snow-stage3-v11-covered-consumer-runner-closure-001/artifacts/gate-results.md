@@ -940,3 +940,9 @@ assurance binding for the amended snow-energy contract and one retained EB03
 lifecycle assertion naming v16. The typed source-adoption transaction and the
 v18 lifecycle reconciliation correct those closure defects without changing
 physics; the superseded 3,218/3,300 result is not claimed as passing evidence.
+
+`Ran / exact clean implementation SHA:`
+`43cc9bbea2fbf5fe6ab6596cee4162de75cef999` passed the complete workspace
+`3,300/3,300`, seven slow, with six configured skips and zero failures. The
+preceding 3,299/3,300 run exposed only the stale generation-ID guard and is
+likewise superseded by this exact-clean result.

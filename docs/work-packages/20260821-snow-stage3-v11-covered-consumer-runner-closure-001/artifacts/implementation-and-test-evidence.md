@@ -467,3 +467,7 @@ custody correction.
 Child 1 remains `EXECUTING / HOLD`; terminal chronology, runner-owned 48-
 support construction, exact-once terminal liquid, additive restart, remaining
 matrices, and terminal package closure remain open.
+
+`Ran / terminal implementation gate:` exact clean SHA
+`43cc9bbea2fbf5fe6ab6596cee4162de75cef999` passed the full workspace
+3,300/3,300 with seven slow tests and six configured skips.
