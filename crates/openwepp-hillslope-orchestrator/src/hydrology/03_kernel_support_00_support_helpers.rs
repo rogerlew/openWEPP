@@ -1476,6 +1476,9 @@ pub(crate) use support_helpers_mod::{
     CoveredTerminalTrialProviderV1, JointTrialAuthorityV1, ProbeChildAuthorityV1,
     CoveredTerminalTrialRequestV1, CoveredTerminalTrialRoleV1,
     CoveredTerminalTrialTransitionV1, STAGE3_DEFAULT_SNOW_ALBEDO,
+    NoEvidence, TerminalEvidenceMode,
     stage3_has_represented_ice,
     stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
 };
+#[cfg(test)]
+pub(crate) use support_helpers_mod::{CaptureEvidence, CaptureState};

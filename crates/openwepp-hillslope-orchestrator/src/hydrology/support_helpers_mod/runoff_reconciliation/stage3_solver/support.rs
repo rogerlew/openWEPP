@@ -357,6 +357,26 @@ impl Wb11HydrologyKernel {
         initial_joint: CoveredTerminalJointTrialStateV1,
         provider: &mut CoveredTerminalTrialProviderV1<'_>,
     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
+        let mut evidence = <NoEvidence as TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>>::new_state();
+        Self::evaluate_stage3_terminal_support_with_trial_provider_and_evidence_v1::<NoEvidence>(
+            inputs, state, lane_id, interval_index, support_input, support, mode,
+            initial_joint, provider, &mut evidence,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn evaluate_stage3_terminal_support_with_trial_provider_and_evidence_v1<M: TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>>(
+        inputs: &DirectActiveSnowPartitionInputs,
+        state: &DirectSnowStage3PersistentState,
+        lane_id: u32,
+        interval_index: u64,
+        support_input: DirectSnowStage3SupportInput,
+        support: TimeSupport,
+        mode: CoveredTerminalExecutionMode,
+        initial_joint: CoveredTerminalJointTrialStateV1,
+        provider: &mut CoveredTerminalTrialProviderV1<'_>,
+        evidence: &mut M::State,
+    ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
         if mode == CoveredTerminalExecutionMode::PersistentReject
             || !support_input.duration_seconds.is_finite()
             || support_input.duration_seconds <= 0.0
@@ -386,7 +406,7 @@ impl Wb11HydrologyKernel {
             )
             .into());
         }
-        let result = Self::evaluate_stage3_persistent_day_internal(
+        let result = Self::evaluate_stage3_persistent_day_internal_with_evidence::<M>(
             inputs,
             state,
             lane_id,
@@ -395,6 +415,7 @@ impl Wb11HydrologyKernel {
             Some(DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1),
             None,
             Some((support, initial_joint, provider)),
+            evidence,
         )?;
         if let CoveredTerminalExecutionMode::ExactEndpoint { expected_tick } = mode {
             let exact = result.terminal_event.as_ref().is_some_and(|event| {

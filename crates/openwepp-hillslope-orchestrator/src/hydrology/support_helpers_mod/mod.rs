@@ -26,7 +26,10 @@ pub(crate) use runoff_reconciliation::{
     CoveredTerminalTrialProviderV1,
     CoveredTerminalTrialRequestV1, CoveredTerminalTrialRoleV1,
     CoveredTerminalTrialTransitionV1, JointTrialAuthorityV1, ProbeChildAuthorityV1,
+    NoEvidence, TerminalEvidenceMode,
     STAGE3_DEFAULT_SNOW_ALBEDO,
     stage3_has_represented_ice,
     stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
 };
+#[cfg(test)]
+pub(crate) use runoff_reconciliation::{CaptureEvidence, CaptureState};

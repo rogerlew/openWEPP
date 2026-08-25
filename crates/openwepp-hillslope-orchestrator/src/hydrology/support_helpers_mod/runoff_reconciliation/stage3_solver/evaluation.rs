@@ -127,12 +127,43 @@ impl Wb11HydrologyKernel {
         terminal_request: Option<DirectSnowTerminalEventRequest>,
         mut terminal_detached_liquid_kg_m2: f64,
         boundary: Option<Stage3SnowSurfaceBoundaryReceiptV1>,
+        terminal_trial_context: Option<(
+            u32,
+            TimeSupport,
+            CoveredTerminalJointTrialStateV1,
+            &mut CoveredTerminalTrialProviderV1<'_>,
+        )>,
+    ) -> Result<Stage3ShadowSummary, DirectSnowStage3EvaluationError> {
+        let mut evidence = <NoEvidence as TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>>::new_state();
+        Self::evaluate_stage3_sequential_melt_shadow_with_evidence::<NoEvidence>(
+            phase_class, tag, inputs, supports, layers, cold_content_by_layer,
+            terminal_request, terminal_detached_liquid_kg_m2, boundary,
+            terminal_trial_context, &mut evidence,
+        )
+    }
+
+    #[allow(
+        clippy::cast_precision_loss,
+        clippy::too_many_lines,
+        clippy::too_many_arguments
+    )]
+    pub(super) fn evaluate_stage3_sequential_melt_shadow_with_evidence<M: TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>>(
+        phase_class: HillslopeKernelPhaseClass,
+        tag: Stage3EvaluationTag,
+        inputs: &DirectActiveSnowPartitionInputs,
+        supports: &[DirectSnowStage3SupportInput],
+        mut layers: Vec<DirectSnowLayerState>,
+        mut cold_content_by_layer: Vec<f64>,
+        terminal_request: Option<DirectSnowTerminalEventRequest>,
+        mut terminal_detached_liquid_kg_m2: f64,
+        boundary: Option<Stage3SnowSurfaceBoundaryReceiptV1>,
         mut terminal_trial_context: Option<(
             u32,
             TimeSupport,
             CoveredTerminalJointTrialStateV1,
             &mut CoveredTerminalTrialProviderV1<'_>,
         )>,
+        evidence: &mut M::State,
     ) -> Result<Stage3ShadowSummary, DirectSnowStage3EvaluationError> {
         if supports.is_empty() || supports.len() > 24 {
             return Err(Self::stage3_domain_error(
@@ -230,7 +261,7 @@ impl Wb11HydrologyKernel {
                         let terminal_lane_id = terminal_trial_context
                             .as_ref()
                             .map(|(lane_id, _, _, _)| *lane_id);
-                        let (mut terminal, accepted_terminal_joint) = Self::solve_terminal_enthalpy_event(
+                        let (mut terminal, accepted_terminal_joint) = Self::solve_terminal_enthalpy_event_with_evidence::<_, _, _, M>(
                             phase_class,
                             hour_index,
                             elapsed_seconds,
@@ -332,7 +363,7 @@ impl Wb11HydrologyKernel {
                                     let mut hint = None;
                                     let mut accepted = None;
                                     for coupling_iteration in 0..32_u32 {
-                                        let receipt = (**provider)(CoveredTerminalTrialRequestV1 {
+                                        let request = CoveredTerminalTrialRequestV1 {
                                             lane_id: *lane_id,
                                             support: trial_support,
                                             role,
@@ -346,7 +377,8 @@ impl Wb11HydrologyKernel {
                                             snow_density_kg_m3: density_kg_m3,
                                             ending_snow_hint: hint,
                                             beginning_joint: beginning_joint.clone(),
-                                        })?;
+                                        };
+                                        let receipt = (**provider)(request)?;
                                         if receipt.boundary.support != trial_support
                                             || receipt.beginning_joint != *beginning_joint
                                             || receipt.probe_child_identity.trial_support
@@ -514,6 +546,7 @@ impl Wb11HydrologyKernel {
                                     })
                                     .transpose()
                             },
+                            evidence,
                         )?;
                         terminal.entry_solid_precipitation_kg_m2 =
                             hourly.snowfall_m * 0.1 * STAGE3_RHO_WATER_KG_M3;

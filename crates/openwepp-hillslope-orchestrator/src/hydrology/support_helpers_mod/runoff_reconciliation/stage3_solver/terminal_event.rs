@@ -212,6 +212,30 @@ impl Wb11HydrologyKernel {
 
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     pub(super) fn solve_terminal_enthalpy_event<F, G, J>(
+        phase_class: HillslopeKernelPhaseClass,
+        hour_index: usize,
+        hour_offset_seconds: f64,
+        requested_seconds: f64,
+        start: TerminalState,
+        initial_joint: J,
+        flux_integral: F,
+        join_hydrology_ending: G,
+    ) -> Result<(DirectSnowTerminalEventResult, J), DirectSnowStage3EvaluationError>
+    where
+        F: FnMut(TerminalState, &J, f64, f64, CoveredTerminalTrialRoleV1, u32)
+            -> Result<(TerminalFluxIntegral, J), DirectSnowStage3EvaluationError>,
+        G: FnMut(TerminalState, J) -> Result<J, DirectSnowStage3EvaluationError>,
+        J: Clone,
+    {
+        let mut evidence = <NoEvidence as TerminalEvidenceMode<J>>::new_state();
+        Self::solve_terminal_enthalpy_event_with_evidence::<F, G, J, NoEvidence>(
+            phase_class, hour_index, hour_offset_seconds, requested_seconds, start,
+            initial_joint, flux_integral, join_hydrology_ending, &mut evidence,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    pub(super) fn solve_terminal_enthalpy_event_with_evidence<F, G, J, M>(
         _phase_class: HillslopeKernelPhaseClass,
         hour_index: usize,
         hour_offset_seconds: f64,
@@ -220,6 +244,7 @@ impl Wb11HydrologyKernel {
         initial_joint: J,
         mut flux_integral: F,
         mut join_hydrology_ending: G,
+        evidence: &mut M::State,
     ) -> Result<(DirectSnowTerminalEventResult, J), DirectSnowStage3EvaluationError>
     where
         F: FnMut(
@@ -232,6 +257,7 @@ impl Wb11HydrologyKernel {
         ) -> Result<(TerminalFluxIntegral, J), DirectSnowStage3EvaluationError>,
         G: FnMut(TerminalState, J) -> Result<J, DirectSnowStage3EvaluationError>,
         J: Clone,
+        M: TerminalEvidenceMode<J>,
     {
         if !requested_seconds.is_finite()
             || requested_seconds <= 0.0
@@ -278,9 +304,17 @@ impl Wb11HydrologyKernel {
             let remaining = requested_seconds - elapsed;
             let dt = trial_seconds.min(remaining);
             if dt < 2.0 * MINIMUM_COVERED_CARRIER_SECONDS {
-                return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
-                    SnowTerminalNumericsFailure::BelowCarrierDomain,
-                ));
+                let outcome = SnowTerminalNumericsFailure::BelowCarrierDomain;
+                let calls = M::provider_call_count(evidence);
+                M::admission(evidence, TerminalAdmissionEvidenceHook {
+                    proposed_duration_s: dt,
+                    required_half_duration_s: 0.5 * dt,
+                    minimum_duration_s: MINIMUM_COVERED_CARRIER_SECONDS,
+                    outcome: &outcome,
+                    provider_calls_before: calls,
+                    provider_calls_after: calls,
+                });
+                return Err(DirectSnowStage3EvaluationError::TerminalNumerics(outcome));
             }
             let full_role = if consecutive_rejections == 0 {
                 CoveredTerminalTrialRoleV1::Full
@@ -326,6 +360,15 @@ impl Wb11HydrologyKernel {
                 ledger: first.ledger.add(second.ledger),
             };
             let error = Self::terminal_scaled_error(full, refined);
+            M::pair(evidence, TerminalPairEvidenceHook {
+                duration_s: dt,
+                coarse_complete_energy_j_m2: full.ledger.complete_energy_j_m2,
+                refined_complete_energy_j_m2: refined.ledger.complete_energy_j_m2,
+                scaled_error: error,
+                rejected: error > 1.0 && refined.state.ice_kg_m2 > 0.0,
+                coarse_external_liquid_kg_m2: full.ledger.external_liquid_kg_m2,
+                refined_external_liquid_kg_m2: refined.ledger.external_liquid_kg_m2,
+            });
             // LTE is discontinuous across exhaustion because terminal
             // transition censors the coarse/fine residual energy at different
             // substep boundaries. Once the refined path brackets zero ice,
@@ -595,6 +638,44 @@ mod tests {
         assert!((event.complete_energy_j_m2 - 200_160.0).abs() <= 1.0e-6);
         assert!(event.solid_mass_closure_residual_kg_m2.abs() <= 1.0e-9);
         assert!(event.energy_closure_residual_j_m2.abs() <= 1.0e-6);
+    }
+
+    #[test]
+    fn capture_mode_retains_rejected_pair_and_separate_floor_admission() {
+        let mut evidence = <CaptureEvidence as TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>>::new_state();
+        let result = Wb11HydrologyKernel::solve_terminal_enthalpy_event_with_evidence::<
+            _, _, _, CaptureEvidence,
+        >(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            0,
+            0.0,
+            3.75,
+            TerminalState { ice_kg_m2: 0.5, liquid_kg_m2: 0.0, cold_content_j_m2: 0.0 },
+            None,
+            |_, _, _, duration, _, _| Ok((TerminalFluxIntegral {
+                complete_energy_j_m2: duration * duration,
+                vapor_mass_exchange_kg_m2: 0.0,
+                shortwave_energy_j_m2: duration * duration,
+                longwave_energy_j_m2: 0.0,
+                sensible_energy_j_m2: 0.0,
+                latent_energy_j_m2: 0.0,
+                advected_energy_j_m2: 0.0,
+                snow_soil_heat_energy_j_m2: 0.0,
+                external_liquid_kg_m2: 0.0,
+            }, None)),
+            |_, joint| Ok(joint),
+            &mut evidence,
+        );
+        assert!(matches!(result, Err(DirectSnowStage3EvaluationError::TerminalNumerics(
+            SnowTerminalNumericsFailure::BelowCarrierDomain
+        ))));
+        assert_eq!(evidence.pairs.last().unwrap().0.to_bits(), 1.875_f64.to_bits());
+        let admission = evidence.admissions.last().unwrap();
+        assert_eq!(admission.0.to_bits(), 0.9375_f64.to_bits());
+        assert_eq!(admission.1.to_bits(), 0.46875_f64.to_bits());
+        assert_eq!(admission.2.to_bits(), 0.6_f64.to_bits());
+        assert_eq!(admission.3, SnowTerminalNumericsFailure::BelowCarrierDomain);
+        assert_eq!(admission.4, admission.5);
     }
 
     #[test]

@@ -23,6 +23,29 @@ impl Wb11HydrologyKernel {
             &mut CoveredTerminalTrialProviderV1<'_>,
         )>,
     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
+        let mut evidence = <NoEvidence as TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>>::new_state();
+        Self::evaluate_stage3_persistent_day_internal_with_evidence::<NoEvidence>(
+            inputs, state, lane_id, interval_index, supports, terminal_request,
+            boundary, terminal_trial_context, &mut evidence,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn evaluate_stage3_persistent_day_internal_with_evidence<M: TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>>(
+        inputs: &DirectActiveSnowPartitionInputs,
+        state: &DirectSnowStage3PersistentState,
+        lane_id: u32,
+        interval_index: u64,
+        supports: &[DirectSnowStage3SupportInput],
+        terminal_request: Option<DirectSnowTerminalEventRequest>,
+        boundary: Option<Stage3SnowSurfaceBoundaryReceiptV1>,
+        terminal_trial_context: Option<(
+            TimeSupport,
+            CoveredTerminalJointTrialStateV1,
+            &mut CoveredTerminalTrialProviderV1<'_>,
+        )>,
+        evidence: &mut M::State,
+    ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
         Self::validate_stage3_persistent_state(state)?;
         if state.lane_id != lane_id || state.next_interval_index != interval_index {
             return Err(Self::stage3_domain_error(
@@ -49,7 +72,7 @@ impl Wb11HydrologyKernel {
             .iter()
             .map(Self::stage3_layer_cold_content_j_m2)
             .collect();
-        let summary = Self::evaluate_stage3_sequential_melt_shadow(
+        let summary = Self::evaluate_stage3_sequential_melt_shadow_with_evidence::<M>(
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
             tag,
             inputs,
@@ -62,6 +85,7 @@ impl Wb11HydrologyKernel {
             terminal_trial_context.map(|(support, joint, provider)| {
                 (lane_id, support, joint, provider)
             }),
+            evidence,
         )?;
         Self::validate_stage3_shadow_summary(
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,

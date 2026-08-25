@@ -2,49 +2,54 @@
 #[test]
 #[allow(clippy::too_many_lines)]
 fn mixed_open_covered_stack_executes_complete_ofe_ground_boundary() {
-    exercise_complete_wb14_cadence(0.005, 8.0, true, None, false, None, false);
+    exercise_complete_wb14_cadence(0.005, 8.0, true, None, false, None, false, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn two_900_second_complete_owner_children_publish_one_parent() {
-    exercise_complete_wb14_cadence(0.02, 8.0, false, None, false, None, false);
+    exercise_complete_wb14_cadence(0.02, 8.0, false, None, false, None, false, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn one_1800_second_child_matches_complete_historical_candidate() {
-    exercise_complete_wb14_cadence(0.08, 8.0, false, None, false, None, false);
+    exercise_complete_wb14_cadence(0.08, 8.0, false, None, false, None, false, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn coupled_hard_boundary_truncates_selected_900_second_child() {
-    exercise_complete_wb14_cadence(0.02, 8.0, false, Some(60_000_000_000), false, None, false);
+    exercise_complete_wb14_cadence(0.02, 8.0, false, Some(60_000_000_000), false, None, false, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn latest_accepted_stage3_state_changes_next_wb14_proposal() {
-    exercise_complete_wb14_cadence(0.010_000_001, 0.0, false, Some(60_000_000_000), true, None, false);
+    exercise_complete_wb14_cadence(0.010_000_001, 0.0, false, Some(60_000_000_000), true, None, false, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn resolved_snow_and_snow_free_lanes_publish_one_atomic_parent() {
-    exercise_complete_wb14_cadence(0.08, 8.0, false, None, false, Some(0.0), false);
+    exercise_complete_wb14_cadence(0.08, 8.0, false, None, false, Some(0.0), false, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn two_resolved_snow_lanes_choose_common_earliest_cadence() {
-    exercise_complete_wb14_cadence(0.08, 8.0, true, None, false, Some(0.005), false);
+    exercise_complete_wb14_cadence(0.08, 8.0, true, None, false, Some(0.005), false, false);
 }
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn interior_terminal_event_runs_covered_event_and_snow_free_remainder() {
-    exercise_complete_wb14_cadence(0.000_6, 0.0, false, None, false, None, true);
+    exercise_complete_wb14_cadence(0.000_6, 0.0, false, None, false, None, true, false);
+}
+
+#[test]
+fn interior_terminal_event_capture_reproduces_below_carrier_domain() {
+    exercise_complete_wb14_cadence(0.000_6, 0.0, false, None, false, None, true, true);
 }
 
 #[allow(
@@ -60,6 +65,7 @@ fn exercise_complete_wb14_cadence(
     expect_dynamic_proposal: bool,
     second_lane_swe_m: Option<f64>,
     terminal_event: bool,
+    capture_terminal_failure: bool,
 ) {
     let positive_covered_rain = runtime_swe_m.to_bits() == 0.005_f64.to_bits()
         && include_child_17
@@ -877,6 +883,56 @@ fn exercise_complete_wb14_cadence(
         assert_eq!(stage3_beginning, rollback_stage3);
     }
     if positive_covered_rain {
+        return;
+    }
+    if capture_terminal_failure {
+        let (result, evidence) = crate::snow_stage3_v11_attachment::execute_covered_real_v11_parent_capture(
+            &context,
+            &parent,
+            &shadow,
+            &beginning_clock,
+            &prepared,
+            0,
+            0,
+            digest(3),
+            stage3_beginning_by_lane.clone(),
+            BTreeMap::new(),
+            None,
+        );
+        assert!(matches!(
+            result,
+            Err(DirectSnowStage3V11AttachmentError::Stage3(
+                DirectSnowStage3EvaluationError::TerminalNumerics(
+                    crate::SnowTerminalNumericsFailure::BelowCarrierDomain
+                )
+            ))
+        ));
+        let pair = evidence
+            .pairs
+            .iter()
+            .find(|pair| pair.0.to_bits() == 1.875_f64.to_bits())
+            .expect("selected 1.875-second rejected pair");
+        assert!(pair.4);
+        assert_eq!(pair.1.to_bits(), 0x4094_9afb_c192_8120);
+        assert_eq!(pair.2.to_bits(), 0x4094_2e21_8363_bae1);
+        assert_eq!((pair.2 - pair.1).to_bits(), 0xc03b_368f_8bb1_8fc0);
+        assert_eq!(pair.5.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(pair.6.to_bits(), 0.0_f64.to_bits());
+        let admission = evidence.admissions.last().expect("floor admission");
+        assert_eq!(admission.0.to_bits(), 0.9375_f64.to_bits());
+        assert_eq!(admission.1.to_bits(), 0.46875_f64.to_bits());
+        assert_eq!(admission.2.to_bits(), 0.6_f64.to_bits());
+        assert_eq!(admission.3, crate::SnowTerminalNumericsFailure::BelowCarrierDomain);
+        assert_eq!(admission.4, admission.5);
+        assert!(!evidence.provider_calls.is_empty());
+        assert_eq!(admission.4, evidence.provider_calls.len() as u64);
+        assert!(evidence.provider_calls.iter().all(|call| {
+            call.1 - call.0 >= 600_000_000 && !call.5 && !call.6
+        }));
+        assert_eq!(parent, rollback_parent);
+        assert_eq!(shadow, rollback_consumer);
+        assert_eq!(beginning_clock, rollback_clock);
+        assert_eq!(stage3_beginning, rollback_stage3);
         return;
     }
     let (

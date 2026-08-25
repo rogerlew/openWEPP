@@ -2462,6 +2462,110 @@ pub(crate) fn execute_covered_real_v11_parent(
     ),
     DirectSnowStage3V11AttachmentError,
 > {
+    let mut evidence = <crate::hydrology::NoEvidence as crate::hydrology::TerminalEvidenceMode<
+        Option<CoveredTerminalJointTrialStateV1>,
+    >>::new_state();
+    execute_covered_real_v11_parent_with_evidence::<crate::hydrology::NoEvidence>(
+        context,
+        beginning_parent,
+        beginning_consumer,
+        beginning_clock,
+        prepared,
+        day_index,
+        interval_index,
+        forcing_receipt,
+        beginning_stage3,
+        beginning_terminal_parcels,
+        failure_injection,
+        &mut evidence,
+    )
+}
+
+#[cfg(test)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+pub(crate) fn execute_covered_real_v11_parent_capture(
+    context: &DirectSnowStage3V11StaticContext,
+    beginning_parent: &V11ParentTransaction,
+    beginning_consumer: &DirectV10RealConsumerShadow,
+    beginning_clock: &CoupledClockStateV1,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    day_index: usize,
+    interval_index: usize,
+    forcing_receipt: Digest32,
+    beginning_stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    beginning_terminal_parcels: BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
+    failure_injection: Option<Stage3V11FailureInjection>,
+) -> (
+    Result<
+        (
+            V11ParentTransaction,
+            DirectV10RealConsumerShadow,
+            CoupledClockStateV1,
+            V11ParentCandidate,
+            BTreeMap<u32, DirectSnowStage3PersistentState>,
+            Vec<Stage3CoupledSubslabReceiptV1>,
+            Vec<Stage3V11TerminalEventGroupV1>,
+            Vec<DirectSnowStage3V11TerminalParcel>,
+        ),
+        DirectSnowStage3V11AttachmentError,
+    >,
+    crate::hydrology::CaptureState,
+) {
+    let mut evidence =
+        <crate::hydrology::CaptureEvidence as crate::hydrology::TerminalEvidenceMode<
+            Option<CoveredTerminalJointTrialStateV1>,
+        >>::new_state();
+    let result = execute_covered_real_v11_parent_with_evidence::<crate::hydrology::CaptureEvidence>(
+        context,
+        beginning_parent,
+        beginning_consumer,
+        beginning_clock,
+        prepared,
+        day_index,
+        interval_index,
+        forcing_receipt,
+        beginning_stage3,
+        beginning_terminal_parcels,
+        failure_injection,
+        &mut evidence,
+    );
+    (result, evidence)
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    clippy::too_many_lines,
+    clippy::type_complexity
+)]
+fn execute_covered_real_v11_parent_with_evidence<M>(
+    context: &DirectSnowStage3V11StaticContext,
+    beginning_parent: &V11ParentTransaction,
+    beginning_consumer: &DirectV10RealConsumerShadow,
+    beginning_clock: &CoupledClockStateV1,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    day_index: usize,
+    interval_index: usize,
+    forcing_receipt: Digest32,
+    beginning_stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    beginning_terminal_parcels: BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
+    failure_injection: Option<Stage3V11FailureInjection>,
+    evidence: &mut M::State,
+) -> Result<
+    (
+        V11ParentTransaction,
+        DirectV10RealConsumerShadow,
+        CoupledClockStateV1,
+        V11ParentCandidate,
+        BTreeMap<u32, DirectSnowStage3PersistentState>,
+        Vec<Stage3CoupledSubslabReceiptV1>,
+        Vec<Stage3V11TerminalEventGroupV1>,
+        Vec<DirectSnowStage3V11TerminalParcel>,
+    ),
+    DirectSnowStage3V11AttachmentError,
+>
+where
+    M: crate::hydrology::TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>,
+{
     let mut parent = beginning_parent.clone();
     let mut consumer = beginning_consumer.clone();
     let mut clock = beginning_clock.clone();
@@ -2585,7 +2689,7 @@ pub(crate) fn execute_covered_real_v11_parent(
         let subslab = prepared
             .coupled_subslab(support, child_ordinal)?
             .retain_active_snow_lanes(&active_lanes)?;
-        if let Some(actual) = try_actual_terminal_subslab(
+        if let Some(actual) = try_actual_terminal_subslab_with_evidence::<M>(
             context,
             &parent,
             &consumer,
@@ -2601,6 +2705,7 @@ pub(crate) fn execute_covered_real_v11_parent(
             u64::try_from(clock.event_ordinal()).map_err(|_| {
                 DirectSnowStage3V11AttachmentError::Identity("terminal event ordinal width")
             })?,
+            evidence,
         )? {
             if actual
                 .receipt

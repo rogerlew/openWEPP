@@ -322,6 +322,36 @@ fn evaluate_covered_terminal_candidate_v1(
     ),
     DirectSnowStage3V11AttachmentError,
 > {
+    let mut evidence = <crate::hydrology::NoEvidence as crate::hydrology::TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>>::new_state();
+    evaluate_covered_terminal_candidate_with_evidence_v1::<crate::hydrology::NoEvidence>(
+        beginning_consumer, beginning_clock, prepared, day_index, interval_index,
+        beginning_stage3, beginning_terminal_parcels, selected_upper_bound_s,
+        current_child_ordinal, lane_id, mode, &mut evidence,
+    )
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn evaluate_covered_terminal_candidate_with_evidence_v1<M: crate::hydrology::TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>>(
+    beginning_consumer: &DirectV10RealConsumerShadow,
+    beginning_clock: &CoupledClockStateV1,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    day_index: usize,
+    interval_index: usize,
+    beginning_stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    beginning_terminal_parcels: &BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
+    selected_upper_bound_s: f64,
+    current_child_ordinal: u32,
+    lane_id: u32,
+    mode: CoveredTerminalExecutionMode,
+    evidence: &mut M::State,
+) -> Result<
+    (
+        crate::hydrology::DirectSnowStage3PersistentDayResult,
+        BTreeMap<Digest32, crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1>,
+        BTreeMap<Digest32, crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1>,
+    ),
+    DirectSnowStage3V11AttachmentError,
+> {
     let state = beginning_stage3.get(&lane_id).ok_or(
         DirectSnowStage3V11AttachmentError::Identity("terminal beginning lane"),
     )?;
@@ -375,6 +405,7 @@ fn evaluate_covered_terminal_candidate_v1(
     let parent_id = beginning_clock.parent_transaction_id();
     let carrier_failure = std::cell::RefCell::new(None);
     let carrier_phases_by_joint = std::cell::RefCell::new(BTreeMap::new());
+    let mut provider_evidence = M::new_provider_state();
     let mut provider = |request: crate::hydrology::CoveredTerminalTrialRequestV1| {
         let beginning = if let Some(exact) = candidates_by_joint
             .borrow()
@@ -504,8 +535,22 @@ fn evaluate_covered_terminal_candidate_v1(
                     },
             },
         );
-        let result = stack
-            .execute_covered_carrier_phase_v1(&beginning, &request, child)
+        let provider_result = stack.execute_covered_carrier_phase_v1(&beginning, &request, child);
+        let (wb14_terminal, surface_terminal) = provider_result.as_ref().map_or((false, false), |value| {
+            let ingress = value.carrier_envelope.hydrology().surface_ingress();
+            (
+                ingress.receipts().iter().any(|receipt| receipt.kind == crate::direct_runtime::DirectSurfaceLiquidParcelKind::TerminalReceiver),
+                ingress.open_ingress_parcels().iter().any(|parcel| parcel.kind == crate::direct_runtime::DirectSurfaceLiquidParcelKind::TerminalReceiver),
+            )
+        });
+        M::provider_call(
+            &mut provider_evidence,
+            &request,
+            provider_result.is_ok(),
+            wb14_terminal,
+            surface_terminal,
+        );
+        let result = provider_result
             .map_err(|error| {
                 if carrier_failure.borrow().is_none() {
                     *carrier_failure.borrow_mut() = Some(error);
@@ -523,7 +568,7 @@ fn evaluate_covered_terminal_candidate_v1(
             .insert(ending_joint_sha256, result.clone());
         Ok(result.transition)
     };
-    let result = Wb11HydrologyKernel::evaluate_stage3_terminal_support_with_trial_provider_v1(
+    let result = Wb11HydrologyKernel::evaluate_stage3_terminal_support_with_trial_provider_and_evidence_v1::<M>(
         inputs,
         state,
         lane_id,
@@ -533,7 +578,10 @@ fn evaluate_covered_terminal_candidate_v1(
         mode,
         initial_joint,
         &mut provider,
+        evidence,
     );
+    drop(provider);
+    M::merge_provider(evidence, provider_evidence);
     match result {
         Ok(result) => Ok((
             result,
@@ -566,6 +614,35 @@ fn try_actual_terminal_subslab(
     current_child_ordinal: u32,
     event_ordinal: u64,
 ) -> Result<Option<ActualTerminalSubslabV1>, DirectSnowStage3V11AttachmentError> {
+    let mut evidence = <crate::hydrology::NoEvidence as crate::hydrology::TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>>::new_state();
+    try_actual_terminal_subslab_with_evidence::<crate::hydrology::NoEvidence>(
+        context, beginning_parent, beginning_consumer, beginning_clock, prepared,
+        day_index, interval_index, forcing_receipt, beginning_stage3,
+        beginning_terminal_parcels, selected_upper_bound_s, current_child_ordinal,
+        event_ordinal, &mut evidence,
+    )
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn try_actual_terminal_subslab_with_evidence<M>(
+    context: &DirectSnowStage3V11StaticContext,
+    beginning_parent: &V11ParentTransaction,
+    beginning_consumer: &DirectV10RealConsumerShadow,
+    beginning_clock: &CoupledClockStateV1,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    day_index: usize,
+    interval_index: usize,
+    forcing_receipt: Digest32,
+    beginning_stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    beginning_terminal_parcels: &BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
+    selected_upper_bound_s: f64,
+    current_child_ordinal: u32,
+    event_ordinal: u64,
+    evidence: &mut M::State,
+) -> Result<Option<ActualTerminalSubslabV1>, DirectSnowStage3V11AttachmentError>
+where
+    M: crate::hydrology::TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>,
+{
     let active_lanes = beginning_stage3
         .iter()
         .filter_map(|(lane, state)| {
@@ -577,7 +654,7 @@ fn try_actual_terminal_subslab(
     let mut candidate_ticks = BTreeSet::new();
     let mut discovery_candidates = BTreeMap::new();
     for lane_id in &active_lanes {
-        let (result, _, _) = evaluate_covered_terminal_candidate_v1(
+        let (result, _, _) = evaluate_covered_terminal_candidate_with_evidence_v1::<M>(
             beginning_consumer,
             beginning_clock,
             prepared,
@@ -589,6 +666,7 @@ fn try_actual_terminal_subslab(
             current_child_ordinal,
             *lane_id,
             CoveredTerminalExecutionMode::DiscoveryProbe,
+            evidence,
         )?;
         let Some(event) = result.terminal_event else {
             continue;
@@ -671,7 +749,7 @@ fn try_actual_terminal_subslab(
         let mut exact_endpoints = Vec::new();
         for discovery in &exact_discovery {
             let (exact_result, exact_candidates, exact_carrier_phases) =
-                evaluate_covered_terminal_candidate_v1(
+                evaluate_covered_terminal_candidate_with_evidence_v1::<M>(
                 beginning_consumer,
                 beginning_clock,
                 &projected,
@@ -685,6 +763,7 @@ fn try_actual_terminal_subslab(
                 CoveredTerminalExecutionMode::ExactEndpoint {
                     expected_tick: tick,
                 },
+                evidence,
                 )?;
             exact_endpoints.push(prepare_exact_terminal_endpoint_v1(
                 discovery,

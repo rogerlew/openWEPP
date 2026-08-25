@@ -227,6 +227,99 @@ pub(crate) enum CoveredTerminalExecutionMode {
     ExactEndpoint { expected_tick: ModelTimeNs },
 }
 
+mod terminal_evidence_sealed {
+    pub trait Sealed {}
+}
+
+#[derive(Clone, Copy)]
+pub(crate) struct TerminalPairEvidenceHook {
+    pub duration_s: f64,
+    pub coarse_complete_energy_j_m2: f64,
+    pub refined_complete_energy_j_m2: f64,
+    pub scaled_error: f64,
+    pub rejected: bool,
+    pub coarse_external_liquid_kg_m2: f64,
+    pub refined_external_liquid_kg_m2: f64,
+}
+
+#[derive(Clone, Copy)]
+pub(crate) struct TerminalAdmissionEvidenceHook<'a> {
+    pub proposed_duration_s: f64,
+    pub required_half_duration_s: f64,
+    pub minimum_duration_s: f64,
+    pub outcome: &'a SnowTerminalNumericsFailure,
+    pub provider_calls_before: u64,
+    pub provider_calls_after: u64,
+}
+
+pub(crate) trait TerminalEvidenceMode<J>: terminal_evidence_sealed::Sealed {
+    type State;
+    type ProviderState;
+    fn new_state() -> Self::State;
+    fn new_provider_state() -> Self::ProviderState;
+    fn provider_call(_: &mut Self::ProviderState, _: &CoveredTerminalTrialRequestV1, _: bool, _: bool, _: bool) {}
+    fn merge_provider(_: &mut Self::State, _: Self::ProviderState) {}
+    fn provider_call_count(_: &Self::State) -> u64 { 0 }
+    fn pair(_: &mut Self::State, _: TerminalPairEvidenceHook) {}
+    fn admission(_: &mut Self::State, _: TerminalAdmissionEvidenceHook<'_>) {}
+}
+
+pub(crate) enum NoEvidence {}
+impl terminal_evidence_sealed::Sealed for NoEvidence {}
+impl<J> TerminalEvidenceMode<J> for NoEvidence {
+    type State = ();
+    type ProviderState = ();
+    #[inline(always)] fn new_state() {}
+    #[inline(always)] fn new_provider_state() {}
+    #[inline(always)] fn provider_call(_: &mut (), _: &CoveredTerminalTrialRequestV1, _: bool, _: bool, _: bool) {}
+    #[inline(always)] fn merge_provider(_: &mut (), _: ()) {}
+    #[inline(always)] fn provider_call_count(_: &()) -> u64 { 0 }
+    #[inline(always)] fn pair(_: &mut (), _: TerminalPairEvidenceHook) {}
+    #[inline(always)] fn admission(_: &mut (), _: TerminalAdmissionEvidenceHook<'_>) {}
+}
+
+#[cfg(test)]
+#[derive(Clone, Debug, Default, PartialEq)]
+pub(crate) struct CaptureState {
+    pub provider_calls: Vec<(u128, u128, CoveredTerminalTrialRoleV1, u32, bool, bool, bool)>,
+    pub pairs: Vec<(f64, f64, f64, f64, bool, f64, f64)>,
+    pub admissions: Vec<(f64, f64, f64, SnowTerminalNumericsFailure, u64, u64)>,
+}
+
+#[cfg(test)]
+pub(crate) enum CaptureEvidence {}
+#[cfg(test)]
+impl terminal_evidence_sealed::Sealed for CaptureEvidence {}
+#[cfg(test)]
+impl TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>> for CaptureEvidence {
+    type State = CaptureState;
+    type ProviderState = Vec<(u128, u128, CoveredTerminalTrialRoleV1, u32, bool, bool, bool)>;
+    fn new_state() -> Self::State { CaptureState::default() }
+    fn new_provider_state() -> Self::ProviderState { Vec::new() }
+    fn provider_call(state: &mut Self::ProviderState, request: &CoveredTerminalTrialRequestV1, ok: bool, wb14_terminal: bool, surface_terminal: bool) {
+        state.push((request.support.start_ns().get(), request.support.end_ns().get(), request.role, request.attempt_ordinal, ok, wb14_terminal, surface_terminal));
+    }
+    fn merge_provider(state: &mut Self::State, provider: Self::ProviderState) {
+        let completed_call_count = state.provider_calls.len() as u64 + provider.len() as u64;
+        if let Some(admission) = state.admissions.last_mut() {
+            // Provider observations are deliberately accumulated outside the
+            // solver borrow and merged only after the physical return.  At
+            // that point, replace the provisional zero-call markers with the
+            // exact count on both sides of the separate floor admission.
+            admission.4 = completed_call_count;
+            admission.5 = completed_call_count;
+        }
+        state.provider_calls.extend(provider);
+    }
+    fn provider_call_count(state: &Self::State) -> u64 { state.provider_calls.len() as u64 }
+    fn pair(state: &mut Self::State, value: TerminalPairEvidenceHook) {
+        state.pairs.push((value.duration_s, value.coarse_complete_energy_j_m2, value.refined_complete_energy_j_m2, value.scaled_error, value.rejected, value.coarse_external_liquid_kg_m2, value.refined_external_liquid_kg_m2));
+    }
+    fn admission(state: &mut Self::State, value: TerminalAdmissionEvidenceHook<'_>) {
+        state.admissions.push((value.proposed_duration_s, value.required_half_duration_s, value.minimum_duration_s, value.outcome.clone(), value.provider_calls_before, value.provider_calls_after));
+    }
+}
+
 /// Pure input presented to the covered carrier for every adaptive and
 /// event-root terminal trial.  The support is the exact absolute interval
 /// beginning at the supplied trial state; it is never a scaled parent receipt.
