@@ -455,6 +455,9 @@ pub struct DirectSnowTerminalEventResult {
     pub sensible_energy_j_m2: f64,
     pub latent_energy_j_m2: f64,
     pub advected_energy_j_m2: f64,
+    /// Exact event-integrated lower-boundary energy supplied by the covered
+    /// trial carrier; zero only when the raw legacy carrier has no such term.
+    pub snow_soil_heat_energy_j_m2: f64,
     pub external_liquid_kg_m2: f64,
     pub cold_energy_change_j_m2: f64,
     pub refrozen_kg_m2: f64,

@@ -36,6 +36,7 @@ impl Wb11HydrologyKernel {
             &supports,
             None,
             None,
+            None,
         )
     }
 
@@ -71,6 +72,7 @@ impl Wb11HydrologyKernel {
                 })
                 .collect::<Vec<_>>(),
             Some(request),
+            None,
             None,
         )
     }
@@ -114,6 +116,7 @@ impl Wb11HydrologyKernel {
             &[support],
             Some(request),
             None,
+            None,
         )
     }
 
@@ -155,6 +158,7 @@ impl Wb11HydrologyKernel {
             lane_id,
             interval_index,
             &[support],
+            None,
             None,
             None,
         )
@@ -204,6 +208,7 @@ impl Wb11HydrologyKernel {
             &[support],
             None,
             Some(boundary),
+            None,
         )
     }
 
@@ -245,15 +250,89 @@ impl Wb11HydrologyKernel {
             )
             .into());
         }
-        Self::evaluate_stage3_persistent_day_internal(
+        let _ = (inputs, state, lane_id, interval_index, boundary);
+        Err(Self::stage3_domain_error(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            "snow.stage3_terminal_covered_trial_provider_required",
+            support.duration_seconds,
+            Some(f64::MIN_POSITIVE),
+            None,
+        )
+        .into())
+    }
+
+    /// Evaluate terminal chronology through a pure covered-carrier provider.
+    /// The provider is invoked independently for every adaptive full/half
+    /// trial and every event-root trial with its exact absolute support.
+    pub(crate) fn evaluate_stage3_terminal_support_with_trial_provider_v1(
+        inputs: &DirectActiveSnowPartitionInputs,
+        state: &DirectSnowStage3PersistentState,
+        lane_id: u32,
+        interval_index: u64,
+        support_input: DirectSnowStage3SupportInput,
+        support: TimeSupport,
+        mode: CoveredTerminalExecutionMode,
+        provider: &mut CoveredTerminalTrialProviderV1<'_>,
+    ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
+        if mode == CoveredTerminalExecutionMode::PersistentReject
+            || !support_input.duration_seconds.is_finite()
+            || support_input.duration_seconds <= 0.0
+            || support.duration_ns() != duration_seconds_to_ns(support_input.duration_seconds)?
+        {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_terminal_covered_execution_mode_or_support",
+                support_input.duration_seconds,
+                Some(f64::MIN_POSITIVE),
+                None,
+            )
+            .into());
+        }
+        Self::validate_stage3_persistent_state(state)?;
+        if state.lane_id != lane_id
+            || state.next_interval_index != interval_index
+            || state.schema_version != 2
+            || state.terminal_event_model
+                != Some(DirectSnowTerminalEventModel::EnthalpyEventV1)
+        {
+            return Err(Self::stage3_domain_error(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "snow.stage3_terminal_persistent_identity_or_model",
+                1.0,
+                Some(0.0),
+                Some(0.0),
+            )
+            .into());
+        }
+        let result = Self::evaluate_stage3_persistent_day_internal(
             inputs,
             state,
             lane_id,
             interval_index,
-            &[support],
+            &[support_input],
             Some(DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1),
-            Some(boundary),
-        )
+            None,
+            Some((support, provider)),
+        )?;
+        if let CoveredTerminalExecutionMode::ExactEndpoint { expected_tick } = mode {
+            let exact = result.terminal_event.as_ref().is_some_and(|event| {
+                event.event_occurred
+                    && event.unevaluated_seconds.abs() <= 1.0e-6
+                    && support.end_ns() == expected_tick
+                    && (event.hour_offset_seconds - support_input.duration_seconds).abs() <= 1.0e-6
+            });
+            if !exact {
+                return Err(Self::stage3_domain_error(
+                    HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                    "snow.stage3_terminal_exact_endpoint",
+                    result.evaluation.evaluated_seconds,
+                    Some(support_input.duration_seconds),
+                    Some(support_input.duration_seconds),
+                )
+                .into());
+            }
+        }
+        Ok(result)
     }
 }
 

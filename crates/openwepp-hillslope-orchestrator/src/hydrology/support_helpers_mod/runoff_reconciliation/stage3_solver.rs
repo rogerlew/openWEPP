@@ -17,6 +17,10 @@ impl Wb11HydrologyKernel {
         supports: &[DirectSnowStage3SupportInput],
         terminal_request: Option<DirectSnowTerminalEventRequest>,
         boundary: Option<Stage3SnowSurfaceBoundaryReceiptV1>,
+        terminal_trial_context: Option<(
+            TimeSupport,
+            &mut CoveredTerminalTrialProviderV1<'_>,
+        )>,
     ) -> Result<DirectSnowStage3PersistentDayResult, DirectSnowStage3EvaluationError> {
         Self::validate_stage3_persistent_state(state)?;
         if state.lane_id != lane_id || state.next_interval_index != interval_index {
@@ -55,6 +59,7 @@ impl Wb11HydrologyKernel {
             terminal_request,
             state.detached_retained_liquid_kg_m2,
             boundary,
+            terminal_trial_context,
         )?;
         Self::validate_stage3_shadow_summary(
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
@@ -514,6 +519,7 @@ impl Wb11HydrologyKernel {
                         cold_content_by_layer.clone(),
                         None,
                         0.0,
+                        None,
                         None,
                     )?;
                     Self::validate_stage3_shadow_summary(phase_class, &summary)?;
@@ -2633,6 +2639,7 @@ mod stage3_evaluation_validation_tests {
             None,
             0.0,
             None,
+            None,
         )
         .expect("valid sequential reconciliation");
         Wb11HydrologyKernel::validate_stage3_reconciliation(phase, &summary)
@@ -2676,6 +2683,7 @@ mod stage3_evaluation_validation_tests {
             cold,
             None,
             0.0,
+            None,
             None,
         )
         .expect("valid sequential reconciliation");

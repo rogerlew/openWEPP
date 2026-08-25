@@ -16,6 +16,7 @@ use openwepp_meteorology::surface_energy::{
 use openwepp_unit_boundary::{
     FractionUnitInterval, LinearRateMetersPerSecond, TemperatureCelsius,
 };
+use openwepp_coupled_time::{ModelTimeNs, TimeSupport};
 use crate::snow_stage3_terminal_handoff::Stage3SnowSurfaceBoundaryReceiptV1;
 use super::snow_mass_transition::{
     SNOW_SOLID_TO_LIQUID_CLOSURE_TOLERANCE_M, SNOW_STAGE3_LIQUID_CLOSURE_TOLERANCE_M,
@@ -228,6 +229,34 @@ struct Stage3SurfaceInterval {
     forcing_duration_seconds: f64,
     boundary: Option<Stage3SnowSurfaceBoundaryReceiptV1>,
 }
+
+/// Controls whether terminal chronology is forbidden, inspected without
+/// publication, or required at one exact covered endpoint.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum CoveredTerminalExecutionMode {
+    PersistentReject,
+    DiscoveryProbe,
+    ExactEndpoint { expected_tick: ModelTimeNs },
+}
+
+/// Pure input presented to the covered carrier for every adaptive and
+/// event-root terminal trial.  The support is the exact absolute interval
+/// beginning at the supplied trial state; it is never a scaled parent receipt.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct CoveredTerminalTrialRequestV1 {
+    pub support: TimeSupport,
+    pub ice_kg_m2: f64,
+    pub liquid_kg_m2: f64,
+    pub cold_content_j_m2: f64,
+    pub surface_temperature_c: f64,
+    pub snow_depth_m: f64,
+    pub snow_density_kg_m3: f64,
+}
+
+pub(crate) type CoveredTerminalTrialProviderV1<'a> = dyn FnMut(
+        CoveredTerminalTrialRequestV1,
+    ) -> Result<Stage3SnowSurfaceBoundaryReceiptV1, DirectSnowStage3EvaluationError>
+    + 'a;
 
 #[derive(Clone, Copy)]
 struct Stage3ThermalControlVolume {

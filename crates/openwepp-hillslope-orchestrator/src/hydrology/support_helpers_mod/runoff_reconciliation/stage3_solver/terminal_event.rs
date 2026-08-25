@@ -28,6 +28,7 @@ pub(super) struct TerminalFluxIntegral {
     pub sensible_energy_j_m2: f64,
     pub latent_energy_j_m2: f64,
     pub advected_energy_j_m2: f64,
+    pub snow_soil_heat_energy_j_m2: f64,
     pub external_liquid_kg_m2: f64,
 }
 
@@ -46,6 +47,7 @@ struct TerminalLedger {
     sensible_energy_j_m2: f64,
     latent_energy_j_m2: f64,
     advected_energy_j_m2: f64,
+    snow_soil_heat_energy_j_m2: f64,
     external_liquid_kg_m2: f64,
 }
 
@@ -67,6 +69,8 @@ impl TerminalLedger {
             sensible_energy_j_m2: self.sensible_energy_j_m2 + other.sensible_energy_j_m2,
             latent_energy_j_m2: self.latent_energy_j_m2 + other.latent_energy_j_m2,
             advected_energy_j_m2: self.advected_energy_j_m2 + other.advected_energy_j_m2,
+            snow_soil_heat_energy_j_m2: self.snow_soil_heat_energy_j_m2
+                + other.snow_soil_heat_energy_j_m2,
             external_liquid_kg_m2: self.external_liquid_kg_m2 + other.external_liquid_kg_m2,
         }
     }
@@ -91,6 +95,7 @@ impl Wb11HydrologyKernel {
             sensible_energy_j_m2: flux.sensible_energy_j_m2,
             latent_energy_j_m2: flux.latent_energy_j_m2,
             advected_energy_j_m2: flux.advected_energy_j_m2,
+            snow_soil_heat_energy_j_m2: flux.snow_soil_heat_energy_j_m2,
             external_liquid_kg_m2: flux.external_liquid_kg_m2,
             ..TerminalLedger::default()
         };
@@ -166,7 +171,7 @@ impl Wb11HydrologyKernel {
         mut flux_integral: F,
     ) -> Result<DirectSnowTerminalEventResult, DirectSnowStage3EvaluationError>
     where
-        F: FnMut(TerminalState, f64) -> Result<TerminalFluxIntegral, DirectSnowStage3EvaluationError>,
+        F: FnMut(TerminalState, f64, f64) -> Result<TerminalFluxIntegral, DirectSnowStage3EvaluationError>,
     {
         if !requested_seconds.is_finite()
             || requested_seconds <= 0.0
@@ -200,13 +205,13 @@ impl Wb11HydrologyKernel {
         while elapsed < requested_seconds && state.ice_kg_m2 > 0.0 {
             let remaining = requested_seconds - elapsed;
             let dt = trial_seconds.min(remaining);
-            let full_flux = flux_integral(state, dt)?;
+            let full_flux = flux_integral(state, elapsed, dt)?;
             let full = Self::terminal_transition(state, full_flux);
             let half_dt = 0.5 * dt;
-            let first = Self::terminal_transition(state, flux_integral(state, half_dt)?);
+            let first = Self::terminal_transition(state, flux_integral(state, elapsed, half_dt)?);
             let second = Self::terminal_transition(
                 first.state,
-                flux_integral(first.state, half_dt)?,
+                flux_integral(first.state, elapsed + half_dt, half_dt)?,
             );
             let refined = TerminalTrial {
                 state: second.state,
@@ -249,7 +254,7 @@ impl Wb11HydrologyKernel {
                 let mut lower_solid = event_start.ice_kg_m2;
                 let mut event = Self::terminal_transition(
                     event_start,
-                    flux_integral(event_start, upper)?,
+                    flux_integral(event_start, elapsed + event_prefix_seconds, upper)?,
                 );
                 if event.state.ice_kg_m2 > 0.0 {
                     return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
@@ -264,7 +269,11 @@ impl Wb11HydrologyKernel {
                     let middle = 0.5 * (lower + upper);
                     let middle_trial = Self::terminal_transition(
                         event_start,
-                        flux_integral(event_start, middle)?,
+                        flux_integral(
+                            event_start,
+                            elapsed + event_prefix_seconds,
+                            middle,
+                        )?,
                     );
                     if middle_trial.state.ice_kg_m2 > lower_solid
                         || middle_trial.state.ice_kg_m2 < upper_solid
@@ -376,6 +385,7 @@ impl Wb11HydrologyKernel {
             sensible_energy_j_m2: ledger.sensible_energy_j_m2,
             latent_energy_j_m2: ledger.latent_energy_j_m2,
             advected_energy_j_m2: ledger.advected_energy_j_m2,
+            snow_soil_heat_energy_j_m2: ledger.snow_soil_heat_energy_j_m2,
             external_liquid_kg_m2: ledger.external_liquid_kg_m2,
             cold_energy_change_j_m2: ledger.cold_energy_change_j_m2,
             refrozen_kg_m2: ledger.refrozen_kg_m2,
@@ -424,7 +434,7 @@ mod tests {
             0.0,
             seconds,
             start,
-            |_, duration| {
+            |_, _, duration| {
                 Ok(TerminalFluxIntegral {
                     complete_energy_j_m2: energy_rate_w_m2 * duration,
                     vapor_mass_exchange_kg_m2: vapor_rate_kg_m2_s * duration,
@@ -433,6 +443,7 @@ mod tests {
                     sensible_energy_j_m2: 0.0,
                     latent_energy_j_m2: 0.0,
                     advected_energy_j_m2: 0.0,
+                    snow_soil_heat_energy_j_m2: 0.0,
                     external_liquid_kg_m2: 0.0,
                 })
             },
@@ -458,6 +469,47 @@ mod tests {
         assert!((event.complete_energy_j_m2 - 200_160.0).abs() <= 1.0e-6);
         assert!(event.solid_mass_closure_residual_kg_m2.abs() <= 1.0e-9);
         assert!(event.energy_closure_residual_j_m2.abs() <= 1.0e-6);
+    }
+
+    #[test]
+    fn every_adaptive_and_root_trial_carries_its_exact_relative_start() {
+        let mut trials = Vec::new();
+        let event = Wb11HydrologyKernel::solve_terminal_enthalpy_event(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            0,
+            0.0,
+            1_000.0,
+            TerminalState {
+                ice_kg_m2: 0.6,
+                liquid_kg_m2: 0.0,
+                cold_content_j_m2: 0.0,
+            },
+            |_, relative_start, duration| {
+                trials.push((relative_start, duration));
+                Ok(TerminalFluxIntegral {
+                    complete_energy_j_m2: 333.6 * duration,
+                    vapor_mass_exchange_kg_m2: 0.0,
+                    shortwave_energy_j_m2: 333.6 * duration,
+                    longwave_energy_j_m2: 0.0,
+                    sensible_energy_j_m2: 0.0,
+                    latent_energy_j_m2: 0.0,
+                    advected_energy_j_m2: 0.0,
+                    snow_soil_heat_energy_j_m2: 0.0,
+                    external_liquid_kg_m2: 0.0,
+                })
+            },
+        )
+        .unwrap();
+        assert!(event.event_occurred);
+        assert!(trials.iter().all(|(start, duration)| {
+            start.is_finite()
+                && duration.is_finite()
+                && *start >= 0.0
+                && *duration > 0.0
+                && start + duration <= 1_000.0
+        }));
+        assert!(trials.iter().any(|(start, _)| *start > 0.0));
+        assert!(trials.windows(2).any(|pair| pair[0].0 == pair[1].0));
     }
 
     #[test]
@@ -527,6 +579,7 @@ mod tests {
                 sensible_energy_j_m2: 0.0,
                 latent_energy_j_m2: 0.0,
                 advected_energy_j_m2: 0.0,
+                snow_soil_heat_energy_j_m2: 0.0,
                 external_liquid_kg_m2: 0.0,
             },
         );
@@ -548,6 +601,7 @@ mod tests {
                 sensible_energy_j_m2: 0.0,
                 latent_energy_j_m2: 0.0,
                 advected_energy_j_m2: 0.0,
+                snow_soil_heat_energy_j_m2: 0.0,
                 external_liquid_kg_m2: 0.0,
             },
         );
@@ -581,6 +635,7 @@ mod tests {
                         sensible_energy_j_m2: 0.0,
                         latent_energy_j_m2: 0.0,
                         advected_energy_j_m2: 0.0,
+                        snow_soil_heat_energy_j_m2: 0.0,
                         external_liquid_kg_m2: 0.0,
                     },
                 );
