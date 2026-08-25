@@ -175,6 +175,29 @@ selectors/defaults, activation, CoE retirement, Child 3, and cutover remain
 unauthorized. Exact-head affected-crate/workspace qualification
 (`CHILD1-TERM-QUAL-008`) follows only after the terminal matrix passes.
 
+### 2026-08-25 coordinated successor contract candidate
+
+Static: the residual/state inventory classifies every participating typed
+surface as storage, algebraic, exact-support integral, deterministic projection
+or discrete custody. Canonical owner bytes remain opaque exact joins and are
+never differentiated. Exact-support parcel/radiation totals are separated from
+state-dependent endpoint fluxes and cannot be re-quadratured.
+
+Candidate SnowEnergy v20, LSE v10, SnowFreeze v138 and CoupledTime v5 now define
+the same-support BE/CN arms, convergence/root/active-set guards, Batch V2
+all-lane and seven-owner schemas, group topology, exact survivor installation,
+zero-prefix witness, typed unsupported disposition and required vectors. The
+reviewed v19/v9/v137/v4 text remains preserved. Ran: the preservation and new
+successor contract guards passed 4/4 in nextest run
+`296cf84e-b8a9-4b0a-8ae4-4cb62f34a0ae`.
+
+The exact candidate hashes are frozen in
+`artifacts/terminal-batch-temporal-contract-candidate-manifest.md`. Production
+Rust remains prohibited pending the two required independent reviews. The
+current rejection path does not retain the last admitted 1.875-second
+component receipt set; v20/v10 make that read-only evidence a required
+contract-derived characterization surface and no missing component is inferred.
+
 ### 2026-08-24 covered physical-custody intake and authority gate
 
 Implementation intent: close one bounded persistent covered-physical-custody

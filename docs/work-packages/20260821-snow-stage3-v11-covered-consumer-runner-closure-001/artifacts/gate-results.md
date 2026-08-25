@@ -1037,3 +1037,20 @@ pre-production gate, no Rust production edit was made. See
 `terminal-batch-temporal-contract-review-a.md`,
 `terminal-batch-temporal-contract-review-b.md`, and
 `terminal-batch-temporal-contract-review-disposition.md`.
+
+## 2026-08-25 coordinated successor authority review (HOLD)
+
+| Evidence | Result |
+|---|---|
+| Frozen v20/v10/v138/v5 candidate hashes | PASS: both reviewers independently matched all six manifest hashes |
+| Existing-v19 preservation plus successor structural guards | PASS: 4/4 initially at nextest `296cf84e-b8a9-4b0a-8ae4-4cb62f34a0ae`; final unchanged-candidate rerun `3eac82f5-f365-4dd0-97a7-33302560b759` also 4/4 |
+| Numerical/DAE and forcing review | HOLD: five accepted/open findings |
+| Science/ownership, Batch V2, event and custody review | HOLD: four accepted/open findings |
+| `cargo fmt --all -- --check` | FAIL: formatting-only drift in the new successor integration guard; candidate intentionally not changed after review freeze |
+| Production Rust / implementation intent | NOT AUTHORIZED / none |
+
+The candidate does not establish installed-CN estimator reliability, complete
+seven-owner DAE construction or required physical evidence. Its Batch V2 hash
+preimages and zero-prefix core bind are incomplete; positive-prefix versus
+zero-event owner joins and terminal-liquid exclusion are ambiguous. Terminal
+chronology remains HARD HOLD and `BelowCarrierDomain` remains correct.

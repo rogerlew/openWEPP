@@ -5,6 +5,7 @@ status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
 contract_version: 137
+candidate_contract_version: 138
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -24,6 +25,10 @@ superseded_by: []
 Status: `in_review`
 Maturity: `draft`
 Evidence mode: `static`
+
+Lifecycle: version 137 remains the reviewed staged terminal V4-owner
+candidate. Version 138 is a distinct `in_review / draft` Batch V2 temporal and
+active-set successor; it does not rewrite or promote version 137.
 
 ## Purpose
 
@@ -4189,11 +4194,74 @@ receipt poisons, compatibility-ordinal divergence, rollback, and later
 Consumed-posture replay exclusion. Runner, receiver consumption, restart
 implementation, activation, CoE retirement and cutover remain held.
 
+## Candidate version 138 — Batch V2 terminal state and phase authority
+
+Version 138 coordinates with SnowEnergy v20, LSE v10 and CoupledTime v5. It
+preserves version-137 V4 snow-owner and ProducedUnconsumed parcel semantics.
+
+`CoveredTerminalBatchTrialRequestV2` contains exactly schema `u32(2)`, exact
+support, arm/role, attempt and coupling ordinals, strictly increasing active
+lane records, one beginning joint receipt and one beginning complete-owner-set
+digest. Each lane record binds lane/OFE identity, canonical beginning Stage-3
+state digest, typed ice/liquid/cold-content/temperature/depth/density fields,
+ordered layer/lifecycle identity and receiver membership. Caller-supplied event
+ticks or ending hints are prohibited.
+
+One batch carrier evaluation returns one shared non-snow candidate set, one
+boundary per active lane, ordered snow--soil/component receipts for every
+applicable lane, sealed prescribed amount sets, endpoint-flux sets and one
+carrier residual receipt. One hydrology join consumes that exact result and
+returns one ending per active lane plus one ending seven-owner joint. No caller
+may supply independently evaluated hydrology endings. Keys equal the request's
+exact ordered lane set.
+
+Each BE and CN arm begins from the same complete owner set and advances shared
+vegetation, LSE, surface-liquid, hydrology, BGC and soil-thermal owners exactly
+once. The snow owner contains every lane ending. Independent lane endpoints may
+remain historical V1 tests; they cannot form a V2 candidate.
+
+Phase chronology remains precipitation, bounded vapor reservation,
+cold-content change, melt, same-support refreeze/retention/routing, and layer
+repartition. BE and CN select identical active-set tags for every lane:
+resolved volumes, vapor direction, cold-only versus melt,
+refreeze/retention/routing, terminal posture and layer lifecycle. A difference
+fails typed `SNOWFREEZE-E-TERMINAL-ACTIVESET-002`; it cannot be averaged.
+
+At the common-earliest accepted high-candidate tick, same-tick terminating
+lanes become dormant and later-event/surviving lanes install their exact high
+batch prefix state. Shared owners install once. No first-endpoint Stage-3 map,
+per-lane non-snow merge or post-hoc survivor preservation is authorized.
+
+Canonical hashing uses `OPENWEPP_CANONICAL_FRAMED_SHA256_V1`, closed tags
+`covered-terminal-batch-request-v2`, `covered-terminal-batch-carrier-v2`,
+`covered-terminal-batch-hydrology-v2` and
+`covered-terminal-batch-joint-v2`. Collections are `u32` count then strict
+semantic order; ticks/supports are big-endian `u128`; ordinals/IDs big-endian
+`u32`; floats big-endian IEEE-754 bits; digests 32 raw bytes. Unknown, optional,
+JSON, duplicate, missing, reordered or extra fields fail typed.
+
+| ID | Binding rule | Guard / evidence |
+|---|---|---|
+| `INV-SNOWFREEZE-106` | Every arm contains all active lanes and one complete seven-owner beginning/ending joint. | lane-set and joint reconstruction |
+| `INV-SNOWFREEZE-107` | Shared owners advance once per arm; boundaries, snow--soil receipts and hydrology endings derive from one batch result. | call and mutation guards |
+| `INV-SNOWFREEZE-108` | BE/CN phase/lifecycle active sets match lane by lane; disagreement is typed unsupported. | active-set vectors |
+| `INV-SNOWFREEZE-109` | Accepted high state supplies terminating and surviving lanes without V1 post-hoc merge. | mixed-survivor fixtures |
+| `INV-SNOWFREEZE-110` | V2 hashes use the closed framed schemas above. | framing poisons |
+| `OBL-SNOWFREEZE-P-075` | Produce complete batch carrier, phase, ledger and ending-joint evidence for both arms and rejected trials. | producer gate |
+| `OBL-SNOWFREEZE-C-016` | Reconstruct every lane/shared owner, conservation and survivor installation. | consumer gate |
+
+Required vectors include analytical constant carriers, manufactured phase
+cases, active-set poisons, same-tick distinct-OFE coalescence, different-tick
+continuation, terminal plus survivor, mixed covered/open topology, no-event
+compatibility, positive physiology/mineral N, framing poisons and rollback.
+This draft admits no production wiring before coordinated dual `GO`.
+
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
 
+| `2026-08-25` | `138` | `Codex` | Added distinct Batch V2 all-lane/seven-owner carrier, hydrology and joint semantics; phase-active-set agreement; canonical hashes; and exact survivor installation while preserving v137. |
 | `2026-08-24` | `137` | `Codex` | Added the staged canonical snow-owner V4 with pending ProducedUnconsumed parcel custody, sole coupled-event ordinal authority, exact snow-only zero-duration mutation, and reconstructable terminal ledger/receipt chain; immediate receiver consumption remains separate and held. |
 | `2026-08-19` | `136` | `Codex` | Added separate default-off terminal receiver chronology (`INV-SNOWFREEZE-102`) with actual-surface selection, partial-interval continuation/restart, and atomic all-owner rollback/error precedence; preserved evaluation-only INV-101 and all production/cutover holds. |
 | `2026-08-07` | `135` | `Codex` | SNOW-TERMINAL-ENTHALPY-EVENT-NUMERICS amendment: added `INV-SNOWFREEZE-101`, `OBL-SNOWFREEZE-P-073`, `OBL-SNOWFREEZE-C-015`, and `TOL-SNOWFREEZE-022`; admitted a fingerprint-bound evaluation-only shallow-snow enthalpy/event request and schema-v8 reconstruction while retaining censored receiving-surface, production, and cutover boundaries. |

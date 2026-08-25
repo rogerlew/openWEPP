@@ -544,3 +544,29 @@ that meets current LTE bounds while every constitutive support remains
 admitted. Exact-head crate/workspace qualification is not claimed;
 `43cc9bbe...` remains the last qualified physical implementation. Later
 runner/receiver/restart/cutover work remains unauthorized.
+
+# 2026-08-25 coordinated temporal-authority successor (HOLD)
+
+Static: a complete residual/state inventory and coordinated candidate
+SnowEnergy v20, LSE v10, SnowFreeze v138 and CoupledTime v5 were authored as
+distinct successors; reviewed v19/v9/v137/v4 semantics remain preserved.
+Canonical owner bytes are exact custody only. Prescribed interval totals are
+separated from endpoint fluxes. Batch V2, group topology, survivor and
+zero-prefix surfaces are prospective contract text only; production Rust was
+not edited.
+
+Ran: existing-candidate preservation and successor contract guards passed 4/4
+at final nextest run `3eac82f5-f365-4dd0-97a7-33302560b759`.
+`git diff --check` passed. A non-mutating formatting check failed only on the
+new test guard's layout; it remains open because changing the frozen candidate
+would invalidate both independent reviews.
+
+Static / review HOLD: both exact-candidate reviews verified all six manifest
+hashes and returned `HOLD`. The numerical review rejected raw BE/CN separation
+as an installed-CN error estimator and found incomplete seven-owner DAE/root/
+active-set authority plus absent physical evidence. The ownership review found
+incomplete canonical hash preimages, a zero-witness core-substitution gap,
+ambiguous prefix/event owner joins and missing terminal-liquid exclusion from
+hydrology. No implementation intent follows. `BelowCarrierDomain` remains the
+correct runtime result and `43cc9bbe...` remains the last qualified physical
+implementation.

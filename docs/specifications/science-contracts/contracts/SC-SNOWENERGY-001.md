@@ -6,7 +6,7 @@ maturity: active
 owner: openWEPP maintainers + snow-process reviewer
 contract_version: 18
 released_contract_version: 18
-candidate_contract_version: 19
+candidate_contract_version: 20
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -27,9 +27,11 @@ Status: `approved`
 Maturity: `active`
 Evidence mode: `static + independent oracle + contract vectors`
 
-Lifecycle: version 18 remains `approved / active`; only the version-19
-successor amendment is `in_review / draft` until its own dual review,
-verification, implementation, and exact-head gates pass.
+Lifecycle: version 18 remains `approved / active`; version 19 remains the
+reviewed terminal full/two-half candidate. Version 20 is a distinct
+`in_review / draft` batch same-support successor and does not rewrite or
+promote version 19. It requires its own dual review, verification,
+implementation, and exact-head gates.
 
 ## Purpose
 
@@ -1756,10 +1758,117 @@ nonempty terminal ledgers; canonical pending-parcel bytes; event, group,
 topology, ordinal, owner, parcel and forcing poisons; and rollback at discovery,
 endpoint solve, zero-duration event, successor execution and final publication.
 
+## Candidate version 20 — owner-complete same-support terminal pair
+
+Version 20 is prospective authority for `CHILD1-TERM-TEMPORAL-005`. It retains
+all version-19 tolerances, absolute-prefix replay, event-root predicates,
+carrier minimum and typed failures. It changes only the candidate construction
+used to estimate temporal error. Version 19 remains an immutable reviewed
+candidate.
+
+### Residual classes and units
+
+The normative inventory is
+`docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/terminal-residual-state-inventory-v1.md`.
+Canonical owner bytes are exact custody and are never differentiated. For
+typed physical state `x` on `H=[t0,t1)`, `h>=600000000 ns`, each arm closes:
+
+```text
+S(x1)-S(x0) - I_prescribed(H) - Q_endpoint(H,x0,x1)
+             - P_deterministic(H,x0,x1) = 0
+A(H,x0,x1)=0; C(H,x0,x1)=0; D(H,x0,x1)=true
+```
+
+`S` comprises lane ice/liquid mass and snow/participating soil material
+enthalpy using their existing unit-bearing storage maps. `I_prescribed`
+contains sealed exact-support parcel mass/advection, provider-integrated
+radiation, and other amount-valued receipts. Such totals enter both arms
+bit-identically and shall not be divided by duration or re-quadratured.
+`Q_endpoint` contains only owning-contract-authorized state-dependent endpoint
+fluxes: longwave, sensible, bounded vapor/latent, snow--soil and interlayer
+conduction. `A` is the complete shared carrier/LSE algebraic closure. `C` is
+the existing cold-content-first phase complementarity. `D` is exact topology,
+ordering, cardinality, receipt, owner, support and custody validation.
+
+### Low and high candidates
+
+Both arms restart from the identical immutable batch beginning, forcing,
+topology and full absolute support:
+
+```text
+BE: Q_endpoint = h F(t1,x_BE)
+CN: Q_endpoint = h/2 [F(t0,x0)+F(t1,x_CN)]
+```
+
+Each arm independently solves its nonlinear physical system. Deterministic
+root selection is lexicographic over `(active_set_tag, ordered_lane_id,
+ordered_component_id, IEEE-754 candidate bits)` after rejecting any candidate
+that fails `A`, `C`, `D`, the existing physical domain or residual tolerance.
+Initial guesses and iteration order are not authority. The solver must return
+the unique passing canonical root; zero or multiple distinct passing roots fail
+typed `TerminalTemporalUnsupported` without mutation.
+
+Nonlinear convergence requires every unit-specific residual pass its owning
+absolute closure tolerance and two successive typed iterates pass
+`TOL-SNOWENERGY-003`; exact fields remain exact. Iteration exhaustion,
+non-finite values, phase-posture disagreement, nonunique root, unavailable
+endpoint flux, or missing complete-owner residual fails typed. Neither a fixed-
+point iterate nor a rejected endpoint is a temporal candidate.
+
+Only the CN candidate may be installed. BE is evidence. The temporal norm is
+the maximum over every active lane's ice, liquid, cold content, complete
+component energy and unallocated energy plus every typed shared-owner storage
+component exposed by the inventory. It uses the unchanged unit-specific
+`a_mass=1e-9 kg m^-2`, `a_energy=1e-6 J m^-2`, relative `1e-8`, existing
+temperature/depth bounds, and exact predicates. Agreement of opaque owner
+digests is not a numeric norm component; each arm must nevertheless reconstruct
+its complete ending owner set exactly.
+
+### Active sets and event localization
+
+BE and CN must select the same pre-terminal physical active set over an
+accepted positive support. Different melt/refreeze/sublimation, layer-lifecycle
+or event posture rejects the trial and invokes exact absolute-prefix
+localization; no averaging occurs. Every root candidate replays from the
+immutable cursor with all active lanes. The high candidate supplies monotone
+solid evidence. A bracket is admissible only when reproduced high candidates
+prove its sign/order; loss of monotonicity fails typed. Exact zero uses the
+CoupledTime-v5 sealed predecessor witness and performs no constitutive call.
+
+### Invariants, guards and obligations
+
+| ID | Binding rule | Guard / evidence |
+|---|---|---|
+| `INV-SNOWENERGY-056` | Separate `S`, prescribed totals, endpoint fluxes, algebraic closure, complementarity and exact custody; never re-quadrature an interval total or differentiate owner bytes. | typed residual classifier and receipt reconstruction |
+| `INV-SNOWENERGY-057` | Independently solve complete BE and CN physical batch candidates on the identical admitted support; install CN only. | arm receipts, residual guards and installed-owner join |
+| `INV-SNOWENERGY-058` | Temporal acceptance covers every active lane and exposed shared storage with existing unit tolerances and exact predicates. | batch max norm and survivor poison vectors |
+| `INV-SNOWENERGY-059` | Active-set disagreement, nonunique root, unavailable endpoint flux or no converged arm is typed unsupported with exact rollback. | typed errors and rollback vectors |
+| `INV-SNOWENERGY-060` | Rejected admitted trials retain read-only component receipts and call supports without publishing or mutating state. | rejected-trial evidence receipt |
+| `OBL-SNOWENERGY-P-015` | Produce canonical BE/CN arm and rejected-trial evidence receipts with component values, digests, residuals, support and LSE admission. |
+| `OBL-SNOWENERGY-C-023` | Independently reconstruct prescribed totals, endpoint quadrature, each storage delta, closure and installed CN owner set. |
+
+### Contract-derived vectors
+
+Required before production implementation: constant-flux analytical identity;
+affine relaxation at `0.6`, `0.600000001`, `0.9`, `1.199999999`, `1.2`,
+`1.875`, and `3.75 s` with observed BE order one/CN order two; two-node
+snow--soil matrix-exponential conduction; manufactured state-dependent typed
+seven-owner storage with independent reconstruction; melt/refreeze/sublimation
+active-set agreement and typed disagreement; all floor boundaries; the real
+covered 1.875-second blocker with retained component receipts; event at cursor,
+interior and end; no-event shallow pack; Batch V2 same/different-tick and
+survivor cases. Every vector records all attempted supports and proves zero
+constitutive calls below `600 ms`.
+
+This version is `in_review / draft`. It authorizes no Rust implementation until
+the coordinated v20/v10/v138/v5 exact candidate receives both required `GO`
+reviews.
+
 ## Change Log
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 20 | 2026-08-25 | Defined a distinct complete-state same-support BE/CN candidate, residual-class partition, deterministic root/active-set guards, rejected-trial evidence and full-domain vectors while retaining v19 and the 600 ms floor. | Terminal residual inventory and Child-1 authority package; review pending |
 | 19 | 2026-08-24 | Defined covered terminal execution modes, exact per-trial covered-carrier reconstruction, resolved crossing, dormant endpoint and ProducedUnconsumed snow-owner custody, terminal snow--soil receipt join, and mandatory terminal physical ledger. Immediate receiver consumption, restart, activation and cutover remain excluded. | Static WIP review at `3fda26f0`; Child-1 contract-first correction |
 | 18 | 2026-08-24 | Admitted persistent snow--soil boundary authority: one OFE/lane interface, bottom snow volume to first OFE soil node, two-half-layer series resistance, Crank--Nicolson beginning/end evaluation inside the covered fixed point, exact equal/opposite candidate custody, reconstructable receipt, and atomic rollback. | Pinned `frostn.for`/`tmpadj.for` series-resistance provenance; `SC-LANDSURFACEENERGY-001@8`; Child-1 contract-derived guards |
 | 17 | 2026-08-24 | Admitted persistent-support precipitation custody: sealed ordered phase-parcel sets, present empty-set zero, open raw-rain versus covered route-distinct vegetation-terminal-liquid exclusivity, solid ground-snow bypass, OFE-ground aggregation, and exact same-set mass/advection consumption. No interception or canopy-snow physics was added. | Direct Child-1 checkpoint authority; `SC-VEGETATION-001@28`; `SC-LANDSURFACEENERGY-001`; contract-derived source guards |

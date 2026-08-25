@@ -126,3 +126,11 @@ environment drift was observed.
 | `CHILD1-TERM-BATCH-006` | Critical | `accepted / open` | Batch V2 types and validators exist, but live terminal execution remains per-lane V1. Production qualification requires one joint batch carrier/hydrology trial over every active lane and the complete seven-owner joint, including canonical group topology, common-earliest coalescence, and exact surviving-lane state. |
 | `CHILD1-TERM-ZERO-007` | Major | `accepted / open` | Exact-zero cursor replay calls no provider but lacks a sealed canonical unapplied-predecessor witness. Event-at-start and later restart safety require a zero-prefix receipt plus replay/substitution poisons. |
 | `CHILD1-TERM-QUAL-008` | Closure blocker | `accepted / open` | Exact-head affected-crate and workspace qualification have not run and are not claimable while the focused terminal fixture remains on hard HOLD. `43cc9bbea2fbf5fe6ab6596cee4162de75cef999` remains the last qualified physical implementation. |
+
+## 2026-08-25 coordinated v20/v10/v138/v5 reviews
+
+Static: both independently scoped reviewers verified the exact candidate
+manifest and returned `HOLD`. Numerical findings `TBTV20-NUM-001..005` and
+ownership findings `TBTV20-OWN-001..004` are accepted/open; see
+`terminal-batch-temporal-v20-review-disposition.md`. No production Rust was
+edited and no implementation intent is admitted.

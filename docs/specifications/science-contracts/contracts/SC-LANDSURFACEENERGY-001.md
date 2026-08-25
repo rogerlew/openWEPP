@@ -6,7 +6,7 @@ maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
 contract_version: 8
 released_contract_version: 8
-candidate_contract_version: 9
+candidate_contract_version: 10
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
@@ -25,9 +25,11 @@ Status: `approved`
 Maturity: `active`
 Evidence mode: `static + independent oracle`
 
-Lifecycle: version 8 remains `approved / active`; only the version-9 terminal
-endpoint amendment is `in_review / draft` until its own mandatory review,
-verification, implementation, and exact-head gates pass.
+Lifecycle: version 8 remains `approved / active`; version 9 remains the
+reviewed terminal full/two-half endpoint candidate. Version 10 is a distinct
+`in_review / draft` same-support endpoint-flux successor and does not rewrite
+version 9. It requires its own mandatory review, verification, implementation,
+and exact-head gates.
 
 ## Purpose
 
@@ -1130,10 +1132,58 @@ nonzero soil heat, endpoint/support and event-result poisons, persistent versus
 terminal receipt substitution, no fabricated-temperature reachability,
 dormant installed-owner validation, and rollback before owner publication.
 
+## Candidate version 10 — same-support endpoint-flux receipt
+
+Version 10 is the coordinated LSE surface for SnowEnergy v20. It preserves
+released v8 and reviewed candidate v9. The physical support domain remains
+`dt>=600000000 ns` for every positive carrier evaluation.
+
+For one exact absolute batch support, LSE v10 evaluates the unchanged physical
+tile/component equations at the beginning typed state and at each arm's ending
+typed state. It emits `CoveredLseEndpointFluxSetV1` containing canonical ordered
+`(OFE,lane,tile,vertical_occupancy,component)` entries for snow-recipient
+shortwave classification, emitted/reciprocal longwave, sensible heat, vapor
+mass, latent heat, and snow--soil conduction, with units and direction tags.
+Amount-valued provider radiation and precipitation/advection receipts are
+referenced by digest and exact total only; they are never converted to endpoint
+rates.
+
+Each endpoint entry binds schema, model/configuration, absolute tick, complete
+support, forcing, topology, beginning complete-owner set, arm tag (`BE|CN`),
+typed endpoint state, primitive operands, flux value, direction, units and
+component receipt. The ordered set binds algebraic carrier residuals,
+Newton/fixed-point convergence evidence, beginning/ending LSE candidates and
+the complete arm receipt. Beginning endpoint evaluation is read-only and does
+not advance an owner. Ending evaluation occurs inside the independently solved
+arm. Missing, duplicated, reordered, wrong-unit, wrong-direction, stale-state,
+wrong-support or cross-arm substitution fails `LSEB-E-046`.
+
+BE integrates authorized state-dependent entries as `h F1`; CN integrates the
+same ordered entries as `h/2(F0+F1)`. When an owning boundary receipt supplies
+an exact support integral, v10 classifies it as prescribed and both arms consume
+it identically. Ambiguous rate/integral classification fails typed rather than
+applying a second quadrature.
+
+| ID | Binding rule | Guard / evidence |
+|---|---|---|
+| `INV-LANDSURFACEENERGY-130` | Every positive BE/CN arm uses the identical exact absolute support and remains at or above `600000000 ns`. | pre-Newton admission and call-support evidence |
+| `INV-LANDSURFACEENERGY-131` | Endpoint-flux receipts expose only state-dependent rates; prescribed interval totals retain amount identity and are never re-quadratured. | units/classifier and alias poisons |
+| `INV-LANDSURFACEENERGY-132` | Beginning endpoint evaluation is read-only; each ending endpoint is algebraically closed against that arm's complete typed state. | residual and owner-mutation guards |
+| `INV-LANDSURFACEENERGY-133` | Ordered batch component receipts bind all active lanes while shared LSE/vegetation owners advance once per arm. | Batch V2 receipt reconstruction |
+| `OBL-LANDSURFACEENERGY-P-021` | Produce the canonical endpoint-flux set and exact amount-reference set for each arm. | producer validation |
+| `OBL-LANDSURFACEENERGY-C-021` | Reconstruct classification, endpoint operands, algebraic closure, support admission and ending-owner join. | independent consumer |
+
+Required vectors cover constant and affine endpoint fluxes, exact interval-total
+anti-requadrature, snow--soil equal/opposite energy,
+`599999999/600000000/600000001 ns`, stale/cross-arm receipts, lane and topology
+permutation, and the real 1.875-second covered component receipt set. This draft
+authorizes no production implementation before coordinated dual `GO`.
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-25 | 10 | Codex | Added a distinct same-support endpoint-flux/amount classifier and canonical batch receipt surface for SnowEnergy v20; preserved v9 and the 600 ms domain. |
 | 2026-08-24 | 9 | Codex | Added a terminal-specific snow--soil receipt integrated only through the accepted event, with limiting pre-event snow-state custody, exact soil credit, dormant endpoint validation, and no fabricated terminal snow temperature. |
 | 2026-08-24 | 8 | Codex | Admitted the persistent Stage 3 OFE/lane snow--soil interface as a specialization of the existing node-centered Crank--Nicolson soil authority: bottom snow volume to first OFE soil node, half-layer series resistance, positive-downward exact snow debit/soil credit, sealed receipt, independent reconstruction, and atomic rollback; no tile averaging or duplicated flux. |
 | 2026-08-19 | 5 | Codex | Admitted default-off terminal remaining-support LSE-V2 authority (`INV-LANDSURFACEENERGY-114/115`) with actual receiver selection, complete flux rebuild, no post-event snow operands, and atomic rollback. |

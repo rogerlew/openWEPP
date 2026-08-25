@@ -6,7 +6,7 @@ maturity: active
 owner: openWEPP maintainers + time/numerics + transaction/restart reviewers
 contract_version: 3
 released_contract_version: 3
-candidate_contract_version: 4
+candidate_contract_version: 5
 producer_scope:
   - OPENWEPP_COUPLED_TIME_SUPPORT_V1
   - Coupled parent-interval coordinator and staged clock
@@ -29,9 +29,11 @@ Authority identity: `OPENWEPP_COUPLED_TIME_SUPPORT_V1`
 
 Evidence mode: `Static + independent oracle and executable contract vectors`
 
-Lifecycle: version 3 remains `approved / active`; only the version-4 covered
-terminal chain is `in_review / draft` until its mandatory review, verification,
-implementation, and exact-head gates pass.
+Lifecycle: version 3 remains `approved / active`; version 4 remains the
+reviewed covered terminal chain candidate. Version 5 is a distinct
+`in_review / draft` Batch V2, group-topology, and zero-prefix successor and
+does not rewrite version 4. It requires its own mandatory review, verification,
+implementation, and exact-head gates.
 
 ## Purpose and scientific scope
 
@@ -969,10 +971,106 @@ event receipt and child-ordinal poisons, missing and extra mutation members,
 orphan/duplicate groups and parcels, canonical framing, and rollback at every
 chain boundary.
 
+## Candidate version 5 — Batch V2 event and zero-prefix chronology
+
+Version 5 coordinates with SnowEnergy v20, LSE v10 and SnowFreeze v138 while
+preserving reviewed version 4. Every positive candidate is a complete Batch V2
+absolute-prefix replay from the immutable current cursor. Search brackets are
+diagnostic only.
+
+### Batch result and common-earliest selection
+
+`CoveredTerminalBatchTrialResultV2` binds request, BE and CN arm receipts,
+ordered per-lane boundaries/event evidence, one shared ending owner set, one
+ending joint and the maximum unit-specific temporal norm. Only a converged CN
+arm is installable. Candidate ticks are derived from its lane evidence, sorted
+by `(absolute_tick,lane_id)`. The minimum tick is selected; every lane at that
+tick coalesces, later-event and no-event lanes survive in their exact CN prefix
+state. Root localization repeats the complete batch replay and must preserve
+monotone high-arm solid evidence. No lane-local endpoint merge is authority.
+
+`CoveredTerminalGroupTopologySetV2` is the strictly ordered union over the
+terminating lanes' `(lane,OFE,destination_tile,destination_fraction,
+receiver_class,receiver_model)` records. Fractions close per lane only under
+the existing SnowEnergy topology tolerance. Its canonical digest replaces the
+lane-local receiver digest in every member's common proposal core. One group
+may therefore contain distinct OFEs without requiring their lane-local digests
+to be identical. Missing, duplicate, reordered, incomplete or extraneous
+members fail `ERR-CT-027`.
+
+The proposal core v2 binds schema, parent transaction, enclosing/current
+supports, event tick, physical-child/event ordinals, complete batch result,
+forcing, group topology, ordered terminating event results and terminal
+mass/enthalpy. Parcel/ending-owner/accepted-event digests remain excluded to
+preserve the v4 acyclic rule. Preaccept and accepted group receipts bind the
+exact complete beginning/ending owner sets, one physical mutation set `{snow}`,
+all parcels and the common proposal core.
+
+### Canonical zero-prefix witness
+
+`CoveredTerminalZeroPrefixReceiptV1` proves a sealed cursor predecessor and is
+not a slab or event receipt. Its canonical hash uses
+`OPENWEPP_CANONICAL_FRAMED_SHA256_V1`, closed domain
+`covered-terminal-zero-prefix-receipt-v1`, and these fields in exact order:
+
+```text
+schema:u32=1
+parent_transaction:[u8;32]
+enclosing_start:u128, enclosing_end:u128, current_cursor:u128
+physical_child_ordinal:u32, event_ordinal:u32
+beginning_complete_owner_set:[u8;32]
+beginning_joint:[u8;32]
+source_snow_owner_v4:[u8;32]
+accepted_predecessor_count:u32, repeated predecessor:[u8;32]
+provider_call_count:u32=0
+physical_mutation_count:u32=0
+ledger_mass_bits:u64=+0.0
+ledger_energy_bits:u64=+0.0
+ledger_q_ss_bits:u64=+0.0
+event_posture:u8=0  # Unapplied
+```
+
+The predecessor list is exact, nonzero, unique and in accepted chronology
+order. The current cursor equals the sealed predecessor endpoint; beginning
+joint/owner/snow digests reconstruct from that predecessor. There is no
+positive carrier, hydrology, snow--soil or parcel receipt. Before construction,
+the coordinator proves no terminal parcel for this parent/ordinal/core and no
+accepted event receipt for the ordinal/core exists. Retrying before event
+application reconstructs identical bytes. After application, changed event
+ordinal, owner set and accepted receipt posture cause typed `ERR-CT-028`
+replay rejection. Substitution, omission, signed nonzero, negative zero,
+fabricated receipt or mutation member fails before event application.
+
+### Failure and rollback order
+
+Identity/support/topology/receipt errors precede numerical evaluation;
+subminimum positive support precedes a carrier call; arm residual/active-set/
+nonunique-root failures precede temporal acceptance; temporal nonconvergence or
+no admitted operator yields typed `ERR-CT-029` unsupported disposition. Probe,
+exact endpoint, event, successor or parent-finalization failure leaves every
+owner, clock, ordinal, receipt, parcel, WB14 cursor and `last_*` field unchanged.
+
+| ID | Binding rule | Guard / evidence |
+|---|---|---|
+| `INV-COUPLEDTIME-027` | Every terminal candidate/result is one complete all-lane Batch V2 absolute-prefix replay and ending joint. | request/result reconstruction |
+| `INV-COUPLEDTIME-028` | Common-earliest selection coalesces equal ticks and installs exact CN survivor state. | same/different-tick fixtures |
+| `INV-COUPLEDTIME-029` | One canonical ordered group topology set and proposal core cover all terminating lanes/OFE receivers. | topology framing poisons |
+| `INV-COUPLEDTIME-030` | Exact-zero replay requires the framed sealed Unapplied predecessor witness and zero provider/mutation/ledger evidence. | zero-prefix validator |
+| `INV-COUPLEDTIME-031` | No converged admitted operator is a typed unsupported result with complete rollback. | error precedence and rollback |
+| `OBL-COUPLEDTIME-012` | Produce/reconstruct Batch V2 request, arm, result, group topology, proposal, event and parent chain one-to-one. | producer/consumer gate |
+| `OBL-COUPLEDTIME-013` | Prove zero-prefix retry identity before application and replay rejection afterward. | zero/replay vectors |
+
+Required vectors cover analytical and real floor cases, event at cursor/interior/
+end, same-tick distinct OFEs, different-tick continuation, terminal plus
+survivor, mixed destinations, no event, topology/ordinal/hash substitution,
+zero-prefix signed-zero/provider/parcel/replay poisons, and rollback at every
+boundary. This draft admits no implementation before coordinated dual `GO`.
+
 ## Change log
 
 | Date | Version | Change |
 |---|---|---|
+| 2026-08-25 | `5` | Defined distinct Batch V2 absolute-prefix results, common group topology, exact survivor installation, sealed zero-prefix witness and typed unsupported rollback while preserving v4. |
 | 2026-08-20 | `1-rc1` | Authored complete coupled-time identity, event, participant, controller, restart, atomicity, and publication authority for independent review. |
 | 2026-08-20 | `1-rc2` | Added complete accepted-slab receipt chronology to restart after implementation exposed that reductions/publications cannot reconstruct parent finalization. |
 | 2026-08-20 | `2` | Preserved restart V1, released restart V2 slab/event chronology, and closed scheduled-once receipt identity without borrowing event ordinals. |

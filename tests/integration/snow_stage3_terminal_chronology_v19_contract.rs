@@ -23,7 +23,7 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
     let registry = read("docs/specifications/science-contracts/index.md");
 
     for required in [
-        "candidate_contract_version: 19",
+        "version 19 remains the\nreviewed terminal full/two-half candidate",
         "CoveredTerminalExecutionMode",
         "PersistentReject",
         "DiscoveryProbe",
@@ -57,7 +57,7 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
     }
 
     for required in [
-        "candidate_contract_version: 9",
+        "version 9 remains the\nreviewed terminal full/two-half endpoint candidate",
         "TerminalSnowSoilHeatReceiptV1",
         "No `273.15 K`",
         "INV-LANDSURFACEENERGY-127",
@@ -90,7 +90,7 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
     }
 
     for required in [
-        "candidate_contract_version: 4",
+        "version 4 remains the\nreviewed covered terminal chain candidate",
         "current search support `[cursor,b)`",
         "current physical-child ordinal",
         "Candidate iteration order and literal ordinal zero",
