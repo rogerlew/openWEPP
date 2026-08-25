@@ -946,3 +946,47 @@ physics; the superseded 3,218/3,300 result is not claimed as passing evidence.
 `3,300/3,300`, seven slow, with six configured skips and zero failures. The
 preceding 3,299/3,300 run exposed only the stale generation-ID guard and is
 likewise superseded by this exact-clean result.
+
+# 2026-08-24 terminal-chronology WIP review disposition (HOLD)
+
+`Static:` pushed WIP `3fda26f0df866504ed4b2f8a26d167e48420ae29`
+is retained without reset, rebase, amend, merge, or history rewrite. Its
+terminal chronology architecture is useful WIP, but it is not a qualified
+physical implementation. Documentation reconciliation `e02ccf504b83b31f279e7269407fbbaeb37c65f8`
+remains `PASS`; exact-clean physical implementation
+`43cc9bbea2fbf5fe6ab6596cee4162de75cef999` remains the last qualified
+checkpoint. Child 1 remains `EXECUTING / HOLD`; Child 3 and production cutover
+remain unauthorized.
+
+`Ran / focused failing command:`
+`nix develop --command cargo nextest run -p openwepp-hillslope-orchestrator interior_terminal_event_runs_covered_event_and_snow_free_remainder --no-fail-fast`
+failed `0/1` at exact WIP `3fda26f0df866504ed4b2f8a26d167e48420ae29`.
+The typed cause was
+`Stage3(Kernel(MissingRequiredStateSymbol { phase_class: HydrologyRunoffReconciliation, symbol: BoundarySymbol("snow.cloud_forcing_unavailable") }))`.
+The test run ID was `4251bc87-9e00-4cd8-ad90-1e548da6bc0e`.
+
+`Static / correction boundary:` covered terminal candidate discovery invokes
+the raw Stage-3 persistent evaluator, and terminal adaptive/root trials retain
+a second raw-carrier seam. The WIP also consumes already-cleared terminal snow
+storage, retains parcel posture outside the canonical seven-owner set, and has
+no authoritative terminal snow--soil endpoint receipt or terminating-lane
+physical ledger. Runner-owned support construction, terminal-liquid receiver
+consumption, restart, selectors/defaults, activation, CoE retirement, and
+production cutover do not proceed until terminal chronology independently
+passes.
+
+# 2026-08-24 terminal-chronology contract-first checkpoint (PASS)
+
+| Evidence | Result |
+| --- | --- |
+| Independent contract review A | Static `GO` after all CR-A/CR-B findings and unit-bearing tolerance predicates were verified |
+| Independent contract review B | Static `GO`; no lifecycle, duplicate-authority, conservation, framing, or evidence regression |
+| Coordinated successor structural guard | PASS: 2/2, nextest run `41ff5e3c-84da-4022-a264-df90a285a847` |
+| Successor plus affected historical contract guards | PASS: 36/36, nextest run `7ead53f3-9088-4112-a765-4a1677e0c3ce` |
+| Formatting / diff hygiene | PASS: `cargo fmt --all -- --check`; `git diff --check` |
+
+`Static:` this is contract-first authority and source-structure evidence only.
+It admits production implementation of the bounded terminal-chronology
+checkpoint but is not runtime, exact-head, or terminal PASS evidence. Child 1
+remains `EXECUTING / HOLD`; all later runner/receiver/restart/cutover work
+remains unauthorized.

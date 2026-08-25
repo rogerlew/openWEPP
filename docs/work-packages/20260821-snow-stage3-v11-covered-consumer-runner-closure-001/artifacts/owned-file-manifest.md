@@ -208,3 +208,23 @@ Persistent covered physical-custody expansion:
   LSE boundary, runner input, tests, contract, registry, authority guards, and
   package evidence files shown by the terminal diff. No selector, default,
   production output, CoE, frozen restart wire, or publication behavior changes.
+
+Terminal chronology correction expansion:
+
+- `docs/specifications/science-contracts/contracts/{SC-SNOWENERGY-001,SC-LANDSURFACEENERGY-001,SC-SNOWFREEZE-001,SC-COUPLEDTIME-001}.md`
+  and `docs/specifications/science-contracts/index.md`: coordinated prospective
+  authority for read-only covered discovery, exact per-trial covered carrier
+  reconstruction, terminal snow--soil endpoint custody, canonical snow-owner
+  pending parcels, exact event mutation/ordinal authority, and reconstructable
+  terminal receipts.
+- Contract-derived integration guards for the four successor versions and
+  their no-raw-carrier, no-fabricated-temperature, owner-custody, mutation-set,
+  ledger, and receipt-chain obligations.
+- Existing covered Stage-3 terminal solver, V11 covered carrier, coupled clock,
+  V11 parent transaction, canonical snow-owner, attachment/receipt, and
+  responsibility-specific terminal test modules needed to implement those
+  reviewed contracts. The attachment must be decomposed below 3,000 lines
+  before terminal PASS.
+- This expansion does not admit runner-owned 48-support construction,
+  terminal-liquid receiver consumption, additive restart, selectors/defaults,
+  activation, CoE retirement, or production cutover.

@@ -13,7 +13,7 @@ fn read(path: &str) -> String {
 fn v134_admits_exactly_one_mechanics_only_persistent_operator() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 136",
+        "contract_version: 137",
         "INV-SNOWFREEZE-100",
         "OBL-SNOWFREEZE-P-072",
         "OBL-SNOWFREEZE-C-014",

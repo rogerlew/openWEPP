@@ -30,7 +30,7 @@ fn contracts_admit_only_event_local_terminal_snow_numerics() {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
     for required in [
-        "contract_version: 136",
+        "contract_version: 137",
         "INV-SNOWFREEZE-101",
         "OBL-SNOWFREEZE-P-073",
         "OBL-SNOWFREEZE-C-015",

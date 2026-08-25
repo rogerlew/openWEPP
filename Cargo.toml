@@ -874,6 +874,10 @@ name = "snow_stage3_shared_carrier_authority_contract"
 path = "tests/integration/snow_stage3_shared_carrier_authority_contract.rs"
 
 [[test]]
+name = "snow_stage3_terminal_chronology_v19_contract"
+path = "tests/integration/snow_stage3_terminal_chronology_v19_contract.rs"
+
+[[test]]
 name = "snow_stage3_shared_carrier_terminal_handoff_implementation"
 path = "tests/integration/snow_stage3_shared_carrier_terminal_handoff_implementation.rs"
 

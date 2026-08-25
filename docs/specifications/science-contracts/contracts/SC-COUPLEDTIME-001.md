@@ -5,6 +5,8 @@ status: approved
 maturity: active
 owner: openWEPP maintainers + time/numerics + transaction/restart reviewers
 contract_version: 3
+released_contract_version: 3
+candidate_contract_version: 4
 producer_scope:
   - OPENWEPP_COUPLED_TIME_SUPPORT_V1
   - Coupled parent-interval coordinator and staged clock
@@ -12,7 +14,7 @@ consumer_scope:
   - Segmented-support vegetation V11
   - Snow, land-surface-energy, surface-liquid, Lane D, Richards, plant, soil-thermal, biogeochemistry, restart, and publication adopters
 evidence_level: static+independent_oracle+contract_vectors
-last_reviewed: 2026-08-20
+last_reviewed: 2026-08-24
 supersedes: []
 superseded_by: []
 ---
@@ -26,6 +28,10 @@ Maturity: `active`
 Authority identity: `OPENWEPP_COUPLED_TIME_SUPPORT_V1`
 
 Evidence mode: `Static + independent oracle and executable contract vectors`
+
+Lifecycle: version 3 remains `approved / active`; only the version-4 covered
+terminal chain is `in_review / draft` until its mandatory review, verification,
+implementation, and exact-head gates pass.
 
 ## Purpose and scientific scope
 
@@ -136,7 +142,10 @@ delimiter concatenation, JSON/debug bytes, and hexadecimal digest text are
 forbidden. Closed domain tags are `parent-interval`, `parent-transaction`,
 `segment`, `accepted-slab`, `attempt`, `event`, `constraint`, `owner-set`,
 `event-receipt`, `slab-receipt`, `parent-receipt`, and
-`publication-receipt`.
+`publication-receipt`. Candidate version 4 adds the closed domain tags
+`stage3-v11-terminal-group-preaccept` and
+`stage3-v11-terminal-group-accepted`; their ordered fields are defined in the
+version-4 amendment and use this same framed preimage, not raw concatenation.
 
 The V1 field lists are closed and ordered:
 
@@ -539,11 +548,19 @@ one family are simultaneously true.
 | INV-COUPLEDTIME-018 | Event boundary candidates satisfy both neighbor-side support predicates and all four independently admitted tolerances. | Child 2C event authority | `[INFERENCE][Static]` | candidate validator | `ERR-CT-021` |
 | INV-COUPLEDTIME-019 | Proposed and accepted ticks, candidate digest, errors, and tie-break identity are retained and replay-authenticated. | Child 2C receipt authority | `[INFERENCE][Static]` | event receipt validator | `ERR-CT-012/015` |
 | INV-COUPLEDTIME-020 | A no-candidate event is an atomic retry/failure; it cannot drop, freeze, scale, or execute a below-domain successor. | Child 2C rollback authority | `[INFERENCE][Static]` | rollback validator | `ERR-CT-021` |
+| INV-COUPLEDTIME-021 | Candidate-v4 separates current search support from enclosing parent and admits only prior exact-zero endpoint replay at cursor. | half-open/version-3 chronology | `[INFERENCE][Static]` | support/cursor validator | `ERR-CT-022` |
+| INV-COUPLEDTIME-022 | Trial/candidate projection uses current accepted-positive-slab child ordinal. | predecessor identity | `[INFERENCE][Static]` | child/WB14 join | `ERR-CT-022` |
+| INV-COUPLEDTIME-023 | Discovery is read-only; endpoint and event operations share one rollback envelope. | version-3 attempt/event atomicity | `[DIRECT][Static] + [INFERENCE][Static]` | attempt-state validator | `ERR-CT-023` |
+| INV-COUPLEDTIME-024 | Physical mutation set is exact and clock accepted receipts are sole ordinal authority. | complete-owner/event receipt authority | `[DIRECT][Static] + [INFERENCE][Static]` | mutation/ordinal validator | `ERR-CT-024` |
+| INV-COUPLEDTIME-025 | Terminal result through parent receipt uses the exact acyclic canonical group chain. | canonical receipt governance | `[INFERENCE][Static]` | receipt/replay validator | `ERR-CT-025` |
 
 ## Canonical obligations
 
 | Obligation ID | Requirement | Enforcement |
 |---|---|---|
+| `OBL-COUPLEDTIME-009` | Publish immutable discovery evidence without chronology side effects. | attempt/rollback validator |
+| `OBL-COUPLEDTIME-010` | Expose accepted event ordinal/context/owner/ledger digests for reconstruction. | accepted-event receipt API/validator |
+| `OBL-COUPLEDTIME-011` | Validate exact mutation equality and one-to-one terminal result/group/event/owner/parcel/parent chain. | parent receipt reconstruction |
 | OBL-COUPLEDTIME-001 | Canonical schema/model/vector identities bind origin, wire width, conversions, precedence, and every lineage field. | schema/profile/vector gates |
 | OBL-COUPLEDTIME-002 | Independent reference model consumes frozen vectors only, imports no Rust, and calls no Rust binary for expected values. | source audit plus separately authored comparison test |
 | OBL-COUPLEDTIME-003 | Reference consumer proves A+B/C, B-to-C event, A+C/B-terminal chronology with rejection, retry, restart, and atomic publication. | orchestrator integration test |
@@ -681,6 +698,7 @@ contradiction.
 | `BEI-CT-002` | terminal snow HOLD timing findings | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-002, INV-COUPLEDTIME-007, INV-COUPLEDTIME-008, INV-COUPLEDTIME-010` | `flagged-binding-addition` | Preserves event, participant, and restart residue. |
 | `BEI-CT-003` | Richards assessment timing recommendation | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-003, INV-COUPLEDTIME-009, INV-COUPLEDTIME-016, OBL-COUPLEDTIME-007` | `flagged-binding-addition` | Imports chronology only, not Richards numerics. |
 | `BEI-CT-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-017, INV-COUPLEDTIME-018, INV-COUPLEDTIME-019, INV-COUPLEDTIME-020, OBL-COUPLEDTIME-008` | `flagged-binding-addition` | Active-participant support, canonical event receipt, deterministic coalescing, and atomic no-candidate retry. |
+| `BEI-CT-V4-COVERED-TERMINAL-CHAIN` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-021, INV-COUPLEDTIME-022, INV-COUPLEDTIME-023, INV-COUPLEDTIME-024, INV-COUPLEDTIME-025, OBL-COUPLEDTIME-009, OBL-COUPLEDTIME-010, OBL-COUPLEDTIME-011` | `flagged-binding-addition` | Candidate v4 current-search, physical-child, read-only discovery, mutation/ordinal and acyclic terminal receipt-chain binding under review. |
 
 ## Child 2C shared-carrier and event-boundary amendment
 
@@ -792,6 +810,94 @@ both neighbor-side violations, deterministic tie and tie-poison cases,
 proposed/accepted tick divergence, no-candidate retry, owner-preserving
 rejection, restart before/after the event, and wrong-regime flux rejection.
 
+## Version 4 Covered Terminal Event Chain
+
+Terminal discovery distinguishes the enclosing parent support `[a,b)` from the
+current search support `[cursor,b)`. Every candidate begins at the current
+accepted cursor and ends at its proposed event tick; the coalesced group still
+binds the enclosing parent identity. Trial and candidate projection use the
+current physical-child ordinal derived from already accepted positive slabs.
+Candidate iteration order and literal ordinal zero are never chronology
+authority.
+
+Discovery is observational under the existing provisional-attempt rollback
+rules. It may expose only canonical bracket/candidate evidence and cannot
+accept a slab/event, advance a clock, mutate an owner/controller, retain a
+receipt or publication, or leak staged state. The exact positive-duration
+endpoint solve and the subsequent zero-duration event are separate acceptance
+operations. `mutation_set` equals the canonical set of owner IDs whose bytes
+differ: both missing changed owners and extra/nonexistent members fail. The
+coupled clock's ordered `AcceptedEventReceiptV1` records and their parent
+transaction identity are the sole event-ordinal authority.
+
+At event acceptance, coupled chronology appends exactly one accepted receipt
+and increments its ordinal. In the separately joined seven-owner physical
+transition, the mutation set is exactly `{snow}`. These are two views of one
+atomic event; clock state is transaction authority, not an eighth physical
+process owner. An event at `cursor` has zero endpoint-slab duration and is
+admissible only as replay of an immediately preceding accepted positive
+endpoint result proving exact zero solid and an unapplied event predecessor.
+It cannot localize or delete positive beginning solid. It accepts no positive
+slab and evaluates no rate; its present terminal ledger carries explicit zero
+flux and no snow--soil receipt.
+
+The canonical framed chain is acyclic:
+
+```text
+covered probe bracket evidence
+-> exact shortened covered endpoint result (or sealed cursor-root result)
+-> terminal event-result digest
+-> preaccept event-group digest
+-> accepted CoupledTime event receipt
+-> accepted-group receipt digest
+-> zero-duration canonical snow-owner transition
+-> ProducedUnconsumed parcel-set digest
+-> parent receipt
+```
+
+The preaccept group binds enclosing parent, current search support, event tick, physical
+child ordinal, complete covered forcing digest, receiver topology, canonical
+event-result bytes/digests, terminal liquid and enthalpy, complete beginning
+and proposed ending physical owner sets, exact physical mutation set, and
+proposed parcel-set digest. Its domain is
+the canonical framed tag `stage3-v11-terminal-group-preaccept` and it cannot
+include an accepted receipt; the event proposal context is exactly this digest. After
+acceptance, `AcceptedTerminalEventGroupReceiptV1` uses domain
+tag `stage3-v11-terminal-group-accepted` and binds the
+preaccept digest, accepted event receipt ID and ordinal, event context,
+begin/end owner-set digests, ledger digest, and final parcel-set digest. All
+ticks are big-endian `u128`; ordinals, child IDs and counts are big-endian
+`u32`; `f64` values are big-endian bit patterns; digests are 32 raw bytes;
+ordered collections are a `u32` count followed by canonical elements; digest
+algorithm is SHA-256.
+
+The preaccept ordered tagged fields are: `schema=u32(1)`,
+`parent_transaction`, `enclosing_start`, `enclosing_end`, `search_start`,
+`search_end`, `event_tick`, `child_ordinal`, `event_ordinal`, `forcing`,
+`topology`, `begin_owner_set`, `proposed_end_owner_set`, `mutations` as ordered
+length-framed owner IDs, and `candidates` as ordered framed members. Each
+candidate member contains `lane`, `event_result`, `terminal_state`,
+`terminal_liquid_bits`, `terminal_enthalpy_bits`, and `proposed_parcel_set`.
+The accepted-group ordered tagged fields are: `schema=u32(1)`, `preaccept`,
+`accepted_event_receipt`, `accepted_ordinal`, `event_context`,
+`begin_owner_set`, `end_owner_set`, `ledger`, and `parcel_set`. No extra,
+optional, omitted, reordered, self-referential, or JSON field is admissible.
+
+The parent reconstructs every accepted-group receipt one-to-one from accepted
+subslab terminal results, coupled event receipts, snow-owner parcels, and owner
+transitions. Missing, duplicate, orphan, reordered, replayed, JSON-authority,
+or digest-substituted links fail atomically.
+
+Canonical `INV-COUPLEDTIME-021..025` rows are integrated in the invariant guard
+map and `OBL-COUPLEDTIME-009..011` in canonical obligations. This section
+defines their version-4 algorithm and wire only.
+
+Required vectors cover a candidate after prior 60- and 900-second slabs,
+start/interior/end events, same-tick coalescing and different-tick sequence,
+event receipt and child-ordinal poisons, missing and extra mutation members,
+orphan/duplicate groups and parcels, canonical framing, and rollback at every
+chain boundary.
+
 ## Change log
 
 | Date | Version | Change |
@@ -800,3 +906,4 @@ rejection, restart before/after the event, and wrong-regime flux rejection.
 | 2026-08-20 | `1-rc2` | Added complete accepted-slab receipt chronology to restart after implementation exposed that reductions/publications cannot reconstruct parent finalization. |
 | 2026-08-20 | `2` | Preserved restart V1, released restart V2 slab/event chronology, and closed scheduled-once receipt identity without borrowing event ordinals. |
 | 2026-08-20 | `3` | Bound Child 2C active-participant maximum support, deterministic event-boundary coalescing, typed no-candidate retry, and the proposal/accepted event receipt. |
+| 2026-08-24 | `4` | Defined current-search versus enclosing-parent identity, actual physical-child ordinal, read-only discovery, exact mutation-set and sole event-ordinal authority, plus the framed terminal result/group/event/owner/parcel/parent chain. |

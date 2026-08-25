@@ -247,7 +247,7 @@ fn v130_retains_additive_default_off_operator_reconciliation() {
     let contract = read(CONTRACT);
 
     for required in [
-        "contract_version: 136",
+        "contract_version: 137",
         "REF-SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION",
         "INV-SNOWFREEZE-096",
         "OBL-SNOWFREEZE-P-069",
@@ -561,7 +561,7 @@ fn v131_binds_raw_opportunity_separately_from_bounded_transfer() {
     assert_v131_normative_sections(&snow, &energy);
 
     for required in [
-        "contract_version: 136",
+        "contract_version: 137",
         "INV-SNOWFREEZE-098",
         "OBL-SNOWFREEZE-P-071",
         "OBL-SNOWFREEZE-C-013",

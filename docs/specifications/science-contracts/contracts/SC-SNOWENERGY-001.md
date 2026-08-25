@@ -5,6 +5,8 @@ status: approved
 maturity: active
 owner: openWEPP maintainers + snow-process reviewer
 contract_version: 18
+released_contract_version: 18
+candidate_contract_version: 19
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -24,6 +26,10 @@ superseded_by: []
 Status: `approved`
 Maturity: `active`
 Evidence mode: `static + independent oracle + contract vectors`
+
+Lifecycle: version 18 remains `approved / active`; only the version-19
+successor amendment is `in_review / draft` until its own dual review,
+verification, implementation, and exact-head gates pass.
 
 ## Purpose
 
@@ -121,6 +127,16 @@ the first ordered OFE soil-thermal node. The interface uses the same
 center-to-center, two-half-layer series resistance and Crank--Nicolson endpoint
 evaluation already admitted by `SC-LANDSURFACEENERGY-001`; tile temperatures
 are neither averaged nor assigned duplicate shares of the lane flux.
+
+Version 19 defines the covered terminal chronology successor. It separates
+read-only discovery from exact endpoint acceptance, requires every adaptive
+and root trial to rebuild the complete covered physical carrier on its exact
+projected support, retains the solver-returned dormant endpoint, and stages
+terminal liquid as `ProducedUnconsumed` custody inside the canonical snow
+owner. It also introduces a terminal-specific snow--soil receipt and physical
+ledger; no post-event snow temperature is invented. The successor remains
+default-off and in review. Runner construction, liquid receiver consumption,
+restart, selectors, activation, CoE retirement, and cutover are not admitted.
 
 ## Scientific Scope
 
@@ -841,6 +857,10 @@ divide/branch threshold.
 | `INV-SNOWENERGY-048` | The persistent lower boundary is exactly one OFE/lane interface from the bottom represented snow thermal volume to the first ordered OFE soil-thermal node. No tile soil temperature participates; first-tile selection, tile averaging, covered-only averaging, tile-fraction weighting, duplicated lane flux, or silent zero heat is prohibited. | `REF-SNOWENERGY-SOIL-BOUNDARY-V18`; `SC-LANDSURFACEENERGY-001@8` | `[DIRECT][Static] + [INFERENCE][Static]` | topology/node/owner/basis guard | `SNOWENERGY-E-SOIL-HEAT-001` |
 | `INV-SNOWENERGY-049` | With positive finite `dz_sb,lambda_sb,dz_1,lambda_1`, `g_ss=1/(dz_sb/(2*lambda_sb)+dz_1/(2*lambda_1))=2/(dz_sb/lambda_sb+dz_1/lambda_1)`. `G_ss,e=g_ss*(T_sb,e-T_1,e)` for endpoint `e in {0,1}` and the accepted support flux is `bar(G_ss)=0.5*(G_ss,0+G_ss,1)`, positive downward. Both ending temperatures participate in the covered fixed point; beginning values come only from sealed beginning owners. | `REF-SNOWENERGY-SOIL-BOUNDARY-V18`; LSE Crank--Nicolson authority | `[DIRECT][Static] + [INFERENCE][Static]` | physical-operand/endpoint/convergence guard | `SNOWENERGY-E-SOIL-HEAT-001` |
 | `INV-SNOWENERGY-050` | The Stage 3 candidate records exactly `-bar(G_ss)` and the first-node soil-thermal candidate records exactly `+bar(G_ss)` on the same support and OFE-ground basis. One sealed `SnowSoilHeatReceiptV1` binds support, lane/OFE, topology/configuration digests, both beginning-owner identities, the four resistance operands, both endpoint temperature pairs, accepted flux, both candidate-ending identities, and a reconstructable digest. Independent validation reconstructs the receipt and equal/opposite debits from primitives before atomic publication; any omission, substitution, sign/basis error, nonconvergence, or later failure rolls back both owners and all receipt state. | physical conservation; `SC-LANDSURFACEENERGY-001@8` | `[INFERENCE][Static]` | receipt/reconstruction/atomic-owner guard | `SNOWENERGY-E-SOIL-HEAT-001` |
+| `INV-SNOWENERGY-051` | Candidate-v19 covered terminal execution uses the closed three-mode enum and rebuilds every adaptive/root carrier from exact trial-start owners/support; no raw/scaled/fabricated carrier is admissible. | `INV-034/036/038/039`; deterministic numerics | `[INFERENCE][Static]` | terminal carrier/mode guard | `SNOWENERGY-E-TERMINAL-CARRIER-001` |
+| `INV-SNOWENERGY-052` | Candidate-v19 admits terminal-domain and resolved crossings; positive endpoints are exact and cursor events only replay a prior accepted exact-zero endpoint. | `INV-026/034`; endpoint-root identity | `[INFERENCE][Static]` | lifecycle/endpoint guard | `SNOWENERGY-E-TERMINAL-ENDPOINT-001` |
+| `INV-SNOWENERGY-053` | Dormant endpoint, non-storage cumulative lineage, area-weighted ProducedUnconsumed parcel mass, solid refreeze, and tolerance-bounded terminal energy form one exact custody rule without immediate receiver credit. | `INV-030/035/042`; conservation | `[DIRECT][Static] + [INFERENCE][Static]` | mass/energy/owner guards | `SNOWENERGY-E-TERMINAL-CUSTODY-001`, `SNOWENERGY-E-TERMINAL-ENERGY-001` |
+| `INV-SNOWENERGY-054` | Every terminating lane emits a present nonempty independently reconstructable terminal physical ledger, including explicit-zero cursor replay. | independent conservation obligations | `[INFERENCE][Static]` | ledger/receipt guard | `SNOWENERGY-E-TERMINAL-LEDGER-001` |
 
 ## Producer and Consumer Obligations
 
@@ -854,6 +874,8 @@ divide/branch threshold.
 | `OBL-SNOWENERGY-P-006` | complete energy producer | Before melt-owner cutover, publish finite, unit-explicit, same-substep net radiation, sensible heat, latent heat, ground/interlayer conduction, and precipitation-advected heat with exact-one composition and independently reconstructable lineage. |
 | `OBL-SNOWENERGY-P-007` | evaluation evidence producer | Preserve raw vapor/latent opportunity separately from bounded deposition/sublimation and state endpoints; use N/A for S/F actual transfer; do not relabel raw opportunity as actual snow loss. |
 | `OBL-SNOWENERGY-P-008` | terminal event producer | For enabled persistent evaluation only, publish request/version, start/end enthalpy state, accepted/rejected trials, error norm, bracket bounds, event/evaluated/unevaluated seconds, complete carrier, `Delta H_cc`, refreeze, deposition, sublimation, melt, endpoint-solid identity, terminal liquid/energy handoffs, and scale-aware closure without naming a receiving surface. |
+| `OBL-SNOWENERGY-P-013` | staged terminal probe/endpoint producer | Publish only immutable bracket evidence or exact endpoint result; retain no probe mutation. |
+| `OBL-SNOWENERGY-P-014` | staged terminal custody producer | Publish one terminal ledger and ProducedUnconsumed parcel set per terminating lane joined to the canonical owner/event chain. |
 | `OBL-SNOWENERGY-C-001` | longwave evaluator | Apply the equations and guards in the specified order without silent unit conversion or fallback. |
 | `OBL-SNOWENERGY-C-002` | shared energy carrier | Consume `L_net` exactly once with the positive-toward-snow convention. |
 | `OBL-SNOWENERGY-C-003` | sublimation/melt consumers | Use the same EB-03 snow state as longwave; do not reconstruct an independent surface temperature. |
@@ -869,6 +891,8 @@ divide/branch threshold.
 | `OBL-SNOWENERGY-C-013` | melt-owner implementation and cutover | Atomically replace CoE generation with bounded Stage 3 positive-energy phase conversion; close same-substep refreeze/retention/routing, residual-snow and terminal-unallocated-energy authority, selectors/defaults/rollback, real-consumer use, and independent energy plus linked mass ledgers before claiming conformance. |
 | `OBL-SNOWENERGY-C-014` | evaluation evidence consumer | Reconstruct raw vapor from turbulent primitives; verify `Q_latent_raw=m_v,raw L_s(T_s)`; derive bounded transfer and `Q_latent_bounded=m_v L_s(T_s)`; report their difference; reconstruct the exact characterization-only raw-latent cold/melt chronology; and reject producer disagreement plus all vapor/melt/liquid/N/A aliases before reduction. Never claim the as-built raw-latent chronology conforms to the future bounded-latent target. |
 | `OBL-SNOWENERGY-C-015` | terminal event evidence consumer | Independently reconstruct endpoint solid, terminal liquid, enthalpy/energy, event support, and bracket/error acceptance from schema-v8 primitives. Reject full-step melt/sublimation, omitted deposition/refreeze, post-event snow flux, poisoned producer residuals, request/state mismatch, terminal recipient claims, and any event outside the terminal domain. |
+| `OBL-SNOWENERGY-C-023` | staged terminal carrier consumer | Independently reconstruct every trial support and covered forcing component; reject raw/scaled carrier paths. |
+| `OBL-SNOWENERGY-C-024` | staged terminal custody consumer | Independently reconstruct terminal mass, energy, snow--soil disposition, dormant state, parcel set and acyclic receipt chain. |
 | `OBL-SNOWENERGY-P-010` | shared carrier producer | Emit one carrier candidate with complete operand lineage, residuals, current-trial temperatures, and owner/support identities. |
 | `OBL-SNOWENERGY-C-017` | shared carrier consumer | Independently reconstruct snow, vapor, liquid, energy, longwave, and event-time closure and reject any alias or duplicate flux. |
 | `OBL-SNOWENERGY-C-018` | OFE-ground lane-boundary consumer | Independently reconstruct the complete ordered typed tile contribution set, all retained source-receipt-set identities, common Stage 3 state/temperature/latent heat, OFE-ground flux sums, terminal-liquid handoff, and topology/basis identity; reject omission, duplication, class/model substitution, covered-subset normalization, or restart topology substitution. |
@@ -993,6 +1017,10 @@ state, CoE exclusion, and recipient absence on failure are exact.
   `max(1e-12 kg m^-2,1e-12*sum_abs_mass_operands)` and
   `max(1e-6 J m^-2,1e-12*sum_abs_energy_operands)`. LTE, event-root, and
   closure tolerances are not interchangeable and authorize no state clamp.
+  Candidate-v19 terminal acceptance names the unit-bearing components
+  `a_terminal_mass=1e-9 kg m^-2` and
+  `a_terminal_energy=1e-6 J m^-2`; these are comparison tolerances only and
+  authorize no normalization, clamp, or residual deletion.
 
 | Tolerance ID | Binding rule | Guard |
 |---|---|---|
@@ -1164,6 +1192,7 @@ The package rows below map active package-local binding residue through version
 | `SNOWENERGY-V16-COVERED-CONVERGENCE-RESTART` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-043, INV-SNOWENERGY-044, OBL-SNOWENERGY-C-019, OBL-SNOWENERGY-C-020` | `flagged-binding-addition` | Separates covered fixed-point comparisons under `TOL-SNOWENERGY-003`, reconstructs candidate fingerprints, and holds additive restart until a normative lane-receipt V2 wire and complete topology/owner replay join are admitted. |
 | `SNOWENERGY-V17-PRECIPITATION-CUSTODY` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `approved_active` | `maps-to-existing-INV` | `INV-SNOWENERGY-045, INV-SNOWENERGY-046, INV-SNOWENERGY-047, OBL-SNOWENERGY-P-011, OBL-SNOWENERGY-C-021` | `dual-review+exact-clean-gates` | Seals the ordered precipitation phase-parcel set, binds open-versus-covered liquid exclusivity and solid bypass, and requires mass/advection same-set reconstruction on the OFE-ground lane basis. |
 | `SNOWENERGY-V18-SNOW-SOIL-BOUNDARY` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `approved_active` | `maps-to-existing-INV` | `INV-SNOWENERGY-048, INV-SNOWENERGY-049, INV-SNOWENERGY-050, OBL-SNOWENERGY-P-012, OBL-SNOWENERGY-C-022` | `dual-review+exact-clean-gates` | Binds one OFE/lane bottom-snow-to-first-soil-node Crank--Nicolson interface, exact equal/opposite custody, reconstructable receipt, and atomic rollback without tile aggregation or duplication. |
+| `SNOWENERGY-V19-COVERED-TERMINAL-CHRONOLOGY` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-051, INV-SNOWENERGY-052, INV-SNOWENERGY-053, INV-SNOWENERGY-054, OBL-SNOWENERGY-P-013, OBL-SNOWENERGY-P-014, OBL-SNOWENERGY-C-023, OBL-SNOWENERGY-C-024` | `flagged-binding-addition` | Candidate v19 binding is under mandatory review; it covers exact per-trial carrier, dormant endpoint, pending parcels, terminal snow--soil disposition and terminal ledger. Receiver consumption and cutover remain held. |
 | `SNOWENERGY-EB02-AUTHORITY` | `docs/work-packages/20260730-snow-surface-eb-02-subcanopy-longwave-contract-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-001, INV-SNOWENERGY-002, INV-SNOWENERGY-003, INV-SNOWENERGY-004, INV-SNOWENERGY-005, INV-SNOWENERGY-006, INV-SNOWENERGY-007, INV-SNOWENERGY-008, INV-SNOWENERGY-009, INV-SNOWENERGY-010, INV-SNOWENERGY-011, INV-SNOWENERGY-012, INV-SNOWENERGY-013, INV-SNOWENERGY-014` | `none` | Package-local source reconciliation and analytical artifacts are evidence; all binding equations, guards, and obligations are in this canonical contract. |
 | `SNOWENERGY-EB03-COMPOSITION` | `docs/work-packages/20260730-snow-surface-eb-03-shared-thermal-energy-composition-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-015, INV-SNOWENERGY-016, INV-SNOWENERGY-017, INV-SNOWENERGY-018, INV-SNOWENERGY-019` | `none` | Package evidence binds the Stage 3 provider, orthogonal selectors, and mass/energy composition implemented by version 2. |
 | `SNOWENERGY-EB03A-COUPLING` | `docs/work-packages/20260730-snow-surface-eb-03a-active-layer-thermal-coupling-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-020, INV-SNOWENERGY-021, INV-SNOWENERGY-022, INV-SNOWENERGY-023, INV-SNOWENERGY-024, INV-SNOWENERGY-025` | `none` | Package evidence must implement and verify the version-3 active thermal control volume and coupled substep solver. |
@@ -1526,10 +1555,143 @@ or set digests cannot excuse a missing, duplicated, or substituted parcel.
 Validation completes before snow or soil owner mutation, and any failure uses
 `SNOWENERGY-E-PRECIP-001` with complete rollback.
 
+## Version 19 Covered Terminal Chronology Amendment
+
+`CoveredTerminalExecutionMode` is a closed enum:
+
+1. `PersistentReject` preserves the released covered path and rejects every
+   unexpected terminal event before owner publication.
+2. `DiscoveryProbe` begins from immutable complete owners at the current
+   accepted cursor and may return only canonical bracket/candidate evidence.
+   It cannot accept a slab or event, stage an ending, execute or retain WB14,
+   publish a receipt or owner, mutate a controller, or retain any `last_*`
+   field.
+3. `ExactEndpoint { expected_tick }` evaluates the exact projected half-open
+   support ending at `expected_tick`. For positive support it accepts only when
+   the event is exactly at that endpoint, evaluated time equals support
+   duration, and unevaluated time is zero. When `expected_tick` equals the
+   current cursor, it uses only the sealed zero-support beginning-root branch
+   defined below and performs no positive endpoint solve.
+
+For every full step, first and second half step, rejected retry, bracket
+endpoint, and bisection/root trial, the covered carrier is reconstructed from
+the immutable complete-owner beginning plus that trial's start snow state and
+exact absolute support. Reconstruction includes the sealed precipitation
+parcel set and advection, V11 canopy/atmospheric identities, reciprocal
+radiation, sensible exchange, bounded vapor/latent exchange, terminal
+snow--soil receipt, current physical-child/WB14 identity, receiver topology,
+and complete forcing digest. A sealed whole-support boundary cannot be scaled
+or reused. Raw cloud fraction, fabricated clearness, compatibility longwave,
+and `boundary=None` are inadmissible in covered terminal execution. Schema-v2
+resolved beginnings with the admitted terminal model may cross into the
+terminal domain; beginning-terminal and resolved-to-terminal events use the
+same modes and guards.
+
+The accepted positive-duration endpoint remains the exact dormant Stage-3
+state returned by the solver. Represented layers and detached retained liquid
+are zero, and the increment of `cumulative_unresolved_liquid_kg_m2` equals the
+event terminal liquid. The zero-duration event does not consume layer liquid,
+detached liquid, or `refrozen_liquid_m`; refrozen material remains solid
+custody. Instead it adds one canonically keyed `ProducedUnconsumed` parcel per
+receiver destination to the versioned snow owner. Surface-liquid and WB14
+owners remain byte-identical. Only a later separately authorized receiver
+checkpoint may atomically credit surface liquid and change parcel posture to
+`Consumed`. This successor supersedes version-13 immediate-consumption wording
+only when execution mode is the version-19 staged covered chronology. The
+historical `terminal_receiver_v1` lane retains version-13 authority under its
+distinct selector but is not evidence for this checkpoint; the two selectors
+are mutually exclusive and staged chronology has no immediate-consumption
+fallback.
+
+`cumulative_unresolved_liquid_kg_m2` is a monotone lineage diagnostic, not a
+physical storage term. It is excluded from the V4 owner stored-mass sum; its
+event increment must satisfy
+`abs(delta_cumulative_unresolved_liquid-m_terminal_liquid) <=
+a_terminal_mass`, where `a_terminal_mass=1e-9 kg m^-2`. Physical
+pending-liquid custody exists only in the V4
+parcel set. If destination `i` has canonical OFE-ground fraction `f_i`, every
+parcel carries uniform lane depth/mass `m_i=m_terminal_liquid` on its tile-ground
+basis and `sum_i(f_i m_i)=m_terminal_liquid`, `sum_i f_i=1` within
+`TOL-SNOWENERGY-002`. The same equation applies to zero sensible enthalpy.
+No remainder redistribution or renormalization is allowed.
+
+Before endpoint acceptance, independently reconstructed
+`Q_terminal_unallocated` must satisfy `0 <= Q_terminal_unallocated <=
+a_terminal_energy`, where `a_terminal_energy=1e-6 J m^-2`. A larger value
+remains censored evaluation evidence and
+fails the physical chronology with `SNOWENERGY-E-TERMINAL-ENERGY-001`; it is
+not deleted, assigned to soil, or hidden in the parcel.
+
+Terminal snow--soil custody uses
+`SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-127` and never supplies a
+fabricated post-event snow node. Every terminating lane also emits a nonempty,
+independently reconstructed physical ledger binding beginning ice, liquid and
+enthalpy; projected precipitation/advection; covered radiation, sensible,
+bounded vapor/latent and soil heat; melt, refreeze, deposition and sublimation;
+event time and evaluated/unevaluated support; terminal liquid and energy; the
+dormant endpoint; ProducedUnconsumed parcel set; and event-result, group and
+owner-transition digests. An empty terminal ledger set is invalid.
+
+An event exactly at the current search cursor is admitted only as replay of an
+already accepted immediately preceding positive-support endpoint event whose
+canonical result proves exact zero endpoint solid, dormant lane bytes, and an
+unapplied coupled event receipt predecessor. A fresh beginning with any
+positive represented solid, including a tolerance-sized residue, cannot create
+a zero-duration event and remains fail-closed. The replay result has
+`evaluated_seconds=0`, `unevaluated_seconds` equal the search duration, and no
+new forcing integral. It has no positive-duration
+snow--soil receipt and `Q_ss=0`, but still emits one present, nonempty terminal
+physical ledger whose flux operands are explicit zeros and whose mass,
+enthalpy, event, parcel, group, and owner-transition fields are complete.
+
+### Version 19 kernel-profile integration
+
+Authority anchors are released `INV-SNOWENERGY-034/036/038/039/042`,
+`SC-LANDSURFACEENERGY-001` candidate v9, `SC-COUPLEDTIME-001` candidate v4,
+mass/energy conservation, and deterministic step-doubling/root analysis.
+`[DIRECT][Static]` applies to imported released fields and equations;
+`[INFERENCE][Static]` applies to their staged covered composition.
+
+| Profile surface | Version-19 binding |
+|---|---|
+| Inputs | immutable seven-owner beginning, enclosing/current support, current physical-child identity, exact covered forcing and topology, schema-v2 Stage-3 lane |
+| Outputs | read-only bracket evidence or exact terminal result, terminal snow--soil disposition, nonempty terminal ledger, preaccept/accepted group identities, V4 pending parcel set |
+| Mutated state | none in discovery; exact endpoint candidate in positive solve; only canonical snow owner among physical owners at the zero-duration event; coupled chronology separately appends its receipt |
+| Branch priority | request/schema/identity -> mode -> cursor-root or positive support -> carrier/trial -> terminal energy -> ledger/parcel -> coupled event -> snow owner; no immediate-receiver fallback |
+| Variables/units | tick/support `ns`; ice/liquid `kg m^-2 OFE-ground`; energy `J m^-2`; flux `W m^-2`; temperature `K`; fractions dimensionless |
+| Aliases | `current_search_support=prepared.support`; `physical_child_ordinal=accepted positive-slab count`; `pending_terminal_parcels=V4 parcel map`; cumulative unresolved liquid is lineage only |
+| Constants | Existing `TOL-SNOWENERGY-001/002/003`, `L_f`, water density, terminal event-model ID; no new physical constant or fit |
+| Unit governance | Existing typed mass/energy/support wrappers apply; `f64` wire values use exact bit encoding; no scalar canonicalization is admitted |
+| Calibration | `CALIBRATION_NOT_APPLICABLE`; no parameter, observation operator, fitting, efficacy, or transferability claim |
+| Gaps | implementation, runner, receiver consumption, restart, activation and cutover remain `IMPLEMENTATION_MISSING / NON_PROMOTABLE` |
+
+The algorithm is the numbered mode/trial/endpoint/owner sequence above. Its
+degenerate state is the explicit cursor-root branch. Conservation equations
+are the event mass/energy identities, `sum_i f_i=1`,
+`sum_i(f_i m_i)=m_terminal_liquid`, and the equal/opposite snow--soil equation
+from candidate v9. Every invalid branch maps to the typed errors below and
+rolls back immutable beginnings.
+
+Canonical invariant and guard-map rows `INV-SNOWENERGY-051..054` are integrated
+in `## Invariants and Guard Map`; canonical producer/consumer rows
+`OBL-SNOWENERGY-P-013/P-014/C-023/C-024` are integrated in the obligations
+table. The remaining text is algorithm and test-vector detail, not a second
+binding surface.
+
+Required vectors include unavailable raw-cloud forcing with successful covered
+probing and negative raw-evaluator reachability; beginning-terminal and
+resolved-crossing events; event at start, interior and end; event after a prior
+60- or 900-second child; same-tick coalescing, different-tick sequencing and a
+surviving covered lane; no-event byte compatibility; exact child/WB14 identity;
+nonempty terminal ledgers; canonical pending-parcel bytes; event, group,
+topology, ordinal, owner, parcel and forcing poisons; and rollback at discovery,
+endpoint solve, zero-duration event, successor execution and final publication.
+
 ## Change Log
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 19 | 2026-08-24 | Defined covered terminal execution modes, exact per-trial covered-carrier reconstruction, resolved crossing, dormant endpoint and ProducedUnconsumed snow-owner custody, terminal snow--soil receipt join, and mandatory terminal physical ledger. Immediate receiver consumption, restart, activation and cutover remain excluded. | Static WIP review at `3fda26f0`; Child-1 contract-first correction |
 | 18 | 2026-08-24 | Admitted persistent snow--soil boundary authority: one OFE/lane interface, bottom snow volume to first OFE soil node, two-half-layer series resistance, Crank--Nicolson beginning/end evaluation inside the covered fixed point, exact equal/opposite candidate custody, reconstructable receipt, and atomic rollback. | Pinned `frostn.for`/`tmpadj.for` series-resistance provenance; `SC-LANDSURFACEENERGY-001@8`; Child-1 contract-derived guards |
 | 17 | 2026-08-24 | Admitted persistent-support precipitation custody: sealed ordered phase-parcel sets, present empty-set zero, open raw-rain versus covered route-distinct vegetation-terminal-liquid exclusivity, solid ground-snow bypass, OFE-ground aggregation, and exact same-set mass/advection consumption. No interception or canopy-snow physics was added. | Direct Child-1 checkpoint authority; `SC-VEGETATION-001@28`; `SC-LANDSURFACEENERGY-001`; contract-derived source guards |
 | 13 | 2026-08-19 | Added fresh default-off `terminal_receiver_v1` authority (`INV-SNOWENERGY-035`) for earliest-event closure, exact-one 0 C liquid/enthalpy custody, remaining-time support, and post-event snow-operand exclusion while preserving all carrier/efficacy/production holds and evaluation-only INV-034 semantics. | Contract-first terminal handoff package |

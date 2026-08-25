@@ -471,3 +471,35 @@ matrices, and terminal package closure remain open.
 `Ran / terminal implementation gate:` exact clean SHA
 `43cc9bbea2fbf5fe6ab6596cee4162de75cef999` passed the full workspace
 3,300/3,300 with seven slow tests and six configured skips.
+
+# 2026-08-24 terminal-chronology WIP HOLD intake
+
+`Static:` exact pushed WIP `3fda26f0df866504ed4b2f8a26d167e48420ae29`
+is preserved as forward-corrected work. It is not terminal chronology PASS
+evidence. The prior exact-clean physical implementation
+`43cc9bbea2fbf5fe6ab6596cee4162de75cef999` remains the last qualified
+physical checkpoint.
+
+`Ran:` the unchanged focused interior-terminal regression failed `0/1` with
+`snow.cloud_forcing_unavailable` because covered candidate discovery crossed
+the raw Stage-3 carrier boundary. Command:
+`nix develop --command cargo nextest run -p openwepp-hillslope-orchestrator interior_terminal_event_runs_covered_event_and_snow_free_remainder --no-fail-fast`.
+No runner, terminal-liquid receiver, restart, selector/default, activation, or
+cutover work is authorized by this WIP. Disposition remains `EXECUTING / HOLD`.
+
+# 2026-08-24 terminal-chronology contract-first authority
+
+`Static:` coordinated candidate successors now bind the three closed execution
+modes, immutable per-trial covered carrier reconstruction, terminal-specific
+snow--soil custody, dormant endpoint plus canonical V4 pending parcels,
+single coupled event-ordinal authority, exact mutation sets, independently
+reconstructed nonempty terminal ledgers, and acyclic framed receipt lineage.
+Both independent reviewers and both mandatory verification passes returned
+`GO`; retained finding dispositions and review chronology are under
+`artifacts/science-contracts/terminal-chronology/`.
+
+`Ran:` the new two-test structural guard passed, then the successor guard plus
+six affected historical contract binaries passed 36/36. `git diff --check`
+passed. These executions validate contract structure and lifecycle only. The
+focused runtime terminal test remains at its recorded WIP failure until the
+now-authorized terminal implementation correction is made.

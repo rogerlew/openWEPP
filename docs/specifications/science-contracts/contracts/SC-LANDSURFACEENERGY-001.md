@@ -5,6 +5,8 @@ status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
 contract_version: 8
+released_contract_version: 8
+candidate_contract_version: 9
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
@@ -22,6 +24,10 @@ superseded_by: []
 Status: `approved`
 Maturity: `active`
 Evidence mode: `static + independent oracle`
+
+Lifecycle: version 8 remains `approved / active`; only the version-9 terminal
+endpoint amendment is `in_review / draft` until its own mandatory review,
+verification, implementation, and exact-head gates pass.
 
 ## Purpose
 
@@ -229,6 +235,9 @@ then `snow_free`. No temperature-only guess may override explicit snow state.
 | `INV-LANDSURFACEENERGY-043` | Interval-integrated Stage C transpiration mass and its latent-energy debit share one transaction, stratum, area, interval, lineage, and authority-tagged `h_v`, satisfying `Q_T,s=-h_v*T_s` exactly once. | SC-VEGETATION-001#INV-VEGETATION-014 | `[INFERENCE][Static]` | future integration/test | hard `HOLD` |
 | `INV-LANDSURFACEENERGY-114` | Default-off LSE-V2 selects the actual receiver and rebuilds every flux only on `[wall_t*,wall_end)` without snow operands. | terminal receiver authority | `[INFERENCE][Static]` | runtime/test | typed receiver failure |
 | `INV-LANDSURFACEENERGY-115` | The 0 C parcel enters hydrology once; fusion energy is not soil heat, zero remaining support skips LSE, and any failure rolls back all owners. | conservation/transaction authority | `[INFERENCE][Static]` | runtime/test | typed join/rollback failure |
+| `INV-LANDSURFACEENERGY-127` | Candidate v9 positive terminal support uses only accepted two-half/root `q_ss` integrals; exact-zero cursor replay uses zero support/no receipt and no fabricated snow node. | released v8 interface; `SC-SNOWENERGY-001#INV-SNOWENERGY-034/051` | `[INFERENCE][Static]` | terminal support/receipt validator | `LSEB-E-045` |
+| `INV-LANDSURFACEENERGY-128` | Each accepted joint trial binds start/end state, exact support, carrier and `q_ss`; terminal receipt binds ordered sum, event, soil ending, dormant snow and owners. Full/rejected trials are evidence only. | deterministic two-half/root integration; energy conservation | `[INFERENCE][Static]` | trial/event/owner reconstruction | `LSEB-E-045` |
+| `INV-LANDSURFACEENERGY-129` | Terminal snow `-Q_ss` and first-soil-node `+Q_ss` use identical bits and commit atomically; installed validation never projects dormant snow. | released v8 sign/owner authority; first law | `[DIRECT][Static] + [INFERENCE][Static]` | energy/owner join | `LSEB-E-045` |
 
 Guard-map enforcement in version 1 is the contract-derived integration test
 and package review. Runtime mappings are intentionally future obligations; an
@@ -259,6 +268,9 @@ evidence artifact before promotion.
 | `INV-LANDSURFACEENERGY-041` | provenance/no-proxy review | governance | blocked promotion | baseline map + reviews |
 | `INV-LANDSURFACEENERGY-042` | future recipient-specific radiation ledger and poison vectors | runtime + test | blocked promotion on omitted, duplicated, or aliased recipient | vegetation/LSE integration package |
 | `INV-LANDSURFACEENERGY-043` | future latent mass-energy lineage join | runtime + test | blocked promotion on missing/mismatched `h_v`, duplicate debit, or amount/rate basis mismatch | vegetation/LSE integration package |
+| `INV-LANDSURFACEENERGY-127` | candidate-v9 terminal support/receipt classifier | runtime + test | `LSEB-E-045`; exact rollback | Child-1 terminal chronology contract/tests |
+| `INV-LANDSURFACEENERGY-128` | accepted joint-trial and receipt reconstruction | runtime + test | `LSEB-E-045`; exact rollback | Child-1 terminal chronology contract/tests |
+| `INV-LANDSURFACEENERGY-129` | identical-bit snow/soil custody and dormant installed join | runtime + test | `LSEB-E-045`; exact rollback | Child-1 terminal chronology contract/tests |
 
 ## Producer Obligations and Consumer Obligations
 
@@ -278,6 +290,12 @@ evidence artifact before promotion.
   sole subsurface conduction/phase-state mutator.
 - `OBL-LANDSURFACEENERGY-C-004`: a real scheduler consumer must prove that the
   new state and ledger affect the intended direct path before runtime closure.
+- `OBL-LANDSURFACEENERGY-P-020`: candidate v9 emits one terminal snow--soil
+  receipt per positive terminating support or the canonical zero-support
+  no-receipt disposition.
+- `OBL-LANDSURFACEENERGY-C-020`: candidate v9 independently reconstructs the
+  ordered accepted `q_ss` sum and identical-bit snow debit/soil credit without
+  a dormant snow projection.
 
 ## Symbol Alias Map
 
@@ -379,19 +397,18 @@ invalid Kelvin/log/roughness/resistance domains, negative storage, duplicate
 lineage, wrong branch priority, and every censored schema-v8 terminal payload.
 Real-consumer proof remains intentionally unsatisfied in version 1.
 
-### Child 2C invariant IDs
+### Child 2C test bindings
 
-| ID | Binding rule | Guard/failure |
-|---|---|---|
-| `INV-LANDSURFACEENERGY-121` | A positive snow-free successor consumes the accepted event receipt and a covered-forest support-admission receipt. | typed receipt join / `LSEB-E-042` |
-| `INV-LANDSURFACEENERGY-122` | The successor uses only post-event snow-free operands and its exact accepted support. | chronology/operand lineage / `LSEB-E-043` |
-| `INV-LANDSURFACEENERGY-123` | Below-domain positive support rejects before Newton with exact owner rollback; zero support performs no physical solve. | preflight / `LSEB-E-041` |
+The Child 2C and candidate-v9 test vectors bind canonical invariant rows
+`INV-LANDSURFACEENERGY-121..123` and `127..129`; no invariant definition is
+duplicated in this test section.
 
 ## Binding Exposure Index
 
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
 |---|---|---|---|---|---|---|
 | `LSE-CHILD2C-SUCCESSOR` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-121, INV-LANDSURFACEENERGY-122, INV-LANDSURFACEENERGY-123` | `flagged-binding-addition` | Accepted event receipt, post-event-only operands, and pre-Newton covered-forest support admission; no storage arithmetic change. |
+| `LSE-V9-TERMINAL-SNOW-SOIL-ENDPOINT` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-127, INV-LANDSURFACEENERGY-128, INV-LANDSURFACEENERGY-129, OBL-LANDSURFACEENERGY-P-020, OBL-LANDSURFACEENERGY-C-020` | `flagged-binding-addition` | Candidate v9 event-integrated terminal snow--soil custody without a fabricated post-event snow node; released v8 persistent custody remains active. |
 
 ## Gap Register and Promotability Labels
 
@@ -1027,10 +1044,73 @@ soil-thermal, transaction, and receipt owners byte-identical.
 | `INV-LANDSURFACEENERGY-125` | Half-snow plus half-soil series resistance and beginning/ending Crank--Nicolson evaluation produce one positive-downward `bar(G_ss)` inside the covered fixed point. | operand/endpoint/convergence guard / `LSEB-E-044` |
 | `INV-LANDSURFACEENERGY-126` | Exact `-bar(G_ss)` snow custody and `+bar(G_ss)` first-soil-node custody share one reconstructable receipt and commit or roll back together. | independent receipt/owner transaction guard / `LSEB-E-044` |
 
+## Version 9 Terminal Snow--Soil Endpoint Amendment
+
+Version 8 remains the persistent resolved-to-resolved receipt. A support whose
+accepted Stage-3 endpoint is dormant uses the separate
+`TerminalSnowSoilHeatReceiptV1`; it cannot be validated as a persistent receipt
+and has no post-event snow temperature or bottom snow volume.
+
+The terminal receipt integrates only over the evaluated snow support through
+the accepted event. The terminal enthalpy solver's transition callback is a
+joint snow/first-soil-node transition. For a trial beginning at state `x_k`
+over exact duration `h`, the covered provider computes the current-trial
+snow--soil flux from the real trial-start bottom snow volume and soil node,
+advances the soil node over the same trial, and returns `q_ss,k` in `J m^-2`
+positive snow-to-soil. One-full and two-half trials each begin from the same
+immutable `x_k`; the accepted step is the two sequential half transitions, so
+only `q_ss,k,1+q_ss,k,2` enters accepted custody. The full trial and every
+rejected retry are evidence only. Root localization replays from the immutable
+pretrial state at each bisection duration; only the transition chain ending at
+the accepted upper root endpoint contributes. Thus
+`Q_ss=sum(q_ss,k,accepted)` in chronological order, snow energy includes
+`-Q_ss`, and first-soil-node storage includes `+Q_ss` using the identical bits.
+
+The callback evaluates flux only from a positive-ice trial-start state and
+never requests an ending dormant snow temperature. The accepted upper root may
+be dormant because `q_ss,k` is already the integrated output of the exact
+first-order trial map authorized by
+`SC-SNOWENERGY-001#INV-SNOWENERGY-034/051`; no limiting temperature or
+post-event node is constructed. Each accepted trial binds its start/end joint
+state, absolute support, carrier receipt and `q_ss,k`. The terminal receipt
+binds the ordered accepted trial receipts, event tick, evaluated support,
+exact `Q_ss`, ending soil owner, dormant snow endpoint, event-result digest,
+and complete beginning/ending owner digests. `[INFERENCE][Static]` from the
+released terminal first-order/step-doubling algorithm, released version-8
+interface physics, and equal/opposite energy conservation.
+
+No `273.15 K` fallback, melting-point substitute, or other fabricated dormant
+snow temperature is admitted by this receipt.
+
+When the event is exactly at the current cursor, evaluated snow support is
+zero, `Q_ss=0`, no `TerminalSnowSoilHeatReceiptV1` is emitted, and the terminal
+physical ledger records the explicit zero-support disposition. Any positive
+support terminating lane requires exactly one terminal receipt.
+
+Required-lane and installed-owner validation classify lanes consistently:
+resolved-to-resolved lanes require the version-8 persistent receipt;
+resolved-to-dormant and terminal-domain-to-dormant lanes require the version-9
+terminal receipt when evaluated support is positive, while a sealed cursor-root
+event requires no snow--soil receipt and validates `Q_ss=0`. Installed terminal validation reconstructs the event-integral
+and owner joins without calling a resolved-state bottom-volume projector on the
+dormant endpoint. Missing, duplicate, cross-class, post-event, fabricated-node,
+or unequal snow/soil custody fails atomically.
+
+Canonical `INV-LANDSURFACEENERGY-127..129` rows are integrated with the Child
+2C invariant IDs, and `OBL-LANDSURFACEENERGY-P-020/C-020` are integrated in
+the producer/consumer obligations section. This algorithm detail is not a
+second invariant or obligation surface.
+
+Required vectors cover terminal-domain and resolved-crossing beginnings,
+nonzero soil heat, endpoint/support and event-result poisons, persistent versus
+terminal receipt substitution, no fabricated-temperature reachability,
+dormant installed-owner validation, and rollback before owner publication.
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-24 | 9 | Codex | Added a terminal-specific snow--soil receipt integrated only through the accepted event, with limiting pre-event snow-state custody, exact soil credit, dormant endpoint validation, and no fabricated terminal snow temperature. |
 | 2026-08-24 | 8 | Codex | Admitted the persistent Stage 3 OFE/lane snow--soil interface as a specialization of the existing node-centered Crank--Nicolson soil authority: bottom snow volume to first OFE soil node, half-layer series resistance, positive-downward exact snow debit/soil credit, sealed receipt, independent reconstruction, and atomic rollback; no tile averaging or duplicated flux. |
 | 2026-08-19 | 5 | Codex | Admitted default-off terminal remaining-support LSE-V2 authority (`INV-LANDSURFACEENERGY-114/115`) with actual receiver selection, complete flux rebuild, no post-event snow operands, and atomic rollback. |
 | 2026-08-18 | 4 | Codex | Admitted `OPENWEPP_SNOW_FREE_LSE_V2`, binding V10 exact-zero-PAR physiology and deterministic FullSupply iteration-zero final reevaluation; V1 remains immutable. |

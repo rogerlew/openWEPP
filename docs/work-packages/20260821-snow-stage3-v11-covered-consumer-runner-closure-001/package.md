@@ -32,6 +32,18 @@ the released Child 2C snow--canopy carrier.
 
 ## Scope
 
+### Active checkpoint boundary — terminal chronology correction
+
+The current authorized checkpoint is terminal chronology through its own
+terminal PASS: covered discovery, exact endpoint solve, zero-duration canonical
+snow-owner ProducedUnconsumed custody, terminal snow--soil/physical ledgers,
+receipt reconstruction, rollback, source decomposition, review, verification,
+and exact-head qualification. The broader package objective remains queued but
+does not execute concurrently. Runner-owned 48-support construction,
+terminal-liquid receiver consumption, additive restart, selectors/defaults,
+activation, CoE retirement, and production cutover resume only after this
+checkpoint passes and a truthful next-increment intent is recorded.
+
 Included: Child 2C contract mapping; covered V11/shared-carrier execution;
 canonical Stage-3 snow custody; terminal event chronology and exact-once
 terminal-liquid installation; runner-owned sealed 48-support capability;
