@@ -30,7 +30,7 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
         "ExactEndpoint { expected_tick }",
         "boundary=None",
         "Raw cloud fraction",
-        "raw/scaled/fabricated carrier",
+        "bracket-local, raw, scaled, interpolated, coalesced, or fabricated carriers",
         "Schema-v2\nresolved beginnings",
         "INV-SNOWENERGY-051",
         "INV-SNOWENERGY-052",
@@ -43,6 +43,12 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
         "tag `covered-terminal-joint-trial-state` (no NUL in the tag)",
         "SNOWENERGY-E-TERMINAL-TRIAL-STATE-001",
         "cannot be installed, serialized as a persistent lane",
+        "Outer bracket and root localization use absolute-tick prefix replay",
+        "`g_c(t)`",
+        "`[bracket_lower,midpoint)`",
+        "`0 < t-c < 600000000 ns`",
+        "Each canonical outer-candidate receipt binds",
+        "selected candidate receipt and ordinary accepted-slab\nreceipt",
     ] {
         assert!(
             snow_energy.contains(required),
@@ -59,6 +65,10 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
         "INV-LANDSURFACEENERGY-129",
         "dormant installed-owner validation",
         "they never reuse the immutable\naccepted beginning soil node",
+        "complete replay prefix `[current_search_cursor,t)`",
+        "Bracket\nlower/upper ticks and bracket width are diagnostics",
+        "nanosecond root refinement does not create nanosecond LSE supports",
+        "offset exactly `600000000 ns` is admitted",
     ] {
         assert!(lse.contains(required), "LSE missing {required}");
     }
@@ -99,6 +109,10 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
         "ERR-CT-026",
         "`covered-terminal-joint-trial-state`, and\n`covered-probe-child-identity`",
         "No NUL is part of the domain tag",
+        "Its constitutive support is exactly `[cursor,t)`",
+        "it is never `[bracket_lower,t)`",
+        "The canonical candidate receipt additionally binds",
+        "selected candidate\nreceipt with the ordinary accepted-slab receipt",
     ] {
         assert!(
             coupled_time.contains(required),

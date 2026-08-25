@@ -551,7 +551,7 @@ one family are simultaneously true.
 | INV-COUPLEDTIME-018 | Event boundary candidates satisfy both neighbor-side support predicates and all four independently admitted tolerances. | Child 2C event authority | `[INFERENCE][Static]` | candidate validator | `ERR-CT-021` |
 | INV-COUPLEDTIME-019 | Proposed and accepted ticks, candidate digest, errors, and tie-break identity are retained and replay-authenticated. | Child 2C receipt authority | `[INFERENCE][Static]` | event receipt validator | `ERR-CT-012/015` |
 | INV-COUPLEDTIME-020 | A no-candidate event is an atomic retry/failure; it cannot drop, freeze, scale, or execute a below-domain successor. | Child 2C rollback authority | `[INFERENCE][Static]` | rollback validator | `ERR-CT-021` |
-| INV-COUPLEDTIME-021 | Candidate-v4 separates current search support from enclosing parent and admits only prior exact-zero endpoint replay at cursor. | half-open/version-3 chronology | `[INFERENCE][Static]` | support/cursor validator | `ERR-CT-022` |
+| INV-COUPLEDTIME-021 | Candidate-v4 separates current search support from enclosing parent. Root candidates are absolute ticks whose physical evaluation replays the complete prefix from the immutable current-search cursor; bracket width is diagnostic only, and only prior exact-zero endpoint replay is admitted at cursor. | half-open/version-3 chronology | `[INFERENCE][Static]` | support/cursor/prefix validator | `ERR-CT-022` |
 | INV-COUPLEDTIME-022 | Trial/candidate projection uses current accepted-positive-slab child ordinal. | predecessor identity | `[INFERENCE][Static]` | child/WB14 join | `ERR-CT-022` |
 | INV-COUPLEDTIME-023 | Discovery is read-only; endpoint and event operations share one rollback envelope. | version-3 attempt/event atomicity | `[DIRECT][Static] + [INFERENCE][Static]` | attempt-state validator | `ERR-CT-023` |
 | INV-COUPLEDTIME-024 | Physical mutation set is exact and clock accepted receipts are sole ordinal authority. | complete-owner/event receipt authority | `[DIRECT][Static] + [INFERENCE][Static]` | mutation/ordinal validator | `ERR-CT-024` |
@@ -824,6 +824,16 @@ current physical-child ordinal derived from already accepted positive slabs.
 Candidate iteration order and literal ordinal zero are never chronology
 authority.
 
+Every bracket endpoint and bisection/root candidate is an absolute tick `t`.
+Its constitutive support is exactly `[cursor,t)`, replayed from the immutable
+complete joint state at `cursor`; it is never `[bracket_lower,t)`. Bracket
+lower/upper ticks and width are retained only as search diagnostics and cannot
+authorize carrier scaling, snow-only interpolation/coalescing, state seeding,
+or a physical support. Inner accepted half-step chains may evolve complete
+coupled candidates inside one prefix replay, but no rejected outer candidate
+advances the cursor state. The selected candidate is rerun over the identical
+prefix by the exact-endpoint operation before ordinary slab acceptance.
+
 Discovery is observational under the existing provisional-attempt rollback
 rules. It may expose only canonical bracket/candidate evidence and cannot
 accept a slab/event, advance a clock, mutate an owner/controller, retain a
@@ -859,6 +869,17 @@ endpoint input, and requires bit-identical equality with the corresponding
 probe fields. Any mismatch,
 use of an accepted receipt during discovery, or use of a probe identity as an
 accepted WB14/publication identity fails atomically with `ERR-CT-026`.
+
+The canonical candidate receipt additionally binds the enclosing-parent and
+current-search supports; absolute candidate tick; bracket lower/upper ticks and
+diagnostic width; full-prefix start/end/duration; physical-child, attempt, and
+trial-role identities; immutable beginning owner-set and joint-state digests;
+complete forcing and receiver-topology digests; constitutive policy identities,
+minimum-support admission result, ordered accepted inner-transition receipts,
+endpoint/event/ledger digests, evaluated/unevaluated durations, typed failure,
+and probe identity. Exact-endpoint acceptance cross-joins the selected candidate
+receipt with the ordinary accepted-slab receipt and requires identical prefix,
+ordinal, beginning owners, forcing, topology, endpoint, and event-result fields.
 
 At event acceptance, coupled chronology appends exactly one accepted receipt
 and increments its ordinal. In the separately joined seven-owner physical

@@ -32,3 +32,26 @@ final narrow pass returned `GO` after confirming the exact predicates are
 bound by the structural test. This disposition is static contract evidence
 only. It does not claim runtime implementation, exact-head qualification, or
 terminal chronology PASS.
+
+## Absolute-tick full-prefix replay amendment
+
+Evidence: `Static` plus focused structural contract test.
+
+The coordinated candidate successors now define every outer bracket/root
+candidate as an absolute tick evaluated by a complete covered replay from the
+immutable current-search cursor and seven-owner joint state over
+`[cursor,candidate_tick)`. Bracket width is diagnostic only; bracket-local
+constitutive support, rejected-endpoint seeding, snow-only interpolation or
+coalescing, and carrier scaling are prohibited. Candidate receipts bind the
+full-prefix, minimum-support admission, complete carrier/owner identities,
+ordered accepted inner transitions, endpoint/event/ledger results, and probe
+identity; exact endpoint acceptance cross-joins the selected candidate receipt
+to the ordinary accepted-slab receipt. A fresh positive offset below
+`600000000 ns` fails typed LSE support admission, while cursor replay remains
+the sealed prior-endpoint exact-zero branch.
+
+Ran `nix develop --command cargo nextest run --test
+snow_stage3_terminal_chronology_v19_contract --no-fail-fast`: 2 passed, 0
+failed. Ran `nix develop --command cargo fmt --all -- --check` and `git diff
+--check`: both passed. This evidence does not qualify runtime implementation or
+lift the terminal chronology HOLD.

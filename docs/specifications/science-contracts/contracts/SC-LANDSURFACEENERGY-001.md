@@ -235,8 +235,8 @@ then `snow_free`. No temperature-only guess may override explicit snow state.
 | `INV-LANDSURFACEENERGY-043` | Interval-integrated Stage C transpiration mass and its latent-energy debit share one transaction, stratum, area, interval, lineage, and authority-tagged `h_v`, satisfying `Q_T,s=-h_v*T_s` exactly once. | SC-VEGETATION-001#INV-VEGETATION-014 | `[INFERENCE][Static]` | future integration/test | hard `HOLD` |
 | `INV-LANDSURFACEENERGY-114` | Default-off LSE-V2 selects the actual receiver and rebuilds every flux only on `[wall_t*,wall_end)` without snow operands. | terminal receiver authority | `[INFERENCE][Static]` | runtime/test | typed receiver failure |
 | `INV-LANDSURFACEENERGY-115` | The 0 C parcel enters hydrology once; fusion energy is not soil heat, zero remaining support skips LSE, and any failure rolls back all owners. | conservation/transaction authority | `[INFERENCE][Static]` | runtime/test | typed join/rollback failure |
-| `INV-LANDSURFACEENERGY-127` | Candidate v9 positive terminal support uses only accepted two-half/root `q_ss` integrals; exact-zero cursor replay uses zero support/no receipt and no fabricated snow node. | released v8 interface; `SC-SNOWENERGY-001#INV-SNOWENERGY-034/051` | `[INFERENCE][Static]` | terminal support/receipt validator | `LSEB-E-045` |
-| `INV-LANDSURFACEENERGY-128` | Each accepted joint trial binds start/end state, exact support, carrier and `q_ss`; terminal receipt binds ordered sum, event, soil ending, dormant snow and owners. Full/rejected trials are evidence only. | deterministic two-half/root integration; energy conservation | `[INFERENCE][Static]` | trial/event/owner reconstruction | `LSEB-E-045` |
+| `INV-LANDSURFACEENERGY-127` | Candidate v9 evaluates every positive outer terminal candidate on the complete absolute prefix `[current_search_cursor,candidate_tick)`, never the local bracket width. Only accepted inner two-half `q_ss` integrals enter custody; exact-zero cursor replay uses zero support/no receipt and no fabricated snow node. | released v8 interface; `SC-SNOWENERGY-001#INV-SNOWENERGY-034/051` | `[INFERENCE][Static]` | terminal prefix-support/receipt validator | `LSEB-E-041/045` |
+| `INV-LANDSURFACEENERGY-128` | Each outer candidate restarts from the immutable cursor joint state and binds its full-prefix support, LSE admission, ordered accepted inner state/`q_ss` chain, and endpoint. Rejected outer alternatives and inner coarse trials are evidence only; the terminal receipt binds the accepted ordered sum, event, soil ending, dormant snow, and owners. | deterministic two-half/root integration; energy conservation | `[INFERENCE][Static]` | trial/event/owner reconstruction | `LSEB-E-045` |
 | `INV-LANDSURFACEENERGY-129` | Terminal snow `-Q_ss` and first-soil-node `+Q_ss` use identical bits and commit atomically; installed validation never projects dormant snow. | released v8 sign/owner authority; first law | `[DIRECT][Static] + [INFERENCE][Static]` | energy/owner join | `LSEB-E-045` |
 
 Guard-map enforcement in version 1 is the contract-derived integration test
@@ -1055,6 +1055,20 @@ only the ending candidate proven by the accepted fine chain. This is the
 trial-state realization of `INV-LANDSURFACEENERGY-127..129`; stale-soil reuse
 fails `LSEB-E-043` and all accepted owners remain unchanged on failure.
 
+For outer root localization, each candidate is an absolute tick `t` and its LSE
+support is the complete replay prefix `[current_search_cursor,t)`. Bracket
+lower/upper ticks and bracket width are diagnostics, never LSE constitutive
+support. Every outer alternative restarts from the immutable cursor joint state;
+only the accepted inner two-half transitions evolve the first-soil node and
+other coupled candidates within that replay. A callback over
+`[bracket_lower,midpoint)`, a rejected lower-endpoint state, snow-only
+interpolation/coalescing, or a scaled prior carrier is prohibited. Consequently
+nanosecond root refinement does not create nanosecond LSE supports. A fresh
+positive event offset below `OPENWEPP_SNOW_FREE_LSE_V1.minimum_support_ns =
+600000000` fails `LSEB-E-041`; offset exactly `600000000 ns` is admitted under
+the ordinary positive-support policy. An event at the cursor is admissible only
+through the sealed prior-endpoint zero-support branch.
+
 Version 8 remains the persistent resolved-to-resolved receipt. A support whose
 accepted Stage-3 endpoint is dormant uses the separate
 `TerminalSnowSoilHeatReceiptV1`; it cannot be validated as a persistent receipt
@@ -1070,7 +1084,8 @@ positive snow-to-soil. One-full and two-half trials each begin from the same
 immutable `x_k`; the accepted step is the two sequential half transitions, so
 only `q_ss,k,1+q_ss,k,2` enters accepted custody. The full trial and every
 rejected retry are evidence only. Root localization replays from the immutable
-pretrial state at each bisection duration; only the transition chain ending at
+current-search cursor joint state through each absolute candidate tick; only
+the transition chain ending at
 the accepted upper root endpoint contributes. Thus
 `Q_ss=sum(q_ss,k,accepted)` in chronological order, snow energy includes
 `-Q_ss`, and first-soil-node storage includes `+Q_ss` using the identical bits.

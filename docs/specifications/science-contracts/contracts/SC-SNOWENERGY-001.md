@@ -857,11 +857,11 @@ divide/branch threshold.
 | `INV-SNOWENERGY-048` | The persistent lower boundary is exactly one OFE/lane interface from the bottom represented snow thermal volume to the first ordered OFE soil-thermal node. No tile soil temperature participates; first-tile selection, tile averaging, covered-only averaging, tile-fraction weighting, duplicated lane flux, or silent zero heat is prohibited. | `REF-SNOWENERGY-SOIL-BOUNDARY-V18`; `SC-LANDSURFACEENERGY-001@8` | `[DIRECT][Static] + [INFERENCE][Static]` | topology/node/owner/basis guard | `SNOWENERGY-E-SOIL-HEAT-001` |
 | `INV-SNOWENERGY-049` | With positive finite `dz_sb,lambda_sb,dz_1,lambda_1`, `g_ss=1/(dz_sb/(2*lambda_sb)+dz_1/(2*lambda_1))=2/(dz_sb/lambda_sb+dz_1/lambda_1)`. `G_ss,e=g_ss*(T_sb,e-T_1,e)` for endpoint `e in {0,1}` and the accepted support flux is `bar(G_ss)=0.5*(G_ss,0+G_ss,1)`, positive downward. Both ending temperatures participate in the covered fixed point; beginning values come only from sealed beginning owners. | `REF-SNOWENERGY-SOIL-BOUNDARY-V18`; LSE Crank--Nicolson authority | `[DIRECT][Static] + [INFERENCE][Static]` | physical-operand/endpoint/convergence guard | `SNOWENERGY-E-SOIL-HEAT-001` |
 | `INV-SNOWENERGY-050` | The Stage 3 candidate records exactly `-bar(G_ss)` and the first-node soil-thermal candidate records exactly `+bar(G_ss)` on the same support and OFE-ground basis. One sealed `SnowSoilHeatReceiptV1` binds support, lane/OFE, topology/configuration digests, both beginning-owner identities, the four resistance operands, both endpoint temperature pairs, accepted flux, both candidate-ending identities, and a reconstructable digest. Independent validation reconstructs the receipt and equal/opposite debits from primitives before atomic publication; any omission, substitution, sign/basis error, nonconvergence, or later failure rolls back both owners and all receipt state. | physical conservation; `SC-LANDSURFACEENERGY-001@8` | `[INFERENCE][Static]` | receipt/reconstruction/atomic-owner guard | `SNOWENERGY-E-SOIL-HEAT-001` |
-| `INV-SNOWENERGY-051` | Candidate-v19 covered terminal execution uses the closed three-mode enum and rebuilds every adaptive/root carrier from exact trial-start owners/support; no raw/scaled/fabricated carrier is admissible. | `INV-034/036/038/039`; deterministic numerics | `[INFERENCE][Static]` | terminal carrier/mode guard | `SNOWENERGY-E-TERMINAL-CARRIER-001` |
+| `INV-SNOWENERGY-051` | Candidate-v19 covered terminal execution uses the closed three-mode enum. Every outer bracket/root candidate is an absolute tick and replays the complete covered prefix from the immutable current-search cursor and joint state over `[cursor,candidate_tick)`; bracket-local, raw, scaled, interpolated, coalesced, or fabricated carriers are inadmissible. | `INV-034/036/038/039`; deterministic numerics | `[INFERENCE][Static]` | terminal carrier/mode/prefix-replay guard | `SNOWENERGY-E-TERMINAL-CARRIER-001` |
 | `INV-SNOWENERGY-052` | Candidate-v19 admits terminal-domain and resolved crossings; positive endpoints are exact and cursor events only replay a prior accepted exact-zero endpoint. | `INV-026/034`; endpoint-root identity | `[INFERENCE][Static]` | lifecycle/endpoint guard | `SNOWENERGY-E-TERMINAL-ENDPOINT-001` |
 | `INV-SNOWENERGY-053` | Dormant endpoint, non-storage cumulative lineage, area-weighted ProducedUnconsumed parcel mass, solid refreeze, and tolerance-bounded terminal energy form one exact custody rule without immediate receiver credit. | `INV-030/035/042`; conservation | `[DIRECT][Static] + [INFERENCE][Static]` | mass/energy/owner guards | `SNOWENERGY-E-TERMINAL-CUSTODY-001`, `SNOWENERGY-E-TERMINAL-ENERGY-001` |
 | `INV-SNOWENERGY-054` | Every terminating lane emits a present nonempty independently reconstructable terminal physical ledger, including explicit-zero cursor replay. | independent conservation obligations | `[INFERENCE][Static]` | ledger/receipt guard | `SNOWENERGY-E-TERMINAL-LEDGER-001` |
-| `INV-SNOWENERGY-055` | Every adaptive/root covered evaluation uses a complete canonical ephemeral seven-owner joint state; accepted half chains advance coupled candidates, rejected alternatives escape nowhere, and terminal aggregate snow is never installed as a persistent owner. | `INV-034/051`; `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-127`; released one-volume cold-content equation | `[DIRECT][Static] + [INFERENCE][Static]` | joint-state schema/Markov/lineage/domain guard | `SNOWENERGY-E-TERMINAL-TRIAL-STATE-001` |
+| `INV-SNOWENERGY-055` | Every covered replay uses a complete canonical ephemeral seven-owner joint state. Each outer absolute-tick alternative restarts from the immutable cursor state; only accepted inner half-step chains advance coupled candidates within that replay. Rejected alternatives escape nowhere, and terminal aggregate snow is never installed as a persistent owner. | `INV-034/051`; `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-127`; released one-volume cold-content equation | `[DIRECT][Static] + [INFERENCE][Static]` | joint-state schema/Markov/lineage/domain guard | `SNOWENERGY-E-TERMINAL-TRIAL-STATE-001` |
 
 ## Producer and Consumer Obligations
 
@@ -1588,6 +1588,23 @@ resolved beginnings with the admitted terminal model may cross into the
 terminal domain; beginning-terminal and resolved-to-terminal events use the
 same modes and guards.
 
+Outer bracket and root localization use absolute-tick prefix replay. For the
+immutable current-search cursor `c`, immutable joint state `X_c`, and candidate
+tick `t`, the root function is `g_c(t)`: execute the complete covered solve from
+`(c,X_c)` over exactly `[c,t)` and evaluate the terminal predicate only on that
+prefix endpoint. Every outer candidate, including bracket endpoints and
+bisection midpoints, restarts from `(c,X_c)`. The bracket lower tick, upper tick,
+and width are diagnostic evidence only; no constitutive callback may evaluate
+`[bracket_lower,midpoint)`, seed from a rejected lower endpoint, interpolate a
+snow-only state, coalesce adjacent candidates, or scale/reuse a carrier. Inner
+adaptive full/two-half evaluation may evolve the complete joint state only
+inside one such prefix replay. `ExactEndpoint` replays the selected `[c,t*)`
+prefix and requires its terminal result and complete covered-forcing digest to
+match the selected discovery evidence. A newly discovered event with
+`0 < t-c < 600000000 ns` fails the admitted LSE minimum-support error; it is not
+rounded, shifted, or evaluated on a shorter local bracket. `t=c` remains solely
+the sealed prior-endpoint exact-zero branch.
+
 The accepted positive-duration endpoint remains the exact dormant Stage-3
 state returned by the solver. Represented layers and detached retained liquid
 are zero, and the increment of `cumulative_unresolved_liquid_kg_m2` equals the
@@ -1674,6 +1691,19 @@ joint state, including advanced first-soil-node and other coupled candidates.
 Only the accepted fine chain advances the ephemeral state; coarse, rejected
 and discarded root alternatives are deleted. The immutable accepted owners are
 never changed by discovery.
+
+Each canonical outer-candidate receipt binds: schema and parent transaction;
+enclosing-parent and current-search supports; absolute candidate tick; bracket
+lower/upper ticks and diagnostic width; full-prefix start, end, and duration;
+physical-child ordinal, attempt ordinal, and trial role; immutable beginning
+complete-owner-set and joint-state digests; complete projected forcing and
+receiver-topology digests; LSE policy identity, minimum support, and admission
+result; ordered accepted inner-transition and `q_ss` receipt digests; terminal
+endpoint, event-result, and terminal-ledger digests; evaluated and unevaluated
+durations; typed failure, if any; and probe identity. Exact-endpoint acceptance
+additionally binds the selected candidate receipt and ordinary accepted-slab
+receipt. All fields use the registered canonical framed encoding; omission,
+reordering, substitution, or mismatch fails before owner publication.
 
 `TerminalTrialSnowStateV1` is authorized only inside that joint trial state and
 cannot be installed, serialized as a persistent lane, used for restart, or
