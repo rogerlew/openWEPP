@@ -219,6 +219,30 @@ prohibited production temporal-control edit or duplicated decision logic. No
 diagnostic implementation, receipt capture, effectivity matrix, final
 candidate review or production implementation intent is authorized.
 
+### 2026-08-25 rejected-pair evidence-correlation authority V2 intent
+
+Replace the held post-decision observer proposal with a distinct, review-first
+authority for the minimum private production-source correlation path. The V2
+candidate uses a sealed compile-time `NoEvidence`/`CaptureEvidence` mode,
+ordinary dual-channel value returns, fixed-size trial keys and a caller-local
+evidence arena. It defines closed provider/coupling, selected-trial,
+pair-decision and rejected-prefix records and selects the crate-private
+`cfg(test)` compilation boundary. It authorizes no callback, global/thread-local
+recorder, internal unwind boundary, acceptance or physics change.
+
+No source implementation is authorized until independent numerical/evidence
+reachability and Rust/custody/API reviews both return `GO-to-evidence` on the
+exact V2 hash. Either HOLD retains the existing `BelowCarrierDomain` result and
+all temporal/Batch/event/receiver/restart/cutover prohibitions.
+
+Review disposition: the exact V2 hash received Rust/custody `GO-to-evidence`
+and numerical/evidence `HOLD`. The gate therefore stopped before source edits.
+The numerical review accepted the architecture in principle but found five
+unclosed canonical rules: coupling-owned selection finalization, live role
+mapping, separate retry-pair versus subsequent floor-decision custody, signed
+error/tie semantics, and complete receipt-adapter schemas. No diagnostic seam,
+capture, matrix or production implementation intent is authorized.
+
 ### 2026-08-24 covered physical-custody intake and authority gate
 
 Implementation intent: close one bounded persistent covered-physical-custody
