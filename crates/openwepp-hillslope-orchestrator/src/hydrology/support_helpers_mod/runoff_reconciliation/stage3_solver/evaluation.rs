@@ -13,7 +13,8 @@ fn seconds_to_exact_ns(
     seconds: f64,
 ) -> Result<u128, DirectSnowStage3EvaluationError> {
     let nanos = seconds * 1_000_000_000.0;
-    if !nanos.is_finite() || nanos < 0.0 || nanos.fract() != 0.0 {
+    let rounded = nanos.round();
+    if !nanos.is_finite() || nanos < 0.0 || (nanos - rounded).abs() > 0.500_001 {
         return Err(Wb11HydrologyKernel::stage3_domain_error(
             phase_class,
             "snow.terminal_trial_nanoseconds",
@@ -23,7 +24,7 @@ fn seconds_to_exact_ns(
         )
         .into());
     }
-    Ok(nanos as u128)
+    Ok(rounded as u128)
 }
 
 impl Wb11HydrologyKernel {
@@ -263,8 +264,12 @@ impl Wb11HydrologyKernel {
                                         phase_class,
                                         elapsed_seconds + relative_start_seconds,
                                     )?;
-                                    let duration_ns =
-                                        seconds_to_exact_ns(phase_class, duration_seconds)?;
+                                    let end_offset_ns = seconds_to_exact_ns(
+                                        phase_class,
+                                        elapsed_seconds
+                                            + relative_start_seconds
+                                            + duration_seconds,
+                                    )?;
                                     let trial_start = ModelTimeNs::new(
                                         base_support
                                             .start_ns()
@@ -281,7 +286,7 @@ impl Wb11HydrologyKernel {
                                             })?,
                                     );
                                     let trial_end = ModelTimeNs::new(
-                                        trial_start.get().checked_add(duration_ns).ok_or_else(
+                                        base_support.start_ns().get().checked_add(end_offset_ns).ok_or_else(
                                             || {
                                                 Wb11HydrologyKernel::stage3_domain_error(
                                                     phase_class,
@@ -313,6 +318,8 @@ impl Wb11HydrologyKernel {
                                                 None,
                                             )
                                         })?;
+                                    let duration_seconds =
+                                        f64::from_bits(trial_support.duration_s_bits());
                                     let beginning_joint = beginning_joint.as_ref().ok_or_else(|| {
                                         Wb11HydrologyKernel::stage3_domain_error(
                                             phase_class,

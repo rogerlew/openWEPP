@@ -80,6 +80,122 @@ pub(super) struct TerminalTrial {
 }
 
 impl Wb11HydrologyKernel {
+    fn terminal_prefix_candidate<F, G, J>(
+        start: TerminalState,
+        initial_joint: &J,
+        candidate_seconds: f64,
+        attempt_ordinal: &mut u32,
+        flux_integral: &mut F,
+        join_hydrology_ending: &mut G,
+    ) -> Result<(TerminalTrial, J), DirectSnowStage3EvaluationError>
+    where
+        F: FnMut(
+            TerminalState,
+            &J,
+            f64,
+            f64,
+            CoveredTerminalTrialRoleV1,
+            u32,
+        ) -> Result<(TerminalFluxIntegral, J), DirectSnowStage3EvaluationError>,
+        G: FnMut(TerminalState, J) -> Result<J, DirectSnowStage3EvaluationError>,
+        J: Clone,
+    {
+        if !candidate_seconds.is_finite() || candidate_seconds < 0.0 {
+            return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
+                SnowTerminalNumericsFailure::DomainOrNonFinite,
+            ));
+        }
+        let mut state = start;
+        let mut joint = initial_joint.clone();
+        let mut ledger = TerminalLedger::default();
+        let mut elapsed = 0.0;
+        let mut trial_seconds = candidate_seconds.min(MAXIMUM_TRIAL_SECONDS);
+        let mut rejections = 0_u32;
+        while elapsed < candidate_seconds && state.ice_kg_m2 > 0.0 {
+            let duration = (candidate_seconds - elapsed).min(trial_seconds);
+            let (full_flux, full_carrier_joint) = flux_integral(
+                state,
+                &joint,
+                elapsed,
+                duration,
+                CoveredTerminalTrialRoleV1::Root,
+                *attempt_ordinal,
+            )?;
+            *attempt_ordinal = attempt_ordinal.checked_add(1).ok_or(
+                DirectSnowStage3EvaluationError::TerminalNumerics(
+                    SnowTerminalNumericsFailure::DomainOrNonFinite,
+                ),
+            )?;
+            let full = Self::terminal_transition(state, full_flux);
+            let _full_joint = join_hydrology_ending(full.state, full_carrier_joint)?;
+            let half = 0.5 * duration;
+            let (first_flux, first_carrier_joint) = flux_integral(
+                state,
+                &joint,
+                elapsed,
+                half,
+                CoveredTerminalTrialRoleV1::Half1,
+                *attempt_ordinal,
+            )?;
+            *attempt_ordinal = attempt_ordinal.checked_add(1).ok_or(
+                DirectSnowStage3EvaluationError::TerminalNumerics(
+                    SnowTerminalNumericsFailure::DomainOrNonFinite,
+                ),
+            )?;
+            let first = Self::terminal_transition(state, first_flux);
+            let first_joint = join_hydrology_ending(first.state, first_carrier_joint)?;
+            let (second_flux, second_carrier_joint) = flux_integral(
+                first.state,
+                &first_joint,
+                elapsed + half,
+                half,
+                CoveredTerminalTrialRoleV1::Half2,
+                *attempt_ordinal,
+            )?;
+            *attempt_ordinal = attempt_ordinal.checked_add(1).ok_or(
+                DirectSnowStage3EvaluationError::TerminalNumerics(
+                    SnowTerminalNumericsFailure::DomainOrNonFinite,
+                ),
+            )?;
+            let second = Self::terminal_transition(first.state, second_flux);
+            let second_joint = join_hydrology_ending(second.state, second_carrier_joint)?;
+            let refined = TerminalTrial {
+                state: second.state,
+                ledger: first.ledger.add(second.ledger),
+            };
+            let error = Self::terminal_scaled_error(full, refined);
+            if error > 1.0 && refined.state.ice_kg_m2 > 0.0 {
+                rejections += 1;
+                if rejections > MAXIMUM_REJECTIONS || duration <= MINIMUM_TRIAL_SECONDS {
+                    return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
+                        SnowTerminalNumericsFailure::RejectionLimit,
+                    ));
+                }
+                trial_seconds = (0.5 * duration).max(MINIMUM_TRIAL_SECONDS);
+                continue;
+            }
+            rejections = 0;
+            joint = second_joint;
+            state = refined.state;
+            ledger = ledger.add(refined.ledger);
+            elapsed += duration;
+            trial_seconds = if error < 0.125 {
+                (2.0 * duration).min(MAXIMUM_TRIAL_SECONDS)
+            } else {
+                duration
+            };
+        }
+        if state.ice_kg_m2 > 0.0 && state.ice_kg_m2 <= 1.0e-14 {
+            let residual_ice = state.ice_kg_m2;
+            state.ice_kg_m2 = 0.0;
+            state.liquid_kg_m2 += residual_ice;
+            ledger.melt_kg_m2 += residual_ice;
+            ledger.unallocated_energy_j_m2 -=
+                STAGE3_LATENT_HEAT_FUSION_J_KG * residual_ice;
+        }
+        Ok((TerminalTrial { state, ledger }, joint))
+    }
+
     pub(super) fn terminal_transition(
         start: TerminalState,
         flux: TerminalFluxIntegral,
@@ -194,7 +310,7 @@ impl Wb11HydrologyKernel {
             ));
         }
         let mut state = start;
-        let mut accepted_joint = initial_joint;
+        let mut accepted_joint = initial_joint.clone();
         let mut ledger = TerminalLedger::default();
         let mut elapsed = 0.0;
         let mut trial_seconds = requested_seconds.min(MAXIMUM_TRIAL_SECONDS);
@@ -267,7 +383,12 @@ impl Wb11HydrologyKernel {
                 ledger: first.ledger.add(second.ledger),
             };
             let error = Self::terminal_scaled_error(full, refined);
-            if error > 1.0 {
+            // LTE is discontinuous across exhaustion because terminal
+            // transition censors the coarse/fine residual energy at different
+            // substep boundaries. Once the refined path brackets zero ice,
+            // localize that physical event below instead of shrinking the
+            // adaptive step forever against a non-smooth endpoint.
+            if error > 1.0 && refined.state.ice_kg_m2 > 0.0 {
                 rejected_trials += 1;
                 consecutive_rejections += 1;
                 if consecutive_rejections > MAXIMUM_REJECTIONS || dt <= MINIMUM_TRIAL_SECONDS {
@@ -290,64 +411,47 @@ impl Wb11HydrologyKernel {
             }
 
             if refined.state.ice_kg_m2 <= 0.0 {
-                let (
-                    event_start,
-                    event_start_joint,
-                    event_prefix_seconds,
-                    event_limit_seconds,
-                    prefix_ledger,
-                ) = if first.state.ice_kg_m2 <= 0.0 {
-                    (
-                        state,
-                        accepted_joint.clone(),
-                        0.0,
-                        half_dt,
-                        TerminalLedger::default(),
-                    )
-                } else {
-                    (
-                        first.state,
-                        first_joint.clone(),
-                        half_dt,
-                        half_dt,
-                        first.ledger,
-                    )
-                };
-                let mut lower = 0.0;
-                let mut upper = event_limit_seconds;
-                let mut lower_solid = event_start.ice_kg_m2;
-                let (upper_flux, upper_joint) = flux_integral(
-                    event_start,
-                    &event_start_joint,
-                    elapsed + event_prefix_seconds,
+                // Root selection is over absolute cursor-prefix duration. Every
+                // candidate restarts from the immutable cursor state/joint;
+                // bracket-local state and support are never solver operands.
+                let mut lower = elapsed;
+                let mut upper = elapsed + dt;
+                let (mut event, mut event_joint) = Self::terminal_prefix_candidate(
+                    start,
+                    &initial_joint,
                     upper,
-                    CoveredTerminalTrialRoleV1::BracketUpper,
-                    attempt_ordinal,
+                    &mut attempt_ordinal,
+                    &mut flux_integral,
+                    &mut join_hydrology_ending,
                 )?;
-                let mut event = Self::terminal_transition(event_start, upper_flux);
-                let mut event_joint = join_hydrology_ending(event.state, upper_joint)?;
-                attempt_ordinal = next_attempt(attempt_ordinal)?;
                 if event.state.ice_kg_m2 > 0.0 {
                     return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
                         SnowTerminalNumericsFailure::InvalidEventBracket,
                     ));
                 }
+                let (lower_trial, _) = Self::terminal_prefix_candidate(
+                    start,
+                    &initial_joint,
+                    lower,
+                    &mut attempt_ordinal,
+                    &mut flux_integral,
+                    &mut join_hydrology_ending,
+                )?;
+                let mut lower_solid = lower_trial.state.ice_kg_m2;
                 let mut upper_solid = event.state.ice_kg_m2;
                 for _ in 0..MAXIMUM_EVENT_BISECTIONS {
                     if upper - lower <= EVENT_TIME_TOLERANCE_SECONDS {
                         break;
                     }
                     let middle = 0.5 * (lower + upper);
-                    let (middle_flux, middle_joint) = flux_integral(
-                        event_start,
-                        &event_start_joint,
-                        elapsed + event_prefix_seconds,
+                    let (middle_trial, middle_joint) = Self::terminal_prefix_candidate(
+                        start,
+                        &initial_joint,
                         middle,
-                        CoveredTerminalTrialRoleV1::Root,
-                        attempt_ordinal,
+                        &mut attempt_ordinal,
+                        &mut flux_integral,
+                        &mut join_hydrology_ending,
                     )?;
-                    let middle_trial = Self::terminal_transition(event_start, middle_flux);
-                    attempt_ordinal = next_attempt(attempt_ordinal)?;
                     if middle_trial.state.ice_kg_m2 > lower_solid
                         || middle_trial.state.ice_kg_m2 < upper_solid
                     {
@@ -358,7 +462,7 @@ impl Wb11HydrologyKernel {
                     if middle_trial.state.ice_kg_m2 <= 0.0 {
                         upper = middle;
                         event = middle_trial;
-                        event_joint = join_hydrology_ending(middle_trial.state, middle_joint)?;
+                        event_joint = middle_joint;
                         upper_solid = middle_trial.state.ice_kg_m2;
                     } else {
                         lower = middle;
@@ -366,8 +470,8 @@ impl Wb11HydrologyKernel {
                     }
                 }
                 event_bracket_width_seconds = upper - lower;
-                event_bracket_lower_seconds = event_prefix_seconds + lower;
-                event_bracket_upper_seconds = event_prefix_seconds + upper;
+                event_bracket_lower_seconds = lower;
+                event_bracket_upper_seconds = upper;
                 event_bracket_lower_solid_kg_m2 = lower_solid;
                 event_bracket_upper_solid_kg_m2 = upper_solid;
                 if event_bracket_width_seconds > EVENT_TIME_TOLERANCE_SECONDS
@@ -379,8 +483,8 @@ impl Wb11HydrologyKernel {
                 }
                 state = event.state;
                 accepted_joint = event_joint;
-                ledger = ledger.add(prefix_ledger).add(event.ledger);
-                elapsed += event_prefix_seconds + upper;
+                ledger = event.ledger;
+                elapsed = upper;
                 accepted_trials += 1;
                 break;
             }
@@ -645,6 +749,55 @@ mod tests {
         assert_eq!(observed[0], (CoveredTerminalTrialRoleV1::Full, 0, 0));
         assert_eq!(observed[1], (CoveredTerminalTrialRoleV1::Half1, 1, 0));
         assert_eq!(observed[2], (CoveredTerminalTrialRoleV1::Half2, 2, 1));
+    }
+
+    #[test]
+    fn absolute_prefix_candidates_cover_zero_event_tick_and_predecessor_tick() {
+        let start = TerminalState {
+            ice_kg_m2: 0.6,
+            liquid_kg_m2: 0.0,
+            cold_content_j_m2: 0.0,
+        };
+        let mut attempt = 0;
+        let mut flux = |state: TerminalState,
+                        joint: &u32,
+                        relative_start: f64,
+                        duration: f64,
+                        role,
+                        _| {
+            if role == CoveredTerminalTrialRoleV1::Root
+                && (relative_start != 0.0 || state.ice_kg_m2.to_bits() != start.ice_kg_m2.to_bits())
+            {
+                return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
+                    SnowTerminalNumericsFailure::InvalidEventBracket,
+                ));
+            }
+            Ok((TerminalFluxIntegral {
+                complete_energy_j_m2: 333_600.0 * duration,
+                vapor_mass_exchange_kg_m2: 0.0,
+                shortwave_energy_j_m2: 333_600.0 * duration,
+                longwave_energy_j_m2: 0.0,
+                sensible_energy_j_m2: 0.0,
+                latent_energy_j_m2: 0.0,
+                advected_energy_j_m2: 0.0,
+                snow_soil_heat_energy_j_m2: 0.0,
+                external_liquid_kg_m2: 0.0,
+            }, *joint + 1))
+        };
+        let mut join = |_: TerminalState, joint| Ok(joint);
+        let (zero, zero_joint) = Wb11HydrologyKernel::terminal_prefix_candidate(
+            start, &0, 0.0, &mut attempt, &mut flux, &mut join,
+        ).unwrap();
+        assert_eq!(zero.state.ice_kg_m2.to_bits(), start.ice_kg_m2.to_bits());
+        assert_eq!(zero_joint, 0);
+        let (predecessor, _) = Wb11HydrologyKernel::terminal_prefix_candidate(
+            start, &0, 0.599_999_999, &mut attempt, &mut flux, &mut join,
+        ).unwrap();
+        assert!(predecessor.state.ice_kg_m2 > 0.0);
+        let (event, _) = Wb11HydrologyKernel::terminal_prefix_candidate(
+            start, &0, 0.6, &mut attempt, &mut flux, &mut join,
+        ).unwrap();
+        assert_eq!(event.state.ice_kg_m2.to_bits(), 0.0_f64.to_bits());
     }
 
     #[test]
