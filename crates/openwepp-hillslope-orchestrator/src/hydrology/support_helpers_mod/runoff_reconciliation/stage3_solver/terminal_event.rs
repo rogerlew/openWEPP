@@ -74,13 +74,16 @@ impl TerminalLedger {
 }
 
 #[derive(Clone, Copy)]
-struct TerminalTrial {
-    state: TerminalState,
+pub(super) struct TerminalTrial {
+    pub(super) state: TerminalState,
     ledger: TerminalLedger,
 }
 
 impl Wb11HydrologyKernel {
-    fn terminal_transition(start: TerminalState, flux: TerminalFluxIntegral) -> TerminalTrial {
+    pub(super) fn terminal_transition(
+        start: TerminalState,
+        flux: TerminalFluxIntegral,
+    ) -> TerminalTrial {
         let mut state = start;
         let mut ledger = TerminalLedger {
             complete_energy_j_m2: flux.complete_energy_j_m2,
@@ -163,7 +166,7 @@ impl Wb11HydrologyKernel {
         initial_joint: J,
         mut flux_integral: F,
         mut join_hydrology_ending: G,
-    ) -> Result<DirectSnowTerminalEventResult, DirectSnowStage3EvaluationError>
+    ) -> Result<(DirectSnowTerminalEventResult, J), DirectSnowStage3EvaluationError>
     where
         F: FnMut(
             TerminalState,
@@ -313,7 +316,7 @@ impl Wb11HydrologyKernel {
                 let mut lower = 0.0;
                 let mut upper = event_limit_seconds;
                 let mut lower_solid = event_start.ice_kg_m2;
-                let (upper_flux, _) = flux_integral(
+                let (upper_flux, upper_joint) = flux_integral(
                     event_start,
                     &event_start_joint,
                     elapsed + event_prefix_seconds,
@@ -322,6 +325,7 @@ impl Wb11HydrologyKernel {
                     attempt_ordinal,
                 )?;
                 let mut event = Self::terminal_transition(event_start, upper_flux);
+                let mut event_joint = join_hydrology_ending(event.state, upper_joint)?;
                 attempt_ordinal = next_attempt(attempt_ordinal)?;
                 if event.state.ice_kg_m2 > 0.0 {
                     return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
@@ -334,7 +338,7 @@ impl Wb11HydrologyKernel {
                         break;
                     }
                     let middle = 0.5 * (lower + upper);
-                    let (middle_flux, _) = flux_integral(
+                    let (middle_flux, middle_joint) = flux_integral(
                         event_start,
                         &event_start_joint,
                         elapsed + event_prefix_seconds,
@@ -354,6 +358,7 @@ impl Wb11HydrologyKernel {
                     if middle_trial.state.ice_kg_m2 <= 0.0 {
                         upper = middle;
                         event = middle_trial;
+                        event_joint = join_hydrology_ending(middle_trial.state, middle_joint)?;
                         upper_solid = middle_trial.state.ice_kg_m2;
                     } else {
                         lower = middle;
@@ -373,6 +378,7 @@ impl Wb11HydrologyKernel {
                     ));
                 }
                 state = event.state;
+                accepted_joint = event_joint;
                 ledger = ledger.add(prefix_ledger).add(event.ledger);
                 elapsed += event_prefix_seconds + upper;
                 accepted_trials += 1;
@@ -430,7 +436,7 @@ impl Wb11HydrologyKernel {
                 SnowTerminalNumericsFailure::Closure,
             ));
         }
-        Ok(DirectSnowTerminalEventResult {
+        Ok((DirectSnowTerminalEventResult {
             model: DirectSnowTerminalEventModel::EnthalpyEventV1,
             event_occurred,
             hour_index,
@@ -481,7 +487,7 @@ impl Wb11HydrologyKernel {
             accepted_trials,
             rejected_trials,
             maximum_scaled_error,
-        })
+        }, accepted_joint))
     }
 }
 
@@ -521,6 +527,7 @@ mod tests {
             |_, joint| Ok(joint),
         )
         .unwrap()
+        .0
     }
 
     #[test]
@@ -546,7 +553,7 @@ mod tests {
     #[test]
     fn every_adaptive_and_root_trial_carries_its_exact_relative_start() {
         let mut trials = Vec::new();
-        let event = Wb11HydrologyKernel::solve_terminal_enthalpy_event(
+        let (event, _) = Wb11HydrologyKernel::solve_terminal_enthalpy_event(
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
             0,
             0.0,
@@ -603,7 +610,7 @@ mod tests {
     #[test]
     fn joint_trial_state_advances_only_along_the_accepted_fine_chain() {
         let mut observed = Vec::new();
-        let result = Wb11HydrologyKernel::solve_terminal_enthalpy_event(
+        let (result, _) = Wb11HydrologyKernel::solve_terminal_enthalpy_event(
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
             0,
             0.0,

@@ -241,6 +241,7 @@ impl Wb11HydrologyKernel {
             terminal_unallocated_energy_j_m2: summary.unallocated_after_exhaustion_j_m2,
             terminal_event: summary.terminal_event,
             terminal_intervals: summary.terminal_intervals,
+            covered_terminal_ending_joint: summary.terminal_ending_joint,
         })
     }
 

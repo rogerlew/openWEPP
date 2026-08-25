@@ -457,6 +457,20 @@ fn execute_v8_lse_runtime_shadow_phases(
         .as_ref()
         .map(LandSurfaceEnergyRealHydrologyAdapter::new);
     let soil_adapter = effective_adapter.as_ref().unwrap_or(soil_adapter);
+    // The complete execution topology may include ordinary/open destinations
+    // beside Stage-3-covered destinations. Only the latter may receive snow
+    // optical and lower-boundary authority; the remaining columns still run
+    // through the same envelope as ordinary LSE participants.
+    let active_stage3_lower_boundaries = covered_lower_boundaries.map(|boundaries| {
+        boundaries
+            .iter()
+            .filter(|(destination, _)| {
+                covered_destinations.is_none_or(|covered| covered.contains(*destination))
+            })
+            .map(|(destination, boundary)| (destination.clone(), boundary.clone()))
+            .collect::<BTreeMap<_, _>>()
+    });
+    let covered_lower_boundaries = active_stage3_lower_boundaries.as_ref();
     let projected = project_v8_runtime_inputs_with_carriers(
         vegetation_configuration,
         vegetation_beginning,

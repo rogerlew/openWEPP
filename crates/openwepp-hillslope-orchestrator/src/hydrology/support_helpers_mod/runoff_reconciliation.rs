@@ -236,13 +236,27 @@ pub(crate) struct CoveredTerminalTrialRequestV1 {
     pub support: TimeSupport,
     pub role: CoveredTerminalTrialRoleV1,
     pub attempt_ordinal: u32,
+    /// Zero-based iteration within one adaptive/root attempt. This is not an
+    /// accepted chronology ordinal and may never escape probe evaluation.
+    pub coupling_iteration: u32,
     pub ice_kg_m2: f64,
     pub liquid_kg_m2: f64,
     pub cold_content_j_m2: f64,
     pub surface_temperature_c: f64,
     pub snow_depth_m: f64,
     pub snow_density_kg_m3: f64,
+    /// Hydrology ending-state estimate from the preceding coupled replay.
+    /// `None` denotes the first replay from the immutable trial-start joint.
+    pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
     pub beginning_joint: CoveredTerminalJointTrialStateV1,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct CoveredTerminalEndingSnowHintV1 {
+    pub ice_kg_m2: f64,
+    pub liquid_kg_m2: f64,
+    pub cold_content_j_m2: f64,
+    pub surface_temperature_c: f64,
 }
 
 /// Immutable, unpublished seven-owner candidate carried between covered
@@ -463,8 +477,8 @@ pub(crate) struct CoveredTerminalTrialTransitionV1 {
     pub beginning_joint: CoveredTerminalJointTrialStateV1,
     pub ending_joint: CoveredTerminalJointTrialStateV1,
     pub probe_child_identity: CoveredProbeChildIdentityV1,
-    pub terminal_snow_soil_receipt:
-        Option<crate::v9_real_consumer_shadow::TerminalSnowSoilHeatReceiptV1>,
+    pub trial_snow_soil_receipt:
+        Option<crate::v9_real_consumer_shadow::TerminalSnowSoilTrialReceiptV1>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -628,6 +642,7 @@ struct Stage3ShadowSummary {
     final_layers: Vec<DirectSnowLayerState>,
     terminal_event: Option<DirectSnowTerminalEventResult>,
     terminal_intervals: Vec<DirectSnowTerminalEventResult>,
+    terminal_ending_joint: Option<CoveredTerminalJointTrialStateV1>,
     terminal_refrozen_kg_m2: f64,
     persistent_refrozen_kg_m2: f64,
     terminal_deposition_kg_m2: f64,
@@ -675,6 +690,7 @@ impl Stage3ShadowSummary {
             final_layers: Vec::new(),
             terminal_event: None,
             terminal_intervals: Vec::new(),
+            terminal_ending_joint: None,
             terminal_refrozen_kg_m2: 0.0,
             persistent_refrozen_kg_m2: 0.0,
             terminal_deposition_kg_m2: 0.0,

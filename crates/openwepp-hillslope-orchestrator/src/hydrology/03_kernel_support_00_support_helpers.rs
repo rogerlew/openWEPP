@@ -405,6 +405,7 @@ pub struct DirectSnowStage3PersistentDayResult {
     pub terminal_unallocated_energy_j_m2: f64,
     pub terminal_event: Option<DirectSnowTerminalEventResult>,
     pub terminal_intervals: Vec<DirectSnowTerminalEventResult>,
+    pub(crate) covered_terminal_ending_joint: Option<CoveredTerminalJointTrialStateV1>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -1466,7 +1467,8 @@ pub use support_helpers_mod::{
 pub(crate) use support_helpers_mod::DirectSnowStage3Resolution;
 pub(crate) use support_helpers_mod::{
     CoveredProbeChildIdentityV1, CoveredTerminalExecutionMode,
-    CoveredTerminalJointTrialStateV1, CoveredTerminalTrialProviderV1,
+    CoveredTerminalEndingSnowHintV1, CoveredTerminalJointTrialStateV1,
+    CoveredTerminalTrialProviderV1,
     CoveredTerminalTrialRequestV1, CoveredTerminalTrialRoleV1,
     CoveredTerminalTrialTransitionV1, STAGE3_DEFAULT_SNOW_ALBEDO,
     stage3_has_represented_ice,

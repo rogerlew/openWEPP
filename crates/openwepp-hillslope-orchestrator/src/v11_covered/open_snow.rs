@@ -1157,31 +1157,20 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     flux_boundaries,
                     &iteration_stage3_states,
                 )?;
-                let mut current_execution_boundaries = current_boundaries.clone();
-                for (destination, boundary) in &open_boundaries {
-                    current_execution_boundaries.insert(destination.clone(), boundary.clone());
-                }
                 let mut provisional_candidate = self.beginning.clone();
                 provisional_candidate.inner.authority = CoveredColumnAuthority::V11SnowCovered;
-                let provisional_envelope = provisional_candidate
-                    .inner
-                    .construct_covered_interval_envelope_with_duration(
-                        self.day_index,
-                        self.interval_index,
-                        self.interval,
+                let provisional_envelope = self.build_covered_carrier_envelope_value_v1(
+                    CoveredCarrierEnvelopeBuildV1 {
+                        candidate: &provisional_candidate,
                         interval_s,
-                        input.duration_s_bits,
-                        &covered_destinations,
-                        &current_execution_boundaries,
-                        true,
-                        self.finalize_wb14_parent_interval,
-                        self.wb14_coupled_child_binding,
-                    )
-                    .map_err(|error| {
-                        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                            error,
-                        ))
-                    })?;
+                        duration_s_bits: input.duration_s_bits,
+                        covered_destinations: &covered_destinations,
+                        covered_boundaries: &current_boundaries,
+                        open_boundaries: &open_boundaries,
+                        provisional: true,
+                        finalize_wb14_parent_interval: self.finalize_wb14_parent_interval,
+                    },
+                )?;
                 let provisional_precipitation_sets =
                     self.precipitation_parcel_sets(input.support, &provisional_envelope)?;
                 let (next_boundaries, _next_shortwave_by_lane, _next_longwave_by_lane) = self
@@ -1279,32 +1268,21 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     &next_covered_boundaries,
                     &stage3_candidate,
                 )?;
-                let mut final_execution_boundaries = final_input_boundaries.clone();
-                for (destination, boundary) in self
+                let final_input_open_boundaries = self
                     .open_snow_boundaries_by_destination(&stage3_candidate)?
-                    .1
-                {
-                    final_execution_boundaries.insert(destination, boundary);
-                }
-                let final_envelope = final_candidate
-                    .inner
-                    .construct_covered_interval_envelope_with_duration(
-                        self.day_index,
-                        self.interval_index,
-                        self.interval,
+                    .1;
+                let final_envelope = self.build_covered_carrier_envelope_value_v1(
+                    CoveredCarrierEnvelopeBuildV1 {
+                        candidate: &final_candidate,
                         interval_s,
-                        input.duration_s_bits,
-                        &covered_destinations,
-                        &final_execution_boundaries,
-                        false,
-                        self.finalize_wb14_parent_interval,
-                        self.wb14_coupled_child_binding,
-                    )
-                    .map_err(|error| {
-                        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                            error,
-                        ))
-                    })?;
+                        duration_s_bits: input.duration_s_bits,
+                        covered_destinations: &covered_destinations,
+                        covered_boundaries: &final_input_boundaries,
+                        open_boundaries: &final_input_open_boundaries,
+                        provisional: false,
+                        finalize_wb14_parent_interval: self.finalize_wb14_parent_interval,
+                    },
+                )?;
                 let final_precipitation_sets =
                     self.precipitation_parcel_sets(input.support, &final_envelope)?;
                 let (final_corrected_boundaries, final_shortwave_by_lane, final_longwave_by_lane) =
@@ -1362,34 +1340,21 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     &final_rebuilt_boundaries,
                     &final_stage3_candidate,
                 )?;
-                let sealed_source_envelope = final_candidate
-                    .inner
-                    .construct_covered_interval_envelope_with_duration(
-                        self.day_index,
-                        self.interval_index,
-                        self.interval,
+                let sealed_source_open_boundaries = self
+                    .open_snow_boundaries_by_destination(&final_stage3_candidate)?
+                    .1;
+                let sealed_source_envelope = self.build_covered_carrier_envelope_value_v1(
+                    CoveredCarrierEnvelopeBuildV1 {
+                        candidate: &final_candidate,
                         interval_s,
-                        input.duration_s_bits,
-                        &covered_destinations,
-                        &{
-                            let mut complete = sealed_source_input_boundaries.clone();
-                            for (destination, boundary) in self
-                                .open_snow_boundaries_by_destination(&final_stage3_candidate)?
-                                .1
-                            {
-                                complete.insert(destination, boundary);
-                            }
-                            complete
-                        },
-                        false,
-                        self.finalize_wb14_parent_interval,
-                        self.wb14_coupled_child_binding,
-                    )
-                    .map_err(|error| {
-                        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                            error,
-                        ))
-                    })?;
+                        duration_s_bits: input.duration_s_bits,
+                        covered_destinations: &covered_destinations,
+                        covered_boundaries: &sealed_source_input_boundaries,
+                        open_boundaries: &sealed_source_open_boundaries,
+                        provisional: false,
+                        finalize_wb14_parent_interval: self.finalize_wb14_parent_interval,
+                    },
+                )?;
                 let (sealed_source_corrected_boundaries, _, _) = self
                     .corrected_covered_boundaries_from_envelope(
                         &sealed_source_input_boundaries,
@@ -1442,31 +1407,18 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     &final_boundary_receipts,
                     &final_precipitation_sets,
                 )?;
-                let final_envelope = final_candidate
-                    .inner
-                    .construct_covered_interval_envelope_with_duration(
-                        self.day_index,
-                        self.interval_index,
-                        self.interval,
+                let final_envelope = self.build_covered_carrier_envelope_value_v1(
+                    CoveredCarrierEnvelopeBuildV1 {
+                        candidate: &final_candidate,
                         interval_s,
-                        input.duration_s_bits,
-                        &covered_destinations,
-                        &{
-                            let mut complete = final_covered_lower_boundaries.clone();
-                            for (destination, boundary) in &final_open_lower_boundaries {
-                                complete.insert(destination.clone(), boundary.clone());
-                            }
-                            complete
-                        },
-                        false,
-                        self.finalize_wb14_parent_interval,
-                        self.wb14_coupled_child_binding,
-                    )
-                    .map_err(|error| {
-                        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                            error,
-                        ))
-                    })?;
+                        duration_s_bits: input.duration_s_bits,
+                        covered_destinations: &covered_destinations,
+                        covered_boundaries: &final_covered_lower_boundaries,
+                        open_boundaries: &final_open_lower_boundaries,
+                        provisional: false,
+                        finalize_wb14_parent_interval: self.finalize_wb14_parent_interval,
+                    },
+                )?;
                 let (self_reconstructed_boundaries, _, _) = self
                     .corrected_covered_boundaries_from_envelope(
                         &final_covered_lower_boundaries,
@@ -1567,31 +1519,18 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         ))
                     })
                     .collect::<Result<BTreeMap<_, _>, DirectV11RealConsumerError>>()?;
-                let installed_envelope = final_candidate
-                    .inner
-                    .construct_covered_interval_envelope_with_duration(
-                        self.day_index,
-                        self.interval_index,
-                        self.interval,
+                let installed_envelope = self.build_covered_carrier_envelope_value_v1(
+                    CoveredCarrierEnvelopeBuildV1 {
+                        candidate: &final_candidate,
                         interval_s,
-                        input.duration_s_bits,
-                        &covered_destinations,
-                        &{
-                            let mut complete = installed_covered_lower_boundaries.clone();
-                            for (destination, boundary) in &installed_open_lower_boundaries {
-                                complete.insert(destination.clone(), boundary.clone());
-                            }
-                            complete
-                        },
-                        false,
-                        self.finalize_wb14_parent_interval,
-                        self.wb14_coupled_child_binding,
-                    )
-                    .map_err(|error| {
-                        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                            error,
-                        ))
-                    })?;
+                        duration_s_bits: input.duration_s_bits,
+                        covered_destinations: &covered_destinations,
+                        covered_boundaries: &installed_covered_lower_boundaries,
+                        open_boundaries: &installed_open_lower_boundaries,
+                        provisional: false,
+                        finalize_wb14_parent_interval: self.finalize_wb14_parent_interval,
+                    },
+                )?;
                 let installed_precipitation_sets =
                     self.precipitation_parcel_sets(input.support, &installed_envelope)?;
                 if installed_precipitation_sets

@@ -5,6 +5,248 @@
 use super::{OfeId, Stage3LaneAreaBasisV1};
 use openwepp_coupled_time::{Digest32, TimeSupport, digest_bytes};
 
+#[derive(Clone, Debug)]
+pub(crate) struct TerminalSnowBottomSoilTrialInputsV1<'a> {
+    pub support: TimeSupport,
+    pub lane_id: u32,
+    pub ofe_id: &'a OfeId,
+    pub canonical_source_sha256: Digest32,
+    pub ice_kg_m2: f64,
+    pub liquid_kg_m2: f64,
+    pub cold_content_j_m2: f64,
+    pub depth_m: f64,
+    pub density_kg_m3: f64,
+    pub temperature_k: f64,
+    pub atmospheric_pressure_pa: f64,
+    pub first_soil_configuration: &'a openwepp_land_surface_energy::SoilInterfaceLayer,
+    pub beginning_first_soil: &'a openwepp_land_surface_energy::SoilThermalLayerSnapshot,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct TerminalSnowBottomSoilTrialResultV1 {
+    pub ending_first_soil: openwepp_land_surface_energy::SoilThermalLayerSnapshot,
+    pub ending_snow_temperature_k: f64,
+    pub snow_heat_j_m2: f64,
+    pub soil_heat_j_m2: f64,
+    pub receipt: TerminalSnowSoilTrialReceiptV1,
+}
+
+/// Unpublished receipt for one adaptive/root trial. This is deliberately not
+/// the final dormant-endpoint receipt: rejected/full alternatives remain
+/// evidence and cannot claim an accepted terminal owner transition.
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct TerminalSnowSoilTrialReceiptV1 {
+    pub support: TimeSupport,
+    pub lane_id: u32,
+    pub ofe_id: OfeId,
+    pub canonical_source_sha256: Digest32,
+    pub beginning_snow_temperature_k: f64,
+    pub ending_snow_temperature_k: f64,
+    pub beginning_soil_temperature_k: f64,
+    pub ending_soil_temperature_k: f64,
+    pub snow_heat_j_m2: f64,
+    pub soil_heat_j_m2: f64,
+    pub ending_soil_candidate_sha256: Digest32,
+    pub receipt_sha256: Digest32,
+}
+
+impl TerminalSnowSoilTrialReceiptV1 {
+    fn seal(mut self) -> Result<Self, Stage3PhysicalOutcomeLedgerError> {
+        self.receipt_sha256 = Digest32::zero();
+        if self.canonical_source_sha256 == Digest32::zero()
+            || self.ending_soil_candidate_sha256 == Digest32::zero()
+            || self.snow_heat_j_m2.to_bits() != (-self.soil_heat_j_m2).to_bits()
+            || [
+                self.beginning_snow_temperature_k,
+                self.ending_snow_temperature_k,
+                self.beginning_soil_temperature_k,
+                self.ending_soil_temperature_k,
+                self.snow_heat_j_m2,
+                self.soil_heat_j_m2,
+            ]
+            .iter()
+            .any(|value| !value.is_finite())
+        {
+            return Err(Stage3PhysicalOutcomeLedgerError::Identity(
+                "terminal snow-soil trial receipt",
+            ));
+        }
+        let mut bytes = b"OPENWEPP_TERMINAL_SNOW_SOIL_TRIAL_RECEIPT_V1".to_vec();
+        bytes.extend_from_slice(&self.support.start_ns().get().to_be_bytes());
+        bytes.extend_from_slice(&self.support.end_ns().get().to_be_bytes());
+        bytes.extend_from_slice(&self.lane_id.to_be_bytes());
+        append_str(&mut bytes, self.ofe_id.as_str());
+        bytes.extend_from_slice(self.canonical_source_sha256.as_bytes());
+        for value in [
+            self.beginning_snow_temperature_k,
+            self.ending_snow_temperature_k,
+            self.beginning_soil_temperature_k,
+            self.ending_soil_temperature_k,
+            self.snow_heat_j_m2,
+            self.soil_heat_j_m2,
+        ] {
+            bytes.extend_from_slice(&value.to_bits().to_be_bytes());
+        }
+        bytes.extend_from_slice(self.ending_soil_candidate_sha256.as_bytes());
+        self.receipt_sha256 = digest_bytes(&bytes);
+        Ok(self)
+    }
+
+    pub(crate) fn validate(&self) -> Result<(), Stage3PhysicalOutcomeLedgerError> {
+        let mut candidate = self.clone();
+        candidate.receipt_sha256 = Digest32::zero();
+        if candidate.seal()? != *self {
+            return Err(Stage3PhysicalOutcomeLedgerError::Identity(
+                "terminal snow-soil trial receipt seal",
+            ));
+        }
+        Ok(())
+    }
+}
+
+/// Advance the first soil node across one exact positive terminal-snow trial.
+///
+/// The snow volume is supplied directly by the terminal solver. It is never
+/// projected through a persistent Stage-3 state, and no ending snow
+/// temperature is requested. The first-order trial map evaluates the
+/// snow--soil Crank--Nicolson flux from the coupled ending snow/soil
+/// candidates and applies identical-bit opposite custody to snow and soil.
+pub(crate) fn evaluate_terminal_snow_bottom_soil_trial_v1(
+    inputs: &TerminalSnowBottomSoilTrialInputsV1<'_>,
+) -> Result<TerminalSnowBottomSoilTrialResultV1, Stage3PhysicalOutcomeLedgerError> {
+    let duration_s = f64::from_bits(inputs.support.duration_s_bits());
+    let scalars = [
+        duration_s,
+        inputs.ice_kg_m2,
+        inputs.liquid_kg_m2,
+        inputs.cold_content_j_m2,
+        inputs.depth_m,
+        inputs.density_kg_m3,
+        inputs.temperature_k,
+        inputs.atmospheric_pressure_pa,
+        inputs.first_soil_configuration.thickness_m,
+        inputs.first_soil_configuration.thermal_conductivity_w_m_k,
+        inputs.first_soil_configuration.areal_heat_capacity_j_m2_k,
+        inputs.beginning_first_soil.temperature_k,
+        inputs.beginning_first_soil.enthalpy_j_m2_ofe_ground,
+    ];
+    if inputs.canonical_source_sha256 == Digest32::zero()
+        || scalars.iter().any(|value| !value.is_finite())
+        || duration_s <= 0.0
+        || inputs.ice_kg_m2 <= 0.0
+        || inputs.liquid_kg_m2 < 0.0
+        || inputs.cold_content_j_m2 < 0.0
+        || inputs.depth_m <= 0.0
+        || inputs.density_kg_m3 <= 0.0
+        || inputs.temperature_k <= 0.0
+        || inputs.atmospheric_pressure_pa <= 0.0
+        || inputs.first_soil_configuration.thickness_m <= 0.0
+        || inputs.first_soil_configuration.thermal_conductivity_w_m_k <= 0.0
+        || inputs.first_soil_configuration.areal_heat_capacity_j_m2_k <= 0.0
+        || inputs.beginning_first_soil.temperature_k <= 0.0
+        || inputs.beginning_first_soil.layer_id != inputs.first_soil_configuration.layer_id
+        || (inputs.ice_kg_m2 - inputs.density_kg_m3 * inputs.depth_m).abs() > 1.0e-9
+    {
+        return Err(Stage3PhysicalOutcomeLedgerError::Numeric(
+            "terminal snow-bottom soil trial operands",
+        ));
+    }
+
+    let temperature_c =
+        openwepp_unit_boundary::TemperatureCelsius::try_new(inputs.temperature_k - 273.15)
+            .map_err(|_| {
+                Stage3PhysicalOutcomeLedgerError::Numeric("terminal snow-bottom temperature")
+            })?;
+    let pressure = openwepp_meteorology::surface_energy::PressurePascals::try_new(
+        inputs.atmospheric_pressure_pa,
+    )
+    .map_err(|_| Stage3PhysicalOutcomeLedgerError::Numeric("terminal snow-bottom pressure"))?;
+    let snow_conductivity =
+        openwepp_meteorology::surface_energy::snow_effective_thermal_conductivity_snobal(
+            inputs.density_kg_m3,
+            temperature_c,
+            pressure,
+        )
+        .map_err(|_| {
+            Stage3PhysicalOutcomeLedgerError::Numeric("terminal snow-bottom conductivity")
+        })?
+        .as_watts_per_meter_kelvin();
+    let resistance = 0.5 * inputs.depth_m / snow_conductivity
+        + 0.5 * inputs.first_soil_configuration.thickness_m
+            / inputs.first_soil_configuration.thermal_conductivity_w_m_k;
+    if !resistance.is_finite() || resistance <= 0.0 {
+        return Err(Stage3PhysicalOutcomeLedgerError::Numeric(
+            "terminal snow-soil resistance",
+        ));
+    }
+    let conductance_w_m2_k = 1.0 / resistance;
+    let snow_capacity_j_m2_k = inputs.ice_kg_m2 * 2_100.0;
+    let soil_capacity_j_m2_k = inputs.first_soil_configuration.areal_heat_capacity_j_m2_k;
+    let beginning_delta_k = inputs.temperature_k - inputs.beginning_first_soil.temperature_k;
+    let cn_denominator = 1.0
+        + 0.5
+            * duration_s
+            * conductance_w_m2_k
+            * (1.0 / snow_capacity_j_m2_k + 1.0 / soil_capacity_j_m2_k);
+    if !cn_denominator.is_finite() || cn_denominator <= 0.0 {
+        return Err(Stage3PhysicalOutcomeLedgerError::Numeric(
+            "terminal snow-soil Crank-Nicolson denominator",
+        ));
+    }
+    let soil_heat_j_m2 = duration_s * conductance_w_m2_k * beginning_delta_k / cn_denominator;
+    let snow_heat_j_m2 = -soil_heat_j_m2;
+    if !soil_heat_j_m2.is_finite() || snow_heat_j_m2.to_bits() != (-soil_heat_j_m2).to_bits() {
+        return Err(Stage3PhysicalOutcomeLedgerError::Closure(
+            "terminal snow-soil equal and opposite heat",
+        ));
+    }
+    let ending_snow_temperature = inputs.temperature_k - soil_heat_j_m2 / snow_capacity_j_m2_k;
+    let ending_enthalpy = inputs.beginning_first_soil.enthalpy_j_m2_ofe_ground + soil_heat_j_m2;
+    let ending_temperature = inputs.beginning_first_soil.temperature_k
+        + soil_heat_j_m2 / inputs.first_soil_configuration.areal_heat_capacity_j_m2_k;
+    if !ending_snow_temperature.is_finite()
+        || ending_snow_temperature <= 0.0
+        || !ending_enthalpy.is_finite()
+        || !ending_temperature.is_finite()
+        || ending_temperature <= 0.0
+    {
+        return Err(Stage3PhysicalOutcomeLedgerError::Numeric(
+            "terminal first-soil ending candidate",
+        ));
+    }
+    let ending_first_soil = openwepp_land_surface_energy::SoilThermalLayerSnapshot {
+        layer_id: inputs.beginning_first_soil.layer_id.clone(),
+        temperature_k: ending_temperature,
+        enthalpy_j_m2_ofe_ground: ending_enthalpy,
+    };
+    let ending_soil_owner_sha256 =
+        digest_bytes(&serde_json::to_vec(&ending_first_soil).map_err(|_| {
+            Stage3PhysicalOutcomeLedgerError::Identity("terminal first-soil candidate seal")
+        })?);
+    let receipt = TerminalSnowSoilTrialReceiptV1 {
+        support: inputs.support,
+        lane_id: inputs.lane_id,
+        ofe_id: inputs.ofe_id.clone(),
+        canonical_source_sha256: inputs.canonical_source_sha256,
+        beginning_snow_temperature_k: inputs.temperature_k,
+        ending_snow_temperature_k: ending_snow_temperature,
+        beginning_soil_temperature_k: inputs.beginning_first_soil.temperature_k,
+        ending_soil_temperature_k: ending_temperature,
+        snow_heat_j_m2,
+        soil_heat_j_m2,
+        ending_soil_candidate_sha256: ending_soil_owner_sha256,
+        receipt_sha256: Digest32::zero(),
+    }
+    .seal()?;
+    Ok(TerminalSnowBottomSoilTrialResultV1 {
+        ending_first_soil,
+        ending_snow_temperature_k: ending_snow_temperature,
+        snow_heat_j_m2,
+        soil_heat_j_m2,
+        receipt,
+    })
+}
+
 /// Event-integrated lower-boundary custody for a lane whose accepted ending
 /// snow owner is dormant.  Unlike the persistent receipt, this wire has no
 /// ending snow temperature: dormancy is proved by the ending owner identity.
@@ -445,6 +687,7 @@ fn append_str(bytes: &mut Vec<u8>, value: &str) {
 mod tests {
     use super::*;
     use openwepp_coupled_time::ModelTimeNs;
+    use openwepp_kernel_contract::SoilLayerId;
 
     fn d(v: u8) -> Digest32 {
         Digest32::from_bytes([v; 32])
@@ -541,6 +784,135 @@ mod tests {
         .seal()
         .expect("terminal receipt");
         assert_ne!(receipt.receipt_sha256, Digest32::zero());
+    }
+
+    #[test]
+    fn terminal_bottom_soil_trial_closes_and_matches_one_volume_persistent_conductivity() {
+        let support = TimeSupport::new(
+            ModelTimeNs::new(1_000_000_000),
+            ModelTimeNs::new(61_000_000_000),
+        )
+        .expect("support");
+        let state = crate::hydrology::Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            41,
+            vec![crate::DirectSnowLayerState {
+                mass_swe_m: 0.08,
+                thickness_m: 0.20,
+                density_kg_m3: 400.0,
+                settle_day_count: 1.0,
+                temperature_c: -4.0,
+                liquid_water_m: 0.0,
+                cold_content_j_m2: 672_000.0,
+                refrozen_liquid_m: 0.0,
+            }],
+        )
+        .expect("persistent state");
+        let projection = crate::hydrology::Wb11HydrologyKernel::project_stage3_bottom_volume_v1(
+            &state, 101_324.6,
+        )
+        .expect("persistent bottom projection");
+        let layer_id = SoilLayerId::try_new("thermal-top").expect("layer");
+        let config = openwepp_land_surface_energy::SoilInterfaceLayer {
+            layer_id: layer_id.clone(),
+            thickness_m: 0.10,
+            thermal_conductivity_w_m_k: 1.5,
+            areal_heat_capacity_j_m2_k: 120_000.0,
+        };
+        let beginning = openwepp_land_surface_energy::SoilThermalLayerSnapshot {
+            layer_id,
+            temperature_k: 271.15,
+            enthalpy_j_m2_ofe_ground: -240_000.0,
+        };
+        let result =
+            evaluate_terminal_snow_bottom_soil_trial_v1(&TerminalSnowBottomSoilTrialInputsV1 {
+                support,
+                lane_id: 41,
+                ofe_id: &OfeId::try_new("ofe-41").expect("ofe"),
+                canonical_source_sha256: projection.beginning_stage3_state_sha256,
+                ice_kg_m2: 80.0,
+                liquid_kg_m2: 0.0,
+                cold_content_j_m2: 672_000.0,
+                depth_m: projection.thickness_m,
+                density_kg_m3: 400.0,
+                temperature_k: projection.temperature_k,
+                atmospheric_pressure_pa: 101_324.6,
+                first_soil_configuration: &config,
+                beginning_first_soil: &beginning,
+            })
+            .expect("terminal trial");
+        let resistance = 0.5 * projection.thickness_m / projection.thermal_conductivity_w_m_k
+            + 0.5 * config.thickness_m / config.thermal_conductivity_w_m_k;
+        let conductance = 1.0 / resistance;
+        let snow_capacity = 80.0 * 2_100.0;
+        let expected_soil_heat =
+            60.0 * conductance * (projection.temperature_k - beginning.temperature_k)
+                / (1.0
+                    + 0.5
+                        * 60.0
+                        * conductance
+                        * (1.0 / snow_capacity + 1.0 / config.areal_heat_capacity_j_m2_k));
+        assert_eq!(
+            result.soil_heat_j_m2.to_bits(),
+            expected_soil_heat.to_bits()
+        );
+        assert_eq!(
+            result.snow_heat_j_m2.to_bits(),
+            (-result.soil_heat_j_m2).to_bits()
+        );
+        assert!(
+            ((result.ending_first_soil.enthalpy_j_m2_ofe_ground
+                - beginning.enthalpy_j_m2_ofe_ground)
+                - result.soil_heat_j_m2)
+                .abs()
+                <= 1.0e-9
+        );
+        let beginning_flux = conductance * (projection.temperature_k - beginning.temperature_k);
+        let ending_flux = conductance
+            * (result.ending_snow_temperature_k - result.ending_first_soil.temperature_k);
+        assert!(
+            (result.soil_heat_j_m2 - 0.5 * (beginning_flux + ending_flux) * 60.0).abs() <= 1.0e-9
+        );
+        result.receipt.validate().expect("sealed receipt");
+    }
+
+    #[test]
+    fn terminal_bottom_soil_trial_rejects_inconsistent_scalar_volume() {
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_000_000_000))
+            .expect("support");
+        let layer_id = SoilLayerId::try_new("thermal-top").expect("layer");
+        let config = openwepp_land_surface_energy::SoilInterfaceLayer {
+            layer_id: layer_id.clone(),
+            thickness_m: 0.1,
+            thermal_conductivity_w_m_k: 1.5,
+            areal_heat_capacity_j_m2_k: 120_000.0,
+        };
+        let beginning = openwepp_land_surface_energy::SoilThermalLayerSnapshot {
+            layer_id,
+            temperature_k: 271.15,
+            enthalpy_j_m2_ofe_ground: 0.0,
+        };
+        let result =
+            evaluate_terminal_snow_bottom_soil_trial_v1(&TerminalSnowBottomSoilTrialInputsV1 {
+                support,
+                lane_id: 1,
+                ofe_id: &OfeId::try_new("ofe-1").expect("ofe"),
+                canonical_source_sha256: d(1),
+                ice_kg_m2: 79.0,
+                liquid_kg_m2: 0.0,
+                cold_content_j_m2: 1.0,
+                depth_m: 0.2,
+                density_kg_m3: 400.0,
+                temperature_k: 269.15,
+                atmospheric_pressure_pa: 101_324.6,
+                first_soil_configuration: &config,
+                beginning_first_soil: &beginning,
+            });
+        assert!(matches!(
+            result,
+            Err(Stage3PhysicalOutcomeLedgerError::Numeric(
+                "terminal snow-bottom soil trial operands"
+            ))
+        ));
     }
 
     #[test]

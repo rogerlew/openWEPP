@@ -17,7 +17,8 @@ pub use snow_mass_transition::{
 pub(crate) use snow_mass_transition::DirectSnowStage3Resolution;
 pub(crate) use runoff_reconciliation::{
     CoveredProbeChildIdentityV1, CoveredTerminalExecutionMode,
-    CoveredTerminalJointTrialStateV1, CoveredTerminalTrialProviderV1,
+    CoveredTerminalEndingSnowHintV1, CoveredTerminalJointTrialStateV1,
+    CoveredTerminalTrialProviderV1,
     CoveredTerminalTrialRequestV1, CoveredTerminalTrialRoleV1,
     CoveredTerminalTrialTransitionV1, STAGE3_DEFAULT_SNOW_ALBEDO,
     stage3_has_represented_ice,

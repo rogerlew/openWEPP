@@ -70,14 +70,58 @@ fn try_actual_terminal_subslab(
         )]));
         let parent_id = beginning_clock.parent_transaction_id();
         let parent_owner_digest = complete_owner_set_digest(beginning_clock.owners())?;
+        // The hydrology provider surface is intentionally restricted to
+        // Stage-3 errors. Retain the exact covered-carrier failure beside the
+        // probe so the attachment boundary can restore its typed owner cause
+        // instead of collapsing it to a generic terminal-custody label.
+        let carrier_failure = std::cell::RefCell::new(None);
         let mut provider = |request: crate::hydrology::CoveredTerminalTrialRequestV1| {
-            let beginning = candidates_by_joint
+            let beginning = if let Some(exact) = candidates_by_joint
                 .borrow()
                 .get(&request.beginning_joint.receipt_sha256())
                 .cloned()
-                .ok_or(DirectSnowStage3EvaluationError::TerminalCustody(
-                    "covered probe typed beginning joint",
-                ))?;
+            {
+                exact
+            } else {
+                // The hydrology post-flux join changes only the canonical
+                // snow member after the carrier has returned its six-owner
+                // candidate. Rebind that typed candidate to the exact joined
+                // seven-owner identity before Half2/retry/root execution.
+                // Rejected previews remain local to this probe map.
+                let matching = candidates_by_joint
+                    .borrow()
+                    .values()
+                    .filter(|candidate| {
+                        request.beginning_joint.owner_bytes().iter().all(
+                            |(owner_id, bytes)| {
+                                owner_id == "snow"
+                                    || candidate
+                                        .joint()
+                                        .owner_bytes()
+                                        .get(owner_id)
+                                        .is_some_and(|candidate_bytes| candidate_bytes == bytes)
+                            },
+                        )
+                    })
+                    .cloned()
+                    .collect::<Vec<_>>();
+                if matching.len() != 1 {
+                    return Err(DirectSnowStage3EvaluationError::TerminalCustody(
+                        "covered probe typed beginning joint",
+                    ));
+                }
+                let carrier = &matching[0];
+                crate::v9_real_consumer_shadow::CoveredCarrierEphemeralCandidatesV1::try_new(
+                    request.beginning_joint.clone(),
+                    carrier.shadow().clone(),
+                    carrier.stage3_by_lane().clone(),
+                )
+                .map_err(|_| {
+                    DirectSnowStage3EvaluationError::TerminalCustody(
+                        "covered probe post-hydrology typed joint",
+                    )
+                })?
+            };
             let projected = prepared
                 .coupled_subslab(request.support, current_child_ordinal)
                 .map_err(|_| {
@@ -133,7 +177,10 @@ fn try_actual_terminal_subslab(
             );
             let result = stack
                 .execute_covered_carrier_phase_v1(&beginning, &request, child)
-                .map_err(|_| {
+                .map_err(|error| {
+                    if carrier_failure.borrow().is_none() {
+                        *carrier_failure.borrow_mut() = Some(error);
+                    }
                     DirectSnowStage3EvaluationError::TerminalCustody(
                         "covered probe carrier fixed point",
                     )
@@ -154,7 +201,16 @@ fn try_actual_terminal_subslab(
             CoveredTerminalExecutionMode::DiscoveryProbe,
             initial_joint,
             &mut provider,
-        )?;
+        );
+        let result = match result {
+            Ok(result) => result,
+            Err(error) => {
+                if let Some(carrier_error) = carrier_failure.into_inner() {
+                    return Err(DirectSnowStage3V11AttachmentError::Owner(carrier_error));
+                }
+                return Err(DirectSnowStage3V11AttachmentError::Stage3(error));
+            }
+        };
         let Some(event) = result.terminal_event else {
             continue;
         };

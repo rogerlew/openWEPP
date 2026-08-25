@@ -99,6 +99,7 @@ mod canonical_owner_bytes;
 #[path = "v11_covered/mod.rs"]
 mod v11_covered;
 pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1;
 pub(crate) use v11_covered::physical_outcome_ledger::ledger_set_digest as stage3_physical_outcome_ledger_set_digest;
 
 pub(crate) use v11_covered::CoveredCarrierEphemeralCandidatesV1;
@@ -1968,7 +1969,11 @@ impl DirectV9RealConsumerShadow {
                     &self.soil_thermal,
                     &nitrogen,
                     &self.biogeochemistry,
-                    self.authority,
+                    // This entry point is the typed V11 snow-covered carrier
+                    // path even for unpublished probe envelopes. Read-only
+                    // disposition changes publication authority, not the
+                    // physical lower-boundary model used by LSE.
+                    openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered,
                     covered_lower_boundaries,
                     bits,
                     !provisional_v11,

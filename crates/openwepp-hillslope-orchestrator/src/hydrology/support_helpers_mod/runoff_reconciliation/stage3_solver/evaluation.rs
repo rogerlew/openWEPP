@@ -229,7 +229,7 @@ impl Wb11HydrologyKernel {
                         let terminal_lane_id = terminal_trial_context
                             .as_ref()
                             .map(|(lane_id, _, _, _)| *lane_id);
-                        let mut terminal = Self::solve_terminal_enthalpy_event(
+                        let (mut terminal, accepted_terminal_joint) = Self::solve_terminal_enthalpy_event(
                             phase_class,
                             hour_index,
                             elapsed_seconds,
@@ -256,7 +256,7 @@ impl Wb11HydrologyKernel {
                                 } else {
                                     0.0
                                 };
-                                let trial_transition = if let Some((lane_id, base_support, _, provider)) =
+                                let trial_transition: Option<CoveredTerminalTrialTransitionV1> = if let Some((lane_id, base_support, _, provider)) =
                                     terminal_trial_context.as_mut()
                                 {
                                     let start_offset_ns = seconds_to_exact_ns(
@@ -322,39 +322,116 @@ impl Wb11HydrologyKernel {
                                             Some(0.0),
                                         )
                                     })?;
-                                    let receipt = (**provider)(CoveredTerminalTrialRequestV1 {
-                                        lane_id: *lane_id,
-                                        support: trial_support,
-                                        role,
-                                        attempt_ordinal,
-                                        ice_kg_m2: trial_state.ice_kg_m2,
-                                        liquid_kg_m2: trial_state.liquid_kg_m2,
-                                        cold_content_j_m2: trial_state.cold_content_j_m2,
-                                        surface_temperature_c,
-                                        snow_depth_m: trial_depth_m,
-                                        snow_density_kg_m3: density_kg_m3,
-                                        beginning_joint: beginning_joint.clone(),
-                                    })?;
-                                    if receipt.boundary.support != trial_support
-                                        || receipt.beginning_joint != *beginning_joint
-                                        || receipt.probe_child_identity.trial_support
-                                            != trial_support
-                                        || receipt.probe_child_identity.role != role
-                                        || receipt.probe_child_identity.attempt_ordinal
-                                            != attempt_ordinal
-                                        || receipt.probe_child_identity.beginning_joint_sha256
-                                            != beginning_joint.receipt_sha256()
-                                    {
-                                        return Err(Wb11HydrologyKernel::stage3_domain_error(
+                                    let mut hint = None;
+                                    let mut accepted = None;
+                                    for coupling_iteration in 0..32_u32 {
+                                        let receipt = (**provider)(CoveredTerminalTrialRequestV1 {
+                                            lane_id: *lane_id,
+                                            support: trial_support,
+                                            role,
+                                            attempt_ordinal,
+                                            coupling_iteration,
+                                            ice_kg_m2: trial_state.ice_kg_m2,
+                                            liquid_kg_m2: trial_state.liquid_kg_m2,
+                                            cold_content_j_m2: trial_state.cold_content_j_m2,
+                                            surface_temperature_c,
+                                            snow_depth_m: trial_depth_m,
+                                            snow_density_kg_m3: density_kg_m3,
+                                            ending_snow_hint: hint,
+                                            beginning_joint: beginning_joint.clone(),
+                                        })?;
+                                        if receipt.boundary.support != trial_support
+                                            || receipt.beginning_joint != *beginning_joint
+                                            || receipt.probe_child_identity.trial_support
+                                                != trial_support
+                                            || receipt.probe_child_identity.role != role
+                                            || receipt.probe_child_identity.attempt_ordinal
+                                                != attempt_ordinal
+                                            || receipt.probe_child_identity.beginning_joint_sha256
+                                                != beginning_joint.receipt_sha256()
+                                        {
+                                            return Err(Wb11HydrologyKernel::stage3_domain_error(
+                                                phase_class,
+                                                "snow.terminal_trial_boundary_support_join",
+                                                duration_seconds,
+                                                Some(duration_seconds),
+                                                Some(duration_seconds),
+                                            )
+                                            .into());
+                                        }
+                                        let carrier = Self::stage3_hourly_surface_energy(
                                             phase_class,
-                                            "snow.terminal_trial_boundary_support_join",
-                                            duration_seconds,
-                                            Some(duration_seconds),
-                                            Some(duration_seconds),
-                                        )
-                                        .into());
+                                            inputs,
+                                            hourly,
+                                            Stage3SurfaceInterval {
+                                                surface_temperature_c,
+                                                snow_depth_m: trial_depth_m,
+                                                snow_density_kg_m3: density_kg_m3,
+                                                duration_seconds,
+                                                forcing_duration_seconds: duration_seconds,
+                                                boundary: Some(receipt.boundary.clone()),
+                                            },
+                                            Some(tag.operator),
+                                            DirectSnowDiagnosticCapture::Verbose,
+                                        )?;
+                                        let surface = carrier.diagnostics.ok_or_else(|| {
+                                            Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                                                phase_class,
+                                                symbol: BoundarySymbol::from(
+                                                    "snow.terminal_enthalpy_diagnostics",
+                                                ),
+                                            }
+                                        })?;
+                                        let flux = TerminalFluxIntegral {
+                                            complete_energy_j_m2: surface.shadow_complete_energy_j_m2,
+                                            vapor_mass_exchange_kg_m2: surface.shadow_vapor_mass_exchange_kg_m2,
+                                            shortwave_energy_j_m2: carrier.shortwave_j_m2,
+                                            longwave_energy_j_m2: carrier.longwave_j_m2,
+                                            sensible_energy_j_m2: surface.shadow_sensible_flux_w_m2 * duration_seconds,
+                                            latent_energy_j_m2: surface.shadow_latent_flux_w_m2 * duration_seconds,
+                                            advected_energy_j_m2: surface.shadow_advected_flux_w_m2 * duration_seconds,
+                                            snow_soil_heat_energy_j_m2: carrier.reconciliation.as_ref().map_or(0.0, |value| value.snow_soil_heat_flux_w_m2 * duration_seconds),
+                                            external_liquid_kg_m2: hourly.rain_m * STAGE3_RHO_WATER_KG_M3 * duration_seconds / support_seconds,
+                                        };
+                                        let preview = Self::terminal_transition(trial_state, flux).state;
+                                        let next_hint = CoveredTerminalEndingSnowHintV1 {
+                                            ice_kg_m2: preview.ice_kg_m2,
+                                            liquid_kg_m2: preview.liquid_kg_m2,
+                                            cold_content_j_m2: preview.cold_content_j_m2,
+                                            surface_temperature_c: Self::stage3_temperature_from_cold_content_values(
+                                                preview.ice_kg_m2 / STAGE3_RHO_WATER_KG_M3,
+                                                preview.cold_content_j_m2,
+                                            ),
+                                        };
+                                        let converged = hint.is_some_and(|previous: CoveredTerminalEndingSnowHintV1| {
+                                            (previous.ice_kg_m2 - next_hint.ice_kg_m2).abs() <= 1.0e-9
+                                                && (previous.liquid_kg_m2 - next_hint.liquid_kg_m2).abs() <= 1.0e-9
+                                                && (previous.cold_content_j_m2 - next_hint.cold_content_j_m2).abs() <= 1.0e-6
+                                                && (previous.surface_temperature_c - next_hint.surface_temperature_c).abs() <= 1.0e-9
+                                        });
+                                        accepted = Some((receipt, flux));
+                                        if converged {
+                                            break;
+                                        }
+                                        hint = Some(next_hint);
                                     }
-                                    Some(receipt)
+                                    let (receipt, flux) = accepted.ok_or(
+                                        DirectSnowStage3EvaluationError::TerminalCustody(
+                                            "covered terminal coupled trial missing result",
+                                        ),
+                                    )?;
+                                    let converged = hint.is_some_and(|previous| {
+                                        let preview = Self::terminal_transition(trial_state, flux).state;
+                                        (previous.ice_kg_m2 - preview.ice_kg_m2).abs() <= 1.0e-9
+                                            && (previous.liquid_kg_m2 - preview.liquid_kg_m2).abs() <= 1.0e-9
+                                            && (previous.cold_content_j_m2 - preview.cold_content_j_m2).abs() <= 1.0e-6
+                                    });
+                                    if !converged {
+                                        return Err(DirectSnowStage3EvaluationError::TerminalCustody(
+                                            "covered terminal coupled trial nonconvergence",
+                                        ));
+                                    }
+                                    return Ok((flux, Some(receipt.ending_joint)));
                                 } else {
                                     None
                                 };
@@ -478,6 +555,7 @@ impl Wb11HydrologyKernel {
                                 reason: "terminal_enthalpy_event_v1",
                             };
                         summary.terminal_event = Some(terminal);
+                        summary.terminal_ending_joint = accepted_terminal_joint;
                         summary.terminal_intervals.push(terminal);
                         if terminal.event_occurred {
                             for status in summary

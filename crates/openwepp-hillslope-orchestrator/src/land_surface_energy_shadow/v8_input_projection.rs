@@ -559,6 +559,22 @@ impl ValidatedV8RuntimeInputProjection {
                         {
                             column.authority = authority;
                             column.stage3_lower_boundary = Some(boundary.clone());
+                            // The typed tile may have been projected with a
+                            // different provisional Stage-3 boundary. Re-seal
+                            // optical custody from this tile's exact current
+                            // two-stream results and the boundary being bound;
+                            // retaining the earlier optical receipt mixes two
+                            // carrier iterations and breaks directional ground
+                            // absorption closure.
+                            column.stage3_optical = Some(stage3_optical_receipt(
+                                &tile.ofe_id,
+                                &tile.tile_id,
+                                &tile.radiation.visible_direct,
+                                &tile.radiation.visible_diffuse,
+                                &tile.radiation.near_infrared_direct,
+                                &tile.radiation.near_infrared_diffuse,
+                                boundary,
+                            )?);
                         }
                     } else {
                         column.authority = authority;
@@ -1281,7 +1297,7 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
     interval_index: u8,
     authenticated_duration_s_bits: Option<u64>,
     covered_lower_boundaries: Option<&BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>>,
-    _covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
+    covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
 ) -> Result<ValidatedV8RuntimeInputProjection, V8InputProjectionError> {
     vegetation_configuration.validate_v8()?;
     let configured_bindings = vegetation_configuration
@@ -1404,10 +1420,11 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
                     canopy_forcing.forcing().rain_kg_m2,
                 )?;
             }
-            let covered_lower_boundary = if covered {
-                covered_lower_boundaries.and_then(|boundaries| {
-                    boundaries.get(&(ofe.ofe_id.clone(), tile.tile_id.clone()))
-                })
+            let destination = (ofe.ofe_id.clone(), tile.tile_id.clone());
+            let stage3_covered_destination =
+                covered_destinations.is_none_or(|destinations| destinations.contains(&destination));
+            let covered_lower_boundary = if covered && stage3_covered_destination {
+                covered_lower_boundaries.and_then(|boundaries| boundaries.get(&destination))
             } else {
                 None
             };

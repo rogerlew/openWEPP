@@ -9,6 +9,87 @@ use crate::hydrology::{
     CoveredTerminalTrialRequestV1, CoveredTerminalTrialTransitionV1,
 };
 
+/// Snow operand presented to the shared covered carrier engine.
+///
+/// Persistent execution uses the canonical Stage-3 lane map. Terminal trials
+/// retain that map only as lineage and replace the target lane's physical
+/// bottom/surface operands with the aggregate one-volume trial state.
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum CoveredSnowBoundaryStateV1 {
+    Persistent,
+    TerminalTrial {
+        lane_id: u32,
+        ice_kg_m2: f64,
+        liquid_kg_m2: f64,
+        cold_content_j_m2: f64,
+        surface_temperature_k: f64,
+        depth_m: f64,
+        density_kg_m3: f64,
+    },
+}
+
+/// Whether a shared carrier result is an unpublished probe or the candidate
+/// used by the accepted covered execution path.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) enum CoveredCarrierExecutionIdentityV1 {
+    Probe(CoveredProbeChildIdentityV1),
+    Accepted,
+}
+
+impl CoveredSnowBoundaryStateV1 {
+    fn apply_to_boundaries(
+        self,
+        bindings: &[crate::direct_runtime::DirectSurfaceLiquidOfeBinding],
+        boundaries: &mut BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+    ) -> Result<(), DirectV11RealConsumerError> {
+        let Self::TerminalTrial {
+            lane_id,
+            ice_kg_m2,
+            liquid_kg_m2,
+            cold_content_j_m2,
+            surface_temperature_k,
+            depth_m,
+            density_kg_m3,
+        } = self
+        else {
+            return Ok(());
+        };
+        if !surface_temperature_k.is_finite()
+            || surface_temperature_k <= 0.0
+            || !ice_kg_m2.is_finite()
+            || ice_kg_m2 < 0.0
+            || !liquid_kg_m2.is_finite()
+            || liquid_kg_m2 < 0.0
+            || !cold_content_j_m2.is_finite()
+            || cold_content_j_m2 < 0.0
+            || !depth_m.is_finite()
+            || depth_m < 0.0
+            || !density_kg_m3.is_finite()
+            || density_kg_m3 < 0.0
+            || (ice_kg_m2 - density_kg_m3 * depth_m).abs() > 1.0e-9
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered terminal trial snow boundary state",
+            ));
+        }
+        let mut matched = false;
+        for (destination, boundary) in boundaries {
+            if bindings.iter().any(|binding| {
+                binding.ofe_id == destination.0 && binding.production_lane_id == lane_id
+            }) {
+                matched = true;
+                boundary.snow_temperature_k = surface_temperature_k;
+            }
+        }
+        if !matched {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered terminal trial lane topology",
+            ));
+        }
+        Ok(())
+    }
+}
+
 /// Typed companions for opaque canonical joint-owner bytes.
 ///
 /// Canonical owner bytes are intentionally not a deserialization protocol.
@@ -19,6 +100,8 @@ pub(crate) struct CoveredCarrierEphemeralCandidatesV1 {
     joint: CoveredTerminalJointTrialStateV1,
     shadow: DirectV10RealConsumerShadow,
     stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    terminal_snow_soil_trial_receipt:
+        Option<physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1>,
 }
 
 impl CoveredCarrierEphemeralCandidatesV1 {
@@ -43,6 +126,7 @@ impl CoveredCarrierEphemeralCandidatesV1 {
             joint,
             shadow,
             stage3_by_lane,
+            terminal_snow_soil_trial_receipt: None,
         })
     }
 
@@ -78,6 +162,38 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         request: &CoveredTerminalTrialRequestV1,
         child: CoveredProbeChildIdentityV1,
     ) -> Result<CoveredCarrierPhaseResultV1, DirectV11RealConsumerError> {
+        self.execute_shared_covered_carrier_engine_v1(
+            beginning,
+            request,
+            CoveredSnowBoundaryStateV1::TerminalTrial {
+                lane_id: request.lane_id,
+                ice_kg_m2: request.ice_kg_m2,
+                liquid_kg_m2: request.liquid_kg_m2,
+                cold_content_j_m2: request.cold_content_j_m2,
+                surface_temperature_k: request.surface_temperature_c + 273.15,
+                depth_m: request.snow_depth_m,
+                density_kg_m3: request.snow_density_kg_m3,
+            },
+            CoveredCarrierExecutionIdentityV1::Probe(child),
+        )
+    }
+
+    /// Execute the value-returning covered carrier engine without adopting a
+    /// slab or publishing any receipt. Both persistent and terminal callers
+    /// use this mapping; execution identity controls only lineage, never
+    /// physical operands.
+    fn execute_shared_covered_carrier_engine_v1(
+        &self,
+        beginning: &CoveredCarrierEphemeralCandidatesV1,
+        request: &CoveredTerminalTrialRequestV1,
+        snow_boundary_state: CoveredSnowBoundaryStateV1,
+        execution_identity: CoveredCarrierExecutionIdentityV1,
+    ) -> Result<CoveredCarrierPhaseResultV1, DirectV11RealConsumerError> {
+        let CoveredCarrierExecutionIdentityV1::Probe(child) = execution_identity else {
+            return Err(DirectV11RealConsumerError::Identity(
+                "accepted shared carrier engine not yet joined",
+            ));
+        };
         if child.trial_support != request.support
             || child.role != request.role
             || child.attempt_ordinal != request.attempt_ordinal
@@ -117,7 +233,6 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             &beginning.stage3_by_lane,
             self.stage3_forcing_by_lane,
         )?;
-        let covered_destinations = carrier_receipts.keys().cloned().collect::<BTreeSet<_>>();
         let seed = self.stage3_lower_boundaries_by_destination(
             &carrier_receipts,
             self.stage3_inputs_by_lane,
@@ -125,168 +240,147 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         )?;
         let mut seed =
             self.merge_latest_stage3_state_operands(&seed, &beginning.stage3_by_lane)?;
-        let trial_temperature_k = request.surface_temperature_c + 273.15;
-        if !trial_temperature_k.is_finite() || trial_temperature_k <= 0.0 {
+        snow_boundary_state.apply_to_boundaries(
+            &beginning.shadow.inner.surface_configuration.ofe_bindings,
+            &mut seed,
+        )?;
+        // Stage-3 lower-boundary construction, rather than the broader
+        // carrier-diagnostic receipt topology, is the authority for which
+        // destinations enter the covered LSE branch. Ordinary canopy/open
+        // destinations remain in the complete envelope below, but must not
+        // be reclassified as snow-covered merely because they have a carrier
+        // diagnostic receipt.
+        let covered_destinations = seed.keys().cloned().collect::<BTreeSet<_>>();
+        if covered_destinations != self.covered_expected_destinations() {
             return Err(DirectV11RealConsumerError::Identity(
-                "covered carrier trial snow temperature",
+                "covered carrier Stage-3 lower-boundary membership",
             ));
-        }
-        // The hydrology root solver owns the evolving aggregate snow state.
-        // Every LSE carrier evaluation must therefore use this trial's exact
-        // surface temperature, never the persistent support's beginning value.
-        for (destination, boundary) in &mut seed {
-            if beginning
-                .shadow
-                .inner
-                .surface_configuration
-                .ofe_bindings
-                .iter()
-                .any(|binding| {
-                    binding.ofe_id == destination.0
-                        && binding.production_lane_id == request.lane_id
-                })
-            {
-                boundary.snow_temperature_k = trial_temperature_k;
-            }
         }
         let (open_diagnostics, open_boundaries, _) =
             self.open_snow_boundaries_by_destination(&beginning.stage3_by_lane)?;
-        let (envelope, corrected) = 'fixed_point: {
-            let mut iterate = seed;
-            for _ in 0..COVERED_FIXED_POINT_POLICY.max_iterations {
-                let mut execution_iterate = iterate.clone();
-                for (destination, boundary) in &open_boundaries {
-                    if execution_iterate
-                        .insert(destination.clone(), boundary.clone())
-                        .is_some()
-                    {
-                        return Err(DirectV11RealConsumerError::Identity(
-                            "covered carrier covered/open destination intersection",
-                        ));
-                    }
-                }
-                let envelope = beginning
-                    .shadow
-                    .inner
-                    .construct_covered_interval_envelope_with_duration(
-                        self.day_index,
-                        self.interval_index,
-                        self.interval,
-                        interval_s,
-                        request.support.duration_s_bits(),
-                        &covered_destinations,
-                        &execution_iterate,
-                        true,
-                        false,
-                        self.wb14_coupled_child_binding,
-                    )
-                    .map_err(|error| {
-                        DirectV11RealConsumerError::Runtime(
-                            DirectV10RealConsumerError::Runtime(error),
-                        )
-                    })?;
-                let (next, _, _) =
-                    self.corrected_covered_boundaries_from_envelope(&iterate, &envelope)?;
-                let lse_states = envelope
-                    .covered_lse_iteration_state_by_destination()
-                    .map_err(|_| {
-                        DirectV11RealConsumerError::Identity("covered carrier LSE state")
-                    })?;
-                let next = self.apply_lse_iteration_exchange(&next, &lse_states)?;
-                let mut next =
-                    self.merge_latest_stage3_state_operands(&next, &beginning.stage3_by_lane)?;
-                for (destination, boundary) in &mut next {
-                    if beginning
-                        .shadow
-                        .inner
-                        .surface_configuration
-                        .ofe_bindings
-                        .iter()
-                        .any(|binding| {
-                            binding.ofe_id == destination.0
-                                && binding.production_lane_id == request.lane_id
-                        })
-                    {
-                        boundary.snow_temperature_k = trial_temperature_k;
-                    }
-                }
-                if covered_fixed_point_boundaries_equal(&iterate, &next) {
-                    // Rebuild once from the converged operand so the retained
-                    // typed endpoints and boundary share one exact mapping.
-                    let final_envelope = beginning
-                        .shadow
-                        .inner
-                        .construct_covered_interval_envelope_with_duration(
-                            self.day_index,
-                            self.interval_index,
-                            self.interval,
-                            interval_s,
-                            request.support.duration_s_bits(),
-                            &covered_destinations,
-                            &{
-                                let mut execution = next.clone();
-                                for (destination, boundary) in &open_boundaries {
-                                    execution.insert(destination.clone(), boundary.clone());
-                                }
-                                execution
-                            },
-                            false,
-                            false,
-                            self.wb14_coupled_child_binding,
-                        )
-                        .map_err(|error| {
-                            DirectV11RealConsumerError::Runtime(
-                                DirectV10RealConsumerError::Runtime(error),
-                            )
-                        })?;
-                    let (rebuilt, _, _) = self
-                        .corrected_covered_boundaries_from_envelope(&next, &final_envelope)?;
-                    let final_lse = final_envelope
-                        .covered_lse_iteration_state_by_destination()
-                        .map_err(|_| {
-                            DirectV11RealConsumerError::Identity(
-                                "covered carrier final LSE state",
-                            )
-                        })?;
-                    let rebuilt = self.apply_lse_iteration_exchange(&rebuilt, &final_lse)?;
-                    let mut rebuilt = self.merge_latest_stage3_state_operands(
-                        &rebuilt,
-                        &beginning.stage3_by_lane,
-                    )?;
-                    for (destination, boundary) in &mut rebuilt {
-                        if beginning
-                            .shadow
-                            .inner
-                            .surface_configuration
-                            .ofe_bindings
-                            .iter()
-                            .any(|binding| {
-                                binding.ofe_id == destination.0
-                                    && binding.production_lane_id == request.lane_id
-                            })
-                        {
-                            boundary.snow_temperature_k = trial_temperature_k;
-                        }
-                    }
-                    if !covered_fixed_point_boundaries_equal(&next, &rebuilt) {
-                        return Err(DirectV11RealConsumerError::Identity(
-                            "covered carrier rebuilt fixed-point mismatch",
-                        ));
-                    }
-                    break 'fixed_point (final_envelope, rebuilt);
-                }
-                iterate = next;
-            }
+        if covered_destinations
+            .iter()
+            .any(|destination| open_boundaries.contains_key(destination))
+        {
             return Err(DirectV11RealConsumerError::Identity(
-                "covered carrier fixed-point iteration limit",
+                "covered carrier Stage-3/open destination membership",
             ));
-        };
-        let precipitation_sets = self.precipitation_parcel_sets(request.support, &envelope)?;
-        let snow_soil = self.snow_soil_heat_receipts(
-            request.support,
-            &beginning.stage3_by_lane,
-            &beginning.shadow.inner.soil_thermal,
+        }
+        // One provider call is one joint carrier mapping. The hydrology
+        // terminal solver owns the outer fixed-point replay and returns the
+        // preceding snow estimate through `ending_snow_hint`; iterating only
+        // the carrier here would omit snow and soil from convergence.
+        let envelope = self.build_covered_carrier_envelope_value_v1(
+            CoveredCarrierEnvelopeBuildV1 {
+                candidate: &beginning.shadow,
+                interval_s,
+                duration_s_bits: request.support.duration_s_bits(),
+                covered_destinations: &covered_destinations,
+                covered_boundaries: &seed,
+                open_boundaries: &open_boundaries,
+                // Every provider replay starts from an unsealed carrier
+                // operand. Coupling iteration is joint-solver chronology, not
+                // authority to reinterpret that operand as a final optical
+                // boundary.
+                provisional: true,
+                finalize_wb14_parent_interval: false,
+            },
         )?;
+        let (corrected, _lse_states) = self.rebuild_covered_lse_carrier_value_v1(
+            &seed,
+            &envelope,
+            &beginning.stage3_by_lane,
+            snow_boundary_state,
+        )?;
+        let precipitation_sets = self.precipitation_parcel_sets(request.support, &envelope)?;
+        let lane_id = request.lane_id;
+        let ofe_id = self
+            .covered_lane_to_ofe(&beginning.stage3_by_lane)?
+            .remove(&lane_id)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "covered carrier terminal snow-soil OFE",
+            ))?;
+        let configured_ofe = beginning
+            .shadow
+            .inner
+            .lse_configuration
+            .ofes
+            .iter()
+            .find(|value| value.ofe_id == ofe_id)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "covered carrier terminal configured OFE",
+            ))?;
+        let configured_top = configured_ofe.soil_interface_layers.first().ok_or(
+            DirectV11RealConsumerError::Identity("covered carrier terminal configured soil top"),
+        )?;
+        let beginning_soil_ofe = beginning
+            .shadow
+            .inner
+            .soil_thermal
+            .ofes
+            .iter()
+            .find(|value| value.ofe_id == ofe_id)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "covered carrier terminal beginning soil OFE",
+            ))?;
+        let beginning_soil_top = beginning_soil_ofe.ordered_layers.first().ok_or(
+            DirectV11RealConsumerError::Identity("covered carrier terminal beginning soil top"),
+        )?;
+        let stage3_inputs = self.stage3_inputs_by_lane.get(&lane_id).ok_or(
+            DirectV11RealConsumerError::Identity("covered carrier terminal Stage-3 inputs"),
+        )?;
+        let terminal_soil_trial = physical_outcome_ledger::evaluate_terminal_snow_bottom_soil_trial_v1(
+            &physical_outcome_ledger::TerminalSnowBottomSoilTrialInputsV1 {
+                support: request.support,
+                lane_id,
+                ofe_id: &ofe_id,
+                canonical_source_sha256: child.receipt_sha256,
+                ice_kg_m2: request.ice_kg_m2,
+                liquid_kg_m2: request.liquid_kg_m2,
+                cold_content_j_m2: request.cold_content_j_m2,
+                depth_m: request.snow_depth_m,
+                density_kg_m3: request.snow_density_kg_m3,
+                temperature_k: request.surface_temperature_c + 273.15,
+                atmospheric_pressure_pa: stage3_inputs
+                    .surface_energy_options
+                    .atmospheric_pressure_pa,
+                first_soil_configuration: configured_top,
+                beginning_first_soil: beginning_soil_top,
+            },
+        )
+        .map_err(|_| {
+            DirectV11RealConsumerError::Identity("covered carrier terminal snow-soil trial")
+        })?;
+        let terminal_soil_credit = SoilThermalTopBoundaryCreditV1 {
+            lane_id,
+            ofe_id: ofe_id.clone(),
+            first_layer_id: configured_top.layer_id.clone(),
+            beginning_owner_id: beginning.shadow.inner.soil_thermal.owner_id.clone(),
+            beginning_configuration_sha256: beginning
+                .shadow
+                .inner
+                .soil_thermal
+                .configuration_sha256
+                .clone(),
+            beginning_state_sha256: beginning
+                .shadow
+                .inner
+                .soil_thermal
+                .state_sha256
+                .clone(),
+            support_start_ns: i64::try_from(request.support.start_ns().get()).map_err(|_| {
+                DirectV11RealConsumerError::Identity("terminal soil credit support start")
+            })?,
+            support_end_ns: i64::try_from(request.support.end_ns().get()).map_err(|_| {
+                DirectV11RealConsumerError::Identity("terminal soil credit support end")
+            })?,
+            accepted_positive_downward_j_m2_ofe_ground: terminal_soil_trial.soil_heat_j_m2,
+            soil_thermal_credit_j_m2_ofe_ground: terminal_soil_trial.soil_heat_j_m2,
+            snow_soil_heat_receipt_sha256: Sha256Digest::try_new(digest32_hex(
+                terminal_soil_trial.receipt.receipt_sha256,
+            ))
+            .map_err(|_| DirectV11RealConsumerError::Identity("terminal soil credit digest"))?,
+        };
         let destination_receipts = carrier_receipts
             .iter()
             .map(|(key, value)| (key.clone(), value.diagnostic_sha256))
@@ -301,7 +395,6 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             &corrected,
             interval_s,
         )?;
-        let lane_id = request.lane_id;
         let lane_terms = terms.get(&lane_id).ok_or(
             DirectV11RealConsumerError::Identity("covered carrier active lane"),
         )?;
@@ -335,12 +428,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 shortwave_energy_j_m2: lane_terms.snow_absorbed_shortwave_w_m2 * interval_s,
                 net_longwave_energy_j_m2: lane_terms.snow_net_longwave_w_m2 * interval_s,
                 precipitation_advection_j_m2: advection,
-                snow_soil_heat_j_m2: snow_soil
-            .get(&lane_id)
-                    .ok_or(DirectV11RealConsumerError::Identity(
-                        "covered carrier snow-soil lane",
-                    ))?
-                    .snow_candidate_heat_j_m2_ofe_ground,
+                snow_soil_heat_j_m2: terminal_soil_trial.snow_heat_j_m2,
                 latent_heat_j_kg: lane_terms.latent_heat_j_kg,
                 beginning_stage3_state_sha256: snow_digest,
                 identity: Stage3BoundaryIdentity::Provisional {
@@ -357,7 +445,11 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         candidate.inner.authority = CoveredColumnAuthority::V11SnowCovered;
         candidate
             .inner
-            .accept_envelope(envelope.transaction_id(), &envelope)
+            .accept_envelope_with_soil_top_boundary_credits(
+                envelope.transaction_id(),
+                &envelope,
+                &[terminal_soil_credit],
+            )
             .map_err(|error| {
                 DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
             })?;
@@ -373,17 +465,19 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         ending_owner_bytes.insert("snow".to_owned(), trial_snow);
         let ending_joint = CoveredTerminalJointTrialStateV1::try_new(ending_owner_bytes)
             .map_err(|_| DirectV11RealConsumerError::Identity("covered carrier ending joint"))?;
-        let ending_candidates = CoveredCarrierEphemeralCandidatesV1::try_new(
+        let mut ending_candidates = CoveredCarrierEphemeralCandidatesV1::try_new(
             ending_joint,
             candidate,
             beginning.stage3_by_lane.clone(),
         )?;
+        ending_candidates.terminal_snow_soil_trial_receipt =
+            Some(terminal_soil_trial.receipt.clone());
         let transition = CoveredTerminalTrialTransitionV1 {
             boundary,
             beginning_joint: beginning.joint.clone(),
             ending_joint: ending_candidates.joint.clone(),
             probe_child_identity: child,
-            terminal_snow_soil_receipt: None,
+            trial_snow_soil_receipt: Some(terminal_soil_trial.receipt),
         };
         Ok(CoveredCarrierPhaseResultV1 {
             transition,
@@ -422,14 +516,18 @@ mod covered_carrier_phase_tests {
     #[test]
     fn phase_receiver_is_immutable_and_trial_identity_is_exact() {
         let source = include_str!("carrier_phase.rs");
+        let implementation = source
+            .split("#[cfg(test)]")
+            .next()
+            .expect("implementation source");
         assert!(source.contains("execute_covered_carrier_phase_v1(\n        &self,"));
         assert!(source.contains("child.trial_support != request.support"));
         assert!(source.contains("child.beginning_joint_sha256 != beginning.joint.receipt_sha256()"));
         assert!(source.contains("forcing.duration_seconds.to_bits() != interval_s.to_bits()"));
         assert!(source.contains("boundary.snow_temperature_k = trial_temperature_k"));
-        assert!(source.contains("'fixed_point:"));
-        assert!(source.contains("covered_fixed_point_boundaries_equal"));
+        assert!(source.contains("One provider call is one joint carrier mapping"));
+        assert!(source.contains("provisional: true"));
         assert!(source.contains("accept_envelope(envelope.transaction_id(), &envelope)"));
-        assert!(!source.contains("let ending_candidates = beginning.clone()"));
+        assert!(!implementation.contains("let ending_candidates = beginning.clone()"));
     }
 }
