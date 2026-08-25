@@ -225,7 +225,11 @@ impl Wb11HydrologyKernel {
                                 liquid_kg_m2: start_liquid_kg_m2,
                                 cold_content_j_m2: start_cold_content_j_m2,
                             },
-                            |trial_state, relative_start_seconds, duration_seconds| {
+                            |trial_state,
+                             relative_start_seconds,
+                             duration_seconds,
+                             role,
+                             attempt_ordinal| {
                                 let surface_temperature_c =
                                     Self::stage3_temperature_from_cold_content_values(
                                         trial_state.ice_kg_m2 / STAGE3_RHO_WATER_KG_M3,
@@ -295,6 +299,8 @@ impl Wb11HydrologyKernel {
                                         })?;
                                     let receipt = (**provider)(CoveredTerminalTrialRequestV1 {
                                         support: trial_support,
+                                        role,
+                                        attempt_ordinal,
                                         ice_kg_m2: trial_state.ice_kg_m2,
                                         liquid_kg_m2: trial_state.liquid_kg_m2,
                                         cold_content_j_m2: trial_state.cold_content_j_m2,

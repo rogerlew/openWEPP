@@ -171,7 +171,13 @@ impl Wb11HydrologyKernel {
         mut flux_integral: F,
     ) -> Result<DirectSnowTerminalEventResult, DirectSnowStage3EvaluationError>
     where
-        F: FnMut(TerminalState, f64, f64) -> Result<TerminalFluxIntegral, DirectSnowStage3EvaluationError>,
+        F: FnMut(
+            TerminalState,
+            f64,
+            f64,
+            CoveredTerminalTrialRoleV1,
+            u32,
+        ) -> Result<TerminalFluxIntegral, DirectSnowStage3EvaluationError>,
     {
         if !requested_seconds.is_finite()
             || requested_seconds <= 0.0
@@ -195,6 +201,14 @@ impl Wb11HydrologyKernel {
         let mut rejected_trials = 0_u32;
         let mut consecutive_rejections = 0_u32;
         let mut maximum_scaled_error: f64 = 0.0;
+        let mut attempt_ordinal = 0_u32;
+        let next_attempt = |value: u32| {
+            value.checked_add(1).ok_or(
+                DirectSnowStage3EvaluationError::TerminalNumerics(
+                    SnowTerminalNumericsFailure::DomainOrNonFinite,
+                ),
+            )
+        };
         let mut event_bracket_width_seconds = 0.0;
         let mut event_bracket_lower_seconds = 0.0;
         let mut event_bracket_upper_seconds = 0.0;
@@ -205,14 +219,35 @@ impl Wb11HydrologyKernel {
         while elapsed < requested_seconds && state.ice_kg_m2 > 0.0 {
             let remaining = requested_seconds - elapsed;
             let dt = trial_seconds.min(remaining);
-            let full_flux = flux_integral(state, elapsed, dt)?;
+            let full_role = if consecutive_rejections == 0 {
+                CoveredTerminalTrialRoleV1::Full
+            } else {
+                CoveredTerminalTrialRoleV1::Retry
+            };
+            let full_flux = flux_integral(state, elapsed, dt, full_role, attempt_ordinal)?;
+            attempt_ordinal = next_attempt(attempt_ordinal)?;
             let full = Self::terminal_transition(state, full_flux);
             let half_dt = 0.5 * dt;
-            let first = Self::terminal_transition(state, flux_integral(state, elapsed, half_dt)?);
+            let first_flux = flux_integral(
+                state,
+                elapsed,
+                half_dt,
+                CoveredTerminalTrialRoleV1::Half1,
+                attempt_ordinal,
+            )?;
+            attempt_ordinal = next_attempt(attempt_ordinal)?;
+            let first = Self::terminal_transition(state, first_flux);
             let second = Self::terminal_transition(
                 first.state,
-                flux_integral(first.state, elapsed + half_dt, half_dt)?,
+                flux_integral(
+                    first.state,
+                    elapsed + half_dt,
+                    half_dt,
+                    CoveredTerminalTrialRoleV1::Half2,
+                    attempt_ordinal,
+                )?,
             );
+            attempt_ordinal = next_attempt(attempt_ordinal)?;
             let refined = TerminalTrial {
                 state: second.state,
                 ledger: first.ledger.add(second.ledger),
@@ -254,8 +289,15 @@ impl Wb11HydrologyKernel {
                 let mut lower_solid = event_start.ice_kg_m2;
                 let mut event = Self::terminal_transition(
                     event_start,
-                    flux_integral(event_start, elapsed + event_prefix_seconds, upper)?,
+                    flux_integral(
+                        event_start,
+                        elapsed + event_prefix_seconds,
+                        upper,
+                        CoveredTerminalTrialRoleV1::BracketUpper,
+                        attempt_ordinal,
+                    )?,
                 );
+                attempt_ordinal = next_attempt(attempt_ordinal)?;
                 if event.state.ice_kg_m2 > 0.0 {
                     return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
                         SnowTerminalNumericsFailure::InvalidEventBracket,
@@ -273,8 +315,11 @@ impl Wb11HydrologyKernel {
                             event_start,
                             elapsed + event_prefix_seconds,
                             middle,
+                            CoveredTerminalTrialRoleV1::Root,
+                            attempt_ordinal,
                         )?,
                     );
+                    attempt_ordinal = next_attempt(attempt_ordinal)?;
                     if middle_trial.state.ice_kg_m2 > lower_solid
                         || middle_trial.state.ice_kg_m2 < upper_solid
                     {
@@ -434,7 +479,7 @@ mod tests {
             0.0,
             seconds,
             start,
-            |_, _, duration| {
+            |_, _, duration, _, _| {
                 Ok(TerminalFluxIntegral {
                     complete_energy_j_m2: energy_rate_w_m2 * duration,
                     vapor_mass_exchange_kg_m2: vapor_rate_kg_m2_s * duration,
@@ -484,8 +529,8 @@ mod tests {
                 liquid_kg_m2: 0.0,
                 cold_content_j_m2: 0.0,
             },
-            |_, relative_start, duration| {
-                trials.push((relative_start, duration));
+            |_, relative_start, duration, role, attempt| {
+                trials.push((relative_start, duration, role, attempt));
                 Ok(TerminalFluxIntegral {
                     complete_energy_j_m2: 333.6 * duration,
                     vapor_mass_exchange_kg_m2: 0.0,
@@ -501,15 +546,22 @@ mod tests {
         )
         .unwrap();
         assert!(event.event_occurred);
-        assert!(trials.iter().all(|(start, duration)| {
+        assert!(trials.iter().all(|(start, duration, _, _)| {
             start.is_finite()
                 && duration.is_finite()
                 && *start >= 0.0
                 && *duration > 0.0
                 && start + duration <= 1_000.0
         }));
-        assert!(trials.iter().any(|(start, _)| *start > 0.0));
+        assert!(trials.iter().any(|(start, _, _, _)| *start > 0.0));
         assert!(trials.windows(2).any(|pair| pair[0].0 == pair[1].0));
+        assert!(trials
+            .iter()
+            .enumerate()
+            .all(|(index, (_, _, _, attempt))| *attempt == index as u32));
+        assert!(trials
+            .iter()
+            .any(|(_, _, role, _)| *role == CoveredTerminalTrialRoleV1::Root));
     }
 
     #[test]

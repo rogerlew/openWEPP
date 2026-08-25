@@ -245,12 +245,26 @@ pub(crate) enum CoveredTerminalExecutionMode {
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct CoveredTerminalTrialRequestV1 {
     pub support: TimeSupport,
+    pub role: CoveredTerminalTrialRoleV1,
+    pub attempt_ordinal: u32,
     pub ice_kg_m2: f64,
     pub liquid_kg_m2: f64,
     pub cold_content_j_m2: f64,
     pub surface_temperature_c: f64,
     pub snow_depth_m: f64,
     pub snow_density_kg_m3: f64,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(u8)]
+pub(crate) enum CoveredTerminalTrialRoleV1 {
+    Full = 0,
+    Half1 = 1,
+    Half2 = 2,
+    Retry = 3,
+    BracketLower = 4,
+    BracketUpper = 5,
+    Root = 6,
 }
 
 pub(crate) type CoveredTerminalTrialProviderV1<'a> = dyn FnMut(
