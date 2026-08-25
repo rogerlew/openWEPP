@@ -19,7 +19,7 @@ impl Stage3V11ActualTerminalCandidateV1 {
         active_lanes: &BTreeSet<u32>,
     ) -> Result<(), DirectSnowStage3V11AttachmentError> {
         if !active_lanes.contains(&self.lane_id)
-            || self.support.start_ns() != parent.start_ns()
+            || self.support.start_ns() < parent.start_ns()
             || self.support.end_ns() != self.tick
             || self.tick < parent.start_ns()
             || self.tick > parent.end_ns()
@@ -115,6 +115,17 @@ pub fn select_common_earliest_actual_terminal_group_v1(
                 "duplicate terminal lane candidate",
             ));
         }
+    }
+    if by_lane
+        .values()
+        .map(|candidate| candidate.support.start_ns())
+        .collect::<BTreeSet<_>>()
+        .len()
+        > 1
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Terminal(
+            "terminal candidates do not share the current search cursor",
+        ));
     }
     let Some(earliest) = by_lane.values().map(|value| value.tick).min() else {
         return Ok(None);

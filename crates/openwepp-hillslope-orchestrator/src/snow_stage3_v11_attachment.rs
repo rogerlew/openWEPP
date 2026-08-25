@@ -2735,6 +2735,7 @@ pub(crate) fn execute_covered_real_v11_parent(
             forcing_receipt,
             &stage3,
             selected_seconds,
+            child_ordinal,
             u64::try_from(clock.event_ordinal()).map_err(|_| {
                 DirectSnowStage3V11AttachmentError::Identity("terminal event ordinal width")
             })?,
@@ -2866,6 +2867,7 @@ fn try_actual_terminal_subslab(
     forcing_receipt: Digest32,
     beginning_stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
     selected_upper_bound_s: f64,
+    current_child_ordinal: u32,
     event_ordinal: u64,
 ) -> Result<Option<ActualTerminalSubslabV1>, DirectSnowStage3V11AttachmentError> {
     let active_lanes = beginning_stage3
@@ -2934,7 +2936,7 @@ fn try_actual_terminal_subslab(
             continue;
         }
         let support = TimeSupport::new(prepared.support.start_ns(), tick)?;
-        let projected = prepared.coupled_subslab(support, 0)?;
+        let projected = prepared.coupled_subslab(support, current_child_ordinal)?;
         let trial = execute_covered_real_v11_subslab(
             context,
             beginning_parent,
