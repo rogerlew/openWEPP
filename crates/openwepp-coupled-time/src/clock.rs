@@ -75,6 +75,10 @@ impl CoupledClockStateV1 {
         self.event_ordinal
     }
     #[must_use]
+    pub fn accepted_event_receipts(&self) -> &[crate::AcceptedEventReceiptV1] {
+        &self.accepted_event_receipts
+    }
+    #[must_use]
     pub fn scheduled_once_receipts(&self) -> &[ScheduledOnceReceiptV1] {
         &self.scheduled_once_receipts
     }

@@ -146,7 +146,38 @@ fn event_queue_orders_and_replay_is_closed() {
     let mut q = EventQueueV1::new(t(0), vec![event]).unwrap();
     let receipt = q.apply_next(&mut c).unwrap().unwrap();
     assert_eq!(receipt.tick(), t(0));
+    assert_eq!(receipt.ordinal(), 0);
+    assert_eq!(receipt.event_context_digest(), d(10));
+    assert_eq!(receipt, c.accepted_event_receipts()[0]);
+    assert_eq!(
+        receipt.ending_owner_set_digest(),
+        complete_owner_set_digest(c.owners()).unwrap()
+    );
+    assert_eq!(receipt.parent_transaction_id(), c.parent_transaction_id());
     assert!(q.apply_next(&mut c).unwrap().is_none());
+}
+
+#[test]
+fn event_transition_rejects_nonexistent_mutation_set_member() {
+    let mut c = clock(10);
+    let event = EventProposalV1::new(
+        EventClass::OwnershipTransfer,
+        "A".into(),
+        d(10),
+        vec![owner("A", b"terminal"), owner("B", b"b")],
+        vec!["A".into(), "nonexistent".into()],
+        "r1".into(),
+        vec!["B".into()],
+        vec![LedgerEntryV1::new("melt".into(), "kg".into(), d(11), d(11), d(12)).unwrap()],
+    )
+    .unwrap();
+    let mut queue = EventQueueV1::new(t(0), vec![event]).unwrap();
+    assert!(matches!(
+        queue.apply_next(&mut c),
+        Err(CoupledTimeError::EventTransition)
+    ));
+    assert!(c.accepted_event_receipts().is_empty());
+    assert_eq!(c.event_ordinal(), 0);
 }
 
 #[test]

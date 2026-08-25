@@ -856,13 +856,18 @@ impl V11ParentTransaction {
         {
             return Err(V11Error::ResourceOwnerCandidate);
         }
-        for (owner_id, beginning) in &self.staged_resource_owners {
-            let ending = ending_owners
-                .get(owner_id)
-                .ok_or(V11Error::ResourceOwnerCandidate)?;
-            if (beginning != ending) != mutation_set.iter().any(|value| value == owner_id) {
-                return Err(V11Error::ResourceOwnerCandidate);
-            }
+        let exact_mutation_set = self
+            .staged_resource_owners
+            .iter()
+            .filter_map(|(owner_id, beginning)| {
+                ending_owners
+                    .get(owner_id)
+                    .is_some_and(|ending| beginning != ending)
+                    .then(|| owner_id.clone())
+            })
+            .collect::<Vec<_>>();
+        if mutation_set != exact_mutation_set {
+            return Err(V11Error::ResourceOwnerCandidate);
         }
         self.staged_resource_owners = ending_owners;
         Ok(())
@@ -2266,6 +2271,67 @@ mod tests {
                 .collect::<Vec<_>>(),
             V11_COMPLETE_OWNER_MANIFEST
         );
+    }
+
+    #[test]
+    fn zero_duration_owner_transition_requires_exact_mutation_set() {
+        let (v10_configuration, v10_state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
+        let beginning_owners = complete_owners(&migrated.state);
+        let (parent_id, _) = accepted_receipts(&beginning_owners, &[1_800_000_000_000]);
+
+        let make_parent = || {
+            V11ParentTransaction::new_with_complete_owners(
+                &migrated.configuration,
+                &migrated.state,
+                parent_id,
+                ModelTimeNs::new(0),
+                beginning_owners.clone(),
+            )
+            .expect("parent")
+        };
+        let mut ending_owners = beginning_owners.clone();
+        let mut ending_snow_bytes = ending_owners.get("snow").expect("snow").state_bytes.clone();
+        ending_snow_bytes.push(1);
+        ending_owners.insert(
+            "snow".to_owned(),
+            V11OwnerEnvelope::try_new("snow".to_owned(), ending_snow_bytes).expect("ending snow"),
+        );
+
+        let mut extra_member = make_parent();
+        let before = extra_member.checkpoint();
+        assert!(matches!(
+            extra_member.accept_zero_duration_owner_transition(
+                &migrated.configuration,
+                ModelTimeNs::new(0),
+                ending_owners.clone(),
+                &["nonexistent".to_owned(), "snow".to_owned()],
+            ),
+            Err(V11Error::ResourceOwnerCandidate)
+        ));
+        assert_eq!(extra_member.checkpoint(), before);
+
+        let mut omitted_member = make_parent();
+        assert!(matches!(
+            omitted_member.accept_zero_duration_owner_transition(
+                &migrated.configuration,
+                ModelTimeNs::new(0),
+                ending_owners.clone(),
+                &["soil_thermal".to_owned()],
+            ),
+            Err(V11Error::ResourceOwnerCandidate)
+        ));
+
+        let mut exact = make_parent();
+        exact
+            .accept_zero_duration_owner_transition(
+                &migrated.configuration,
+                ModelTimeNs::new(0),
+                ending_owners.clone(),
+                &["snow".to_owned()],
+            )
+            .expect("exact snow mutation");
+        assert_eq!(exact.staged_resource_owners(), &ending_owners);
     }
 
     #[test]

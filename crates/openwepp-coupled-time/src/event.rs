@@ -51,6 +51,34 @@ impl AcceptedEventReceiptV1 {
     pub const fn tick(&self) -> ModelTimeNs {
         self.tick
     }
+    #[must_use]
+    pub const fn ordinal(&self) -> u32 {
+        self.ordinal
+    }
+    #[must_use]
+    pub const fn event_id(&self) -> EventId {
+        self.event_id
+    }
+    #[must_use]
+    pub const fn event_context_digest(&self) -> Digest32 {
+        self.event_context_digest
+    }
+    #[must_use]
+    pub const fn beginning_owner_set_digest(&self) -> Digest32 {
+        self.begin_owner_set
+    }
+    #[must_use]
+    pub const fn ending_owner_set_digest(&self) -> Digest32 {
+        self.end_owner_set
+    }
+    #[must_use]
+    pub const fn ledger_digest(&self) -> Digest32 {
+        self.ledger_digest
+    }
+    #[must_use]
+    pub const fn parent_transaction_id(&self) -> crate::ParentTransactionId {
+        self.parent_transaction_id
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -146,11 +174,14 @@ impl EventTransitionV1 {
         if mutation_set.windows(2).any(|w| w[0] >= w[1]) {
             return Err(CoupledTimeError::EventTransition);
         }
-        for (before, after) in clock.complete_owner_set.iter().zip(&ending) {
-            let changed = before != after;
-            if changed != mutation_set.iter().any(|id| id == before.owner_id()) {
-                return Err(CoupledTimeError::EventTransition);
-            }
+        let exact_mutation_set = clock
+            .complete_owner_set
+            .iter()
+            .zip(&ending)
+            .filter_map(|(before, after)| (before != after).then(|| before.owner_id().to_owned()))
+            .collect::<Vec<_>>();
+        if mutation_set != exact_mutation_set {
+            return Err(CoupledTimeError::EventTransition);
         }
         let begin = owner_set_digest(&clock.complete_owner_set)?;
         let end = owner_set_digest(&ending)?;
