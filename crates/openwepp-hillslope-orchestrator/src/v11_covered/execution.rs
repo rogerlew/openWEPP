@@ -412,6 +412,9 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     last_component_carrier_receipts:
         Option<BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>>,
     last_snow_soil_heat_receipts: Option<BTreeMap<u32, SnowSoilHeatReceiptV1>>,
+    last_terminal_snow_soil_heat_receipts: Option<
+        BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1>,
+    >,
     last_precipitation_parcel_sets: Option<BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>>,
     last_physical_outcome_ledgers:
         Option<BTreeMap<u32, physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1>>,
@@ -461,6 +464,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             last_lane_boundary_receipts: None,
             last_component_carrier_receipts: None,
             last_snow_soil_heat_receipts: None,
+            last_terminal_snow_soil_heat_receipts: None,
             last_precipitation_parcel_sets: None,
             last_physical_outcome_ledgers: None,
             last_terminal_events: None,
@@ -1789,11 +1793,15 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 } else {
                     Wb11HydrologyKernel::project_stage3_surface_state_v1(state)
                 };
-                let (snow_temperature_k, latent_heat_j_kg) =
-                    match projected {
+                let (snow_temperature_k, latent_heat_j_kg) = match projected {
                         Ok(surface) => (surface.surface_temperature_k, surface.latent_heat_j_kg),
-                        Err(_) if self.terminal_endpoint_mode => {
-                            (273.15, boundary.latent_heat_j_kg)
+                        // A dormant endpoint has no snow temperature.  The
+                        // boundary entering this merge is the last physical
+                        // pre-event boundary produced by the covered fixed
+                        // point, so retain it as the limiting boundary rather
+                        // than inventing a post-event melting-point node.
+                        Err(_) if self.terminal_endpoint_mode && state.layers.is_empty() => {
+                            (boundary.snow_temperature_k, boundary.latent_heat_j_kg)
                         }
                         Err(_) => {
                             return Err(DirectV11RealConsumerError::Identity(
@@ -1852,6 +1860,12 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         &self,
     ) -> Option<&BTreeMap<u32, SnowSoilHeatReceiptV1>> {
         self.last_snow_soil_heat_receipts.as_ref()
+    }
+
+    pub(crate) fn last_terminal_snow_soil_heat_receipts(
+        &self,
+    ) -> Option<&BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1>> {
+        self.last_terminal_snow_soil_heat_receipts.as_ref()
     }
 
     #[allow(dead_code)]

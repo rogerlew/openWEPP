@@ -5,6 +5,57 @@
 use super::{OfeId, Stage3LaneAreaBasisV1};
 use openwepp_coupled_time::{Digest32, TimeSupport, digest_bytes};
 
+/// Event-integrated lower-boundary custody for a lane whose accepted ending
+/// snow owner is dormant.  Unlike the persistent receipt, this wire has no
+/// ending snow temperature: dormancy is proved by the ending owner identity.
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct TerminalSnowSoilHeatReceiptV1 {
+    pub support: TimeSupport,
+    pub lane_id: u32,
+    pub ofe_id: OfeId,
+    pub beginning_snow_owner_sha256: Digest32,
+    pub ending_dormant_snow_owner_sha256: Digest32,
+    pub ending_soil_owner_sha256: Digest32,
+    pub limiting_boundary_receipt_sha256: Digest32,
+    pub snow_heat_j_m2: f64,
+    pub soil_heat_j_m2: f64,
+    pub receipt_sha256: Digest32,
+}
+
+impl TerminalSnowSoilHeatReceiptV1 {
+    pub(crate) fn seal(mut self) -> Result<Self, Stage3PhysicalOutcomeLedgerError> {
+        self.receipt_sha256 = Digest32::zero();
+        if self.beginning_snow_owner_sha256 == Digest32::zero()
+            || self.ending_dormant_snow_owner_sha256 == Digest32::zero()
+            || self.ending_soil_owner_sha256 == Digest32::zero()
+            || self.limiting_boundary_receipt_sha256 == Digest32::zero()
+            || !self.snow_heat_j_m2.is_finite()
+            || self.soil_heat_j_m2.to_bits() != (-self.snow_heat_j_m2).to_bits()
+        {
+            return Err(Stage3PhysicalOutcomeLedgerError::Identity(
+                "terminal snow-soil custody",
+            ));
+        }
+        self.receipt_sha256 = self.digest();
+        Ok(self)
+    }
+
+    fn digest(&self) -> Digest32 {
+        let mut bytes = b"OPENWEPP_TERMINAL_SNOW_SOIL_HEAT_RECEIPT_V1".to_vec();
+        bytes.extend_from_slice(&self.support.start_ns().get().to_le_bytes());
+        bytes.extend_from_slice(&self.support.end_ns().get().to_le_bytes());
+        bytes.extend_from_slice(&self.lane_id.to_le_bytes());
+        append_str(&mut bytes, self.ofe_id.as_str());
+        bytes.extend_from_slice(self.beginning_snow_owner_sha256.as_bytes());
+        bytes.extend_from_slice(self.ending_dormant_snow_owner_sha256.as_bytes());
+        bytes.extend_from_slice(self.ending_soil_owner_sha256.as_bytes());
+        bytes.extend_from_slice(self.limiting_boundary_receipt_sha256.as_bytes());
+        bytes.extend_from_slice(&self.snow_heat_j_m2.to_bits().to_le_bytes());
+        bytes.extend_from_slice(&self.soil_heat_j_m2.to_bits().to_le_bytes());
+        digest_bytes(&bytes)
+    }
+}
+
 pub(crate) fn ledger_set_digest(
     ledgers: &std::collections::BTreeMap<u32, Stage3LanePhysicalOutcomeLedgerV1>,
 ) -> Digest32 {
@@ -457,6 +508,27 @@ mod tests {
     fn independent_ledger_closes() {
         let (value, expected) = fixture();
         Stage3LanePhysicalOutcomeLedgerV1::try_new(value, &expected).expect("closed ledger");
+    }
+
+    #[test]
+    fn terminal_snow_soil_receipt_has_no_endpoint_temperature_and_closes_custody() {
+        let support =
+            TimeSupport::new(ModelTimeNs::new(10), ModelTimeNs::new(20)).expect("support");
+        let receipt = TerminalSnowSoilHeatReceiptV1 {
+            support,
+            lane_id: 7,
+            ofe_id: OfeId::try_new("ofe-7").expect("ofe"),
+            beginning_snow_owner_sha256: d(1),
+            ending_dormant_snow_owner_sha256: d(2),
+            ending_soil_owner_sha256: d(3),
+            limiting_boundary_receipt_sha256: d(4),
+            snow_heat_j_m2: -12.5,
+            soil_heat_j_m2: 12.5,
+            receipt_sha256: Digest32::zero(),
+        }
+        .seal()
+        .expect("terminal receipt");
+        assert_ne!(receipt.receipt_sha256, Digest32::zero());
     }
 
     #[test]

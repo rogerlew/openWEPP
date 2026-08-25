@@ -122,7 +122,11 @@ struct PhysicalOutcomeLedgerInputs<'a> {
     destinations: &'a BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
     precipitation: &'a BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>,
     soil: &'a BTreeMap<u32, SnowSoilHeatReceiptV1>,
-    diagnostics: &'a BTreeMap<u32, (f64, f64, f64)>,
+    terminal_soil:
+        &'a BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1>,
+    /// Vapor material enthalpy, active/lower interlayer custody, and the
+    /// independently reported Stage-3 snow--soil energy, respectively.
+    diagnostics: &'a BTreeMap<u32, (f64, f64, f64, f64)>,
 }
 
 impl DirectV11SnowCoveredRealConsumerStack<'_> {
@@ -147,8 +151,14 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 .ok_or(DirectV11RealConsumerError::Identity(
                     "physical ledger ending lane",
                 ))?;
-            if !crate::hydrology::stage3_is_resolved_thermal_domain(beginning)
-                || !crate::hydrology::stage3_is_resolved_thermal_domain(ending)
+            let terminal_ending = self.terminal_endpoint_mode
+                && ending.layers.is_empty()
+                && !crate::hydrology::stage3_has_represented_ice(ending)
+                && ending.detached_retained_liquid_kg_m2.to_bits() == 0.0_f64.to_bits();
+            if (!crate::hydrology::stage3_is_resolved_thermal_domain(beginning)
+                && !crate::hydrology::stage3_is_terminal_event_domain(beginning))
+                || (!crate::hydrology::stage3_is_resolved_thermal_domain(ending)
+                    && !terminal_ending)
             {
                 continue;
             }
@@ -165,12 +175,12 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                     .ok_or(DirectV11RealConsumerError::Identity(
                         "physical ledger precipitation lane",
                     ))?;
-            let soil = inputs
-                .soil
-                .get(lane_id)
-                .ok_or(DirectV11RealConsumerError::Identity(
+            let soil = inputs.soil.get(lane_id);
+            if soil.is_none() && !terminal_ending {
+                return Err(DirectV11RealConsumerError::Identity(
                     "physical ledger soil lane",
-                ))?;
+                ));
+            }
             let beginning_digest = digest_bytes(
                 &Wb11HydrologyKernel::serialize_stage3_persistent_state(beginning)?,
             );
@@ -295,6 +305,20 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             let beginning_enthalpy =
                 -beginning_cold + OUTCOME_LATENT_HEAT_FUSION_J_KG * beginning_liquid;
             let ending_enthalpy = -ending_cold + OUTCOME_LATENT_HEAT_FUSION_J_KG * ending_liquid;
+            let (vapor_material_enthalpy, interlayer_active, interlayer_lower, soil_heat) = *inputs
+                .diagnostics
+                .get(lane_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "physical ledger diagnostic lane",
+                ))?;
+            let soil_receipt_sha256 = if terminal_ending {
+                inputs
+                    .terminal_soil
+                    .get(lane_id)
+                    .map_or(Digest32::zero(), |receipt| receipt.receipt_sha256)
+            } else {
+                soil.map_or(Digest32::zero(), |receipt| receipt.receipt_sha256)
+            };
             let expected = Stage3LanePhysicalOutcomeExpectationV1 {
                 support,
                 lane_id: *lane_id,
@@ -308,16 +332,10 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                     lane.reciprocal_longwave_receipt_sha256,
                     lane.provisional_carrier_receipt_sha256,
                     lane.final_destination_receipt_sha256,
-                    soil.receipt_sha256,
+                    soil_receipt_sha256,
                     lane.receipt_sha256,
                 ],
             };
-            let (vapor_material_enthalpy, interlayer_active, interlayer_lower) = *inputs
-                .diagnostics
-                .get(lane_id)
-                .ok_or(DirectV11RealConsumerError::Identity(
-                    "physical ledger diagnostic lane",
-                ))?;
             let value = Stage3LanePhysicalOutcomeLedgerV1 {
                 support,
                 lane_id: *lane_id,
@@ -353,7 +371,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 longwave_j_m2: longwave,
                 sensible_j_m2: sensible,
                 latent_j_m2: latent,
-                soil_heat_j_m2: soil.snow_candidate_heat_j_m2_ofe_ground,
+                soil_heat_j_m2: soil_heat,
                 interlayer_active_conduction_j_m2: interlayer_active,
                 interlayer_lower_conduction_j_m2: interlayer_lower,
                 interlayer_conduction_j_m2: interlayer_active + interlayer_lower,
@@ -416,6 +434,97 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         Ok(receipts)
     }
 
+    fn retain_terminal_limiting_snow_soil_receipts(
+        &self,
+        mut next: BTreeMap<u32, SnowSoilHeatReceiptV1>,
+        previous: &BTreeMap<u32, SnowSoilHeatReceiptV1>,
+        trial_stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    ) -> BTreeMap<u32, SnowSoilHeatReceiptV1> {
+        if self.terminal_endpoint_mode {
+            for (lane_id, state) in trial_stage3 {
+                if state.layers.is_empty()
+                    && !crate::hydrology::stage3_has_represented_ice(state)
+                    && state.detached_retained_liquid_kg_m2.to_bits() == 0.0_f64.to_bits()
+                {
+                    if let Some(limiting) = previous.get(lane_id) {
+                        next.insert(*lane_id, limiting.clone());
+                    }
+                }
+            }
+        }
+        next
+    }
+
+    fn terminal_snow_soil_heat_receipts(
+        &self,
+        support: openwepp_coupled_time::TimeSupport,
+        ending: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+        installed_soil: &SoilThermalSnapshot,
+        limiting: &BTreeMap<u32, SnowSoilHeatReceiptV1>,
+        diagnostics: &BTreeMap<u32, (f64, f64, f64, f64)>,
+    ) -> Result<
+        BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1>,
+        DirectV11RealConsumerError,
+    > {
+        let mut result = BTreeMap::new();
+        for (lane_id, ending_state) in ending {
+            if !self.terminal_endpoint_mode
+                || !ending_state.layers.is_empty()
+                || crate::hydrology::stage3_has_represented_ice(ending_state)
+                || ending_state.detached_retained_liquid_kg_m2.to_bits() != 0.0_f64.to_bits()
+            {
+                continue;
+            }
+            let beginning = self.stage3_beginning_by_lane.get(lane_id).ok_or(
+                DirectV11RealConsumerError::Identity("terminal snow-soil beginning lane"),
+            )?;
+            let limiting_receipt = limiting.get(lane_id).ok_or(
+                DirectV11RealConsumerError::Identity("terminal snow-soil limiting receipt"),
+            )?;
+            let ending_soil_ofe = installed_soil
+                .ofes
+                .iter()
+                .find(|value| value.ofe_id == limiting_receipt.ofe_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "terminal snow-soil ending OFE",
+                ))?;
+            let snow_heat = diagnostics
+                .get(lane_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "terminal snow-soil event-integrated operand",
+                ))?
+                .3;
+            let receipt = physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1 {
+                support,
+                lane_id: *lane_id,
+                ofe_id: limiting_receipt.ofe_id.clone(),
+                beginning_snow_owner_sha256: digest_bytes(
+                    &Wb11HydrologyKernel::serialize_stage3_persistent_state(beginning)?,
+                ),
+                ending_dormant_snow_owner_sha256: digest_bytes(
+                    &Wb11HydrologyKernel::serialize_stage3_persistent_state(ending_state)?,
+                ),
+                ending_soil_owner_sha256: digest_bytes(
+                    &serde_json::to_vec(ending_soil_ofe).map_err(|_| {
+                        DirectV11RealConsumerError::Identity(
+                            "terminal snow-soil ending soil identity",
+                        )
+                    })?,
+                ),
+                limiting_boundary_receipt_sha256: limiting_receipt.receipt_sha256,
+                snow_heat_j_m2: snow_heat,
+                soil_heat_j_m2: -snow_heat,
+                receipt_sha256: Digest32::zero(),
+            }
+            .seal()
+            .map_err(|_| {
+                DirectV11RealConsumerError::Identity("terminal snow-soil receipt closure")
+            })?;
+            result.insert(*lane_id, receipt);
+        }
+        Ok(result)
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn snow_soil_heat_receipt_for_lane(
         &self,
@@ -472,7 +581,11 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 inputs.surface_energy_options.atmospheric_pressure_pa,
             )?.temperature_k
         } else if self.terminal_endpoint_mode {
-            273.15
+            // Dormancy has no projectable snow node.  A terminal-specific
+            // event-integrated receipt must carry this custody; the
+            // persistent Crank--Nicolson receipt cannot be completed by
+            // fabricating an endpoint temperature.
+            return Ok(None);
         } else {
             return Ok(None);
         };
@@ -837,7 +950,8 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     },
                 )?;
                 let result = if self.terminal_endpoint_mode
-                    && crate::hydrology::stage3_is_terminal_event_domain(beginning)
+                    && beginning.schema_version == 2
+                    && beginning.terminal_event_model.is_some()
                 {
                     Wb11HydrologyKernel::evaluate_stage3_terminal_support_with_boundary_v1(
                         stage3_inputs,
@@ -892,6 +1006,15 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         && (event.evaluated_seconds - interval_s).abs() <= 1.0e-6;
                     if self.terminal_endpoint_mode && endpoint {
                         terminal_events.borrow_mut().insert(*lane_id, event.clone());
+                        outcome_diagnostics_by_lane.insert(
+                            *lane_id,
+                            (
+                                result.evaluation.complete_arm_cold_content_export_j_m2,
+                                0.0,
+                                0.0,
+                                result.evaluation.complete_arm_snow_soil_heat_j_m2,
+                            ),
+                        );
                         ending_stage3.insert(*lane_id, result.state);
                         continue;
                     }
@@ -939,6 +1062,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         result.evaluation.complete_arm_cold_content_export_j_m2,
                         interlayer_active,
                         interlayer_lower,
+                        result.evaluation.complete_arm_snow_soil_heat_j_m2,
                     ),
                 );
                 ending_stage3.insert(*lane_id, result.state);
@@ -1003,11 +1127,17 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
             installed_cold_content_export_by_lane,
         ) = 'fixed_point: {
             for _iteration in 0..COVERED_FIXED_POINT_POLICY.max_iterations {
-                accepted_snow_soil_receipts = self.snow_soil_heat_receipts(
+                let next_snow_soil_receipts = self.snow_soil_heat_receipts(
                     input.support,
                     &iteration_stage3_states,
                     &iteration_soil_state,
                 )?;
+                accepted_snow_soil_receipts = self
+                    .retain_terminal_limiting_snow_soil_receipts(
+                        next_snow_soil_receipts,
+                        &accepted_snow_soil_receipts,
+                        &iteration_stage3_states,
+                    );
                 let (open_diagnostics, open_boundaries, _) =
                     self.open_snow_boundaries_by_destination(&iteration_stage3_states)?;
                 let mut destination_receipts = initial_diagnostic_receipts.clone();
@@ -1131,11 +1261,17 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                 // the identities retained by the parent join and replayed for
                 // exact installation; the preceding receipt was only the
                 // fixed-point operand generated from the prior trial.
-                accepted_snow_soil_receipts = self.snow_soil_heat_receipts(
+                let final_snow_soil_receipts = self.snow_soil_heat_receipts(
                     input.support,
                     &stage3_candidate,
                     &soil_candidate,
                 )?;
+                accepted_snow_soil_receipts = self
+                    .retain_terminal_limiting_snow_soil_receipts(
+                        final_snow_soil_receipts,
+                        &accepted_snow_soil_receipts,
+                        &stage3_candidate,
+                    );
 
                 let mut final_candidate = self.beginning.clone();
                 final_candidate.inner.authority = CoveredColumnAuthority::V11SnowCovered;
@@ -1572,6 +1708,13 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
             &final_lane_boundary_receipts,
             &final_boundary_receipts,
         )?;
+        let terminal_snow_soil_heat_receipts = self.terminal_snow_soil_heat_receipts(
+            input.support,
+            &ending_stage3,
+            &installed_soil_preview,
+            &accepted_snow_soil_receipts,
+            &installed_cold_content_export_by_lane,
+        )?;
         let physical_outcome_ledgers =
             self.physical_outcome_ledgers(&PhysicalOutcomeLedgerInputs {
                 support: input.support,
@@ -1580,6 +1723,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                 destinations: &final_boundary_receipts,
                 precipitation: &installed_precipitation_sets,
                 soil: &accepted_snow_soil_receipts,
+                terminal_soil: &terminal_snow_soil_heat_receipts,
                 diagnostics: &installed_cold_content_export_by_lane,
             })?;
         self.last_wb14_child_receipt_set_sha256 = Some(
@@ -1621,6 +1765,8 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
         self.last_snow_soil_heat_receipts = Some(accepted_snow_soil_receipts);
         self.last_precipitation_parcel_sets = Some(installed_precipitation_sets);
         self.last_physical_outcome_ledgers = Some(physical_outcome_ledgers);
+        self.last_terminal_snow_soil_heat_receipts =
+            Some(terminal_snow_soil_heat_receipts);
         self.last_terminal_events = Some(terminal_events.into_inner());
         self.ending_stage3_by_lane = Some(ending_stage3);
         self.ending = Some(candidate);
