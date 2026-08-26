@@ -35,15 +35,20 @@ Ran: canonical framed hashes are constructed in the exact order:
 -> ArmCustodyReceipt -> LaneEvidenceCore -> BatchResultCore -> EventReceipt ->
 ParentReceipt`.
 
-No node references a successor. Deterministic replay and root-poison
-propagation through every successor pass.
+No node references a successor. The corrected tool uses distinct node-local
+payloads and nine independent poisons. For each poison, ancestors and
+unrelated nodes remain unchanged while the poisoned node and exactly all of
+its transitive descendants change; reconstruction is deterministic.
 
 ## SCC inventory
 
-Ran: 12 records each carry units, exact symbolic cardinality, canonical index
-order, storage map, residual, active tag, forcing class, vector order,
-tolerance, generated-transfer counterpart and follower set. Tarjan evaluation
-finds one 11-component implicit physical SCC and one exact BGC follower SCC.
+Historical: the planning inventory's 12 records and Tarjan run reported one
+11-component implicit physical SCC and one BGC follower. Real-source tracing
+now supersedes that as source truth: one live provider call is a feed-forward
+endpoint transaction, vegetation component temperatures have no storage map,
+canopy liquid has cardinality two rather than eight, the actual LSE algebraic
+vector has 29 rows, and the repeated carrier call does not consume its ending
+snow hint. See `real-terminal-dae-defect-hold.md`.
 
 ## Disposition
 

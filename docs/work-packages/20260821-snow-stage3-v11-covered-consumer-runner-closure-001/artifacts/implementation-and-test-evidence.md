@@ -591,3 +591,68 @@ The final error decision and complete carrier receipts exist at different
 layers, so correlation requires a prohibited production temporal-control edit
 or duplicated solver logic. The component receipt/effectivity matrix and final
 candidate reviews remain `NOT RUN`; no implementation intent is recorded.
+
+## 2026-08-25 real terminal DAE exploration
+
+Ran: exact clean intake at pushed `64fdeb02942f62efd92428ef538440596b90668f`
+passed after `git fetch origin`: `origin/main == HEAD == requested SHA` and the
+worktree was empty before edits.
+
+Ran: the receipt-DAG Rust tool now constructs nine distinct node-local poison
+cases. Its unit test passed 1/1, regenerated v3 JSON/Markdown evidence reports
+`pass=true`, and every case changes exactly the poisoned node and its
+descendants while preserving ancestors and unrelated nodes.
+
+Ran: the final corrected test-only numerical module passed 4/4 at nextest run
+`aa60e2a9-9b97-4441-824d-c2c29b59ba73`. All 48 smooth analytical floor rows
+match the package-Python CN endpoint, signed Hermite--Gauss estimate, and both
+Gauss defects. The other tests prove exact nanosecond floor handling, separate
+prescribed cumulative amounts, exact outer-support identity with normalized
+stage abscissae, finite/cardinality guards, scaled residual-plus-step
+convergence, and pivot diagnostics.
+
+Ran: the unchanged real `BelowCarrierDomain` path passed its focused fixture
+1/1 with exact cardinalities 7/1/6/1/8/2/1. The orchestrator library check and
+all-target test compilation passed. The final frozen v20/v21 integration guards
+passed 5/5 at nextest run `64610c7d-6f83-4650-a237-5f459b4d94c7`.
+Formatting and diff hygiene passed.
+
+Ran: the final affected heavy suite at nextest run
+`a2fc23d0-8833-401b-ae7c-6dd6a808561b` executed 860 tests: 849 passed, the
+exact historical 11 failed, and one was skipped. There were zero unexpected or
+missing failure names and zero normalized-signature deltas. The retained log is
+`heavy-orchestrator-20260826-000033.log`.
+
+The heavy log's trailing `EXIT_CODE:0` is the capture pipeline/`tee` status,
+not the test status. The immediately preceding `/usr/bin/time` record and
+nextest result report authoritative command status 100, as expected for the
+classified eleven-test red set.
+
+Static: source tracing established a 21-coordinate candidate-active storage
+census, separate 29-row covered and seven-row open LSE algebraic blocks,
+prescribed cumulative inputs, and known followers in
+`real-terminal-dae-defect-hold.md`. It also found hydrology aggregate and
+cumulative owner fields that cannot be assigned complete `x/q/p` roles without
+the missing continuous equations, so no complete DAE cardinality is claimed.
+The coarse executed provider graph is feed-forward after owner-local solves are
+collapsed; the prior 12-row/11-node planning graph is not the live source
+graph.
+
+Disposition: `CHILD1-REAL-DAE-001 / HOLD`. The real endpoint implementation
+does not expose the continuous snow, canopy-storage, hydrology/authorization,
+or routing residuals needed for the requested DAE. Defining them would select
+new physical temporal equations, which is an explicit user stop condition and
+an immutable red-line violation. Real AD/finite-difference, CN/reference
+receipts, Hermite effectivity, and successor contracts are therefore not
+fabricated.
+
+Static / review: independent numerical/DAE and science/ownership reviewers
+initially found layout, exact-time, scaling, and graph-level overclaims. All
+were corrected and independently rechecked with no remaining finding. Both
+reviews return `GO` for freezing the corrected defect-shaped HOLD and
+explicitly do not return real-candidate or Batch/science GO.
+
+Static / structural WARN: `v9_real_consumer_shadow_wb14_tests.rs` is a
+pre-existing 2,306-line fixture module. This diff changes only four assertions;
+no decomposition is mixed into the numerical HOLD. The other touched Rust
+files are below 2,000 lines.

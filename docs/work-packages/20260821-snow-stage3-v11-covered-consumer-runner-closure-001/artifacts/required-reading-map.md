@@ -18,3 +18,13 @@ chain, active package, `SC-SURFACELIQUID-001`, relevant
 `SC-COUPLEDTIME-001` parent/slab/receipt/finalization sections, existing WB14
 shared transition, persistent continuation validation, and the Stage-3/V11
 short-cadence rejection path.
+
+Real terminal DAE exploration intake additionally read the complete applicable
+root, work-package, science-contract, standards, and Rust instruction chain;
+the active package; `docs/codex_exec_plans.md`; the canonical testing and local
+CI standards; the numerics policy; and the accepted Rust/Python numerical and
+receipt-DAG scaffolds. `tools/agents/find-agents --for` confirmed the package
+artifact chain (`AGENTS.md` -> `docs/work-packages/AGENTS.md`) and Rust source
+chain (`AGENTS.md` -> `crates/AGENTS.md`). The immutable user-directed red lines
+make new science-contract versions inapplicable unless and until the complete
+real matrix passes.

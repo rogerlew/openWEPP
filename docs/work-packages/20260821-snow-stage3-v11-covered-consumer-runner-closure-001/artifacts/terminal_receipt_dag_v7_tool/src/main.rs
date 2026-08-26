@@ -33,7 +33,9 @@ fn predecessors(node: &str) -> &'static [&'static str] {
     }
 }
 
-fn construct(seed: &[u8]) -> Result<BTreeMap<&'static str, Digest32>, String> {
+fn construct(
+    payloads: &BTreeMap<&'static str, Vec<u8>>,
+) -> Result<BTreeMap<&'static str, Digest32>, String> {
     let mut digests: BTreeMap<&'static str, Digest32> = BTreeMap::new();
     for (ordinal, node) in ORDER.iter().copied().enumerate() {
         let schema = 1_u32.to_be_bytes();
@@ -49,6 +51,9 @@ fn construct(seed: &[u8]) -> Result<BTreeMap<&'static str, Digest32>, String> {
                     .ok_or_else(|| format!("successor reference from {node} to {predecessor}"))
             })
             .collect::<Result<Vec<_>, _>>()?;
+        let payload = payloads
+            .get(node)
+            .ok_or_else(|| format!("missing node-local payload for {node}"))?;
         let mut fields = vec![
             FramedField {
                 tag: "schema",
@@ -59,8 +64,8 @@ fn construct(seed: &[u8]) -> Result<BTreeMap<&'static str, Digest32>, String> {
                 value: &ordinal,
             },
             FramedField {
-                tag: "seed",
-                value: seed,
+                tag: "payload",
+                value: payload,
             },
         ];
         fields.extend(predecessor_digests.iter().map(|digest| FramedField {
@@ -72,6 +77,50 @@ fn construct(seed: &[u8]) -> Result<BTreeMap<&'static str, Digest32>, String> {
         digests.insert(node, digest);
     }
     Ok(digests)
+}
+
+fn baseline_payloads() -> BTreeMap<&'static str, Vec<u8>> {
+    ORDER
+        .iter()
+        .copied()
+        .map(|node| {
+            (
+                node,
+                format!("child1-terminal-candidate::{node}").into_bytes(),
+            )
+        })
+        .collect()
+}
+
+fn ancestors(target: &str) -> Vec<&'static str> {
+    let mut selected = Vec::new();
+    for node in ORDER {
+        if node == target {
+            break;
+        }
+        if predecessors(target).contains(&node)
+            || predecessors(target)
+                .iter()
+                .any(|predecessor| ancestors(predecessor).contains(&node))
+        {
+            selected.push(node);
+        }
+    }
+    selected
+}
+
+fn descendants(target: &str) -> Vec<&'static str> {
+    let mut selected = Vec::new();
+    for node in ORDER {
+        if node != target
+            && predecessors(node)
+                .iter()
+                .any(|predecessor| *predecessor == target || selected.contains(predecessor))
+        {
+            selected.push(node);
+        }
+    }
+    selected
 }
 
 fn digest_map(values: &BTreeMap<&str, Digest32>) -> Value {
@@ -99,21 +148,78 @@ fn main() -> Result<(), String> {
             }
         }
     }
-    let baseline = construct(b"child1-terminal-candidate")?;
-    let replay = construct(b"child1-terminal-candidate")?;
-    let poison = construct(b"child1-terminal-candidate-poison")?;
-    let changed = ORDER
-        .iter()
-        .filter(|node| baseline.get(**node) != poison.get(**node))
-        .copied()
-        .collect::<Vec<_>>();
-    let pass = violations.is_empty() && baseline == replay && changed == ORDER;
+    let payloads = baseline_payloads();
+    let baseline = construct(&payloads)?;
+    let replay = construct(&payloads)?;
+    let mut poison_cases = Vec::new();
+    let mut poison_matrix_pass = true;
+    for poisoned_node in ORDER {
+        let mut poisoned_payloads = payloads.clone();
+        poisoned_payloads
+            .get_mut(poisoned_node)
+            .ok_or_else(|| format!("missing poison target {poisoned_node}"))?
+            .extend_from_slice(b"::poison");
+        let poisoned = construct(&poisoned_payloads)?;
+        let poisoned_replay = construct(&poisoned_payloads)?;
+        let changed = ORDER
+            .iter()
+            .filter(|node| baseline.get(**node) != poisoned.get(**node))
+            .copied()
+            .collect::<Vec<_>>();
+        let ancestors = ancestors(poisoned_node);
+        let descendants = descendants(poisoned_node);
+        let unrelated = ORDER
+            .iter()
+            .copied()
+            .filter(|node| {
+                *node != poisoned_node && !ancestors.contains(node) && !descendants.contains(node)
+            })
+            .collect::<Vec<_>>();
+        let ancestors_unchanged = ancestors
+            .iter()
+            .all(|node| baseline.get(node) == poisoned.get(node));
+        let poisoned_node_changed = baseline.get(poisoned_node) != poisoned.get(poisoned_node);
+        let all_descendants_changed = descendants
+            .iter()
+            .all(|node| baseline.get(node) != poisoned.get(node));
+        let unrelated_unchanged = unrelated
+            .iter()
+            .all(|node| baseline.get(node) == poisoned.get(node));
+        let deterministic_reconstruction = poisoned == poisoned_replay;
+        let expected_changed = ORDER
+            .iter()
+            .copied()
+            .filter(|node| *node == poisoned_node || descendants.contains(node))
+            .collect::<Vec<_>>();
+        let case_pass = ancestors_unchanged
+            && poisoned_node_changed
+            && all_descendants_changed
+            && unrelated_unchanged
+            && deterministic_reconstruction
+            && changed == expected_changed;
+        poison_matrix_pass &= case_pass;
+        poison_cases.push(json!({
+            "poisoned_node": poisoned_node,
+            "ancestors": ancestors,
+            "descendants": descendants,
+            "unrelated_nodes": unrelated,
+            "changed_nodes": changed,
+            "expected_changed_nodes": expected_changed,
+            "ancestors_unchanged": ancestors_unchanged,
+            "poisoned_node_changed": poisoned_node_changed,
+            "all_descendants_changed": all_descendants_changed,
+            "unrelated_nodes_unchanged": unrelated_unchanged,
+            "deterministic_reconstruction": deterministic_reconstruction,
+            "pass": case_pass,
+        }));
+    }
+    let pass = violations.is_empty() && baseline == replay && poison_matrix_pass;
     let predecessor_json = ORDER
         .iter()
         .map(|node| ((*node).to_owned(), json!(predecessors(node))))
         .collect::<Map<_, _>>();
     let result = json!({
-        "schema": "openwepp-terminal-receipt-dag-v7-evidence-v2",
+        "schema": "openwepp-terminal-receipt-dag-v7-evidence-v3",
         "hash_implementation": "openwepp_coupled_time::framed_sha256",
         "order": ORDER,
         "predecessors": predecessor_json,
@@ -121,8 +227,12 @@ fn main() -> Result<(), String> {
         "acyclic": violations.is_empty(),
         "deterministic_replay": baseline == replay,
         "digests": digest_map(&baseline),
-        "poison_changed_nodes": changed,
-        "poison_propagates_to_all_successors": changed == ORDER,
+        "node_local_payloads": ORDER.iter().map(|node| (
+            (*node).to_owned(),
+            json!(String::from_utf8_lossy(&payloads[node]).into_owned()),
+        )).collect::<Map<_, _>>(),
+        "poison_cases": poison_cases,
+        "poison_matrix_pass": poison_matrix_pass,
         "pass": pass,
     });
     let output_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -139,10 +249,10 @@ fn main() -> Result<(), String> {
     fs::write(
         output_dir.join("terminal-receipt-dag-v7-evidence.md"),
         format!(
-            "# Terminal receipt DAG v7 executable evidence\n\nRan: package-local Rust construction through `openwepp_coupled_time::framed_sha256`.\n\n- pass: `{pass}`\n- acyclic/no successor references: `{}`\n- deterministic replay: `{}`\n- root poison propagates through all nodes: `{}`\n\nOrder: `{}`.\n",
+            "# Terminal receipt DAG v7 executable evidence\n\nRan: package-local Rust construction through `openwepp_coupled_time::framed_sha256`.\n\n- pass: `{pass}`\n- acyclic/no forward references: `{}`\n- deterministic baseline replay: `{}`\n- node-local poison cases: `{}`\n- every poison preserves ancestors/unrelated nodes and changes exactly its node plus descendants: `{poison_matrix_pass}`\n\nOrder: `{}`.\n",
             violations.is_empty(),
             baseline == replay,
-            changed == ORDER,
+            ORDER.len(),
             ORDER.join(" -> "),
         ),
     )
@@ -151,5 +261,13 @@ fn main() -> Result<(), String> {
         Ok(())
     } else {
         Err("receipt DAG validation failed".to_owned())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn every_node_local_poison_proves_exact_transitive_propagation() {
+        super::main().expect("all node-local receipt poison cases");
     }
 }

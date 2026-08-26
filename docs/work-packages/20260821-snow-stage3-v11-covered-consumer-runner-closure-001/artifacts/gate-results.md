@@ -1097,3 +1097,34 @@ the 600 ms floor unchanged.
 
 The eleven failures remain a regression comparator, not a qualification PASS.
 V14 changed only six package artifacts and no Rust source.
+
+## 2026-08-25 real terminal DAE exploration gates
+
+| Gate | Result |
+|---|---|
+| Exact pushed intake | PASS: `origin/main == HEAD == 64fdeb02942f62efd92428ef538440596b90668f`, initially clean |
+| Formatting / diff hygiene | PASS / PASS |
+| Package receipt-DAG tool | PASS: 1/1; nine node-local poisons; regenerated v3 evidence |
+| Analytical Rust/package-Python numerical module | PASS: 4/4, nextest `aa60e2a9-9b97-4441-824d-c2c29b59ba73` |
+| Exact real fixture / current production disposition | PASS: 1/1, nextest `f0e25fa3-9f57-4b21-a7b8-b1225c0f0a3a`; `BelowCarrierDomain`; counts 7/1/6/1/8/2/1 |
+| Orchestrator production compilation | PASS: `cargo check -p openwepp-hillslope-orchestrator --lib` |
+| Orchestrator test compilation | PASS: `cargo test -p openwepp-hillslope-orchestrator --all-targets --no-run` |
+| Frozen v20/v21 guards | PASS: 5/5, nextest `64610c7d-6f83-4650-a237-5f459b4d94c7` |
+| Real fixed-active-set DAE / AD / references / effectivity | HOLD: `CHILD1-REAL-DAE-001`; required continuous owner-local equations do not exist |
+| Candidate v22/v12/v140/v7 | NOT AUTHORED |
+| Production temporal operator / Batch V2 | NOT MODIFIED |
+| Affected heavy suite | EXPECTED RED: 849 passed / exact historical 11 failed / 1 skipped; zero name/signature delta; nextest `a2fc23d0-8833-401b-ae7c-6dd6a808561b` |
+| Exact-head workspace suite | NOT RUN: checkpoint stopped before a complete real candidate matrix |
+| Independent numerical and science/ownership reviews | GO / GO for corrected HOLD; no real-candidate GO |
+| Independent verification passes | GO / GO for corrected HOLD; artifact-only findings corrected |
+
+Warnings printed by affected-crate compilation are the retained baseline
+warnings; this diff adds no warnings-denied claim. The HOLD is the user-named
+physical-equation stop condition, not a validation shortcut.
+
+Heavy-log status note: the raw log footer `EXIT_CODE:0` records the shell
+capture pipeline, while nextest and `/usr/bin/time` record authoritative status
+100 for the expected-red eleven-failure run. Structural WARN:
+`v9_real_consumer_shadow_wb14_tests.rs` is 2,306 lines; only four assertions
+changed, so unrelated fixture decomposition is deferred. The numerical module
+(927) and receipt tool (273) remain below 2,000 lines.

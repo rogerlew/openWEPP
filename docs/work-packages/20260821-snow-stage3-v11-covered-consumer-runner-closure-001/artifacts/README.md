@@ -7,3 +7,8 @@ review basis used.
 Current intake artifacts are deliberately conservative. `BLOCKED` means the
 required implementation or evidence is still inside this package scope; it is
 not a closure claim.
+
+The current Child-1 real-DAE exploration disposition is
+`real-terminal-dae-defect-hold.md`. It supersedes the planning-inventory SCC
+as live source truth and records the exact physical-equation stop condition;
+the analytical and receipt-DAG evidence remain test-only.

@@ -2,18 +2,29 @@
   "acyclic": true,
   "deterministic_replay": true,
   "digests": {
-    "ArmCustodyReceipt": "cb8800a2d742b35763582f626463bbeb12735145c8fb0e3643b2a6e12b5d782c",
-    "ArmInputCore": "3b9539322c449ff973b9a0c8349b513a3d8a252e059002495bb92b5ee62dbb42",
-    "ArmPhysicalResultCore": "00d1d73938e7a9279c963e375677d2e566829366c3f597baf5f5582f2820d736",
-    "BatchRequestCore": "2c17a5dae40234035d8edf7f8d7333ca9366b65c033d2bed81d2e26eb48aff8e",
-    "BatchResultCore": "3d439879c8830027421254933f938277a194a41f2789340e26df723ed5c4e10c",
-    "EndingJointReceipt": "95d124c6744f911ac56b8ab3b599642fc848856f393a7d99a7df6184e46bd08f",
-    "EventReceipt": "b2b4f09e4342fada66a135f2b40c8d846dea12f260eec0ac60d12a0406d205ff",
-    "LaneEvidenceCore": "1d783917bb74e3fb34e88c789dfd725d4fc62d332fbb203729ae64a1e127427f",
-    "ParentReceipt": "e07f0b3dfa89af2e1560e4c70d1a47bb68432cb7b0687081bfd4af27aaf8294e"
+    "ArmCustodyReceipt": "0345536f48df87cc8086d21f0ed9b448ab24dcc73e285cceafb668e1255e90e7",
+    "ArmInputCore": "b0faef515e2774e2c606f44bebad0c1089375283428e15d52d32038615fd8458",
+    "ArmPhysicalResultCore": "3297030ef08bb3030b01da096b3ec82774ee4fc800a53cfdd27056e4b01ba2b6",
+    "BatchRequestCore": "72a6f8c35b9862dd4b8a23e286bd543b21082cae22b62bbeb4d7290ff55236ac",
+    "BatchResultCore": "ccac2318219df7598c96eb89e4ef10afbcb760489a69f29d3e3dbb339e7ecaf5",
+    "EndingJointReceipt": "a2521b84c273bab5e6f5f029ced07b7e100584135e0847c399fd6ce51a1510d2",
+    "EventReceipt": "816ef13921e5ab62a32b625db025bd3f3d216e5ba60393db41d2d6faa33c8a74",
+    "LaneEvidenceCore": "677c9a8b3c9a8da45bed3ed4a7bbdda57ba0ae5a0830a5166a380c08a343d50d",
+    "ParentReceipt": "1dfcac170464b6a30855a42eff8c417ad640f961c70aa2cde22ae81454dc5434"
   },
   "forward_reference_violations": [],
   "hash_implementation": "openwepp_coupled_time::framed_sha256",
+  "node_local_payloads": {
+    "ArmCustodyReceipt": "child1-terminal-candidate::ArmCustodyReceipt",
+    "ArmInputCore": "child1-terminal-candidate::ArmInputCore",
+    "ArmPhysicalResultCore": "child1-terminal-candidate::ArmPhysicalResultCore",
+    "BatchRequestCore": "child1-terminal-candidate::BatchRequestCore",
+    "BatchResultCore": "child1-terminal-candidate::BatchResultCore",
+    "EndingJointReceipt": "child1-terminal-candidate::EndingJointReceipt",
+    "EventReceipt": "child1-terminal-candidate::EventReceipt",
+    "LaneEvidenceCore": "child1-terminal-candidate::LaneEvidenceCore",
+    "ParentReceipt": "child1-terminal-candidate::ParentReceipt"
+  },
   "order": [
     "BatchRequestCore",
     "ArmInputCore",
@@ -26,18 +37,331 @@
     "ParentReceipt"
   ],
   "pass": true,
-  "poison_changed_nodes": [
-    "BatchRequestCore",
-    "ArmInputCore",
-    "ArmPhysicalResultCore",
-    "EndingJointReceipt",
-    "ArmCustodyReceipt",
-    "LaneEvidenceCore",
-    "BatchResultCore",
-    "EventReceipt",
-    "ParentReceipt"
+  "poison_cases": [
+    {
+      "all_descendants_changed": true,
+      "ancestors": [],
+      "ancestors_unchanged": true,
+      "changed_nodes": [
+        "BatchRequestCore",
+        "ArmInputCore",
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "descendants": [
+        "ArmInputCore",
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "deterministic_reconstruction": true,
+      "expected_changed_nodes": [
+        "BatchRequestCore",
+        "ArmInputCore",
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "pass": true,
+      "poisoned_node": "BatchRequestCore",
+      "poisoned_node_changed": true,
+      "unrelated_nodes": [],
+      "unrelated_nodes_unchanged": true
+    },
+    {
+      "all_descendants_changed": true,
+      "ancestors": [
+        "BatchRequestCore"
+      ],
+      "ancestors_unchanged": true,
+      "changed_nodes": [
+        "ArmInputCore",
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "descendants": [
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "deterministic_reconstruction": true,
+      "expected_changed_nodes": [
+        "ArmInputCore",
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "pass": true,
+      "poisoned_node": "ArmInputCore",
+      "poisoned_node_changed": true,
+      "unrelated_nodes": [],
+      "unrelated_nodes_unchanged": true
+    },
+    {
+      "all_descendants_changed": true,
+      "ancestors": [
+        "BatchRequestCore",
+        "ArmInputCore"
+      ],
+      "ancestors_unchanged": true,
+      "changed_nodes": [
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "descendants": [
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "deterministic_reconstruction": true,
+      "expected_changed_nodes": [
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "pass": true,
+      "poisoned_node": "ArmPhysicalResultCore",
+      "poisoned_node_changed": true,
+      "unrelated_nodes": [],
+      "unrelated_nodes_unchanged": true
+    },
+    {
+      "all_descendants_changed": true,
+      "ancestors": [
+        "BatchRequestCore",
+        "ArmInputCore",
+        "ArmPhysicalResultCore"
+      ],
+      "ancestors_unchanged": true,
+      "changed_nodes": [
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "descendants": [
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "deterministic_reconstruction": true,
+      "expected_changed_nodes": [
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "pass": true,
+      "poisoned_node": "EndingJointReceipt",
+      "poisoned_node_changed": true,
+      "unrelated_nodes": [],
+      "unrelated_nodes_unchanged": true
+    },
+    {
+      "all_descendants_changed": true,
+      "ancestors": [
+        "BatchRequestCore",
+        "ArmInputCore",
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt"
+      ],
+      "ancestors_unchanged": true,
+      "changed_nodes": [
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "descendants": [
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "deterministic_reconstruction": true,
+      "expected_changed_nodes": [
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "pass": true,
+      "poisoned_node": "ArmCustodyReceipt",
+      "poisoned_node_changed": true,
+      "unrelated_nodes": [],
+      "unrelated_nodes_unchanged": true
+    },
+    {
+      "all_descendants_changed": true,
+      "ancestors": [
+        "BatchRequestCore",
+        "ArmInputCore",
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt"
+      ],
+      "ancestors_unchanged": true,
+      "changed_nodes": [
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "descendants": [
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "deterministic_reconstruction": true,
+      "expected_changed_nodes": [
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "pass": true,
+      "poisoned_node": "LaneEvidenceCore",
+      "poisoned_node_changed": true,
+      "unrelated_nodes": [],
+      "unrelated_nodes_unchanged": true
+    },
+    {
+      "all_descendants_changed": true,
+      "ancestors": [
+        "BatchRequestCore",
+        "ArmInputCore",
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore"
+      ],
+      "ancestors_unchanged": true,
+      "changed_nodes": [
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "descendants": [
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "deterministic_reconstruction": true,
+      "expected_changed_nodes": [
+        "BatchResultCore",
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "pass": true,
+      "poisoned_node": "BatchResultCore",
+      "poisoned_node_changed": true,
+      "unrelated_nodes": [],
+      "unrelated_nodes_unchanged": true
+    },
+    {
+      "all_descendants_changed": true,
+      "ancestors": [
+        "BatchRequestCore",
+        "ArmInputCore",
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore"
+      ],
+      "ancestors_unchanged": true,
+      "changed_nodes": [
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "descendants": [
+        "ParentReceipt"
+      ],
+      "deterministic_reconstruction": true,
+      "expected_changed_nodes": [
+        "EventReceipt",
+        "ParentReceipt"
+      ],
+      "pass": true,
+      "poisoned_node": "EventReceipt",
+      "poisoned_node_changed": true,
+      "unrelated_nodes": [],
+      "unrelated_nodes_unchanged": true
+    },
+    {
+      "all_descendants_changed": true,
+      "ancestors": [
+        "BatchRequestCore",
+        "ArmInputCore",
+        "ArmPhysicalResultCore",
+        "EndingJointReceipt",
+        "ArmCustodyReceipt",
+        "LaneEvidenceCore",
+        "BatchResultCore",
+        "EventReceipt"
+      ],
+      "ancestors_unchanged": true,
+      "changed_nodes": [
+        "ParentReceipt"
+      ],
+      "descendants": [],
+      "deterministic_reconstruction": true,
+      "expected_changed_nodes": [
+        "ParentReceipt"
+      ],
+      "pass": true,
+      "poisoned_node": "ParentReceipt",
+      "poisoned_node_changed": true,
+      "unrelated_nodes": [],
+      "unrelated_nodes_unchanged": true
+    }
   ],
-  "poison_propagates_to_all_successors": true,
+  "poison_matrix_pass": true,
   "predecessors": {
     "ArmCustodyReceipt": [
       "ArmInputCore",
@@ -70,5 +394,5 @@
       "EventReceipt"
     ]
   },
-  "schema": "openwepp-terminal-receipt-dag-v7-evidence-v2"
+  "schema": "openwepp-terminal-receipt-dag-v7-evidence-v3"
 }

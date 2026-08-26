@@ -670,3 +670,57 @@ Separately, executable tools construct the required acyclic receipt chain and
 compute SCCs from a 12-component exact-unit/cardinality/order inventory. Both
 tools pass deterministic replay, forward-reference, poison-propagation, schema,
 graph and order checks. Production temporal/Batch behavior remains untouched.
+
+### 2026-08-25 real terminal DAE numerical-exploration intent
+
+Owner-directed implementation authority continues the accepted test-only
+scaffold from exact clean `64fdeb02942f62efd92428ef538440596b90668f`.
+This increment will correct receipt-DAG poison evidence, prove Rust/Python
+analytical-row parity, harden the private numerical utilities, derive the
+concrete real component layout and SCC from the immutable real fixture, and
+attempt same-support CN, Hermite--Gauss, three-stage Gauss--Legendre, and
+three-stage Radau IIA solves of the actual fixed-active-set DAE with AD or exact
+Jacobians. It will retain complete candidate, closure, follower, receipt, and
+effectivity evidence and finish with independent review, verification, the
+affected suite, and an exact-head workspace suite.
+
+The actual source write set is ownership-discovered and will be frozen after
+implementation rather than used as a preimplementation boundary. Authorized
+writes are private or `cfg(test)` source in compiler-discovered owner crates,
+package-local reference tooling, and this package's evidence. No external crate
+may enter the production dependency graph solely for this work.
+
+Production execution must remain `BelowCarrierDomain`. Constitutive equations,
+parameters, constants, the 600 ms floor, tolerances, temporal acceptance/retry,
+event chronology, owner mutation/publication/output, public APIs, restart,
+terminal-liquid behavior, runner behavior, selectors/defaults, Stage-3
+activation, CoE posture, and Child 3/4 scope are immutable. Current receipts
+will not be relabeled as candidate receipts. No v22/v12/v140/v7 contract is
+authorized unless the complete real result-blind matrix passes, and no
+production temporal operator or Batch V2 work is authorized by this increment.
+
+Implementation intent classification: test-only integrated numerical
+exploration with conservation and reconstruction evidence; no empirical
+calibration, production physics amendment, public behavior, or dependency-
+resolution change intended. Exact terminal-diff reconciliation determines the
+applicable validation set. A named stop condition produces a defect-shaped
+`HOLD`; ordinary compiler, visibility, scaling, convergence, DTO, and fixture
+issues remain in-envelope implementation work.
+
+### 2026-08-26 real terminal DAE exploration disposition
+
+The authorized attempt stops at `CHILD1-REAL-DAE-001 / HOLD`: the endpoint
+owners do not expose the continuous snow, canopy-storage, hydrology,
+authorization, and routing residuals required to construct the real DAE
+without selecting new temporal physics. The source-resolved census, graph,
+exact missing-equation defect, corrected receipt poisons, analytical parity,
+utility hardening, independent reviews, and validation receipts are frozen in
+the package artifacts.
+
+Both independent reviews and their correction verifications accept this
+defect-shaped HOLD with no remaining finding. The affected heavy suite retains
+the exact historical eleven failures with zero name/signature delta. No real
+CN/reference receipt, AD comparison, Hermite effectivity matrix, successor
+contract, production temporal operator, or Batch V2 is claimed or authored.
+`BelowCarrierDomain` and fully qualified physical implementation
+`43cc9bbea2fbf5fe6ab6596cee4162de75cef999` remain authoritative.

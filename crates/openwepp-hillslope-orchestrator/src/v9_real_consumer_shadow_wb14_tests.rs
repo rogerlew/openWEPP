@@ -963,10 +963,10 @@ fn exercise_complete_wb14_cadence(
             .expect("real candidate layout");
         assert_eq!(real_layout.owner_count, 7);
         assert_eq!(real_layout.snow_lane_count, 1);
-        assert!(real_layout.soil_layer_count > 0);
-        assert!(real_layout.covered_destination_count > 0);
-        assert!(real_layout.lse_component_surface_count > 0);
-        assert!(real_layout.lower_boundary_count >= real_layout.covered_destination_count);
+        assert_eq!(real_layout.soil_layer_count, 6);
+        assert_eq!(real_layout.covered_destination_count, 1);
+        assert_eq!(real_layout.lse_component_surface_count, 8);
+        assert_eq!(real_layout.lower_boundary_count, 2);
         assert_eq!(real_layout.precipitation_lane_count, 1);
         eprintln!(
             "CHILD1_REAL_CANDIDATE_LAYOUT={}",

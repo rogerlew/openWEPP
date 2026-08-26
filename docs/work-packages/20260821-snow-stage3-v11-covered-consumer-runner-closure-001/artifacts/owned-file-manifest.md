@@ -228,3 +228,43 @@ Terminal chronology correction expansion:
 - This expansion does not admit runner-owned 48-support construction,
   terminal-liquid receiver consumption, additive restart, selectors/defaults,
   activation, CoE retirement, or production cutover.
+
+## 2026-08-25 real terminal DAE exploration exact write set
+
+The terminal diff from base `64fdeb02942f62efd92428ef538440596b90668f`
+contains only:
+
+- `crates/openwepp-hillslope-orchestrator/src/terminal_candidate_numerics.rs`:
+  test-only exact-support, scaling, validation, conditioning, reference-method,
+  and package-Python parity corrections.
+- `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs`:
+  exact immutable-fixture cardinality assertions.
+- `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/package.md`:
+  owner-directed implementation intent and red-line reconciliation.
+- `artifacts/required-reading-map.md` and
+  `artifacts/post-v21-numerical-exploration-progress.md`: intake and superseded
+  planning-inventory corrections.
+- `artifacts/README.md`: pointer to the current Child-1 real-DAE disposition.
+- `artifacts/terminal_receipt_dag_v7_tool/src/main.rs` plus generated
+  `artifacts/terminal-receipt-dag-v7-evidence.{json,md}`: nine node-local
+  poison constructions through canonical Rust framing.
+- `artifacts/real-terminal-dae-defect-hold.md`: concrete source-resolved
+  `x/z/q/p` layout, actual graph/SCC correction, and stop-condition proof.
+- This manifest, `implementation-and-test-evidence.md`, `gate-results.md`, and
+  the review/disposition artifacts added for terminal reconciliation.
+- `artifacts/real-terminal-dae-{numerical-review,science-ownership-review,review-disposition,verification}.md`
+  and `artifacts/heavy-orchestrator-2026082{5-235333,6-000033}.log`: independent
+  review/verification/disposition and initial/final affected-suite command
+  receipts.
+
+No other crate, contract, registry, assurance, dependency, public API,
+production execution, or output file is modified.
+
+Line-count governance: the test-only numerical module is 927 lines and the
+package receipt tool is 273 lines. The touched
+`v9_real_consumer_shadow_wb14_tests.rs` is a pre-existing 2,306-line test
+fixture, above the 2,000-line warning threshold but below the hard 3,000-line
+limit. This increment changes only four existing cardinality assertions there;
+decomposing the large shared fixture would be unrelated architectural churn
+for a defect-shaped numerical HOLD. Follow-up decomposition remains advisable
+when substantive fixture structure next changes.
