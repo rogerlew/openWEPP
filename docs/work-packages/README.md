@@ -2,11 +2,12 @@
 
 ## 20260826-snow-terminal-chronology-candidates-001
 
-Executing cfg(test)-only follow-up evaluation of chronology-resolved released
+Completed cfg(test)-only follow-up evaluation of chronology-resolved released
 ordering, event-driven residual frost, time-resolved complementarity, and an
-existing-snow-owner frost subtype. Production and contracts remain unchanged;
-the package must distinguish physical-path dependence from numerical
-partition dependence and close through independent science/ownership review.
+existing-snow-owner frost subtype. All four are NO-GO: released ordering is
+partition-dependent, the event-driven model could not be instantiated from the
+integrated forcing receipt, and both remaining models lack science/ownership
+authority. Production and contracts remain unchanged. Status: `EXECUTED HOLD`.
 
 ## 20260826-snow-terminal-vapor-melt-phase-competition-001
 

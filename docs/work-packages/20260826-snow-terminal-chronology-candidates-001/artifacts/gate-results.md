@@ -1,18 +1,22 @@
 # Gate results
 
-Status: `EXECUTING / PRE-REVIEW`.
+Status: `FINAL / PASS FOR DEFECT-SHAPED HOLD`.
 
-- Ran: initial trajectory matrix `5635aeed-bfef-45d7-a3a8-e036390b21ef`:
-  6/6 PASS.
-- Ran: corrected hybrid trajectory matrix
-  `e3d0ef84-d8b7-4936-a177-16861bef4bc8`: 6/6 PASS.
-- Ran: real fixture `84ea637b-6ced-443a-9bbe-0b89796786fa`: 1/1 PASS.
-- Ran: final pre-review matrix `a1e5a66d-c0fa-4af2-a164-8a20dee172e5`:
-  7/7 PASS.
-- Ran: final pre-review real fixture
-  `b275ae2c-fad8-429f-b405-325c9020237d`: 1/1 PASS.
+- Ran: post-review trajectory matrix nextest
+  `11375817-3189-4900-999b-22b1df2595ab`: 8/8 PASS.
+- Ran: post-review real fixture nextest
+  `df2735e6-b5d8-4988-9970-e407a7b209c4`: 1/1 PASS.
+- Ran: `cargo fmt --all -- --check`: PASS.
+- Ran: `cargo check -p openwepp-hillslope-orchestrator --tests`: PASS with
+  pre-existing warnings.
+- Ran: `cargo clippy -p openwepp-hillslope-orchestrator --tests --no-deps`:
+  PASS with repository-baseline warnings; warnings-denied is not baseline-clean.
+- Ran: `git diff --check`: PASS.
 - Static: all new model code and module registration are cfg(test).
-- Static: production and canonical contracts are unchanged.
+- Static: production code, canonical contracts, manifests/dependencies, public
+  APIs, and the Assurance V2 package are unchanged.
+- Static: independent science, ownership, Rust, and QA reviews all return NO-GO
+  for candidate selection and GO for production isolation/HOLD.
 
-Final matrix, build, format, Clippy, diff, reviews, verification, and exact-diff
-reconciliation remain pending.
+The gates qualify the truthfulness and isolation of the rejected research
+checkpoint. They do not qualify a physical candidate or production path.

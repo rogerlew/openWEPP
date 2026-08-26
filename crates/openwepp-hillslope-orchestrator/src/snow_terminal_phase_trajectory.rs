@@ -18,6 +18,7 @@ pub(crate) enum TrajectoryModel {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum TrajectoryEventKind {
     Meltout,
+    SublimationExhaustion,
     Reappearance,
 }
 
@@ -53,6 +54,7 @@ pub(crate) struct TrajectoryLedger {
     pub refrozen_kg_m2: f64,
     pub external_liquid_kg_m2: f64,
     pub complete_energy_j_m2: f64,
+    pub cold_content_change_j_m2: f64,
     pub unallocated_energy_j_m2: f64,
     pub vapor_energy_residual_j_m2: f64,
     pub solid_residual_kg_m2: f64,
@@ -75,19 +77,21 @@ pub(crate) enum TrajectoryFailure {
     SublimationOverdraw,
     Closure,
     UnsupportedFrostInput,
+    TickOverflow,
     RestartSchema,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum Qualification {
     RequiresPostEventEnergyRecipient,
-    RequiresDistinctFrostOwner,
+    UnresolvedSolidEnergyCoexistence,
+    EventDrivenModelNotInstantiated,
     MissingSimultaneousEquilibriumAuthority,
-    RequiresSnowOwnerSchemaAuthorization,
+    IncompleteSnowOwnerSchema,
 }
 
 fn finite_nonnegative(value: f64) -> bool {
-    value.is_finite() && value >= 0.0
+    value.is_finite() && value >= 0.0 && !(value == 0.0 && value.is_sign_negative())
 }
 
 fn validate_state(state: TrajectoryState) -> Result<(), TrajectoryFailure> {
@@ -100,7 +104,13 @@ fn validate_state(state: TrajectoryState) -> Result<(), TrajectoryFailure> {
     .into_iter()
     .all(finite_nonnegative)
     {
-        Ok(())
+        if state.pack_ice_kg_m2 + state.surface_frost_kg_m2 <= MASS_TOL_KG_M2
+            && state.cold_content_j_m2 > ENERGY_TOL_J_M2
+        {
+            Err(TrajectoryFailure::DomainOrNonFinite)
+        } else {
+            Ok(())
+        }
     } else {
         Err(TrajectoryFailure::DomainOrNonFinite)
     }
@@ -110,6 +120,7 @@ fn validate_segment(segment: ForcingSegment) -> Result<(), TrajectoryFailure> {
     if segment.duration_ns == 0
         || !segment.vapor_mass_into_snow_kg_m2.is_finite()
         || !finite_nonnegative(segment.latent_heat_j_kg)
+        || (segment.vapor_mass_into_snow_kg_m2 != 0.0 && segment.latent_heat_j_kg == 0.0)
         || !segment.latent_energy_into_snow_j_m2.is_finite()
         || !finite_nonnegative(segment.external_liquid_kg_m2)
         || !segment.complete_energy_j_m2.is_finite()
@@ -127,12 +138,19 @@ fn validate_segment(segment: ForcingSegment) -> Result<(), TrajectoryFailure> {
     Ok(())
 }
 
-fn event_tick(start_ns: u128, duration_ns: u128, numerator: f64, denominator: f64) -> u128 {
+fn event_tick(
+    start_ns: u128,
+    duration_ns: u128,
+    numerator: f64,
+    denominator: f64,
+) -> Result<u128, TrajectoryFailure> {
     if denominator <= 0.0 || numerator <= 0.0 {
-        return start_ns;
+        return Ok(start_ns);
     }
     let fraction = (numerator / denominator).clamp(0.0, 1.0);
-    start_ns + ((duration_ns as f64) * fraction).ceil() as u128
+    start_ns
+        .checked_add(((duration_ns as f64) * fraction).ceil() as u128)
+        .ok_or(TrajectoryFailure::TickOverflow)
 }
 
 fn remove_solid(
@@ -181,6 +199,7 @@ fn finalize(
     cold_change_j_m2: f64,
 ) -> Result<TrajectoryOutcome, TrajectoryFailure> {
     validate_state(ending)?;
+    ledger.cold_content_change_j_m2 = cold_change_j_m2;
     ledger.solid_residual_kg_m2 = beginning.pack_ice_kg_m2
         + beginning.surface_frost_kg_m2
         + ledger.deposition_kg_m2
@@ -194,7 +213,7 @@ fn finalize(
             - ledger.refrozen_kg_m2
             - ending.liquid_kg_m2;
     ledger.energy_residual_j_m2 =
-        ledger.complete_energy_j_m2 - cold_change_j_m2 - LF_J_KG * ledger.melt_kg_m2
+        ledger.complete_energy_j_m2 - ledger.cold_content_change_j_m2 - LF_J_KG * ledger.melt_kg_m2
             + LF_J_KG * ledger.refrozen_kg_m2
             - ledger.unallocated_energy_j_m2;
     if [
@@ -224,7 +243,6 @@ fn run_ordered(
     model: TrajectoryModel,
     beginning: TrajectoryState,
     segments: &[ForcingSegment],
-    deposition_to_frost_after_meltout: bool,
 ) -> Result<TrajectoryOutcome, TrajectoryFailure> {
     validate_state(beginning)?;
     let mut state = beginning;
@@ -234,9 +252,19 @@ fn run_ordered(
     let mut cold_change = 0.0;
     for segment in segments {
         validate_segment(*segment)?;
+        let segment_end = cursor_ns
+            .checked_add(segment.duration_ns)
+            .ok_or(TrajectoryFailure::TickOverflow)?;
         let solid_at_start = state.pack_ice_kg_m2 + state.surface_frost_kg_m2;
         let sublimation = (-segment.vapor_mass_into_snow_kg_m2).max(0.0);
         remove_solid(&mut state, sublimation)?;
+        let solid_before_energy = state.pack_ice_kg_m2 + state.surface_frost_kg_m2;
+        if solid_at_start > MASS_TOL_KG_M2 && solid_before_energy <= MASS_TOL_KG_M2 {
+            events.push(TrajectoryEvent {
+                kind: TrajectoryEventKind::SublimationExhaustion,
+                tick_ns: event_tick(cursor_ns, segment.duration_ns, solid_at_start, sublimation)?,
+            });
+        }
         state.liquid_kg_m2 += segment.external_liquid_kg_m2;
         let cold_before = state.cold_content_j_m2;
         let energy_needed =
@@ -245,7 +273,7 @@ fn run_ordered(
             apply_energy(&mut state, segment.complete_energy_j_m2);
         cold_change += cold_before - state.cold_content_j_m2;
         let solid_after_energy = state.pack_ice_kg_m2 + state.surface_frost_kg_m2;
-        if solid_at_start > MASS_TOL_KG_M2 && solid_after_energy <= MASS_TOL_KG_M2 {
+        if solid_before_energy > MASS_TOL_KG_M2 && solid_after_energy <= MASS_TOL_KG_M2 {
             events.push(TrajectoryEvent {
                 kind: TrajectoryEventKind::Meltout,
                 tick_ns: event_tick(
@@ -253,24 +281,16 @@ fn run_ordered(
                     segment.duration_ns,
                     energy_needed,
                     segment.complete_energy_j_m2,
-                ),
+                )?,
             });
         }
         let deposition = segment.vapor_mass_into_snow_kg_m2.max(0.0);
         if deposition > 0.0 {
-            if deposition_to_frost_after_meltout
-                && events
-                    .iter()
-                    .any(|event| event.kind == TrajectoryEventKind::Meltout)
-            {
-                state.surface_frost_kg_m2 += deposition;
-            } else {
-                state.pack_ice_kg_m2 += deposition;
-            }
+            state.pack_ice_kg_m2 += deposition;
             if solid_after_energy <= MASS_TOL_KG_M2 {
                 events.push(TrajectoryEvent {
                     kind: TrajectoryEventKind::Reappearance,
-                    tick_ns: cursor_ns + segment.duration_ns,
+                    tick_ns: segment_end,
                 });
             }
         }
@@ -283,7 +303,7 @@ fn run_ordered(
         ledger.unallocated_energy_j_m2 += unallocated;
         ledger.vapor_energy_residual_j_m2 += segment.latent_energy_into_snow_j_m2
             - segment.vapor_mass_into_snow_kg_m2 * segment.latent_heat_j_kg;
-        cursor_ns += segment.duration_ns;
+        cursor_ns = segment_end;
     }
     finalize(model, beginning, state, events, ledger, cold_change)
 }
@@ -299,7 +319,6 @@ pub(crate) fn released_ordered_trajectory(
         TrajectoryModel::ReleasedOrderedTrajectory,
         beginning,
         segments,
-        false,
     )
 }
 
@@ -323,6 +342,12 @@ fn run_hybrid(
     let mut cold_change = 0.0;
     for segment in segments {
         validate_segment(*segment)?;
+        let segment_end = cursor_ns
+            .checked_add(segment.duration_ns)
+            .ok_or(TrajectoryFailure::TickOverflow)?;
+        if state.pack_ice_kg_m2 > MASS_TOL_KG_M2 && state.surface_frost_kg_m2 > MASS_TOL_KG_M2 {
+            return Err(TrajectoryFailure::UnsupportedFrostInput);
+        }
         if (-segment.vapor_mass_into_snow_kg_m2).max(0.0)
             > state.pack_ice_kg_m2 + state.surface_frost_kg_m2 + MASS_TOL_KG_M2
         {
@@ -357,12 +382,12 @@ fn run_hybrid(
         ) {
             events.push(TrajectoryEvent {
                 kind: TrajectoryEventKind::Meltout,
-                tick_ns: cursor_ns + segment.duration_ns,
+                tick_ns: segment_end,
             });
         } else if reappeared {
             events.push(TrajectoryEvent {
                 kind: TrajectoryEventKind::Reappearance,
-                tick_ns: cursor_ns + segment.duration_ns,
+                tick_ns: segment_end,
             });
         }
         cold_change += state.cold_content_j_m2 - candidate.ending_cold_content_j_m2;
@@ -390,7 +415,7 @@ fn run_hybrid(
         ledger.unallocated_energy_j_m2 += candidate.unallocated_energy_j_m2;
         ledger.vapor_energy_residual_j_m2 += segment.latent_energy_into_snow_j_m2
             - segment.vapor_mass_into_snow_kg_m2 * segment.latent_heat_j_kg;
-        cursor_ns += segment.duration_ns;
+        cursor_ns = segment_end;
     }
     finalize(model, beginning, state, events, ledger, cold_change)
 }
@@ -410,6 +435,9 @@ pub(crate) fn time_resolved_complementarity(
     let mut cold_change = 0.0;
     for segment in segments {
         validate_segment(*segment)?;
+        let segment_end = cursor_ns
+            .checked_add(segment.duration_ns)
+            .ok_or(TrajectoryFailure::TickOverflow)?;
         let input = crate::snow_terminal_phase_competition::TerminalPhaseInputs {
             beginning_pack_ice_kg_m2: state.pack_ice_kg_m2,
             beginning_surface_frost_kg_m2: 0.0,
@@ -431,13 +459,13 @@ pub(crate) fn time_resolved_complementarity(
             | crate::snow_terminal_phase_competition::TerminalEventChronology::AtEnd => {
                 events.push(TrajectoryEvent {
                     kind: TrajectoryEventKind::Meltout,
-                    tick_ns: cursor_ns + segment.duration_ns,
+                    tick_ns: segment_end,
                 });
             }
             crate::snow_terminal_phase_competition::TerminalEventChronology::Reappeared => {
                 events.push(TrajectoryEvent {
                     kind: TrajectoryEventKind::Reappearance,
-                    tick_ns: cursor_ns + segment.duration_ns,
+                    tick_ns: segment_end,
                 });
             }
             _ => {}
@@ -458,7 +486,7 @@ pub(crate) fn time_resolved_complementarity(
         ledger.unallocated_energy_j_m2 += candidate.unallocated_energy_j_m2;
         ledger.vapor_energy_residual_j_m2 += segment.latent_energy_into_snow_j_m2
             - segment.vapor_mass_into_snow_kg_m2 * segment.latent_heat_j_kg;
-        cursor_ns += segment.duration_ns;
+        cursor_ns = segment_end;
     }
     finalize(
         TrajectoryModel::TimeResolvedComplementarity,
@@ -532,17 +560,20 @@ pub(crate) fn existing_snow_frost_subtype(
 }
 
 pub(crate) fn qualification(outcome: &TrajectoryOutcome) -> Qualification {
+    if outcome.ending.pack_ice_kg_m2 + outcome.ending.surface_frost_kg_m2 > MASS_TOL_KG_M2
+        && outcome.ledger.unallocated_energy_j_m2 > ENERGY_TOL_J_M2
+    {
+        return Qualification::UnresolvedSolidEnergyCoexistence;
+    }
     match outcome.model {
         TrajectoryModel::ReleasedOrderedTrajectory => {
             Qualification::RequiresPostEventEnergyRecipient
         }
-        TrajectoryModel::EventDrivenFrostHybrid => Qualification::RequiresDistinctFrostOwner,
+        TrajectoryModel::EventDrivenFrostHybrid => Qualification::EventDrivenModelNotInstantiated,
         TrajectoryModel::TimeResolvedComplementarity => {
             Qualification::MissingSimultaneousEquilibriumAuthority
         }
-        TrajectoryModel::ExistingSnowFrostSubtype => {
-            Qualification::RequiresSnowOwnerSchemaAuthorization
-        }
+        TrajectoryModel::ExistingSnowFrostSubtype => Qualification::IncompleteSnowOwnerSchema,
     }
 }
 
@@ -658,7 +689,7 @@ mod tests {
         assert!(outcome.ledger.unallocated_energy_j_m2 > ENERGY_TOL_J_M2);
         assert_eq!(
             qualification(&outcome),
-            Qualification::RequiresPostEventEnergyRecipient
+            Qualification::UnresolvedSolidEnergyCoexistence
         );
     }
 
@@ -742,7 +773,7 @@ mod tests {
         );
         assert_eq!(
             qualification(&hybrid),
-            Qualification::RequiresDistinctFrostOwner
+            Qualification::UnresolvedSolidEnergyCoexistence
         );
         let (tagged, envelope) =
             existing_snow_frost_subtype(state(0.6, 0.0, 0.0), &forcing).expect("tagged subtype");
@@ -753,7 +784,7 @@ mod tests {
         );
         assert_eq!(
             qualification(&tagged),
-            Qualification::RequiresSnowOwnerSchemaAuthorization
+            Qualification::UnresolvedSolidEnergyCoexistence
         );
         let mut poison = envelope.canonical_bytes();
         poison[0] ^= 1;
@@ -777,12 +808,61 @@ mod tests {
             Err(TrajectoryFailure::VaporLatentMismatch)
         );
         assert_eq!(beginning, state(0.6, 0.0, 0.0));
+        let zero_latent_coefficient = ForcingSegment {
+            latent_heat_j_kg: 0.0,
+            latent_energy_into_snow_j_m2: 0.0,
+            ..valid
+        };
+        assert_eq!(
+            released_ordered_trajectory(beginning, &[zero_latent_coefficient]),
+            Err(TrajectoryFailure::DomainOrNonFinite)
+        );
         let overdraw = segment(10, -0.7, 0.0, 0.0);
         assert_eq!(
             event_driven_frost_hybrid(beginning, &[overdraw]),
             Err(TrajectoryFailure::SublimationOverdraw)
         );
         assert_eq!(beginning, state(0.6, 0.0, 0.0));
+    }
+
+    #[test]
+    fn chronology_domain_and_tick_failures_are_typed() {
+        let exhaustion =
+            released_ordered_trajectory(state(0.6, 0.0, 0.0), &[segment(10, -0.6, 0.0, 0.0)])
+                .expect("exact sublimation exhaustion");
+        assert_eq!(
+            exhaustion.events,
+            vec![TrajectoryEvent {
+                kind: TrajectoryEventKind::SublimationExhaustion,
+                tick_ns: 10,
+            }]
+        );
+
+        let signed_zero = TrajectoryState {
+            pack_ice_kg_m2: -0.0,
+            ..state(0.0, 0.0, 0.0)
+        };
+        assert_eq!(
+            event_driven_frost_hybrid(signed_zero, &[segment(1, 0.0, 0.0, 0.0)]),
+            Err(TrajectoryFailure::DomainOrNonFinite)
+        );
+        assert_eq!(
+            event_driven_frost_hybrid(
+                TrajectoryState {
+                    pack_ice_kg_m2: 0.3,
+                    surface_frost_kg_m2: 0.3,
+                    liquid_kg_m2: 0.0,
+                    cold_content_j_m2: 0.0,
+                },
+                &[segment(1, 0.0, 0.0, 0.0)],
+            ),
+            Err(TrajectoryFailure::UnsupportedFrostInput)
+        );
+        let overflowing = [segment(u128::MAX, 0.0, 0.0, 0.0), segment(1, 0.0, 0.0, 0.0)];
+        assert_eq!(
+            released_ordered_trajectory(state(0.6, 0.0, 0.0), &overflowing),
+            Err(TrajectoryFailure::TickOverflow)
+        );
     }
 
     #[test]

@@ -1,6 +1,6 @@
 # Snow terminal chronology candidates
 
-Status: `EXECUTING / TEST-ONLY RESEARCH / PRODUCTION UNCHANGED`
+Status: `EXECUTED / DEFECT-SHAPED HOLD / PRODUCTION UNCHANGED`
 
 Date: `2026-08-26`
 
