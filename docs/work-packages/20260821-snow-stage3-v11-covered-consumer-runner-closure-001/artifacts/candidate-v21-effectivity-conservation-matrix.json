@@ -1,0 +1,574 @@
+{
+  "active_set_local": {
+    "event_containing_floor_vector": "excluded_required",
+    "smooth_same_tag": "evaluated",
+    "tag_disagreement": "typed_unsupported_required"
+  },
+  "affine_rows": [
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "effectivity_abs_estimate_over_reference": 2.559902742943397e-10,
+      "exact_reference": 1.4668488030448472,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 1.466849451645065,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.01,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -1.6603534765082104e-16,
+      "signed_reference_error": -6.486002177563677e-07,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "effectivity_abs_estimate_over_reference": 1.2799513631398205e-10,
+      "exact_reference": 1.4668488034051776,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 1.4668494520053996,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.01,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -8.301767382499668e-17,
+      "signed_reference_error": -6.486002219752152e-07,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "effectivity_abs_estimate_over_reference": 1.266045726551854e-10,
+      "exact_reference": 1.5747862694829706,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 1.5747884519661526,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.01,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -2.7631235057868506e-16,
+      "signed_reference_error": -2.1824831819561297e-06,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "effectivity_abs_estimate_over_reference": 1.0698279385081981e-11,
+      "exact_reference": 1.6824004083968376,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 1.6824055662422088,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.01,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -5.5180070806693566e-17,
+      "signed_reference_error": -5.157845371250858e-06,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "effectivity_abs_estimate_over_reference": 1.0000215315997896,
+      "exact_reference": 1.6824004087550222,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 1.6824016981955432,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.01,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -1.289468284741228e-06,
+      "signed_reference_error": -1.2894405210239768e-06,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "effectivity_abs_estimate_over_reference": 1.0000524625304146,
+      "exact_reference": 1.9233550691430779,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 1.9233599549158424,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.01,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -4.886029084586833e-06,
+      "signed_reference_error": -4.885772764584573e-06,
+      "support_s": 1.875
+    },
+    {
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "effectivity_abs_estimate_over_reference": 1.0002087942830489,
+      "exact_reference": 2.5842023576202067,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 2.584240719263101,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.01,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -3.836965258600481e-05,
+      "signed_reference_error": -3.8361642894280124e-05,
+      "support_s": 3.75
+    },
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "effectivity_abs_estimate_over_reference": 1.271034880328374e-12,
+      "exact_reference": 1.3955886660393784,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 1.395631067961165,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.1,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": 5.3894321583745464e-17,
+      "signed_reference_error": -4.2401921786616725e-05,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "effectivity_abs_estimate_over_reference": 4.448622059128358e-12,
+      "exact_reference": 1.3955886662748194,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 1.3956310681968138,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.1,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": 1.886301255339523e-16,
+      "signed_reference_error": -4.2401921994450475e-05,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "effectivity_abs_estimate_over_reference": 7.645030959177742e-13,
+      "exact_reference": 1.4651720368219294,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 1.4653110047846891,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.1,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -1.0624143776317289e-16,
+      "signed_reference_error": -0.00013896796275969514,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "effectivity_abs_estimate_over_reference": 3.273475245307563e-13,
+      "exact_reference": 1.5326989079853761,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 1.5330188677020293,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.1,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -1.0473802119599297e-16,
+      "signed_reference_error": -0.00031995971665321754,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "effectivity_abs_estimate_over_reference": 1.0020934838980402,
+      "exact_reference": 1.5326989082071063,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 1.5327787727401263,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.1,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -8.003172813390395e-05,
+      "signed_reference_error": -7.986453302000207e-05,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "effectivity_abs_estimate_over_reference": 1.0050305736896532,
+      "exact_reference": 1.6774272045489989,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 1.677712185341947,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.1,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -0.0002864144098272033,
+      "signed_reference_error": -0.0002849807929481418,
+      "support_s": 1.875
+    },
+    {
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "effectivity_abs_estimate_over_reference": 1.019370078160268,
+      "exact_reference": 2.031776803022569,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 2.033673469387755,
+      "minimum_support_ok": true,
+      "rate_s_inv": -0.1,
+      "selector": "cn_step_doubling",
+      "signed_estimate": -0.0019334049409236442,
+      "signed_reference_error": -0.0018966663651860394,
+      "support_s": 3.75
+    },
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "effectivity_abs_estimate_over_reference": 0.0,
+      "exact_reference": 0.855210181582273,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 0.8461538461538461,
+      "minimum_support_ok": true,
+      "rate_s_inv": -1.0,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -0.0,
+      "signed_reference_error": 0.009056335428426876,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "effectivity_abs_estimate_over_reference": 1.4145087394303409e-14,
+      "exact_reference": 0.8552101811020629,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 0.8461538456360949,
+      "minimum_support_ok": true,
+      "rate_s_inv": -1.0,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -1.2810265663824782e-16,
+      "signed_reference_error": 0.009056335465968068,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "effectivity_abs_estimate_over_reference": 0.0,
+      "exact_reference": 0.7307484522730242,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 0.7068965517241379,
+      "minimum_support_ok": true,
+      "rate_s_inv": -1.0,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -0.0,
+      "signed_reference_error": 0.023851900548886307,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "effectivity_abs_estimate_over_reference": 0.0,
+      "exact_reference": 0.6385449356867217,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": 0.5937500003417968,
+      "minimum_support_ok": true,
+      "rate_s_inv": -1.0,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -0.0,
+      "signed_reference_error": 0.04479493534492485,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "effectivity_abs_estimate_over_reference": 1.183076134908191,
+      "exact_reference": 0.6385449354231769,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 0.6286982248520709,
+      "minimum_support_ok": true,
+      "rate_s_inv": -1.0,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.011649408284023685,
+      "signed_reference_error": 0.009846710571105977,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "effectivity_abs_estimate_over_reference": 1.4585813702251045,
+      "exact_reference": 0.5091855959893123,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 0.4894748755092803,
+      "minimum_support_ok": true,
+      "rate_s_inv": -1.0,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.028749689685889146,
+      "signed_reference_error": 0.01971072048003203,
+      "support_s": 1.875
+    },
+    {
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "effectivity_abs_estimate_over_reference": 4.528869398855178,
+      "exact_reference": 0.39557802762400796,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 0.37591050988553587,
+      "minimum_support_ok": true,
+      "rate_s_inv": -1.0,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.08907161923720762,
+      "signed_reference_error": 0.019667517738472085,
+      "support_s": 3.75
+    },
+    {
+      "constitutive_supports_s": [
+        0.6
+      ],
+      "effectivity_abs_estimate_over_reference": 2.733392759577886e-16,
+      "exact_reference": 0.04050548701420796,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": -0.56875,
+      "minimum_support_ok": true,
+      "rate_s_inv": -10.0,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": 1.6653345369377348e-16,
+      "signed_reference_error": 0.609255487014208,
+      "support_s": 0.6
+    },
+    {
+      "constitutive_supports_s": [
+        0.600000001
+      ],
+      "effectivity_abs_estimate_over_reference": 2.733392752896099e-16,
+      "exact_reference": 0.04050548698415309,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": -0.5687500007578125,
+      "minimum_support_ok": true,
+      "rate_s_inv": -10.0,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": 1.665334534856067e-16,
+      "signed_reference_error": 0.6092554877419656,
+      "support_s": 0.600000001
+    },
+    {
+      "constitutive_supports_s": [
+        0.9
+      ],
+      "effectivity_abs_estimate_over_reference": 4.185007170212254e-16,
+      "exact_reference": 0.0376496343874551,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": -0.734090909090909,
+      "minimum_support_ok": true,
+      "rate_s_inv": -10.0,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -3.2297397080004555e-16,
+      "signed_reference_error": 0.7717405434783641,
+      "support_s": 0.9
+    },
+    {
+      "constitutive_supports_s": [
+        1.199999999
+      ],
+      "effectivity_abs_estimate_over_reference": 0.0,
+      "exact_reference": 0.03750744985755291,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": false,
+      "installed": -0.8285714283239797,
+      "minimum_support_ok": true,
+      "rate_s_inv": -10.0,
+      "selector": "full_support_defect_transport",
+      "signed_estimate": -0.0,
+      "signed_reference_error": 0.8660788781815326,
+      "support_s": 1.199999999
+    },
+    {
+      "constitutive_supports_s": [
+        1.2,
+        0.6,
+        0.6
+      ],
+      "effectivity_abs_estimate_over_reference": 1.2857458852972925,
+      "exact_reference": 0.037507449857478406,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 0.34062499999999996,
+      "minimum_support_ok": true,
+      "rate_s_inv": -10.0,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.3897321428571428,
+      "signed_reference_error": -0.30311755014252156,
+      "support_s": 1.2
+    },
+    {
+      "constitutive_supports_s": [
+        1.875,
+        0.9375,
+        0.9375
+      ],
+      "effectivity_abs_estimate_over_reference": 0.9734427678425592,
+      "exact_reference": 0.0375000087228863,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 0.5471863301533632,
+      "minimum_support_ok": true,
+      "rate_s_inv": -10.0,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.4961504634647757,
+      "signed_reference_error": -0.5096863214304769,
+      "support_s": 1.875
+    },
+    {
+      "constitutive_supports_s": [
+        3.75,
+        1.875,
+        1.875
+      ],
+      "effectivity_abs_estimate_over_reference": 0.7930778753126491,
+      "exact_reference": 0.03750000000000006,
+      "family": "affine_relaxation",
+      "gamma2_componentwise_enclosure": true,
+      "installed": 0.8275874582668021,
+      "minimum_support_ok": true,
+      "rate_s_inv": -10.0,
+      "selector": "cn_step_doubling",
+      "signed_estimate": 0.6266008827134066,
+      "signed_reference_error": -0.790087458266802,
+      "support_s": 3.75
+    }
+  ],
+  "conduction_rows": [
+    {
+      "beginning_sum": 3.0,
+      "conservation_residual": 0.0,
+      "family": "two_node_conduction",
+      "gamma2_componentwise_enclosure": false,
+      "installed_sum": 3.0,
+      "signed_difference_estimate": -0.0,
+      "signed_difference_reference_error": 0.1577076731188034,
+      "support_s": 0.6
+    },
+    {
+      "beginning_sum": 3.0,
+      "conservation_residual": 0.0,
+      "family": "two_node_conduction",
+      "gamma2_componentwise_enclosure": false,
+      "installed_sum": 3.0,
+      "signed_difference_estimate": 3.0006027676352324e-16,
+      "signed_difference_reference_error": 0.15770767370796124,
+      "support_s": 0.600000001
+    },
+    {
+      "beginning_sum": 3.0,
+      "conservation_residual": 0.0,
+      "family": "two_node_conduction",
+      "gamma2_componentwise_enclosure": false,
+      "installed_sum": 3.0,
+      "signed_difference_estimate": -0.0,
+      "signed_difference_reference_error": 0.37068530503851604,
+      "support_s": 0.9
+    },
+    {
+      "beginning_sum": 3.0,
+      "conservation_residual": 0.0,
+      "family": "two_node_conduction",
+      "gamma2_componentwise_enclosure": false,
+      "installed_sum": 3.0,
+      "signed_difference_estimate": -0.0,
+      "signed_difference_reference_error": 0.6309939934156102,
+      "support_s": 1.199999999
+    },
+    {
+      "beginning_sum": 3.0,
+      "conservation_residual": 0.0,
+      "family": "two_node_conduction",
+      "gamma2_componentwise_enclosure": true,
+      "installed_sum": 3.0,
+      "signed_difference_estimate": 0.17173268138519104,
+      "signed_difference_reference_error": 0.11579595016964694,
+      "support_s": 1.2
+    },
+    {
+      "beginning_sum": 3.0,
+      "conservation_residual": 0.0,
+      "family": "two_node_conduction",
+      "gamma2_componentwise_enclosure": true,
+      "installed_sum": 3.0,
+      "signed_difference_estimate": 0.36734693877551017,
+      "signed_difference_reference_error": 0.14689452551278911,
+      "support_s": 1.875
+    },
+    {
+      "beginning_sum": 3.0,
+      "conservation_residual": 0.0,
+      "family": "two_node_conduction",
+      "gamma2_componentwise_enclosure": true,
+      "installed_sum": 3.0,
+      "signed_difference_estimate": 0.9,
+      "signed_difference_reference_error": -0.1876062391166682,
+      "support_s": 3.75
+    }
+  ],
+  "failed_enclosure_count": 20,
+  "floor": {
+    "all_constitutive_supports_admitted": true,
+    "minimum_s": 0.6
+  },
+  "production_operator_changed": false,
+  "real_1_875_capture": {
+    "candidate_cn_receipts_available": false,
+    "coarse_complete_energy_bits": "0x40949afbc1928120",
+    "delta_complete_energy_bits": "0xc03b368f8bb18fc0",
+    "disposition": "not_evaluable_without_candidate_operator",
+    "physical_result": "BelowCarrierDomain",
+    "refined_complete_energy_bits": "0x40942e218363bae1"
+  },
+  "schema": "openwepp-child1-candidate-v21-effectivity-matrix-v1",
+  "selector_boundary": {
+    "at_1_2": "cn_step_doubling",
+    "below_1_2": "full_support_defect_transport",
+    "no_blend": true
+  },
+  "status": "DIVERGES"
+}

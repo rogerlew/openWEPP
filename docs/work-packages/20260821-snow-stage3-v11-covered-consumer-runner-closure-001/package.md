@@ -630,3 +630,22 @@ of `CHILD1-TERM-COUPLING-020` that records 32 iterations and
 comparison predicates but is not that execution. Synthetic evidence is not
 substituted. Candidate-v21 matrix and final candidate reviews remain gated;
 temporal operator and Batch V2 remain untouched.
+
+### 2026-08-25 coupling fail-closure and candidate-v21 matrix
+
+Owner disposition removed the unreachable real-carrier 32-iteration witness
+and authorized the generic correction. Exhaustion now retains
+`IterationLoopExhausted` evidence and returns the existing typed coupling
+nonconvergence error; only a live four-component convergence break may select a
+physical trial. The real carrier remains invariant when only the hint and
+coupling ordinal vary, and every captured real group is exactly two successful
+calls with four exact-zero second-iteration differences.
+
+The package-local candidate-v21 matrix then ran without changing the production
+temporal operator. It closes two-node conservation and exact selector/floor
+behavior but returns `DIVERGES`: for smooth affine floor-domain vectors, the
+specified Gauss defect over a linear interpolation is identically the CN
+residual and therefore zero, while the independently referenced CN endpoint
+error is nonzero. The proposed `gamma=2` enclosure consequently fails. Final
+dual review is required; temporal-operator and Batch V2 implementation remain
+prohibited unless both reviews return `GO`.

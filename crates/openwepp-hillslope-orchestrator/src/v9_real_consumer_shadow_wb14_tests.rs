@@ -991,6 +991,79 @@ fn exercise_complete_wb14_cadence(
             selection.reason == crate::hydrology::TerminalCouplingSelectionReason::FourComponentConvergenceBreak
                 && selection.post_loop_three_component_check
         }));
+        assert!(evidence.coupling_selections.iter().all(|selection| {
+            let calls = evidence
+                .provider_calls
+                .iter()
+                .filter(|call| {
+                    call.request.lane_id == selection.request.lane_id
+                        && call.request.support == selection.request.support
+                        && call.request.role == selection.request.role
+                        && call.request.attempt_ordinal == selection.request.attempt_ordinal
+                        && call.request.beginning_joint.receipt_sha256()
+                            == selection.request.beginning_joint.receipt_sha256()
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(calls.len(), 2, "real carrier coupling group cardinality");
+            assert_eq!(calls[0].request.coupling_iteration, 0);
+            assert!(calls[0].request.ending_snow_hint.is_none());
+            assert_eq!(calls[1].request.coupling_iteration, 1);
+            assert!(calls[1].request.ending_snow_hint.is_some());
+            let second_iteration = evidence
+                .coupling_iterations
+                .iter()
+                .find(|iteration| {
+                    iteration.hook.request.lane_id == calls[1].request.lane_id
+                        && iteration.hook.request.support == calls[1].request.support
+                        && iteration.hook.request.role == calls[1].request.role
+                        && iteration.hook.request.attempt_ordinal
+                            == calls[1].request.attempt_ordinal
+                        && iteration.hook.request.coupling_iteration
+                            == calls[1].request.coupling_iteration
+                        && iteration.hook.request.beginning_joint.receipt_sha256()
+                            == calls[1].request.beginning_joint.receipt_sha256()
+                })
+                .expect("second real coupling iteration");
+            assert!(second_iteration
+                .hook
+                .comparisons
+                .expect("second-iteration comparisons")
+                .iter()
+                .all(|comparison| comparison.2.to_bits() == 0.0_f64.to_bits()));
+            let (
+                crate::hydrology::CapturedProviderOutcome::Success(first),
+                crate::hydrology::CapturedProviderOutcome::Success(second),
+            ) = (&calls[0].outcome, &calls[1].outcome)
+            else {
+                panic!("real coupling group must contain two successes");
+            };
+            // Only `ending_snow_hint` and `coupling_iteration` differ. The
+            // genuine carrier transition, ending joint, and retained evidence
+            // projection are invariant to those generic-loop fields.
+            assert_eq!(first.transition.boundary, second.transition.boundary);
+            assert_eq!(first.transition.beginning_joint, second.transition.beginning_joint);
+            assert_eq!(first.transition.ending_joint, second.transition.ending_joint);
+            assert_eq!(
+                first.transition.probe_child_identity,
+                second.transition.probe_child_identity
+            );
+            assert_eq!(first.precipitation_sets, second.precipitation_sets);
+            assert_eq!(first.complete_lower_boundaries, second.complete_lower_boundaries);
+            assert_eq!(first.carrier_source_receipts, second.carrier_source_receipts);
+            assert_eq!(first.covered_lse_states, second.covered_lse_states);
+            assert_eq!(first.soil_candidate, second.soil_candidate);
+            assert_eq!(first.soil_top_boundary_credit, second.soil_top_boundary_credit);
+            assert_eq!(
+                first.wb14_child_receipt_set_sha256,
+                second.wb14_child_receipt_set_sha256
+            );
+            assert_eq!(first.wb14_child_replay_bytes, second.wb14_child_replay_bytes);
+            true
+        }));
+        assert!(!evidence.coupling_selections.iter().any(|selection| {
+            selection.reason
+                == crate::hydrology::TerminalCouplingSelectionReason::IterationLoopExhausted
+        }));
         assert_eq!(evidence.selected_trials.len(), evidence.pairs.len() * 3);
         assert!(evidence.selected_trials.chunks_exact(3).all(|trials| {
             trials[0].position == crate::hydrology::TerminalPairPosition::Coarse

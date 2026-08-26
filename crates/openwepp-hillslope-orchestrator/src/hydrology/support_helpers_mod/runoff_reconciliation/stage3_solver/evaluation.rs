@@ -490,7 +490,7 @@ impl Wb11HydrologyKernel {
                                         post_loop_three_component_check: converged,
                                         });
                                     }
-                                    if !converged {
+                                    if !selected_live_converged {
                                         return Err(DirectSnowStage3EvaluationError::TerminalCustody(
                                             "covered terminal coupled trial nonconvergence",
                                         ));

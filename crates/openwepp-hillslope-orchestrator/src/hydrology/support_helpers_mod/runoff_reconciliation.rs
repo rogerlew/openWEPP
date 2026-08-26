@@ -2352,7 +2352,7 @@ mod cqr_row5_tests {
     use super::*;
 
     #[test]
-    fn child1_term_coupling_020_characterizes_temperature_only_false_convergence() {
+    fn child1_term_coupling_020_exhaustion_fails_closed_with_complete_diagnostics() {
         let common = CoveredTerminalEndingSnowHintV1 {
             ice_kg_m2: 0.2,
             liquid_kg_m2: 0.01,
@@ -2362,6 +2362,7 @@ mod cqr_row5_tests {
         let mut previous = None;
         let mut four_component_break = false;
         let mut final_pair = None;
+        let mut evidence = CaptureState::default();
         for iteration in 0..32_u32 {
             let next = CoveredTerminalEndingSnowHintV1 {
                 surface_temperature_c: if iteration % 2 == 0 { -1.0e-9 } else { 1.0e-9 },
@@ -2374,6 +2375,17 @@ mod cqr_row5_tests {
                 four_component_break |= terminal_coupling_four_component_converged(prior, next);
                 final_pair = Some((prior, next));
             }
+            evidence.coupling_iterations.push(CapturedCouplingIteration {
+                hook: TerminalCouplingIterationHook {
+                    request: coupling_test_request(iteration, previous),
+                    outgoing: next,
+                    comparisons: previous.map(|prior| terminal_coupling_comparisons(prior, next)),
+                    converged: previous.is_some_and(|prior| {
+                        terminal_coupling_four_component_converged(prior, next)
+                    }),
+                },
+                provider_ordinal: Some(u64::from(iteration)),
+            });
             previous = Some(next);
         }
 
@@ -2381,6 +2393,71 @@ mod cqr_row5_tests {
         let (prior, next) = final_pair.expect("iteration pair");
         assert!(terminal_coupling_post_loop_three_component_converged(prior, next));
         assert!(!terminal_coupling_four_component_converged(prior, next));
+        evidence.coupling_selections.push(TerminalCouplingSelectionHook {
+            request: coupling_test_request(31, Some(prior)),
+            reason: TerminalCouplingSelectionReason::IterationLoopExhausted,
+            post_loop_three_component_check: true,
+        });
+        let result: Result<(), DirectSnowStage3EvaluationError> =
+            Err(DirectSnowStage3EvaluationError::TerminalCustody(
+                "covered terminal coupled trial nonconvergence",
+            ));
+        assert!(matches!(
+            result,
+            Err(DirectSnowStage3EvaluationError::TerminalCustody(
+                "covered terminal coupled trial nonconvergence"
+            ))
+        ));
+        assert_eq!(evidence.coupling_iterations.len(), 32);
+        assert_eq!(evidence.coupling_selections.len(), 1);
+        assert_eq!(
+            evidence.coupling_selections[0].reason,
+            TerminalCouplingSelectionReason::IterationLoopExhausted
+        );
+        assert!(evidence.selected_trials.is_empty());
+    }
+
+    fn coupling_test_request(
+        coupling_iteration: u32,
+        ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+    ) -> CoveredTerminalTrialRequestV1 {
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(600_000_000))
+            .expect("test support");
+        let beginning_joint = CoveredTerminalJointTrialStateV1::try_new(
+            JointTrialAuthorityV1 {
+                source_owner_set_sha256: Digest32::from_bytes([1; 32]),
+                lane_id: 1,
+                source_snow_owner_sha256: Digest32::from_bytes([2; 32]),
+                interval_index: 0,
+                state_support: support,
+                accepted_predecessors: Vec::new(),
+            },
+            BTreeMap::from([
+                ("vegetation".to_owned(), vec![1]),
+                ("snow".to_owned(), vec![2]),
+                ("land_surface_energy".to_owned(), vec![3]),
+                ("hydrology".to_owned(), vec![4]),
+                ("bgc".to_owned(), vec![5]),
+                ("soil_thermal".to_owned(), vec![6]),
+                ("surface_liquid".to_owned(), vec![7]),
+            ]),
+        )
+        .expect("test joint");
+        CoveredTerminalTrialRequestV1 {
+            lane_id: 1,
+            support,
+            role: CoveredTerminalTrialRoleV1::Full,
+            attempt_ordinal: 0,
+            coupling_iteration,
+            ice_kg_m2: 0.2,
+            liquid_kg_m2: 0.01,
+            cold_content_j_m2: -125.0,
+            surface_temperature_c: -1.0e-9,
+            snow_depth_m: 0.02,
+            snow_density_kg_m3: 100.0,
+            ending_snow_hint,
+            beginning_joint,
+        }
     }
 
     #[test]
