@@ -30,7 +30,7 @@ fn v11_v134_separate_source_adjusted_and_virtual_wind() {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
     for required in [
-        "contract_version: 137",
+        "contract_version: 136",
         "INV-SNOWFREEZE-099",
         "`fwv_m_s` is local and cannot feed snow",
         "never measurement height",

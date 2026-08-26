@@ -45,6 +45,9 @@ fn runner_persistent_state_is_explicitly_historical_evaluation_only() {
 #[test]
 fn typed_attachment_excludes_rejected_live_carrier_and_rate_surfaces() {
     let attachment = read(&format!("{ORCHESTRATOR}/snow_stage3_v11_attachment.rs"));
+    let terminal_execution = read(&format!(
+        "{ORCHESTRATOR}/snow_stage3_v11_terminal_execution.rs"
+    ));
 
     for forbidden in [
         "TerminalStateRates",
@@ -58,9 +61,13 @@ fn typed_attachment_excludes_rejected_live_carrier_and_rate_surfaces() {
             !attachment.contains(forbidden),
             "typed attachment contains rejected surface {forbidden}"
         );
+        assert!(
+            !terminal_execution.contains(forbidden),
+            "typed terminal execution contains rejected surface {forbidden}"
+        );
     }
     assert!(attachment.contains("evaluate_stage3_persistent_support"));
     assert!(attachment.contains("execute_direct_v11_segment"));
-    assert!(attachment.contains("terminal_parcels_from_event"));
+    assert!(terminal_execution.contains("terminal_parcels_for_event_group"));
     assert!(attachment.contains("DirectV11RealConsumerStack"));
 }

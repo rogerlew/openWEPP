@@ -5,8 +5,6 @@ status: approved
 maturity: active
 owner: openWEPP maintainers + time/numerics + transaction/restart reviewers
 contract_version: 3
-released_contract_version: 3
-candidate_contract_version: 6
 producer_scope:
   - OPENWEPP_COUPLED_TIME_SUPPORT_V1
   - Coupled parent-interval coordinator and staged clock
@@ -14,7 +12,7 @@ consumer_scope:
   - Segmented-support vegetation V11
   - Snow, land-surface-energy, surface-liquid, Lane D, Richards, plant, soil-thermal, biogeochemistry, restart, and publication adopters
 evidence_level: static+independent_oracle+contract_vectors
-last_reviewed: 2026-08-24
+last_reviewed: 2026-08-20
 supersedes: []
 superseded_by: []
 ---
@@ -28,15 +26,6 @@ Maturity: `active`
 Authority identity: `OPENWEPP_COUPLED_TIME_SUPPORT_V1`
 
 Evidence mode: `Static + independent oracle and executable contract vectors`
-
-Lifecycle: version 3 remains `approved / active`; version 4 remains the
-reviewed covered terminal chain candidate. Version 5 is a distinct
-`in_review / draft` Batch V2, group-topology, and zero-prefix successor and
-does not rewrite version 4. It requires its own mandatory review, verification,
-implementation, and exact-head gates.
-
-Version 6 is the corrected successor to held v5 and requires a new manifest,
-executed evidence and independent reviews.
 
 ## Purpose and scientific scope
 
@@ -147,13 +136,7 @@ delimiter concatenation, JSON/debug bytes, and hexadecimal digest text are
 forbidden. Closed domain tags are `parent-interval`, `parent-transaction`,
 `segment`, `accepted-slab`, `attempt`, `event`, `constraint`, `owner-set`,
 `event-receipt`, `slab-receipt`, `parent-receipt`, and
-`publication-receipt`. Candidate version 4 adds the closed domain tags
-`stage3-v11-terminal-group-preaccept`,
-`stage3-v11-terminal-group-accepted`,
-`stage3-v11-terminal-event-proposal-core`,
-`covered-terminal-joint-trial-state`, and
-`covered-probe-child-identity`; their ordered fields are defined in the
-version-4 amendment and use this same framed preimage, not raw concatenation.
+`publication-receipt`.
 
 The V1 field lists are closed and ordered:
 
@@ -556,20 +539,11 @@ one family are simultaneously true.
 | INV-COUPLEDTIME-018 | Event boundary candidates satisfy both neighbor-side support predicates and all four independently admitted tolerances. | Child 2C event authority | `[INFERENCE][Static]` | candidate validator | `ERR-CT-021` |
 | INV-COUPLEDTIME-019 | Proposed and accepted ticks, candidate digest, errors, and tie-break identity are retained and replay-authenticated. | Child 2C receipt authority | `[INFERENCE][Static]` | event receipt validator | `ERR-CT-012/015` |
 | INV-COUPLEDTIME-020 | A no-candidate event is an atomic retry/failure; it cannot drop, freeze, scale, or execute a below-domain successor. | Child 2C rollback authority | `[INFERENCE][Static]` | rollback validator | `ERR-CT-021` |
-| INV-COUPLEDTIME-021 | Candidate-v4 separates current search support from enclosing parent. Root candidates are absolute ticks whose physical evaluation replays the complete prefix from the immutable current-search cursor; bracket width is diagnostic only, and only prior exact-zero endpoint replay is admitted at cursor. | half-open/version-3 chronology | `[INFERENCE][Static]` | support/cursor/prefix validator | `ERR-CT-022` |
-| INV-COUPLEDTIME-022 | Trial/candidate projection uses current accepted-positive-slab child ordinal. | predecessor identity | `[INFERENCE][Static]` | child/WB14 join | `ERR-CT-022` |
-| INV-COUPLEDTIME-023 | Discovery is read-only; endpoint and event operations share one rollback envelope. | version-3 attempt/event atomicity | `[DIRECT][Static] + [INFERENCE][Static]` | attempt-state validator | `ERR-CT-023` |
-| INV-COUPLEDTIME-024 | Physical mutation set is exact and clock accepted receipts are sole ordinal authority. | complete-owner/event receipt authority | `[DIRECT][Static] + [INFERENCE][Static]` | mutation/ordinal validator | `ERR-CT-024` |
-| INV-COUPLEDTIME-025 | Terminal result through parent receipt uses the exact acyclic canonical group chain. | canonical receipt governance | `[INFERENCE][Static]` | receipt/replay validator | `ERR-CT-025` |
-| INV-COUPLEDTIME-026 | Read-only probes use role/attempt-distinct canonical identities; exact endpoint receipts cross-join every shared field and probe identities never authorize accepted WB14/publication state. | attempt/slab identity and rollback authority | `[INFERENCE][Static]` | probe framing/cross-join/non-substitution validator | `ERR-CT-026` |
 
 ## Canonical obligations
 
 | Obligation ID | Requirement | Enforcement |
 |---|---|---|
-| `OBL-COUPLEDTIME-009` | Publish immutable discovery evidence without chronology side effects. | attempt/rollback validator |
-| `OBL-COUPLEDTIME-010` | Expose accepted event ordinal/context/owner/ledger digests for reconstruction. | accepted-event receipt API/validator |
-| `OBL-COUPLEDTIME-011` | Validate exact mutation equality and one-to-one terminal result/group/event/owner/parcel/parent chain. | parent receipt reconstruction |
 | OBL-COUPLEDTIME-001 | Canonical schema/model/vector identities bind origin, wire width, conversions, precedence, and every lineage field. | schema/profile/vector gates |
 | OBL-COUPLEDTIME-002 | Independent reference model consumes frozen vectors only, imports no Rust, and calls no Rust binary for expected values. | source audit plus separately authored comparison test |
 | OBL-COUPLEDTIME-003 | Reference consumer proves A+B/C, B-to-C event, A+C/B-terminal chronology with rejection, retry, restart, and atomic publication. | orchestrator integration test |
@@ -707,7 +681,6 @@ contradiction.
 | `BEI-CT-002` | terminal snow HOLD timing findings | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-002, INV-COUPLEDTIME-007, INV-COUPLEDTIME-008, INV-COUPLEDTIME-010` | `flagged-binding-addition` | Preserves event, participant, and restart residue. |
 | `BEI-CT-003` | Richards assessment timing recommendation | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-003, INV-COUPLEDTIME-009, INV-COUPLEDTIME-016, OBL-COUPLEDTIME-007` | `flagged-binding-addition` | Imports chronology only, not Richards numerics. |
 | `BEI-CT-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-017, INV-COUPLEDTIME-018, INV-COUPLEDTIME-019, INV-COUPLEDTIME-020, OBL-COUPLEDTIME-008` | `flagged-binding-addition` | Active-participant support, canonical event receipt, deterministic coalescing, and atomic no-candidate retry. |
-| `BEI-CT-V4-COVERED-TERMINAL-CHAIN` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-021, INV-COUPLEDTIME-022, INV-COUPLEDTIME-023, INV-COUPLEDTIME-024, INV-COUPLEDTIME-025, INV-COUPLEDTIME-026, OBL-COUPLEDTIME-009, OBL-COUPLEDTIME-010, OBL-COUPLEDTIME-011` | `flagged-binding-addition` | Candidate v4 current-search, physical-child, role-distinct read-only probe identity, exact endpoint cross-join, mutation/ordinal and acyclic terminal receipt-chain binding under review. |
 
 ## Child 2C shared-carrier and event-boundary amendment
 
@@ -819,332 +792,11 @@ both neighbor-side violations, deterministic tie and tie-poison cases,
 proposed/accepted tick divergence, no-candidate retry, owner-preserving
 rejection, restart before/after the event, and wrong-regime flux rejection.
 
-## Version 4 Covered Terminal Event Chain
-
-Terminal discovery distinguishes the enclosing parent support `[a,b)` from the
-current search support `[cursor,b)`. Every candidate begins at the current
-accepted cursor and ends at its proposed event tick; the coalesced group still
-binds the enclosing parent identity. Trial and candidate projection use the
-current physical-child ordinal derived from already accepted positive slabs.
-Candidate iteration order and literal ordinal zero are never chronology
-authority.
-
-Every bracket endpoint and bisection/root candidate is an absolute tick `t`.
-Its constitutive support is exactly `[cursor,t)`, replayed from the immutable
-complete joint state at `cursor`; it is never `[bracket_lower,t)`. Bracket
-lower/upper ticks and width are retained only as search diagnostics and cannot
-authorize carrier scaling, snow-only interpolation/coalescing, state seeding,
-or a physical support. Inner accepted half-step chains may evolve complete
-coupled candidates inside one prefix replay, but no rejected outer candidate
-advances the cursor state. The selected candidate is rerun over the identical
-prefix by the exact-endpoint operation before ordinary slab acceptance.
-
-Discovery is observational under the existing provisional-attempt rollback
-rules. It may expose only canonical bracket/candidate evidence and cannot
-accept a slab/event, advance a clock, mutate an owner/controller, retain a
-receipt or publication, or leak staged state. The exact positive-duration
-endpoint solve and the subsequent zero-duration event are separate acceptance
-operations. `mutation_set` equals the canonical set of owner IDs whose bytes
-differ: both missing changed owners and extra/nonexistent members fail. The
-coupled clock's ordered `AcceptedEventReceiptV1` records and their parent
-transaction identity are the sole event-ordinal authority.
-
-Discovery identifies a physical child with
-`CoveredProbeChildIdentityV1`, not an accepted-slab receipt. Its canonical
-SHA-256 preimage uses exactly `OPENWEPP_CANONICAL_FRAMED_SHA256_V1`: prefix,
-version, length-framed closed domain tag `covered-probe-child-identity`, then
-the ordinary ordered tagged fields. No NUL is part of the domain tag. Ordered fields are schema
-`u32(1)`, parent transaction digest, enclosing parent start/end `u128`, exact
-trial start/end `u128`, current physical-child ordinal `u32`, attempt ordinal
-`u32`, trial role tag `u8` (`0=full`, `1=half-1`, `2=half-2`, `3=retry`,
-`4=bracket-lower`, `5=bracket-upper`, `6=root`), beginning joint-trial-state
-digest, beginning complete-owner-set digest, complete projected forcing digest,
-and receiver-topology digest. Unknown roles, noncanonical framing and duplicate
-attempt/role identities fail. Construction is pure and does not call
-`accept_slab`. It is probe evidence only and cannot
-authorize WB14 publication, owner mutation, cursor advance or restart.
-
-The exact endpoint creates the ordinary accepted slab using the same parent,
-support, ordinal, beginning owner set, forcing and topology. The terminal
-event-result contains `discovery_probe_identity_digest`; the preaccept group
-contains the same digest and the ordinary accepted-slab receipt ID. Validation
-reconstructs parent, support, child ordinal, beginning owner set and forcing
-from the accepted receipt/slab context, reconstructs topology from the exact
-endpoint input, and requires bit-identical equality with the corresponding
-probe fields. Any mismatch,
-use of an accepted receipt during discovery, or use of a probe identity as an
-accepted WB14/publication identity fails atomically with `ERR-CT-026`.
-
-The canonical candidate receipt additionally binds the enclosing-parent and
-current-search supports; absolute candidate tick; bracket lower/upper ticks and
-diagnostic width; full-prefix start/end/duration; physical-child, attempt, and
-trial-role identities; immutable beginning owner-set and joint-state digests;
-complete forcing and receiver-topology digests; constitutive policy identities,
-minimum-support admission result, ordered accepted inner-transition receipts,
-endpoint/event/ledger digests, evaluated/unevaluated durations, typed failure,
-and probe identity. Exact-endpoint acceptance cross-joins the selected candidate
-receipt with the ordinary accepted-slab receipt and requires identical prefix,
-ordinal, beginning owners, forcing, topology, endpoint, and event-result fields.
-
-At event acceptance, coupled chronology appends exactly one accepted receipt
-and increments its ordinal. In the separately joined seven-owner physical
-transition, the mutation set is exactly `{snow}`. These are two views of one
-atomic event; clock state is transaction authority, not an eighth physical
-process owner. An event at `cursor` has zero endpoint-slab duration and is
-admissible only as replay of an immediately preceding accepted positive
-endpoint result proving exact zero solid and an unapplied event predecessor.
-It cannot localize or delete positive beginning solid. It accepts no positive
-slab and evaluates no rate; its present terminal ledger carries explicit zero
-flux and no snow--soil receipt.
-
-The canonical framed chain is acyclic:
-
-```text
-covered probe bracket evidence
--> exact shortened covered endpoint result (or sealed cursor-root result)
--> terminal event-result digest
--> preaccept event-group digest
--> accepted CoupledTime event receipt
--> accepted-group receipt digest
--> zero-duration canonical snow-owner transition
--> ProducedUnconsumed parcel-set digest
--> parent receipt
-```
-
-Parcel and V4 owner bytes bind `terminal_event_proposal_core_id`, not a
-preaccept/accepted group or event-receipt ID. The proposal-core preimage is
-`OPENWEPP_CANONICAL_FRAMED_SHA256_V1` with closed domain tag
-`stage3-v11-terminal-event-proposal-core`, beginning with schema `u32(1)`, then
-parent transaction, enclosing/current support, event tick, physical-child and
-event ordinals, ordered event-result/probe/forcing/topology digests, and
-terminal liquid/enthalpy bits only. No parcel-set or ending-owner digest is
-present. The preaccept group then binds that core plus proposed parcels and
-ending owner. `EventProposalV1` uses the preaccept digest as event context and
-the ending owners; its accepted receipt binds both. The accepted-group receipt
-finally binds preaccept, accepted receipt, ending owner and parcel-set digest.
-Accepted receipt, preaccept/accepted group, or ordinary event-proposal IDs
-inside parcel/ending-owner bytes are prohibited self-referential preimages and
-fail `ERR-CT-025`.
-
-The preaccept group binds proposal core, enclosing parent, current search support, event tick, physical
-child ordinal, complete covered forcing digest, receiver topology, canonical
-event-result bytes/digests, terminal liquid and enthalpy, complete beginning
-and proposed ending physical owner sets, exact physical mutation set, and
-proposed parcel-set digest. Its domain is
-the canonical framed tag `stage3-v11-terminal-group-preaccept` and it cannot
-include an accepted receipt; the event proposal context is exactly this digest. After
-acceptance, `AcceptedTerminalEventGroupReceiptV1` uses domain
-tag `stage3-v11-terminal-group-accepted` and binds the
-preaccept digest, accepted event receipt ID and ordinal, event context,
-begin/end owner-set digests, ledger digest, and final parcel-set digest. All
-ticks are big-endian `u128`; ordinals, child IDs and counts are big-endian
-`u32`; `f64` values are big-endian bit patterns; digests are 32 raw bytes;
-ordered collections are a `u32` count followed by canonical elements; digest
-algorithm is SHA-256.
-
-The proposal-core ordered tagged fields are: `schema=u32(1)`,
-`parent_transaction`, `enclosing_start`, `enclosing_end`, `search_start`,
-`search_end`, `event_tick`, `child_ordinal`, `event_ordinal`, `forcing`,
-`topology`, and ordered candidate event-result/probe/terminal-liquid/enthalpy
-members. No parcel-set or ending-owner digest is present. The preaccept ordered
-tagged fields are: `schema=u32(1)`, `proposal_core`,
-`parent_transaction`, `enclosing_start`, `enclosing_end`, `search_start`,
-`search_end`, `event_tick`, `child_ordinal`, `event_ordinal`, `forcing`,
-`topology`, `begin_owner_set`, `proposed_end_owner_set`, `mutations` as ordered
-length-framed owner IDs, and `candidates` as ordered framed members. Each
-candidate member contains `lane`, `event_result`, `terminal_state`,
-`terminal_liquid_bits`, `terminal_enthalpy_bits`, and `proposed_parcel_set`.
-The accepted-group ordered tagged fields are: `schema=u32(1)`, `preaccept`,
-`accepted_event_receipt`, `accepted_ordinal`, `event_context`,
-`begin_owner_set`, `end_owner_set`, `ledger`, and `parcel_set`. No extra,
-optional, omitted, reordered, self-referential, or JSON field is admissible.
-
-The parent reconstructs every accepted-group receipt one-to-one from accepted
-subslab terminal results, coupled event receipts, snow-owner parcels, and owner
-transitions. Missing, duplicate, orphan, reordered, replayed, JSON-authority,
-or digest-substituted links fail atomically.
-
-Canonical `INV-COUPLEDTIME-021..025` rows are integrated in the invariant guard
-map and `OBL-COUPLEDTIME-009..011` in canonical obligations. This section
-defines their version-4 algorithm and wire only.
-
-Required vectors cover a candidate after prior 60- and 900-second slabs,
-start/interior/end events, same-tick coalescing and different-tick sequence,
-event receipt and child-ordinal poisons, missing and extra mutation members,
-orphan/duplicate groups and parcels, canonical framing, and rollback at every
-chain boundary.
-
-## Candidate version 5 — Batch V2 event and zero-prefix chronology
-
-Version 5 coordinates with SnowEnergy v20, LSE v10 and SnowFreeze v138 while
-preserving reviewed version 4. Every positive candidate is a complete Batch V2
-absolute-prefix replay from the immutable current cursor. Search brackets are
-diagnostic only.
-
-### Batch result and common-earliest selection
-
-`CoveredTerminalBatchTrialResultV2` binds request, BE and CN arm receipts,
-ordered per-lane boundaries/event evidence, one shared ending owner set, one
-ending joint and the maximum unit-specific temporal norm. Only a converged CN
-arm is installable. Candidate ticks are derived from its lane evidence, sorted
-by `(absolute_tick,lane_id)`. The minimum tick is selected; every lane at that
-tick coalesces, later-event and no-event lanes survive in their exact CN prefix
-state. Root localization repeats the complete batch replay and must preserve
-monotone high-arm solid evidence. No lane-local endpoint merge is authority.
-
-`CoveredTerminalGroupTopologySetV2` is the strictly ordered union over the
-terminating lanes' `(lane,OFE,destination_tile,destination_fraction,
-receiver_class,receiver_model)` records. Fractions close per lane only under
-the existing SnowEnergy topology tolerance. Its canonical digest replaces the
-lane-local receiver digest in every member's common proposal core. One group
-may therefore contain distinct OFEs without requiring their lane-local digests
-to be identical. Missing, duplicate, reordered, incomplete or extraneous
-members fail `ERR-CT-027`.
-
-The proposal core v2 binds schema, parent transaction, enclosing/current
-supports, event tick, physical-child/event ordinals, complete batch result,
-forcing, group topology, ordered terminating event results and terminal
-mass/enthalpy. Parcel/ending-owner/accepted-event digests remain excluded to
-preserve the v4 acyclic rule. Preaccept and accepted group receipts bind the
-exact complete beginning/ending owner sets, one physical mutation set `{snow}`,
-all parcels and the common proposal core.
-
-### Canonical zero-prefix witness
-
-`CoveredTerminalZeroPrefixReceiptV1` proves a sealed cursor predecessor and is
-not a slab or event receipt. Its canonical hash uses
-`OPENWEPP_CANONICAL_FRAMED_SHA256_V1`, closed domain
-`covered-terminal-zero-prefix-receipt-v1`, and these fields in exact order:
-
-```text
-schema:u32=1
-parent_transaction:[u8;32]
-enclosing_start:u128, enclosing_end:u128, current_cursor:u128
-physical_child_ordinal:u32, event_ordinal:u32
-beginning_complete_owner_set:[u8;32]
-beginning_joint:[u8;32]
-source_snow_owner_v4:[u8;32]
-accepted_predecessor_count:u32, repeated predecessor:[u8;32]
-provider_call_count:u32=0
-physical_mutation_count:u32=0
-ledger_mass_bits:u64=+0.0
-ledger_energy_bits:u64=+0.0
-ledger_q_ss_bits:u64=+0.0
-event_posture:u8=0  # Unapplied
-```
-
-The predecessor list is exact, nonzero, unique and in accepted chronology
-order. The current cursor equals the sealed predecessor endpoint; beginning
-joint/owner/snow digests reconstruct from that predecessor. There is no
-positive carrier, hydrology, snow--soil or parcel receipt. Before construction,
-the coordinator proves no terminal parcel for this parent/ordinal/core and no
-accepted event receipt for the ordinal/core exists. Retrying before event
-application reconstructs identical bytes. After application, changed event
-ordinal, owner set and accepted receipt posture cause typed `ERR-CT-028`
-replay rejection. Substitution, omission, signed nonzero, negative zero,
-fabricated receipt or mutation member fails before event application.
-
-### Failure and rollback order
-
-Identity/support/topology/receipt errors precede numerical evaluation;
-subminimum positive support precedes a carrier call; arm residual/active-set/
-nonunique-root failures precede temporal acceptance; temporal nonconvergence or
-no admitted operator yields typed `ERR-CT-029` unsupported disposition. Probe,
-exact endpoint, event, successor or parent-finalization failure leaves every
-owner, clock, ordinal, receipt, parcel, WB14 cursor and `last_*` field unchanged.
-
-| ID | Binding rule | Guard / evidence |
-|---|---|---|
-| `INV-COUPLEDTIME-027` | Every terminal candidate/result is one complete all-lane Batch V2 absolute-prefix replay and ending joint. | request/result reconstruction |
-| `INV-COUPLEDTIME-028` | Common-earliest selection coalesces equal ticks and installs exact CN survivor state. | same/different-tick fixtures |
-| `INV-COUPLEDTIME-029` | One canonical ordered group topology set and proposal core cover all terminating lanes/OFE receivers. | topology framing poisons |
-| `INV-COUPLEDTIME-030` | Exact-zero replay requires the framed sealed Unapplied predecessor witness and zero provider/mutation/ledger evidence. | zero-prefix validator |
-| `INV-COUPLEDTIME-031` | No converged admitted operator is a typed unsupported result with complete rollback. | error precedence and rollback |
-| `OBL-COUPLEDTIME-012` | Produce/reconstruct Batch V2 request, arm, result, group topology, proposal, event and parent chain one-to-one. | producer/consumer gate |
-| `OBL-COUPLEDTIME-013` | Prove zero-prefix retry identity before application and replay rejection afterward. | zero/replay vectors |
-
-Required vectors cover analytical and real floor cases, event at cursor/interior/
-end, same-tick distinct OFEs, different-tick continuation, terminal plus
-survivor, mixed destinations, no event, topology/ordinal/hash substitution,
-zero-prefix signed-zero/provider/parcel/replay poisons, and rollback at every
-boundary. This draft admits no implementation before coordinated dual `GO`.
-
-## Candidate version 6 — closed terminal wire DAG and split owner transitions
-
-Version 6 supersedes held v5 only as a new candidate. Every node uses
-`OPENWEPP_CANONICAL_FRAMED_SHA256_V1`, a closed domain tag below, `schema=u32`
-first, then the exact ordered fields listed. Common encoding remains big-endian
-`u32/u128`, raw 32-byte digests, IEEE-754 `u64` bits, and `u32` count followed
-by canonical elements. No optional/unknown/JSON field is allowed.
-
-### Wire DAG and exact preimages
-
-| Node / closed domain tag | Schema | Exact ordered fields after schema |
-|---|---:|---|
-| Batch request / `covered-terminal-batch-request-v3` | 3 | parent transaction; enclosing start/end; prefix start/end; arm tag; attempt; coupling ordinal; forcing; topology; beginning owner set; beginning joint; lane count; repeated lane ID, OFE, beginning snow digest, typed-state digest, receiver-set digest |
-| Prescribed amount set / `covered-terminal-prescribed-amount-set-v1` | 1 | provider transaction; exact support; forcing; count; repeated class, source, destination, units tag, value bits, source receipt |
-| Rate evaluation set / `covered-terminal-rate-evaluation-set-v1` | 1 | parent; support; absolute tick; arm/stage; typed SCC state; prescribed set; topology; count; repeated component identity, class, units, direction, value bits, primitive receipt; algebraic residual; AD Jacobian identity |
-| Arm-generated amount set / `covered-terminal-generated-amount-set-v1` | 1 | parent; support; arm/stage; beginning SCC; ending SCC; count; repeated producer owner/component, consumer owner/component, units, value bits, producer receipt |
-| Temporal arm / `covered-terminal-temporal-arm-v1` | 1 | request; method tag (`CN_FULL`, `CN_HALF_1`, `CN_HALF_2`, `CN_FLOOR_HIGH`); support; beginning joint; prescribed set; ordered rate sets; generated set; active-set tag; nonlinear receipt; ending typed SCC; follower receipt set; ending owner set; ending joint; conservation receipt |
-| High estimator / `covered-terminal-high-estimator-v1` | 1 | request; selector tag (`CN_STEP_DOUBLE`, `FULL_DEFECT`); coarse/full arm; ordered fine-half arms or floor-high arm; defect/collocation rate sets; error-transport receipt; enclosure-factor bits; ordered component signed estimates; scaled maximum; accepted flag; controller factor bits; proposed nanoseconds |
-| Batch result / `covered-terminal-batch-result-v3` | 3 | request; installable high arm; estimator; ordered lane evidence set; ending owner set; ending joint; selected candidate tick or explicit none; typed failure or explicit none |
-| Ending joint / `covered-terminal-ending-joint-v3` | 3 | source owner set; source joint; exact support; installable arm; ordered seven owner IDs/digests; ordered lane ending digests; predecessor count/list; receipt-set digest |
-| Lane event evidence / `covered-terminal-lane-event-v2` | 2 | batch result; lane; OFE; prefix support; beginning/ending solid/liquid/cold content bits; event posture; candidate tick or none; monotone bracket evidence; component/ledger digest |
-| Group topology / `covered-terminal-group-topology-v3` | 3 | parent; prefix; event tick; terminating lane count; repeated lane, OFE, destination tile, fraction bits, receiver class/model, receiver receipt |
-| Positive-prefix owner receipt / `covered-terminal-positive-prefix-owner-v1` | 1 | parent; request; batch result; support `O_begin->O_prefix`; beginning owner set; prefix owner set; exact physical mutation set; installed high arm; ending joint; no-terminal-ingress receipt |
-| Cursor event-intent core / `covered-terminal-cursor-event-intent-v1` | 1 | parent; enclosing/current support; cursor/event tick; child/event ordinals; forcing; group topology; sealed predecessor result; ordered lane event evidence and terminal mass/enthalpy bits |
-| Zero-prefix witness / `covered-terminal-zero-prefix-receipt-v2` | 2 | event-intent core; parent; enclosing/current support; child/event ordinals; prefix owner set; prefix joint; source snow-owner V4; predecessor count/list; provider call count zero; mutation count zero; exact +0 ledgers; Unapplied posture |
-| Event proposal core / `stage3-v11-terminal-event-proposal-core-v2` | 2 | event-intent core; positive-prefix receipt; zero witness when cursor event, otherwise explicit absent tag; group topology; ordered event evidence; terminal mass/enthalpy bits |
-| Preaccept group / `stage3-v11-terminal-group-preaccept-v2` | 2 | proposal core; parent; event tick/ordinals; prefix owner set; proposed event owner set; mutation set exactly `{snow}`; parcel set; candidates |
-| Accepted group / `stage3-v11-terminal-group-accepted-v2` | 2 | preaccept; accepted event receipt; accepted ordinal/context; prefix owner set; event owner set; zero-event ledger; parcel set |
-| Parcel set / `openwepp-stage3-terminal-parcel-set-v2` | 2 | proposal core; prefix snow owner; group topology; count; repeated canonical V4 ProducedUnconsumed parcel fields |
-| Parent chain / `covered-terminal-parent-chain-v2` | 2 | parent; ordered positive-prefix receipts; ordered accepted groups; final owner set; final clock; no orphan/duplicate digest |
-
-The DAG order is request/forcing -> arms -> estimator -> batch result/ending
-joint/lane evidence -> positive-prefix receipt -> cursor event-intent -> optional
-zero witness -> proposal core -> parcel/preaccept -> accepted event/group ->
-parent. A node may reference only nodes to its left; validators reject cycles,
-orphans, duplication and substitution.
-
-### Split owner chronology
-
-`O_begin -> O_prefix` is the accepted positive support and may mutate every
-typed owner proven by the high batch result. `O_prefix -> O_event` is a separate
-zero-duration transition whose complete physical mutation set is exactly
-`{snow}` and whose only physical change is insertion of ProducedUnconsumed
-parcels. Clock acceptance is separate chronology authority. The positive-prefix
-receipt and accepted-group receipt bind the intermediate `O_prefix` digest
-identically; no single begin/end pair may stand for both transitions.
-
-The no-terminal-ingress receipt proves zero matching parcel/core membership in
-hydrology supply, WB14 authorization/debit and surface-liquid ingress through
-`O_prefix`, and bit-identical hydrology/surface-liquid owners across
-`O_prefix -> O_event`.
-
-### Guards
-
-| ID | Binding correction |
-|---|---|
-| `INV-COUPLEDTIME-032` | Every terminal wire node has the exact closed preimage and acyclic order above. |
-| `INV-COUPLEDTIME-033` | Cursor event-intent core precedes and is bound by zero witness, preventing cross-core substitution without a cycle. |
-| `INV-COUPLEDTIME-034` | Positive prefix and zero event are separate owner transitions joined at identical `O_prefix`. |
-| `INV-COUPLEDTIME-035` | No-terminal-ingress receipt proves pending terminal liquid cannot reach hydrology/WB14/surface liquid before receiver authority. |
-| `INV-COUPLEDTIME-036` | Estimator/controller receipts bind installed high state, exact quantized retry and typed unsupported result. |
-| `OBL-COUPLEDTIME-014` | Independently reconstruct the entire DAG, every preimage and both owner transitions. |
-
-Required vectors mutate every field, order, count, tag and predecessor edge;
-exercise cross-core zero substitution, cycle/orphan/duplicate, distinct-OFE
-group topology, survivor installation, terminal-ingress poisons and rollback.
-Implementation remains prohibited.
-
 ## Change log
 
 | Date | Version | Change |
 |---|---|---|
-| 2026-08-25 | `6` | Corrected held v5 with the exact closed terminal wire DAG, core-bound zero witness, split positive-prefix/zero-event owner receipts and terminal-ingress exclusion. |
-| 2026-08-25 | `5` | Defined distinct Batch V2 absolute-prefix results, common group topology, exact survivor installation, sealed zero-prefix witness and typed unsupported rollback while preserving v4. |
 | 2026-08-20 | `1-rc1` | Authored complete coupled-time identity, event, participant, controller, restart, atomicity, and publication authority for independent review. |
 | 2026-08-20 | `1-rc2` | Added complete accepted-slab receipt chronology to restart after implementation exposed that reductions/publications cannot reconstruct parent finalization. |
 | 2026-08-20 | `2` | Preserved restart V1, released restart V2 slab/event chronology, and closed scheduled-once receipt identity without borrowing event ordinals. |
 | 2026-08-20 | `3` | Bound Child 2C active-participant maximum support, deterministic event-boundary coalescing, typed no-candidate retry, and the proposal/accepted event receipt. |
-| 2026-08-24 | `4` | Defined current-search versus enclosing-parent identity, actual physical-child ordinal, read-only discovery, exact mutation-set and sole event-ordinal authority, plus the framed terminal result/group/event/owner/parcel/parent chain. |

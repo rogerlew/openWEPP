@@ -48,6 +48,35 @@ implementation is considered.
 - Classify and dispose all 90 failures explicitly; no aggregate waiver is a
   qualifying baseline.
 
+## Implementation intent and intended write set
+
+Intent classification: authority-baseline reconciliation with no production
+behavior change. The released-contract baseline is the exact canonical content
+at fully qualified physical implementation
+`43cc9bbea2fbf5fe6ab6596cee4162de75cef999`. Rejected candidate text remains
+recoverable from Git history and its unchanged historical/research package
+artifacts; it is not active canonical authority.
+
+Prospective writes are limited to:
+
+- the four canonical contract files for SnowEnergy, SnowFreeze, LSE, and
+  CoupledTime, restored exactly to their released `43cc9bbe` bytes;
+- the lifecycle registry, restored for those four rows only to their released
+  `43cc9bbe` wording;
+- exact retained source/registry guard bindings where focused execution proves
+  a stale path or unreleased-version assertion; guard scope and negative-token
+  coverage may not be reduced;
+- this package tree and the roadmap/catalog terminal lifecycle pointers. No
+  fixture, selector, runtime implementation, or assurance identity file is in
+  scope.
+
+Validation intent is Critical workspace-baseline qualification because
+canonical authority and Assurance V2 identity are affected. Run the complete
+focused Assurance V2 census, all nine retained guards, the protected V9 oracle,
+contract schema/source scans, anti-evasion guards, formatting/check/lint where
+applicable, and an exact-clean full-workspace correctness regression. Reconcile
+the exact terminal diff before disposition.
+
 ## Required evidence before closure
 
 1. Exact clean intake SHA and full failure-name/normalized-signature census.
@@ -75,3 +104,10 @@ does not supersede the defect-shaped
 Once explicitly authorized, this package permits read-only parallel causal
 census and guard review. Implementation delegation requires a separately
 declared write set and must preserve all unrelated user changes.
+
+Subagent authorization: this package explicitly authorizes spawning/delegating
+to two independent contract/authority reviewers and two terminal verifiers for
+read-only review of the declared write set and retained command evidence.
+Expected outputs are compact findings, exact commands/results, and bounded
+package artifacts; no delegated production, contract, test, fixture, or
+assurance write is authorized.

@@ -4,8 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 137
-candidate_contract_version: 139
+contract_version: 136
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -15,7 +14,7 @@ consumer_scope:
   - Infiltration/runoff partition consumers affected by frozen-soil state
   - Soil/erosion coupling consumers requiring freeze-thaw context
 evidence_level: static
-last_reviewed: 2026-08-24
+last_reviewed: 2026-08-19
 supersedes: []
 superseded_by: []
 ---
@@ -25,13 +24,6 @@ superseded_by: []
 Status: `in_review`
 Maturity: `draft`
 Evidence mode: `static`
-
-Lifecycle: version 137 remains the reviewed staged terminal V4-owner
-candidate. Version 138 is a distinct `in_review / draft` Batch V2 temporal and
-active-set successor; it does not rewrite or promote version 137.
-
-Version 139 is the corrected successor to held v138 and requires a new
-manifest, executed evidence and independent reviews.
 
 ## Purpose
 
@@ -1510,11 +1502,6 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 | Stage 3 wind source custody and exposure (`INV-SNOWFREEZE-099`) | frozen identities, raw CLI/runtime/Stage-3 chain, PMET-local adjustment, source/virtual-height separation, and per-site two-sided exposure matrix | Hard evidence failure on alias/identity error; `AUTHORITY_MISSING` and persistence hold when immutable generator custody or forcing-to-target exposure linkage is absent | contract-derived alias checks, source-custody ledger, independent neutral bound, and exposure/claim audit; no production correction or canopy authority | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Persistent Stage 3 evaluation continuity (`INV-SNOWFREEZE-100`) | typed request, per-lane private carry, atomic day transaction, snapshot/restore envelope, enabled-only schema-v7 writer, and independent consumer | Evaluation hard-fail on invalid order/identity/state/version/fingerprint, nonclosure, partial commit, aliasing, or production reachability; governance claim limit on unresolved physical magnitude and recipients | synthetic multi-day accumulation/liquid/dormancy/reappearance/restart, anti-alias, noninterference, and exact reconstruction gates; no physical efficacy or cutover evidence | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Terminal receiver chronology (`INV-SNOWFREEZE-102`) | separate default-off wall-support/transaction identities, versioned in-progress adaptive/bisection restart, actual receiver selection, exact liquid receipt, and all-owner transaction | Typed failure under total precedence; first cause retained, rollback diagnostic secondary, exact beginning bytes restored; CoE/default unchanged | numeric liquid/support, endpoint/midnight, restart state-machine, precedence, receiver/routing, contradiction and noninterference vectors | `[INFERENCE][Static]` |
-| Staged terminal V4 owner (`INV-SNOWFREEZE-103`) | exact framed V4 lanes/receipts/pending-parcel bytes and independently closing parcel mass | `SNOWFREEZE-E-TERMINAL-OWNER-001`; rollback exact | wire round-trip, ordering, mass and alias vectors | `[DIRECT][Static] + [INFERENCE][Static]` |
-| Staged terminal physical mutation (`INV-SNOWFREEZE-104`) | dormant lane retained; only snow changes among seven physical owners; clock event mutation separately exact | `SNOWFREEZE-E-TERMINAL-MUTATION-001`; rollback exact | mutation-set, refrozen-alias and cursor-replay vectors | `[INFERENCE][Static]` |
-| Staged terminal receipt chain (`INV-SNOWFREEZE-105`) | sole coupled ordinal and one-to-one group/ledger/parcel/owner/parent reconstruction | `SNOWFREEZE-E-TERMINAL-REPLAY-001`; no orphan/replay | receipt poison and replay vectors | `[INFERENCE][Static]` |
-| V4 staged owner producer (`OBL-SNOWFREEZE-P-074`) | canonically encode V4 and publish pending parcels only through accepted snow-owner mutation | `SNOWFREEZE-E-TERMINAL-OWNER-001/MUTATION-001` | exact wire and rollback vectors | `[INFERENCE][Static]` |
-| V4 staged owner consumer (`OBL-SNOWFREEZE-C-016`) | independently decode V4 and reconstruct lane/event/topology/mass/posture/ordinal/chain | `SNOWFREEZE-E-TERMINAL-REPLAY-001` | poison, orphan and replay vectors | `[INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -4002,7 +3989,6 @@ no-regression/conservation gates pass; zero residual closure is not required.
 | `SNOWFREEZE-STAGE3-WIND-SOURCE-CUSTODY` | SNOW-STAGE3-WIND-SOURCE-CUSTODY-AND-EXPOSURE-AUTHORITY package | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-099, SC-SNOWENERGY-001#INV-SNOWENERGY-033` | `flagged-binding-addition` | Separates raw/source/PMET/virtual-height custody; retained records prove local value lineage while nearby source only reconstructs request/transform semantics. Deployed request/server and site-exposure authority remain missing without fitting, canopy licensing, or production correction. |
 | `SNOWFREEZE-STAGE3-PERSISTENT-ACCUMULATION-SHADOW` | SNOW-STAGE3-PERSISTENT-ACCUMULATION-SHADOW package | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-100, OBL-SNOWFREEZE-P-072, OBL-SNOWFREEZE-C-014, TOL-SNOWFREEZE-021` | `flagged-binding-addition` | One typed default-off operator may own private per-lane state, schema-v7 continuity evidence, and snapshot/restore mechanics. Physical efficacy, unresolved recipients, production ownership, and cutover remain held. |
 | `SNOWFREEZE-TERMINAL-ENTHALPY-EVENT` | SNOW-TERMINAL-ENTHALPY-EVENT-NUMERICS package | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-101, OBL-SNOWFREEZE-P-073, OBL-SNOWFREEZE-C-015, TOL-SNOWFREEZE-022` | `flagged-binding-addition` | A fingerprint-bound default-off request may extend persistent evaluation into event-local terminal snow numerics with schema-v8 evidence. Receiving surfaces, post-event evolution, production, and cutover remain excluded. |
-| `SNOWFREEZE-V137-STAGED-TERMINAL-OWNER` | `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWFREEZE-103, INV-SNOWFREEZE-104, INV-SNOWFREEZE-105, OBL-SNOWFREEZE-P-074, OBL-SNOWFREEZE-C-016` | `flagged-binding-addition` | Candidate v137 V4 snow owner and ProducedUnconsumed chronology are under review; v136 immediate receiver remains a distinct historical default-off selector. |
 
 ## Known Gaps
 
@@ -4094,216 +4080,10 @@ field, impossible stage/operand combination, incomplete bracket/trial,
 inconsistent elapsed/support, fingerprint mismatch, or receipt/consumed
 mismatch rejects before mutation. Canonical bytes round-trip exactly.
 
-## Version 137 Staged Terminal Owner Amendment
-
-Version 137 introduces a staged Child-1 terminal checkpoint distinct from the
-version-136 immediate receiver transaction. Its canonical snow owner is
-`OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V4` and contains exactly the ordered
-Stage-3 lanes, ordered final lane/tile boundary-receipt identities when
-applicable, and an ordered map of pending terminal parcels. The V4 wire uses
-domain-separated framed fixed-width canonical encoding; general JSON is not
-wire authority. Child-1 may encode only posture tag `0=ProducedUnconsumed`;
-tag `1=Consumed` is reserved and non-executable until a separately reviewed
-receiver amendment admits its transition.
-
-The V4 preimage domain is
-`OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V4\0` and its digest is SHA-256. All
-integers are unsigned big-endian, all `f64` values are IEEE-754 bit patterns in
-big-endian `u64`, booleans are one byte `0|1`, digests are 32 raw bytes, and
-strings/opaque state bytes are big-endian `u32` length followed by exact bytes.
-Maps are encoded as big-endian `u32` cardinality then strictly increasing keys;
-duplicates and noncanonical order fail. Field order is:
-
-```text
-schema_version:u32=4
-lane_count:u32
-  repeated lane_id:u32, state_len:u32, canonical_stage3_state_bytes
-lane_receipt_count:u32
-  repeated lane_id:u32, receipt_digest:[u8;32]
-tile_receipt_count:u32
-  repeated ofe_len:u32, ofe_bytes, tile_len:u32, tile_bytes,
-           receipt_digest:[u8;32]
-parcel_count:u32
-  repeated parcel_digest:[u8;32], source_lane_id:u32,
-           parent_transaction_id:[u8;32], event_ordinal:u32,
-           terminal_event_proposal_core_id:[u8;32], event_result_digest:[u8;32],
-           receiver_topology_digest:[u8;32],
-           support_start_ns:u128, support_end_ns:u128,
-           destination_ofe_len:u32, destination_ofe_bytes,
-           destination_tile_len:u32, destination_tile_bytes,
-           destination_fraction_bits:u64, mass_kg_m2_tile_bits:u64,
-           temperature_k_bits:u64, specific_enthalpy_j_kg_bits:u64,
-           posture:u8
-```
-
-`parcel_digest` is SHA-256 of domain
-`OPENWEPP_STAGE3_TERMINAL_PARCEL_V1\0` followed by the same parcel fields after
-the digest. `terminal_event_proposal_core_id` is a canonical precursor using
-`SC-COUPLEDTIME-001#OPENWEPP_CANONICAL_FRAMED_SHA256_V1`, closed domain tag
-`stage3-v11-terminal-event-proposal-core`, and leading schema `u32(1)`. Its
-remaining preimage contains only parent transaction, enclosing/current support, event
-tick, physical-child/event ordinals, ordered event-result/probe/forcing/
-topology digests, and terminal liquid/enthalpy bits. It excludes parcel,
-ending-owner, preaccept-group, ordinary event-proposal, accepted-event, and
-accepted-group identities. A parcel must not
-contain `AcceptedEventReceiptV1::receipt_id`, because that receipt binds the
-ending owner containing the parcel and would create a digest self-reference.
-It must not contain an ambiguous event-group receipt digest. The preaccept
-group subsequently binds proposal core plus proposed parcels/ending owner; the
-accepted-group receipt joins preaccept, accepted receipt, ending owner and
-parcel-set digests. Pending physical mass is
-`sum_i(f_i*m_i)` per lane/OFE; fractions close to one only under
-`SC-SNOWENERGY-001#TOL-SNOWENERGY-002`, and the sum must satisfy
-`abs(sum_i(f_i*m_i)-m_terminal_liquid) <= a_terminal_mass`, where
-`a_terminal_mass=1e-9 kg m^-2` is the unit-bearing candidate-v19 component of
-`SC-SNOWENERGY-001#TOL-SNOWENERGY-001`. Stage-3 cumulative unresolved liquid is
-lineage only and is excluded from stored mass, so it cannot duplicate parcels.
-
-At the accepted positive-duration endpoint the terminating lane is already the
-exact dormant solver state. The zero-duration event changes only the canonical
-snow owner by inserting its `ProducedUnconsumed` parcels. It does not mutate
-surface liquid, WB14, hydrology, soil, LSE, or any other owner, and does not
-debit snow layer, detached, or refrozen storage again. Among the seven complete
-physical owners, only `snow` changes. The separate coupled-clock chronology
-transition appends its accepted event receipt and increments its ordinal; that
-clock state is transaction authority, not an eighth physical process owner.
-Parcel posture may not
-be stored solely in an attachment, committed-state side map, parent receipt,
-restart sidecar, or an eighth owner. A later separately authorized exact-once
-receiver checkpoint credits surface liquid and changes the same parcel posture
-to `Consumed` atomically.
-
-The coupled clock's accepted event receipt is the sole event-ordinal authority.
-Any compatibility count is derived from ordered accepted receipts and must
-reject divergence; no mutable attachment ordinal is authoritative. Restart for
-this successor, when separately admitted, must persist the complete V4 bytes
-and accepted coupled-event receipt. Version-136 immediate-consumption and
-`terminal_receipt_consumed` wording remains historical default-off authority
-and cannot substitute for this staged checkpoint.
-
-Every terminating lane requires the nonempty terminal physical ledger defined
-by `SC-SNOWENERGY-001#INV-SNOWENERGY-054`. It and every pending parcel are
-cross-joined to one exact terminal result, group, coupled event receipt, and V4
-owner transition. Orphan, duplicate, replayed, out-of-order, or out-of-owner
-parcel posture fails with exact rollback.
-
-Canonical `INV-SNOWFREEZE-103..105` rows, authority/evidence, typed failures,
-vectors, and enforcement are integrated in the canonical obligations and guard
-map above. This wire description is their algorithm/schema expansion.
-
-Required vectors include ProducedUnconsumed V4 round-trip, exact-only snow
-owner mutation, refrozen-mass non-aliasing, missing/extra/reordered parcel and
-receipt poisons, compatibility-ordinal divergence, rollback, and later
-Consumed-posture replay exclusion. Runner, receiver consumption, restart
-implementation, activation, CoE retirement and cutover remain held.
-
-## Candidate version 138 — Batch V2 terminal state and phase authority
-
-Version 138 coordinates with SnowEnergy v20, LSE v10 and CoupledTime v5. It
-preserves version-137 V4 snow-owner and ProducedUnconsumed parcel semantics.
-
-`CoveredTerminalBatchTrialRequestV2` contains exactly schema `u32(2)`, exact
-support, arm/role, attempt and coupling ordinals, strictly increasing active
-lane records, one beginning joint receipt and one beginning complete-owner-set
-digest. Each lane record binds lane/OFE identity, canonical beginning Stage-3
-state digest, typed ice/liquid/cold-content/temperature/depth/density fields,
-ordered layer/lifecycle identity and receiver membership. Caller-supplied event
-ticks or ending hints are prohibited.
-
-One batch carrier evaluation returns one shared non-snow candidate set, one
-boundary per active lane, ordered snow--soil/component receipts for every
-applicable lane, sealed prescribed amount sets, endpoint-flux sets and one
-carrier residual receipt. One hydrology join consumes that exact result and
-returns one ending per active lane plus one ending seven-owner joint. No caller
-may supply independently evaluated hydrology endings. Keys equal the request's
-exact ordered lane set.
-
-Each BE and CN arm begins from the same complete owner set and advances shared
-vegetation, LSE, surface-liquid, hydrology, BGC and soil-thermal owners exactly
-once. The snow owner contains every lane ending. Independent lane endpoints may
-remain historical V1 tests; they cannot form a V2 candidate.
-
-Phase chronology remains precipitation, bounded vapor reservation,
-cold-content change, melt, same-support refreeze/retention/routing, and layer
-repartition. BE and CN select identical active-set tags for every lane:
-resolved volumes, vapor direction, cold-only versus melt,
-refreeze/retention/routing, terminal posture and layer lifecycle. A difference
-fails typed `SNOWFREEZE-E-TERMINAL-ACTIVESET-002`; it cannot be averaged.
-
-At the common-earliest accepted high-candidate tick, same-tick terminating
-lanes become dormant and later-event/surviving lanes install their exact high
-batch prefix state. Shared owners install once. No first-endpoint Stage-3 map,
-per-lane non-snow merge or post-hoc survivor preservation is authorized.
-
-Canonical hashing uses `OPENWEPP_CANONICAL_FRAMED_SHA256_V1`, closed tags
-`covered-terminal-batch-request-v2`, `covered-terminal-batch-carrier-v2`,
-`covered-terminal-batch-hydrology-v2` and
-`covered-terminal-batch-joint-v2`. Collections are `u32` count then strict
-semantic order; ticks/supports are big-endian `u128`; ordinals/IDs big-endian
-`u32`; floats big-endian IEEE-754 bits; digests 32 raw bytes. Unknown, optional,
-JSON, duplicate, missing, reordered or extra fields fail typed.
-
-| ID | Binding rule | Guard / evidence |
-|---|---|---|
-| `INV-SNOWFREEZE-106` | Every arm contains all active lanes and one complete seven-owner beginning/ending joint. | lane-set and joint reconstruction |
-| `INV-SNOWFREEZE-107` | Shared owners advance once per arm; boundaries, snow--soil receipts and hydrology endings derive from one batch result. | call and mutation guards |
-| `INV-SNOWFREEZE-108` | BE/CN phase/lifecycle active sets match lane by lane; disagreement is typed unsupported. | active-set vectors |
-| `INV-SNOWFREEZE-109` | Accepted high state supplies terminating and surviving lanes without V1 post-hoc merge. | mixed-survivor fixtures |
-| `INV-SNOWFREEZE-110` | V2 hashes use the closed framed schemas above. | framing poisons |
-| `OBL-SNOWFREEZE-P-075` | Produce complete batch carrier, phase, ledger and ending-joint evidence for both arms and rejected trials. | producer gate |
-| `OBL-SNOWFREEZE-C-016` | Reconstruct every lane/shared owner, conservation and survivor installation. | consumer gate |
-
-Required vectors include analytical constant carriers, manufactured phase
-cases, active-set poisons, same-tick distinct-OFE coalescence, different-tick
-continuation, terminal plus survivor, mixed covered/open topology, no-event
-compatibility, positive physiology/mineral N, framing poisons and rollback.
-This draft admits no production wiring before coordinated dual `GO`.
-
-## Candidate version 139 — corrected core/follower and terminal-liquid custody
-
-Version 139 supersedes held v138 only as a new candidate. The implicit SCC is
-snow, vegetation/LSE/shared carrier, participating soil thermal, surface liquid
-and hydrology whenever same-support root-water or routing feedback exists. BGC
-is an exact follower only under the beginning-pool-only domain proven by a
-follower receipt; any feedback moves it into the SCC. Serialization, hashes and
-diagnostics are discrete followers.
-
-Each temporal arm receipt contains ordered implicit-core unknown/residual
-components with units, active set, nonlinear evidence, one complete beginning
-owner set, one converged typed ending per owner, follower inputs/outputs and an
-exact complete ending owner set. Followers cannot be used as seeds or feedback
-inside the arm.
-
-Terminal-event liquid remains internal to the high snow endpoint through the
-positive prefix. It is excluded by exact zero cardinality from every pre-event
-surface-liquid ingress set, WB14 authorization/debit, hydrology supply and
-ending non-snow owner receipt. Only after prefix acceptance does the zero-event
-transition add the ProducedUnconsumed pending parcel to the snow owner. Surface
-liquid, WB14 and hydrology remain bit-identical across that zero event. The
-later receiver remains unauthorized.
-
-| ID | Binding correction |
-|---|---|
-| `INV-SNOWFREEZE-111` | Same-support feedback defines SCC membership; no lagged/frozen/post-hoc follower edge is allowed. |
-| `INV-SNOWFREEZE-112` | Each BE/high/coarse/fine arm constructs all typed owners from one beginning and serializes once without owner-byte differentiation. |
-| `INV-SNOWFREEZE-113` | A follower receipt proves no same-support path back to the core; otherwise the owner is in the core. |
-| `INV-SNOWFREEZE-114` | Terminal liquid is absent from pre-event hydrology/WB14/surface ingress and remains snow-owned until the separate zero event creates its pending parcel. |
-| `OBL-SNOWFREEZE-P-076` | Produce SCC/follower, arm-generated transfer and terminal-liquid exclusion receipts. |
-| `OBL-SNOWFREEZE-C-017` | Reconstruct feedback classification, complete owners, internal transfers and two-stage terminal custody. |
-
-Required vectors include root-water feedback forcing hydrology into the SCC,
-beginning-pool-only BGC follower and feedback poison, cross-arm generated-
-amount substitution, terminal-liquid ingress/WB14/hydrology poisons, and exact
-prefix/event rollback. Implementation remains prohibited.
-
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
-
-| `2026-08-25` | `139` | `Codex` | Corrected held v138 with explicit SCC/follower proof, complete typed owner construction and exact exclusion of terminal liquid from pre-event hydrology/WB14/surface ingress. |
-| `2026-08-25` | `138` | `Codex` | Added distinct Batch V2 all-lane/seven-owner carrier, hydrology and joint semantics; phase-active-set agreement; canonical hashes; and exact survivor installation while preserving v137. |
-| `2026-08-24` | `137` | `Codex` | Added the staged canonical snow-owner V4 with pending ProducedUnconsumed parcel custody, sole coupled-event ordinal authority, exact snow-only zero-duration mutation, and reconstructable terminal ledger/receipt chain; immediate receiver consumption remains separate and held. |
 | `2026-08-19` | `136` | `Codex` | Added separate default-off terminal receiver chronology (`INV-SNOWFREEZE-102`) with actual-surface selection, partial-interval continuation/restart, and atomic all-owner rollback/error precedence; preserved evaluation-only INV-101 and all production/cutover holds. |
 | `2026-08-07` | `135` | `Codex` | SNOW-TERMINAL-ENTHALPY-EVENT-NUMERICS amendment: added `INV-SNOWFREEZE-101`, `OBL-SNOWFREEZE-P-073`, `OBL-SNOWFREEZE-C-015`, and `TOL-SNOWFREEZE-022`; admitted a fingerprint-bound evaluation-only shallow-snow enthalpy/event request and schema-v8 reconstruction while retaining censored receiving-surface, production, and cutover boundaries. |
 | `2026-08-07` | `134` | `Codex` | SNOW-STAGE3-PERSISTENT-ACCUMULATION-SHADOW amendment: added `INV-SNOWFREEZE-100`, `OBL-SNOWFREEZE-P-072`, `OBL-SNOWFREEZE-C-014`, and `TOL-SNOWFREEZE-021`; authorized an isolated default-off per-lane continuity experiment with atomic snowfall/liquid custody, dormancy/reappearance, schema-v7 evidence, and exact snapshot/restore while retaining every physical-efficacy, recipient, production, and cutover hold. |

@@ -25,7 +25,7 @@ fn v130_binds_forcing_matched_predecessor_reproduction() {
     let contract = read(CONTRACT);
 
     for required in [
-        "contract_version: 137",
+        "contract_version: 136",
         "REF-SNOWFREEZE-STAGE3-PREDECESSOR-BRIDGE",
         "INV-SNOWFREEZE-097",
         "OBL-SNOWFREEZE-P-070",
