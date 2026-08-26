@@ -1,0 +1,274 @@
+{
+  "components": [
+    {
+      "active_tag": "snow_phase",
+      "cardinality": "N_lane",
+      "counterpart": "surface_liquid.generated_melt",
+      "followers": [
+        "receipt.snow"
+      ],
+      "forcing_class": "storage",
+      "id": "snow.ice",
+      "index_order": "lane_id ascending",
+      "order": 0,
+      "residual": "end-begin-prescribed_solid-deposition+sub+melt-refreeze",
+      "storage_map": "identity",
+      "tolerance": "1e-9 kg m^-2",
+      "units": "kg m^-2"
+    },
+    {
+      "active_tag": "snow_phase",
+      "cardinality": "N_lane",
+      "counterpart": "surface_liquid.generated_melt",
+      "followers": [
+        "receipt.snow"
+      ],
+      "forcing_class": "storage",
+      "id": "snow.liquid",
+      "index_order": "lane_id ascending",
+      "order": 1,
+      "residual": "end-begin-rain-melt+refreeze+route",
+      "storage_map": "identity",
+      "tolerance": "1e-9 kg m^-2",
+      "units": "kg m^-2"
+    },
+    {
+      "active_tag": "snow_phase",
+      "cardinality": "N_lane",
+      "counterpart": "soil.enthalpy",
+      "followers": [
+        "receipt.snow"
+      ],
+      "forcing_class": "storage",
+      "id": "snow.enthalpy",
+      "index_order": "lane_id ascending",
+      "order": 2,
+      "residual": "end-begin-prescribed_advection-integrated_rates-generated_phase_energy",
+      "storage_map": "cold_content_material_enthalpy",
+      "tolerance": "1e-6 J m^-2",
+      "units": "J m^-2"
+    },
+    {
+      "active_tag": "soil_phase",
+      "cardinality": "sum_ofe N_soil_layer(ofe)",
+      "counterpart": "snow.enthalpy",
+      "followers": [
+        "receipt.soil"
+      ],
+      "forcing_class": "storage",
+      "id": "soil.enthalpy",
+      "index_order": "ofe_id then layer ascending",
+      "order": 3,
+      "residual": "end-begin-internal_conduction-external_bottom",
+      "storage_map": "soil_contract_enthalpy",
+      "tolerance": "1e-6 J m^-2",
+      "units": "J m^-2"
+    },
+    {
+      "active_tag": "wet_dry",
+      "cardinality": "N_vegetation_component",
+      "counterpart": "surface_liquid.storage",
+      "followers": [
+        "bgc.transition",
+        "receipt.vegetation"
+      ],
+      "forcing_class": "storage",
+      "id": "vegetation.liquid",
+      "index_order": "ofe_id,tile_id,stratum_id,component_id",
+      "order": 4,
+      "residual": "end-begin-prescribed_rain-generated_release-vapor",
+      "storage_map": "identity",
+      "tolerance": "1e-9 kg m^-2",
+      "units": "kg m^-2"
+    },
+    {
+      "active_tag": "wet_dry",
+      "cardinality": "N_vegetation_component",
+      "counterpart": "carrier.air_temperature",
+      "followers": [
+        "bgc.transition",
+        "receipt.vegetation"
+      ],
+      "forcing_class": "storage",
+      "id": "vegetation.temperature",
+      "index_order": "ofe_id,tile_id,stratum_id,component_id",
+      "order": 5,
+      "residual": "storage_delta-integrated_radiative_sensible_latent",
+      "storage_map": "heat_capacity_enthalpy",
+      "tolerance": "1e-9 K",
+      "units": "K"
+    },
+    {
+      "active_tag": "surface_route",
+      "cardinality": "N_ofe_tile",
+      "counterpart": "snow.enthalpy",
+      "followers": [
+        "receipt.lse"
+      ],
+      "forcing_class": "algebraic",
+      "id": "lse.surface_temperature",
+      "index_order": "ofe_id,tile_id",
+      "order": 6,
+      "residual": "net_radiation-sensible-latent-ground",
+      "storage_map": "algebraic",
+      "tolerance": "1e-9 K",
+      "units": "K"
+    },
+    {
+      "active_tag": "carrier_topology",
+      "cardinality": "N_carrier_node",
+      "counterpart": "vegetation.temperature",
+      "followers": [
+        "receipt.carrier"
+      ],
+      "forcing_class": "algebraic",
+      "id": "carrier.air_temperature",
+      "index_order": "canonical topology ordinal",
+      "order": 7,
+      "residual": "ordered_sensible_flux_sum",
+      "storage_map": "algebraic",
+      "tolerance": "1e-9 K",
+      "units": "K"
+    },
+    {
+      "active_tag": "vapor_direction",
+      "cardinality": "N_carrier_node",
+      "counterpart": "vegetation.liquid",
+      "followers": [
+        "receipt.carrier"
+      ],
+      "forcing_class": "algebraic",
+      "id": "carrier.specific_humidity",
+      "index_order": "canonical topology ordinal",
+      "order": 8,
+      "residual": "ordered_vapor_flux_sum",
+      "storage_map": "algebraic",
+      "tolerance": "1e-12 kg kg^-1",
+      "units": "kg kg^-1"
+    },
+    {
+      "active_tag": "surface_route",
+      "cardinality": "N_ofe_tile",
+      "counterpart": "hydrology.water",
+      "followers": [
+        "receipt.surface_liquid"
+      ],
+      "forcing_class": "storage",
+      "id": "surface_liquid.storage",
+      "index_order": "ofe_id,tile_id",
+      "order": 9,
+      "residual": "end-begin-generated_ingress-infiltration-runoff-runon",
+      "storage_map": "identity",
+      "tolerance": "1e-9 kg m^-2",
+      "units": "kg m^-2"
+    },
+    {
+      "active_tag": "wet_dry",
+      "cardinality": "sum_ofe N_hydrology_layer(ofe)",
+      "counterpart": "surface_liquid.storage",
+      "followers": [
+        "receipt.hydrology"
+      ],
+      "forcing_class": "storage",
+      "id": "hydrology.water",
+      "index_order": "ofe_id then hydrology layer ascending",
+      "order": 10,
+      "residual": "end-begin-infiltration-root_supply-drainage",
+      "storage_map": "water_depth_times_density",
+      "tolerance": "1e-9 kg m^-2",
+      "units": "kg m^-2"
+    },
+    {
+      "active_tag": "mineral_feedback_absent",
+      "cardinality": "sum_ofe N_bgc_pool(ofe)",
+      "counterpart": "none",
+      "followers": [
+        "receipt.bgc"
+      ],
+      "forcing_class": "follower",
+      "id": "bgc.transition",
+      "index_order": "ofe_id then canonical pool ordinal",
+      "order": 11,
+      "residual": "none_exact_beginning_pool_transition",
+      "storage_map": "follower",
+      "tolerance": "exact",
+      "units": "exact"
+    }
+  ],
+  "edges": {
+    "bgc.transition": [],
+    "carrier.air_temperature": [
+      "vegetation.temperature",
+      "lse.surface_temperature"
+    ],
+    "carrier.specific_humidity": [
+      "vegetation.liquid",
+      "lse.surface_temperature"
+    ],
+    "hydrology.water": [
+      "surface_liquid.storage",
+      "soil.enthalpy"
+    ],
+    "lse.surface_temperature": [
+      "snow.enthalpy",
+      "vegetation.temperature",
+      "carrier.air_temperature",
+      "carrier.specific_humidity",
+      "soil.enthalpy"
+    ],
+    "snow.enthalpy": [
+      "snow.ice",
+      "snow.liquid",
+      "lse.surface_temperature",
+      "soil.enthalpy"
+    ],
+    "snow.ice": [
+      "snow.enthalpy",
+      "lse.surface_temperature"
+    ],
+    "snow.liquid": [
+      "snow.enthalpy",
+      "surface_liquid.storage"
+    ],
+    "soil.enthalpy": [
+      "snow.enthalpy",
+      "hydrology.water"
+    ],
+    "surface_liquid.storage": [
+      "hydrology.water"
+    ],
+    "vegetation.liquid": [
+      "vegetation.temperature",
+      "carrier.specific_humidity",
+      "surface_liquid.storage"
+    ],
+    "vegetation.temperature": [
+      "vegetation.liquid",
+      "carrier.air_temperature",
+      "lse.surface_temperature"
+    ]
+  },
+  "graph_complete": true,
+  "order_exact": true,
+  "pass": true,
+  "sccs": [
+    [
+      "carrier.air_temperature",
+      "carrier.specific_humidity",
+      "hydrology.water",
+      "lse.surface_temperature",
+      "snow.enthalpy",
+      "snow.ice",
+      "snow.liquid",
+      "soil.enthalpy",
+      "surface_liquid.storage",
+      "vegetation.liquid",
+      "vegetation.temperature"
+    ],
+    [
+      "bgc.transition"
+    ]
+  ],
+  "schema": "openwepp-terminal-scc-inventory-v3",
+  "schema_complete": true
+}

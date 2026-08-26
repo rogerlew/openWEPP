@@ -1,0 +1,73 @@
+{
+  "acyclic": true,
+  "deterministic_replay": true,
+  "digests": {
+    "ArmCustodyReceipt": "3465f2a04d9b75baba32b1e17e5017f3397b5ce5cca409202c5a78a70a0d18e2",
+    "ArmInputCore": "d92e399a9d66d2648850be465801f4f031f11821964a49adf35e814ae1f6b081",
+    "ArmPhysicalResultCore": "e373f83479576da09d627d9591a14e8fec94fa2207c4dacb8602a478c4295857",
+    "BatchRequestCore": "7795db955f0d813979ccc97adc0a6715ad66a716ec6ae72e1e7b24f08da01741",
+    "BatchResultCore": "25495953320d490ec48618b6df0301495f74017c157fd61b8df9ebfb84ae4cee",
+    "EndingJointReceipt": "768a559aad3286398e92ec6ac4d951eee66240ad92f6bf3396d62698047a613a",
+    "EventReceipt": "f742d1cbf5effa7cddd7bf9314ee3e3d2347b17dcc5e5c83c528a052630394ea",
+    "LaneEvidenceCore": "76923eeac12fa61bbe7086bf48a0d0cfd6d598be0e60a46d86b5ca14999579ef",
+    "ParentReceipt": "867c158120759581f1c20fc88c5c1555c3f3a32151543f3aa040743a701c4cf3"
+  },
+  "forward_reference_violations": [],
+  "order": [
+    "BatchRequestCore",
+    "ArmInputCore",
+    "ArmPhysicalResultCore",
+    "EndingJointReceipt",
+    "ArmCustodyReceipt",
+    "LaneEvidenceCore",
+    "BatchResultCore",
+    "EventReceipt",
+    "ParentReceipt"
+  ],
+  "pass": true,
+  "poison_changed_nodes": [
+    "BatchRequestCore",
+    "ArmInputCore",
+    "ArmPhysicalResultCore",
+    "EndingJointReceipt",
+    "ArmCustodyReceipt",
+    "LaneEvidenceCore",
+    "BatchResultCore",
+    "EventReceipt",
+    "ParentReceipt"
+  ],
+  "poison_propagates_to_all_successors": true,
+  "predecessors": {
+    "ArmCustodyReceipt": [
+      "ArmInputCore",
+      "ArmPhysicalResultCore",
+      "EndingJointReceipt"
+    ],
+    "ArmInputCore": [
+      "BatchRequestCore"
+    ],
+    "ArmPhysicalResultCore": [
+      "ArmInputCore"
+    ],
+    "BatchRequestCore": [],
+    "BatchResultCore": [
+      "BatchRequestCore",
+      "ArmCustodyReceipt",
+      "LaneEvidenceCore"
+    ],
+    "EndingJointReceipt": [
+      "ArmPhysicalResultCore"
+    ],
+    "EventReceipt": [
+      "BatchResultCore"
+    ],
+    "LaneEvidenceCore": [
+      "ArmCustodyReceipt"
+    ],
+    "ParentReceipt": [
+      "BatchResultCore",
+      "EventReceipt"
+    ]
+  },
+  "schema": "openwepp-terminal-receipt-dag-v7-evidence-v1"
+}

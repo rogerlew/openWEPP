@@ -649,3 +649,24 @@ residual and therefore zero, while the independently referenced CN endpoint
 error is nonzero. The proposed `gamma=2` enclosure consequently fails. Final
 dual review is required; temporal-operator and Batch V2 implementation remain
 prohibited unless both reviews return `GO`.
+
+### 2026-08-25 post-v21 executable numerical exploration
+
+Candidate v21/v11/v139/v6 is rejected. A package-local Hermite--Gauss
+prototype now evaluates a full-support CN endpoint, cubic Hermite storage
+extension, two exact Gauss collocation evaluations, dynamic linearized error
+transport with a two-stage Gauss method, and retained CN step doubling above
+the exact 1.2-second selector. The analytical floor matrix passes 48/48 smooth
+rows without gamma and without sub-600-ms constitutive support. Expected
+nonunique/rootless nonlinear CN cases fail typed.
+
+The candidate is `ANALYTICAL_PASS_REAL_INCOMPLETE`, not a successor authority:
+the real carrier does not yet expose a test-only complete-SCC CN/collocation/AD
+Jacobian solve, so real 1.875-second candidate effectivity is unavailable and
+cannot be replaced by current production receipts. No v22/v12/v140/v7 contract
+candidate is authored.
+
+Separately, executable tools construct the required acyclic receipt chain and
+compute SCCs from a 12-component exact-unit/cardinality/order inventory. Both
+tools pass deterministic replay, forward-reference, poison-propagation, schema,
+graph and order checks. Production temporal/Batch behavior remains untouched.
