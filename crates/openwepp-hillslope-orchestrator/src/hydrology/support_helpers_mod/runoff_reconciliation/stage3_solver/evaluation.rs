@@ -130,6 +130,7 @@ impl Wb11HydrologyKernel {
         terminal_trial_context: Option<(
             u32,
             TimeSupport,
+            CoveredTerminalExecutionMode,
             CoveredTerminalJointTrialStateV1,
             &mut CoveredTerminalTrialProviderV1<'_>,
         )>,
@@ -160,6 +161,7 @@ impl Wb11HydrologyKernel {
         mut terminal_trial_context: Option<(
             u32,
             TimeSupport,
+            CoveredTerminalExecutionMode,
             CoveredTerminalJointTrialStateV1,
             &mut CoveredTerminalTrialProviderV1<'_>,
         )>,
@@ -257,10 +259,23 @@ impl Wb11HydrologyKernel {
                         let remaining_seconds = support_seconds - elapsed_seconds;
                         let initial_joint = terminal_trial_context
                             .as_ref()
-                            .map(|(_, _, joint, _)| joint.clone());
+                            .map(|(_, _, _, joint, _)| joint.clone());
                         let terminal_lane_id = terminal_trial_context
                             .as_ref()
-                            .map(|(lane_id, _, _, _)| *lane_id);
+                            .map(|(lane_id, _, _, _, _)| *lane_id);
+                        let discrete_complete_endpoint = terminal_trial_context
+                            .as_ref()
+                            .is_some_and(|(_, _, mode, _, _)| {
+                                #[cfg(test)]
+                                {
+                                    *mode == CoveredTerminalExecutionMode::DiscreteCompleteEndpoint
+                                }
+                                #[cfg(not(test))]
+                                {
+                                    let _ = mode;
+                                    false
+                                }
+                            });
                         let mut coupling_evidence = M::new_coupling_state();
                         let terminal_result = Self::solve_terminal_enthalpy_event_with_evidence::<_, _, _, M>(
                             phase_class,
@@ -289,7 +304,7 @@ impl Wb11HydrologyKernel {
                                 } else {
                                     0.0
                                 };
-                                let trial_transition: Option<CoveredTerminalTrialTransitionV1> = if let Some((lane_id, base_support, _, provider)) =
+                                let trial_transition: Option<CoveredTerminalTrialTransitionV1> = if let Some((lane_id, base_support, _, _, provider)) =
                                     terminal_trial_context.as_mut()
                                 {
                                     let start_offset_ns = seconds_to_exact_ns(
@@ -569,6 +584,7 @@ impl Wb11HydrologyKernel {
                                     })
                                     .transpose()
                             },
+                            discrete_complete_endpoint,
                             evidence,
                         );
                         M::merge_coupling(evidence, coupling_evidence);
@@ -601,6 +617,11 @@ impl Wb11HydrologyKernel {
                         summary.complete_sensible_j_m2 += terminal.sensible_energy_j_m2;
                         summary.complete_latent_j_m2 += terminal.latent_energy_j_m2;
                         summary.complete_advected_j_m2 += terminal.advected_energy_j_m2;
+                        #[cfg(test)]
+                        if discrete_complete_endpoint {
+                            summary.complete_snow_soil_heat_j_m2 +=
+                                terminal.snow_soil_heat_energy_j_m2;
+                        }
                         summary.complete_vapor_mass_exchange_kg_m2 +=
                             terminal.deposition_kg_m2 - terminal.sublimation_kg_m2;
                         summary.terminal_refrozen_kg_m2 += terminal.refrozen_kg_m2;
@@ -693,6 +714,7 @@ impl Wb11HydrologyKernel {
                 let covered_substep_boundary = if let Some((
                     lane_id,
                     base_support,
+                    _,
                     accepted_joint,
                     provider,
                 )) = terminal_trial_context.as_mut()

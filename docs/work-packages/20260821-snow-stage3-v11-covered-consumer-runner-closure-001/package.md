@@ -761,3 +761,62 @@ the workspace failure is an additional intake-resident qualification defect.
 No successor contract or production behavior is changed, and
 `43cc9bbea2fbf5fe6ab6596cee4162de75cef999` remains the last fully qualified
 physical implementation.
+
+### 2026-08-26 discrete complete-owner terminal support-root intent
+
+Owner direction closes the continuous-DAE exploration as a valid
+`CHILD1-REAL-DAE-001 / HOLD` and authorizes a distinct test-only discrete
+endpoint checkpoint. Treat the existing unpublished complete-owner support
+transaction as an exact batch map from immutable beginning owners, exact
+support and exact projected forcing to one complete endpoint candidate or a
+typed failure. Do not construct arbitrary-time derivatives or reuse the
+rejected v21 continuous-DAE language.
+
+Implement a private or `cfg(test)` exact-integer-tick root operator with a
+batch-shaped endpoint callback. It records every evaluated tick and lane-keyed
+classification, enforces the 600,000,000-ns floor, selects the earliest
+reproducible `TerminalAtEndpoint`, coalesces same-tick terminal lanes, retains
+survivors from the same joint candidate, rejects no-progress, cycles,
+nonmonotone/ambiguous predicates and bracket-history dependence, and requires
+byte-identical endpoint replay. The first real fixture is the existing
+interior one-lane covered fixture; synthetic complete-owner batch fixtures may
+exercise the required multi-lane and failure matrix, but real-fixture claims
+must contain only actual execution owners, ledgers and receipts.
+
+Implementation intent classification: test-only integrated discrete numerical
+exploration and reconstruction evidence. Constitutive equations/constants,
+the 600-ms floor, ordinary persistent physics, public APIs/outputs, production
+owner publication, restart/receiver/runner behavior, selectors/defaults,
+Stage-3 activation, CoE, Child 3/4 and production `BelowCarrierDomain` are
+immutable. No external dependency enters production. The exact source write
+set is compiler/ownership-discovered inside the private orchestrator and this
+package tree and will be reconciled at terminal diff.
+
+Only a passing real discrete checkpoint may open distinct candidate
+SnowEnergy v22, LSE v12, SnowFreeze v140 and CoupledTime v7 text. Contract
+candidates, if opened, must specify discrete complete-endpoint semantics and
+undergo independent science/numerics plus ownership/Batch/custody review.
+Neither candidate text nor review alone authorizes production implementation.
+Before contract freeze or production implementation, record a separate
+workspace-baseline reconciliation package for the 81 Assurance V2 and nine
+source/registry-guard failures; those 90 failures are not modified here.
+
+### 2026-08-26 discrete complete-owner support-root disposition
+
+The owner-authorized test-only discrete checkpoint stops at
+`CHILD1-DISCRETE-SUPPORT-ROOT-001 / HOLD`. The real complete-owner endpoint map
+replays individual ticks byte-identically and leaves all beginning owners
+unchanged. After applying the canonical `1.0e-6 J m^-2` terminal-energy
+comparison tolerance, two valid initial brackets select the same first
+materially invalid tick, `615737728343` ns. The complete endpoint has fully
+melted the beginning ice and carries material excess energy, but positive
+deposition remains as ending ice and `event_occurred` is false. No evaluated
+tick is `TerminalAtEndpoint`.
+
+This is the named no-admissible-root stop condition. No v22/v12/v140/v7
+candidate is authored and no production implementation or cutover scope opens.
+The production call remains `BelowCarrierDomain`; constitutive
+physics, constants, the 600-ms floor, public behavior, owners, publication,
+restart/receiver/runner, selectors, Stage-3, CoE and Child 3/4 remain unchanged.
+The exact tick/class record and claim boundary are frozen in
+`artifacts/discrete-terminal-support-root-defect-hold.md`.

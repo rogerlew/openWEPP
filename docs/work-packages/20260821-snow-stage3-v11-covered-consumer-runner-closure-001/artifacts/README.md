@@ -16,3 +16,15 @@ workspace run at clean evidence SHA `9b1105d683189e46a2df5a23817498fb1430fded`
 is non-qualifying: the historical eleven are unchanged, but 90 additional
 intake-resident failures remain. See `gate-results.md` for the exact census and
 causal audit.
+
+The active follow-on checkpoint is the owner-authorized discrete
+complete-owner terminal support-root exploration. Its pre-implementation scope
+and red-line reconciliation are recorded in
+`discrete-terminal-support-root-implementation-intent.md` and `package.md`.
+Its terminal disposition is the defect-shaped
+`discrete-terminal-support-root-defect-hold.md`: two valid immutable brackets
+select the same first materially invalid tick, no evaluated tick is
+`TerminalAtEndpoint`, and no successor contract or production path is opened.
+The required science/numerics and ownership/Batch/custody re-reviews are
+recorded in `discrete-terminal-support-root-reviews.md`; both authorize the
+defect-shaped HOLD only, not production work.

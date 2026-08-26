@@ -23,6 +23,8 @@ pub mod ofe_routing;
 mod winter_column;
 
 #[cfg(test)]
+mod discrete_terminal_support_root;
+#[cfg(test)]
 mod terminal_candidate_numerics;
 #[cfg(test)]
 mod tests;

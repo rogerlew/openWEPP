@@ -23,6 +23,7 @@ impl Wb11HydrologyKernel {
         boundary: Option<Stage3SnowSurfaceBoundaryReceiptV1>,
         terminal_trial_context: Option<(
             TimeSupport,
+            CoveredTerminalExecutionMode,
             CoveredTerminalJointTrialStateV1,
             &mut CoveredTerminalTrialProviderV1<'_>,
         )>,
@@ -45,6 +46,7 @@ impl Wb11HydrologyKernel {
         boundary: Option<Stage3SnowSurfaceBoundaryReceiptV1>,
         terminal_trial_context: Option<(
             TimeSupport,
+            CoveredTerminalExecutionMode,
             CoveredTerminalJointTrialStateV1,
             &mut CoveredTerminalTrialProviderV1<'_>,
         )>,
@@ -86,8 +88,8 @@ impl Wb11HydrologyKernel {
             terminal_request,
             state.detached_retained_liquid_kg_m2,
             boundary,
-            terminal_trial_context.map(|(support, joint, provider)| {
-                (lane_id, support, joint, provider)
+            terminal_trial_context.map(|(support, mode, joint, provider)| {
+                (lane_id, support, mode, joint, provider)
             }),
             evidence,
         )?;

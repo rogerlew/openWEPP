@@ -225,6 +225,8 @@ pub(crate) enum CoveredTerminalExecutionMode {
     PersistentReject,
     DiscoveryProbe,
     ExactEndpoint { expected_tick: ModelTimeNs },
+    #[cfg(test)]
+    DiscreteCompleteEndpoint,
 }
 
 mod terminal_evidence_sealed {
@@ -1066,7 +1068,7 @@ impl CoveredTerminalJointTrialStateV1 {
     /// trial. The carrier may evolve the other six unpublished candidates,
     /// but it cannot claim an ending snow owner before the terminal operator
     /// has applied the accepted flux integral.
-    pub(super) fn with_terminal_hydrology_state(
+    pub(crate) fn with_terminal_hydrology_state(
         &self,
         lane_id: u32,
         ice_kg_m2: f64,

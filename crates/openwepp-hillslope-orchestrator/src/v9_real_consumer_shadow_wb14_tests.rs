@@ -49,7 +49,190 @@ fn interior_terminal_event_runs_covered_event_and_snow_free_remainder() {
 
 #[test]
 fn interior_terminal_event_capture_reproduces_below_carrier_domain() {
-    exercise_complete_wb14_cadence(0.000_6, 0.0, false, None, false, None, true, true);
+    std::thread::Builder::new()
+        .name("child1-real-discrete-fixture".to_owned())
+        .stack_size(64 * 1024 * 1024)
+        .spawn(|| {
+            exercise_complete_wb14_cadence(
+                0.000_6, 0.0, false, None, false, None, true, true,
+            );
+        })
+        .expect("spawn Child-1 real discrete fixture")
+        .join()
+        .expect("join Child-1 real discrete fixture");
+}
+
+#[allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    clippy::too_many_lines,
+    reason = "test-only exact event ticks are checked finite, positive, integral, and parent-bounded before conversion"
+)]
+#[inline(never)]
+fn run_real_discrete_endpoint_probes(
+    shadow: &DirectV10RealConsumerShadow,
+    beginning_clock: &CoupledClockStateV1,
+    prepared: &PreparedStage3V11SupportV1,
+    stage3_beginning_by_lane: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    selected_seconds: f64,
+) {
+    const TERMINAL_ENERGY_COMPARISON_TOLERANCE_J_M2: f64 = 1.0e-6;
+    let beginning_terminal_parcels = BTreeMap::new();
+    let classify = |endpoint: &crate::snow_stage3_v11_attachment::RealDiscreteCompleteEndpointEvidenceV1| {
+        use crate::discrete_terminal_support_root::EndpointTerminalClass;
+        let duration_s = f64::from_bits(endpoint.support.duration_s_bits());
+        let evaluated_s = f64::from_bits(endpoint.event_evaluated_seconds_bits);
+        let event_offset_s = f64::from_bits(endpoint.event_hour_offset_seconds_bits);
+        let unevaluated_s = f64::from_bits(endpoint.event_unevaluated_seconds_bits);
+        let admissible_terminal_ledger = f64::from_bits(endpoint.terminal_unallocated_energy_bits)
+            <= TERMINAL_ENERGY_COMPARISON_TOLERANCE_J_M2;
+        if endpoint.event_occurred
+            && evaluated_s.to_bits() == duration_s.to_bits()
+            && event_offset_s.to_bits() == duration_s.to_bits()
+            && unevaluated_s <= 1.0e-6
+            && endpoint.end_ice_bits == 0.0_f64.to_bits()
+            && admissible_terminal_ledger
+        {
+            EndpointTerminalClass::TerminalAtEndpoint
+        } else if endpoint.event_occurred
+            && event_offset_s > 0.0
+            && event_offset_s < duration_s
+            && endpoint.end_ice_bits == 0.0_f64.to_bits()
+            && admissible_terminal_ledger
+        {
+            let event_ns = event_offset_s * 1_000_000_000.0;
+            if event_ns.is_finite() && event_ns.fract() == 0.0 {
+                EndpointTerminalClass::CrossedTerminal {
+                    event_tick: ModelTimeNs::new(
+                        endpoint.support.start_ns().get() + event_ns as u128,
+                    ),
+                }
+            } else {
+                EndpointTerminalClass::Invalid
+            }
+        } else if !endpoint.event_occurred
+            && f64::from_bits(endpoint.terminal_unallocated_energy_bits)
+                <= TERMINAL_ENERGY_COMPARISON_TOLERANCE_J_M2
+            && f64::from_bits(endpoint.end_ice_bits) > 0.0
+        {
+            EndpointTerminalClass::PreTerminal
+        } else {
+            EndpointTerminalClass::Invalid
+        }
+    };
+    let mut evaluate = |endpoint_tick: u128| {
+        let endpoint = crate::snow_stage3_v11_attachment::
+            evaluate_real_discrete_complete_endpoint_v1(
+                shadow,
+                beginning_clock,
+                prepared,
+                0,
+                0,
+                stage3_beginning_by_lane,
+                &beginning_terminal_parcels,
+                selected_seconds,
+                1,
+                1,
+                ModelTimeNs::new(endpoint_tick),
+            )
+            .expect("real discrete complete endpoint probe");
+        eprintln!(
+            "CHILD1_REAL_DISCRETE_EVALUATED tick={} class={:?} event={} ice_bits={:#018x} liquid_bits={:#018x} deposition_bits={:#018x} melt_bits={:#018x} unallocated_bits={:#018x} energy_closure_bits={:#018x} ice_closure_bits={:#018x} water_closure_bits={:#018x} owner_count={}",
+            endpoint_tick,
+            classify(&endpoint),
+            endpoint.event_occurred,
+            endpoint.end_ice_bits,
+            endpoint.end_liquid_bits,
+            endpoint.deposition_bits,
+            endpoint.melt_bits,
+            endpoint.terminal_unallocated_energy_bits,
+            endpoint.energy_closure_residual_bits,
+            endpoint.ice_closure_residual_bits,
+            endpoint.water_closure_residual_bits,
+            endpoint.owner_count,
+        );
+        endpoint
+    };
+    let find_first_non_preterminal = |mut lower: u128,
+                                      mut upper: u128,
+                                      evaluate: &mut dyn FnMut(u128) -> crate::snow_stage3_v11_attachment::RealDiscreteCompleteEndpointEvidenceV1| {
+        assert_eq!(classify(&evaluate(lower)), crate::discrete_terminal_support_root::EndpointTerminalClass::PreTerminal);
+        assert_eq!(classify(&evaluate(upper)), crate::discrete_terminal_support_root::EndpointTerminalClass::Invalid);
+        while lower + 1 < upper {
+            let middle = lower + (upper - lower) / 2;
+            if classify(&evaluate(middle))
+                == crate::discrete_terminal_support_root::EndpointTerminalClass::PreTerminal
+            {
+                lower = middle;
+            } else {
+                upper = middle;
+            }
+        }
+        upper
+    };
+    let first = find_first_non_preterminal(600_000_000, 900_000_000_000, &mut evaluate);
+    let second =
+        find_first_non_preterminal(937_500_000, 1_799_999_999_999, &mut evaluate);
+    assert_eq!(first, second, "material comparison must be bracket-independent");
+    let mut typed_batch_endpoint = |tick: ModelTimeNs| {
+        let candidate = evaluate(tick.get());
+        Ok(crate::discrete_terminal_support_root::BatchEndpointEvaluation {
+            tick,
+            lane_classes: BTreeMap::from([(1, classify(&candidate))]),
+            candidate: Some(candidate),
+        })
+    };
+    assert_eq!(
+        crate::discrete_terminal_support_root::integer_bisection(
+            ModelTimeNs::new(0),
+            beginning_clock.parent_support().end_ns(),
+            ModelTimeNs::new(600_000_000),
+            ModelTimeNs::new(900_000_000_000),
+            None,
+            &mut typed_batch_endpoint,
+        ),
+        Err(crate::discrete_terminal_support_root::DiscreteRootError::InvalidEndpoint),
+        "the batch-shaped real endpoint must return a typed failure rather than a root"
+    );
+    let selected = first;
+    let mut boundary_candidates = Vec::new();
+    for tick in [selected - 1, selected, selected + 1] {
+        let endpoint = evaluate(tick);
+        assert_ne!(
+            classify(&endpoint),
+            crate::discrete_terminal_support_root::EndpointTerminalClass::TerminalAtEndpoint
+        );
+        assert!(!endpoint.event_occurred);
+        assert!(f64::from_bits(endpoint.end_ice_bits) > 0.0);
+        boundary_candidates.push((tick, endpoint));
+    }
+    let previous = &boundary_candidates[0].1;
+    let candidate = &boundary_candidates[1].1;
+    let next = &boundary_candidates[2].1;
+    assert_eq!(
+        classify(previous),
+        crate::discrete_terminal_support_root::EndpointTerminalClass::PreTerminal
+    );
+    assert_eq!(
+        classify(candidate),
+        crate::discrete_terminal_support_root::EndpointTerminalClass::Invalid
+    );
+    assert_eq!(
+        classify(next),
+        crate::discrete_terminal_support_root::EndpointTerminalClass::Invalid
+    );
+    assert!(f64::from_bits(candidate.terminal_unallocated_energy_bits)
+        > TERMINAL_ENERGY_COMPARISON_TOLERANCE_J_M2);
+    assert_eq!(candidate.end_ice_bits, candidate.deposition_bits);
+    assert_eq!(candidate.melt_bits, 0.6_f64.to_bits());
+    assert_eq!(
+        evaluate(selected),
+        *candidate,
+        "exact endpoint replay must be byte-identical"
+    );
+    eprintln!(
+        "CHILD1_REAL_DISCRETE_HOLD first_material_invalid_tick={selected} bracket_independent=true classification=Invalid reason=no_admissible_root_positive_deposition_after_complete_melt terminal_at_endpoint_absent=true",
+    );
 }
 
 #[allow(
@@ -977,6 +1160,17 @@ fn exercise_complete_wb14_cadence(
         assert_eq!(pair.components[3].1.to_bits(), 0x4094_2e21_8363_bae1);
         assert_eq!(pair.components[3].2.to_bits(), 0xc03b_368f_8bb1_8fc0);
         let trials = &evidence.selected_trials[evidence.selected_trials.len() - 3..];
+        for (position, trial) in ["coarse", "fine-1", "fine-2"].into_iter().zip(trials) {
+            eprintln!(
+                "CHILD1_DISCRETE_ENDPOINT position={position} duration_bits={:#018x} ice_bits={:#018x} liquid_bits={:#018x} cold_bits={:#018x} unallocated_bits={:#018x} complete_energy_bits={:#018x}",
+                trial.duration_s.to_bits(),
+                trial.ending.ice_kg_m2.to_bits(),
+                trial.ending.liquid_kg_m2.to_bits(),
+                trial.ending.cold_content_j_m2.to_bits(),
+                trial.ledger.unallocated_energy_j_m2.to_bits(),
+                trial.ledger.complete_energy_j_m2.to_bits(),
+            );
+        }
         // Typed Stage-3/hydrology supply proof: terminal liquid is absent from
         // every selected trial's live external-liquid operand.
         assert!(trials.iter().all(|trial| {
@@ -988,6 +1182,16 @@ fn exercise_complete_wb14_cadence(
         assert_eq!(admission.2.to_bits(), 0.6_f64.to_bits());
         assert_eq!(admission.3, crate::SnowTerminalNumericsFailure::BelowCarrierDomain);
         assert_eq!(admission.4, admission.5);
+        run_real_discrete_endpoint_probes(
+            &shadow,
+            &beginning_clock,
+            &prepared,
+            &stage3_beginning_by_lane,
+            selected_seconds,
+        );
+        assert_eq!(shadow, rollback_consumer);
+        assert_eq!(beginning_clock, rollback_clock);
+        assert_eq!(stage3_beginning, rollback_stage3);
         assert!(!evidence.provider_calls.is_empty());
         assert_eq!(evidence.provider_calls.len(), evidence.coupling_iterations.len());
         assert!(evidence.provider_calls.iter().enumerate().all(|(ordinal, call)|

@@ -1,5 +1,14 @@
 # Work Packages
 
+## 20260826-workspace-baseline-assurance-v2-reconciliation-001
+
+Queued successor debt package for the 81 intake-resident Assurance V2
+identity/source failures and nine retained source/registry guards observed in
+the canonical 3,250/101/6 workspace run. It requires separate owner
+authorization and must close before any future Child-1 discrete contract
+freeze or production implementation. It does not waive the failures or alter
+the discrete support-root HOLD.
+
 ## 20260821-snow-stage3-v11-covered-consumer-runner-closure-001
 
 Active Child-1 successor from the synchronized Stage-3 terminal handoff

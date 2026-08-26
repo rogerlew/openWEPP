@@ -28,3 +28,15 @@ artifact chain (`AGENTS.md` -> `docs/work-packages/AGENTS.md`) and Rust source
 chain (`AGENTS.md` -> `crates/AGENTS.md`). The immutable user-directed red lines
 make new science-contract versions inapplicable unless and until the complete
 real matrix passes.
+
+Discrete terminal support-root intake additionally ran
+`tools/agents/find-agents --for` for the package artifacts, private
+orchestrator numerical/fixture sources and integration-test surface. The
+applicable chains remain root plus `docs/work-packages/AGENTS.md`, root plus
+`crates/AGENTS.md`, and root plus `tests/AGENTS.md`. Required governance read
+before source edits: the complete work-package and science-contract instruction
+files, canonical testing strategy, kernel-package preparation and prompt
+wording standards, active package, prior real-DAE HOLD/evidence/gate/write-set
+artifacts, and the terminal sections of SnowEnergy v19--v21, LSE v9--v11,
+SnowFreeze v137--v139 and CoupledTime v4--v6. Candidate successor versions are
+on-demand and may be authored only after the real discrete checkpoint passes.

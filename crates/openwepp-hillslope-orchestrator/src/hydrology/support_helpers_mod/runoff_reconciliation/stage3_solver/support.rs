@@ -414,7 +414,7 @@ impl Wb11HydrologyKernel {
             &[support_input],
             Some(DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1),
             None,
-            Some((support, initial_joint, provider)),
+            Some((support, mode, initial_joint, provider)),
             evidence,
         )?;
         if let CoveredTerminalExecutionMode::ExactEndpoint { expected_tick } = mode {

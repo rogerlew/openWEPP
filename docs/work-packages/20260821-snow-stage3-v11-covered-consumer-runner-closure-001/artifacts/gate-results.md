@@ -1,5 +1,45 @@
 # Gate results
 
+## 2026-08-26 discrete complete-owner terminal support-root exploration
+
+Ran: the focused synthetic discrete-root matrix passed 9/9 under nextest run
+ID `4cbfed85-0697-42b5-b0b2-a22ceeb02b52`. It covers the batch-shaped callback,
+floor and exact-tick guards, event positions, bracket/order invariance,
+same-tick coalescing, survivor handling, rollback, replay, invalid-lane
+rejection, and receipt/owner poisons.
+
+Ran: the corrected real interior fixture passed 1/1 under the
+science/numerics review rerun, nextest run ID
+`eba7ddb4-be86-45b8-991d-5e95f3cc26bd`. The current production call remained
+typed `BelowCarrierDomain`; the test-only endpoint map reproducibly reached
+the same first material `Invalid` tick from two brackets and produced no
+admissible `TerminalAtEndpoint` root. The final local rerun after lint-only
+source cleanup also passed 1/1 at nextest
+`854dbf1b-314d-4d8f-9efd-12cdab314564`.
+
+Ran: `cargo check -p openwepp-hillslope-orchestrator --tests --quiet`, library
+and test `cargo clippy --no-deps`, formatting, and `git diff --check` passed at
+the implementation checkpoint. Clippy continued to report only retained
+baseline warnings; the newly introduced `len_zero` warning was corrected.
+
+Static/Ran: the independent science/numerics review is `GO for defect-shaped
+HOLD`; the independent ownership/Batch/custody review is `GO-to-HOLD`. See
+`discrete-terminal-support-root-reviews.md`. Neither review authorizes
+successor contracts or production implementation.
+
+Ran: the delegated affected-crate comparator executed
+`cargo nextest run -p openwepp-hillslope-orchestrator --lib --no-fail-fast`
+from intake HEAD `221e94ef3e6ccf646f732bf104b0fb563208d338`. It ran 869
+tests: 858 passed, the exact historical eleven failed, and one skipped. Every
+failure name and normalized signature matches
+`terminal-bounded-evidence-v14-failure-census.md`; no new affected-crate
+failure appeared. The complete runner log is
+`/tmp/openwepp-affected-orchestrator-20260826T085437.log`.
+
+Disposition: `CHILD1-DISCRETE-SUPPORT-ROOT-001 / HOLD`. Affected-package and
+exact-head workspace comparator results are recorded below when run; no
+failure waiver is permitted.
+
 ## 2026-08-23 provider-owned atmosphere checkpoint results
 
 Ran: `cargo fmt --all -- --check` passed in the repository Nix development
