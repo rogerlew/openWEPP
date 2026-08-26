@@ -1,14 +1,38 @@
 use std::fs;
+use std::process::Command;
+
+const REJECTED_V21_CHECKPOINT: &str = "e3b9e20eebbf5ecd319c372c3d31b1a05a2479d7";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("failed to read {path}: {error}"))
 }
 
+fn read_rejected_contract(path: &str) -> String {
+    let object = format!("{REJECTED_V21_CHECKPOINT}:{path}");
+    let output = Command::new("git")
+        .args(["show", &object])
+        .output()
+        .unwrap_or_else(|error| panic!("failed to run git show {object}: {error}"));
+    assert!(
+        output.status.success(),
+        "failed to resolve preserved candidate object {object}: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    String::from_utf8(output.stdout)
+        .unwrap_or_else(|error| panic!("preserved candidate object {object} is not UTF-8: {error}"))
+}
+
 #[test]
 fn corrected_successors_bind_estimator_scc_forcing_and_solver_authority() {
-    let snow = read("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
-    let lse = read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
-    let freeze = read("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
+    let snow = read_rejected_contract(
+        "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+    );
+    let lse = read_rejected_contract(
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+    );
+    let freeze = read_rejected_contract(
+        "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+    );
     let graph = read(
         "docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/terminal-same-support-scc-and-forcing-inventory-v2.md",
     );
@@ -83,7 +107,9 @@ fn corrected_successors_bind_estimator_scc_forcing_and_solver_authority() {
 
 #[test]
 fn corrected_coupled_time_defines_every_wire_node_and_split_owner_join() {
-    let time = read("docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md");
+    let time = read_rejected_contract(
+        "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+    );
 
     for required in [
         "candidate_contract_version: 6",

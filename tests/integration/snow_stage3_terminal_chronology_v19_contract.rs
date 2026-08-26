@@ -1,7 +1,20 @@
-use std::fs;
+use std::process::Command;
 
-fn read(path: &str) -> String {
-    fs::read_to_string(path).unwrap_or_else(|error| panic!("failed to read {path}: {error}"))
+const HELD_CHRONOLOGY_CHECKPOINT: &str = "83fb00514e8932561bee5aff26ccdf7c130d470f";
+
+fn read_held_contract(path: &str) -> String {
+    let object = format!("{HELD_CHRONOLOGY_CHECKPOINT}:{path}");
+    let output = Command::new("git")
+        .args(["show", &object])
+        .output()
+        .unwrap_or_else(|error| panic!("failed to run git show {object}: {error}"));
+    assert!(
+        output.status.success(),
+        "failed to resolve preserved candidate object {object}: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    String::from_utf8(output.stdout)
+        .unwrap_or_else(|error| panic!("preserved candidate object {object} is not UTF-8: {error}"))
 }
 
 fn section<'a>(text: &'a str, start: &str, end: &str) -> &'a str {
@@ -15,12 +28,16 @@ fn section<'a>(text: &'a str, start: &str, end: &str) -> &'a str {
 
 #[test]
 fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
-    let snow_energy = read("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
-    let lse = read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
-    let snow_freeze = read("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
+    let snow_energy =
+        read_held_contract("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
+    let lse = read_held_contract(
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+    );
+    let snow_freeze =
+        read_held_contract("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
     let coupled_time =
-        read("docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md");
-    let registry = read("docs/specifications/science-contracts/index.md");
+        read_held_contract("docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md");
+    let registry = read_held_contract("docs/specifications/science-contracts/index.md");
 
     for required in [
         "version 19 remains the\nreviewed terminal full/two-half candidate",
@@ -171,8 +188,10 @@ fn coordinated_terminal_chronology_successors_bind_the_review_findings() {
 
 #[test]
 fn staged_terminal_authority_keeps_later_work_out_of_scope() {
-    let snow_energy = read("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
-    let snow_freeze = read("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
+    let snow_energy =
+        read_held_contract("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
+    let snow_freeze =
+        read_held_contract("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
     for required in [
         "Runner construction, liquid receiver consumption",
         "restart, selectors, activation, CoE retirement, and cutover are not admitted",

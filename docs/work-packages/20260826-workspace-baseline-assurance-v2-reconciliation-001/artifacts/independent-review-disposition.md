@@ -38,3 +38,21 @@ Findings and disposition:
   six occurrences across five files; the artifact was corrected.
 
 Final rereview: `PASS`, no remaining finding.
+
+## Historical candidate-guard follow-up
+
+The first canonical-cache full workspace attempt exposed six additional stale
+candidate-source bindings across three historical test binaries. Both original
+reviewers independently inspected the complete follow-up diff.
+
+Authority reviewer: `PASS`, no findings. Every existing assertion remains,
+the pinned commits resolve the intended held/rejected candidate surfaces, and
+immutable historical reads do not reactivate candidate authority.
+
+Guard reviewer: `PASS`, no findings. All assertion/token/negative/scope-hold
+coverage is retained; checkpoint SHA-256 values match the preserved manifests;
+current canonical files contain none of the candidate markers; independent
+focused execution passed 7/7.
+
+Disposition: no open review finding. The follow-up is a bounded stale-path
+correction within the amended package write set.

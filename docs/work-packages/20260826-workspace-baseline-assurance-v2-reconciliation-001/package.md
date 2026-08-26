@@ -66,6 +66,10 @@ Prospective writes are limited to:
 - exact retained source/registry guard bindings where focused execution proves
   a stale path or unreleased-version assertion; guard scope and negative-token
   coverage may not be reduced;
+- exact historical candidate-guard source bindings where full-workspace
+  execution proves a rejected/held candidate test still reads active canonical
+  authority; such guards must read a preserved immutable Git checkpoint and
+  retain every historical assertion;
 - this package tree and the roadmap/catalog terminal lifecycle pointers. No
   fixture, selector, runtime implementation, or assurance identity file is in
   scope.

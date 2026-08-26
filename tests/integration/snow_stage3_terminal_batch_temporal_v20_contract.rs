@@ -1,15 +1,38 @@
 use std::fs;
+use std::process::Command;
+
+const HELD_V20_CHECKPOINT: &str = "83fb00514e8932561bee5aff26ccdf7c130d470f";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("failed to read {path}: {error}"))
 }
 
+fn read_held_contract(path: &str) -> String {
+    let object = format!("{HELD_V20_CHECKPOINT}:{path}");
+    let output = Command::new("git")
+        .args(["show", &object])
+        .output()
+        .unwrap_or_else(|error| panic!("failed to run git show {object}: {error}"));
+    assert!(
+        output.status.success(),
+        "failed to resolve preserved candidate object {object}: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    String::from_utf8(output.stdout)
+        .unwrap_or_else(|error| panic!("preserved candidate object {object} is not UTF-8: {error}"))
+}
+
 #[test]
 fn coordinated_v20_v10_v138_v5_define_the_complete_authority_surface() {
-    let snow = read("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
-    let lse = read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
-    let freeze = read("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
-    let time = read("docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md");
+    let snow =
+        read_held_contract("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
+    let lse = read_held_contract(
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+    );
+    let freeze =
+        read_held_contract("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
+    let time =
+        read_held_contract("docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md");
     let inventory = read(
         "docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/terminal-residual-state-inventory-v1.md",
     );
@@ -100,10 +123,15 @@ fn coordinated_v20_v10_v138_v5_define_the_complete_authority_surface() {
 
 #[test]
 fn successor_preserves_floor_tolerances_and_scope_holds() {
-    let snow = read("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
-    let lse = read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
-    let freeze = read("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
-    let time = read("docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md");
+    let snow =
+        read_held_contract("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
+    let lse = read_held_contract(
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+    );
+    let freeze =
+        read_held_contract("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
+    let time =
+        read_held_contract("docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md");
 
     assert!(snow.contains("a_mass=1e-9 kg m^-2"));
     assert!(snow.contains("a_energy=1e-6 J m^-2"));
