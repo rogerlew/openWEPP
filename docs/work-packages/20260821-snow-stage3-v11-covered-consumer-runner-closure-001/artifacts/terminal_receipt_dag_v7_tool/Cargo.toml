@@ -1,0 +1,12 @@
+[package]
+name = "terminal-receipt-dag-v7-tool"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+openwepp-coupled-time = { path = "../../../../../crates/openwepp-coupled-time" }
+serde_json = "1"
+

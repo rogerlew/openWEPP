@@ -176,6 +176,42 @@ pub(crate) struct CoveredCarrierPhaseResultV1 {
     pub wb14_parent_replay_bytes: Option<Vec<u8>>,
 }
 
+#[cfg(test)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize)]
+pub(crate) struct CoveredCarrierCandidateLayoutCountsV1 {
+    pub owner_count: usize,
+    pub snow_lane_count: usize,
+    pub soil_layer_count: usize,
+    pub covered_destination_count: usize,
+    pub lse_component_surface_count: usize,
+    pub lower_boundary_count: usize,
+    pub precipitation_lane_count: usize,
+}
+
+#[cfg(test)]
+impl CoveredCarrierPhaseResultV1 {
+    pub(crate) fn candidate_layout_counts_v1(&self) -> CoveredCarrierCandidateLayoutCountsV1 {
+        CoveredCarrierCandidateLayoutCountsV1 {
+            owner_count: self.ending_candidates.joint.owner_bytes().len(),
+            snow_lane_count: self.ending_candidates.stage3_by_lane.len(),
+            soil_layer_count: self
+                .soil_candidate
+                .ofes
+                .iter()
+                .map(|ofe| ofe.ordered_layers.len())
+                .sum(),
+            covered_destination_count: self.covered_lse_states.len(),
+            lse_component_surface_count: self
+                .covered_lse_states
+                .values()
+                .map(|state| state.component_carrier_surfaces.len())
+                .sum(),
+            lower_boundary_count: self.complete_lower_boundaries.len(),
+            precipitation_lane_count: self.precipitation_sets.len(),
+        }
+    }
+}
+
 impl DirectV11SnowCoveredRealConsumerStack<'_> {
     /// Construct the actual V11/LSE/precipitation/snow--soil carrier for one
     /// immutable terminal trial and stop before Stage-3 evaluation.

@@ -23,6 +23,8 @@ pub mod ofe_routing;
 mod winter_column;
 
 #[cfg(test)]
+mod terminal_candidate_numerics;
+#[cfg(test)]
 mod tests;
 
 use openwepp_kernel_contract::{HillslopeProductionFluxSymbol, HillslopeProductionStateSymbol};

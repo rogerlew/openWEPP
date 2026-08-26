@@ -948,6 +948,30 @@ fn exercise_complete_wb14_cadence(
             .iter()
             .find(|pair| pair.duration_s.to_bits() == 1.875_f64.to_bits())
             .expect("selected 1.875-second rejected pair");
+        let real_layout = evidence
+            .provider_calls
+            .iter()
+            .find_map(|call| match &call.outcome {
+                crate::hydrology::CapturedProviderOutcome::Success(result)
+                    if f64::from_bits(call.request.support.duration_s_bits()).to_bits()
+                        == pair.duration_s.to_bits() =>
+                {
+                    Some(result.candidate_layout_counts_v1())
+                }
+                _ => None,
+            })
+            .expect("real candidate layout");
+        assert_eq!(real_layout.owner_count, 7);
+        assert_eq!(real_layout.snow_lane_count, 1);
+        assert!(real_layout.soil_layer_count > 0);
+        assert!(real_layout.covered_destination_count > 0);
+        assert!(real_layout.lse_component_surface_count > 0);
+        assert!(real_layout.lower_boundary_count >= real_layout.covered_destination_count);
+        assert_eq!(real_layout.precipitation_lane_count, 1);
+        eprintln!(
+            "CHILD1_REAL_CANDIDATE_LAYOUT={}",
+            serde_json::to_string(&real_layout).expect("layout JSON")
+        );
         assert!(pair.rejected);
         assert_eq!(pair.components[3].0.to_bits(), 0x4094_9afb_c192_8120);
         assert_eq!(pair.components[3].1.to_bits(), 0x4094_2e21_8363_bae1);

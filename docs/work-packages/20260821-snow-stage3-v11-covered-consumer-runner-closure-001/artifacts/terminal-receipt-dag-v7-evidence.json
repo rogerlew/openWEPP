@@ -2,17 +2,18 @@
   "acyclic": true,
   "deterministic_replay": true,
   "digests": {
-    "ArmCustodyReceipt": "3465f2a04d9b75baba32b1e17e5017f3397b5ce5cca409202c5a78a70a0d18e2",
-    "ArmInputCore": "d92e399a9d66d2648850be465801f4f031f11821964a49adf35e814ae1f6b081",
-    "ArmPhysicalResultCore": "e373f83479576da09d627d9591a14e8fec94fa2207c4dacb8602a478c4295857",
-    "BatchRequestCore": "7795db955f0d813979ccc97adc0a6715ad66a716ec6ae72e1e7b24f08da01741",
-    "BatchResultCore": "25495953320d490ec48618b6df0301495f74017c157fd61b8df9ebfb84ae4cee",
-    "EndingJointReceipt": "768a559aad3286398e92ec6ac4d951eee66240ad92f6bf3396d62698047a613a",
-    "EventReceipt": "f742d1cbf5effa7cddd7bf9314ee3e3d2347b17dcc5e5c83c528a052630394ea",
-    "LaneEvidenceCore": "76923eeac12fa61bbe7086bf48a0d0cfd6d598be0e60a46d86b5ca14999579ef",
-    "ParentReceipt": "867c158120759581f1c20fc88c5c1555c3f3a32151543f3aa040743a701c4cf3"
+    "ArmCustodyReceipt": "cb8800a2d742b35763582f626463bbeb12735145c8fb0e3643b2a6e12b5d782c",
+    "ArmInputCore": "3b9539322c449ff973b9a0c8349b513a3d8a252e059002495bb92b5ee62dbb42",
+    "ArmPhysicalResultCore": "00d1d73938e7a9279c963e375677d2e566829366c3f597baf5f5582f2820d736",
+    "BatchRequestCore": "2c17a5dae40234035d8edf7f8d7333ca9366b65c033d2bed81d2e26eb48aff8e",
+    "BatchResultCore": "3d439879c8830027421254933f938277a194a41f2789340e26df723ed5c4e10c",
+    "EndingJointReceipt": "95d124c6744f911ac56b8ab3b599642fc848856f393a7d99a7df6184e46bd08f",
+    "EventReceipt": "b2b4f09e4342fada66a135f2b40c8d846dea12f260eec0ac60d12a0406d205ff",
+    "LaneEvidenceCore": "1d783917bb74e3fb34e88c789dfd725d4fc62d332fbb203729ae64a1e127427f",
+    "ParentReceipt": "e07f0b3dfa89af2e1560e4c70d1a47bb68432cb7b0687081bfd4af27aaf8294e"
   },
   "forward_reference_violations": [],
+  "hash_implementation": "openwepp_coupled_time::framed_sha256",
   "order": [
     "BatchRequestCore",
     "ArmInputCore",
@@ -69,5 +70,5 @@
       "EventReceipt"
     ]
   },
-  "schema": "openwepp-terminal-receipt-dag-v7-evidence-v1"
+  "schema": "openwepp-terminal-receipt-dag-v7-evidence-v2"
 }
