@@ -1081,3 +1081,19 @@ require a production temporal-control correlation mechanism or duplicated
 solver logic. Both are outside the mini-gate and the user's write prohibition.
 Terminal chronology therefore remains HARD HOLD with `BelowCarrierDomain` and
 the 600 ms floor unchanged.
+
+## 2026-08-25 bounded terminal evidence V14 gates
+
+| Gate | Result |
+|---|---|
+| Exact current affected crate | RED: 844 passed / 11 failed / 1 skipped, `875ee602-1e45-4a2a-8010-0387f238f6cc` |
+| Detached pre-seam affected crate | RED: 842 passed / identical 11 failed / 1 skipped, `acd21032-6069-4d34-aa3f-5e307a99d0d0` |
+| Evidence-seam regression comparison | PASS: no new failure name or first relevant signature; two new capture tests pass |
+| V20/V21 structural guards | PASS: 5/5, `de3e2318-348a-46bf-8802-7a8c6ec0a717` |
+| Exact live decision definition | PASS review |
+| Numerical/evidence review | HOLD: malformed cardinality, distinct ingress and coupling/provider binding incomplete |
+| Rust/noninterference review | HOLD: literal path, duplicate floor retention, framing and observability incomplete |
+| Source implementation | NOT AUTHORIZED |
+
+The eleven failures remain a regression comparator, not a qualification PASS.
+V14 changed only six package artifacts and no Rust source.

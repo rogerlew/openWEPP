@@ -138,3 +138,13 @@ edited and no implementation intent is admitted.
 | Finding | Severity | Decision | Current action/status |
 |---|---:|---|---|
 | `TBTV20-NUM-006` | Critical | `accepted / correction in v21 intake` | V20 incompletely separated prescribed upstream amounts, arm-generated amounts and state-dependent absorption. The v21 SCC/forcing inventory now distinguishes provider amounts/series, arm-generated transfers, state-dependent endpoint/collocation rates, algebraic variables and discrete outputs; final authority/review remains open. |
+
+## Terminal bounded evidence findings
+
+| Finding | Severity | Decision | Current action/status |
+|---|---:|---|---|
+| `CHILD1-TERM-EVIDENCE-016` | Closure blocker | `accepted / closed by census` | Current and detached pre-seam runs have the identical eleven failure names and signatures; the V12 seam adds two passing tests and no affected regression. |
+| `CHILD1-TERM-EVIDENCE-017` | Critical | `accepted / corrected in V14` | The live decision is exactly ice, retained liquid, cold content, complete energy and unallocated energy; prospective effectivity terms remain separate full-ledger evidence. |
+| `CHILD1-TERM-EVIDENCE-018` | Critical | `accepted / open` | Associated lazy projection direction is accepted, but the literal resolvable type path and NoEvidence source nonreachability require V15 authority. |
+| `CHILD1-TERM-EVIDENCE-019` | Critical | `accepted / open` | V14 did not provide raw duplicate-floor retention or an exact provider/pair boundary join. V15 must use raw vectors and immutable validated custody. |
+| `CHILD1-TERM-COUPLING-020` | Critical | `accepted / open characterization` | The live 32-iteration loop does not retain whether selection followed the four-component break or exhaustion; the post-loop three-component comparison can compare the last hint with a preview from the same last flux and omits temperature. Evidence must record selection reason; any physical correction requires separate authority. |

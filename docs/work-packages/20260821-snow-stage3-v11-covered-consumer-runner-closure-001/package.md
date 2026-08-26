@@ -578,3 +578,21 @@ diff/write-set reconciliation, and line-count evidence. The package remains
 - [~] Scenario matrix and independent physical-custody reviews pass; terminal
   scenarios and exact Child-1 closure gates remain open after this bounded
   checkpoint.
+
+### 2026-08-25 terminal bounded evidence V14 disposition
+
+Exact source seam `ce58080c06f604ec1c5579db83517c8495c8514c` adds two
+passing capture tests and no affected-suite regression. Current run
+`875ee602-1e45-4a2a-8010-0387f238f6cc` is 844 passed / 11 failed / 1 skipped;
+detached pre-seam run `acd21032-6069-4d34-aa3f-5e307a99d0d0` is 842 passed /
+the identical 11 failed / 1 skipped. Four failures are terminal-success
+obligations, four stale persistent-model guards, two stale multi-lane/OFE
+guards and one stale V10 error-variant expectation.
+
+V14 is a governed HOLD. Its exact live decision vector—ice, retained liquid,
+cold content, complete energy, unallocated energy—is accepted. Raw malformed
+evidence, immutable provider/pair/floor custody, distinct ingress proofs,
+coupling-selection reason, provider ordinal joins, exact carrier projections
+and observable noninterference remain open. `BelowCarrierDomain` and qualified
+physical implementation `43cc9bbea2fbf5fe6ab6596cee4162de75cef999`
+remain authoritative.
