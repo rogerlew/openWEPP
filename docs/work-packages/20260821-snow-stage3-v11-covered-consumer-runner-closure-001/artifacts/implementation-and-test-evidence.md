@@ -714,3 +714,34 @@ nextest `dee21e27-22dc-4318-a33e-827613eed031` and the directly affected case
 passed 1/1 at `5d592021-5f6e-453b-ba89-33158d5f6db0`. The only finding was a
 temporary write-manifest omission; `owned-file-manifest.md` now records both
 the integration test and `heavy-workspace-20260826-002137.log`.
+
+## 2026-08-26 clean-SHA workspace terminal result
+
+Ran: at exact clean evidence SHA
+`9b1105d683189e46a2df5a23817498fb1430fded`,
+`nix develop --command tools/dev/heavy cargo nextest run --workspace
+--no-fail-fast` completed at nextest
+`069f044d-888f-473e-a443-91d6a2f51bff`. It ran 3,351 tests in 764.42
+seconds: 3,250 passed, 101 failed, and 6 skipped; exit status 100. The raw
+receipt is `heavy-workspace-20260826-002439.log`.
+
+Ran / comparator: all exact historical eleven failure names and normalized
+signatures are present with zero delta. Ninety additional failures make the
+gate non-qualifying under the explicit allowed-red rule.
+
+Static / dual independent audit: the unexpected failures collapse to 81 stale
+Assurance V2 identity/source failures and nine stale source/registry guards.
+The latter are one Stage-0 anti-wiring guard, five missing v136 index-wording
+guards, two missing v18 index-wording guards, and one missing
+`terminal_parcels_from_event` attachment token. Every named causal file and
+guard test is byte-identical at intake `64fdeb0` and evidence SHA `9b1105d`;
+none was introduced by this increment. The assurance mismatch binds the
+generated identity to older SnowEnergy/SnowFreeze bytes while the intake tree
+already contains rejected v21/v139 candidate bytes.
+
+Static / authority disposition: rebinding generated assurance identity to
+rejected candidate contracts or weakening historical/source guards is outside
+this numerical checkpoint and would violate the retained authority posture.
+The result is workspace `FAIL`, not waived or reclassified. The package
+remains `EXECUTED / HOLD / CHILD1-REAL-DAE-001`, and `43cc9bbe...` remains the
+last fully qualified physical implementation.

@@ -1114,7 +1114,7 @@ V14 changed only six package artifacts and no Rust source.
 | Candidate v22/v12/v140/v7 | NOT AUTHORED |
 | Production temporal operator / Batch V2 | NOT MODIFIED |
 | Affected heavy suite | EXPECTED RED: 849 passed / exact historical 11 failed / 1 skipped; zero name/signature delta; nextest `a2fc23d0-8833-401b-ae7c-6dd6a808561b` |
-| Exact-head workspace suite | FIRST CLEAN SHA COMPILE-BLOCKED at runner test fixture; corrected; second clean-SHA run pending |
+| Exact-head workspace suite | FAIL at clean `9b1105d683189e46a2df5a23817498fb1430fded`: 3,250 passed / 101 failed / 6 skipped; historical 11 exact plus 90 intake-resident unexpected failures |
 | Complete affected runner suite | PASS: 253/253, nextest `e305172f-63c2-4ca6-9be3-05a24e11ee21` |
 | Focused EB03 runtime integration suite | PASS: 26/26, nextest `c665d958-6022-47eb-8887-0c4ff6105c76` |
 | Independent numerical and science/ownership reviews | GO / GO for corrected HOLD; no real-candidate GO |
@@ -1163,3 +1163,32 @@ match correction. Independent verification passed 26/26 at nextest
 `5d592021-5f6e-453b-ba89-33158d5f6db0`. The sole evidence-only manifest
 finding is corrected: the integration test and raw workspace log are both in
 the exact write set.
+
+Third clean-SHA workspace attempt: at exact clean evidence SHA
+`9b1105d683189e46a2df5a23817498fb1430fded`, the canonical command completed
+all 3,351 tests at nextest `069f044d-888f-473e-a443-91d6a2f51bff` in 764.42
+seconds: 3,250 passed, 101 failed, and 6 skipped (status 100; raw receipt
+`heavy-workspace-20260826-002439.log`). The historical eleven all match by
+exact name and normalized signature with zero delta. The other 90 are not
+allowed red results, so this is a workspace `FAIL`, not an expected-red PASS.
+
+Static / independent audit: the 90 unexpected failures collapse to 81 stale
+Assurance V2 identity/source failures and nine stale source/registry guards.
+For assurance, the identity lock expects SnowEnergy
+`b95ba52c9d3212f1248f836a552a48247e17eaa5b4c8489823fa8aae3dcde372`
+and SnowFreeze
+`976f052f8c74366b1406b95dbe79968691dab326ee9e266c3d4b730cd5a08e6b`,
+but intake and the evidence SHA contain rejected-candidate hashes
+`7b125f383ae3dca7fb3fe52e40dfe9bf28347cf69c32bb4e13f7a031a9f3772e`
+and `a84d8413855c540daa8ae1d0f9b74ef2f7ae49be0654b0463d2c818d7cb4f1ce`.
+The other nine are one Stage-0 anti-wiring guard and eight Stage-3
+source/index guards. Every causal operand and failing guard is byte-identical
+between intake `64fdeb02942f62efd92428ef538440596b90668f` and the clean evidence
+SHA; no Child-1 incremental regression is identified. This is static byte
+provenance, not a passing intake workspace run.
+
+Disposition: do not rebind assurance to rejected candidate contracts and do
+not weaken historical/source guards under this checkpoint. The workspace gate
+remains non-qualifying, reinforcing `EXECUTED / HOLD /
+CHILD1-REAL-DAE-001`; `43cc9bbea2fbf5fe6ab6596cee4162de75cef999`
+remains the last fully qualified physical implementation.

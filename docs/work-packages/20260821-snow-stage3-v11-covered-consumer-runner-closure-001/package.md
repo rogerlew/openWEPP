@@ -744,3 +744,20 @@ compile drift: an integration-test typed error match omitted the existing
 focused target passes 26/26 at nextest
 `c665d958-6022-47eb-8887-0c4ff6105c76`. No production source or assertion was
 changed or weakened. A new clean-SHA workspace run remains required.
+
+The canonical workspace run then completed at exact clean evidence SHA
+`9b1105d683189e46a2df5a23817498fb1430fded`: 3,250 passed, 101 failed, and
+6 skipped at nextest `069f044d-888f-473e-a443-91d6a2f51bff`. The exact
+historical eleven match by name and normalized signature, but 90 additional
+failures make the gate non-qualifying. Independent audit collapses them to 81
+stale Assurance V2 identity/source failures and nine stale source/registry
+guards; every causal byte is unchanged from intake `64fdeb0`, so they are not
+Child-1 incremental regressions. They cannot be waived, and rebinding rejected
+candidate contracts or weakening the guards is outside this checkpoint.
+
+Final disposition remains `EXECUTED / HOLD / CHILD1-REAL-DAE-001`. The named
+physical-equation stop condition remains the primary real-candidate defect;
+the workspace failure is an additional intake-resident qualification defect.
+No successor contract or production behavior is changed, and
+`43cc9bbea2fbf5fe6ab6596cee4162de75cef999` remains the last fully qualified
+physical implementation.

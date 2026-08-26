@@ -35,3 +35,23 @@ has an explicit no-unrelated-refactor disposition; and gate evidence explains
 the heavy log's pipeline/footer status versus authoritative nextest status 100.
 No substantive finding remained. Result after these artifact-only corrections:
 `GO` for `EXECUTED / HOLD / CHILD1-REAL-DAE-001`.
+
+## Clean-SHA workspace verification
+
+Ran: exact clean SHA `9b1105d683189e46a2df5a23817498fb1430fded`
+completed the canonical no-fail-fast workspace suite at nextest
+`069f044d-888f-473e-a443-91d6a2f51bff`: 3,250 passed, 101 failed, and 6
+skipped. The historical eleven match by name and normalized signature; 90
+additional failures make the workspace gate `FAIL`.
+
+Static: two independent evidence audits agreed on the 90-failure causal
+census: 81 stale Assurance V2 identity/source failures plus nine stale
+source/registry guards. Every implicated operand and guard test is byte-equal
+between intake `64fdeb02942f62efd92428ef538440596b90668f` and the clean evidence
+SHA. That proves no Child-1 incremental regression, but it does not waive the
+explicit allowed-red rule or qualify the workspace.
+
+Verification disposition remains `GO` for truthfully freezing the
+defect-shaped HOLD and `FAIL` for workspace qualification. Rebinding rejected
+contract candidates or weakening retained source guards is not an authorized
+corrective action.

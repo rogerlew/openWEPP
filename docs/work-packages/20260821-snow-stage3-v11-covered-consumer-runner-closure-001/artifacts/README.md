@@ -11,4 +11,8 @@ not a closure claim.
 The current Child-1 real-DAE exploration disposition is
 `real-terminal-dae-defect-hold.md`. It supersedes the planning-inventory SCC
 as live source truth and records the exact physical-equation stop condition;
-the analytical and receipt-DAG evidence remain test-only.
+the analytical and receipt-DAG evidence remain test-only. The canonical
+workspace run at clean evidence SHA `9b1105d683189e46a2df5a23817498fb1430fded`
+is non-qualifying: the historical eleven are unchanged, but 90 additional
+intake-resident failures remain. See `gate-results.md` for the exact census and
+causal audit.

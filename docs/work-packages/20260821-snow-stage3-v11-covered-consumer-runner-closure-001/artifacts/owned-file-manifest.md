@@ -261,9 +261,10 @@ contains only:
 - This manifest, `implementation-and-test-evidence.md`, `gate-results.md`, and
   the review/disposition artifacts added for terminal reconciliation.
 - `artifacts/real-terminal-dae-{numerical-review,science-ownership-review,review-disposition,verification}.md`
-  and `artifacts/heavy-{orchestrator-20260825-235333,orchestrator-20260826-000033,workspace-20260826-000829,workspace-20260826-002137}.log`:
+  and `artifacts/heavy-{orchestrator-20260825-235333,orchestrator-20260826-000033,workspace-20260826-000829,workspace-20260826-002137,workspace-20260826-002439}.log`:
   independent review/verification/disposition, initial/final affected-suite
-  receipts, and both clean-SHA workspace compile-failure receipts.
+  receipts, both clean-SHA workspace compile-failure receipts, and the final
+  executed clean-SHA workspace receipt.
 
 No other crate, contract, registry, assurance, dependency, public API,
 production execution, or output file is modified.
