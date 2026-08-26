@@ -239,6 +239,11 @@ contains only:
   and package-Python parity corrections.
 - `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs`:
   exact immutable-fixture cardinality assertions.
+- `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00h_snow_stage3_evaluation_trace.rs`:
+  test-only workspace-compile correction; the external fixture obtains a
+  legitimate result from the existing dormant evaluator instead of directly
+  constructing a struct with a private ending-joint field. No runner
+  production path or public API changes.
 - `docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/package.md`:
   owner-directed implementation intent and red-line reconciliation.
 - `artifacts/required-reading-map.md` and
@@ -253,9 +258,9 @@ contains only:
 - This manifest, `implementation-and-test-evidence.md`, `gate-results.md`, and
   the review/disposition artifacts added for terminal reconciliation.
 - `artifacts/real-terminal-dae-{numerical-review,science-ownership-review,review-disposition,verification}.md`
-  and `artifacts/heavy-orchestrator-2026082{5-235333,6-000033}.log`: independent
-  review/verification/disposition and initial/final affected-suite command
-  receipts.
+  and `artifacts/heavy-{orchestrator-20260825-235333,orchestrator-20260826-000033,workspace-20260826-000829}.log`:
+  independent review/verification/disposition, initial/final affected-suite
+  receipts, and the first clean-SHA workspace compile-failure receipt.
 
 No other crate, contract, registry, assurance, dependency, public API,
 production execution, or output file is modified.
@@ -268,3 +273,4 @@ limit. This increment changes only four existing cardinality assertions there;
 decomposing the large shared fixture would be unrelated architectural churn
 for a defect-shaped numerical HOLD. Follow-up decomposition remains advisable
 when substantive fixture structure next changes.
+The runner trace file is 1,627 lines after its test-only compiler correction.

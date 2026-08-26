@@ -1,0 +1,608 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:101:16
+    |
+101 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `ENERGY_ABSOLUTE_TOLERANCE_J_M2`, `MASS_ABSOLUTE_TOLERANCE_KG_M2`, and `RELATIVE_ERROR_TOLERANCE`
+  --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs:10:5
+   |
+10 |     ENERGY_ABSOLUTE_TOLERANCE_J_M2, MASS_ABSOLUTE_TOLERANCE_KG_M2,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+11 |     RELATIVE_ERROR_TOLERANCE,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CoveredTerminalBatchCarrierCandidatesV2`, `CoveredTerminalBatchHydrologyJoinV2`, `CoveredTerminalBatchJoinedResultV2`, `CoveredTerminalBatchPrefixRequestV2`, `CoveredTerminalBatchProviderV2`, `CoveredTerminalBatchTrialProviderV2`, `CoveredTerminalBatchTrialRequestV2`, `CoveredTerminalBatchTrialResultV2`, `CoveredTerminalEndingSnowHintV1`, `CoveredTerminalLaneTrialStateV2`, `CoveredTerminalTrialProviderV1`, and `CoveredTerminalTrialRoleV1`
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:1470:5
+     |
+1470 |     CoveredTerminalBatchCarrierCandidatesV2, CoveredTerminalBatchHydrologyJoinV2,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1471 |     CoveredTerminalBatchJoinedResultV2, CoveredTerminalBatchPrefixRequestV2,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1472 |     CoveredTerminalBatchProviderV2, CoveredTerminalBatchTrialProviderV2,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1473 |     CoveredTerminalBatchTrialRequestV2, CoveredTerminalBatchTrialResultV2,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1474 |     CoveredTerminalLaneTrialStateV2,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1475 |     CoveredTerminalEndingSnowHintV1, CoveredTerminalJointTrialStateV1,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1476 |     CoveredTerminalTrialProviderV1, JointTrialAuthorityV1, ProbeChildAuthorityV1,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1477 |     CoveredTerminalTrialRequestV1, CoveredTerminalTrialRoleV1,
+     |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs:125:9
+    |
+125 |         mut layers: Vec<DirectSnowLayerState>,
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs:126:9
+    |
+126 |         mut cold_content_by_layer: Vec<f64>,
+    |         ----^^^^^^^^^^^^^^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs:128:9
+    |
+128 |         mut terminal_detached_liquid_kg_m2: f64,
+    |         ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: method `solver_ready_tiles_with_authority` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v8_input_projection.rs:517:19
+    |
+505 | impl ValidatedV8RuntimeInputProjection {
+    | -------------------------------------- method in this implementation
+...
+517 |     pub(crate) fn solver_ready_tiles_with_authority(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `project_v8_runtime_inputs` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v8_input_projection.rs:1243:15
+     |
+1243 | pub(crate) fn project_v8_runtime_inputs(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `evaluate_covered_terminal_candidate_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:334:4
+    |
+334 | fn evaluate_covered_terminal_candidate_v1(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `try_actual_terminal_subslab` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs:628:4
+    |
+628 | fn try_actual_terminal_subslab(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `Persistent` is never constructed
+  --> crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs:19:5
+   |
+18 | pub(crate) enum CoveredSnowBoundaryStateV1 {
+   |                 -------------------------- variant in this enum
+19 |     Persistent,
+   |     ^^^^^^^^^^
+   |
+   = note: `CoveredSnowBoundaryStateV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: variant `Accepted` is never constructed
+  --> crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs:36:5
+   |
+34 | pub(crate) enum CoveredCarrierExecutionIdentityV1 {
+   |                 --------------------------------- variant in this enum
+35 |     Probe(CoveredProbeChildIdentityV1),
+36 |     Accepted,
+   |     ^^^^^^^^
+   |
+   = note: `CoveredCarrierExecutionIdentityV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: function `canonical_stage3_snow_owner_bytes_v11_with_receipts` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs:638:15
+    |
+638 | pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_receipts(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `SIGMA_W_M2_K4` is never used
+  --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs:32:7
+   |
+32 | const SIGMA_W_M2_K4: f64 = 5.670_374_419e-8;
+   |       ^^^^^^^^^^^^^
+
+warning: constant `TERMINAL_TEMPERATURE_K` is never used
+  --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs:33:7
+   |
+33 | const TERMINAL_TEMPERATURE_K: f64 = 273.15;
+   |       ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `TERMINAL_ENTHALPY_J_KG` is never used
+  --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs:34:7
+   |
+34 | const TERMINAL_ENTHALPY_J_KG: f64 = 0.0;
+   |       ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `NS_PER_SECOND` is never used
+  --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs:35:7
+   |
+35 | const NS_PER_SECOND: f64 = 1.0e9;
+   |       ^^^^^^^^^^^^^
+
+warning: constant `WATER_DENSITY_KG_M3` is never used
+  --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs:36:7
+   |
+36 | const WATER_DENSITY_KG_M3: f64 = 1_000.0;
+   |       ^^^^^^^^^^^^^^^^^^^
+
+warning: methods `stage_after_live_day`, `commit_after_live_day`, `derive_shared_carrier`, `derive_terminal_event`, and `advance_remaining_surface_support` are never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs:207:19
+    |
+101 | impl DirectSnowStage3ShadowAttachment {
+    | ------------------------------------- methods in this implementation
+...
+207 |     pub(crate) fn stage_after_live_day(
+    |                   ^^^^^^^^^^^^^^^^^^^^
+...
+312 |     pub(crate) fn commit_after_live_day(
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+...
+345 |     fn derive_shared_carrier(
+    |        ^^^^^^^^^^^^^^^^^^^^^
+...
+429 |     fn derive_terminal_event(
+    |        ^^^^^^^^^^^^^^^^^^^^^
+...
+495 |     fn advance_remaining_surface_support(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `owner_set_after_sequential_consumers` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs:721:4
+    |
+721 | fn owner_set_after_sequential_consumers(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `terminal_liquid_from_live_snow` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs:766:4
+    |
+766 | fn terminal_liquid_from_live_snow(day_frame: &DirectDayFrame) -> Result<f64, DirectRuntimeError> {
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `snow_depth_to_mass` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs:789:4
+    |
+789 | fn snow_depth_to_mass(value: f64, field: &'static str) -> Result<f64, DirectRuntimeError> {
+    |    ^^^^^^^^^^^^^^^^^^
+
+warning: function `nonnegative_live` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs:800:4
+    |
+800 | fn nonnegative_live(value: f64, field: &'static str) -> Result<f64, DirectRuntimeError> {
+    |    ^^^^^^^^^^^^^^^^
+
+warning: function `surface_liquid_runtime_error` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs:819:4
+    |
+819 | fn surface_liquid_runtime_error(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `ordered_receipt_set_sha256` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_coordinator.rs:141:4
+    |
+141 | fn ordered_receipt_set_sha256<'a>(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `execute_surface_liquid_ingress_with_parent_finalization` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:871:15
+    |
+871 | pub(crate) fn execute_surface_liquid_ingress_with_parent_finalization(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `execute_surface_liquid_ingress_with_parent_state` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs:886:15
+    |
+886 | pub(crate) fn execute_surface_liquid_ingress_with_parent_state(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `duration_s`, `proposed_next_duration_s`, `components`, `scaled_error`, and `rejected` are never read
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:236:9
+    |
+235 | pub(crate) struct TerminalPairEvidenceHook {
+    |                   ------------------------ fields in this struct
+236 |     pub duration_s: f64,
+    |         ^^^^^^^^^^
+237 |     pub proposed_next_duration_s: f64,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+238 |     pub components: [(f64, f64, f64, f64, f64); 5],
+    |         ^^^^^^^^^^
+239 |     pub scaled_error: f64,
+    |         ^^^^^^^^^^^^
+240 |     pub rejected: bool,
+    |         ^^^^^^^^
+    |
+    = note: `TerminalPairEvidenceHook` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: fields `proposed_duration_s`, `required_half_duration_s`, `minimum_duration_s`, `outcome`, `provider_calls_before`, and `provider_calls_after` are never read
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:245:9
+    |
+244 | pub(crate) struct TerminalAdmissionEvidenceHook<'a> {
+    |                   ----------------------------- fields in this struct
+245 |     pub proposed_duration_s: f64,
+    |         ^^^^^^^^^^^^^^^^^^^
+246 |     pub required_half_duration_s: f64,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+247 |     pub minimum_duration_s: f64,
+    |         ^^^^^^^^^^^^^^^^^^
+248 |     pub outcome: &'a SnowTerminalNumericsFailure,
+    |         ^^^^^^^
+249 |     pub provider_calls_before: u64,
+    |         ^^^^^^^^^^^^^^^^^^^^^
+250 |     pub provider_calls_after: u64,
+    |         ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `TerminalAdmissionEvidenceHook` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: fields `request`, `outgoing`, `comparisons`, and `converged` are never read
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:306:9
+    |
+305 | pub(crate) struct TerminalCouplingIterationHook {
+    |                   ----------------------------- fields in this struct
+306 |     pub request: CoveredTerminalTrialRequestV1,
+    |         ^^^^^^^
+307 |     pub outgoing: CoveredTerminalEndingSnowHintV1,
+    |         ^^^^^^^^
+308 |     pub comparisons: Option<[(f64, f64, f64, f64, bool); 4]>,
+    |         ^^^^^^^^^^^
+309 |     pub converged: bool,
+    |         ^^^^^^^^^
+    |
+    = note: `TerminalCouplingIterationHook` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: fields `request`, `reason`, and `post_loop_three_component_check` are never read
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:320:9
+    |
+319 | pub(crate) struct TerminalCouplingSelectionHook {
+    |                   ----------------------------- fields in this struct
+320 |     pub request: CoveredTerminalTrialRequestV1,
+    |         ^^^^^^^
+321 |     pub reason: TerminalCouplingSelectionReason,
+    |         ^^^^^^
+322 |     pub post_loop_three_component_check: bool,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `TerminalCouplingSelectionHook` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: multiple fields are never read
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:329:9
+    |
+328 | pub(crate) struct TerminalSelectedTrialHook<'a, J> {
+    |                   ------------------------- fields in this struct
+329 |     pub position: TerminalPairPosition,
+    |         ^^^^^^^^
+330 |     pub role: CoveredTerminalTrialRoleV1,
+    |         ^^^^
+331 |     pub attempt_ordinal: u32,
+    |         ^^^^^^^^^^^^^^^
+332 |     pub relative_start_s: f64,
+    |         ^^^^^^^^^^^^^^^^
+333 |     pub duration_s: f64,
+    |         ^^^^^^^^^^
+334 |     pub beginning: TerminalStateEvidence,
+    |         ^^^^^^^^^
+335 |     pub ending: TerminalStateEvidence,
+    |         ^^^^^^
+336 |     pub ledger: TerminalLedgerEvidence,
+    |         ^^^^^^
+337 |     pub beginning_joint: &'a J,
+    |         ^^^^^^^^^^^^^^^
+338 |     pub carrier_ending_joint: &'a J,
+    |         ^^^^^^^^^^^^^^^^^^^^
+339 |     pub hydrology_ending_joint: &'a J,
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `coupling_iteration` and `ending_snow_hint` are never read
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:919:9
+    |
+912 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+    |                   ----------------------------- fields in this struct
+...
+919 |     pub coupling_iteration: u32,
+    |         ^^^^^^^^^^^^^^^^^^
+...
+928 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+    |         ^^^^^^^^^^^^^^^^
+    |
+    = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: field `trial_snow_soil_receipt` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1307:9
+     |
+1302 | pub(crate) struct CoveredTerminalTrialTransitionV1 {
+     |                   -------------------------------- field in this struct
+...
+1307 |     pub trial_snow_soil_receipt:
+     |         ^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialTransitionV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: variants `BracketLower` and `BracketUpper` are never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1318:5
+     |
+1313 | pub(crate) enum CoveredTerminalTrialRoleV1 {
+     |                 -------------------------- variants in this enum
+...
+1318 |     BracketLower = 4,
+     |     ^^^^^^^^^^^^
+1319 |     BracketUpper = 5,
+     |     ^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRoleV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: struct `CoveredTerminalLaneTrialStateV2` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1329:19
+     |
+1329 | pub(crate) struct CoveredTerminalLaneTrialStateV2 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `CoveredTerminalBatchTrialRequestV2` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1342:19
+     |
+1342 | pub(crate) struct CoveredTerminalBatchTrialRequestV2 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `CoveredTerminalBatchCarrierCandidatesV2` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1351:19
+     |
+1351 | pub(crate) struct CoveredTerminalBatchCarrierCandidatesV2 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `CoveredTerminalBatchTrialResultV2` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1363:19
+     |
+1363 | pub(crate) struct CoveredTerminalBatchTrialResultV2 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: type alias `CoveredTerminalBatchTrialProviderV2` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1370:17
+     |
+1370 | pub(crate) type CoveredTerminalBatchTrialProviderV2<'a> = dyn FnMut(
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: type alias `CoveredTerminalBatchHydrologyJoinV2` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1375:17
+     |
+1375 | pub(crate) type CoveredTerminalBatchHydrologyJoinV2<'a> = dyn FnMut(
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: type alias `CoveredTerminalBatchPrefixRequestV2` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1384:17
+     |
+1384 | pub(crate) type CoveredTerminalBatchPrefixRequestV2 = CoveredTerminalBatchTrialRequestV2;
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: type alias `CoveredTerminalBatchJoinedResultV2` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1385:17
+     |
+1385 | pub(crate) type CoveredTerminalBatchJoinedResultV2 = CoveredTerminalBatchTrialResultV2;
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: type alias `CoveredTerminalBatchProviderV2` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1386:17
+     |
+1386 | pub(crate) type CoveredTerminalBatchProviderV2<'a> = CoveredTerminalBatchTrialProviderV2<'a>;
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated functions `covered_terminal_batch_common_earliest_lanes_v2`, `join_covered_terminal_batch_prefix_v2`, and `evaluate_stage3_terminal_support_with_trial_provider_v1` are never used
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs:5:19
+    |
+  4 | impl Wb11HydrologyKernel {
+    | ------------------------ associated functions in this implementation
+  5 |     pub(crate) fn covered_terminal_batch_common_earliest_lanes_v2(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+ 21 |     pub(crate) fn join_covered_terminal_batch_prefix_v2(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+349 |     pub(crate) fn evaluate_stage3_terminal_support_with_trial_provider_v1(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `solve_terminal_enthalpy_event` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/terminal_event.rs:229:19
+    |
+ 99 | impl Wb11HydrologyKernel {
+    | ------------------------ associated function in this implementation
+...
+229 |     pub(super) fn solve_terminal_enthalpy_event<F, G, J>(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unreachable `pub` item
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:231:5
+    |
+231 |     pub trait Sealed {}
+    |     ---^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+    = note: requested on the command line with `-W unreachable-pub`
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 47 warnings (run `cargo fix --lib -p openwepp-hillslope-orchestrator` to apply 7 suggestions)
+   Compiling openwepp-runner v0.1.0 (/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openWEPP/crates/openwepp-vegetation)
+   Compiling openwepp-coupled-time v0.1.0 (/workdir/openWEPP/crates/openwepp-coupled-time)
+   Compiling openwepp-persisted-restart-v1 v0.1.0 (/workdir/openWEPP/crates/openwepp-persisted-restart-v1)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+error: cannot construct `DirectSnowStage3PersistentDayResult` with struct literal syntax due to private fields
+    --> crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00h_snow_stage3_evaluation_trace.rs:1307:26
+     |
+1307 |         let persistent = openwepp_hillslope_orchestrator::DirectSnowStage3PersistentDayResult {
+     |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: ...and other private field `covered_terminal_ending_joint` that was not provided
+
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+error: could not compile `openwepp-runner` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+warning: unused imports: `CoveredTerminalBatchCarrierCandidatesV2`, `CoveredTerminalBatchHydrologyJoinV2`, `CoveredTerminalBatchJoinedResultV2`, `CoveredTerminalBatchPrefixRequestV2`, `CoveredTerminalBatchProviderV2`, `CoveredTerminalBatchTrialProviderV2`, `CoveredTerminalBatchTrialRequestV2`, `CoveredTerminalBatchTrialResultV2`, `CoveredTerminalEndingSnowHintV1`, `CoveredTerminalLaneTrialStateV2`, and `CoveredTerminalTrialProviderV1`
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:1470:5
+     |
+1470 |     CoveredTerminalBatchCarrierCandidatesV2, CoveredTerminalBatchHydrologyJoinV2,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1471 |     CoveredTerminalBatchJoinedResultV2, CoveredTerminalBatchPrefixRequestV2,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1472 |     CoveredTerminalBatchProviderV2, CoveredTerminalBatchTrialProviderV2,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1473 |     CoveredTerminalBatchTrialRequestV2, CoveredTerminalBatchTrialResultV2,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1474 |     CoveredTerminalLaneTrialStateV2,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1475 |     CoveredTerminalEndingSnowHintV1, CoveredTerminalJointTrialStateV1,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1476 |     CoveredTerminalTrialProviderV1, JointTrialAuthorityV1, ProbeChildAuthorityV1,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `project_v8_runtime_inputs` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v8_input_projection.rs:1243:15
+     |
+1243 | pub(crate) fn project_v8_runtime_inputs(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `0` is never read
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:381:13
+    |
+381 |     Failure(CapturedProviderFailure),
+    |     ------- ^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `CapturedProviderOutcome` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+381 -     Failure(CapturedProviderFailure),
+381 +     Failure(()),
+    |
+
+warning: field `provider_ordinal` is never read
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:394:92
+    |
+394 | pub(crate) struct CapturedCouplingIteration { pub hook: TerminalCouplingIterationHook, pub provider_ordinal: Option<u64> }
+    |                   ------------------------- field in this struct                           ^^^^^^^^^^^^^^^^
+    |
+    = note: `CapturedCouplingIteration` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: fields `provider_calls`, `coupling_iterations`, and `coupling_selections` are never read
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:408:9
+    |
+407 | pub(crate) struct ValidatedCaptureState {
+    |                   --------------------- fields in this struct
+408 |     pub provider_calls: Vec<CapturedProviderCall>,
+    |         ^^^^^^^^^^^^^^
+409 |     pub coupling_iterations: Vec<ValidatedCouplingIteration>,
+    |         ^^^^^^^^^^^^^^^^^^^
+410 |     pub coupling_selections: Vec<TerminalCouplingSelectionHook>,
+    |         ^^^^^^^^^^^^^^^^^^^
+
+warning: fields `draft`, `support`, `coupling_selection_index`, and `selected_provider_ordinal` are never read
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:425:9
+    |
+424 | pub(crate) struct ValidatedSelectedTrial {
+    |                   ---------------------- fields in this struct
+425 |     pub draft: CapturedSelectedTrial,
+    |         ^^^^^
+426 |     pub support: TimeSupport,
+    |         ^^^^^^^
+427 |     pub coupling_selection_index: usize,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+428 |     pub selected_provider_ordinal: u64,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `proposed_duration_s`, `required_half_duration_s`, and `minimum_duration_s` are never read
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:439:9
+    |
+438 | pub(crate) struct ValidatedFloorAdmission {
+    |                   ----------------------- fields in this struct
+439 |     pub proposed_duration_s: f64,
+    |         ^^^^^^^^^^^^^^^^^^^
+440 |     pub required_half_duration_s: f64,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+441 |     pub minimum_duration_s: f64,
+    |         ^^^^^^^^^^^^^^^^^^
+
+warning: variant `BracketLower` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1318:5
+     |
+1313 | pub(crate) enum CoveredTerminalTrialRoleV1 {
+     |                 -------------------------- variant in this enum
+...
+1318 |     BracketLower = 4,
+     |     ^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRoleV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: multiple fields are never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1330:9
+     |
+1329 | pub(crate) struct CoveredTerminalLaneTrialStateV2 {
+     |                   ------------------------------- fields in this struct
+1330 |     pub lane_id: u32,
+     |         ^^^^^^^
+1331 |     pub ice_kg_m2: f64,
+     |         ^^^^^^^^^
+1332 |     pub liquid_kg_m2: f64,
+     |         ^^^^^^^^^^^^
+1333 |     pub cold_content_j_m2: f64,
+     |         ^^^^^^^^^^^^^^^^^
+1334 |     pub surface_temperature_c: f64,
+     |         ^^^^^^^^^^^^^^^^^^^^^
+1335 |     pub snow_depth_m: f64,
+     |         ^^^^^^^^^^^^
+1336 |     pub snow_density_kg_m3: f64,
+     |         ^^^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalLaneTrialStateV2` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `support`, `role`, and `attempt_ordinal` are never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1343:9
+     |
+1342 | pub(crate) struct CoveredTerminalBatchTrialRequestV2 {
+     |                   ---------------------------------- fields in this struct
+1343 |     pub support: TimeSupport,
+     |         ^^^^^^^
+1344 |     pub role: CoveredTerminalTrialRoleV1,
+     |         ^^^^
+1345 |     pub attempt_ordinal: u32,
+     |         ^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalBatchTrialRequestV2` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: associated function `join_covered_terminal_batch_prefix_v2` is never used
+  --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs:21:19
+   |
+ 4 | impl Wb11HydrologyKernel {
+   | ------------------------ associated function in this implementation
+...
+21 |     pub(crate) fn join_covered_terminal_batch_prefix_v2(
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 30 warnings (19 duplicates) (run `cargo fix --lib -p openwepp-hillslope-orchestrator --tests` to apply 1 suggestion)
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --workspace` exited with code 101
+Command exited with non-zero status 101
+WALL_TIME=37.34
+EXIT_CODE:0

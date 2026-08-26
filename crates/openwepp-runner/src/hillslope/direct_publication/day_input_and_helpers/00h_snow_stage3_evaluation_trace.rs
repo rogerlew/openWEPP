@@ -427,6 +427,56 @@ mod stage3_evaluation_real_consumer_tests {
         assert!((left - right).abs() <= 1.0e-6, "{context}: {left} != {right}");
     }
 
+    fn dormant_persistent_day_result(
+    ) -> openwepp_hillslope_orchestrator::DirectSnowStage3PersistentDayResult {
+        let inputs = DirectActiveSnowPartitionInputs {
+            hyetograph_rainfall_m: 0.0,
+            rst_c: 0.0,
+            newsnw_kg_m3: 100.0,
+            ssd_kg_m3: 522.0,
+            runtime_swe_m: 0.0,
+            runtime_depth_m: 0.0,
+            runtime_density_kg_m3: 0.0,
+            runtime_settle_day_count: 0.0,
+            liquid_water_retained_m: 0.0,
+            tmax_c: -3.0,
+            tmin_c: -7.0,
+            canopy_cover_fraction: 0.45,
+            wind_m_s: 3.0,
+            dewpoint_c: -15.0,
+            snow_melt_model: SnowMeltModel::CoeLiquidHoldingCapacityV1,
+            snow_density_model: SnowDensityModel::PhysicsBulkDensityCompactionV1,
+            stage3_liquid_routing_model: SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1,
+            surface_energy_options: DirectSnowSurfaceEnergyOptions {
+                longwave_model: SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+                sublimation_model: SnowSurfaceSublimationModel::Disabled,
+                daily_solar_radiation_mj_m2: 5.0,
+                daily_extraterrestrial_radiation_mj_m2: 10.0,
+                daylight: true,
+                atmospheric_pressure_pa: 101_324.6,
+                turbulent_geometry: DirectSnowTurbulentGeometry::CLIGEN_V1,
+                complete_carrier_shadow: false,
+            },
+            sturm_climate_class: None,
+            sturm_day_of_year: None,
+            coe_boundary_depth_m: 0.0,
+            coe_boundary_density_kg_m3: 0.0,
+            coe_boundary_settle_day_count: 0.0,
+            snow_albedo_model: None,
+            snow_albedo_state: None,
+            snow_layers: Vec::new(),
+            underlying_surface_albedo: 0.2,
+            hourly: [DirectSnowHourlyForcing {
+                air_temperature_c: -5.0,
+                ..DirectSnowHourlyForcing::zero()
+            }; 24],
+        };
+        let state = Wb11HydrologyKernel::initialize_stage3_persistent_state(0, Vec::new())
+            .expect("valid dormant trace state");
+        Wb11HydrologyKernel::evaluate_stage3_persistent_day(&inputs, &state, 0, 0)
+            .expect("dormant trace day")
+    }
+
     fn fnv1a64(bytes: &[u8]) -> u64 {
         bytes.iter().fold(0xcbf2_9ce4_8422_2325, |mut hash, byte| {
             hash ^= u64::from(*byte);
@@ -1304,72 +1354,71 @@ mod stage3_evaluation_real_consumer_tests {
         persistent_evaluation.hourly[0].requested_seconds = 3_600.0;
         persistent_evaluation.hourly[0].evaluated_seconds = 3_600.0;
         persistent_evaluation.hourly[0].complete_carrier_evaluated = true;
-        let persistent = openwepp_hillslope_orchestrator::DirectSnowStage3PersistentDayResult {
-            start_state: Box::new(
-                openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState {
-                    schema_version: 1,
-                    terminal_event_model: None,
-                    fingerprint: 0x5bcd_7547_4b65_2ea4,
-                    lane_id: 0,
-                    next_interval_index: 0,
-                    layers: Vec::new(),
-                    detached_retained_liquid_kg_m2: 0.0,
-                    initial_ice_kg_m2: 0.0,
-                    initial_retained_liquid_kg_m2: 0.0,
-                    cumulative_snowfall_kg_m2: 0.0,
-                    cumulative_external_liquid_kg_m2: 0.0,
-                    cumulative_deposition_kg_m2: 0.0,
-                    cumulative_sublimation_kg_m2: 0.0,
-                    cumulative_melt_kg_m2: 0.0,
-                    cumulative_unresolved_liquid_kg_m2: 0.0,
-                    cumulative_complete_energy_j_m2: 0.0,
-                    cumulative_cold_energy_change_j_m2: 0.0,
-                    cumulative_terminal_unallocated_energy_j_m2: 0.0,
-                },
-            ),
-            state: openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState {
+        let mut persistent = dormant_persistent_day_result();
+        persistent.start_state = Box::new(
+            openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState {
                 schema_version: 1,
                 terminal_event_model: None,
-                fingerprint: 0x7428_f289_6003_8068,
+                fingerprint: 0x5bcd_7547_4b65_2ea4,
                 lane_id: 0,
-                next_interval_index: 1,
+                next_interval_index: 0,
                 layers: Vec::new(),
                 detached_retained_liquid_kg_m2: 0.0,
                 initial_ice_kg_m2: 0.0,
                 initial_retained_liquid_kg_m2: 0.0,
-                cumulative_snowfall_kg_m2: 2.0,
-                cumulative_external_liquid_kg_m2: 3.0,
+                cumulative_snowfall_kg_m2: 0.0,
+                cumulative_external_liquid_kg_m2: 0.0,
                 cumulative_deposition_kg_m2: 0.0,
-                cumulative_sublimation_kg_m2: 0.25,
-                cumulative_melt_kg_m2: 1.75,
-                cumulative_unresolved_liquid_kg_m2: 4.75,
-                cumulative_complete_energy_j_m2: 583_819.0,
-                cumulative_cold_energy_change_j_m2: 2.0,
-                cumulative_terminal_unallocated_energy_j_m2: 17.0,
+                cumulative_sublimation_kg_m2: 0.0,
+                cumulative_melt_kg_m2: 0.0,
+                cumulative_unresolved_liquid_kg_m2: 0.0,
+                cumulative_complete_energy_j_m2: 0.0,
+                cumulative_cold_energy_change_j_m2: 0.0,
+                cumulative_terminal_unallocated_energy_j_m2: 0.0,
             },
-            evaluation: persistent_evaluation,
-            reconciliation: Box::new(reconciliation.clone()),
-            lifecycle: "dormant",
-            start_state_fingerprint: 0x5bcd_7547_4b65_2ea4,
-            end_state_fingerprint: 0x7428_f289_6003_8068,
-            start_ice_kg_m2: 0.0,
-            start_retained_liquid_kg_m2: 0.0,
-            snowfall_kg_m2: 2.0,
-            external_liquid_kg_m2: 3.0,
-            deposition_kg_m2: 0.0,
-            refrozen_kg_m2: 0.0,
-            sublimation_kg_m2: 0.25,
-            melt_kg_m2: 1.75,
-            end_ice_kg_m2: 0.0,
-            end_retained_liquid_kg_m2: 0.0,
-            retained_liquid_censored_loss_kg_m2: 0.0,
-            ice_mass_closure_residual_kg_m2: 0.0,
-            total_water_closure_residual_kg_m2: 0.0,
-            unresolved_liquid_kg_m2: 4.75,
-            terminal_unallocated_energy_j_m2: 17.0,
-            terminal_event: None,
-            terminal_intervals: Vec::new(),
+        );
+        persistent.state = openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState {
+            schema_version: 1,
+            terminal_event_model: None,
+            fingerprint: 0x7428_f289_6003_8068,
+            lane_id: 0,
+            next_interval_index: 1,
+            layers: Vec::new(),
+            detached_retained_liquid_kg_m2: 0.0,
+            initial_ice_kg_m2: 0.0,
+            initial_retained_liquid_kg_m2: 0.0,
+            cumulative_snowfall_kg_m2: 2.0,
+            cumulative_external_liquid_kg_m2: 3.0,
+            cumulative_deposition_kg_m2: 0.0,
+            cumulative_sublimation_kg_m2: 0.25,
+            cumulative_melt_kg_m2: 1.75,
+            cumulative_unresolved_liquid_kg_m2: 4.75,
+            cumulative_complete_energy_j_m2: 583_819.0,
+            cumulative_cold_energy_change_j_m2: 2.0,
+            cumulative_terminal_unallocated_energy_j_m2: 17.0,
         };
+        persistent.evaluation = persistent_evaluation;
+        persistent.reconciliation = Box::new(reconciliation.clone());
+        persistent.lifecycle = "dormant";
+        persistent.start_state_fingerprint = 0x5bcd_7547_4b65_2ea4;
+        persistent.end_state_fingerprint = 0x7428_f289_6003_8068;
+        persistent.start_ice_kg_m2 = 0.0;
+        persistent.start_retained_liquid_kg_m2 = 0.0;
+        persistent.snowfall_kg_m2 = 2.0;
+        persistent.external_liquid_kg_m2 = 3.0;
+        persistent.deposition_kg_m2 = 0.0;
+        persistent.refrozen_kg_m2 = 0.0;
+        persistent.sublimation_kg_m2 = 0.25;
+        persistent.melt_kg_m2 = 1.75;
+        persistent.end_ice_kg_m2 = 0.0;
+        persistent.end_retained_liquid_kg_m2 = 0.0;
+        persistent.retained_liquid_censored_loss_kg_m2 = 0.0;
+        persistent.ice_mass_closure_residual_kg_m2 = 0.0;
+        persistent.total_water_closure_residual_kg_m2 = 0.0;
+        persistent.unresolved_liquid_kg_m2 = 4.75;
+        persistent.terminal_unallocated_energy_j_m2 = 17.0;
+        persistent.terminal_event = None;
+        persistent.terminal_intervals = Vec::new();
         assert_eq!(
             direct_snow_trace_schema(
                 Some(&persistent.evaluation),

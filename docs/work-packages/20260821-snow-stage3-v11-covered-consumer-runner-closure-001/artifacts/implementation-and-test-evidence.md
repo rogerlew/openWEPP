@@ -656,3 +656,34 @@ Static / structural WARN: `v9_real_consumer_shadow_wb14_tests.rs` is a
 pre-existing 2,306-line fixture module. This diff changes only four assertions;
 no decomposition is mixed into the numerical HOLD. The other touched Rust
 files are below 2,000 lines.
+
+## 2026-08-26 clean-SHA workspace compile correction
+
+Ran: clean evidence SHA `14adffb4dbdc0a89af613348d079abe8ce3567a4`
+attempted the heavy workspace suite. Cargo stopped before nextest created a run
+ID because the runner's test-only trace fixture directly constructed
+`DirectSnowStage3PersistentDayResult` after the orchestrator had added private
+field `covered_terminal_ending_joint`. The authoritative cargo status was 101;
+`heavy-workspace-20260826-000829.log` retains the exact compiler receipt.
+
+Static: this was an ordinary external-fixture construction defect, not a
+physical stop condition. The runner test now obtains a legitimate dormant
+result through the existing public persistent evaluator and replaces only the
+already-public trace fields. The private ending-joint field stays
+orchestrator-owned. No public API or runner production path changed.
+
+Ran: the focused runner trace test passed 1/1 at nextest
+`633e73ad-b4e8-43db-94b4-11c9492081ad`. Runner library check and all-target
+test compilation passed. Formatting and diff hygiene passed. The correction is
+confined to a `cfg(test)` module in a 1,627-line file.
+
+Ran: the complete affected runner suite passed 253/253 at nextest
+`e305172f-63c2-4ca6-9be3-05a24e11ee21`.
+
+Static / independent review: numerical/Rust review and science/ownership
+review independently inspected the correction and returned `GO` with no
+findings. Both confirmed that the helper remains `cfg(test)`, leaves the
+orchestrator-private ending joint owner-initialized, changes no public API or
+production runner behavior, and accurately records the first workspace
+attempt as compile-blocked. This is compiler-correction GO only; the clean-SHA
+workspace rerun and overall `CHILD1-REAL-DAE-001` HOLD remain.

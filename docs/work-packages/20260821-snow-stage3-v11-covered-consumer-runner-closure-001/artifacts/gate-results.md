@@ -1114,7 +1114,8 @@ V14 changed only six package artifacts and no Rust source.
 | Candidate v22/v12/v140/v7 | NOT AUTHORED |
 | Production temporal operator / Batch V2 | NOT MODIFIED |
 | Affected heavy suite | EXPECTED RED: 849 passed / exact historical 11 failed / 1 skipped; zero name/signature delta; nextest `a2fc23d0-8833-401b-ae7c-6dd6a808561b` |
-| Exact-head workspace suite | NOT RUN: checkpoint stopped before a complete real candidate matrix |
+| Exact-head workspace suite | FIRST CLEAN SHA COMPILE-BLOCKED at runner test fixture; corrected; second clean-SHA run pending |
+| Complete affected runner suite | PASS: 253/253, nextest `e305172f-63c2-4ca6-9be3-05a24e11ee21` |
 | Independent numerical and science/ownership reviews | GO / GO for corrected HOLD; no real-candidate GO |
 | Independent verification passes | GO / GO for corrected HOLD; artifact-only findings corrected |
 
@@ -1128,3 +1129,18 @@ capture pipeline, while nextest and `/usr/bin/time` record authoritative status
 `v9_real_consumer_shadow_wb14_tests.rs` is 2,306 lines; only four assertions
 changed, so unrelated fixture decomposition is deferred. The numerical module
 (927) and receipt tool (273) remain below 2,000 lines.
+
+Clean-SHA workspace attempt: at
+`14adffb4dbdc0a89af613348d079abe8ce3567a4`, cargo stopped before nextest on a
+runner test-fixture private-field construction error (status 101; raw log
+`heavy-workspace-20260826-000829.log`). The test-only fixture was corrected
+without a public API or production runner change. Its focused test passed 1/1
+at `633e73ad-b4e8-43db-94b4-11c9492081ad`; runner library and all-target test
+compilation now pass. A second clean-SHA workspace run is required.
+
+Ran: the complete affected runner suite passed 253/253 at nextest
+`e305172f-63c2-4ca6-9be3-05a24e11ee21`. Two independent post-correction
+reviews found no findings and returned `GO` for the test-only compiler
+correction's correctness, ownership, noninterference, and evidence
+truthfulness. Neither review converts the real-candidate HOLD into numerical,
+science, Batch, or workspace qualification GO.

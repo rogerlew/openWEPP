@@ -724,3 +724,15 @@ CN/reference receipt, AD comparison, Hermite effectivity matrix, successor
 contract, production temporal operator, or Batch V2 is claimed or authored.
 `BelowCarrierDomain` and fully qualified physical implementation
 `43cc9bbea2fbf5fe6ab6596cee4162de75cef999` remain authoritative.
+
+The first clean-SHA workspace attempt exposed an unrelated test-fixture compile
+defect in `openwepp-runner`: an external struct literal could no longer supply
+the orchestrator-private terminal ending joint. Under the standing
+compiler-hiccup authority, the test now obtains a real dormant result through
+the existing evaluator and mutates only public trace fields. Focused runner
+test and production/test compilation pass; runner behavior and public API are
+unchanged. The complete affected runner suite passes 253/253 at nextest
+`e305172f-63c2-4ca6-9be3-05a24e11ee21`, and two independent post-correction
+reviews return `GO` with no findings for this test-only compiler correction.
+The second clean-SHA workspace run remains the final validation action; these
+results do not alter the real-candidate HOLD.
