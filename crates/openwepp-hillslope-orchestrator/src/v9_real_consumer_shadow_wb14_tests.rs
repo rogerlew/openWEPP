@@ -271,6 +271,102 @@ fn run_real_discrete_endpoint_probes(
         complete_complementarity_boundary.terminal_unallocated_energy_bits,
         0.0_f64.to_bits()
     );
+    let trajectory_beginning = crate::snow_terminal_phase_trajectory::TrajectoryState {
+        pack_ice_kg_m2: f64::from_bits(candidate.start_ice_bits),
+        surface_frost_kg_m2: 0.0,
+        liquid_kg_m2: f64::from_bits(candidate.start_liquid_bits),
+        cold_content_j_m2: f64::from_bits(candidate.start_cold_content_bits),
+    };
+    let trajectory_segment =
+        crate::snow_terminal_phase_trajectory::segment_from_real_endpoint(candidate);
+    let released_trajectory =
+        crate::snow_terminal_phase_trajectory::released_ordered_trajectory(
+            trajectory_beginning,
+            &[trajectory_segment],
+        )
+        .expect("real released-order trajectory");
+    let frost_hybrid = crate::snow_terminal_phase_trajectory::event_driven_frost_hybrid(
+        trajectory_beginning,
+        &[trajectory_segment],
+    )
+    .expect("real frost-hybrid trajectory");
+    let resolved_complementarity =
+        crate::snow_terminal_phase_trajectory::time_resolved_complementarity(
+            trajectory_beginning,
+            &[trajectory_segment],
+        )
+        .expect("real time-resolved complementarity");
+    let (tagged_frost, tagged_envelope) =
+        crate::snow_terminal_phase_trajectory::existing_snow_frost_subtype(
+            trajectory_beginning,
+            &[trajectory_segment],
+        )
+        .expect("real tagged-frost trajectory");
+    assert_eq!(released_trajectory.events.len(), 2);
+    assert_eq!(
+        released_trajectory.ending.pack_ice_kg_m2.to_bits(),
+        candidate.deposition_bits
+    );
+    assert_eq!(
+        frost_hybrid.ending.surface_frost_kg_m2.to_bits(),
+        0.0_f64.to_bits()
+    );
+    assert_eq!(
+        frost_hybrid.ending.pack_ice_kg_m2.to_bits(),
+        complementarity.ending_pack_ice_kg_m2.to_bits()
+    );
+    assert_eq!(
+        resolved_complementarity.ending.pack_ice_kg_m2.to_bits(),
+        complementarity.ending_pack_ice_kg_m2.to_bits()
+    );
+    assert_eq!(tagged_frost.ending, frost_hybrid.ending);
+    assert_eq!(
+        crate::snow_terminal_phase_trajectory::TaggedSnowOwnerEnvelope::restore(
+            &tagged_envelope.canonical_bytes(),
+        ),
+        Ok(tagged_envelope)
+    );
+    let expected_latent_heat =
+        openwepp_meteorology::surface_energy::latent_heat_for_surface_temperature(
+            openwepp_unit_boundary::TemperatureCelsius::try_new(0.0)
+                .expect("terminal surface temperature"),
+        )
+        .expect("terminal latent heat")
+        .as_joules_per_kilogram();
+    assert!(
+        (trajectory_segment.latent_heat_j_kg - expected_latent_heat).abs()
+            <= 1.0e-9 * expected_latent_heat
+    );
+    assert_eq!(
+        crate::snow_terminal_phase_trajectory::released_ordered_trajectory(
+            trajectory_beginning,
+            &[trajectory_segment],
+        )
+        .expect("real trajectory replay"),
+        released_trajectory
+    );
+    for energy_delta_j_m2 in [-1.0e-3, -1.0e-6, 0.0, 1.0e-6, 1.0e-3] {
+        let perturbed = crate::snow_terminal_phase_trajectory::ForcingSegment {
+            complete_energy_j_m2: trajectory_segment.complete_energy_j_m2
+                + energy_delta_j_m2,
+            ..trajectory_segment
+        };
+        crate::snow_terminal_phase_trajectory::released_ordered_trajectory(
+            trajectory_beginning,
+            &[perturbed],
+        )
+        .expect("nearby released-order forcing");
+        crate::snow_terminal_phase_trajectory::event_driven_frost_hybrid(
+            trajectory_beginning,
+            &[perturbed],
+        )
+        .expect("nearby frost-hybrid forcing");
+        crate::snow_terminal_phase_trajectory::time_resolved_complementarity(
+            trajectory_beginning,
+            &[perturbed],
+        )
+        .expect("nearby resolved-complementarity forcing");
+    }
     for energy_delta_j_m2 in [-1.0e-3, -1.0e-6, 0.0, 1.0e-6, 1.0e-3] {
         let perturbed = crate::snow_terminal_phase_competition::TerminalPhaseInputs {
             non_vapor_energy_j_m2: competition_inputs.non_vapor_energy_j_m2
@@ -305,7 +401,7 @@ fn run_real_discrete_endpoint_probes(
         "exact endpoint replay must be byte-identical"
     );
     eprintln!(
-        "CHILD1_TERMINAL_PHASE_COMPETITION tick={selected} complementarity={complementarity:?} residual_frost={residual_frost:?} parent_end={parent_complementarity:?}",
+        "CHILD1_TERMINAL_PHASE_COMPETITION tick={selected} complementarity={complementarity:?} residual_frost={residual_frost:?} released_trajectory={released_trajectory:?} frost_hybrid={frost_hybrid:?} resolved_complementarity={resolved_complementarity:?} tagged_frost={tagged_frost:?} parent_end={parent_complementarity:?}",
     );
 }
 
