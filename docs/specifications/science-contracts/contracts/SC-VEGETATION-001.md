@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 28
+contract_version: 29
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-08-20
+last_reviewed: 2026-08-26
 supersedes: []
 superseded_by: []
 ---
@@ -79,6 +79,12 @@ successor to V8. V9 imports every V8 scientific and runtime rule exactly and
 supersedes only the independent oracle's numerical-runtime, canonical
 serialization, definition, and vector identity. V1--V8 remain immutable
 historical identities and none is a V9 runtime alias.
+Version 29 preserves those exact V9 authority bytes while distinguishing the
+immutable generation-host descriptor from active verification. Exact-host
+regeneration remains the authority-generation route. Active verification may
+admit only a changed SHA-256 provider object under the bounded equivalence
+proof in the V9 amendment; every other runtime binding and the complete frozen
+output remain exact.
 
 The local definition identity for `OPENWEPP_C3_WOODY_V1` is
 `sha256:003107043e8eb5bda6d9d6476e3ea01690815e3280ac98daf169317ce4d09157`
@@ -1447,8 +1453,9 @@ declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
 `INV-VEGETATION-120`, `INV-VEGETATION-121`, `INV-VEGETATION-122`,
 `INV-VEGETATION-123`, `INV-VEGETATION-124`, `INV-VEGETATION-125`,
 `INV-VEGETATION-126`, `INV-VEGETATION-127`, `INV-VEGETATION-128`,
+`INV-VEGETATION-133`,
 `VEG-E-095`, `VEG-E-096`, `VEG-E-097`, `VEG-E-098`, `VEG-E-099`,
-and `VEG-E-100`.
+`VEG-E-100`, and `VEG-E-133`.
 
 ## Binding Exposure Index
 
@@ -1469,6 +1476,7 @@ and `VEG-E-100`.
 | `BEI-VEGETATION-013` | V9 reproducible oracle identity amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-115, INV-VEGETATION-116, INV-VEGETATION-117` | `flagged-binding-addition` | Reproducible oracle identity and exact V8-to-V9 migration. |
 | `BEI-VEGETATION-014` | V10 nonpositive-assimilation amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-118, INV-VEGETATION-119, INV-VEGETATION-120` | `flagged-binding-addition` | Exact dark/low-light behavior and immutable V9-to-V10 migration. |
 | `BEI-VEGETATION-015` | V11 segmented-support amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-121, INV-VEGETATION-122, INV-VEGETATION-123, INV-VEGETATION-124, INV-VEGETATION-125, INV-VEGETATION-126, INV-VEGETATION-127, INV-VEGETATION-128` | `flagged-binding-addition` | Immutable V10 import, common slab duration, staged resources/materials, additive restart, exact compatibility, and atomic parent finalization. |
+| `BEI-VEGETATION-016` | V9 SHA-256 provider-equivalence correction | `active` | `maps-to-existing-INV` | `INV-VEGETATION-116, INV-VEGETATION-133` | `flagged-binding-addition` | Preserves exact V9 generation-host provenance while admitting a one-object SHA-256 provider substitution only under known-answer, remaining-runtime, protected-byte, and complete-output equality proofs. |
 | `BEI-VEGETATION-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-129, INV-VEGETATION-130, INV-VEGETATION-131, INV-VEGETATION-132` | `flagged-binding-addition` | Shared canopy-air carrier, sealed exposure, exact-once canopy fluxes, and event-bounded snow regime. |
 
 ## Gap Register and Promotability Labels
@@ -2266,6 +2274,7 @@ calibration, identifiability, empirical validity, or transferability.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-26 | 29 | Codex | Preserved exact V9 generation-host provenance and admitted a one-object SHA-256 provider-equivalence verification route requiring known-answer, remaining-runtime, protected-byte, and complete-output equality proofs. |
 | 2026-08-17 | 13 | Codex | Admitted prospective `OPENWEPP_C3_WOODY_V9` with exact V8 science/runtime import, exact identity-only migration, and content-addressed non-Rust oracle runtime and serialization; preserved V1--V8 bytes. |
 | 2026-08-14 | 12 | Codex | Admitted `OPENWEPP_C3_WOODY_V8` reciprocal multirank ground longwave, shared tile canopy-air ground H/E coupling, joint potential/final transaction, strict migration and independent LSE coupling; preserved V1--V7. |
 | 2026-08-13 | 11 | Codex | Admitted `OPENWEPP_C3_WOODY_V7` exact six-tissue seasonal storage-to-transfer preparation, onset deployment, immutable-beginning ordering, evergreen zero-pool posture, conservation, failure, migration, and independent fixtures; preserved V1--V6 bytes. |
@@ -2413,6 +2422,33 @@ command. The generator
 recomputes and rejects every binding, including its own calculator SHA-256,
 before importing V8.
 
+The descriptor is immutable generation-host provenance, not a requirement to
+retain an obsolete operating-system security package on every verification
+host. Exact-host execution remains the only route that can generate or replace
+V9 authority bytes. Active verification of the already frozen V9 authority may
+use a bounded SHA-256 provider-equivalence route when and only when
+`libcrypto.so.3` is the sole descriptor-object mismatch. That route records the
+actual provider digest from a retained read-only file descriptor, proves that
+its path/device/inode identity is the object CPython actually mapped, keeps the
+descriptor open through completion, passes fixed SHA-256 known-answer and
+streaming tests, verifies every other
+descriptor field and object exactly, rechecks every protected V9/V8 source
+digest, executes the exact frozen calculator without changing its bytes, and
+requires its complete stdout to equal the frozen V9 vector byte-for-byte.
+
+Provider equivalence is verification evidence only. It cannot rewrite the
+descriptor, definition, calculator, vector, expected digest, or model identity;
+cannot admit a second runtime mismatch; and cannot turn a failed known answer
+or output comparison into a skip. The active verifier must include negative
+cases for a wrong SHA-256 provider result, a second descriptor mismatch,
+mapped-provider device/inode mismatch, changed protected bytes, and changed
+generated output.
+The admitted verifier is
+`20260826-vegetation-v9-libcrypto-runtime-equivalence-defect-closure-001/
+artifacts/verify_v9_runtime_equivalence.py` at
+`sha256:71ccef3c97cf23a5e28e1b74f2a0d8a94751cdf4af7e8bdcd56079c925d6148d`;
+different verifier bytes are not this equivalence authority.
+
 The V9 vector is
 `artifacts/v9/openwepp_c3_woody_v9_vectors.json`. The definition binds its
 noncircular imported-execution payload at
@@ -2441,8 +2477,10 @@ V9 state.
 | `INV-VEGETATION-115` | V9 imports exact V8 physics/runtime semantics and supersedes only reproducible oracle numerical-runtime and serialization identity. |
 | `INV-VEGETATION-116` | V9 oracle execution checksum-binds the independent Python calculator, interpreter, dynamic runtime objects, serializer, definition, and full imported-execution payload. |
 | `INV-VEGETATION-117` | V8-to-V9 migration validates exact V8 identity, copies all scientific state/configuration values bit-identically, derives only V9 identities, and defines no historical alias. |
+| `INV-VEGETATION-133` | Active V9 verification may substitute only a mismatched `libcrypto.so.3` provider object after loaded-object path/device/inode identity, SHA-256 known-answer/streaming capability, all-other-runtime exactness, protected-byte immutability, and complete frozen-output byte equality; exact-host execution remains the sole authority-generation route. |
 | `VEG-E-115` | Any calculator, runtime descriptor, serializer, definition, imported V8 source, payload, or repeated-generation byte mismatch rejects V9 authority generation. |
 | `VEG-E-116` | Any non-identity migration mutation, stale V8 identity under V9, V9 identity under V8, or partial migration rejects without a V9 state. |
+| `VEG-E-133` | A missing/wrong loaded provider, failed SHA-256 capability proof, any second runtime mismatch, changed protected byte, or complete-output mismatch rejects active V9 verification without rewriting authority or skipping the guard. |
 
 This prospective amendment preserves every V1--V8 calculator, vector,
 definition, contract-era digest, fixture, and runtime expectation byte. It

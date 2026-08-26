@@ -225,7 +225,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "contract_version: 28",
+        "contract_version: 29",
         "Version 13 admits `OPENWEPP_C3_WOODY_V9`",
         "Version 7 admits the constitutive equations, topology inheritance, and V3",
         "Earlier-version statements limiting admission to",
@@ -248,8 +248,9 @@ fn canonical_schema_and_registry_entry_are_bound() {
     for field in [
         lifecycle,
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
-        "| `static+independent_oracle+contract_vectors` | `2026-08-24` |",
-        "v28 retains the exact-one-bearing-OFE domain",
+        "| `static+independent_oracle+contract_vectors` | `2026-08-26` |",
+        "v29 preserves exact V9 generation-host provenance",
+        "v28 mineral-N ordering remains binding",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
@@ -673,7 +674,7 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 28",
+        "contract_version: 29",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
         "OPENWEPP_C3_WOODY_V3",
@@ -2639,8 +2640,12 @@ fn v9_oracle_successor_is_exactly_bound_and_v8_is_immutable() {
         "INV-VEGETATION-115",
         "INV-VEGETATION-116",
         "INV-VEGETATION-117",
+        "INV-VEGETATION-133",
         "VEG-E-115",
         "VEG-E-116",
+        "VEG-E-133",
+        "sole descriptor-object mismatch",
+        "complete stdout to equal the frozen V9 vector byte-for-byte",
     ] {
         assert!(
             contract.contains(required),
@@ -2664,12 +2669,18 @@ fn v9_oracle_successor_is_exactly_bound_and_v8_is_immutable() {
     let isolated = OracleTempRoot::new("v9");
     let execution = isolated.path("execution");
     fs::create_dir_all(&execution).expect("create isolated V9 execution directory");
-    let calculator_path = fs::canonicalize(&calculator).expect("canonical V9 calculator path");
+    let verifier = "docs/work-packages/20260826-vegetation-v9-libcrypto-runtime-equivalence-defect-closure-001/artifacts/verify_v9_runtime_equivalence.py";
+    let verifier_path =
+        fs::canonicalize(verifier).expect("canonical V9 runtime-equivalence verifier path");
+    assert_eq!(
+        sha256(verifier),
+        "71ccef3c97cf23a5e28e1b74f2a0d8a94751cdf4af7e8bdcd56079c925d6148d"
+    );
     let output = Command::new("/usr/bin/python3.14")
         .arg("-I")
         .arg("-S")
         .arg("-B")
-        .arg(calculator_path)
+        .arg(verifier_path)
         .current_dir(execution)
         .env_clear()
         .env("LC_ALL", "C.UTF-8")
@@ -2688,4 +2699,39 @@ fn v9_oracle_successor_is_exactly_bound_and_v8_is_immutable() {
     for (path, before) in protected {
         assert_eq!(fs::read(&path).expect("reread protected V9 bytes"), before);
     }
+}
+
+#[test]
+fn v9_runtime_equivalence_verifier_rejects_every_required_poison() {
+    let verifier = fs::canonicalize(
+        "docs/work-packages/20260826-vegetation-v9-libcrypto-runtime-equivalence-defect-closure-001/artifacts/verify_v9_runtime_equivalence.py",
+    )
+    .expect("canonical V9 runtime-equivalence verifier path");
+    let output = Command::new("/usr/bin/python3.14")
+        .arg("-I")
+        .arg("-S")
+        .arg("-B")
+        .arg(verifier)
+        .arg("--self-test-poisons")
+        .env_clear()
+        .env("LC_ALL", "C.UTF-8")
+        .env("SOURCE_DATE_EPOCH", "0")
+        .output()
+        .expect("run V9 runtime-equivalence poison population");
+    assert!(
+        output.status.success(),
+        "V9 equivalence poisons failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report: Value = serde_json::from_slice(&output.stdout).expect("poison report JSON");
+    assert_eq!(
+        report["rejected"],
+        serde_json::json!([
+            "wrong_sha256_provider_result",
+            "mapped_provider_identity_mismatch",
+            "second_runtime_mismatch",
+            "changed_protected_bytes",
+            "changed_generated_output"
+        ])
+    );
 }
