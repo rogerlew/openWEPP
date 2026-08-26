@@ -95,9 +95,14 @@ fn validate_inputs(input: TerminalPhaseInputs) -> Result<(), TerminalPhaseFailur
     {
         return Err(TerminalPhaseFailure::SublimationExceedsBeginningSolid);
     }
-    if (input.deposition_kg_m2 > 0.0 && input.sublimation_kg_m2 > 0.0)
-        || (input.deposition_kg_m2 > 0.0 && input.vapor_latent_energy_j_m2 < 0.0)
-        || (input.sublimation_kg_m2 > 0.0 && input.vapor_latent_energy_j_m2 > 0.0)
+    let simultaneous_signed_vapor = input.deposition_kg_m2 > 0.0 && input.sublimation_kg_m2 > 0.0;
+    let deposition_sign_mismatch =
+        input.deposition_kg_m2 > 0.0 && input.vapor_latent_energy_j_m2 < 0.0;
+    let sublimation_sign_mismatch =
+        input.sublimation_kg_m2 > 0.0 && input.vapor_latent_energy_j_m2 > 0.0;
+    if simultaneous_signed_vapor
+        || deposition_sign_mismatch
+        || sublimation_sign_mismatch
         || (input.deposition_kg_m2 == 0.0
             && input.sublimation_kg_m2 == 0.0
             && input.vapor_latent_energy_j_m2 != 0.0)
@@ -107,6 +112,7 @@ fn validate_inputs(input: TerminalPhaseInputs) -> Result<(), TerminalPhaseFailur
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn finalize(
     input: TerminalPhaseInputs,
     model: TerminalPhaseModel,
@@ -168,6 +174,15 @@ fn finalize(
             + LATENT_HEAT_FUSION_J_KG * (melt_kg_m2 + refrozen_kg_m2)
             + unallocated_energy_j_m2,
     );
+    if !solid_closure_residual_kg_m2.is_finite()
+        || !liquid_closure_residual_kg_m2.is_finite()
+        || !energy_closure_residual_j_m2.is_finite()
+        || !vapor_energy_custody_residual_j_m2.is_finite()
+        || !mass_scale.is_finite()
+        || !energy_scale.is_finite()
+    {
+        return Err(TerminalPhaseFailure::DomainOrNonFinite);
+    }
     if solid_closure_residual_kg_m2.abs() > MASS_TOLERANCE_KG_M2.max(1.0e-12 * mass_scale)
         || liquid_closure_residual_kg_m2.abs() > MASS_TOLERANCE_KG_M2.max(1.0e-12 * mass_scale)
         || energy_closure_residual_j_m2.abs() > ENERGY_TOLERANCE_J_M2.max(1.0e-12 * energy_scale)
@@ -294,45 +309,35 @@ pub(crate) fn residual_surface_frost(
     let pack_before_melt = input.beginning_pack_ice_kg_m2 - remaining_sublimation;
     let available_beginning_solid = frost_before_melt + pack_before_melt;
     let available_liquid = input.beginning_liquid_kg_m2 + input.external_liquid_kg_m2;
-    let (
-        mut ending_pack,
-        mut ending_frost,
-        ending_liquid,
-        ending_cold,
-        melt,
-        refrozen,
-        unallocated,
-    ) = if input.complete_energy_j_m2 >= input.beginning_cold_content_j_m2 {
-        let phase_energy = input.complete_energy_j_m2 - input.beginning_cold_content_j_m2;
-        let melt = (phase_energy / LATENT_HEAT_FUSION_J_KG).min(available_beginning_solid);
-        let frost_melt = melt.min(frost_before_melt);
-        let pack_melt = melt - frost_melt;
-        (
-            pack_before_melt - pack_melt,
-            frost_before_melt - frost_melt,
-            available_liquid + melt,
-            0.0,
-            melt,
-            0.0,
-            (phase_energy - LATENT_HEAT_FUSION_J_KG * melt).max(0.0),
-        )
-    } else {
-        let remaining_cold = input.beginning_cold_content_j_m2 - input.complete_energy_j_m2;
-        let refrozen = (remaining_cold / LATENT_HEAT_FUSION_J_KG).min(available_liquid);
-        (
-            pack_before_melt + refrozen,
-            frost_before_melt,
-            available_liquid - refrozen,
-            remaining_cold - LATENT_HEAT_FUSION_J_KG * refrozen,
-            0.0,
-            refrozen,
-            0.0,
-        )
-    };
+    let (ending_pack, mut ending_frost, ending_liquid, ending_cold, melt, refrozen, unallocated) =
+        if input.complete_energy_j_m2 >= input.beginning_cold_content_j_m2 {
+            let phase_energy = input.complete_energy_j_m2 - input.beginning_cold_content_j_m2;
+            let melt = (phase_energy / LATENT_HEAT_FUSION_J_KG).min(available_beginning_solid);
+            let frost_melt = melt.min(frost_before_melt);
+            let pack_melt = melt - frost_melt;
+            (
+                pack_before_melt - pack_melt,
+                frost_before_melt - frost_melt,
+                available_liquid + melt,
+                0.0,
+                melt,
+                0.0,
+                (phase_energy - LATENT_HEAT_FUSION_J_KG * melt).max(0.0),
+            )
+        } else {
+            let remaining_cold = input.beginning_cold_content_j_m2 - input.complete_energy_j_m2;
+            let refrozen = (remaining_cold / LATENT_HEAT_FUSION_J_KG).min(available_liquid);
+            (
+                pack_before_melt + refrozen,
+                frost_before_melt,
+                available_liquid - refrozen,
+                remaining_cold - LATENT_HEAT_FUSION_J_KG * refrozen,
+                0.0,
+                refrozen,
+                0.0,
+            )
+        };
     ending_frost += input.deposition_kg_m2;
-    if ending_pack.abs() <= MASS_TOLERANCE_KG_M2 {
-        ending_pack = 0.0;
-    }
     let event = event_from_balance(
         input,
         input.beginning_pack_ice_kg_m2 + input.beginning_surface_frost_kg_m2,
@@ -513,7 +518,7 @@ mod tests {
     }
 
     #[test]
-    fn simultaneous_model_is_support_partition_invariant_for_additive_forcing() {
+    fn simultaneous_model_matches_a_proportional_additive_partition() {
         let full =
             simultaneous_complementarity(vector(0.6, 0.0, 1_000.0, 0.002, 0.0, 0.01, 50_000.0))
                 .expect("full");
@@ -534,6 +539,60 @@ mod tests {
         assert!((full.ending_pack_ice_kg_m2 - second.ending_pack_ice_kg_m2).abs() <= 1.0e-12);
         assert!((full.ending_liquid_kg_m2 - second.ending_liquid_kg_m2).abs() <= 1.0e-12);
         assert!((full.ending_cold_content_j_m2 - second.ending_cold_content_j_m2).abs() <= 1.0e-9);
+    }
+
+    #[test]
+    fn simultaneous_model_is_materially_order_dependent_at_meltout() {
+        let full = simultaneous_complementarity(vector(
+            0.6,
+            0.0,
+            0.0,
+            0.002,
+            0.0,
+            0.0,
+            0.602 * LATENT_HEAT_FUSION_J_KG,
+        ))
+        .expect("aggregate complementarity endpoint");
+        assert_eq!(full.event, TerminalEventChronology::AtEnd);
+        assert_eq!(full.ending_pack_ice_kg_m2.to_bits(), 0.0_f64.to_bits());
+
+        let energy_first = simultaneous_complementarity(vector(
+            0.6,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.602 * LATENT_HEAT_FUSION_J_KG,
+        ))
+        .expect("energy-first partition");
+        assert_eq!(energy_first.event, TerminalEventChronology::Interior);
+        assert_eq!(
+            energy_first.ending_pack_ice_kg_m2.to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert!(energy_first.unallocated_energy_j_m2 > ENERGY_TOLERANCE_J_M2);
+
+        let deposition_second = simultaneous_complementarity(vector(
+            energy_first.ending_pack_ice_kg_m2,
+            energy_first.ending_liquid_kg_m2,
+            energy_first.ending_cold_content_j_m2,
+            0.002,
+            0.0,
+            0.0,
+            0.0,
+        ))
+        .expect("later deposition partition");
+        assert_eq!(deposition_second.event, TerminalEventChronology::Reappeared);
+        assert_eq!(
+            deposition_second.ending_pack_ice_kg_m2.to_bits(),
+            0.002_f64.to_bits()
+        );
+        assert_ne!(full.event, energy_first.event);
+        assert_ne!(
+            full.ending_pack_ice_kg_m2.to_bits(),
+            deposition_second.ending_pack_ice_kg_m2.to_bits()
+        );
     }
 
     #[test]
@@ -575,7 +634,10 @@ mod tests {
         let deposition = simultaneous_complementarity(vector(0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0))
             .expect("deposition reappearance");
         assert_eq!(deposition.event, TerminalEventChronology::Reappeared);
-        assert_eq!(deposition.ending_pack_ice_kg_m2, 0.001);
+        assert_eq!(
+            deposition.ending_pack_ice_kg_m2.to_bits(),
+            0.001_f64.to_bits()
+        );
 
         let mut frost_input = vector(
             0.0,
@@ -593,7 +655,7 @@ mod tests {
             melted.ending_surface_frost_kg_m2.to_bits(),
             0.0_f64.to_bits()
         );
-        assert_eq!(melted.ending_liquid_kg_m2, 0.001);
+        assert_eq!(melted.ending_liquid_kg_m2.to_bits(), 0.001_f64.to_bits());
     }
 
     #[test]
@@ -627,6 +689,16 @@ mod tests {
         };
         assert_eq!(
             simultaneous_complementarity(invalid),
+            Err(TerminalPhaseFailure::DomainOrNonFinite)
+        );
+        let overflow = TerminalPhaseInputs {
+            non_vapor_energy_j_m2: f64::MAX,
+            vapor_latent_energy_j_m2: f64::MAX,
+            complete_energy_j_m2: f64::MAX,
+            ..vector(0.6, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0)
+        };
+        assert_eq!(
+            simultaneous_complementarity(overflow),
             Err(TerminalPhaseFailure::DomainOrNonFinite)
         );
         assert_eq!(typed_unsupported(), Err(TerminalPhaseFailure::Unsupported));

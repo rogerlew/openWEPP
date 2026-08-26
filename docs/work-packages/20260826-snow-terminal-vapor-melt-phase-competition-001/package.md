@@ -1,6 +1,6 @@
 # Snow terminal vapor/melt phase competition
 
-Status: `EXECUTING / RESEARCH / PRODUCTION UNCHANGED`
+Status: `COMPLETED / DEFECT-SHAPED HOLD / PRODUCTION UNCHANGED`
 
 Date: `2026-08-26`
 
@@ -154,6 +154,17 @@ none closes in-envelope.
 - reviews, verifications, finding disposition, validation, exact-diff, and
   line-count artifacts are complete;
 - final disposition is truthful `PASS` or defect-shaped `HOLD`.
+
+## Terminal disposition
+
+The package closes as a defect-shaped `HOLD`. Candidate A is materially
+partition/order dependent at meltout; Candidate B's tested deposition-lag
+chronology is also materially partition dependent and would require a new
+unauthorized frost owner; Candidate C (`Unsupported`) therefore remains the
+only admissible disposition. Independent science and ownership reviews are
+both `NO-GO`. No contract successor, default-off implementation, or production
+change is authorized. See `artifacts/hold-disposition.md` and
+`artifacts/review-findings.md`.
 
 Security impact: none intended. No secrets, external services, dependency
 admission, or authority-suite weakening is allowed.

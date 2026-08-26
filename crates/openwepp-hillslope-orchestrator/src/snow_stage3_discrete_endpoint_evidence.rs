@@ -32,6 +32,14 @@ pub(crate) struct RealDiscreteCompleteEndpointEvidenceV1 {
 #[cfg(test)]
 impl RealDiscreteCompleteEndpointEvidenceV1 {
     pub(crate) fn validate_evidence(&self) -> Result<(), &'static str> {
+        let finite_nonnegative = |bits| {
+            let value = f64::from_bits(bits);
+            value.is_finite() && value >= 0.0
+        };
+        let finite_within = |bits, tolerance: f64| {
+            let value = f64::from_bits(bits);
+            value.is_finite() && value.abs() <= tolerance
+        };
         if self.support.duration_ns() < crate::discrete_terminal_support_root::MINIMUM_TERMINAL_SUPPORT_NS
             || !matches!(
                 self.selected_upper_bound_s_bits,
@@ -44,25 +52,25 @@ impl RealDiscreteCompleteEndpointEvidenceV1 {
             || self.owner_count != 7
             || self.snow_soil_receipt_sha256 == Digest32::zero()
             || self.ending_joint_sha256 == Digest32::zero()
-            || f64::from_bits(self.start_ice_bits) < 0.0
-            || f64::from_bits(self.start_liquid_bits) < 0.0
-            || f64::from_bits(self.start_cold_content_bits) < 0.0
-            || f64::from_bits(self.end_ice_bits) < 0.0
-            || f64::from_bits(self.end_liquid_bits) < 0.0
-            || f64::from_bits(self.deposition_bits) < 0.0
-            || f64::from_bits(self.sublimation_bits) < 0.0
-            || f64::from_bits(self.melt_bits) < 0.0
-            || f64::from_bits(self.refrozen_bits) < 0.0
-            || f64::from_bits(self.external_liquid_bits) < 0.0
+            || !finite_nonnegative(self.start_ice_bits)
+            || !finite_nonnegative(self.start_liquid_bits)
+            || !finite_nonnegative(self.start_cold_content_bits)
+            || !finite_nonnegative(self.end_ice_bits)
+            || !finite_nonnegative(self.end_liquid_bits)
+            || !finite_nonnegative(self.deposition_bits)
+            || !finite_nonnegative(self.sublimation_bits)
+            || !finite_nonnegative(self.melt_bits)
+            || !finite_nonnegative(self.refrozen_bits)
+            || !finite_nonnegative(self.external_liquid_bits)
             || !f64::from_bits(self.complete_energy_bits).is_finite()
             || !f64::from_bits(self.latent_energy_bits).is_finite()
-            || f64::from_bits(self.event_evaluated_seconds_bits) < 0.0
-            || f64::from_bits(self.event_hour_offset_seconds_bits) < 0.0
-            || f64::from_bits(self.event_unevaluated_seconds_bits) < 0.0
-            || f64::from_bits(self.terminal_unallocated_energy_bits) < 0.0
-            || f64::from_bits(self.energy_closure_residual_bits).abs() > 1.0e-6
-            || f64::from_bits(self.ice_closure_residual_bits).abs() > 1.0e-9
-            || f64::from_bits(self.water_closure_residual_bits).abs() > 1.0e-9
+            || !finite_nonnegative(self.event_evaluated_seconds_bits)
+            || !finite_nonnegative(self.event_hour_offset_seconds_bits)
+            || !finite_nonnegative(self.event_unevaluated_seconds_bits)
+            || !finite_nonnegative(self.terminal_unallocated_energy_bits)
+            || !finite_within(self.energy_closure_residual_bits, 1.0e-6)
+            || !finite_within(self.ice_closure_residual_bits, 1.0e-9)
+            || !finite_within(self.water_closure_residual_bits, 1.0e-9)
             || self.canonical_bytes.is_empty()
         {
             return Err("incomplete real discrete endpoint");

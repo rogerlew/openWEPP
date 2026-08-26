@@ -655,7 +655,6 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<M: crate::hydrology::Ter
     }
 }
 
-#[cfg(test)]
 fn discrete_endpoint_wb14_ceiling_bits(support: TimeSupport) -> u64 {
     let duration_s = f64::from_bits(support.duration_s_bits());
     if duration_s <= 60.0 {

@@ -2,13 +2,12 @@
 
 ## 20260826-snow-terminal-vapor-melt-phase-competition-001
 
-Executing Child-1 defect-closure research package for the simultaneous
+Completed defect-shaped HOLD for the simultaneous
 terminal melt/vapor-deposition state exposed at exact tick 615737728343 ns.
-It compares support-local phase complementarity, an explicitly owned residual
-surface-frost regime, and typed unsupported disposition using result-blind
-mass/energy/water closure evidence. Production remains `BelowCarrierDomain`;
-no terminal contract, owner, receiver, restart, runner, selector, or cutover
-change is authorized before a passing matrix and dual independent review.
+Candidate A and the tested residual-frost chronology are materially
+partition-dependent; dual independent reviews returned NO-GO and typed
+unsupported remains controlling. Production remains `BelowCarrierDomain`; no
+contract, owner, receiver, restart, runner, selector, or cutover changed.
 
 ## 20260826-workspace-baseline-assurance-v2-reconciliation-001
 

@@ -1,6 +1,6 @@
 # Terminal phase operand lineage
 
-Status: `EXECUTED / RESEARCH CANDIDATE A FROZEN FOR REVIEW`.
+Status: `EXECUTED / CANDIDATE A REJECTED`.
 
 | Operand | Units/sign | Owner/basis | Research rule |
 |---|---|---|---|
@@ -10,7 +10,7 @@ Status: `EXECUTED / RESEARCH CANDIDATE A FROZEN FOR REVIEW`.
 | sublimation | `kg m^-2`, nonnegative | signed vapor transfer, exact support | debited once from beginning exposed solid; cannot exceed it |
 | external liquid | `kg m^-2`, nonnegative | precipitation/liquid owner, exact support | credited once to liquid before possible refreeze |
 | vapor latent energy | `J m^-2`, signed | carrier energy component, exact support | appears once inside complete energy; never added again by allocator |
-| non-vapor energy | `J m^-2`, signed | remaining carrier components | `complete - vapor_latent` diagnostic reconstruction only |
+| non-vapor energy | `J m^-2`, signed | remaining carrier components | prototype uses `complete - vapor_latent`; not an independent reconstruction |
 | complete energy | `J m^-2`, signed | complete carrier, exact support | satisfies cold content first, then phase allocation |
 | refreeze | `kg m^-2`, nonnegative | liquid debit/solid credit | only under remaining cold deficit; minimal-circulation solution forbids simultaneous net melt/refreeze |
 | melt | `kg m^-2`, nonnegative | solid debit/liquid credit | bounded by beginning ice plus deposition less sublimation under Candidate A |
@@ -18,6 +18,7 @@ Status: `EXECUTED / RESEARCH CANDIDATE A FROZEN FOR REVIEW`.
 | unallocated energy | `J m^-2`, nonnegative | terminal energy ledger | Candidate A enforces material complementarity with ending solid |
 | surface frost | `kg m^-2`, nonnegative | Candidate B distinct hypothetical owner | never aliases liquid; Candidate B is rejected for material partition sensitivity |
 
-Ran: independent solid, liquid, energy, and vapor-component reconstructions are
-computed in `snow_terminal_phase_competition.rs`; exact self-consistency is
-supplemented by vapor-double-count and sign/split poisons.
+Ran: solid, liquid, and phase-energy self-consistency is computed in
+`snow_terminal_phase_competition.rs`. Independent review rejected the vapor
+claim because the prototype neither carries surface temperature/latent heat
+nor reconstructs `Q_latent = m_v L_s(T_s)` from an independent receipt.

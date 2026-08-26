@@ -1,8 +1,8 @@
 # Terminal vapor/melt candidate matrix
 
-Status: `EXECUTED / CANDIDATE A FROZEN FOR DUAL REVIEW / NO PRODUCTION AUTHORITY`.
+Status: `EXECUTED / CANDIDATES A AND B REJECTED / TYPED UNSUPPORTED`.
 
-## Frozen Candidate A research semantics
+## Attempted Candidate A research semantics
 
 Static: Candidate A is a support-local endpoint complementarity allocation,
 not a continuous-time or LTE model. Signed vapor mass is split exclusively into
@@ -45,8 +45,8 @@ Candidate A/B tests. All seven passed.
 | event at start/interior/end | PASS distinct typed classes | incomplete physical chronology |
 | persistent deposition after exhaustion | PASS typed reappearance | distinct frost reappearance represented |
 | subsequent frost melt | N/A, no frost owner | PASS algebraic next-support melt |
-| support partition sensitivity | PASS for additive fixed forcing | FAIL materially for B's deposition lag |
-| vapor latent custody | PASS exact-once reconstruction and double-count/sign poisons | same input guards |
+| support partition sensitivity | FAIL materially at meltout; proportional split alone passes | FAIL materially for B's deposition lag |
+| vapor latent custody | FAIL independent proof; split is producer-derived | same input guards |
 | mass/energy/water closure | PASS independent identities | PASS identities but not partition acceptance |
 | invalid domain/split | typed fail closed | typed fail closed |
 | Candidate C | typed `Unsupported` | retained fallback |
@@ -60,10 +60,11 @@ fixture after the source split and Candidate A complete-owner mode.
 - Released allocation at `615737728343 ns`: ice/deposition
   `0.002815601898351902 kg m^-2`, liquid/melt `0.6 kg m^-2`, and
   `1.014879671856761e-6 J m^-2` unallocated energy.
-- Candidate A complete-owner endpoint at the same tick: ice
+- Candidate A post-carrier research endpoint at the same tick: ice
   `0.002815601895309716 kg m^-2`, liquid `0.6000000000030422 kg m^-2`, and
-  exact zero unallocated energy. Solid, liquid, energy, water, receipt, and all
-  seven owner joins validate.
+  exact zero unallocated energy. The algebra closes, but the carrier fixed
+  point used the released ending-snow transition, so this is not a jointly
+  converged seven-owner Candidate A proof.
 - Candidate B at the same tick: pack ice zero, distinct frost
   `0.002815601898351902 kg m^-2`, liquid `0.6 kg m^-2`, and the unchanged
   `1.014879671856761e-6 J m^-2` excess. It is not accepted because the lagged
@@ -76,11 +77,19 @@ fixture after the source split and Candidate A complete-owner mode.
   and `+1e-3 J m^-2` all close without positive material ice plus positive
   material excess energy.
 
+## Falsifying partition
+
+Ran: beginning ice `0.6 kg m^-2`, zero cold/liquid, aggregate deposition
+`0.002 kg m^-2`, and energy `0.602 L_f` produces `AtEnd` with zero ending ice.
+The valid energy-first partition produces `Interior` meltout and
+`667.2 J m^-2` excess; a subsequent deposition-only partition produces
+`Reappeared` with `0.002 kg m^-2` ice. Reverse ordering ends with zero ice.
+Candidate A therefore changes endpoint state and event chronology with support
+partition/order at the exact disputed phase boundary.
+
 ## Claim boundary
 
-Candidate A passes the support-local phase-allocation research matrix and is
-frozen for independent review. The real 900-second result proves that a later
-event chronology implementation must stop at the interior event and cannot
-install the full-support snow-covered non-snow owner candidate. No event search,
+Candidate A and the tested Candidate B chronology fail the required partition
+invariance. Candidate C remains typed unsupported. No event search,
 contract successor, production implementation, receiver, restart, runner,
 selector/default, activation, CoE, Child 3/4, or cutover change is claimed here.
