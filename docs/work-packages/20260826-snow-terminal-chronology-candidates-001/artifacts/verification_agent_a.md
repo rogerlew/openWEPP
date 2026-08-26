@@ -13,3 +13,8 @@ sublimation exhaustion, positive latent coefficient for nonzero vapor,
 retained cold-content change, and explicit solid/excess-energy
 disqualification. Remaining prototype limitations are recorded as reasons for
 NO-GO rather than hidden as passing evidence.
+
+Static/Ran re-review: exact corrected checkpoint `c81946530`; trajectory 8/8
+and real fixture 1/1 PASS. No blocking correctness finding remains for HOLD.
+Duplicated adapters and collapsed internal allocator failures must be corrected
+before any future reuse.

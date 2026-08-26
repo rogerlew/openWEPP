@@ -17,3 +17,7 @@ Post-review corrections reject mixed pack/frost continuation, canonical signed
 zero, tick overflow, and solid/excess-energy acceptance. These corrections make
 the prototype fail closed; they do not create receiver-grade evidence.
 Production isolation is GO. Candidate installation is NO-GO.
+
+Static re-review: exact corrected checkpoint `c81946530`; GO-to-HOLD confirmed.
+The diagnostic outcome/qualification split is acceptable only for cfg(test)
+research and must become non-ignorable before any future reuse.

@@ -25,7 +25,7 @@ energy is classified as acceptable. Such outcomes are explicitly classified
 
 ## Real fixture
 
-Ran: post-review real complete-owner diagnostic nextest
+Ran: post-review diagnostic derived from a real complete-owner endpoint, nextest
 `df2735e6-b5d8-4988-9970-e407a7b209c4` passed 1/1.
 
 At `615737728343 ns`, the one-segment released-order interpretation produces a

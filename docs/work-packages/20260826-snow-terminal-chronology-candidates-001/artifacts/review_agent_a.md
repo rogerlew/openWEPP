@@ -17,3 +17,7 @@ The reported zero latent-coefficient hole and sublimation-event taxonomy were
 corrected after review. No correction supplies the missing science authority.
 Final disposition remains NO-GO for candidate freeze or contract work and GO
 for a defect-shaped HOLD.
+
+Static/Ran re-review: exact corrected checkpoint `c81946530`; 8/8 focused tests
+PASS (`76d4a822...`). Disposition confirmed GO-to-HOLD with no blocking
+scientific inconsistency.

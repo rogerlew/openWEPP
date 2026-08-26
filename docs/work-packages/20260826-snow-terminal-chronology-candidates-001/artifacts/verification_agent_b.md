@@ -13,3 +13,7 @@ test file needed WARN documentation. Final artifacts now state those limits;
 the post-review matrix adds fail-closed domain/tick coverage; line-count WARN
 and split intent are recorded. The disposition relies on demonstrated NO-GO,
 not on overclaimed qualification.
+
+Static/Ran re-verification: exact corrected checkpoint `c81946530`; rustfmt,
+diff hygiene, trajectory 8/8 (`ac00ccc1...`), and real fixture 1/1
+(`dfdeee69...`) PASS. Verdict GO-to-HOLD only.
