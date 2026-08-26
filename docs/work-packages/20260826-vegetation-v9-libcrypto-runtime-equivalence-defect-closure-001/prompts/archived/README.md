@@ -1,3 +1,3 @@
 # Archived prompts
 
-No prompt is archived until package disposition.
+Contains the package-end-to-end kickoff prompt after terminal disposition.

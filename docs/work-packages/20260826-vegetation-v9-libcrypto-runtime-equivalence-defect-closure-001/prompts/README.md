@@ -1,4 +1,3 @@
 # Prompts
 
-The active kickoff prompt executes this package end-to-end. Move it to
-`archived/` only at terminal disposition.
+The archived kickoff prompt executed this package end-to-end.

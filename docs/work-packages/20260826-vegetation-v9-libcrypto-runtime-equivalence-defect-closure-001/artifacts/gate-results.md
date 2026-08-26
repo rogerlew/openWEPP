@@ -1,6 +1,6 @@
 # Gate results
 
-Status: focused gates pass; exact-workspace gate pending committed candidate.
+Status: PASS / qualified against the historical-eleven baseline.
 
 Ran:
 
@@ -28,3 +28,31 @@ warnings` reached unrelated pre-existing failures in
 mechanism. The package-selected affected Rust surface passes warnings-denied;
 the critical global correctness obligation is the pending full-workspace
 Nextest run.
+
+## Exact-workspace qualification
+
+Ran first committed candidate `aadc4109e`, clean and equal to `origin/main`:
+full-profile Nextest ran 3,337 tests; 3,325 passed, 12 failed, and 34 were
+configured skips. Eleven failure names/signatures matched the retained
+historical census exactly. The sole delta was
+`all_owner_failure_rolls_back_and_index_records_lifecycle`, whose stale v28
+registry-note assertion was introduced by this package's canonical v29
+amendment. This result was nonqualifying and the assertion was reconciled
+without changing receiver authority or behavior.
+
+Ran terminal implementation candidate
+`8f4a9b84cdaa953562b02e9aca98be248289ea14`, clean and equal to
+`origin/main` before and after execution:
+
+`nix develop --command cargo nextest run --workspace --profile full --no-fail-fast`
+
+Result: 3,337 run; 3,326 passed (3 slow); exactly 11 failed; 34 configured
+skips. The failure-name and normalized-signature sets are identical to all
+eleven entries in the immediately preceding workspace-baseline census. The V9
+test passes on the ordinary `.4` host without overlay. Nonzero exit 100 is due
+only to the deliberately visible historical eleven and introduces no waiver,
+skip, expected-failure annotation, or reclassification. Complete external log:
+`/tmp/openwepp-batch-logs/nextest-full-workspace-8f4a9b84c-20260826T145140.log`.
+
+The lifecycle correction plus vegetation integration rerun passed 37/37,
+Nextest `1449ff8e-9124-4d1d-a24b-d5c02afe25bd`.

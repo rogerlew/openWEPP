@@ -1,3 +1,4 @@
 # HOLD legitimacy audit
 
-Status: not applicable while executable in-envelope correction remains.
+Status: not applicable. An in-envelope correction succeeded and HOLD would be
+illegitimate. Final disposition is COMPLETE / GO.

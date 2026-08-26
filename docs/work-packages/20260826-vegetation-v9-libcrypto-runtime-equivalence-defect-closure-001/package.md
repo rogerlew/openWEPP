@@ -3,7 +3,7 @@
 This Defect-Closure ExecPlan is a living document maintained under
 `docs/codex_exec_plans.md` and `docs/defect_closure_execplans.md`.
 
-Status: `EXECUTING`
+Status: `COMPLETE`
 
 ## Purpose / Big Picture
 
@@ -24,9 +24,11 @@ authority.
 - [x] (2026-08-26) Add contract-derived regression and poison coverage and record the
   expected pre-implementation failure.
 - [x] (2026-08-26) Implement the bounded equivalence verifier and update the active guard.
-- [ ] Run focused, authority, anti-evasion, and full-workspace validation.
-- [ ] Complete dual independent reviews, finding disposition, dual terminal
-  verification, closure, commit, and push.
+- [x] (2026-08-26) Run focused, authority, anti-evasion, and full-workspace
+  validation; correct the one package-induced stale registry assertion and
+  qualify the exact historical-eleven workspace result at `8f4a9b84c`.
+- [x] (2026-08-26) Complete dual independent reviews, finding disposition,
+  dual terminal verification, closure, commits, and push.
 
 ## Correction Authority Envelope
 
@@ -172,7 +174,19 @@ edit the declared write set.
 
 ## Outcomes & Retrospective
 
-Pending execution.
+Defect `VEG-V9-CRYPTO-001` is closed. The V9 bytes and exact `.3` generation
+descriptor remain immutable. Active verification on the `.4` security update
+is admitted only through the retained-object SHA-256 equivalence proof and
+reproduces the complete frozen vector. Exact `.3` execution still takes the
+exact-host route. Five end-to-end poisons fail closed.
+
+The first full workspace run exposed one package-induced stale v28 registry
+assertion alongside the unchanged historical eleven. After the lifecycle-only
+test correction, exact clean candidate `8f4a9b84c` ran 3,337 tests under the
+full profile: 3,326 passed, exactly the historical eleven failed with unchanged
+names/signatures, and 34 were configured skips. No production source, V9
+authority byte, terminal behavior, assurance posture, or Stage-3 physics
+changed.
 
 ## Idempotence And Recovery
 
