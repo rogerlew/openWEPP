@@ -40,6 +40,26 @@ Disposition: `CHILD1-DISCRETE-SUPPORT-ROOT-001 / HOLD`. Affected-package and
 exact-head workspace comparator results are recorded below when run; no
 failure waiver is permitted.
 
+Ran: at exact clean commit
+`97accd99a62d9e4418d2eb7533c4474fe405427d`, the delegated canonical
+workspace command completed nextest run
+`a8ea9537-4240-4bab-a8aa-3673b514d6e5`: 3,360 tests ran, 3,258 passed,
+102 failed, and six skipped in 730.850 seconds (status 100). All 101 intake
+failure names and normalized signatures remain unchanged. One prohibited new
+failure appeared in
+`vegetation_boundary_authority_contract::v9_oracle_successor_is_exactly_bound_and_v8_is_immutable`:
+the protected V9 oracle rejected the host `libcrypto.so.3` checksum.
+
+Static: the failing guard and its protected V9 artifact tree are byte-identical
+between intake and the evidence commit. The frozen descriptor expects
+`0cd331307536a397ab9c83c6dbeeb3474d0a5114f397ce03d1762adb96d3c781`;
+the terminal host object hashes to
+`23265e4027cb6439687be04311a0f37e27f29a23bfa4c750c49725da14f986bb`.
+Neither protected evidence nor system runtime state is changed here. Because
+the owner permitted no new failure name/signature, the exact workspace result
+is `WORKSPACE QUALIFICATION HOLD`, not an allowed-red pass. See
+`discrete-terminal-support-root-workspace-qualification-hold.md`.
+
 ## 2026-08-23 provider-owned atmosphere checkpoint results
 
 Ran: `cargo fmt --all -- --check` passed in the repository Nix development

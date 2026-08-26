@@ -28,3 +28,8 @@ select the same first materially invalid tick, no evaluated tick is
 The required science/numerics and ownership/Batch/custody re-reviews are
 recorded in `discrete-terminal-support-root-reviews.md`; both authorize the
 defect-shaped HOLD only, not production work.
+The exact clean-commit full-workspace comparator and its additional protected
+V9 external-runtime guard failure are recorded in
+`discrete-terminal-support-root-workspace-qualification-hold.md`. The physical
+HOLD remains valid, but the workspace result is non-qualifying because the
+owner permitted no new failure name or normalized signature.

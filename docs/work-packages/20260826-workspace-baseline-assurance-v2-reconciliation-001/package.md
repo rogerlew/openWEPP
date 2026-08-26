@@ -18,6 +18,14 @@ V2 identity/source failures and nine source/registry guards. Their causal
 bytes were unchanged from the Child-1 intake and they are not attributed to
 the discrete support-root exploration.
 
+The later discrete-checkpoint comparator at clean commit
+`97accd99a62d9e4418d2eb7533c4474fe405427d` retained those 101 exact names
+and signatures but observed one separate external-runtime failure: the frozen
+V9 vegetation oracle rejected the terminal host `libcrypto.so.3` checksum.
+The protected guard/artifact bytes are unchanged from intake. This incident is
+not part of the 90-failure source-debt census and must be resolved or executed
+in its exact bound runtime before a future workspace baseline can qualify.
+
 ## Objective
 
 Reconcile the 90 intake-resident failures against the currently intended
@@ -50,6 +58,8 @@ implementation is considered.
 5. Exact-head full-workspace qualification with no unexplained new failure
    name or normalized signature.
 6. Independent authority/guard review and terminal verification.
+7. Exact-runtime disposition for the protected V9 vegetation oracle without
+   weakening or rebinding its frozen runtime evidence.
 
 ## Relationship to Child-1
 

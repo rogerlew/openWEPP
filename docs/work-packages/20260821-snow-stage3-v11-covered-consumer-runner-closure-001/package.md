@@ -820,3 +820,19 @@ physics, constants, the 600-ms floor, public behavior, owners, publication,
 restart/receiver/runner, selectors, Stage-3, CoE and Child 3/4 remain unchanged.
 The exact tick/class record and claim boundary are frozen in
 `artifacts/discrete-terminal-support-root-defect-hold.md`.
+
+The terminal canonical workspace comparator ran at exact clean evidence commit
+`97accd99a62d9e4418d2eb7533c4474fe405427d`: 3,258 passed, 102 failed, and
+six skipped. The 101 intake failure names/signatures are unchanged, but the
+protected V9 vegetation oracle added one prohibited external-runtime checksum
+failure because the host `libcrypto.so.3` bytes no longer match its frozen
+descriptor. The guard and all protected V9 source/evidence bytes are unchanged
+from intake and are not modified here. This is an additional terminal
+`WORKSPACE QUALIFICATION HOLD`; it does not alter or waive the physical HOLD.
+
+Line-count disposition: `snow_stage3_v11_terminal_execution.rs` is 2,137
+lines, above the 2,000-line WARN threshold and below the 3,000-line mandatory
+split threshold. The test-only real endpoint evidence remains colocated with
+the private candidate binder for this bounded HOLD. Any future reuse must
+first split the test evidence into a child module and centralize the duplicated
+closure assembly and WB14-ceiling mapping identified by ownership review.
