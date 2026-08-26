@@ -147,7 +147,7 @@ fn all_owner_failure_rolls_back_and_index_records_lifecycle() {
     for required in [
         "v136 admits a separate default-off terminal receiver chronology",
         "v18 admits OFE/lane snow--soil boundary custody and preserves v17 precipitation custody, v16 convergence, and restart holds",
-        "v28 retains the exact-one-bearing-OFE domain",
+        "v29 preserves exact V9 generation-host provenance",
     ] {
         assert!(index.contains(required), "{INDEX} missing {required}");
     }

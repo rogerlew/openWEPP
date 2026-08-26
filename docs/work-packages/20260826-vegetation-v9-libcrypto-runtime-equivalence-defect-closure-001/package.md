@@ -42,6 +42,8 @@ The in-scope write set is:
 - `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md`;
 - `docs/specifications/science-contracts/index.md`;
 - `tests/integration/vegetation_boundary_authority_contract.rs`;
+- `tests/integration/snow_stage3_terminal_receiver_authority_contract.rs` only
+  to reconcile the package-induced V28-to-V29 vegetation registry assertion;
 - this package, including one package-local executable equivalence verifier;
 - `docs/work-packages/README.md` and `docs/ROADMAP.md` only for lifecycle
   reconciliation if required.
@@ -62,8 +64,9 @@ Acceptance requires all of the following:
 5. the exact frozen calculator, descriptor, definition, vectors, and imported
    V8 source retain their existing SHA-256 identities;
 6. complete generated stdout equals the frozen V9 vector byte-for-byte;
-7. poisons for wrong provider capability, any second runtime mismatch, changed
-   protected bytes, and changed generated output fail closed; and
+7. poisons for wrong provider capability, mapped-provider identity mismatch,
+   any second runtime mismatch, changed protected bytes, and changed generated
+   output fail closed; and
 8. the ordinary integration test passes without a host `/usr` mutation,
    package skip, or external-runtime overlay.
 
@@ -148,6 +151,10 @@ edit the declared write set.
   not vegetation floating-point calculation.
 - A diagnostic that substituted only the stale provider checksum produced the
   exact frozen V9 bytes under `.4`.
+- The first exact-workspace candidate exposed one package-induced stale v28
+  registry assertion in the terminal-receiver authority test; the historical
+  eleven were otherwise unchanged. The assertion was reconciled to v29 without
+  changing terminal-receiver behavior or authority.
 - The pre-existing full-workspace Clippy surface has unrelated warnings-denied
   debt in biogeochemistry, coupled time, and land-surface energy. The selected
   affected-target Clippy command passes; the broad diagnostic failure remains
