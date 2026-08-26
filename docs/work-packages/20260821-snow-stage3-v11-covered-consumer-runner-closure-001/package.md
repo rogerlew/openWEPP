@@ -613,3 +613,20 @@ proofs, identical-beginning NoEvidence/Capture noninterference and the complete
 poison matrix. The candidate-v21 effectivity/conservation matrix and final
 candidate reviews remain gated and were not run. No temporal operator, Batch
 V2, physical correction, public API, publication or owner behavior changed.
+
+### 2026-08-26 forward terminal evidence correction disposition
+
+The enriched capture and validator corrections passed focused real/lower
+captures, compilation, 5/5 V20/V21 guards, and the affected comparator at 845
+passed / the exact historical 11 failed / 1 skipped. Numerical review and
+Rust/API/noninterference review are `GO` for the corrected implementation.
+Provider/result/iteration chains, selected carrier and hydrology joints,
+decision arithmetic, three ingress exclusions, identical-beginning
+NoEvidence/Capture behavior and raw poison classes are closed.
+
+The sole remaining evidence-policy HOLD is a real carrier/provider execution
+of `CHILD1-TERM-COUPLING-020` that records 32 iterations and
+`IterationLoopExhausted`; the current test characterizes the unchanged live
+comparison predicates but is not that execution. Synthetic evidence is not
+substituted. Candidate-v21 matrix and final candidate reviews remain gated;
+temporal operator and Batch V2 remain untouched.

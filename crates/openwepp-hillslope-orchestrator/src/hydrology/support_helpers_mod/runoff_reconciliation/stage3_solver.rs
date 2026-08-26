@@ -6,6 +6,10 @@ mod liquid_routing;
 mod persistent_state;
 mod support;
 mod terminal_event;
+pub(super) use terminal_event::{
+    ENERGY_ABSOLUTE_TOLERANCE_J_M2, MASS_ABSOLUTE_TOLERANCE_KG_M2,
+    RELATIVE_ERROR_TOLERANCE,
+};
 
 impl Wb11HydrologyKernel {
     #[allow(clippy::too_many_lines)]

@@ -255,6 +255,7 @@ pub(crate) trait TerminalEvidenceMode<J>: terminal_evidence_sealed::Sealed {
     type State;
     type ProviderState;
     type ProviderProjection;
+    type ProviderFailureProjection;
     type CouplingState;
     fn new_state() -> Self::State;
     fn new_provider_state() -> Self::ProviderState;
@@ -263,8 +264,11 @@ pub(crate) trait TerminalEvidenceMode<J>: terminal_evidence_sealed::Sealed {
         _: &CoveredTerminalTrialRequestV1,
         _: &crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1,
     ) -> Self::ProviderProjection;
+    fn project_provider_failure(
+        _: &crate::v9_real_consumer_shadow::DirectV11RealConsumerError,
+    ) -> Self::ProviderFailureProjection;
     fn provider_success(_: &mut Self::ProviderState, _: &CoveredTerminalTrialRequestV1, _: Self::ProviderProjection) {}
-    fn provider_failure(_: &mut Self::ProviderState, _: &CoveredTerminalTrialRequestV1, _: &'static str) {}
+    fn provider_failure(_: &mut Self::ProviderState, _: &CoveredTerminalTrialRequestV1, _: Self::ProviderFailureProjection) {}
     fn merge_provider(_: &mut Self::State, _: Self::ProviderState) {}
     fn provider_call_count(_: &Self::State) -> u64 { 0 }
     fn pair(_: &mut Self::State, _: TerminalPairEvidenceHook) {}
@@ -282,13 +286,15 @@ impl<J> TerminalEvidenceMode<J> for NoEvidence {
     type State = ();
     type ProviderState = ();
     type ProviderProjection = ();
+    type ProviderFailureProjection = ();
     type CouplingState = ();
     #[inline(always)] fn new_state() {}
     #[inline(always)] fn new_provider_state() {}
     #[inline(always)] fn new_coupling_state() {}
     #[inline(always)] fn project_provider_success(_: &CoveredTerminalTrialRequestV1, _: &crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1) {}
+    #[inline(always)] fn project_provider_failure(_: &crate::v9_real_consumer_shadow::DirectV11RealConsumerError) {}
     #[inline(always)] fn provider_success(_: &mut (), _: &CoveredTerminalTrialRequestV1, _: ()) {}
-    #[inline(always)] fn provider_failure(_: &mut (), _: &CoveredTerminalTrialRequestV1, _: &'static str) {}
+    #[inline(always)] fn provider_failure(_: &mut (), _: &CoveredTerminalTrialRequestV1, _: ()) {}
     #[inline(always)] fn merge_provider(_: &mut (), _: ()) {}
     #[inline(always)] fn provider_call_count(_: &()) -> u64 { 0 }
     #[inline(always)] fn pair(_: &mut (), _: TerminalPairEvidenceHook) {}
@@ -370,7 +376,16 @@ pub(crate) struct CapturedPair {
 
 #[cfg(test)]
 #[derive(Clone)]
-pub(crate) enum CapturedProviderOutcome { Success(crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1), Failure(&'static str) }
+pub(crate) enum CapturedProviderOutcome {
+    Success(Box<crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1>),
+    Failure(CapturedProviderFailure),
+}
+#[cfg(test)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum CapturedProviderFailure {
+    Runtime, Vegetation, Serialization, Identity(&'static str), CoveredBoundary,
+    Stage3, Stage3PrecipitationCustody(&'static str), Stage3SnowSoilHeatCustody(&'static str),
+}
 #[cfg(test)]
 #[derive(Clone)]
 pub(crate) struct CapturedProviderCall { pub ordinal: u64, pub request: CoveredTerminalTrialRequestV1, pub outcome: CapturedProviderOutcome }
@@ -390,11 +405,41 @@ pub(crate) struct CapturedSelectedTrial {
 
 #[cfg(test)]
 pub(crate) struct ValidatedCaptureState {
-    pub final_trial_count: usize,
-    pub final_pair_rejected: bool,
-    pub floor_outcome: SnowTerminalNumericsFailure,
+    pub provider_calls: Vec<CapturedProviderCall>,
+    pub coupling_iterations: Vec<ValidatedCouplingIteration>,
+    pub coupling_selections: Vec<TerminalCouplingSelectionHook>,
+    pub pairs: Vec<ValidatedCapturedPair>,
+    pub floor: ValidatedFloorAdmission,
     pub call_count_through_final_pair: u64,
     pub call_count_at_floor: u64,
+}
+
+#[cfg(test)]
+pub(crate) struct ValidatedCouplingIteration {
+    pub draft: TerminalCouplingIterationHook,
+    pub provider_ordinal: u64,
+}
+
+#[cfg(test)]
+pub(crate) struct ValidatedSelectedTrial {
+    pub draft: CapturedSelectedTrial,
+    pub support: TimeSupport,
+    pub coupling_selection_index: usize,
+    pub selected_provider_ordinal: u64,
+}
+
+#[cfg(test)]
+pub(crate) struct ValidatedCapturedPair {
+    pub trials: [ValidatedSelectedTrial; 3],
+    pub decision: CapturedPair,
+}
+
+#[cfg(test)]
+pub(crate) struct ValidatedFloorAdmission {
+    pub proposed_duration_s: f64,
+    pub required_half_duration_s: f64,
+    pub minimum_duration_s: f64,
+    pub outcome: SnowTerminalNumericsFailure,
 }
 
 #[cfg(test)]
@@ -411,13 +456,47 @@ fn same_terminal_call_key(
 }
 
 #[cfg(test)]
+fn same_terminal_coupling_group(
+    left: &CoveredTerminalTrialRequestV1,
+    right: &CoveredTerminalTrialRequestV1,
+) -> bool {
+    left.lane_id == right.lane_id
+        && left.support == right.support
+        && left.role == right.role
+        && left.attempt_ordinal == right.attempt_ordinal
+        && left.beginning_joint.receipt_sha256() == right.beginning_joint.receipt_sha256()
+}
+
+#[cfg(test)]
 impl CaptureState {
-    pub(crate) fn validate(&self) -> Result<ValidatedCaptureState, &'static str> {
+    pub(crate) fn validate(self) -> Result<ValidatedCaptureState, &'static str> {
         if self.admissions.len() != 1 || self.pairs.is_empty() {
             return Err("floor/pair cardinality");
         }
+        if self
+            .provider_calls
+            .iter()
+            .enumerate()
+            .any(|(ordinal, call)| call.ordinal != ordinal as u64)
+        {
+            return Err("provider order");
+        }
         if self.selected_trials.len() != self.pairs.len() * 3 {
             return Err("selected trial cardinality");
+        }
+        if self.coupling_selections.len() != self.selected_trials.len()
+            || self
+                .coupling_selections
+                .iter()
+                .zip(&self.selected_trials)
+                .any(|(selection, trial)| {
+                    selection.request.role != trial.role
+                        || selection.request.attempt_ordinal != trial.attempt_ordinal
+                        || f64::from_bits(selection.request.support.duration_s_bits()).to_bits()
+                            != trial.duration_s.to_bits()
+                })
+        {
+            return Err("selection/trial order");
         }
         for (pair, trials) in self.pairs.iter().zip(self.selected_trials.chunks_exact(3)) {
             if trials[0].position != TerminalPairPosition::Coarse
@@ -428,16 +507,69 @@ impl CaptureState {
                 || trials[2].role != CoveredTerminalTrialRoleV1::Half2
                 || trials[2].beginning != trials[1].ending
                 || trials[2].beginning_joint != trials[1].hydrology_ending_joint
+                || trials[0].attempt_ordinal.checked_add(1) != Some(trials[1].attempt_ordinal)
+                || trials[1].attempt_ordinal.checked_add(1) != Some(trials[2].attempt_ordinal)
+                || trials[0].beginning != trials[1].beginning
+                || trials[0].beginning_joint != trials[1].beginning_joint
+                || trials[0].relative_start_s.to_bits() != trials[1].relative_start_s.to_bits()
+                || trials[2].relative_start_s.to_bits()
+                    != (trials[1].relative_start_s + trials[1].duration_s).to_bits()
+                || trials[0].duration_s.to_bits() != pair.duration_s.to_bits()
+                || trials[1].duration_s.to_bits() != (pair.duration_s / 2.0).to_bits()
+                || trials[2].duration_s.to_bits() != trials[1].duration_s.to_bits()
             {
                 return Err("selected trial order/join");
             }
             if pair.components.len() != 5 {
                 return Err("decision cardinality");
             }
-            let maximum = pair
-                .components
+            let coarse = [
+                trials[0].ending.ice_kg_m2,
+                trials[0].ending.liquid_kg_m2,
+                trials[0].ending.cold_content_j_m2,
+                trials[0].ledger.complete_energy_j_m2,
+                trials[0].ledger.unallocated_energy_j_m2,
+            ];
+            let refined = [
+                trials[2].ending.ice_kg_m2,
+                trials[2].ending.liquid_kg_m2,
+                trials[2].ending.cold_content_j_m2,
+                trials[1].ledger.complete_energy_j_m2
+                    + trials[2].ledger.complete_energy_j_m2,
+                trials[1].ledger.unallocated_energy_j_m2
+                    + trials[2].ledger.unallocated_energy_j_m2,
+            ];
+            for (index, component) in pair.components.iter().enumerate() {
+                let absolute = if index < 2 {
+                    stage3_solver::MASS_ABSOLUTE_TOLERANCE_KG_M2
+                } else {
+                    stage3_solver::ENERGY_ABSOLUTE_TOLERANCE_J_M2
+                };
+                let delta = refined[index] - coarse[index];
+                let denominator = absolute
+                    + stage3_solver::RELATIVE_ERROR_TOLERANCE
+                        * coarse[index].abs().max(refined[index].abs());
+                let expected = (
+                    coarse[index],
+                    refined[index],
+                    delta,
+                    denominator,
+                    delta.abs() / denominator,
+                );
+                if component.0.to_bits() != expected.0.to_bits()
+                    || component.1.to_bits() != expected.1.to_bits()
+                    || component.2.to_bits() != expected.2.to_bits()
+                    || component.3.to_bits() != expected.3.to_bits()
+                    || component.4.to_bits() != expected.4.to_bits()
+                {
+                    return Err("decision reconstruction");
+                }
+            }
+            let maximum = pair.components[1..]
                 .iter()
-                .fold(0.0_f64, |current, component| current.max(component.4));
+                .fold(pair.components[0].4, |current, component| {
+                    current.max(component.4)
+                });
             if maximum.to_bits() != pair.maximum_scaled.to_bits()
                 || pair.rejected != (pair.maximum_scaled > 1.0 && pair.components[0].1 > 0.0)
             {
@@ -449,9 +581,41 @@ impl CaptureState {
             .iter()
             .filter(|call| matches!(call.outcome, CapturedProviderOutcome::Success(_)))
             .collect::<Vec<_>>();
+        for (index, call) in self.provider_calls.iter().enumerate() {
+            if self.provider_calls[index + 1..]
+                .iter()
+                .any(|other| same_terminal_call_key(&call.request, &other.request))
+            {
+                return Err("provider key uniqueness");
+            }
+            if matches!(call.outcome, CapturedProviderOutcome::Failure(_))
+                && self
+                    .coupling_iterations
+                    .iter()
+                    .any(|iteration| same_terminal_call_key(&call.request, &iteration.hook.request))
+            {
+                return Err("failed provider iteration join");
+            }
+            if let CapturedProviderOutcome::Success(result) = &call.outcome {
+                if result.transition.boundary.support != call.request.support
+                    || result.transition.beginning_joint != call.request.beginning_joint
+                    || result.transition.probe_child_identity.trial_support
+                        != call.request.support
+                    || result.transition.probe_child_identity.role != call.request.role
+                    || result.transition.probe_child_identity.attempt_ordinal
+                        != call.request.attempt_ordinal
+                    || result.transition.probe_child_identity.beginning_joint_sha256
+                        != call.request.beginning_joint.receipt_sha256()
+                {
+                    return Err("provider result/request join");
+                }
+            }
+        }
         if successful_calls.len() != self.coupling_iterations.len() {
             return Err("provider/iteration cardinality");
         }
+        let mut validated_iterations = Vec::with_capacity(self.coupling_iterations.len());
+        let mut preceding_provider_ordinal = None;
         for iteration in &self.coupling_iterations {
             let matching = successful_calls
                 .iter()
@@ -466,6 +630,74 @@ impl CaptureState {
             {
                 return Err("iteration zero optionality");
             }
+            if let Some(previous) = iteration.hook.request.ending_snow_hint {
+                let expected = terminal_coupling_comparisons(previous, iteration.hook.outgoing);
+                if iteration.hook.comparisons != Some(expected)
+                    || iteration.hook.converged != expected.iter().all(|comparison| comparison.4)
+                {
+                    return Err("iteration comparison reconstruction");
+                }
+            } else if iteration.hook.converged {
+                return Err("iteration zero convergence");
+            }
+            if preceding_provider_ordinal.is_some_and(|ordinal| ordinal >= matching[0].ordinal) {
+                return Err("coupling iteration order");
+            }
+            preceding_provider_ordinal = Some(matching[0].ordinal);
+            validated_iterations.push(ValidatedCouplingIteration {
+                draft: iteration.hook.clone(),
+                provider_ordinal: matching[0].ordinal,
+            });
+        }
+        if successful_calls.iter().any(|call| {
+            self.coupling_iterations
+                .iter()
+                .filter(|iteration| same_terminal_call_key(&call.request, &iteration.hook.request))
+                .count()
+                != 1
+        }) {
+            return Err("provider/iteration reverse join");
+        }
+        let mut group_start = 0;
+        while group_start < self.coupling_iterations.len() {
+            let first = &self.coupling_iterations[group_start].hook;
+            if first.request.coupling_iteration != 0
+                || first.request.ending_snow_hint.is_some()
+            {
+                return Err("coupling group start");
+            }
+            let mut group_end = group_start + 1;
+            while group_end < self.coupling_iterations.len()
+                && same_terminal_coupling_group(
+                    &first.request,
+                    &self.coupling_iterations[group_end].hook.request,
+                )
+            {
+                let previous = &self.coupling_iterations[group_end - 1].hook;
+                let current = &self.coupling_iterations[group_end].hook;
+                if current.request.coupling_iteration
+                    != previous.request.coupling_iteration.checked_add(1).ok_or("coupling ordinal")?
+                    || current.request.ending_snow_hint != Some(previous.outgoing)
+                {
+                    return Err("coupling group chain");
+                }
+                group_end += 1;
+            }
+            let final_request = &self.coupling_iterations[group_end - 1].hook.request;
+            if self
+                .coupling_selections
+                .iter()
+                .filter(|selection| same_terminal_call_key(&selection.request, final_request))
+                .count()
+                != 1
+                || self.coupling_selections.iter().any(|selection| {
+                    same_terminal_coupling_group(&selection.request, &first.request)
+                        && !same_terminal_call_key(&selection.request, final_request)
+                })
+            {
+                return Err("coupling group selection");
+            }
+            group_start = group_end;
         }
         for selection in &self.coupling_selections {
             let matching = self
@@ -474,8 +706,10 @@ impl CaptureState {
                 .filter(|iteration| same_terminal_call_key(&iteration.hook.request, &selection.request))
                 .collect::<Vec<_>>();
             if matching.len() != 1
-                || (selection.reason == TerminalCouplingSelectionReason::FourComponentConvergenceBreak
-                    && !matching[0].hook.converged)
+                || selection.post_loop_three_component_check != true
+                || (selection.reason
+                    == TerminalCouplingSelectionReason::FourComponentConvergenceBreak)
+                    != matching[0].hook.converged
             {
                 return Err("coupling selection join");
             }
@@ -494,24 +728,110 @@ impl CaptureState {
         {
             return Err("floor join");
         }
-        let final_attempts = final_trials
+        let call_count_through_final_pair = validated_iterations
             .iter()
-            .map(|trial| trial.attempt_ordinal)
-            .collect::<Vec<_>>();
-        let call_count_through_final_pair = self
-            .provider_calls
-            .iter()
-            .filter(|call| final_attempts.contains(&call.request.attempt_ordinal))
-            .map(|call| call.ordinal + 1)
+            .filter(|iteration| {
+                final_trials.iter().any(|trial| {
+                    iteration.draft.request.role == trial.role
+                        && iteration.draft.request.attempt_ordinal == trial.attempt_ordinal
+                })
+            })
+            .map(|iteration| iteration.provider_ordinal + 1)
             .max()
             .ok_or("final pair calls")?;
         let call_count_at_floor = self.provider_calls.len() as u64;
         if call_count_through_final_pair != call_count_at_floor {
             return Err("floor provider call boundary");
         }
-        Ok(ValidatedCaptureState { final_trial_count: final_trials.len(),
-            final_pair_rejected: final_pair.rejected, floor_outcome: floor.3.clone(),
-            call_count_through_final_pair, call_count_at_floor })
+        let mut validated_pairs = Vec::with_capacity(self.pairs.len());
+        for (decision, trials) in self.pairs.into_iter().zip(self.selected_trials.chunks_exact(3)) {
+            let validated_trials = trials
+                .iter()
+                .cloned()
+                .map(|draft| {
+                    let matching = self
+                        .coupling_selections
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, selection)| {
+                            selection.request.role == draft.role
+                                && selection.request.attempt_ordinal == draft.attempt_ordinal
+                        })
+                        .collect::<Vec<_>>();
+                    if matching.len() != 1 {
+                        return Err("trial/coupling selection join");
+                    }
+                    let (selection_index, selection) = matching[0];
+                    let iteration = validated_iterations
+                        .iter()
+                        .find(|iteration| {
+                            same_terminal_call_key(&iteration.draft.request, &selection.request)
+                        })
+                        .ok_or("selected iteration")?;
+                    if draft.beginning_joint.as_ref() != Some(&selection.request.beginning_joint) {
+                        return Err("trial beginning joint");
+                    }
+                    let provider = self
+                        .provider_calls
+                        .get(iteration.provider_ordinal as usize)
+                        .ok_or("selected provider ordinal")?;
+                    let CapturedProviderOutcome::Success(result) = &provider.outcome else {
+                        return Err("selected provider outcome");
+                    };
+                    if draft.carrier_ending_joint.as_ref() != Some(result.ending_candidates.joint()) {
+                        return Err("trial carrier ending joint");
+                    }
+                    let expected_hydrology_ending = draft
+                        .carrier_ending_joint
+                        .as_ref()
+                        .ok_or("trial carrier ending joint")?
+                        .with_terminal_hydrology_state(
+                            selection.request.lane_id,
+                            draft.ending.ice_kg_m2,
+                            draft.ending.liquid_kg_m2,
+                            draft.ending.cold_content_j_m2,
+                        )
+                        .map_err(|_| "trial hydrology ending reconstruction")?;
+                    if draft.hydrology_ending_joint.as_ref()
+                        != Some(&expected_hydrology_ending)
+                    {
+                        return Err("trial hydrology ending joint");
+                    }
+                    if iteration.draft.outgoing.ice_kg_m2.to_bits()
+                        != draft.ending.ice_kg_m2.to_bits()
+                        || iteration.draft.outgoing.liquid_kg_m2.to_bits()
+                            != draft.ending.liquid_kg_m2.to_bits()
+                        || iteration.draft.outgoing.cold_content_j_m2.to_bits()
+                            != draft.ending.cold_content_j_m2.to_bits()
+                    {
+                        return Err("selected coupling/trial ending");
+                    }
+                    Ok(ValidatedSelectedTrial {
+                        support: selection.request.support,
+                        coupling_selection_index: selection_index,
+                        selected_provider_ordinal: iteration.provider_ordinal,
+                        draft,
+                    })
+                })
+                .collect::<Result<Vec<_>, &'static str>>()?
+                .try_into()
+                .map_err(|_| "validated trial array")?;
+            validated_pairs.push(ValidatedCapturedPair { trials: validated_trials, decision });
+        }
+        Ok(ValidatedCaptureState {
+            provider_calls: self.provider_calls,
+            coupling_iterations: validated_iterations,
+            coupling_selections: self.coupling_selections,
+            pairs: validated_pairs,
+            floor: ValidatedFloorAdmission {
+                proposed_duration_s: floor.0,
+                required_half_duration_s: floor.1,
+                minimum_duration_s: floor.2,
+                outcome: floor.3.clone(),
+            },
+            call_count_through_final_pair,
+            call_count_at_floor,
+        })
     }
 }
 
@@ -525,15 +845,33 @@ impl TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>> for CaptureE
     type State = CaptureState;
     type ProviderState = Vec<CapturedProviderCall>;
     type ProviderProjection = crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1;
+    type ProviderFailureProjection = CapturedProviderFailure;
     type CouplingState = (Vec<TerminalCouplingIterationHook>, Vec<TerminalCouplingSelectionHook>);
     fn new_state() -> Self::State { CaptureState::default() }
     fn new_provider_state() -> Self::ProviderState { Vec::new() }
     fn new_coupling_state() -> Self::CouplingState { (Vec::new(), Vec::new()) }
     fn project_provider_success(_: &CoveredTerminalTrialRequestV1, result: &crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1) -> Self::ProviderProjection { result.clone() }
-    fn provider_success(state: &mut Self::ProviderState, request: &CoveredTerminalTrialRequestV1, result: Self::ProviderProjection) {
-        state.push(CapturedProviderCall { ordinal: state.len() as u64, request: request.clone(), outcome: CapturedProviderOutcome::Success(result) });
+    fn project_provider_failure(error: &crate::v9_real_consumer_shadow::DirectV11RealConsumerError) -> Self::ProviderFailureProjection {
+        use crate::v9_real_consumer_shadow::DirectV11RealConsumerError as Error;
+        match error {
+            Error::Runtime(_) => CapturedProviderFailure::Runtime,
+            Error::Vegetation(_) => CapturedProviderFailure::Vegetation,
+            Error::Serialization(_) => CapturedProviderFailure::Serialization,
+            Error::Identity(value) => CapturedProviderFailure::Identity(value),
+            Error::CoveredBoundary(_) => CapturedProviderFailure::CoveredBoundary,
+            Error::Stage3(_) => CapturedProviderFailure::Stage3,
+            Error::Stage3PrecipitationCustody(value) => CapturedProviderFailure::Stage3PrecipitationCustody(value),
+            Error::Stage3SnowSoilHeatCustody(value) => CapturedProviderFailure::Stage3SnowSoilHeatCustody(value),
+        }
     }
-    fn provider_failure(state: &mut Self::ProviderState, request: &CoveredTerminalTrialRequestV1, error: &'static str) {
+    fn provider_success(state: &mut Self::ProviderState, request: &CoveredTerminalTrialRequestV1, result: Self::ProviderProjection) {
+        state.push(CapturedProviderCall {
+            ordinal: state.len() as u64,
+            request: request.clone(),
+            outcome: CapturedProviderOutcome::Success(Box::new(result)),
+        });
+    }
+    fn provider_failure(state: &mut Self::ProviderState, request: &CoveredTerminalTrialRequestV1, error: Self::ProviderFailureProjection) {
         state.push(CapturedProviderCall { ordinal: state.len() as u64, request: request.clone(), outcome: CapturedProviderOutcome::Failure(error) });
     }
     fn merge_provider(state: &mut Self::State, mut provider: Self::ProviderState) {
@@ -597,6 +935,44 @@ pub(crate) struct CoveredTerminalEndingSnowHintV1 {
     pub liquid_kg_m2: f64,
     pub cold_content_j_m2: f64,
     pub surface_temperature_c: f64,
+}
+
+pub(crate) fn terminal_coupling_comparisons(
+    previous: CoveredTerminalEndingSnowHintV1,
+    next: CoveredTerminalEndingSnowHintV1,
+) -> [(f64, f64, f64, f64, bool); 4] {
+    let comparison = |left: f64, right: f64, tolerance: f64| {
+        let difference = (left - right).abs();
+        (left, right, difference, tolerance, difference <= tolerance)
+    };
+    [
+        comparison(previous.ice_kg_m2, next.ice_kg_m2, 1.0e-9),
+        comparison(previous.liquid_kg_m2, next.liquid_kg_m2, 1.0e-9),
+        comparison(previous.cold_content_j_m2, next.cold_content_j_m2, 1.0e-6),
+        comparison(
+            previous.surface_temperature_c,
+            next.surface_temperature_c,
+            1.0e-9,
+        ),
+    ]
+}
+
+pub(crate) fn terminal_coupling_four_component_converged(
+    previous: CoveredTerminalEndingSnowHintV1,
+    next: CoveredTerminalEndingSnowHintV1,
+) -> bool {
+    terminal_coupling_comparisons(previous, next)
+        .into_iter()
+        .all(|comparison| comparison.4)
+}
+
+pub(crate) fn terminal_coupling_post_loop_three_component_converged(
+    previous: CoveredTerminalEndingSnowHintV1,
+    next: CoveredTerminalEndingSnowHintV1,
+) -> bool {
+    terminal_coupling_comparisons(previous, next)[..3]
+        .iter()
+        .all(|comparison| comparison.4)
 }
 
 /// Immutable, unpublished seven-owner candidate carried between covered
@@ -1974,6 +2350,38 @@ impl Wb11HydrologyKernel {
 #[cfg(test)]
 mod cqr_row5_tests {
     use super::*;
+
+    #[test]
+    fn child1_term_coupling_020_characterizes_temperature_only_false_convergence() {
+        let common = CoveredTerminalEndingSnowHintV1 {
+            ice_kg_m2: 0.2,
+            liquid_kg_m2: 0.01,
+            cold_content_j_m2: -125.0,
+            surface_temperature_c: -1.0e-9,
+        };
+        let mut previous = None;
+        let mut four_component_break = false;
+        let mut final_pair = None;
+        for iteration in 0..32_u32 {
+            let next = CoveredTerminalEndingSnowHintV1 {
+                surface_temperature_c: if iteration % 2 == 0 { -1.0e-9 } else { 1.0e-9 },
+                ..common
+            };
+            if let Some(prior) = previous {
+                let comparisons = terminal_coupling_comparisons(prior, next);
+                assert!(comparisons[..3].iter().all(|comparison| comparison.4));
+                assert!(!comparisons[3].4);
+                four_component_break |= terminal_coupling_four_component_converged(prior, next);
+                final_pair = Some((prior, next));
+            }
+            previous = Some(next);
+        }
+
+        assert!(!four_component_break, "all 32 iterations exhaust the live four-component loop");
+        let (prior, next) = final_pair.expect("iteration pair");
+        assert!(terminal_coupling_post_loop_three_component_converged(prior, next));
+        assert!(!terminal_coupling_four_component_converged(prior, next));
+    }
 
     #[test]
     fn eb04w2b_storage_guard_enforces_exact_tolerance_and_nonfinite_rejection() {

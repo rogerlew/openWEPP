@@ -886,6 +886,23 @@ fn exercise_complete_wb14_cadence(
         return;
     }
     if capture_terminal_failure {
+        crate::snow_stage3_v11_attachment::begin_terminal_provider_support_audit();
+        let no_evidence_result = execute_covered_real_v11_parent(
+            &context,
+            &parent,
+            &shadow,
+            &beginning_clock,
+            &prepared,
+            0,
+            0,
+            digest(3),
+            stage3_beginning_by_lane.clone(),
+            BTreeMap::new(),
+            None,
+        );
+        let no_evidence_supports =
+            crate::snow_stage3_v11_attachment::take_terminal_provider_support_audit();
+        crate::snow_stage3_v11_attachment::begin_terminal_provider_support_audit();
         let (result, evidence) = crate::snow_stage3_v11_attachment::execute_covered_real_v11_parent_capture(
             &context,
             &parent,
@@ -899,6 +916,25 @@ fn exercise_complete_wb14_cadence(
             BTreeMap::new(),
             None,
         );
+        let capture_supports =
+            crate::snow_stage3_v11_attachment::take_terminal_provider_support_audit();
+        assert_eq!(no_evidence_supports, capture_supports);
+        assert_eq!(
+            capture_supports,
+            evidence
+                .provider_calls
+                .iter()
+                .map(|call| call.request.support)
+                .collect::<Vec<_>>()
+        );
+        assert!(matches!(
+            no_evidence_result,
+            Err(DirectSnowStage3V11AttachmentError::Stage3(
+                DirectSnowStage3EvaluationError::TerminalNumerics(
+                    crate::SnowTerminalNumericsFailure::BelowCarrierDomain
+                )
+            ))
+        ));
         assert!(matches!(
             result,
             Err(DirectSnowStage3V11AttachmentError::Stage3(
@@ -917,8 +953,11 @@ fn exercise_complete_wb14_cadence(
         assert_eq!(pair.components[3].1.to_bits(), 0x4094_2e21_8363_bae1);
         assert_eq!(pair.components[3].2.to_bits(), 0xc03b_368f_8bb1_8fc0);
         let trials = &evidence.selected_trials[evidence.selected_trials.len() - 3..];
-        assert_eq!(trials[0].ledger.external_liquid_kg_m2.to_bits(), 0.0_f64.to_bits());
-        assert_eq!((trials[1].ledger.external_liquid_kg_m2 + trials[2].ledger.external_liquid_kg_m2).to_bits(), 0.0_f64.to_bits());
+        // Typed Stage-3/hydrology supply proof: terminal liquid is absent from
+        // every selected trial's live external-liquid operand.
+        assert!(trials.iter().all(|trial| {
+            trial.ledger.external_liquid_kg_m2.to_bits() == 0.0_f64.to_bits()
+        }));
         let admission = evidence.admissions.last().expect("floor admission");
         assert_eq!(admission.0.to_bits(), 0.9375_f64.to_bits());
         assert_eq!(admission.1.to_bits(), 0.46875_f64.to_bits());
@@ -970,24 +1009,164 @@ fn exercise_complete_wb14_cadence(
                     == (pair.maximum_scaled > 1.0 && pair.components[0].1 > 0.0)
         }));
         assert_eq!(pair.proposed_next_duration_s.to_bits(), admission.0.to_bits());
+        assert!(evidence.provider_calls.iter().all(|call| {
+            call.request.support.end_ns().get() - call.request.support.start_ns().get()
+                >= 600_000_000
+        }));
+        // Typed WB14 authorization/credit proof.
+        assert!(evidence.provider_calls.iter().all(|call| match &call.outcome {
+            crate::hydrology::CapturedProviderOutcome::Success(result) => !result
+                .carrier_envelope
+                .hydrology()
+                .surface_ingress()
+                .receipts()
+                .iter()
+                .any(|receipt| {
+                    receipt.kind
+                        == crate::direct_runtime::DirectSurfaceLiquidParcelKind::TerminalReceiver
+                }),
+            crate::hydrology::CapturedProviderOutcome::Failure(_) => true,
+        }));
+        // Typed input surface-liquid ingress proof, independent of WB14 receipts.
+        assert!(evidence.provider_calls.iter().all(|call| match &call.outcome {
+            crate::hydrology::CapturedProviderOutcome::Success(result) => !result
+                .carrier_envelope
+                .hydrology()
+                .surface_ingress()
+                .open_ingress_parcels()
+                .iter()
+                .any(|parcel| {
+                    parcel.kind
+                        == crate::direct_runtime::DirectSurfaceLiquidParcelKind::TerminalReceiver
+                }),
+            crate::hydrology::CapturedProviderOutcome::Failure(_) => true,
+        }));
+        macro_rules! rejects_poison {
+            ($label:literal, $mutate:expr) => {{
+                let mut poisoned = evidence.clone();
+                ($mutate)(&mut poisoned);
+                assert!(poisoned.validate().is_err(), $label);
+            }};
+        }
+        rejects_poison!("missing provider", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.provider_calls.remove(0);
+        });
+        rejects_poison!("duplicate provider", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.provider_calls.insert(0, poisoned.provider_calls[0].clone());
+        });
+        rejects_poison!("reordered provider", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.provider_calls.swap(0, 1);
+        });
+        rejects_poison!("substituted provider key", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.provider_calls[0].request.attempt_ordinal ^= 1;
+        });
+        rejects_poison!("missing coupling iteration", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.coupling_iterations.remove(0);
+        });
+        rejects_poison!("duplicate coupling iteration", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.coupling_iterations.insert(0, poisoned.coupling_iterations[0].clone());
+        });
+        rejects_poison!("reordered coupling iteration", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.coupling_iterations.swap(0, 1);
+        });
+        rejects_poison!("substituted coupling key", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.coupling_iterations[0].hook.request.attempt_ordinal ^= 1;
+        });
+        rejects_poison!("coupling comparison", |poisoned: &mut crate::hydrology::CaptureState| {
+            let iteration = poisoned
+                .coupling_iterations
+                .iter_mut()
+                .find(|iteration| iteration.hook.comparisons.is_some())
+                .expect("comparison iteration");
+            iteration.hook.comparisons.as_mut().expect("comparisons")[0].2 += 1.0;
+        });
+        rejects_poison!("missing coupling selection", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.coupling_selections.remove(0);
+        });
+        rejects_poison!("duplicate coupling selection", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.coupling_selections.insert(0, poisoned.coupling_selections[0].clone());
+        });
+        rejects_poison!("reordered coupling selection", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.coupling_selections.swap(0, 1);
+        });
+        rejects_poison!("substituted coupling selection", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.coupling_selections[0].request.attempt_ordinal ^= 1;
+        });
+        rejects_poison!("selected convergence reason", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.coupling_selections[0].reason =
+                crate::hydrology::TerminalCouplingSelectionReason::IterationLoopExhausted;
+        });
+        rejects_poison!("selected live convergence", |poisoned: &mut crate::hydrology::CaptureState| {
+            let request = poisoned.coupling_selections[0].request.clone();
+            poisoned
+                .coupling_iterations
+                .iter_mut()
+                .find(|iteration| {
+                    iteration.hook.request.support == request.support
+                        && iteration.hook.request.role == request.role
+                        && iteration.hook.request.attempt_ordinal == request.attempt_ordinal
+                        && iteration.hook.request.coupling_iteration == request.coupling_iteration
+                })
+                .expect("selected iteration")
+                .hook
+                .converged = false;
+        });
+        rejects_poison!("selected trial order", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.selected_trials.swap(0, 1);
+        });
+        rejects_poison!("missing selected trial", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.selected_trials.remove(0);
+        });
+        rejects_poison!("duplicate selected trial", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.selected_trials.insert(0, poisoned.selected_trials[0].clone());
+        });
+        rejects_poison!("substituted selected trial", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.selected_trials[0].duration_s += 1.0;
+        });
+        rejects_poison!("selected joint join", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.selected_trials[2].beginning_joint = None;
+        });
+        rejects_poison!("maximum-scaled conjunct", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.pairs.last_mut().expect("pair").maximum_scaled = 1.0;
+        });
+        rejects_poison!("refined-ice conjunct", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.pairs.last_mut().expect("pair").components[0].1 = 0.0;
+        });
+        rejects_poison!("decision delta", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.pairs[0].components[0].2 += 1.0;
+        });
+        rejects_poison!("decision denominator", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.pairs[0].components[0].3 += 1.0;
+        });
+        rejects_poison!("decision scaled", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.pairs[0].components[0].4 += 1.0;
+        });
+        rejects_poison!("missing pair", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.pairs.remove(0);
+        });
+        rejects_poison!("duplicate pair", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.pairs.insert(0, poisoned.pairs[0].clone());
+        });
+        rejects_poison!("reordered pair", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.pairs.swap(0, 1);
+        });
+        rejects_poison!("substituted pair", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.pairs[0].duration_s += 1.0;
+        });
+        rejects_poison!("missing floor", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.admissions.clear();
+        });
+        rejects_poison!("duplicate floor", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.admissions.push(poisoned.admissions[0].clone());
+        });
+        rejects_poison!("floor outcome", |poisoned: &mut crate::hydrology::CaptureState| {
+            poisoned.admissions[0].3 = crate::SnowTerminalNumericsFailure::DomainOrNonFinite;
+        });
         let validated = evidence.validate().expect("raw terminal evidence validates");
         assert_eq!(validated.call_count_through_final_pair, validated.call_count_at_floor);
-        assert_eq!(validated.final_trial_count, 3);
-        assert!(validated.final_pair_rejected);
-        assert_eq!(validated.floor_outcome, crate::SnowTerminalNumericsFailure::BelowCarrierDomain);
-        assert!(evidence.provider_calls.iter().all(|call| {
-            let above_floor = call.request.support.end_ns().get()
-                - call.request.support.start_ns().get() >= 600_000_000;
-            let no_terminal_ingress = match &call.outcome {
-                crate::hydrology::CapturedProviderOutcome::Success(result) => {
-                    let ingress = result.carrier_envelope.hydrology().surface_ingress();
-                    !ingress.receipts().iter().any(|receipt| receipt.kind == crate::direct_runtime::DirectSurfaceLiquidParcelKind::TerminalReceiver)
-                        && !ingress.open_ingress_parcels().iter().any(|parcel| parcel.kind == crate::direct_runtime::DirectSurfaceLiquidParcelKind::TerminalReceiver)
-                }
-                crate::hydrology::CapturedProviderOutcome::Failure(_) => true,
-            };
-            above_floor && no_terminal_ingress
-        }));
+        assert_eq!(validated.pairs.last().unwrap().trials.len(), 3);
+        assert!(validated.pairs.last().unwrap().decision.rejected);
+        assert_eq!(validated.floor.outcome, crate::SnowTerminalNumericsFailure::BelowCarrierDomain);
         assert_eq!(parent, rollback_parent);
         assert_eq!(shadow, rollback_consumer);
         assert_eq!(beginning_clock, rollback_clock);

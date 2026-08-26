@@ -444,18 +444,12 @@ impl Wb11HydrologyKernel {
                                                 preview.cold_content_j_m2,
                                             ),
                                         };
-                                        let converged = hint.is_some_and(|previous: CoveredTerminalEndingSnowHintV1| {
-                                            (previous.ice_kg_m2 - next_hint.ice_kg_m2).abs() <= 1.0e-9
-                                                && (previous.liquid_kg_m2 - next_hint.liquid_kg_m2).abs() <= 1.0e-9
-                                                && (previous.cold_content_j_m2 - next_hint.cold_content_j_m2).abs() <= 1.0e-6
-                                                && (previous.surface_temperature_c - next_hint.surface_temperature_c).abs() <= 1.0e-9
+                                        let converged = hint.is_some_and(|previous| {
+                                            terminal_coupling_four_component_converged(previous, next_hint)
                                         });
-                                        let comparisons = evidence_request.as_ref().and_then(|_| hint.map(|previous| [
-                                            (previous.ice_kg_m2, next_hint.ice_kg_m2, (previous.ice_kg_m2 - next_hint.ice_kg_m2).abs(), 1.0e-9, (previous.ice_kg_m2 - next_hint.ice_kg_m2).abs() <= 1.0e-9),
-                                            (previous.liquid_kg_m2, next_hint.liquid_kg_m2, (previous.liquid_kg_m2 - next_hint.liquid_kg_m2).abs(), 1.0e-9, (previous.liquid_kg_m2 - next_hint.liquid_kg_m2).abs() <= 1.0e-9),
-                                            (previous.cold_content_j_m2, next_hint.cold_content_j_m2, (previous.cold_content_j_m2 - next_hint.cold_content_j_m2).abs(), 1.0e-6, (previous.cold_content_j_m2 - next_hint.cold_content_j_m2).abs() <= 1.0e-6),
-                                            (previous.surface_temperature_c, next_hint.surface_temperature_c, (previous.surface_temperature_c - next_hint.surface_temperature_c).abs(), 1.0e-9, (previous.surface_temperature_c - next_hint.surface_temperature_c).abs() <= 1.0e-9),
-                                        ]));
+                                        let comparisons = evidence_request.as_ref().and_then(|_| {
+                                            hint.map(|previous| terminal_coupling_comparisons(previous, next_hint))
+                                        });
                                         if let Some(request) = evidence_request.as_ref() {
                                             M::coupling_iteration(&mut coupling_evidence, TerminalCouplingIterationHook {
                                                 request: request.clone(), outgoing: next_hint,
@@ -475,9 +469,15 @@ impl Wb11HydrologyKernel {
                                     )?;
                                     let converged = hint.is_some_and(|previous| {
                                         let preview = Self::terminal_transition(trial_state, flux).state;
-                                        (previous.ice_kg_m2 - preview.ice_kg_m2).abs() <= 1.0e-9
-                                            && (previous.liquid_kg_m2 - preview.liquid_kg_m2).abs() <= 1.0e-9
-                                            && (previous.cold_content_j_m2 - preview.cold_content_j_m2).abs() <= 1.0e-6
+                                        terminal_coupling_post_loop_three_component_converged(
+                                            previous,
+                                            CoveredTerminalEndingSnowHintV1 {
+                                                ice_kg_m2: preview.ice_kg_m2,
+                                                liquid_kg_m2: preview.liquid_kg_m2,
+                                                cold_content_j_m2: preview.cold_content_j_m2,
+                                                surface_temperature_c: previous.surface_temperature_c,
+                                            },
+                                        )
                                     });
                                     if let Some(selected_request) = selected_request {
                                         M::coupling_selection(&mut coupling_evidence, TerminalCouplingSelectionHook {

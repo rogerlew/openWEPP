@@ -1,9 +1,9 @@
 #[allow(clippy::wildcard_imports)]
 use super::*;
 
-const RELATIVE_ERROR_TOLERANCE: f64 = 1.0e-8;
-const MASS_ABSOLUTE_TOLERANCE_KG_M2: f64 = 1.0e-9;
-const ENERGY_ABSOLUTE_TOLERANCE_J_M2: f64 = 1.0e-6;
+pub(crate) const RELATIVE_ERROR_TOLERANCE: f64 = 1.0e-8;
+pub(crate) const MASS_ABSOLUTE_TOLERANCE_KG_M2: f64 = 1.0e-9;
+pub(crate) const ENERGY_ABSOLUTE_TOLERANCE_J_M2: f64 = 1.0e-6;
 const MINIMUM_TRIAL_SECONDS: f64 = 1.0e-9;
 const MAXIMUM_TRIAL_SECONDS: f64 = 60.0;
 const EVENT_TIME_TOLERANCE_SECONDS: f64 = 1.0e-6;
@@ -202,28 +202,12 @@ impl Wb11HydrologyKernel {
     }
 
     fn terminal_scaled_error(full: TerminalTrial, refined: TerminalTrial) -> f64 {
-        let mass = |a: f64, b: f64| {
-            (a - b).abs()
-                / (MASS_ABSOLUTE_TOLERANCE_KG_M2 + RELATIVE_ERROR_TOLERANCE * a.abs().max(b.abs()))
-        };
-        let energy = |a: f64, b: f64| {
-            (a - b).abs()
-                / (ENERGY_ABSOLUTE_TOLERANCE_J_M2 + RELATIVE_ERROR_TOLERANCE * a.abs().max(b.abs()))
-        };
-        mass(full.state.ice_kg_m2, refined.state.ice_kg_m2)
-            .max(mass(full.state.liquid_kg_m2, refined.state.liquid_kg_m2))
-            .max(energy(
-                full.state.cold_content_j_m2,
-                refined.state.cold_content_j_m2,
-            ))
-            .max(energy(
-                full.ledger.complete_energy_j_m2,
-                refined.ledger.complete_energy_j_m2,
-            ))
-            .max(energy(
-                full.ledger.unallocated_energy_j_m2,
-                refined.ledger.unallocated_energy_j_m2,
-            ))
+        let components = Self::terminal_error_components(full, refined);
+        components[1..]
+            .iter()
+            .fold(components[0].4, |maximum, component| {
+                maximum.max(component.4)
+            })
     }
 
     fn terminal_error_components(full: TerminalTrial, refined: TerminalTrial) -> [(f64, f64, f64, f64, f64); 5] {
@@ -363,12 +347,16 @@ impl Wb11HydrologyKernel {
             )?;
             attempt_ordinal = next_attempt(attempt_ordinal)?;
             let full = Self::terminal_transition(state, full_flux);
-            let full_joint = join_hydrology_ending(full.state, full_carrier_joint.clone())?;
-            if M::ENABLED { M::selected_trial(evidence, TerminalSelectedTrialHook {
+            let (full_joint, captured_full_carrier_joint) = if M::ENABLED {
+                (join_hydrology_ending(full.state, full_carrier_joint.clone())?, Some(full_carrier_joint))
+            } else {
+                (join_hydrology_ending(full.state, full_carrier_joint)?, None)
+            };
+            if let Some(carrier_joint) = captured_full_carrier_joint.as_ref() { M::selected_trial(evidence, TerminalSelectedTrialHook {
                 position: TerminalPairPosition::Coarse, role: full_role, attempt_ordinal: full_attempt,
                 relative_start_s: elapsed, duration_s: dt, beginning: state.into(), ending: full.state.into(),
                 ledger: full.ledger.into(), beginning_joint: &accepted_joint,
-                carrier_ending_joint: &full_carrier_joint, hydrology_ending_joint: &full_joint,
+                carrier_ending_joint: carrier_joint, hydrology_ending_joint: &full_joint,
             }); }
             let half_dt = 0.5 * dt;
             let first_attempt = attempt_ordinal;
@@ -382,12 +370,16 @@ impl Wb11HydrologyKernel {
             )?;
             attempt_ordinal = next_attempt(attempt_ordinal)?;
             let first = Self::terminal_transition(state, first_flux);
-            let first_joint = join_hydrology_ending(first.state, first_carrier_joint.clone())?;
-            if M::ENABLED { M::selected_trial(evidence, TerminalSelectedTrialHook {
+            let (first_joint, captured_first_carrier_joint) = if M::ENABLED {
+                (join_hydrology_ending(first.state, first_carrier_joint.clone())?, Some(first_carrier_joint))
+            } else {
+                (join_hydrology_ending(first.state, first_carrier_joint)?, None)
+            };
+            if let Some(carrier_joint) = captured_first_carrier_joint.as_ref() { M::selected_trial(evidence, TerminalSelectedTrialHook {
                 position: TerminalPairPosition::Fine1, role: CoveredTerminalTrialRoleV1::Half1, attempt_ordinal: first_attempt,
                 relative_start_s: elapsed, duration_s: half_dt, beginning: state.into(), ending: first.state.into(),
                 ledger: first.ledger.into(), beginning_joint: &accepted_joint,
-                carrier_ending_joint: &first_carrier_joint, hydrology_ending_joint: &first_joint,
+                carrier_ending_joint: carrier_joint, hydrology_ending_joint: &first_joint,
             }); }
             let second_attempt = attempt_ordinal;
             let (second_flux, second_carrier_joint) = flux_integral(
@@ -399,12 +391,16 @@ impl Wb11HydrologyKernel {
                 attempt_ordinal,
             )?;
             let second = Self::terminal_transition(first.state, second_flux);
-            let second_joint = join_hydrology_ending(second.state, second_carrier_joint.clone())?;
-            if M::ENABLED { M::selected_trial(evidence, TerminalSelectedTrialHook {
+            let (second_joint, captured_second_carrier_joint) = if M::ENABLED {
+                (join_hydrology_ending(second.state, second_carrier_joint.clone())?, Some(second_carrier_joint))
+            } else {
+                (join_hydrology_ending(second.state, second_carrier_joint)?, None)
+            };
+            if let Some(carrier_joint) = captured_second_carrier_joint.as_ref() { M::selected_trial(evidence, TerminalSelectedTrialHook {
                 position: TerminalPairPosition::Fine2, role: CoveredTerminalTrialRoleV1::Half2, attempt_ordinal: second_attempt,
                 relative_start_s: elapsed + half_dt, duration_s: half_dt, beginning: first.state.into(), ending: second.state.into(),
                 ledger: second.ledger.into(), beginning_joint: &first_joint,
-                carrier_ending_joint: &second_carrier_joint, hydrology_ending_joint: &second_joint,
+                carrier_ending_joint: carrier_joint, hydrology_ending_joint: &second_joint,
             }); }
             attempt_ordinal = next_attempt(attempt_ordinal)?;
             let refined = TerminalTrial {

@@ -1,6 +1,6 @@
 # Terminal bounded evidence implementation-first checkpoint
 
-Status: `EXECUTED HOLD`.
+Status: `EXECUTED / ONE LIVE-FIXTURE HOLD`.
 
 Source base: `80f0af80fdd0b5044fb6c6e800212076b1e2acec`.
 Diagnostic source predecessor: `ce58080c06f604ec1c5579db83517c8495c8514c`.
@@ -62,3 +62,32 @@ The candidate-v21 effectivity/conservation matrix is therefore `NOT RUN`:
 enriched capture did not pass its two required sufficiency reviews. Final
 v21/v11/v139/v6 numerical and science/ownership reviews were not opened.
 Temporal operator and Batch V2 implementation remain prohibited.
+
+## Forward correction checkpoint
+
+Ran: the corrected real capture executes independent identical-beginning
+`NoEvidence` and `CaptureEvidence` calls, proves identical physical failure and
+ordered provider supports, and preserves caller-owned state. Typed Stage-3
+supply, WB14 receipt and input-ingress exclusions are separate. The raw poison
+matrix covers provider, iteration, selection, trial, pair and floor
+omission/duplication/reorder/substitution, comparison arithmetic, decision
+arithmetic and both rejection conjuncts.
+
+Static: post-return validation now reconstructs successful result/request
+joins, failed-call zero-iteration custody, closed ordered coupling chains,
+selection finality, selected carrier and hydrology joints, all four comparison
+tuples, all five decision tuples and the final floor boundary. The production
+scaled-error refactor preserves the original NaN behavior.
+
+Ran: focused lower and real captures pass; crate check and test compilation
+pass; V20/V21 guards pass 5/5 (`921ef42e-24fa-4b14-8445-098062288373`). The
+affected heavy run `79bb978b-1037-4651-a8bc-007b5382f821` is 845 passed / 11
+failed / 1 skipped. Authoritative comparison found the exact historical eleven
+names and normalized signatures with zero delta. Numerical/evidence review is
+`GO`; Rust/API/private-compilation/noninterference review is `GO`.
+
+Overall evidence remains `HOLD` only because `CHILD1-TERM-COUPLING-020` is
+characterized through the production comparison functions but not by a real
+carrier/provider capture that records `IterationLoopExhausted`. Synthetic
+substitution is prohibited. Therefore the candidate-v21 matrix and final
+candidate reviews remain unrun; no temporal operator or Batch V2 was changed.

@@ -8,6 +8,35 @@ struct ActualTerminalSubslabV1 {
     parcels: Vec<DirectSnowStage3V11TerminalParcel>,
 }
 
+#[cfg(test)]
+thread_local! {
+    static TERMINAL_PROVIDER_SUPPORT_AUDIT: std::cell::RefCell<Option<Vec<TimeSupport>>> =
+        const { std::cell::RefCell::new(None) };
+}
+
+#[cfg(test)]
+pub(crate) fn begin_terminal_provider_support_audit() {
+    TERMINAL_PROVIDER_SUPPORT_AUDIT.with(|audit| *audit.borrow_mut() = Some(Vec::new()));
+}
+
+#[cfg(test)]
+pub(crate) fn take_terminal_provider_support_audit() -> Vec<TimeSupport> {
+    TERMINAL_PROVIDER_SUPPORT_AUDIT.with(|audit| audit.borrow_mut().take().unwrap_or_default())
+}
+
+#[cfg(test)]
+fn audit_terminal_provider_support(support: TimeSupport) {
+    TERMINAL_PROVIDER_SUPPORT_AUDIT.with(|audit| {
+        if let Some(entries) = audit.borrow_mut().as_mut() {
+            entries.push(support);
+        }
+    });
+}
+
+#[cfg(not(test))]
+#[inline(always)]
+fn audit_terminal_provider_support(_: TimeSupport) {}
+
 #[derive(Clone)]
 struct ExactCoveredTerminalEndpointV1 {
     support: TimeSupport,
@@ -407,6 +436,7 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<M: crate::hydrology::Ter
     let carrier_phases_by_joint = std::cell::RefCell::new(BTreeMap::new());
     let mut provider_evidence = M::new_provider_state();
     let mut provider = |request: crate::hydrology::CoveredTerminalTrialRequestV1| {
+        audit_terminal_provider_support(request.support);
         let beginning = if let Some(exact) = candidates_by_joint
             .borrow()
             .get(&request.beginning_joint.receipt_sha256())
@@ -541,11 +571,10 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<M: crate::hydrology::Ter
                 let projection = M::project_provider_success(&request, value);
                 M::provider_success(&mut provider_evidence, &request, projection);
             }
-            Err(_) => M::provider_failure(
-                &mut provider_evidence,
-                &request,
-                "covered probe carrier fixed point",
-            ),
+            Err(error) => {
+                let projection = M::project_provider_failure(error);
+                M::provider_failure(&mut provider_evidence, &request, projection);
+            }
         }
         let result = provider_result
             .map_err(|error| {
