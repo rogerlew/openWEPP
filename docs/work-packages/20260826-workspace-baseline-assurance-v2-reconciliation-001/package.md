@@ -1,6 +1,6 @@
 # Reconcile the Assurance V2 workspace baseline
 
-Status: `AUTHORIZED / EXECUTING`.
+Status: `COMPLETE / EXACT-CLEAN BASELINE / TERMINAL A+B PASS`.
 
 Date: `2026-08-26`.
 
@@ -115,3 +115,21 @@ read-only review of the declared write set and retained command evidence.
 Expected outputs are compact findings, exact commands/results, and bounded
 package artifacts; no delegated production, contract, test, fixture, or
 assurance write is authorized.
+
+## Terminal disposition
+
+Complete at exact implementation candidate
+`58ea61a2c303756f5f01c2f81f2516534750377c`. All 81 Assurance V2 failures,
+nine retained guards, and the protected V9 external-runtime binding are
+individually dispositioned. The exact-clean full workspace ran 3,376 tests:
+3,365 passed, exactly the historical eleven failed with unchanged names and
+normalized signatures, and six were configured skips. Both independent
+authority/guard reviews and both terminal verifiers pass with no open finding.
+
+The four canonical contracts and lifecycle index remain exact `43cc9bbe`
+objects. Historical candidate guards read preserved immutable Git checkpoints;
+rejected candidate bytes are not active authority. No production Rust,
+Stage-3 physics, terminal behavior, selector, restart, receiver, runner, CoE,
+Child 3/4, or cutover posture changed. The terminal chronology and phase-
+competition packages remain `EXECUTED HOLD`; typed unsupported controls and
+production remains `BelowCarrierDomain`.

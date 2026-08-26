@@ -44,5 +44,20 @@ their exact preserved Git checkpoints while retaining every assertion. Focused
 rerun: 7/7 passed, nextest run ID
 `a0b3029a-2546-4359-9804-cfeb7a7602bc`.
 
-An exact-clean full-workspace rerun from the landed correction remains required
-for terminal qualification.
+## Terminal exact-clean workspace qualification
+
+Candidate SHA: `58ea61a2c303756f5f01c2f81f2516534750377c`, equal to
+`origin/main` and clean before and after execution.
+
+Nextest run ID: `1e58916c-6350-421e-8100-301bc6ccef56`.
+
+Result: 3,376 run; 3,365 passed; exactly 11 failed; 6 configured skips. A
+mechanical comparison found an empty diff between both the final failure-name
+set and normalized-signature set and the retained historical-eleven census.
+No Assurance, retained-guard, historical-candidate, or protected V9 test
+failed. The one-file V9 overlay retained exact libcrypto SHA-256
+`0cd331307536a397ab9c83c6dbeeb3474d0a5114f397ce03d1762adb96d3c781`.
+
+Disposition: `PASS / QUALIFIED BASELINE`. The command returns nonzero only
+because the exact historical eleven remain intentionally visible; no waiver or
+expected-failure annotation was added. The repository remained clean.

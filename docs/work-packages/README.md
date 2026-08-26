@@ -20,11 +20,13 @@ contract, owner, receiver, restart, runner, selector, or cutover changed.
 
 ## 20260826-workspace-baseline-assurance-v2-reconciliation-001
 
-Next owner-authorized operational package for the 81 intake-resident Assurance
-V2 identity/source failures, nine retained source/registry guards, and the
-protected V9 external-runtime/libcrypto binding. It must establish an exact
-clean workspace baseline without weakening guards, rebinding rejected terminal
-candidate bytes, or altering Stage-3 physics or terminal behavior.
+Complete workspace-baseline reconciliation. All 81 Assurance V2 failures and
+nine retained guards are individually dispositioned; protected V9 passed in
+its exact bound runtime. Exact clean candidate `58ea61a2c` ran 3,376 tests:
+3,365 passed, exactly the historical eleven failed with unchanged names and
+normalized signatures, and six were configured skips. Dual review and dual
+terminal verification pass. No production Rust, Stage-3 physics, terminal
+behavior, selector, restart, receiver, runner, CoE, or cutover posture changed.
 
 ## 20260821-snow-stage3-v11-covered-consumer-runner-closure-001
 
