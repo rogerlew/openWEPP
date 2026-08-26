@@ -51,9 +51,9 @@ without implementing the prohibited candidate operator.
 - Ran: `cargo check --lib` and `cargo test --lib --no-run` — PASS with existing
   warnings.
 - Ran: V20/V21 structural guards — 5/5 PASS, nextest run
-  `76742f24-8cd0-4838-91dd-a0ede3b8fce8`.
+  `56c38682-3838-43f3-a7e9-ee99d3b501a8`.
 - Ran: affected heavy suite — 845 passed / exact historical 11 failed / 1
-  skipped, nextest run `33bb5f09-9bf5-4e8d-b785-b51323027f63`.
+  skipped, nextest run `078cf890-a40d-4280-bb41-2519fadedb47`.
 
 No equation, tolerance, 600 ms floor, acceptance predicate, controller,
 event/root behavior, public API, production output, owner publication, restart,
@@ -63,8 +63,8 @@ receiver, runner, selector, default, CoE, Child 3 or cutover behavior changed.
 
 | SHA-256 | path |
 |---|---|
-| `d1bfde0928d93af8f92e437fec8c4f2b564cdbd55a063f63605e3ea9ab89564e` | `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs` |
-| `480e137dbe5d9f60c893949c3b9b3aba517df9ef00d079fdfae64e85f51752a2` | `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs` |
+| `02b6cbe8eec5432338bc7238a188040079fd4f9ec93531eb3b72ab8fa1d8dcf6` | `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs` |
+| `d88dcc20d868a4b92ec47ea05b51918c2a7b57c992e328c7e6b80e20af2ed273` | `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs` |
 | `ba7c1e829d39c56d1275fb202585f17070c5a8dc74eba6ff8133f4a9a6002718` | `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs` |
 | `fd1eb67626aaf8dffab3118b7a2b2e57038b783ed594b07ad5e51b890946296c` | `candidate_v21_effectivity_matrix.py` |
 | `36dabdea656a7c2fc2778940b09c2f8cec628994bc005e77e66a26dd49346d8e` | `candidate-v21-effectivity-conservation-matrix.json` |

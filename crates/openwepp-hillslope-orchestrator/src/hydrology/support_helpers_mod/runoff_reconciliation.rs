@@ -975,6 +975,18 @@ pub(crate) fn terminal_coupling_post_loop_three_component_converged(
         .all(|comparison| comparison.4)
 }
 
+pub(crate) fn require_terminal_coupling_live_convergence(
+    selected_live_converged: bool,
+) -> Result<(), DirectSnowStage3EvaluationError> {
+    if selected_live_converged {
+        Ok(())
+    } else {
+        Err(DirectSnowStage3EvaluationError::TerminalCustody(
+            "covered terminal coupled trial nonconvergence",
+        ))
+    }
+}
+
 /// Immutable, unpublished seven-owner candidate carried between covered
 /// terminal trials. These bytes are never installed by the hydrology solver.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -2398,10 +2410,7 @@ mod cqr_row5_tests {
             reason: TerminalCouplingSelectionReason::IterationLoopExhausted,
             post_loop_three_component_check: true,
         });
-        let result: Result<(), DirectSnowStage3EvaluationError> =
-            Err(DirectSnowStage3EvaluationError::TerminalCustody(
-                "covered terminal coupled trial nonconvergence",
-            ));
+        let result = require_terminal_coupling_live_convergence(four_component_break);
         assert!(matches!(
             result,
             Err(DirectSnowStage3EvaluationError::TerminalCustody(

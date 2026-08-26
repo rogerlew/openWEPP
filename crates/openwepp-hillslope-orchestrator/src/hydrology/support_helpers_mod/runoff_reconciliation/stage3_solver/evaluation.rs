@@ -490,11 +490,9 @@ impl Wb11HydrologyKernel {
                                         post_loop_three_component_check: converged,
                                         });
                                     }
-                                    if !selected_live_converged {
-                                        return Err(DirectSnowStage3EvaluationError::TerminalCustody(
-                                            "covered terminal coupled trial nonconvergence",
-                                        ));
-                                    }
+                                    require_terminal_coupling_live_convergence(
+                                        selected_live_converged,
+                                    )?;
                                     return Ok((flux, Some(receipt.ending_joint)));
                                 } else {
                                     None
