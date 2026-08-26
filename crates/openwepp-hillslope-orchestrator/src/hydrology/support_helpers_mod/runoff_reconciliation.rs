@@ -227,6 +227,8 @@ pub(crate) enum CoveredTerminalExecutionMode {
     ExactEndpoint { expected_tick: ModelTimeNs },
     #[cfg(test)]
     DiscreteCompleteEndpoint,
+    #[cfg(test)]
+    PhaseComplementarityEndpoint,
 }
 
 mod terminal_evidence_sealed {

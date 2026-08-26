@@ -263,19 +263,31 @@ impl Wb11HydrologyKernel {
                         let terminal_lane_id = terminal_trial_context
                             .as_ref()
                             .map(|(lane_id, _, _, _, _)| *lane_id);
-                        let discrete_complete_endpoint = terminal_trial_context
-                            .as_ref()
-                            .is_some_and(|(_, _, mode, _, _)| {
+                        let discrete_complete_endpoint = terminal_trial_context.as_ref().is_some_and(
+                            |(_, _, mode, _, _)| {
                                 #[cfg(test)]
                                 {
-                                    *mode == CoveredTerminalExecutionMode::DiscreteCompleteEndpoint
+                                    matches!(
+                                        mode,
+                                        CoveredTerminalExecutionMode::DiscreteCompleteEndpoint
+                                            | CoveredTerminalExecutionMode::PhaseComplementarityEndpoint
+                                    )
                                 }
                                 #[cfg(not(test))]
                                 {
                                     let _ = mode;
                                     false
                                 }
+                            },
+                        );
+                        #[cfg(test)]
+                        let phase_complementarity_endpoint = terminal_trial_context
+                            .as_ref()
+                            .is_some_and(|(_, _, mode, _, _)| {
+                                *mode == CoveredTerminalExecutionMode::PhaseComplementarityEndpoint
                             });
+                        #[cfg(not(test))]
+                        let phase_complementarity_endpoint = false;
                         let mut coupling_evidence = M::new_coupling_state();
                         let terminal_result = Self::solve_terminal_enthalpy_event_with_evidence::<_, _, _, M>(
                             phase_class,
@@ -585,6 +597,7 @@ impl Wb11HydrologyKernel {
                                     .transpose()
                             },
                             discrete_complete_endpoint,
+                            phase_complementarity_endpoint,
                             evidence,
                         );
                         M::merge_coupling(evidence, coupling_evidence);

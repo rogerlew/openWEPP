@@ -97,7 +97,6 @@ pub(super) struct TerminalTrial {
 }
 
 impl Wb11HydrologyKernel {
-    #[cfg(test)]
     #[allow(clippy::too_many_arguments)]
     fn terminal_result_from_trial(
         hour_index: usize,
@@ -315,6 +314,61 @@ impl Wb11HydrologyKernel {
         TerminalTrial { state, ledger }
     }
 
+    #[cfg(test)]
+    fn terminal_phase_complementarity_transition(
+        start: TerminalState,
+        flux: TerminalFluxIntegral,
+    ) -> Result<TerminalTrial, DirectSnowStage3EvaluationError> {
+        let deposition_kg_m2 = flux.vapor_mass_exchange_kg_m2.max(0.0);
+        let sublimation_kg_m2 = (-flux.vapor_mass_exchange_kg_m2)
+            .max(0.0)
+            .min(start.ice_kg_m2);
+        let candidate = crate::snow_terminal_phase_competition::simultaneous_complementarity(
+            crate::snow_terminal_phase_competition::TerminalPhaseInputs {
+                beginning_pack_ice_kg_m2: start.ice_kg_m2,
+                beginning_surface_frost_kg_m2: 0.0,
+                beginning_liquid_kg_m2: start.liquid_kg_m2,
+                beginning_cold_content_j_m2: start.cold_content_j_m2,
+                deposition_kg_m2,
+                sublimation_kg_m2,
+                external_liquid_kg_m2: flux.external_liquid_kg_m2,
+                non_vapor_energy_j_m2: flux.complete_energy_j_m2 - flux.latent_energy_j_m2,
+                vapor_latent_energy_j_m2: flux.latent_energy_j_m2,
+                complete_energy_j_m2: flux.complete_energy_j_m2,
+                support_seconds: 1.0,
+            },
+        )
+        .map_err(|_| {
+            DirectSnowStage3EvaluationError::TerminalNumerics(
+                SnowTerminalNumericsFailure::Closure,
+            )
+        })?;
+        Ok(TerminalTrial {
+            state: TerminalState {
+                ice_kg_m2: candidate.ending_pack_ice_kg_m2,
+                liquid_kg_m2: candidate.ending_liquid_kg_m2,
+                cold_content_j_m2: candidate.ending_cold_content_j_m2,
+            },
+            ledger: TerminalLedger {
+                complete_energy_j_m2: flux.complete_energy_j_m2,
+                cold_energy_change_j_m2: start.cold_content_j_m2
+                    - candidate.ending_cold_content_j_m2,
+                refrozen_kg_m2: candidate.refrozen_kg_m2,
+                deposition_kg_m2,
+                sublimation_kg_m2,
+                melt_kg_m2: candidate.melt_kg_m2,
+                unallocated_energy_j_m2: candidate.unallocated_energy_j_m2,
+                shortwave_energy_j_m2: flux.shortwave_energy_j_m2,
+                longwave_energy_j_m2: flux.longwave_energy_j_m2,
+                sensible_energy_j_m2: flux.sensible_energy_j_m2,
+                latent_energy_j_m2: flux.latent_energy_j_m2,
+                advected_energy_j_m2: flux.advected_energy_j_m2,
+                snow_soil_heat_energy_j_m2: flux.snow_soil_heat_energy_j_m2,
+                external_liquid_kg_m2: flux.external_liquid_kg_m2,
+            },
+        })
+    }
+
     fn terminal_scaled_error(full: TerminalTrial, refined: TerminalTrial) -> f64 {
         let components = Self::terminal_error_components(full, refined);
         components[1..]
@@ -359,7 +413,7 @@ impl Wb11HydrologyKernel {
         let mut evidence = <NoEvidence as TerminalEvidenceMode<J>>::new_state();
         Self::solve_terminal_enthalpy_event_with_evidence::<F, G, J, NoEvidence>(
             phase_class, hour_index, hour_offset_seconds, requested_seconds, start,
-            initial_joint, flux_integral, join_hydrology_ending, false, &mut evidence,
+            initial_joint, flux_integral, join_hydrology_ending, false, false, &mut evidence,
         )
     }
 
@@ -374,6 +428,7 @@ impl Wb11HydrologyKernel {
         mut flux_integral: F,
         mut join_hydrology_ending: G,
         discrete_complete_endpoint: bool,
+        phase_complementarity_endpoint: bool,
         evidence: &mut M::State,
     ) -> Result<(DirectSnowTerminalEventResult, J), DirectSnowStage3EvaluationError>
     where
@@ -406,14 +461,28 @@ impl Wb11HydrologyKernel {
         #[cfg(test)]
         if discrete_complete_endpoint {
             let mut attempt_ordinal = 0;
-            let (trial, joint) = Self::terminal_prefix_candidate(
-                start,
-                &initial_joint,
-                requested_seconds,
-                &mut attempt_ordinal,
-                &mut flux_integral,
-                &mut join_hydrology_ending,
-            )?;
+            let (trial, joint) = if phase_complementarity_endpoint {
+                let (flux, carrier_joint) = flux_integral(
+                    start,
+                    &initial_joint,
+                    0.0,
+                    requested_seconds,
+                    CoveredTerminalTrialRoleV1::Root,
+                    attempt_ordinal,
+                )?;
+                let trial = Self::terminal_phase_complementarity_transition(start, flux)?;
+                let joint = join_hydrology_ending(trial.state, carrier_joint)?;
+                (trial, joint)
+            } else {
+                Self::terminal_prefix_candidate(
+                    start,
+                    &initial_joint,
+                    requested_seconds,
+                    &mut attempt_ordinal,
+                    &mut flux_integral,
+                    &mut join_hydrology_ending,
+                )?
+            };
             let result = Self::terminal_result_from_trial(
                 hour_index,
                 hour_offset_seconds,
@@ -436,7 +505,7 @@ impl Wb11HydrologyKernel {
             return Ok((result, joint));
         }
         #[cfg(not(test))]
-        let _ = discrete_complete_endpoint;
+        let _ = (discrete_complete_endpoint, phase_complementarity_endpoint);
         let mut state = start;
         let mut accepted_joint = initial_joint.clone();
         let mut ledger = TerminalLedger::default();
@@ -683,97 +752,26 @@ impl Wb11HydrologyKernel {
             };
         }
 
-        let event_occurred = state.ice_kg_m2 <= 0.0;
-        let solid_residual = start.ice_kg_m2 + ledger.refrozen_kg_m2 + ledger.deposition_kg_m2
-            - ledger.sublimation_kg_m2
-            - ledger.melt_kg_m2
-            - state.ice_kg_m2;
-        let liquid_residual = start.liquid_kg_m2 + ledger.external_liquid_kg_m2 + ledger.melt_kg_m2
-            - ledger.refrozen_kg_m2
-            - state.liquid_kg_m2;
-        let energy_residual = ledger.complete_energy_j_m2
-            - ledger.cold_energy_change_j_m2
-            - STAGE3_LATENT_HEAT_FUSION_J_KG * ledger.melt_kg_m2
-            + STAGE3_LATENT_HEAT_FUSION_J_KG * ledger.refrozen_kg_m2
-            - ledger.unallocated_energy_j_m2;
-        let mass_scale = start.ice_kg_m2
-            + ledger.refrozen_kg_m2
-            + ledger.deposition_kg_m2
-            + ledger.sublimation_kg_m2
-            + ledger.melt_kg_m2
-            + state.ice_kg_m2
-            + start.liquid_kg_m2
-            + ledger.external_liquid_kg_m2
-            + state.liquid_kg_m2;
-        let closure_mass_tolerance = 1.0e-12_f64.max(1.0e-12 * mass_scale);
-        if solid_residual.abs() > closure_mass_tolerance
-            || liquid_residual.abs() > closure_mass_tolerance
-        {
-            return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
-                SnowTerminalNumericsFailure::Closure,
-            ));
-        }
-        let energy_scale = ledger.complete_energy_j_m2.abs()
-            + ledger.cold_energy_change_j_m2.abs()
-            + STAGE3_LATENT_HEAT_FUSION_J_KG * (ledger.melt_kg_m2 + ledger.refrozen_kg_m2)
-            + ledger.unallocated_energy_j_m2.abs();
-        if energy_residual.abs() > 1.0e-6_f64.max(1.0e-12 * energy_scale) {
-            return Err(DirectSnowStage3EvaluationError::TerminalNumerics(
-                SnowTerminalNumericsFailure::Closure,
-            ));
-        }
-        Ok((DirectSnowTerminalEventResult {
-            model: DirectSnowTerminalEventModel::EnthalpyEventV1,
-            event_occurred,
+        let result = Self::terminal_result_from_trial(
             hour_index,
-            terminal_entry_offset_seconds: hour_offset_seconds,
+            hour_offset_seconds,
             requested_seconds,
-            entry_solid_precipitation_kg_m2: 0.0,
-            hour_offset_seconds: hour_offset_seconds + elapsed,
-            evaluated_seconds: elapsed,
-            unevaluated_seconds: (requested_seconds - elapsed).max(0.0),
-            start_ice_kg_m2: start.ice_kg_m2,
-            start_liquid_kg_m2: start.liquid_kg_m2,
-            start_cold_content_j_m2: start.cold_content_j_m2,
-            end_ice_kg_m2: state.ice_kg_m2,
-            terminal_liquid_kg_m2: state.liquid_kg_m2,
-            end_cold_content_j_m2: state.cold_content_j_m2,
-            complete_energy_j_m2: ledger.complete_energy_j_m2,
-            shortwave_energy_j_m2: ledger.shortwave_energy_j_m2,
-            longwave_energy_j_m2: ledger.longwave_energy_j_m2,
-            sensible_energy_j_m2: ledger.sensible_energy_j_m2,
-            latent_energy_j_m2: ledger.latent_energy_j_m2,
-            advected_energy_j_m2: ledger.advected_energy_j_m2,
-            snow_soil_heat_energy_j_m2: ledger.snow_soil_heat_energy_j_m2,
-            external_liquid_kg_m2: ledger.external_liquid_kg_m2,
-            cold_energy_change_j_m2: ledger.cold_energy_change_j_m2,
-            refrozen_kg_m2: ledger.refrozen_kg_m2,
-            deposition_kg_m2: ledger.deposition_kg_m2,
-            sublimation_kg_m2: ledger.sublimation_kg_m2,
-            melt_kg_m2: ledger.melt_kg_m2,
-            terminal_unallocated_energy_j_m2: ledger.unallocated_energy_j_m2,
-            solid_mass_closure_residual_kg_m2: solid_residual,
-            liquid_mass_closure_residual_kg_m2: liquid_residual,
-            energy_closure_residual_j_m2: energy_residual,
+            start,
+            state,
+            ledger,
+            elapsed,
             event_bracket_width_seconds,
             event_bracket_lower_seconds,
             event_bracket_upper_seconds,
             event_bracket_lower_solid_kg_m2,
             event_bracket_upper_solid_kg_m2,
-            lte_coarse_ice_kg_m2: lte_coarse.state.ice_kg_m2,
-            lte_fine_ice_kg_m2: lte_fine.state.ice_kg_m2,
-            lte_coarse_liquid_kg_m2: lte_coarse.state.liquid_kg_m2,
-            lte_fine_liquid_kg_m2: lte_fine.state.liquid_kg_m2,
-            lte_coarse_cold_content_j_m2: lte_coarse.state.cold_content_j_m2,
-            lte_fine_cold_content_j_m2: lte_fine.state.cold_content_j_m2,
-            lte_coarse_complete_energy_j_m2: lte_coarse.ledger.complete_energy_j_m2,
-            lte_fine_complete_energy_j_m2: lte_fine.ledger.complete_energy_j_m2,
-            lte_coarse_unallocated_energy_j_m2: lte_coarse.ledger.unallocated_energy_j_m2,
-            lte_fine_unallocated_energy_j_m2: lte_fine.ledger.unallocated_energy_j_m2,
+            lte_coarse,
+            lte_fine,
             accepted_trials,
             rejected_trials,
             maximum_scaled_error,
-        }, accepted_joint))
+        )?;
+        Ok((result, accepted_joint))
     }
 }
 
@@ -860,6 +858,7 @@ mod tests {
                 external_liquid_kg_m2: 0.0,
             }, None)),
             |_, joint| Ok(joint),
+            false,
             false,
             &mut evidence,
         );

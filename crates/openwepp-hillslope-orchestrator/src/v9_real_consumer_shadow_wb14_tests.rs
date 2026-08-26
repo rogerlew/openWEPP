@@ -225,13 +225,87 @@ fn run_real_discrete_endpoint_probes(
         > TERMINAL_ENERGY_COMPARISON_TOLERANCE_J_M2);
     assert_eq!(candidate.end_ice_bits, candidate.deposition_bits);
     assert_eq!(candidate.melt_bits, 0.6_f64.to_bits());
+    let competition_inputs =
+        crate::snow_terminal_phase_competition::inputs_from_real_endpoint(candidate);
+    let complementarity =
+        crate::snow_terminal_phase_competition::simultaneous_complementarity(competition_inputs)
+            .expect("real complementarity allocation");
+    let residual_frost =
+        crate::snow_terminal_phase_competition::residual_surface_frost(competition_inputs)
+            .expect("real residual-frost allocation");
+    assert!(
+        complementarity.ending_pack_ice_kg_m2 <= 1.0e-9
+            || complementarity.unallocated_energy_j_m2 <= 1.0e-6
+    );
+    assert_eq!(residual_frost.ending_pack_ice_kg_m2.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(
+        residual_frost.ending_surface_frost_kg_m2.to_bits(),
+        candidate.deposition_bits
+    );
+    let evaluate_complete_complementarity = |tick: u128| {
+        crate::snow_stage3_v11_attachment::evaluate_real_phase_complementarity_endpoint_v1(
+            shadow,
+            beginning_clock,
+            prepared,
+            0,
+            0,
+            stage3_beginning_by_lane,
+            &beginning_terminal_parcels,
+            selected_seconds,
+            1,
+            1,
+            ModelTimeNs::new(tick),
+        )
+        .expect("real complete-owner phase-complementarity endpoint")
+    };
+    let complete_complementarity_boundary = evaluate_complete_complementarity(selected);
+    assert_eq!(
+        complete_complementarity_boundary.end_ice_bits,
+        complementarity.ending_pack_ice_kg_m2.to_bits()
+    );
+    assert_eq!(
+        complete_complementarity_boundary.end_liquid_bits,
+        complementarity.ending_liquid_kg_m2.to_bits()
+    );
+    assert_eq!(
+        complete_complementarity_boundary.terminal_unallocated_energy_bits,
+        0.0_f64.to_bits()
+    );
+    for energy_delta_j_m2 in [-1.0e-3, -1.0e-6, 0.0, 1.0e-6, 1.0e-3] {
+        let perturbed = crate::snow_terminal_phase_competition::TerminalPhaseInputs {
+            non_vapor_energy_j_m2: competition_inputs.non_vapor_energy_j_m2
+                + energy_delta_j_m2,
+            complete_energy_j_m2: competition_inputs.complete_energy_j_m2
+                + energy_delta_j_m2,
+            ..competition_inputs
+        };
+        crate::snow_terminal_phase_competition::simultaneous_complementarity(perturbed)
+            .expect("nearby real-energy perturbation");
+    }
+    let parent_endpoint = evaluate(900_000_000_000);
+    let parent_complementarity = crate::snow_terminal_phase_competition::simultaneous_complementarity(
+        crate::snow_terminal_phase_competition::inputs_from_real_endpoint(&parent_endpoint),
+    )
+    .expect("real parent-end complementarity allocation");
+    assert_eq!(
+        parent_complementarity.event,
+        crate::snow_terminal_phase_competition::TerminalEventChronology::Interior
+    );
+    assert!(parent_complementarity.ending_pack_ice_kg_m2 <= 1.0e-9);
+    let complete_complementarity_parent = evaluate_complete_complementarity(900_000_000_000);
+    assert!(complete_complementarity_parent.event_occurred);
+    assert_eq!(f64::from_bits(complete_complementarity_parent.end_ice_bits), 0.0);
+    assert_eq!(
+        complete_complementarity_parent.end_liquid_bits,
+        parent_complementarity.ending_liquid_kg_m2.to_bits()
+    );
     assert_eq!(
         evaluate(selected),
         *candidate,
         "exact endpoint replay must be byte-identical"
     );
     eprintln!(
-        "CHILD1_REAL_DISCRETE_HOLD first_material_invalid_tick={selected} bracket_independent=true classification=Invalid reason=no_admissible_root_positive_deposition_after_complete_melt terminal_at_endpoint_absent=true",
+        "CHILD1_TERMINAL_PHASE_COMPETITION tick={selected} complementarity={complementarity:?} residual_frost={residual_frost:?} parent_end={parent_complementarity:?}",
     );
 }
 
