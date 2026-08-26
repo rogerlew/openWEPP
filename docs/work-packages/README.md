@@ -20,22 +20,22 @@ contract, owner, receiver, restart, runner, selector, or cutover changed.
 
 ## 20260826-workspace-baseline-assurance-v2-reconciliation-001
 
-Queued successor debt package for the 81 intake-resident Assurance V2
-identity/source failures and nine retained source/registry guards observed in
-the canonical 3,250/101/6 workspace run. It requires separate owner
-authorization and must close before any future Child-1 discrete contract
-freeze or production implementation. It does not waive the failures or alter
-the discrete support-root HOLD.
+Next owner-authorized operational package for the 81 intake-resident Assurance
+V2 identity/source failures, nine retained source/registry guards, and the
+protected V9 external-runtime/libcrypto binding. It must establish an exact
+clean workspace baseline without weakening guards, rebinding rejected terminal
+candidate bytes, or altering Stage-3 physics or terminal behavior.
 
 ## 20260821-snow-stage3-v11-covered-consumer-runner-closure-001
 
-Active Child-1 successor from the synchronized Stage-3 terminal handoff
+Terminal Child-1 successor from the synchronized Stage-3 terminal handoff
 `EXECUTED HOLD` at `40a4bb8b53cea4c6b642c70cb036a1a5e2f3de0a`.
-It owns the actual snow-covered V11/Stage-3 shared-carrier consumer, the
-runner-owned sealed 48-support capability, exact-one Stage-3 snow custody,
-terminal-liquid consumption, complete owner installation, additive restart,
-positive physical scenarios, and Child-1 closure. Status: `EXECUTING`; the
-predecessor remains immutable historical evidence and Child 3 is blocked.
+It closed persistent covered physical custody, then exhausted the authorized
+terminal phase/chronology research boundary. Both successor research packages
+are preserved, all four candidates are `NO-GO`, typed unsupported controls,
+and production remains `BelowCarrierDomain`. Status: `EXECUTED HOLD`; no
+runner, receiver, restart, Batch V2, Child 3, successor-contract, or cutover
+continuation is authorized.
 
 ## 20260821-snow-stage3-terminal-handoff-constitutive-closure-001
 
@@ -84,18 +84,19 @@ physical scenarios remain missing. Child 3 is not authorized.
   active-adopter support aggregation, and deterministic event-boundary
   coalescing for a separately reviewed default-off implementation. Sub-ULP LSE
   storage arithmetic is not admitted.
-- `20260819-snow-stage3-production-cutover-campaign-001/` — ACTIVE / CHILD 2C
-  COMPLETE; CHILD 1 NEXT: resume the
-  terminal handoff, run actual-scheduler qualification, obtain final-candidate
-  `ASSURE-06` human approval, and atomic CoE retirement. Canopy-intercepted snow
-  is excluded and CoE remains production-authoritative through Child 3. Its
+- `20260819-snow-stage3-production-cutover-campaign-001/` — HELD / CHILD 1
+  TERMINAL EXECUTED HOLD: preserve the terminal handoff and both terminal
+  research successors. Canopy-intercepted snow is excluded and CoE remains
+  production-authoritative. Its
   fresh Child 1 successor is
   `20260821-snow-stage3-terminal-handoff-live-owner-closure-001/`; it is
   `EXECUTED HOLD` after source review. Its fresh constitutive successor is
   `20260821-snow-stage3-terminal-handoff-constitutive-closure-001/`, now
-  historical. The sole active Child-1 package is
+  historical. The parent Child-1 package is
   `20260821-snow-stage3-v11-covered-consumer-runner-closure-001/`; campaign
-  status remains `active / Child 1 executing HOLD`.
+  status is `held / Child 1 terminal EXECUTED HOLD`. No Child 3 qualification,
+  runner, receiver, restart, Batch V2, contract successor, or cutover is
+  authorized.
 - `20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001/` —
   EXECUTED / HOLD BEFORE PRODUCTION EDITS: admitted the bounded terminal
   receiver and shared-WB14 contracts/tests, then found that V10 vegetation

@@ -1,6 +1,6 @@
 # Reconcile the Assurance V2 workspace baseline
 
-Status: `QUEUED / OWNER AUTHORIZATION REQUIRED`.
+Status: `AUTHORIZED / EXECUTING`.
 
 Date: `2026-08-26`.
 
@@ -37,7 +37,8 @@ implementation is considered.
 
 ## Boundaries
 
-- This scaffold does not authorize implementation or failure waiver.
+- Owner direction authorizes bounded reconciliation of the individually
+  classified baseline failures. It does not authorize failure waiver.
 - Do not weaken source/registry anti-evasion guards.
 - Do not rebind rejected SnowEnergy v21, LSE v11, SnowFreeze v139, or
   CoupledTime v6 continuous-DAE candidates.

@@ -1,6 +1,6 @@
 # Stage-3/V11 Covered Consumer and Runner Closure
 
-Status: `EXECUTING / Child-1 successor / prior package preserved as EXECUTED HOLD`
+Status: `EXECUTED HOLD / terminal Child-1 phase boundary / production BelowCarrierDomain`
 
 Date: `2026-08-21`
 
@@ -836,3 +836,21 @@ split threshold. The test-only real endpoint evidence remains colocated with
 the private candidate binder for this bounded HOLD. Any future reuse must
 first split the test evidence into a child module and centralize the duplicated
 closure assembly and WB14-ceiling mapping identified by ownership review.
+
+### 2026-08-26 final terminal disposition
+
+Owner direction makes the vapor/melt phase-competition package and the later
+chronology-candidate package preserved `EXECUTED HOLD` records, not open
+implementation continuations. All four researched chronology candidates are
+`NO-GO`. Typed unsupported controls the terminal phase boundary and the
+production call remains `BelowCarrierDomain`. The last fully qualified
+physical implementation remains
+`43cc9bbea2fbf5fe6ab6596cee4162de75cef999`.
+
+Do not continue endpoint-root, LTE, DAE, Hermite, complementarity,
+frost-subtype, or search-method implementation under current authority. Do not
+author SnowEnergy, SnowFreeze, LSE, or CoupledTime successors. Batch V2,
+terminal receiver, restart, runner, Child 3, and cutover remain unauthorized.
+The separate owner-authorized next operational package is
+`20260826-workspace-baseline-assurance-v2-reconciliation-001`; it may reconcile
+workspace qualification debt but cannot alter this physical HOLD.

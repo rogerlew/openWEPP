@@ -1,6 +1,6 @@
 # Coordinate Stage 3 Production Cutover
 
-Status: `active / Child 2A, Child 2B, and Child 2C authority complete; Child 1 V11 covered-consumer/runner successor executing HOLD`
+Status: `EXECUTED HOLD / Child 1 terminal boundary / Children 3 and 4 unauthorized`
 
 Date: `2026-08-19`
 
@@ -42,7 +42,10 @@ children or use a later child to pass a current child's required gate.
    still required. Its constitutive successor is retained as historical
    execution evidence. The
    [`20260821-snow-stage3-v11-covered-consumer-runner-closure-001`](../20260821-snow-stage3-v11-covered-consumer-runner-closure-001/package.md)
-   package is now the sole active Child-1 task.
+   package is the terminal parent Child-1 record and is `EXECUTED HOLD`.
+   Its preserved phase-competition and chronology-candidate successors found
+   all four researched candidates `NO-GO`; typed unsupported controls and
+   production remains `BelowCarrierDomain`.
 2. Child 2 is a continuously executed three-increment coordinator:
    - **2A** [`COUPLED-TIME-AUTHORITY-IMPLEMENTATION`](../20260820-coupled-time-authority-implementation-001/package.md)
      admits and implements exact-one coupled clock custody, exact integer
@@ -156,9 +159,13 @@ limits it requires.
 - [x] (2026-08-21) Review the resumed Child-1 increment and correct its
   disposition to EXECUTED HOLD; ordinary scheduler/publication plumbing is
   retained, but Child 3 remains prohibited until the constitutive path closes.
-- [ ] Execute Child 3 actual-scheduler qualification.
-- [ ] Obtain final-candidate `ASSURE-06` human review and approval.
-- [ ] Execute Child 4 atomic cutover and campaign closure.
+- [x] (2026-08-26) Record the terminal Child-1 `EXECUTED HOLD` after the
+  vapor/melt phase-competition and chronology-candidate packages rejected all
+  four researched candidates. Typed unsupported controls; production remains
+  `BelowCarrierDomain`.
+- [ ] `UNAUTHORIZED`: Child 3 actual-scheduler qualification.
+- [ ] `UNAUTHORIZED`: final-candidate `ASSURE-06` human review and approval.
+- [ ] `UNAUTHORIZED`: Child 4 atomic cutover and campaign closure.
 
 ## Surprises & Discoveries
 
@@ -191,9 +198,13 @@ limits it requires.
 
 ## Outcomes & Retrospective
 
-Child 2C authority is terminally complete. The resumed Child-1 increment is
-EXECUTED HOLD after source review: its ordinary scheduler/publication scaffold
-is retained, but actual Stage-3/V11 terminal chronology, typed owner custody,
-complete restart, positive physical scenarios, and assurance reconciliation
-remain. Child 1 remains the next campaign step; no Child 3 qualification,
-selector, default, output, assurance, or ownership change has occurred.
+Child 2C authority is terminally complete. Child 1 is terminally `EXECUTED
+HOLD`: persistent covered physical custody at `43cc9bbe` remains the last fully
+qualified physical implementation, both later terminal research packages are
+preserved, and all four researched chronology candidates are `NO-GO`. Typed
+unsupported controls the current terminal phase boundary and production
+remains `BelowCarrierDomain`. Endpoint-root, LTE, DAE, Hermite,
+complementarity, frost-subtype, and search-method continuation is prohibited
+under current authority. No SnowEnergy, SnowFreeze, LSE, or CoupledTime
+successor may be authored. Batch V2, receiver, restart, runner, Child 3,
+assurance promotion, CoE retirement, and cutover remain unauthorized.
