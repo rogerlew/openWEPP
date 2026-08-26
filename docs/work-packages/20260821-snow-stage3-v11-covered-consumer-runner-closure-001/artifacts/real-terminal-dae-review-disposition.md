@@ -30,3 +30,18 @@ nextest `e305172f-63c2-4ca6-9be3-05a24e11ee21`.
 
 This is compiler-correction review GO, not workspace qualification GO or a
 change to `CHILD1-REAL-DAE-001 / HOLD`.
+
+The workspace attempt at clean SHA
+`21c9423b8c364e647160ea9a2636730096124a64` then exposed one independent
+integration-test exhaustiveness drift. Two reviewers again returned `GO` for
+the three-line correction: the new `TerminalCustody` arm panics, only the
+expected `TurbulentTransfer` branch can pass, and no production source or
+assertion semantics change. Independent focused evidence passed 26/26 at
+nextest `dee21e27-22dc-4318-a33e-827613eed031`; a narrower independent rerun
+passed 1/1 at `5d592021-5f6e-453b-ba89-33158d5f6db0`.
+
+The science/ownership reviewer reported one temporary evidence-only finding:
+the exact write-set manifest had not yet recorded the integration test and
+second raw workspace log. Both are now present in `owned-file-manifest.md`, so
+the finding is corrected before the next clean-SHA workspace run. This remains
+test-only compiler-correction GO and does not alter the real-candidate HOLD.

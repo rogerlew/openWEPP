@@ -736,3 +736,11 @@ unchanged. The complete affected runner suite passes 253/253 at nextest
 reviews return `GO` with no findings for this test-only compiler correction.
 The second clean-SHA workspace run remains the final validation action; these
 results do not alter the real-candidate HOLD.
+
+The workspace run at clean SHA
+`21c9423b8c364e647160ea9a2636730096124a64` exposed one further test-only
+compile drift: an integration-test typed error match omitted the existing
+`TerminalCustody` variant. The corrected match remains fail-closed and the
+focused target passes 26/26 at nextest
+`c665d958-6022-47eb-8887-0c4ff6105c76`. No production source or assertion was
+changed or weakened. A new clean-SHA workspace run remains required.

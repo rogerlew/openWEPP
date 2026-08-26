@@ -1116,6 +1116,7 @@ V14 changed only six package artifacts and no Rust source.
 | Affected heavy suite | EXPECTED RED: 849 passed / exact historical 11 failed / 1 skipped; zero name/signature delta; nextest `a2fc23d0-8833-401b-ae7c-6dd6a808561b` |
 | Exact-head workspace suite | FIRST CLEAN SHA COMPILE-BLOCKED at runner test fixture; corrected; second clean-SHA run pending |
 | Complete affected runner suite | PASS: 253/253, nextest `e305172f-63c2-4ca6-9be3-05a24e11ee21` |
+| Focused EB03 runtime integration suite | PASS: 26/26, nextest `c665d958-6022-47eb-8887-0c4ff6105c76` |
 | Independent numerical and science/ownership reviews | GO / GO for corrected HOLD; no real-candidate GO |
 | Independent verification passes | GO / GO for corrected HOLD; artifact-only findings corrected |
 
@@ -1144,3 +1145,21 @@ reviews found no findings and returned `GO` for the test-only compiler
 correction's correctness, ownership, noninterference, and evidence
 truthfulness. Neither review converts the real-candidate HOLD into numerical,
 science, Batch, or workspace qualification GO.
+
+Second clean-SHA workspace attempt: at
+`21c9423b8c364e647160ea9a2636730096124a64`, cargo again stopped before
+nextest, this time on one non-exhaustive integration-test match after the
+existing `DirectSnowStage3EvaluationError::TerminalCustody` variant. The
+authoritative status is 101 and the raw receipt is
+`heavy-workspace-20260826-002137.log`; no historical test name or signature
+ran. The test-only match now names `TerminalCustody` explicitly and preserves
+the failure assertion. The complete focused `snow_surface_eb03_runtime` target
+passes 26/26 at nextest `c665d958-6022-47eb-8887-0c4ff6105c76`. A third
+clean-SHA workspace run is required.
+
+Static / independent review: both reviewers return `GO` for the exhaustive
+match correction. Independent verification passed 26/26 at nextest
+`dee21e27-22dc-4318-a33e-827613eed031` and 1/1 at
+`5d592021-5f6e-453b-ba89-33158d5f6db0`. The sole evidence-only manifest
+finding is corrected: the integration test and raw workspace log are both in
+the exact write set.

@@ -687,3 +687,30 @@ orchestrator-private ending joint owner-initialized, changes no public API or
 production runner behavior, and accurately records the first workspace
 attempt as compile-blocked. This is compiler-correction GO only; the clean-SHA
 workspace rerun and overall `CHILD1-REAL-DAE-001` HOLD remain.
+
+## 2026-08-26 second clean-SHA workspace compile correction
+
+Ran: at exact clean SHA `21c9423b8c364e647160ea9a2636730096124a64`,
+the canonical heavy workspace command stopped during compilation before
+nextest created a run ID. One integration-test match at
+`snow_surface_eb03_runtime.rs` omitted the already-existing
+`DirectSnowStage3EvaluationError::TerminalCustody` variant. Cargo returned 101;
+`heavy-workspace-20260826-002137.log` retains the exact diagnostic. Because
+nextest did not run, this attempt supplies no historical-eleven comparison.
+
+Static: the test-only correction adds the explicit typed variant arm and keeps
+the test fail-closed if that unexpected error is returned. No assertion,
+production source, public API, physics, owner state, or receipt behavior is
+removed or weakened.
+
+Ran: `cargo nextest run --test snow_surface_eb03_runtime --no-fail-fast`
+passed 26/26 at nextest `c665d958-6022-47eb-8887-0c4ff6105c76`. Formatting and
+diff hygiene pass. A new clean evidence SHA and canonical workspace rerun are
+required.
+
+Static / independent review: both numerical/Rust and science/ownership
+reviewers return `GO` for the correction. Independent reruns passed 26/26 at
+nextest `dee21e27-22dc-4318-a33e-827613eed031` and the directly affected case
+passed 1/1 at `5d592021-5f6e-453b-ba89-33158d5f6db0`. The only finding was a
+temporary write-manifest omission; `owned-file-manifest.md` now records both
+the integration test and `heavy-workspace-20260826-002137.log`.
