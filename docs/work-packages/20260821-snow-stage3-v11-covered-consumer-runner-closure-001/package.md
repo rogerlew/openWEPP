@@ -596,3 +596,20 @@ coupling-selection reason, provider ordinal joins, exact carrier projections
 and observable noninterference remain open. `BelowCarrierDomain` and qualified
 physical implementation `43cc9bbea2fbf5fe6ab6596cee4162de75cef999`
 remain authoritative.
+
+### 2026-08-25 implementation-first terminal bounded evidence disposition
+
+Owner-directed implementation-first authority replaced the prior pre-edit
+review gate. The private capture was enriched and the real `BelowCarrierDomain`
+fixture, lower capture, production/test compilation, V20/V21 guards and exact
+historical eleven-failure census passed. Post-return validation now checks the
+raw decision, trial, provider/iteration and floor joins without mutating prior
+evidence.
+
+Both required postimplementation reviews remain `HOLD` on unclosed evidence
+completeness: real `CHILD1-TERM-COUPLING-020` exhaustion characterization,
+immutable selected coupling/provider/result custody, separate typed ingress
+proofs, identical-beginning NoEvidence/Capture noninterference and the complete
+poison matrix. The candidate-v21 effectivity/conservation matrix and final
+candidate reviews remain gated and were not run. No temporal operator, Batch
+V2, physical correction, public API, publication or owner behavior changed.

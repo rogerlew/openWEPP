@@ -1481,4 +1481,7 @@ pub(crate) use support_helpers_mod::{
     stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
 };
 #[cfg(test)]
-pub(crate) use support_helpers_mod::{CaptureEvidence, CaptureState};
+pub(crate) use support_helpers_mod::{
+    CaptureEvidence, CaptureState, CapturedProviderOutcome, TerminalCouplingSelectionReason,
+    TerminalPairPosition,
+};

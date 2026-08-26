@@ -261,7 +261,8 @@ impl Wb11HydrologyKernel {
                         let terminal_lane_id = terminal_trial_context
                             .as_ref()
                             .map(|(lane_id, _, _, _)| *lane_id);
-                        let (mut terminal, accepted_terminal_joint) = Self::solve_terminal_enthalpy_event_with_evidence::<_, _, _, M>(
+                        let mut coupling_evidence = M::new_coupling_state();
+                        let terminal_result = Self::solve_terminal_enthalpy_event_with_evidence::<_, _, _, M>(
                             phase_class,
                             hour_index,
                             elapsed_seconds,
@@ -378,6 +379,7 @@ impl Wb11HydrologyKernel {
                                             ending_snow_hint: hint,
                                             beginning_joint: beginning_joint.clone(),
                                         };
+                                        let evidence_request = M::ENABLED.then(|| request.clone());
                                         let receipt = (**provider)(request)?;
                                         if receipt.boundary.support != trial_support
                                             || receipt.beginning_joint != *beginning_joint
@@ -448,13 +450,25 @@ impl Wb11HydrologyKernel {
                                                 && (previous.cold_content_j_m2 - next_hint.cold_content_j_m2).abs() <= 1.0e-6
                                                 && (previous.surface_temperature_c - next_hint.surface_temperature_c).abs() <= 1.0e-9
                                         });
-                                        accepted = Some((receipt, flux));
+                                        let comparisons = evidence_request.as_ref().and_then(|_| hint.map(|previous| [
+                                            (previous.ice_kg_m2, next_hint.ice_kg_m2, (previous.ice_kg_m2 - next_hint.ice_kg_m2).abs(), 1.0e-9, (previous.ice_kg_m2 - next_hint.ice_kg_m2).abs() <= 1.0e-9),
+                                            (previous.liquid_kg_m2, next_hint.liquid_kg_m2, (previous.liquid_kg_m2 - next_hint.liquid_kg_m2).abs(), 1.0e-9, (previous.liquid_kg_m2 - next_hint.liquid_kg_m2).abs() <= 1.0e-9),
+                                            (previous.cold_content_j_m2, next_hint.cold_content_j_m2, (previous.cold_content_j_m2 - next_hint.cold_content_j_m2).abs(), 1.0e-6, (previous.cold_content_j_m2 - next_hint.cold_content_j_m2).abs() <= 1.0e-6),
+                                            (previous.surface_temperature_c, next_hint.surface_temperature_c, (previous.surface_temperature_c - next_hint.surface_temperature_c).abs(), 1.0e-9, (previous.surface_temperature_c - next_hint.surface_temperature_c).abs() <= 1.0e-9),
+                                        ]));
+                                        if let Some(request) = evidence_request.as_ref() {
+                                            M::coupling_iteration(&mut coupling_evidence, TerminalCouplingIterationHook {
+                                                request: request.clone(), outgoing: next_hint,
+                                                comparisons, converged,
+                                            });
+                                        }
+                                        accepted = Some((receipt, flux, evidence_request, converged));
                                         if converged {
                                             break;
                                         }
                                         hint = Some(next_hint);
                                     }
-                                    let (receipt, flux) = accepted.ok_or(
+                                    let (receipt, flux, selected_request, selected_live_converged) = accepted.ok_or(
                                         DirectSnowStage3EvaluationError::TerminalCustody(
                                             "covered terminal coupled trial missing result",
                                         ),
@@ -465,6 +479,17 @@ impl Wb11HydrologyKernel {
                                             && (previous.liquid_kg_m2 - preview.liquid_kg_m2).abs() <= 1.0e-9
                                             && (previous.cold_content_j_m2 - preview.cold_content_j_m2).abs() <= 1.0e-6
                                     });
+                                    if let Some(selected_request) = selected_request {
+                                        M::coupling_selection(&mut coupling_evidence, TerminalCouplingSelectionHook {
+                                        request: selected_request,
+                                        reason: if selected_live_converged {
+                                            TerminalCouplingSelectionReason::FourComponentConvergenceBreak
+                                        } else {
+                                            TerminalCouplingSelectionReason::IterationLoopExhausted
+                                        },
+                                        post_loop_three_component_check: converged,
+                                        });
+                                    }
                                     if !converged {
                                         return Err(DirectSnowStage3EvaluationError::TerminalCustody(
                                             "covered terminal coupled trial nonconvergence",
@@ -547,7 +572,9 @@ impl Wb11HydrologyKernel {
                                     .transpose()
                             },
                             evidence,
-                        )?;
+                        );
+                        M::merge_coupling(evidence, coupling_evidence);
+                        let (mut terminal, accepted_terminal_joint) = terminal_result?;
                         terminal.entry_solid_precipitation_kg_m2 =
                             hourly.snowfall_m * 0.1 * STAGE3_RHO_WATER_KG_M3;
                         let hour = &mut summary.hourly[hour_index];

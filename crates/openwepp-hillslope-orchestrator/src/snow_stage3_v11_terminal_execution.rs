@@ -536,20 +536,17 @@ fn evaluate_covered_terminal_candidate_with_evidence_v1<M: crate::hydrology::Ter
             },
         );
         let provider_result = stack.execute_covered_carrier_phase_v1(&beginning, &request, child);
-        let (wb14_terminal, surface_terminal) = provider_result.as_ref().map_or((false, false), |value| {
-            let ingress = value.carrier_envelope.hydrology().surface_ingress();
-            (
-                ingress.receipts().iter().any(|receipt| receipt.kind == crate::direct_runtime::DirectSurfaceLiquidParcelKind::TerminalReceiver),
-                ingress.open_ingress_parcels().iter().any(|parcel| parcel.kind == crate::direct_runtime::DirectSurfaceLiquidParcelKind::TerminalReceiver),
-            )
-        });
-        M::provider_call(
-            &mut provider_evidence,
-            &request,
-            provider_result.is_ok(),
-            wb14_terminal,
-            surface_terminal,
-        );
+        match provider_result.as_ref() {
+            Ok(value) => {
+                let projection = M::project_provider_success(&request, value);
+                M::provider_success(&mut provider_evidence, &request, projection);
+            }
+            Err(_) => M::provider_failure(
+                &mut provider_evidence,
+                &request,
+                "covered probe carrier fixed point",
+            ),
+        }
         let result = provider_result
             .map_err(|error| {
                 if carrier_failure.borrow().is_none() {

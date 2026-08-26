@@ -234,12 +234,10 @@ mod terminal_evidence_sealed {
 #[derive(Clone, Copy)]
 pub(crate) struct TerminalPairEvidenceHook {
     pub duration_s: f64,
-    pub coarse_complete_energy_j_m2: f64,
-    pub refined_complete_energy_j_m2: f64,
+    pub proposed_next_duration_s: f64,
+    pub components: [(f64, f64, f64, f64, f64); 5],
     pub scaled_error: f64,
     pub rejected: bool,
-    pub coarse_external_liquid_kg_m2: f64,
-    pub refined_external_liquid_kg_m2: f64,
 }
 
 #[derive(Clone, Copy)]
@@ -253,37 +251,268 @@ pub(crate) struct TerminalAdmissionEvidenceHook<'a> {
 }
 
 pub(crate) trait TerminalEvidenceMode<J>: terminal_evidence_sealed::Sealed {
+    const ENABLED: bool;
     type State;
     type ProviderState;
+    type ProviderProjection;
+    type CouplingState;
     fn new_state() -> Self::State;
     fn new_provider_state() -> Self::ProviderState;
-    fn provider_call(_: &mut Self::ProviderState, _: &CoveredTerminalTrialRequestV1, _: bool, _: bool, _: bool) {}
+    fn new_coupling_state() -> Self::CouplingState;
+    fn project_provider_success(
+        _: &CoveredTerminalTrialRequestV1,
+        _: &crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1,
+    ) -> Self::ProviderProjection;
+    fn provider_success(_: &mut Self::ProviderState, _: &CoveredTerminalTrialRequestV1, _: Self::ProviderProjection) {}
+    fn provider_failure(_: &mut Self::ProviderState, _: &CoveredTerminalTrialRequestV1, _: &'static str) {}
     fn merge_provider(_: &mut Self::State, _: Self::ProviderState) {}
     fn provider_call_count(_: &Self::State) -> u64 { 0 }
     fn pair(_: &mut Self::State, _: TerminalPairEvidenceHook) {}
     fn admission(_: &mut Self::State, _: TerminalAdmissionEvidenceHook<'_>) {}
+    fn coupling_iteration(_: &mut Self::CouplingState, _: TerminalCouplingIterationHook) {}
+    fn coupling_selection(_: &mut Self::CouplingState, _: TerminalCouplingSelectionHook) {}
+    fn merge_coupling(_: &mut Self::State, _: Self::CouplingState) {}
+    fn selected_trial(_: &mut Self::State, _: TerminalSelectedTrialHook<'_, J>) {}
 }
 
 pub(crate) enum NoEvidence {}
 impl terminal_evidence_sealed::Sealed for NoEvidence {}
 impl<J> TerminalEvidenceMode<J> for NoEvidence {
+    const ENABLED: bool = false;
     type State = ();
     type ProviderState = ();
+    type ProviderProjection = ();
+    type CouplingState = ();
     #[inline(always)] fn new_state() {}
     #[inline(always)] fn new_provider_state() {}
-    #[inline(always)] fn provider_call(_: &mut (), _: &CoveredTerminalTrialRequestV1, _: bool, _: bool, _: bool) {}
+    #[inline(always)] fn new_coupling_state() {}
+    #[inline(always)] fn project_provider_success(_: &CoveredTerminalTrialRequestV1, _: &crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1) {}
+    #[inline(always)] fn provider_success(_: &mut (), _: &CoveredTerminalTrialRequestV1, _: ()) {}
+    #[inline(always)] fn provider_failure(_: &mut (), _: &CoveredTerminalTrialRequestV1, _: &'static str) {}
     #[inline(always)] fn merge_provider(_: &mut (), _: ()) {}
     #[inline(always)] fn provider_call_count(_: &()) -> u64 { 0 }
     #[inline(always)] fn pair(_: &mut (), _: TerminalPairEvidenceHook) {}
     #[inline(always)] fn admission(_: &mut (), _: TerminalAdmissionEvidenceHook<'_>) {}
 }
 
+#[derive(Clone)]
+pub(crate) struct TerminalCouplingIterationHook {
+    pub request: CoveredTerminalTrialRequestV1,
+    pub outgoing: CoveredTerminalEndingSnowHintV1,
+    pub comparisons: Option<[(f64, f64, f64, f64, bool); 4]>,
+    pub converged: bool,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum TerminalCouplingSelectionReason {
+    FourComponentConvergenceBreak,
+    IterationLoopExhausted,
+}
+
+#[derive(Clone)]
+pub(crate) struct TerminalCouplingSelectionHook {
+    pub request: CoveredTerminalTrialRequestV1,
+    pub reason: TerminalCouplingSelectionReason,
+    pub post_loop_three_component_check: bool,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum TerminalPairPosition { Coarse, Fine1, Fine2 }
+
+pub(crate) struct TerminalSelectedTrialHook<'a, J> {
+    pub position: TerminalPairPosition,
+    pub role: CoveredTerminalTrialRoleV1,
+    pub attempt_ordinal: u32,
+    pub relative_start_s: f64,
+    pub duration_s: f64,
+    pub beginning: TerminalStateEvidence,
+    pub ending: TerminalStateEvidence,
+    pub ledger: TerminalLedgerEvidence,
+    pub beginning_joint: &'a J,
+    pub carrier_ending_joint: &'a J,
+    pub hydrology_ending_joint: &'a J,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct TerminalStateEvidence { pub ice_kg_m2: f64, pub liquid_kg_m2: f64, pub cold_content_j_m2: f64 }
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct TerminalLedgerEvidence {
+    pub complete_energy_j_m2: f64, pub cold_energy_change_j_m2: f64,
+    pub refrozen_kg_m2: f64, pub deposition_kg_m2: f64, pub sublimation_kg_m2: f64,
+    pub melt_kg_m2: f64, pub unallocated_energy_j_m2: f64,
+    pub shortwave_energy_j_m2: f64, pub longwave_energy_j_m2: f64,
+    pub sensible_energy_j_m2: f64, pub latent_energy_j_m2: f64,
+    pub advected_energy_j_m2: f64, pub snow_soil_heat_energy_j_m2: f64,
+    pub external_liquid_kg_m2: f64,
+}
+
 #[cfg(test)]
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Default)]
 pub(crate) struct CaptureState {
-    pub provider_calls: Vec<(u128, u128, CoveredTerminalTrialRoleV1, u32, bool, bool, bool)>,
-    pub pairs: Vec<(f64, f64, f64, f64, bool, f64, f64)>,
+    pub provider_calls: Vec<CapturedProviderCall>,
+    pub pairs: Vec<CapturedPair>,
     pub admissions: Vec<(f64, f64, f64, SnowTerminalNumericsFailure, u64, u64)>,
+    pub coupling_iterations: Vec<CapturedCouplingIteration>,
+    pub coupling_selections: Vec<TerminalCouplingSelectionHook>,
+    pub selected_trials: Vec<CapturedSelectedTrial>,
+}
+
+#[cfg(test)]
+#[derive(Clone)]
+pub(crate) struct CapturedPair {
+    pub duration_s: f64, pub proposed_next_duration_s: f64,
+    /// Ordered ice, liquid, cold content, complete energy, unallocated energy.
+    /// Each tuple is `(coarse, refined, delta, denominator, scaled)`.
+    pub components: Vec<(f64, f64, f64, f64, f64)>,
+    pub maximum_scaled: f64, pub rejected: bool,
+}
+
+#[cfg(test)]
+#[derive(Clone)]
+pub(crate) enum CapturedProviderOutcome { Success(crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1), Failure(&'static str) }
+#[cfg(test)]
+#[derive(Clone)]
+pub(crate) struct CapturedProviderCall { pub ordinal: u64, pub request: CoveredTerminalTrialRequestV1, pub outcome: CapturedProviderOutcome }
+#[cfg(test)]
+#[derive(Clone)]
+pub(crate) struct CapturedCouplingIteration { pub hook: TerminalCouplingIterationHook, pub provider_ordinal: Option<u64> }
+#[cfg(test)]
+#[derive(Clone)]
+pub(crate) struct CapturedSelectedTrial {
+    pub position: TerminalPairPosition, pub role: CoveredTerminalTrialRoleV1, pub attempt_ordinal: u32,
+    pub relative_start_s: f64, pub duration_s: f64, pub beginning: TerminalStateEvidence,
+    pub ending: TerminalStateEvidence, pub ledger: TerminalLedgerEvidence,
+    pub beginning_joint: Option<CoveredTerminalJointTrialStateV1>,
+    pub carrier_ending_joint: Option<CoveredTerminalJointTrialStateV1>,
+    pub hydrology_ending_joint: Option<CoveredTerminalJointTrialStateV1>,
+}
+
+#[cfg(test)]
+pub(crate) struct ValidatedCaptureState {
+    pub final_trial_count: usize,
+    pub final_pair_rejected: bool,
+    pub floor_outcome: SnowTerminalNumericsFailure,
+    pub call_count_through_final_pair: u64,
+    pub call_count_at_floor: u64,
+}
+
+#[cfg(test)]
+fn same_terminal_call_key(
+    left: &CoveredTerminalTrialRequestV1,
+    right: &CoveredTerminalTrialRequestV1,
+) -> bool {
+    left.lane_id == right.lane_id
+        && left.support == right.support
+        && left.role == right.role
+        && left.attempt_ordinal == right.attempt_ordinal
+        && left.coupling_iteration == right.coupling_iteration
+        && left.beginning_joint.receipt_sha256() == right.beginning_joint.receipt_sha256()
+}
+
+#[cfg(test)]
+impl CaptureState {
+    pub(crate) fn validate(&self) -> Result<ValidatedCaptureState, &'static str> {
+        if self.admissions.len() != 1 || self.pairs.is_empty() {
+            return Err("floor/pair cardinality");
+        }
+        if self.selected_trials.len() != self.pairs.len() * 3 {
+            return Err("selected trial cardinality");
+        }
+        for (pair, trials) in self.pairs.iter().zip(self.selected_trials.chunks_exact(3)) {
+            if trials[0].position != TerminalPairPosition::Coarse
+                || trials[1].position != TerminalPairPosition::Fine1
+                || trials[2].position != TerminalPairPosition::Fine2
+                || !matches!(trials[0].role, CoveredTerminalTrialRoleV1::Full | CoveredTerminalTrialRoleV1::Retry)
+                || trials[1].role != CoveredTerminalTrialRoleV1::Half1
+                || trials[2].role != CoveredTerminalTrialRoleV1::Half2
+                || trials[2].beginning != trials[1].ending
+                || trials[2].beginning_joint != trials[1].hydrology_ending_joint
+            {
+                return Err("selected trial order/join");
+            }
+            if pair.components.len() != 5 {
+                return Err("decision cardinality");
+            }
+            let maximum = pair
+                .components
+                .iter()
+                .fold(0.0_f64, |current, component| current.max(component.4));
+            if maximum.to_bits() != pair.maximum_scaled.to_bits()
+                || pair.rejected != (pair.maximum_scaled > 1.0 && pair.components[0].1 > 0.0)
+            {
+                return Err("decision predicate");
+            }
+        }
+        let successful_calls = self
+            .provider_calls
+            .iter()
+            .filter(|call| matches!(call.outcome, CapturedProviderOutcome::Success(_)))
+            .collect::<Vec<_>>();
+        if successful_calls.len() != self.coupling_iterations.len() {
+            return Err("provider/iteration cardinality");
+        }
+        for iteration in &self.coupling_iterations {
+            let matching = successful_calls
+                .iter()
+                .filter(|call| same_terminal_call_key(&call.request, &iteration.hook.request))
+                .collect::<Vec<_>>();
+            if matching.len() != 1 {
+                return Err("provider/iteration join");
+            }
+            let zero = iteration.hook.request.coupling_iteration == 0;
+            if zero != iteration.hook.comparisons.is_none()
+                || zero != iteration.hook.request.ending_snow_hint.is_none()
+            {
+                return Err("iteration zero optionality");
+            }
+        }
+        for selection in &self.coupling_selections {
+            let matching = self
+                .coupling_iterations
+                .iter()
+                .filter(|iteration| same_terminal_call_key(&iteration.hook.request, &selection.request))
+                .collect::<Vec<_>>();
+            if matching.len() != 1
+                || (selection.reason == TerminalCouplingSelectionReason::FourComponentConvergenceBreak
+                    && !matching[0].hook.converged)
+            {
+                return Err("coupling selection join");
+            }
+        }
+        let final_pair = self.pairs.last().ok_or("final pair")?;
+        let final_trials = &self.selected_trials[self.selected_trials.len() - 3..];
+        if final_trials[0].role != CoveredTerminalTrialRoleV1::Retry {
+            return Err("final retry role");
+        }
+        let floor = &self.admissions[0];
+        if floor.0.to_bits() != final_pair.proposed_next_duration_s.to_bits()
+            || floor.1.to_bits() != (floor.0 / 2.0).to_bits()
+            || floor.1 >= floor.2
+            || floor.2.to_bits() != 0.6_f64.to_bits()
+            || floor.3 != SnowTerminalNumericsFailure::BelowCarrierDomain
+        {
+            return Err("floor join");
+        }
+        let final_attempts = final_trials
+            .iter()
+            .map(|trial| trial.attempt_ordinal)
+            .collect::<Vec<_>>();
+        let call_count_through_final_pair = self
+            .provider_calls
+            .iter()
+            .filter(|call| final_attempts.contains(&call.request.attempt_ordinal))
+            .map(|call| call.ordinal + 1)
+            .max()
+            .ok_or("final pair calls")?;
+        let call_count_at_floor = self.provider_calls.len() as u64;
+        if call_count_through_final_pair != call_count_at_floor {
+            return Err("floor provider call boundary");
+        }
+        Ok(ValidatedCaptureState { final_trial_count: final_trials.len(),
+            final_pair_rejected: final_pair.rejected, floor_outcome: floor.3.clone(),
+            call_count_through_final_pair, call_count_at_floor })
+    }
 }
 
 #[cfg(test)]
@@ -292,31 +521,49 @@ pub(crate) enum CaptureEvidence {}
 impl terminal_evidence_sealed::Sealed for CaptureEvidence {}
 #[cfg(test)]
 impl TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>> for CaptureEvidence {
+    const ENABLED: bool = true;
     type State = CaptureState;
-    type ProviderState = Vec<(u128, u128, CoveredTerminalTrialRoleV1, u32, bool, bool, bool)>;
+    type ProviderState = Vec<CapturedProviderCall>;
+    type ProviderProjection = crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1;
+    type CouplingState = (Vec<TerminalCouplingIterationHook>, Vec<TerminalCouplingSelectionHook>);
     fn new_state() -> Self::State { CaptureState::default() }
     fn new_provider_state() -> Self::ProviderState { Vec::new() }
-    fn provider_call(state: &mut Self::ProviderState, request: &CoveredTerminalTrialRequestV1, ok: bool, wb14_terminal: bool, surface_terminal: bool) {
-        state.push((request.support.start_ns().get(), request.support.end_ns().get(), request.role, request.attempt_ordinal, ok, wb14_terminal, surface_terminal));
+    fn new_coupling_state() -> Self::CouplingState { (Vec::new(), Vec::new()) }
+    fn project_provider_success(_: &CoveredTerminalTrialRequestV1, result: &crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1) -> Self::ProviderProjection { result.clone() }
+    fn provider_success(state: &mut Self::ProviderState, request: &CoveredTerminalTrialRequestV1, result: Self::ProviderProjection) {
+        state.push(CapturedProviderCall { ordinal: state.len() as u64, request: request.clone(), outcome: CapturedProviderOutcome::Success(result) });
     }
-    fn merge_provider(state: &mut Self::State, provider: Self::ProviderState) {
-        let completed_call_count = state.provider_calls.len() as u64 + provider.len() as u64;
-        if let Some(admission) = state.admissions.last_mut() {
-            // Provider observations are deliberately accumulated outside the
-            // solver borrow and merged only after the physical return.  At
-            // that point, replace the provisional zero-call markers with the
-            // exact count on both sides of the separate floor admission.
-            admission.4 = completed_call_count;
-            admission.5 = completed_call_count;
+    fn provider_failure(state: &mut Self::ProviderState, request: &CoveredTerminalTrialRequestV1, error: &'static str) {
+        state.push(CapturedProviderCall { ordinal: state.len() as u64, request: request.clone(), outcome: CapturedProviderOutcome::Failure(error) });
+    }
+    fn merge_provider(state: &mut Self::State, mut provider: Self::ProviderState) {
+        let base = state.provider_calls.len() as u64;
+        for call in &mut provider {
+            call.ordinal += base;
         }
         state.provider_calls.extend(provider);
     }
     fn provider_call_count(state: &Self::State) -> u64 { state.provider_calls.len() as u64 }
     fn pair(state: &mut Self::State, value: TerminalPairEvidenceHook) {
-        state.pairs.push((value.duration_s, value.coarse_complete_energy_j_m2, value.refined_complete_energy_j_m2, value.scaled_error, value.rejected, value.coarse_external_liquid_kg_m2, value.refined_external_liquid_kg_m2));
+        state.pairs.push(CapturedPair { duration_s: value.duration_s,
+            proposed_next_duration_s: value.proposed_next_duration_s,
+            components: value.components.into_iter().collect(), maximum_scaled: value.scaled_error,
+            rejected: value.rejected });
     }
     fn admission(state: &mut Self::State, value: TerminalAdmissionEvidenceHook<'_>) {
         state.admissions.push((value.proposed_duration_s, value.required_half_duration_s, value.minimum_duration_s, value.outcome.clone(), value.provider_calls_before, value.provider_calls_after));
+    }
+    fn coupling_iteration(state: &mut Self::CouplingState, value: TerminalCouplingIterationHook) { state.0.push(value); }
+    fn coupling_selection(state: &mut Self::CouplingState, value: TerminalCouplingSelectionHook) { state.1.push(value); }
+    fn merge_coupling(state: &mut Self::State, coupling: Self::CouplingState) {
+        state.coupling_iterations.extend(coupling.0.into_iter().map(|hook| CapturedCouplingIteration { hook, provider_ordinal: None }));
+        state.coupling_selections.extend(coupling.1);
+    }
+    fn selected_trial(state: &mut Self::State, value: TerminalSelectedTrialHook<'_, Option<CoveredTerminalJointTrialStateV1>>) {
+        state.selected_trials.push(CapturedSelectedTrial { position: value.position, role: value.role, attempt_ordinal: value.attempt_ordinal,
+            relative_start_s: value.relative_start_s, duration_s: value.duration_s, beginning: value.beginning, ending: value.ending,
+            ledger: value.ledger, beginning_joint: value.beginning_joint.clone(), carrier_ending_joint: value.carrier_ending_joint.clone(),
+            hydrology_ending_joint: value.hydrology_ending_joint.clone() });
     }
 }
 

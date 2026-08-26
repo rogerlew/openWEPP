@@ -32,4 +32,7 @@ pub(crate) use runoff_reconciliation::{
     stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
 };
 #[cfg(test)]
-pub(crate) use runoff_reconciliation::{CaptureEvidence, CaptureState};
+pub(crate) use runoff_reconciliation::{
+    CaptureEvidence, CaptureState, CapturedProviderOutcome, TerminalCouplingSelectionReason,
+    TerminalPairPosition,
+};

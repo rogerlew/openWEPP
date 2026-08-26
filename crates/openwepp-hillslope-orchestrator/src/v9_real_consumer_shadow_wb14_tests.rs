@@ -910,14 +910,15 @@ fn exercise_complete_wb14_cadence(
         let pair = evidence
             .pairs
             .iter()
-            .find(|pair| pair.0.to_bits() == 1.875_f64.to_bits())
+            .find(|pair| pair.duration_s.to_bits() == 1.875_f64.to_bits())
             .expect("selected 1.875-second rejected pair");
-        assert!(pair.4);
-        assert_eq!(pair.1.to_bits(), 0x4094_9afb_c192_8120);
-        assert_eq!(pair.2.to_bits(), 0x4094_2e21_8363_bae1);
-        assert_eq!((pair.2 - pair.1).to_bits(), 0xc03b_368f_8bb1_8fc0);
-        assert_eq!(pair.5.to_bits(), 0.0_f64.to_bits());
-        assert_eq!(pair.6.to_bits(), 0.0_f64.to_bits());
+        assert!(pair.rejected);
+        assert_eq!(pair.components[3].0.to_bits(), 0x4094_9afb_c192_8120);
+        assert_eq!(pair.components[3].1.to_bits(), 0x4094_2e21_8363_bae1);
+        assert_eq!(pair.components[3].2.to_bits(), 0xc03b_368f_8bb1_8fc0);
+        let trials = &evidence.selected_trials[evidence.selected_trials.len() - 3..];
+        assert_eq!(trials[0].ledger.external_liquid_kg_m2.to_bits(), 0.0_f64.to_bits());
+        assert_eq!((trials[1].ledger.external_liquid_kg_m2 + trials[2].ledger.external_liquid_kg_m2).to_bits(), 0.0_f64.to_bits());
         let admission = evidence.admissions.last().expect("floor admission");
         assert_eq!(admission.0.to_bits(), 0.9375_f64.to_bits());
         assert_eq!(admission.1.to_bits(), 0.46875_f64.to_bits());
@@ -925,9 +926,67 @@ fn exercise_complete_wb14_cadence(
         assert_eq!(admission.3, crate::SnowTerminalNumericsFailure::BelowCarrierDomain);
         assert_eq!(admission.4, admission.5);
         assert!(!evidence.provider_calls.is_empty());
-        assert_eq!(admission.4, evidence.provider_calls.len() as u64);
+        assert_eq!(evidence.provider_calls.len(), evidence.coupling_iterations.len());
+        assert!(evidence.provider_calls.iter().enumerate().all(|(ordinal, call)|
+            call.ordinal == ordinal as u64
+                && matches!(call.outcome, crate::hydrology::CapturedProviderOutcome::Success(_))));
+        assert!(evidence.coupling_iterations.iter().all(|iteration| {
+            let request = &iteration.hook.request;
+            let comparison_shape = if request.coupling_iteration == 0 {
+                iteration.hook.comparisons.is_none() && request.ending_snow_hint.is_none()
+            } else {
+                iteration.hook.comparisons.is_some() && request.ending_snow_hint.is_some()
+            };
+            comparison_shape
+                && evidence.provider_calls.iter().filter(|call| {
+                    call.request.support == request.support
+                        && call.request.role == request.role
+                        && call.request.attempt_ordinal == request.attempt_ordinal
+                        && call.request.coupling_iteration == request.coupling_iteration
+                        && call.request.lane_id == request.lane_id
+                        && call.request.beginning_joint.receipt_sha256()
+                            == request.beginning_joint.receipt_sha256()
+                }).count() == 1
+        }));
+        assert!(evidence.coupling_selections.iter().all(|selection| {
+            selection.reason == crate::hydrology::TerminalCouplingSelectionReason::FourComponentConvergenceBreak
+                && selection.post_loop_three_component_check
+        }));
+        assert_eq!(evidence.selected_trials.len(), evidence.pairs.len() * 3);
+        assert!(evidence.selected_trials.chunks_exact(3).all(|trials| {
+            trials[0].position == crate::hydrology::TerminalPairPosition::Coarse
+                && trials[1].position == crate::hydrology::TerminalPairPosition::Fine1
+                && trials[2].position == crate::hydrology::TerminalPairPosition::Fine2
+                && trials[1].role == crate::hydrology::CoveredTerminalTrialRoleV1::Half1
+                && trials[2].role == crate::hydrology::CoveredTerminalTrialRoleV1::Half2
+                && trials[2].beginning == trials[1].ending
+                && trials[2].beginning_joint == trials[1].hydrology_ending_joint
+        }));
+        assert!(evidence.pairs.iter().all(|pair| {
+            pair.components.len() == 5
+                && pair.maximum_scaled.to_bits()
+                    == pair.components.iter().fold(0.0_f64, |maximum, component| maximum.max(component.4)).to_bits()
+                && pair.rejected
+                    == (pair.maximum_scaled > 1.0 && pair.components[0].1 > 0.0)
+        }));
+        assert_eq!(pair.proposed_next_duration_s.to_bits(), admission.0.to_bits());
+        let validated = evidence.validate().expect("raw terminal evidence validates");
+        assert_eq!(validated.call_count_through_final_pair, validated.call_count_at_floor);
+        assert_eq!(validated.final_trial_count, 3);
+        assert!(validated.final_pair_rejected);
+        assert_eq!(validated.floor_outcome, crate::SnowTerminalNumericsFailure::BelowCarrierDomain);
         assert!(evidence.provider_calls.iter().all(|call| {
-            call.1 - call.0 >= 600_000_000 && !call.5 && !call.6
+            let above_floor = call.request.support.end_ns().get()
+                - call.request.support.start_ns().get() >= 600_000_000;
+            let no_terminal_ingress = match &call.outcome {
+                crate::hydrology::CapturedProviderOutcome::Success(result) => {
+                    let ingress = result.carrier_envelope.hydrology().surface_ingress();
+                    !ingress.receipts().iter().any(|receipt| receipt.kind == crate::direct_runtime::DirectSurfaceLiquidParcelKind::TerminalReceiver)
+                        && !ingress.open_ingress_parcels().iter().any(|parcel| parcel.kind == crate::direct_runtime::DirectSurfaceLiquidParcelKind::TerminalReceiver)
+                }
+                crate::hydrology::CapturedProviderOutcome::Failure(_) => true,
+            };
+            above_floor && no_terminal_ingress
         }));
         assert_eq!(parent, rollback_parent);
         assert_eq!(shadow, rollback_consumer);

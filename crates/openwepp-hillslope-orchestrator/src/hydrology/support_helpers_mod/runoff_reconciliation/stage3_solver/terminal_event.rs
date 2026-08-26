@@ -74,6 +74,22 @@ impl TerminalLedger {
     }
 }
 
+impl From<TerminalState> for TerminalStateEvidence {
+    fn from(value: TerminalState) -> Self { Self { ice_kg_m2: value.ice_kg_m2, liquid_kg_m2: value.liquid_kg_m2, cold_content_j_m2: value.cold_content_j_m2 } }
+}
+
+impl From<TerminalLedger> for TerminalLedgerEvidence {
+    fn from(value: TerminalLedger) -> Self { Self {
+        complete_energy_j_m2: value.complete_energy_j_m2, cold_energy_change_j_m2: value.cold_energy_change_j_m2,
+        refrozen_kg_m2: value.refrozen_kg_m2, deposition_kg_m2: value.deposition_kg_m2,
+        sublimation_kg_m2: value.sublimation_kg_m2, melt_kg_m2: value.melt_kg_m2,
+        unallocated_energy_j_m2: value.unallocated_energy_j_m2, shortwave_energy_j_m2: value.shortwave_energy_j_m2,
+        longwave_energy_j_m2: value.longwave_energy_j_m2, sensible_energy_j_m2: value.sensible_energy_j_m2,
+        latent_energy_j_m2: value.latent_energy_j_m2, advected_energy_j_m2: value.advected_energy_j_m2,
+        snow_soil_heat_energy_j_m2: value.snow_soil_heat_energy_j_m2, external_liquid_kg_m2: value.external_liquid_kg_m2,
+    } }
+}
+
 #[derive(Clone, Copy)]
 pub(super) struct TerminalTrial {
     pub(super) state: TerminalState,
@@ -210,6 +226,21 @@ impl Wb11HydrologyKernel {
             ))
     }
 
+    fn terminal_error_components(full: TerminalTrial, refined: TerminalTrial) -> [(f64, f64, f64, f64, f64); 5] {
+        let component = |coarse: f64, fine: f64, absolute: f64| {
+            let delta = fine - coarse;
+            let denominator = absolute + RELATIVE_ERROR_TOLERANCE * coarse.abs().max(fine.abs());
+            (coarse, fine, delta, denominator, delta.abs() / denominator)
+        };
+        [
+            component(full.state.ice_kg_m2, refined.state.ice_kg_m2, MASS_ABSOLUTE_TOLERANCE_KG_M2),
+            component(full.state.liquid_kg_m2, refined.state.liquid_kg_m2, MASS_ABSOLUTE_TOLERANCE_KG_M2),
+            component(full.state.cold_content_j_m2, refined.state.cold_content_j_m2, ENERGY_ABSOLUTE_TOLERANCE_J_M2),
+            component(full.ledger.complete_energy_j_m2, refined.ledger.complete_energy_j_m2, ENERGY_ABSOLUTE_TOLERANCE_J_M2),
+            component(full.ledger.unallocated_energy_j_m2, refined.ledger.unallocated_energy_j_m2, ENERGY_ABSOLUTE_TOLERANCE_J_M2),
+        ]
+    }
+
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     pub(super) fn solve_terminal_enthalpy_event<F, G, J>(
         phase_class: HillslopeKernelPhaseClass,
@@ -321,6 +352,7 @@ impl Wb11HydrologyKernel {
             } else {
                 CoveredTerminalTrialRoleV1::Retry
             };
+            let full_attempt = attempt_ordinal;
             let (full_flux, full_carrier_joint) = flux_integral(
                 state,
                 &accepted_joint,
@@ -331,9 +363,16 @@ impl Wb11HydrologyKernel {
             )?;
             attempt_ordinal = next_attempt(attempt_ordinal)?;
             let full = Self::terminal_transition(state, full_flux);
-            let _full_joint = join_hydrology_ending(full.state, full_carrier_joint)?;
+            let full_joint = join_hydrology_ending(full.state, full_carrier_joint.clone())?;
+            if M::ENABLED { M::selected_trial(evidence, TerminalSelectedTrialHook {
+                position: TerminalPairPosition::Coarse, role: full_role, attempt_ordinal: full_attempt,
+                relative_start_s: elapsed, duration_s: dt, beginning: state.into(), ending: full.state.into(),
+                ledger: full.ledger.into(), beginning_joint: &accepted_joint,
+                carrier_ending_joint: &full_carrier_joint, hydrology_ending_joint: &full_joint,
+            }); }
             let half_dt = 0.5 * dt;
-            let (first_flux, first_joint) = flux_integral(
+            let first_attempt = attempt_ordinal;
+            let (first_flux, first_carrier_joint) = flux_integral(
                 state,
                 &accepted_joint,
                 elapsed,
@@ -343,8 +382,15 @@ impl Wb11HydrologyKernel {
             )?;
             attempt_ordinal = next_attempt(attempt_ordinal)?;
             let first = Self::terminal_transition(state, first_flux);
-            let first_joint = join_hydrology_ending(first.state, first_joint)?;
-            let (second_flux, second_joint) = flux_integral(
+            let first_joint = join_hydrology_ending(first.state, first_carrier_joint.clone())?;
+            if M::ENABLED { M::selected_trial(evidence, TerminalSelectedTrialHook {
+                position: TerminalPairPosition::Fine1, role: CoveredTerminalTrialRoleV1::Half1, attempt_ordinal: first_attempt,
+                relative_start_s: elapsed, duration_s: half_dt, beginning: state.into(), ending: first.state.into(),
+                ledger: first.ledger.into(), beginning_joint: &accepted_joint,
+                carrier_ending_joint: &first_carrier_joint, hydrology_ending_joint: &first_joint,
+            }); }
+            let second_attempt = attempt_ordinal;
+            let (second_flux, second_carrier_joint) = flux_integral(
                 first.state,
                 &first_joint,
                 elapsed + half_dt,
@@ -353,28 +399,33 @@ impl Wb11HydrologyKernel {
                 attempt_ordinal,
             )?;
             let second = Self::terminal_transition(first.state, second_flux);
-            let second_joint = join_hydrology_ending(second.state, second_joint)?;
+            let second_joint = join_hydrology_ending(second.state, second_carrier_joint.clone())?;
+            if M::ENABLED { M::selected_trial(evidence, TerminalSelectedTrialHook {
+                position: TerminalPairPosition::Fine2, role: CoveredTerminalTrialRoleV1::Half2, attempt_ordinal: second_attempt,
+                relative_start_s: elapsed + half_dt, duration_s: half_dt, beginning: first.state.into(), ending: second.state.into(),
+                ledger: second.ledger.into(), beginning_joint: &first_joint,
+                carrier_ending_joint: &second_carrier_joint, hydrology_ending_joint: &second_joint,
+            }); }
             attempt_ordinal = next_attempt(attempt_ordinal)?;
             let refined = TerminalTrial {
                 state: second.state,
                 ledger: first.ledger.add(second.ledger),
             };
             let error = Self::terminal_scaled_error(full, refined);
-            M::pair(evidence, TerminalPairEvidenceHook {
+            let rejected = error > 1.0 && refined.state.ice_kg_m2 > 0.0;
+            if M::ENABLED { M::pair(evidence, TerminalPairEvidenceHook {
                 duration_s: dt,
-                coarse_complete_energy_j_m2: full.ledger.complete_energy_j_m2,
-                refined_complete_energy_j_m2: refined.ledger.complete_energy_j_m2,
+                proposed_next_duration_s: if rejected { (0.5 * dt).max(MINIMUM_TRIAL_SECONDS) } else if error < 0.125 { (2.0 * dt).min(MAXIMUM_TRIAL_SECONDS) } else { dt },
+                components: Self::terminal_error_components(full, refined),
                 scaled_error: error,
-                rejected: error > 1.0 && refined.state.ice_kg_m2 > 0.0,
-                coarse_external_liquid_kg_m2: full.ledger.external_liquid_kg_m2,
-                refined_external_liquid_kg_m2: refined.ledger.external_liquid_kg_m2,
-            });
+                rejected,
+            }); }
             // LTE is discontinuous across exhaustion because terminal
             // transition censors the coarse/fine residual energy at different
             // substep boundaries. Once the refined path brackets zero ice,
             // localize that physical event below instead of shrinking the
             // adaptive step forever against a non-smooth endpoint.
-            if error > 1.0 && refined.state.ice_kg_m2 > 0.0 {
+            if rejected {
                 rejected_trials += 1;
                 consecutive_rejections += 1;
                 if consecutive_rejections > MAXIMUM_REJECTIONS || dt <= MINIMUM_TRIAL_SECONDS {
@@ -669,7 +720,7 @@ mod tests {
         assert!(matches!(result, Err(DirectSnowStage3EvaluationError::TerminalNumerics(
             SnowTerminalNumericsFailure::BelowCarrierDomain
         ))));
-        assert_eq!(evidence.pairs.last().unwrap().0.to_bits(), 1.875_f64.to_bits());
+        assert_eq!(evidence.pairs.last().unwrap().duration_s.to_bits(), 1.875_f64.to_bits());
         let admission = evidence.admissions.last().unwrap();
         assert_eq!(admission.0.to_bits(), 0.9375_f64.to_bits());
         assert_eq!(admission.1.to_bits(), 0.46875_f64.to_bits());
