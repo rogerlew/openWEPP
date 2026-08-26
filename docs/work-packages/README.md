@@ -2,13 +2,14 @@
 
 ## 20260826-vegetation-v9-libcrypto-runtime-equivalence-defect-closure-001
 
-Completed defect closure for the protected V9 vegetation oracle's stale
+Terminal verification reconciliation for the protected V9 vegetation oracle's stale
 patch-level `libcrypto.so.3` checksum. The frozen V9 authority bytes remain
 immutable. The package separates exact generation-host provenance from a
 strictly bounded active SHA-256 provider-equivalence route that must retain all
 other runtime bindings and reproduce the complete frozen vector byte-for-byte.
 Exact clean candidate `8f4a9b84c` retained only the unchanged historical
-workspace eleven. Status: `COMPLETE`.
+workspace eleven. Substantive verification passed; stale queued verification
+artifacts are corrected for terminal rereview. Status: `VERIFYING`.
 
 ## 20260826-snow-terminal-chronology-candidates-001
 

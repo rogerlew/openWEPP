@@ -3,7 +3,7 @@
 This Defect-Closure ExecPlan is a living document maintained under
 `docs/codex_exec_plans.md` and `docs/defect_closure_execplans.md`.
 
-Status: `COMPLETE`
+Status: `VERIFYING`
 
 ## Purpose / Big Picture
 
@@ -27,8 +27,10 @@ authority.
 - [x] (2026-08-26) Run focused, authority, anti-evasion, and full-workspace
   validation; correct the one package-induced stale registry assertion and
   qualify the exact historical-eleven workspace result at `8f4a9b84c`.
-- [x] (2026-08-26) Complete dual independent reviews, finding disposition,
-  dual terminal verification, closure, commits, and push.
+- [ ] Complete dual independent reviews, finding disposition, dual terminal
+  verification, closure, commits, and push. Initial terminal verifications
+  passed all substantive checks but rejected stale queued verification
+  artifacts; the corrected docs-only candidate awaits terminal rereview.
 
 ## Correction Authority Envelope
 
