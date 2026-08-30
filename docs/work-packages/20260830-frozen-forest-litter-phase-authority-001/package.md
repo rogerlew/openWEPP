@@ -29,11 +29,14 @@ order. This is a genuine distinct-authority successor, not a solver clamp.
 - snow-free `forest_litter` liquid/ice state, phase transfer, vapor split,
   fusion energy, receipt, digest/restart, current-ingress ordering, and rollback;
 - independent oracle/anti-tautology vectors and unchanged `p61`/native consumers;
+- consume the parent-owned `WGHL-FULL-001I` soil-thermal owner V2 envelope in
+  the new complete-owner projection and successor runtime/restart handoff;
 - full applicable gates, dual review, dual verification, and handback.
 
 ## Excluded scope
 
-- snow, bare-surface or soil frozen-state admission; soil mutation;
+- snow, bare-surface or soil frozen-state admission; soil mutation remains
+  parent-owned by `WGHL-FULL-001I` and is not implemented by this child;
 - SURFEX tiny-ice cleanup, soil compensation, or hidden tolerance;
 - instantaneous equilibrium, bound lowering, temperature clamp, sub-60 stepping,
   fitted parameters, or surrogate phase physics;
@@ -65,6 +68,12 @@ No surrogate physics is allowed.
 - `docs/sim-contract-boundary-units.md` and the exact boundary-unit registry
   contract binding listed in the owned-file manifest;
 - `tools/release/authority-policy/impact-map.json` exact bindings only.
+
+The child may bind and consume the parent-owned `SoilThermalOwnerEnvelopeV2`
+and successor restart identity in `SurfaceLiquidCompleteOwnerProjectionV3` and
+its V3 runtime/restart integration. It may not define or mutate the soil carry,
+soil owner, soil receipt, or soil restart schema. The parent 001I contract-first
+handoff must be stable before those child integration edits begin.
 
 ## Mandatory sequence
 

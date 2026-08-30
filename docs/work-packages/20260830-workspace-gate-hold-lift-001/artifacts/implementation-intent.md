@@ -21,7 +21,11 @@ remain behavior-preserving/test-authoring work. The amended package also owns:
 - an existing-contract producer correction that caps terminal snow-free
   successor publication at the sealed accepted-child end before ordinary
   cadence resumes, without changing physical support resolution or the
-  qualification chronology validator.
+  qualification chronology validator; and
+- a contract-first receiver-owned exact dyadic soil-enthalpy carry with
+  versioned V2 owner/receipt/restart custody for valid accepted energy below
+  binary64 high-term representability, without tolerance, forced rounding,
+  persisted diagnostics, constitutive changes, or V1 byte mutation.
 
 No further kernel, numerical, contract, serialization, public-output, or
 failure-policy change is authorized until prospectively amended.
@@ -44,5 +48,10 @@ The identical ordering applies independently to `WGHL-FULL-001F` under
 `SC-LANDSURFACEENERGY-001`; the two unchanged interior-terminal consumer tests
 are the positive pre-implementation vector, and existing strict-decrease,
 backtracking-limit, and rollback vectors are protected refusals.
+The identical ordering also applies independently to `WGHL-FULL-001I` under
+`SC-SURFACELIQUID-001` and `SC-LANDSURFACEENERGY-001`: v15 contracts and
+contract-derived tests, retained expected-red on unchanged production, exact
+dyadic arithmetic/owner implementation, receiver/restart integration, then
+real WAT5/restart/p61/native and campaign-strength gates.
 Publication work may begin only after the operand-lineage and wrong-formula
 matrix are complete.

@@ -49,6 +49,8 @@ exclusive group below and must preserve concurrent edits in all other groups.
 
 ## Surface-owner/orchestration production owner, after retained pre-red
 
+- `crates/openwepp-hillslope-orchestrator/src/lib.rs` (successor export wiring
+  only; no legacy export removal);
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs` (successor
   module/export wiring only; no legacy export removal);
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs`;
@@ -64,10 +66,15 @@ exclusive group below and must preserve concurrent edits in all other groups.
 - new modules below
   `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/`
   for V2 state, identity, migration, restart, closure, and focused tests;
+- new `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v3_projection.rs`
+  and included focused tests, consuming but never mutating the parent-owned
+  `SoilThermalOwnerEnvelopeV2`;
 - `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_forest.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_v8_owner.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/multi_tile_runtime.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_derived_ingress.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/strict_v8_endpoint.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v8_input_projection.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v8_projection.rs`;

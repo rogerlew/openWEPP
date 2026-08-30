@@ -55,6 +55,10 @@ full-workspace correctness profile on one exact clean terminal source identity.
   successor beginning at `600 s` is bounded only by adaptive cadence/parent end
   and crosses the accepted terminal child ending at `900 s`; qualification
   correctly rejects the successor chronology.
+- `WGHL-FULL-001I`: a valid accepted infiltration enthalpy credit on the
+  canonical WAT5 path is nonzero but only `1.10875e-7` ULP of the persistent
+  soil-layer binary64 enthalpy. Scalar installation cannot change the owner
+  bits, so strict independent closure correctly fails `SURFACELIQUID-E-003`.
 
 ## Rationale
 
@@ -82,6 +86,9 @@ prior write set as an implicit waiver.
   prospective steps already satisfy every unchanged convergence threshold;
 - producer-side terminal successor partitioning at the sealed accepted-child
   end, preserving the unchanged qualification validator and physical supports;
+- contract-first exact soil-thermal enthalpy carry custody for accepted energy
+  below scalar-state representability, with versioned owner/receipt/restart
+  schemas, exact rollback, and unchanged constitutive physics;
 - delegated execution and handback of the distinct contract-first frozen
   forest-litter phase successor before terminal workspace reruns;
 - timeout diagnosis and deterministic resource/scheduling correction when the
@@ -110,7 +117,7 @@ demonstrates the defect. Every Rust implementation path must be entered in
 `artifacts/failure-inventory.md` with failure ID, owner, exact source/test path,
 classification, intended correction, and focused command before editing.
 
-This package is amended to own two classified exceptions. First,
+This package is amended to own the following classified exceptions. First,
 `WGHL-FULL-001D` must follow contract-first sequencing and may admit only a
 deterministic exact-floor terminal-one-volume phase-aware contraction. It must
 derive the unpublished intermediate from immutable physical beginning state,
@@ -137,6 +144,22 @@ vector and that first eligible halved candidate's exact component step norms
 satisfy all existing thresholds. It changes no phase bound, residual/step tolerance,
 strict-decrease rule for actual updates, iteration/backtracking limit, ledger,
 receipt, event, custody, rollback, or 60-second floor.
+
+Fourth, `WGHL-FULL-001I` must follow contract-first sequencing and may admit
+only a receiver-owned exact dyadic carry for soil-layer enthalpy that cannot be
+represented in the existing binary64 high term. The canonical total is
+`E = exact(H_hi) + R`; `R` has one normalized signed-dyadic wire form, is
+retained exactly, and is rejoined on every later solve and credit. Each accepted
+candidate must aggregate the exact beginning total plus the canonical ordered
+accepted soil, top-boundary, and infiltration energy operands, round the total
+once to nearest-even finite `H_hi`, and retain exactly
+`R = E - exact(H_hi)`. The amendment must freeze every V1 byte/digest, provide
+explicit V1-to-V2 zero-carry migration with no production downgrade, bind the
+carry through typed credit receipts and successor restart/checkpoint schemas,
+and prove byte-exact rollback. It may not zero a nonzero carry, use tolerance,
+`nextafter`, forced-ULP installation, a producer residual, a persisted
+diagnostic, or change any constitutive equation, heat capacity, chronology,
+event, custody, receipt, rollback, or temporal floor.
 
 ## Intended write set
 
@@ -192,6 +215,34 @@ receipt, event, custody, rollback, or 60-second floor.
   as unchanged poison/validator evidence only;
 - `tests/integration/land_surface_energy_balance_authority_contract.rs` for the
   exact v13/`INV-LANDSURFACEENERGY-139` source binding exposed by 001F;
+- `docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md`;
+- `tests/integration/surface_liquid_hydrology_custody_authority_contract.rs`;
+- `crates/openwepp-land-surface-energy/src/lib.rs`;
+- `crates/openwepp-land-surface-energy/src/owner_envelope.rs`;
+- `crates/openwepp-land-surface-energy/src/transaction.rs`;
+- new `crates/openwepp-land-surface-energy/src/exact_dyadic_enthalpy.rs` and
+  included focused tests;
+- `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_soil_thermal.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_serialization.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/receiver_validation.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/finalization_sealing.rs`;
+- exact focused soil-thermal receiver/closure test modules entered under
+  `WGHL-FULL-001I` in the failure inventory before edits;
+- `crates/openwepp-persisted-restart-v1/src/lib.rs`;
+- `crates/openwepp-persisted-restart-v1/src/scientific_owners.rs`;
+- `crates/openwepp-persisted-restart-v1/src/checkpoint.rs`;
+- `crates/openwepp-persisted-restart-v1/src/projection.rs`;
+- `crates/openwepp-persisted-restart-v1/src/host.rs`;
+- `crates/openwepp-persisted-restart-v1/src/transaction.rs`;
+- new V2-focused persisted-restart schema/test modules included from those
+  files;
+- `crates/openwepp-runner/src/hillslope/snow_stage3_v11_production_seed.rs` and
+  exact successor seed tests only if compile or real-consumer adoption proves
+  the versioned seed handoff is required;
 - exact production/test paths under `crates/openwepp-assurance/`,
   `crates/openwepp-runner/`, `crates/openwepp-hillslope-orchestrator/`, and
   `tests/integration/` entered prospectively in the failure inventory after
@@ -235,6 +286,16 @@ The same contract-first sequence applies to `WGHL-FULL-001F` under
 `SC-LANDSURFACEENERGY-001`: amend authority, author the no-update witness and
 refusal tests, record the expected pre-implementation failure, then edit the
 covered solver. No convergence threshold or phase-domain amendment is allowed.
+
+`WGHL-FULL-001I` independently requires `SC-SURFACELIQUID-001` v15
+`INV-SURFACELIQUID-022` and `SC-LANDSURFACEENERGY-001` v15
+`INV-LANDSURFACEENERGY-140`, contract-derived tests, and a retained isolated
+expected-red on unchanged production before any carry/schema implementation.
+Blocking evidence includes the exact canonical WAT5 sub-ULP operand, signed and
+tie-even/crossing/cancellation/order/subnormal/overflow vectors, V1 byte locks,
+V1-to-V2 migration and downgrade poisons, typed receipt identity/cardinality/
+order/substitution poisons, restart split equivalence, exact rollback, and real
+WAT5 plus unchanged p61/native-forest successor consumers.
 
 `WGHL-FULL-001G` remains outside this package's direct write set because it
 crosses a distinct canonical phase/state/restart authority. This package must

@@ -11,6 +11,14 @@ kinetic forest-litter phase model. Preserve the exact 60-second floor,
 conservation, custody, chronology, topology, receipts, rollback, and fail-closed
 behavior. Refuse hidden cleanup and soil correction.
 
+Dependency amendment: the parent workspace package owns
+`WGHL-FULL-001I`, a contract-first exact soil-thermal enthalpy carry and V2
+owner/receipt/restart schema required by canonical WAT5 strict closure. This
+child may consume that stable V2 envelope in its complete-owner projection and
+successor runtime/restart handoff, but must not define or mutate the soil carry,
+soil owner, soil receipt, or soil restart schema. Do not begin that integration
+until the parent handoff is stable.
+
 Conservation/output acceptance: freeze the operand-lineage table before
 production; use phase-distinguishing anti-tautology vectors; reject wrong
 formula/alias candidates explicitly; independently reconstruct liquid/ice,
