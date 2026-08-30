@@ -1,3 +1,3 @@
 # Archived prompts
 
-No archived prompt yet.
+Contains the executed package-end-to-end kickoff prompt.

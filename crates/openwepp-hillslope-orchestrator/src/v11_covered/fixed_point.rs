@@ -476,6 +476,35 @@ fn covered_fixed_point_relaxation_weight_v1(
     Some(support_scaled.clamp(0.25, 0.5))
 }
 
+fn covered_fixed_point_picard_accepts_convergence_v1(
+    coupled_map_converged: bool,
+    finalization_stabilization_pending: bool,
+    relaxation_enabled: bool,
+) -> bool {
+    coupled_map_converged
+        && !(finalization_stabilization_pending && relaxation_enabled)
+}
+
+fn covered_fixed_point_finalization_stage3_iterate_v1(
+    current: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    authentic_candidate: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    support_duration_ns: u128,
+    exact_floor_period_two_detected: bool,
+) -> BTreeMap<u32, DirectSnowStage3PersistentState> {
+    covered_fixed_point_relaxation_weight_v1(
+        support_duration_ns,
+        exact_floor_period_two_detected,
+    )
+    .and_then(|weight| {
+        covered_fixed_point_stage3_underrelaxed_iterate_v1(
+            current,
+            authentic_candidate,
+            weight,
+        )
+    })
+    .unwrap_or_else(|| authentic_candidate.clone())
+}
+
 fn covered_fixed_point_soil_underrelaxed_iterate_v1(
     left: &SoilThermalSnapshot,
     right: &SoilThermalSnapshot,

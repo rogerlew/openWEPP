@@ -1,6 +1,6 @@
 # Stage-3 cold-content fixed-point optimization
 
-Status: `ACTIVE`
+Status: `EXECUTED-HOLD`
 
 Execution mode: `package-end-to-end`
 
@@ -9,15 +9,28 @@ This is a living ExecPlan maintained under `docs/codex_exec_plans.md`.
 ## Progress
 
 - [x] 2026-08-30: scaffold package and freeze the retained baseline.
-- [ ] Record result-blind iteration-history evidence.
-- [ ] Select and contract a bounded solver correction.
-- [ ] Implement and run focused qualification.
-- [ ] Run canonical one-day qualification and reconcile disposition.
+- [x] 2026-08-30: record result-blind iteration-history evidence.
+- [x] 2026-08-30: select and contract a bounded finalization-restart correction.
+- [x] 2026-08-30: implement and run focused qualification.
+- [x] 2026-08-30: run canonical one-day qualification and reconcile disposition.
 
 ## Surprises and discoveries
 
 - The predecessor reduced comparison-driven work but left 128 fixed-point caps;
   100 are cold-content-only after the other coupled maps converge.
+- The canonical one-day trace partitions exactly into 100 cold-only caps with
+  final residuals from `1.010305823001545e-6` through
+  `9.568239875079598e-6 J m^-2`, 27 materially nonconverged Picard maps, and
+  one zero-cold-delta receipt-replay cap. All 100 cold-only histories revisit
+  finalization among Picard iterations.
+- Finalization installed its raw Stage 3 candidate after a failed authentic
+  rebuild, discarding the support-scaled damping used by the surrounding
+  Picard iterations. This is the repeated-reset mechanism, not a slowly
+  contracting 96-iteration cold-content map.
+- Applying the same guarded contraction at finalization reduced cold-only caps
+  but exposed a one-step tolerance-crossing cycle: entering tolerance disabled
+  damping and immediately recreated the finalization residual. One additional
+  guarded Picard update after that first crossing removed the cycle.
 
 ## Decision log
 
@@ -25,10 +38,32 @@ This is a living ExecPlan maintained under `docs/codex_exec_plans.md`.
   Rationale: its solver-policy authority, diagnostics, and acceptance baseline
   are distinct from the completed refreeze-lineage increment.
   Date/author: 2026-08-30, Codex.
+- Decision: apply the already-authorized support-scaled convex Stage 3 update
+  to a failed finalization rebuild, while retaining authentic final LSE and
+  boundary operands and the converged soil candidate.
+  Rationale: this removes the observed damping reset without changing physics,
+  tolerances, the iteration cap, discrete guards, or authentic publication.
+  Date/author: 2026-08-30, Codex.
+- Decision: require one guarded Picard stabilization update at the first
+  otherwise-converged crossing after an applied finalization restart.
+  Rationale: the update retains the same authentic maps and unchanged
+  tolerances while preventing the observed on/off damping cycle.
+  Date/author: 2026-08-30, Codex.
 
 ## Outcomes and retrospective
 
-Queued until result-bearing execution.
+The terminal canonical fixture passes with 491 accepted supports and 205
+rejected trials, down from 504/227. Fixed-point caps fell from 128 to 32 and
+cold-content-only caps from 100 to 2. The accepted-width histogram is 60 s: 49,
+120 s: 92, 180 s: 320, 240 s: 17, 300 s: 3, 420 s: 3, 480 s: 1, 900 s: 3,
+and 1800 s: 3. Exact-floor use remains 49, discrete comparison rejection
+remains zero, body wall falls from 374.23 s to 336.52 s, and mass, energy, and
+receipt closure pass unchanged bounds.
+
+Technical exit criteria are satisfied. The package remains `EXECUTED-HOLD`
+only because the required dual independent reviews and verifications cannot be
+performed under the higher-precedence no-subagent session policy. Local gates
+are not mislabeled as independent evidence.
 
 ## Objective
 
@@ -117,10 +152,12 @@ change, accepted-state canonicalization, or fallback acceptance is allowed.
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/fixed_point.rs`
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/receipt_sets.rs`
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs`
+- `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_terminal_accepted_endpoint.rs`
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs`
 - `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs`
 - `crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs`
 - compiler-discovered SnowEnergy contract consumers under `tests/integration/`
+- `tools/release/authority-policy/impact-map.json`
 
 ## Phase plan
 

@@ -134,6 +134,99 @@ fn relaxation_weight_keeps_raw_exact_floor_until_period_two_is_detected() {
 }
 
 #[test]
+fn finalization_restart_reuses_guarded_support_scaled_stage3_contraction() {
+    let mut original = state();
+    original.layers[0].cold_content_j_m2 = 100.0;
+    original.layers[0].temperature_c =
+        Wb11HydrologyKernel::stage3_temperature_from_cold_content_values(
+            original.layers[0].mass_swe_m,
+            original.layers[0].cold_content_j_m2,
+        );
+    reseal(&mut original);
+    let mut candidate = original.clone();
+    candidate.layers[0].cold_content_j_m2 += 14.0e-6;
+    candidate.layers[0].temperature_c =
+        Wb11HydrologyKernel::stage3_temperature_from_cold_content_values(
+            candidate.layers[0].mass_swe_m,
+            candidate.layers[0].cold_content_j_m2,
+        );
+    reseal(&mut candidate);
+    let original = BTreeMap::from([(7, original)]);
+    let candidate = BTreeMap::from([(7, candidate)]);
+
+    let restarted = covered_fixed_point_finalization_stage3_iterate_v1(
+        &original,
+        &candidate,
+        420_000_000_000,
+        false,
+    );
+    let expected = original[&7].layers[0].cold_content_j_m2
+        + (2.0 / 7.0)
+            * (candidate[&7].layers[0].cold_content_j_m2
+                - original[&7].layers[0].cold_content_j_m2);
+    assert_eq!(
+        restarted[&7].layers[0].cold_content_j_m2.to_bits(),
+        expected.to_bits(),
+    );
+    assert_eq!(
+        restarted[&7].fingerprint,
+        Wb11HydrologyKernel::stage3_persistent_state_fingerprint(&restarted[&7]),
+    );
+    Wb11HydrologyKernel::validate_stage3_persistent_state(&restarted[&7])
+        .expect("finalization iterate remains domain-valid");
+    Wb11HydrologyKernel::validate_stage3_persistent_cumulative_closure(&restarted[&7])
+        .expect("finalization iterate retains cumulative closure");
+
+    assert_eq!(
+        covered_fixed_point_finalization_stage3_iterate_v1(
+            &original,
+            &candidate,
+            60_000_000_000,
+            false,
+        ),
+        candidate,
+        "the exact floor remains raw before authentic period-two detection",
+    );
+}
+
+#[test]
+fn finalization_restart_declines_contraction_across_discrete_event_change() {
+    let original = state();
+    let mut candidate = original.clone();
+    candidate.terminal_event_model = None;
+    reseal(&mut candidate);
+    let original = BTreeMap::from([(7, original)]);
+    let candidate = BTreeMap::from([(7, candidate)]);
+
+    assert_eq!(
+        covered_fixed_point_finalization_stage3_iterate_v1(
+            &original,
+            &candidate,
+            420_000_000_000,
+            false,
+        ),
+        candidate,
+        "a discrete change must retain the raw authentic candidate",
+    );
+}
+
+#[test]
+fn finalization_restart_requires_one_relaxed_picard_stabilization_crossing() {
+    assert!(!covered_fixed_point_picard_accepts_convergence_v1(
+        true, true, true,
+    ));
+    assert!(covered_fixed_point_picard_accepts_convergence_v1(
+        true, false, true,
+    ));
+    assert!(covered_fixed_point_picard_accepts_convergence_v1(
+        true, true, false,
+    ));
+    assert!(!covered_fixed_point_picard_accepts_convergence_v1(
+        false, false, true,
+    ));
+}
+
+#[test]
 fn raw_convergent_exact_floor_does_not_enable_period_two_relaxation() {
     let converged = BTreeMap::from([(7, state())]);
     assert!(!covered_fixed_point_exact_floor_period_two_detected_v1(

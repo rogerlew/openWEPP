@@ -1,10 +1,18 @@
 # Owned file manifest
 
-Status: `INTENDED`
+Status: `RECONCILED`
 
 Evidence mode: `Static`
 
-The intended write set is the package tree, work-package catalog, SnowEnergy
-contract/registry and discovered contract consumers, covered fixed-point
-policy/implementation/tests, transient audit surface, and ignored canonical
-runner diagnostic. Exact terminal paths supersede this list at disposition.
+Terminal owned paths are:
+
+- this package tree and `docs/work-packages/README.md`;
+- `SC-SNOWENERGY-001.md` and the science-contract index;
+- covered `fixed_point.rs`, `open_snow.rs`, the new mechanical
+  `open_snow_terminal_accepted_endpoint.rs`, and convergence tests;
+- seven compiler-discovered SnowEnergy integration-contract consumers;
+- `tools/release/authority-policy/impact-map.json`.
+
+The intended transient diagnostic surfaces, receipt sets, Stage-3 attachment,
+and ignored runner diagnostic have no terminal diff. No unrelated path is
+owned or included.

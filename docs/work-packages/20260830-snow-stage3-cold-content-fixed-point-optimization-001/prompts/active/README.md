@@ -1,3 +1,3 @@
 # Active prompts
 
-Contains the current package-end-to-end kickoff prompt.
+No active prompt remains after technical execution and disposition.

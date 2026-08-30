@@ -1,6 +1,6 @@
 # Required reading map
 
-Status: `ACTIVE`
+Status: `COMPLETE`
 
 Evidence mode: `Static`
 

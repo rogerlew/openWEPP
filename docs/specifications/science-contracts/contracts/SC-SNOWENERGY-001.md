@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 27
+contract_version: 28
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -1255,6 +1255,25 @@ Stage-3 lower-boundary/column operand-join closure is likewise refinable only
 above the floor because it can identify a coarse support spanning a phase
 transition; the same failure at the floor remains fail-closed.
 
+The same candidate weight applies when the converged provisional map is
+authentically rebuilt for finalization but does not yet pass the unchanged LSE,
+boundary, and Stage 3 convergence predicates. That finalization mismatch is
+another unpublished iteration of the same bounded coupled solve, not authority
+to discard the current damped iterate and restart from the raw final candidate.
+Only Stage 3 continuous state admitted by the relaxation guards is blended;
+the finalization LSE and complete boundaries remain authentic map operands and
+soil retains its converged authentic candidate. If relaxation is declined, the
+raw authentic final candidate remains the next iterate. Publication still
+requires an authentic finalization image that passes every unchanged
+predicate; a relaxed intermediate can never be accepted or replayed.
+After a damped finalization restart, the first provisional Stage 3 comparison
+that enters `TOL-SNOWENERGY-003` takes one further support-scaled Picard update
+before another finalization rebuild. This single stabilization update prevents
+the tolerance crossing from disabling damping and immediately recreating the
+same finalization residual. It is active only where relaxation is already
+enabled, introduces no new tolerance, and does not bypass any authentic-map
+comparison.
+
 Relaxation is prohibited across any schema, terminal-model, layer-cardinality,
 density, settling, initial/input, per-layer represented-mass, or aggregate
 resolved/terminal/dormant posture change. Stage-3 temperature and thickness
@@ -1330,6 +1349,21 @@ ice plus snowfall, deposition, sublimation, and melt under the unchanged
 independently closed. A changed accepted-path tracer still changes canonical
 owner identity and persisted restart bytes. No adaptive diagnostic surface is
 persisted.
+
+`INV-SNOWENERGY-054` — A nonconverged authentic finalization rebuild advances
+the unpublished Stage 3 iterate with the same support-scaled candidate weight
+as outer Picard. The convex update is permitted only across the exact schema,
+terminal-event, lane, interval, layer, density, settling, initial/input,
+represented-mass, and aggregate phase-posture identities already required for
+Picard relaxation, and every reconstructed intermediate must retain valid
+cumulative mass/energy closure. Authentic final LSE and boundary operands are
+retained for the next evaluation; soil is not blended across this transition.
+If any relaxation guard fails, the raw authentic final candidate is used.
+Following an applied finalization restart, the first otherwise-converged
+provisional Stage 3 revisit performs one additional guarded update before
+finalization can be retried. Neither path changes `TOL-SNOWENERGY-003`, the
+96-iteration cap, receipt termination, exact-floor cycle policy, or final
+authentic-map replay.
 
 The persistent-layer refreeze operation preserves nonnegative cold content at
 its generating seam. When liquid availability reaches the exact capacity
@@ -1732,6 +1766,7 @@ Validation completes before snow or soil owner mutation, and any failure uses
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 28 | 2026-08-30 | Applied the existing support-scaled convex Stage 3 iterate policy to a nonconverged authentic finalization rebuild, preventing the finalization transition from discarding damping and repeatedly restarting a cold-content residual. After such a restart, one further guarded Picard update stabilizes the first provisional tolerance crossing before finalization is retried. Retained authentic final LSE/boundary operands, converged soil, every discrete/posture/refusal guard, unchanged convergence tolerances and iteration cap, and authentic-map-only publication. | Default-off iteration-history trace distinguishing 100 cold-only finalization/Picard caps from 27 materially nonconverged maps and one receipt-replay cap; contract-derived transition/refusal/stabilization vectors; replacement focused and canonical one-day qualifications |
 | 27 | 2026-08-30 | Classified only the persistent per-layer `refrozen_liquid_m` tracer as within-trial factorization lineage for adaptive direct-versus-composed error estimation. The accepted composed value remains exact owner/restart state, while independent ice-flux refreeze reconstruction and all mass, liquid, cold-content, temperature, cumulative, phase, event, topology, custody, receipt, and energy guards remain unchanged. | One-day cap-signature audit; direct/composed factorization-history vectors; physical-scalar anti-evasion matrix; accepted-publication ledger reconstruction; replacement one-day qualification |
 | 26 | 2026-08-29 | Bound accepted terminal composition to every exact physical child's contiguous precipitation and snow--soil receipt custody. The enclosing parcel set preserves physical operands and child order while resealing envelope support; final-child boundary evidence remains distinct. Terminal receipt/event regrouping uses only existing `TOL-SNOWENERGY-005`, with one-bit-over rejection and unchanged physical-ledger closure. | Multi-child terminal reconstruction, material omission diagnosis, exact-side receipt test, EROD16 progression, and canonical one-day replacement qualification |
 | 25 | 2026-08-28 | Admitted conditional exact-floor period-two contraction: 60-second solves remain raw unless authentic Stage 3 candidates satisfy the existing exact-discrete/native-unit `A/B/A` predicate, after which `w=0.5` applies for that solve only. This replaces the briefly tested unconditional exact-floor damping that regressed the canonical one-day controller to near-floor stepping. Density and every discrete authority remain unblended; the floor, tolerances, 96-iteration cap, authentic final replay, ledgers, events, receipts, and rollback are unchanged. | P102 exact-floor limiting-coordinate audit; focused raw-convergent, exact-density-cycle, cumulative-closure, event/topology-poison vectors; replacement one-day telemetry |

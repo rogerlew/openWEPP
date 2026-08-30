@@ -1,8 +1,8 @@
 # Review A
 
-Status: `QUEUED — independent reviewer unavailable under current session policy`
+Status: `BLOCKED — independent reviewer prohibited by current session policy`
 
 Evidence mode: `not-run`
 
-Findings must be recorded and dispositioned as `accepted`, `rejected`,
-`deferred`, or `follow-up`.
+No independent review was claimed. Technical execution continued under the
+package authorization; `COMPLETE` remains unavailable until this slot is run.

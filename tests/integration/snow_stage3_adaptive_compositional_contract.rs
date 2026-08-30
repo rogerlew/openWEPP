@@ -84,11 +84,12 @@ fn successor_contracts_bind_one_adaptive_model_and_preserve_rejected_history() {
     let surface_liquid = read(SURFACE_LIQUID);
     let package = read(PACKAGE);
     for required in [
-        "contract_version: 27",
+        "contract_version: 28",
         "INV-SNOWENERGY-048",
         "INV-SNOWENERGY-049",
         "INV-SNOWENERGY-050",
         "INV-SNOWENERGY-053",
+        "INV-SNOWENERGY-054",
         "TOL-SNOWENERGY-005",
         "W = I0 + L0 + D - S + Lin",
         "Versions 19 through 21 remain historical",

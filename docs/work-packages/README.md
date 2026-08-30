@@ -2,13 +2,16 @@
 
 ## 20260830-snow-stage3-cold-content-fixed-point-optimization-001
 
-Active owner-authorized optimization of the remaining Stage-3 covered
+Executed owner-authorized optimization of the remaining Stage-3 covered
 fixed-point caps after the refreeze-history classification. The retained
 one-day baseline is 504 accepted / 227 rejected trials, 128 fixed-point caps,
 100 cold-content-only caps, 49 exact-floor supports, and 374.23 seconds body
-wall. The package owns result-blind contraction diagnosis and a contract-first
-solver correction without tolerance relaxation, event/discrete weakening, or
-persisted microstepping diagnostics. Status: `ACTIVE`.
+wall. Terminal qualification is 491 accepted / 205 rejected, 32 fixed-point
+caps, two cold-content-only caps, 49 exact-floor supports, and 336.52 seconds
+body wall without tolerance relaxation, event/discrete weakening, or persisted
+microstepping diagnostics. Technical gates pass; mandatory independent review
+and verification are prohibited by current session policy. Status:
+`EXECUTED-HOLD`.
 
 ## 20260826-snow-stage3-adaptive-compositional-microstepping-001
 
