@@ -1,5 +1,14 @@
 # Work Packages
 
+## 20260830-frozen-forest-litter-phase-authority-001
+
+Queued contract-first successor required by the workspace gate hold-lift after
+valid forest fixtures exposed the current typed exclusion of frozen/thawing
+forest-litter surface liquid. It retains the selected R-156 litter model and
+official CeCILL-C SURFEX v8 instantiation, adjudicates their sign/constants,
+and owns exact liquid/ice/fusion-energy custody, restart, rollback, real
+consumer proof, and independent closure. Status: `QUEUED — SCAFFOLDED`.
+
 ## 20260830-workspace-gate-hold-lift-001
 
 Active owner-authorized hold-lift for the mandatory warnings-denied workspace
@@ -8,7 +17,7 @@ fixed-point optimization package. It performs exact baseline/current failure
 classification, narrow behavior-preserving corrections, exact-clean heavy
 reruns through delegated comparator runners, dual review, and dual
 verification. Test weakening and implicit baseline waivers are forbidden.
-Status: `ACTIVE — INTAKE`.
+Status: `ACTIVE — EXECUTION`.
 
 ## 20260830-snow-stage3-cold-content-fixed-point-optimization-001
 
