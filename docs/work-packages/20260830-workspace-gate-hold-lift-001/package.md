@@ -36,7 +36,10 @@ full-workspace correctness profile on one exact clean terminal source identity.
   across the terminal one-volume snow enthalpy kink: a mixed `0 C` endpoint
   maps to a dry frozen `196.469 K` endpoint below the already-required LSE
   domain. Componentwise contraction correctly refuses the phase/posture
-  crossing; the real `dff_ws2` fixture fails at `60 s`.
+  crossing; the real `dff_ws2` fixture fails at `60 s`. The lawful v31 W/H
+  projection then exposes a pure deposition-to-sublimation active-set reversal
+  on `1860..1920 s`, which its required vapor-disposition guard correctly
+  refuses.
 - `WGHL-FULL-001E`: committed Stage-3 publication omits the requested accepted
   WAT5 producer projection and reconstructs accepted upstream runon from the
   LSE forcing field that correctly rejects routed parcels, masking transaction
@@ -161,6 +164,29 @@ and prove byte-exact rollback. It may not zero a nonzero carry, use tolerance,
 diagnostic, or change any constitutive equation, heat capacity, chronology,
 event, custody, receipt, rollback, or temporal floor.
 
+Fifth, `SC-SNOWENERGY-001` v32 supersedes the in-review v31 controller while
+retaining its same-disposition W/H projection and vapor-disposition refusal.
+When two independently closed, pure one-sided actual-vapor support images have
+identical immutable beginning/support/identity/custody/receipt structure and
+strictly opposite signed actual vapor, the covered solver may localize one
+unpublished vapor-active-set interface. It derives the unique convex vapor-root
+fraction from the signed endpoint masses, sets actual vapor, deposition,
+sublimation, and their already-once latent-energy component to exact positive
+zero, contracts external liquid and every nonlatent ordered energy component at
+that fraction, recomputes complete energy, and applies the unchanged canonical
+total-water/enthalpy phase projection. A subsequent zero-to-one-sided numerical
+branch entry may preserve the fresh authentic endpoint's positive finite
+specific latent heat under the existing bounded support-scaled Picard weight.
+These numerical images are never authentic, converged, finalizable, replayable,
+acceptable, or publishable; only a later fresh authentic map image may satisfy
+those branches. Mixed deposition/sublimation, failed mass/latent/component
+closure, or any identity/event/topology/custody/receipt change remains typed
+failure. This private transition may apply on any exact covered support at or
+above the unchanged 60-second floor solely when ordinary guarded contraction is
+blocked by the terminal-one-volume phase/vapor active set; it changes no
+adaptive temporal policy, tolerance, iteration cap, constitutive equation,
+event, custody, receipt, rollback, public schema, persistence, or publication.
+
 ## Intended write set
 
 - `docs/work-packages/README.md`;
@@ -281,6 +307,16 @@ authority; author/adjust contract-derived tests; record a failing
 pre-implementation gate on the unchanged production implementation; only then
 edit production code. Kernel-profile compliance and dual contract review are
 blocking.
+
+The v32 successor repeats that contract-first sequence. Its retained pre-red
+must include the exact `1860..1920 s` vapor/latent operands, the unique
+`alpha=0.04393657257739406` root, proof that affine latent interpolation leaves
+an inadmissible nonzero `45.77845449909091 J m^-2` at zero vapor, and direct
+support above 60 seconds. Mandatory green evidence includes opposite-sign/root/
+branch-entry and same-sign-v31 vectors; mixed-disposition, capacity, nonfinite,
+component/identity/event, cap, rollback, and no-intermediate-publication
+refusals; real DFF accepted/rejected counts, widths, runtime, limiting reasons,
+and independent mass/energy/vapor closure.
 
 The same contract-first sequence applies to `WGHL-FULL-001F` under
 `SC-LANDSURFACEENERGY-001`: amend authority, author the no-update witness and

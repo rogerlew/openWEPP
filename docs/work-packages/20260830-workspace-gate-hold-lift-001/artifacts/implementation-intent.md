@@ -11,7 +11,10 @@ remain behavior-preserving/test-authoring work. The amended package also owns:
 - a contract-first exact-floor fixed-point transition correction that derives
   only an unpublished terminal-one-volume iterate through the canonical total-
   water/enthalpy phase projection when authentic map images cross the phase
-  kink and one lies outside an already-required constitutive domain; and
+  kink and one lies outside an already-required constitutive domain, followed
+  by a contract-first v32 vapor-active-set interface/branch-entry projection
+  for pure opposite-sign actual-vapor images on exact supports at or above the
+  unchanged 60-second floor; and
 - accepted Stage-3 WAT5/upstream-runon publication reconstruction from sealed
   accepted operands with independent conservation evidence; and
 - a contract-first covered-column no-update termination witness limited to the
@@ -44,6 +47,10 @@ The rejected v30 componentwise candidate-local safeguard is diagnostic evidence,
 not accepted implementation. Its replacement v31 intent is restricted to a
 terminal-one-volume unpublished phase-aware reconstruction in canonical total-
 water/enthalpy coordinates, with fresh-authentic-only convergence/publication.
+Version 32 retains that same-disposition behavior and adds only the unpublished
+opposite-sign vapor root and zero-to-one-sided branch entry defined by
+`SC-SNOWENERGY-001`; it interpolates no vapor latent energy through zero and
+changes no adaptive time policy, tolerance, cap, physics, custody, or floor.
 The identical ordering applies independently to `WGHL-FULL-001F` under
 `SC-LANDSURFACEENERGY-001`; the two unchanged interior-terminal consumer tests
 are the positive pre-implementation vector, and existing strict-decrease,
