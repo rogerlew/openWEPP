@@ -94,10 +94,8 @@ fn qualification_adaptive_envelopes_bind_ordered_exact_replay_partitions() {
             subslabs[3],
         ],
     ] {
-        let poison_publication = qualification_exact_adaptive_publication_subset(
-            &poison,
-            &publication,
-        );
+        let poison_publication =
+            qualification_exact_adaptive_publication_subset(&poison, &publication);
         assert!(
             validate_qualification_adaptive_publication_crossjoin_v1(
                 &expected,
@@ -125,16 +123,16 @@ fn qualification_terminal_child_requires_exact_physical_and_successor_partition(
     ];
     let subslabs = [
         qualification_subslab(0, 420 * SECOND_NS, 1, 11),
-        qualification_subslab_with_terminal(420 * SECOND_NS, 840 * SECOND_NS, 2, 12, true),
+        qualification_subslab_with_terminal(420 * SECOND_NS, 540 * SECOND_NS, 2, 12, true),
     ];
     let publication = [
         qualification_retained_publication(0, 420 * SECOND_NS, 1, 11),
-        qualification_retained_publication(420 * SECOND_NS, 840 * SECOND_NS, 2, 12),
+        qualification_retained_publication(420 * SECOND_NS, 540 * SECOND_NS, 2, 12),
     ];
-    let successor = [qualification_snow_free_successor(
-        840 * SECOND_NS,
-        900 * SECOND_NS,
-    )];
+    let successor = [
+        qualification_snow_free_successor(540 * SECOND_NS, 600 * SECOND_NS),
+        qualification_snow_free_successor(600 * SECOND_NS, 900 * SECOND_NS),
+    ];
     validate_qualification_adaptive_publication_crossjoin_v1(
         &expected,
         &subslabs,
@@ -144,6 +142,7 @@ fn qualification_terminal_child_requires_exact_physical_and_successor_partition(
     .expect("terminal physical prefix plus sealed snow-free tail exactly tiles child envelope");
     let same_parent_tail = [
         successor[0],
+        successor[1],
         qualification_snow_free_successor(900 * SECOND_NS, 1_800 * SECOND_NS),
     ];
     validate_qualification_adaptive_publication_crossjoin_v1(
@@ -180,28 +179,32 @@ fn qualification_terminal_child_requires_exact_physical_and_successor_partition(
         "non-event adaptive children retain exact physical-support equality",
     );
 
-    let mut wrong_parent = successor[0];
+    let mut wrong_parent = successor[1];
     wrong_parent.parent_transaction_sha256 = digest(91);
     for poison in [
         Vec::new(),
         vec![qualification_snow_free_successor(
-            839 * SECOND_NS,
+            539 * SECOND_NS,
             900 * SECOND_NS,
         )],
         vec![qualification_snow_free_successor(
-            841 * SECOND_NS,
+            541 * SECOND_NS,
             900 * SECOND_NS,
         )],
-        vec![qualification_snow_free_successor(
-            840 * SECOND_NS,
-            899 * SECOND_NS,
-        )],
-        vec![qualification_snow_free_successor(
-            840 * SECOND_NS,
-            901 * SECOND_NS,
-        )],
-        vec![wrong_parent],
-        vec![successor[0], successor[0]],
+        vec![
+            successor[0],
+            qualification_snow_free_successor(600 * SECOND_NS, 899 * SECOND_NS),
+        ],
+        vec![
+            successor[0],
+            qualification_snow_free_successor(600 * SECOND_NS, 901 * SECOND_NS),
+        ],
+        vec![successor[0], wrong_parent],
+        vec![successor[0], successor[0], successor[1]],
+        vec![
+            successor[0],
+            qualification_snow_free_successor(600 * SECOND_NS, 1_800 * SECOND_NS),
+        ],
     ] {
         assert!(
             validate_qualification_adaptive_publication_crossjoin_v1(

@@ -746,6 +746,32 @@ impl AdaptiveReceiptAccumulatorV1 {
     }
 }
 
+fn adaptive_terminal_child_end_v1(
+    adaptive_receipts: &AdaptiveReceiptAccumulatorV1,
+    parent_support: TimeSupport,
+) -> Result<ModelTimeNs, DirectSnowStage3V11AttachmentError> {
+    let accepted = adaptive_receipts
+        .accepted_microsteps
+        .last()
+        .ok_or_else(|| adaptive_receipt_identity_error("adaptive terminal child authority"))?;
+    if accepted.receipt_sha256 != accepted.reconstructed_digest()? {
+        return Err(adaptive_receipt_identity_error(
+            "adaptive terminal child seal",
+        ));
+    }
+    if accepted.context.parent_support != parent_support {
+        return Err(adaptive_receipt_identity_error(
+            "adaptive terminal child parent",
+        ));
+    }
+    if accepted.event_posture != Stage3AdaptiveEventPostureV1::TerminalEvent {
+        return Err(adaptive_receipt_identity_error(
+            "adaptive terminal child authority",
+        ));
+    }
+    Ok(accepted.context.step_support.end_ns())
+}
+
 struct AdaptiveCoveredTrialV1 {
     parent: Box<V11ParentTransaction>,
     consumer: Box<DirectV10RealConsumerShadow>,
@@ -2005,29 +2031,34 @@ where
                         .accepted_until()
                         .get()
                         .checked_add(ADAPTIVE_MIN_STEP_NS)
-                        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                            "terminal receiver support overflow",
-                        ))?
+                        .ok_or_else(|| {
+                            adaptive_receipt_identity_error("terminal receiver support overflow")
+                        })?
                         .min(prepared.support.end_ns().get()),
                 )
             } else if !snow_free_successor_receipts.is_empty() {
-                // Preserve the last accepted covered-support width across the
-                // terminal-event/receiver discontinuity.  Jumping directly
-                // from the one-quantum receiver to the parent end discards
-                // the transition resolution and can strand the snow-free
-                // LSE solve at its backtracking cap.  This is only a cadence
-                // bound for the same-parent successor; it does not admit the
-                // successor into the adaptive comparison subset.
-                ModelTimeNs::new(
-                    clock
-                        .accepted_until()
-                        .get()
-                        .checked_add(adaptive_trial_quanta * ADAPTIVE_MIN_STEP_NS)
-                        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                            "snow-free successor support overflow",
-                        ))?
-                        .min(prepared.support.end_ns().get()),
-                )
+                let terminal_child_end =
+                    adaptive_terminal_child_end_v1(&adaptive_receipts, prepared.support)?;
+                if clock.accepted_until() >= terminal_child_end {
+                    prepared.support.end_ns()
+                } else {
+                    let cadence_ns = adaptive_trial_quanta
+                        .checked_mul(ADAPTIVE_MIN_STEP_NS)
+                        .filter(|duration| *duration > 0)
+                        .ok_or_else(|| {
+                            adaptive_receipt_identity_error("successor cadence overflow")
+                        })?;
+                    ModelTimeNs::new(
+                        clock
+                            .accepted_until()
+                            .get()
+                            .checked_add(cadence_ns)
+                            .ok_or_else(|| {
+                                adaptive_receipt_identity_error("successor support overflow")
+                            })?
+                            .min(terminal_child_end.get()),
+                    )
+                }
             } else {
                 prepared.support.end_ns()
             };
