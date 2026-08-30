@@ -115,6 +115,22 @@ const SNOW_LAYER_DERIVED_CACHE_AUTHORITY: AdaptiveNumericalWarmStartAuthorityV1 
         classification_id: "OPENWEPP_ADAPTIVE_DERIVED_INTEGRITY_CACHE_V1-snow-layer-geometry-cadence",
     };
 const ADAPTIVE_RECEIPT_LINEAGE_AUTHORITY: &str = "OPENWEPP_ADAPTIVE_FACTORIZATION_LINEAGE_V1";
+const SNOW_REFREEZE_FACTORIZATION_LINEAGE_AUTHORITY: &str = "SC-SNOWENERGY-001@27\0INV-SNOWENERGY-053\0OPENWEPP_ADAPTIVE_FACTORIZATION_LINEAGE_V1-snow-layer-refreeze-history";
+
+fn adaptive_factorization_lineage_authority(owner_id: &str, path: &str) -> Option<&'static str> {
+    if owner_id != "snow" {
+        return None;
+    }
+    let normalized_path = path.to_ascii_lowercase();
+    let lane_suffix = normalized_path.strip_prefix("lanes[")?;
+    let (lane_index, layer_suffix) = lane_suffix.split_once("][1].layers[")?;
+    let layer_index = layer_suffix.strip_suffix("].refrozen_liquid_m")?;
+    (!lane_index.is_empty()
+        && lane_index.bytes().all(|byte| byte.is_ascii_digit())
+        && !layer_index.is_empty()
+        && layer_index.bytes().all(|byte| byte.is_ascii_digit()))
+    .then_some(SNOW_REFREEZE_FACTORIZATION_LINEAGE_AUTHORITY)
+}
 
 pub(crate) fn adaptive_numerical_warm_start_authority(
     owner_id: &str,
@@ -806,6 +822,19 @@ fn adaptive_collect_value(
             {
                 return Ok(());
             }
+            if adaptive_factorization_lineage_authority(owner_id, path).is_some() {
+                let value = adaptive_float_bits(value).map(f64::from_bits).ok_or(
+                    DirectV11RealConsumerError::Identity(
+                        "adaptive factorization-lineage scalar encoding",
+                    ),
+                )?;
+                if !value.is_finite() {
+                    return Err(DirectV11RealConsumerError::Identity(
+                        "adaptive comparison non-finite factorization lineage",
+                    ));
+                }
+                return Ok(());
+            }
             if let (
                 Some(bits),
                 Some((tolerance_authority, absolute_tolerance, relative_tolerance)),
@@ -862,6 +891,9 @@ fn adaptive_collect_value(
                     path,
                     discrete_surfaces,
                 ) {
+                    return Ok(());
+                }
+                if adaptive_factorization_lineage_authority(owner_id, path).is_some() {
                     return Ok(());
                 }
                 if let Some((tolerance_authority, absolute_tolerance, relative_tolerance)) =
@@ -1407,6 +1439,53 @@ mod adaptive_comparison_tests {
     }
 
     #[test]
+    fn snow_refrozen_layer_history_is_factorization_lineage_not_a_physical_error_scalar() {
+        let owners = owner_values();
+        let baseline = comparison(&owners).expect("baseline comparison projection");
+        let path = "lanes[0][1].layers[0].refrozen_liquid_m";
+        assert_eq!(
+            adaptive_factorization_lineage_authority("snow", path),
+            Some(SNOW_REFREEZE_FACTORIZATION_LINEAGE_AUTHORITY),
+            "the exclusion is bound to the exact contract-authorized owner path",
+        );
+        assert_eq!(
+            adaptive_factorization_lineage_authority("snow", "layers[0].refrozen_liquid_m"),
+            None,
+            "an abbreviated or substituted path is not silently excluded",
+        );
+        assert!(
+            !baseline
+                .scalars
+                .iter()
+                .any(|scalar| scalar.owner_id == "snow" && scalar.path == path),
+            "INV-SNOWENERGY-053 excludes only the within-trial refreeze-history tracer",
+        );
+
+        let mut changed_owners = owners.clone();
+        *changed_owners
+            .get_mut("snow")
+            .and_then(|owner| owner.pointer_mut("/lanes/0/1/layers/0/refrozen_liquid_m"))
+            .expect("refrozen-liquid history field") = serde_json::json!(0.0003);
+        let changed = comparison(&changed_owners).expect("changed comparison projection");
+        assert_eq!(
+            baseline.scaled_error(&changed).expect("scaled error"),
+            (0.0, false),
+            "factorization history alone cannot reject otherwise identical physical state",
+        );
+
+        let baseline_owner_digest = digest_bytes(
+            &serde_json::to_vec(&owners).expect("baseline canonical owner fixture bytes"),
+        );
+        let changed_owner_digest = digest_bytes(
+            &serde_json::to_vec(&changed_owners).expect("changed canonical owner fixture bytes"),
+        );
+        assert_ne!(
+            baseline_owner_digest, changed_owner_digest,
+            "the accepted-path tracer remains exact canonical owner/restart state",
+        );
+    }
+
+    #[test]
     fn scalar_identity_mismatch_is_discrete_and_keeps_finite_intersection_error() {
         let direct = comparison(&owner_values()).expect("direct comparison");
         let mut omitted = direct.clone();
@@ -1937,6 +2016,26 @@ mod adaptive_comparison_tests {
         let owners = owner_values();
         let baseline = comparison(&owners).expect("baseline");
         for (owner_id, pointer, poison) in [
+            (
+                "snow",
+                "/lanes/0/1/layers/0/mass_swe_m",
+                serde_json::json!(0.011),
+            ),
+            (
+                "snow",
+                "/lanes/0/1/layers/0/liquid_water_m",
+                serde_json::json!(0.0011),
+            ),
+            (
+                "snow",
+                "/lanes/0/1/layers/0/cold_content_j_m2",
+                serde_json::json!(42001.0),
+            ),
+            (
+                "snow",
+                "/lanes/0/1/layers/0/temperature_c",
+                serde_json::json!(-1.9),
+            ),
             (
                 "snow",
                 "/lanes/0/1/cumulative_snowfall_kg_m2",

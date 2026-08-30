@@ -16,3 +16,24 @@ equations, fixed-point convergence, tolerances, adaptive decisions, receipts,
 owner state, publication, restart, or wire formats. The target buckets are the
 multi-tile physical runtime and the converged-candidate finalization/replay
 path. No performance optimization is authorized by this increment.
+
+## 2026-08-30 fixed-point optimization continuation
+
+Static: the owner now authorizes execution of the profiling-selected
+optimization target. The primary success measure is a material reduction in
+canonical one-day accepted/rejected microsteps and fixed-point cap failures;
+wall time is secondary but must not regress materially. Before changing the
+solver, the ignored real-fixture diagnostic may aggregate cap stage,
+convergence flags, limiting Stage-3 coordinate, support width, and completed
+iteration count. This evidence remains transient test output and must not enter
+production persistence, receipts, restart, publication, or controller state.
+
+Any solver-policy change is contract-first and must retain the exact
+60-second floor, authentic-map final replay, exact discrete/event/topology
+predicates, the 96-iteration fail-closed cap, and unchanged mass/energy and
+snow--soil receipt closure limits. No tolerance loosening is intended. If
+result-blind cap evidence supports a bounded numerical acceleration, contract
+vectors must prove refusal across discrete/posture changes and cumulative
+closure before production activation. Canonical acceptance requires one-day
+counts, accepted-width distribution, runtime, limiting rejection reasons, and
+ledger/receipt closure against the retained profiling baseline.

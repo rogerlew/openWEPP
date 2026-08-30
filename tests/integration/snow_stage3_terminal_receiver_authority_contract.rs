@@ -148,7 +148,7 @@ fn all_owner_failure_rolls_back_and_index_records_lifecycle() {
     }
     for required in [
         "v140 owner amendment selects an exact 60-second adaptive Stage-3 floor",
-        "v26 retains bounded vapor/phase custody, the exact 60-second fallback",
+        "v27 retains bounded vapor/phase custody, the exact 60-second fallback",
         "v30 retains V9 generation-host/provider-equivalence",
     ] {
         assert!(index.contains(required), "{INDEX} missing {required}");

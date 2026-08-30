@@ -15,7 +15,7 @@ fn contracts_admit_only_event_local_terminal_snow_numerics() {
     let energy = read(ENERGY);
     let freeze = read(FREEZE);
     for required in [
-        "contract_version: 26",
+        "contract_version: 27",
         "Version 18 defines the persistent Stage 3 snow--soil conductive boundary",
         "INV-SNOWENERGY-034",
         "OBL-SNOWENERGY-P-008",
@@ -68,7 +68,7 @@ fn package_and_index_preserve_receiving_surface_and_production_boundaries() {
     assert!(package.contains("No assignment of terminal unallocated energy"));
     assert!(package.contains("No physical seasonal efficacy"));
     assert!(
-        index.contains("v26 retains bounded vapor/phase custody, the exact 60-second fallback")
+        index.contains("v27 retains bounded vapor/phase custody, the exact 60-second fallback")
     );
     assert!(
         index.contains("v140 owner amendment selects an exact 60-second adaptive Stage-3 floor")

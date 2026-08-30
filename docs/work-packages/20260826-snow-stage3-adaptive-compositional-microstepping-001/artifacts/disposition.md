@@ -5,17 +5,17 @@ full production cutover requires external science authority`.
 
 Evidence mode: `Ran + Static`.
 
-The final exact-head canonical one-day fixture passed all 48 parents, the
+The latest exact-head canonical one-day fixture passed all 48 parents, the
 committed qualification snapshot, real downstream publication consumer,
-archive fold, and output transaction. It accepted 588 supports and rejected
-320 trials, versus the retained 1,434/1,529 baseline: reductions of 59.00% and
-79.07%. Accepted widths were `139x60 s`, `111x120 s`, `320x180 s`, `12x240 s`,
-`1x300 s`, `3x420 s`, `1x900 s`, and `1x1800 s`; 449/588 (76.36%) were larger
-than the exact 60-second fallback floor. The comparable optimized test body
-fell from 485.858 to 420.11 seconds (13.53%). Incremental-build-inclusive wall
-was 489.99 seconds and peak RSS was 3,935,368 KiB; neither is a model-residency
-measurement. Exact logs are `/tmp/adaptive_microstep_amendment/one-day-final-v16-exact-head.log`
-and `.time`.
+archive fold, and output transaction. It accepted 504 supports and rejected
+227 trials. Relative to the retained pre-optimization 588/320 baseline, those
+are reductions of 14.29% and 29.06%; relative to the original 1,434/1,529
+baseline, reductions are 64.85% and 85.15%. Accepted widths were `49x60 s`,
+`112x120 s`, `323x180 s`, `11x240 s`, `2x360 s`, `1x420 s`, `3x900 s`, and
+`3x1800 s`; 455/504 (90.28%) exceeded the fallback floor. Test-body/external
+wall was 374.23/374.71 seconds and peak RSS 864,968 KiB. Exact logs are
+`/tmp/adaptive_microstep_amendment/one-day-refreeze-lineage-v27.log` and
+`.time`.
 
 The v16 run supersedes v12 after the exact-head broad gate exposed one
 accepted-terminal packaging defect: the installed ending spanned every exact
@@ -23,7 +23,7 @@ physical child, while precipitation, resource debits, and material proposals
 named only the final child. The corrected package retains and authenticates the
 ordered carrier-phase chain, composes exact child operands without rerunning
 physics, preserves the distinct final-child boundary receipts, and rejects
-omission/order/topology/receipt substitutions. `SC-SNOWENERGY-001@26` and
+omission/order/topology/receipt substitutions. `SC-SNOWENERGY-001@27` and
 `SC-VEGETATION-001@30` are the canonical authority. The only new numeric bound
 is an exact one-ULP nonnegative finite BGC regrouping audit; the sequential
 owner ending and all mass/energy ledger thresholds remain unchanged.
@@ -42,16 +42,19 @@ The stable period-two snow/soil fixed-point defect remains corrected by
 bounded under-relaxation above the floor and conditional exact-floor `A/B/A`
 detection. Authentic final replay, exact density/discrete surfaces, the
 96-iteration fail-closed cap, and all physical tolerances remain unchanged.
-The final day recorded 124 bounded fixed-point nonconvergences and 140 scaled
-composition rejections. The 320 controller rejections partitioned into 180
-phase-class and 140 comparison-class rejections; event, combined event/phase,
-and exact-discrete comparison rejections were all zero.
+The latest day recorded 128 bounded fixed-point nonconvergences and 45 scaled
+physical composition rejections. The 227 controller rejections partitioned
+into 182 phase-class and 45 comparison-class rejections; event, combined
+event/phase, and exact-discrete comparison rejections were all zero. The
+per-layer refreeze tracer is contract-bound within-trial factorization history;
+accepted owner/restart bytes retain it exactly, and independent physical
+refreeze closure is unchanged.
 
-Independent ledger validation covered 2,037 ledgers. Maximum residuals were
+Independent ledger validation covered 1,682 ledgers. Maximum residuals were
 `3.55271367880050093e-15 kg m^-2` mass and
-`1.39698386192321777e-9 J m^-2` energy against unchanged `1e-9` and `1e-6`
+`9.31322574615478516e-10 J m^-2` energy against unchanged `1e-9` and `1e-6`
 bounds. Receipt reseal maxima were `9.98625182546675205e-10 J m^-2` and
-`1.06297193269710988e-11 K`, within `TOL-SNOWENERGY-005`.
+`3.69482222595252097e-12 K`, within `TOL-SNOWENERGY-005`.
 
 Seasonal/archive/memory and generic per-step optimization remain paused by the
 owner amendment and are not package blockers. Historical failed or superseded

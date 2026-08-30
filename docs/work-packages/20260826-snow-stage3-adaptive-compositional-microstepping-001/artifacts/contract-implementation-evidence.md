@@ -2,7 +2,7 @@
 
 Status: owner-amended implementation and canonical one-day qualification PASS
 
-Static: amended canonical SnowEnergy v26, SnowFreeze v140, CoupledTime v9,
+Static: amended canonical SnowEnergy v27, SnowFreeze v140, CoupledTime v9,
 LandSurfaceEnergy v10, SurfaceLiquid v13, Vegetation v30, and the registry. The
 successors preserve rejected version ranges as historical and bind bounded
 vapor, phase projection, adaptive complete-owner chronology, batch lifecycle,
@@ -34,3 +34,16 @@ workflow. Assurance generation advanced from `931f2f31` to `5c275785`, a
 repeat check was a no-op, all-report validation passed, and affected contract
 and assurance evidence passed 220/220 tests. The new receipt is
 `assurance/v2/transactions/f1ad46344455412f03748bfd7b0fc272322cbf5a7a7ea43123015b275a8e7b0a.json`.
+
+Static: the 2026-08-30 optimization follow-on advances current SnowEnergy
+authority to v27. `INV-SNOWENERGY-053` classifies only the persistent
+per-layer refreeze-history tracer as within-trial factorization lineage for
+adaptive error estimation. Accepted composed owner/restart state and
+independent physical refreeze, liquid, mass, and energy closure remain exact;
+no tolerance or persisted diagnostic changes.
+
+Ran: all seven affected canonical-contract binaries pass 47/47, the comparison
+projection passes 16/16, committed publication passes 21/21, affected crate
+checks pass, and the replacement canonical one-day consumer passes with
+504 accepted / 227 rejected trials and unchanged closure limits. Detailed
+evidence is in `solver-optimization-evidence.md`.

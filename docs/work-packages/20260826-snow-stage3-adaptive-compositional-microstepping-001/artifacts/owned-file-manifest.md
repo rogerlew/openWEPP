@@ -137,6 +137,13 @@ workspace; no path was reverted or silently omitted.
 - ` M` `docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md`
 - ` M` `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md`
 - ` M` `docs/specifications/science-contracts/index.md`
+- ` M` `tests/integration/snow_stage3_adaptive_compositional_contract.rs`
+- ` M` `tests/integration/snow_stage3_shared_carrier_authority_contract.rs`
+- ` M` `tests/integration/snow_surface_eb03_contract.rs`
+- ` M` `tests/integration/snow_stage3_wind_source_custody_contract.rs`
+- ` M` `tests/integration/snow_stage3_terminal_receiver_authority_contract.rs`
+- ` M` `tests/integration/snow_stage3_turbulent_operator_reconciliation_contract.rs`
+- ` M` `tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs`
 - ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/artifact-manifest.json`
 - ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-cross-midnight-vector.json`
 - ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-in-progress-vector.json`
@@ -321,3 +328,31 @@ workspace; no path was reverted or silently omitted.
 - ` M` `docs/work-packages/20260826-snow-stage3-adaptive-compositional-microstepping-001/artifacts/line-count-governance.md`
 - `??` `docs/work-packages/20260826-snow-stage3-adaptive-compositional-microstepping-001/artifacts/one-day-wall-time-attribution.md`
 - ` M` `docs/work-packages/20260826-snow-stage3-adaptive-compositional-microstepping-001/artifacts/owned-file-manifest.md`
+
+## 2026-08-30 fixed-point optimization follow-on
+
+Static intended additions before production edits:
+
+- ` M` `crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs`
+- ` M` `docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md` if the diagnostic supports a solver-policy amendment
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/fixed_point.rs` if admitted contract vectors pass
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs` if the admitted solver requires bounded runtime state
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs`
+- ` M` this package tree, including `artifacts/solver-optimization-evidence.md`
+
+The exact terminal diff will supersede this intended list at disposition.
+
+Terminal retained diff for the qualified increment:
+
+- ` M` `crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs`
+- ` M` `docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md`
+- ` M` `docs/specifications/science-contracts/index.md`
+- ` M` this package's `package.md`
+- ` M` this package's `artifacts/gate-results.md`
+- ` M` this package's `artifacts/contract-implementation-evidence.md`
+- ` M` this package's `artifacts/disposition.md`
+- ` M` this package's `artifacts/implementation-intent.md`
+- ` M` this package's `artifacts/owned-file-manifest.md`
+- ` M` this package's `artifacts/terminal-diff-reconciliation.md`
+- `??` this package's `artifacts/solver-optimization-evidence.md`

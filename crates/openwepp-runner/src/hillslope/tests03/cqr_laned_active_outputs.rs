@@ -627,6 +627,42 @@ fn cqr_stage3_one_day_qualification_with_telemetry() {
         .iter()
         .filter(|entry| !entry.converged)
         .count();
+    let mut fixed_point_caps_by_signature = BTreeMap::<String, u64>::new();
+    let mut fixed_point_cap_max_abs_delta_by_field = BTreeMap::<String, f64>::new();
+    for entry in fixed_point_audit.iter().filter(|entry| !entry.converged) {
+        let signature = match entry.limit_detail {
+            Some(detail) => {
+                if let Some((_, field, left_bits, right_bits, _, _)) =
+                    detail.stage3_first_difference
+                {
+                    if field.starts_with("layer.") || field.starts_with("cumulative_") {
+                        let delta = (f64::from_bits(left_bits) - f64::from_bits(right_bits)).abs();
+                        fixed_point_cap_max_abs_delta_by_field
+                            .entry(field.to_owned())
+                            .and_modify(|maximum| *maximum = maximum.max(delta))
+                            .or_insert(delta);
+                    }
+                }
+                format!(
+                    "width={} stage={:?} lse={} stage3={} soil={} boundary={} field={}",
+                    entry.support.duration_ns(),
+                    detail.stage,
+                    detail.lse_converged,
+                    detail.stage3_converged,
+                    detail.soil_converged,
+                    detail.boundary_converged,
+                    detail
+                        .stage3_first_difference
+                        .map_or("none", |difference| difference.1),
+                )
+            }
+            None => format!(
+                "width={} stage=unrecorded lse=unknown stage3=unknown soil=unknown boundary=unknown field=none",
+                entry.support.duration_ns(),
+            ),
+        };
+        *fixed_point_caps_by_signature.entry(signature).or_default() += 1;
+    }
     let receipt_reseal_max_abs_residual_j_m2 = fixed_point_audit
         .iter()
         .map(|entry| f64::from_bits(entry.receipt_reseal_max_abs_residual_bits))
@@ -639,6 +675,10 @@ fn cqr_stage3_one_day_qualification_with_telemetry() {
         .fold(0.0_f64, f64::max);
     eprintln!(
         "STAGE3_LIMITING_REJECTIONS fixed_point_nonconverged={fixed_point_nonconverged} comparison_rejections={comparison_rejections} comparison_scaled={comparison_scaled_rejections} comparison_discrete={comparison_discrete_rejections} comparison_by_owner_path={comparison_rejections_by_owner_path:?}",
+    );
+    eprintln!("STAGE3_FIXED_POINT_CAP_SIGNATURES {fixed_point_caps_by_signature:?}");
+    eprintln!(
+        "STAGE3_FIXED_POINT_CAP_MAX_ABS_DELTA_BY_FIELD {fixed_point_cap_max_abs_delta_by_field:?}"
     );
     eprintln!(
         "STAGE3_LEDGER_CLOSURE validated={} maximum_abs_mass_residual_kg_m2={:.17e} mass_tolerance_kg_m2=1.0e-9 maximum_abs_energy_residual_j_m2={:.17e} energy_tolerance_j_m2=1.0e-6",

@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 26
+contract_version: 27
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -14,7 +14,7 @@ consumer_scope:
   - Snow sublimation and melt components
   - Snow-energy diagnostics and assurance outputs
 evidence_level: static+independent_oracle+contract_vectors
-last_reviewed: 2026-08-29
+last_reviewed: 2026-08-30
 supersedes: []
 superseded_by: []
 ---
@@ -1313,6 +1313,24 @@ map image. A discrete change, invalid reconstruction, receipt mismatch, or
 96-iteration exhaustion remains fail-closed, and no support below the exact
 floor is admitted.
 
+`INV-SNOWENERGY-053` — The persistent per-layer `refrozen_liquid_m` field is
+material-provenance history within one trial factorization, not an independent
+prognostic truncation-error coordinate between direct `H` and composed
+`H/2 + H/2` trials. Each trial must still carry, validate, fingerprint, and
+replay the complete field, and the accepted composed owner must install and
+persist its exact value. The adaptive cross-factorization scalar projection
+therefore excludes only `snow.lanes[*][1].layers[*].refrozen_liquid_m`.
+
+This classification does not exclude or loosen any current snow mass, liquid,
+cold-content, temperature, cumulative-water, cumulative-energy, phase, event,
+topology, custody, or receipt coordinate. Before committed publication, actual
+accepted refreeze remains independently reconstructed from beginning and ending
+ice plus snowfall, deposition, sublimation, and melt under the unchanged
+`1e-9 m` physical-ledger threshold; the liquid and energy ledgers remain
+independently closed. A changed accepted-path tracer still changes canonical
+owner identity and persisted restart bytes. No adaptive diagnostic surface is
+persisted.
+
 The persistent-layer refreeze operation preserves nonnegative cold content at
 its generating seam. When liquid availability reaches the exact capacity
 `Q_cc/L_f`, binary64 division followed by multiplication is not generally
@@ -1714,6 +1732,7 @@ Validation completes before snow or soil owner mutation, and any failure uses
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 27 | 2026-08-30 | Classified only the persistent per-layer `refrozen_liquid_m` tracer as within-trial factorization lineage for adaptive direct-versus-composed error estimation. The accepted composed value remains exact owner/restart state, while independent ice-flux refreeze reconstruction and all mass, liquid, cold-content, temperature, cumulative, phase, event, topology, custody, receipt, and energy guards remain unchanged. | One-day cap-signature audit; direct/composed factorization-history vectors; physical-scalar anti-evasion matrix; accepted-publication ledger reconstruction; replacement one-day qualification |
 | 26 | 2026-08-29 | Bound accepted terminal composition to every exact physical child's contiguous precipitation and snow--soil receipt custody. The enclosing parcel set preserves physical operands and child order while resealing envelope support; final-child boundary evidence remains distinct. Terminal receipt/event regrouping uses only existing `TOL-SNOWENERGY-005`, with one-bit-over rejection and unchanged physical-ledger closure. | Multi-child terminal reconstruction, material omission diagnosis, exact-side receipt test, EROD16 progression, and canonical one-day replacement qualification |
 | 25 | 2026-08-28 | Admitted conditional exact-floor period-two contraction: 60-second solves remain raw unless authentic Stage 3 candidates satisfy the existing exact-discrete/native-unit `A/B/A` predicate, after which `w=0.5` applies for that solve only. This replaces the briefly tested unconditional exact-floor damping that regressed the canonical one-day controller to near-floor stepping. Density and every discrete authority remain unblended; the floor, tolerances, 96-iteration cap, authentic final replay, ledgers, events, receipts, and rollback are unchanged. | P102 exact-floor limiting-coordinate audit; focused raw-convergent, exact-density-cycle, cumulative-closure, event/topology-poison vectors; replacement one-day telemetry |
 | 24 | 2026-08-28 | Admitted only exact-zero canonicalization for finite binary64 refreeze-capacity quotient/product cancellation under `TOL-SNOWENERGY-006`; retained the selected refrozen mass, fusion energy, unchanged physical-ledger tolerance, and typed failure for every material or unrelated negative cold-content result. | P102 real-consumer boundary failure operands; focused exact-side and poison vectors with independent water/energy reconstruction; bounded P102 replay |

@@ -158,8 +158,8 @@ fn current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation() {
     for required in [
         "status: approved",
         "maturity: active",
-        "contract_version: 26",
-        "last_reviewed: 2026-08-29",
+        "contract_version: 27",
+        "last_reviewed: 2026-08-30",
         "INV-SNOWENERGY-042",
         "INV-SNOWENERGY-043",
         "INV-SNOWENERGY-044",
@@ -205,7 +205,7 @@ fn current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation() {
     assert!(registry.contains(
         "| `SC-SNOWENERGY-001` | Snow-Surface Energy and Sub-Canopy Longwave Contract | `approved` | `active` |"
     ));
-    assert!(registry.contains("v26 retains bounded vapor/phase custody"));
+    assert!(registry.contains("v27 retains bounded vapor/phase custody"));
     assert!(!registry.contains("v14 binds the default-off shared V11/Stage 3 carrier"));
     assert_eq!(contract.matches("| `INV-SNOWENERGY-041` |").count(), 1);
     assert_eq!(contract.matches("| `INV-SNOWENERGY-042` |").count(), 2);

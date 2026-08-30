@@ -202,6 +202,40 @@ Its terminal fixture disposition remains pending because it then fails closed
 on the separate BGC finalized-use inventory join, before the PL14 test can
 publish its iteration and independent ledger-closure audit.
 
+### 2026-08-30 fixed-point transition optimization amendment
+
+The owner authorizes execution of the profiling-selected optimization target.
+The exact-head one-day cap audit attributes 94 of 124 bounded failures to
+Picard/finalization attempts where LSE, soil, and complete-boundary maps have
+already converged while Stage 3 remains separated first at per-layer cold
+content. The same workload attributes 95 of 140 scaled comparison rejections
+to per-layer refrozen liquid. Static inspection finds that the numerical
+under-relaxation guard treats liquid-water, cold-content, and refrozen-liquid
+zero crossings as discrete posture changes and therefore falls back to raw
+Picard at the refreeze onset/removal seam.
+
+The first contract-first candidate permitted only these continuous phase-axis
+zero crossings inside an otherwise-authorized convex unpublished iterate. Its
+focused five-parent run reduced cap failures 5 to 4, but the canonical day is
+`REJECTED`: accepted/rejected counts and the accepted-width distribution were
+unchanged, cap failures increased 124 to 188, and test-body runtime regressed
+416.94 to 432.62 seconds. Closure remained exact. The candidate production,
+test, and first v27 contract edits were removed; authority returned to v26
+before selecting the distinct v27 classification below. The optimization
+checkpoint then continued against the measured direct/composed refrozen-liquid
+limiter without tolerance relaxation.
+
+The selected `SC-SNOWENERGY-001@27` correction classifies only per-layer
+`refrozen_liquid_m` as within-trial factorization history for adaptive
+direct/composed error estimation. Exact accepted composed owner/restart bytes
+still retain the tracer, and committed publication still independently
+reconstructs physical refreeze and closes mass, liquid, and energy. The
+canonical one-day fixture passes with 504 accepted / 227 rejected trials,
+49 exact-floor supports, and `374.23 s` body time versus the retained
+588/320, 139-floor, `416.94 s` baseline. Exact discrete/event rejections remain
+zero and ledger/receipt limits are unchanged. The remaining 128 fixed-point
+caps remain the next solver limiter rather than being masked by tolerance.
+
 ## Included scope and deliverables
 
 Included: bounded vapor/latent custody; enthalpy phase projection; exact grid

@@ -37,3 +37,18 @@ No archive, seasonal, memory, or generic per-step optimization was added after
 the owner paused those objectives. Remaining HOLD surfaces require new science
 authority and were not hidden by a tolerance, clamp, fallback, or fixture
 evasion.
+
+## 2026-08-30 optimization follow-on reconciliation
+
+Static: the follow-on terminal diff is limited to the canonical adaptive owner
+projection, test-only cap aggregation, SnowEnergy v27/registry authority,
+seven compiler-discovered contract consumers, and package evidence. It adds no
+production diagnostic, receipt, restart, publication, or wire field. The exact
+path list is in `owned-file-manifest.md`.
+
+Ran: contract-first failure evidence, projection 16/16, committed publication
+21/21, affected canonical contracts 47/47, affected all-target/all-feature
+crate checks, rustfmt, diff validation, the five-parent real fixture, and the
+complete canonical one-day consumer all pass. The exact-head day reduces
+588/320 accepted/rejected trials to 504/227 with unchanged physical closure.
+The retained 128 fixed-point caps remain explicit next-target evidence.
