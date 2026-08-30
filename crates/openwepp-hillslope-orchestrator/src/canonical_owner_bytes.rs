@@ -1,6 +1,33 @@
 #[allow(clippy::wildcard_imports)]
 use super::*;
 
+/// Canonical successor bytes for the exact soil-thermal owner bundle.
+/// Legacy complete-owner byte construction does not call this function, so
+/// every V1 owner byte remains frozen.
+pub fn canonical_soil_thermal_v2_bundle_bytes(
+    beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+    candidate: &super::SoilThermalAcceptedCandidateV2,
+    seals: &super::SoilThermalOrchestratorSealsV2,
+) -> Result<Vec<u8>, DirectV9RealConsumerError> {
+    #[derive(Serialize)]
+    struct CanonicalSoilThermalV2Bundle<'a> {
+        schema: &'static str,
+        owner: &'a openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+        latest_credit_receipt: &'a openwepp_land_surface_energy::SoilThermalEnergyCreditReceiptV2,
+        expected_sources: &'a super::SoilThermalExpectedAcceptedOperandSetV2,
+        seals: &'a super::SoilThermalOrchestratorSealsV2,
+    }
+    super::validate_soil_thermal_orchestrator_seals_v2(beginning, candidate, seals)?;
+    serde_json::to_vec(&CanonicalSoilThermalV2Bundle {
+        schema: "OPENWEPP_SOIL_THERMAL_CANONICAL_OWNER_BUNDLE_V2",
+        owner: &candidate.ending_owner,
+        latest_credit_receipt: &candidate.credit_receipt,
+        expected_sources: &candidate.expected_sources,
+        seals,
+    })
+    .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))
+}
+
 const ADAPTIVE_COMPLETE_OWNER_IDS: [&str; 7] = [
     "bgc",
     "hydrology",

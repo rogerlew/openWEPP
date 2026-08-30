@@ -96,6 +96,7 @@ pub(crate) use covered_v8_owner::{
 pub use covered_v8_owner::{CoveredV8OwnerEnvelopeError, UncommittedCoveredV8OwnerEnvelope};
 use finalization_sealing::first_sealed_finalization_violation;
 use receiver_failure::canonical_receiver_failure;
+pub use receiver_validation::validate_soil_thermal_v2_surface_cancellation;
 use receiver_validation::{
     FramedSha256, canonicalize_finalized_error, canonicalize_unified_error,
     finalization_receiver_sets_sha256, preflight_protocol_bounds, preflight_protocol_cardinality,

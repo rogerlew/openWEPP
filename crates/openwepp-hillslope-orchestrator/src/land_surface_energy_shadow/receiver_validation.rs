@@ -7,10 +7,10 @@ use super::{
     OwnerKind, OwnerRollbackHash, PotentialWaterRequestBatch, ProductionSoilLayerReceiverOperands,
     ProductionSoilReceiverOperands, RealReceiverClosureOperands, RequestingComponent,
     ResourceOwnerId, Sha256, Sha256Digest, SoilLayerId, SoilThermalTileCandidate, SourceId,
-    SurfaceId, TileId, TileState, UnifiedReceiverExpectations, WaterProtocol, WaterProtocolRow,
-    WaterProtocolViolation, checked_surface_liquid_add, checked_surface_liquid_close,
-    checked_surface_liquid_div, checked_surface_liquid_mul, checked_surface_liquid_sub,
-    checked_surface_liquid_sum,
+    SurfaceId, TileId, TileState, TransactionId, UnifiedReceiverExpectations, WaterProtocol,
+    WaterProtocolRow, WaterProtocolViolation, checked_surface_liquid_add,
+    checked_surface_liquid_close, checked_surface_liquid_div, checked_surface_liquid_mul,
+    checked_surface_liquid_sub, checked_surface_liquid_sum,
 };
 use crate::DirectSurfaceLiquidConfigurationRecord;
 use crate::direct_runtime::{
@@ -19,6 +19,14 @@ use crate::direct_runtime::{
     surface_liquid_raw_snapshot_attempt_sha256, surface_liquid_raw_snapshot_sha256,
 };
 use crate::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter;
+
+struct ExpectedSoilInfiltrationCreditV2<'a> {
+    ofe_id: &'a OfeId,
+    layer_id: &'a SoilLayerId,
+    ordinal: u32,
+    digest: Sha256Digest,
+    receipt: &'a crate::DirectSurfaceLiquidParcelReceipt,
+}
 
 pub(super) fn lse_error_code(error: &LandSurfaceEnergyError) -> DirectSurfaceLiquidErrorCode {
     match error.class() {
@@ -44,6 +52,112 @@ pub(super) fn shadow_error_code(
         LandSurfaceEnergyShadowError::LandSurface(error) => lse_error_code(error),
         LandSurfaceEnergyShadowError::SurfaceLiquid(error) => error.code(),
     }
+}
+
+/// Independently prove that every accepted infiltration energy is both the
+/// surface-owner debit and the exact soil-owner credit. Expected values come
+/// from typed surface receipts, never from the soil credit receipt under test.
+pub fn validate_soil_thermal_v2_surface_cancellation(
+    transaction_id: TransactionId,
+    support_start_ns: u128,
+    support_end_ns: u128,
+    surface_owner_id: &ResourceOwnerId,
+    operands: &[openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2],
+    ingress: &crate::DirectSurfaceLiquidIngressCandidate,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let actual = operands
+        .iter()
+        .filter(|operand| {
+            operand.source_kind
+                == openwepp_land_surface_energy::SoilThermalEnergyOperandKindV2::Infiltration
+        })
+        .collect::<Vec<_>>();
+    let mut expected = Vec::new();
+    let mut ordinals = std::collections::BTreeMap::<(OfeId, SoilLayerId), u32>::new();
+    for receipt in ingress.receipts() {
+        let (
+            crate::DirectSurfaceLiquidReceiptDisposition::Infiltration,
+            crate::DirectSurfaceLiquidReceiptRecipient::SoilInfiltration {
+                ofe_id,
+                soil_thermal_layer_id,
+                ..
+            },
+        ) = (&receipt.disposition, &receipt.recipient)
+        else {
+            continue;
+        };
+        let ordinal = ordinals
+            .entry((ofe_id.clone(), soil_thermal_layer_id.clone()))
+            .or_insert(0);
+        let digest = super::v2_physical_operand_digest(&(
+            "OPENWEPP_ACCEPTED_SOIL_INFILTRATION_ENERGY_V2",
+            transaction_id,
+            support_start_ns,
+            support_end_ns,
+            surface_owner_id,
+            receipt,
+            soil_thermal_layer_id,
+            *ordinal,
+        ))?;
+        expected.push(ExpectedSoilInfiltrationCreditV2 {
+            ofe_id,
+            layer_id: soil_thermal_layer_id,
+            ordinal: *ordinal,
+            digest,
+            receipt,
+        });
+        *ordinal = ordinal
+            .checked_add(1)
+            .ok_or(LandSurfaceEnergyShadowError::Bound(
+                "V2 infiltration receipt ordinal overflow",
+            ))?;
+    }
+    expected.sort_unstable_by(|left, right| {
+        (left.ofe_id, left.layer_id, left.ordinal).cmp(&(
+            right.ofe_id,
+            right.layer_id,
+            right.ordinal,
+        ))
+    });
+    if expected.len() != actual.len() {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "V2 infiltration soil credit cardinality",
+        ));
+    }
+    for (expected, operand) in expected.iter().zip(actual) {
+        if operand.ofe_id != *expected.ofe_id
+            || operand.layer_id != *expected.layer_id
+            || operand.source_owner_id != *surface_owner_id
+            || operand.debit_credit_identity_sha256 != expected.digest
+            || operand.ordinal != expected.ordinal
+            || operand.units != "J m^-2 OFE-ground"
+            || operand.basis != "ofe_ground"
+            || operand.energy_j_m2_ofe_ground.to_bits()
+                != expected.receipt.enthalpy_j_m2_basis_ofe_ground.to_bits()
+        {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "V2 infiltration debit/credit substitution",
+            ));
+        }
+        let zero = openwepp_land_surface_energy::ExactDyadicEnthalpy::zero();
+        let cancelled = openwepp_land_surface_energy::ExactDyadicEnthalpy::exact_sum_binary64(
+            0.0,
+            &zero,
+            &[
+                expected.receipt.enthalpy_j_m2_basis_ofe_ground,
+                -operand.energy_j_m2_ofe_ground,
+            ],
+        )
+        .map_err(|_| {
+            LandSurfaceEnergyShadowError::Bound("V2 infiltration exact cancellation arithmetic")
+        })?;
+        if cancelled != zero {
+            return Err(LandSurfaceEnergyShadowError::Bound(
+                "V2 infiltration surface/soil energy cancellation",
+            ));
+        }
+    }
+    Ok(())
 }
 
 pub(super) fn validate_surface_production_binding(

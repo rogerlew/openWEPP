@@ -1,3 +1,5 @@
+type SoilThermalEnergyOperandV2 = openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2;
+
 /// Join one immutable LSE request batch to both actual water owners.
 #[allow(clippy::too_many_lines)]
 pub(crate) fn execute_unified_real_hydrology_shadow<F>(
@@ -1437,6 +1439,203 @@ fn credit_retained_receipt_group(
 fn checked_receiver_credit_add(beginning: f64, credit: f64) -> Option<f64> {
     let ending = checked_surface_liquid_add(beginning, credit)?;
     (credit == 0.0 || ending.to_bits() != beginning.to_bits()).then_some(ending)
+}
+
+/// Reconstruct canonical V2 soil-energy operands from accepted LSE storage
+/// deltas and typed infiltration receipts before a soil credit exists.
+pub fn physical_soil_energy_operands_v2(
+    transaction_id: TransactionId,
+    support_start_ns: u128,
+    support_end_ns: u128,
+    lse_owner_id: &ResourceOwnerId,
+    surface_owner_id: &ResourceOwnerId,
+    pre_ingress_candidates: &[SoilThermalTileCandidate],
+    ingress: &DirectSurfaceLiquidIngressCandidate,
+) -> Result<Vec<SoilThermalEnergyOperandV2>, LandSurfaceEnergyShadowError> {
+    if transaction_id.0 == 0
+        || ingress.transaction_id() != transaction_id
+        || support_start_ns >= support_end_ns
+    {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "V2 soil support identity",
+        ));
+    }
+    let mut operands = Vec::new();
+    append_v2_soil_internal_operands(
+        transaction_id,
+        support_start_ns,
+        support_end_ns,
+        lse_owner_id,
+        pre_ingress_candidates,
+        &mut operands,
+    )?;
+    append_v2_infiltration_operands(
+        transaction_id,
+        support_start_ns,
+        support_end_ns,
+        surface_owner_id,
+        ingress,
+        &mut operands,
+    )?;
+    operands.sort_unstable_by(|left, right| {
+        (&left.ofe_id, &left.layer_id, left.source_kind, left.ordinal).cmp(&(
+            &right.ofe_id,
+            &right.layer_id,
+            right.source_kind,
+            right.ordinal,
+        ))
+    });
+    Ok(operands)
+}
+
+fn append_v2_soil_internal_operands(
+    transaction_id: TransactionId,
+    support_start_ns: u128,
+    support_end_ns: u128,
+    lse_owner_id: &ResourceOwnerId,
+    pre_ingress_candidates: &[SoilThermalTileCandidate],
+    operands: &mut Vec<SoilThermalEnergyOperandV2>,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let mut candidates = pre_ingress_candidates.iter().collect::<Vec<_>>();
+    candidates.sort_unstable_by(|left, right| {
+        (&left.ofe_id, &left.tile_id).cmp(&(&right.ofe_id, &right.tile_id))
+    });
+    let mut internal_ordinals = BTreeMap::<(OfeId, SoilLayerId), u32>::new();
+    for candidate in candidates {
+        for layer in &candidate.layers {
+            if layer.infiltration_enthalpy_credit_j_m2_ofe_ground.to_bits() != 0.0_f64.to_bits()
+                || !layer.ending_enthalpy_j_m2_ofe_ground.is_finite()
+                || !layer.beginning_enthalpy_j_m2_ofe_ground.is_finite()
+            {
+                return Err(LandSurfaceEnergyShadowError::Identity(
+                    "V2 pre-ingress soil energy",
+                ));
+            }
+            let energy =
+                layer.ending_enthalpy_j_m2_ofe_ground - layer.beginning_enthalpy_j_m2_ofe_ground;
+            if !energy.is_finite() {
+                return Err(LandSurfaceEnergyShadowError::Bound(
+                    "V2 soil-internal energy delta",
+                ));
+            }
+            let ordinal = next_v2_operand_ordinal(
+                &mut internal_ordinals,
+                &candidate.ofe_id,
+                &layer.layer_id,
+            )?;
+            let digest = v2_physical_operand_digest(&(
+                "OPENWEPP_ACCEPTED_SOIL_INTERNAL_ENERGY_V2",
+                transaction_id,
+                support_start_ns,
+                support_end_ns,
+                lse_owner_id,
+                &candidate.owner_id,
+                &candidate.beginning_state_sha256,
+                &candidate.ofe_id,
+                &candidate.tile_id,
+                &layer.layer_id,
+                ordinal,
+                layer.beginning_enthalpy_j_m2_ofe_ground,
+                layer.ending_enthalpy_j_m2_ofe_ground,
+                energy,
+            ))?;
+            operands.push(SoilThermalEnergyOperandV2 {
+                ofe_id: candidate.ofe_id.clone(),
+                layer_id: layer.layer_id.clone(),
+                source_kind:
+                    openwepp_land_surface_energy::SoilThermalEnergyOperandKindV2::SoilInternal,
+                source_owner_id: lse_owner_id.clone(),
+                debit_credit_identity_sha256: digest,
+                ordinal,
+                units: "J m^-2 OFE-ground".to_owned(),
+                basis: "ofe_ground".to_owned(),
+                energy_j_m2_ofe_ground: energy,
+            });
+        }
+    }
+    Ok(())
+}
+
+fn append_v2_infiltration_operands(
+    transaction_id: TransactionId,
+    support_start_ns: u128,
+    support_end_ns: u128,
+    surface_owner_id: &ResourceOwnerId,
+    ingress: &DirectSurfaceLiquidIngressCandidate,
+    operands: &mut Vec<SoilThermalEnergyOperandV2>,
+) -> Result<(), LandSurfaceEnergyShadowError> {
+    let mut infiltration_ordinals = BTreeMap::<(OfeId, SoilLayerId), u32>::new();
+    for receipt in ingress.receipts() {
+        let (
+            DirectSurfaceLiquidReceiptDisposition::Infiltration,
+            DirectSurfaceLiquidReceiptRecipient::SoilInfiltration {
+                ofe_id,
+                soil_thermal_layer_id,
+                ..
+            },
+        ) = (&receipt.disposition, &receipt.recipient)
+        else {
+            continue;
+        };
+        if ofe_id != &receipt.recipient_store_key.ofe_id
+            || !receipt.enthalpy_j_m2_basis_ofe_ground.is_finite()
+        {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "V2 infiltration energy receipt identity",
+            ));
+        }
+        let ordinal =
+            next_v2_operand_ordinal(&mut infiltration_ordinals, ofe_id, soil_thermal_layer_id)?;
+        let digest = v2_physical_operand_digest(&(
+            "OPENWEPP_ACCEPTED_SOIL_INFILTRATION_ENERGY_V2",
+            transaction_id,
+            support_start_ns,
+            support_end_ns,
+            surface_owner_id,
+            receipt,
+            soil_thermal_layer_id,
+            ordinal,
+        ))?;
+        operands.push(SoilThermalEnergyOperandV2 {
+            ofe_id: ofe_id.clone(),
+            layer_id: soil_thermal_layer_id.clone(),
+            source_kind: openwepp_land_surface_energy::SoilThermalEnergyOperandKindV2::Infiltration,
+            source_owner_id: surface_owner_id.clone(),
+            debit_credit_identity_sha256: digest,
+            ordinal,
+            units: "J m^-2 OFE-ground".to_owned(),
+            basis: "ofe_ground".to_owned(),
+            energy_j_m2_ofe_ground: receipt.enthalpy_j_m2_basis_ofe_ground,
+        });
+    }
+    Ok(())
+}
+
+fn next_v2_operand_ordinal(
+    ordinals: &mut BTreeMap<(OfeId, SoilLayerId), u32>,
+    ofe_id: &OfeId,
+    layer_id: &SoilLayerId,
+) -> Result<u32, LandSurfaceEnergyShadowError> {
+    let next = ordinals
+        .entry((ofe_id.clone(), layer_id.clone()))
+        .or_insert(0);
+    let ordinal = *next;
+    *next = next
+        .checked_add(1)
+        .ok_or(LandSurfaceEnergyShadowError::Bound(
+            "V2 soil-energy operand ordinal overflow",
+        ))?;
+    Ok(ordinal)
+}
+
+pub(super) fn v2_physical_operand_digest<T: serde::Serialize>(
+    value: &T,
+) -> Result<Sha256Digest, LandSurfaceEnergyShadowError> {
+    let bytes = serde_json::to_vec(value).map_err(|_| {
+        LandSurfaceEnergyShadowError::Identity("V2 physical energy receipt serialization")
+    })?;
+    Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes)))
+        .map_err(LandSurfaceEnergyShadowError::from)
 }
 
 fn apply_production_infiltration(

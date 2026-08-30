@@ -103,6 +103,7 @@ use crate::{
 
 #[path = "canonical_owner_bytes.rs"]
 mod canonical_owner_bytes;
+pub use canonical_owner_bytes::canonical_soil_thermal_v2_bundle_bytes;
 pub(crate) use canonical_owner_bytes::{
     AdaptiveCompleteOwnerComparisonV1, AdaptiveDiscreteSurfaceKindV1, AdaptiveOwnerDimensionV1,
     adaptive_scalar_policy,
