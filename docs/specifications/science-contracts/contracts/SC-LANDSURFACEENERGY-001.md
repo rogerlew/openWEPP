@@ -4,7 +4,7 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 12
+contract_version: 14
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
@@ -12,7 +12,7 @@ producer_scope:
 consumer_scope:
   - Future soil-heat/frost boundary, evaporation, infiltration/runoff, and surface-water ledgers
 evidence_level: static+independent_oracle
-last_reviewed: 2026-08-29
+last_reviewed: 2026-08-30
 supersedes: []
 superseded_by: []
 ---
@@ -231,6 +231,7 @@ then `snow_free`. No temperature-only guess may override explicit snow state.
 | `INV-LANDSURFACEENERGY-115` | The 0 C parcel enters hydrology once; fusion energy is not soil heat, zero remaining support skips LSE, and any failure rolls back all owners. | conservation/transaction authority | `[INFERENCE][Static]` | runtime/test | typed join/rollback failure |
 | `INV-LANDSURFACEENERGY-130` | A covered-canopy or Stage 3 terminal-liquid temperature represented as exactly one upward binary64 spacing from `T_ref` is canonicalized to exact `T_ref` at its named publication boundary; every other temperature remains unchanged or fails its existing domain guard. | exact reference-state representation authority | `[INFERENCE][Static]` | runtime/test | typed closure/domain failure |
 | `INV-LANDSURFACEENERGY-138` | Every covered-column Jacobian uses the canonical centered binary64 difference at an interior coordinate and the unique inward one-sided difference only at an exact admitted closed bound; an invalid current iterate or two inadmissible probes rejects. | deterministic numerical-domain authority | `[INFERENCE][Static]` | runtime/test | typed constitutive-domain failure |
+| `INV-LANDSURFACEENERGY-139` | When the current complete covered residual vector passes, the full Newton trial cannot satisfy the existing no-update witness because it is domain-invalid or a governed prospective step exceeds its unchanged threshold, and the first domain-valid halved trial has every governed exact prospective step norm inside those thresholds, the solver accepts the current iterate without installing the trial. | deterministic no-update termination authority | `[INFERENCE][Static]` | runtime/test | accepted current iterate or unchanged strict-decrease/fail-closed path |
 
 Guard-map enforcement in version 1 is the contract-derived integration test
 and package review. Runtime mappings are intentionally future obligations; an
@@ -260,6 +261,7 @@ evidence artifact before promotion.
 | `INV-LANDSURFACEENERGY-115` | liquid-energy join and atomic envelope | default-off runtime/test | typed reject/rollback | terminal handoff package |
 | `INV-LANDSURFACEENERGY-130` | covered-liquid finalization before ledger materialization | runtime/test | exact reference-state canonicalization or existing typed reject | adaptive microstepping package |
 | `INV-LANDSURFACEENERGY-138` | covered-column Jacobian probe-domain validator | runtime/test | centered interior, unique inward closed-bound derivative, or typed reject | covered solver contract/unit/runtime vectors |
+| `INV-LANDSURFACEENERGY-139` | covered-column first-domain-valid-halving no-update witness | runtime/test | after the full trial fails the existing no-update witness by domain or governed-step refusal, accept the unchanged current iterate only when the complete current residual vector and every governed first-halved prospective step pass; otherwise retain strict-decrease update or typed numerical rejection | covered solver contract/unit/runtime vectors plus interior-terminal real consumer |
 | `INV-LANDSURFACEENERGY-041` | provenance/no-proxy review | governance | blocked promotion | baseline map + reviews |
 | `INV-LANDSURFACEENERGY-042` | future recipient-specific radiation ledger and poison vectors | runtime + test | blocked promotion on omitted, duplicated, or aliased recipient | vegetation/LSE integration package |
 | `INV-LANDSURFACEENERGY-043` | future latent mass-energy lineage join | runtime + test | blocked promotion on missing/mismatched `h_v`, duplicate debit, or amount/rate basis mismatch | vegetation/LSE integration package |
@@ -811,9 +813,32 @@ probes violates the existing covered-trial domain, the Jacobian uses the
 unique inward one-sided difference between the valid current iterate and the
 admitted probe. An invalid current iterate, or two inadmissible probes, rejects
 with a typed constitutive-domain failure. The solve then uses deterministic
-partial-pivot LU and accepts the first factor `2^-b`, `b=0..20`, producing a
-strict decrease in normalized infinity norm. Equal pivot magnitudes choose the lowest row.
-Failure to decrease through `b=20` is backtracking limit. A pivot below
+partial-pivot LU. First apply the existing full-trial no-update witness: when
+the `b=0` trial is domain-valid, evaluate its exact prospective component
+steps and accept the current iterate if the current complete residual vector
+and every governed step norm pass. If that full-trial witness fails because
+the trial is domain-invalid or any governed full-trial step exceeds its
+unchanged threshold while the current complete residual vector passes, the
+solver examines the same ordered factors `2^-b`, `b=1..20`, until the first
+domain-valid halved trial. That trial is evaluated prospectively without
+installing it. The exact applied hydraulic, beta, temperature, humidity, and
+derived `ci` step norms are reconstructed; every norm with an existing
+coordinate threshold must pass. The `ci` norm remains diagnostic because this
+contract defines no independent `ci` step threshold. If those predicates pass, the
+solver accepts the current iterate with no update. The accepted solution,
+evaluation, state, branch, ledger, and owner candidates are exclusively those
+of the current iterate; the diagnostic step norms and the exact examined
+exponent contribution added to the existing cumulative backtracking count
+record the prospective witness. No separate persisted or public exponent field
+is authorized. This witness is unavailable when the full trial is
+itself a passing existing no-update witness, the current residual vector does
+not pass, the first domain-valid halved trial cannot be completely evaluated,
+or any governed prospective coordinate step fails.
+
+Otherwise the solve accepts the first factor `2^-b`, `b=0..20`, producing a
+strict decrease in normalized infinity norm and installs that trial as the
+next iterate. Equal pivot magnitudes choose the lowest row. Failure to decrease
+through `b=20` is backtracking limit. A pivot below
 `64*epsilon*matrix_inf_norm` is singular. The iteration limit is 50 completed
 Newton updates. Unit scales are `1 K`, `0.001 kg kg^-1`, `1 Pa`, `1000 mm`,
 and `1` for beta.
@@ -824,7 +849,9 @@ residual threshold is `1e-12 kg m^-2 s^-1+1e-9*scale`. Accepted temperature
 step is at most `1e-8 K`; humidity step at most `1e-12 kg kg^-1`; accepted
 hydraulic step is at most `1e-7 mm`; and beta step at most `1e-10`.
 Convergence requires all residual and step criteria on the same accepted
-iterate. Active branches are evaluated in this order: typed domain; surface
+iterate or the exact no-update witness above, whose residuals come from that
+accepted current iterate and whose prospective step norms come from the first
+domain-valid halved trial. Active branches are evaluated in this order: typed domain; surface
 class; covered/open turbulence; positive-surface-water versus dry-soil vapor;
 vapor sign; water cap (`cap<=law`, equality cap-active); then numerical solve.
 Identity, unit, basis, owner, layer, band, direction and D/A/F inequalities are
@@ -1162,10 +1189,302 @@ the inward derivative rule is not scaling authority for any other solve.
 |---|---|---|
 | `INV-LANDSURFACEENERGY-138` | Every covered potential/final Jacobian retains centered differences for two valid probes and uses the unique inward one-sided difference only when a valid current iterate has exactly one inadmissible canonical probe. | beta lower/upper, active/zero-area canopy and liquid-bearing-ground vapor lower bound, interior centered, potential/final, invalid-current, and neither-probe poisons; typed `covered_jacobian_bound` rejection |
 
+## Version 13 first-domain-valid no-update termination amendment
+
+The covered solver already admits a no-update termination when the current
+complete normalized residual vector passes and a valid full Newton trial proves
+that every governed prospective component step is inside its unchanged
+threshold. A closed phase bound can make that full trial invalid, while an
+otherwise valid full trial can exceed one unchanged governed step threshold.
+In either case a deterministic halving can produce a domain-valid governed
+step too small to produce an observable strict residual decrease in binary64.
+
+For both owner-uncapped potential and fixed-authorization final solves, first
+retain the existing no-update witness on a domain-valid full `b=0` Newton
+trial. If and only if the current complete residual vector passes and that
+full-trial witness cannot accept because the full trial is outside the existing
+covered-trial domain or any governed full-trial prospective step exceeds its
+unchanged threshold, examine the existing ordered backtracking sequence from
+`b=1` until its first domain-valid halved trial. A
+complete prospective evaluation of that trial supplies the exact applied
+hydraulic, beta, temperature and humidity norms and the diagnostic derived
+`ci` norm. When all four governed norms pass their unchanged thresholds,
+accept the current iterate without applying, projecting, or publishing any
+part of the trial. Record the prospective norms and add the exact examined
+exponent to the existing cumulative backtracking-count diagnostic; do not add a
+separate public or persisted field. Retain the current solution, evaluation,
+active branches, state, water requests/uses, ledgers, owner candidates, and
+closure operands exactly.
+
+The halved witness is refused when the current residual vector has any nonfinite or
+out-of-tolerance member; when the full trial itself passes the existing
+no-update witness; when the first domain-valid halved trial cannot be
+completely evaluated; or when any governed prospective step norm fails. After
+refusal, that same first domain-valid trial
+and all later factors remain eligible only under the unchanged strict-residual-
+decrease rule for an actual installed update. Exhaustion remains the existing
+typed backtracking-limit failure with exact rollback. The solver may not skip
+the first domain-valid candidate to obtain a smaller no-update witness.
+
+This amendment changes no closed bound, constitutive equation, residual or
+step threshold, finite-difference rule, pivot rule, iteration/backtracking
+limit, active branch, event chronology, 60-second floor, mass/energy ledger,
+receipt, custody, topology, publication, or rollback rule. It admits no trial
+clamp or projected state and does not turn strict decrease into a tolerance;
+strict decrease remains mandatory for every actual update.
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-LANDSURFACEENERGY-139` | After the full Newton trial fails the existing no-update witness by domain invalidity or a governed step excess, a passing current residual vector and passing governed step norms on the first domain-valid halved trial accept only the unchanged current iterate. | positive full-outside and full-step-excess/first-valid witnesses; residual/nonfinite, already-passing-full, per-thresholded-coordinate, prospective-evaluation and skip-first poisons; unchanged strict-decrease update/backtracking-limit/rollback vectors |
+
+Required real-consumer vectors are the two interior terminal-event paths that
+previously reached `FinalFixedCap` iteration 4 and exhausted 20 halvings. They
+must complete with current-state acceptance, unchanged owner closure, and no
+trial installation. Existing oracle backtracking-limit and genuine strict-
+decrease vectors remain required and must retain their prior disposition.
+
+## Version 14 snow-free frozen forest-litter successor amendment
+
+Version 14 admits `OPENWEPP_SNOW_FREE_LSE_V3` as an immutable successor for
+the snow-free `forest_litter` surface only. It retains every V1 and V2 model,
+configuration, state, receipt, restart, and serialized byte unchanged. V3
+imports the complete V2 canopy, radiation, turbulence, soil-thermal,
+water-authorization, numerical, closure, 60-second support-admission, event,
+and rollback authority, then adds the phase-specific litter rules below. It
+does not widen bare-mineral, ponded, soil-frozen, snow-present, or snow-terminal
+authority.
+
+### Retained authority and adjudicated constants
+
+The peer-reviewed R-156 authority is
+`references/vendorable/gmd-10-1621-2017-isba-meb-litter.pdf`, Appendix A,
+equations A1--A4 and A7--A14, SHA-256
+`2a8c14d912651457bf9205a4a963b78dd12f1aa7f243bccb025e4b81ce99716d`.
+The retained official SURFEX v8 sources are
+`references/vendorable/surfex-v8/isba_meb.F90.source.html`, generated source
+lines 1992--2159, SHA-256
+`0a300739b5dc660b61d29db144dd92f886e8fdf9934eac8facc022585992087a`;
+`references/vendorable/surfex-v8/isba_fluxes_meb.F90.source.html`, generated
+source lines 388--407, SHA-256
+`e0378bc89ee0d52cffe14841aac56de1d8d379edf18ad29f24cfdb9ea0dfdbbc`;
+and `references/vendorable/surfex-v8/ini_csts.F90.source.html`, generated
+source lines 146--157, SHA-256
+`f39840df4d851efc70044f9e3ad62822371ed743c3c3a8055a4c940e2f86d73a`.
+The retained source is governed by the retained CeCILL-C v1 English license,
+SHA-256
+`7280115e43fa03917f2f23370519be8c9fb0b57f4c86f8da5f7ac10c070f6aa0`.
+
+The selected constants are
+
+```text
+T_ref    = 273.15 K
+rho_w    = 1000 kg m^-3
+rho_i    = 920 kg m^-3
+C_w      = 4218 J kg^-1 K^-1
+C_i      = 2106 J kg^-1 K^-1
+L_f      = 333700 J kg^-1
+tau_ice  = 3300 s
+W_i,max  = 0.85*rho_w*dz_l kg m^-2 tile-ground.
+```
+
+R-156 supplies `T_ref`, `rho_i`, and `C_i`; the named SURFEX instantiation
+supplies `tau_ice`, `L_f`, executable ordering, and the `0.85 m3 m^-3`
+capacity. The capacity is liquid-water-equivalent because generated lines
+2080--2081 convert both liquid and litter ice with `rho_w`. Therefore
+`0.85*rho_i*dz_l` is a rejected capacity. The R-156 A4 printed sign conflicts
+with A1--A3 and its melt prose; generated lines 2089--2117 and exact
+liquid/ice conservation select `signed_phase = m_freeze - m_melt`.
+
+### V3 state, phase-free solve, and signed vapor
+
+Hydrology's versioned surface owner exclusively owns finite, nonnegative
+`W_l` and `W_i` in `kg m^-2 tile-ground`; `W_i` is liquid-water-equivalent
+litter ice and is neither snow nor soil `frozwt`. LSE V3 owns the surface
+sensible-energy coordinate
+
+```text
+U = (C_dry + W_l*C_w + W_i*C_i)*(T_l-T_ref)   [J m^-2 tile-ground].
+```
+
+The complete V2 nonlinear system is first solved phase-free: no freeze, melt,
+fusion term, phase-updated capacity, or phase-adjusted temperature appears in
+any Newton residual, Jacobian, active branch, water authorization, or
+convergence witness. Its immutable beginning-phase availability is
+`W_l,0,W_i,0`. Define
+
+```text
+p_i = 0                                  when W_l,0 + W_i,0 = 0
+p_i = W_i,0/(W_l,0 + W_i,0)             otherwise
+h_ul = 0.5*(1-cos(pi*W_l,0/W_l,max))
+h_ui = 0.5*(1-cos(pi*W_i,0/W_i,max))
+v_l,raw = (1-p_i)*rho_a*(h_ul*q_sat_liquid(T_l,p)-q_recipient)/r_l-c
+v_i,raw = p_i*rho_a*(h_ui*q_sat_liquid(T_l,p)-q_recipient)/r_l-c.
+```
+
+Both phases deliberately use saturation over liquid water, as R-156 A8
+states; saturation over ice is not admitted. Positive `v_l` is liquid
+evaporation and positive `v_i` is ice sublimation; negative values are liquid
+condensation and ice deposition. Hydrology authorizes the two signed
+components separately. Each positive finalized mass is bounded by only its
+named immutable beginning pool; a negative component has no availability cap
+and credits only its named phase. A liquid request cannot debit ice, an ice
+request cannot debit liquid, and neither can use current ingress.
+
+The phase-specific energy fluxes leaving the litter are
+
+```text
+Q_v,l = v_l*[C_w*(T_l-T_ref) + L_v(T_l)]
+Q_v,i = v_i*[C_i*(T_l-T_ref) + L_s(T_l)].
+```
+
+They remain separately signed through authorization, owner-candidate
+construction, receipt sealing, and independent reconstruction. Only then may
+the air-side consumer aggregate `v_l+v_i` or `Q_v,l+Q_v,i`. Latent-only
+energy, absolute-value aggregation, one total-store availability cap, or a
+second SC-EVAP debit is invalid.
+
+After fixed-authorization phase-free acceptance, install the finalized vapor
+mass and energy exactly once:
+
+```text
+W_l,* = W_l,0 - dt*v_l
+W_i,* = W_i,0 - dt*v_i
+U_*   = (C_dry + W_l,*C_w + W_i,*C_i)*(T_*-T_ref).
+```
+
+The signed equations include condensation/deposition because negative vapor
+adds mass. The accepted phase-free ledger must independently reconstruct the
+same `U_*`, `T_*`, phase masses, and phase-specific vapor energy before phase
+change begins. No raw request, authorization-as-use, or producer residual may
+be installed.
+
+### Bounded kinetic phase and fusion-energy closure
+
+Require `0 <= W_i,* <= W_i,max`, `W_l,* >= 0`, positive finite `dz_l`, and a
+positive finite ending heat capacity. With all operands evaluated from the
+accepted post-vapor/pre-ingress state, define
+
+```text
+M_warm   = rho_i*C_i*dz_l*max(T_*-T_ref,0)/L_f
+M_cold   = rho_i*C_i*dz_l*max(T_ref-T_*,0)/L_f
+m_melt   = min(W_i,*, (dt/tau_ice)*min(M_warm,W_i,*))
+m_freeze = min(W_l,*, W_i,max-W_i,*,
+               (dt/tau_ice)*min(M_cold,W_l,*))
+m_phase  = m_freeze - m_melt.
+```
+
+The outer mass/capacity bounds are binding for every admitted `dt`, including
+supports greater than `tau_ice`; the phase operator never creates a maximum
+step-size requirement. At `T_*=T_ref`, both transfers are exact zero. The
+atomic phase candidate is
+
+```text
+W_l,phase = W_l,* - m_freeze + m_melt
+W_i,phase = W_i,* + m_freeze - m_melt
+U_phase   = U_* + L_f*m_phase
+C_phase   = C_dry + W_l,phase*C_w + W_i,phase*C_i
+T_phase   = T_ref + U_phase/C_phase.
+```
+
+Thus liquid debit equals ice credit on freezing, ice debit equals liquid
+credit on melting, and the phase-only total enthalpy coordinate
+`H_phase = U - L_f*W_i` is invariant exactly. Deriving `T_phase` with the
+pre-phase heat capacity or applying literal `T += L_f*m_phase/C_*` is rejected
+because it leaves an unowned heat-capacity-change energy term. A phase result
+never triggers a same-support flux, fixed-point, water-authorization, or
+Newton re-solve; it is the ending thermal state and next-support warm start.
+
+### Ingress, WB14, identity, restart, receipts, and failure posture
+
+Only after the vapor and phase candidates pass may current precipitation,
+runon, throughfall, canopy drainage, stemflow, and litter overflow enter the
+existing hydrology chronology. Every admitted current parcel is liquid and
+carries the unchanged V2 liquid sensible enthalpy. The complete owner
+candidate then executes the existing WB14 partition with liquid-only
+availability. `W_i,phase` cannot infiltrate, run off, drain, satisfy WB14,
+enter soil `frozwt`, or mutate soil. Ingress cannot retroactively donate to
+the already accepted vapor or phase operation.
+
+The immutable model tag is `OPENWEPP_SNOW_FREE_LSE_V3`; the phase receipt tag
+is `OPENWEPP_FOREST_LITTER_PHASE_RECEIPT_V1`. The V3 definition binds its V2
+parent digest, both terminal contract digests, all retained-source hashes,
+selected constants, equations, ordering, error map, and explicit refusals.
+Checked V2-to-V3 LSE migration copies every V2 scientific value bit-identically
+and changes only successor identity/digest material while joining an explicit
+surface-owner V2 state. Checked surface-owner V1-to-V2 migration initializes
+litter ice to exact zero; a new V2 seed may instead carry explicit finite
+nonnegative ice. Temperature never synthesizes initial ice. Production V3-to-
+V2 LSE and surface-owner V2-to-V1 downgrades are prohibited.
+
+Every restart/checkpoint carries explicit LSE V3, surface-owner V2, model-
+definition, contract, configuration, state, phase-state, and receipt tags and
+digests. Missing, duplicate, stale, mixed-version, unknown, or digest-mismatched
+restart material rejects before evaluation. A sealed phase receipt binds the
+half-open support and exact duration bits; OFE/tile/area/owner/transaction
+identities; beginning `W_l,W_i,U,T`; both raw and finalized signed vapor
+components and phase-specific energies; `W_l,*,W_i,*,U_*,T_*`; all phase
+constants, capacities, transfer bounds, `m_melt,m_freeze,m_phase`; the
+phase-ending state; current-ingress parcel identities; liquid-only WB14
+handoff; beginning and candidate owner digests; and independent mass, energy,
+and `H_phase` reconstructions. Receipt serialization uses repository canonical
+framing and never hashes a producer residual as proof.
+
+Any domain, identity, availability, closure, receipt, restart, WB14, later
+owner, or publication failure rolls back the LSE, surface owner, hydrology,
+soil thermal, vegetation, BGC, receipts, checkpoint, and enclosing transaction
+to byte-identical beginnings. The typed families are `LSEB-E-045` for V3
+identity/domain/migration, `LSEB-E-046` for phase-specific vapor custody or
+enthalpy, `LSEB-E-047` for phase mass/fusion/ending-capacity closure, and
+`LSEB-E-048` for chronology/receipt/restart/rollback joins.
+
+SC-EVAP-001 remains the owner of daily WB17 soil/residue/canopy ET. It neither
+owns nor repeats this subdaily pre-WB14 litter liquid/ice vapor transaction.
+SC-SURFACELIQUID-001 v14 owns the matching surface state/custody specialization,
+and SC-WATBAL-001 retains liquid-only WB14 ownership. The exact
+`60000000000 ns` physical fallback floor, support receipt, closure tolerances,
+event chronology, topology, custody, and fail-closed posture are unchanged;
+stable supports must still accept steps substantially larger than 60 seconds.
+
+### V3 invariants and required production vectors
+
+| ID | Binding V3 rule | Guard/failure |
+|---|---|---|
+| `INV-LANDSURFACEENERGY-140` | V3 is an immutable V2 successor; V1/V2 scientific and serialized bytes remain unchanged and mixed identities reject. | identity/migration/restart / `LSEB-E-045/048` |
+| `INV-LANDSURFACEENERGY-141` | The nonlinear solve is phase-free and publishes separate signed liquid and ice vapor under liquid-water saturation with phase-specific sensible-plus-latent enthalpy. | exact component/authority joins / `LSEB-E-046` |
+| `INV-LANDSURFACEENERGY-142` | Finalized vapor uses immutable beginning phase availability, installs each mass/energy component exactly once, and cannot consume current ingress. | D/A/F and owner-candidate reconstruction / `LSEB-E-046` |
+| `INV-LANDSURFACEENERGY-143` | The `3300 s` kinetic operator is bounded by named liquid, ice, and liquid-water-equivalent ice-capacity operands and uses `freeze-melt`. | independent transfer reconstruction / `LSEB-E-047` |
+| `INV-LANDSURFACEENERGY-144` | Equal liquid/ice transfer and `L_f*m_phase` conserve `U-L_f*W_i`; ending temperature uses ending dry/liquid/ice heat capacity. | independent mass/fusion/temperature closure / `LSEB-E-047` |
+| `INV-LANDSURFACEENERGY-145` | Phase precedes current liquid ingress and liquid-only WB14; litter ice never enters soil, runoff, infiltration, or `frozwt`. | chronology and owner guard / `LSEB-E-048` |
+| `INV-LANDSURFACEENERGY-146` | Phase is post-solve and cannot trigger a same-support re-solve; exact 60-second fallback and larger-support obligation remain unchanged. | solve-count/support receipt / `LSEB-E-048` |
+| `INV-LANDSURFACEENERGY-147` | Successor restart and phase receipts bind every primitive operand and all owner identities; any later failure rolls back the full envelope byte-exactly. | restart/receipt/rollback / `LSEB-E-048` |
+| `INV-LANDSURFACEENERGY-148` | SC-EVAP daily WB17 does not duplicate V3's subdaily pre-WB14 surface vapor debit or credit. | cross-owner exact-one guard / `LSEB-E-046/048` |
+| `INV-LANDSURFACEENERGY-149` | Canonical `p61` and native-forest consumers must install and persist V3 phase state with independent mass/energy closure; producer-only or synthetic evidence cannot close runtime adoption. | real-consumer gate / hard `HOLD` until run |
+
+Contract-derived vectors must cover exact empty, all-liquid, all-ice, mixed,
+freezing, melting, exact `T_ref`, condensation, deposition, availability-capped
+evaporation/sublimation, ice-capacity saturation, `dt<tau_ice`, `dt=tau_ice`,
+`dt>tau_ice`, exact 60 seconds, and substantially larger stable support.
+Independent poisons must distinguish wrong A4 sign, `273.16 K`, `rho_i=917`,
+wrong `L_f`, wrong `tau_ice`, `rho_i` ice capacity, saturation over ice,
+latent-only vapor, total-store capping, simultaneous double debit, instant
+equilibrium, freeze-only logic, pre-phase capacity temperature, current-ingress
+donation, ice-as-WB14 supply, same-support re-solve, implicit ice initialization,
+production downgrade, `zertol` ice deletion, `xwgmin` regularization, soil
+compensation, producer-residual closure, stale restart, and partial commit.
+
+The unchanged canonical real-consumer obligations are
+`tests/integration/erosion_single_ofe_p61_sediment.rs` and
+`tests/integration/dff_ws1_native_forest_cli.rs`. Each must run through the
+production selector, persist/reload successor state, and prove primitive-
+operand liquid/ice mass, fusion-energy, vapor-energy, WB14, and whole-envelope
+closure. Contract or source scanning alone is intentionally insufficient.
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-30 | 14 | Codex | Admitted immutable snow-free forest-litter LSE V3 authority: phase-free V2 solve, separately finalized liquid/ice signed vapor, bounded 3300-second kinetic freeze/melt, exact equal-mass and fusion-energy closure with ending heat capacity, post-phase current ingress and liquid-only WB14, successor identities/restart/receipts/rollback, unchanged exact 60-second fallback, and mandatory p61/native real-consumer proof. |
+| 2026-08-30 | 13 | Codex | Extended covered-column no-update termination only to the first domain-valid halved trial when the full trial fails the existing witness by domain invalidity or governed-step excess and the current complete residual vector plus every governed halved prospective step already pass; the accepted current iterate is unchanged and all actual updates retain strict decrease. |
 | 2026-08-29 | 12 | Codex | Generalized the covered-column finite-difference stencil to use the unique inward one-sided derivative at exact admitted closed bounds for potential and final solves, while preserving the exact centered interior stencil, perturbations, scaling authority, branches, backtracking, ledgers, receipts, and rollback. |
 | 2026-08-28 | 11 | Codex | Kept numerically inactive sun, shade, and wet liquid-vapor coordinates inside the existing `273.15 K` phase domain by anchoring them to `max(T_canopy, T_ref)`; zero-area physical operands, active equations, tolerances, ledgers, exact-60 fallback, events, and fail-closed behavior remain unchanged. |
 | 2026-08-28 | 10 | Codex | Bound causal snow--soil receipt termination to finite `1e-9 J m^-2` energy and `1e-8 K` endpoint residuals while preserving the exact applied soil credit, exact installed owner identities, and unchanged physical-ledger closure threshold. |

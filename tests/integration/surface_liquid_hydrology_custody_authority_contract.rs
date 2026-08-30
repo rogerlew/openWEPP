@@ -1,4 +1,5 @@
 use std::fs;
+use std::path::Path;
 
 use sha2::{Digest, Sha256};
 
@@ -15,6 +16,25 @@ const PACKAGE: &str =
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
+}
+
+fn read_rust_tree(path: &Path) -> String {
+    let mut paths = fs::read_dir(path)
+        .unwrap_or_else(|error| panic!("read directory {}: {error}", path.display()))
+        .map(|entry| entry.expect("directory entry").path())
+        .collect::<Vec<_>>();
+    paths.sort();
+    let mut source = String::new();
+    for path in paths {
+        if path.is_dir() {
+            source.push_str(&read_rust_tree(&path));
+        } else if path.extension().is_some_and(|extension| extension == "rs") {
+            source.push_str(&read(
+                path.to_str().expect("repository Rust path is valid UTF-8"),
+            ));
+        }
+    }
+    source
 }
 
 fn authorize(beginning_tile: f64, tile_fraction: f64, demands: &[f64]) -> Vec<f64> {
@@ -102,7 +122,7 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
     let contract = read(CONTRACT);
     for required in [
         "contract_id: SC-SURFACELIQUID-001",
-        "contract_version: 13",
+        "contract_version: 14",
         "status: approved",
         "maturity: active",
         "INV-SURFACELIQUID-001",
@@ -146,6 +166,80 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
         read(LSE)
             .contains("Hydrology exclusively owns ponded, litter-held and soil-layer water mass")
     );
+}
+
+#[test]
+fn version_14_binds_frozen_litter_surface_owner_v2_before_production() {
+    let contract = read(CONTRACT);
+    for required in [
+        "INV-SURFACELIQUID-016",
+        "INV-SURFACELIQUID-017",
+        "INV-SURFACELIQUID-018",
+        "INV-SURFACELIQUID-019",
+        "INV-SURFACELIQUID-020",
+        "INV-SURFACELIQUID-021",
+        "SurfaceLiquidOwnerEnvelopeV2",
+        "SurfaceLiquidOwnedStateV2",
+        "SurfaceLiquidStateRecordV2",
+        "litter_ice_kg_m2_tile",
+        "litter_ice_capacity_kg_m2_tile=0.85*rho_w*litter_depth_m",
+        "initializes `W_i` to positive-zero bits exactly",
+        "Production V2-to-V1 downgrade is always rejected",
+        "p_i=W_i/(W_l+W_i)",
+        "No `xwgmin` denominator floor is admitted",
+        "U_end=U*+L_f*m_frz-L_f*m_mlt",
+        "`T += Q_phase/C_old` is prohibited",
+        "current ingress into liquid custody",
+        "Litter ice is unavailable to",
+        "soil `frozwt`",
+        "producer-supplied residual is never an",
+        "unchanged `p61` and",
+        "native-forest fixtures",
+        "`zertol` tiny-ice deletion",
+        "same-support phase re-solve",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    let beginning_liquid = 0.75_f64;
+    let beginning_ice = 0.25_f64;
+    let evaporation = 0.125_f64;
+    let condensation = 0.0625_f64;
+    let sublimation = 0.0625_f64;
+    let deposition = 0.03125_f64;
+    let post_vapor_liquid = beginning_liquid - evaporation + condensation;
+    let post_vapor_ice = beginning_ice - sublimation + deposition;
+    let frozen = 0.125_f64;
+    let melted = 0.0_f64;
+    let ending_liquid = post_vapor_liquid - frozen + melted;
+    let ending_ice = post_vapor_ice + frozen - melted;
+    assert_eq!(
+        (ending_liquid + ending_ice).to_bits(),
+        (beginning_liquid + beginning_ice - evaporation + condensation - sublimation + deposition)
+            .to_bits()
+    );
+    let fusion_energy = 333_700.0_f64 * (frozen - melted);
+    assert_eq!(fusion_energy.to_bits(), 41_712.5_f64.to_bits());
+    let forbidden_ingress_donation = post_vapor_liquid + 0.50;
+    assert!(frozen <= post_vapor_liquid);
+    assert_ne!(frozen.to_bits(), forbidden_ingress_donation.to_bits());
+
+    let production = read_rust_tree(Path::new(
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime",
+    ));
+    for required in [
+        "pub enum SurfaceLiquidOwnerEnvelopeV2",
+        "pub struct SurfaceLiquidOwnedStateV2",
+        "pub struct SurfaceLiquidStateRecordV2",
+        "litter_ice_kg_m2_tile",
+        "SurfaceLiquidCompleteOwnerProjectionV3",
+        "migrate_v1_to_v2",
+    ] {
+        assert!(
+            production.contains(required),
+            "unchanged production is missing frozen-litter V2 obligation {required}"
+        );
+    }
 }
 
 #[test]

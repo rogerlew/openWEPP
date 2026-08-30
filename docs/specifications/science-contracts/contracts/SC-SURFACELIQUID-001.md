@@ -4,17 +4,19 @@ title: Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology/land-surface-energy reviewer
-contract_version: 13
+contract_version: 14
 producer_scope:
   - Persistent snow-free bare-surface and forest-litter liquid hydrology state
+  - Versioned snow-free forest-litter liquid/ice custody and restart state
   - Same-snapshot withdrawal authorization and finalized debit
-  - Signed condensation credit and actual WB14 post-solve ingress routing
+  - Phase-specific vapor custody, bounded litter phase transfer, signed ingress,
+    and actual WB14 post-solve routing
 consumer_scope:
-  - OPENWEPP_SNOW_FREE_LSE_V1 runtime shadow
+  - OPENWEPP_SNOW_FREE_LSE_V1/V2/V3 runtime shadows
   - Production WB14 infiltration/runoff and routed-runon owners
   - Restart and atomic shadow-state consumers
 evidence_level: static+contract_vectors
-last_reviewed: 2026-08-29
+last_reviewed: 2026-08-30
 supersedes: []
 superseded_by: []
 ---
@@ -27,11 +29,14 @@ Evidence mode: `Static + contract vectors`
 
 ## Purpose And Scientific Scope
 
-Define the exact persistent hydrology owner required by
-`OPENWEPP_SNOW_FREE_LSE_V1` for snow-free bare-surface and forest-litter
-liquid. This contract admits ownership, state, transaction, conservative
-routing, and the exact adapter to the existing WB14 Green-Ampt producer. It
-does not introduce an alternative evaporation, infiltration, or runoff law.
+Define the exact persistent hydrology owner required by the immutable
+`OPENWEPP_SNOW_FREE_LSE_V1/V2` models and successor
+`OPENWEPP_SNOW_FREE_LSE_V3` for snow-free bare-surface liquid and
+forest-litter liquid/ice. This contract admits ownership, versioned state,
+transaction, conservative routing, and the exact adapter to the existing WB14
+Green-Ampt producer. LSE v14 owns the selected subdaily litter vapor and phase
+physics; this contract owns their mass/energy custody and chronology. It does
+not introduce an alternative infiltration, runoff, or daily WB17 ET law.
 
 In scope are strict per-OFE/tile/surface/source state, restart identity, one
 immutable beginning snapshot, proportional maximum authorization, finalized
@@ -40,9 +45,12 @@ accepted child inside one immutable half-hour parent,
 post-infiltration capacity retention, overflow/runoff routing, parcel
 mass/enthalpy joins, candidate isolation, and rollback.
 
-Out of scope are snow and terminal snow, frozen/thawing surface liquid,
-production selection or default changes, legacy PMET/ET replacement, output
-publication, calibration, deployment, and cutover.
+Out of scope are snow, terminal snow, frozen/thawing bare-surface or soil
+liquid, production selection or default changes, legacy PMET/ET replacement,
+output publication, calibration, deployment, and cutover. Frozen/thawing
+surface custody is admitted only for the exact snow-free `forest_litter`
+successor defined by `INV-SURFACELIQUID-016..021`; it does not admit litter ice
+as WB14 supply or soil `frozwt`.
 
 ## Authority Anchors
 
@@ -55,6 +63,10 @@ publication, calibration, deployment, and cutover.
 | `REF-SURFACELIQUID-PHYSICAL` | Conservation of mass and energy at an owner boundary | Exact debit/credit, capacity overflow, proportional parcel splits, and cross-owner identities. | `[INFERENCE][Static + contract vectors]` |
 | `REF-SURFACELIQUID-COUPLED-TIME` | `SC-COUPLEDTIME-001#INV-COUPLEDTIME-002/005/006/007/008/009/013/017/019` and the `openwepp-coupled-time` accepted parent/slab API | Exact half-open parent/child support, hard-boundary reduction, immutable accepted-slab identity, event chronology, owner adjacency, and atomic candidate publication. | `[DIRECT][Static + Ran]` |
 | `REF-SURFACELIQUID-STAGE3-CADENCE` | `SC-SNOWENERGY-001#INV-SNOWENERGY-042/048/049/050` and `SC-COUPLEDTIME-001#INV-COUPLEDTIME-021/022/023/024` | Joint Stage-3 adaptive compositional stepping on the exact 60-second (`60_000_000_000 ns`) grid and per-lane OFE-ground basis. | `[DIRECT][Static]`; amended-floor rerun required |
+| `REF-SURFACELIQUID-LITTER-R156` | R-156, `references/vendorable/gmd-10-1621-2017-isba-meb-litter.pdf`, equations A1--A14, SHA-256 `2a8c14d912651457bf9205a4a963b78dd12f1aa7f243bccb025e4b81ce99716d` | Snow-free forest-litter liquid/ice storage, phase-specific vapor, heat capacity, and bounded freeze/melt conservation. | `[DIRECT][Static]` |
+| `REF-SURFACELIQUID-LITTER-SURFEX` | Official SURFEX v8 `isba_meb.F90`, SHA-256 `0a300739b5dc660b61d29db144dd92f886e8fdf9934eac8facc022585992087a`; `isba_fluxes_meb.F90`, SHA-256 `e0378bc89ee0d52cffe14841aac56de1d8d379edf18ad29f24cfdb9ea0dfdbbc`; and `ini_csts.F90`, SHA-256 `f39840df4d851efc70044f9e3ad62822371ed743c3c3a8055a4c940e2f86d73a` | Exact `tau_ice`, `L_f`, liquid-water-equivalent ice capacity, executable phase ordering, and source discrepancy adjudication. | `[DIRECT][Static]` |
+| `REF-SURFACELIQUID-LITTER-LSE-V3` | `SC-LANDSURFACEENERGY-001` version 14, frozen-litter successor invariants | Exact phase-specific vapor/enthalpy operands and bounded kinetic phase receipt consumed by the surface owner. | `[DIRECT][Static]` |
+| `REF-SURFACELIQUID-LITTER-WATBAL` | `SC-WATBAL-001#INV-WATBAL-103` and daily WB17 ownership in `SC-EVAP-001` | Only post-vapor/post-phase liquid may enter the existing WB14 chronology; litter ice is neither infiltration supply nor soil frozen water. | `[DIRECT][Static]` |
 
 Package artifacts summarize implementation evidence but do not replace these
 canonical authorities.
@@ -66,7 +78,9 @@ canonical authorities.
 | `k` | typed identity | `(run_id, ofe_id, tile_id, surface_id, surface_class, source_type, source_id)` |
 | `f_t` | dimensionless | tile fraction of the owning OFE ground area |
 | `W_0,k`, `W_1,k` | `kg H2O m^-2 tile-ground` | beginning and ending persistent liquid mass |
+| `W_l,k`, `W_i,k` | `kg H2O m^-2 tile-ground` | version-2 forest-litter liquid and liquid-water-equivalent ice mass |
 | `W_max,k` | `kg H2O m^-2 tile-ground` | finite store capacity |
+| `W_i,max,k` | `kg H2O m^-2 tile-ground` | forest-litter ice capacity `0.85*rho_w*litter_depth` |
 | `D_i`, `A_i`, `F_i` | `kg H2O m^-2 OFE-ground interval` | request, maximum authorization, and finalized use |
 | `R_i` | `kg H2O m^-2 OFE-ground interval` | raw binary64 full or proportional authorization before a joint representability correction |
 | `c_k` | dimensionless binary64 | one common downward authorization scale for all requests sharing source key `k` |
@@ -76,6 +90,10 @@ canonical authorities.
 | `T_p` | `K` | parcel temperature |
 | `Q_p` | `J m^-2 basis-OFE-ground` | parcel sensible enthalpy relative to `T_ref` |
 | `h_l(T)` | `J kg^-1` | `C_w*(T-T_ref)` |
+| `h_lv(T)` | `J kg^-1` | `C_w*(T-T_ref)+L_v(T)`; liquid vapor specific enthalpy |
+| `h_iv(T)` | `J kg^-1` | `C_i*(T-T_ref)+L_s(T)`; ice vapor specific enthalpy |
+| `m_frz`, `m_mlt` | `kg H2O m^-2 tile-ground` | bounded freeze and melt transfers; at most one is positive |
+| `U_lit` | `J m^-2 tile-ground` | litter enthalpy relative to `T_ref`, including phase custody |
 | `Delta t_parent` | `s` | immutable `1800 s` WB14 parent interval and persistent cursor unit |
 | `Delta t_proposed` | `s` | Stage-3 adaptive candidate upper bound, an exact positive integer multiple of `60 s` no greater than the parent remainder |
 | `Delta t_child` | `s` | exact positive coupled-time-selected child support, no greater than `Delta t_proposed` or the parent remainder |
@@ -629,7 +647,7 @@ beginning byte.
 | 1 | malformed or unknown/missing field | schema | Reject before identity projection. | `SURFACELIQUID-E-001` |
 | 2 | owner/configuration/state/transaction/key mismatch | identity | Reject exact identity or lineage. | `SURFACELIQUID-E-002` |
 | 3 | nonfinite/out-of-domain capacity, fraction, mass, interval, temperature, topology, or unsafe proportional representability | domain | Reject without normalization except the exact symmetric joint-authorization rule in section 2. | `SURFACELIQUID-E-003` |
-| 4 | snow, terminal snow, frozen, or thawing surface branch | unsupported domain | Reject before candidate work, except the exact typed terminal parcel into an already-authorized actual frozen/thawing receiver under INV-010/011. | `SURFACELIQUID-E-004` |
+| 4 | snow, terminal snow, frozen/thawing bare or soil liquid, or frozen/thawing litter on a non-V2 owner/model identity | unsupported domain | Reject before candidate work, except the exact typed terminal parcel under INV-010/011 and the snow-free `forest_litter` V2 successor under INV-016..021. | `SURFACELIQUID-E-004` |
 | 5 | duplicate/missing request, authorization, use, credit, or parcel | protocol cardinality | Reject complete protocol. | `SURFACELIQUID-E-005` |
 | 6 | `F>A`, `A>D`, negative amount, or wrong basis | resource bound | Reject; no tolerance repairs it. | `SURFACELIQUID-E-006` |
 | 7 | legacy depression retention nonzero in native shadow | exact-one owner | Reject duplicate storage custody. | `SURFACELIQUID-E-007` |
@@ -665,12 +683,18 @@ string. A generic category plus prose detail is not the canonical payload.
 | `INV-SURFACELIQUID-013` | Every child binds coupled support, immutable OFE/lane/configuration/model/parameter identity, exact Green-Ampt inputs and working progression, complete beginning/ending owner sets, and a reconstructable predecessor receipt chain. | `REF-SURFACELIQUID-COUPLED-TIME` + correctness authority model | child and parent receipt `validate()` replay | identity/cardinality/replay; `E-002,E-005,E-011` | `[DIRECT][Static + Ran]` substitution, omission, reorder, replay, restart, and receipt-byte poisons |
 | `INV-SURFACELIQUID-014` | The complete parent candidate processes all OFEs in topology order and atomically stages surface storage, attributed liquid/enthalpy, routing, soil, soil thermal, LSE, V11, Stage 3, clock, provider/GSI, event, and receipt owners. When multiple lanes have resolved snow, each lane retains its own OFE-ground Stage-3 owner and boundary ledger; cadence is the common earliest latest-state proposal and no cross-lane energy, vapor, or snow scalar is admissible. | physical conservation + `REF-SURFACELIQUID-COUPLED-TIME` + `SC-SNOWENERGY-001#INV-SNOWENERGY-042` | complete-owner coordinator and covered owner join | closure/rollback; `E-009..011` | `[DIRECT][Static + Ran] + [INFERENCE][Static]` complete parity, snow/snow-free and dual-resolved-snow lane parents, independent per-lane ledgers, short-child two-OFE routing, child/final-join rollback vectors |
 | `INV-SURFACELIQUID-015` | A positive candidate retained amount no greater than the explicit binary64 mass envelope is an unrepresentable persistent credit: retain zero, leave persistent storage unchanged, and route the complete parcel mass and enthalpy as runoff; any larger candidate follows the ordinary retention equation. | `REF-SURFACELIQUID-BINARY64` + physical conservation | retention/routing candidate | exact predicate and closure; `E-003,E-009` | `[DIRECT][Static + contract vectors] + [INFERENCE][Static]` parcel-limited and capacity-limited below/equal/above-envelope, deterministic replay, and independent mass/enthalpy closure vectors |
+| `INV-SURFACELIQUID-016` | Surface owner/restart V2 is a tagged immutable successor with explicit finite nonnegative litter `W_l/W_i`; V1 state/restart and legacy complete-owner-projection V2 bytes remain unchanged. Checked V1-to-V2 migration initializes ice to exact zero, temperature never synthesizes ice, and production downgrade is prohibited. | `REF-SURFACELIQUID-LITTER-R156`, correctness authority model | V2 schema/identity/migration/restart validators | schema/identity/domain; `E-001..004` | `[DIRECT][Static]`; unchanged-production V2 pre-red required |
+| `INV-SURFACELIQUID-017` | The immutable beginning lineage authorizes liquid evaporation/condensation and ice sublimation/deposition separately; each outbound phase is capped by its own beginning availability, inbound mass credits only its named phase, and the exact empty-pool frozen fraction is zero, otherwise `W_i/(W_l+W_i)`. | `REF-SURFACELIQUID-LITTER-R156`, `REF-SURFACELIQUID-LITTER-LSE-V3` | phase-specific vapor receipt validator | identity/cardinality/bound; `E-002,E-003,E-005..006` | `[DIRECT][Static] + [INFERENCE][Static]`; independent phase-split vectors required |
+| `INV-SURFACELIQUID-018` | Chronology is immutable beginning snapshot, finalized phase-specific vapor, bounded kinetic phase transfer from the exact post-vapor state, atomic fusion/state update, current ingress, then WB14. Same-support ingress cannot donate to vapor or phase, and phase never triggers a same-support flux/fixed-point re-solve. | `REF-SURFACELIQUID-LITTER-SURFEX`, `REF-SURFACELIQUID-LITTER-LSE-V3`, `REF-SURFACELIQUID-LITTER-WATBAL` | V3 LSE/surface coordinator and receipt chain | chronology/replay; `E-002,E-005,E-008,E-011` | `[DIRECT][Static]`; order-poison and real-consumer vectors required |
+| `INV-SURFACELIQUID-019` | Bounded phase transfers equal liquid debit/ice credit or the reverse; `U_end=U*+L_f*m_frz-L_f*m_mlt`, ending temperature derives from ending dry/liquid/ice heat capacity, and independent mass/energy reconstruction consumes no producer residual. | `REF-SURFACELIQUID-LITTER-R156`, `REF-SURFACELIQUID-LITTER-SURFEX`, physical conservation | phase receipt and external ledger validators | domain/closure; `E-003,E-009..010` | `[DIRECT][Static] + [INFERENCE][Static]`; wrong-sign, old-capacity, and residual poisons required |
+| `INV-SURFACELIQUID-020` | Only post-vapor/post-phase liquid enters current-ingress/WB14 custody. Litter ice is never WB14 liquid supply, runoff, routed runon, soil-layer liquid, or soil `frozwt`; SC-EVAP daily WB17 ownership remains unchanged. | `REF-SURFACELIQUID-LITTER-WATBAL` | ingress/WB14 adapter and complete-owner join | identity/custody; `E-002,E-004..010` | `[DIRECT][Static]`; ice-alias and unchanged-WB14 vectors required |
+| `INV-SURFACELIQUID-021` | V2 model definition, state/restart, phase-specific vapor, phase transfer, closure operands, ordered receipts, successor complete-owner projection, warm start, and rollback bind exact identities and bytes; any failure preserves every V1/V2/V3 beginning and production owner byte. Both unchanged `p61` and native-forest real consumers must read the successor path. | correctness authority model + transaction atomicity | successor owner envelope, restart replay, and real-consumer gates | identity/restart/rollback; `E-001..011` | `[DIRECT][Static]`; unchanged-production V2 pre-red and runtime evidence required |
 
 ## Producer Obligations
 
 | Producer | Required operands and behavior | Prohibited substitution |
 |---|---|---|
-| LSE | Exact `GroundWaterKey` request/use and `CondensationCredit` with OFE-ground basis, surface/source identity, accepted temperature, and enthalpy. | Negative request, authorization-as-use, tile-basis credit, clipped condensation. |
+| LSE | Exact `GroundWaterKey` request/use and `CondensationCredit` with OFE-ground basis, surface/source identity, accepted temperature, and enthalpy. V3 additionally supplies separate finalized liquid-vapor, ice-vapor, and bounded phase receipts from one immutable beginning lineage. | Negative request, authorization-as-use, tile-basis credit, clipped condensation, aggregated vapor before phase custody, or phase inferred from ending temperature. |
 | Vegetation/forcing/upstream OFE | Timed, typed ingress parcels with exact OFE/tile/source and mass/enthalpy identity. | Untimed daily scalar, wrong destination, air-temperature enthalpy fallback. |
 | Hydrology configuration/state | Strict complete persistent store, capacities, topology, predecessor lineage, and digest. | Residue, WAT5, snow, soil-layer, or legacy depression-delta alias. |
 | Coupled Stage-3 controller | Select `Delta t_proposed` result-blindly on the exact 60-second grid, evaluate each complete-owner candidate from the latest accepted owner set, and supply the exact accepted-slab receipt/support. | Select cadence from snow mass or another physical threshold, infer proposal from elapsed duration, reuse an obsolete beginning state, or treat a zero-time event as physics. |
@@ -683,7 +707,7 @@ string. A generic category plus prose detail is not the canonical payload.
 | LSE fixed-cap solve | Consume exact authorization once and emit exact finalized use/credit. | Reauthorize or treat ingress as available supply. |
 | Soil liquid/thermal owners | Independently receive attributed infiltration mass and enthalpy. | Accept producer residual or unmatched energy. |
 | Routed hydrology | Preserve timing/source/destination and insert only before a later topology lane. | Cycle, backward route, scalar carry, duplicate debit. |
-| Shadow orchestrator/restart | Validate the complete candidate and replace the whole shadow state only after all joins pass. | Partial owner commit, production mutation, synthesized state. |
+| Shadow orchestrator/restart | Validate the complete candidate and replace the whole shadow state only after all joins pass. Select and replay the exact V1 or V2 surface-owner/restart tag and successor complete-owner projection. | Partial owner commit, production mutation, synthesized state, implicit ice, or V2-to-V1 fallback. |
 | Coupled owner join | Bind exact beginning/ending complete-owner sets, coupled slab, ordered WB14 child receipts, and final-only parent receipts/cursor transition. | Digest-only trust, inactive-owner mutation, omitted receipt, or child-local persistent lineage. |
 
 ## Symbol Alias Map
@@ -692,7 +716,9 @@ string. A generic category plus prose detail is not the canonical payload.
 |---|---|---|---|---|
 | `k` | persistent key projected from `GroundWaterKey` | owner identity | exact field equality | soil layer, snow layer, residue ET scalar |
 | `W` | `surface_liquid.liquid_kg_m2_tile` | persistent state | `kg H2O m^-2 tile-ground` | residue interception, WB14 depression delta, WAT5 retention |
+| `W_l/W_i` | `SurfaceLiquidStateRecordV2.liquid_kg_m2_tile` / `.litter_ice_kg_m2_tile` | successor persistent state | `kg H2O m^-2 tile-ground`; ice is liquid-water-equivalent | snow ice, soil ice, `frozwt`, WB14 supply |
 | `W_max` | `surface_liquid.capacity_kg_m2_tile` | configuration | `kg H2O m^-2 tile-ground` | soil porosity, depression delta |
+| `W_i,max` | `SurfaceLiquidConfigurationRecordV2.litter_ice_capacity_kg_m2_tile` | successor configuration | exact `0.85*rho_w*litter_depth` | `rho_i` capacity, liquid capacity, inferred default |
 | `D/A/F` | `surface_liquid.amount_kg_m2_ofe_ground` | LSE protocol | `kg H2O m^-2 OFE-ground interval` | authorization-as-use, daily ET scalar |
 | `C` | `surface_liquid.condensation_kg_m2_ofe_ground` | LSE protocol | `kg H2O m^-2 OFE-ground interval` | negative request, tile-ground credit |
 | `A_o` | `surface_liquid.ofe_area_m2` | routing identity | `m^2` positive finite | lane index or unscaled depth |
@@ -709,6 +735,10 @@ string. A generic category plus prose detail is not the canonical payload.
 | OFE/lane identity | `ofe_id` / `production_lane_id` | topology-ranked authority | exact configured binding | scalar broadcast or lane index substitution |
 | `wall_t*,wall_end,d` | terminal receiver absolute support | wall-time identity | `s` plus calendar/bin identity | transaction ID, full-bin duration, proportional scale |
 | `m_terminal_liquid` | terminal receipt mass | exact-one ingress | `kg H2O m^-2 OFE-ground` | store level/change, runoff, rain-only, CoE melt |
+| `m_evap,l/m_cond,l` | V3 liquid-vapor receipt | litter-vapor custody | `kg H2O m^-2 tile-ground interval` | daily WB17 ET, signed aggregate without phase identity |
+| `m_sub,i/m_dep,i` | V3 ice-vapor receipt | litter-vapor custody | `kg H2O m^-2 tile-ground interval` | snow vapor, liquid vapor, `frozwt` |
+| `m_frz/m_mlt` | V3 litter-phase receipt | atomic phase custody | `kg H2O m^-2 tile-ground interval` | soil/snow phase, net-only producer residual |
+| `U_lit` | V3 litter state/receipt enthalpy | phase energy custody | `J m^-2 tile-ground` relative to `T_ref` | power, air-energy proxy, old-capacity temperature increment |
 
 ## Constants And Parameters
 
@@ -716,7 +746,12 @@ string. A generic category plus prose detail is not the canonical payload.
 |---|---|---|
 | `T_ref` | `273.15 K` | `SC-LANDSURFACEENERGY-001` version 3 |
 | `C_w` | `4218 J kg^-1 K^-1` | `SC-LANDSURFACEENERGY-001` version 3 |
+| `C_i` | `2106 J kg^-1 K^-1` | `REF-SURFACELIQUID-LITTER-R156` |
+| `rho_i` | `920 kg m^-3` | `REF-SURFACELIQUID-LITTER-R156`; material property, not the ice-capacity conversion |
 | `rho_w` | `1000 kg m^-3` | `SC-LANDSURFACEENERGY-001` version 3 water-mass conversion |
+| `L_f` | `333700 J kg^-1` | named official SURFEX v8 instantiation |
+| `tau_ice` | `3300 s` | named official SURFEX v8 `ice_litter` instantiation |
+| forest-litter volumetric ice capacity | `0.85 m3 m^-3` | official SURFEX v8; areal mass is `0.85*rho_w*litter_depth` |
 | WB14 parent interval | `1800 s` | admitted direct-runtime cadence and persistent cursor unit |
 | Stage-3 upper-bound proposals | `{1800,900,60} s` | coupled Stage-3 cadence authority; maximum step, not guaranteed accepted duration |
 | intervals per direct day | `48` | `86400 s / 1800 s` |
@@ -733,6 +768,7 @@ capacity, inferred capacity, or executable default is admitted.
 | Boundary symbol | Canonical unit/basis | Registry posture | Runtime representation | Conversion/output rule |
 |---|---|---|---|---|
 | `W,W_max` | `kg H2O m^-2 tile-ground` | registry symbols `surface_liquid.store_mass` and `surface_liquid.store_capacity` | typed field, scalar only inside owner module | never published; no raw metre alias |
+| `W_l,W_i,W_i,max` | `kg H2O m^-2 tile-ground` | successor V2 boundary registry entries required before promotion | typed V2 fields; ice explicitly liquid-water-equivalent | capacity uses `rho_w`; no `rho_i`, snow, soil, or metre alias |
 | `D,A,F,C` | `kg H2O m^-2 OFE-ground interval` | registry symbols `surface_liquid.resource_amount` and `surface_liquid.condensation_credit` plus LSE `StandGroundWaterAmountBasis` | `WaterAmount`/`WaterAuthorization`/`CondensationCredit` | `stand-ground` means OFE; tile conversion named and once |
 | `m_p` | `kg H2O m^-2 basis-OFE-ground` | registry symbol `surface_liquid.parcel_mass` | typed parcel field with `basis_ofe_id` | `ofe_ground_water_mass_to_depth_m(x)=x/rho_w` |
 | `T_p` | `K` | registry symbol `surface_liquid.parcel_temperature` | typed parcel field; finite domain | no Celsius/raw temperature substitution |
@@ -743,8 +779,11 @@ capacity, inferred capacity, or executable default is admitted.
 | WB14/OFE/lane/configuration identities | typed ID or SHA-256 | configuration and coupled-owner registries | typed IDs and `Digest32` | exact canonical-preimage equality; never dimensional conversion |
 | `f_t` | dimensionless | topology semantic entry | strict config scalar | only named tile/OFE helpers consume it |
 | `A_o` | `m2` | registry symbol `surface_liquid.ofe_area` | typed configuration field | only `route_ofe_ground_amount` consumes area ratio |
+| `m_evap,l,m_cond,l,m_sub,i,m_dep,i,m_frz,m_mlt` | `kg H2O m^-2 tile-ground interval` | successor phase/vapor boundary entries required before promotion | typed phase-specific receipt fields | tile/OFE conversion is explicit and once; no aggregate phase-erasing scalar |
+| `U_lit,Q_v,Q_phase` | `J m^-2 tile-ground` | successor enthalpy boundary entries required before promotion | typed receipt/state fields | amount, never `W m^-2`; exact `T_ref=273.15 K` reference |
 
-Raw dimensional literals are limited to frozen `T_ref`, `C_w`, and declared
+Raw dimensional literals are limited to frozen `T_ref`, `C_w`, `C_i`,
+`rho_i`, `rho_w`, `L_f`, `tau_ice`, the named `0.85` capacity, and declared
 closure absolute terms. This package publishes no output metadata.
 
 ## Tolerance And Numeric Notes
@@ -767,11 +806,20 @@ move every row downward through one common representable factor and must prove
 the resulting aggregate is `<=S_k` exactly. It is not a generic approximate
 comparison and cannot admit an overdraw.
 
+V2 version tags, source/model/configuration/restart digests, phase identity,
+chronology, availability bounds, capacity, no-ingress-donation, and the
+prohibition on litter ice entering WB14 or `frozwt` are exact. Existing mass
+and enthalpy closure envelopes apply only after independent operand
+reconstruction; they cannot delete tiny ice, change a phase, repair an old-
+capacity temperature update, or admit a producer residual.
+
 ## Calibration And Identifiability Posture
 
-`science_implementation_status=IMPLEMENTED`; lifecycle and gap status retain
-the pending verification/promotion posture. `calibration_evidence_status=NOT_APPLICABLE`
-and `identifiability_status=NOT_APPLICABLE`.
+The frozen V1 authority is implemented. For the version-14 successor,
+`science_implementation_status=NOT_IMPLEMENTED` until the contract-first red is
+closed by production and real-consumer evidence;
+`calibration_evidence_status=NOT_APPLICABLE` and
+`identifiability_status=NOT_APPLICABLE`.
 
 Custody arithmetic is non-calibratable. `capacity_kg_m2_tile` is a required
 external site/surface parameter that controls retention and overflow; this
@@ -783,7 +831,7 @@ not a calibration fallback.
 
 | Readiness obligation | Status | Evidence/disposition |
 |---|---|---|
-| typed/enumerable parameter surface | `PASS` | Capacity and immutable WB14 parameters are explicit external configuration; custody introduces no fitted parameter. |
+| typed/enumerable parameter surface | `PASS` | Liquid/ice capacities, fixed litter constants, and immutable WB14 parameters are explicit; custody introduces no fitted parameter. |
 | observation operator with units and scale | `PASS` | Beginning/ending store, infiltration, and routed/outlet runoff are defined above with tile/OFE bases. |
 | deterministic candidate execution | `PASS` | Canonical configuration, state, parent, child, and receipt reconstruction are required. |
 | objective reconstruction | `NOT_APPLICABLE` | This contract defines no calibration objective and authorizes no fitting. |
@@ -827,8 +875,147 @@ partial mutation; OFE/lane/K/matric-potential/storage/model/ordinal/support/
 predecessor substitution; early parent cursor advancement; and production
 selector/default reachability.
 
+Version-14 positive vectors additionally cover V1 byte identity; checked
+V1-to-V2 exact-zero-ice migration; an explicit-ice V2 seed; V2 restart and
+warm-start replay; exact empty and nonempty frozen fractions; separately
+capped liquid evaporation and ice sublimation; uncapped named-phase
+condensation/deposition; liquid/ice vapor enthalpy; freeze and melt with equal
+opposing mass; `L_f*m_phase` energy; ending-capacity temperature; ingress only
+after phase; unchanged WB14 with liquid-only supply; successor complete-owner
+projection; and unchanged `p61` plus native-forest real-consumer execution.
+Version-14 poisons reject implicit ice from temperature; `rho_i` ice capacity;
+`xwgmin` and `zertol`; saturation-over-ice substitution; cross-phase vapor
+debit; same-support ingress donation; wrong phase sign; freeze-only execution;
+old-capacity temperature update; phase-triggered re-solve; ice-as-WB14,
+runoff, soil-liquid, or `frozwt`; stale model/restart identity; production
+downgrade; receipt omission/reorder/replay; producer residual; and rollback at
+every new fallible boundary.
+
 Expected values are independently reconstructed from frozen operands rather
 than generated by production Rust.
+
+## Frozen Forest-Litter Surface-Owner V2 Amendment
+
+This version-14 amendment is an immutable successor only. It does not alter any
+version-1 configuration/state/restart preimage, the legacy complete-owner
+projection V2, or their canonical bytes. `SurfaceLiquidOwnerEnvelopeV2` is a
+strict tagged union of the frozen V1 payload and this new V2 payload; the tag,
+schema digest, model-definition digest, parent identity, every record, and the
+transaction lineage enter its canonical digest. The corresponding complete-
+owner projection is V3 so that it cannot be confused with the frozen projection
+V2.
+
+The V2 configuration extends only a `forest_litter/litter_liquid` record with
+explicit finite positive `litter_depth_m` and the bitwise exact derived
+`litter_ice_capacity_kg_m2_tile=0.85*rho_w*litter_depth_m`. The use of `rho_w`
+is binding because R-156 and SURFEX store litter ice on a liquid-water-
+equivalent basis. Bare-surface records carry no ice fields. V2 state is:
+
+```text
+SurfaceLiquidStateRecordV2 {
+    key,
+    liquid_kg_m2_tile,
+    litter_ice_kg_m2_tile,
+    surface_enthalpy_j_m2_tile,
+    last_accepted_transaction_id
+}
+SurfaceLiquidOwnedStateV2 {
+    owner_id,
+    configuration_sha256,
+    model_definition_sha256,
+    state_sha256,
+    records,
+    continuations
+}
+```
+
+Every mass and enthalpy is finite; `0<=W_l<=W_max` and
+`0<=W_i<=W_i,max`. A checked V1-to-V2 migration copies every frozen V1 field
+and binary64 bit, initializes `W_i` to positive-zero bits exactly, derives no
+state from temperature, and rebinds only the successor identities. A caller may
+instead construct a new V2 seed with explicit finite nonnegative ice within
+capacity. Production V2-to-V1 downgrade is always rejected; an exact-zero-ice
+test utility is not a runtime fallback. Missing, stale, unknown, cross-version,
+or mismatched model/schema/restart identity rejects before candidate work.
+
+The successor model-definition JSON binds the terminal digests of this contract
+and LSE v14, the frozen V1 parent digest, all retained-source SHA-256 values,
+`T_ref=273.15 K`, `rho_i=920 kg m^-3`, `C_i=2106 J kg^-1 K^-1`,
+`L_f=333700 J kg^-1`, `tau_ice=3300 s`, the `0.85` capacity rule, exact
+formulas/order below, and every refusal. Restart/checkpoint bytes carry the
+explicit owner V2 and projection V3 tags plus that definition digest.
+
+For one accepted child, the owner executes exactly this order:
+
+1. Validate and freeze the complete beginning V2 state and phase-specific
+   availability. No current precipitation, canopy release, runon, terminal
+   parcel, or other same-support ingress belongs to this snapshot.
+2. Validate the LSE v14 liquid evaporation/condensation and ice
+   sublimation/deposition receipts. Liquid and ice use the same liquid-water
+   saturation-humidity function selected by R-156; saturation over ice is not
+   substituted. The exact empty-pool frozen fraction is zero; otherwise
+   `p_i=W_i/(W_l+W_i)`. No `xwgmin` denominator floor is admitted. Each outbound
+   component is independently bounded by its named beginning phase; each
+   inbound component credits only its named phase and has no availability cap.
+3. Install the finalized vapor candidate to obtain exact phase-free
+   `W_l*`,`W_i*`,`U*`,`T*`. Liquid vapor carries
+   `h_lv(T)=C_w*(T-T_ref)+L_v(T)` and ice vapor carries
+   `h_iv(T)=C_i*(T-T_ref)+L_s(T)`. Outbound and inbound mass/energy remain
+   separately reconstructable before any air-flux total. With all four masses
+   nonnegative, the signed surface-energy operands are exactly
+   `Q_v,l=-m_evap,l*h_lv(T_evap)+m_cond,l*h_lv(T_cond)` and
+   `Q_v,i=-m_sub,i*h_iv(T_sub)+m_dep,i*h_iv(T_dep)`; therefore
+   `U*=U_0+Q_v,l+Q_v,i` before phase transfer.
+4. Validate the LSE v14 bounded kinetic phase receipt computed from that exact
+   post-vapor state and the accepted child duration. At most one of `m_frz` and
+   `m_mlt` is positive. Require
+   `m_frz<=W_l*`, `m_mlt<=W_i*`,
+   `W_i*+m_frz-m_mlt<=W_i,max`, and equal opposing liquid/ice transfers. The
+   conservation-resolved sign is `signed_phase=m_frz-m_mlt`: positive debits
+   liquid, credits ice, and credits fusion energy; negative reverses them.
+5. Atomically construct
+   `W_l,end=W_l*-m_frz+m_mlt`,
+   `W_i,end=W_i*+m_frz-m_mlt`, and
+   `U_end=U*+L_f*m_frz-L_f*m_mlt`. Derive ending temperature from `U_end` and
+   `C_end=C_dry+C_w*W_l,end+C_i*W_i,end` as
+   `T_end=T_ref+U_end/C_end`, with positive finite `C_end`. Literal
+   `T += Q_phase/C_old` is prohibited because it leaves an unowned
+   `delta-C*(T-T_ref)` energy term. The ending temperature is the next-child
+   warm start; no phase-triggered same-support flux or fixed-point re-solve is
+   permitted.
+6. Only after steps 1--5, admit current ingress into liquid custody and execute
+   the unchanged sections 4--8/WB14 chronology. Litter ice is unavailable to
+   authorization, ingress, infiltration, retention, overflow, runoff, routing,
+   soil liquid, soil thermal liquid, and soil `frozwt`.
+
+The V2 receipt chain seals, in order, beginning owner bytes, separate liquid-
+vapor and ice-vapor operands, post-vapor state, phase input and bounded transfer,
+fusion-energy operands, post-phase state, current-ingress parcels, WB14 child
+receipts, complete ending owner bytes, and predecessor identity. Independent
+validation reconstructs both phase balances:
+
+```text
+W_l,end = W_l,0 - m_evap,l + m_cond,l - m_frz + m_mlt
+W_i,end = W_i,0 - m_sub,i  + m_dep,i  + m_frz - m_mlt
+U_end   = U_0 + Q_vapor,liquid + Q_vapor,ice
+             + L_f*m_frz - L_f*m_mlt + Q_ingress - Q_outgoing
+```
+
+Every signed energy operand is reconstructed from named mass, phase, receipt
+temperature, and specific enthalpy; a producer-supplied residual is never an
+operand. Rejection at vapor, phase, ingress, WB14, owner join, receipt replay,
+restart, or serialization preserves the complete V2 beginning bytes and all
+production bytes. Real-consumer closure requires both the unchanged `p61` and
+native-forest fixtures to construct, persist, restore, execute, and publish
+through this successor path; a producer-only or shadow-only receipt is not
+closure evidence.
+
+Explicitly refused are `zertol` tiny-ice deletion, soil compensation,
+instantaneous projection, a lower-bound patch, snow/soil/bare frozen-state
+admission, ice as WB14 liquid supply, current-ingress donation to vapor or
+phase, freeze-only logic, saturation over ice, hidden empty-pool
+regularization, same-support phase re-solve, implicit ice initialization,
+production downgrade, tolerance/floor changes, and producer-residual closure.
 
 ## Terminal Meltout Receipt And Partial-WB14 Amendment
 
@@ -902,10 +1089,11 @@ claim, qualification, or cutover.
 | Tolerance | existing WB14/mass bounds apply to independently integrated segment operands; none repairs support/cardinality/identity |
 | Tests | endpoint rain/runon, nonlinear unequal full-bin/segment forcing, zero/full remainder, midnight, restart/replay, debit-credit marker, rollback |
 
-`GAP-SURFACELIQUID-004` is narrowly superseded only for receipt of this typed
-0 C parcel into an already-authorized actual frozen or thawing receiver.
-Frozen-liquid constitutive physics beyond that receipt remains
-`AUTHORITY_MISSING` and non-promotable.
+`GAP-SURFACELIQUID-004` is superseded for receipt of this typed 0 C parcel and,
+under the version-14 successor only, for the exact snow-free `forest_litter`
+liquid/ice owner. Snow, soil, and bare-surface frozen-liquid constitutive
+physics beyond the terminal receipt remain `AUTHORITY_MISSING` and
+non-promotable.
 
 ## WB14 Parent/Child Receipt Schema Details
 
@@ -1028,6 +1216,7 @@ persistent continuation advance.
 | `SURFACELIQUID-V13-FACTORIZATION-LINEAGE` | Adaptive direct-versus-composed receipt classification above | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-012, INV-SURFACELIQUID-013, INV-SURFACELIQUID-014` | `none` | Version 13 classifies only the WB14 child ordinal and digest-keyed receipt-map identity as exact per-trial factorization lineage; all receipt custody and accepted-path replay obligations remain exact. |
 | `SURFACELIQUID-V11-REPRESENTATIONAL-SATURATION` | Section 7 effective-retention rule | `active` | `new-INV` | `INV-SURFACELIQUID-007, INV-SURFACELIQUID-008, INV-SURFACELIQUID-015` | `none` | A bounded binary64-only candidate credit, whether parcel- or capacity-limited, routes the complete conservative parcel instead of attempting an unrepresentable persistent mass/enthalpy credit. |
 | `SURFACELIQUID-V12-INVERSE-BASIS-AUTHORIZATION` | Section 2 checked OFE/tile-basis authorization rule | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-003, INV-SURFACELIQUID-004` | `none` | One common binary64 scale must make both the OFE-ground authorization sum and the exact resource-phase tile-ground inverse sum no greater than their immutable beginning supplies; no clamp or candidate tolerance is admitted. |
+| `SURFACELIQUID-V14-FROZEN-LITTER-V2` | Frozen Forest-Litter Surface-Owner V2 Amendment above | `active` | `new-INV` | `INV-SURFACELIQUID-016, INV-SURFACELIQUID-017, INV-SURFACELIQUID-018, INV-SURFACELIQUID-019, INV-SURFACELIQUID-020, INV-SURFACELIQUID-021` | `flagged-binding-addition` | Admits only the immutable snow-free forest-litter liquid/ice successor after contract review, production closure, exact restart/rollback, independent mass/energy reconstruction, and both real-consumer gates. |
 
 ## Gap Register And Promotability
 
@@ -1036,8 +1225,9 @@ persistent continuation advance.
 | `GAP-SURFACELIQUID-001` persistent owner absent | `CLOSED` | Persistent owner, canonical state/restart, and complete-owner projection are implemented and tested. |
 | `GAP-SURFACELIQUID-002` runtime owner implementation | `CLOSED` | Exact state/candidate operations, receipt-owned parent coordination, reconstruction, rollback, dual review, and independent verification passed for v8. |
 | `GAP-SURFACELIQUID-003` production selector/cutover | `NOT_AUTHORIZED` | Later separately governed package required. |
-| `GAP-SURFACELIQUID-004` snow/frozen/thawing custody | `AUTHORITY_MISSING`, `NON_PROMOTABLE` | Typed unsupported; snow contracts own that domain. |
+| `GAP-SURFACELIQUID-004` snow/frozen/thawing custody | `PARTIALLY_CLOSED` | V14 freezes authority only for snow-free `forest_litter`; snow/soil/bare frozen state remains typed unsupported and non-promotable. |
 | `GAP-SURFACELIQUID-005` multi-production-lane covered Stage-3 parent execution | `CLOSED` | Version 9 admits the lane-keyed parent after real snow/snow-free and dual-resolved-snow attachment fixtures, independent per-lane boundary-ledger closure, common-earliest cadence, topology-ordered WB14/runon closure, atomic publication, and child/final-join rollback verification. |
+| `GAP-SURFACELIQUID-006` forest-litter surface-owner/restart V2 production and real consumers | `OPEN`, `NON_PROMOTABLE` | Contract-first authority is frozen; unchanged production must fail the V2 gate until owner, restart, projection, closure, rollback, `p61`, and native-forest evidence pass. |
 
 This contract authorizes exact-grid adaptive child-slab attachment, including
 lane-keyed multi-lane covered Stage-3 execution. It does not by itself
@@ -1057,6 +1247,7 @@ rerun; this amendment claims no replacement execution.
 
 | Date | Version | Author | Change |
 |---|---|---|---|
+| 2026-08-30 | 14 | Codex | Added immutable surface-owner/restart V2 authority for snow-free forest-litter liquid/ice, exact V1 migration and byte preservation, phase-specific vapor custody, bounded phase chronology, fusion-energy closure, liquid-only WB14 handoff, successor receipts/restart/rollback, explicit refusals, and unchanged `p61`/native-forest real-consumer obligations. Production remains non-promotable pending the retained contract-first red. |
 | 2026-08-29 | 13 | Codex | Bound the WB14 child ordinal and digest-keyed per-OFE receipt-map identity as exact per-trial factorization lineage rather than direct-versus-composed physical state. Retained exact accepted-path receipt chronology, replay, custody, event/topology posture, rollback, and mass/energy closure. |
 | 2026-08-28 | 12 | Codex | Required every raw full/proportional authorization set to satisfy both its OFE-basis supply bound and the exact checked tile-basis inverse-debit bound used by the resource phase. A single symmetric bounded common scale resolves representational overshoot; candidate execution remains exact and admits no clamp/tolerance. Added the `.62` one-ULP inverse-basis vector and dry zero-store obligations. |
 | 2026-08-27 | 11 owner amendment | Codex | Replaced the provisional 600-ms Stage-3 child grid with an exact 60-second (`60_000_000_000 ns`) temporal floor. Surface-liquid conservation, custody, topology, receipt, final-only cursor, rollback, and fail-closed obligations are unchanged; stable ordinary supports must accept substantially larger steps. Prior floor-dependent evidence is superseded and awaits rerun. |

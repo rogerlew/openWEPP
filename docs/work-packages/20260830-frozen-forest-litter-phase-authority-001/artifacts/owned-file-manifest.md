@@ -49,7 +49,10 @@ exclusive group below and must preserve concurrent edits in all other groups.
 
 ## Surface-owner/orchestration production owner, after retained pre-red
 
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs` (successor
+  module/export wiring only; no legacy export removal);
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs`;
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner_tests.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_attachment.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_coordinator.rs`;

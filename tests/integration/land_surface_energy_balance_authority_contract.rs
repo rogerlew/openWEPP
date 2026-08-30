@@ -5,9 +5,30 @@ const CONTRACT: &str =
 const INDEX: &str = "docs/specifications/science-contracts/index.md";
 const AUTHORITY_PACKAGE: &str =
     "docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts";
+const LSE_V3_PRODUCTION_PATHS: &[&str] = &[
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/v3_state.rs",
+    "crates/openwepp-land-surface-energy/src/litter_phase.rs",
+    "crates/openwepp-land-surface-energy/src/litter_phase_closure.rs",
+    "crates/openwepp-land-surface-energy/src/litter_phase_output.rs",
+    "crates/openwepp-land-surface-energy/src/solver_litter_phase.rs",
+    "crates/openwepp-land-surface-energy/src/transaction_v3.rs",
+];
+const LSE_V3_REAL_CONSUMERS: &[&str] = &[
+    "tests/integration/erosion_single_ofe_p61_sediment.rs",
+    "tests/integration/dff_ws1_native_forest_cli.rs",
+];
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
+}
+
+fn read_existing(paths: &[&str]) -> String {
+    paths
+        .iter()
+        .filter_map(|path| fs::read_to_string(path).ok())
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 fn row<'a>(contract: &'a str, key: &str) -> &'a str {
@@ -76,7 +97,7 @@ fn contract_preserves_adjacent_owners_and_rejects_terminal_payload() {
 fn current_version_releases_named_authority_without_production_claims() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 12",
+        "contract_version: 14",
         "status: approved",
         "maturity: active",
         "OPENWEPP_SNOW_FREE_LSE_V1",
@@ -91,6 +112,115 @@ fn current_version_releases_named_authority_without_production_claims() {
         "calibration, empirical validation or transferability",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+}
+
+#[test]
+fn version_fourteen_binds_frozen_litter_phase_vapor_and_atomic_chronology() {
+    let contract = read(CONTRACT);
+    for required in [
+        "OPENWEPP_SNOW_FREE_LSE_V3",
+        "OPENWEPP_FOREST_LITTER_PHASE_RECEIPT_V1",
+        "phase-free: no freeze, melt",
+        "q_sat_liquid(T_l,p)",
+        "Q_v,l = v_l*[C_w*(T_l-T_ref) + L_v(T_l)]",
+        "Q_v,i = v_i*[C_i*(T_l-T_ref) + L_s(T_l)]",
+        "tau_ice  = 3300 s",
+        "L_f      = 333700 J kg^-1",
+        "W_i,max  = 0.85*rho_w*dz_l kg m^-2 tile-ground",
+        "m_phase  = m_freeze - m_melt",
+        "W_l,phase = W_l,* - m_freeze + m_melt",
+        "W_i,phase = W_i,* + m_freeze - m_melt",
+        "U_phase   = U_* + L_f*m_phase",
+        "T_phase   = T_ref + U_phase/C_phase",
+        "`H_phase = U - L_f*W_i` is invariant exactly",
+        "current precipitation,\nrunon, throughfall, canopy drainage, stemflow, and litter overflow",
+        "existing WB14 partition with liquid-only\navailability",
+        "same-support flux, fixed-point, water-authorization, or\nNewton re-solve",
+        "SC-EVAP-001 remains the owner of daily WB17",
+        "exact\n`60000000000 ns` physical fallback floor",
+        "steps substantially larger than 60 seconds",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    for invariant in 140..=149 {
+        let id = format!("INV-LANDSURFACEENERGY-{invariant}");
+        assert!(
+            contract.contains(&id),
+            "{CONTRACT} missing successor invariant {id}"
+        );
+    }
+
+    for (source, digest) in [
+        (
+            "gmd-10-1621-2017-isba-meb-litter.pdf",
+            "2a8c14d912651457bf9205a4a963b78dd12f1aa7f243bccb025e4b81ce99716d",
+        ),
+        (
+            "isba_meb.F90.source.html",
+            "0a300739b5dc660b61d29db144dd92f886e8fdf9934eac8facc022585992087a",
+        ),
+        (
+            "isba_fluxes_meb.F90.source.html",
+            "e0378bc89ee0d52cffe14841aac56de1d8d379edf18ad29f24cfdb9ea0dfdbbc",
+        ),
+        (
+            "ini_csts.F90.source.html",
+            "f39840df4d851efc70044f9e3ad62822371ed743c3c3a8055a4c940e2f86d73a",
+        ),
+    ] {
+        assert!(contract.contains(source), "{CONTRACT} missing {source}");
+        assert!(contract.contains(digest), "{CONTRACT} missing {digest}");
+    }
+
+    for refusal in [
+        "wrong A4 sign",
+        "`273.16 K`",
+        "`rho_i=917`",
+        "saturation over ice",
+        "instant\nequilibrium",
+        "ice-as-WB14 supply",
+        "`zertol` ice deletion",
+        "`xwgmin` regularization",
+        "soil\ncompensation",
+        "producer-residual closure",
+    ] {
+        assert!(contract.contains(refusal), "{CONTRACT} missing {refusal}");
+    }
+}
+
+#[test]
+fn version_fourteen_requires_successor_production_identity_and_typed_guards() {
+    let production = read_existing(LSE_V3_PRODUCTION_PATHS);
+    for required in [
+        "OPENWEPP_SNOW_FREE_LSE_V3",
+        "OPENWEPP_FOREST_LITTER_PHASE_RECEIPT_V1",
+        "LSEB-E-045",
+        "LSEB-E-046",
+        "LSEB-E-047",
+        "LSEB-E-048",
+    ] {
+        assert!(
+            production.contains(required),
+            "unchanged production is missing required V3 binding {required}"
+        );
+    }
+}
+
+#[test]
+fn version_fourteen_requires_p61_and_native_real_consumer_adoption() {
+    for path in LSE_V3_REAL_CONSUMERS {
+        let consumer = read(path);
+        for required in [
+            "OPENWEPP_SNOW_FREE_LSE_V3",
+            "OPENWEPP_FOREST_LITTER_PHASE_RECEIPT_V1",
+        ] {
+            assert!(
+                consumer.contains(required),
+                "unchanged real consumer {path} is missing V3 binding {required}"
+            );
+        }
     }
 }
 
