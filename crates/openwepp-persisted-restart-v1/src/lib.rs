@@ -28,6 +28,7 @@
 
 mod canonical;
 mod checkpoint;
+mod checkpoint_v2;
 mod continuation_template;
 mod erosion;
 #[cfg(feature = "fixtures")]
@@ -36,17 +37,22 @@ mod groundwater;
 mod growth_et;
 mod gsi_forcing;
 mod host;
+mod host_v2;
 mod hydrology_core;
 mod hydrology_restart;
 mod primitives;
 mod projection;
+mod projection_v2;
 mod scientific_owners;
+mod scientific_owners_v2;
 mod snow_stage3_handoff;
 mod snow_stage3_v11;
 mod snow_stage3_v11_v3;
+mod soil_thermal_v2;
 mod subsurface;
 mod surface_liquid;
 mod transaction;
+mod transaction_v2;
 mod transfer;
 mod vegetation_v11;
 mod vegetation_v11_v3;
@@ -61,6 +67,7 @@ pub use checkpoint::{
     RestoredCompleteCommittedOwnerStateV1, RestoredScientificOwnerStateSetV1,
     ScientificOwnerStateSetV1, admit_checkpoint_into_owner_store_v1, admit_checkpoint_v1,
 };
+pub use checkpoint_v2::*;
 pub use continuation_template::*;
 pub use erosion::{
     DirectErosionDownstreamRestartV1, DirectErosionInflowIntakeRestartV1,
@@ -82,6 +89,7 @@ pub use host::{
     DirectV10RestartHost, RestartInstallError, admit_and_install_checkpoint_v1,
     install_restored_checkpoint,
 };
+pub use host_v2::*;
 pub use hydrology_core::{DirectHydrologyCoreError, DirectWaterStateRestartV1};
 pub use hydrology_restart::{
     DirectHydrologyRestartV1, DirectLaneRestartV1, DirectRuntimePostureV1,
@@ -94,19 +102,23 @@ pub use primitives::{
 pub use projection::{
     checkpoint_identities_v1, project_complete_owner_state_v1, project_scientific_owner_state_v1,
 };
+pub use projection_v2::*;
 pub use scientific_owners::*;
+pub use scientific_owners_v2::*;
 pub use snow_stage3_handoff::{SnowStage3HandoffRestartError, SnowStage3HandoffRestartV1};
 pub use snow_stage3_v11::{
     DirectSnowStage3V11AttachmentRestartV2, ExpectedSnowStage3V11RestartContext,
     SnowStage3V11RestartError,
 };
 pub use snow_stage3_v11_v3::*;
+pub use soil_thermal_v2::*;
 pub use subsurface::{DirectSubsurfaceLayerRestartV1, SubsurfaceRestartError};
 pub use surface_liquid::{
     DirectSurfaceLiquidConfigurationRestartV1, DirectSurfaceLiquidOwnedStateRestartV1,
     GroundIngressModeWireV1, SurfaceClassWireV1, SurfaceLiquidRestartError, WaterSourceWireV1,
 };
 pub use transaction::{DirectV10PreparedDayTransactionV1, RestartTransactionError};
+pub use transaction_v2::*;
 pub use transfer::{
     DirectLaneTransferLedgerRestartV1, DirectRunTransferDownstreamOperandsRestartV1,
     DirectTransferBuffersRestartV1, TransferRestartError,
@@ -114,3 +126,6 @@ pub use transfer::{
 pub use vegetation_v11::*;
 pub use vegetation_v11_v3::*;
 pub use winter::{DirectWinterColumnRestartV1, RestoredWinterCompatibility, WinterRestartError};
+
+#[cfg(test)]
+mod v2_tests;
