@@ -438,7 +438,12 @@ pub use surface_liquid_owner::{
     DirectSurfaceLiquidFailure, DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidOwnedState,
     DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
     DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
+    SurfaceLiquidConfigurationRecordV2, SurfaceLiquidConfigurationV2, SurfaceLiquidOwnedStateV2,
+    SurfaceLiquidOwnerClosureRecordV2, SurfaceLiquidOwnerEnvelopeV2,
+    SurfaceLiquidOwnerModelDefinitionV2, SurfaceLiquidOwnerRestartV2,
+    SurfaceLiquidOwnerSourceIdentityV2, SurfaceLiquidStateRecordV2,
     apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
+    validate_surface_liquid_owner_mass_closure_v2,
 };
 pub(crate) use surface_liquid_owner::{
     DirectSurfaceLiquidClosureUnit, checked_surface_liquid_add, checked_surface_liquid_close,

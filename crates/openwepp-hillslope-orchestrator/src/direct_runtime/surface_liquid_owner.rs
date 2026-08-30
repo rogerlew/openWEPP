@@ -16,6 +16,17 @@ use thiserror::Error;
 
 mod resource_validation;
 
+mod v2;
+mod v2_restart;
+
+pub use v2::{
+    SurfaceLiquidConfigurationRecordV2, SurfaceLiquidConfigurationV2, SurfaceLiquidOwnedStateV2,
+    SurfaceLiquidOwnerClosureRecordV2, SurfaceLiquidOwnerEnvelopeV2,
+    SurfaceLiquidOwnerModelDefinitionV2, SurfaceLiquidOwnerSourceIdentityV2,
+    SurfaceLiquidStateRecordV2, validate_surface_liquid_owner_mass_closure_v2,
+};
+pub use v2_restart::SurfaceLiquidOwnerRestartV2;
+
 use resource_validation::preflight_resource_phase_inputs;
 
 const ZERO_SHA256: &str = "0000000000000000000000000000000000000000000000000000000000000000";
@@ -2913,6 +2924,10 @@ include!("surface_liquid_zero_duration_snow.rs");
 #[cfg(test)]
 #[path = "surface_liquid_owner_tests.rs"]
 pub(crate) mod tests;
+
+#[cfg(test)]
+#[path = "surface_liquid_owner/v2_tests.rs"]
+mod v2_tests;
 
 #[path = "surface_liquid_owner/identity_validation.rs"]
 mod identity_validation;

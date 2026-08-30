@@ -210,8 +210,12 @@ pub use direct_runtime::{
     DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
     DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
     DirectZeroDurationSnowLiquidDispositionV1, DirectZeroDurationSnowLiquidReceiptV1,
+    SurfaceLiquidConfigurationRecordV2, SurfaceLiquidConfigurationV2, SurfaceLiquidOwnedStateV2,
+    SurfaceLiquidOwnerClosureRecordV2, SurfaceLiquidOwnerEnvelopeV2,
+    SurfaceLiquidOwnerModelDefinitionV2, SurfaceLiquidOwnerRestartV2,
+    SurfaceLiquidOwnerSourceIdentityV2, SurfaceLiquidStateRecordV2,
     apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
-    zero_duration_snow_liquid_receipt_set_sha256,
+    validate_surface_liquid_owner_mass_closure_v2, zero_duration_snow_liquid_receipt_set_sha256,
 };
 #[cfg(test)]
 pub use direct_runtime::{
