@@ -17,6 +17,11 @@ use thiserror::Error;
 mod resource_validation;
 
 mod v2;
+// This is a bounded integration seam whose production consumer is installed
+// by the successor complete-owner projection. Keep the handoff compilable
+// without weakening warnings on the already-live V1 path.
+#[allow(dead_code)]
+pub(crate) mod v2_ingress_adapter;
 mod v2_restart;
 
 pub use v2::{
@@ -2928,6 +2933,10 @@ pub(crate) mod tests;
 #[cfg(test)]
 #[path = "surface_liquid_owner/v2_tests.rs"]
 mod v2_tests;
+
+#[cfg(test)]
+#[path = "surface_liquid_owner/v2_ingress_tests.rs"]
+mod v2_ingress_tests;
 
 #[path = "surface_liquid_owner/identity_validation.rs"]
 mod identity_validation;
