@@ -289,7 +289,7 @@ covered solver. No convergence threshold or phase-domain amendment is allowed.
 
 `WGHL-FULL-001I` independently requires `SC-SURFACELIQUID-001` v15
 `INV-SURFACELIQUID-022` and `SC-LANDSURFACEENERGY-001` v15
-`INV-LANDSURFACEENERGY-140`, contract-derived tests, and a retained isolated
+`INV-LANDSURFACEENERGY-150`, contract-derived tests, and a retained isolated
 expected-red on unchanged production before any carry/schema implementation.
 Blocking evidence includes the exact canonical WAT5 sub-ULP operand, signed and
 tie-even/crossing/cancellation/order/subnormal/overflow vectors, V1 byte locks,
