@@ -265,8 +265,13 @@ event, custody, receipt, rollback, public schema, persistence, or publication.
 - `crates/openwepp-persisted-restart-v1/src/projection.rs`;
 - `crates/openwepp-persisted-restart-v1/src/host.rs`;
 - `crates/openwepp-persisted-restart-v1/src/transaction.rs`;
-- new V2-focused persisted-restart schema/test modules included from those
-  files;
+- new `crates/openwepp-persisted-restart-v1/src/soil_thermal_v2.rs`;
+- new `crates/openwepp-persisted-restart-v1/src/scientific_owners_v2.rs`;
+- new `crates/openwepp-persisted-restart-v1/src/checkpoint_v2.rs`;
+- new `crates/openwepp-persisted-restart-v1/src/projection_v2.rs`;
+- new `crates/openwepp-persisted-restart-v1/src/host_v2.rs`;
+- new `crates/openwepp-persisted-restart-v1/src/transaction_v2.rs`;
+- new `crates/openwepp-persisted-restart-v1/src/v2_tests.rs`;
 - `crates/openwepp-runner/src/hillslope/snow_stage3_v11_production_seed.rs` and
   exact successor seed tests only if compile or real-consumer adoption proves
   the versioned seed handoff is required;
