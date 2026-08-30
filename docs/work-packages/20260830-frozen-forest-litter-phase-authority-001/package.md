@@ -1,6 +1,6 @@
 # Frozen forest-litter phase authority and implementation
 
-Status: `QUEUED — SCAFFOLDED`
+Status: `ACTIVE — AUTHORITY FREEZE`
 
 Execution mode: `contract-first package-end-to-end`
 
