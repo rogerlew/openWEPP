@@ -96,7 +96,13 @@ impl DirectPublicationDayInput {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectFrostLayerCarryProjection {
     pub layer_index: usize,
     pub fine_layer_count: usize,
@@ -399,8 +405,12 @@ impl DirectPublicationDayRow {
                 groundwater_deep_seepage_m3: terminal_groundwater_output.deep_seepage_m3,
             },
             transfer: DirectPublicationTransferOperands {
-                upstream_surface_mm: m_to_mm(day_frame.normalization.surface_transfer_m)?,
-                upstream_lateral_mm: m_to_mm(day_frame.normalization.lateral_transfer_m)?,
+                upstream_surface_mm: m_to_mm(
+                    day_frame.runon_carry_downstream_operands.runon_input_m,
+                )?,
+                upstream_lateral_mm: m_to_mm(
+                    day_frame.runon_carry_downstream_operands.subsurface_carry_m,
+                )?,
             },
             storage: precomputed.storage,
             water_temperature: precomputed.water_temperature,
@@ -629,18 +639,15 @@ fn direct_publication_peak_runoff_operands(
                 field: "publication.runoff.runoff_duration_s",
             });
         }
-        let peak_runoff_rate_m_s = peak_runoff.peak_runoff_rate_m_s * q_runoff_m
-            / peak_runoff.q_runoff_m;
+        let peak_runoff_rate_m_s =
+            peak_runoff.peak_runoff_rate_m_s * q_runoff_m / peak_runoff.q_runoff_m;
         validate_finite(
             "publication.runoff.basis_adjusted_peak_runoff_rate_m_s",
             peak_runoff_rate_m_s,
         )?;
         let peak_runoff_m3_s = peak_runoff_rate_m_s * area_m2;
         validate_finite("publication.runoff.peak_runoff_m3_s", peak_runoff_m3_s)?;
-        return Ok((
-            Some(peak_runoff_m3_s),
-            Some(peak_runoff.runoff_duration_s),
-        ));
+        return Ok((Some(peak_runoff_m3_s), Some(peak_runoff.runoff_duration_s)));
     }
     if q_runoff_m == 0.0 {
         return Ok((Some(0.0), Some(0.0)));
@@ -983,8 +990,7 @@ mod cqr_publication_tests {
             (Some(0.0), Some(0.0))
         );
         assert_eq!(
-            direct_publication_peak_runoff_operands(&day, 0.01, 1.0)
-                .expect("missing wet peak"),
+            direct_publication_peak_runoff_operands(&day, 0.01, 1.0).expect("missing wet peak"),
             (None, None)
         );
         day.peak_runoff_shadow_projection = Some(DirectPeakRunoffShadowProjection {
@@ -1006,9 +1012,7 @@ mod cqr_publication_tests {
             direct_publication_peak_runoff_operands(&day, 0.01, 200.0)
                 .expect("area-scaled public peak");
         assert!(
-            (peak_100_m3_s.expect("public peak") - (0.002 / 3_600.0) * 0.5 * 100.0)
-                .abs()
-                < 1.0e-15
+            (peak_100_m3_s.expect("public peak") - (0.002 / 3_600.0) * 0.5 * 100.0).abs() < 1.0e-15
         );
         assert_eq!(
             peak_200_m3_s.expect("public peak").to_bits(),
@@ -1047,8 +1051,8 @@ mod cqr_publication_tests {
         let stage3_outcome = DirectSnowStage3Outcome {
             enabled: true,
             meltwater_temperature_c: Some(
-            openwepp_unit_boundary::TemperatureCelsius::try_new(value_c)
-                .expect("finite snow temperature"),
+                openwepp_unit_boundary::TemperatureCelsius::try_new(value_c)
+                    .expect("finite snow temperature"),
             ),
             sublimation_m: 0.0,
         };
@@ -1188,8 +1192,12 @@ mod cqr_publication_tests {
                 |_, produced_day| {
                     let mut day = produced_day.clone();
                     day.normalization.precipitation_m = 0.011;
-                    day.normalization.surface_transfer_m = 0.009;
-                    day.normalization.lateral_transfer_m = 0.010;
+                    day.normalization.surface_transfer_m = 0.019;
+                    day.normalization.lateral_transfer_m = 0.020;
+                    day.runon_carry_downstream_operands = DirectRunonCarryDownstreamOperands {
+                        runon_input_m: 0.009,
+                        subsurface_carry_m: 0.010,
+                    };
                     day.liquid_input.liquid_input_m = 0.013;
                     day.interception_m = 0.002;
                     day.hydrology_projection.q_runoff_m = 0.004;
@@ -1243,6 +1251,18 @@ mod cqr_publication_tests {
         assert!((row.runoff.qofe_mm - 2.0).abs() < f64::EPSILON);
         assert!((row.runoff.runvol_m3 - 2.4).abs() < 1.0e-12);
         assert!((row.subsurface.latqcc_mm - 7.0).abs() < f64::EPSILON);
+        assert!((row.transfer.upstream_surface_mm - 9.0).abs() < f64::EPSILON);
+        assert!((row.transfer.upstream_lateral_mm - 10.0).abs() < f64::EPSILON);
+        assert_ne!(
+            row.transfer.upstream_surface_mm.to_bits(),
+            19.0_f64.to_bits(),
+            "normalization.surface_transfer_m is a rejected UpStrmQ alias",
+        );
+        assert_ne!(
+            row.transfer.upstream_lateral_mm.to_bits(),
+            20.0_f64.to_bits(),
+            "normalization.lateral_transfer_m is a rejected SubRIn alias",
+        );
         assert!((row.subsurface.sbrunv_m3 - 1.4).abs() < 1.0e-12);
         assert!((row.subsurface.groundwater_baseflow_mm - 15.0).abs() < f64::EPSILON);
         assert!((row.subsurface.groundwater_deep_seepage_mm - 25.0).abs() < f64::EPSILON);

@@ -2908,7 +2908,6 @@ impl Stage3AcceptedPublicationSupportV1 {
     }
 
     #[must_use]
-    #[cfg(test)]
     pub(crate) fn wb14_parameters(&self) -> &[DirectOfeWb14Parameters] {
         &self.wb14_parameters
     }

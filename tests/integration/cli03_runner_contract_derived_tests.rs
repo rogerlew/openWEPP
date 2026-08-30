@@ -1049,11 +1049,10 @@ fn assert_mf_multiofe_publication_wat_rows(wat_output: &Path) {
     assert_mf_multiofe_publication_not_cloned(&wat_rows[0..3]);
 }
 
-/// Local-length QOFE/Q ratios of the fixture (OFE 1/2/3). Pre-MOFEFID-B02 the
-/// published `QOFE` carried this local-length depth; post-B02 the published
-/// `QOFE == Q` (INV-RUNOFFPART-032) and the local-length runoff basis is
-/// internal, so the handoff is reconstructed as `Q * local_ratio`.
-const QOFE_LOCAL_LENGTH_RATIOS: [f64; 3] = [1.0, 2.5, 6.0];
+/// Destination-basis accepted `UpstreamRunon` depths for OFEs 2 and 3 in the
+/// M-F routed fixture. These values are frozen from the accepted receipt and
+/// routed-disposition reconstruction, independently of every public Q column.
+const MF_ACCEPTED_UPSTREAM_RUNON_MM: [f64; 2] = [144.710_274_008_372_32, 483.033_410_756_098_65];
 
 fn assert_mf_multiofe_publication_surface_handoff(day_rows: &[Row]) {
     assert_eq!(
@@ -1061,30 +1060,22 @@ fn assert_mf_multiofe_publication_surface_handoff(day_rows: &[Row]) {
         3,
         "M-F active routed-day fixture must expose one row per OFE"
     );
-    let upstream_to_downstream_area_ratios = [1.5, 2.0];
     for ofe_offset in 1..day_rows.len() {
-        // MOFEFID-B02: `UpStrmQ` (routed runon) still reflects the upstream
-        // OFE's LOCAL-length runoff depth, but the published `QOFE == Q` no
-        // longer carries it; reconstruct the local runoff from published `Q`
-        // and the known local-length ratio.
         let upstream_q = row_f64_value(&day_rows[ofe_offset - 1], "Q");
-        let upstream_local_runoff = upstream_q * QOFE_LOCAL_LENGTH_RATIOS[ofe_offset - 1];
         let downstream_upstrmq = row_f64_value(&day_rows[ofe_offset], "UpStrmQ");
-        let expected_downstream_upstrmq =
-            upstream_local_runoff * upstream_to_downstream_area_ratios[ofe_offset - 1];
+        let expected_downstream_upstrmq = MF_ACCEPTED_UPSTREAM_RUNON_MM[ofe_offset - 1];
         assert!(
-            upstream_q > 1.0e-9,
-            "M-F-REDO requires nonzero upstream Q on active handoff rows"
-        );
-        assert!(
-            downstream_upstrmq > 1.0e-9,
-            "M-F-REDO requires nonzero downstream UpStrmQ on active handoff rows"
+            expected_downstream_upstrmq > 1.0e-9 && downstream_upstrmq > 1.0e-9,
+            "M-F-REDO requires nonzero accepted and published downstream UpStrmQ"
         );
         assert!(
             (downstream_upstrmq - expected_downstream_upstrmq).abs() <= 1.0e-6,
-            "downstream UpStrmQ ({downstream_upstrmq}) must equal upstream local runoff (Q {upstream_q} * local ratio {}) scaled by area ratio {}",
-            QOFE_LOCAL_LENGTH_RATIOS[ofe_offset - 1],
-            upstream_to_downstream_area_ratios[ofe_offset - 1]
+            "downstream UpStrmQ ({downstream_upstrmq}) must equal independently reconstructed accepted destination-basis runon ({expected_downstream_upstrmq})",
+        );
+        assert_ne!(
+            downstream_upstrmq.to_bits(),
+            upstream_q.to_bits(),
+            "upstream public Q is a rejected downstream UpStrmQ alias",
         );
     }
 }

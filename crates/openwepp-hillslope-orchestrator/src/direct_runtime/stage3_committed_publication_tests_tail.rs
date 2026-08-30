@@ -499,3 +499,191 @@ fn support_liquid_publication_routes_source_runoff_and_destination_runon_once() 
         "destination enthalpy substitution must reject",
     );
 }
+
+#[test]
+fn accepted_runon_receipts_close_destination_basis_and_reject_adjacent_aliases() {
+    use crate::direct_runtime::{
+        DirectGroundIngressMode, DirectSurfaceLiquidConfiguration,
+        DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidOfeBinding,
+        DirectSurfaceLiquidParcelKind, DirectSurfaceLiquidParcelReceipt,
+        DirectSurfaceLiquidReceiptDisposition, DirectSurfaceLiquidReceiptRecipient,
+        DirectSurfaceLiquidStoreKey,
+    };
+    use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
+    use openwepp_land_surface_energy::{SourceId, SurfaceId};
+
+    let upstream_ofe = OfeId::try_new("upstream").expect("upstream OFE");
+    let destination_ofe = OfeId::try_new("destination").expect("destination OFE");
+    let upstream_tile = TileId::try_new("upstream-tile").expect("upstream tile");
+    let destination_tile = TileId::try_new("destination-tile").expect("destination tile");
+    let upstream_top = SoilLayerId::try_new("upstream-top").expect("upstream top layer");
+    let destination_top = SoilLayerId::try_new("destination-top").expect("destination top layer");
+    let store_key = |ofe_id: OfeId, tile_id: TileId, label: &str| DirectSurfaceLiquidStoreKey {
+        run_id: 77,
+        ofe_id,
+        tile_id,
+        surface_id: SurfaceId::try_new(format!("{label}-surface")).expect("surface"),
+        surface_class: SurfaceClass::BareMineralSoil,
+        source_type: WaterSourceType::SurfaceLiquid,
+        source_id: SourceId::try_new(format!("{label}-source")).expect("source"),
+    };
+    let upstream_key = store_key(upstream_ofe.clone(), upstream_tile, "upstream");
+    let destination_key = store_key(
+        destination_ofe.clone(),
+        destination_tile.clone(),
+        "destination",
+    );
+    let configuration = DirectSurfaceLiquidConfiguration::new(
+        ResourceOwnerId::try_new("hydrology").expect("owner"),
+        77,
+        vec![upstream_ofe.clone(), destination_ofe.clone()],
+        vec![
+            DirectSurfaceLiquidOfeBinding {
+                ofe_id: upstream_ofe.clone(),
+                production_lane_index: 0,
+                production_lane_id: 1,
+                ordered_soil_layer_ids: vec![upstream_top.clone()],
+                infiltration_soil_thermal_layer_id: upstream_top,
+            },
+            DirectSurfaceLiquidOfeBinding {
+                ofe_id: destination_ofe.clone(),
+                production_lane_index: 1,
+                production_lane_id: 2,
+                ordered_soil_layer_ids: vec![destination_top.clone()],
+                infiltration_soil_thermal_layer_id: destination_top,
+            },
+        ],
+        vec![
+            DirectSurfaceLiquidConfigurationRecord {
+                key: upstream_key.clone(),
+                tile_fraction: 1.0,
+                capacity_kg_m2_tile: 4.0,
+                ofe_area_m2: 100.0,
+                ground_ingress_mode: DirectGroundIngressMode::OpenRawPrecipitation,
+                runon_destination_ofe_id: Some(destination_ofe.clone()),
+                runon_destination_tile_id: Some(destination_tile),
+            },
+            DirectSurfaceLiquidConfigurationRecord {
+                key: destination_key.clone(),
+                tile_fraction: 1.0,
+                capacity_kg_m2_tile: 4.0,
+                ofe_area_m2: 200.0,
+                ground_ingress_mode: DirectGroundIngressMode::OpenRawPrecipitation,
+                runon_destination_ofe_id: None,
+                runon_destination_tile_id: None,
+            },
+        ],
+    )
+    .expect("destination configuration");
+    let receipt =
+        |kind,
+         disposition,
+         id: &str,
+         source_id: &str,
+         basis_ofe_id: OfeId,
+         origin_store_key: DirectSurfaceLiquidStoreKey,
+         recipient: DirectSurfaceLiquidReceiptRecipient,
+         mass_kg_m2_basis_ofe_ground| DirectSurfaceLiquidParcelReceipt {
+            parcel_id: id.to_owned(),
+            source_parcel_id: source_id.to_owned(),
+            transaction_id: TransactionId(77),
+            origin_store_key,
+            recipient_store_key: destination_key.clone(),
+            recipient,
+            basis_ofe_id,
+            kind,
+            disposition,
+            start_s: 0.0,
+            end_s: 60.0,
+            mass_kg_m2_basis_ofe_ground,
+            temperature_k: 280.0,
+            enthalpy_j_m2_basis_ofe_ground: mass_kg_m2_basis_ofe_ground * 28_623.16,
+        };
+    let receipts = vec![
+        receipt(
+            DirectSurfaceLiquidParcelKind::RawPrecipitation,
+            DirectSurfaceLiquidReceiptDisposition::RoutedRunoff,
+            "accepted-sent",
+            "accepted-route-source",
+            upstream_ofe.clone(),
+            upstream_key,
+            DirectSurfaceLiquidReceiptRecipient::RoutedOfe {
+                source_ofe_id: upstream_ofe,
+                destination_ofe_id: destination_ofe.clone(),
+                destination_store_key: destination_key.clone(),
+            },
+            4.0,
+        ),
+        receipt(
+            DirectSurfaceLiquidParcelKind::UpstreamRunon,
+            DirectSurfaceLiquidReceiptDisposition::RetainedSurface,
+            "accepted-received",
+            "accepted-route-source",
+            destination_ofe.clone(),
+            destination_key.clone(),
+            DirectSurfaceLiquidReceiptRecipient::SurfaceStore {
+                store_key: destination_key.clone(),
+            },
+            2.0,
+        ),
+        receipt(
+            DirectSurfaceLiquidParcelKind::RawPrecipitation,
+            DirectSurfaceLiquidReceiptDisposition::RetainedSurface,
+            "accepted-local",
+            "accepted-local-source",
+            destination_ofe.clone(),
+            destination_key.clone(),
+            DirectSurfaceLiquidReceiptRecipient::SurfaceStore {
+                store_key: destination_key.clone(),
+            },
+            3.0,
+        ),
+    ];
+    let projection = accepted_runon_receipt_components(&receipts, &destination_ofe, &configuration)
+        .expect("sealed accepted source projection");
+
+    assert!((projection.local_liquid_m - 0.003).abs() < 1.0e-15);
+    assert!((projection.upstream_runon_m - 0.002).abs() < 1.0e-15);
+    assert!((projection.sent_volume_m3 - 0.4).abs() < 1.0e-15);
+    assert!((projection.sent_volume_m3 - projection.received_volume_m3).abs() < 1.0e-15,);
+    assert_ne!(
+        projection.upstream_runon_m.to_bits(),
+        (projection.local_liquid_m + projection.upstream_runon_m).to_bits(),
+        "total accepted ingress must not be mislabeled UpStrmQ",
+    );
+    assert_ne!(
+        projection.upstream_runon_m.to_bits(),
+        projection.local_liquid_m.to_bits(),
+        "local liquid must not substitute for accepted UpStrmQ",
+    );
+}
+
+#[test]
+fn accepted_wat5_hyetograph_preserves_overlapping_segment_shape_and_magnitude() {
+    let segments = [
+        AcceptedWat5RainSegmentV1 {
+            start_s: 0.0,
+            end_s: 600.0,
+            depth_m: 0.003,
+        },
+        AcceptedWat5RainSegmentV1 {
+            start_s: 300.0,
+            end_s: 600.0,
+            depth_m: 0.001,
+        },
+    ];
+    let hyetograph =
+        accepted_wat5_piecewise_hyetograph(&segments).expect("accepted WAT5 source shape");
+    assert_eq!(hyetograph.len(), 2);
+    assert!(hyetograph[1].intensity_m_s > hyetograph[0].intensity_m_s);
+    let reconstructed_m = hyetograph
+        .iter()
+        .map(|interval| interval.intensity_m_s * (interval.end_s - interval.start_s))
+        .sum::<f64>();
+    assert!((reconstructed_m - 0.004).abs() < 1.0e-15);
+    assert_ne!(
+        hyetograph[0].intensity_m_s.to_bits(),
+        (0.004_f64 / 600.0).to_bits(),
+        "uniform daily-depth timing is a rejected WAT5 alias",
+    );
+}

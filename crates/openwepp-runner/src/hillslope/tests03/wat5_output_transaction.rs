@@ -45,8 +45,14 @@ fn wat5_day_two_source_failure_publishes_no_partial_output_set() {
         ),
     )
     .expect_err("day-two untimed melt must fail WAT5");
-    assert!(error.to_string().contains("lane 1 day 1"));
-    assert!(error.to_string().contains("WAT5-E-001"));
+    assert!(
+        error.to_string().contains("lane 1 day 1"),
+        "unexpected failure before the day-two WAT5 source guard: {error}",
+    );
+    assert!(
+        error.to_string().contains("WAT5-E-001"),
+        "day-two failure did not reach WAT5-E-001: {error}",
+    );
     for path in [
         "H61.hbp",
         "H61.loss.json",

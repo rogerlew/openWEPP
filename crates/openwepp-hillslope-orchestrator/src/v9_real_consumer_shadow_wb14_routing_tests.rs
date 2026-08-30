@@ -83,6 +83,7 @@ fn two_lane_stage3_endpoint_fixture() -> EndpointFixture {
 fn exercise_complete_owner_two_ofe_child_routes_upstream_runoff_as_downstream_runon() {
     let (shadow, fixture) = v10_shadow_fixture_from(two_ofe_routed_endpoint_fixture());
     let shadow = open_only_complete_owner_shadow(shadow);
+    let lower_ofe = OfeId::try_new("ofe-2").expect("lower OFE");
     let mut interval = day_input(&fixture).intervals.remove(0);
     interval.wb14_parameters[0].effective_conductivity_m_s = 1.0e-10;
     interval.wb14_parameters[0].infiltration_storage_capacity_m = 1.0e-8;
@@ -227,6 +228,56 @@ fn exercise_complete_owner_two_ofe_child_routes_upstream_runoff_as_downstream_ru
     assert_eq!(accepted.lse_forcing(), &interval.lse_forcing);
     assert_eq!(accepted.vegetation_forcing(), &interval.vegetation_forcing);
     assert_eq!(accepted.wb14_parameters(), interval.wb14_parameters);
+    let accepted_runon_m = accepted
+        .ingress_receipts()
+        .iter()
+        .filter(|receipt| {
+            receipt.basis_ofe_id == lower_ofe
+                && receipt.kind
+                    == crate::direct_runtime::DirectSurfaceLiquidParcelKind::UpstreamRunon
+        })
+        .map(|receipt| receipt.mass_kg_m2_basis_ofe_ground / 1_000.0)
+        .sum::<f64>();
+    let accepted_local_m = accepted
+        .ingress_receipts()
+        .iter()
+        .filter(|receipt| {
+            receipt.basis_ofe_id == lower_ofe
+                && receipt.kind
+                    != crate::direct_runtime::DirectSurfaceLiquidParcelKind::UpstreamRunon
+        })
+        .map(|receipt| receipt.mass_kg_m2_basis_ofe_ground / 1_000.0)
+        .sum::<f64>();
+    let sent_volume_m3 = accepted
+        .ingress_receipts()
+        .iter()
+        .filter(|receipt| {
+            receipt.disposition
+                == crate::direct_runtime::DirectSurfaceLiquidReceiptDisposition::RoutedRunoff
+                && matches!(
+                    &receipt.recipient,
+                    crate::direct_runtime::DirectSurfaceLiquidReceiptRecipient::RoutedOfe {
+                        destination_ofe_id,
+                        ..
+                    } if destination_ofe_id == &lower_ofe
+                )
+        })
+        .map(|receipt| receipt.mass_kg_m2_basis_ofe_ground / 1_000.0 * 100.0)
+        .sum::<f64>();
+    let received_volume_m3 = accepted_runon_m * 200.0;
+    assert!(
+        accepted_runon_m > 0.0,
+        "real accepted child must retain nonzero destination-basis runon",
+    );
+    assert!(
+        (sent_volume_m3 - received_volume_m3).abs() <= 1.0e-12,
+        "sealed routed send and destination receipt must close independently",
+    );
+    assert_ne!(
+        accepted_runon_m.to_bits(),
+        accepted_local_m.to_bits(),
+        "accepted local liquid is a rejected UpStrmQ alias",
+    );
     let duplicate = accepted.clone();
     let shared_clone = ending.clone();
     let forced_deep_clone = {
@@ -267,8 +318,7 @@ fn exercise_complete_owner_two_ofe_child_routes_upstream_runoff_as_downstream_ru
     let mut wb14_poison = ending.accepted_publication_supports();
     let mut poisoned_replay = wb14_poison[0].wb14_child_replay.materialize();
     poisoned_replay[0] ^= 1;
-    wb14_poison[0].wb14_child_replay =
-        PersistentCanonicalWb14ReplayV1::from_bytes(poisoned_replay);
+    wb14_poison[0].wb14_child_replay = PersistentCanonicalWb14ReplayV1::from_bytes(poisoned_replay);
     assert!(
         poisoned
             .restore_accepted_publication_supports(wb14_poison)
