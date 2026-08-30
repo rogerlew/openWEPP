@@ -26,12 +26,13 @@ use crate::{
     RequestingComponent, SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG,
     SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256, Sha256Digest, SoilThermalAcceptedEnergyOperandV2,
     SoilThermalEnergyCreditReceiptV2, SoilThermalExactCarryError, SoilThermalLayerEnergyCreditV2,
-    SoilThermalOwnerEnvelopeV2, SoilThermalSnapshot, SolveIdentity, SolvePass, SourceId,
-    SourceWaterCap, Stage3SnowOpticalBoundaryReceiptV1, StandGroundWaterAmountBasis, StepNorms,
-    SurfaceClass, SurfaceClassKind, SurfaceEnergyOperands, SurfaceId, TileState,
-    VEGETATION_MODEL_DEFINITION_SHA256, VEGETATION_MODEL_VERSION, WaterAmount, WaterAuthorization,
-    WaterProtocol, WaterSourceType, canonical_digest, evaluate_covered_column,
-    evaluate_open_surface, liquid_enthalpy_j_kg, solve_covered_column, solve_open_surface,
+    SoilThermalOwnerEnvelopeV2, SoilThermalSnapshot, SoilThermalTemperatureProjectionV2,
+    SolveIdentity, SolvePass, SourceId, SourceWaterCap, Stage3SnowOpticalBoundaryReceiptV1,
+    StandGroundWaterAmountBasis, StepNorms, SurfaceClass, SurfaceClassKind, SurfaceEnergyOperands,
+    SurfaceId, TileState, VEGETATION_MODEL_DEFINITION_SHA256, VEGETATION_MODEL_VERSION,
+    WaterAmount, WaterAuthorization, WaterProtocol, WaterSourceType, canonical_digest,
+    evaluate_covered_column, evaluate_open_surface, liquid_enthalpy_j_kg, solve_covered_column,
+    solve_open_surface,
     solver::{covered_failure_residuals, open_failure_residuals},
     validate_ground_heat_join, validate_latent_join, validate_surface_energy,
 };
@@ -2769,10 +2770,30 @@ pub struct SoilThermalExactCarryCandidateV2 {
     pub credit_receipt: SoilThermalEnergyCreditReceiptV2,
 }
 
-pub fn apply_soil_thermal_energy_credit_v2(
+fn unique_temperature_projection<'a>(
+    projections: &'a [SoilThermalTemperatureProjectionV2],
+    ofe_id: &OfeId,
+    layer_id: &SoilLayerId,
+) -> Result<&'a SoilThermalTemperatureProjectionV2, SoilThermalExactCarryError> {
+    let mut matches = projections
+        .iter()
+        .filter(|row| &row.ofe_id == ofe_id && &row.layer_id == layer_id);
+    let projection = matches
+        .next()
+        .ok_or(SoilThermalExactCarryError::Cardinality(
+            "missing layer temperature projection",
+        ))?;
+    if matches.next().is_some() {
+        return Err(SoilThermalExactCarryError::Cardinality(
+            "duplicate layer temperature projection",
+        ));
+    }
+    Ok(projection)
+}
+
+fn validate_exact_carry_predecessor(
     beginning: &SoilThermalOwnerEnvelopeV2,
-    accepted_operands: &[SoilThermalAcceptedEnergyOperandV2],
-) -> Result<SoilThermalExactCarryCandidateV2, SoilThermalExactCarryError> {
+) -> Result<(), SoilThermalExactCarryError> {
     beginning.validate()?;
     if beginning.state.last_accepted_transaction_id != beginning.expected_predecessor_transaction_id
         || beginning.expected_predecessor_transaction_id == Some(beginning.transaction_id)
@@ -2781,11 +2802,25 @@ pub fn apply_soil_thermal_energy_credit_v2(
             "stale or replayed V2 predecessor",
         ));
     }
+    Ok(())
+}
+
+pub fn apply_soil_thermal_energy_credit_v2(
+    beginning: &SoilThermalOwnerEnvelopeV2,
+    accepted_operands: &[SoilThermalAcceptedEnergyOperandV2],
+    temperature_projections: &[SoilThermalTemperatureProjectionV2],
+) -> Result<SoilThermalExactCarryCandidateV2, SoilThermalExactCarryError> {
+    validate_exact_carry_predecessor(beginning)?;
 
     let mut ending = beginning.clone();
     let mut layer_credits = Vec::new();
     for ofe in &beginning.state.ofes {
         for layer in &ofe.ordered_layers {
+            let projection = unique_temperature_projection(
+                temperature_projections,
+                &ofe.ofe_id,
+                &layer.layer_id,
+            )?;
             let layer_operands: Vec<_> = accepted_operands
                 .iter()
                 .filter(|operand| {
@@ -2815,14 +2850,18 @@ pub fn apply_soil_thermal_energy_credit_v2(
             )?;
             ending_layer.enthalpy_hi_j_m2_ofe_ground = high;
             ending_layer.enthalpy_carry = carry.clone();
+            ending_layer.temperature_k = projection.ending_temperature_k;
             ending_layer.last_accepted_transaction_id = Some(beginning.transaction_id);
             layer_credits.push(SoilThermalLayerEnergyCreditV2 {
                 ofe_id: ofe.ofe_id.clone(),
                 layer_id: layer.layer_id.clone(),
                 beginning_enthalpy_hi_j_m2_ofe_ground: layer.enthalpy_hi_j_m2_ofe_ground,
                 beginning_enthalpy_carry: layer.enthalpy_carry.clone(),
+                beginning_temperature_k: layer.temperature_k,
                 ending_enthalpy_hi_j_m2_ofe_ground: high,
                 ending_enthalpy_carry: carry,
+                ending_temperature_k: projection.ending_temperature_k,
+                heat_capacity_j_m2_k: projection.heat_capacity_j_m2_k,
                 accepted_operands: layer_operands,
             });
         }
@@ -2858,7 +2897,12 @@ pub fn apply_soil_thermal_energy_credit_v2(
     };
     receipt.reseal()?;
     ending.receipt_chain_sha256 = receipt.receipt_sha256.clone();
-    receipt.validate_independent(beginning, &ending, accepted_operands)?;
+    receipt.validate_independent(
+        beginning,
+        &ending,
+        accepted_operands,
+        temperature_projections,
+    )?;
     Ok(SoilThermalExactCarryCandidateV2 {
         ending_owner: ending,
         credit_receipt: receipt,

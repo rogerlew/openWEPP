@@ -12,9 +12,9 @@ use crate::{
 };
 
 pub const SOIL_THERMAL_OWNER_V2_TAG: &str = "OPENWEPP_SOIL_THERMAL_OWNER_V2";
-pub const SOIL_THERMAL_OWNER_V2_SCHEMA_CANONICAL: &str = "OPENWEPP_SOIL_THERMAL_OWNER_V2|contract_version=15|owner_tag|schema_sha256|exact_carry_definition_sha256|parent_v1_state_sha256|model_version|model_definition_sha256|run_id|transaction_id|expected_predecessor_transaction_id|support_start_ns|support_end_ns|receipt_chain_sha256|state(owner_id,configuration_sha256,state_sha256,last_accepted_transaction_id,ordered_ofes(ofe_id,ordered_layers(layer_id,temperature_k_bits,enthalpy_hi_bits,enthalpy_carry,last_accepted_transaction_id)))";
+pub const SOIL_THERMAL_OWNER_V2_SCHEMA_CANONICAL: &str = "OPENWEPP_SOIL_THERMAL_OWNER_V2|contract_version=15|owner_tag|schema_sha256|exact_carry_definition_sha256|parent_v1_state_sha256|model_version|model_definition_sha256|run_id|transaction_id|expected_predecessor_transaction_id|support_start_ns|support_end_ns|receipt_chain_sha256|state(owner_id,configuration_sha256,state_sha256,last_accepted_transaction_id,ordered_ofes(ofe_id,ordered_layers(layer_id,temperature_k_bits,enthalpy_hi_bits,enthalpy_carry,last_accepted_transaction_id)))|credit_layer(beginning_temperature_k_bits,ending_temperature_k_bits,heat_capacity_j_m2_k_bits,beginning_HR,ending_HR,ordered_Q)|temperature_projection=round_nearest_even(T_begin+(E_end-E_begin)/C)";
 pub const SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256: &str =
-    "e9b9e7f181e0abf1d28fd7e4a3b15f6c00158781acd7d3d0f9a5b5559eb4d09c";
+    "7877f2a227b0fa98c0c92ae2fb7397744857555fc2f2f77d91a6de327ca88be4";
 pub const EXACT_DYADIC_ENTHALPY_V1_DEFINITION_CANONICAL: &str = "OPENWEPP_EXACT_DYADIC_ENTHALPY_V1|value=sign*coefficient*2^exponent2|zero=(0,0,0)|nonzero_sign=-1_or_1|coefficient=lowercase_positive_odd_hex_no_leading_zero|exponent2=i32|binary64=round_nearest_ties_even|overflow=refuse";
 pub const EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256: &str =
     "7ceb6e80567a05625b0ac7c33fc8c48ac9a776bab8f9863e02e5a87696714014";

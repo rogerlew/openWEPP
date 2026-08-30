@@ -220,6 +220,43 @@ impl ExactDyadicEnthalpy {
     }
 }
 
+/// Correctly rounded projection of the unchanged layer equation
+/// `T_end = T_begin + (E_end - E_begin) / C`.
+pub fn project_soil_temperature_k(
+    beginning_temperature_k: f64,
+    heat_capacity_j_m2_k: f64,
+    beginning_enthalpy_hi_j_m2_ofe_ground: f64,
+    beginning_enthalpy_carry: &ExactDyadicEnthalpy,
+    ending_enthalpy_hi_j_m2_ofe_ground: f64,
+    ending_enthalpy_carry: &ExactDyadicEnthalpy,
+) -> Result<f64, SoilThermalExactCarryError> {
+    if !beginning_temperature_k.is_finite()
+        || !(200.0..=350.0).contains(&beginning_temperature_k)
+        || !heat_capacity_j_m2_k.is_finite()
+        || heat_capacity_j_m2_k <= 0.0
+    {
+        return Err(SoilThermalExactCarryError::Domain(
+            "soil temperature projection input",
+        ));
+    }
+    let beginning_energy = Dyadic::from_f64(beginning_enthalpy_hi_j_m2_ofe_ground)?
+        .add(&Dyadic::from_wire(beginning_enthalpy_carry)?);
+    let ending_energy = Dyadic::from_f64(ending_enthalpy_hi_j_m2_ofe_ground)?
+        .add(&Dyadic::from_wire(ending_enthalpy_carry)?);
+    let energy_delta = ending_energy.add(&beginning_energy.negated());
+    let capacity = Dyadic::from_f64(heat_capacity_j_m2_k)?;
+    let numerator = Dyadic::from_f64(beginning_temperature_k)?
+        .multiply(&capacity)
+        .add(&energy_delta);
+    let projected = round_dyadic_ratio_to_f64(&numerator, &capacity)?;
+    if !(200.0..=350.0).contains(&projected) {
+        return Err(SoilThermalExactCarryError::Domain(
+            "projected soil temperature bounds",
+        ));
+    }
+    Ok(projected)
+}
+
 pub const SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG: &str =
     "OPENWEPP_SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2";
 
@@ -245,6 +282,16 @@ pub struct SoilThermalAcceptedEnergyOperandV2 {
     pub energy_j_m2_ofe_ground: f64,
 }
 
+/// Solver-authoritative temperature projection bound to unchanged heat capacity.
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SoilThermalTemperatureProjectionV2 {
+    pub ofe_id: OfeId,
+    pub layer_id: SoilLayerId,
+    pub heat_capacity_j_m2_k: f64,
+    pub ending_temperature_k: f64,
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct SoilThermalLayerEnergyCreditV2 {
@@ -252,8 +299,11 @@ pub struct SoilThermalLayerEnergyCreditV2 {
     pub layer_id: SoilLayerId,
     pub beginning_enthalpy_hi_j_m2_ofe_ground: f64,
     pub beginning_enthalpy_carry: ExactDyadicEnthalpy,
+    pub beginning_temperature_k: f64,
     pub ending_enthalpy_hi_j_m2_ofe_ground: f64,
     pub ending_enthalpy_carry: ExactDyadicEnthalpy,
+    pub ending_temperature_k: f64,
+    pub heat_capacity_j_m2_k: f64,
     pub accepted_operands: Vec<SoilThermalAcceptedEnergyOperandV2>,
 }
 
@@ -337,6 +387,7 @@ impl SoilThermalEnergyCreditReceiptV2 {
         beginning: &SoilThermalOwnerEnvelopeV2,
         ending: &SoilThermalOwnerEnvelopeV2,
         expected_operands: &[SoilThermalAcceptedEnergyOperandV2],
+        expected_temperature_projections: &[SoilThermalTemperatureProjectionV2],
     ) -> Result<(), SoilThermalExactCarryError> {
         beginning.validate()?;
         ending.validate()?;
@@ -390,6 +441,21 @@ impl SoilThermalEnergyCreditReceiptV2 {
                 "accepted operand omission, duplication, reorder, or substitution",
             ));
         }
+        let bound_projections: Vec<_> = self
+            .layer_credits
+            .iter()
+            .map(|credit| SoilThermalTemperatureProjectionV2 {
+                ofe_id: credit.ofe_id.clone(),
+                layer_id: credit.layer_id.clone(),
+                heat_capacity_j_m2_k: credit.heat_capacity_j_m2_k,
+                ending_temperature_k: credit.ending_temperature_k,
+            })
+            .collect();
+        if bound_projections != expected_temperature_projections {
+            return Err(SoilThermalExactCarryError::Receipt(
+                "temperature projection omission, reorder, or substitution",
+            ));
+        }
         let mut all_debit_identities = std::collections::BTreeSet::new();
         if flattened.iter().any(|operand| {
             !all_debit_identities.insert(operand.debit_credit_identity_sha256.clone())
@@ -437,7 +503,6 @@ impl SoilThermalEnergyCreditReceiptV2 {
                     .layer(&ofe.ofe_id, &layer.layer_id)
                     .ok_or(SoilThermalExactCarryError::Identity("ending layer"))?;
                 if ordered_ending_layer.layer_id != layer.layer_id
-                    || ordered_ending_layer.temperature_k.to_bits() != layer.temperature_k.to_bits()
                     || ordered_ending_layer.last_accepted_transaction_id
                         != Some(beginning.transaction_id)
                     || credit.ofe_id != ofe.ofe_id
@@ -445,9 +510,13 @@ impl SoilThermalEnergyCreditReceiptV2 {
                     || credit.beginning_enthalpy_hi_j_m2_ofe_ground.to_bits()
                         != layer.enthalpy_hi_j_m2_ofe_ground.to_bits()
                     || credit.beginning_enthalpy_carry != layer.enthalpy_carry
+                    || credit.beginning_temperature_k.to_bits() != layer.temperature_k.to_bits()
                     || credit.ending_enthalpy_hi_j_m2_ofe_ground.to_bits()
                         != ending_layer.enthalpy_hi_j_m2_ofe_ground.to_bits()
                     || credit.ending_enthalpy_carry != ending_layer.enthalpy_carry
+                    || credit.ending_temperature_k.to_bits() != ending_layer.temperature_k.to_bits()
+                    || !credit.heat_capacity_j_m2_k.is_finite()
+                    || credit.heat_capacity_j_m2_k <= 0.0
                 {
                     return Err(SoilThermalExactCarryError::Identity(
                         "layer beginning/ending credit binding",
@@ -482,6 +551,17 @@ impl SoilThermalEnergyCreditReceiptV2 {
                     &carry,
                 ])?;
                 if reconstructed != total {
+                    return Err(SoilThermalExactCarryError::Reconstruction);
+                }
+                let projected_temperature = project_soil_temperature_k(
+                    layer.temperature_k,
+                    credit.heat_capacity_j_m2_k,
+                    layer.enthalpy_hi_j_m2_ofe_ground,
+                    &layer.enthalpy_carry,
+                    ending_layer.enthalpy_hi_j_m2_ofe_ground,
+                    &ending_layer.enthalpy_carry,
+                )?;
+                if projected_temperature.to_bits() != ending_layer.temperature_k.to_bits() {
                     return Err(SoilThermalExactCarryError::Reconstruction);
                 }
             }
@@ -648,6 +728,42 @@ impl BigUint {
         Self { limbs: result }
     }
 
+    fn multiply(&self, other: &Self) -> Self {
+        if self.is_zero() || other.is_zero() {
+            return Self::zero();
+        }
+        let mut result = vec![0_u64; self.limbs.len() + other.limbs.len()];
+        for (left_index, left) in self.limbs.iter().enumerate() {
+            let mut carry = 0_u128;
+            for (right_index, right) in other.limbs.iter().enumerate() {
+                let index = left_index + right_index;
+                let product =
+                    u128::from(*left) * u128::from(*right) + u128::from(result[index]) + carry;
+                let bytes = product.to_le_bytes();
+                result[index] = u64::from_le_bytes([
+                    bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
+                ]);
+                carry = product >> 64;
+            }
+            let mut index = left_index + other.limbs.len();
+            while carry != 0 {
+                let sum = u128::from(result[index]) + carry;
+                let bytes = sum.to_le_bytes();
+                result[index] = u64::from_le_bytes([
+                    bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
+                ]);
+                carry = sum >> 64;
+                index += 1;
+                if index == result.len() && carry != 0 {
+                    result.push(0);
+                }
+            }
+        }
+        let mut result = Self { limbs: result };
+        result.normalize();
+        result
+    }
+
     fn sub(&self, other: &Self) -> Self {
         debug_assert!(self.cmp_magnitude(other) != Ordering::Less);
         let mut result = Vec::with_capacity(self.limbs.len());
@@ -724,6 +840,31 @@ impl BigUint {
             }
         }
         self.limbs.push(1);
+    }
+
+    fn set_bit(&mut self, index: usize) {
+        let limb_index = index / 64;
+        self.limbs.resize(limb_index + 1, 0);
+        self.limbs[limb_index] |= 1_u64 << (index % 64);
+    }
+
+    fn div_rem(&self, divisor: &Self) -> (Self, Self) {
+        debug_assert!(!divisor.is_zero());
+        if self.cmp_magnitude(divisor) == Ordering::Less {
+            return (Self::zero(), self.clone());
+        }
+        let shift = self.bit_len() - divisor.bit_len();
+        let mut shifted_divisor = divisor.shl(shift);
+        let mut remainder = self.clone();
+        let mut quotient = Self::zero();
+        for bit in (0..=shift).rev() {
+            if remainder.cmp_magnitude(&shifted_divisor) != Ordering::Less {
+                remainder = remainder.sub(&shifted_divisor);
+                quotient.set_bit(bit);
+            }
+            shifted_divisor = shifted_divisor.shr(1);
+        }
+        (quotient, remainder)
     }
 
     fn to_u64(&self) -> Option<u64> {
@@ -836,6 +977,23 @@ impl Dyadic {
         }
     }
 
+    fn negated(&self) -> Self {
+        let mut result = self.clone();
+        result.sign = -result.sign;
+        result
+    }
+
+    fn multiply(&self, other: &Self) -> Self {
+        if self.sign == 0 || other.sign == 0 {
+            return Self::zero();
+        }
+        Self::normalized(
+            self.sign * other.sign,
+            self.coefficient.multiply(&other.coefficient),
+            self.exponent2.saturating_add(other.exponent2),
+        )
+    }
+
     fn rounded_integer_at(&self, unit_exponent: i32) -> BigUint {
         if self.exponent2 >= unit_exponent {
             return self
@@ -895,6 +1053,109 @@ impl Dyadic {
         let fraction = significand - (1_u64 << 52);
         Ok(f64::from_bits(sign_bit | (exponent_bits << 52) | fraction))
     }
+}
+
+fn compare_ratio_to_power_of_two(
+    numerator: &BigUint,
+    denominator: &BigUint,
+    ratio_exponent2: i32,
+    power_exponent2: i64,
+) -> Ordering {
+    let shift = i64::from(ratio_exponent2) - power_exponent2;
+    if shift >= 0 {
+        numerator
+            .shl(usize::try_from(shift).unwrap_or(usize::MAX))
+            .cmp_magnitude(denominator)
+    } else {
+        numerator.cmp_magnitude(&denominator.shl(usize::try_from(-shift).unwrap_or(usize::MAX)))
+    }
+}
+
+fn round_dyadic_ratio_to_f64(
+    numerator: &Dyadic,
+    denominator: &Dyadic,
+) -> Result<f64, ExactDyadicEnthalpyError> {
+    if denominator.sign <= 0 {
+        return Err(ExactDyadicEnthalpyError::NonCanonicalWire(
+            "ratio denominator must be positive",
+        ));
+    }
+    if numerator.sign == 0 {
+        return Ok(0.0);
+    }
+    let ratio_exponent2 = numerator.exponent2.saturating_sub(denominator.exponent2);
+    let tentative_exponent = i64::try_from(numerator.coefficient.bit_len())
+        .map_err(|_| ExactDyadicEnthalpyError::ExponentOutOfRange)?
+        - i64::try_from(denominator.coefficient.bit_len())
+            .map_err(|_| ExactDyadicEnthalpyError::ExponentOutOfRange)?
+        + i64::from(ratio_exponent2);
+    let top_exponent = if compare_ratio_to_power_of_two(
+        &numerator.coefficient,
+        &denominator.coefficient,
+        ratio_exponent2,
+        tentative_exponent,
+    ) == Ordering::Less
+    {
+        tentative_exponent - 1
+    } else {
+        tentative_exponent
+    };
+    if top_exponent > 1023 {
+        return Err(ExactDyadicEnthalpyError::Binary64Overflow);
+    }
+    let unit_exponent = if top_exponent < -1022 {
+        -1074_i64
+    } else {
+        top_exponent - 52
+    };
+    let scale_shift = i64::from(ratio_exponent2) - unit_exponent;
+    let (dividend, divisor) = if scale_shift >= 0 {
+        (
+            numerator
+                .coefficient
+                .shl(usize::try_from(scale_shift).unwrap_or(usize::MAX)),
+            denominator.coefficient.clone(),
+        )
+    } else {
+        (
+            numerator.coefficient.clone(),
+            denominator
+                .coefficient
+                .shl(usize::try_from(-scale_shift).unwrap_or(usize::MAX)),
+        )
+    };
+    let (mut quotient, remainder) = dividend.div_rem(&divisor);
+    let doubled_remainder = remainder.shl(1);
+    let remainder_order = doubled_remainder.cmp_magnitude(&divisor);
+    if remainder_order == Ordering::Greater
+        || remainder_order == Ordering::Equal && quotient.is_odd()
+    {
+        quotient.add_one();
+    }
+    let mut significand = quotient
+        .to_u64()
+        .ok_or(ExactDyadicEnthalpyError::Binary64Overflow)?;
+    let sign_bit = if numerator.sign < 0 { 1_u64 << 63 } else { 0 };
+    if top_exponent < -1022 {
+        if significand > 1_u64 << 52 {
+            return Err(ExactDyadicEnthalpyError::Binary64Overflow);
+        }
+        return Ok(f64::from_bits(sign_bit | significand));
+    }
+    let mut binary_exponent =
+        i32::try_from(top_exponent).map_err(|_| ExactDyadicEnthalpyError::ExponentOutOfRange)?;
+    if significand == 1_u64 << 53 {
+        significand = 1_u64 << 52;
+        binary_exponent += 1;
+    }
+    if binary_exponent > 1023 {
+        return Err(ExactDyadicEnthalpyError::Binary64Overflow);
+    }
+    let exponent_bits = u64::try_from(binary_exponent + 1023)
+        .map_err(|_| ExactDyadicEnthalpyError::ExponentOutOfRange)?;
+    Ok(f64::from_bits(
+        sign_bit | (exponent_bits << 52) | (significand - (1_u64 << 52)),
+    ))
 }
 
 #[cfg(test)]
@@ -969,6 +1230,17 @@ mod tests {
             crossing.round_to_f64().expect("round"),
             f64::from_bits(1.0_f64.to_bits() + 1)
         );
+
+        let one_third_projection = project_soil_temperature_k(
+            273.15,
+            3.0,
+            0.0,
+            &ExactDyadicEnthalpy::zero(),
+            1.0,
+            &ExactDyadicEnthalpy::zero(),
+        )
+        .expect("exact rational projection");
+        assert_eq!(one_third_projection.to_bits(), 0x4071_17bb_bbbb_bbbb);
     }
 
     #[test]
@@ -1123,6 +1395,18 @@ mod tests {
         }
     }
 
+    fn temperature_projection(
+        heat_capacity_j_m2_k: f64,
+        ending_temperature_k: f64,
+    ) -> SoilThermalTemperatureProjectionV2 {
+        SoilThermalTemperatureProjectionV2 {
+            ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+            layer_id: SoilLayerId::try_new("layer-1").expect("layer"),
+            heat_capacity_j_m2_k,
+            ending_temperature_k,
+        }
+    }
+
     #[test]
     fn v1_bytes_are_frozen_and_migration_is_zero_carry_with_no_downgrade() {
         let v1 = v1_snapshot();
@@ -1177,12 +1461,16 @@ mod tests {
             -8.0670339832330148e-19,
             'f',
         );
-        let candidate =
-            apply_soil_thermal_energy_credit_v2(&beginning, std::slice::from_ref(&wat5))
-                .expect("WAT5 candidate");
+        let projection = temperature_projection(2_000.0, 273.15);
+        let candidate = apply_soil_thermal_energy_credit_v2(
+            &beginning,
+            std::slice::from_ref(&wat5),
+            std::slice::from_ref(&projection),
+        )
+        .expect("WAT5 candidate");
         candidate
             .credit_receipt
-            .validate_independent(&beginning, &candidate.ending_owner, &[wat5])
+            .validate_independent(&beginning, &candidate.ending_owner, &[wat5], &[projection])
             .expect("independent receipt reconstruction");
         let layer = &candidate.ending_owner.state.ofes[0].ordered_layers[0];
         assert_eq!(
@@ -1193,11 +1481,43 @@ mod tests {
             layer.enthalpy_carry,
             ExactDyadicEnthalpy::try_new(-1, "1dc319224e55f", -109).expect("WAT5 carry")
         );
+        assert_eq!(layer.temperature_k.to_bits(), 273.15_f64.to_bits());
         assert_eq!(
             candidate.credit_receipt.predecessor_transaction_id,
             Some(TransactionId(40))
         );
         assert_eq!(candidate.credit_receipt.transaction_id, TransactionId(41));
+    }
+
+    #[test]
+    fn normal_energy_delta_requires_authoritative_temperature_change() {
+        let beginning = migrated();
+        let energy = operand(SoilThermalEnergyOperandKindV2::TopBoundary, 0, 1_000.0, '9');
+        let projection = temperature_projection(2_000.0, 273.65);
+        let candidate = apply_soil_thermal_energy_credit_v2(
+            &beginning,
+            std::slice::from_ref(&energy),
+            std::slice::from_ref(&projection),
+        )
+        .expect("normal delta projection");
+        assert_eq!(
+            candidate.ending_owner.state.ofes[0].ordered_layers[0]
+                .temperature_k
+                .to_bits(),
+            273.65_f64.to_bits()
+        );
+
+        let stale = temperature_projection(2_000.0, 273.15);
+        let before = serde_json::to_vec(&beginning).expect("beginning bytes");
+        assert!(
+            apply_soil_thermal_energy_credit_v2(
+                &beginning,
+                std::slice::from_ref(&energy),
+                &[stale],
+            )
+            .is_err()
+        );
+        assert_eq!(serde_json::to_vec(&beginning).expect("rollback"), before);
     }
 
     #[test]
@@ -1217,7 +1537,10 @@ mod tests {
             },
         )
         .expect("migration");
-        let candidate = apply_soil_thermal_energy_credit_v2(&beginning, &[]).expect("no-op credit");
+        let projection = temperature_projection(2_000.0, 273.15);
+        let candidate =
+            apply_soil_thermal_energy_credit_v2(&beginning, &[], std::slice::from_ref(&projection))
+                .expect("no-op credit");
         assert_eq!(
             candidate.ending_owner.state.ofes[0].ordered_layers[0]
                 .enthalpy_hi_j_m2_ofe_ground
@@ -1226,11 +1549,12 @@ mod tests {
         );
         candidate
             .credit_receipt
-            .validate_independent(&beginning, &candidate.ending_owner, &[])
+            .validate_independent(&beginning, &candidate.ending_owner, &[], &[projection])
             .expect("no-op independent validation");
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn receipt_omission_duplication_reorder_and_identity_substitution_refuse() {
         let beginning = migrated();
         let operands = vec![
@@ -1243,8 +1567,14 @@ mod tests {
                 '3',
             ),
         ];
-        let candidate =
-            apply_soil_thermal_energy_credit_v2(&beginning, &operands).expect("canonical receipt");
+        let expected_temperature = 273.15 + 0.125 / 2_000.0;
+        let projection = temperature_projection(2_000.0, expected_temperature);
+        let candidate = apply_soil_thermal_energy_credit_v2(
+            &beginning,
+            &operands,
+            std::slice::from_ref(&projection),
+        )
+        .expect("canonical receipt");
         let beginning_bytes = serde_json::to_vec(&beginning).expect("beginning bytes");
 
         let mut expected_poisons = Vec::new();
@@ -1259,7 +1589,12 @@ mod tests {
             assert!(
                 candidate
                     .credit_receipt
-                    .validate_independent(&beginning, &candidate.ending_owner, &poison)
+                    .validate_independent(
+                        &beginning,
+                        &candidate.ending_owner,
+                        &poison,
+                        std::slice::from_ref(&projection),
+                    )
                     .is_err()
             );
         }
@@ -1291,10 +1626,25 @@ mod tests {
         wrong_carry.layer_credits[0].ending_enthalpy_carry = ExactDyadicEnthalpy::zero();
         wrong_carry.reseal().expect("reseal carry poison");
         receipt_poisons.push(wrong_carry);
+        let mut wrong_temperature = candidate.credit_receipt.clone();
+        wrong_temperature.layer_credits[0].ending_temperature_k = 273.15;
+        wrong_temperature
+            .reseal()
+            .expect("reseal temperature poison");
+        receipt_poisons.push(wrong_temperature);
+        let mut wrong_capacity = candidate.credit_receipt.clone();
+        wrong_capacity.layer_credits[0].heat_capacity_j_m2_k = 1_000.0;
+        wrong_capacity.reseal().expect("reseal capacity poison");
+        receipt_poisons.push(wrong_capacity);
         for poison in receipt_poisons {
             assert!(
                 poison
-                    .validate_independent(&beginning, &candidate.ending_owner, &operands)
+                    .validate_independent(
+                        &beginning,
+                        &candidate.ending_owner,
+                        &operands,
+                        std::slice::from_ref(&projection),
+                    )
                     .is_err()
             );
             assert_eq!(
@@ -1305,7 +1655,15 @@ mod tests {
 
         let mut nonfinite = operands;
         nonfinite[2].energy_j_m2_ofe_ground = f64::NAN;
-        assert!(apply_soil_thermal_energy_credit_v2(&beginning, &nonfinite).is_err());
+        assert!(
+            apply_soil_thermal_energy_credit_v2(
+                &beginning,
+                &nonfinite,
+                std::slice::from_ref(&projection),
+            )
+            .is_err()
+        );
+        assert!(apply_soil_thermal_energy_credit_v2(&beginning, &[], &[]).is_err());
         assert_eq!(
             serde_json::to_vec(&beginning).expect("rollback bytes"),
             beginning_bytes
