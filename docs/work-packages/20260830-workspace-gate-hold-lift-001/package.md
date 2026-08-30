@@ -213,6 +213,7 @@ event, custody, receipt, rollback, public schema, persistence, or publication.
   touched science-bound test surfaces;
 - `docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md`;
 - `docs/specifications/science-contracts/index.md`;
+- `tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/fixed_point.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs`;
