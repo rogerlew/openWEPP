@@ -31,17 +31,22 @@ fn stage1_contract_and_selector_are_package_bound() {
     }
 
     let builder = read(BUILDER);
-    assert_contains(&builder, "physics_bulk_multilayer_density_v1", BUILDER);
-    assert_contains(
-        &builder,
+    for retired in [
+        "physics_bulk_multilayer_density_v1",
         "SnowDensityModel::PhysicsBulkMultilayerDensityV1",
-        BUILDER,
-    );
-    assert_contains(
-        &builder,
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1",
-        BUILDER,
-    );
+        "must be legacy_wepp",
+    ] {
+        assert!(
+            !builder.contains(retired),
+            "retired Stage-1 selector must remain package-bound, not re-enter {BUILDER}: {retired}"
+        );
+    }
+    for required in [
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+    ] {
+        assert_contains(&builder, required, BUILDER);
+    }
     assert_runner_bins_do_not_expose_selector();
 
     let package = read(PACKAGE);

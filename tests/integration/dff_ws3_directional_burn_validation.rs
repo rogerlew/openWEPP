@@ -3,12 +3,12 @@ use std::fs;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 
-use openwepp_runner::{
-    HillslopeRunReport, HillslopeRunRequest, SidecarPolicy, execute_hillslope_run,
-};
+use openwepp_runner::{HillslopeRunReport, HillslopeRunRequest, SidecarPolicy};
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
 use serde_json::Value;
+
+mod common;
 
 #[derive(Debug, Clone)]
 struct MatrixCell {
@@ -174,7 +174,7 @@ fn run_matrix_cell(wepp_id: usize, temp_prefix: &str) -> FixtureRun {
     let temp_run_dir = copy_matrix_cell_to_temp(wepp_id, temp_prefix);
     normalize_legacy_nan_dewpoint_tokens(&temp_run_dir);
     let run_file = format!("p{wepp_id}.run");
-    let report = execute_hillslope_run(
+    let report = common::execute_with_complete_stage3_owner_seed(
         &HillslopeRunRequest {
             run_dir: temp_run_dir.clone(),
             run_file: PathBuf::from(&run_file),

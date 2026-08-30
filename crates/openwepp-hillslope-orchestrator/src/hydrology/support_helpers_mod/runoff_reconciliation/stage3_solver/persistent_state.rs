@@ -326,8 +326,8 @@ impl Wb11HydrologyKernel {
             .sum::<f64>()
             + detached_retained_liquid_kg_m2;
         let mut state = DirectSnowStage3PersistentState {
-            schema_version: 1,
-            terminal_event_model: None,
+            schema_version: 2,
+            terminal_event_model: Some(DirectSnowTerminalEventModel::EnthalpyEventV1),
             fingerprint: 0,
             lane_id,
             next_interval_index: 0,

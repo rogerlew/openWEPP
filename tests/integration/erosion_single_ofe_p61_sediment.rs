@@ -10,8 +10,10 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 
 use arrow_array::{Array, Float64Array, Int16Array};
-use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
+use openwepp_runner::{HillslopeRunRequest, SidecarPolicy};
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
+
+mod common;
 
 // One end-to-end fixture driver validating the E.1 + E.2 publication
 // surfaces off a single run; splitting it would re-run the fixture per
@@ -24,7 +26,7 @@ fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
     amplify_dominant_p61_storm(&run_dir.join("p61.cli"));
     let output_dir = run_dir.join("output");
 
-    let report = execute_hillslope_run(
+    let report = common::execute_with_complete_stage3_owner_seed(
         &HillslopeRunRequest {
             run_dir: run_dir.clone(),
             run_file: PathBuf::from("p61.run"),

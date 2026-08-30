@@ -43,6 +43,7 @@ pub use gsi_forcing::{
     DirectGsiOwnerStateRestartV1, GsiForcingRestartError, SnowFreeHalfHourDayReceiptRestartV1,
     SnowFreeHalfHourDestinationRestartV1, SnowFreeHalfHourProviderCursorRestartV1,
     SnowFreeHalfHourStaticConfigurationRestartV1, SnowFreePrecipitationParcelRestartV1,
+    SnowFreeSolidPrecipitationParcelRestartV1,
 };
 pub use hydrology_core::{DirectHydrologyCoreError, DirectWaterStateRestartV1};
 pub use hydrology_restart::{

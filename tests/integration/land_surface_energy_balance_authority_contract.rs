@@ -76,7 +76,7 @@ fn contract_preserves_adjacent_owners_and_rejects_terminal_payload() {
 fn current_version_releases_named_authority_without_production_claims() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 8",
+        "contract_version: 12",
         "status: approved",
         "maturity: active",
         "OPENWEPP_SNOW_FREE_LSE_V1",
@@ -92,6 +92,39 @@ fn current_version_releases_named_authority_without_production_claims() {
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
+}
+
+#[test]
+fn version_eleven_binds_inactive_liquid_vapor_coordinates_without_physical_interference() {
+    let contract = read(CONTRACT);
+    for required in [
+        "INV-LANDSURFACEENERGY-131",
+        "T_inactive_liquid_vapor - max(T_canopy, T_ref) = 0",
+        "zero-area component contributes no physical",
+        "Active components,\nphysical residual equations, tolerances, ledgers, receipts, events, the exact\n60-second raw fallback",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+}
+
+#[test]
+fn version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks() {
+    let contract = read(CONTRACT);
+    for required in [
+        "INV-LANDSURFACEENERGY-138",
+        "For every covered-column authority and for both owner-uncapped potential and\nfixed-authorization final solves",
+        "J[:,i] = (R(x + delta_i e_i) - R(x - delta_i e_i)) / (2 delta_i)",
+        "lower bound: J[:,i] = (R(x + delta_i e_i) - R(x)) / delta_i",
+        "upper bound: J[:,i] = (R(x) - R(x - delta_i e_i)) / delta_i",
+        "it does not shrink `delta_i`, clamp a probe, infer a\nderivative, or continue",
+        "diagonal coordinate scaling admitted by `INV-LANDSURFACEENERGY-112` remains\nexclusive",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    let index = read(INDEX);
+    let index_row = row(&index, "SC-LANDSURFACEENERGY-001");
+    assert!(index_row.contains("v12 retains exact centered interior differences"));
 }
 
 #[test]

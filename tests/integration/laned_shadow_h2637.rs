@@ -69,14 +69,6 @@ fn warm_climate_for_routing_seam(run_dir: &Path) {
     fs::write(path, rendered).expect("warmed climate fixture writable");
 }
 
-struct AbandonedImplicitEnvCleanup;
-
-impl Drop for AbandonedImplicitEnvCleanup {
-    fn drop(&mut self) {
-        unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE_IMPLICIT") };
-    }
-}
-
 struct LaneDSelectorEnvCleanup;
 
 impl Drop for LaneDSelectorEnvCleanup {
@@ -98,16 +90,17 @@ fn clear_laned_selector_env() {
     }
 }
 
-#[test]
-fn abandoned_implicit_selector_env_fails_closed_at_startup() {
-    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE_IMPLICIT", "0") };
-    let _cleanup = AbandonedImplicitEnvCleanup;
+fn assert_retired_laned_selector_rejected(name: &'static str) {
+    clear_laned_selector_env();
+    let _cleanup = LaneDSelectorEnvCleanup;
+    // SAFETY: these tests are nextest-only and therefore process isolated.
+    unsafe { std::env::set_var(name, "1") };
 
     let result = execute_hillslope_run(
         &HillslopeRunRequest {
-            run_dir: PathBuf::from("/tmp/openwepp_missing_run_dir_for_abandoned_selector_guard"),
+            run_dir: PathBuf::from("/tmp/openwepp_missing_run_dir_for_retired_laned_selector"),
             run_file: PathBuf::from("case.run"),
-            output_dir: PathBuf::from("/tmp/openwepp_missing_output_for_abandoned_selector_guard"),
+            output_dir: PathBuf::from("/tmp/openwepp_missing_output_for_retired_laned_selector"),
             sidecar_policy: SidecarPolicy::Compat,
             legacy_sidecar_discovery: false,
             manifest_path: None,
@@ -115,93 +108,25 @@ fn abandoned_implicit_selector_env_fails_closed_at_startup() {
         &["openwepp-cli-hill".to_string()],
     );
 
-    match result.expect_err("abandoned implicit selector env must fail before run setup") {
+    match result.expect_err("retired Lane-D selector must fail before run setup") {
         HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
-            assert_eq!(surface, "OPENWEPP_LANED_ACTIVE_IMPLICIT");
-            assert!(detail.contains("ADR-0037"));
-            assert!(detail.contains("abandoned"));
+            assert_eq!(surface, "stage3_v11_owner");
+            assert!(detail.contains("sole production hydrology/routing path"));
+            assert!(detail.contains("retired Lane-D selector"));
+            assert!(detail.contains(name));
         }
         other => panic!("unexpected error variant: {other:?}"),
     }
 }
 
 #[test]
-fn active_trace_selector_requires_active_before_outputs() {
-    let run_dir = copy_fixture_to_temp("active_trace_without_active");
-    let output_dir = run_dir.join("output");
-    clear_laned_selector_env();
-    // SAFETY: single-threaded test setup before runner work starts.
-    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE_TRACE", "1") };
-    let _cleanup = LaneDSelectorEnvCleanup;
-
-    let result = execute_hillslope_run(
-        &HillslopeRunRequest {
-            run_dir: run_dir.clone(),
-            run_file: PathBuf::from("p2637.run.toml"),
-            output_dir: output_dir.clone(),
-            sidecar_policy: SidecarPolicy::Compat,
-            legacy_sidecar_discovery: false,
-            manifest_path: Some(run_dir.join("manifest.json")),
-        },
-        &["openwepp-cli-hill".to_string()],
-    );
-
-    match result.expect_err("trace selector without active must fail at startup") {
-        HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
-            assert_eq!(surface, "OPENWEPP_LANED_ACTIVE_TRACE");
-            assert!(detail.contains("OPENWEPP_LANED_ACTIVE=1"));
-        }
-        other => panic!("unexpected error variant: {other:?}"),
-    }
-    assert!(
-        !output_dir.exists(),
-        "trace-only selector must fail before output directory creation"
-    );
+fn abandoned_implicit_selector_env_fails_closed_at_startup() {
+    assert_retired_laned_selector_rejected("OPENWEPP_LANED_ACTIVE_IMPLICIT");
 }
 
-fn run_h2637(
-    tag: &str,
-    shadow: bool,
-) -> Result<(PathBuf, serde_json::Value, Vec<u8>, Vec<u8>), HillslopeCliError> {
-    let run_dir = copy_fixture_to_temp(tag);
-    let output_dir = run_dir.join("output");
-    let manifest_path = run_dir.join("manifest.json");
-    // CR-M2/T3-QA-M3: neutralize ALL sibling selector variables so inherited
-    // shell state cannot turn a baseline leg into a shadow/active run or
-    // stale abandoned-selector startup failure.
-    clear_laned_selector_env();
-    // nextest runs each test in its own process, and both runs execute
-    // serially inside this one test — the env mutation cannot leak.
-    if shadow {
-        // SAFETY: single-threaded test setup before any runner threads.
-        unsafe { std::env::set_var("OPENWEPP_LANED_SHADOW", "1") };
-    } else {
-        // SAFETY: as above.
-        unsafe { std::env::remove_var("OPENWEPP_LANED_SHADOW") };
-    }
-    let report = execute_hillslope_run(
-        &HillslopeRunRequest {
-            run_dir: run_dir.clone(),
-            run_file: PathBuf::from("p2637.run.toml"),
-            output_dir,
-            sidecar_policy: SidecarPolicy::Compat,
-            legacy_sidecar_discovery: false,
-            manifest_path: Some(manifest_path.clone()),
-        },
-        &["openwepp-cli-hill".to_string()],
-    );
-    if shadow {
-        // SAFETY: restore the process env immediately after the single run.
-        unsafe { std::env::remove_var("OPENWEPP_LANED_SHADOW") };
-    }
-    let report = report?;
-    let manifest: serde_json::Value =
-        serde_json::from_str(&fs::read_to_string(&manifest_path).expect("manifest readable"))
-            .expect("manifest parses");
-    let pass_bytes = fs::read(&report.output_pass).expect("HBP bytes");
-    let parquet_bytes = fs::read(report.output_pass.with_file_name("H2637.pass.parquet"))
-        .expect("pass parquet bytes");
-    Ok((run_dir, manifest, pass_bytes, parquet_bytes))
+#[test]
+fn active_trace_selector_requires_active_before_outputs() {
+    assert_retired_laned_selector_rejected("OPENWEPP_LANED_ACTIVE_TRACE");
 }
 
 fn enable_native_cropland_routing_coefficients(run_dir: &Path) {
@@ -327,34 +252,7 @@ fn find_key<'a>(value: &'a serde_json::Value, key: &str) -> Option<&'a serde_jso
 
 #[test]
 fn h2637_legacy_shadow_fails_closed_without_routing_coefficients() {
-    let (_dir_off, manifest_off, pass_off, parquet_off) =
-        run_h2637("off", false).expect("legacy H2637 must run with Lane D shadow disabled");
-    assert!(
-        find_key(&manifest_off, "laned_shadow").is_none(),
-        "no shadow keys when the shadow is off"
-    );
-    assert!(
-        find_key(&manifest_off, "laned_active").is_none(),
-        "legacy no-coefficient default path must not attach active routing"
-    );
-    assert!(!pass_off.is_empty(), "shadow-off HBP should be written");
-    assert!(
-        !parquet_off.is_empty(),
-        "shadow-off pass parquet should be written"
-    );
-
-    let err = run_h2637("on", true)
-        .expect_err("legacy H2637 must fail closed when Lane D shadow lacks routing coefficients");
-    clear_laned_selector_env();
-    let message = err.to_string();
-    assert!(
-        message.contains("routing coefficient extension"),
-        "expected routing coefficient extension error, got {message}"
-    );
-    assert!(
-        message.contains("OPENWEPP_LANED_SHADOW"),
-        "expected Lane D shadow opt-in error, got {message}"
-    );
+    assert_retired_laned_selector_rejected("OPENWEPP_LANED_SHADOW");
 }
 
 #[test]
@@ -457,99 +355,19 @@ fn run_h2637_native_active(
 
 #[test]
 fn h2637_active_fails_closed_without_routing_coefficients() {
-    // Legacy management (no native routing_coefficients): the ACTIVE
-    // selector must fail closed before streaming, mirroring the shadow's
-    // rev-20 guard.
-    let run_dir = copy_fixture_to_temp("active_legacy");
-    let output_dir = run_dir.join("output");
-    let _cleanup = LaneDSelectorEnvCleanup;
-    clear_laned_selector_env();
-    // SAFETY: single-threaded test setup before any runner threads.
-    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
-    let report = execute_hillslope_run(
-        &HillslopeRunRequest {
-            run_dir: run_dir.clone(),
-            run_file: PathBuf::from("p2637.run.toml"),
-            output_dir,
-            sidecar_policy: SidecarPolicy::Compat,
-            legacy_sidecar_discovery: false,
-            manifest_path: Some(run_dir.join("manifest.json")),
-        },
-        &["openwepp-cli-hill".to_string()],
-    );
-    let message = report
-        .expect_err("active selector must fail closed")
-        .to_string();
-    assert!(
-        message.contains("routing coefficient extension"),
-        "expected routing coefficient extension error, got {message}"
-    );
-    assert!(
-        message.contains("OPENWEPP_LANED_ACTIVE"),
-        "expected active opt-in error, got {message}"
-    );
+    assert_retired_laned_selector_rejected("OPENWEPP_LANED_ACTIVE");
 }
 
 #[test]
 fn h2637_active_and_shadow_are_mutually_exclusive() {
-    let run_dir = copy_fixture_to_temp("active_shadow_conflict");
-    enable_native_cropland_routing_coefficients(&run_dir);
-    let output_dir = run_dir.join("output");
-    let _cleanup = LaneDSelectorEnvCleanup;
-    clear_laned_selector_env();
-    // SAFETY: single-threaded test setup before any runner threads.
-    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
-    // SAFETY: as above.
-    unsafe { std::env::set_var("OPENWEPP_LANED_SHADOW", "1") };
-    let report = execute_hillslope_run(
-        &HillslopeRunRequest {
-            run_dir: run_dir.clone(),
-            run_file: PathBuf::from("p2637.run.toml"),
-            output_dir,
-            sidecar_policy: SidecarPolicy::Compat,
-            legacy_sidecar_discovery: false,
-            manifest_path: Some(run_dir.join("manifest.json")),
-        },
-        &["openwepp-cli-hill".to_string()],
-    );
-    let message = report
-        .expect_err("active + shadow must fail closed")
-        .to_string();
-    assert!(
-        message.contains("mutually exclusive"),
-        "expected mutual-exclusion error, got {message}"
-    );
+    assert_retired_laned_selector_rejected("OPENWEPP_LANED_ACTIVE");
+    assert_retired_laned_selector_rejected("OPENWEPP_LANED_SHADOW");
 }
 
 #[test]
 fn h2637_active_and_disable_are_mutually_exclusive() {
-    let run_dir = copy_fixture_to_temp("active_disable_conflict");
-    enable_native_cropland_routing_coefficients(&run_dir);
-    let output_dir = run_dir.join("output");
-    let _cleanup = LaneDSelectorEnvCleanup;
-    clear_laned_selector_env();
-    // SAFETY: single-threaded test setup before any runner threads.
-    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
-    // SAFETY: as above.
-    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE_DISABLE", "1") };
-    let report = execute_hillslope_run(
-        &HillslopeRunRequest {
-            run_dir: run_dir.clone(),
-            run_file: PathBuf::from("p2637.run.toml"),
-            output_dir,
-            sidecar_policy: SidecarPolicy::Compat,
-            legacy_sidecar_discovery: false,
-            manifest_path: Some(run_dir.join("manifest.json")),
-        },
-        &["openwepp-cli-hill".to_string()],
-    );
-    let message = report
-        .expect_err("active + disable must fail closed")
-        .to_string();
-    assert!(
-        message.contains("mutually exclusive"),
-        "expected mutual-exclusion error, got {message}"
-    );
+    assert_retired_laned_selector_rejected("OPENWEPP_LANED_ACTIVE");
+    assert_retired_laned_selector_rejected("OPENWEPP_LANED_ACTIVE_DISABLE");
 }
 
 fn run_h2637_default_expect_error(run_dir: &Path) -> String {
@@ -579,12 +397,12 @@ fn h2637_default_mixed_routing_coefficients_fails_closed() {
     remove_first_native_routing_coefficient_block(&run_dir);
     let message = run_h2637_default_expect_error(&run_dir);
     assert!(
-        message.contains("conditional Lane D default activation"),
-        "expected conditional default error, got {message}"
+        message.contains("snow_stage3_v11_owner_seed"),
+        "the sole Stage3 owner must require its seed before retired Lane-D default logic, got {message}"
     );
     assert!(
-        message.contains("with coefficients") && message.contains("without coefficients"),
-        "expected mixed-authority counts, got {message}"
+        !message.contains("conditional Lane D default activation"),
+        "retired Lane-D default activation must not execute"
     );
 }
 

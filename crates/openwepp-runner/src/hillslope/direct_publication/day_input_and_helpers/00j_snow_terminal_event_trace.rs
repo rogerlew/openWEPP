@@ -1,25 +1,3 @@
-const SNOW_TERMINAL_ENTHALPY_EVENT_ENV: &str = "OPENWEPP_SNOW_TERMINAL_ENTHALPY_EVENT";
-
-fn snow_terminal_enthalpy_event_requested() -> Result<bool, HillslopeCliError> {
-    match std::env::var(SNOW_TERMINAL_ENTHALPY_EVENT_ENV) {
-        Ok(value) => match value.trim() {
-            "" | "0" | "false" | "disabled" => Ok(false),
-            "1" | "true" | "enthalpy_event_v1" => Ok(true),
-            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_snow_terminal_enthalpy_event",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOW_TERMINAL_ENTHALPY_EVENT_ENV} must be disabled, enthalpy_event_v1, true, false, 1, 0, or empty default, observed {observed}"
-                ),
-            }),
-        },
-        Err(std::env::VarError::NotPresent) => Ok(false),
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_terminal_enthalpy_event",
-            detail: format!("{SIMOUT_GUARD_ID} {SNOW_TERMINAL_ENTHALPY_EVENT_ENV} must be UTF-8"),
-        }),
-    }
-}
-
 fn snow_terminal_state_fingerprint(value: &serde_json::Value) -> Result<u64, &'static str> {
     fn add(mut hash: u64, value: u64) -> u64 {
         for byte in value.to_le_bytes() {
@@ -36,11 +14,16 @@ fn snow_terminal_state_fingerprint(value: &serde_json::Value) -> Result<u64, &'s
         hash = add(hash, 1);
     }
     for field in [
-        "cumulative_snowfall_kg_m2", "cumulative_external_liquid_kg_m2",
-        "cumulative_deposition_kg_m2", "cumulative_sublimation_kg_m2",
-        "cumulative_melt_kg_m2", "cumulative_unresolved_liquid_kg_m2",
-        "initial_ice_kg_m2", "initial_retained_liquid_kg_m2",
-        "detached_retained_liquid_kg_m2", "cumulative_complete_energy_j_m2",
+        "cumulative_snowfall_kg_m2",
+        "cumulative_external_liquid_kg_m2",
+        "cumulative_deposition_kg_m2",
+        "cumulative_sublimation_kg_m2",
+        "cumulative_melt_kg_m2",
+        "cumulative_unresolved_liquid_kg_m2",
+        "initial_ice_kg_m2",
+        "initial_retained_liquid_kg_m2",
+        "detached_retained_liquid_kg_m2",
+        "cumulative_complete_energy_j_m2",
         "cumulative_cold_energy_change_j_m2",
         "cumulative_terminal_unallocated_energy_j_m2",
     ] {
@@ -49,8 +32,14 @@ fn snow_terminal_state_fingerprint(value: &serde_json::Value) -> Result<u64, &'s
     }
     for layer in value["layers"].as_array().ok_or("state layers")? {
         for field in [
-            "mass_swe_m", "thickness_m", "density_kg_m3", "settle_day_count",
-            "temperature_c", "liquid_water_m", "cold_content_j_m2", "refrozen_liquid_m",
+            "mass_swe_m",
+            "thickness_m",
+            "density_kg_m3",
+            "settle_day_count",
+            "temperature_c",
+            "liquid_water_m",
+            "cold_content_j_m2",
+            "refrozen_liquid_m",
         ] {
             let number = layer[field].as_f64().ok_or("state layer number")?;
             hash = add(hash, if number == 0.0 { 0 } else { number.to_bits() });
@@ -106,13 +95,11 @@ fn validate_terminal_interval(interval: &serde_json::Value) -> Result<(), &'stat
     let liquid = number("start_liquid_kg_m2")? + number("external_liquid_kg_m2")? + melt
         - refrozen
         - number("terminal_liquid_kg_m2")?;
-    let cold_change = number("start_cold_content_j_m2")?
-        - number("end_cold_content_j_m2")?;
-    let energy = number("complete_energy_j_m2")?
-        - number("cold_energy_change_j_m2")?
-        - 333_600.0 * melt
-        + 333_600.0 * refrozen
-        - number("terminal_unallocated_energy_j_m2")?;
+    let cold_change = number("start_cold_content_j_m2")? - number("end_cold_content_j_m2")?;
+    let energy =
+        number("complete_energy_j_m2")? - number("cold_energy_change_j_m2")? - 333_600.0 * melt
+            + 333_600.0 * refrozen
+            - number("terminal_unallocated_energy_j_m2")?;
     let components = number("shortwave_energy_j_m2")?
         + number("longwave_energy_j_m2")?
         + number("sensible_energy_j_m2")?
@@ -154,17 +141,19 @@ fn validate_terminal_interval(interval: &serde_json::Value) -> Result<(), &'stat
         .as_bool()
         .ok_or("terminal interval event flag")?;
     if interval["model"] != "EnthalpyEventV1"
-        || interval["hour_index"].as_u64().is_none_or(|hour| hour >= 24)
-        || interval["accepted_trials"].as_u64().is_none_or(|count| count == 0)
+        || interval["hour_index"]
+            .as_u64()
+            .is_none_or(|hour| hour >= 24)
+        || interval["accepted_trials"]
+            .as_u64()
+            .is_none_or(|count| count == 0)
         || interval["rejected_trials"].as_u64().is_none()
         || start_ice <= 0.0
         || start_ice > 1.0
         || solid.abs() > 1.0e-12_f64.max(1.0e-12 * scale)
         || liquid.abs() > 1.0e-12_f64.max(1.0e-12 * scale)
-        || number("solid_mass_closure_residual_kg_m2")?.abs()
-            > 1.0e-12_f64.max(1.0e-12 * scale)
-        || number("liquid_mass_closure_residual_kg_m2")?.abs()
-            > 1.0e-12_f64.max(1.0e-12 * scale)
+        || number("solid_mass_closure_residual_kg_m2")?.abs() > 1.0e-12_f64.max(1.0e-12 * scale)
+        || number("liquid_mass_closure_residual_kg_m2")?.abs() > 1.0e-12_f64.max(1.0e-12 * scale)
         || (cold_change - number("cold_energy_change_j_m2")?).abs() > 1.0e-6
         || (components - number("complete_energy_j_m2")?).abs()
             > 1.0e-6_f64.max(1.0e-12 * components.abs())
@@ -206,8 +195,7 @@ fn validate_snow_terminal_event_trace_consumer(
     let Some(event) = persistent.terminal_event else {
         return Ok(());
     };
-    if event.model
-        != openwepp_hillslope_orchestrator::DirectSnowTerminalEventModel::EnthalpyEventV1
+    if event.model != openwepp_hillslope_orchestrator::DirectSnowTerminalEventModel::EnthalpyEventV1
         || event.hour_index >= 24
         || event.evaluated_seconds <= 0.0
         || event.unevaluated_seconds < 0.0
@@ -250,8 +238,7 @@ fn validate_snow_terminal_event_trace_consumer(
         1.0e-12
             * (event.complete_energy_j_m2.abs()
                 + event.cold_energy_change_j_m2.abs()
-                + (LATENT_HEAT_FUSION_J_KG * (event.melt_kg_m2 + event.refrozen_kg_m2))
-                    .abs()
+                + (LATENT_HEAT_FUSION_J_KG * (event.melt_kg_m2 + event.refrozen_kg_m2)).abs()
                 + event.terminal_unallocated_energy_j_m2.abs()),
     );
     if (components - event.complete_energy_j_m2).abs() > energy_tolerance
@@ -260,7 +247,12 @@ fn validate_snow_terminal_event_trace_consumer(
     {
         return Err("terminal event energy reconstruction");
     }
-    for hour in persistent.evaluation.hourly.iter().skip(event.hour_index + 1) {
+    for hour in persistent
+        .evaluation
+        .hourly
+        .iter()
+        .skip(event.hour_index + 1)
+    {
         if hour.evaluated_seconds != 0.0
             || hour.complete_energy_j_m2 != 0.0
             || hour.melt_kg_m2 != 0.0
@@ -277,15 +269,14 @@ fn validate_snow_terminal_event_trace_consumer(
 #[allow(clippy::too_many_lines)]
 fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str> {
     const LF: f64 = 333_600.0;
-    let row: serde_json::Value = serde_json::from_str(line).map_err(|_| "invalid schema-v8 JSON")?;
+    let row: serde_json::Value =
+        serde_json::from_str(line).map_err(|_| "invalid schema-v8 JSON")?;
     if row["schema"] != "openwepp-r7h-direct-production-snow-trace-v8"
         || row["stage3_terminal_event_model"] != "enthalpy_event_v1"
         || row["stage3_persistent_start_state"]["schema_version"] != 2
         || row["stage3_persistent_end_state"]["schema_version"] != 2
-        || row["stage3_persistent_start_state"]["terminal_event_model"]
-            != "enthalpy_event_v1"
-        || row["stage3_persistent_end_state"]["terminal_event_model"]
-            != "enthalpy_event_v1"
+        || row["stage3_persistent_start_state"]["terminal_event_model"] != "enthalpy_event_v1"
+        || row["stage3_persistent_end_state"]["terminal_event_model"] != "enthalpy_event_v1"
     {
         return Err("schema-v8 request/state binding");
     }
@@ -305,8 +296,14 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
         return Err("schema-v8 unsupported receiving-surface claim");
     }
     for (state_field, alias_field) in [
-        ("stage3_persistent_start_state", "stage3_persistent_start_state_fingerprint"),
-        ("stage3_persistent_end_state", "stage3_persistent_end_state_fingerprint"),
+        (
+            "stage3_persistent_start_state",
+            "stage3_persistent_start_state_fingerprint",
+        ),
+        (
+            "stage3_persistent_end_state",
+            "stage3_persistent_end_state_fingerprint",
+        ),
     ] {
         let state = &row[state_field];
         if format!("{:016x}", snow_terminal_state_fingerprint(state)?)
@@ -323,16 +320,36 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
         .as_object()
         .ok_or("schema-v8 terminal evidence malformed")?;
     const ALLOWED: [&str; 31] = [
-        "event_occurred", "hour_index", "hour_offset_seconds", "evaluated_seconds",
-        "unevaluated_seconds", "start_ice_kg_m2", "start_liquid_kg_m2",
-        "start_cold_content_j_m2", "end_ice_kg_m2", "terminal_liquid_kg_m2",
-        "end_cold_content_j_m2", "complete_energy_j_m2", "shortwave_energy_j_m2",
-        "longwave_energy_j_m2", "sensible_energy_j_m2", "latent_energy_j_m2",
-        "advected_energy_j_m2", "external_liquid_kg_m2", "cold_energy_change_j_m2",
-        "refrozen_kg_m2", "deposition_kg_m2", "sublimation_kg_m2", "melt_kg_m2",
-        "terminal_unallocated_energy_j_m2", "solid_mass_closure_residual_kg_m2",
-        "liquid_mass_closure_residual_kg_m2", "energy_closure_residual_j_m2",
-        "event_bracket_width_seconds", "accepted_trials", "rejected_trials",
+        "event_occurred",
+        "hour_index",
+        "hour_offset_seconds",
+        "evaluated_seconds",
+        "unevaluated_seconds",
+        "start_ice_kg_m2",
+        "start_liquid_kg_m2",
+        "start_cold_content_j_m2",
+        "end_ice_kg_m2",
+        "terminal_liquid_kg_m2",
+        "end_cold_content_j_m2",
+        "complete_energy_j_m2",
+        "shortwave_energy_j_m2",
+        "longwave_energy_j_m2",
+        "sensible_energy_j_m2",
+        "latent_energy_j_m2",
+        "advected_energy_j_m2",
+        "external_liquid_kg_m2",
+        "cold_energy_change_j_m2",
+        "refrozen_kg_m2",
+        "deposition_kg_m2",
+        "sublimation_kg_m2",
+        "melt_kg_m2",
+        "terminal_unallocated_energy_j_m2",
+        "solid_mass_closure_residual_kg_m2",
+        "liquid_mass_closure_residual_kg_m2",
+        "energy_closure_residual_j_m2",
+        "event_bracket_width_seconds",
+        "accepted_trials",
+        "rejected_trials",
         "maximum_scaled_error",
     ];
     let event_occurred = event["event_occurred"]
@@ -368,8 +385,7 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
         + number("sensible_energy_j_m2")?
         + number("latent_energy_j_m2")?
         + number("advected_energy_j_m2")?;
-    let phase = complete - number("cold_energy_change_j_m2")? - LF * melt
-        + LF * refrozen
+    let phase = complete - number("cold_energy_change_j_m2")? - LF * melt + LF * refrozen
         - number("terminal_unallocated_energy_j_m2")?;
     let energy_tolerance = 1.0e-6_f64.max(1.0e-12 * complete.abs().max(components.abs()));
     if (complete - components).abs() > energy_tolerance
@@ -407,26 +423,20 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
     if transitions.len() != tuples.len() {
         return Err("schema-v8 transition witness count");
     }
-    let event_hour = event["hour_index"]
-        .as_u64()
-        .ok_or("schema-v8 event hour")?;
-    let event_absolute = f64::from(
-        u32::try_from(event_hour).map_err(|_| "schema-v8 event hour")?,
-    ) * 3_600.0
+    let event_hour = event["hour_index"].as_u64().ok_or("schema-v8 event hour")?;
+    let event_absolute = f64::from(u32::try_from(event_hour).map_err(|_| "schema-v8 event hour")?)
+        * 3_600.0
         + offset;
     for (tuple, transition) in tuples.iter().zip(transitions) {
-        let tuple_hour = tuple["hour_index"]
-            .as_u64()
-            .ok_or("schema-v8 tuple hour")?;
+        let tuple_hour = tuple["hour_index"].as_u64().ok_or("schema-v8 tuple hour")?;
         let tuple_start = tuple["elapsed_start_seconds"]
             .as_f64()
             .ok_or("schema-v8 tuple start")?;
         let tuple_duration = tuple["duration_seconds"]
             .as_f64()
             .ok_or("schema-v8 tuple duration")?;
-        let tuple_end = f64::from(
-            u32::try_from(tuple_hour).map_err(|_| "schema-v8 tuple hour")?,
-        ) * 3_600.0
+        let tuple_end = f64::from(u32::try_from(tuple_hour).map_err(|_| "schema-v8 tuple hour")?)
+            * 3_600.0
             + tuple_start
             + tuple_duration;
         if !(0.0..=3_600.0).contains(&tuple_start)
@@ -443,7 +453,8 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
             return Err("schema-v8 tuple chronology");
         }
     }
-    if intervals.is_empty() || intervals.last() != Some(&row["stage3_terminal_event_solver_witness"])
+    if intervals.is_empty()
+        || intervals.last() != Some(&row["stage3_terminal_event_solver_witness"])
     {
         return Err("schema-v8 terminal interval chronology");
     }
@@ -454,7 +465,9 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
     }
     for (index, interval) in intervals.iter().enumerate() {
         validate_terminal_interval(interval)?;
-        if interval["event_occurred"].as_bool().ok_or("interval event flag")?
+        if interval["event_occurred"]
+            .as_bool()
+            .ok_or("interval event flag")?
             != (index + 1 == intervals.len() && event_occurred)
         {
             return Err("schema-v8 terminal event finality");
@@ -462,13 +475,15 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
         if let Some(previous) = index.checked_sub(1).map(|prior| &intervals[prior]) {
             let previous_hour = previous["hour_index"].as_u64().ok_or("interval hour")?;
             let hour = interval["hour_index"].as_u64().ok_or("interval hour")?;
-            let previous_offset = previous["hour_offset_seconds"].as_f64().ok_or("interval offset")?;
-            let entry_offset = interval["terminal_entry_offset_seconds"].as_f64().ok_or("interval entry offset")?;
-            let previous_hour_f64 = f64::from(
-                u32::try_from(previous_hour).map_err(|_| "interval transition hour")?,
-            );
-            let hour_f64 =
-                f64::from(u32::try_from(hour).map_err(|_| "interval transition hour")?);
+            let previous_offset = previous["hour_offset_seconds"]
+                .as_f64()
+                .ok_or("interval offset")?;
+            let entry_offset = interval["terminal_entry_offset_seconds"]
+                .as_f64()
+                .ok_or("interval entry offset")?;
+            let previous_hour_f64 =
+                f64::from(u32::try_from(previous_hour).map_err(|_| "interval transition hour")?);
+            let hour_f64 = f64::from(u32::try_from(hour).map_err(|_| "interval transition hour")?);
             let previous_end = previous_hour_f64 * 3_600.0 + previous_offset;
             let current_entry = hour_f64 * 3_600.0 + entry_offset;
             let mut last_transition = None;
@@ -484,9 +499,8 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
                 let tuple_duration = tuple["duration_seconds"]
                     .as_f64()
                     .ok_or("interval transition duration")?;
-                let tuple_hour_f64 = f64::from(
-                    u32::try_from(tuple_hour).map_err(|_| "interval transition hour")?,
-                );
+                let tuple_hour_f64 =
+                    f64::from(u32::try_from(tuple_hour).map_err(|_| "interval transition hour")?);
                 let tuple_absolute_start = tuple_hour_f64 * 3_600.0 + tuple_start;
                 let tuple_end = tuple_absolute_start + tuple_duration;
                 if !(0.0..=3_600.0).contains(&tuple_start)
@@ -538,9 +552,8 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
             if hour < previous_hour
                 || (hour == previous_hour && entry_offset < previous_offset)
                 || (covered_until - current_entry).abs() > 1.0e-6
-                || (expected_ice
-                    - interval["start_ice_kg_m2"].as_f64().ok_or("interval ice")?)
-                .abs()
+                || (expected_ice - interval["start_ice_kg_m2"].as_f64().ok_or("interval ice")?)
+                    .abs()
                     > 1.0e-12
                 || (expected_cold
                     - interval["start_cold_content_j_m2"]
@@ -573,9 +586,18 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
             "terminal_unallocated_energy_j_m2",
             "stage3_terminal_unallocated_energy_j_m2",
         ),
-        ("complete_energy_j_m2", "stage3_terminal_complete_energy_j_m2"),
-        ("cold_energy_change_j_m2", "stage3_terminal_cold_energy_change_j_m2"),
-        ("external_liquid_kg_m2", "stage3_terminal_external_liquid_kg_m2"),
+        (
+            "complete_energy_j_m2",
+            "stage3_terminal_complete_energy_j_m2",
+        ),
+        (
+            "cold_energy_change_j_m2",
+            "stage3_terminal_cold_energy_change_j_m2",
+        ),
+        (
+            "external_liquid_kg_m2",
+            "stage3_terminal_external_liquid_kg_m2",
+        ),
         ("evaluated_seconds", "stage3_terminal_evaluated_seconds"),
     ] {
         let tolerance = if interval_field.ends_with("kg_m2") {
@@ -583,8 +605,7 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
         } else {
             1.0e-6
         };
-        if (sum(interval_field)? - row[day_field].as_f64().ok_or("schema-v8 day operand")?)
-            .abs()
+        if (sum(interval_field)? - row[day_field].as_f64().ok_or("schema-v8 day operand")?).abs()
             > tolerance
         {
             return Err("schema-v8 terminal interval aggregate");
@@ -611,15 +632,15 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
         || start_ice <= 0.0
         || start_ice > 1.0
         || event["hour_index"].as_u64().is_none_or(|hour| hour >= 24)
-        || event["accepted_trials"].as_u64().is_none_or(|count| count == 0)
+        || event["accepted_trials"]
+            .as_u64()
+            .is_none_or(|count| count == 0)
         || event["rejected_trials"].as_u64().is_none()
     {
         return Err("schema-v8 support/domain evidence");
     }
-    let hour_index = usize::try_from(
-        event["hour_index"].as_u64().ok_or("schema-v8 hour index")?,
-    )
-    .map_err(|_| "schema-v8 hour index")?;
+    let hour_index = usize::try_from(event["hour_index"].as_u64().ok_or("schema-v8 hour index")?)
+        .map_err(|_| "schema-v8 hour index")?;
     let hourly = |field: &str| {
         row[field]
             .as_array()
@@ -712,15 +733,12 @@ fn validate_snow_terminal_event_trace_row(line: &str) -> Result<(), &'static str
     let bracket_lower = witness_number("event_bracket_lower_seconds")?;
     let bracket_upper = witness_number("event_bracket_upper_seconds")?;
     if bracket_lower > bracket_upper
-        || (number("event_bracket_width_seconds")?
-            - witness_number("event_bracket_width_seconds")?)
-        .abs()
+        || (number("event_bracket_width_seconds")? - witness_number("event_bracket_width_seconds")?)
+            .abs()
             > 1.0e-12
         || (number("maximum_scaled_error")? - witness_number("maximum_scaled_error")?).abs()
             > 1.0e-12
-        || (bracket_upper - bracket_lower
-            - witness_number("event_bracket_width_seconds")?)
-        .abs()
+        || (bracket_upper - bracket_lower - witness_number("event_bracket_width_seconds")?).abs()
             > 1.0e-12
         || (event_occurred
             && (witness_number("event_bracket_lower_solid_kg_m2")? <= 0.0
@@ -826,24 +844,37 @@ mod snow_terminal_event_trace_tests {
                 "maximum_scaled_error": 0.0
             }
         });
-        let state = |next_interval_index: u64| serde_json::json!({
-            "schema_version": 2, "terminal_event_model": "enthalpy_event_v1",
-            "fingerprint": "", "lane_id": 0, "next_interval_index": next_interval_index,
-            "layers": [], "detached_retained_liquid_kg_m2": 0.0,
-            "initial_ice_kg_m2": 0.6, "initial_retained_liquid_kg_m2": 0.1,
-            "cumulative_snowfall_kg_m2": 0.0, "cumulative_external_liquid_kg_m2": 0.0,
-            "cumulative_deposition_kg_m2": 0.0, "cumulative_sublimation_kg_m2": 0.0,
-            "cumulative_melt_kg_m2": 0.0, "cumulative_unresolved_liquid_kg_m2": 0.0,
-            "cumulative_complete_energy_j_m2": 0.0,
-            "cumulative_cold_energy_change_j_m2": 0.0,
-            "cumulative_terminal_unallocated_energy_j_m2": 0.0
-        });
+        let state = |next_interval_index: u64| {
+            serde_json::json!({
+                "schema_version": 2, "terminal_event_model": "enthalpy_event_v1",
+                "fingerprint": "", "lane_id": 0, "next_interval_index": next_interval_index,
+                "layers": [], "detached_retained_liquid_kg_m2": 0.0,
+                "initial_ice_kg_m2": 0.6, "initial_retained_liquid_kg_m2": 0.1,
+                "cumulative_snowfall_kg_m2": 0.0, "cumulative_external_liquid_kg_m2": 0.0,
+                "cumulative_deposition_kg_m2": 0.0, "cumulative_sublimation_kg_m2": 0.0,
+                "cumulative_melt_kg_m2": 0.0, "cumulative_unresolved_liquid_kg_m2": 0.0,
+                "cumulative_complete_energy_j_m2": 0.0,
+                "cumulative_cold_energy_change_j_m2": 0.0,
+                "cumulative_terminal_unallocated_energy_j_m2": 0.0
+            })
+        };
         for (state_field, alias_field, next) in [
-            ("stage3_persistent_start_state", "stage3_persistent_start_state_fingerprint", 0),
-            ("stage3_persistent_end_state", "stage3_persistent_end_state_fingerprint", 1),
+            (
+                "stage3_persistent_start_state",
+                "stage3_persistent_start_state_fingerprint",
+                0,
+            ),
+            (
+                "stage3_persistent_end_state",
+                "stage3_persistent_end_state_fingerprint",
+                1,
+            ),
         ] {
             row[state_field] = state(next);
-            let fingerprint = format!("{:016x}", snow_terminal_state_fingerprint(&row[state_field]).unwrap());
+            let fingerprint = format!(
+                "{:016x}",
+                snow_terminal_state_fingerprint(&row[state_field]).unwrap()
+            );
             row[state_field]["fingerprint"] = serde_json::json!(fingerprint);
             row[alias_field] = serde_json::json!(fingerprint);
         }
@@ -876,8 +907,7 @@ mod snow_terminal_event_trace_tests {
         row["stage3_evaluation_hourly_complete_energy_j_m2"] = serde_json::json!(complete);
         row["stage3_evaluation_hourly_vapor_mass_exchange_kg_m2"] =
             serde_json::json!(vec![0.0; 24]);
-        row["stage3_evaluation_hourly_sublimation_kg_m2"] =
-            serde_json::json!(vec![0.0; 24]);
+        row["stage3_evaluation_hourly_sublimation_kg_m2"] = serde_json::json!(vec![0.0; 24]);
         row["stage3_evaluation_hourly_melt_kg_m2"] = serde_json::json!(melt);
         row["stage3_evaluation_hourly_terminal_unallocated_j_m2"] =
             serde_json::json!(vec![0.0; 24]);
@@ -900,8 +930,7 @@ mod snow_terminal_event_trace_tests {
             assert!(validate_snow_terminal_event_trace_row(&poisoned.to_string()).is_err());
         }
         let mut recipient = row;
-        recipient["stage3_terminal_event"]["receiving_ground_energy_j_m2"] =
-            serde_json::json!(1.0);
+        recipient["stage3_terminal_event"]["receiving_ground_energy_j_m2"] = serde_json::json!(1.0);
         assert!(validate_snow_terminal_event_trace_row(&recipient.to_string()).is_err());
     }
 

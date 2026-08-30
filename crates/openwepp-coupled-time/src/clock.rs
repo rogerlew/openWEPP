@@ -71,10 +71,6 @@ pub struct CoupledClockStateV1 {
 
 impl CoupledClockStateV1 {
     #[must_use]
-    pub const fn event_ordinal(&self) -> u32 {
-        self.event_ordinal
-    }
-    #[must_use]
     pub fn accepted_event_receipts(&self) -> &[crate::AcceptedEventReceiptV1] {
         &self.accepted_event_receipts
     }
@@ -197,6 +193,10 @@ impl CoupledClockStateV1 {
     #[must_use]
     pub const fn slab_ordinal(&self) -> u32 {
         self.slab_ordinal
+    }
+    #[must_use]
+    pub const fn event_ordinal(&self) -> u32 {
+        self.event_ordinal
     }
     /// Admit a fixed current regime boundary before any slab in that segment.
     pub fn admit_active_segment_end(

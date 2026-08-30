@@ -1,3 +1,4 @@
+#[allow(clippy::too_many_arguments)]
 fn execute_hillslope_direct_production_days(
     run_name: &str,
     output_hillslope_id: u32,
@@ -6,7 +7,9 @@ fn execute_hillslope_direct_production_days(
     state: HillslopeClimateExecutionState,
     climate: &ClimateFile,
     streaming_targets: &DirectPublicationStreamingTargets,
+    stage3_evidence_private_path: &Path,
 ) -> Result<HillslopeClimateExecution, HillslopeCliError> {
+    reject_retired_stage3_snow_selector_envs()?;
     let climate_request = build_hillslope_climate_runtime_request(climate).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
             surface: "climate",
@@ -37,6 +40,18 @@ fn execute_hillslope_direct_production_days(
     frame
         .configure_groundwater(groundwater_authority)
         .map_err(|source| direct_production_runtime_error(&source))?;
+    #[cfg(not(test))]
+    let snow_stage3_v11_owner_seed =
+        crate::hillslope::snow_stage3_v11_production_seed::DirectSnowStage3V11ProductionSeedV1::load_required(
+            sidecars.snow_stage3_v11_owner_seed_path.as_deref(),
+        )?;
+    #[cfg(test)]
+    let snow_stage3_v11_owner_seed =
+        crate::hillslope::snow_stage3_v11_production_seed::load_required_or_explicit_test(
+            sidecars.snow_stage3_v11_owner_seed_path.as_deref(),
+            &frame,
+        )?;
+    snow_stage3_v11_owner_seed.bootstrap(&mut frame)?;
     let day_input_builder =
         DirectProductionDayInputBuilder::new(&climate_request, &climate_span, &seed_authority)?;
     let metadata = DirectPublicationRunMetadata {
@@ -51,9 +66,11 @@ fn execute_hillslope_direct_production_days(
     };
     let retained_direct_publication = execute_direct_publication_stream(
         &mut frame,
-        metadata,
+        &metadata,
         &day_input_builder,
+        &snow_stage3_v11_owner_seed,
         streaming_targets,
+        stage3_evidence_private_path,
     )?;
     let coupling_vectors = build_direct_production_coupling_vector_provenance(
         &seed_authority,
@@ -62,6 +79,7 @@ fn execute_hillslope_direct_production_days(
     )?;
     let executed_day_count = climate_span.days.len();
     let multi_ofe_wave1_chained = seed_authority.multi_ofe_wave1_chained;
+    #[cfg(test)]
     let laned_shadow = retained_direct_publication.laned_shadow;
     let laned_active = retained_direct_publication.laned_active.clone();
 
@@ -70,6 +88,7 @@ fn execute_hillslope_direct_production_days(
         climate_span,
         coupling_vectors,
         multi_ofe_wave1_chained,
+        #[cfg(test)]
         laned_shadow,
         laned_active,
         scheduler_outcome_class: "completed",
@@ -81,6 +100,7 @@ fn execute_hillslope_direct_production_days(
     })
 }
 
+#[cfg(test)]
 fn resolve_laned_active_decision(
     explicit_laned_active_enabled: bool,
     explicit_laned_active_disabled: bool,
@@ -112,6 +132,7 @@ fn resolve_laned_active_decision(
     }
 }
 
+#[cfg(test)]
 fn resolve_laned_active_enabled(
     day_input_builder: &DirectProductionDayInputBuilder<'_>,
 ) -> Result<bool, HillslopeCliError> {
@@ -122,6 +143,7 @@ fn resolve_laned_active_enabled(
     )
 }
 
+#[cfg(test)]
 fn resolve_laned_active_configuration(
     laned_active_enabled: bool,
     laned_shadow_enabled: bool,
@@ -139,6 +161,7 @@ fn resolve_laned_active_configuration(
     ))
 }
 
+#[cfg(test)]
 fn apply_laned_active_configuration(
     frame: &mut DirectRunFrame,
     config: Option<openwepp_hillslope_orchestrator::DirectLanedActiveConfig>,
@@ -153,6 +176,7 @@ fn apply_laned_active_configuration(
     }
 }
 
+#[cfg(test)]
 fn validate_laned_active_summary(
     laned_active_enabled: bool,
     laned_active: Option<openwepp_hillslope_orchestrator::DirectLanedActiveRunSummary>,
@@ -167,6 +191,7 @@ fn validate_laned_active_summary(
     Ok(laned_active)
 }
 
+#[cfg(test)]
 fn configure_laned_active_execution(
     frame: &mut DirectRunFrame,
     day_input_builder: &DirectProductionDayInputBuilder<'_>,
@@ -186,136 +211,235 @@ fn configure_laned_active_execution(
     Ok((laned_active_enabled, laned_active_profile_enabled))
 }
 
+#[allow(clippy::result_large_err, clippy::too_many_lines)]
 fn execute_direct_publication_stream(
     frame: &mut DirectRunFrame,
-    metadata: DirectPublicationRunMetadata,
+    metadata: &DirectPublicationRunMetadata,
     day_input_builder: &DirectProductionDayInputBuilder<'_>,
+    snow_stage3_v11_owner_seed: &crate::hillslope::snow_stage3_v11_production_seed::DirectSnowStage3V11ProductionSeedV1,
     streaming_targets: &DirectPublicationStreamingTargets,
+    stage3_evidence_private_path: &Path,
 ) -> Result<RetainedDirectPublication, HillslopeCliError> {
     let wat5_subhourly_requested = streaming_targets.wat_subhourly.is_some();
-    // Lane D ACTIVE owner (SC-OFEROUTE-001 rev 46): explicit active opt-in
-    // or conditional default activation when every scheduled lane carries
-    // native routing-coefficient authority. A no-coefficient run remains
-    // legacy/off; mixed authority fails closed before streaming.
-    let (laned_active_enabled, laned_active_profile_enabled) =
-        configure_laned_active_execution(frame, day_input_builder)?;
-    // Lane D seam shadow (INV-OFEROUTE-012 activation increment):
-    // opt-in, diagnostics-only; geometry from the Wave-1 operand seeds.
-    let mut laned_shadow = if crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled() {
-        Some(crate::hillslope::laned_shadow::LanedShadowCollector::new(
-            day_input_builder.laned_shadow_geometry()?,
-        ))
-    } else {
-        None
-    };
-    let mut canopy_research_traces =
-        std::collections::BTreeMap::<(usize, usize), _>::new();
-    let batch = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
-        .run_publication_batch_with_interleaved_day_inputs_and_day_frames(
+    reject_retired_laned_runtime_envs()?;
+    let lane_ids = frame
+        .lanes
+        .iter()
+        .map(|lane| lane.lane_id)
+        .collect::<Vec<_>>();
+    let initial_archive_prefix = frame
+        .snow_stage3_v11_archived_receipt_prefix()
+        .map_err(|source| direct_production_runtime_error(&source))?;
+    let mut archive_manifest =
+        openwepp_hillslope_orchestrator::Stage3CommittedDayArchiveManifestV1::empty(
+            initial_archive_prefix.run_identity,
+            initial_archive_prefix.topology_identity,
+        )
+        .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "stage3_v11_archive_manifest",
+            detail: source.to_string(),
+        })?;
+    let mut stream_sink = DirectPublicationStreamingSink::create(
+        frame.identity,
+        metadata.clone(),
+        streaming_targets,
+    )?;
+    let mut archive_writer =
+        crate::hillslope::transaction_spool::CanonicalRecordSpoolWriter::create(
+            stage3_evidence_private_path,
+        )
+        .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "stage3_v11_archive_spool",
+            detail: format!("create transaction-private evidence spool: {source}"),
+        })?;
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
+        .run_atomic_publication_stream_with_stage3_day_preparation_and_committed_day_archive(
             frame,
             metadata.clone(),
+            |frame, day_index| {
+                let beginning_canopy_cover_by_lane = frame
+                    .lanes
+                    .iter()
+                    .map(|lane| lane.plant_growth_state.canopy_cover_fraction)
+                    .collect::<Vec<_>>();
+                frame.prepare_snow_stage3_v11_production_day_from_repository(
+                    day_input_builder.climate_request,
+                    day_index,
+                    snow_stage3_v11_owner_seed
+                        .support_static_authority()
+                        .interval_template(),
+                    |provider, snow_free, snow_surface, support_index, support| {
+                        day_input_builder.build_stage3_v11_support_inputs(
+                            &beginning_canopy_cover_by_lane,
+                            provider,
+                            snow_free,
+                            snow_surface,
+                            support_index,
+                            support,
+                            &lane_ids,
+                            snow_stage3_v11_owner_seed,
+                        )
+                    },
+                )
+            },
             |frame, day_index, lane_index| {
                 day_input_builder
-                    .build(frame, day_index, lane_index)
+                    .build_stage3_v11_publication_input(frame, day_index, lane_index)
                     .map(|mut input| {
-                        if let Some(trace) =
-                            day_input_builder.canopy_research_trace_for(day_index, lane_index)
-                        {
-                            canopy_research_traces.insert((day_index, lane_index), trace);
-                        }
                         input.wat5_subhourly_requested = wat5_subhourly_requested;
                         input
                     })
                     .map_err(|error| direct_publication_day_input_build_error(&error))
             },
+            |row, day_frame| {
+                day_input_builder
+                    .write_canopy_research_trace(day_frame, None)
+                    .map_err(|error| DirectRuntimeError::PublicationSinkFailure {
+                        detail: error.to_string(),
+                    })?;
+                #[cfg(test)]
+                record_native_canopy_consumer_trace(day_frame);
+                stream_sink.observe_row(row).map_err(|error| {
+                    DirectRuntimeError::PublicationSinkFailure {
+                        detail: error.to_string(),
+                    }
+                })?;
+                stream_sink
+                    .observe_subhourly_generation(row, day_frame)
+                    .map_err(|error| DirectRuntimeError::PublicationSinkFailure {
+                        detail: error.to_string(),
+                    })
+            },
+            |frame, day_index| {
+                frame.stage_snow_stage3_v11_committed_day_archive(day_index)?;
+                let archive_entry = frame
+                    .snow_stage3_v11_pending_committed_day_evidence()?
+                    .entry()
+                    .clone();
+                let expected_content_sha256 = archive_entry.content_sha256;
+                let record_sha256 = archive_entry.record_sha256;
+                let appended_content_sha256 = archive_writer
+                    .append_durable_stream(
+                        archive_entry.canonical_uncompressed_len,
+                        expected_content_sha256,
+                        |writer| {
+                            frame
+                                .write_snow_stage3_v11_pending_committed_day_evidence(writer)
+                                .map_err(|source| std::io::Error::other(source.to_string()))
+                        },
+                    )
+                    .map_err(|source| DirectRuntimeError::PublicationSinkFailure {
+                        detail: format!(
+                            "durably append Stage-3 committed-day evidence: {source}"
+                        ),
+                    })?;
+                if appended_content_sha256 != expected_content_sha256 {
+                    return Err(DirectRuntimeError::PublicationSinkFailure {
+                        detail: "Stage-3 committed-day archive content digest mismatch".into(),
+                    });
+                }
+                archive_manifest
+                    .append(archive_entry)
+                    .map_err(|source| DirectRuntimeError::PublicationSinkFailure {
+                        detail: format!("append Stage-3 committed-day archive manifest: {source}"),
+                    })?;
+                frame.acknowledge_snow_stage3_v11_committed_day_archive(record_sha256)
+            },
         )
         .map_err(|source| direct_production_runtime_error(&source))?;
-    let execution = DirectStreamingPublicationExecution {
-        report: batch.report().clone(),
-        identity: batch.identity(),
-        metadata: batch.metadata().clone(),
-        row_count: batch.rows().len(),
-    };
-    let mut stream_sink = DirectPublicationStreamingSink::create(
-        execution.identity,
-        execution.metadata.clone(),
-        streaming_targets,
-    )?;
-    for (row, day_frame) in batch.rows() {
-        day_input_builder
-            .write_canopy_research_trace(
-                day_frame,
-                canopy_research_traces
-                    .get(&(day_frame.day_index, day_frame.lane_index))
-                    .copied(),
-            )
-            .map_err(|error| DirectRuntimeError::PublicationSinkFailure {
-                detail: error.to_string(),
-            })
+    let stage3_archived_prefix = frame
+        .snow_stage3_v11_archived_receipt_prefix()
+        .map_err(|source| direct_production_runtime_error(&source))?
+        .clone();
+    stage3_archived_prefix
+        .validate()
+        .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "stage3_v11_archive_prefix",
+            detail: source.to_string(),
+        })?;
+    if stage3_archived_prefix.archived_day_count != frame.identity.day_count {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "stage3_v11_archive_prefix",
+            detail: format!(
+                "archived day count {} does not match scheduled day count {}",
+                stage3_archived_prefix.archived_day_count, frame.identity.day_count
+            ),
+        });
+    }
+    #[cfg(test)]
+    if crate::hillslope::snow_stage3_v11_qualification_audit::is_enabled() {
+        let snapshot = frame
+            .snow_stage3_v11_production_qualification_snapshot()
             .map_err(|source| direct_production_runtime_error(&source))?;
-        #[cfg(test)]
-        record_native_canopy_consumer_trace(day_frame);
-        if let Some(collector) = laned_shadow.as_mut() {
-            let operand_span = collector.profile_span_start();
-            let operands = Box::new(
-                day_input_builder
-                    .laned_shadow_lane_day_operands(day_frame)
-                    .map_err(|error| direct_publication_day_input_build_error(&error))
-                    .map_err(|source| direct_production_runtime_error(&source))?,
-            );
-            collector.record_operand_build(operand_span);
-            collector
-                .observe_row(row, operands)
-                .map_err(|detail| DirectRuntimeError::PublicationSinkFailure { detail })
-                .map_err(|source| direct_production_runtime_error(&source))?;
-        }
-        stream_sink.observe_row(row).map_err(|error| {
-            DirectRuntimeError::PublicationSinkFailure {
-                detail: error.to_string(),
-            }
-        })
-        .map_err(|source| direct_production_runtime_error(&source))?;
-        stream_sink.observe_subhourly_generation(row, day_frame).map_err(|error| {
-            DirectRuntimeError::PublicationSinkFailure {
-                detail: error.to_string(),
-            }
-        })
-        .map_err(|source| direct_production_runtime_error(&source))?;
+        crate::hillslope::snow_stage3_v11_qualification_audit::record_committed_snapshot(snapshot);
     }
     let stream = stream_sink.finish()?;
-    let laned_shadow = laned_shadow
-        .map(crate::hillslope::laned_shadow::LanedShadowCollector::finalize)
-        .transpose()
-        .map_err(|detail| {
-            direct_production_runtime_error(&DirectRuntimeError::PublicationSinkFailure { detail })
-        })?;
-    // D15A: the executor accumulated the active evidence on the frame; a
-    // missing summary under the active selector is a wiring defect and
-    // fails closed rather than publishing an activation-free manifest.
-    let laned_active = frame.laned_active_summary.take().map(|summary| *summary);
-    if laned_active_profile_enabled {
-        // Lane D diagnostics: one stderr line, same posture as the shadow's
-        // profile report (never touches outputs or the manifest).
-        let routing = openwepp_hillslope_orchestrator::ofe_routing::profile::snapshot_and_reset();
-        eprintln!(
-            "laned_active_profile {{\"solver_runs\":{},\"solver_steps\":{},\"solver_steps_homogeneous\":{},\"solver_steps_source_free\":{},\"alpha_evaluations\":{},\"solver_cfl_ns\":{},\"solver_step_ns\":{},\"solver_sample_ns\":{}}}",
-            routing.solver_runs,
-            routing.solver_steps,
-            routing.solver_steps_homogeneous,
-            routing.solver_steps_source_free,
-            routing.alpha_evaluations,
-            routing.solver_cfl_ns,
-            routing.solver_step_ns,
-            routing.solver_sample_ns,
-        );
+    let stage3_archive = archive_writer.finish().map_err(|source| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "stage3_v11_archive_spool",
+            detail: format!("finish transaction-private evidence spool: {source}"),
+        }
+    })?;
+    if usize::try_from(stage3_archive.record_count).ok()
+        != Some(stage3_archived_prefix.archived_day_count)
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "stage3_v11_archive_spool",
+            detail: "archive spool count does not match the sealed archived-day prefix".into(),
+        });
     }
-    let laned_active = validate_laned_active_summary(laned_active_enabled, laned_active)?;
+    archive_manifest
+        .validate()
+        .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "stage3_v11_archive_manifest",
+            detail: source.to_string(),
+        })?;
+    if archive_manifest.committed_day_count != stage3_archived_prefix.archived_day_count
+        || archive_manifest.ordered_day_chain_sha256
+            != stage3_archived_prefix.ordered_day_chain_sha256
+        || archive_manifest.archive_content_root_sha256
+            != stage3_archived_prefix.archive_content_root_sha256
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "stage3_v11_archive_manifest",
+            detail: "archive manifest does not match the installed archived-day prefix".into(),
+        });
+    }
     Ok(RetainedDirectPublication {
         execution,
         stream,
-        laned_shadow,
-        laned_active,
+        stage3_archive,
+        stage3_archived_prefix,
+        stage3_archive_manifest: archive_manifest,
+        #[cfg(test)]
+        laned_shadow: None,
+        laned_active: None,
     })
+}
+
+fn reject_retired_laned_runtime_envs() -> Result<(), HillslopeCliError> {
+    for name in [
+        "OPENWEPP_LANED_ACTIVE",
+        "OPENWEPP_LANED_ACTIVE_DISABLE",
+        "OPENWEPP_LANED_ACTIVE_IMPLICIT",
+        "OPENWEPP_LANED_SHADOW",
+        "OPENWEPP_LANED_SHADOW_PROFILE",
+        "OPENWEPP_LANED_ACTIVE_TRACE",
+        "OPENWEPP_LANED_ACTIVE_TRACE_DETAIL",
+        "OPENWEPP_LANED_ACTIVE_STEP_TRACE",
+        "OPENWEPP_LANED_ACTIVE_MAX_DT_S",
+        "OPENWEPP_LANED_ACTIVE_MESH_TARGET_DX_M",
+    ] {
+        if std::env::var_os(name).is_some() {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "stage3_v11_owner",
+                detail: format!(
+                    "the constitutive Stage-3/V11 owner is the sole production hydrology/routing path; retired Lane-D selector {name} is not admitted"
+                ),
+            });
+        }
+    }
+    Ok(())
 }
 
 struct DirectProductionRunFrameBuildInputs<'a> {
@@ -389,8 +513,28 @@ fn build_direct_production_run_frame(
             Ok(lane_inputs)
         })
         .collect::<Result<Vec<_>, HillslopeCliError>>()?;
-    DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(identity, lanes))
-        .map_err(|source| direct_production_runtime_error(&source))
+    let mut frame =
+        DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(identity, lanes))
+            .map_err(|source| direct_production_runtime_error(&source))?;
+    frame.lane_transfer_ledger = frame
+        .lanes
+        .iter()
+        .map(
+            |lane| openwepp_hillslope_orchestrator::DirectLaneTransferLedger {
+                lane_id: lane.lane_id,
+                upstream_lane_id: lane.upstream_lane_id,
+                downstream_lane_id: lane.downstream_lane_id,
+                upstream_area_ratio: lane.upstream_area_ratio,
+                area_m2: lane.area_m2,
+                outgoing_surface_m: 0.0,
+                outgoing_lateral_m: 0.0,
+                received_surface_m: 0.0,
+                received_lateral_m: 0.0,
+                net_transfer_m: 0.0,
+            },
+        )
+        .collect();
+    Ok(frame)
 }
 
 fn direct_groundwater_authority_from_gwcoeff(
@@ -599,18 +743,29 @@ fn build_hillslope_execution_provenance(
         erod14_qin_sediment_coupled: multi_ofe_wave1_chained,
         wb16_ealpha_compatibility_seed_used,
         wb16_ealpha_seed_policy: wb16_ealpha_seed_policy(wb16_ealpha_compatibility_seed_used),
-        laned_shadow: execution.laned_shadow.map(|summary| LanedShadowProvenance {
-            days_seen: summary.days_seen,
-            days_routed: summary.days_routed,
-            days_uniform_shape: summary.days_uniform_shape,
-            days_uniform_shape_with_routed_melt: summary.days_uniform_shape_with_routed_melt,
-            days_uniform_shape_without_routed_melt: summary.days_uniform_shape_without_routed_melt,
-            max_router_conservation_rel: summary.max_router_conservation_rel,
-            aggregate_router_conservation_rel: summary.aggregate_router_conservation_rel,
-            max_supply_reconstruction_rel: summary.max_supply_reconstruction_rel,
-            total_source_m3: summary.total_source_m3,
-            total_routed_outlet_m3: summary.total_routed_outlet_m3,
-        }),
+        laned_shadow: {
+            #[cfg(test)]
+            {
+                execution.laned_shadow.map(|summary| LanedShadowProvenance {
+                    days_seen: summary.days_seen,
+                    days_routed: summary.days_routed,
+                    days_uniform_shape: summary.days_uniform_shape,
+                    days_uniform_shape_with_routed_melt: summary
+                        .days_uniform_shape_with_routed_melt,
+                    days_uniform_shape_without_routed_melt: summary
+                        .days_uniform_shape_without_routed_melt,
+                    max_router_conservation_rel: summary.max_router_conservation_rel,
+                    aggregate_router_conservation_rel: summary.aggregate_router_conservation_rel,
+                    max_supply_reconstruction_rel: summary.max_supply_reconstruction_rel,
+                    total_source_m3: summary.total_source_m3,
+                    total_routed_outlet_m3: summary.total_routed_outlet_m3,
+                })
+            }
+            #[cfg(not(test))]
+            {
+                None
+            }
+        },
         laned_active: execution
             .laned_active
             .as_ref()
@@ -802,10 +957,7 @@ fn require_direct_publication_output_family_authority_row(
         row.climate.precipitation_mm,
     )?;
     require_finite_nonnegative_direct_publication_scalar("runoff.runvol_m3", row.runoff.runvol_m3)?;
-    require_direct_publication_option(
-        "runoff.peak_runoff_m3_s",
-        row.runoff.peak_runoff_m3_s,
-    )?;
+    require_direct_publication_option("runoff.peak_runoff_m3_s", row.runoff.peak_runoff_m3_s)?;
     require_direct_publication_option(
         "erosion.peak_runoff_rate_m_s",
         row.erosion.peak_runoff_rate_m_s,
@@ -1524,7 +1676,10 @@ fn write_hillslope_run_manifest(
         utc_now_rfc3339().map_err(|detail| HillslopeCliError::TimeFormat { detail })?;
     let input_checksums =
         build_hillslope_input_checksums(publication.inputs, publication.sidecars.input_paths)?;
-    let output_checksums = build_hillslope_output_checksums(publication.targets)?;
+    let output_checksums = build_hillslope_output_checksums(
+        publication.targets,
+        Path::new(&publication.stage3_evidence_archive.output_path),
+    )?;
     let manifest = build_hillslope_run_manifest(
         publication,
         &binary_path,
@@ -1576,6 +1731,7 @@ fn optional_sidecar_input_paths(input_paths: &HillslopeSidecarInputPaths) -> Vec
         input_paths.wepp_ui.as_deref(),
         input_paths.pmetpara.as_deref(),
         input_paths.gwcoeff.as_deref(),
+        input_paths.snow_stage3_v11_owner_seed.as_deref(),
     ]
     .into_iter()
     .flatten()
@@ -1584,6 +1740,7 @@ fn optional_sidecar_input_paths(input_paths: &HillslopeSidecarInputPaths) -> Vec
 
 fn build_hillslope_output_checksums(
     targets: &HillslopeOutputTargets,
+    stage3_evidence_path: &Path,
 ) -> Result<BTreeMap<String, String>, HillslopeCliError> {
     let mut output_checksum_entries = Vec::new();
     for path in std::iter::once(&targets.output_pass)
@@ -1598,6 +1755,13 @@ fn build_hillslope_output_checksums(
             })?,
         ));
     }
+    output_checksum_entries.push(OutputChecksumEntry::new(
+        stage3_evidence_path.display().to_string(),
+        sha256_file_hex(stage3_evidence_path).map_err(|source| HillslopeCliError::Io {
+            path: stage3_evidence_path.to_path_buf(),
+            source,
+        })?,
+    ));
     if let Some(trace_path) = &targets.laned_active_trace {
         output_checksum_entries.push(OutputChecksumEntry::new(
             trace_path.display().to_string(),
@@ -1648,6 +1812,7 @@ fn build_hillslope_run_manifest(
         resolved_sidecars: publication.sidecars.resolved_sidecars,
         input_checksums,
         output_checksums,
+        stage3_evidence_archive: publication.stage3_evidence_archive,
         wat5_output: HillslopeWat5OutputProvenance {
             enabled: publication.targets.wat_subhourly.is_some(),
             selector: "run_file.outputs.wat_subhourly_presence",
@@ -1790,6 +1955,7 @@ fn execute_selected_hillslope_days(
     state: HillslopeClimateExecutionState,
     climate: &ClimateFile,
     streaming_targets: &DirectPublicationStreamingTargets,
+    stage3_evidence_private_path: &Path,
 ) -> Result<HillslopeClimateExecution, HillslopeCliError> {
     debug_assert_eq!(
         runtime_selection,
@@ -1803,6 +1969,7 @@ fn execute_selected_hillslope_days(
         state,
         climate,
         streaming_targets,
+        stage3_evidence_private_path,
     )
 }
 
@@ -1827,8 +1994,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
     argv: &[String],
     runtime_policy: HillslopeRuntimeSelectionPolicy,
 ) -> Result<HillslopeRunReport, HillslopeCliError> {
-    crate::hillslope::laned_active::reject_abandoned_implicit_selector_env()?;
-    crate::hillslope::laned_active::validate_trace_selector_env()?;
+    reject_retired_laned_runtime_envs()?;
 
     if !request.run_dir.is_dir() {
         return Err(HillslopeCliError::RunDirectoryMissing {
@@ -1879,7 +2045,38 @@ pub fn execute_hillslope_run_with_runtime_policy(
         execution_state,
         &inputs.climate,
         &streaming_targets,
+        output_transaction.stage3_evidence_private_path(),
     )?;
+    let retained_publication = execution.retained_direct_publication.as_ref().ok_or(
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "stage3_v11_archive_spool",
+            detail: "direct production completed without retained publication archive seal".into(),
+        },
+    )?;
+    let stage3_evidence_archive = HillslopeStage3EvidenceArchiveProvenance {
+        schema: "openwepp-stage3-v11-evidence-spool-v2-zlib",
+        output_path: output_transaction
+            .stage3_evidence_final_path()
+            .display()
+            .to_string(),
+        record_count: retained_publication.stage3_archive.record_count,
+        ordered_root_sha256: retained_publication.stage3_archive.ordered_root_sha256,
+        canonical_uncompressed_bytes: retained_publication
+            .stage3_archive
+            .canonical_uncompressed_bytes,
+        stored_record_bytes: retained_publication.stage3_archive.stored_record_bytes,
+        archived_day_count: retained_publication.stage3_archived_prefix.archived_day_count,
+        ordered_day_chain_sha256: retained_publication
+            .stage3_archived_prefix
+            .ordered_day_chain_sha256,
+        archive_content_root_sha256: retained_publication
+            .stage3_archived_prefix
+            .archive_content_root_sha256,
+        archived_prefix_receipt_sha256: retained_publication
+            .stage3_archived_prefix
+            .receipt_sha256,
+        archive_manifest: retained_publication.stage3_archive_manifest.clone(),
+    };
     execution.direct_publication = build_direct_publication_artifacts(
         runtime_selection,
         &inputs,
@@ -1925,6 +2122,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
             argv,
             inputs: &inputs,
             targets: &final_targets,
+            stage3_evidence_archive,
             sidecars: HillslopeSidecarManifestInputs {
                 discovery_mode,
                 resolved_sidecars,
@@ -1940,7 +2138,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
             direct_runtime_counters,
             coupling_vectors: execution.coupling_vectors,
         },
-        output_transaction.manifest_staged_path(),
+        output_transaction.manifest_private_path(),
     ) {
         return Err(output_transaction.fail_and_rollback(error));
     }

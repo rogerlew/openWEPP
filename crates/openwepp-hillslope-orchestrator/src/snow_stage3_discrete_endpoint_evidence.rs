@@ -119,7 +119,7 @@ pub(crate) fn evaluate_real_discrete_complete_endpoint_v1(
         current_child_ordinal,
         lane_id,
         endpoint_tick,
-        CoveredTerminalExecutionMode::DiscreteCompleteEndpoint,
+        CoveredTerminalExecutionMode::DirectStepTrial,
     )
 }
 
@@ -231,7 +231,7 @@ fn evaluate_real_complete_endpoint_with_phase_mode_v1(
     };
     let mut canonical_bytes = b"OPENWEPP_REAL_DISCRETE_COMPLETE_ENDPOINT_V1".to_vec();
     canonical_bytes.push(match mode {
-        CoveredTerminalExecutionMode::DiscreteCompleteEndpoint => 0,
+        CoveredTerminalExecutionMode::DirectStepTrial => 0,
         CoveredTerminalExecutionMode::PhaseComplementarityEndpoint => 1,
         _ => {
             return Err(DirectSnowStage3V11AttachmentError::Terminal(
@@ -241,7 +241,7 @@ fn evaluate_real_complete_endpoint_with_phase_mode_v1(
     });
     canonical_bytes.extend_from_slice(&support.start_ns().get().to_be_bytes());
     canonical_bytes.extend_from_slice(&support.end_ns().get().to_be_bytes());
-    let selected_upper_bound_s_bits = discrete_endpoint_wb14_ceiling_bits(support);
+    let selected_upper_bound_s_bits = support.duration_s_bits();
     canonical_bytes.extend_from_slice(&selected_upper_bound_s_bits.to_be_bytes());
     canonical_bytes.extend_from_slice(&lane_id.to_be_bytes());
     for (owner_id, bytes) in &owners {

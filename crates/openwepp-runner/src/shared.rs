@@ -1,5 +1,6 @@
 use std::ffi::OsStr;
-use std::io;
+use std::fs::File;
+use std::io::{self, BufReader, Read};
 use std::path::Path;
 use std::process::Command;
 
@@ -27,13 +28,17 @@ pub(crate) fn git_source_commit_or_unknown() -> String {
 }
 
 pub(crate) fn sha256_file_hex(path: &Path) -> Result<String, io::Error> {
-    let bytes = std::fs::read(path)?;
-    Ok(sha256_bytes_hex(&bytes))
-}
-
-#[must_use]
-pub(crate) fn sha256_bytes_hex(bytes: &[u8]) -> String {
-    format!("{:x}", Sha256::digest(bytes))
+    let mut reader = BufReader::new(File::open(path)?);
+    let mut hasher = Sha256::new();
+    let mut buffer = vec![0_u8; 64 * 1024].into_boxed_slice();
+    loop {
+        let read = reader.read(&mut buffer)?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..read]);
+    }
+    Ok(format!("{:x}", hasher.finalize()))
 }
 
 #[must_use]

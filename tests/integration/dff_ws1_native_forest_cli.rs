@@ -7,7 +7,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
-use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
+use openwepp_runner::{HillslopeRunRequest, SidecarPolicy};
+
+mod common;
 
 fn runner_execution_lock() -> &'static Mutex<()> {
     static RUN_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
@@ -63,7 +65,7 @@ fn native_forest_hillslope_runs_end_to_end_with_pmet_hit_and_reconciliation() {
     // `ow-lanuse-1` `.man` parses, the `.man` forest class reconciles with the
     // `.sol` `DisturbedPolicy` (luse=forest), the PMET record resolves, the
     // forest projection emits the growth-symbol surface, and the kernel runs.
-    let report = execute_hillslope_run(
+    let report = common::execute_with_complete_stage3_owner_seed(
         &HillslopeRunRequest {
             run_dir: run_dir.clone(),
             run_file: PathBuf::from("p2.run.toml"),

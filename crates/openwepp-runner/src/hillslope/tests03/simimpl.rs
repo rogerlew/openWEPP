@@ -97,10 +97,10 @@ use crate::hillslope::intake_lane_setup::build_execution_lane_context;
         let plot_path = report
             .optional_outputs
             .iter()
-            .find(|path| path.file_name().is_some_and(|name| name == "H5.plot.parquet"))
+            .find(|path| path.file_name().is_some_and(|name| name == "H83.plot.parquet"))
             .expect("fixture plot output");
         let plot_text = fs::read_to_string(plot_path).expect("read generic plot output");
-        assert!(plot_text.contains("file=H5.plot.parquet\n"));
+        assert!(plot_text.contains("file=H83.plot.parquet\n"));
         assert!(!plot_text.contains(".openwepp-"));
 
         let manifest_json = read_manifest_json(&report);

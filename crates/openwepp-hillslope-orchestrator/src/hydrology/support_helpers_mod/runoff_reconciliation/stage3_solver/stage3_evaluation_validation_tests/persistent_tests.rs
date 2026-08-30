@@ -152,15 +152,10 @@ fn terminal_event_request_is_state_bound_and_censors_remaining_time() {
     let ordinary =
         Wb11HydrologyKernel::initialize_stage3_persistent_state(12, inputs.snow_layers.clone())
             .unwrap();
-    assert!(
-        Wb11HydrologyKernel::evaluate_stage3_persistent_day_with_terminal_event(
-            &inputs,
-            &ordinary,
-            12,
-            0,
-            DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
-        )
-        .is_err()
+    assert_eq!(ordinary.schema_version, 2);
+    assert_eq!(
+        ordinary.terminal_event_model,
+        Some(DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1.model)
     );
     let terminal = Wb11HydrologyKernel::initialize_stage3_persistent_state_with_terminal_event(
         12,
@@ -168,9 +163,9 @@ fn terminal_event_request_is_state_bound_and_censors_remaining_time() {
         DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
     )
     .unwrap();
-    assert!(
-        Wb11HydrologyKernel::evaluate_stage3_persistent_day(&inputs, &terminal, 12, 0,).is_err()
-    );
+    assert_eq!(ordinary, terminal);
+    let implicit =
+        Wb11HydrologyKernel::evaluate_stage3_persistent_day(&inputs, &terminal, 12, 0).unwrap();
     let day = Wb11HydrologyKernel::evaluate_stage3_persistent_day_with_terminal_event(
         &inputs,
         &terminal,
@@ -179,6 +174,7 @@ fn terminal_event_request_is_state_bound_and_censors_remaining_time() {
         DirectSnowTerminalEventRequest::ENTHALPY_EVENT_V1,
     )
     .unwrap();
+    assert_eq!(implicit, day);
     let event = day.terminal_event.expect("localized exhaustion event");
     assert!(event.event_occurred);
     assert!(event.evaluated_seconds > 0.0);
@@ -248,25 +244,31 @@ fn resolved_terminal_model_calls_covered_provider_before_any_raw_carrier() {
         forcing: inputs.hourly[0],
         duration_seconds: 1_800.0,
     };
-    let time_support = TimeSupport::new(
-        ModelTimeNs::new(0),
-        ModelTimeNs::new(1_800_000_000_000),
+    let time_support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_800_000_000_000))
+        .expect("exact support");
+    let joint = CoveredTerminalJointTrialStateV1::try_new(
+        JointTrialAuthorityV1 {
+            source_owner_set_sha256: Digest32::from_bytes([8; 32]),
+            lane_id: 1,
+            source_snow_owner_sha256: Digest32::from_bytes([9; 32]),
+            interval_index: 0,
+            state_support: TimeSupport::new(
+                ModelTimeNs::new(0),
+                ModelTimeNs::new(3_600_000_000_000),
+            )
+            .unwrap(),
+            accepted_predecessors: Vec::new(),
+        },
+        BTreeMap::from([
+            ("vegetation".to_owned(), vec![1]),
+            ("snow".to_owned(), vec![2]),
+            ("land_surface_energy".to_owned(), vec![3]),
+            ("hydrology".to_owned(), vec![4]),
+            ("bgc".to_owned(), vec![5]),
+            ("soil_thermal".to_owned(), vec![6]),
+            ("surface_liquid".to_owned(), vec![7]),
+        ]),
     )
-    .expect("exact support");
-    let joint = CoveredTerminalJointTrialStateV1::try_new(JointTrialAuthorityV1 {
-        source_owner_set_sha256: Digest32::from_bytes([8; 32]), lane_id: 1,
-        source_snow_owner_sha256: Digest32::from_bytes([9; 32]), interval_index: 0,
-        state_support: TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(3_600_000_000_000)).unwrap(),
-        accepted_predecessors: Vec::new(),
-    }, BTreeMap::from([
-        ("vegetation".to_owned(), vec![1]),
-        ("snow".to_owned(), vec![2]),
-        ("land_surface_energy".to_owned(), vec![3]),
-        ("hydrology".to_owned(), vec![4]),
-        ("bgc".to_owned(), vec![5]),
-        ("soil_thermal".to_owned(), vec![6]),
-        ("surface_liquid".to_owned(), vec![7]),
-    ]))
     .expect("complete ephemeral owner set");
     let mut calls = 0_u32;
     let mut provider = |request: CoveredTerminalTrialRequestV1| {
@@ -403,6 +405,75 @@ fn persistent_warm_rain_on_isothermal_snow_does_not_refreeze() {
         beginning_ice_kg_m2.to_bits()
     );
     assert!((1.0 - routed - retained).abs() <= 1.0e-12);
+}
+
+#[test]
+fn persistent_refreeze_capacity_roundoff_canonicalizes_zero_and_closes_ledgers() {
+    let beginning_cold_content_j_m2 = 10.9;
+    let refreeze_capacity_kg_m2 = beginning_cold_content_j_m2 / STAGE3_LATENT_HEAT_FUSION_J_KG;
+    let refreeze_energy_j_m2 = refreeze_capacity_kg_m2 * STAGE3_LATENT_HEAT_FUSION_J_KG;
+    let raw_energy_remainder_j_m2 = beginning_cold_content_j_m2 - refreeze_energy_j_m2;
+    assert!(raw_energy_remainder_j_m2 < 0.0);
+    assert!(raw_energy_remainder_j_m2.abs() <= STAGE3_REFREEZE_COLD_CONTENT_ROUNDOFF_J_M2);
+
+    let mut layers = vec![DirectSnowLayerState {
+        mass_swe_m: 0.05,
+        thickness_m: 0.10,
+        density_kg_m3: 500.0,
+        settle_day_count: 1.0,
+        temperature_c: -1.0,
+        liquid_water_m: 0.0,
+        cold_content_j_m2: beginning_cold_content_j_m2,
+        refrozen_liquid_m: 0.0,
+    }];
+    let beginning_ice_kg_m2 = layers[0].mass_swe_m * STAGE3_RHO_WATER_KG_M3;
+    let mut cold_content = vec![beginning_cold_content_j_m2];
+    let (routed, retained, refrozen) =
+        Wb11HydrologyKernel::route_stage3_persistent_liquid_through_layers(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            refreeze_capacity_kg_m2,
+            &mut layers,
+            &mut cold_content,
+        )
+        .expect("capacity-limited refreeze roundoff must canonicalize at its generating seam");
+
+    assert_eq!(routed.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(retained.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(refrozen.to_bits(), refreeze_capacity_kg_m2.to_bits());
+    assert_eq!(cold_content[0].to_bits(), 0.0_f64.to_bits());
+    assert_eq!(layers[0].cold_content_j_m2.to_bits(), 0.0_f64.to_bits());
+    assert!(
+        (refreeze_capacity_kg_m2 - routed - retained - refrozen).abs()
+            <= SNOW_STAGE3_LIQUID_CLOSURE_TOLERANCE_M * STAGE3_RHO_WATER_KG_M3
+    );
+    assert!(
+        (layers[0].mass_swe_m * STAGE3_RHO_WATER_KG_M3 - beginning_ice_kg_m2 - refrozen).abs()
+            <= 1.0e-12
+    );
+    assert!(raw_energy_remainder_j_m2.abs() <= STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2);
+}
+
+#[test]
+fn persistent_refreeze_roundoff_poison_rejects_material_or_wrong_branch_negative() {
+    let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+    assert!(
+        Wb11HydrologyKernel::canonical_stage3_refreeze_cold_content_remainder(
+            phase_class,
+            10.9,
+            10.9 + 2.0 * STAGE3_REFREEZE_COLD_CONTENT_ROUNDOFF_J_M2,
+            true,
+        )
+        .is_err()
+    );
+    assert!(
+        Wb11HydrologyKernel::canonical_stage3_refreeze_cold_content_remainder(
+            phase_class,
+            10.9,
+            10.9 + 0.5 * STAGE3_REFREEZE_COLD_CONTENT_ROUNDOFF_J_M2,
+            false,
+        )
+        .is_err()
+    );
 }
 
 #[test]

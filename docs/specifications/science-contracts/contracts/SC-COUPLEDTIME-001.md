@@ -4,7 +4,7 @@ title: Coupled Time Support, Event, and Atomic Chronology Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + time/numerics + transaction/restart reviewers
-contract_version: 3
+contract_version: 9
 producer_scope:
   - OPENWEPP_COUPLED_TIME_SUPPORT_V1
   - Coupled parent-interval coordinator and staged clock
@@ -12,7 +12,7 @@ consumer_scope:
   - Segmented-support vegetation V11
   - Snow, land-surface-energy, surface-liquid, Lane D, Richards, plant, soil-thermal, biogeochemistry, restart, and publication adopters
 evidence_level: static+independent_oracle+contract_vectors
-last_reviewed: 2026-08-20
+last_reviewed: 2026-08-28
 supersedes: []
 superseded_by: []
 ---
@@ -315,10 +315,22 @@ Event class is closed/versioned: `OwnershipTransfer=0`,
 source-owner identity, then event-context digest. Duplicate identity or
 incompatible equal-precedence transitions fail. After each event, either owner
 state, regime/participant identity, or the pending-event multiset must make
-physical progress; ordinals, IDs, and receipts do not count. The cycle key is
-the framed hash of tick, complete-owner digest, regime/participant digest, and
-sorted pending-event semantic digests. A repeated key or more than 256
-transitions at one tick fails `ERR-CT-013`.
+physical progress. There is one narrow receipt-custody successor: an
+`OwnershipTransfer` whose exact mutation set is empty and whose ending owners,
+regime, and participants are byte-identical may remove one independently
+validated pending custody event when its canonically ordered ledger is
+nonempty, balanced, and every entry has nonzero debit, matching nonzero credit,
+and nonzero operand-lineage digests. That transition advances the event and
+segment ordinals exactly once and persists exactly one accepted event receipt;
+it changes no time, rate, owner, regime, or participant state. Its domain owner
+must independently prove positive output, exact first-hop mass and enthalpy
+closure, zero retained mass and enthalpy, and at least one complete runoff or
+outlet receipt. Ordinals, IDs, or receipts without that typed custody authority
+do not count as progress. Any other empty no-op, missing/empty/unbalanced/zero
+ledger authority, wrong event class, or replay remains `ERR-CT-013`. The cycle
+key is the framed hash of tick, complete-owner digest,
+regime/participant digest, and sorted pending-event semantic digests. A
+repeated key or more than 256 transitions at one tick fails `ERR-CT-013`.
 Accepted event receipts prevent replay, including after restart.
 
 The canonical reference chronology is: segment 0 has owners A+B active and C
@@ -357,6 +369,29 @@ publication order, and terminal parent identity.
 Coupled-time restart is additive and versioned. Existing DirectV10 persisted-
 restart V1 schema, vectors, manifest, and bytes remain byte-identical. Any
 change to an existing wire requires separate authority amendment.
+
+`OPENWEPP_SNOW_STAGE3_V11_RESTART_V3` may replace resident completed-day
+detail only after the complete day has been validated, written as canonical
+uncompressed bytes to transaction-private durable storage, and acknowledged by
+the exact content-addressed archive record. The append-only archive manifest
+seals day count/order, prior and resulting ordered/content roots, complete
+parent and publication receipt identities, beginning/ending owner sets, clock
+and parent sequence, and the bounded qualification delta. A resident prefix
+seals the same terminal roots/counts and qualification fold; only the active
+day and exact next-owner/event/WB14 tail remain resident. The next day is not
+admitted while an archive acknowledgement is pending.
+
+Archive acknowledgement is an atomic owner operation. Any write, sync,
+content-digest, manifest-append, publication-rotation, prefix-fold, or final
+owner/count/root failure leaves the full completed day resident and changes no
+prefix, publication history, owner, clock, or public output. Whole-run failure
+discards the transaction-private archive together with all private output
+spools. Restore V3 requires the matching manifest and every content-addressed
+record and rejects omission, truncation, duplication, reorder, substitution,
+wrong prior/final root, wrong day count, or wrong final owner. Uncompacted and
+archived continuation must produce identical physical owners, accepted
+publication rows, WB14 materialization, archive roots, qualification fold, and
+restart continuation.
 
 `OPENWEPP_COUPLED_TIME_RESTART_V2` retains the complete canonical owner bytes,
 controller checkpoint bytes, accepted slab, event, and scheduled-once receipts,
@@ -486,7 +521,7 @@ digest binds this matrix, both precedence tables, and the 256-event budget.
 | owner support/duration/beginning join differs | reject entire attempt | `ERR-CT-010 SlabJoinMismatch` |
 | owner attempts direct clock advancement | reject entire attempt | `ERR-CT-011 UnauthorizedClockAdvance` |
 | event failure/replay/duplicate | atomic no-op | `ERR-CT-012 EventTransition` |
-| same-tick event no-progress cycle | atomic no-op | `ERR-CT-013 EventNoProgressCycle` |
+| same-tick event no-progress cycle, including any empty mutation without the exact typed receipt-custody exception | atomic no-op | `ERR-CT-013 EventNoProgressCycle` |
 | ledger/ending-owner mismatch | reject entire acceptance | `ERR-CT-014 AtomicAcceptance` |
 | restart schema/digest/policy mismatch | reject restore | `ERR-CT-015 RestartMismatch` |
 | rejected state appears in restart/reduction/output | reject | `ERR-CT-016 RejectedStateLeak` |
@@ -495,8 +530,12 @@ digest binds this matrix, both precedence tables, and the 256-event budget.
 | unsupported authority tuple | reject configuration | `ERR-CT-019 UnsupportedAuthorityTuple` |
 | malformed/noncanonical serialization | reject | `ERR-CT-020 Serialization` |
 | no candidate satisfies both neighbor supports and all independently admitted event tolerances | atomic parent retry/no-op; no owner or chronology mutation | `ERR-CT-021 EventBoundaryNoCandidate` |
+| archive record/manifest/prefix/durable acknowledgement or V3 archive-reader mismatch | reject without rotation or owner mutation | `ERR-CT-027 ArchiveMismatch` |
 
-Error precedence is the numeric order `ERR-CT-001` through `ERR-CT-021`.
+`ERR-CT-022` through `ERR-CT-026` are reserved historical candidate
+identifiers and are not active version-8 failure authority. Active error
+precedence is the numeric order `ERR-CT-001` through `ERR-CT-021`, followed by
+`ERR-CT-027`.
 Within a class, choose the earliest canonical owner/constraint/event identity.
 Validation must not depend on hash-map iteration order.
 
@@ -525,7 +564,7 @@ one family are simultaneously true.
 | INV-COUPLEDTIME-004 | Rejected attempts consume no accepted chronology or physical identity and leave all accepted/staged state byte-identical. | REF-CT-TRANSACTION | `[DIRECT][Static]` | rollback digest comparison | `ERR-CT-016` |
 | INV-COUPLEDTIME-005 | An accepted slab begins from one owner set, uses one support, closes ledgers, installs all participants atomically, and advances exactly once. | REF-CT-TRANSACTION, REF-CT-PHYSICAL | `[DIRECT][Static]` | slab-candidate join/commit | `ERR-CT-010/014` |
 | INV-COUPLEDTIME-006 | The parent transaction ID increments once at complete parent commit; slab/event attempts never increment it. | REF-CT-TRANSACTION | `[DIRECT][Static]` | transaction receipt checks | `ERR-CT-003/014` |
-| INV-COUPLEDTIME-007 | Event transitions advance no time, integrate no rate, explicitly join owner digests, close transfer ledgers, advance one event ordinal, and cannot replay. | REF-CT-SNOW, REF-CT-PHYSICAL | `[DIRECT][Static]` | event receipt/ledger/replay set | `ERR-CT-012/013/014` |
+| INV-COUPLEDTIME-007 | Event transitions advance no time, integrate no rate, explicitly join owner digests, close transfer ledgers, advance one event and segment ordinal, and cannot replay. An exact-empty-mutation, unchanged-owner/regime/participant `OwnershipTransfer` counts as progress only with a nonempty balanced ledger whose debit, matching credit, and lineage digests are all nonzero; every ordinary empty no-op fails `ERR-CT-013`. | REF-CT-SNOW, REF-CT-PHYSICAL | `[DIRECT][Static]` | event receipt/ledger/replay and typed receipt-custody vectors | `ERR-CT-012/013/014` |
 | INV-COUPLEDTIME-008 | The complete parent owner set is fixed; segment participants may change only through admitted segment/event authority; inactive owners are byte-identical except at admitted events. | REF-CT-SNOW, REF-CT-TRANSACTION | `[INFERENCE][Static]` | participant subset/owner digest | `ERR-CT-004/005/012` |
 | INV-COUPLEDTIME-009 | Constraint reduction is deterministic by tick, class, owner, and digest; adopter controller physics remains outside clock authority. | REF-CT-PHYSICAL | `[INFERENCE][Static]` | reducer/policy digest vectors | `ERR-CT-006/008/015` |
 | INV-COUPLEDTIME-010 | Restart contains every accepted temporal receipt and staged reduction/publication fact needed for equivalent continuation and no rejected iterate. | REF-CT-RESTART | `[DIRECT][Static]` | schema/roundtrip/poison tests | `ERR-CT-015/016/017` |
@@ -539,6 +578,22 @@ one family are simultaneously true.
 | INV-COUPLEDTIME-018 | Event boundary candidates satisfy both neighbor-side support predicates and all four independently admitted tolerances. | Child 2C event authority | `[INFERENCE][Static]` | candidate validator | `ERR-CT-021` |
 | INV-COUPLEDTIME-019 | Proposed and accepted ticks, candidate digest, errors, and tie-break identity are retained and replay-authenticated. | Child 2C receipt authority | `[INFERENCE][Static]` | event receipt validator | `ERR-CT-012/015` |
 | INV-COUPLEDTIME-020 | A no-candidate event is an atomic retry/failure; it cannot drop, freeze, scale, or execute a below-domain successor. | Child 2C rollback authority | `[INFERENCE][Static]` | rollback validator | `ERR-CT-021` |
+| INV-COUPLEDTIME-021 | Stage-3 adaptive candidates use exact integer 60-second (`60_000_000_000 ns`) quanta, tile the parent exactly, evaluate direct plus composed paths from immutable beginnings, and install only the composed result. Stable ordinary supports accept steps substantially larger than one quantum. | owner-selected adaptive model | `[DIRECT][Static] + [INFERENCE][Static] + [DIRECT][Ran]`; exact-60 focused and canonical one-day replacement evidence passed 2026-08-28 | grid/controller/receipt guards plus package one-day evidence | `ERR-CT-001/010/016/021` |
+| INV-COUPLEDTIME-022 | A floor operation has exactly one physical trial and a typed `FloorAccepted` or `FloorRejected` decision; no split child or sub-floor continuation is fabricated. | owner-selected adaptive model | `[DIRECT][Static]` | floor admission and provider-call guards | `ERR-CT-001/021` |
+| INV-COUPLEDTIME-023 | Direct/composed comparison spans the complete prognostic owner set with dimension-specific tolerances and exact discrete topology, event, parcel, ordering, and schema predicates. | transaction atomicity and owner contracts | `[DIRECT][Static] + [INFERENCE][Static]` | comparison vector and owner-set validator | `ERR-CT-010/012/014/016` |
+| INV-COUPLEDTIME-024 | The canonical receipt chain is acyclic: parent request, direct trial, split child 1, split child 2, comparison, accepted microstep, optional event group/parcel set, ending owner set, parent receipt. Every node binds exact support, attempt, beginning/ending owner digests, forcing, topology, configuration, ledgers, and decision. | canonical framed SHA-256 and transaction authority | `[DIRECT][Static]` | receipt replay/poison validation | `ERR-CT-002/003/010/012/015/017` |
+| INV-COUPLEDTIME-026 | Completed-day detail rotates only after durable exact archive acknowledgement. The content-addressed manifest, bounded prefix/qualification fold, resident active-day tail, publication-history prefix, and materialized WB14 tail must reconstruct the uncompacted owner/publication chronology exactly; missing or substituted archive authority fails closed. | transaction, restart, and canonical receipt authority | `[DIRECT][Static]` | archive/prefix/rotation/restart equality and poison gates | `ERR-CT-015/018/020/027` |
+
+`INV-COUPLEDTIME-025` is a reserved historical candidate identifier and is not
+active version-8 invariant authority.
+
+The 2026-08-27 owner amendment changes only the Stage-3 minimum positive
+adaptive support and its exact tiling grid, from 600 ms to 60 seconds. It does
+not change constraint ordering, direct/composed ownership, conservation or
+custody, participant/owner topology, receipt content/order, event atomicity,
+restart/rollback, or fail-closed behavior. All earlier floor-dependent vector
+results, attempt counts, event ticks, traces, and performance evidence are
+superseded and require fresh 60-second execution; no rerun is claimed here.
 
 ## Canonical obligations
 
@@ -552,6 +607,7 @@ one family are simultaneously true.
 | OBL-COUPLEDTIME-006 | V10 remains immutable; full-support V10/V11 equivalence belongs to Child 2B. | exact-diff/write-set audit |
 | OBL-COUPLEDTIME-007 | Richards equations and controller policy remain outside this contract; Richards adoption must import this clock authority. | boundary and tuple audit |
 | OBL-COUPLEDTIME-008 | Child 2C event receipts bind canonical ticks, participant/support receipts, immutable terminal-state and candidate ledgers, tolerance policy, tie rank, owner custody, and atomic retry identity. | schema, oracle, restart, and transaction gates |
+| OBL-COUPLEDTIME-009 | Multi-day Stage-3 execution proves bounded one-active-day residency, exact uncompacted-versus-archived equality, durable archive rollback, streamed archive reconstruction, V3 restart admission/poisons, and flat retained-memory growth. | runner consumer, archive reader, restart, poison, and resource gates |
 
 ## Symbol alias map
 
@@ -634,7 +690,10 @@ poisons:
 - integer-to-binary64 duration bits, halfway event ties, one-bit neighbors, and
   quantization at start/interior/end boundaries;
 - event at parent start, inside, and end; two same-tick events; event failure;
-  no-progress cycle; restart immediately before/after; replay poison;
+  no-progress cycle; receipt-bearing exact-empty-mutation `OwnershipTransfer`
+  with unchanged owners/regime/participants and one ordinal/receipt advance;
+  empty, zero, unbalanced, missing-lineage, wrong-class, and replay poisons;
+  restart immediately before/after;
 - A+B active/C unchanged, B-to-C event, then A+C active/B terminal;
 - constraint behind cursor, past end, zero step without event, incompatible
   equal-time constraints, deterministic compatible ties, and minimum-step
@@ -653,6 +712,14 @@ poisons:
 - authority tuples: legacy hydrology with legacy fixed schedule admitted;
   `RichardsCoupledV1 + LegacyFixedSchedule`, whole-day nonpersistent Lane D, or
   legacy R4L mutation rejected.
+
+Version-7 Stage-3 vectors additionally cover odd 60-second-quantum tiling,
+direct-invalid/composed-valid retry, exact floor acceptance and rejection,
+initial-proposal and growth-history invariance, attempt-ordinal invariance,
+complete-owner substitution, same-tick event groups, later event boundaries,
+receiver exact-once posture, adaptive-boundary restart, and byte-identical
+uninterrupted/restarted parent receipts. A complete-season fixed-floor run is
+not an admitted qualification oracle.
 
 Expected outputs include canonical receipt/digest identities, exact ticks and
 duration bits, selected constraints, accepted owner bytes, event/scheduled
@@ -677,7 +744,7 @@ contradiction.
 
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
 |---|---|---|---|---|---|---|
-| `BEI-CT-001` | coupled-time package Authority To Establish | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-001, INV-COUPLEDTIME-002, INV-COUPLEDTIME-003, INV-COUPLEDTIME-004, INV-COUPLEDTIME-005, INV-COUPLEDTIME-006, INV-COUPLEDTIME-007, INV-COUPLEDTIME-008, INV-COUPLEDTIME-009, INV-COUPLEDTIME-010, INV-COUPLEDTIME-011, INV-COUPLEDTIME-012, INV-COUPLEDTIME-013, INV-COUPLEDTIME-014, INV-COUPLEDTIME-015, INV-COUPLEDTIME-016, OBL-COUPLEDTIME-001, OBL-COUPLEDTIME-002, OBL-COUPLEDTIME-003, OBL-COUPLEDTIME-004, OBL-COUPLEDTIME-005, OBL-COUPLEDTIME-006, OBL-COUPLEDTIME-007` | `flagged-binding-addition` | Entire new authority receives the mandatory contract cycle. |
+| `BEI-CT-001` | coupled-time package Authority To Establish | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-001, INV-COUPLEDTIME-002, INV-COUPLEDTIME-003, INV-COUPLEDTIME-004, INV-COUPLEDTIME-005, INV-COUPLEDTIME-006, INV-COUPLEDTIME-007, INV-COUPLEDTIME-008, INV-COUPLEDTIME-009, INV-COUPLEDTIME-010, INV-COUPLEDTIME-011, INV-COUPLEDTIME-012, INV-COUPLEDTIME-013, INV-COUPLEDTIME-014, INV-COUPLEDTIME-015, INV-COUPLEDTIME-016, INV-COUPLEDTIME-026, OBL-COUPLEDTIME-001, OBL-COUPLEDTIME-002, OBL-COUPLEDTIME-003, OBL-COUPLEDTIME-004, OBL-COUPLEDTIME-005, OBL-COUPLEDTIME-006, OBL-COUPLEDTIME-007, OBL-COUPLEDTIME-009` | `flagged-binding-addition` | Entire new authority receives the mandatory contract cycle. |
 | `BEI-CT-002` | terminal snow HOLD timing findings | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-002, INV-COUPLEDTIME-007, INV-COUPLEDTIME-008, INV-COUPLEDTIME-010` | `flagged-binding-addition` | Preserves event, participant, and restart residue. |
 | `BEI-CT-003` | Richards assessment timing recommendation | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-003, INV-COUPLEDTIME-009, INV-COUPLEDTIME-016, OBL-COUPLEDTIME-007` | `flagged-binding-addition` | Imports chronology only, not Richards numerics. |
 | `BEI-CT-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-COUPLEDTIME-017, INV-COUPLEDTIME-018, INV-COUPLEDTIME-019, INV-COUPLEDTIME-020, OBL-COUPLEDTIME-008` | `flagged-binding-addition` | Active-participant support, canonical event receipt, deterministic coalescing, and atomic no-candidate retry. |
@@ -796,6 +863,10 @@ rejection, restart before/after the event, and wrong-regime flux rejection.
 
 | Date | Version | Change |
 |---|---|---|
+| 2026-08-28 | `9` | Admitted one typed receipt-custody progress successor for exact-empty-mutation `OwnershipTransfer` events with unchanged owners/regime/participants and a nonempty balanced nonzero debit/credit/lineage ledger. The successor advances one event/segment ordinal and one receipt only; all ordinary empty no-ops remain `ERR-CT-013`. |
+| 2026-08-28 | `8` | Added mandatory durable content-addressed completed-day archival, bounded resident prefix/qualification fold, publication/WB14 rotation, transaction-private runner spooling, and fail-closed V3 archive-reader/restart authority without changing physical equations or accepted chronology. |
+| 2026-08-27 | `7` owner amendment | Replaced the provisional 600-ms Stage-3 floor with an exact 60-second (`60_000_000_000 ns`) temporal floor. Conservation, custody, phase, topology, receipt, rollback, and fail-closed obligations are unchanged; stable ordinary supports must accept substantially larger steps. Prior floor-dependent evidence is superseded and awaits rerun. |
+| 2026-08-26 | `7` | Replaced terminal root/localization chronology with exact-grid adaptive compositional stepping, composed-result ownership, typed floor decisions, complete-owner/discrete comparison, and acyclic adaptive/event receipt custody; versions 4-6 remain rejected historical candidates. |
 | 2026-08-20 | `1-rc1` | Authored complete coupled-time identity, event, participant, controller, restart, atomicity, and publication authority for independent review. |
 | 2026-08-20 | `1-rc2` | Added complete accepted-slab receipt chronology to restart after implementation exposed that reductions/publications cannot reconstruct parent finalization. |
 | 2026-08-20 | `2` | Preserved restart V1, released restart V2 slab/event chronology, and closed scheduled-once receipt identity without borrowing event ordinals. |

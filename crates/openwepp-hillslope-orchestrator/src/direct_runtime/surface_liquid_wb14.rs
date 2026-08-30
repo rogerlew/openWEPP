@@ -1,10 +1,85 @@
 use crate::constants::WB11_ZERO_THRESHOLD;
 use openwepp_coupled_time::{FramedField, framed_sha256};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, ser::SerializeSeq};
+use std::{ops::Index, sync::Arc};
 
 use super::{
     DirectRuntimeError, validate_finite, validate_nonnegative_direct_m, validate_positive_direct,
 };
+
+#[cfg(test)]
+std::thread_local! {
+    static WB14_SHORT_PARENT_SUPPORT_TEST_PERMIT: std::cell::Cell<Option<u128>> = const { std::cell::Cell::new(None) };
+}
+
+#[cfg(test)]
+pub(crate) struct DirectWb14ShortParentSupportTestPermitV1 {
+    previous: Option<u128>,
+}
+
+#[cfg(test)]
+impl Drop for DirectWb14ShortParentSupportTestPermitV1 {
+    fn drop(&mut self) {
+        WB14_SHORT_PARENT_SUPPORT_TEST_PERMIT.with(|permit| permit.set(self.previous));
+    }
+}
+
+#[cfg(test)]
+pub(crate) fn permit_short_wb14_parent_support_for_test(
+    duration_ns: u128,
+) -> DirectWb14ShortParentSupportTestPermitV1 {
+    assert!(
+        duration_ns > 0 && duration_ns != 1_800_000_000_000 && duration_ns % 60_000_000_000 == 0,
+        "short WB14 production-test parent support"
+    );
+    let previous = WB14_SHORT_PARENT_SUPPORT_TEST_PERMIT.with(|permit| {
+        let previous = permit.get();
+        permit.set(Some(duration_ns));
+        previous
+    });
+    DirectWb14ShortParentSupportTestPermitV1 { previous }
+}
+
+fn wb14_parent_support_is_admitted(duration_ns: u128) -> bool {
+    if duration_ns == 1_800_000_000_000 {
+        return true;
+    }
+    #[cfg(test)]
+    {
+        return WB14_SHORT_PARENT_SUPPORT_TEST_PERMIT
+            .with(|permit| permit.get() == Some(duration_ns));
+    }
+    #[cfg(not(test))]
+    false
+}
+
+#[cfg(test)]
+std::thread_local! {
+    static WB14_FORCE_DEEP_RECEIPT_HISTORY_CLONE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+#[cfg(test)]
+pub(crate) struct DirectWb14DeepReceiptHistoryClonePermitV1 {
+    previous: bool,
+}
+
+#[cfg(test)]
+impl Drop for DirectWb14DeepReceiptHistoryClonePermitV1 {
+    fn drop(&mut self) {
+        WB14_FORCE_DEEP_RECEIPT_HISTORY_CLONE.with(|permit| permit.set(self.previous));
+    }
+}
+
+#[cfg(test)]
+pub(crate) fn force_deep_clone_direct_wb14_receipt_history_v1()
+-> DirectWb14DeepReceiptHistoryClonePermitV1 {
+    let previous = WB14_FORCE_DEEP_RECEIPT_HISTORY_CLONE.with(|permit| {
+        let previous = permit.get();
+        permit.set(true);
+        previous
+    });
+    DirectWb14DeepReceiptHistoryClonePermitV1 { previous }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(super) struct DirectWb14ContinuationIntervalInputs {
@@ -329,13 +404,115 @@ pub(super) struct DirectWb14ParentFinalizationV1 {
     pub receipt: DirectWb14ParentReceiptV1,
 }
 
+#[derive(Debug, Default)]
+pub(super) struct DirectWb14ChildReceiptHistoryV1 {
+    receipts: Arc<Vec<Arc<DirectWb14ChildReceiptV1>>>,
+}
+
+impl Clone for DirectWb14ChildReceiptHistoryV1 {
+    fn clone(&self) -> Self {
+        #[cfg(test)]
+        if WB14_FORCE_DEEP_RECEIPT_HISTORY_CLONE.with(std::cell::Cell::get) {
+            return Self {
+                receipts: Arc::new(self.iter().cloned().map(Arc::new).collect()),
+            };
+        }
+        Self {
+            receipts: Arc::clone(&self.receipts),
+        }
+    }
+}
+
+impl DirectWb14ChildReceiptHistoryV1 {
+    fn len(&self) -> usize {
+        self.receipts.len()
+    }
+
+    fn is_empty(&self) -> bool {
+        self.receipts.is_empty()
+    }
+
+    fn iter(&self) -> impl ExactSizeIterator<Item = &DirectWb14ChildReceiptV1> {
+        self.receipts.iter().map(Arc::as_ref)
+    }
+
+    pub(super) fn last(&self) -> Option<&DirectWb14ChildReceiptV1> {
+        self.receipts.last().map(Arc::as_ref)
+    }
+
+    fn push(&mut self, receipt: DirectWb14ChildReceiptV1) {
+        Arc::make_mut(&mut self.receipts).push(Arc::new(receipt));
+    }
+
+    #[cfg(test)]
+    fn shares_storage_with(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.receipts, &other.receipts)
+    }
+
+    #[cfg(test)]
+    fn get_mut_for_test(&mut self, index: usize) -> Option<&mut DirectWb14ChildReceiptV1> {
+        Arc::make_mut(&mut self.receipts)
+            .get_mut(index)
+            .map(Arc::make_mut)
+    }
+
+    #[cfg(test)]
+    fn swap_for_test(&mut self, left: usize, right: usize) {
+        Arc::make_mut(&mut self.receipts).swap(left, right);
+    }
+}
+
+impl Index<usize> for DirectWb14ChildReceiptHistoryV1 {
+    type Output = DirectWb14ChildReceiptV1;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        self.receipts[index].as_ref()
+    }
+}
+
+impl PartialEq for DirectWb14ChildReceiptHistoryV1 {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.receipts, &other.receipts) || self.iter().eq(other.iter())
+    }
+}
+
+impl Eq for DirectWb14ChildReceiptHistoryV1 {}
+
+impl Serialize for DirectWb14ChildReceiptHistoryV1 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut sequence = serializer.serialize_seq(Some(self.len()))?;
+        for receipt in self.iter() {
+            sequence.serialize_element(receipt)?;
+        }
+        sequence.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for DirectWb14ChildReceiptHistoryV1 {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let receipts = Vec::<DirectWb14ChildReceiptV1>::deserialize(deserializer)?
+            .into_iter()
+            .map(Arc::new)
+            .collect();
+        Ok(Self {
+            receipts: Arc::new(receipts),
+        })
+    }
+}
+
 #[allow(dead_code)]
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub(super) struct DirectWb14ParentIntervalV1 {
     authority: DirectWb14ParentAuthorityV1,
     beginning_cursor: DirectWb14PersistentCursorV1,
     working: DirectWb14ParentWorkingStateV1,
-    receipts: Vec<DirectWb14ChildReceiptV1>,
+    receipts: DirectWb14ChildReceiptHistoryV1,
 }
 
 #[allow(dead_code)]
@@ -575,7 +752,7 @@ impl DirectWb14ParentIntervalV1 {
     pub(super) fn canonical_sha256(&self) -> Result<[u8; 32], DirectWb14ParentIntervalErrorV1> {
         self.validate()?;
         let mut receipts = Vec::with_capacity(self.receipts.len() * 32);
-        for receipt in &self.receipts {
+        for receipt in self.receipts.iter() {
             receipts.extend_from_slice(&receipt.receipt_sha256);
         }
         let working_state_sha256 = working_digest(self.working)?;
@@ -638,10 +815,10 @@ impl DirectWb14ParentIntervalV1 {
         {
             return Err(DirectWb14ParentIntervalErrorV1::ImmutableIdentity);
         }
-        if authority
+        if !authority
             .support_end_ns
             .checked_sub(authority.support_start_ns)
-            != Some(1_800_000_000_000)
+            .is_some_and(wb14_parent_support_is_admitted)
         {
             return Err(DirectWb14ParentIntervalErrorV1::ParentSupport);
         }
@@ -701,7 +878,7 @@ impl DirectWb14ParentIntervalV1 {
                 cumulative_infiltration_m,
                 receipt_chain_sha256: chain,
             },
-            receipts: Vec::new(),
+            receipts: DirectWb14ChildReceiptHistoryV1::default(),
         })
     }
 
@@ -767,9 +944,12 @@ impl DirectWb14ParentIntervalV1 {
         let duration_ns = support_end_ns
             .checked_sub(support_start_ns)
             .ok_or(DirectWb14ParentIntervalErrorV1::ChildSupport)?;
-        let admitted_proposal = [1_800.0_f64, 900.0, 60.0]
-            .iter()
-            .any(|candidate| candidate.to_bits() == proposed_upper_bound_s.to_bits());
+        let proposal_ns = proposed_upper_bound_s * 1.0e9;
+        let admitted_proposal = proposed_upper_bound_s.is_finite()
+            && proposed_upper_bound_s >= 60.0
+            && proposal_ns.is_finite()
+            && proposal_ns.fract() == 0.0
+            && (proposal_ns as u128) % 60_000_000_000 == 0;
         if !admitted_proposal || duration_ns == 0 || inputs.is_empty() {
             return Err(DirectWb14ParentIntervalErrorV1::ChildCadence);
         }
@@ -1125,7 +1305,7 @@ impl DirectWb14ParentIntervalV1 {
     /// compare all canonical receipt and working-state bytes.
     pub(super) fn validate(&self) -> Result<(), DirectWb14ParentIntervalErrorV1> {
         let mut reconstructed = Self::begin(self.authority, self.beginning_cursor)?;
-        for receipt in &self.receipts {
+        for receipt in self.receipts.iter() {
             reconstructed = receipt.validate(&reconstructed)?;
         }
         if reconstructed.working != self.working || reconstructed.receipts != self.receipts {
@@ -1138,7 +1318,7 @@ impl DirectWb14ParentIntervalV1 {
         self.working
     }
 
-    pub(super) fn receipts(&self) -> &[DirectWb14ChildReceiptV1] {
+    pub(super) fn receipts(&self) -> &DirectWb14ChildReceiptHistoryV1 {
         &self.receipts
     }
 
@@ -1172,6 +1352,72 @@ impl DirectWb14ParentIntervalV1 {
             return Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation);
         }
         Ok(())
+    }
+
+    pub(super) fn coupled_child_binding_v1(
+        &self,
+    ) -> Result<super::DirectWb14CoupledChildBindingV1, DirectWb14ParentIntervalErrorV1> {
+        self.validate()?;
+        let child = self
+            .receipts
+            .last()
+            .ok_or(DirectWb14ParentIntervalErrorV1::ReceiptValidation)?;
+        Ok(super::DirectWb14CoupledChildBindingV1 {
+            proposed_upper_bound_s_bits: child.proposed_upper_bound_s_bits,
+            coupled_parent_transaction_sha256: self.authority.coupled_parent_transaction_sha256,
+            accepted_slab_sha256: child.accepted_coupled_slab_sha256,
+            parent_beginning_complete_owner_set_sha256: child
+                .child_beginning_complete_owner_set_sha256,
+            parent_support_start_ns: self.authority.support_start_ns,
+            parent_support_end_ns: self.authority.support_end_ns,
+            child_support_start_ns: child.support_start_ns,
+            child_support_end_ns: child.support_end_ns,
+        })
+    }
+
+    /// Reseal the last accepted child against the final coupled-slab digest.
+    /// Every physical transition, amount, owner, support, queue, and context
+    /// operand is replayed from the already validated receipt. Only the final
+    /// child's coupled-slab authorization is replaced.
+    pub(super) fn rebind_final_accepted_slab(
+        &self,
+        accepted_slab_sha256: [u8; 32],
+    ) -> Result<Self, DirectWb14ParentIntervalErrorV1> {
+        self.validate()?;
+        if accepted_slab_sha256 == [0; 32] || self.receipts.is_empty() {
+            return Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation);
+        }
+        let child_count = self.receipts.len();
+        let mut rebuilt = Self::begin(self.authority, self.beginning_cursor)?;
+        for (index, child) in self.receipts.iter().enumerate() {
+            let transitions = child
+                .transitions
+                .iter()
+                .copied()
+                .map(DirectWb14ChildTransitionV1::inputs)
+                .collect::<Vec<_>>();
+            let slab = if index + 1 == child_count {
+                accepted_slab_sha256
+            } else {
+                child.accepted_coupled_slab_sha256
+            };
+            rebuilt = rebuilt
+                .accept_child_transitions_with_slab(
+                    child.ordinal,
+                    child.support_start_ns,
+                    child.support_end_ns,
+                    child.predecessor_receipt_sha256,
+                    slab,
+                    child.child_beginning_complete_owner_set_sha256,
+                    child.pending_routed_parcels_before_sha256,
+                    child.pending_routed_parcels_after_sha256,
+                    f64::from_bits(child.proposed_upper_bound_s_bits),
+                    &transitions,
+                )?
+                .0;
+        }
+        rebuilt.validate()?;
+        Ok(rebuilt)
     }
 
     pub(super) fn validated_finalization(
@@ -1341,6 +1587,31 @@ mod tests {
             .0
     }
 
+    fn accept_bound_duration(
+        parent: &DirectWb14ParentIntervalV1,
+        duration_s: u64,
+        supply_m: f64,
+        accepted_slab_sha256: [u8; 32],
+    ) -> DirectWb14ParentIntervalV1 {
+        let start = parent.working().accepted_until_ns;
+        let end = start + u128::from(duration_s) * 1_000_000_000;
+        parent
+            .accept_child_transitions_with_slab(
+                parent.working().next_child_ordinal,
+                start,
+                end,
+                parent.working().receipt_chain_sha256,
+                accepted_slab_sha256,
+                [61; 32],
+                [62; 32],
+                [63; 32],
+                duration_s as f64,
+                &[child_inputs(parent, duration_s as f64, supply_m)],
+            )
+            .expect("accepted bound child")
+            .0
+    }
+
     #[test]
     fn one_parent_child_is_bitwise_identical_to_historical_interval_transition() {
         let beginning = parent_fixture();
@@ -1369,6 +1640,44 @@ mod tests {
                 .cumulative_infiltration_m
                 .to_bits(),
             historical.cumulative_infiltration_m.to_bits()
+        );
+    }
+
+    #[test]
+    fn shared_receipt_history_preserves_exact_legacy_json_and_forced_deep_reference() {
+        #[derive(Serialize)]
+        struct LegacyParentIntervalWireV1<'a> {
+            authority: DirectWb14ParentAuthorityV1,
+            beginning_cursor: DirectWb14PersistentCursorV1,
+            working: DirectWb14ParentWorkingStateV1,
+            receipts: Vec<&'a DirectWb14ChildReceiptV1>,
+        }
+
+        let parent = accept_duration(&parent_fixture(), 60, 0.000_12);
+        let shared = parent.clone();
+        assert!(parent.receipts.shares_storage_with(&shared.receipts));
+        let forced_deep = {
+            let _permit = force_deep_clone_direct_wb14_receipt_history_v1();
+            parent.clone()
+        };
+        assert!(!parent.receipts.shares_storage_with(&forced_deep.receipts));
+        assert_eq!(parent, forced_deep);
+
+        let actual = serde_json::to_vec(&parent).expect("shared parent JSON");
+        let legacy = serde_json::to_vec(&LegacyParentIntervalWireV1 {
+            authority: parent.authority,
+            beginning_cursor: parent.beginning_cursor,
+            working: parent.working,
+            receipts: parent.receipts.iter().collect(),
+        })
+        .expect("legacy parent JSON");
+        assert_eq!(actual, legacy);
+        let restored: DirectWb14ParentIntervalV1 =
+            serde_json::from_slice(&actual).expect("shared parent restore");
+        assert_eq!(restored, parent);
+        assert_eq!(
+            serde_json::to_vec(&restored).expect("restored JSON"),
+            actual
         );
     }
 
@@ -1414,6 +1723,155 @@ mod tests {
                 8
             );
         }
+    }
+
+    #[test]
+    fn final_slab_rebind_preserves_physics_and_rejects_receipt_poisons() {
+        let first = accept_bound_duration(&parent_fixture(), 900, 0.001, [31; 32]);
+        let original = accept_bound_duration(&first, 900, 0.002, [32; 32]);
+        let rebound = original
+            .rebind_final_accepted_slab([33; 32])
+            .expect("exact final-slab reseal");
+        assert!(
+            original
+                .receipts
+                .iter()
+                .take(1)
+                .eq(rebound.receipts.iter().take(1))
+        );
+        let before = original.receipts.last().expect("original final child");
+        let after = rebound.receipts.last().expect("rebound final child");
+        assert_eq!(after.accepted_coupled_slab_sha256, [33; 32]);
+        assert_ne!(before.receipt_sha256, after.receipt_sha256);
+        assert_ne!(
+            before.ending_working_state_sha256,
+            after.ending_working_state_sha256
+        );
+        assert_eq!(before.parent_id, after.parent_id);
+        assert_eq!(before.ofe_id_sha256, after.ofe_id_sha256);
+        assert_eq!(before.production_lane_id, after.production_lane_id);
+        assert_eq!(
+            before.surface_liquid_configuration_sha256,
+            after.surface_liquid_configuration_sha256
+        );
+        assert_eq!(
+            before.wb14_configuration_sha256,
+            after.wb14_configuration_sha256
+        );
+        assert_eq!(
+            before.wb14_model_definition_sha256,
+            after.wb14_model_definition_sha256
+        );
+        assert_eq!(
+            before.effective_conductivity_m_s_bits,
+            after.effective_conductivity_m_s_bits
+        );
+        assert_eq!(
+            before.matric_potential_m_bits,
+            after.matric_potential_m_bits
+        );
+        assert_eq!(
+            before.storage_capacity_m_bits,
+            after.storage_capacity_m_bits
+        );
+        assert_eq!(
+            before.parent_beginning_owner_sha256,
+            after.parent_beginning_owner_sha256
+        );
+        assert_eq!(
+            before.parent_beginning_cursor_sha256,
+            after.parent_beginning_cursor_sha256
+        );
+        assert_eq!(before.ordinal, after.ordinal);
+        assert_eq!(before.support_start_ns, after.support_start_ns);
+        assert_eq!(before.support_end_ns, after.support_end_ns);
+        assert_eq!(
+            before.beginning_working_state_sha256,
+            after.beginning_working_state_sha256
+        );
+        assert_eq!(
+            before.predecessor_receipt_sha256,
+            after.predecessor_receipt_sha256
+        );
+        assert_eq!(
+            before.child_beginning_complete_owner_set_sha256,
+            after.child_beginning_complete_owner_set_sha256
+        );
+        assert_eq!(
+            before.pending_routed_parcels_before_sha256,
+            after.pending_routed_parcels_before_sha256
+        );
+        assert_eq!(
+            before.pending_routed_parcels_after_sha256,
+            after.pending_routed_parcels_after_sha256
+        );
+        assert_eq!(before.child_inputs_sha256, after.child_inputs_sha256);
+        assert_eq!(before.transitions, after.transitions);
+        assert_eq!(
+            before.proposed_upper_bound_s_bits,
+            after.proposed_upper_bound_s_bits
+        );
+        assert_eq!(
+            before.accepted_duration_s_bits,
+            after.accepted_duration_s_bits
+        );
+        assert_eq!(
+            before.cumulative_supply_m_bits,
+            after.cumulative_supply_m_bits
+        );
+        assert_eq!(
+            before.cumulative_infiltration_m_bits,
+            after.cumulative_infiltration_m_bits
+        );
+        assert_eq!(before.interval_supply_m_bits, after.interval_supply_m_bits);
+        assert_eq!(
+            before.interval_infiltration_m_bits,
+            after.interval_infiltration_m_bits
+        );
+        assert_eq!(before.interval_excess_m_bits, after.interval_excess_m_bits);
+        assert_eq!(
+            original.working.accepted_until_ns,
+            rebound.working.accepted_until_ns
+        );
+        assert_eq!(
+            original.working.next_child_ordinal,
+            rebound.working.next_child_ordinal
+        );
+        assert_eq!(
+            original.working.cumulative_supply_m.to_bits(),
+            rebound.working.cumulative_supply_m.to_bits()
+        );
+        assert_eq!(
+            original.working.cumulative_infiltration_m.to_bits(),
+            rebound.working.cumulative_infiltration_m.to_bits()
+        );
+        rebound.finalize().expect("rebound parent finalization");
+
+        let mut transition = original.clone();
+        transition
+            .receipts
+            .get_mut_for_test(1)
+            .expect("transition receipt")
+            .transitions[0]
+            .interval_duration_s_bits ^= 1;
+        assert!(transition.rebind_final_accepted_slab([33; 32]).is_err());
+        let mut amount = original.clone();
+        amount
+            .receipts
+            .get_mut_for_test(1)
+            .expect("amount receipt")
+            .interval_supply_m_bits ^= 1;
+        assert!(amount.rebind_final_accepted_slab([33; 32]).is_err());
+        let mut owner = original.clone();
+        owner
+            .receipts
+            .get_mut_for_test(1)
+            .expect("owner receipt")
+            .child_beginning_complete_owner_set_sha256[0] ^= 1;
+        assert!(owner.rebind_final_accepted_slab([33; 32]).is_err());
+        let mut order = original;
+        order.receipts.swap_for_test(0, 1);
+        assert!(order.rebind_final_accepted_slab([33; 32]).is_err());
     }
 
     #[test]
@@ -1739,6 +2197,20 @@ mod tests {
     fn accepted_support_may_be_truncated_below_the_selected_upper_bound() {
         let beginning = parent_fixture();
         let start = beginning.working().accepted_until_ns;
+        let (exact_floor, _) = beginning
+            .accept_child(
+                0,
+                start,
+                start + 60_000_000_000,
+                beginning.working().receipt_chain_sha256,
+                60.0,
+                child_inputs(&beginning, 60.0, 0.000_1),
+            )
+            .expect("exact 60-second child");
+        assert_eq!(
+            exact_floor.receipts()[0].accepted_duration_s_bits,
+            60.0_f64.to_bits()
+        );
         let duration_s = 437.0;
         let (ending, _) = beginning
             .accept_child(
@@ -1765,6 +2237,7 @@ mod tests {
 
         for (proposal, end) in [
             (437.0, start + 437_000_000_000),
+            (59_999_999_999_f64 / 1_000_000_000.0, start + 59_999_999_999),
             (60.0, start + 61_000_000_000),
         ] {
             assert_eq!(
@@ -1972,13 +2445,21 @@ mod tests {
             .expect("parent receipt reconstruction");
 
         let mut poisoned = ending.clone();
-        poisoned.receipts[0].interval_supply_m_bits = 0.002_f64.to_bits();
+        poisoned
+            .receipts
+            .get_mut_for_test(0)
+            .expect("poisoned receipt")
+            .interval_supply_m_bits = 0.002_f64.to_bits();
         assert_eq!(
             poisoned.validate(),
             Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation)
         );
         let mut queue_poisoned = ending.clone();
-        queue_poisoned.receipts[0].pending_routed_parcels_after_sha256 = [91; 32];
+        queue_poisoned
+            .receipts
+            .get_mut_for_test(0)
+            .expect("queue-poisoned receipt")
+            .pending_routed_parcels_after_sha256 = [91; 32];
         assert_eq!(
             queue_poisoned.validate(),
             Err(DirectWb14ParentIntervalErrorV1::ReceiptValidation)

@@ -128,6 +128,11 @@ pub(crate) fn parse_runfile_execution_config(
         runfile.inputs.pmetpara.as_deref(),
         "inputs.pmetpara",
     )?;
+    let snow_stage3_v11_owner_seed_path = resolve_optional_runfile_path(
+        run_file_path,
+        runfile.inputs.snow_stage3_v11_owner_seed.as_deref(),
+        "inputs.snow_stage3_v11_owner_seed",
+    )?;
     if !legacy_sidecar_discovery
         && let Some(path) = pmetpara_path.as_ref()
         && !path.is_file()
@@ -151,6 +156,7 @@ pub(crate) fn parse_runfile_execution_config(
         sidecar_overrides: RunfileSidecarOverrides {
             wepp_ui: runfile.inputs.wepp_ui,
             pmetpara_path,
+            snow_stage3_v11_owner_seed_path,
             snow: runfile.inputs.snow,
             frost: runfile.inputs.frost,
         },

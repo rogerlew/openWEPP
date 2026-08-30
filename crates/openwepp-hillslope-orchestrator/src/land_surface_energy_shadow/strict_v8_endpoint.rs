@@ -28,9 +28,9 @@ use super::covered_v8_owner::{
     construct_multi_tile_v8_owner_envelope_v11,
 };
 use super::multi_tile_runtime::{
-    MultiTileFailurePhase, PendingPayloadKind, StrictProjectedCoveredTile, StrictProjectedOpenTile,
-    StrictProjectedStage3OpenSnowTile, StrictProjectedTileProblem, execute_multi_tile_runtime,
-    execute_multi_tile_runtime_provisional,
+    MultiTileFailurePhase, MultiTileRuntimeResult, PendingPayloadKind, StrictProjectedCoveredTile,
+    StrictProjectedOpenTile, StrictProjectedStage3OpenSnowTile, StrictProjectedTileProblem,
+    execute_multi_tile_runtime, execute_multi_tile_runtime_provisional,
 };
 use super::v8_input_projection::{
     V8SolverReadyTilePhysics, project_v8_runtime_inputs_with_carriers,
@@ -78,6 +78,39 @@ pub(crate) enum V8EndpointFailureInjection {
     AfterBiogeochemistryCandidate,
     AfterEnvelopeValidation,
     BeforeReturn,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum V8EndpointEvaluationPostureV1 {
+    PhysicalOnly,
+    Complete,
+}
+
+enum V8EndpointEvaluationResultV1 {
+    PhysicalOnly(MultiTileRuntimeResult),
+    Complete(UncommittedCoveredV8OwnerEnvelope),
+}
+
+impl V8EndpointEvaluationResultV1 {
+    fn into_complete(
+        self,
+    ) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
+        match self {
+            Self::Complete(value) => Ok(value),
+            Self::PhysicalOnly(_) => Err(ExecuteV8LseRuntimeShadowError::Identity(
+                "complete endpoint returned physical-only evaluation",
+            )),
+        }
+    }
+
+    fn into_physical(self) -> Result<MultiTileRuntimeResult, ExecuteV8LseRuntimeShadowError> {
+        match self {
+            Self::PhysicalOnly(value) => Ok(value),
+            Self::Complete(_) => Err(ExecuteV8LseRuntimeShadowError::Identity(
+                "physical-only endpoint returned complete evaluation",
+            )),
+        }
+    }
 }
 
 #[derive(Default)]
@@ -194,7 +227,9 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
         true,
         None,
         None,
-    );
+        V8EndpointEvaluationPostureV1::Complete,
+    )
+    .and_then(V8EndpointEvaluationResultV1::into_complete);
     if let Err(error) = &result {
         pending.borrow_mut().diagnostic = error.to_string().into_bytes();
         let dirty = pending.borrow();
@@ -372,7 +407,79 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11_with_carriers(
         finalize_wb14_parent_interval,
         wb14_parent_working_state,
         wb14_coupled_child_binding,
+        V8EndpointEvaluationPostureV1::Complete,
     )
+    .and_then(V8EndpointEvaluationResultV1::into_complete)
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+pub(crate) fn execute_v8_lse_runtime_shadow_v11_physical_with_carriers(
+    vegetation_configuration: &VegetationConfiguration,
+    vegetation_beginning: &V8CoupledOwnedState,
+    vegetation_owner_id: &ResourceOwnerId,
+    canopy_forcing: &V8CanopyForcingReceipt,
+    lse_configuration: &LandSurfaceEnergyConfiguration,
+    lse_beginning: &LandSurfaceEnergyState,
+    lse_forcing: &LandSurfaceForcing,
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    day_index: usize,
+    interval_index: u8,
+    wb14_parameters: &[DirectOfeWb14Parameters],
+    soil_thermal: &SoilThermalSnapshot,
+    nitrogen: &dyn NitrogenArbiter,
+    biogeochemistry_beginning: &BiogeochemistryState,
+    authority: openwepp_land_surface_energy::CoveredColumnAuthority,
+    covered_lower_boundaries: Option<
+        &BTreeMap<
+            (
+                openwepp_land_surface_energy::OfeId,
+                openwepp_kernel_contract::TileId,
+            ),
+            Stage3SnowCoveredLowerBoundary,
+        >,
+    >,
+    duration_s_bits: u64,
+    covered_destinations: Option<
+        &BTreeSet<(
+            openwepp_land_surface_energy::OfeId,
+            openwepp_kernel_contract::TileId,
+        )>,
+    >,
+    finalize_wb14_parent_interval: bool,
+    wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
+    wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
+) -> Result<MultiTileRuntimeResult, ExecuteV8LseRuntimeShadowError> {
+    let pending = RefCell::new(PendingEndpointEnvelopes::default());
+    execute_v8_lse_runtime_shadow_phases(
+        vegetation_configuration,
+        vegetation_beginning,
+        vegetation_owner_id,
+        canopy_forcing,
+        lse_configuration,
+        lse_beginning,
+        lse_forcing,
+        soil_adapter,
+        surface_configuration,
+        day_index,
+        interval_index,
+        wb14_parameters,
+        soil_thermal,
+        nitrogen,
+        biogeochemistry_beginning,
+        None,
+        authority,
+        covered_lower_boundaries,
+        &pending,
+        Some(duration_s_bits),
+        false,
+        covered_destinations,
+        finalize_wb14_parent_interval,
+        wb14_parent_working_state,
+        wb14_coupled_child_binding,
+        V8EndpointEvaluationPostureV1::PhysicalOnly,
+    )
+    .and_then(V8EndpointEvaluationResultV1::into_physical)
 }
 
 fn injection_requires_actual_pending_payload(
@@ -439,7 +546,11 @@ fn execute_v8_lse_runtime_shadow_phases(
     finalize_wb14_parent_interval: bool,
     wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
     wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
-) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
+    evaluation_posture: V8EndpointEvaluationPostureV1,
+) -> Result<V8EndpointEvaluationResultV1, ExecuteV8LseRuntimeShadowError> {
+    let mut provisional_phase_started = (!validate_ofe_energy)
+        .then(crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1)
+        .flatten();
     // A coupled child after ordinal zero begins from the accepted parent-local
     // physical surface candidate. Install that projection before snapshot
     // construction, requests, authorization, debit/credit, or ingress; the
@@ -457,19 +568,11 @@ fn execute_v8_lse_runtime_shadow_phases(
         .as_ref()
         .map(LandSurfaceEnergyRealHydrologyAdapter::new);
     let soil_adapter = effective_adapter.as_ref().unwrap_or(soil_adapter);
-    // The complete execution topology may include ordinary/open destinations
-    // beside Stage-3-covered destinations. Only the latter may receive snow
-    // optical and lower-boundary authority; the remaining columns still run
-    // through the same envelope as ordinary LSE participants.
-    let active_stage3_lower_boundaries = covered_lower_boundaries.map(|boundaries| {
-        boundaries
-            .iter()
-            .filter(|(destination, _)| {
-                covered_destinations.is_none_or(|covered| covered.contains(*destination))
-            })
-            .map(|(destination, boundary)| (destination.clone(), boundary.clone()))
-            .collect::<BTreeMap<_, _>>()
-    });
+    // The lower-boundary map is the complete active Stage-3 destination set.
+    // `covered_destinations` selects canopy-covered columns only; it must not
+    // remove an open-snow destination before the projection converts that
+    // ordinary open tile into the state-carrying `Stage3OpenSnow` variant.
+    let active_stage3_lower_boundaries = covered_lower_boundaries.cloned();
     let covered_lower_boundaries = active_stage3_lower_boundaries.as_ref();
     let projected = project_v8_runtime_inputs_with_carriers(
         vegetation_configuration,
@@ -498,6 +601,13 @@ fn execute_v8_lse_runtime_shadow_phases(
         covered_lower_boundaries,
         covered_destinations,
     )?;
+    crate::snow_stage3_v11_attachment::record_adaptive_parent_provisional_envelope_phase_v1(
+        "projection",
+        provisional_phase_started.take(),
+    );
+    provisional_phase_started = (!validate_ofe_energy)
+        .then(crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1)
+        .flatten();
     injected(injection, V8EndpointFailureInjection::AfterProjection)?;
     let stage3_snow_destinations = covered_lower_boundaries
         .map_or_else(BTreeSet::new, |values| values.keys().cloned().collect());
@@ -566,6 +676,13 @@ fn execute_v8_lse_runtime_shadow_phases(
         };
         problems.push(problem);
     }
+    crate::snow_stage3_v11_attachment::record_adaptive_parent_provisional_envelope_phase_v1(
+        "solver ready",
+        provisional_phase_started.take(),
+    );
+    provisional_phase_started = (!validate_ofe_energy)
+        .then(crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1)
+        .flatten();
     let runtime_hook = |phase| {
         let endpoint_phase = match phase {
             MultiTileFailurePhase::PotentialTile(index) => {
@@ -633,6 +750,16 @@ fn execute_v8_lse_runtime_shadow_phases(
             Some(&pending_hook),
         )?
     };
+    crate::snow_stage3_v11_attachment::record_adaptive_parent_provisional_envelope_phase_v1(
+        "physical",
+        provisional_phase_started.take(),
+    );
+    if evaluation_posture == V8EndpointEvaluationPostureV1::PhysicalOnly {
+        return Ok(V8EndpointEvaluationResultV1::PhysicalOnly(physical));
+    }
+    provisional_phase_started = (!validate_ofe_energy)
+        .then(crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1)
+        .flatten();
     let potentials = physical
         .potential_tiles()
         .iter()
@@ -664,6 +791,13 @@ fn execute_v8_lse_runtime_shadow_phases(
             vegetation_beginning,
         )?,
     };
+    crate::snow_stage3_v11_attachment::record_adaptive_parent_provisional_envelope_phase_v1(
+        "receipts",
+        provisional_phase_started.take(),
+    );
+    provisional_phase_started = (!validate_ofe_energy)
+        .then(crate::snow_stage3_v11_attachment::begin_adaptive_parent_fixed_point_phase_v1)
+        .flatten();
     injected(injection, V8EndpointFailureInjection::AfterV8Receipts)?;
     let configured_root_layers = vegetation_configuration
         .strata
@@ -732,8 +866,12 @@ fn execute_v8_lse_runtime_shadow_phases(
             owner_hook_ref,
         )?,
     };
+    crate::snow_stage3_v11_attachment::record_adaptive_parent_provisional_envelope_phase_v1(
+        "owner",
+        provisional_phase_started,
+    );
     injected(injection, V8EndpointFailureInjection::BeforeReturn)?;
-    Ok(envelope)
+    Ok(V8EndpointEvaluationResultV1::Complete(envelope))
 }
 
 fn injected(
@@ -786,6 +924,8 @@ fn derive_ingress_schedule(
                         .into_iter()
                         .filter(|parcel| {
                             !stage3_owns_precipitation
+                                || parcel.parcel_kind
+                                    == openwepp_land_surface_energy::LiquidParcelKind::SnowTerminalReceiver
                                 || forcing.runon_parcels.iter().any(|runon| {
                                     runon.parcel_id == parcel.parcel_id
                                         && runon.source_owner_id == parcel.source_owner_id
@@ -870,6 +1010,9 @@ fn strict_open_ingress_parcel(
         }
         openwepp_land_surface_energy::LiquidParcelKind::RoutedRunon => {
             DirectSurfaceLiquidParcelKind::UpstreamRunon
+        }
+        openwepp_land_surface_energy::LiquidParcelKind::SnowTerminalReceiver => {
+            DirectSurfaceLiquidParcelKind::TerminalReceiver
         }
     };
     Ok(DirectOpenLiquidIngressParcel {

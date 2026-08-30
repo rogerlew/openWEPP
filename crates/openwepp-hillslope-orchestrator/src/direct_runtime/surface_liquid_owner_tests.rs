@@ -84,7 +84,7 @@ fn record(
     }
 }
 
-fn configuration() -> DirectSurfaceLiquidConfiguration {
+pub(crate) fn configuration() -> DirectSurfaceLiquidConfiguration {
     DirectSurfaceLiquidConfiguration::new(
         owner("hydrology"),
         71,
@@ -112,7 +112,9 @@ fn configuration() -> DirectSurfaceLiquidConfiguration {
     .expect("valid configuration")
 }
 
-fn state(configuration: &DirectSurfaceLiquidConfiguration) -> DirectSurfaceLiquidOwnedState {
+pub(crate) fn state(
+    configuration: &DirectSurfaceLiquidConfiguration,
+) -> DirectSurfaceLiquidOwnedState {
     let liquid = configuration
         .records
         .iter()
@@ -120,6 +122,23 @@ fn state(configuration: &DirectSurfaceLiquidConfiguration) -> DirectSurfaceLiqui
         .collect();
     DirectSurfaceLiquidOwnedState::new_initial(configuration, &liquid, 3)
         .expect("valid initial state")
+}
+
+pub(crate) fn accepted_state(
+    configuration: &DirectSurfaceLiquidConfiguration,
+) -> DirectSurfaceLiquidOwnedState {
+    let mut value = state(configuration);
+    let transaction = Some(TransactionId(1));
+    for record in &mut value.records {
+        record.last_accepted_transaction_id = transaction;
+    }
+    for continuation in &mut value.continuations {
+        continuation.next_interval_index = 1;
+        continuation.last_accepted_transaction_id = transaction;
+    }
+    value.state_sha256 = value.recomputed_sha256().expect("accepted state digest");
+    value.validate(configuration).expect("accepted state");
+    value
 }
 
 fn record_index(configuration: &DirectSurfaceLiquidConfiguration, tile_id: &str) -> usize {
@@ -155,6 +174,143 @@ fn request(
         },
         amount_kg_m2_stand_ground: amount,
     }
+}
+
+#[test]
+fn inverse_basis_authorization_scales_one_ulp_overdraw_without_candidate_clamp() {
+    let base = configuration();
+    let mut records = base.records.clone();
+    records[0].tile_fraction = 0.38;
+    records[1].tile_fraction = 0.62;
+    let configuration = DirectSurfaceLiquidConfiguration::new(
+        base.owner_id,
+        base.run_id,
+        base.ofe_topology,
+        base.ofe_bindings,
+        records,
+    )
+    .expect("exact .38/.62 configuration");
+    let covered_index = record_index(&configuration, "covered");
+    let beginning_tile = f64::from_bits(0x3f8f_c89c_a7fa_c25a);
+    let liquid = configuration
+        .records
+        .iter()
+        .map(|record| {
+            (
+                record.key.clone(),
+                (record.key.tile_id == tile("covered"))
+                    .then_some(beginning_tile)
+                    .unwrap_or(0.0),
+            )
+        })
+        .collect();
+    let beginning = DirectSurfaceLiquidOwnedState::new_initial(&configuration, &liquid, 0)
+        .expect("sealed one-ULP beginning state");
+    let transaction = TransactionId(901);
+    let raw_ofe_debit = 0.62 * beginning_tile;
+    assert_eq!(
+        (raw_ofe_debit / 0.62).to_bits(),
+        beginning_tile.to_bits() + 1,
+        "the contract vector must retain its one-ULP inverse-basis separation"
+    );
+    let requested = request(&configuration, covered_index, transaction, raw_ofe_debit);
+    let arbitration = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        std::slice::from_ref(&requested),
+    )
+    .expect("symmetric inverse-basis correction");
+    let authorized = arbitration.authorizations[0].amount_kg_m2_stand_ground;
+    assert!(authorized < raw_ofe_debit);
+    assert!(authorized / 0.62 <= beginning_tile);
+
+    let finalized = WaterAmount {
+        key: requested.key.clone(),
+        amount_kg_m2_stand_ground: authorized,
+    };
+    let candidate = apply_surface_liquid_resource_phase(
+        &configuration,
+        &arbitration,
+        std::slice::from_ref(&finalized),
+        &[],
+    )
+    .expect("the exact authorized inverse debit must remain nonnegative");
+    assert!(candidate.working_state.records[covered_index].liquid_kg_m2_tile >= 0.0);
+
+    let unscaled = WaterAmount {
+        key: requested.key,
+        amount_kg_m2_stand_ground: raw_ofe_debit,
+    };
+    let error = apply_surface_liquid_resource_phase(
+        &configuration,
+        &arbitration,
+        std::slice::from_ref(&unscaled),
+        &[],
+    )
+    .expect_err("substituting the unscaled debit must fail closed");
+    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E006);
+
+    assert!(jointly_safe_proportional_authorizations(&[0.1], 0.1, 0.62, 0.01).is_none());
+}
+
+#[test]
+fn exact_zero_store_dry_authorization_and_resource_candidate_are_noops() {
+    let configuration = configuration();
+    let liquid = configuration
+        .records
+        .iter()
+        .map(|record| (record.key.clone(), 0.0))
+        .collect();
+    let beginning = DirectSurfaceLiquidOwnedState::new_initial(&configuration, &liquid, 0)
+        .expect("exact dry beginning state");
+    let transaction = TransactionId(902);
+    let requested = request(&configuration, 0, transaction, 1.0);
+    let arbitration = authorize_surface_liquid_withdrawals(
+        &configuration,
+        &beginning,
+        transaction,
+        None,
+        std::slice::from_ref(&requested),
+    )
+    .expect("dry authorization");
+    assert_eq!(arbitration.authorizations[0].amount_kg_m2_stand_ground, 0.0);
+    assert_eq!(
+        arbitration.authorizations[0].reason,
+        WaterAuthorizationReason::DrySource
+    );
+    let finalized = WaterAmount {
+        key: requested.key.clone(),
+        amount_kg_m2_stand_ground: 0.0,
+    };
+    let candidate = apply_surface_liquid_resource_phase(
+        &configuration,
+        &arbitration,
+        std::slice::from_ref(&finalized),
+        &[],
+    )
+    .expect("zero-store dry resource candidate");
+    assert!(
+        candidate
+            .working_state
+            .records
+            .iter()
+            .all(|record| record.liquid_kg_m2_tile == 0.0)
+    );
+
+    let positive = WaterAmount {
+        key: requested.key,
+        amount_kg_m2_stand_ground: f64::from_bits(1),
+    };
+    let error = apply_surface_liquid_resource_phase(
+        &configuration,
+        &arbitration,
+        std::slice::from_ref(&positive),
+        &[],
+    )
+    .expect_err("positive use from an exact dry store must fail closed");
+    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E006);
 }
 
 fn attachment_frame() -> crate::DirectRunFrame {
@@ -431,6 +587,70 @@ fn strict_configuration_and_state_round_trip_bind_topology_and_ingress() {
     let error = DirectSurfaceLiquidConfiguration::from_canonical_bytes(with_unknown.as_bytes())
         .expect_err("unknown field");
     assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E001);
+}
+
+#[cfg(feature = "persisted-restart-v1")]
+#[test]
+fn restart_admission_lineage_clone_is_identity_only_and_rejects_poisons() {
+    let configuration = configuration();
+    let source_transaction = TransactionId(40);
+    let mut source = state(&configuration);
+    for record in &mut source.records {
+        record.last_accepted_transaction_id = Some(source_transaction);
+    }
+    for continuation in &mut source.continuations {
+        continuation.next_interval_index = 1;
+        continuation.last_accepted_transaction_id = Some(source_transaction);
+    }
+    source.state_sha256 = source.recomputed_sha256().expect("source state digest");
+    source
+        .validate(&configuration)
+        .expect("valid accepted source state");
+    let admitted_transaction = TransactionId(41);
+    let normalized = source
+        .restart_authority_with_admission_lineage(&configuration, admitted_transaction)
+        .expect("admission lineage clone");
+    assert!(
+        normalized
+            .records
+            .iter()
+            .all(|record| record.last_accepted_transaction_id == Some(admitted_transaction))
+            && normalized.continuations.iter().all(|continuation| {
+                continuation.last_accepted_transaction_id == Some(admitted_transaction)
+            })
+    );
+    let mut physical_projection = normalized.clone();
+    for (actual, expected) in physical_projection.records.iter_mut().zip(&source.records) {
+        actual.last_accepted_transaction_id = expected.last_accepted_transaction_id;
+    }
+    for (actual, expected) in physical_projection
+        .continuations
+        .iter_mut()
+        .zip(&source.continuations)
+    {
+        actual.last_accepted_transaction_id = expected.last_accepted_transaction_id;
+    }
+    physical_projection
+        .state_sha256
+        .clone_from(&source.state_sha256);
+    assert_eq!(physical_projection, source, "physical bytes are invariant");
+
+    let mut wrong_configuration = configuration.clone();
+    wrong_configuration.run_id += 1;
+    assert!(
+        source
+            .restart_authority_with_admission_lineage(&wrong_configuration, admitted_transaction,)
+            .is_err()
+    );
+
+    let mut partial = normalized.clone();
+    partial.records[0].last_accepted_transaction_id = Some(TransactionId(40));
+    partial.state_sha256 = partial.recomputed_sha256().expect("partial poison digest");
+    assert!(partial.validate(&configuration).is_err());
+
+    let mut digest_substitution = normalized;
+    digest_substitution.state_sha256 = "0".repeat(64);
+    assert!(digest_substitution.validate(&configuration).is_err());
 }
 
 #[test]

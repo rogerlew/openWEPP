@@ -3,13 +3,13 @@ use std::path::Path;
 
 use openwepp_hillslope_orchestrator::{
     DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowLayerState,
-    DirectSnowStage3Diagnostics, SnowDensityModel, SnowMeltModel, SnowStage3LiquidRoutingModel,
-    Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
+    SnowDensityModel, SnowMeltModel, SnowStage3LiquidRoutingModel, Wb11HydrologyKernel,
 };
 
 const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const PACKAGE: &str = "docs/work-packages/20260629-paradigm-2-stage-3-liquid-routing-meltwater-temperature-001/package.md";
 const RUNNER_BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs";
+const RUNNER_STAGE3_AUTHORITY: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_stage3_canopy_authority.rs";
 const RUNNER_IMPL: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs";
 const HYDROLOGY_IMPL: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs";
 const HYDROLOGY_SOLVER: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs";
@@ -17,6 +17,10 @@ const HYDROLOGY_EVALUATION: &str = "crates/openwepp-hillslope-orchestrator/src/h
 const RUNNER_BINS: &str = "crates/openwepp-runner/src/bin";
 const OBSERVED_GATE_TOOL: &str =
     "tools/snowfreeze_observed/paradigm2_stage3_liquid_routing_meltwater_temperature.py";
+const V11_PRODUCTION_TESTS: &str = concat!(
+    "crates/openwepp-hillslope-orchestrator/src/",
+    "snow_stage3_v11_adaptive_production_tests.rs"
+);
 
 #[test]
 fn stage3_contract_package_and_selector_are_bound() {
@@ -43,15 +47,26 @@ fn stage3_contract_package_and_selector_are_bound() {
         assert_contains(&package, marker, PACKAGE);
     }
 
-    let builder = read(RUNNER_BUILDER);
+    let builder = format!(
+        "{}\n{}",
+        read(RUNNER_BUILDER),
+        read(RUNNER_STAGE3_AUTHORITY)
+    );
     for marker in [
         "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL",
-        "paradigm2_stage3_liquid_routing_model",
-        "disabled",
-        "layered_thermal_liquid_v1",
+        "reject_retired_stage3_snow_selector_envs",
+        "retired snow selector",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
     ] {
-        assert_contains(&builder, marker, RUNNER_BUILDER);
+        assert_contains(
+            &builder,
+            marker,
+            "split runner Stage-3 builder/authority sources",
+        );
     }
+    assert!(!builder.contains("\"disabled\" => Ok"));
 
     let runner_impl = read(RUNNER_IMPL);
     assert_contains(
@@ -89,6 +104,16 @@ fn stage3_contract_package_and_selector_are_bound() {
     ] {
         assert_contains(&observed_gate_tool, marker, OBSERVED_GATE_TOOL);
     }
+
+    let v11_production_tests = read(V11_PRODUCTION_TESTS);
+    for marker in [
+        "stable_minimum_production_support_accepts_one_direct_trial",
+        "stable adaptive receipt validates",
+        "accepted_microsteps.len(), 1",
+        "odd_quanta_tile_exactly_and_never_call_carrier_below_floor",
+    ] {
+        assert_contains(&v11_production_tests, marker, V11_PRODUCTION_TESTS);
+    }
 }
 
 #[test]
@@ -113,132 +138,61 @@ fn stage3_internal_selector_not_user_cli_exposed() {
 }
 
 #[test]
-fn stage3_disabled_default_leaves_diagnostics_off() {
-    let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
+fn retired_stage3_disabled_selector_fails_closed() {
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
         &warm_layered_inputs(SnowStage3LiquidRoutingModel::Disabled),
     )
-    .expect("disabled Stage 3 partition should compute");
-    assert_eq!(
-        partition
-            .verbose_diagnostics
-            .as_deref()
-            .expect("compatibility solve retains verbose diagnostics")
-            .stage3,
-        DirectSnowStage3Diagnostics::disabled()
-    );
+    .expect_err("retired disabled Stage 3 selector must fail closed");
     assert!(
-        partition.solid_to_liquid_ledger().liquid_handoff_m > 0.0,
-        "test setup should exercise the existing CoE melt path"
+        error
+            .to_string()
+            .contains("snow.adaptive_stage3_legacy_shortwave_entry"),
+        "unexpected retired-selector error: {error}"
     );
 }
 
 #[test]
-fn stage3_routes_liquid_closes_energy_and_produces_typed_temperature() {
-    let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
+fn stage3_v11_fixture_rejects_retired_partition_entrypoint() {
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
         &warm_layered_inputs(SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1),
     )
-    .expect("Stage 3 opt-in partition should compute");
-
-    let diagnostics = &partition
-        .verbose_diagnostics
-        .as_deref()
-        .expect("compatibility solve retains verbose diagnostics")
-        .stage3;
-    assert!(partition.stage3_outcome().enabled);
-    assert!(partition.liquid_disposition_ledger().incoming_liquid_m > 0.0);
-    assert!(partition.liquid_disposition_ledger().routed_liquid_m > 0.0);
-    assert!(partition.liquid_disposition_ledger().refrozen_liquid_m > 0.0);
+    .expect_err("adaptive Stage3 V11 cannot enter the retired WB11 partition path");
     assert!(
-        partition
-            .liquid_disposition_ledger()
-            .retained_liquid_delta_m
-            > 0.0
-    );
-    assert!(
-        partition
-            .liquid_disposition_ledger()
-            .liquid_closure_residual_m
-            .abs()
-            <= 1.0e-9
-    );
-    assert!(diagnostics.energy_closure_residual_j_m2.abs() <= 1.0e-6);
-    let meltwater_temperature_c = partition
-        .stage3_outcome()
-        .meltwater_temperature_c
-        .expect("positive routed liquid should carry typed temperature")
-        .as_celsius();
-    assert!(meltwater_temperature_c.abs() <= 1.0e-12);
-    assert!(
-        (partition.solid_to_liquid_ledger().liquid_handoff_m
-            - partition.liquid_disposition_ledger().incoming_liquid_m)
-            .abs()
-            <= 1.0e-12
-    );
-    assert!(
-        partition
-            .snow_layers_after
-            .iter()
-            .all(|layer| layer.temperature_c <= 0.0)
+        error
+            .to_string()
+            .contains("snow.adaptive_stage3_legacy_shortwave_entry"),
+        "unexpected V11 cutover error: {error}"
     );
 }
 
 #[test]
-fn stage3_accepts_bulk_density_model_after_decouple() {
+fn stage3_v11_bulk_density_fixture_rejects_retired_partition_entrypoint() {
     let mut inputs = warm_layered_inputs(SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1);
     inputs.snow_density_model = SnowDensityModel::PhysicsBulkDensityCompactionV1;
-    let mut disabled_inputs = inputs.clone();
-    disabled_inputs.stage3_liquid_routing_model = SnowStage3LiquidRoutingModel::Disabled;
-
-    let disabled =
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&disabled_inputs)
-            .expect("bulk-density disabled Stage 3 partition should compute");
-    let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
-        .expect("Stage 3 must run on the bulk-density model after decoupling");
-
-    assert!(partition.stage3_outcome().enabled);
-    assert!((partition.runtime_swe_after_m - disabled.runtime_swe_after_m).abs() <= 1.0e-12);
-    assert!((partition.runtime_depth_after_m - disabled.runtime_depth_after_m).abs() <= 1.0e-12);
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
+        .expect_err("adaptive Stage3 V11 cannot enter the retired WB11 partition path");
     assert!(
-        (partition.runtime_density_after_kg_m3 - disabled.runtime_density_after_kg_m3).abs()
-            <= 1.0e-12
+        error
+            .to_string()
+            .contains("snow.adaptive_stage3_legacy_shortwave_entry"),
+        "unexpected V11 cutover error: {error}"
     );
-    assert!(partition.snow_layers_after.iter().all(|layer| {
-        (layer.density_kg_m3 - partition.runtime_density_after_kg_m3).abs() <= 1.0e-12
-    }));
 }
 
 #[test]
-fn stage3_rejects_persisted_cold_content_below_absolute_zero() {
+fn stage3_v11_cutover_precedes_retired_cold_content_partition_guard() {
     let mut inputs = warm_layered_inputs(SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1);
     inputs.snow_layers[0].cold_content_j_m2 = 1.0e12;
     inputs.snow_layers[1].cold_content_j_m2 = 1.0e12;
 
     let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
-        .expect_err("an impossible cold-content state must fail instead of being clamped");
+        .expect_err("retired partition entrypoint must fail before historical cold-content solve");
 
     let rendered = error.to_string();
     assert!(
-        rendered.contains("temperature_c must be above absolute zero"),
-        "underlying meteorology cause was lost: {error}"
+        rendered.contains("snow.adaptive_stage3_legacy_shortwave_entry"),
+        "unexpected V11 cutover error: {error}"
     );
-    assert!(
-        rendered.contains("layer_density_kg_m3=")
-            && rendered.contains("control_volume_temperature_c=")
-            && rendered.contains("atmospheric_pressure_pa="),
-        "replay operands were not published: {error}"
-    );
-    assert!(matches!(
-        error,
-        Wb11HydrologyKernelGuardError::SnowStage3Conductivity(_)
-    ));
-    if let Wb11HydrologyKernelGuardError::SnowStage3Conductivity(snapshot) = &error {
-        let replayed = snapshot
-            .replay()
-            .expect_err("captured invalid conductivity inputs must fail on replay");
-        assert_eq!(replayed, snapshot.source);
-        assert_eq!(snapshot.control_volume_layers.len(), 1);
-        assert_eq!(snapshot.control_volume_layers[0], snapshot.layer);
-    }
 }
 
 fn warm_layered_inputs(
@@ -280,8 +234,8 @@ fn warm_layered_inputs(
         canopy_cover_fraction: 0.0,
         wind_m_s: 2.0,
         dewpoint_c: 0.0,
-        snow_melt_model: SnowMeltModel::CoeLiquidHoldingCapacityV1,
-        snow_density_model: SnowDensityModel::PhysicsBulkMultilayerDensityV1,
+        snow_melt_model: SnowMeltModel::AdaptiveCompositionalStage3V1,
+        snow_density_model: SnowDensityModel::PhysicsBulkDensityCompactionV1,
         stage3_liquid_routing_model,
         surface_energy_options:
             openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions::default(),

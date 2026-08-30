@@ -16,9 +16,11 @@ struct DirectProductionDayInputBuilder<'a> {
     /// Historical evaluation-only carry.  The constitutive Stage-3/V11
     /// attachment owns its own persistent state; this field is never read by
     /// that path and exists only for the released day-oriented evaluator.
-    snow_stage3_historical_evaluation_state: Option<std::cell::RefCell<Vec<Option<
-        openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState,
-    >>>>,
+    snow_stage3_historical_evaluation_state: Option<
+        std::cell::RefCell<
+            Vec<Option<openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState>>,
+        >,
+    >,
     winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
     sturm_climate_class: Option<openwepp_hillslope_orchestrator::SnowClimateClass>,
 }
@@ -29,6 +31,7 @@ struct DirectProductionSnowPartitionResult {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[cfg(test)]
 pub(crate) enum DirectLanedActiveDefaultEligibility {
     Complete,
     Absent,
@@ -40,6 +43,7 @@ impl DirectProductionDayInputBuilder<'_> {
     /// when every scheduled lane carries native `routing_coefficients`;
     /// no-lane authority is a protected legacy/off fallback, and mixed
     /// authority must fail closed before streaming.
+    #[cfg(test)]
     pub(crate) fn laned_active_default_eligibility(&self) -> DirectLanedActiveDefaultEligibility {
         let present = self
             .lane_authority
@@ -58,22 +62,11 @@ impl DirectProductionDayInputBuilder<'_> {
         }
     }
 
-    /// Per-lane static geometry for the Lane D seam shadow (from the
-    /// Wave-1 operand seeds): slope length, hillslope field width, and
-    /// the mean profile gradient (integral of the normalized `a·x + b`
-    /// segment fit), floored at 0.001 m/m so degenerate flat fits keep
-    /// the bare-cell mesh valid.
-    pub(crate) fn laned_shadow_geometry(
-        &self,
-    ) -> Result<Vec<crate::hillslope::laned_shadow::LanedShadowLaneGeometry>, HillslopeCliError>
-    {
-        self.laned_geometry_with_selector("OPENWEPP_LANED_SHADOW")
-    }
-
     /// D15A (rev 27): the ACTIVE owner's per-lane configuration — the SAME
     /// rev-20/21/36 authority extraction as the shadow (fail-closed on
     /// missing native `routing_coefficients`). Dynamic `LAI`/`canhgt` comes
     /// from the live post-growth day frame at consumption time.
+    #[cfg(test)]
     pub(crate) fn laned_active_config(
         &self,
     ) -> Result<openwepp_hillslope_orchestrator::DirectLanedActiveConfig, HillslopeCliError> {
@@ -110,6 +103,7 @@ impl DirectProductionDayInputBuilder<'_> {
         })
     }
 
+    #[cfg(test)]
     fn laned_geometry_with_selector(
         &self,
         selector: &'static str,
@@ -181,6 +175,7 @@ struct DirectProductionTypedLaneSeedAuthority {
     growth: DirectProductionGrowthAuthority,
     erosion: DirectProductionErosionAuthority,
     snow_frost: DirectProductionSnowFrostAuthority,
+    #[cfg(test)]
     ofe_routing: Option<DirectProductionOfeRoutingCoefficientAuthority>,
 }
 
@@ -211,6 +206,7 @@ struct DirectProductionLaneDayInputAuthority {
     hydrology_projection: DirectHydrologyProjectionInputs,
     erosion: DirectProductionErosionAuthority,
     snow_frost: DirectProductionSnowFrostAuthority,
+    #[cfg(test)]
     ofe_routing: Option<DirectProductionOfeRoutingCoefficientAuthority>,
 }
 
@@ -385,6 +381,7 @@ struct DirectProductionWinterHourlyGeometry {
     azimuth: f64,
 }
 
+#[cfg(test)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct DirectProductionOfeRoutingCoefficientAuthority {
     skin_friction_coefficient_ko: f64,
@@ -394,6 +391,7 @@ struct DirectProductionOfeRoutingCoefficientAuthority {
     vegetation_drag_coefficient: f64,
 }
 
+#[cfg(test)]
 impl DirectProductionOfeRoutingCoefficientAuthority {
     fn into_laned_shadow(self) -> crate::hillslope::laned_shadow::LanedShadowRoutingCoefficients {
         crate::hillslope::laned_shadow::LanedShadowRoutingCoefficients {
@@ -453,8 +451,6 @@ struct DirectProductionSnowFrostAuthority {
     stage3_liquid_routing_model: openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel,
     snow_surface_longwave_model: openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel,
     snow_surface_sublimation_model: openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel,
-    snow_stage3_evaluation_operator:
-        Option<openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator>,
     snow_terminal_enthalpy_event_requested: bool,
     snow_atmospheric_pressure_pa: f64,
     snow_rst_c: f64,
@@ -714,6 +710,7 @@ fn direct_production_day_input_authority_from_typed_seed(
         hydrology_projection: seed.hydrology_projection,
         erosion: seed.erosion,
         snow_frost: seed.snow_frost,
+        #[cfg(test)]
         ofe_routing: seed.ofe_routing,
     }
 }
@@ -771,6 +768,7 @@ fn direct_production_typed_lane_seed_authority(
             surface: "direct_production_typed_seed",
             detail: error.to_string(),
         })?;
+    #[cfg(test)]
     let ofe_routing =
         direct_production_optional_lane_routing_coefficient_authority(&management_projection)?;
     let mut pmetpara_projection_source = pmetpara.clone();
@@ -852,10 +850,12 @@ fn direct_production_typed_lane_seed_authority(
             &frost_projection,
             climate_request,
         )?,
+        #[cfg(test)]
         ofe_routing,
     })
 }
 
+#[cfg(test)]
 fn direct_production_optional_lane_routing_coefficient_authority(
     projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
 ) -> Result<Option<DirectProductionOfeRoutingCoefficientAuthority>, HillslopeCliError> {
@@ -914,6 +914,7 @@ fn direct_production_optional_lane_routing_coefficient_authority(
     Ok(lane_authority)
 }
 
+#[cfg(test)]
 fn direct_production_optional_slot_crop_routing_coefficient_authority(
     projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     slot_index: usize,
@@ -1008,6 +1009,7 @@ fn direct_production_optional_slot_crop_routing_coefficient_authority(
     Ok(Some(authority))
 }
 
+#[cfg(test)]
 fn validate_direct_production_routing_coefficient_authority(
     context: &str,
     authority: DirectProductionOfeRoutingCoefficientAuthority,
@@ -2050,14 +2052,19 @@ fn direct_production_typed_snow_frost_authority(
         snow_runtime_density_kg_m3: snow_projection.runtime_density_kg_m3,
         snow_runtime_settle_day_count: snow_projection.runtime_settle_day_count,
         snow_controls_projected: true,
-        snow_density_model: snowdensity1015_default_snow_density_model()?,
-        snow_phase_model: snowdensity1035_diagnostic_snow_phase_model()?,
-        snow_melt_model: snowdensity1015_default_snow_melt_model()?,
-        stage3_liquid_routing_model: paradigm2_stage3_liquid_routing_model()?,
-        snow_surface_longwave_model: snow_surface_longwave_model()?,
-        snow_surface_sublimation_model: snow_surface_sublimation_model()?,
-        snow_stage3_evaluation_operator: snow_stage3_evaluation_operator()?,
-        snow_terminal_enthalpy_event_requested: snow_terminal_enthalpy_event_requested()?,
+        snow_density_model:
+            openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1,
+        snow_phase_model:
+            openwepp_hillslope_orchestrator::SnowPhasePartitionModel::HarderPomeroyHourly,
+        snow_melt_model:
+            openwepp_hillslope_orchestrator::SnowMeltModel::AdaptiveCompositionalStage3V1,
+        stage3_liquid_routing_model:
+            openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1,
+        snow_surface_longwave_model:
+            openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+        snow_surface_sublimation_model:
+            openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel::NeutralBulkStage3V1,
+        snow_terminal_enthalpy_event_requested: true,
         snow_atmospheric_pressure_pa: direct_snow_atmospheric_pressure_pa(
             climate_request.direct_elevation_m(),
         )?,

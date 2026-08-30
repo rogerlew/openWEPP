@@ -57,34 +57,34 @@ mod cqr_row5_tests {
         assert_close(
             Wb11HydrologyKernel::resolve_frozen_soil_kfactor_from_typed(
                 phase_class,
-                controls(None)
+                controls(None),
             )
             .unwrap(),
-            0.31
+            0.31,
         );
         assert_close(
             Wb11HydrologyKernel::resolve_frozen_soil_kfactor_from_typed(
                 phase_class,
-                controls(Some(1.0))
+                controls(Some(1.0)),
             )
             .unwrap(),
-            0.31
+            0.31,
         );
         assert_close(
             Wb11HydrologyKernel::resolve_frozen_soil_kfactor_from_typed(
                 phase_class,
-                controls(Some(2.0))
+                controls(Some(2.0)),
             )
             .unwrap(),
-            0.42
+            0.42,
         );
         assert_close(
             Wb11HydrologyKernel::resolve_frozen_soil_kfactor_from_typed(
                 phase_class,
-                controls(Some(3.0))
+                controls(Some(3.0)),
             )
             .unwrap(),
-            0.53
+            0.53,
         );
 
         for proxy in [1.25, 4.0] {
@@ -368,7 +368,9 @@ fn maybe_write_r7g_frost_trace(
     line.push_str(",\"final_ws_frz_m\":");
     line.push_str(&r7g_frost_trace_number(outcome.ws_frz));
     line.push_str(",\"final_soil_water_after_m\":");
-    line.push_str(&r7g_frost_trace_optional_number(outcome.soil_water_after_frwatc));
+    line.push_str(&r7g_frost_trace_optional_number(
+        outcome.soil_water_after_frwatc,
+    ));
     line.push_str(",\"frwatc_soil_water_after_m\":");
     line.push_str(&r7g_frost_trace_number(outcome.frwatc_soil_water_after));
     line.push_str(",\"frwatc_freeze_debit_m\":");
@@ -391,7 +393,10 @@ fn maybe_write_r7g_frost_trace(
     ));
     line.push_str(",\"final_layer_frozen_water_m\":");
     line.push_str(&r7g_frost_trace_array(
-        outcome.layer_topology_state.iter().map(|layer| layer.frzw_m),
+        outcome
+            .layer_topology_state
+            .iter()
+            .map(|layer| layer.frzw_m),
     ));
     line.push_str(",\"shadow_layer_soil_water_m\":");
     line.push_str(&r7g_frost_trace_array(
@@ -745,8 +750,10 @@ impl Wb11HydrologyKernel {
         inputs: &DirectActiveFrostPartitionInputs,
         phase_class: HillslopeKernelPhaseClass,
         layer_water_state: &[FrostLayerWaterState],
-    ) -> Result<(FrostFineShadowState, ActiveFrostProfileShadowContext), Wb11HydrologyKernelGuardError>
-    {
+    ) -> Result<
+        (FrostFineShadowState, ActiveFrostProfileShadowContext),
+        Wb11HydrologyKernelGuardError,
+    > {
         Self::require_dynamic_state_range_with(
             phase_class,
             || BoundarySymbol::from(PL_GROWTH_SOIL_DEPTH_SYMBOL),
@@ -950,7 +957,9 @@ impl Wb11HydrologyKernel {
         controls: DirectFrostControlInputs,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let Some(class_proxy) = controls.landuse_class_proxy else {
-            return Ok(controls.kfactor1.min(controls.kfactor2.min(controls.kfactor3)));
+            return Ok(controls
+                .kfactor1
+                .min(controls.kfactor2.min(controls.kfactor3)));
         };
         let rounded = class_proxy.round();
         let symbol = BoundarySymbol::from(FROST_LANDUSE_CLASS_PROXY_SYMBOL);
@@ -1014,18 +1023,18 @@ impl Wb11HydrologyKernel {
             None,
         )?;
         let conductivity_residue_w_m_k = FROST_RUNTIME_KRES_BASE_W_M_K * controls.kresf;
-        let snow_conductivity_w_m_k =
-            if inputs.thermal.snow_depth_m <= SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
-                || inputs.thermal.snow_density_kg_m3 <= 0.0
-            {
-                0.0
-            } else {
-                Self::tmpadj_snow_conductivity_w_m_k(
-                    phase_class,
-                    inputs.thermal.snow_density_kg_m3,
-                    controls.ksnowf,
-                )?
-            };
+        let snow_conductivity_w_m_k = if inputs.thermal.snow_depth_m
+            <= SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
+            || inputs.thermal.snow_density_kg_m3 <= 0.0
+        {
+            0.0
+        } else {
+            Self::tmpadj_snow_conductivity_w_m_k(
+                phase_class,
+                inputs.thermal.snow_density_kg_m3,
+                controls.ksnowf,
+            )?
+        };
         let sdate = inputs.thermal.day_of_year.round();
         if (inputs.thermal.day_of_year - sdate).abs() > WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
@@ -1043,8 +1052,7 @@ impl Wb11HydrologyKernel {
             Some(1.0),
             Some(366.0),
         )?;
-        let seasonal_temperature_curve =
-            inputs.thermal.seasonal_temperature_curve;
+        let seasonal_temperature_curve = inputs.thermal.seasonal_temperature_curve;
         Ok(ActiveFrostThermalContext {
             snow_depth_m: inputs.thermal.snow_depth_m,
             snow_density_kg_m3: inputs.thermal.snow_density_kg_m3,
@@ -1090,7 +1098,8 @@ impl Wb11HydrologyKernel {
             context.thermal.conductivity_residue_w_m_k,
             &mut shadow_fine_state.watbtm_m,
         );
-        let depth_after = Self::derived_frost_depths_from_fine_state(&shadow_fine_state.fine_layers);
+        let depth_after =
+            Self::derived_frost_depths_from_fine_state(&shadow_fine_state.fine_layers);
         let hourly_frdp_m = depth_after.frdp.min(context.profile_depth_m);
         if hourly_frdp_m > WB11_ZERO_THRESHOLD {
             *fgthwd_flag = 0.0;
@@ -1099,8 +1108,7 @@ impl Wb11HydrologyKernel {
             }
         }
         hourly.tilled_frozen_depth_m = hourly_frdp_m.min(FROST_RUNTIME_TILLAGE_DEPTH_M);
-        hourly.untilled_frozen_depth_m =
-            (hourly_frdp_m - hourly.tilled_frozen_depth_m).max(0.0);
+        hourly.untilled_frozen_depth_m = (hourly_frdp_m - hourly.tilled_frozen_depth_m).max(0.0);
     }
 
     fn apply_active_frost_thaw_step(
@@ -1163,7 +1171,8 @@ impl Wb11HydrologyKernel {
             );
         }
 
-        let depth_after = Self::derived_frost_depths_from_fine_state(&shadow_fine_state.fine_layers);
+        let depth_after =
+            Self::derived_frost_depths_from_fine_state(&shadow_fine_state.fine_layers);
         let mut hourly_frdp_m = depth_after.frdp.min(context.profile_depth_m);
         *fgthwd_flag = if hourly_frdp_m <= WB11_ZERO_THRESHOLD {
             1.0
@@ -1174,8 +1183,7 @@ impl Wb11HydrologyKernel {
             hourly_frdp_m = 0.0;
         }
         hourly.tilled_frozen_depth_m = hourly_frdp_m.min(FROST_RUNTIME_TILLAGE_DEPTH_M);
-        hourly.untilled_frozen_depth_m =
-            (hourly_frdp_m - hourly.tilled_frozen_depth_m).max(0.0);
+        hourly.untilled_frozen_depth_m = (hourly_frdp_m - hourly.tilled_frozen_depth_m).max(0.0);
     }
 
     fn canonicalize_active_frost_fine_layers(
@@ -1201,7 +1209,8 @@ impl Wb11HydrologyKernel {
         freeze_started: &mut bool,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
         Self::reset_fine_layer_hour_timers(&mut shadow_fine_state.fine_layers);
-        let depth_before = Self::derived_frost_depths_from_fine_state(&shadow_fine_state.fine_layers);
+        let depth_before =
+            Self::derived_frost_depths_from_fine_state(&shadow_fine_state.fine_layers);
         let hourly_frdp_m = depth_before.frdp.min(context.profile_depth_m);
         let surface_temp_c = Self::legacy_tmpadj_surface_temperature_from_typed(
             context.phase_class,
@@ -1280,8 +1289,10 @@ impl Wb11HydrologyKernel {
         context: &ActiveFrostHourlyContext<'_>,
         shadow_fine_state: &mut FrostFineShadowState,
         prior_fgthwd_flag: f64,
-    ) -> Result<([FrostHourlyState; SIMIMPL29_HOURS_PER_DAY], bool, f64), Wb11HydrologyKernelGuardError>
-    {
+    ) -> Result<
+        ([FrostHourlyState; SIMIMPL29_HOURS_PER_DAY], bool, f64),
+        Wb11HydrologyKernelGuardError,
+    > {
         let mut freeze_started = false;
         let mut fgthwd_flag = prior_fgthwd_flag;
         let mut hourly_state = std::array::from_fn(|hour_index| FrostHourlyState {
@@ -1373,9 +1384,7 @@ impl Wb11HydrologyKernel {
                 signed_net_flux_w_m2,
                 depth_summary,
             );
-            if Self::frost_branch_matches(branch, 1.0)
-                || Self::frost_branch_matches(branch, 2.0)
-            {
+            if Self::frost_branch_matches(branch, 1.0) || Self::frost_branch_matches(branch, 2.0) {
                 return Ok(true);
             }
         }
@@ -1547,8 +1556,7 @@ impl Wb11HydrologyKernel {
             || frwatc_thaw_release > WB11_ZERO_THRESHOLD
             || shadow_fine_state.watpdg_m > WB11_ZERO_THRESHOLD
             || shadow_fine_state.watbtm_m > WB11_ZERO_THRESHOLD;
-        let mut frwatc_net_liquid_delta =
-            raw_frwatc_soil_water_after - context.prior.soil_water;
+        let mut frwatc_net_liquid_delta = raw_frwatc_soil_water_after - context.prior.soil_water;
         if !material_frwatc_exchange && frwatc_net_liquid_delta.abs() <= WB11_ZERO_THRESHOLD {
             frwatc_net_liquid_delta = 0.0;
         }
@@ -1646,20 +1654,18 @@ impl Wb11HydrologyKernel {
             } else {
                 0.0
             };
-        let frwatc_freeze_exchange =
-            if raw_frwatc_freeze_exchange > context.prior.soil_water
-                && raw_frwatc_freeze_exchange <= context.prior.soil_water + WB11_ZERO_THRESHOLD
-            {
-                context.prior.soil_water
-            } else {
-                raw_frwatc_freeze_exchange
-            };
-        let frwatc_thaw_release =
-            if context.prior.prior_ws_frz > ws_frz + WB11_ZERO_THRESHOLD {
-                context.prior.prior_ws_frz - ws_frz
-            } else {
-                0.0
-            };
+        let frwatc_freeze_exchange = if raw_frwatc_freeze_exchange > context.prior.soil_water
+            && raw_frwatc_freeze_exchange <= context.prior.soil_water + WB11_ZERO_THRESHOLD
+        {
+            context.prior.soil_water
+        } else {
+            raw_frwatc_freeze_exchange
+        };
+        let frwatc_thaw_release = if context.prior.prior_ws_frz > ws_frz + WB11_ZERO_THRESHOLD {
+            context.prior.prior_ws_frz - ws_frz
+        } else {
+            0.0
+        };
         if frwatc_freeze_exchange > context.prior.soil_water + WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class: context.phase_class,
@@ -1821,8 +1827,11 @@ impl Wb11HydrologyKernel {
             &mut shadow_fine_state,
             &mut layer_water_state,
         )?;
-        let scalars =
-            Self::compute_active_frost_final_scalars(context, &shadow_fine_state, &layer_water_state)?;
+        let scalars = Self::compute_active_frost_final_scalars(
+            context,
+            &shadow_fine_state,
+            &layer_water_state,
+        )?;
         let fine_layer_diagnostic_state = Self::build_frost_fine_layer_diagnostic_state(
             context.phase_class,
             layer_water_state.len(),
@@ -1845,7 +1854,8 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveFrostPartitionInputs,
     ) -> Result<FrostCouplingOutcome, Wb11HydrologyKernelGuardError> {
-        let controls = Self::require_active_frost_controls_from_typed(inputs.controls, phase_class)?;
+        let controls =
+            Self::require_active_frost_controls_from_typed(inputs.controls, phase_class)?;
         let (total_fine_layer_count, layer_water_state) =
             Self::require_active_frost_layer_water_state_from_typed(
                 &inputs.layers,
@@ -1859,8 +1869,11 @@ impl Wb11HydrologyKernel {
                 &layer_water_state,
             )?;
         let prior_shadow_fine_state = shadow_fine_state.clone();
-        let prior_context =
-            Self::require_typed_active_frost_storage_inputs(inputs, phase_class, profile_shadow_context)?;
+        let prior_context = Self::require_typed_active_frost_storage_inputs(
+            inputs,
+            phase_class,
+            profile_shadow_context,
+        )?;
         let thermal_context =
             Self::require_active_frost_thermal_context_from_typed(inputs, phase_class, controls)?;
         let tmpadj = ActiveFrostTmpadjContext {
@@ -1955,5 +1968,4 @@ impl Wb11HydrologyKernel {
         );
         Ok(outcome)
     }
-
 }

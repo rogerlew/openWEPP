@@ -70,9 +70,9 @@ fn carrier() -> SharedCarrierInput {
             "v11-canopy".to_string(),
         ],
         support_receipts: vec![
-            support("shared-carrier", "support-carrier-v1", 600_000_000),
-            support("stage3-snow", "support-stage3-v1", 600_000_000),
-            support("v11-canopy", "support-v11-v1", 600_000_000),
+            support("shared-carrier", "support-carrier-v1", 60_000_000_000),
+            support("stage3-snow", "support-stage3-v1", 60_000_000_000),
+            support("v11-canopy", "support-v11-v1", 60_000_000_000),
         ],
         atmospheric_longwave_w_m2: 280.0,
         effective_canopy_cover: 0.5,
@@ -189,42 +189,45 @@ fn shared_carrier_reconstructs_authority_vector_and_rejects_proxies() {
 
 #[test]
 fn event_selection_uses_support_tolerance_and_atomic_no_candidate() {
-    let mut request = event(2_000_000_000);
-    request.proposed_event_tick = tick(1_100_000_000);
+    let mut request = event(200_000_000_000);
+    request.proposed_event_tick = tick(110_000_000_000);
     request.candidate_ticks = vec![
-        tick(1_000_000_000),
-        tick(1_100_000_000),
-        tick(1_200_000_000),
+        tick(100_000_000_000),
+        tick(110_000_000_000),
+        tick(120_000_000_000),
     ];
     request.pre_active_participants = vec![
-        support("stage3", "stage3-pre", 600_000_000),
-        support("v11", "v11-pre", 1_200_000_000),
+        support("stage3", "stage3-pre", 60_000_000_000),
+        support("v11", "v11-pre", 120_000_000_000),
     ];
-    request.post_active_participants = vec![support("v11", "v11-post", 600_000_000)];
-    request.event_time_tolerance_ns = tick(100_000_000);
+    request.post_active_participants = vec![support("v11", "v11-post", 60_000_000_000)];
+    request.event_time_tolerance_ns = tick(10_000_000_000);
     request.snow_mass_tolerance_kg_m2 = 0.001;
     request.liquid_mass_tolerance_kg_m2 = 0.001;
     request.energy_tolerance_j_m2 = 10.0;
     request.terminal_state = TerminalStateRates {
         snow_start_kg_m2: 10.0,
-        snow_rate_kg_m2_s: -1.0,
+        snow_rate_kg_m2_s: -0.01,
         snow_target_kg_m2: 8.8,
         liquid_start_kg_m2: 0.5,
-        liquid_rate_kg_m2_s: 0.1,
+        liquid_rate_kg_m2_s: 0.001,
         liquid_target_kg_m2: 0.62,
         energy_start_j_m2: 0.0,
-        energy_rate_j_m2_s: 100.0,
+        energy_rate_j_m2_s: 1.0,
         energy_target_j_m2: 120.0,
     };
     let selected = locate_terminal_event(&request).expect("support-admissible event");
-    assert_eq!(selected.accepted_event_tick, Some(tick(1_200_000_000)));
-    assert_eq!(selected.pre_common_minimum_support_ns, tick(1_200_000_000));
+    assert_eq!(selected.accepted_event_tick, Some(tick(120_000_000_000)));
+    assert_eq!(
+        selected.pre_common_minimum_support_ns,
+        tick(120_000_000_000)
+    );
 
-    let mut no_candidate = event(1_200_000_000);
-    no_candidate.proposed_event_tick = tick(500_000_000);
-    no_candidate.candidate_ticks = vec![tick(500_000_000)];
-    no_candidate.pre_active_participants = vec![support("stage3", "stage3", 600_000_000)];
-    no_candidate.post_active_participants = vec![support("lse", "lse", 600_000_000)];
+    let mut no_candidate = event(120_000_000_000);
+    no_candidate.proposed_event_tick = tick(50_000_000_000);
+    no_candidate.candidate_ticks = vec![tick(50_000_000_000)];
+    no_candidate.pre_active_participants = vec![support("stage3", "stage3", 60_000_000_000)];
+    no_candidate.post_active_participants = vec![support("lse", "lse", 60_000_000_000)];
     let error = locate_terminal_event(&no_candidate).expect_err("retry boundary");
     assert_eq!(
         error.to_string(),
@@ -241,7 +244,7 @@ fn handoff_stages_complete_owners_commits_once_and_round_trips_restart() {
     let mut runtime = SnowStage3HandoffRuntime::new(tick(0), beginning.clone()).expect("runtime");
     let request = SnowStage3TerminalHandoffRequest {
         carrier: carrier(),
-        event: event(600_000_000),
+        event: event(60_000_000_000),
         beginning_owners: beginning.clone(),
         ending_owners: ending,
         owner_execution: first_owner_execution,
@@ -283,18 +286,18 @@ fn handoff_stages_complete_owners_commits_once_and_round_trips_restart() {
     assert_eq!(receipt.parent_identity, "parent-child2c-test");
     assert_eq!(receipt.segment_identity, "segment-stage3-test");
     assert_eq!(receipt.accepted_tie_rank, 1);
-    assert_eq!(runtime.accepted_cursor_ns(), tick(600_000_000));
+    assert_eq!(runtime.accepted_cursor_ns(), tick(60_000_000_000));
     assert_eq!(runtime.accepted_event_ordinal(), 1);
     assert_eq!(runtime.receipt_chain().len(), 1);
     assert_eq!(runtime.receipt_history(), std::slice::from_ref(&receipt));
 
     let second_ending = owners(3);
-    let mut second_event = event(1_200_000_000);
+    let mut second_event = event(120_000_000_000);
     second_event.segment_identity = "segment-stage3-test-2".to_string();
     second_event.event_ordinal = 2;
-    second_event.parent_start_tick = tick(600_000_000);
-    second_event.proposed_event_tick = tick(1_200_000_000);
-    second_event.candidate_ticks = vec![tick(1_200_000_000)];
+    second_event.parent_start_tick = tick(60_000_000_000);
+    second_event.proposed_event_tick = tick(120_000_000_000);
+    second_event.candidate_ticks = vec![tick(120_000_000_000)];
     second_event.pre_active_participants = carrier().support_receipts;
     second_event.post_active_participants = Vec::new();
     let second_request = SnowStage3TerminalHandoffRequest {
@@ -339,7 +342,7 @@ fn handoff_rejects_unjoined_carrier_and_successor_identity() {
     let mut runtime = SnowStage3HandoffRuntime::new(tick(0), beginning.clone()).expect("runtime");
     let mut request = SnowStage3TerminalHandoffRequest {
         carrier: carrier(),
-        event: event(1_800_000_000),
+        event: event(180_000_000_000),
         beginning_owners: beginning,
         ending_owners: ending.clone(),
         owner_execution: owner_execution(ending),
@@ -348,7 +351,7 @@ fn handoff_rejects_unjoined_carrier_and_successor_identity() {
         terminal_melt_kg_m2: 0.5,
         terminal_refreeze_kg_m2: 0.1,
         continuation: SnowFreeContinuationInput {
-            duration_ns: tick(1_800_000_000),
+            duration_ns: tick(180_000_000_000),
             terminal_liquid_kg_m2: 1.3,
             post_event_contains_snow_operands: false,
         },
@@ -360,14 +363,14 @@ fn handoff_rejects_unjoined_carrier_and_successor_identity() {
     no_successor.event.pre_active_participants = carrier()
         .active_participants
         .iter()
-        .map(|participant| support(participant, &format!("{participant}-pre"), 600_000_000))
+        .map(|participant| support(participant, &format!("{participant}-pre"), 60_000_000_000))
         .collect();
     no_successor.event.post_active_participants.clear();
     assert!(runtime.stage(no_successor).is_err());
 
     let mut subminimum_successor = SnowStage3TerminalHandoffRequest {
         carrier: carrier(),
-        event: event(1_800_000_000),
+        event: event(180_000_000_000),
         beginning_owners: owners(11),
         ending_owners: owners(12),
         owner_execution: owner_execution(owners(12)),
@@ -376,7 +379,7 @@ fn handoff_rejects_unjoined_carrier_and_successor_identity() {
         terminal_melt_kg_m2: 0.5,
         terminal_refreeze_kg_m2: 0.1,
         continuation: SnowFreeContinuationInput {
-            duration_ns: tick(1_800_000_000),
+            duration_ns: tick(180_000_000_000),
             terminal_liquid_kg_m2: 1.3,
             post_event_contains_snow_operands: false,
         },
@@ -401,7 +404,7 @@ fn direct_stage3_runtime_commits_staged_handoff() {
     let ending = owners(4);
     let request = SnowStage3TerminalHandoffRequest {
         carrier: carrier(),
-        event: event(600_000_000),
+        event: event(60_000_000_000),
         beginning_owners: beginning,
         ending_owners: ending.clone(),
         owner_execution: owner_execution(ending),
@@ -417,6 +420,6 @@ fn direct_stage3_runtime_commits_staged_handoff() {
     };
     runtime.stage(request).expect("stage handoff candidate");
     runtime.commit_pending().expect("commit handoff candidate");
-    assert_eq!(runtime.accepted_cursor_ns(), tick(600_000_000));
+    assert_eq!(runtime.accepted_cursor_ns(), tick(60_000_000_000));
     assert_eq!(runtime.receipt_chain().len(), 1);
 }

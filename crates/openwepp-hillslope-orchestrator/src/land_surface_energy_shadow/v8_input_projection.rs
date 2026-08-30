@@ -508,20 +508,9 @@ impl ValidatedV8RuntimeInputProjection {
         &self,
         vegetation_owner_id: &ResourceOwnerId,
     ) -> Result<Vec<V8SolverReadyTileInput>, V8InputProjectionError> {
-        self.solver_ready_tiles_with_authority(
-            vegetation_owner_id,
-            openwepp_land_surface_energy::CoveredColumnAuthority::HistoricalV8,
-        )
-    }
-
-    pub(crate) fn solver_ready_tiles_with_authority(
-        &self,
-        vegetation_owner_id: &ResourceOwnerId,
-        authority: openwepp_land_surface_energy::CoveredColumnAuthority,
-    ) -> Result<Vec<V8SolverReadyTileInput>, V8InputProjectionError> {
         self.solver_ready_tiles_with_authority_and_lower_boundaries(
             vegetation_owner_id,
-            authority,
+            openwepp_land_surface_energy::CoveredColumnAuthority::HistoricalV8,
             None,
         )
     }
@@ -1204,7 +1193,9 @@ fn covered_precipitation_for_tile(
         .precipitation_parcels
         .iter()
         .filter(|parcel| {
-            &parcel.destination_ofe_id == ofe_id && &parcel.destination_tile_id == tile_id
+            parcel.parcel_kind == openwepp_land_surface_energy::LiquidParcelKind::Precipitation
+                && &parcel.destination_ofe_id == ofe_id
+                && &parcel.destination_tile_id == tile_id
         })
         .map(|parcel| parcel.amount_kg_m2_destination_tile_ground)
         .fold(0.0, |total, amount| total + amount)
@@ -1234,49 +1225,6 @@ fn tile_qualified_component_id(
         occupancy.stratum_id.as_str(),
         occupancy.tile_id.as_str()
     ))?)
-}
-
-/// Derive all solve inputs from validated owner configuration/state and the
-/// canonical forcing DTOs. No LAI/SAI, rank, warm start, ground state, soil
-/// state, or hydraulic source operand is accepted independently.
-#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-pub(crate) fn project_v8_runtime_inputs(
-    vegetation_configuration: &VegetationConfiguration,
-    vegetation_state: &V8CoupledOwnedState,
-    vegetation_owner_id: &ResourceOwnerId,
-    biogeochemistry_owner_id: &ResourceOwnerId,
-    beginning_biogeochemistry_state_sha256: &Sha256Digest,
-    canopy_forcing: &V8CanopyForcingReceipt,
-    lse_configuration: &LandSurfaceEnergyConfiguration,
-    lse_state: &LandSurfaceEnergyState,
-    lse_forcing: &LandSurfaceForcing,
-    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
-    surface_configuration: &DirectSurfaceLiquidConfiguration,
-    soil_thermal: &SoilThermalSnapshot,
-    day_index: usize,
-    interval_index: u8,
-    authenticated_duration_s_bits: Option<u64>,
-    covered_lower_boundaries: Option<&BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>>,
-) -> Result<ValidatedV8RuntimeInputProjection, V8InputProjectionError> {
-    project_v8_runtime_inputs_with_carriers(
-        vegetation_configuration,
-        vegetation_state,
-        vegetation_owner_id,
-        biogeochemistry_owner_id,
-        beginning_biogeochemistry_state_sha256,
-        canopy_forcing,
-        lse_configuration,
-        lse_state,
-        lse_forcing,
-        soil_adapter,
-        surface_configuration,
-        soil_thermal,
-        day_index,
-        interval_index,
-        authenticated_duration_s_bits,
-        covered_lower_boundaries,
-        None,
-    )
 }
 
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]

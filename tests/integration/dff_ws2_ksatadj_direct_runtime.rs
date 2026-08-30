@@ -1,8 +1,10 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
+use openwepp_runner::{HillslopeRunRequest, SidecarPolicy};
 use serde_json::Value;
+
+mod common;
 
 #[test]
 fn dff_ws2_forest_high_severity_loam_runs_with_live_direct_ksatadj_effect() {
@@ -27,7 +29,7 @@ fn dff_ws2_forest_high_severity_loam_runs_with_live_direct_ksatadj_effect() {
 }
 
 fn run_fixture(temp_run_dir: &Path) -> openwepp_runner::HillslopeRunReport {
-    execute_hillslope_run(
+    common::execute_with_complete_stage3_owner_seed(
         &HillslopeRunRequest {
             run_dir: temp_run_dir.to_path_buf(),
             run_file: PathBuf::from("p313.run.toml"),

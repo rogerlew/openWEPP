@@ -1,4 +1,4 @@
-//! Separately written Rust executor for the frozen 114-case oracle population.
+//! Separately written Rust executor for the frozen 118-case oracle population.
 #![allow(
     clippy::cast_possible_truncation,
     clippy::cast_precision_loss,
@@ -257,6 +257,14 @@ fn events(c: &Value) -> Result<Value, String> {
         return err("EventBudgetExhausted");
     }
     let mut state = s(c, "begin_owner_sha256").to_owned();
+    let mut regime = c
+        .get("begin_regime_sha256")
+        .and_then(Value::as_str)
+        .map(str::to_owned);
+    let mut participants = c
+        .get("begin_participant_sha256")
+        .and_then(Value::as_str)
+        .map(str::to_owned);
     let mut seen: BTreeSet<String> = c
         .get("accepted_event_ids")
         .and_then(Value::as_array)
@@ -276,6 +284,29 @@ fn events(c: &Value) -> Result<Value, String> {
         if s(e, "begin_owner_sha256") != state {
             return err("EventCustodyConflict");
         }
+        if e.get("mutation_set").is_some() {
+            let ledger = e
+                .get("ledger")
+                .and_then(Value::as_array)
+                .ok_or("LedgerNotClosed")?;
+            if ledger.iter().any(|entry| entry["debit"] != entry["credit"]) {
+                return err("LedgerNotClosed");
+            }
+            let physical = s(e, "end_owner_sha256") != state
+                || regime.as_deref() != Some(s(e, "regime_sha256"))
+                || participants.as_deref() != Some(s(e, "participant_sha256"));
+            let custody = s(e, "class") == "OwnershipTransfer"
+                && e["mutation_set"].as_array().is_some_and(Vec::is_empty)
+                && !ledger.is_empty()
+                && ledger.iter().all(|entry| {
+                    s(entry, "debit") != "0"
+                        && s(entry, "credit") != "0"
+                        && s(entry, "lineage") != "0"
+                });
+            if !physical && !custody {
+                return err("EventNoProgressCycle");
+            }
+        }
         let key = format!(
             "{}:{}:{}:{}:{}",
             s(e, "tick"),
@@ -289,6 +320,8 @@ fn events(c: &Value) -> Result<Value, String> {
         }
         seen.insert(s(e, "event_id").into());
         state = s(e, "end_owner_sha256").into();
+        regime = Some(s(e, "regime_sha256").into());
+        participants = Some(s(e, "participant_sha256").into());
         receipts.push(format!("{}:{}:{}", s(e, "class"), s(e, "event_id"), state))
     }
     Ok(
@@ -597,7 +630,7 @@ fn production_rust_matches_all_frozen_oracle_cases() {
         serde_json::from_slice(&fs::read(root().join("coupled-time-vectors.json")).unwrap())
             .unwrap();
     let cases = vectors["cases"].as_array().unwrap();
-    assert_eq!(cases.len(), 114);
+    assert_eq!(cases.len(), 118);
     for c in cases {
         let actual = eval(c).unwrap_or_else(reject);
         assert_eq!(actual, c["expected"], "{}", s(c, "id"));

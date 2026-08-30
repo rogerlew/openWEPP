@@ -1,7 +1,9 @@
 //! E.3 / SC-SED-001 rev 44 `INV-SED-016` regression: the multi-OFE Wave-1
 //! chain produces sediment end-to-end through the direct-production
-//! runtime on a REAL 2-OFE disturbed-forest hillslope from the
-//! WSHED-W7DC01 substrate (`insensible-aliquot` H102). Asserts:
+//! runtime on a REAL 2-OFE disturbed-forest soil substrate from the
+//! WSHED-W7DC01 substrate (`insensible-aliquot` H102). The checked management
+//! authority is cropland, so this fixture uses the typed open/no-strata Stage-3
+//! owner and makes no active-canopy claim. Asserts:
 //!
 //! 1. the run completes with nonzero outlet detachment (the W7DC01 proof
 //!    class — the retired EROD14 multi-OFE path published zero sediment);
@@ -21,7 +23,9 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 
 use arrow_array::{Array, Float64Array, Int16Array};
-use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
+use openwepp_runner::{HillslopeRunRequest, SidecarPolicy};
+
+mod common;
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 
 #[allow(clippy::too_many_lines)]
@@ -29,6 +33,12 @@ use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 fn erosion_multi_ofe_p102_wave1_chain_routes_sediment() {
     let fixture = fixture_path("erosion_multi_ofe_p102");
     let run_dir = copy_fixture_to_temp(&fixture, "erosion_p102_chain");
+    let management = fs::read_to_string(run_dir.join("p102.man"))
+        .expect("P102 fixture management should be readable");
+    assert!(
+        management.contains("# Landuse - <Cropland>"),
+        "P102 is an erosion/hydrology fixture with typed open/no-strata Stage-3 authority; it must not silently acquire an active-canopy claim"
+    );
     let report = run_p102(&run_dir);
 
     let pass_parquet = report
@@ -173,7 +183,7 @@ fn erosion_multi_ofe_p102_wave1_chain_routes_sediment() {
 
 fn run_p102(run_dir: &Path) -> openwepp_runner::HillslopeRunReport {
     let output_dir = run_dir.join("output");
-    execute_hillslope_run(
+    common::execute_with_adaptive_stage3_owner_seed(
         &HillslopeRunRequest {
             run_dir: run_dir.to_path_buf(),
             run_file: PathBuf::from("p102.run"),

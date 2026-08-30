@@ -20,6 +20,7 @@
     clippy::needless_pass_by_value,
     clippy::redundant_closure_for_method_calls,
     clippy::ref_option,
+    clippy::result_large_err,
     clippy::semicolon_if_nothing_returned,
     clippy::too_many_lines,
     clippy::unreadable_literal
@@ -41,6 +42,8 @@ mod primitives;
 mod projection;
 mod scientific_owners;
 mod snow_stage3_handoff;
+mod snow_stage3_v11;
+mod snow_stage3_v11_v3;
 mod subsurface;
 mod surface_liquid;
 mod transaction;
@@ -93,6 +96,11 @@ pub use projection::{
 };
 pub use scientific_owners::*;
 pub use snow_stage3_handoff::{SnowStage3HandoffRestartError, SnowStage3HandoffRestartV1};
+pub use snow_stage3_v11::{
+    DirectSnowStage3V11AttachmentRestartV2, ExpectedSnowStage3V11RestartContext,
+    SnowStage3V11RestartError,
+};
+pub use snow_stage3_v11_v3::*;
 pub use subsurface::{DirectSubsurfaceLayerRestartV1, SubsurfaceRestartError};
 pub use surface_liquid::{
     DirectSurfaceLiquidConfigurationRestartV1, DirectSurfaceLiquidOwnedStateRestartV1,

@@ -52,6 +52,28 @@ impl<'a> DirectV11RealConsumerStack<'a> {
         value
     }
 
+    #[must_use]
+    pub fn new_parent_child_with_ending_snow_owner(
+        beginning: &DirectV10RealConsumerShadow,
+        interval: &'a DirectV9ShadowIntervalInput,
+        day_index: usize,
+        interval_index: usize,
+        finalize_wb14_parent_interval: bool,
+        wb14_coupled_child_binding: crate::direct_runtime::DirectWb14CoupledChildBindingV1,
+        ending_snow_owner_bytes: Vec<u8>,
+    ) -> Self {
+        let mut value = Self::new_parent_child(
+            beginning,
+            interval,
+            day_index,
+            interval_index,
+            finalize_wb14_parent_interval,
+            wb14_coupled_child_binding,
+        );
+        value.ending_snow_owner_bytes = Some(ending_snow_owner_bytes);
+        value
+    }
+
     /// Consume the isolated staged ending only after the V11 parent accepts
     /// the corresponding segment candidate.
     pub fn take_staged_ending(&mut self) -> Option<DirectV10RealConsumerShadow> {

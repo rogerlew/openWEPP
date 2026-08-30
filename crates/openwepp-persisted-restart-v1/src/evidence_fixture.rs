@@ -7,9 +7,8 @@ use crate::{
     SnowFreeHalfHourProviderCursorRestartV1, SnowFreeHalfHourStaticConfigurationRestartV1,
     SoilThermalStateRestartV1, VegetationV10StateRestartV1, WireDayIndex, canonical_sha256,
 };
-use openwepp_hillslope_orchestrator::DirectOfeWb14Parameters;
 use openwepp_hillslope_orchestrator::land_surface_energy_shadow::{
-    EndpointFixture, endpoint_fixture,
+    EndpointFixture, endpoint_fixture, two_ofe_routed_endpoint_fixture,
 };
 use openwepp_hillslope_orchestrator::runtime_inputs::{
     DirectGsiOwnerConfigurationV1, HillslopeClimateRuntimeRequest, PreparedSnowFreeGsiDayV1,
@@ -20,6 +19,10 @@ use openwepp_hillslope_orchestrator::v9_real_consumer_shadow::{
     DirectRootZoneHydraulicConfiguration, DirectRootZoneLayerConfiguration,
     DirectRootZoneStratumGeometry, DirectV9ShadowIntervalInput, DirectV10RealConsumerShadow,
     DirectV10ShadowDayInput, restart_authority_wb14_parameter_sha256,
+};
+use openwepp_hillslope_orchestrator::{
+    DirectGroundIngressMode, DirectOfeWb14Parameters, DirectSurfaceLiquidConfiguration,
+    DirectSurfaceLiquidOwnedState,
 };
 use openwepp_input_contract::parsers::climate::{ParserMode, parse_climate_from_str};
 use openwepp_kernel_contract::{ResourceOwnerId, TransactionId};
@@ -272,15 +275,55 @@ pub fn restart_authority_prepared_day_fixture() -> RestartAuthorityPreparedDayFi
     restart_authority_prepared_day_fixture_from_source(source)
 }
 
+pub fn restart_authority_adaptive_prepared_day_fixture() -> RestartAuthorityPreparedDayFixture {
+    let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n84.7 -120.0 0.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 0.0 0.0 420.0 3.7 180.0 0.0\n";
+    restart_authority_prepared_day_fixture_from_source_and_owners(
+        source,
+        restart_authority_adaptive_owner_fixture(),
+    )
+}
+
+pub fn restart_authority_adaptive_snow_prepared_day_fixture() -> RestartAuthorityPreparedDayFixture
+{
+    let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n84.7 -120.0 0.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 4.0 1.0 0.5 50.0 -0.25 -0.75 0.0 1.0 180.0 -1.0\n";
+    restart_authority_prepared_day_fixture_from_source_and_owners(
+        source,
+        restart_authority_adaptive_owner_fixture(),
+    )
+}
+
+pub fn restart_authority_cold_prepared_day_fixture() -> RestartAuthorityPreparedDayFixture {
+    let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 1 2000 0.0 0.0 0.0 0.0 -3.0 -7.0 0.0 3.0 180.0 -10.0\n";
+    restart_authority_prepared_day_fixture_from_source(source)
+}
+
 pub fn restart_authority_cross_midnight_carry_fixture() -> RestartAuthorityPreparedDayFixture {
     let source = "5.30\n1 1 0\nTEST STATION 1500\nDAY MON YEAR NBRKPT TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 3 28.0 22.0 420.0 2.5 180.0 20.0\n23.50 0.0\n24.00 3.6\n24.50 7.2\n";
     restart_authority_prepared_day_fixture_from_source(source)
 }
 
+pub fn restart_authority_adaptive_cross_midnight_carry_fixture()
+-> RestartAuthorityPreparedDayFixture {
+    let source = "5.30\n1 1 0\nTEST STATION 1500\nDAY MON YEAR NBRKPT TMAX TMIN RAD VWIND WIND TDPT\n84.7 -120.0 0.0 30 2000 1\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 3 28.0 22.0 0.0 2.5 180.0 20.0\n23.50 0.0\n24.00 3.6\n24.50 7.2\n";
+    restart_authority_prepared_day_fixture_from_source_and_owners(
+        source,
+        restart_authority_adaptive_owner_fixture(),
+    )
+}
+
 fn restart_authority_prepared_day_fixture_from_source(
     source: &str,
 ) -> RestartAuthorityPreparedDayFixture {
-    let mut owners = restart_authority_owner_fixture();
+    restart_authority_prepared_day_fixture_from_source_and_owners(
+        source,
+        restart_authority_owner_fixture(),
+    )
+}
+
+fn restart_authority_prepared_day_fixture_from_source_and_owners(
+    source: &str,
+    mut owners: RestartAuthorityOwnerFixture,
+) -> RestartAuthorityPreparedDayFixture {
     let climate = parse_climate_from_str(source, ParserMode::SnowFreeHalfHourProvider).unwrap();
     let request = build_hillslope_climate_runtime_request(&climate).unwrap();
     let shadow = &owners.runtime.shadow;
@@ -347,7 +390,25 @@ fn restart_authority_prepared_day_fixture_from_source(
 }
 
 pub fn restart_authority_owner_fixture() -> RestartAuthorityOwnerFixture {
-    let runtime = restart_authority_evidence_fixture();
+    restart_authority_owner_fixture_from_runtime(restart_authority_evidence_fixture())
+}
+
+pub fn restart_authority_adaptive_owner_fixture() -> RestartAuthorityOwnerFixture {
+    restart_authority_owner_fixture_from_runtime(restart_authority_adaptive_evidence_fixture())
+}
+
+#[cfg(feature = "fixtures")]
+pub fn restart_authority_two_ofe_owner_fixture() -> RestartAuthorityOwnerFixture {
+    restart_authority_owner_fixture_from_runtime(restart_authority_evidence_fixture_from_endpoint(
+        two_ofe_routed_endpoint_fixture(),
+        true,
+        41.1,
+    ))
+}
+
+fn restart_authority_owner_fixture_from_runtime(
+    runtime: RestartAuthorityEvidenceFixture,
+) -> RestartAuthorityOwnerFixture {
     let shadow = &runtime.shadow;
     let mut hydrology_frame = shadow.restart_authority_hydrology_frame().clone();
     hydrology_frame.lane_transfer_ledger = hydrology_frame
@@ -464,28 +525,71 @@ pub fn restart_authority_owner_fixture() -> RestartAuthorityOwnerFixture {
 }
 
 pub fn restart_authority_evidence_fixture() -> RestartAuthorityEvidenceFixture {
+    restart_authority_evidence_fixture_from_endpoint(endpoint_fixture(), true, 41.1)
+}
+
+pub fn restart_authority_adaptive_evidence_fixture() -> RestartAuthorityEvidenceFixture {
     let mut endpoint = endpoint_fixture();
-    let mut wet_frame = endpoint.hydrology.beginning_frame().clone();
-    for lane in &mut wet_frame.lanes {
-        for layer in &mut lane.subsurface_layers {
-            layer.theta_m = 0.95 * layer.porosity * layer.depth_m;
-            layer.conductivity_m_s = 1.0e-10;
-        }
-        lane.water.soil_water_m = lane
-            .subsurface_layers
-            .iter()
-            .map(|layer| layer.theta_m)
-            .sum();
+    endpoint.vegetation_configuration.strata.clear();
+    endpoint.vegetation_configuration.configuration_sha256 = endpoint
+        .vegetation_configuration
+        .canonical_sha256()
+        .unwrap();
+    endpoint.vegetation_state.occupancies.clear();
+    endpoint.vegetation_state.strata.clear();
+    endpoint.vegetation_state.tile_canopy_air.clear();
+    endpoint
+        .vegetation_state
+        .configuration_sha256
+        .clone_from(&endpoint.vegetation_configuration.configuration_sha256);
+    endpoint.vegetation_state.state_sha256 = endpoint.vegetation_state.canonical_sha256();
+    endpoint
+        .vegetation_configuration
+        .initial_state_sha256
+        .clone_from(&endpoint.vegetation_state.state_sha256);
+    let mut records = endpoint.surface_configuration.records.clone();
+    for record in &mut records {
+        record.ground_ingress_mode = DirectGroundIngressMode::OpenRawPrecipitation;
     }
-    endpoint.hydrology = openwepp_hillslope_orchestrator::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter::try_from_day_start(
-        &wet_frame,
-        0,
-        TransactionId(41),
-        1_800.0,
-        ResourceOwnerId::try_new("production-hydrology").unwrap(),
-        endpoint.hydrology.restart_authority_layer_maps(),
+    endpoint.surface_configuration = DirectSurfaceLiquidConfiguration::new(
+        endpoint.surface_configuration.owner_id.clone(),
+        endpoint.surface_configuration.run_id,
+        endpoint.surface_configuration.ofe_topology.clone(),
+        endpoint.surface_configuration.ofe_bindings.clone(),
+        records,
     )
     .unwrap();
+    restart_authority_evidence_fixture_from_endpoint(endpoint, false, 84.7)
+}
+
+fn restart_authority_evidence_fixture_from_endpoint(
+    mut endpoint: EndpointFixture,
+    wet_hydrology: bool,
+    latitude_degrees: f64,
+) -> RestartAuthorityEvidenceFixture {
+    if wet_hydrology {
+        let mut wet_frame = endpoint.hydrology.beginning_frame().clone();
+        for lane in &mut wet_frame.lanes {
+            for layer in &mut lane.subsurface_layers {
+                layer.theta_m = 0.95 * layer.porosity * layer.depth_m;
+                layer.conductivity_m_s = 1.0e-10;
+            }
+            lane.water.soil_water_m = lane
+                .subsurface_layers
+                .iter()
+                .map(|layer| layer.theta_m)
+                .sum();
+        }
+        endpoint.hydrology = openwepp_hillslope_orchestrator::vegetation_real_hydrology_shadow::RealHydrologyShadowAdapter::try_from_day_start(
+            &wet_frame,
+            0,
+            TransactionId(41),
+            1_800.0,
+            ResourceOwnerId::try_new("production-hydrology").unwrap(),
+            endpoint.hydrology.restart_authority_layer_maps(),
+        )
+        .unwrap();
+    }
     let mut v9_configuration = endpoint.vegetation_configuration.clone();
     v9_configuration.model_definition_sha256 = V9_MODEL_SHA256.into();
     v9_configuration.configuration_sha256 = v9_configuration.canonical_sha256().unwrap();
@@ -547,15 +651,19 @@ pub fn restart_authority_evidence_fixture() -> RestartAuthorityEvidenceFixture {
     let gsi = DirectGsiOwnerConfigurationV1::try_new(
         "restart-authority-gsi".into(),
         GsiParameters::generalized(),
-        41.1,
+        latitude_degrees,
     )
     .unwrap();
-    let wb14 = DirectOfeWb14Parameters {
-        ofe_id: OfeId::try_new("ofe-1").unwrap(),
-        effective_conductivity_m_s: 1e-6,
-        matric_potential_m: 0.1,
-        infiltration_storage_capacity_m: 0.04,
-    };
+    let wb14 = lse_configuration
+        .ofes
+        .iter()
+        .map(|ofe| DirectOfeWb14Parameters {
+            ofe_id: ofe.ofe_id.clone(),
+            effective_conductivity_m_s: 1e-6,
+            matric_potential_m: 0.1,
+            infiltration_storage_capacity_m: 0.04,
+        })
+        .collect::<Vec<_>>();
     let forcing = SnowFreeHalfHourStaticConfiguration {
         run_id: endpoint
             .hydrology
@@ -566,16 +674,51 @@ pub fn restart_authority_evidence_fixture() -> RestartAuthorityEvidenceFixture {
         co2_pa: endpoint.receipt.forcing().co2_pa,
         reference_height_m: endpoint.receipt.forcing().reference_height_m,
         gsi_owner_configuration_sha256: gsi.configuration_sha256.clone(),
-        destinations: ["forest", "open"]
-            .into_iter()
-            .map(|tile| SnowFreeHalfHourDestination {
-                ofe_id: "ofe-1".into(),
-                tile_id: tile.into(),
-                wb14_configuration_sha256: restart_authority_wb14_parameter_sha256(&wb14),
+        destinations: lse_configuration
+            .ofes
+            .iter()
+            .flat_map(|ofe| {
+                let wb14 = wb14
+                    .iter()
+                    .find(|parameters| parameters.ofe_id == ofe.ofe_id)
+                    .unwrap();
+                ofe.tiles
+                    .iter()
+                    .map(move |tile| SnowFreeHalfHourDestination {
+                        ofe_id: ofe.ofe_id.as_str().into(),
+                        tile_id: tile.tile_id.as_str().into(),
+                        wb14_configuration_sha256: restart_authority_wb14_parameter_sha256(wb14),
+                    })
             })
             .collect(),
     };
     let mut hydrology_frame = endpoint.hydrology.beginning_frame().clone();
+    if hydrology_frame
+        .surface_liquid_shadow
+        .as_deref()
+        .is_some_and(|state| {
+            state.configuration_sha256 != endpoint.surface_configuration.configuration_sha256
+        })
+    {
+        let liquid_by_key = hydrology_frame
+            .surface_liquid_shadow
+            .as_deref()
+            .unwrap()
+            .records
+            .iter()
+            .map(|record| (record.key.clone(), record.liquid_kg_m2_tile))
+            .collect();
+        let surface_state = DirectSurfaceLiquidOwnedState::new_initial(
+            &endpoint.surface_configuration,
+            &liquid_by_key,
+            0,
+        )
+        .unwrap();
+        hydrology_frame.surface_liquid_shadow = None;
+        hydrology_frame
+            .configure_surface_liquid_shadow(&endpoint.surface_configuration, surface_state)
+            .unwrap();
+    }
     hydrology_frame.lane_transfer_ledger = hydrology_frame
         .lanes
         .iter()
@@ -645,9 +788,41 @@ mod tests {
                 .collect::<Vec<_>>()
         );
     }
+
+    #[test]
+    fn adaptive_snow_fixture_starts_with_typed_solid_precipitation() {
+        let fixture = restart_authority_adaptive_snow_prepared_day_fixture();
+        assert!(
+            fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_vegetation_configuration()
+                .strata
+                .is_empty()
+        );
+        assert!(
+            fixture
+                .owners
+                .runtime
+                .shadow
+                .restart_authority_surface_configuration()
+                .records
+                .iter()
+                .all(|record| {
+                    record.ground_ingress_mode == DirectGroundIngressMode::OpenRawPrecipitation
+                })
+        );
+        for day in fixture.prepared.forcing_receipts().receipts() {
+            assert!(day.intervals.iter().any(|interval| {
+                interval.snowfall_m > 0.0 && !interval.solid_precipitation_parcels.is_empty()
+            }));
+        }
+    }
     use crate::{
         AcceptedIntervalCount, DirectV10CheckpointPhaseV1, DirectV10RealConsumerCheckpointV1,
-        ExpectedRestartStaticContext, WireDayIndex, admit_checkpoint_v1, to_canonical_bytes,
+        DirectV10RestartHost, ExpectedRestartStaticContext, RestartAdmissionFailureV1,
+        WireDayIndex, admit_checkpoint_v1, to_canonical_bytes,
     };
     #[test]
     fn repository_backed_v10_lse_v2_fixture_is_valid() {
@@ -730,6 +905,172 @@ mod tests {
             day_input_digests: &fixture.day_input_digests,
         };
         admit_checkpoint_v1(&to_canonical_bytes(&checkpoint).unwrap(), &context).unwrap();
+    }
+
+    #[test]
+    fn two_ofe_owner_fixture_restores_exact_topology_and_rejects_poisons() {
+        let fixture = restart_authority_two_ofe_owner_fixture();
+        let shadow = &fixture.runtime.shadow;
+        let lanes = &shadow.restart_authority_hydrology_frame().lanes;
+        assert_eq!(
+            lanes
+                .iter()
+                .enumerate()
+                .map(|(index, lane)| (index, lane.lane_id, lane.area_m2))
+                .collect::<Vec<_>>(),
+            vec![(0, 1, 100.0), (1, 2, 200.0)]
+        );
+
+        let expected_layers = [
+            "thermal-1",
+            "thermal-2",
+            "soil-1",
+            "soil-2",
+            "soil-dry",
+            "soil-frozen",
+        ];
+        let root_layers = shadow.root_zone_hydraulic_configuration().ordered_layers();
+        assert_eq!(root_layers.len(), 2 * expected_layers.len());
+        for (lane_index, lane_layers) in root_layers.chunks_exact(expected_layers.len()).enumerate()
+        {
+            assert_eq!(
+                lane_layers
+                    .iter()
+                    .map(|layer| {
+                        let (index, id, layer_id, _, _) = layer.restart_identity_fields();
+                        (index, id, layer_id.as_str())
+                    })
+                    .collect::<Vec<_>>(),
+                expected_layers
+                    .iter()
+                    .map(|layer_id| (
+                        lane_index,
+                        u32::try_from(lane_index + 1).unwrap(),
+                        *layer_id
+                    ))
+                    .collect::<Vec<_>>()
+            );
+        }
+
+        let surface = shadow.restart_authority_surface_configuration();
+        let upper_records = surface
+            .records
+            .iter()
+            .filter(|record| record.key.ofe_id.as_str() == "ofe-1")
+            .collect::<Vec<_>>();
+        assert_eq!(upper_records.len(), 2);
+        assert!(upper_records.iter().all(|record| {
+            record
+                .runon_destination_ofe_id
+                .as_ref()
+                .is_some_and(|ofe| ofe.as_str() == "ofe-2")
+                && record
+                    .runon_destination_tile_id
+                    .as_ref()
+                    .is_some_and(|tile| tile.as_str() == "lower-open")
+        }));
+        assert_eq!(fixture.committed.scientific.lse_v2.tiles.len(), 4);
+        assert_eq!(fixture.committed.scientific.soil_thermal.ofes.len(), 2);
+        assert_eq!(
+            fixture
+                .committed
+                .static_forcing_configuration
+                .destinations
+                .len(),
+            4
+        );
+        assert!(
+            !fixture
+                .committed
+                .scientific
+                .biogeochemistry
+                .layers
+                .is_empty()
+        );
+
+        let (run, topology) = restart_authority_identities(
+            &fixture.committed,
+            shadow.root_zone_hydraulic_configuration(),
+        );
+        let mut checkpoint = DirectV10RealConsumerCheckpointV1 {
+            schema: "OPENWEPP_DIRECT_V10_REAL_CONSUMER_CHECKPOINT_V1".into(),
+            version: 1,
+            run_identity_sha256: run.clone(),
+            topology_sha256: topology.clone(),
+            phase: DirectV10CheckpointPhaseV1::BetweenDays {
+                next_day_index: WireDayIndex(0),
+                accepted_interval_count: AcceptedIntervalCount::try_new(0).unwrap(),
+                committed: fixture.committed.clone(),
+            },
+            payload_sha256: Sha256Hex::try_new("0".repeat(64)).unwrap(),
+        };
+        checkpoint.seal().unwrap();
+        let context = ExpectedRestartStaticContext {
+            run_identity_sha256: &run,
+            topology_sha256: &topology,
+            vegetation_configuration: shadow.restart_authority_vegetation_configuration(),
+            vegetation_owner_id: shadow.restart_authority_vegetation_owner_id(),
+            soil_thermal_owner_id: &shadow.restart_authority_soil_thermal().owner_id,
+            soil_thermal_configuration_sha256: &shadow
+                .restart_authority_soil_thermal()
+                .configuration_sha256,
+            lse_configuration: shadow.restart_authority_lse_configuration(),
+            surface_liquid_configuration: shadow.restart_authority_surface_configuration(),
+            gsi_configuration: shadow.gsi_owner_configuration(),
+            forcing_static_configuration: shadow.provider_static_configuration(),
+            root_zone_hydraulic_configuration: shadow.root_zone_hydraulic_configuration(),
+            phase_plan: &shadow.restart_authority_hydrology_frame().phase_plan,
+            phase_plan_sha256: &fixture.phase_plan_sha256,
+            day_inputs: &fixture.day_inputs,
+            day_input_digests: &fixture.day_input_digests,
+        };
+        let admitted =
+            admit_checkpoint_v1(&to_canonical_bytes(&checkpoint).unwrap(), &context).unwrap();
+        let restored = DirectV10RestartHost::from_isolated(admitted, &context).unwrap();
+        assert_eq!(
+            restored
+                .shadow()
+                .restart_authority_hydrology_frame()
+                .lanes
+                .iter()
+                .enumerate()
+                .map(|(index, lane)| (index, lane.lane_id, lane.area_m2))
+                .collect::<Vec<_>>(),
+            vec![(0, 1, 100.0), (1, 2, 200.0)]
+        );
+
+        let mut topology_poison = checkpoint.clone();
+        topology_poison.topology_sha256 = Sha256Hex::try_new("3".repeat(64)).unwrap();
+        topology_poison.seal().unwrap();
+        assert!(matches!(
+            admit_checkpoint_v1(&to_canonical_bytes(&topology_poison).unwrap(), &context),
+            Err(RestartAdmissionFailureV1::TopologyIdentity)
+        ));
+
+        let mut order_poison = checkpoint.clone();
+        let DirectV10CheckpointPhaseV1::BetweenDays { committed, .. } = &mut order_poison.phase
+        else {
+            unreachable!()
+        };
+        committed.scientific.direct_hydrology.lanes.swap(0, 1);
+        order_poison.seal().unwrap();
+        assert!(matches!(
+            admit_checkpoint_v1(&to_canonical_bytes(&order_poison).unwrap(), &context),
+            Err(RestartAdmissionFailureV1::TopologyIdentity)
+        ));
+
+        let mut owner_poison = checkpoint;
+        let DirectV10CheckpointPhaseV1::BetweenDays { committed, .. } = &mut owner_poison.phase
+        else {
+            unreachable!()
+        };
+        committed.scientific.biogeochemistry.owner_id = "wrong-biogeochemistry-owner".into();
+        committed.scientific.biogeochemistry.seal().unwrap();
+        owner_poison.seal().unwrap();
+        assert!(matches!(
+            admit_checkpoint_v1(&to_canonical_bytes(&owner_poison).unwrap(), &context),
+            Err(RestartAdmissionFailureV1::OwnerValidation)
+        ));
     }
 
     #[test]

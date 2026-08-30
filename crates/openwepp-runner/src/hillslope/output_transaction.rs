@@ -3,6 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use super::transaction_spool::RunnerTransactionPrivateSpool;
 use super::{HillslopeCliError, HillslopeOutputTargets};
 
 struct TransactionEntry {
@@ -16,8 +17,13 @@ struct TransactionEntry {
 
 pub(super) struct HillslopeOutputTransaction {
     entries: Vec<TransactionEntry>,
+    output_private_spool: RunnerTransactionPrivateSpool,
+    manifest_private_spool: RunnerTransactionPrivateSpool,
     staged_targets: HillslopeOutputTargets,
+    stage3_evidence_final_path: PathBuf,
+    stage3_evidence_private_path: PathBuf,
     manifest_final_path: PathBuf,
+    manifest_private_path: PathBuf,
     manifest_staged_path: PathBuf,
     manifest_backup_path: PathBuf,
     manifest_backed_up: bool,
@@ -46,6 +52,8 @@ impl HillslopeOutputTransaction {
             ));
         }
 
+        let (transaction_targets, stage3_evidence_final_path) =
+            transaction_targets_with_stage3_evidence(final_targets, &manifest_final_path)?;
         let nonce = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map_err(|error| transaction_error(format!("transaction clock failed: {error}")))?
@@ -53,7 +61,9 @@ impl HillslopeOutputTransaction {
         let token = format!("{}-{nonce}", std::process::id());
         let mut entries = Vec::new();
         let mut staged_by_final = BTreeMap::new();
-        for final_path in target_paths(final_targets) {
+        let mut private_by_final = BTreeMap::new();
+        let mut output_private_pairs = Vec::new();
+        for final_path in target_paths(&transaction_targets) {
             if final_path == &manifest_final_path {
                 return Err(transaction_error(format!(
                     "manifest path aliases run output {}",
@@ -67,10 +77,14 @@ impl HillslopeOutputTransaction {
                 )));
             }
             let staged_path = sibling_transaction_path(final_path, &token, "stage")?;
+            let private_path = sibling_transaction_path(final_path, &token, "spool")?;
             let backup_path = sibling_transaction_path(final_path, &token, "backup")?;
             ensure_transaction_path_absent(&staged_path)?;
+            ensure_transaction_path_absent(&private_path)?;
             ensure_transaction_path_absent(&backup_path)?;
             staged_by_final.insert(final_path.clone(), staged_path.clone());
+            private_by_final.insert(final_path.clone(), private_path.clone());
+            output_private_pairs.push((private_path, staged_path.clone()));
             entries.push(TransactionEntry {
                 final_path: final_path.clone(),
                 staged_path,
@@ -81,15 +95,45 @@ impl HillslopeOutputTransaction {
             });
         }
         let manifest_staged_path = sibling_transaction_path(&manifest_final_path, &token, "stage")?;
+        let manifest_private_path =
+            sibling_transaction_path(&manifest_final_path, &token, "spool")?;
         let manifest_backup_path =
             sibling_transaction_path(&manifest_final_path, &token, "backup")?;
         ensure_transaction_path_absent(&manifest_staged_path)?;
+        ensure_transaction_path_absent(&manifest_private_path)?;
         ensure_transaction_path_absent(&manifest_backup_path)?;
-        let staged_targets = map_targets(final_targets, &staged_by_final)?;
+        // The archive is a first-class transaction entry, but it is not an
+        // ordinary configured output. Keep it out of the generic optional
+        // output enumerator and expose its private path separately.
+        let staged_targets = map_targets(final_targets, &private_by_final)?;
+        let stage3_evidence_private_path = private_by_final
+            .get(&stage3_evidence_final_path)
+            .cloned()
+            .ok_or_else(|| transaction_error("missing Stage-3 evidence private spool path"))?;
+        let output_private_spool = RunnerTransactionPrivateSpool::new(output_private_pairs)
+            .map_err(|source| {
+                transaction_io_error("create private output spool", &manifest_final_path, &source)
+            })?;
+        let manifest_private_spool = RunnerTransactionPrivateSpool::new([(
+            manifest_private_path.clone(),
+            manifest_staged_path.clone(),
+        )])
+        .map_err(|source| {
+            transaction_io_error(
+                "create private manifest spool",
+                &manifest_final_path,
+                &source,
+            )
+        })?;
         Ok(Self {
             entries,
+            output_private_spool,
+            manifest_private_spool,
             staged_targets,
+            stage3_evidence_final_path,
+            stage3_evidence_private_path,
             manifest_final_path,
+            manifest_private_path,
             manifest_staged_path,
             manifest_backup_path,
             manifest_backed_up: false,
@@ -108,11 +152,28 @@ impl HillslopeOutputTransaction {
         &self.staged_targets
     }
 
-    pub(super) fn manifest_staged_path(&self) -> &Path {
-        &self.manifest_staged_path
+    pub(super) fn manifest_private_path(&self) -> &Path {
+        &self.manifest_private_path
+    }
+
+    pub(super) fn stage3_evidence_private_path(&self) -> &Path {
+        &self.stage3_evidence_private_path
+    }
+
+    pub(super) fn stage3_evidence_final_path(&self) -> &Path {
+        &self.stage3_evidence_final_path
     }
 
     pub(super) fn publish_outputs(&mut self) -> Result<(), HillslopeCliError> {
+        self.output_private_spool
+            .promote_complete()
+            .map_err(|source| {
+                transaction_io_error(
+                    "promote private output spool",
+                    &self.manifest_final_path,
+                    &source,
+                )
+            })?;
         for entry in &self.entries {
             if !entry.staged_path.is_file() {
                 return Err(transaction_error(format!(
@@ -158,6 +219,14 @@ impl HillslopeOutputTransaction {
     }
 
     pub(super) fn publish_manifest(&mut self) -> Result<(), HillslopeCliError> {
+        if let Err(source) = self.manifest_private_spool.promote_complete() {
+            let error = transaction_io_error(
+                "promote private manifest spool",
+                &self.manifest_final_path,
+                &source,
+            );
+            return Err(self.failure_with_rollback(error));
+        }
         if !self.manifest_staged_path.is_file() {
             let error = transaction_error(format!(
                 "staged manifest is missing or invalid at {}",
@@ -301,6 +370,8 @@ impl HillslopeOutputTransaction {
     }
 
     fn failure_with_rollback(&mut self, primary: HillslopeCliError) -> HillslopeCliError {
+        self.output_private_spool.discard();
+        self.manifest_private_spool.discard();
         match self.rollback() {
             Ok(()) => primary,
             Err(rollback) => transaction_error(format!("{primary}; {rollback}")),
@@ -344,8 +415,30 @@ impl Drop for HillslopeOutputTransaction {
         for entry in &self.entries {
             let _ = fs::remove_file(&entry.staged_path);
         }
+        let _ = fs::remove_file(&self.manifest_private_path);
         let _ = fs::remove_file(&self.manifest_staged_path);
     }
+}
+
+fn transaction_targets_with_stage3_evidence(
+    final_targets: &HillslopeOutputTargets,
+    manifest_final_path: &Path,
+) -> Result<(HillslopeOutputTargets, PathBuf), HillslopeCliError> {
+    let stage3_evidence_final_path = stage3_evidence_companion_path(manifest_final_path)?;
+    let mut transaction_targets = final_targets.clone();
+    if target_paths(&transaction_targets)
+        .iter()
+        .any(|path| **path == stage3_evidence_final_path)
+    {
+        return Err(transaction_error(format!(
+            "Stage-3 evidence archive aliases run output {}",
+            stage3_evidence_final_path.display()
+        )));
+    }
+    transaction_targets
+        .optional_outputs
+        .push(stage3_evidence_final_path.clone());
+    Ok((transaction_targets, stage3_evidence_final_path))
 }
 
 fn target_paths(targets: &HillslopeOutputTargets) -> Vec<&PathBuf> {
@@ -396,6 +489,20 @@ fn sibling_transaction_path(
     let parent = final_path.parent().unwrap_or_else(|| Path::new("."));
     Ok(parent.join(format!(
         ".{}.openwepp-{token}.{role}",
+        file_name.to_string_lossy()
+    )))
+}
+
+fn stage3_evidence_companion_path(manifest_path: &Path) -> Result<PathBuf, HillslopeCliError> {
+    let file_name = manifest_path.file_name().ok_or_else(|| {
+        transaction_error(format!(
+            "manifest path has no file name: {}",
+            manifest_path.display()
+        ))
+    })?;
+    let parent = manifest_path.parent().unwrap_or_else(|| Path::new("."));
+    Ok(parent.join(format!(
+        "{}.stage3-v11-evidence-v1.bin",
         file_name.to_string_lossy()
     )))
 }
@@ -464,6 +571,8 @@ mod tests {
         for path in target_paths(transaction.staged_targets()) {
             fs::write(path, bytes).expect("write staged fixture");
         }
+        fs::write(transaction.stage3_evidence_private_path(), bytes)
+            .expect("write Stage-3 evidence fixture");
     }
 
     #[test]
@@ -500,6 +609,8 @@ mod tests {
         fs::write(&manifest, b"old-manifest").expect("seed manifest");
         let mut transaction =
             HillslopeOutputTransaction::new(&targets, manifest.clone()).expect("transaction");
+        let evidence = transaction.stage3_evidence_final_path().to_path_buf();
+        fs::write(&evidence, b"old-evidence").expect("seed evidence archive");
         write_all_staged(&transaction, b"new");
         transaction.force_publish_failure_at(2);
         transaction
@@ -508,6 +619,10 @@ mod tests {
         for path in target_paths(&targets) {
             assert_eq!(fs::read(path).expect("read restored target"), b"old");
         }
+        assert_eq!(
+            fs::read(evidence).expect("read restored evidence archive"),
+            b"old-evidence"
+        );
         assert_eq!(fs::read(manifest).expect("read manifest"), b"old-manifest");
         fs::remove_dir_all(directory).expect("remove transaction directory");
     }
@@ -684,6 +799,7 @@ mod tests {
         let manifest = directory.join("manifest.json");
         let mut transaction =
             HillslopeOutputTransaction::new(&targets, manifest.clone()).expect("transaction");
+        let evidence = transaction.stage3_evidence_final_path().to_path_buf();
         write_all_staged(&transaction, b"new");
         transaction
             .publish_outputs()
@@ -692,12 +808,16 @@ mod tests {
             !manifest.exists(),
             "manifest is the final completion marker"
         );
-        fs::write(transaction.manifest_staged_path(), b"new-manifest")
+        fs::write(transaction.manifest_private_path(), b"new-manifest")
             .expect("write staged manifest");
         transaction.publish_manifest().expect("publish manifest");
         for path in target_paths(&targets) {
             assert_eq!(fs::read(path).expect("read committed target"), b"new");
         }
+        assert_eq!(
+            fs::read(evidence).expect("read committed evidence archive"),
+            b"new"
+        );
         assert_eq!(fs::read(manifest).expect("read manifest"), b"new-manifest");
         drop(transaction);
         fs::remove_dir_all(directory).expect("remove transaction directory");

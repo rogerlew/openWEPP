@@ -6,6 +6,8 @@ use openwepp_runner::{
     validate_release_sidecar, write_release_sidecar_for_binary,
 };
 
+mod common;
+
 const RUNNER_CRATE_MANIFEST: &str = include_str!("../../crates/openwepp-runner/Cargo.toml");
 
 #[test]
@@ -21,15 +23,17 @@ fn cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest(
     let temp_run_dir = copy_fixture_to_temp(&fixture, "cli01_hillslope_success");
     let output_dir = temp_run_dir.join("output");
 
+    let request = HillslopeRunRequest {
+        run_dir: temp_run_dir.clone(),
+        run_file: PathBuf::from("case.run"),
+        output_dir: output_dir.clone(),
+        sidecar_policy: SidecarPolicy::Compat,
+        legacy_sidecar_discovery: false,
+        manifest_path: None,
+    };
+    common::bind_adaptive_stage3_owner_seed(&request);
     let report = execute_hillslope_run(
-        &HillslopeRunRequest {
-            run_dir: temp_run_dir.clone(),
-            run_file: PathBuf::from("case.run"),
-            output_dir: output_dir.clone(),
-            sidecar_policy: SidecarPolicy::Compat,
-            legacy_sidecar_discovery: false,
-            manifest_path: None,
-        },
+        &request,
         &[
             "openwepp-cli-hill".to_string(),
             "--run-dir".to_string(),
@@ -60,18 +64,17 @@ fn cli01_contract_conformance_sidecar_policy_warns_on_unknown_discovery() {
     let temp_run_dir = copy_fixture_to_temp(&fixture, "cli01_hillslope_unknown");
     let output_dir = temp_run_dir.join("output");
 
-    let report = execute_hillslope_run(
-        &HillslopeRunRequest {
-            run_dir: temp_run_dir,
-            run_file: PathBuf::from("case.run"),
-            output_dir,
-            sidecar_policy: SidecarPolicy::Compat,
-            legacy_sidecar_discovery: true,
-            manifest_path: None,
-        },
-        &["openwepp-cli-hill".to_string()],
-    )
-    .expect("compat policy should accept unknown sidecar with warning");
+    let request = HillslopeRunRequest {
+        run_dir: temp_run_dir,
+        run_file: PathBuf::from("case.run"),
+        output_dir,
+        sidecar_policy: SidecarPolicy::Compat,
+        legacy_sidecar_discovery: true,
+        manifest_path: None,
+    };
+    common::bind_adaptive_stage3_owner_seed(&request);
+    let report = execute_hillslope_run(&request, &["openwepp-cli-hill".to_string()])
+        .expect("compat policy should accept unknown sidecar with warning");
 
     assert!(
         report

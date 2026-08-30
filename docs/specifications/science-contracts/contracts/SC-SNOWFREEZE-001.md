@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 136
+contract_version: 140
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Infiltration/runoff partition consumers affected by frozen-soil state
   - Soil/erosion coupling consumers requiring freeze-thaw context
 evidence_level: static
-last_reviewed: 2026-08-19
+last_reviewed: 2026-08-27
 supersedes: []
 superseded_by: []
 ---
@@ -4080,10 +4080,81 @@ field, impossible stage/operand combination, incomplete bracket/trial,
 inconsistent elapsed/support, fingerprint mismatch, or receipt/consumed
 mismatch rejects before mutation. Canonical bytes round-trip exactly.
 
+## Adaptive Stage-3 lifecycle and batch successor
+
+Version 140 supersedes the active mechanics of `INV-SNOWFREEZE-101/102` and
+their bisection-oriented restart schema. Versions 137 through 139 are rejected historical candidates and are not restored. The old receiver evidence remains
+historical evidence; production authority is now one Stage-3 snow/land-surface
+model whose computational resolution is adaptive compositional microstepping.
+
+`INV-SNOWFREEZE-103` — Every positive Stage-3 physical carrier support is an
+exact integer number of 60-second (`60_000_000_000 ns`) quanta and no
+subminimum remainder is
+executed. A candidate support is evaluated once directly and, when it contains
+at least two quanta, as two positive children that exactly tile it. Rejection
+restarts from immutable complete-owner beginning bytes; acceptance installs the
+composed child-2 ending. At one quantum there is no fabricated split, and the
+same phase/owner transaction is accepted only after exact closures and discrete
+predicates pass.
+
+`INV-SNOWFREEZE-104` — Snow disappears when an accepted microstep ends with
+exact zero ice. One zero-duration event removes only terminating lanes, creates
+one topology-bound produced-unconsumed liquid parcel per lane, consumes each
+parcel exactly once through surface-liquid/WB14 ownership, and continues the
+parent remainder under the snow-free owner. Atmospheric vapor cannot recreate
+snow. Authorized solid precipitation creates a canonical Stage-3 state with
+exact parcel custody, mass, density, enthalpy, represented layers, lane
+identity, replay, and restart semantics.
+
+`INV-SNOWFREEZE-105` — Adaptive execution is batch-shaped. Each candidate
+contains every active lane and advances shared vegetation, LSE, hydrology,
+surface-liquid/WB14, soil-thermal, biogeochemistry, provider, and clock owners
+once. The joint maximum scaled error and exact discrete surfaces decide the
+step. Same-tick terminal lanes form one event group; terminating and surviving
+lanes install states from the same accepted joint candidate. Independent lane
+integration followed by owner merging is forbidden.
+
+`INV-SNOWFREEZE-106` — Restart is additive and may occur only at a sealed
+adaptive operation boundary. It stores parent/support/cursor, next proposal,
+accepted controller history, complete owner set and topology, pending event or
+parcel posture, forcing/provider/GSI state, receipt predecessor chain, and
+clock. It stores no rejected trial. Uninterrupted and restarted executions must
+produce byte-identical ending owners and receipts before/after disappearance,
+receiver consumption, reappearance, and cross-midnight continuation.
+
+The production model has no CoE, fixed-step, legacy-terminal, mass-threshold,
+or alternate-model fallback. Controller proposal and growth constants are
+result-blind and may change computational resolution only. Qualification uses
+the production adaptive controller, not a complete-season 60-second oracle.
+Stable ordinary persistent supports must accept steps substantially larger
+than the 60-second floor.
+
+The 2026-08-27 owner amendment is temporal only: it changes the minimum
+positive support and exact tiling grid from 600 ms to 60 seconds. Every
+conservation, phase-equilibrium, mass/water/energy custody, lane/shared-owner
+topology, receipt, exact rollback, and fail-closed obligation remains
+unchanged. Earlier evidence whose floor, support grid, attempt count, event
+tick, trace, or performance depended on 600-ms quanta is superseded and must
+be rerun. This amendment records no replacement execution.
+
+Required vectors cover stable large-step acceptance; deterministic refinement;
+odd-quantum splits; floor acceptance/rejection; initial-proposal/growth
+invariance; active-set mismatch; the deposition-at-meltout fixture; start,
+interior, and end events; exact rollback at every failure point; same/different
+tick multi-lane events; survivor/terminator shared-owner custody; reappearance;
+restart at every operation boundary; and representative adaptive seasons.
+
+Calibration and identifiability are not applicable to temporal resolution or
+phase projection. Numerical tolerances remain dimension-specific contract
+constants and are validated through invariance and closure tests rather than
+fitted to observations.
+
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-08-27` | `140` owner amendment | `Codex` | Replaced the provisional 600-ms adaptive floor with an exact 60-second (`60_000_000_000 ns`) temporal floor. All conservation, custody, phase, topology, receipt, rollback, and fail-closed obligations remain unchanged; stable ordinary supports must accept substantially larger steps. Prior floor-dependent evidence is superseded and awaits rerun. |
+| `2026-08-26` | `140` | `Codex` | Replaced evaluation-only terminal root/receiver authority with the then-selected 600-ms-quantized adaptive compositional production model, joint-lane lifecycle, exact disappearance/liquid/reappearance chronology, and additive adaptive-boundary restart. The 600-ms floor portion is superseded by the 2026-08-27 owner amendment; versions 137-139 remain rejected historical candidates. |
 | `2026-08-19` | `136` | `Codex` | Added separate default-off terminal receiver chronology (`INV-SNOWFREEZE-102`) with actual-surface selection, partial-interval continuation/restart, and atomic all-owner rollback/error precedence; preserved evaluation-only INV-101 and all production/cutover holds. |
 | `2026-08-07` | `135` | `Codex` | SNOW-TERMINAL-ENTHALPY-EVENT-NUMERICS amendment: added `INV-SNOWFREEZE-101`, `OBL-SNOWFREEZE-P-073`, `OBL-SNOWFREEZE-C-015`, and `TOL-SNOWFREEZE-022`; admitted a fingerprint-bound evaluation-only shallow-snow enthalpy/event request and schema-v8 reconstruction while retaining censored receiving-surface, production, and cutover boundaries. |
 | `2026-08-07` | `134` | `Codex` | SNOW-STAGE3-PERSISTENT-ACCUMULATION-SHADOW amendment: added `INV-SNOWFREEZE-100`, `OBL-SNOWFREEZE-P-072`, `OBL-SNOWFREEZE-C-014`, and `TOL-SNOWFREEZE-021`; authorized an isolated default-off per-lane continuity experiment with atomic snowfall/liquid custody, dormancy/reappearance, schema-v7 evidence, and exact snapshot/restore while retaining every physical-efficacy, recipient, production, and cutover hold. |

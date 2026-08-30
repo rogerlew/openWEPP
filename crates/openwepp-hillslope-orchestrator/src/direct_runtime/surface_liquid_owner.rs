@@ -73,38 +73,78 @@ pub(crate) fn checked_surface_liquid_div(numerator: f64, denominator: f64) -> Op
     }
 }
 
-fn authorization_sum_at_common_scale(raw_shares: &[f64], scale: f64) -> Option<f64> {
+fn authorization_sums_at_common_scale(
+    raw_shares: &[f64],
+    scale: f64,
+    tile_fraction: f64,
+) -> Option<(f64, f64)> {
     if !scale.is_finite() || !(0.0..=1.0).contains(&scale) {
         return None;
     }
-    raw_shares.iter().try_fold(0.0, |sum, raw_share| {
+    raw_shares.iter().try_fold((0.0, 0.0), |sums, raw_share| {
         if !raw_share.is_finite() || *raw_share < 0.0 {
             return None;
         }
-        let scaled = raw_share * scale;
-        if !scaled.is_finite() {
-            return None;
-        }
-        checked_surface_liquid_add(sum, scaled)
+        let scaled = checked_surface_liquid_mul(*raw_share, scale)?;
+        let tile_scaled = if scaled == 0.0 {
+            0.0
+        } else {
+            checked_surface_liquid_div(scaled, tile_fraction)?
+        };
+        Some((
+            checked_surface_liquid_add(sums.0, scaled)?,
+            checked_surface_liquid_add(sums.1, tile_scaled)?,
+        ))
     })
 }
 
-/// Apply the SC-SURFACELIQUID-001 v6 common representability scale.
-fn jointly_safe_proportional_authorizations(raw_shares: &[f64], supply: f64) -> Option<Vec<f64>> {
-    let raw_sum = checked_surface_liquid_sum(raw_shares.iter().copied())?;
-    if raw_sum <= supply {
+/// Apply the SC-SURFACELIQUID-001 v12 common representability scale in both
+/// the OFE-ground authorization basis and the resource phase's exact inverse
+/// tile-ground debit basis.
+fn jointly_safe_proportional_authorizations(
+    raw_shares: &[f64],
+    supply: f64,
+    tile_fraction: f64,
+    beginning_liquid_kg_m2_tile: f64,
+) -> Option<Vec<f64>> {
+    let (raw_sum, raw_tile_sum) =
+        authorization_sums_at_common_scale(raw_shares, 1.0, tile_fraction)?;
+    if raw_sum <= supply && raw_tile_sum <= beginning_liquid_kg_m2_tile {
         return Some(raw_shares.to_vec());
     }
-    if !checked_surface_liquid_close(raw_sum, supply, DirectSurfaceLiquidClosureUnit::MassKgM2)? {
+    if (raw_sum > supply
+        && !checked_surface_liquid_close(
+            raw_sum,
+            supply,
+            DirectSurfaceLiquidClosureUnit::MassKgM2,
+        )?)
+        || (raw_tile_sum > beginning_liquid_kg_m2_tile
+            && !checked_surface_liquid_close(
+                raw_tile_sum,
+                beginning_liquid_kg_m2_tile,
+                DirectSurfaceLiquidClosureUnit::MassKgM2,
+            )?)
+    {
         return None;
     }
 
-    let initial_scale = checked_surface_liquid_div(supply, raw_sum)?;
+    let ofe_scale = if raw_sum <= supply {
+        1.0
+    } else {
+        checked_surface_liquid_div(supply, raw_sum)?
+    };
+    let tile_scale = if raw_tile_sum <= beginning_liquid_kg_m2_tile {
+        1.0
+    } else {
+        checked_surface_liquid_div(beginning_liquid_kg_m2_tile, raw_tile_sum)?
+    };
+    let initial_scale = ofe_scale.min(tile_scale);
     if !(0.0..=1.0).contains(&initial_scale) || initial_scale == 0.0 {
         return None;
     }
-    let initial_sum = authorization_sum_at_common_scale(raw_shares, initial_scale)?;
-    let scale = if initial_sum <= supply {
+    let initial_sums =
+        authorization_sums_at_common_scale(raw_shares, initial_scale, tile_fraction)?;
+    let scale = if initial_sums.0 <= supply && initial_sums.1 <= beginning_liquid_kg_m2_tile {
         initial_scale
     } else {
         let mut lower_bits = 0_u64;
@@ -116,7 +156,9 @@ fn jointly_safe_proportional_authorizations(raw_shares: &[f64], supply: f64) -> 
             }
             let middle_bits = lower_bits + (upper_bits - lower_bits) / 2;
             let middle = f64::from_bits(middle_bits);
-            if authorization_sum_at_common_scale(raw_shares, middle)? <= supply {
+            let middle_sums =
+                authorization_sums_at_common_scale(raw_shares, middle, tile_fraction)?;
+            if middle_sums.0 <= supply && middle_sums.1 <= beginning_liquid_kg_m2_tile {
                 lower_bits = middle_bits;
             } else {
                 upper_bits = middle_bits;
@@ -137,7 +179,10 @@ fn jointly_safe_proportional_authorizations(raw_shares: &[f64], supply: f64) -> 
         .iter()
         .zip(&authorizations)
         .any(|(raw_share, authorization)| *raw_share > 0.0 && *authorization == 0.0)
-        || checked_surface_liquid_sum(authorizations.iter().copied())? > supply
+        || {
+            let sums = authorization_sums_at_common_scale(&authorizations, 1.0, tile_fraction)?;
+            sums.0 > supply || sums.1 > beginning_liquid_kg_m2_tile
+        }
     {
         return None;
     }
@@ -1269,6 +1314,29 @@ impl DirectSurfaceLiquidOwnedState {
         ))
     }
 
+    /// Build an identity-only clone for admission through the legacy V1 host,
+    /// which requires every complete-owner lineage to share one transaction.
+    /// The restart caller must immediately reinstall the independently sealed
+    /// exact surface owner after host admission.
+    #[cfg(feature = "persisted-restart-v1")]
+    pub fn restart_authority_with_admission_lineage(
+        &self,
+        configuration: &DirectSurfaceLiquidConfiguration,
+        transaction: TransactionId,
+    ) -> Result<Self, DirectSurfaceLiquidError> {
+        self.validate(configuration)?;
+        let mut normalized = self.clone();
+        for record in &mut normalized.records {
+            record.last_accepted_transaction_id = Some(transaction);
+        }
+        for continuation in &mut normalized.continuations {
+            continuation.last_accepted_transaction_id = Some(transaction);
+        }
+        normalized.state_sha256 = normalized.recomputed_sha256()?;
+        normalized.validate(configuration)?;
+        Ok(normalized)
+    }
+
     fn canonical_bytes_with_digest(
         &self,
         digest: &str,
@@ -1627,8 +1695,27 @@ fn authorize_surface_liquid_withdrawals_inner(
             )
         })?;
         if total_demand <= supply {
-            for index in canonical_indexes {
-                authorization_amounts[index] = requests[index].amount_kg_m2_stand_ground;
+            let raw_shares = canonical_indexes
+                .iter()
+                .map(|index| requests[*index].amount_kg_m2_stand_ground)
+                .collect::<Vec<_>>();
+            let corrected_shares = jointly_safe_proportional_authorizations(
+                &raw_shares,
+                supply,
+                config.tile_fraction,
+                state.liquid_kg_m2_tile,
+            )
+            .ok_or_else(|| {
+                water_protocol_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    DirectSurfaceLiquidPhase::Authorization,
+                    transaction_id,
+                    &requests[canonical_indexes[0]].key,
+                    "full authorization is not safely representable in both OFE and tile bases",
+                )
+            })?;
+            for (index, amount) in canonical_indexes.into_iter().zip(corrected_shares) {
+                authorization_amounts[index] = amount;
             }
         } else if supply > 0.0 && total_demand > 0.0 {
             let checked_shares = canonical_indexes
@@ -1660,18 +1747,21 @@ fn authorize_surface_liquid_withdrawals_inner(
                     Ok(share)
                 })
                 .collect::<Result<Vec<_>, DirectSurfaceLiquidError>>()?;
-            let corrected_shares =
-                jointly_safe_proportional_authorizations(&checked_shares, supply).ok_or_else(
-                    || {
-                        water_protocol_failure(
-                            DirectSurfaceLiquidErrorCode::E003,
-                            DirectSurfaceLiquidPhase::Authorization,
-                            transaction_id,
-                            &requests[canonical_indexes[0]].key,
-                            "joint proportional authorization is not safely representable",
-                        )
-                    },
-                )?;
+            let corrected_shares = jointly_safe_proportional_authorizations(
+                &checked_shares,
+                supply,
+                config.tile_fraction,
+                state.liquid_kg_m2_tile,
+            )
+            .ok_or_else(|| {
+                water_protocol_failure(
+                    DirectSurfaceLiquidErrorCode::E003,
+                    DirectSurfaceLiquidPhase::Authorization,
+                    transaction_id,
+                    &requests[canonical_indexes[0]].key,
+                    "joint proportional authorization is not safely representable in both OFE and tile bases",
+                )
+            })?;
             for (index, amount) in canonical_indexes.into_iter().zip(corrected_shares) {
                 if !amount.is_finite()
                     || amount < 0.0
@@ -1828,7 +1918,18 @@ fn apply_surface_liquid_resource_phase_inner(
             )
         })?;
         if raw < 0.0 {
-            return Err(candidate_closure("negative resource state"));
+            return Err(negative_resource_state_failure(
+                configuration,
+                arbitration.transaction_id,
+                &state.key,
+                config.tile_fraction,
+                state.liquid_kg_m2_tile,
+                debit,
+                debit_tile,
+                credit,
+                credit_tile,
+                raw,
+            ));
         }
         if raw > config.capacity_kg_m2_tile {
             let detail = credit_details
@@ -2456,6 +2557,48 @@ fn candidate_closure(detail: &'static str) -> DirectSurfaceLiquidError {
     )
 }
 
+#[allow(clippy::too_many_arguments)]
+fn negative_resource_state_failure(
+    configuration: &DirectSurfaceLiquidConfiguration,
+    transaction_id: TransactionId,
+    key: &DirectSurfaceLiquidStoreKey,
+    tile_fraction: f64,
+    beginning_liquid_kg_m2_tile: f64,
+    finalized_debit_kg_m2_ofe: f64,
+    finalized_debit_kg_m2_tile: f64,
+    condensation_credit_kg_m2_ofe: f64,
+    condensation_credit_kg_m2_tile: f64,
+    candidate_liquid_kg_m2_tile: f64,
+) -> DirectSurfaceLiquidError {
+    DirectSurfaceLiquidError::canonical_failure(
+        DirectSurfaceLiquidErrorCode::E009,
+        DirectSurfaceLiquidPhase::ResourceCandidate,
+        DirectSurfaceLiquidErrorContext {
+            transaction_id: Some(transaction_id),
+            owner_id: Some(configuration.owner_id.clone()),
+            ofe_id: Some(key.ofe_id.clone()),
+            tile_id: Some(key.tile_id.clone()),
+            surface_id: Some(key.surface_id.clone()),
+            source_id: Some(key.source_id.clone()),
+            parcel_id: None,
+        },
+        DirectSurfaceLiquidRollbackHashes {
+            beginning_owner_sha256: None,
+            attempted_owner_sha256: None,
+        },
+        format!(
+            "negative resource state: tile_fraction={tile_fraction:.17e} beginning_liquid_kg_m2_tile={beginning_liquid_kg_m2_tile:.17e} finalized_debit_kg_m2_ofe={finalized_debit_kg_m2_ofe:.17e} finalized_debit_kg_m2_tile={finalized_debit_kg_m2_tile:.17e} condensation_credit_kg_m2_ofe={condensation_credit_kg_m2_ofe:.17e} condensation_credit_kg_m2_tile={condensation_credit_kg_m2_tile:.17e} candidate_liquid_kg_m2_tile={candidate_liquid_kg_m2_tile:.17e}; bits=tile_fraction:{:016x},beginning:{:016x},debit_ofe:{:016x},debit_tile:{:016x},credit_ofe:{:016x},credit_tile:{:016x},candidate:{:016x}",
+            tile_fraction.to_bits(),
+            beginning_liquid_kg_m2_tile.to_bits(),
+            finalized_debit_kg_m2_ofe.to_bits(),
+            finalized_debit_kg_m2_tile.to_bits(),
+            condensation_credit_kg_m2_ofe.to_bits(),
+            condensation_credit_kg_m2_tile.to_bits(),
+            candidate_liquid_kg_m2_tile.to_bits(),
+        ),
+    )
+}
+
 fn condensation_candidate_closure(
     configuration: &DirectSurfaceLiquidConfiguration,
     transaction_id: TransactionId,
@@ -2765,9 +2908,11 @@ fn is_sha256(value: &str) -> bool {
             .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
 }
 
+include!("surface_liquid_zero_duration_snow.rs");
+
 #[cfg(test)]
 #[path = "surface_liquid_owner_tests.rs"]
-mod tests;
+pub(crate) mod tests;
 
 #[path = "surface_liquid_owner/identity_validation.rs"]
 mod identity_validation;

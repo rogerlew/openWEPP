@@ -10,9 +10,11 @@ use openwepp_comparator_metadata::{
     COMPMETA_HIGH_CONFIDENCE_SINGLE_OFE_DAILY_MESSAGE_ID, ComparatorConfidenceTier,
     ComparatorSurfaceClass, ComparatorTierRoutingRequest, route_comparator_tier_metadata,
 };
-use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
+use openwepp_runner::{HillslopeRunRequest, SidecarPolicy};
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
+
+mod common;
 
 const PL14S_SEMANTIC_COMPARATOR_SCRIPT: &str = include_str!("../../tools/owcmp/semantic_wat.py");
 const PL14S_REPLAY_SUITE_SCRIPT: &str = include_str!("../../tools/owcmp/pl14s_suite.py");
@@ -270,7 +272,11 @@ struct Wb13Snapshot {
 
 #[test]
 fn simimpl18_contract_requires_cold_day_partition_zero_rm_and_runtime_snow_storage() {
+    let _fixed_point_audit_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_covered_fixed_point_iteration_audit_v1();
+    openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_stage3_physical_outcome_closure_audit_v1();
     let report = execute_simimpl18_fixture_run("simimpl18_partition");
+    let fixed_point_audit = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_covered_fixed_point_iteration_audit_v1();
+    let closure_audit = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_stage3_physical_outcome_closure_audit_v1();
     let rows = load_wb13_rows(&report);
     assert!(rows.len() >= 2, "expected at least two WB13 rows");
 
@@ -288,6 +294,31 @@ fn simimpl18_contract_requires_cold_day_partition_zero_rm_and_runtime_snow_stora
         (day1.snow_water - 4.4).abs() < 1.0e-6,
         "day-1 Snow-Water must follow runtime SWE accumulation (4.4 mm), not static control; observed {}",
         day1.snow_water
+    );
+    let exact_floor = fixed_point_audit
+        .iter()
+        .find(|entry| {
+            entry.support.start_ns().get() == 0 && entry.support.duration_ns() == 60_000_000_000
+        })
+        .expect("cold-canopy PL14 must evaluate the exact 60-second fallback");
+    assert!(
+        exact_floor.converged,
+        "phase-safe inactive coordinates must let exact-60 PL14 converge: {exact_floor:?}"
+    );
+    assert!(
+        exact_floor.completed_iterations < 96,
+        "exact-60 PL14 must converge before the fixed-point cap: {exact_floor:?}"
+    );
+    assert!(closure_audit.validated_ledger_count > 0);
+    assert!(closure_audit.maximum_abs_mass_residual_kg_m2 <= 1.0e-9);
+    assert!(closure_audit.maximum_abs_energy_residual_j_m2 <= 1.0e-6);
+    eprintln!(
+        "PL14_COLD_CANOPY_EXACT60 iterations={} fixed_point_entries={} ledger_count={} maximum_abs_mass_residual_kg_m2={:.17e} maximum_abs_energy_residual_j_m2={:.17e}",
+        exact_floor.completed_iterations,
+        fixed_point_audit.len(),
+        closure_audit.validated_ledger_count,
+        closure_audit.maximum_abs_mass_residual_kg_m2,
+        closure_audit.maximum_abs_energy_residual_j_m2,
     );
 }
 
@@ -328,7 +359,7 @@ fn execute_simimpl18_fixture_run(prefix: &str) -> PathBuf {
     let climate = climate
         .replace(
             "1 1 2000 10.0 2.0 0.25 3.0 12.0 2.0 200.0 3.0 180.0 -1.0",
-            "1 1 2000 4.4 2.0 0.25 3.0 -1.6 -14.6 200.0 3.0 180.0 -1.0",
+            "1 1 2000 4.4 2.0 0.25 3.0 -1.6 -14.6 200.0 3.0 180.0 -15.0",
         )
         .replace(
             "2 1 2000 0.0 0.0 0.0 0.0 10.0 1.0 190.0 2.5 170.0 -2.0",
@@ -358,7 +389,7 @@ wat = "output/H5.wat.parquet"
     fs::write(&run_file_path, runfile_payload).expect("runfile fixture should be writable");
 
     let output_dir = temp_run_dir.join("output");
-    let report = execute_hillslope_run(
+    let report = common::execute_with_complete_stage3_owner_seed(
         &HillslopeRunRequest {
             run_dir: temp_run_dir.clone(),
             run_file: PathBuf::from("case.run"),

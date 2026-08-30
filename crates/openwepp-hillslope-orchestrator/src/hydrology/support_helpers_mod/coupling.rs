@@ -71,5 +71,4 @@ struct ActiveFrostTmpadjContext {
     random_roughness_m: f64,
 }
 
-impl Wb11HydrologyKernel {
-}
+impl Wb11HydrologyKernel {}

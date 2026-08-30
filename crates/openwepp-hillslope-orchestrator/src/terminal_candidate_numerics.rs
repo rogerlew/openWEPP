@@ -6,7 +6,7 @@
 
 use openwepp_coupled_time::{ModelTimeNs, TimeSupport};
 
-const MINIMUM_CARRIER_NS: u128 = 600_000_000;
+const MINIMUM_CARRIER_NS: u128 = 60_000_000_000;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct EvaluationTime {
@@ -647,11 +647,11 @@ mod tests {
 
     fn exact_support(seconds: f64) -> TimeSupport {
         let duration_ns = match seconds.to_bits() {
-            bits if bits == 0.6_f64.to_bits() => 600_000_000,
-            bits if bits == 0.600_000_001_f64.to_bits() => 600_000_001,
-            bits if bits == 0.9_f64.to_bits() => 900_000_000,
-            bits if bits == 0.9375_f64.to_bits() => 937_500_000,
-            bits if bits == 1.199_999_999_f64.to_bits() => 1_199_999_999,
+            bits if bits == 0.6_f64.to_bits() => 60_000_000_000,
+            bits if bits == 0.600_000_001_f64.to_bits() => 60_000_000_100,
+            bits if bits == 0.9_f64.to_bits() => 90_000_000_000,
+            bits if bits == 0.9375_f64.to_bits() => 93_750_000_000,
+            bits if bits == 1.199_999_999_f64.to_bits() => 119_999_999_900,
             _ => panic!("unsupported analytical nanosecond duration {seconds}"),
         };
         let start = 17_000_000_000;
@@ -669,6 +669,19 @@ mod tests {
     {
         let support_s = row["support_s"].as_f64().expect("Python support");
         let support = exact_support(support_s);
+        // The frozen matrix predates the 60-second constitutive floor. Scale
+        // its rates by the same factor used to lift support so the autonomous
+        // dimensionless system and every expected endpoint remain unchanged.
+        let scaled_rate = |time, state: &[f64]| {
+            rate(time, state).map(|values| values.into_iter().map(|value| value / 100.0).collect())
+        };
+        let scaled_jacobian = |time, state: &[f64]| {
+            jacobian(time, state).map(|rows| {
+                rows.into_iter()
+                    .map(|row| row.into_iter().map(|value| value / 100.0).collect())
+                    .collect()
+            })
+        };
         let beginning = match row["family"].as_str().expect("row family") {
             "nonlinear_manufactured" => row["parameter"].as_f64().expect("Python initial"),
             "conservative_two_node" => 5.0,
@@ -681,13 +694,18 @@ mod tests {
             &[0.0],
             &[1.0],
             &[1.0],
-            &rate,
-            &jacobian,
+            &scaled_rate,
+            &scaled_jacobian,
         )
         .expect("Rust analytical CN");
-        let estimate =
-            hermite_gauss_error_transport(&[beginning], &cn.state, support, rate, jacobian)
-                .expect("Rust analytical Hermite--Gauss");
+        let estimate = hermite_gauss_error_transport(
+            &[beginning],
+            &cn.state,
+            support,
+            scaled_rate,
+            scaled_jacobian,
+        )
+        .expect("Rust analytical Hermite--Gauss");
         let python_installed = row["installed"].as_f64().expect("Python installed");
         let python_estimate = row["signed_estimate"]
             .as_f64()
@@ -708,10 +726,10 @@ mod tests {
             .as_array()
             .expect("Python Gauss defects");
         for (rust, python) in estimate.defects.iter().zip(python_defects) {
+            let scaled_python = python.as_f64().expect("Python defect") / 100.0;
             assert!(
-                (rust[0] - python.as_f64().expect("Python defect")).abs()
-                    <= parity_tolerance(python.as_f64().expect("Python defect")),
-                "defect parity: Rust={} Python={} row={row}",
+                (rust[0] - scaled_python).abs() <= parity_tolerance(scaled_python),
+                "scaled defect parity: Rust={} Python={} row={row}",
                 rust[0],
                 python
             );
@@ -774,7 +792,7 @@ mod tests {
     #[test]
     fn numerical_guards_preserve_exact_support_amounts_and_absolute_time() {
         let start = ModelTimeNs::new(17_000_000_000);
-        let below_floor = TimeSupport::new(start, ModelTimeNs::new(17_599_999_999))
+        let below_floor = TimeSupport::new(start, ModelTimeNs::new(76_999_999_999))
             .expect("positive below-floor support");
         assert_eq!(
             cn_solve(
@@ -791,7 +809,7 @@ mod tests {
         );
 
         let large_start = ModelTimeNs::new(9_007_199_254_740_993);
-        let support = TimeSupport::new(large_start, ModelTimeNs::new(9_007_199_854_740_993))
+        let support = TimeSupport::new(large_start, ModelTimeNs::new(9_007_259_254_740_993))
             .expect("exact carrier-floor support");
         let solved = cn_solve(
             &[1.0],
@@ -809,7 +827,7 @@ mod tests {
             },
         )
         .expect("time-dependent CN with exact prescribed amount");
-        let expected = 1.0 + 0.2 + 0.5 * 0.6 * (17.0 + 17.6);
+        let expected = 1.0 + 0.2 + 0.5 * 60.0 * (17.0 + 17.6);
         assert!((solved.state[0] - expected).abs() <= 1.0e-14);
         assert!(solved.residual_max <= 1.0e-12);
         assert!(solved.step_max <= 1.0e-12);
@@ -884,8 +902,8 @@ mod tests {
 
     #[test]
     fn same_support_cn_and_reference_methods_have_expected_affine_accuracy() {
-        let rate = |_tick: EvaluationTime, state: &[f64]| Ok(vec![-0.1 * state[0] + 0.375]);
-        let jacobian = |_tick: EvaluationTime, _state: &[f64]| Ok(vec![vec![-0.1]]);
+        let rate = |_tick: EvaluationTime, state: &[f64]| Ok(vec![-0.001 * state[0] + 0.00375]);
+        let jacobian = |_tick: EvaluationTime, _state: &[f64]| Ok(vec![vec![-0.001]]);
         let support = exact_support(0.9375);
         let cn = cn_solve(&[1.25], support, &[0.0], &[2.0], &[0.5], rate, jacobian).expect("CN");
         let gauss = implicit_reference(
@@ -906,10 +924,10 @@ mod tests {
             rate,
         )
         .expect("Radau reference");
-        let exact = 3.75 + (1.25 - 3.75) * (-0.1_f64 * 0.9375).exp();
+        let exact = 3.75 + (1.25 - 3.75) * (-0.001_f64 * 93.75).exp();
         let estimate =
             hermite_gauss_error_transport(&[1.25], &cn.state, support, rate, |_tick, _state| {
-                Ok(vec![vec![-0.1]])
+                Ok(vec![vec![-0.001]])
             })
             .expect("Hermite--Gauss transport");
         assert!((gauss.state[0] - exact).abs() < 1.0e-11);

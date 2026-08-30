@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::runtime_inputs::SnowPhasePartitionModel;
 
     fn precipitation_test_digest(label: &[u8]) -> Digest32 {
         digest_bytes(label)
@@ -539,6 +540,54 @@ mod tests {
     }
 
     #[test]
+    fn sequential_state_selects_meltout_then_solid_reappearance_without_future_regime_input() {
+        let persistent = lifecycle_state(Some(0.002), 0.0, 0.0);
+        let terminal = lifecycle_state(Some(0.000_5), 0.0, 0.0);
+        let snow_free = lifecycle_state(None, 0.0, 0.0);
+        let reappearing = lifecycle_state(None, 0.0, 0.0);
+        let represented_again = lifecycle_state(Some(0.002), 0.0, 0.0);
+        assert_eq!(
+            [
+                stage3_lane_lifecycle(&persistent, 0.0),
+                stage3_lane_lifecycle(&terminal, 0.0),
+                stage3_lane_lifecycle(&snow_free, 0.0),
+                stage3_lane_lifecycle(&reappearing, 0.001),
+                stage3_lane_lifecycle(&represented_again, 0.0),
+            ],
+            [
+                Stage3LaneLifecycleV1::ResolvedSnow,
+                Stage3LaneLifecycleV1::TerminalPending,
+                Stage3LaneLifecycleV1::SnowFree,
+                Stage3LaneLifecycleV1::SolidPrecipitationPending,
+                Stage3LaneLifecycleV1::ResolvedSnow,
+            ]
+        );
+    }
+
+    #[test]
+    fn exact_terminal_domain_crosses_parent_without_parcel_or_stale_state() {
+        let mut terminal = lifecycle_state(Some(0.000_5), 0.001, 0.0);
+        terminal.schema_version = 2;
+        terminal.terminal_event_model =
+            Some(crate::hydrology::DirectSnowTerminalEventModel::EnthalpyEventV1);
+        assert!(terminal_domain_can_cross_parent_support(&terminal, false));
+        assert!(!terminal_domain_can_cross_parent_support(&terminal, true));
+
+        let mut stale = terminal.clone();
+        stale.schema_version = 1;
+        stale.terminal_event_model = None;
+        assert!(!terminal_domain_can_cross_parent_support(&stale, false));
+
+        let mut liquid_only = terminal;
+        liquid_only.layers.clear();
+        liquid_only.detached_retained_liquid_kg_m2 = 1.0;
+        assert!(!terminal_domain_can_cross_parent_support(
+            &liquid_only,
+            false
+        ));
+    }
+
+    #[test]
     fn multi_lane_covered_lifecycle_is_lane_keyed_without_candidate_mutation() {
         let first = lifecycle_state(Some(0.002), 0.0, 0.0);
         let mut second = first.clone();
@@ -711,11 +760,8 @@ mod tests {
 
     fn terminal_ledger_fixture() -> Stage3V11TerminalPhysicalLedgerV1 {
         Stage3V11TerminalPhysicalLedgerV1 {
-            support: TimeSupport::new(
-                ModelTimeNs::new(0),
-                ModelTimeNs::new(60_000_000_000),
-            )
-            .expect("terminal support"),
+            support: TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(60_000_000_000))
+                .expect("terminal support"),
             event_result_set_sha256: digest_bytes(b"events"),
             proposal_core_sha256: digest_bytes(b"proposal"),
             accepted_event_receipt_sha256: digest_bytes(b"accepted"),
@@ -757,5 +803,107 @@ mod tests {
         let source = include_str!("snow_stage3_v11_attachment.rs");
         assert!(source.contains("snow-free successor terminal V4 owner"));
         assert!(source.contains("snow-free successor changed pending terminal V4 custody"));
+    }
+
+    #[test]
+    fn solid_reappearance_phase_debit_seals_rain_only_successor_forcing() {
+        let mut mixed = DirectSnowHourlyForcing {
+            active_precipitation_m: 0.003,
+            rain_m: 0.001,
+            snowfall_m: 0.02,
+            radiation_mj_m2: 4.0,
+            air_temperature_c: -1.0,
+            cloud_fraction: 0.5,
+            phase_model: SnowPhasePartitionModel::LegacyRst,
+            rain_fraction: 1.0 / 3.0,
+            snow_fraction: 2.0 / 3.0,
+            hydrometeor_temperature_c: Some(-0.5),
+        };
+        debit_solid_reappearance_phase_v1(&mut mixed)
+            .expect("canonical solid reappearance phase debit");
+        assert_eq!(mixed.active_precipitation_m.to_bits(), 0.001_f64.to_bits());
+        assert_eq!(mixed.rain_m.to_bits(), 0.001_f64.to_bits());
+        assert_eq!(mixed.snowfall_m.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(mixed.rain_fraction.to_bits(), 1.0_f64.to_bits());
+        assert_eq!(mixed.snow_fraction.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(mixed.hydrometeor_temperature_c, Some(-0.5));
+
+        let mut all_solid = DirectSnowHourlyForcing {
+            active_precipitation_m: 0.002,
+            rain_m: 0.0,
+            snowfall_m: 0.02,
+            radiation_mj_m2: 4.0,
+            air_temperature_c: -1.0,
+            cloud_fraction: 0.5,
+            phase_model: SnowPhasePartitionModel::LegacyRst,
+            rain_fraction: 0.0,
+            snow_fraction: 1.0,
+            hydrometeor_temperature_c: Some(-1.0),
+        };
+        debit_solid_reappearance_phase_v1(&mut all_solid)
+            .expect("all-solid reappearance phase debit");
+        assert_eq!(
+            all_solid.active_precipitation_m.to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert_eq!(all_solid.rain_fraction.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(all_solid.snow_fraction.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(all_solid.hydrometeor_temperature_c, None);
+    }
+
+    #[test]
+    fn solid_reappearance_phase_debit_rejects_omission_and_substitution_without_mutation() {
+        let canonical = DirectSnowHourlyForcing {
+            active_precipitation_m: 0.003,
+            rain_m: 0.001,
+            snowfall_m: 0.02,
+            radiation_mj_m2: 4.0,
+            air_temperature_c: -1.0,
+            cloud_fraction: 0.5,
+            phase_model: SnowPhasePartitionModel::LegacyRst,
+            rain_fraction: 1.0 / 3.0,
+            snow_fraction: 2.0 / 3.0,
+            hydrometeor_temperature_c: Some(-0.5),
+        };
+        let mut poisons = Vec::new();
+        let mut missing_solid = canonical;
+        missing_solid.snowfall_m = 0.0;
+        poisons.push(missing_solid);
+        let mut substituted_fraction = canonical;
+        substituted_fraction.snow_fraction += 1.0e-6;
+        poisons.push(substituted_fraction);
+        let mut substituted_rain = canonical;
+        substituted_rain.rain_m += 1.0e-6;
+        poisons.push(substituted_rain);
+        let mut nonfinite_phase = canonical;
+        nonfinite_phase.snow_fraction = f64::NAN;
+        poisons.push(nonfinite_phase);
+
+        for original in poisons {
+            let mut candidate = original;
+            assert!(debit_solid_reappearance_phase_v1(&mut candidate).is_err());
+            assert_eq!(
+                candidate.active_precipitation_m.to_bits(),
+                original.active_precipitation_m.to_bits()
+            );
+            assert_eq!(candidate.rain_m.to_bits(), original.rain_m.to_bits());
+            assert_eq!(
+                candidate.snowfall_m.to_bits(),
+                original.snowfall_m.to_bits()
+            );
+            assert_eq!(
+                candidate.rain_fraction.to_bits(),
+                original.rain_fraction.to_bits()
+            );
+            assert_eq!(
+                candidate.snow_fraction.to_bits(),
+                original.snow_fraction.to_bits()
+            );
+            assert_eq!(
+                candidate.hydrometeor_temperature_c.map(f64::to_bits),
+                original.hydrometeor_temperature_c.map(f64::to_bits),
+                "rejected debit must roll back exactly"
+            );
+        }
     }
 }

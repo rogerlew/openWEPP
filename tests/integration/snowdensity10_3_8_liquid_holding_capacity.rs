@@ -14,9 +14,9 @@ const DIRECT_PUBLICATION_BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00c_day_input_builder_impl.rs"
 );
-const DIRECT_PUBLICATION_SNOW_FROST_IMPL: &str = concat!(
+const STAGE3_CANOPY_AUTHORITY: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
-    "00a_snow_frost_authority_impl.rs"
+    "00c_stage3_canopy_authority.rs"
 );
 const COE_MELT_SNOWBENCH: &str = "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs";
 const TOL: f64 = 1.0e-12;
@@ -167,19 +167,23 @@ fn activation_preserves_rollback_identity_and_selector_isolation() {
     let builder = format!(
         "{}\n{}",
         repo_text(DIRECT_PUBLICATION_BUILDER),
-        repo_text(DIRECT_PUBLICATION_SNOW_FROST_IMPL)
+        repo_text(STAGE3_CANOPY_AUTHORITY)
     );
     for marker in [
         "OPENWEPP_SNOWDENSITY1038_MELT_MODEL",
-        "snowdensity1015_default_snow_melt_model",
-        "SnowMeltModel::LegacyCoe",
-        "SnowMeltModel::CoeLiquidHoldingCapacityV1",
-        "must be legacy_coe, coe_liquid_holding_capacity_v1, coe_open_sublimation_stage_a_v1, or coe_open_sublimation_stage_b_v1",
-        "liquid_water_retained_before_m",
-        "liquid_water_retained_after_m",
+        "reject_retired_stage3_snow_selector_envs",
+        "retired snow selector",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
     ] {
-        assert_contains(&builder, marker, "direct publication snow/frost sources");
+        assert_contains(&builder, marker, DIRECT_PUBLICATION_BUILDER);
     }
+    assert!(
+        !builder.contains("SnowMeltModel::LegacyCoe")
+            && !builder.contains("SnowMeltModel::CoeLiquidHoldingCapacityV1"),
+        "historical CoE liquid-capacity selectors must not re-enter production"
+    );
 }
 
 #[test]

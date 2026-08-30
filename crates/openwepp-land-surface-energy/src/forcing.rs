@@ -16,6 +16,7 @@ use crate::{
 pub enum LiquidParcelKind {
     Precipitation,
     RoutedRunon,
+    SnowTerminalReceiver,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -23,6 +24,7 @@ pub enum LiquidParcelKind {
 pub enum LiquidTemperatureProvider {
     HarderPomeroyHourly,
     AcceptedUpstreamOutletParcel,
+    AcceptedSnowTerminalParcel,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -65,6 +67,9 @@ impl LiquidParcel {
             LiquidParcelKind::Precipitation => LiquidTemperatureProvider::HarderPomeroyHourly,
             LiquidParcelKind::RoutedRunon => {
                 LiquidTemperatureProvider::AcceptedUpstreamOutletParcel
+            }
+            LiquidParcelKind::SnowTerminalReceiver => {
+                LiquidTemperatureProvider::AcceptedSnowTerminalParcel
             }
         };
         if self.temperature_provider != expected_provider {
@@ -190,14 +195,15 @@ impl LandSurfaceForcing {
             }
             parcel.validate(self.interval_s)?;
         }
-        if self
-            .precipitation_parcels
+        if self.precipitation_parcels.iter().any(|parcel| {
+            !matches!(
+                parcel.parcel_kind,
+                LiquidParcelKind::Precipitation | LiquidParcelKind::SnowTerminalReceiver
+            )
+        }) || self
+            .runon_parcels
             .iter()
-            .any(|parcel| parcel.parcel_kind != LiquidParcelKind::Precipitation)
-            || self
-                .runon_parcels
-                .iter()
-                .any(|parcel| parcel.parcel_kind != LiquidParcelKind::RoutedRunon)
+            .any(|parcel| parcel.parcel_kind != LiquidParcelKind::RoutedRunon)
         {
             return Err(LandSurfaceEnergyError::topology_cardinality(
                 "parcel in wrong forcing collection",

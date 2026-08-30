@@ -35,16 +35,21 @@ fn raw_shadow_boundaries_remain_crate_private() {
             .join("crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs"),
     )
     .expect("land-surface shadow source");
+    let real_hydrology_execution = fs::read_to_string(workspace.join(
+        "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs",
+    ))
+    .expect("real-hydrology execution source");
+    let private_sources = format!("{source}\n{real_hydrology_execution}");
     for name in [
         "execute_open_bare_soil_shadow",
         "execute_unified_real_hydrology_shadow",
     ] {
         assert!(
-            source.contains(&format!("pub(crate) fn {name}")),
+            private_sources.contains(&format!("pub(crate) fn {name}")),
             "{name} must remain available to crate-internal boundary tests"
         );
         assert!(
-            !source.contains(&format!("pub fn {name}")),
+            !private_sources.contains(&format!("pub fn {name}")),
             "{name} must not become a public test bypass"
         );
         assert!(

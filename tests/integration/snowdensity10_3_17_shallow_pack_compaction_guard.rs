@@ -16,6 +16,10 @@ const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00c_day_input_builder_impl.rs"
 );
+const STAGE3_CANOPY_AUTHORITY: &str = concat!(
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
+    "00c_stage3_canopy_authority.rs"
+);
 const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 const TOOL: &str = "tools/snowfreeze_observed/shallow_pack_compaction_guard.py";
 const REPORT: &str = concat!(
@@ -115,16 +119,21 @@ fn shallow_guard_reduces_only_shallow_density_aggression() {
 
 #[test]
 fn selector_and_tool_keep_diagnostic_boundaries() {
-    let builder = read(BUILDER);
+    let builder = format!("{}\n{}", read(BUILDER), read(STAGE3_CANOPY_AUTHORITY));
     for marker in [
         "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
-        "physics_bulk_density_compaction_v1",
-        "physics_bulk_shallow_guard_v1",
-        "SnowDensityModel::PhysicsBulkShallowGuardV1",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1",
+        "reject_retired_stage3_snow_selector_envs",
+        "retired snow selector",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
+    assert!(
+        !builder.contains("SnowDensityModel::PhysicsBulkShallowGuardV1"),
+        "historical shallow-pack candidate must not be selectable in production"
+    );
     assert!(
         !read(CLI).contains("physics_bulk_shallow_guard_v1"),
         "SNOWDENSITY-10.3.17 must not expose the diagnostic selector as user CLI"

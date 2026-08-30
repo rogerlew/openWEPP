@@ -4,6 +4,62 @@
 
 use super::{OfeId, Stage3LaneAreaBasisV1};
 use openwepp_coupled_time::{Digest32, TimeSupport, digest_bytes};
+use openwepp_kernel_contract::TileId;
+use serde::{Deserialize, Serialize};
+
+/// Opt-in, process-local closure evidence for qualification tests.
+///
+/// This audit is deliberately absent from every receipt, owner, restart, and
+/// publication schema. Production execution does not enable it.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Stage3PhysicalOutcomeClosureAuditV1 {
+    pub validated_ledger_count: u64,
+    pub maximum_abs_mass_residual_kg_m2: f64,
+    pub maximum_abs_energy_residual_j_m2: f64,
+}
+
+std::thread_local! {
+    static STAGE3_PHYSICAL_OUTCOME_CLOSURE_AUDIT: std::cell::RefCell<
+        Option<Stage3PhysicalOutcomeClosureAuditV1>
+    > = const { std::cell::RefCell::new(None) };
+}
+
+pub fn begin_stage3_physical_outcome_closure_audit_v1() {
+    STAGE3_PHYSICAL_OUTCOME_CLOSURE_AUDIT.with(|audit| {
+        *audit.borrow_mut() = Some(Stage3PhysicalOutcomeClosureAuditV1::default());
+    });
+}
+
+#[must_use]
+pub fn take_stage3_physical_outcome_closure_audit_v1() -> Stage3PhysicalOutcomeClosureAuditV1 {
+    STAGE3_PHYSICAL_OUTCOME_CLOSURE_AUDIT
+        .with(|audit| audit.borrow_mut().take().unwrap_or_default())
+}
+
+fn record_stage3_physical_outcome_closure_audit_v1(value: &Stage3LanePhysicalOutcomeLedgerV1) {
+    STAGE3_PHYSICAL_OUTCOME_CLOSURE_AUDIT.with(|audit| {
+        let mut audit = audit.borrow_mut();
+        let Some(audit) = audit.as_mut() else {
+            return;
+        };
+        audit.validated_ledger_count = audit.validated_ledger_count.saturating_add(1);
+        audit.maximum_abs_mass_residual_kg_m2 = audit.maximum_abs_mass_residual_kg_m2.max(
+            [
+                value.mass_residual_kg_m2,
+                value.ice_residual_kg_m2,
+                value.liquid_residual_kg_m2,
+                value.vapor_residual_kg_m2,
+                value.ending_liquid_residual_kg_m2,
+            ]
+            .into_iter()
+            .map(f64::abs)
+            .fold(0.0, f64::max),
+        );
+        audit.maximum_abs_energy_residual_j_m2 = audit
+            .maximum_abs_energy_residual_j_m2
+            .max(value.energy_residual_j_m2.abs());
+    });
+}
 
 #[derive(Clone, Debug)]
 pub(crate) struct TerminalSnowBottomSoilTrialInputsV1<'a> {
@@ -325,6 +381,90 @@ const MASS_TOL: f64 = 1.0e-9;
 const ENERGY_TOL: f64 = 1.0e-6;
 const LATENT_HEAT_FUSION_J_KG: f64 = 333_600.0;
 
+/// Destination-resolved authority for liquid exported by one OFE/lane snow
+/// owner. Stage 3 owns one common snow depth/enthalpy density per lane. The
+/// ordered tile vector is sealed here, at physical-outcome creation, so a
+/// downstream receiver never invents an allocation from the OFE aggregate.
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct Stage3DestinationLiquidOutcomeV1 {
+    pub ofe_id: OfeId,
+    pub tile_id: TileId,
+    pub tile_fraction: f64,
+    pub mass_kg_m2_tile_ground: f64,
+    pub sensible_enthalpy_j_m2_tile_ground: f64,
+}
+
+pub(crate) fn seal_destination_liquid_outcomes_v1<'a>(
+    ofe_id: &OfeId,
+    destinations: impl IntoIterator<Item = (&'a TileId, f64)>,
+    common_mass_kg_m2_tile_ground: f64,
+    common_enthalpy_j_m2_tile_ground: f64,
+) -> Result<(Vec<Stage3DestinationLiquidOutcomeV1>, f64, f64), Stage3PhysicalOutcomeLedgerError> {
+    if !common_mass_kg_m2_tile_ground.is_finite()
+        || common_mass_kg_m2_tile_ground < 0.0
+        || !common_enthalpy_j_m2_tile_ground.is_finite()
+        || common_enthalpy_j_m2_tile_ground < 0.0
+    {
+        return Err(Stage3PhysicalOutcomeLedgerError::Numeric(
+            "destination liquid outcome",
+        ));
+    }
+    let mut values = destinations
+        .into_iter()
+        .map(
+            |(tile_id, tile_fraction)| Stage3DestinationLiquidOutcomeV1 {
+                ofe_id: ofe_id.clone(),
+                tile_id: tile_id.clone(),
+                tile_fraction,
+                mass_kg_m2_tile_ground: common_mass_kg_m2_tile_ground,
+                sensible_enthalpy_j_m2_tile_ground: common_enthalpy_j_m2_tile_ground,
+            },
+        )
+        .collect::<Vec<_>>();
+    values.sort_by(|left, right| left.tile_id.cmp(&right.tile_id));
+    if values.is_empty()
+        || values
+            .windows(2)
+            .any(|pair| pair[0].tile_id >= pair[1].tile_id)
+        || values
+            .iter()
+            .any(|value| !value.tile_fraction.is_finite() || value.tile_fraction <= 0.0)
+    {
+        return Err(Stage3PhysicalOutcomeLedgerError::Identity(
+            "destination liquid topology",
+        ));
+    }
+    let fraction_sum = values
+        .iter()
+        .try_fold(0.0_f64, |sum, value| {
+            let next = sum + value.tile_fraction;
+            next.is_finite().then_some(next)
+        })
+        .ok_or(Stage3PhysicalOutcomeLedgerError::Numeric(
+            "destination liquid fraction sum",
+        ))?;
+    if (fraction_sum - 1.0).abs() > super::STAGE3_OFE_TILE_FRACTION_CLOSURE_TOLERANCE {
+        return Err(Stage3PhysicalOutcomeLedgerError::Identity(
+            "destination liquid fraction closure",
+        ));
+    }
+    let mass = values.iter().try_fold(0.0_f64, |sum, value| {
+        let next = sum + value.tile_fraction * value.mass_kg_m2_tile_ground;
+        next.is_finite().then_some(next)
+    });
+    let enthalpy = values.iter().try_fold(0.0_f64, |sum, value| {
+        let next = sum + value.tile_fraction * value.sensible_enthalpy_j_m2_tile_ground;
+        next.is_finite().then_some(next)
+    });
+    match (mass, enthalpy) {
+        (Some(mass), Some(enthalpy)) => Ok((values, mass, enthalpy)),
+        _ => Err(Stage3PhysicalOutcomeLedgerError::Numeric(
+            "destination liquid reconstruction",
+        )),
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Stage3LanePhysicalOutcomeExpectationV1 {
     pub support: TimeSupport,
@@ -370,6 +510,10 @@ pub(crate) struct Stage3LanePhysicalOutcomeLedgerV1 {
     pub melt_kg_m2: f64,
     pub refreeze_kg_m2: f64,
     pub terminal_liquid_kg_m2: f64,
+    /// Sensible enthalpy above the 0 C liquid reference exported with the
+    /// terminal-liquid boundary parcel.
+    pub terminal_liquid_sensible_enthalpy_j_m2: f64,
+    pub destination_liquid_outcomes: Vec<Stage3DestinationLiquidOutcomeV1>,
     pub retained_liquid_kg_m2: f64,
     /// All energy terms use positive-into-snow sign convention.
     pub shortwave_j_m2: f64,
@@ -415,6 +559,7 @@ impl Stage3LanePhysicalOutcomeLedgerV1 {
         value.ending_liquid_residual_kg_m2 = r[5];
         value.receipt_sha256 = value.digest();
         value.validate(expected)?;
+        record_stage3_physical_outcome_closure_audit_v1(&value);
         Ok(value)
     }
 
@@ -447,6 +592,26 @@ impl Stage3LanePhysicalOutcomeLedgerV1 {
         if self.receipt_sha256 == Digest32::zero() || self.receipt_sha256 != self.digest() {
             return Err(Stage3PhysicalOutcomeLedgerError::Identity("seal"));
         }
+        let (expected_destinations, mass, enthalpy) = seal_destination_liquid_outcomes_v1(
+            &self.ofe_id,
+            self.destination_liquid_outcomes
+                .iter()
+                .map(|value| (&value.tile_id, value.tile_fraction)),
+            self.destination_liquid_outcomes
+                .first()
+                .map_or(0.0, |value| value.mass_kg_m2_tile_ground),
+            self.destination_liquid_outcomes
+                .first()
+                .map_or(0.0, |value| value.sensible_enthalpy_j_m2_tile_ground),
+        )?;
+        if expected_destinations != self.destination_liquid_outcomes
+            || mass.to_bits() != self.terminal_liquid_kg_m2.to_bits()
+            || enthalpy.to_bits() != self.terminal_liquid_sensible_enthalpy_j_m2.to_bits()
+        {
+            return Err(Stage3PhysicalOutcomeLedgerError::Identity(
+                "destination liquid reconstruction",
+            ));
+        }
         let mut receipts = self.source_receipts_sha256;
         receipts.sort_unstable();
         if receipts.iter().any(|v| *v == Digest32::zero())
@@ -476,6 +641,7 @@ impl Stage3LanePhysicalOutcomeLedgerV1 {
             self.melt_kg_m2,
             self.refreeze_kg_m2,
             self.terminal_liquid_kg_m2,
+            self.terminal_liquid_sensible_enthalpy_j_m2,
             self.retained_liquid_kg_m2,
         ];
         if nonnegative.iter().any(|v| !v.is_finite() || *v < 0.0) {
@@ -573,7 +739,8 @@ impl Stage3LanePhysicalOutcomeLedgerV1 {
                 // liquid at +L_f. These boundary phase transports are
                 // independent of precipitation sensible advection.
                 + LATENT_HEAT_FUSION_J_KG
-                    * (self.liquid_precipitation_kg_m2 - self.terminal_liquid_kg_m2));
+                    * (self.liquid_precipitation_kg_m2 - self.terminal_liquid_kg_m2)
+                - self.terminal_liquid_sensible_enthalpy_j_m2);
         [
             mass,
             ice,
@@ -630,10 +797,22 @@ impl Stage3LanePhysicalOutcomeLedgerV1 {
         for v in self.values() {
             b.extend_from_slice(&v.to_bits().to_le_bytes());
         }
+        for value in &self.destination_liquid_outcomes {
+            append_str(&mut b, value.ofe_id.as_str());
+            append_str(&mut b, value.tile_id.as_str());
+            b.extend_from_slice(&value.tile_fraction.to_bits().to_le_bytes());
+            b.extend_from_slice(&value.mass_kg_m2_tile_ground.to_bits().to_le_bytes());
+            b.extend_from_slice(
+                &value
+                    .sensible_enthalpy_j_m2_tile_ground
+                    .to_bits()
+                    .to_le_bytes(),
+            );
+        }
         digest_bytes(&b)
     }
 
-    fn values(&self) -> [f64; 36] {
+    fn values(&self) -> [f64; 37] {
         [
             self.beginning_ice_kg_m2,
             self.beginning_liquid_kg_m2,
@@ -655,6 +834,7 @@ impl Stage3LanePhysicalOutcomeLedgerV1 {
             self.melt_kg_m2,
             self.refreeze_kg_m2,
             self.terminal_liquid_kg_m2,
+            self.terminal_liquid_sensible_enthalpy_j_m2,
             self.retained_liquid_kg_m2,
             self.shortwave_j_m2,
             self.longwave_j_m2,
@@ -708,10 +888,24 @@ mod tests {
             precipitation_set_sha256: d(4),
             source_receipts_sha256: [d(5), d(6), d(7), d(8), d(9), d(10)],
         };
+        let destination_ofe = OfeId::try_new("ofe-2").expect("OFE");
+        let destination_tile_a = TileId::try_new("tile-a").expect("tile");
+        let destination_tile_b = TileId::try_new("tile-b").expect("tile");
+        let (
+            destination_liquid_outcomes,
+            terminal_liquid_kg_m2,
+            terminal_liquid_sensible_enthalpy_j_m2,
+        ) = seal_destination_liquid_outcomes_v1(
+            &destination_ofe,
+            [(&destination_tile_a, 0.38), (&destination_tile_b, 0.62)],
+            0.15,
+            0.0,
+        )
+        .expect("destination outcomes");
         let value = Stage3LanePhysicalOutcomeLedgerV1 {
             support,
             lane_id: 2,
-            ofe_id: OfeId::try_new("ofe-2").expect("OFE"),
+            ofe_id: destination_ofe,
             area_basis: Stage3LaneAreaBasisV1::OfeGround,
             topology_sha256: d(1),
             beginning_snow_owner_sha256: d(2),
@@ -737,7 +931,9 @@ mod tests {
             vapor_material_enthalpy_j_m2: 0.0,
             melt_kg_m2: 0.1,
             refreeze_kg_m2: 0.1,
-            terminal_liquid_kg_m2: 0.15,
+            terminal_liquid_kg_m2,
+            terminal_liquid_sensible_enthalpy_j_m2,
+            destination_liquid_outcomes,
             retained_liquid_kg_m2: 1.05,
             shortwave_j_m2: 20.0,
             longwave_j_m2: -5.0,
@@ -763,6 +959,38 @@ mod tests {
     fn independent_ledger_closes() {
         let (value, expected) = fixture();
         Stage3LanePhysicalOutcomeLedgerV1::try_new(value, &expected).expect("closed ledger");
+    }
+
+    #[test]
+    fn destination_vector_order_cardinality_and_redistribution_poisons_fail_closed() {
+        let (value, expected) = fixture();
+        let sealed = Stage3LanePhysicalOutcomeLedgerV1::try_new(value, &expected)
+            .expect("closed destination vector");
+        let reseal = |mut value: Stage3LanePhysicalOutcomeLedgerV1| {
+            value.receipt_sha256 = Digest32::zero();
+            value.receipt_sha256 = value.digest();
+            value
+        };
+
+        let mut permuted = sealed.clone();
+        permuted.destination_liquid_outcomes.swap(0, 1);
+        assert!(reseal(permuted).validate(&expected).is_err());
+
+        let mut omitted = sealed.clone();
+        omitted.destination_liquid_outcomes.pop();
+        assert!(reseal(omitted).validate(&expected).is_err());
+
+        let mut duplicated = sealed.clone();
+        duplicated
+            .destination_liquid_outcomes
+            .push(duplicated.destination_liquid_outcomes[0].clone());
+        assert!(reseal(duplicated).validate(&expected).is_err());
+
+        let mut redistributed = sealed;
+        redistributed.destination_liquid_outcomes[0].mass_kg_m2_tile_ground = 0.16;
+        redistributed.destination_liquid_outcomes[1].mass_kg_m2_tile_ground =
+            (0.15 - 0.38 * 0.16) / 0.62;
+        assert!(reseal(redistributed).validate(&expected).is_err());
     }
 
     #[test]

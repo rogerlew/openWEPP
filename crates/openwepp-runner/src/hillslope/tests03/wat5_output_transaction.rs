@@ -3,8 +3,8 @@ fn wat5_day_two_source_failure_publishes_no_partial_output_set() {
     let _execution_guard = runner_execution_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
-    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/fixtures/erosion_single_ofe_p61");
+    let source =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/erosion_single_ofe_p61");
     let run_dir = copy_fixture_to_temp(&source, "wat5_day_two_transaction");
     let run_path = run_dir.join("p61.run");
     let mut runfile = fs::read_to_string(&run_path).expect("read p61 run file");
@@ -22,15 +22,22 @@ fn wat5_day_two_source_failure_publishes_no_partial_output_set() {
     fs::write(&climate_path, two_day_climate).expect("write two-day climate");
 
     let output_dir = run_dir.join("output");
+    let request = HillslopeRunRequest {
+        run_dir: run_dir.clone(),
+        run_file: PathBuf::from("p61.run"),
+        output_dir: output_dir.clone(),
+        sidecar_policy: SidecarPolicy::Compat,
+        legacy_sidecar_discovery: false,
+        manifest_path: Some(output_dir.join("manifest.json")),
+    };
+    test_fixture_authority::author_stage3_v11_owner_seed_fixture(
+        &request,
+        test_fixture_authority::Stage3TestFixtureSeedProfile::CompleteOwner,
+        test_fixture_authority::Stage3TestFixtureSeedBinding::ExplicitRunfile,
+    )
+    .expect("day-two WAT5 fixture should bind its exact Stage-3 owner seed");
     let error = execute_hillslope_run_with_runtime_policy(
-        &HillslopeRunRequest {
-            run_dir: run_dir.clone(),
-            run_file: PathBuf::from("p61.run"),
-            output_dir: output_dir.clone(),
-            sidecar_policy: SidecarPolicy::Compat,
-            legacy_sidecar_discovery: false,
-            manifest_path: Some(output_dir.join("manifest.json")),
-        },
+        &request,
         &["openwepp-cli-hill".to_string()],
         HillslopeRuntimeSelectionPolicy::new(
             HillslopeRuntimeSelection::DirectProductionExecutor,
@@ -67,8 +74,8 @@ fn forced_wat5_close_failure_preserves_preexisting_sibling_output_set() {
     let _execution_guard = runner_execution_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
-    let source = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/fixtures/erosion_single_ofe_p61");
+    let source =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/erosion_single_ofe_p61");
     let run_dir = copy_fixture_to_temp(&source, "wat5_close_transaction");
     let run_path = run_dir.join("p61.run");
     let mut runfile = fs::read_to_string(&run_path).expect("read p61 run file");
@@ -82,9 +89,7 @@ fn forced_wat5_close_failure_preserves_preexisting_sibling_output_set() {
     let header = climate.lines().take(15).collect::<Vec<_>>().join("\n");
     fs::write(
         &climate_path,
-        format!(
-            "{header}\n  1  1 2000   0.0   0.0  0.0    0.0  20.0  10.0  200  3.0  180   5.0\n"
-        ),
+        format!("{header}\n  1  1 2000   0.0   0.0  0.0    0.0  20.0  10.0  200  3.0  180   5.0\n"),
     )
     .expect("write source-complete dry climate");
 
@@ -101,16 +106,23 @@ fn forced_wat5_close_failure_preserves_preexisting_sibling_output_set() {
         fs::write(path, format!("sentinel-{index}")).expect("write sentinel output");
     }
 
+    let request = HillslopeRunRequest {
+        run_dir: run_dir.clone(),
+        run_file: PathBuf::from("p61.run"),
+        output_dir: output_dir.clone(),
+        sidecar_policy: SidecarPolicy::Compat,
+        legacy_sidecar_discovery: false,
+        manifest_path: Some(output_dir.join("manifest.json")),
+    };
+    test_fixture_authority::author_stage3_v11_owner_seed_fixture(
+        &request,
+        test_fixture_authority::Stage3TestFixtureSeedProfile::CompleteOwner,
+        test_fixture_authority::Stage3TestFixtureSeedBinding::ExplicitRunfile,
+    )
+    .expect("forced-close WAT5 fixture should bind its exact Stage-3 owner seed");
     force_wat5_close_failure_once();
     let error = execute_hillslope_run_with_runtime_policy(
-        &HillslopeRunRequest {
-            run_dir: run_dir.clone(),
-            run_file: PathBuf::from("p61.run"),
-            output_dir: output_dir.clone(),
-            sidecar_policy: SidecarPolicy::Compat,
-            legacy_sidecar_discovery: false,
-            manifest_path: Some(output_dir.join("manifest.json")),
-        },
+        &request,
         &["openwepp-cli-hill".to_string()],
         HillslopeRuntimeSelectionPolicy::new(
             HillslopeRuntimeSelection::DirectProductionExecutor,
@@ -144,11 +156,13 @@ fn forced_wat5_close_failure_preserves_preexisting_sibling_output_set() {
 fn production_runner_publishes_positive_depression_storage_for_independent_reconstruction() {
     let identity = DirectRunIdentity::new(42, 2637, 1, 1).expect("WAT5 test identity");
     let producer = openwepp_hillslope_orchestrator::DirectWb14InfiltrationProducerInputs {
-        hyetograph: vec![openwepp_hillslope_orchestrator::DirectWb14HyetographInterval {
-            start_s: 0.0,
-            end_s: 7_200.0,
-            intensity_m_s: 0.08 / 7_200.0,
-        }],
+        hyetograph: vec![
+            openwepp_hillslope_orchestrator::DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 7_200.0,
+                intensity_m_s: 0.08 / 7_200.0,
+            },
+        ],
         hourly_additional_supply_m: [0.0; 24],
         effective_conductivity_m_s: 1.0e-8,
         matric_potential_m: 0.1,
@@ -226,10 +240,7 @@ fn production_runner_publishes_positive_depression_storage_for_independent_recon
     let post_depression_generation_mm = sum_column(14);
     assert!(depression_storage_mm > 0.0);
     assert!(
-        (rainfall_mm
-            - infiltration_mm
-            - depression_storage_mm
-            - post_depression_generation_mm)
+        (rainfall_mm - infiltration_mm - depression_storage_mm - post_depression_generation_mm)
             .abs()
             <= 1.0e-9
     );

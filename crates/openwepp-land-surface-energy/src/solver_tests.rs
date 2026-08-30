@@ -51,7 +51,7 @@ fn v10_vector_close(actual: f64, expected: f64) {
 }
 
 #[test]
-fn actual_v10_leaf_gas_matches_frozen_nighttime_vectors() {
+fn v10_and_v11_leaf_gas_match_frozen_dark_low_light_and_positive_vectors() {
     let vectors: serde_json::Value = serde_json::from_str(include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../../docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/nighttime-ci-vectors.json"
@@ -124,6 +124,29 @@ fn actual_v10_leaf_gas_matches_frozen_nighttime_vectors() {
             4.0,
         )
         .expect("actual Rust V10 leaf-gas path");
+        let v11 = leaf_trial_state(
+            LeafBiochemicalInputs {
+                leaf_area_m2_m2_tile: 1.0,
+                absorbed_shortwave_w_m2_tile: par,
+                absorbed_par_w_m2_leaf: par,
+                vcmax25: 60.0 / vcmax_factor,
+                jmax25: 100.0 / jmax_factor,
+                rd25: 1.2 / rd_factor,
+            },
+            biochemical,
+            temperature,
+            qcan,
+            1.0,
+            LeafGasEnvironment {
+                authority: CoveredColumnAuthority::V11SnowCovered,
+                ..environment
+            },
+            0.02,
+            100.0,
+            4.0,
+        )
+        .expect("actual Rust V11 inherited leaf-gas path");
+        assert_eq!(v11, actual, "V11 inherited branch differs for PAR={par:?}");
         assert_eq!(actual.gas_branch, expected_branch);
         let expected = &case["result"];
         v10_vector_close(actual.ci_pa, expected["ci"].as_f64().expect("Ci"));
@@ -163,6 +186,62 @@ fn actual_v10_leaf_gas_matches_frozen_nighttime_vectors() {
     )
     .expect("zero-area V10 leaf class");
     assert_eq!(inactive.gas_branch, V10LeafGasBranch::Inactive);
+
+    let historical_dark = leaf_trial_state(
+        LeafBiochemicalInputs {
+            leaf_area_m2_m2_tile: 1.0,
+            absorbed_shortwave_w_m2_tile: 0.0,
+            absorbed_par_w_m2_leaf: 0.0,
+            vcmax25: 60.0 / vcmax_factor,
+            jmax25: 100.0 / jmax_factor,
+            rd25: 1.2 / rd_factor,
+        },
+        biochemical,
+        temperature,
+        qcan,
+        1.0,
+        LeafGasEnvironment {
+            authority: CoveredColumnAuthority::HistoricalV8,
+            ..environment
+        },
+        0.02,
+        100.0,
+        4.0,
+    );
+    assert_eq!(
+        historical_dark,
+        Err(LandSurfaceEnergyError::ConstitutiveDomain("ci_bracket"))
+    );
+    assert!(!CoveredColumnAuthority::HistoricalV8.admits_nonpositive_assimilation());
+    assert!(CoveredColumnAuthority::V10NonpositiveAssimilation.admits_nonpositive_assimilation());
+    assert!(CoveredColumnAuthority::V11SnowCovered.admits_nonpositive_assimilation());
+
+    let v11_dark_at_saturation = leaf_trial_state(
+        LeafBiochemicalInputs {
+            leaf_area_m2_m2_tile: 1.0,
+            absorbed_shortwave_w_m2_tile: 0.0,
+            absorbed_par_w_m2_leaf: -0.0,
+            vcmax25: 60.0 / vcmax_factor,
+            jmax25: 100.0 / jmax_factor,
+            rd25: 1.2 / rd_factor,
+        },
+        biochemical,
+        temperature,
+        qsurface,
+        1.0,
+        LeafGasEnvironment {
+            authority: CoveredColumnAuthority::V11SnowCovered,
+            ..environment
+        },
+        0.02,
+        100.0,
+        4.0,
+    )
+    .expect("exact zero PAR selects the analytic branch before the VPD gate");
+    assert_eq!(
+        v11_dark_at_saturation.gas_branch,
+        V10LeafGasBranch::ExactZeroPar
+    );
 }
 
 #[test]
@@ -747,6 +826,14 @@ fn covered_v8_block_matches_frozen_joint_solution() {
             .iter()
             .all(|value| value.is_finite())
     );
+    let mut closed_bound_trial = full_trial.clone();
+    closed_bound_trial[4] = 0.0;
+    closed_bound_trial[5] = 1.0;
+    let closed_bound_potential = solve_covered_column(&column, None, closed_bound_trial.clone());
+    assert!(
+        closed_bound_potential.is_ok(),
+        "an admitted beta-bound potential iterate must construct its Jacobian: {closed_bound_potential:?}"
+    );
     let solved = solve_covered_column(&column, None, full_trial.clone()).expect("potential solve");
     let CoveredColumnSolveOutcome::Accepted(potential) = solved else {
         panic!("potential must accept");
@@ -776,6 +863,11 @@ fn covered_v8_block_matches_frozen_joint_solution() {
             authorization_rate_kg_m2_tile_s: 1.226_044_233_320_78e-4,
         },
     };
+    let closed_bound_final = solve_covered_column(&column, Some(&caps), closed_bound_trial);
+    assert!(
+        closed_bound_final.is_ok(),
+        "an admitted beta-bound fixed-final iterate must construct its Jacobian: {closed_bound_final:?}"
+    );
     let capped_trial = vec![
         -16_824.779_647_297_01,
         -16_712.589_117_241_627,

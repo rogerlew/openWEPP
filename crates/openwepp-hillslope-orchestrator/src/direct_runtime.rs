@@ -170,13 +170,31 @@ mod storage;
 mod subhourly_generation;
 mod subsurface;
 pub(crate) use subsurface::apply_direct_same_pass_infiltration;
+#[cfg(test)]
 mod snow_stage3_shadow;
+mod stage3_committed_publication;
+pub(crate) use stage3_committed_publication::Stage3AcceptedPublicationDayV1;
 mod snow_stage3_v11_scheduler;
+#[cfg(test)]
+mod snow_stage3_v11_scheduler_tests;
+#[cfg(test)]
+mod stage3_cutover_source_guards;
 mod surface_liquid_attachment;
 mod surface_liquid_closure;
 mod surface_liquid_ingress;
 mod surface_liquid_owner;
+pub use surface_liquid_owner::{
+    DirectZeroDurationSnowLiquidDispositionV1, DirectZeroDurationSnowLiquidReceiptV1,
+    zero_duration_snow_liquid_receipt_set_sha256,
+};
+pub(crate) use surface_liquid_owner::{
+    DirectZeroDurationSnowLiquidInputV1, validate_zero_duration_snow_liquid_surface_delta_v1,
+};
 mod surface_liquid_wb14;
+#[cfg(test)]
+pub(crate) use surface_liquid_wb14::{
+    force_deep_clone_direct_wb14_receipt_history_v1, permit_short_wb14_parent_support_for_test,
+};
 
 pub use decomposition::{
     DirectDecompositionAction, DirectDecompositionActiveContext,
@@ -354,6 +372,7 @@ pub use runoff::{
     DirectWb14InfiltrationProducerInputs, compute_direct_canopy_interception,
     wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
 };
+#[cfg(test)]
 pub use snow_stage3_shadow::{
     DirectSnowStage3SealedForcing, DirectSnowStage3ShadowAttachment,
     DirectSnowStage3ShadowConfiguration, DirectSnowStage3ShadowRestartV1,
@@ -409,7 +428,8 @@ pub use surface_liquid_ingress::{
 pub(crate) use surface_liquid_ingress::{
     DirectWb14ParentWorkingState,
     execute_surface_liquid_ingress_with_parent_state_and_coupled_binding,
-    validate_wb14_child_replay_binding, validate_wb14_parent_replay,
+    rebind_wb14_replay_to_accepted_slab, validate_wb14_child_replay_binding,
+    validate_wb14_parent_replay, wb14_child_replay_binding,
 };
 pub use surface_liquid_owner::{
     DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,

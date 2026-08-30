@@ -9,7 +9,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_coupled_time::ModelTimeNs;
 
-pub(crate) const MINIMUM_TERMINAL_SUPPORT_NS: u128 = 600_000_000;
+pub(crate) const MINIMUM_TERMINAL_SUPPORT_NS: u128 = 60_000_000_000;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum EndpointTerminalClass {
@@ -572,7 +572,7 @@ mod tests {
     ) -> Result<DiscreteRootReceipt<Candidate>, DiscreteRootError> {
         integer_bisection(
             ModelTimeNs::new(0),
-            ModelTimeNs::new(2_000_000_000),
+            ModelTimeNs::new(200_000_000_000),
             ModelTimeNs::new(lower),
             ModelTimeNs::new(upper),
             None,
@@ -583,21 +583,21 @@ mod tests {
     #[test]
     fn no_event_and_floor_boundaries_are_typed() {
         assert_eq!(
-            search(BTreeMap::from([(1, None)]), 600_000_000, 2_000_000_000),
+            search(BTreeMap::from([(1, None)]), 60_000_000_000, 200_000_000_000,),
             Err(DiscreteRootError::NoRoot)
         );
         let exact_floor = search(
-            BTreeMap::from([(1, Some(600_000_000))]),
-            600_000_000,
-            2_000_000_000,
+            BTreeMap::from([(1, Some(60_000_000_000))]),
+            60_000_000_000,
+            200_000_000_000,
         )
         .unwrap();
-        assert_eq!(exact_floor.selected_tick, ModelTimeNs::new(600_000_000));
+        assert_eq!(exact_floor.selected_tick, ModelTimeNs::new(60_000_000_000));
         assert_eq!(
             search(
-                BTreeMap::from([(1, Some(599_999_999))]),
-                600_000_000,
-                2_000_000_000
+                BTreeMap::from([(1, Some(59_999_999_999))]),
+                60_000_000_000,
+                200_000_000_000
             ),
             Err(DiscreteRootError::BelowFloor)
         );
@@ -613,9 +613,9 @@ mod tests {
         };
         let cursor = integer_bisection(
             ModelTimeNs::new(0),
-            ModelTimeNs::new(2_000_000_000),
-            ModelTimeNs::new(600_000_000),
-            ModelTimeNs::new(2_000_000_000),
+            ModelTimeNs::new(200_000_000_000),
+            ModelTimeNs::new(60_000_000_000),
+            ModelTimeNs::new(200_000_000_000),
             Some(witness),
             &mut synthetic(BTreeMap::from([(1, None)])),
         )
@@ -624,11 +624,11 @@ mod tests {
         assert!(cursor.evaluated.is_empty());
         assert_eq!(cursor.candidate, witness_candidate);
 
-        for root in [937_500_000, 2_000_000_000] {
+        for root in [93_750_000_000, 200_000_000_000] {
             let receipt = search(
                 BTreeMap::from([(1, Some(root))]),
-                600_000_000,
-                2_000_000_000,
+                60_000_000_000,
+                200_000_000_000,
             )
             .unwrap();
             assert_eq!(receipt.selected_tick, ModelTimeNs::new(root));
@@ -637,27 +637,27 @@ mod tests {
 
     #[test]
     fn multiple_brackets_and_order_permutations_select_identically() {
-        let roots = BTreeMap::from([(1, Some(937_500_000)), (2, None)]);
+        let roots = BTreeMap::from([(1, Some(93_750_000_000)), (2, None)]);
         let brackets = [
             (
-                ModelTimeNs::new(600_000_000),
-                ModelTimeNs::new(1_000_000_000),
+                ModelTimeNs::new(60_000_000_000),
+                ModelTimeNs::new(100_000_000_000),
             ),
             (
-                ModelTimeNs::new(800_000_000),
-                ModelTimeNs::new(2_000_000_000),
+                ModelTimeNs::new(80_000_000_000),
+                ModelTimeNs::new(200_000_000_000),
             ),
         ];
         let first = compare_brackets(
             ModelTimeNs::new(0),
-            ModelTimeNs::new(2_000_000_000),
+            ModelTimeNs::new(200_000_000_000),
             &brackets,
             &mut synthetic(roots.clone()),
         )
         .unwrap();
         let second = compare_brackets(
             ModelTimeNs::new(0),
-            ModelTimeNs::new(2_000_000_000),
+            ModelTimeNs::new(200_000_000_000),
             &brackets.into_iter().rev().collect::<Vec<_>>(),
             &mut synthetic(roots),
         )
@@ -671,21 +671,21 @@ mod tests {
     #[test]
     fn same_and_different_tick_lanes_use_one_joint_candidate() {
         let same = search(
-            BTreeMap::from([(1, Some(900_000_000)), (2, Some(900_000_000))]),
-            600_000_000,
-            2_000_000_000,
+            BTreeMap::from([(1, Some(90_000_000_000)), (2, Some(90_000_000_000))]),
+            60_000_000_000,
+            200_000_000_000,
         )
         .unwrap();
         assert_eq!(same.terminal_lanes, vec![1, 2]);
         assert!(same.surviving_lanes.is_empty());
 
         let different = search(
-            BTreeMap::from([(1, Some(900_000_000)), (2, Some(1_200_000_000))]),
-            600_000_000,
-            2_000_000_000,
+            BTreeMap::from([(1, Some(90_000_000_000)), (2, Some(120_000_000_000))]),
+            60_000_000_000,
+            200_000_000_000,
         )
         .unwrap();
-        assert_eq!(different.selected_tick, ModelTimeNs::new(900_000_000));
+        assert_eq!(different.selected_tick, ModelTimeNs::new(90_000_000_000));
         assert_eq!(different.terminal_lanes, vec![1]);
         assert_eq!(different.surviving_lanes, vec![2]);
         assert_eq!(different.candidate.owners.len(), 7);
@@ -693,23 +693,23 @@ mod tests {
 
     #[test]
     fn result_blind_algorithms_agree_before_bisection_is_frozen() {
-        let roots = BTreeMap::from([(1, Some(937_500_000)), (2, None)]);
+        let roots = BTreeMap::from([(1, Some(93_750_000_000)), (2, None)]);
         let fixed = fixed_point(
             ModelTimeNs::new(0),
-            ModelTimeNs::new(2_000_000_000),
-            ModelTimeNs::new(2_000_000_000),
+            ModelTimeNs::new(200_000_000_000),
+            ModelTimeNs::new(200_000_000_000),
             &mut synthetic(roots.clone()),
         )
         .unwrap();
         let secant = safeguarded_secant(
             ModelTimeNs::new(0),
-            ModelTimeNs::new(2_000_000_000),
-            ModelTimeNs::new(600_000_000),
-            ModelTimeNs::new(2_000_000_000),
+            ModelTimeNs::new(200_000_000_000),
+            ModelTimeNs::new(60_000_000_000),
+            ModelTimeNs::new(200_000_000_000),
             &mut synthetic(roots.clone()),
         )
         .unwrap();
-        let bisection = search(roots, 600_000_000, 2_000_000_000).unwrap();
+        let bisection = search(roots, 60_000_000_000, 200_000_000_000).unwrap();
         assert_eq!(fixed.selected_tick, secant.selected_tick);
         assert_eq!(fixed.selected_tick, bisection.selected_tick);
         assert_eq!(fixed.candidate, secant.candidate);
@@ -731,8 +731,8 @@ mod tests {
         assert_eq!(
             fixed_point(
                 ModelTimeNs::new(0),
-                ModelTimeNs::new(2_000_000_000),
-                ModelTimeNs::new(1_000_000_000),
+                ModelTimeNs::new(200_000_000_000),
+                ModelTimeNs::new(100_000_000_000),
                 &mut no_progress,
             ),
             Err(DiscreteRootError::InvalidEndpoint)
@@ -741,7 +741,11 @@ mod tests {
         let mut toggle = false;
         let mut cycle = move |tick| {
             toggle = !toggle;
-            let event_tick = if toggle { 800_000_000 } else { 900_000_000 };
+            let event_tick = if toggle {
+                80_000_000_000
+            } else {
+                90_000_000_000
+            };
             Ok(BatchEndpointEvaluation {
                 tick,
                 lane_classes: BTreeMap::from([(
@@ -760,8 +764,8 @@ mod tests {
         assert_eq!(
             fixed_point(
                 ModelTimeNs::new(0),
-                ModelTimeNs::new(2_000_000_000),
-                ModelTimeNs::new(1_000_000_000),
+                ModelTimeNs::new(200_000_000_000),
+                ModelTimeNs::new(100_000_000_000),
                 &mut cycle,
             ),
             Err(DiscreteRootError::InvalidEndpoint),
@@ -771,10 +775,10 @@ mod tests {
 
     #[test]
     fn nonmonotone_replay_and_candidate_poisons_fail_closed() {
-        let mut nonmonotone = synthetic(BTreeMap::from([(1, Some(900_000_000))]));
+        let mut nonmonotone = synthetic(BTreeMap::from([(1, Some(90_000_000_000))]));
         let mut wrapped = move |tick| {
             let mut value = nonmonotone(tick)?;
-            if tick == ModelTimeNs::new(900_000_001) {
+            if tick == ModelTimeNs::new(90_000_000_001) {
                 value
                     .lane_classes
                     .insert(1, EndpointTerminalClass::PreTerminal);
@@ -784,37 +788,40 @@ mod tests {
         assert_eq!(
             integer_bisection(
                 ModelTimeNs::new(0),
-                ModelTimeNs::new(2_000_000_000),
-                ModelTimeNs::new(600_000_000),
-                ModelTimeNs::new(2_000_000_000),
+                ModelTimeNs::new(200_000_000_000),
+                ModelTimeNs::new(60_000_000_000),
+                ModelTimeNs::new(200_000_000_000),
                 None,
                 &mut wrapped,
             ),
             Err(DiscreteRootError::AmbiguousOrNonmonotone)
         );
 
-        let calls = std::cell::Cell::new(0_u32);
+        let selected_evaluations = std::cell::Cell::new(0_u32);
         let mut replay_poison = move |tick| {
-            calls.set(calls.get() + 1);
-            let mut value = synthetic(BTreeMap::from([(1, Some(900_000_000))]))(tick)?;
-            if tick == ModelTimeNs::new(900_000_000) && calls.get() > 30 {
-                value.candidate.as_mut().unwrap().bytes.push(1);
+            let mut value = synthetic(BTreeMap::from([(1, Some(90_000_000_000))]))(tick)?;
+            if tick == ModelTimeNs::new(90_000_000_000) {
+                let evaluations = selected_evaluations.get();
+                if evaluations > 0 {
+                    value.candidate.as_mut().unwrap().bytes.push(1);
+                }
+                selected_evaluations.set(evaluations + 1);
             }
             Ok(value)
         };
         assert!(matches!(
             integer_bisection(
                 ModelTimeNs::new(0),
-                ModelTimeNs::new(2_000_000_000),
-                ModelTimeNs::new(600_000_000),
-                ModelTimeNs::new(2_000_000_000),
+                ModelTimeNs::new(200_000_000_000),
+                ModelTimeNs::new(60_000_000_000),
+                ModelTimeNs::new(200_000_000_000),
                 None,
                 &mut replay_poison,
             ),
             Err(DiscreteRootError::ReplayMismatch)
         ));
 
-        let mut owner_poison = synthetic(BTreeMap::from([(1, Some(900_000_000))]));
+        let mut owner_poison = synthetic(BTreeMap::from([(1, Some(90_000_000_000))]));
         let mut invalid = move |tick| {
             let mut value = owner_poison(tick)?;
             value.candidate.as_mut().unwrap().owners.remove("hydrology");
@@ -823,9 +830,9 @@ mod tests {
         assert_eq!(
             integer_bisection(
                 ModelTimeNs::new(0),
-                ModelTimeNs::new(2_000_000_000),
-                ModelTimeNs::new(600_000_000),
-                ModelTimeNs::new(2_000_000_000),
+                ModelTimeNs::new(200_000_000_000),
+                ModelTimeNs::new(60_000_000_000),
+                ModelTimeNs::new(200_000_000_000),
                 None,
                 &mut invalid,
             ),
@@ -848,9 +855,9 @@ mod tests {
         assert_eq!(
             integer_bisection(
                 ModelTimeNs::new(0),
-                ModelTimeNs::new(2_000_000_000),
-                ModelTimeNs::new(600_000_000),
-                ModelTimeNs::new(2_000_000_000),
+                ModelTimeNs::new(200_000_000_000),
+                ModelTimeNs::new(60_000_000_000),
+                ModelTimeNs::new(200_000_000_000),
                 None,
                 &mut mixed,
             ),

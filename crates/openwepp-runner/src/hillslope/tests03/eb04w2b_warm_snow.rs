@@ -1,5 +1,5 @@
 #[test]
-fn eb04w2b_direct_production_warm_mean_new_snow_reaches_shared_partition() {
+fn eb04w2b_retired_day_builder_partition_entrypoint_fails_closed() {
     let source_fixture_dir = fixture_path("hillslope_run_dir");
     let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, "eb04w2b_warm_snow");
     let request = HillslopeRunRequest {
@@ -68,25 +68,13 @@ fn eb04w2b_direct_production_warm_mean_new_snow_reaches_shared_partition() {
     let builder =
         DirectProductionDayInputBuilder::new(&climate_request, &climate_span, &seed_authority)
             .expect("day input builder");
-    let day_input = builder
+    let error = builder
         .build(&frame, 0, 0)
-        .expect("warm-mean direct-production day input must build");
-    let snow = day_input
-        .snow_coupling_inputs
-        .expect("published day input must carry typed snow coupling");
-
-    assert!(snow.active_snow_coupling);
+        .expect_err("retired day-builder partition entrypoint must fail closed");
+    let message = error.to_string();
     assert!(
-        snow.snow_coupling_handoff_m < 0.0,
-        "zero-pack warm-day snowfall must publish a storage-gain handoff"
-    );
-    assert!(snow.runtime_swe_after_m > 0.0);
-    assert!(
-        day_input
-            .hydrology_projection_inputs
-            .expect("day input must publish hydrology projection")
-            .snow_water_m
-            > 0.0
+        message.contains("snow.adaptive_stage3_legacy_sublimation_entry"),
+        "unexpected Stage3 V11 cutover error: {message}"
     );
     let _ = std::fs::remove_dir_all(temp_run_dir);
 }

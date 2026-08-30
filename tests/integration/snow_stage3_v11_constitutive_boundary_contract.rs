@@ -38,13 +38,17 @@ fn runner_persistent_state_is_explicitly_historical_evaluation_only() {
 
     assert!(builders.contains("snow_stage3_historical_evaluation_state"));
     assert!(!builders.contains("snow_stage3_persistent_state:"));
-    assert!(builders.contains("constitutive Stage-3/V11\n    /// attachment owns its own"));
+    assert!(builders.contains("constitutive Stage-3/V11"));
+    assert!(builders.contains("attachment owns its own persistent state"));
     assert!(implementation.contains("snow_stage3_historical_evaluation_state"));
 }
 
 #[test]
 fn typed_attachment_excludes_rejected_live_carrier_and_rate_surfaces() {
     let attachment = read(&format!("{ORCHESTRATOR}/snow_stage3_v11_attachment.rs"));
+    let attachment_runtime = read(&format!(
+        "{ORCHESTRATOR}/snow_stage3_v11_attachment_runtime.rs"
+    ));
     let terminal_execution = read(&format!(
         "{ORCHESTRATOR}/snow_stage3_v11_terminal_execution.rs"
     ));
@@ -66,7 +70,9 @@ fn typed_attachment_excludes_rejected_live_carrier_and_rate_surfaces() {
             "typed terminal execution contains rejected surface {forbidden}"
         );
     }
-    assert!(attachment.contains("evaluate_stage3_persistent_support"));
+    assert!(attachment.contains("include!(\"snow_stage3_v11_attachment_runtime.rs\")"));
+    assert!(attachment.contains("include!(\"snow_stage3_v11_adaptive_execution.rs\")"));
+    assert!(attachment_runtime.contains("evaluate_stage3_persistent_support"));
     assert!(attachment.contains("execute_direct_v11_segment"));
     assert!(terminal_execution.contains("terminal_parcels_for_event_group"));
     assert!(attachment.contains("DirectV11RealConsumerStack"));

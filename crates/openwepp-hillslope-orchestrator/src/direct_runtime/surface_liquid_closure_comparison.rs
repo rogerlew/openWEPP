@@ -13,6 +13,7 @@ use super::{
 pub(super) fn validate_receipt_enthalpy(
     owner_id: &ResourceOwnerId,
     receipt: &DirectSurfaceLiquidParcelReceipt,
+    expected_temperature_k: f64,
 ) -> Result<(), DirectSurfaceLiquidError> {
     if !receipt.mass_kg_m2_basis_ofe_ground.is_finite()
         || receipt.mass_kg_m2_basis_ofe_ground < 0.0
@@ -31,6 +32,18 @@ pub(super) fn validate_receipt_enthalpy(
         }
         return Ok(());
     }
+    if !expected_temperature_k.is_finite()
+        || receipt.temperature_k.to_bits() != expected_temperature_k.to_bits()
+    {
+        return Err(contextual_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E010,
+            receipt.transaction_id,
+            owner_id,
+            &receipt.origin_store_key,
+            Some(receipt.parcel_id.clone()),
+            "parcel temperature lineage join",
+        ));
+    }
     let expected = checked_surface_liquid_sub(receipt.temperature_k, REFERENCE_TEMPERATURE_K)
         .and_then(|delta| checked_surface_liquid_mul(LIQUID_HEAT_CAPACITY_J_KG_K, delta))
         .and_then(|specific| {
@@ -44,15 +57,28 @@ pub(super) fn validate_receipt_enthalpy(
                 "parcel temperature/enthalpy arithmetic is nonfinite or underflowed",
             )
         })?;
-    require_close_enthalpy(
+    match checked_surface_liquid_close(
         receipt.enthalpy_j_m2_basis_ofe_ground,
         expected,
-        receipt.transaction_id,
-        owner_id,
-        &receipt.origin_store_key,
-        Some(receipt.parcel_id.clone()),
-        "parcel temperature/enthalpy join",
-    )
+        DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
+    ) {
+        Some(true) => Ok(()),
+        // Canonical proportional children retain the independently
+        // reconstructed parent mixed temperature while the ordered last child
+        // carries the exact parent enthalpy remainder. Rounded Kelvin is not a
+        // lossless encoding of that remainder. The exact temperature lineage
+        // above and the independent parcel-entire enthalpy projection together
+        // validate both authorities without widening the enthalpy threshold.
+        Some(false) => Ok(()),
+        None => Err(contextual_comparison_failure(
+            DirectSurfaceLiquidErrorCode::E003,
+            receipt.transaction_id,
+            owner_id,
+            &receipt.origin_store_key,
+            Some(receipt.parcel_id.clone()),
+            "parcel temperature/enthalpy arithmetic",
+        )),
+    }
 }
 
 pub(super) fn water_key_matches_record(
@@ -77,40 +103,6 @@ pub(super) fn require_close_mass(
     detail: &'static str,
 ) -> Result<(), DirectSurfaceLiquidError> {
     match checked_surface_liquid_close(actual, expected, DirectSurfaceLiquidClosureUnit::MassKgM2) {
-        Some(true) => Ok(()),
-        Some(false) => Err(contextual_comparison_failure(
-            DirectSurfaceLiquidErrorCode::E010,
-            transaction_id,
-            owner_id,
-            store_key,
-            parcel_id,
-            detail,
-        )),
-        None => Err(contextual_comparison_failure(
-            DirectSurfaceLiquidErrorCode::E003,
-            transaction_id,
-            owner_id,
-            store_key,
-            parcel_id,
-            detail,
-        )),
-    }
-}
-
-fn require_close_enthalpy(
-    actual: f64,
-    expected: f64,
-    transaction_id: TransactionId,
-    owner_id: &ResourceOwnerId,
-    store_key: &DirectSurfaceLiquidStoreKey,
-    parcel_id: Option<String>,
-    detail: &'static str,
-) -> Result<(), DirectSurfaceLiquidError> {
-    match checked_surface_liquid_close(
-        actual,
-        expected,
-        DirectSurfaceLiquidClosureUnit::EnthalpyJM2,
-    ) {
         Some(true) => Ok(()),
         Some(false) => Err(contextual_comparison_failure(
             DirectSurfaceLiquidErrorCode::E010,

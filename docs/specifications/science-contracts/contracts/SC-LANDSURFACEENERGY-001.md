@@ -4,7 +4,7 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 8
+contract_version: 12
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
@@ -12,7 +12,7 @@ producer_scope:
 consumer_scope:
   - Future soil-heat/frost boundary, evaporation, infiltration/runoff, and surface-water ledgers
 evidence_level: static+independent_oracle
-last_reviewed: 2026-08-24
+last_reviewed: 2026-08-29
 supersedes: []
 superseded_by: []
 ---
@@ -229,6 +229,8 @@ then `snow_free`. No temperature-only guess may override explicit snow state.
 | `INV-LANDSURFACEENERGY-043` | Interval-integrated Stage C transpiration mass and its latent-energy debit share one transaction, stratum, area, interval, lineage, and authority-tagged `h_v`, satisfying `Q_T,s=-h_v*T_s` exactly once. | SC-VEGETATION-001#INV-VEGETATION-014 | `[INFERENCE][Static]` | future integration/test | hard `HOLD` |
 | `INV-LANDSURFACEENERGY-114` | Default-off LSE-V2 selects the actual receiver and rebuilds every flux only on `[wall_t*,wall_end)` without snow operands. | terminal receiver authority | `[INFERENCE][Static]` | runtime/test | typed receiver failure |
 | `INV-LANDSURFACEENERGY-115` | The 0 C parcel enters hydrology once; fusion energy is not soil heat, zero remaining support skips LSE, and any failure rolls back all owners. | conservation/transaction authority | `[INFERENCE][Static]` | runtime/test | typed join/rollback failure |
+| `INV-LANDSURFACEENERGY-130` | A covered-canopy or Stage 3 terminal-liquid temperature represented as exactly one upward binary64 spacing from `T_ref` is canonicalized to exact `T_ref` at its named publication boundary; every other temperature remains unchanged or fails its existing domain guard. | exact reference-state representation authority | `[INFERENCE][Static]` | runtime/test | typed closure/domain failure |
+| `INV-LANDSURFACEENERGY-138` | Every covered-column Jacobian uses the canonical centered binary64 difference at an interior coordinate and the unique inward one-sided difference only at an exact admitted closed bound; an invalid current iterate or two inadmissible probes rejects. | deterministic numerical-domain authority | `[INFERENCE][Static]` | runtime/test | typed constitutive-domain failure |
 
 Guard-map enforcement in version 1 is the contract-derived integration test
 and package review. Runtime mappings are intentionally future obligations; an
@@ -256,6 +258,8 @@ evidence artifact before promotion.
 | `INV-LANDSURFACEENERGY-040` | gap-label assertion and package disposition | governance | `NON_PROMOTABLE` | focused test + disposition |
 | `INV-LANDSURFACEENERGY-114` | terminal support/operand validator and receiver selection | default-off runtime/test | typed reject/rollback | terminal handoff package |
 | `INV-LANDSURFACEENERGY-115` | liquid-energy join and atomic envelope | default-off runtime/test | typed reject/rollback | terminal handoff package |
+| `INV-LANDSURFACEENERGY-130` | covered-liquid finalization before ledger materialization | runtime/test | exact reference-state canonicalization or existing typed reject | adaptive microstepping package |
+| `INV-LANDSURFACEENERGY-138` | covered-column Jacobian probe-domain validator | runtime/test | centered interior, unique inward closed-bound derivative, or typed reject | covered solver contract/unit/runtime vectors |
 | `INV-LANDSURFACEENERGY-041` | provenance/no-proxy review | governance | blocked promotion | baseline map + reviews |
 | `INV-LANDSURFACEENERGY-042` | future recipient-specific radiation ledger and poison vectors | runtime + test | blocked promotion on omitted, duplicated, or aliased recipient | vegetation/LSE integration package |
 | `INV-LANDSURFACEENERGY-043` | future latent mass-energy lineage join | runtime + test | blocked promotion on missing/mismatched `h_v`, duplicate debit, or amount/rate basis mismatch | vegetation/LSE integration package |
@@ -799,11 +803,16 @@ The joint system may be monolithic or a mathematically equivalent nested solve
 only when every inner solve converges at every outer residual evaluation and
 the complete ordered residual vector passes. Residuals are normalized by the
 dimensional thresholds below before the infinity norm is formed. Starting from
-the complete caller warm start, each Newton iteration uses centered finite
-differences `delta_i=sqrt(epsilon)*max(abs(x_i),unit_scale_i)`, evaluating the
-minus point and then the plus point, solves with deterministic partial-pivot
-LU, and accepts the first factor `2^-b`, `b=0..20`, producing a strict decrease
-in normalized infinity norm. Equal pivot magnitudes choose the lowest row.
+the complete caller warm start, each Newton iteration uses
+`delta_i=sqrt(epsilon)*max(abs(x_i),unit_scale_i)`. An interior coordinate
+evaluates the minus point and then the plus point and uses the exact centered
+difference. At an admitted closed bound where exactly one of those canonical
+probes violates the existing covered-trial domain, the Jacobian uses the
+unique inward one-sided difference between the valid current iterate and the
+admitted probe. An invalid current iterate, or two inadmissible probes, rejects
+with a typed constitutive-domain failure. The solve then uses deterministic
+partial-pivot LU and accepts the first factor `2^-b`, `b=0..20`, producing a
+strict decrease in normalized infinity norm. Equal pivot magnitudes choose the lowest row.
 Failure to decrease through `b=20` is backtracking limit. A pivot below
 `64*epsilon*matrix_inf_norm` is singular. The iteration limit is 50 completed
 Newton updates. Unit scales are `1 K`, `0.001 kg kg^-1`, `1 Pa`, `1000 mm`,
@@ -937,7 +946,7 @@ and partial commit.
 The covered-forest snow-free receiver remains a default-off physical adopter.
 For any positive successor segment it consumes the coupled-time
 `LseSupportAdmissibilityReceiptV1` and admits only the declared physical
-support domain `dt >= 600000000 ns`. A structural one-nanosecond clock interval
+support domain `dt >= 60000000000 ns`. A structural one-nanosecond clock interval
 is not a valid constitutive LSE solve. The guard runs before Newton and leaves
 the LSE, snow, surface-liquid, hydrology, soil-thermal, BGC, V11, and coupled
 time owners unchanged on rejection.
@@ -1012,6 +1021,15 @@ both endpoint temperature pairs, both endpoint fluxes, accepted
 repository canonical framed encoding and is reconstructed from those semantic
 fields; receipt-hash order is not operand order.
 
+The final nonlinear termination rule is `SC-SNOWENERGY-001@25` /
+`TOL-SNOWENERGY-005`: retain exactly the equal/opposite heat that both solvers
+consumed, require the receipt reconstructed from installed endpoints to differ
+by no more than `1e-9 J m^-2` and `1e-8 K`, then reseal the consumed receipt to
+the exact installed snow and soil candidate identities. A larger or nonfinite
+residual retries within the fixed-point cap and fails closed on exhaustion.
+This rule does not change soil enthalpy, applied credit, or the existing
+`1e-6 J m^-2` physical-ledger closure threshold.
+
 Independent validation recomputes the resistance, endpoint fluxes,
 Crank--Nicolson flux, Stage 3 debit, first-soil-node credit/storage equation,
 receipt digest, and beginning/candidate owner joins from primitive operands.
@@ -1027,10 +1045,132 @@ soil-thermal, transaction, and receipt owners byte-identical.
 | `INV-LANDSURFACEENERGY-125` | Half-snow plus half-soil series resistance and beginning/ending Crank--Nicolson evaluation produce one positive-downward `bar(G_ss)` inside the covered fixed point. | operand/endpoint/convergence guard / `LSEB-E-044` |
 | `INV-LANDSURFACEENERGY-126` | Exact `-bar(G_ss)` snow custody and `+bar(G_ss)` first-soil-node custody share one reconstructable receipt and commit or roll back together. | independent receipt/owner transaction guard / `LSEB-E-044` |
 
+## Version 9 exact liquid reference-state representation amendment
+
+The liquid enthalpy datum remains exactly `T_ref = 273.15 K` and
+`h_l(T)=4218*(T-T_ref) J kg^-1`. In the covered-canopy solver, the existing
+inactive wet-surface coordinate anchor can represent its physically exact
+phase-reference solution as the immediately adjacent binary64 value above
+`T_ref`. At a 60-second admitted adaptive support, multiplying that representational
+offset by a positive parcel mass produces a nonzero energy far below the
+binary64 spacing of an otherwise valid persistent receiver ledger. Publishing
+that artifact would require the receiver either to lose a positive credit or
+to reject an exact-reference physical state.
+
+Before a covered-canopy liquid ledger or release is materialized, and nowhere
+else, define
+
+```text
+T_ref_bits       = 0x4071126666666666
+T_ref_next_up    = 0x4071126666666667 = 273.15000000000003 K
+Delta_T_ref_up   = T_ref_next_up - T_ref
+                 = 2^-44 K = 5.684341886080802e-14 K.
+```
+
+If `T_wet`, or the mass-weighted Stage 3 terminal-liquid publication
+temperature, is bit-identical to `T_ref_next_up`, set it to `T_ref` before
+computing `h_l` and persist the canonical temperature and exact zero specific
+enthalpy together. Exact `T_ref` is unchanged. A value below `T_ref` retains
+the existing covered-canopy-snow rejection; a value at or above the second
+upward binary64 neighbor is not normalized. This is a reference-state
+representation rule, not a tolerance relaxation: it does not change liquid
+mass, wet fraction, solver residuals, accepted support, storage arithmetic,
+phase ownership, or any non-reference temperature.
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-LANDSURFACEENERGY-130` | Only the exact first upward binary64 neighbor of `273.15 K` is canonicalized to the exact liquid enthalpy reference before covered-canopy ledger/release or Stage 3 terminal-liquid publication. | exact-bit runtime guard plus below/at/above boundary vectors; existing typed closure/domain failure otherwise |
+
+## Version 11 inactive liquid-vapor coordinate domain amendment
+
+The sun-leaf, shade-leaf, and wet-surface temperature coordinates use the
+covered solver's liquid-vapor saturation law, whose admitted phase domain
+begins at `T_ref = 273.15 K`. When one of those component coordinates is
+numerically inactive because its physical component area is exactly zero, or
+when the existing `INV-LANDSURFACEENERGY-113` wet-coordinate predicate has
+already proven its physical energy residual inside the canonical tolerance,
+its deterministic representational anchor is
+
+```text
+T_inactive_liquid_vapor - max(T_canopy, T_ref) = 0.
+```
+
+The dry-stem inactive anchor remains exactly `T_stem - T_canopy = 0` because
+that coordinate does not invoke the liquid-vapor law. The amended target only
+keeps an otherwise unconstrained numerical coordinate inside its existing
+constitutive domain. For an exactly zero-area component the Newton row is the
+direct deterministic anchor row; it does not inherit the nondifferentiable
+phase-boundary slope from a finite difference through `max`. An exactly
+zero-area component contributes no physical
+radiative, sensible, latent, mass, enthalpy, or ledger operand, and the
+existing V10 inactive-wet predicate still requires the unanchored physical
+wet-energy residual to pass before the row substitution. Active components,
+physical residual equations, tolerances, ledgers, receipts, events, the exact
+60-second raw fallback, backtracking limits, rollback, and fail-closed behavior
+are unchanged.
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-LANDSURFACEENERGY-131` | Only a numerically inactive sun-leaf, shade-leaf, or wet-surface temperature coordinate uses `max(T_canopy, 273.15 K)` as its representational anchor; zero physical area and the existing inactive-wet residual predicate guarantee no physical operand or ledger interference. | cold-canopy zero-area phase-domain vector; unchanged active-component residual/closure guards and numerical rejection |
+
+## Version 12 exact closed-bound finite-difference amendment
+
+The covered-column nonlinear domain already contains closed coordinates,
+including `0 <= beta <= 1`, `273.15 <= T_liquid-vapor <= 350 K` for canopy
+components and liquid-bearing ground, the remaining temperature bounds, and
+`0 <= q_canopy <= 0.1 kg kg^-1`. A valid current
+iterate exactly at one of those bounds cannot admit both canonical centered
+probes. This is a property of the existing domain, not constitutive failure at
+the current physical state.
+
+For every covered-column authority and for both owner-uncapped potential and
+fixed-authorization final solves, retain the exact perturbation
+`delta_i=sqrt(epsilon)*max(abs(x_i),unit_scale_i)`, unit scales, ordered minus
+then plus evaluation, normalized residuals, and frozen active branches. When
+both probes satisfy the existing covered-trial domain, use the exact centered
+difference
+
+```text
+J[:,i] = (R(x + delta_i e_i) - R(x - delta_i e_i)) / (2 delta_i).
+```
+
+When the current iterate is valid and exactly one probe violates that domain,
+use only the unique inward one-sided difference:
+
+```text
+lower bound: J[:,i] = (R(x + delta_i e_i) - R(x)) / delta_i
+upper bound: J[:,i] = (R(x) - R(x - delta_i e_i)) / delta_i.
+```
+
+An invalid current iterate rejects before Jacobian construction. If neither
+probe is admissible, Jacobian construction rejects with the covered
+constitutive-domain error; it does not shrink `delta_i`, clamp a probe, infer a
+derivative, or continue. Exact `beta=0`, `beta=1`, and exact `273.15 K` active
+or zero-area liquid-vapor coordinates, and exact `273.15 K` liquid-bearing
+ground coordinates are ordinary boundary cases under this rule. Values outside
+their existing domains remain poisons.
+
+This amendment changes no constitutive equation, closed bound, coordinate or
+residual scale, branch predicate, branch-freezing order, diagonal scaling
+authority, pivot rule, backtracking, convergence threshold, ledger, receipt,
+event, custody, rollback, or fail-closed requirement. In particular, the
+diagonal coordinate scaling admitted by `INV-LANDSURFACEENERGY-112` remains
+exclusive to the uncapped active V10 nonpositive-assimilation potential solve;
+the inward derivative rule is not scaling authority for any other solve.
+
+| ID | Binding rule | Guard/failure |
+|---|---|---|
+| `INV-LANDSURFACEENERGY-138` | Every covered potential/final Jacobian retains centered differences for two valid probes and uses the unique inward one-sided difference only when a valid current iterate has exactly one inadmissible canonical probe. | beta lower/upper, active/zero-area canopy and liquid-bearing-ground vapor lower bound, interior centered, potential/final, invalid-current, and neither-probe poisons; typed `covered_jacobian_bound` rejection |
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-29 | 12 | Codex | Generalized the covered-column finite-difference stencil to use the unique inward one-sided derivative at exact admitted closed bounds for potential and final solves, while preserving the exact centered interior stencil, perturbations, scaling authority, branches, backtracking, ledgers, receipts, and rollback. |
+| 2026-08-28 | 11 | Codex | Kept numerically inactive sun, shade, and wet liquid-vapor coordinates inside the existing `273.15 K` phase domain by anchoring them to `max(T_canopy, T_ref)`; zero-area physical operands, active equations, tolerances, ledgers, exact-60 fallback, events, and fail-closed behavior remain unchanged. |
+| 2026-08-28 | 10 | Codex | Bound causal snow--soil receipt termination to finite `1e-9 J m^-2` energy and `1e-8 K` endpoint residuals while preserving the exact applied soil credit, exact installed owner identities, and unchanged physical-ledger closure threshold. |
+| 2026-08-28 | 9 | Codex | Extended the existing exact one-ULP liquid phase-reference representation rule to Stage 3 terminal-liquid committed publication; all other temperatures and every ledger tolerance remain unchanged. |
+| 2026-08-26 | 9 | Codex | Admitted exact one-ULP upward canonicalization of the covered-canopy wet-liquid phase reference before ledger and release publication, with an explicit `2^-44 K` threshold, exact-bit boundary, and no normalization of other temperatures. |
 | 2026-08-24 | 8 | Codex | Admitted the persistent Stage 3 OFE/lane snow--soil interface as a specialization of the existing node-centered Crank--Nicolson soil authority: bottom snow volume to first OFE soil node, half-layer series resistance, positive-downward exact snow debit/soil credit, sealed receipt, independent reconstruction, and atomic rollback; no tile averaging or duplicated flux. |
 | 2026-08-19 | 5 | Codex | Admitted default-off terminal remaining-support LSE-V2 authority (`INV-LANDSURFACEENERGY-114/115`) with actual receiver selection, complete flux rebuild, no post-event snow operands, and atomic rollback. |
 | 2026-08-18 | 4 | Codex | Admitted `OPENWEPP_SNOW_FREE_LSE_V2`, binding V10 exact-zero-PAR physiology and deterministic FullSupply iteration-zero final reevaluation; V1 remains immutable. |
@@ -1063,19 +1203,34 @@ identity, owner, or amount mismatch cannot use this acceptance path.
 
 Nonpositive-assimilation partial positive root authorization is typed unsupported in V2.
 
-## Version 6 prospective positive-support admission amendment
+## Version 9 positive-support admission owner amendment
 
 `OPENWEPP_SNOW_FREE_LSE_V1` retains nanosecond chronology at the coupled-time
 wire boundary, but its physical nonlinear solver has a deterministic declared
 positive-support domain. The released domain policy is
 `OPENWEPP_SNOW_FREE_LSE_V1_SUPPORT_POLICY_V1` with
-`minimum_support_ns = 600000000` (0.6 seconds). This is a conservative,
-model-specific numerical-domain boundary selected from the frozen V11 actual
-covered-forest stack sweep and representation analysis; open-mineral, litter,
+`minimum_support_ns = 60000000000` (60 seconds). This is the exact Stage-3
+adaptive temporal floor selected by the 2026-08-27 owner amendment. It is a
+conservative model-specific numerical-domain boundary; open-mineral, litter,
 and other surface profiles remain prospective/non-admitted until separately
 profiled. It is not
 a hidden duration floor, a changed V10 cadence, or a promise that every larger
 support is globally convergent under arbitrary forcing.
+
+The amendment changes temporal admission only. It does not change any LSE
+constitutive equation, conservation or liquid/energy custody, phase ownership,
+active-set/topology predicate, receipt identity, rollback, or fail-closed
+behavior. Stable ordinary supports must accept steps substantially larger than
+60 seconds. Every earlier admission, trace, or performance result that depended
+on the provisional 0.6-second floor is superseded and requires a fresh
+amended-floor run; none is claimed here.
+
+For `OPENWEPP_STAGE3_ADAPTIVE_OWNER_TOLERANCE_V1` only, direct-versus-composed
+LSE energy uses `1e-6 J m^-2 + 5e-3*max_abs`, soil-thermal energy uses
+`1e-6 J m^-2 + 1.5e-2*max_abs`, and LSE/soil temperature uses
+`1e-2 K + 1e-8*max_abs`. These are truncation-error controller bounds, not
+constitutive, residual, mass, or energy-closure tolerances; all exact owner,
+topology, phase, and receipt predicates remain exact.
 
 Every physical V11 LSE invocation must first admit a sealed
 `LseSupportAdmissibilityReceiptV1` binding parent transaction, segment, slab,
@@ -1103,10 +1258,10 @@ coupled-time V2 bytes, or DirectV10 restart V1 bytes.
 The independent representation analysis records adjacent binary64 temperature
 spacing, finite-capacity energy quanta, configured absolute/relative energy
 tolerances, and the necessary storage-resolution support for every declared
-finite-capacity V11 actual-stack profile. The observed
-transition is solver-domain behavior beyond that representational floor; the
-declared 0.6-second policy is therefore fail-closed and deterministic across
-the admitted V11 actual-stack fixture domain. A future smaller or additional
+finite-capacity V11 actual-stack profile. The prior 0.6-second profiling and
+execution evidence is historical and does not validate the amended floor. The
+declared 60-second policy remains fail-closed; fresh fixture execution is
+required before any conformance or performance claim. A future smaller or additional
 surface/state-qualified domain
 requires a new contract cycle; it may not be inferred from a successful
 individual run.
@@ -1129,22 +1284,20 @@ are frozen in the package artifact set.
 
 | Error | Meaning |
 |---|---|
-| `LSEB-E-041` | Requested positive support is below `600000000` ns for the declared LSE policy; typed pre-Newton rejection. |
+| `LSEB-E-041` | Requested positive support is below `60000000000` ns for the declared LSE policy; typed pre-Newton rejection. |
 | `LSEB-E-042` | Support receipt parent/segment/slab, absolute support, duration bits, configuration/state, tolerance, or numerical-policy binding is invalid. |
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-27 | 9 owner amendment | Codex | Raised the Stage-3 adaptive temporal admission floor from the provisional 0.6 seconds to exactly 60 seconds (`60_000_000_000 ns`). Constitutive equations, energy/liquid custody, phase ownership, topology, receipt, rollback, and fail-closed obligations are unchanged; stable ordinary supports must accept substantially larger steps. Prior floor-dependent evidence is superseded and awaits rerun. |
 | 2026-08-20 | 6 | Codex | Prospective deterministic positive-support admission; nanosecond chronology remains coupled-time-valid, below-domain support rejects before Newton, and event-boundary coalescing is deferred to the reviewed snow/event contract. |
 | 2026-08-20 | 7 | Codex | Bound the covered-forest snow-free successor to the accepted event receipt, post-event-only operands, and pre-Newton support admission without scaling, freezing, or sub-ULP storage treatment. |
 It does not invoke hydraulic attenuation, conductance or vulnerability floors,
 plant capacitance, or authorization donation.
 
-For the V10 nonpositive-assimilation potential solve only, a coordinate at an admitted
-closed bound uses the inward one-sided binary64 finite difference when the
-opposite perturbation is outside the existing trial domain. Interior
-coordinates retain the V1 centered difference. Both perturbations outside the
-domain reject. This bound-aware derivative rule is prospective V2 numerics and
-does not alter any V1/V8/V9 execution.
+Every covered potential and final solve uses the exact closed-bound derivative
+rule in `INV-LANDSURFACEENERGY-138`. This general numerical-domain rule does
+not broaden the V10-only coordinate-scaling authority below.
 
 For that same uncapped active V10 nonpositive-assimilation potential solve only, the
 Newton linear system is expressed in the declared coordinate units. With
@@ -1164,7 +1317,7 @@ than the canonical water residual tolerance, the wet-surface temperature is a
 numerically inactive coordinate: the wet-energy residual is already below its
 admitted closure scale and cannot determine that temperature. V2 replaces
 that one row with the existing inactive-component anchor
-`T_wet - T_canopy = 0`. Liquid mass, enthalpy, longwave area, and every owner
+`T_wet - max(T_canopy, 273.15 K) = 0`. Liquid mass, enthalpy, longwave area, and every owner
 ledger remain evaluated normally; no liquid amount is clamped or discarded.
 The predicate additionally requires the unanchored physical wet-energy
 residual already satisfy its canonical energy tolerance. It is unavailable to
@@ -1180,7 +1333,7 @@ transitively derived receipts. V1 remains immutable and is not a V2 alias.
 | `INV-LANDSURFACEENERGY-110` | Exact FullSupply finalization seeds only coordinates, then reevaluates the complete fixed-final system from immutable beginning owners; a passing initial evaluation accepts at iteration zero without a Jacobian. |
 | `INV-LANDSURFACEENERGY-111` | V1-to-V2 migration copies every LSE scientific value bit-identically and derives only V2 identity receipts; partial nonpositive-assimilation root supply is unsupported. |
 | `INV-LANDSURFACEENERGY-112` | Only the uncapped active V10 nonpositive-assimilation potential solve uses the declared diagonal coordinate scaling for Jacobian pivot classification and dimensionless Newton solution; physical residuals and steps are unchanged. |
-| `INV-LANDSURFACEENERGY-113` | A store-cap-active V10 nonpositive-assimilation wet coordinate below the canonical water-rate tolerance uses the existing canopy-temperature inactive anchor only when its physical energy residual already passes, without changing liquid or energy ledgers. |
+| `INV-LANDSURFACEENERGY-113` | A store-cap-active V10 nonpositive-assimilation wet coordinate below the canonical water-rate tolerance uses the domain-valid inactive anchor defined by `INV-LANDSURFACEENERGY-131` only when its physical energy residual already passes, without changing liquid or energy ledgers. |
 | `LSE-E-109` | V8/V9 vegetation identity, mixed V1/V2 receipts, or any owner alias rejects before V2 physics. |
 | `LSE-E-110` | Missing, duplicated, mutated, or locally recomputed V10 nighttime gas state rejects the coupled owner envelope. |
 | `LSE-E-111` | Partial or value-mutating V1-to-V2 migration rejects without a V2 state. |

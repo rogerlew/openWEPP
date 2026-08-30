@@ -793,19 +793,23 @@ fn require_lineage(
     required: Option<u128>,
 ) -> Result<(), RestartAdmissionFailureV1> {
     let expected = value.vegetation_v10.last_transaction_id.to_u128();
+    let lse_lineage = value
+        .lse_v2
+        .last_accepted_transaction_id
+        .as_ref()
+        .map(crate::HexU128::to_u128);
+    let soil_lineage = value
+        .soil_thermal
+        .last_accepted_transaction_id
+        .as_ref()
+        .map(crate::HexU128::to_u128);
     if required.is_some_and(|value| value != expected)
-        || value
-            .lse_v2
-            .last_accepted_transaction_id
-            .as_ref()
-            .map(crate::HexU128::to_u128)
-            != Some(expected)
-        || value
-            .soil_thermal
-            .last_accepted_transaction_id
-            .as_ref()
-            .map(crate::HexU128::to_u128)
-            != Some(expected)
+        || if required.is_some() {
+            lse_lineage != Some(expected) || soil_lineage != Some(expected)
+        } else {
+            lse_lineage.is_some_and(|lineage| lineage != expected)
+                || soil_lineage.is_some_and(|lineage| lineage != expected)
+        }
         || value.biogeochemistry.last_transaction_id.to_u128() != expected
         || value
             .direct_hydrology

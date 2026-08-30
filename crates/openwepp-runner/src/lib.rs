@@ -41,6 +41,11 @@ pub use hillslope::{
     fresh_snow_density_kg_m3, physics_bulk_constants, physics_bulk_constants_for_variant,
     run_physics_bulk_snowbench,
 };
+#[cfg(feature = "test-fixture-authority")]
+pub use hillslope::{
+    Stage3TestFixtureSeedBinding, Stage3TestFixtureSeedProfile,
+    author_stage3_v11_owner_seed_fixture,
+};
 pub use hillslope::{
     execute_hillslope_run, execute_hillslope_run_with_runtime_policy,
     execute_hillslope_run_with_runtime_selection, export_openwepp_snow_csv_from_wat,

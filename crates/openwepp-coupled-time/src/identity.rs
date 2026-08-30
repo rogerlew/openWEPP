@@ -224,6 +224,54 @@ impl SegmentId {
             ],
         )?))
     }
+
+    /// Derive the typed boundary posture installed by a zero-duration event
+    /// accepted exactly at the end of its parent support. This is not a slab
+    /// segment and deliberately accepts no fabricated positive support.
+    pub fn derive_terminal_event_boundary(
+        parent: ParentTransactionId,
+        parent_support: crate::TimeSupport,
+        tick: crate::ModelTimeNs,
+        event_ordinal: u32,
+        predecessor_owner_set: Digest32,
+    ) -> Result<Self, CoupledTimeError> {
+        if tick != parent_support.end_ns() {
+            return Err(CoupledTimeError::InvalidSupport);
+        }
+        let start = parent_support.start_ns().get().to_be_bytes();
+        let end = parent_support.end_ns().get().to_be_bytes();
+        let tick = tick.get().to_be_bytes();
+        let event_ordinal = event_ordinal.to_be_bytes();
+        Ok(Self(id(
+            "terminal-event-boundary",
+            &[
+                FramedField {
+                    tag: "parent_transaction_id",
+                    value: parent.0.as_bytes(),
+                },
+                FramedField {
+                    tag: "parent_start_ns",
+                    value: &start,
+                },
+                FramedField {
+                    tag: "parent_end_ns",
+                    value: &end,
+                },
+                FramedField {
+                    tag: "tick_ns",
+                    value: &tick,
+                },
+                FramedField {
+                    tag: "event_ordinal",
+                    value: &event_ordinal,
+                },
+                FramedField {
+                    tag: "predecessor_owner_set",
+                    value: predecessor_owner_set.as_bytes(),
+                },
+            ],
+        )?))
+    }
 }
 impl AttemptId {
     #[allow(clippy::too_many_arguments)]

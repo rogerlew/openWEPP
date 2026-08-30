@@ -1,5 +1,22 @@
 # Work Packages
 
+## 20260826-snow-stage3-adaptive-compositional-microstepping-001
+
+Forward-only owner-authorized correction replacing the old terminal root and
+phase-ordering model with one adaptive compositional Stage-3 temporal operator,
+same-microstep deposited-ice phase equilibrium, complete-owner transactions,
+terminal liquid consumption, reappearance, restart, runner qualification, and
+atomic production cutover. The 2026-08-27 owner amendment sets the exact
+adaptive floor to 60 seconds (`60_000_000_000 ns`) as a temporal-only change;
+all conservation, custody, phase, topology, receipt, rollback, and fail-closed
+obligations remain unchanged, and stable ordinary supports must accept
+substantially larger steps. Fresh exact-head qualification passes at 588
+accepted / 320 rejected trials with 76.36% of accepted supports above the
+floor, exact downstream publication, and strict ledger/receipt closure. Prior
+600-ms and pre-correction one-day evidence remains historical and superseded.
+Status: `HOLD — ONE-DAY OBJECTIVE QUALIFIED; EXTERNAL SCIENCE AUTHORITY
+REQUIRED FOR FULL CUTOVER`.
+
 ## 20260826-vegetation-v9-libcrypto-runtime-equivalence-defect-closure-001
 
 Completed defect closure for the protected V9 vegetation oracle's stale

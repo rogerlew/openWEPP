@@ -18,12 +18,12 @@ use openwepp_meteorology::surface_energy::{
     specific_heat_water, surface_energy_balance, turbulent_fluxes_monin_obukhov_with_diagnostics,
 };
 use openwepp_unit_boundary::{FractionUnitInterval, LinearRateMetersPerSecond, TemperatureCelsius};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 mod stage3_solver;
 
 const STAGE3_RHO_WATER_KG_M3: f64 = 1_000.0;
-const STAGE3_LATENT_HEAT_FUSION_J_KG: f64 = 333_600.0;
+pub(crate) const STAGE3_LATENT_HEAT_FUSION_J_KG: f64 = 333_600.0;
 const STAGE3_SPECIFIC_HEAT_ICE_J_KG_K: f64 = 2_100.0;
 pub(crate) const STAGE3_DEFAULT_SNOW_ALBEDO: f64 = 0.82;
 const STAGE3_SECONDS_PER_HOUR: f64 = 3_600.0;
@@ -61,6 +61,7 @@ pub(crate) fn stage3_is_terminal_event_domain(state: &DirectSnowStage3Persistent
 const STAGE3_MEDIUM_TIMESTEP_SECONDS: f64 = 900.0;
 const STAGE3_SMALL_TIMESTEP_SECONDS: f64 = 60.0;
 const STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2: f64 = 1.0e-6;
+const STAGE3_REFREEZE_COLD_CONTENT_ROUNDOFF_J_M2: f64 = 1.0e-9;
 const STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
 const STAGE3_BULK_EQUIVALENT_MAX_LAYERS: usize = 16;
 
@@ -223,16 +224,22 @@ struct Stage3SurfaceInterval {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum CoveredTerminalExecutionMode {
     PersistentReject,
+    /// One exact unpublished adaptive trial transaction. The outer
+    /// complete-owner controller compares this direct result with its
+    /// composed H1/H2 result and owns acceptance.
+    DirectStepTrial,
+    /// Unpublished adaptive event discovery. The caller must replay the
+    /// selected endpoint under `ExactEndpoint` before any publication.
     DiscoveryProbe,
-    ExactEndpoint { expected_tick: ModelTimeNs },
-    #[cfg(test)]
-    DiscreteCompleteEndpoint,
+    ExactEndpoint {
+        expected_tick: ModelTimeNs,
+    },
     #[cfg(test)]
     PhaseComplementarityEndpoint,
 }
 
 mod terminal_evidence_sealed {
-    pub trait Sealed {}
+    pub(crate) trait Sealed {}
 }
 
 #[derive(Clone, Copy)]
@@ -244,12 +251,18 @@ pub(crate) struct TerminalPairEvidenceHook {
     pub rejected: bool,
 }
 
-#[derive(Clone, Copy)]
-pub(crate) struct TerminalAdmissionEvidenceHook<'a> {
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum TerminalFloorDecision {
+    Accepted,
+    #[cfg(test)]
+    Rejected,
+}
+
+pub(crate) struct TerminalAdmissionEvidenceHook {
     pub proposed_duration_s: f64,
     pub required_half_duration_s: f64,
     pub minimum_duration_s: f64,
-    pub outcome: &'a SnowTerminalNumericsFailure,
+    pub decision: TerminalFloorDecision,
     pub provider_calls_before: u64,
     pub provider_calls_after: u64,
 }
@@ -271,12 +284,24 @@ pub(crate) trait TerminalEvidenceMode<J>: terminal_evidence_sealed::Sealed {
     fn project_provider_failure(
         _: &crate::v9_real_consumer_shadow::DirectV11RealConsumerError,
     ) -> Self::ProviderFailureProjection;
-    fn provider_success(_: &mut Self::ProviderState, _: &CoveredTerminalTrialRequestV1, _: Self::ProviderProjection) {}
-    fn provider_failure(_: &mut Self::ProviderState, _: &CoveredTerminalTrialRequestV1, _: Self::ProviderFailureProjection) {}
+    fn provider_success(
+        _: &mut Self::ProviderState,
+        _: &CoveredTerminalTrialRequestV1,
+        _: Self::ProviderProjection,
+    ) {
+    }
+    fn provider_failure(
+        _: &mut Self::ProviderState,
+        _: &CoveredTerminalTrialRequestV1,
+        _: Self::ProviderFailureProjection,
+    ) {
+    }
     fn merge_provider(_: &mut Self::State, _: Self::ProviderState) {}
-    fn provider_call_count(_: &Self::State) -> u64 { 0 }
+    fn provider_call_count(_: &Self::State) -> u64 {
+        0
+    }
     fn pair(_: &mut Self::State, _: TerminalPairEvidenceHook) {}
-    fn admission(_: &mut Self::State, _: TerminalAdmissionEvidenceHook<'_>) {}
+    fn admission(_: &mut Self::State, _: TerminalAdmissionEvidenceHook) {}
     fn coupling_iteration(_: &mut Self::CouplingState, _: TerminalCouplingIterationHook) {}
     fn coupling_selection(_: &mut Self::CouplingState, _: TerminalCouplingSelectionHook) {}
     fn merge_coupling(_: &mut Self::State, _: Self::CouplingState) {}
@@ -292,17 +317,116 @@ impl<J> TerminalEvidenceMode<J> for NoEvidence {
     type ProviderProjection = ();
     type ProviderFailureProjection = ();
     type CouplingState = ();
-    #[inline(always)] fn new_state() {}
-    #[inline(always)] fn new_provider_state() {}
-    #[inline(always)] fn new_coupling_state() {}
-    #[inline(always)] fn project_provider_success(_: &CoveredTerminalTrialRequestV1, _: &crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1) {}
-    #[inline(always)] fn project_provider_failure(_: &crate::v9_real_consumer_shadow::DirectV11RealConsumerError) {}
-    #[inline(always)] fn provider_success(_: &mut (), _: &CoveredTerminalTrialRequestV1, _: ()) {}
-    #[inline(always)] fn provider_failure(_: &mut (), _: &CoveredTerminalTrialRequestV1, _: ()) {}
-    #[inline(always)] fn merge_provider(_: &mut (), _: ()) {}
-    #[inline(always)] fn provider_call_count(_: &()) -> u64 { 0 }
-    #[inline(always)] fn pair(_: &mut (), _: TerminalPairEvidenceHook) {}
-    #[inline(always)] fn admission(_: &mut (), _: TerminalAdmissionEvidenceHook<'_>) {}
+    #[inline(always)]
+    fn new_state() {}
+    #[inline(always)]
+    fn new_provider_state() {}
+    #[inline(always)]
+    fn new_coupling_state() {}
+    #[inline(always)]
+    fn project_provider_success(
+        request: &CoveredTerminalTrialRequestV1,
+        result: &crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1,
+    ) {
+        let _ = (request.coupling_iteration, request.ending_snow_hint);
+        let _ = &result.transition.trial_snow_soil_receipt;
+    }
+    #[inline(always)]
+    fn project_provider_failure(_: &crate::v9_real_consumer_shadow::DirectV11RealConsumerError) {}
+    #[inline(always)]
+    fn provider_success(_: &mut (), _: &CoveredTerminalTrialRequestV1, _: ()) {}
+    #[inline(always)]
+    fn provider_failure(_: &mut (), _: &CoveredTerminalTrialRequestV1, _: ()) {}
+    #[inline(always)]
+    fn merge_provider(_: &mut (), _: ()) {}
+    #[inline(always)]
+    fn provider_call_count(_: &()) -> u64 {
+        0
+    }
+    #[inline(always)]
+    fn pair(_: &mut (), value: TerminalPairEvidenceHook) {
+        let TerminalPairEvidenceHook {
+            duration_s,
+            proposed_next_duration_s,
+            components,
+            scaled_error,
+            rejected,
+        } = value;
+        let _ = (
+            duration_s,
+            proposed_next_duration_s,
+            components,
+            scaled_error,
+            rejected,
+        );
+    }
+    #[inline(always)]
+    fn admission(_: &mut (), value: TerminalAdmissionEvidenceHook) {
+        let TerminalAdmissionEvidenceHook {
+            proposed_duration_s,
+            required_half_duration_s,
+            minimum_duration_s,
+            decision,
+            provider_calls_before,
+            provider_calls_after,
+        } = value;
+        let _ = (
+            proposed_duration_s,
+            required_half_duration_s,
+            minimum_duration_s,
+            decision,
+            provider_calls_before,
+            provider_calls_after,
+        );
+    }
+    #[inline(always)]
+    fn coupling_iteration(_: &mut (), value: TerminalCouplingIterationHook) {
+        let TerminalCouplingIterationHook {
+            request,
+            outgoing,
+            comparisons,
+            converged,
+        } = value;
+        let _ = (request, outgoing, comparisons, converged);
+    }
+    #[inline(always)]
+    fn coupling_selection(_: &mut (), value: TerminalCouplingSelectionHook) {
+        let TerminalCouplingSelectionHook {
+            request,
+            reason,
+            post_loop_three_component_check,
+        } = value;
+        let _ = (request, reason, post_loop_three_component_check);
+    }
+    #[inline(always)]
+    fn selected_trial(_: &mut (), value: TerminalSelectedTrialHook<'_, J>) {
+        let TerminalSelectedTrialHook {
+            position,
+            role,
+            attempt_ordinal,
+            relative_start_s,
+            duration_s,
+            beginning,
+            ending,
+            ledger,
+            beginning_joint,
+            carrier_ending_joint,
+            hydrology_ending_joint,
+        } = value;
+        let _ = (
+            position,
+            role,
+            attempt_ordinal,
+            relative_start_s,
+            duration_s,
+            beginning,
+            ending,
+            ledger,
+            beginning_joint,
+            carrier_ending_joint,
+            hydrology_ending_joint,
+        );
+    }
 }
 
 #[derive(Clone)]
@@ -327,7 +451,11 @@ pub(crate) struct TerminalCouplingSelectionHook {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum TerminalPairPosition { Coarse, Fine1, Fine2 }
+pub(crate) enum TerminalPairPosition {
+    Coarse,
+    Fine1,
+    Fine2,
+}
 
 pub(crate) struct TerminalSelectedTrialHook<'a, J> {
     pub position: TerminalPairPosition,
@@ -344,16 +472,27 @@ pub(crate) struct TerminalSelectedTrialHook<'a, J> {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub(crate) struct TerminalStateEvidence { pub ice_kg_m2: f64, pub liquid_kg_m2: f64, pub cold_content_j_m2: f64 }
+pub(crate) struct TerminalStateEvidence {
+    pub ice_kg_m2: f64,
+    pub liquid_kg_m2: f64,
+    pub cold_content_j_m2: f64,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(crate) struct TerminalLedgerEvidence {
-    pub complete_energy_j_m2: f64, pub cold_energy_change_j_m2: f64,
-    pub refrozen_kg_m2: f64, pub deposition_kg_m2: f64, pub sublimation_kg_m2: f64,
-    pub melt_kg_m2: f64, pub unallocated_energy_j_m2: f64,
-    pub shortwave_energy_j_m2: f64, pub longwave_energy_j_m2: f64,
-    pub sensible_energy_j_m2: f64, pub latent_energy_j_m2: f64,
-    pub advected_energy_j_m2: f64, pub snow_soil_heat_energy_j_m2: f64,
+    pub complete_energy_j_m2: f64,
+    pub cold_energy_change_j_m2: f64,
+    pub refrozen_kg_m2: f64,
+    pub deposition_kg_m2: f64,
+    pub sublimation_kg_m2: f64,
+    pub melt_kg_m2: f64,
+    pub unallocated_energy_j_m2: f64,
+    pub shortwave_energy_j_m2: f64,
+    pub longwave_energy_j_m2: f64,
+    pub sensible_energy_j_m2: f64,
+    pub latent_energy_j_m2: f64,
+    pub advected_energy_j_m2: f64,
+    pub snow_soil_heat_energy_j_m2: f64,
     pub external_liquid_kg_m2: f64,
 }
 
@@ -362,7 +501,7 @@ pub(crate) struct TerminalLedgerEvidence {
 pub(crate) struct CaptureState {
     pub provider_calls: Vec<CapturedProviderCall>,
     pub pairs: Vec<CapturedPair>,
-    pub admissions: Vec<(f64, f64, f64, SnowTerminalNumericsFailure, u64, u64)>,
+    pub admissions: Vec<(f64, f64, f64, TerminalFloorDecision, u64, u64)>,
     pub coupling_iterations: Vec<CapturedCouplingIteration>,
     pub coupling_selections: Vec<TerminalCouplingSelectionHook>,
     pub selected_trials: Vec<CapturedSelectedTrial>,
@@ -371,11 +510,13 @@ pub(crate) struct CaptureState {
 #[cfg(test)]
 #[derive(Clone)]
 pub(crate) struct CapturedPair {
-    pub duration_s: f64, pub proposed_next_duration_s: f64,
+    pub duration_s: f64,
+    pub proposed_next_duration_s: f64,
     /// Ordered ice, liquid, cold content, complete energy, unallocated energy.
     /// Each tuple is `(coarse, refined, delta, denominator, scaled)`.
     pub components: Vec<(f64, f64, f64, f64, f64)>,
-    pub maximum_scaled: f64, pub rejected: bool,
+    pub maximum_scaled: f64,
+    pub rejected: bool,
 }
 
 #[cfg(test)]
@@ -387,21 +528,42 @@ pub(crate) enum CapturedProviderOutcome {
 #[cfg(test)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum CapturedProviderFailure {
-    Runtime, Vegetation, Serialization, Identity(&'static str), CoveredBoundary,
-    Stage3, Stage3PrecipitationCustody(&'static str), Stage3SnowSoilHeatCustody(&'static str),
+    Runtime,
+    Vegetation,
+    Serialization,
+    Identity(&'static str),
+    OpenSnowLowerBoundaryDomain,
+    ComponentCarrierReferenceFluxCustody,
+    AdaptiveRefinement(&'static str),
+    CoveredBoundary,
+    Stage3,
+    Stage3PrecipitationCustody(&'static str),
+    Stage3SnowSoilHeatCustody(&'static str),
+    ZeroDurationSnowLiquid,
 }
 #[cfg(test)]
 #[derive(Clone)]
-pub(crate) struct CapturedProviderCall { pub ordinal: u64, pub request: CoveredTerminalTrialRequestV1, pub outcome: CapturedProviderOutcome }
+pub(crate) struct CapturedProviderCall {
+    pub ordinal: u64,
+    pub request: CoveredTerminalTrialRequestV1,
+    pub outcome: CapturedProviderOutcome,
+}
 #[cfg(test)]
 #[derive(Clone)]
-pub(crate) struct CapturedCouplingIteration { pub hook: TerminalCouplingIterationHook, pub provider_ordinal: Option<u64> }
+pub(crate) struct CapturedCouplingIteration {
+    pub hook: TerminalCouplingIterationHook,
+}
 #[cfg(test)]
 #[derive(Clone)]
 pub(crate) struct CapturedSelectedTrial {
-    pub position: TerminalPairPosition, pub role: CoveredTerminalTrialRoleV1, pub attempt_ordinal: u32,
-    pub relative_start_s: f64, pub duration_s: f64, pub beginning: TerminalStateEvidence,
-    pub ending: TerminalStateEvidence, pub ledger: TerminalLedgerEvidence,
+    pub position: TerminalPairPosition,
+    pub role: CoveredTerminalTrialRoleV1,
+    pub attempt_ordinal: u32,
+    pub relative_start_s: f64,
+    pub duration_s: f64,
+    pub beginning: TerminalStateEvidence,
+    pub ending: TerminalStateEvidence,
+    pub ledger: TerminalLedgerEvidence,
     pub beginning_joint: Option<CoveredTerminalJointTrialStateV1>,
     pub carrier_ending_joint: Option<CoveredTerminalJointTrialStateV1>,
     pub hydrology_ending_joint: Option<CoveredTerminalJointTrialStateV1>,
@@ -409,9 +571,6 @@ pub(crate) struct CapturedSelectedTrial {
 
 #[cfg(test)]
 pub(crate) struct ValidatedCaptureState {
-    pub provider_calls: Vec<CapturedProviderCall>,
-    pub coupling_iterations: Vec<ValidatedCouplingIteration>,
-    pub coupling_selections: Vec<TerminalCouplingSelectionHook>,
     pub pairs: Vec<ValidatedCapturedPair>,
     pub floor: ValidatedFloorAdmission,
     pub call_count_through_final_pair: u64,
@@ -425,25 +584,14 @@ pub(crate) struct ValidatedCouplingIteration {
 }
 
 #[cfg(test)]
-pub(crate) struct ValidatedSelectedTrial {
-    pub draft: CapturedSelectedTrial,
-    pub support: TimeSupport,
-    pub coupling_selection_index: usize,
-    pub selected_provider_ordinal: u64,
-}
-
-#[cfg(test)]
 pub(crate) struct ValidatedCapturedPair {
-    pub trials: [ValidatedSelectedTrial; 3],
+    pub trials: [(); 3],
     pub decision: CapturedPair,
 }
 
 #[cfg(test)]
 pub(crate) struct ValidatedFloorAdmission {
-    pub proposed_duration_s: f64,
-    pub required_half_duration_s: f64,
-    pub minimum_duration_s: f64,
-    pub outcome: SnowTerminalNumericsFailure,
+    pub decision: TerminalFloorDecision,
 }
 
 #[cfg(test)]
@@ -474,7 +622,7 @@ fn same_terminal_coupling_group(
 #[cfg(test)]
 impl CaptureState {
     pub(crate) fn validate(self) -> Result<ValidatedCaptureState, &'static str> {
-        if self.admissions.len() != 1 || self.pairs.is_empty() {
+        if self.admissions.is_empty() || self.pairs.is_empty() {
             return Err("floor/pair cardinality");
         }
         if self
@@ -506,7 +654,10 @@ impl CaptureState {
             if trials[0].position != TerminalPairPosition::Coarse
                 || trials[1].position != TerminalPairPosition::Fine1
                 || trials[2].position != TerminalPairPosition::Fine2
-                || !matches!(trials[0].role, CoveredTerminalTrialRoleV1::Full | CoveredTerminalTrialRoleV1::Retry)
+                || !matches!(
+                    trials[0].role,
+                    CoveredTerminalTrialRoleV1::Full | CoveredTerminalTrialRoleV1::Retry
+                )
                 || trials[1].role != CoveredTerminalTrialRoleV1::Half1
                 || trials[2].role != CoveredTerminalTrialRoleV1::Half2
                 || trials[2].beginning != trials[1].ending
@@ -538,10 +689,8 @@ impl CaptureState {
                 trials[2].ending.ice_kg_m2,
                 trials[2].ending.liquid_kg_m2,
                 trials[2].ending.cold_content_j_m2,
-                trials[1].ledger.complete_energy_j_m2
-                    + trials[2].ledger.complete_energy_j_m2,
-                trials[1].ledger.unallocated_energy_j_m2
-                    + trials[2].ledger.unallocated_energy_j_m2,
+                trials[1].ledger.complete_energy_j_m2 + trials[2].ledger.complete_energy_j_m2,
+                trials[1].ledger.unallocated_energy_j_m2 + trials[2].ledger.unallocated_energy_j_m2,
             ];
             for (index, component) in pair.components.iter().enumerate() {
                 let absolute = if index < 2 {
@@ -600,15 +749,26 @@ impl CaptureState {
             {
                 return Err("failed provider iteration join");
             }
+            if let CapturedProviderOutcome::Failure(
+                CapturedProviderFailure::Identity(detail)
+                | CapturedProviderFailure::Stage3PrecipitationCustody(detail)
+                | CapturedProviderFailure::Stage3SnowSoilHeatCustody(detail),
+            ) = &call.outcome
+                && detail.is_empty()
+            {
+                return Err("failed provider detail");
+            }
             if let CapturedProviderOutcome::Success(result) = &call.outcome {
                 if result.transition.boundary.support != call.request.support
                     || result.transition.beginning_joint != call.request.beginning_joint
-                    || result.transition.probe_child_identity.trial_support
-                        != call.request.support
+                    || result.transition.probe_child_identity.trial_support != call.request.support
                     || result.transition.probe_child_identity.role != call.request.role
                     || result.transition.probe_child_identity.attempt_ordinal
                         != call.request.attempt_ordinal
-                    || result.transition.probe_child_identity.beginning_joint_sha256
+                    || result
+                        .transition
+                        .probe_child_identity
+                        .beginning_joint_sha256
                         != call.request.beginning_joint.receipt_sha256()
                 {
                     return Err("provider result/request join");
@@ -665,9 +825,7 @@ impl CaptureState {
         let mut group_start = 0;
         while group_start < self.coupling_iterations.len() {
             let first = &self.coupling_iterations[group_start].hook;
-            if first.request.coupling_iteration != 0
-                || first.request.ending_snow_hint.is_some()
-            {
+            if first.request.coupling_iteration != 0 || first.request.ending_snow_hint.is_some() {
                 return Err("coupling group start");
             }
             let mut group_end = group_start + 1;
@@ -680,7 +838,11 @@ impl CaptureState {
                 let previous = &self.coupling_iterations[group_end - 1].hook;
                 let current = &self.coupling_iterations[group_end].hook;
                 if current.request.coupling_iteration
-                    != previous.request.coupling_iteration.checked_add(1).ok_or("coupling ordinal")?
+                    != previous
+                        .request
+                        .coupling_iteration
+                        .checked_add(1)
+                        .ok_or("coupling ordinal")?
                     || current.request.ending_snow_hint != Some(previous.outgoing)
                 {
                     return Err("coupling group chain");
@@ -707,7 +869,9 @@ impl CaptureState {
             let matching = self
                 .coupling_iterations
                 .iter()
-                .filter(|iteration| same_terminal_call_key(&iteration.hook.request, &selection.request))
+                .filter(|iteration| {
+                    same_terminal_call_key(&iteration.hook.request, &selection.request)
+                })
                 .collect::<Vec<_>>();
             if matching.len() != 1
                 || selection.post_loop_three_component_check != true
@@ -723,12 +887,11 @@ impl CaptureState {
         if final_trials[0].role != CoveredTerminalTrialRoleV1::Retry {
             return Err("final retry role");
         }
-        let floor = &self.admissions[0];
+        let floor = self.admissions.last().ok_or("floor admission")?;
         if floor.0.to_bits() != final_pair.proposed_next_duration_s.to_bits()
-            || floor.1.to_bits() != (floor.0 / 2.0).to_bits()
-            || floor.1 >= floor.2
+            || floor.1.to_bits() != 0.0_f64.to_bits()
             || floor.2.to_bits() != 0.6_f64.to_bits()
-            || floor.3 != SnowTerminalNumericsFailure::BelowCarrierDomain
+            || floor.3 != TerminalFloorDecision::Accepted
         {
             return Err("floor join");
         }
@@ -744,11 +907,15 @@ impl CaptureState {
             .max()
             .ok_or("final pair calls")?;
         let call_count_at_floor = self.provider_calls.len() as u64;
-        if call_count_through_final_pair != call_count_at_floor {
+        if call_count_through_final_pair >= call_count_at_floor {
             return Err("floor provider call boundary");
         }
         let mut validated_pairs = Vec::with_capacity(self.pairs.len());
-        for (decision, trials) in self.pairs.into_iter().zip(self.selected_trials.chunks_exact(3)) {
+        for (decision, trials) in self
+            .pairs
+            .into_iter()
+            .zip(self.selected_trials.chunks_exact(3))
+        {
             let validated_trials = trials
                 .iter()
                 .cloned()
@@ -765,7 +932,7 @@ impl CaptureState {
                     if matching.len() != 1 {
                         return Err("trial/coupling selection join");
                     }
-                    let (selection_index, selection) = matching[0];
+                    let (_, selection) = matching[0];
                     let iteration = validated_iterations
                         .iter()
                         .find(|iteration| {
@@ -782,7 +949,8 @@ impl CaptureState {
                     let CapturedProviderOutcome::Success(result) = &provider.outcome else {
                         return Err("selected provider outcome");
                     };
-                    if draft.carrier_ending_joint.as_ref() != Some(result.ending_candidates.joint()) {
+                    if draft.carrier_ending_joint.as_ref() != Some(result.ending_candidates.joint())
+                    {
                         return Err("trial carrier ending joint");
                     }
                     let expected_hydrology_ending = draft
@@ -796,9 +964,7 @@ impl CaptureState {
                             draft.ending.cold_content_j_m2,
                         )
                         .map_err(|_| "trial hydrology ending reconstruction")?;
-                    if draft.hydrology_ending_joint.as_ref()
-                        != Some(&expected_hydrology_ending)
-                    {
+                    if draft.hydrology_ending_joint.as_ref() != Some(&expected_hydrology_ending) {
                         return Err("trial hydrology ending joint");
                     }
                     if iteration.draft.outgoing.ice_kg_m2.to_bits()
@@ -810,29 +976,19 @@ impl CaptureState {
                     {
                         return Err("selected coupling/trial ending");
                     }
-                    Ok(ValidatedSelectedTrial {
-                        support: selection.request.support,
-                        coupling_selection_index: selection_index,
-                        selected_provider_ordinal: iteration.provider_ordinal,
-                        draft,
-                    })
+                    Ok(())
                 })
                 .collect::<Result<Vec<_>, &'static str>>()?
                 .try_into()
                 .map_err(|_| "validated trial array")?;
-            validated_pairs.push(ValidatedCapturedPair { trials: validated_trials, decision });
+            validated_pairs.push(ValidatedCapturedPair {
+                trials: validated_trials,
+                decision,
+            });
         }
         Ok(ValidatedCaptureState {
-            provider_calls: self.provider_calls,
-            coupling_iterations: validated_iterations,
-            coupling_selections: self.coupling_selections,
             pairs: validated_pairs,
-            floor: ValidatedFloorAdmission {
-                proposed_duration_s: floor.0,
-                required_half_duration_s: floor.1,
-                minimum_duration_s: floor.2,
-                outcome: floor.3.clone(),
-            },
+            floor: ValidatedFloorAdmission { decision: floor.3 },
             call_count_through_final_pair,
             call_count_at_floor,
         })
@@ -850,33 +1006,73 @@ impl TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>> for CaptureE
     type ProviderState = Vec<CapturedProviderCall>;
     type ProviderProjection = crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1;
     type ProviderFailureProjection = CapturedProviderFailure;
-    type CouplingState = (Vec<TerminalCouplingIterationHook>, Vec<TerminalCouplingSelectionHook>);
-    fn new_state() -> Self::State { CaptureState::default() }
-    fn new_provider_state() -> Self::ProviderState { Vec::new() }
-    fn new_coupling_state() -> Self::CouplingState { (Vec::new(), Vec::new()) }
-    fn project_provider_success(_: &CoveredTerminalTrialRequestV1, result: &crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1) -> Self::ProviderProjection { result.clone() }
-    fn project_provider_failure(error: &crate::v9_real_consumer_shadow::DirectV11RealConsumerError) -> Self::ProviderFailureProjection {
+    type CouplingState = (
+        Vec<TerminalCouplingIterationHook>,
+        Vec<TerminalCouplingSelectionHook>,
+    );
+    fn new_state() -> Self::State {
+        CaptureState::default()
+    }
+    fn new_provider_state() -> Self::ProviderState {
+        Vec::new()
+    }
+    fn new_coupling_state() -> Self::CouplingState {
+        (Vec::new(), Vec::new())
+    }
+    fn project_provider_success(
+        _: &CoveredTerminalTrialRequestV1,
+        result: &crate::v9_real_consumer_shadow::CoveredCarrierPhaseResultV1,
+    ) -> Self::ProviderProjection {
+        result.clone()
+    }
+    fn project_provider_failure(
+        error: &crate::v9_real_consumer_shadow::DirectV11RealConsumerError,
+    ) -> Self::ProviderFailureProjection {
         use crate::v9_real_consumer_shadow::DirectV11RealConsumerError as Error;
         match error {
             Error::Runtime(_) => CapturedProviderFailure::Runtime,
             Error::Vegetation(_) => CapturedProviderFailure::Vegetation,
             Error::Serialization(_) => CapturedProviderFailure::Serialization,
             Error::Identity(value) => CapturedProviderFailure::Identity(value),
+            Error::OpenSnowLowerBoundaryDomain { .. } => {
+                CapturedProviderFailure::OpenSnowLowerBoundaryDomain
+            }
+            Error::ComponentCarrierReferenceFluxCustody { .. } => {
+                CapturedProviderFailure::ComponentCarrierReferenceFluxCustody
+            }
+            Error::AdaptiveRefinement(value) => CapturedProviderFailure::AdaptiveRefinement(value),
             Error::CoveredBoundary(_) => CapturedProviderFailure::CoveredBoundary,
             Error::Stage3(_) => CapturedProviderFailure::Stage3,
-            Error::Stage3PrecipitationCustody(value) => CapturedProviderFailure::Stage3PrecipitationCustody(value),
-            Error::Stage3SnowSoilHeatCustody(value) => CapturedProviderFailure::Stage3SnowSoilHeatCustody(value),
+            Error::Stage3PrecipitationCustody(value) => {
+                CapturedProviderFailure::Stage3PrecipitationCustody(value)
+            }
+            Error::Stage3SnowSoilHeatCustody(value) => {
+                CapturedProviderFailure::Stage3SnowSoilHeatCustody(value)
+            }
+            Error::ZeroDurationSnowLiquid(_) => CapturedProviderFailure::ZeroDurationSnowLiquid,
         }
     }
-    fn provider_success(state: &mut Self::ProviderState, request: &CoveredTerminalTrialRequestV1, result: Self::ProviderProjection) {
+    fn provider_success(
+        state: &mut Self::ProviderState,
+        request: &CoveredTerminalTrialRequestV1,
+        result: Self::ProviderProjection,
+    ) {
         state.push(CapturedProviderCall {
             ordinal: state.len() as u64,
             request: request.clone(),
             outcome: CapturedProviderOutcome::Success(Box::new(result)),
         });
     }
-    fn provider_failure(state: &mut Self::ProviderState, request: &CoveredTerminalTrialRequestV1, error: Self::ProviderFailureProjection) {
-        state.push(CapturedProviderCall { ordinal: state.len() as u64, request: request.clone(), outcome: CapturedProviderOutcome::Failure(error) });
+    fn provider_failure(
+        state: &mut Self::ProviderState,
+        request: &CoveredTerminalTrialRequestV1,
+        error: Self::ProviderFailureProjection,
+    ) {
+        state.push(CapturedProviderCall {
+            ordinal: state.len() as u64,
+            request: request.clone(),
+            outcome: CapturedProviderOutcome::Failure(error),
+        });
     }
     fn merge_provider(state: &mut Self::State, mut provider: Self::ProviderState) {
         let base = state.provider_calls.len() as u64;
@@ -885,27 +1081,60 @@ impl TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>> for CaptureE
         }
         state.provider_calls.extend(provider);
     }
-    fn provider_call_count(state: &Self::State) -> u64 { state.provider_calls.len() as u64 }
+    fn provider_call_count(state: &Self::State) -> u64 {
+        state.provider_calls.len() as u64
+    }
     fn pair(state: &mut Self::State, value: TerminalPairEvidenceHook) {
-        state.pairs.push(CapturedPair { duration_s: value.duration_s,
+        state.pairs.push(CapturedPair {
+            duration_s: value.duration_s,
             proposed_next_duration_s: value.proposed_next_duration_s,
-            components: value.components.into_iter().collect(), maximum_scaled: value.scaled_error,
-            rejected: value.rejected });
+            components: value.components.into_iter().collect(),
+            maximum_scaled: value.scaled_error,
+            rejected: value.rejected,
+        });
     }
-    fn admission(state: &mut Self::State, value: TerminalAdmissionEvidenceHook<'_>) {
-        state.admissions.push((value.proposed_duration_s, value.required_half_duration_s, value.minimum_duration_s, value.outcome.clone(), value.provider_calls_before, value.provider_calls_after));
+    fn admission(state: &mut Self::State, value: TerminalAdmissionEvidenceHook) {
+        state.admissions.push((
+            value.proposed_duration_s,
+            value.required_half_duration_s,
+            value.minimum_duration_s,
+            value.decision,
+            value.provider_calls_before,
+            value.provider_calls_after,
+        ));
     }
-    fn coupling_iteration(state: &mut Self::CouplingState, value: TerminalCouplingIterationHook) { state.0.push(value); }
-    fn coupling_selection(state: &mut Self::CouplingState, value: TerminalCouplingSelectionHook) { state.1.push(value); }
+    fn coupling_iteration(state: &mut Self::CouplingState, value: TerminalCouplingIterationHook) {
+        state.0.push(value);
+    }
+    fn coupling_selection(state: &mut Self::CouplingState, value: TerminalCouplingSelectionHook) {
+        state.1.push(value);
+    }
     fn merge_coupling(state: &mut Self::State, coupling: Self::CouplingState) {
-        state.coupling_iterations.extend(coupling.0.into_iter().map(|hook| CapturedCouplingIteration { hook, provider_ordinal: None }));
+        state.coupling_iterations.extend(
+            coupling
+                .0
+                .into_iter()
+                .map(|hook| CapturedCouplingIteration { hook }),
+        );
         state.coupling_selections.extend(coupling.1);
     }
-    fn selected_trial(state: &mut Self::State, value: TerminalSelectedTrialHook<'_, Option<CoveredTerminalJointTrialStateV1>>) {
-        state.selected_trials.push(CapturedSelectedTrial { position: value.position, role: value.role, attempt_ordinal: value.attempt_ordinal,
-            relative_start_s: value.relative_start_s, duration_s: value.duration_s, beginning: value.beginning, ending: value.ending,
-            ledger: value.ledger, beginning_joint: value.beginning_joint.clone(), carrier_ending_joint: value.carrier_ending_joint.clone(),
-            hydrology_ending_joint: value.hydrology_ending_joint.clone() });
+    fn selected_trial(
+        state: &mut Self::State,
+        value: TerminalSelectedTrialHook<'_, Option<CoveredTerminalJointTrialStateV1>>,
+    ) {
+        state.selected_trials.push(CapturedSelectedTrial {
+            position: value.position,
+            role: value.role,
+            attempt_ordinal: value.attempt_ordinal,
+            relative_start_s: value.relative_start_s,
+            duration_s: value.duration_s,
+            beginning: value.beginning,
+            ending: value.ending,
+            ledger: value.ledger,
+            beginning_joint: value.beginning_joint.clone(),
+            carrier_ending_joint: value.carrier_ending_joint.clone(),
+            hydrology_ending_joint: value.hydrology_ending_joint.clone(),
+        });
     }
 }
 
@@ -927,6 +1156,10 @@ pub(crate) struct CoveredTerminalTrialRequestV1 {
     pub surface_temperature_c: f64,
     pub snow_depth_m: f64,
     pub snow_density_kg_m3: f64,
+    /// Exact typed Stage-3 owner at the beginning of this trial. This binds
+    /// state-dependent open-snow terms and receipt identity to the same
+    /// adaptive chronology represented by `beginning_joint`.
+    pub beginning_stage3_state: Box<DirectSnowStage3PersistentState>,
     /// Hydrology ending-state estimate from the preceding coupled replay.
     /// `None` denotes the first replay from the immutable trial-start joint.
     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
@@ -1046,7 +1279,9 @@ impl CoveredTerminalJointTrialStateV1 {
                 .len()
                 != authority.accepted_predecessors.len()
         {
-            return Err(DirectSnowStage3EvaluationError::TerminalCustody("terminal joint authority"));
+            return Err(DirectSnowStage3EvaluationError::TerminalCustody(
+                "terminal joint authority",
+            ));
         }
         let receipt_sha256 = covered_terminal_joint_digest(&authority, &owner_bytes)?;
         Ok(Self {
@@ -1091,9 +1326,7 @@ impl CoveredTerminalJointTrialStateV1 {
             .into());
         }
         let prior_snow = self.owner_bytes.get("snow").ok_or_else(|| {
-            DirectSnowStage3EvaluationError::TerminalCustody(
-                "terminal joint missing snow owner",
-            )
+            DirectSnowStage3EvaluationError::TerminalCustody("terminal joint missing snow owner")
         })?;
         let mut snow = Vec::with_capacity(100);
         snow.extend_from_slice(b"OPENWEPP_STAGE3_TERMINAL_TRIAL_SNOW_V1\0");
@@ -1124,35 +1357,67 @@ fn covered_terminal_joint_digest(
     owner_bytes: &BTreeMap<String, Vec<u8>>,
 ) -> Result<Digest32, DirectSnowStage3EvaluationError> {
     const OWNER_IDS: [&str; 7] = [
-        "vegetation", "snow", "land_surface_energy", "hydrology", "bgc",
-        "soil_thermal", "surface_liquid",
+        "vegetation",
+        "snow",
+        "land_surface_energy",
+        "hydrology",
+        "bgc",
+        "soil_thermal",
+        "surface_liquid",
     ];
     let schema = 1_u32.to_be_bytes();
     let mut fields = Vec::with_capacity(8 + owner_bytes.len() * 2);
-    fields.push(FramedField { tag: "schema", value: &schema });
+    fields.push(FramedField {
+        tag: "schema",
+        value: &schema,
+    });
     let lane = authority.lane_id.to_be_bytes();
     let interval = authority.interval_index.to_be_bytes();
     let start = authority.state_support.start_ns().get().to_be_bytes();
     let end = authority.state_support.end_ns().get().to_be_bytes();
-    let mut predecessors = (authority.accepted_predecessors.len() as u32).to_be_bytes().to_vec();
+    let mut predecessors = (authority.accepted_predecessors.len() as u32)
+        .to_be_bytes()
+        .to_vec();
     for predecessor in &authority.accepted_predecessors {
         predecessors.extend_from_slice(predecessor.as_bytes());
     }
     fields.extend([
-        FramedField { tag: "source_owner_set", value: authority.source_owner_set_sha256.as_bytes() },
-        FramedField { tag: "lane", value: &lane },
-        FramedField { tag: "source_snow_owner", value: authority.source_snow_owner_sha256.as_bytes() },
-        FramedField { tag: "interval_index", value: &interval },
-        FramedField { tag: "state_support_start", value: &start },
-        FramedField { tag: "state_support_end", value: &end },
-        FramedField { tag: "accepted_predecessors", value: &predecessors },
+        FramedField {
+            tag: "source_owner_set",
+            value: authority.source_owner_set_sha256.as_bytes(),
+        },
+        FramedField {
+            tag: "lane",
+            value: &lane,
+        },
+        FramedField {
+            tag: "source_snow_owner",
+            value: authority.source_snow_owner_sha256.as_bytes(),
+        },
+        FramedField {
+            tag: "interval_index",
+            value: &interval,
+        },
+        FramedField {
+            tag: "state_support_start",
+            value: &start,
+        },
+        FramedField {
+            tag: "state_support_end",
+            value: &end,
+        },
+        FramedField {
+            tag: "accepted_predecessors",
+            value: &predecessors,
+        },
     ]);
     for owner_id in OWNER_IDS {
-        let bytes = owner_bytes.get(owner_id).ok_or(
-            DirectSnowStage3EvaluationError::TerminalCustody(
-                "terminal joint canonical owner order",
-            ),
-        )?;
+        let bytes =
+            owner_bytes
+                .get(owner_id)
+                .ok_or(DirectSnowStage3EvaluationError::TerminalCustody(
+                    "terminal joint canonical owner order",
+                ))?;
         fields.push(FramedField {
             tag: "owner_id",
             value: owner_id.as_bytes(),
@@ -1207,8 +1472,26 @@ impl CoveredProbeChildIdentityV1 {
     pub(crate) fn try_new(
         authority: ProbeChildAuthorityV1,
     ) -> Result<Self, DirectSnowStage3EvaluationError> {
-        let ProbeChildAuthorityV1 { parent_transaction_sha256, enclosing_parent_support, trial_support, physical_child_ordinal, attempt_ordinal, role, beginning_joint_sha256, beginning_owner_set_sha256, complete_forcing_sha256, topology_sha256 } = authority;
-        if [parent_transaction_sha256, beginning_joint_sha256, beginning_owner_set_sha256, complete_forcing_sha256, topology_sha256].contains(&Digest32::zero())
+        let ProbeChildAuthorityV1 {
+            parent_transaction_sha256,
+            enclosing_parent_support,
+            trial_support,
+            physical_child_ordinal,
+            attempt_ordinal,
+            role,
+            beginning_joint_sha256,
+            beginning_owner_set_sha256,
+            complete_forcing_sha256,
+            topology_sha256,
+        } = authority;
+        if [
+            parent_transaction_sha256,
+            beginning_joint_sha256,
+            beginning_owner_set_sha256,
+            complete_forcing_sha256,
+            topology_sha256,
+        ]
+        .contains(&Digest32::zero())
             || trial_support.start_ns() < enclosing_parent_support.start_ns()
             || trial_support.end_ns() > enclosing_parent_support.end_ns()
         {
@@ -1272,9 +1555,18 @@ impl CoveredProbeChildIdentityV1 {
                     tag: "beginning_joint",
                     value: beginning_joint_sha256.as_bytes(),
                 },
-                FramedField { tag: "beginning_owner_set", value: beginning_owner_set_sha256.as_bytes() },
-                FramedField { tag: "complete_forcing", value: complete_forcing_sha256.as_bytes() },
-                FramedField { tag: "topology", value: topology_sha256.as_bytes() },
+                FramedField {
+                    tag: "beginning_owner_set",
+                    value: beginning_owner_set_sha256.as_bytes(),
+                },
+                FramedField {
+                    tag: "complete_forcing",
+                    value: complete_forcing_sha256.as_bytes(),
+                },
+                FramedField {
+                    tag: "topology",
+                    value: topology_sha256.as_bytes(),
+                },
             ],
         )
         .map_err(|_| {
@@ -1319,7 +1611,7 @@ pub(crate) enum CoveredTerminalTrialRoleV1 {
     Half1 = 1,
     Half2 = 2,
     Retry = 3,
-    BracketLower = 4,
+    #[cfg(test)]
     BracketUpper = 5,
     Root = 6,
 }
@@ -1357,18 +1649,30 @@ pub(crate) struct CoveredTerminalBatchCarrierCandidatesV2 {
     pub beginning_joint_sha256: Digest32,
     pub carrier_joint: CoveredTerminalJointTrialStateV1,
     pub boundaries_by_lane: BTreeMap<u32, Stage3SnowSurfaceBoundaryReceiptV1>,
-    pub ordered_q_ss_receipts_by_lane: BTreeMap<
-        u32,
-        crate::v9_real_consumer_shadow::TerminalSnowSoilTrialReceiptV1,
-    >,
+    pub ordered_q_ss_receipts_by_lane:
+        BTreeMap<u32, crate::v9_real_consumer_shadow::TerminalSnowSoilTrialReceiptV1>,
 }
 
 #[derive(Clone, Debug)]
 pub(crate) struct CoveredTerminalBatchTrialResultV2 {
-    pub support: TimeSupport,
-    pub hydrology_endings_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
-    pub carrier_candidates: CoveredTerminalBatchCarrierCandidatesV2,
     pub ending_joint: CoveredTerminalJointTrialStateV1,
+    pub decision: CoveredTerminalBatchDecisionV2,
+}
+
+/// One atomic decision over every active snow lane in a candidate support.
+///
+/// `terminating_lanes` is the ordered same-tick event group at the earliest
+/// accepted boundary. All other lanes are installed from the same candidate
+/// as `surviving_lanes`; they are never recomputed after event selection.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) struct CoveredTerminalBatchDecisionV2 {
+    pub event_tick: Option<ModelTimeNs>,
+    pub terminating_lanes: Vec<u32>,
+    pub surviving_lanes: Vec<u32>,
+    pub beginning_joint_sha256: Digest32,
+    pub carrier_joint_sha256: Digest32,
+    pub ending_joint_sha256: Digest32,
+    pub receipt_sha256: Digest32,
 }
 
 pub(crate) type CoveredTerminalBatchTrialProviderV2<'a> = dyn FnMut(
@@ -1382,12 +1686,6 @@ pub(crate) type CoveredTerminalBatchHydrologyJoinV2<'a> = dyn FnMut(
         &BTreeMap<u32, DirectSnowStage3PersistentState>,
     ) -> Result<CoveredTerminalJointTrialStateV1, DirectSnowStage3EvaluationError>
     + 'a;
-
-// Transitional aliases keep the already-landed solver call sites source-compatible while
-// carrier integration moves to the canonical trial terminology above.
-pub(crate) type CoveredTerminalBatchPrefixRequestV2 = CoveredTerminalBatchTrialRequestV2;
-pub(crate) type CoveredTerminalBatchJoinedResultV2 = CoveredTerminalBatchTrialResultV2;
-pub(crate) type CoveredTerminalBatchProviderV2<'a> = CoveredTerminalBatchTrialProviderV2<'a>;
 
 #[derive(Clone, Copy)]
 struct Stage3ThermalControlVolume {
@@ -1431,7 +1729,7 @@ struct Stage3SubstepDiagnostics {
     atmospheric_pressure_pa: f64,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Stage3EvaluationTag {
     operator: SnowStage3EvaluationOperator,
     source_snapshot_id: &'static str,
@@ -1496,7 +1794,7 @@ impl Stage3EvaluationTag {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Stage3ShadowSummary {
     tag: Stage3EvaluationTag,
     source_fingerprint: u64,
@@ -1534,6 +1832,8 @@ struct Stage3ShadowSummary {
     terminal_event: Option<DirectSnowTerminalEventResult>,
     terminal_intervals: Vec<DirectSnowTerminalEventResult>,
     terminal_ending_joint: Option<CoveredTerminalJointTrialStateV1>,
+    terminal_accepted_microsteps:
+        Vec<stage3_solver::TerminalAcceptedMicrostep<Option<CoveredTerminalJointTrialStateV1>>>,
     terminal_refrozen_kg_m2: f64,
     persistent_refrozen_kg_m2: f64,
     terminal_deposition_kg_m2: f64,
@@ -1582,6 +1882,7 @@ impl Stage3ShadowSummary {
             terminal_event: None,
             terminal_intervals: Vec::new(),
             terminal_ending_joint: None,
+            terminal_accepted_microsteps: Vec::new(),
             terminal_refrozen_kg_m2: 0.0,
             persistent_refrozen_kg_m2: 0.0,
             terminal_deposition_kg_m2: 0.0,
@@ -2363,402 +2664,4 @@ impl Wb11HydrologyKernel {
     }
 }
 
-#[cfg(test)]
-mod cqr_row5_tests {
-    use super::*;
-
-    #[test]
-    fn child1_term_coupling_020_exhaustion_fails_closed_with_complete_diagnostics() {
-        let common = CoveredTerminalEndingSnowHintV1 {
-            ice_kg_m2: 0.2,
-            liquid_kg_m2: 0.01,
-            cold_content_j_m2: -125.0,
-            surface_temperature_c: -1.0e-9,
-        };
-        let mut previous = None;
-        let mut four_component_break = false;
-        let mut final_pair = None;
-        let mut evidence = CaptureState::default();
-        for iteration in 0..32_u32 {
-            let next = CoveredTerminalEndingSnowHintV1 {
-                surface_temperature_c: if iteration % 2 == 0 { -1.0e-9 } else { 1.0e-9 },
-                ..common
-            };
-            if let Some(prior) = previous {
-                let comparisons = terminal_coupling_comparisons(prior, next);
-                assert!(comparisons[..3].iter().all(|comparison| comparison.4));
-                assert!(!comparisons[3].4);
-                four_component_break |= terminal_coupling_four_component_converged(prior, next);
-                final_pair = Some((prior, next));
-            }
-            evidence.coupling_iterations.push(CapturedCouplingIteration {
-                hook: TerminalCouplingIterationHook {
-                    request: coupling_test_request(iteration, previous),
-                    outgoing: next,
-                    comparisons: previous.map(|prior| terminal_coupling_comparisons(prior, next)),
-                    converged: previous.is_some_and(|prior| {
-                        terminal_coupling_four_component_converged(prior, next)
-                    }),
-                },
-                provider_ordinal: Some(u64::from(iteration)),
-            });
-            previous = Some(next);
-        }
-
-        assert!(!four_component_break, "all 32 iterations exhaust the live four-component loop");
-        let (prior, next) = final_pair.expect("iteration pair");
-        assert!(terminal_coupling_post_loop_three_component_converged(prior, next));
-        assert!(!terminal_coupling_four_component_converged(prior, next));
-        evidence.coupling_selections.push(TerminalCouplingSelectionHook {
-            request: coupling_test_request(31, Some(prior)),
-            reason: TerminalCouplingSelectionReason::IterationLoopExhausted,
-            post_loop_three_component_check: true,
-        });
-        let result = require_terminal_coupling_live_convergence(four_component_break);
-        assert!(matches!(
-            result,
-            Err(DirectSnowStage3EvaluationError::TerminalCustody(
-                "covered terminal coupled trial nonconvergence"
-            ))
-        ));
-        assert_eq!(evidence.coupling_iterations.len(), 32);
-        assert_eq!(evidence.coupling_selections.len(), 1);
-        assert_eq!(
-            evidence.coupling_selections[0].reason,
-            TerminalCouplingSelectionReason::IterationLoopExhausted
-        );
-        assert!(evidence.selected_trials.is_empty());
-    }
-
-    fn coupling_test_request(
-        coupling_iteration: u32,
-        ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
-    ) -> CoveredTerminalTrialRequestV1 {
-        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(600_000_000))
-            .expect("test support");
-        let beginning_joint = CoveredTerminalJointTrialStateV1::try_new(
-            JointTrialAuthorityV1 {
-                source_owner_set_sha256: Digest32::from_bytes([1; 32]),
-                lane_id: 1,
-                source_snow_owner_sha256: Digest32::from_bytes([2; 32]),
-                interval_index: 0,
-                state_support: support,
-                accepted_predecessors: Vec::new(),
-            },
-            BTreeMap::from([
-                ("vegetation".to_owned(), vec![1]),
-                ("snow".to_owned(), vec![2]),
-                ("land_surface_energy".to_owned(), vec![3]),
-                ("hydrology".to_owned(), vec![4]),
-                ("bgc".to_owned(), vec![5]),
-                ("soil_thermal".to_owned(), vec![6]),
-                ("surface_liquid".to_owned(), vec![7]),
-            ]),
-        )
-        .expect("test joint");
-        CoveredTerminalTrialRequestV1 {
-            lane_id: 1,
-            support,
-            role: CoveredTerminalTrialRoleV1::Full,
-            attempt_ordinal: 0,
-            coupling_iteration,
-            ice_kg_m2: 0.2,
-            liquid_kg_m2: 0.01,
-            cold_content_j_m2: -125.0,
-            surface_temperature_c: -1.0e-9,
-            snow_depth_m: 0.02,
-            snow_density_kg_m3: 100.0,
-            ending_snow_hint,
-            beginning_joint,
-        }
-    }
-
-    #[test]
-    fn eb04w2b_storage_guard_enforces_exact_tolerance_and_nonfinite_rejection() {
-        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
-        for residual_m in [
-            -SNOW_SOLID_TO_LIQUID_CLOSURE_TOLERANCE_M,
-            0.0,
-            SNOW_SOLID_TO_LIQUID_CLOSURE_TOLERANCE_M,
-        ] {
-            Wb11HydrologyKernel::validate_direct_snow_storage_residual(phase_class, residual_m)
-                .expect("exact-tolerance daily snow closure residual must be accepted");
-        }
-
-        for residual_m in [
-            f64::from_bits(SNOW_SOLID_TO_LIQUID_CLOSURE_TOLERANCE_M.to_bits() + 1),
-            -f64::from_bits(SNOW_SOLID_TO_LIQUID_CLOSURE_TOLERANCE_M.to_bits() + 1),
-        ] {
-            let error =
-                Wb11HydrologyKernel::validate_direct_snow_storage_residual(phase_class, residual_m)
-                    .expect_err("over-tolerance daily snow closure residual must fail closed");
-            assert!(matches!(
-                error,
-                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange { .. }
-            ));
-            assert_eq!(error.code(), "HKERNEL-WB14-RUNOFF-E-003");
-            assert!(
-                error
-                    .to_string()
-                    .contains("snow.daily_storage_closure_residual_m")
-            );
-        }
-
-        let error =
-            Wb11HydrologyKernel::validate_direct_snow_storage_residual(phase_class, f64::NAN)
-                .expect_err("non-finite daily snow closure residual must fail closed");
-        assert!(matches!(
-            error,
-            Wb11HydrologyKernelGuardError::NonFiniteStateSymbol { .. }
-        ));
-        assert_eq!(error.code(), "HKERNEL-WB14-RUNOFF-E-002");
-        assert!(
-            error
-                .to_string()
-                .contains("snow.daily_storage_closure_residual_m")
-        );
-    }
-
-    #[test]
-    fn eb04c_lower_volume_threshold_is_strict_on_native_swe() {
-        let threshold = STAGE3_MINIMUM_RESOLVED_THERMAL_MASS_SWE_M;
-        let just_below = f64::from_bits(threshold.to_bits() - 1);
-        let just_above = f64::from_bits(threshold.to_bits() + 1);
-
-        assert!(Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(just_below));
-        assert!(!Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(threshold));
-        assert!(!Wb11HydrologyKernel::stage3_lower_volume_is_subresolution_swe_m(just_above));
-    }
-
-    #[test]
-    fn partial_sublimation_retains_mass_resolved_subnanometer_swe_remainder() {
-        let original_mass_swe_m = 1.0e-6;
-        let represented_remainder_swe_m = 5.0e-10;
-        let requested_m = original_mass_swe_m - represented_remainder_swe_m;
-        let mut layer = DirectSnowLayerState::new(original_mass_swe_m, 2.0e-6, 500.0, 8.0);
-        layer.liquid_water_m = 2.0e-7;
-        layer.refrozen_liquid_m = 1.0e-7;
-        let mut layers = vec![layer];
-        let original_cold_content_j_m2 = 2.1;
-        let mut cold_content_by_layer = vec![original_cold_content_j_m2];
-        let mut active_layer_count = 1;
-
-        let (removed_m, exported_j_m2, removed_layer_count) =
-            Wb11HydrologyKernel::remove_stage3_active_sublimation(
-                requested_m,
-                &mut layers,
-                &mut cold_content_by_layer,
-                &mut active_layer_count,
-            );
-
-        assert_eq!(layers.len(), 1);
-        assert_eq!(active_layer_count, 1);
-        assert_eq!(removed_layer_count, 0);
-        assert!(snow_density_layer_has_resolved_mass(layers[0].mass_swe_m));
-        assert!((layers[0].mass_swe_m - represented_remainder_swe_m).abs() <= 1.0e-18);
-        assert!((removed_m + layers[0].mass_swe_m - original_mass_swe_m).abs() <= 1.0e-18);
-        assert!(
-            (exported_j_m2 + cold_content_by_layer[0] - original_cold_content_j_m2).abs()
-                <= 1.0e-12
-        );
-        assert!((layers[0].liquid_water_m - 1.0e-10).abs() <= 1.0e-18);
-        assert!((layers[0].refrozen_liquid_m - 5.0e-11).abs() <= 1.0e-18);
-    }
-
-    #[test]
-    fn stage3_target_trim_preserves_coupled_mass_resolved_remainder() {
-        let original_mass_swe_m = 2.0e-6;
-        let represented_remainder_swe_m = 5.0e-10;
-        let removal_m = original_mass_swe_m - represented_remainder_swe_m;
-        let mut surface = DirectSnowLayerState::new(original_mass_swe_m, 4.0e-6, 500.0, 9.0);
-        surface.temperature_c = -4.0;
-        surface.liquid_water_m = 4.0e-7;
-        surface.cold_content_j_m2 = 16.8;
-        surface.refrozen_liquid_m = 2.0e-7;
-        let lower = DirectSnowLayerState::new(0.1, 0.2, 500.0, 20.0);
-        let target_swe_m = surface.mass_swe_m + lower.mass_swe_m - removal_m;
-        let mut layers = vec![surface, lower];
-
-        Wb11HydrologyKernel::adjust_stage3_layer_swe_to_target(
-            &mut layers,
-            target_swe_m,
-            0.2,
-            500.0,
-            20.0,
-        );
-
-        assert_eq!(layers.len(), 2);
-        let retained = layers[0];
-        let retained_fraction = retained.mass_swe_m / original_mass_swe_m;
-        assert!((retained.mass_swe_m - represented_remainder_swe_m).abs() <= 1.0e-15);
-        assert!(snow_density_layer_has_resolved_mass(retained.mass_swe_m));
-        assert!(
-            (retained.liquid_water_m - surface.liquid_water_m * retained_fraction).abs() <= 1.0e-18
-        );
-        assert!(
-            (retained.refrozen_liquid_m - surface.refrozen_liquid_m * retained_fraction).abs()
-                <= 1.0e-18
-        );
-        assert!(
-            (retained.cold_content_j_m2 - surface.cold_content_j_m2 * retained_fraction).abs()
-                <= 1.0e-15
-        );
-        assert_eq!(
-            retained.density_kg_m3.to_bits(),
-            surface.density_kg_m3.to_bits()
-        );
-        assert_eq!(
-            retained.temperature_c.to_bits(),
-            surface.temperature_c.to_bits()
-        );
-        assert_eq!(
-            retained.settle_day_count.to_bits(),
-            surface.settle_day_count.to_bits()
-        );
-        let reconstructed_swe_m = layers.iter().map(|layer| layer.mass_swe_m).sum::<f64>();
-        assert!((reconstructed_swe_m - target_swe_m).abs() <= 1.0e-15);
-    }
-
-    #[test]
-    fn stage3_target_trim_continues_below_residual_tolerance_across_layers() {
-        let mut removed = DirectSnowLayerState::new(2.0e-6, 4.0e-6, 500.0, 9.0);
-        removed.liquid_water_m = 4.0e-7;
-        removed.cold_content_j_m2 = 16.8;
-        removed.refrozen_liquid_m = 2.0e-7;
-        let mut retained = DirectSnowLayerState::new(2.0e-9, 4.0e-9, 500.0, 12.0);
-        retained.temperature_c = -3.0;
-        retained.liquid_water_m = 8.0e-10;
-        retained.cold_content_j_m2 = 4.2e-3;
-        retained.refrozen_liquid_m = 4.0e-10;
-        let target_swe_m = 1.5e-9;
-        let mut layers = vec![removed, retained];
-
-        Wb11HydrologyKernel::adjust_stage3_layer_swe_to_target(
-            &mut layers,
-            target_swe_m,
-            3.0e-9,
-            500.0,
-            12.0,
-        );
-
-        assert_eq!(layers.len(), 1);
-        let result = layers[0];
-        let retained_fraction = 0.75;
-        assert!((result.mass_swe_m - target_swe_m).abs() <= 1.0e-18);
-        assert!(snow_density_layer_has_resolved_mass(result.mass_swe_m));
-        assert!(
-            (result.liquid_water_m - retained.liquid_water_m * retained_fraction).abs() <= 1.0e-18
-        );
-        assert!(
-            (result.refrozen_liquid_m - retained.refrozen_liquid_m * retained_fraction).abs()
-                <= 1.0e-18
-        );
-        assert!(
-            (result.cold_content_j_m2 - retained.cold_content_j_m2 * retained_fraction).abs()
-                <= 1.0e-15
-        );
-        assert_eq!(
-            result.density_kg_m3.to_bits(),
-            retained.density_kg_m3.to_bits()
-        );
-        assert_eq!(
-            result.temperature_c.to_bits(),
-            retained.temperature_c.to_bits()
-        );
-        assert_eq!(
-            result.settle_day_count.to_bits(),
-            retained.settle_day_count.to_bits()
-        );
-    }
-
-    #[test]
-    fn snow_density_guard_error_maps_all_error_variants() {
-        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
-        let replay_layers = [DirectSnowLayerState::new(0.2, 0.4, 500.0, 2.0)];
-        let cases = [
-            SnowDensityError::NonFiniteInput {
-                symbol: "row5.nonfinite",
-                value: f64::NAN,
-            },
-            SnowDensityError::OutOfRangeInput {
-                symbol: "row5.range",
-                value: -1.0,
-                minimum: Some(0.0),
-                maximum: Some(1.0),
-            },
-            SnowDensityError::MissingClimateClassAssignment { model: "sturm2010" },
-            SnowDensityError::MissingSturmDayOfYear { model: "sturm2010" },
-            SnowDensityError::MissingClimateClassDensityParameters { class: "alpine" },
-            SnowDensityError::LayerAggregateMismatch {
-                symbol: "prior_layers.thickness_m",
-                value: 0.4,
-                expected: 0.5,
-            },
-            SnowDensityError::DiagnosticClosureViolation {
-                residual_kg_m3: 2.0e-9,
-                tolerance_kg_m3: 1.0e-9,
-            },
-        ];
-
-        let mapped = cases
-            .iter()
-            .map(|error| {
-                Wb11HydrologyKernel::snow_density_guard_error(
-                    phase_class,
-                    error,
-                    0.2,
-                    0.5,
-                    &replay_layers,
-                )
-            })
-            .collect::<Vec<_>>();
-
-        assert!(matches!(
-            mapped[0],
-            Wb11HydrologyKernelGuardError::NonFiniteStateSymbol { .. }
-        ));
-        assert!(matches!(
-            mapped[1],
-            Wb11HydrologyKernelGuardError::StateSymbolOutOfRange { .. }
-        ));
-        assert!(matches!(
-            mapped[2],
-            Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol { .. }
-        ));
-        assert!(mapped[2].to_string().contains("snow_climate_class"));
-        assert!(
-            mapped[3]
-                .to_string()
-                .contains("sturm2010_density_day_of_year")
-        );
-        assert!(
-            mapped[4]
-                .to_string()
-                .contains("sturm2010_density_parameters")
-        );
-        assert!(matches!(
-            mapped[5],
-            Wb11HydrologyKernelGuardError::SnowLayerAggregateMismatch(_)
-        ));
-        assert!(matches!(
-            mapped[6],
-            Wb11HydrologyKernelGuardError::StateSymbolOutOfRange { .. }
-        ));
-        if let Wb11HydrologyKernelGuardError::SnowLayerAggregateMismatch(snapshot) = &mapped[5] {
-            assert!((snapshot.replay_value() - snapshot.value).abs() <= f64::EPSILON);
-            assert!((snapshot.replay_value() - snapshot.expected).abs() > f64::EPSILON);
-            assert!((snapshot.expected - snapshot.prior_depth_m).abs() <= f64::EPSILON);
-            let replay_swe_m = snapshot
-                .prior_layers
-                .iter()
-                .map(|layer| layer.mass_swe_m)
-                .sum::<f64>();
-            assert!((replay_swe_m - snapshot.prior_swe_m).abs() <= f64::EPSILON);
-        }
-        assert!(
-            mapped[5]
-                .to_string()
-                .contains("prior_layers.thickness_m=0.4 does not match expected 0.5")
-        );
-    }
-}
+include!("runoff_reconciliation/cqr_row5_tests.rs");

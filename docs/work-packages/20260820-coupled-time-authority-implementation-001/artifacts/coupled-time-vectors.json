@@ -1,6 +1,6 @@
 {
   "schema": "OPENWEPP_COUPLED_TIME_VECTORS_V1",
-  "expected_reference_results_sha256": "192a03003475f4b8e10326a91b837236f9b4e8cafd6b5335b2189b4f8ff69a7c",
+  "expected_reference_results_sha256": "6ec1f38ddaa122f718be78a42fdd3517c706610cd63b44299b02cb5daf70bc05",
   "accepted_state_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "mutated_state_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "cases": [
@@ -747,15 +747,15 @@
       "files": [
         {
           "path": "../../20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-vector.json",
-          "sha256": "c29e28c4fdefd7b49fd6348d46181537df6ae7fc61c21aae1df7960b36ca2ad1"
+          "sha256": "c3f9df44452b491a9734ac55f765fbdfb124624fdbda22e83a1e7f2a563d805f"
         },
         {
           "path": "../../20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-schema.json",
-          "sha256": "c041ab5923d696e6f26ea8e646a7520fadc30df86191009f08b556b470d80ddd"
+          "sha256": "59b81be70e2bba759997f53f3bb622fa5c1556dc26e2477f7177af55d7155047"
         },
         {
           "path": "../../20260817-direct-hydrology-persisted-restart-authority-001/artifacts/artifact-manifest.json",
-          "sha256": "e01e2a931ee4edca2fcc452bf90c04e13d2e4e36e15cd96b3ef24666931d47c9"
+          "sha256": "d4338d1aed1caeebeb991d3cc378ac21c005e330adaa94eea0f7e6ea5da4117c"
         }
       ],
       "expected": {
@@ -981,6 +981,138 @@
           "participant_sha256": "p",
           "pending_event_ids": [],
           "ledger_closed": true
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "EventNoProgressCycle",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "receipt_custody_noop",
+      "op": "events",
+      "event_ordinal": 0,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "begin_regime_sha256": "r0",
+      "begin_participant_sha256": "p0",
+      "events": [
+        {
+          "tick": "5",
+          "class": "OwnershipTransfer",
+          "owner": "snow-stage3-v11",
+          "digest": "custody-1",
+          "event_id": "custody-1",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "regime_sha256": "r0",
+          "participant_sha256": "p0",
+          "pending_event_ids": [],
+          "mutation_set": [],
+          "ledger_closed": true,
+          "ledger": [
+            {"debit": "11", "credit": "11", "lineage": "12"}
+          ]
+        }
+      ],
+      "expected": {
+        "end_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "event_ordinal": 1,
+        "receipts": [
+          "OwnershipTransfer:custody-1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        ],
+        "status": "accepted"
+      }
+    },
+    {
+      "id": "receipt_custody_noop_zero_lineage",
+      "op": "events",
+      "event_ordinal": 0,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "begin_regime_sha256": "r0",
+      "begin_participant_sha256": "p0",
+      "events": [
+        {
+          "tick": "5",
+          "class": "OwnershipTransfer",
+          "owner": "snow-stage3-v11",
+          "digest": "custody-zero-lineage",
+          "event_id": "custody-zero-lineage",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "regime_sha256": "r0",
+          "participant_sha256": "p0",
+          "pending_event_ids": [],
+          "mutation_set": [],
+          "ledger_closed": true,
+          "ledger": [
+            {"debit": "11", "credit": "11", "lineage": "0"}
+          ]
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "EventNoProgressCycle",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "receipt_custody_noop_wrong_class",
+      "op": "events",
+      "event_ordinal": 0,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "begin_regime_sha256": "r0",
+      "begin_participant_sha256": "p0",
+      "events": [
+        {
+          "tick": "5",
+          "class": "DiagnosticMarker",
+          "owner": "snow-stage3-v11",
+          "digest": "custody-wrong-class",
+          "event_id": "custody-wrong-class",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "regime_sha256": "r0",
+          "participant_sha256": "p0",
+          "pending_event_ids": [],
+          "mutation_set": [],
+          "ledger_closed": true,
+          "ledger": [
+            {"debit": "11", "credit": "11", "lineage": "12"}
+          ]
+        }
+      ],
+      "expected": {
+        "after_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "error": "EventNoProgressCycle",
+        "status": "rejected"
+      }
+    },
+    {
+      "id": "receipt_custody_noop_empty_ledger",
+      "op": "events",
+      "event_ordinal": 0,
+      "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "begin_regime_sha256": "r0",
+      "begin_participant_sha256": "p0",
+      "events": [
+        {
+          "tick": "5",
+          "class": "OwnershipTransfer",
+          "owner": "snow-stage3-v11",
+          "digest": "custody-empty-ledger",
+          "event_id": "custody-empty-ledger",
+          "begin_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "end_owner_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "regime_sha256": "r0",
+          "participant_sha256": "p0",
+          "pending_event_ids": [],
+          "mutation_set": [],
+          "ledger_closed": true,
+          "ledger": []
         }
       ],
       "expected": {

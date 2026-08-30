@@ -689,14 +689,36 @@ impl CoupledTimeRestartV2 {
             participant_bytes.extend_from_slice(p.as_bytes());
             participant_bytes.push(0);
         }
-        let active_support = TimeSupport::new(w.active_segment.start_ns, w.active_segment.end_ns)?;
-        if SegmentId::derive(
-            w.parent_transaction_id,
-            w.active_segment.ordinal,
-            active_support,
-            digest_bytes(w.active_segment.regime_id.as_bytes()),
-            digest_bytes(&participant_bytes),
-        )? != w.active_segment.segment_id
+        let expected_active_segment_id = if w.active_segment.start_ns == w.active_segment.end_ns {
+            let terminal_event = w
+                .accepted_event_receipts
+                .last()
+                .filter(|event| {
+                    event.tick_ns == w.parent_support.end_ns()
+                        && event.tick_ns == w.accepted_until_ns
+                        && w.active_segment.start_ns == event.tick_ns
+                })
+                .ok_or(CoupledTimeError::RestartInvalid)?;
+            SegmentId::derive_terminal_event_boundary(
+                w.parent_transaction_id,
+                w.parent_support,
+                terminal_event.tick_ns,
+                terminal_event.event_ordinal,
+                terminal_event.begin_owner_set_sha256,
+            )?
+        } else {
+            let active_support =
+                TimeSupport::new(w.active_segment.start_ns, w.active_segment.end_ns)?;
+            SegmentId::derive(
+                w.parent_transaction_id,
+                w.active_segment.ordinal,
+                active_support,
+                digest_bytes(w.active_segment.regime_id.as_bytes()),
+                digest_bytes(&participant_bytes),
+            )?
+        };
+        if w.active_segment.ordinal != w.next_segment_ordinal
+            || expected_active_segment_id != w.active_segment.segment_id
         {
             return Err(CoupledTimeError::RestartInvalid);
         }
@@ -857,7 +879,10 @@ impl CoupledTimeRestartV2 {
             segment_ordinal: w.next_segment_ordinal,
             slab_ordinal: w.next_slab_ordinal,
             event_ordinal: w.next_event_ordinal,
-            last_accepted_step_ns: Some(last),
+            // Zero is the canonical wire sentinel for the absence of an
+            // accepted positive-duration slab. `TimeSupport` forbids a
+            // zero-duration slab, so `Some(0)` has no valid runtime meaning.
+            last_accepted_step_ns: (last != 0).then_some(last),
             complete_owner_set: owners,
             active_regime_id: w.active_segment.regime_id,
             active_segment_start: w.active_segment.start_ns,

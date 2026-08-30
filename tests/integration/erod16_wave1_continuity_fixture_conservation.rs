@@ -55,7 +55,9 @@ use openwepp_hillslope_orchestrator::{
 };
 use openwepp_input_contract::parsers::slope::{SlopeParserOptions, parse_slope_file};
 use openwepp_input_contract::parsers::soil::{ParserMode, SoilParserOptions, parse_soil};
-use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
+use openwepp_runner::{HillslopeRunRequest, SidecarPolicy};
+
+mod common;
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
 
@@ -81,7 +83,7 @@ fn erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing() {
     let run_dir = copy_fixture_to_temp(&fixture, "erod16_wave1_p4");
     normalize_legacy_nan_dewpoint_tokens(&run_dir);
 
-    let report = execute_hillslope_run(
+    let report = common::execute_with_complete_stage3_owner_seed(
         &HillslopeRunRequest {
             run_dir: run_dir.clone(),
             run_file: PathBuf::from("p4.run.toml"),

@@ -91,6 +91,10 @@ pub(crate) struct CoveredLseIterationState {
     pub canopy_vapor_kg_m2_s: f64,
     pub sensible_to_reference_air_w_m2: f64,
     pub vapor_to_reference_air_kg_m2_s: f64,
+    pub shared_heat_residual_w_m2: f64,
+    pub shared_heat_tolerance_w_m2: f64,
+    pub shared_vapor_residual_kg_m2_s: f64,
+    pub shared_vapor_tolerance_kg_m2_s: f64,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -114,6 +118,282 @@ pub(crate) struct CoveredCarrierComponentState {
 enum CoveredV8PhysicalOwner {
     Legacy(CoveredForestShadowResult),
     MultiTile(MultiTileRuntimeResult),
+}
+
+/// Unpublished physical result used only while solving the covered Stage-3
+/// fixed point. It contains no vegetation/BGC candidate, V8 projection
+/// receipt, accepted publication, or complete-owner envelope.
+pub(crate) struct ProvisionalCoveredV8PhysicalEvaluationV1 {
+    transaction_id: TransactionId,
+    physical: MultiTileRuntimeResult,
+}
+
+impl ProvisionalCoveredV8PhysicalEvaluationV1 {
+    pub(crate) fn try_new(
+        physical: MultiTileRuntimeResult,
+    ) -> Result<Self, CoveredV8OwnerEnvelopeError> {
+        let transaction_id = physical.hydrology_candidate().transaction_id();
+        if physical.finalized_tiles().is_empty() {
+            return Err(CoveredV8OwnerEnvelopeError::Identity(
+                "empty provisional covered physical evaluation",
+            ));
+        }
+        Ok(Self {
+            transaction_id,
+            physical,
+        })
+    }
+
+    #[must_use]
+    pub(crate) const fn transaction_id(&self) -> TransactionId {
+        self.transaction_id
+    }
+
+    #[must_use]
+    pub(crate) fn hydrology(&self) -> &UnifiedRealHydrologyCandidate {
+        self.physical.hydrology_candidate()
+    }
+
+    pub(crate) fn fixed_cap_canopy_releases_by_destination(
+        &self,
+        interval_s: f64,
+    ) -> Result<FixedCapCanopyReleasesByDestination, CoveredV8OwnerEnvelopeError> {
+        fixed_cap_canopy_releases_from_multi_tile(&self.physical, interval_s)
+    }
+
+    pub(crate) fn covered_lse_iteration_state_by_destination(
+        &self,
+    ) -> Result<BTreeMap<(OfeId, TileId), CoveredLseIterationState>, CoveredV8OwnerEnvelopeError>
+    {
+        covered_lse_iteration_states_from_multi_tile(&self.physical)
+    }
+
+    pub(crate) fn covered_snow_longwave_by_destination(
+        &self,
+    ) -> Result<BTreeMap<(OfeId, TileId), f64>, CoveredV8OwnerEnvelopeError> {
+        covered_snow_longwave_from_multi_tile(&self.physical)
+    }
+
+    pub(crate) fn covered_snow_shortwave_by_destination(
+        &self,
+    ) -> Result<BTreeMap<(OfeId, TileId), f64>, CoveredV8OwnerEnvelopeError> {
+        covered_snow_shortwave_from_multi_tile(&self.physical)
+    }
+}
+
+fn fixed_cap_canopy_releases_from_multi_tile(
+    physical: &MultiTileRuntimeResult,
+    interval_s: f64,
+) -> Result<FixedCapCanopyReleasesByDestination, CoveredV8OwnerEnvelopeError> {
+    let mut releases = BTreeMap::new();
+    for tile in physical.finalized_tiles() {
+        let Some(covered) = tile.covered() else {
+            continue;
+        };
+        covered.vegetation_operands.validate()?;
+        let release = super::covered_derived_ingress::derive_release_from_ledgers(
+            covered
+                .vegetation_operands
+                .occupancies
+                .iter()
+                .map(|row| (row.occupancy_id.as_str(), &row.liquid)),
+            covered
+                .vegetation_operands
+                .ground_canopy_release_kg_m2_tile_ground,
+            covered
+                .vegetation_operands
+                .ground_stemflow_kg_m2_tile_ground,
+            interval_s,
+        )
+        .map_err(|_| CoveredV8OwnerEnvelopeError::Identity("fixed-cap release reconstruction"))?;
+        let source_identity = openwepp_coupled_time::digest_bytes(
+            &serde_json::to_vec(&covered.vegetation_operands).map_err(|_| {
+                CoveredV8OwnerEnvelopeError::Identity("fixed-cap release source framing")
+            })?,
+        );
+        let destination = (
+            covered.identity.ofe_id.clone(),
+            covered.identity.tile_id.clone(),
+        );
+        if releases
+            .insert(destination, (release, source_identity))
+            .is_some()
+        {
+            return Err(CoveredV8OwnerEnvelopeError::Identity(
+                "duplicate fixed-cap release destination",
+            ));
+        }
+    }
+    Ok(releases)
+}
+
+fn covered_lse_iteration_states_from_multi_tile(
+    physical: &MultiTileRuntimeResult,
+) -> Result<BTreeMap<(OfeId, TileId), CoveredLseIterationState>, CoveredV8OwnerEnvelopeError> {
+    let mut states = BTreeMap::new();
+    for tile in physical.finalized_tiles() {
+        let Some(covered) = tile.covered() else {
+            continue;
+        };
+        let lower = match &covered.energy_operands.lower_boundary {
+            CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(value) => value,
+            CoveredLowerBoundaryEnergyOperands::SnowFree(_) => continue,
+        };
+        let column = &covered.energy_operands.column;
+        let component_temperatures_k = column
+            .occupancies
+            .iter()
+            .map(|occupancy| {
+                (
+                    occupancy.occupancy_id.clone(),
+                    [
+                        occupancy.sun_leaf.surface_temperature_k,
+                        occupancy.shade_leaf.surface_temperature_k,
+                        occupancy.wet_surface.surface_temperature_k,
+                        occupancy.dry_stem.surface_temperature_k,
+                    ],
+                )
+            })
+            .collect();
+        let component_carrier_surfaces = column
+            .occupancies
+            .iter()
+            .enumerate()
+            .flat_map(|(vertical_ordinal, occupancy)| {
+                [
+                    occupancy.sun_leaf,
+                    occupancy.shade_leaf,
+                    occupancy.wet_surface,
+                    occupancy.dry_stem,
+                ]
+                .into_iter()
+                .enumerate()
+                .map(|(ordinal, surface)| CoveredCarrierComponentState {
+                    vertical_occupancy_ordinal: vertical_ordinal as u32,
+                    occupancy_id: occupancy.occupancy_id.clone(),
+                    component_ordinal: ordinal as u8,
+                    surface_area_m2_m2_tile: surface.surface_area_m2_m2_tile,
+                    emissive_area_m2_m2_tile: surface.emissive_area_m2_m2_tile,
+                    heat_conductance_m_s_tile: surface.heat_conductance_m_s_tile,
+                    vapor_conductance_m_s_tile: surface.vapor_conductance_m_s_tile,
+                    vapor_authorization_kg_m2_tile_s: surface.vapor_authorization_kg_m2_tile_s,
+                    temperature_k: surface.surface_temperature_k,
+                    specific_humidity_kg_kg: surface.surface_specific_humidity_kg_kg,
+                    sensible_to_canopy_air_w_m2: surface.sensible_to_canopy_air_w_m2_tile,
+                    vapor_to_canopy_air_kg_m2_s: surface.signed_vapor_to_canopy_air_kg_m2_tile_s,
+                })
+                .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        let key = (
+            covered.identity.ofe_id.clone(),
+            covered.identity.tile_id.clone(),
+        );
+        if states
+            .insert(
+                key,
+                CoveredLseIterationState {
+                    canopy_air_temperature_k: column.canopy_air.canopy_air_temperature_k,
+                    canopy_air_specific_humidity_kg_kg: column
+                        .canopy_air
+                        .canopy_air_specific_humidity_kg_kg,
+                    snow_temperature_k: lower.snow_temperature_k,
+                    snow_sensible_w_m2: column.canopy_air.ground_sensible_to_canopy_air_w_m2_tile,
+                    snow_vapor_kg_m2_s: column.canopy_air.ground_vapor_to_canopy_air_kg_m2_tile_s,
+                    snow_latent_w_m2: column.canopy_air.ground_vapor_to_canopy_air_kg_m2_tile_s
+                        * lower.latent_heat_j_kg,
+                    snow_net_longwave_w_m2: column.longwave.ground_net_w_m2_tile,
+                    component_temperatures_k,
+                    component_carrier_surfaces,
+                    canopy_sensible_w_m2: column.canopy_air.canopy_sensible_w_m2_tile,
+                    canopy_vapor_kg_m2_s: column.canopy_air.canopy_vapor_kg_m2_tile_s,
+                    sensible_to_reference_air_w_m2: column
+                        .canopy_air
+                        .sensible_to_reference_air_w_m2_tile,
+                    vapor_to_reference_air_kg_m2_s: column
+                        .canopy_air
+                        .vapor_to_reference_air_kg_m2_tile_s,
+                    shared_heat_residual_w_m2: column.canopy_air.shared_heat_residual_w_m2_tile,
+                    shared_heat_tolerance_w_m2: column.canopy_air.shared_heat_tolerance_w_m2_tile,
+                    shared_vapor_residual_kg_m2_s: column
+                        .canopy_air
+                        .shared_vapor_residual_kg_m2_tile_s,
+                    shared_vapor_tolerance_kg_m2_s: column
+                        .canopy_air
+                        .shared_vapor_tolerance_kg_m2_tile_s,
+                },
+            )
+            .is_some()
+        {
+            return Err(CoveredV8OwnerEnvelopeError::Identity(
+                "duplicate covered iteration destination",
+            ));
+        }
+    }
+    Ok(states)
+}
+
+fn covered_snow_longwave_from_multi_tile(
+    physical: &MultiTileRuntimeResult,
+) -> Result<BTreeMap<(OfeId, TileId), f64>, CoveredV8OwnerEnvelopeError> {
+    let mut receipts = BTreeMap::new();
+    for tile in physical.finalized_tiles() {
+        let Some(covered) = tile.covered() else {
+            continue;
+        };
+        let key = (
+            covered.identity.ofe_id.clone(),
+            covered.identity.tile_id.clone(),
+        );
+        let value = covered.energy_operands.column.longwave.ground_net_w_m2_tile;
+        if receipts.insert(key, value).is_some() {
+            return Err(CoveredV8OwnerEnvelopeError::Identity(
+                "duplicate covered longwave destination",
+            ));
+        }
+    }
+    if receipts.is_empty() {
+        return Err(CoveredV8OwnerEnvelopeError::Identity(
+            "empty covered longwave destination set",
+        ));
+    }
+    Ok(receipts)
+}
+
+fn covered_snow_shortwave_from_multi_tile(
+    physical: &MultiTileRuntimeResult,
+) -> Result<BTreeMap<(OfeId, TileId), f64>, CoveredV8OwnerEnvelopeError> {
+    let mut receipts = BTreeMap::new();
+    for tile in physical.finalized_tiles() {
+        let Some(covered) = tile.covered() else {
+            continue;
+        };
+        let key = (
+            covered.identity.ofe_id.clone(),
+            covered.identity.tile_id.clone(),
+        );
+        let value = match &covered.energy_operands.lower_boundary {
+            CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(stage3) => {
+                stage3.optical.absorbed_w_m2_tile.total()
+            }
+            CoveredLowerBoundaryEnergyOperands::SnowFree(_) => {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "covered Stage-3 optical receipt for shortwave",
+                ));
+            }
+        };
+        if receipts.insert(key, value).is_some() {
+            return Err(CoveredV8OwnerEnvelopeError::Identity(
+                "duplicate covered shortwave destination",
+            ));
+        }
+    }
+    if receipts.is_empty() {
+        return Err(CoveredV8OwnerEnvelopeError::Identity(
+            "empty covered shortwave destination set",
+        ));
+    }
+    Ok(receipts)
 }
 
 impl CoveredV8PhysicalOwner {
@@ -145,56 +425,14 @@ impl UncommittedCoveredV8OwnerEnvelope {
         &self,
         interval_s: f64,
     ) -> Result<FixedCapCanopyReleasesByDestination, CoveredV8OwnerEnvelopeError> {
-        let physical = match &self.physical {
-            CoveredV8PhysicalOwner::MultiTile(value) => value,
-            CoveredV8PhysicalOwner::Legacy(_) => {
-                return Err(CoveredV8OwnerEnvelopeError::Identity(
-                    "fixed-cap release requires multi-tile physical owner",
-                ));
+        match &self.physical {
+            CoveredV8PhysicalOwner::MultiTile(value) => {
+                fixed_cap_canopy_releases_from_multi_tile(value, interval_s)
             }
-        };
-        let mut releases = BTreeMap::new();
-        for tile in physical.finalized_tiles() {
-            let Some(covered) = tile.covered() else {
-                continue;
-            };
-            covered.vegetation_operands.validate()?;
-            let release = super::covered_derived_ingress::derive_release_from_ledgers(
-                covered
-                    .vegetation_operands
-                    .occupancies
-                    .iter()
-                    .map(|row| (row.occupancy_id.as_str(), &row.liquid)),
-                covered
-                    .vegetation_operands
-                    .ground_canopy_release_kg_m2_tile_ground,
-                covered
-                    .vegetation_operands
-                    .ground_stemflow_kg_m2_tile_ground,
-                interval_s,
-            )
-            .map_err(|_| {
-                CoveredV8OwnerEnvelopeError::Identity("fixed-cap release reconstruction")
-            })?;
-            let source_identity = openwepp_coupled_time::digest_bytes(
-                &serde_json::to_vec(&covered.vegetation_operands).map_err(|_| {
-                    CoveredV8OwnerEnvelopeError::Identity("fixed-cap release source framing")
-                })?,
-            );
-            let destination = (
-                covered.identity.ofe_id.clone(),
-                covered.identity.tile_id.clone(),
-            );
-            if releases
-                .insert(destination, (release, source_identity))
-                .is_some()
-            {
-                return Err(CoveredV8OwnerEnvelopeError::Identity(
-                    "duplicate fixed-cap release destination",
-                ));
-            }
+            CoveredV8PhysicalOwner::Legacy(_) => Err(CoveredV8OwnerEnvelopeError::Identity(
+                "fixed-cap release requires multi-tile physical owner",
+            )),
         }
-        Ok(releases)
     }
 
     pub(crate) fn covered_lse_iteration_state_by_destination(
@@ -265,14 +503,6 @@ impl UncommittedCoveredV8OwnerEnvelope {
                     .collect::<Vec<_>>()
                 })
                 .collect::<Vec<_>>();
-            let canopy_sensible_w_m2 = component_carrier_surfaces
-                .iter()
-                .map(|surface| surface.sensible_to_canopy_air_w_m2)
-                .sum();
-            let canopy_vapor_kg_m2_s = component_carrier_surfaces
-                .iter()
-                .map(|surface| surface.vapor_to_canopy_air_kg_m2_s)
-                .sum();
             let key = (
                 covered.identity.ofe_id.clone(),
                 covered.identity.tile_id.clone(),
@@ -297,14 +527,24 @@ impl UncommittedCoveredV8OwnerEnvelope {
                         snow_net_longwave_w_m2: column.longwave.ground_net_w_m2_tile,
                         component_temperatures_k,
                         component_carrier_surfaces,
-                        canopy_sensible_w_m2,
-                        canopy_vapor_kg_m2_s,
+                        canopy_sensible_w_m2: column.canopy_air.canopy_sensible_w_m2_tile,
+                        canopy_vapor_kg_m2_s: column.canopy_air.canopy_vapor_kg_m2_tile_s,
                         sensible_to_reference_air_w_m2: column
                             .canopy_air
                             .sensible_to_reference_air_w_m2_tile,
                         vapor_to_reference_air_kg_m2_s: column
                             .canopy_air
                             .vapor_to_reference_air_kg_m2_tile_s,
+                        shared_heat_residual_w_m2: column.canopy_air.shared_heat_residual_w_m2_tile,
+                        shared_heat_tolerance_w_m2: column
+                            .canopy_air
+                            .shared_heat_tolerance_w_m2_tile,
+                        shared_vapor_residual_kg_m2_s: column
+                            .canopy_air
+                            .shared_vapor_residual_kg_m2_tile_s,
+                        shared_vapor_tolerance_kg_m2_s: column
+                            .canopy_air
+                            .shared_vapor_tolerance_kg_m2_tile_s,
                     },
                 )
                 .is_some()

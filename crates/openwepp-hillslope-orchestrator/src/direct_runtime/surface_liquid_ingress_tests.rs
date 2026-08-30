@@ -9,6 +9,216 @@ use crate::direct_runtime::{
     authorize_surface_liquid_withdrawals,
 };
 
+#[test]
+fn representational_credit_is_bounded_at_the_declared_mass_envelope() {
+    let capacity_ofe = 0.1;
+    let stored_ofe = 0.1_f64.next_down();
+    let total_excess = 0.05;
+    let envelope = mass_tolerance(capacity_ofe + stored_ofe + total_excess);
+    let below = envelope / 2.0;
+    let above = f64::from_bits(envelope.to_bits() + 1);
+
+    assert_eq!(
+        effective_retained_mass(below, capacity_ofe, stored_ofe, total_excess),
+        Some(0.0)
+    );
+    assert_eq!(
+        effective_retained_mass(envelope, capacity_ofe, stored_ofe, total_excess),
+        Some(0.0)
+    );
+    assert_eq!(
+        effective_retained_mass(above, capacity_ofe, stored_ofe, total_excess),
+        Some(above)
+    );
+    assert_eq!(
+        effective_retained_mass(0.0, capacity_ofe, stored_ofe, total_excess),
+        Some(0.0)
+    );
+}
+
+#[test]
+fn exact_full_capacity_retention_uses_sealed_tile_remainder_without_basis_overrun() {
+    let beginning_tile = 0.0_f64;
+    let capacity_tile = 6.0_f64;
+    let tile_fraction = 0.38_f64;
+    let available_tile = capacity_tile - beginning_tile;
+    let available_ofe = tile_fraction * available_tile;
+    let inverse_basis = available_ofe / tile_fraction;
+    assert_eq!(inverse_basis.to_bits(), capacity_tile.to_bits() + 1);
+
+    let (credited_tile, ending_tile) = retained_tile_credit_and_ending_store(
+        beginning_tile,
+        capacity_tile,
+        tile_fraction,
+        available_tile,
+        available_ofe,
+        available_ofe,
+    )
+    .expect("exact full-capacity authority");
+    assert_eq!(credited_tile.to_bits(), available_tile.to_bits());
+    assert_eq!(ending_tile.to_bits(), capacity_tile.to_bits());
+}
+
+#[test]
+fn capacity_endpoint_rejects_false_full_and_substituted_basis_operands() {
+    let capacity_tile = 6.0_f64;
+    let tile_fraction = 0.38_f64;
+    let available_tile = capacity_tile;
+    let available_ofe = tile_fraction * available_tile;
+
+    assert!(
+        retained_tile_credit_and_ending_store(
+            0.0,
+            capacity_tile,
+            tile_fraction,
+            f64::from_bits(available_tile.to_bits() - 1),
+            available_ofe,
+            available_ofe,
+        )
+        .is_none()
+    );
+    assert!(
+        retained_tile_credit_and_ending_store(
+            0.0,
+            capacity_tile,
+            tile_fraction,
+            available_tile,
+            f64::from_bits(available_ofe.to_bits() + 1),
+            available_ofe,
+        )
+        .is_none()
+    );
+    assert!(
+        retained_tile_credit_and_ending_store(
+            0.0,
+            capacity_tile,
+            tile_fraction,
+            available_tile,
+            available_ofe,
+            f64::from_bits(available_ofe.to_bits() + 1),
+        )
+        .is_none()
+    );
+
+    let partial = f64::from_bits(available_ofe.to_bits() - 1);
+    let (_, partial_ending) = retained_tile_credit_and_ending_store(
+        0.0,
+        capacity_tile,
+        tile_fraction,
+        available_tile,
+        available_ofe,
+        partial,
+    )
+    .expect("valid partial retention");
+    assert!(partial_ending <= capacity_tile);
+}
+
+#[test]
+fn production_full_retention_carries_exact_source_mass() {
+    let first_excess = f64::from_bits(0x3e2f_4a5e_f546_6a45);
+    let last_excess = f64::from_bits(0x3ee1_ccbc_d840_e06c);
+    let total_excess = first_excess + last_excess;
+    let rounded_first = total_excess * first_excess / total_excess;
+    assert_eq!(rounded_first.to_bits(), first_excess.to_bits() + 1);
+    assert!((first_excess - rounded_first).is_sign_negative());
+
+    let retained_first =
+        allocate_retained_mass(total_excess, total_excess, 0.0, first_excess, false)
+            .expect("exact full-retention first source");
+    let retained_last = allocate_retained_mass(
+        total_excess,
+        total_excess,
+        retained_first,
+        last_excess,
+        true,
+    )
+    .expect("exact full-retention last source");
+    assert_eq!(retained_first.to_bits(), first_excess.to_bits());
+    assert_eq!(retained_last.to_bits(), last_excess.to_bits());
+    assert_eq!(
+        (retained_first + retained_last).to_bits(),
+        total_excess.to_bits()
+    );
+}
+
+#[test]
+fn production_retained_allocation_rejects_poisoned_or_nonphysical_operands() {
+    assert_eq!(
+        allocate_retained_mass(f64::INFINITY, 1.0, 0.0, 0.5, false),
+        None
+    );
+    assert_eq!(allocate_retained_mass(1.0, 0.5, 0.0, 0.5, false), None);
+    assert_eq!(allocate_retained_mass(0.5, 1.0, 0.6, 0.4, true), None);
+    assert_eq!(allocate_retained_mass(0.5, 1.0, 0.0, -0.1, false), None);
+}
+
+#[test]
+fn production_near_full_infiltration_allocates_nonnegative_exact_excess() {
+    let first_mass = f64::from_bits(0x3f6f_b77a_3a86_d4be);
+    let last_mass = f64::from_bits(0x3f41_ff59_f1bd_dca4);
+    let supply_mass = f64::from_bits(0x3f72_1ba8_5b7b_25f4);
+    let total_infiltration = f64::from_bits(0x3f72_1ba8_5b7b_25f3);
+    let legacy_first = total_infiltration * first_mass / supply_mass;
+    let legacy_last = total_infiltration - legacy_first;
+    assert_eq!((last_mass - legacy_last).to_bits(), 0xbc30_0000_0000_0000);
+    let use_excess_authority = direct_infiltration_requires_excess_authority(
+        total_infiltration,
+        supply_mass,
+        [first_mass, last_mass],
+    )
+    .expect("finite direct allocation preflight");
+    assert!(use_excess_authority);
+
+    let (first_infiltration, first_excess) = allocate_infiltration_and_excess(
+        total_infiltration,
+        supply_mass,
+        0.0,
+        0.0,
+        first_mass,
+        false,
+        use_excess_authority,
+    )
+    .expect("first exact complement partition");
+    let (last_infiltration, last_excess) = allocate_infiltration_and_excess(
+        total_infiltration,
+        supply_mass,
+        first_infiltration,
+        first_excess,
+        last_mass,
+        true,
+        use_excess_authority,
+    )
+    .expect("last exact complement partition");
+    assert!(first_excess >= 0.0);
+    assert!(last_excess >= 0.0);
+    assert_eq!(
+        (first_excess + last_excess).to_bits(),
+        0x3c30_0000_0000_0000
+    );
+    assert!(first_infiltration <= first_mass);
+    assert!(last_infiltration <= last_mass);
+}
+
+#[test]
+fn production_infiltration_partition_rejects_negative_and_overdrawn_operands() {
+    assert_eq!(
+        allocate_infiltration_and_excess(f64::INFINITY, 1.0, 0.0, 0.0, 0.5, false, true),
+        None
+    );
+    assert_eq!(
+        allocate_infiltration_and_excess(1.0, 0.5, 0.0, 0.0, 0.5, false, true),
+        None
+    );
+    assert_eq!(
+        allocate_infiltration_and_excess(0.5, 1.0, 0.6, 0.0, 0.4, true, false),
+        None
+    );
+    assert_eq!(
+        allocate_infiltration_and_excess(0.5, 1.0, 0.0, 0.0, -0.1, false, false),
+        None
+    );
+}
+
 fn owner(value: &str) -> ResourceOwnerId {
     ResourceOwnerId::try_new(value).expect("owner")
 }
@@ -939,6 +1149,7 @@ fn partial_support_routes_independently_across_multiple_hops() {
     assert!(routed.iter().all(|receipt| {
         receipt.start_s.to_bits() == 300.0_f64.to_bits()
             && receipt.end_s.to_bits() == 1_500.0_f64.to_bits()
+            && receipt.temperature_k.to_bits() == 287.0_f64.to_bits()
     }));
     assert!(candidate.receipts.iter().any(|receipt| {
         receipt.source_parcel_id == source_id
@@ -989,6 +1200,56 @@ fn partial_support_routes_independently_across_multiple_hops() {
         )
         .expect_err("routed descendant kind drift");
     assert_eq!(kind_error.code(), DirectSurfaceLiquidErrorCode::E010);
+
+    let mut temperature_drift = candidate.clone();
+    let temperature_receipt = temperature_drift
+        .receipts
+        .iter_mut()
+        .find(|receipt| {
+            receipt.source_parcel_id == source_id
+                && receipt.basis_ofe_id == ofe("middle")
+                && receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RoutedRunoff
+        })
+        .expect("first routed temperature receipt");
+    temperature_receipt.temperature_k = f64::from_bits(
+        temperature_receipt
+            .temperature_k
+            .to_bits()
+            .checked_add(1)
+            .expect("finite routed temperature successor"),
+    );
+    let temperature_error =
+        super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+            &configuration,
+            &resource,
+            &temperature_drift.closure_operands,
+            &temperature_drift.receipts,
+            &temperature_drift.ending_state,
+        )
+        .expect_err("routed temperature lineage drift");
+    assert_eq!(temperature_error.code(), DirectSurfaceLiquidErrorCode::E010);
+
+    let mut enthalpy_drift = candidate.clone();
+    let enthalpy_receipt = enthalpy_drift
+        .receipts
+        .iter_mut()
+        .find(|receipt| {
+            receipt.source_parcel_id == source_id
+                && receipt.basis_ofe_id == ofe("middle")
+                && receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RoutedRunoff
+        })
+        .expect("first routed enthalpy receipt");
+    enthalpy_receipt.enthalpy_j_m2_basis_ofe_ground += 1.0e-6;
+    let enthalpy_error =
+        super::super::surface_liquid_closure::validate_surface_liquid_closure_operands(
+            &configuration,
+            &resource,
+            &enthalpy_drift.closure_operands,
+            &enthalpy_drift.receipts,
+            &enthalpy_drift.ending_state,
+        )
+        .expect_err("routed enthalpy lineage drift");
+    assert_eq!(enthalpy_error.code(), DirectSurfaceLiquidErrorCode::E010);
 
     let mut drift = candidate;
     let routed_receipt = drift
@@ -1528,7 +1789,11 @@ fn independent_closure_rejects_poisoned_source_operand() {
         &candidate.ending_state,
     )
     .expect_err("ordinary closure mismatch");
-    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E010);
+    assert_eq!(
+        error.code(),
+        DirectSurfaceLiquidErrorCode::E010,
+        "{error:?}"
+    );
 
     let mut producer_poison = candidate;
     producer_poison.closure_operands = poisoned;
@@ -1540,7 +1805,10 @@ fn independent_closure_rejects_poisoned_source_operand() {
         .validate(&configuration, &resource, &input)
         .expect_err("public producer mismatch");
     let failure = error.failure().expect("canonical public closure failure");
-    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E010);
+    // The forged 0.25 kg/m2 beginning operand exceeds this store's 0.1
+    // kg/m2 capacity. SC-SURFACELIQUID public precedence classifies that
+    // out-of-domain state as E003 before the later finite E010 join mismatch.
+    assert_eq!(failure.code, DirectSurfaceLiquidErrorCode::E003);
     assert_eq!(failure.phase, DirectSurfaceLiquidPhase::IndependentClosure);
     assert_eq!(failure.context.transaction_id, Some(transaction_id));
     assert_eq!(

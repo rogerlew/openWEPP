@@ -8,7 +8,7 @@ fn validate_terminal_custody_lane_sets(
     events: &BTreeSet<u32>,
     ledgers: &BTreeSet<u32>,
 ) -> Result<(), DirectV11RealConsumerError> {
-    if terminal != events
+    if !events.is_subset(terminal)
         || !terminal.is_disjoint(persistent)
         || !terminal.iter().all(|lane_id| ledgers.contains(lane_id))
     {
@@ -19,9 +19,25 @@ fn validate_terminal_custody_lane_sets(
     Ok(())
 }
 
+const fn requires_persistent_snow_soil_receipt(
+    beginning_resolved: bool,
+    ending_resolved: bool,
+    ending_terminal: bool,
+) -> bool {
+    beginning_resolved && (ending_resolved || ending_terminal)
+}
+
+const fn requires_adaptive_terminal_snow_soil_receipt(
+    beginning_terminal: bool,
+    ending_terminal: bool,
+) -> bool {
+    beginning_terminal && ending_terminal
+}
+
 #[cfg(test)]
 mod terminal_custody_lane_set_tests {
     use super::*;
+    use crate::DirectSnowLayerState;
 
     #[test]
     fn terminal_receipts_require_exact_event_set_and_ledgers() {
@@ -34,25 +50,134 @@ mod terminal_custody_lane_set_tests {
     }
 
     #[test]
-    fn terminal_receipt_extra_lane_is_rejected() {
-        assert!(validate_terminal_custody_lane_sets(
+    fn terminal_to_terminal_uses_only_adaptive_trial_custody() {
+        assert!(!requires_persistent_snow_soil_receipt(false, false, true));
+        assert!(requires_adaptive_terminal_snow_soil_receipt(true, true));
+        for poisoned in [(false, true), (true, false), (false, false)] {
+            assert!(!requires_adaptive_terminal_snow_soil_receipt(
+                poisoned.0, poisoned.1
+            ));
+        }
+    }
+
+    #[test]
+    fn adaptive_terminal_domain_receipt_without_event_is_admitted() {
+        validate_terminal_custody_lane_sets(
             &BTreeSet::from([1]),
             &BTreeSet::from([2, 3]),
             &BTreeSet::from([2]),
             &BTreeSet::from([1, 2, 3]),
         )
-        .is_err());
+        .expect("preterminal adaptive receipt remains physical custody");
+    }
+
+    fn canonical_adaptive_snow_state() -> DirectSnowStage3PersistentState {
+        Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            1,
+            vec![DirectSnowLayerState::new(0.08, 0.8, 100.0, 12.0)],
+        )
+        .expect("canonical adaptive snow state")
+    }
+
+    #[test]
+    fn adaptive_snow_derived_cache_requires_candidate_local_identities() {
+        let baseline = BTreeMap::from([(1, canonical_adaptive_snow_state())]);
+        canonical_stage3_snow_owner_bytes_v11(&baseline)
+            .expect("canonical snow derived identities");
+
+        let inconsistent_density = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            1,
+            vec![DirectSnowLayerState::new(0.08, 0.8, 101.0, 12.0)],
+        )
+        .expect("independently sealed density poison");
+        assert!(matches!(
+            canonical_stage3_snow_owner_bytes_v11(&BTreeMap::from([(1, inconsistent_density)])),
+            Err(DirectV11RealConsumerError::Identity(
+                "adaptive snow mass-depth-density derived identity"
+            ))
+        ));
+
+        let ordering_probe_mass_swe_m: f64 = 0.054_992_284_801_565_73;
+        let canonical_thickness_m = ordering_probe_mass_swe_m * 1_000.0 / 100.0;
+        let alternate_thickness_m = ordering_probe_mass_swe_m / 100.0 * 1_000.0;
+        assert_ne!(
+            canonical_thickness_m.to_bits(),
+            alternate_thickness_m.to_bits(),
+            "ordering probe must distinguish the canonical SWE/density/rho-water projection"
+        );
+        let canonical_ordering = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            1,
+            vec![DirectSnowLayerState::new(
+                ordering_probe_mass_swe_m,
+                canonical_thickness_m,
+                100.0,
+                12.0,
+            )],
+        )
+        .expect("canonical density projection ordering");
+        canonical_stage3_snow_owner_bytes_v11(&BTreeMap::from([(1, canonical_ordering)]))
+            .expect("canonical density projection ordering is admitted");
+        let alternate_ordering = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            1,
+            vec![DirectSnowLayerState::new(
+                ordering_probe_mass_swe_m,
+                alternate_thickness_m,
+                100.0,
+                12.0,
+            )],
+        )
+        .expect("independently sealed alternate-order poison");
+        assert!(matches!(
+            canonical_stage3_snow_owner_bytes_v11(&BTreeMap::from([(1, alternate_ordering)])),
+            Err(DirectV11RealConsumerError::Identity(
+                "adaptive snow mass-depth-density derived identity"
+            ))
+        ));
+
+        let mut stale_settle_bits = canonical_adaptive_snow_state();
+        stale_settle_bits.layers[0].settle_day_count =
+            f64::from_bits(stale_settle_bits.layers[0].settle_day_count.to_bits() + 1);
+        assert!(matches!(
+            canonical_stage3_snow_owner_bytes_v11(&BTreeMap::from([(1, stale_settle_bits)])),
+            Err(DirectV11RealConsumerError::Identity(
+                "adaptive snow derived-cache candidate validation"
+            ))
+        ));
+
+        let overflowing_weighted_settle = Wb11HydrologyKernel::initialize_stage3_persistent_state(
+            1,
+            vec![DirectSnowLayerState::new(2.0, 20.0, 100.0, f64::MAX)],
+        )
+        .expect("independently sealed weighted-settle poison");
+        assert!(matches!(
+            canonical_stage3_snow_owner_bytes_v11(&BTreeMap::from([(
+                1,
+                overflowing_weighted_settle
+            )])),
+            Err(DirectV11RealConsumerError::Identity(
+                "adaptive snow weighted-settle derived identity"
+            ))
+        ));
     }
 
     #[test]
     fn terminal_lane_without_physical_ledger_is_rejected() {
-        assert!(validate_terminal_custody_lane_sets(
-            &BTreeSet::from([1]),
-            &BTreeSet::from([2]),
-            &BTreeSet::from([2]),
-            &BTreeSet::from([1]),
-        )
-        .is_err());
+        assert!(
+            validate_terminal_custody_lane_sets(
+                &BTreeSet::from([1]),
+                &BTreeSet::from([2]),
+                &BTreeSet::from([2]),
+                &BTreeSet::from([1]),
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn solid_reappearance_has_no_persistent_snow_soil_exchange_receipt() {
+        assert!(!requires_persistent_snow_soil_receipt(false, true, false));
+        assert!(requires_persistent_snow_soil_receipt(true, true, false));
+        assert!(requires_persistent_snow_soil_receipt(true, false, true));
     }
 }
 
@@ -61,18 +186,27 @@ pub(crate) fn soil_thermal_owner_with_top_boundary_credit_join_sha256(
     accepted_credit_set_sha256: &openwepp_land_surface_energy::Sha256Digest,
 ) -> Result<Digest32, DirectV11RealConsumerError> {
     if ending_soil_owner_sha256 == Digest32::zero() {
-        return Err(DirectV11RealConsumerError::Identity("soil top-boundary owner join"));
+        return Err(DirectV11RealConsumerError::Identity(
+            "soil top-boundary owner join",
+        ));
     }
     openwepp_coupled_time::framed_sha256(
         "covered-soil-top-boundary-owner-join-v1",
         &[
-            openwepp_coupled_time::FramedField { tag: "ending_soil_owner", value: ending_soil_owner_sha256.as_bytes() },
-            openwepp_coupled_time::FramedField { tag: "accepted_credit_set", value: accepted_credit_set_sha256.as_str().as_bytes() },
+            openwepp_coupled_time::FramedField {
+                tag: "ending_soil_owner",
+                value: ending_soil_owner_sha256.as_bytes(),
+            },
+            openwepp_coupled_time::FramedField {
+                tag: "accepted_credit_set",
+                value: accepted_credit_set_sha256.as_str().as_bytes(),
+            },
         ],
-    ).map_err(|_| DirectV11RealConsumerError::Identity("soil top-boundary owner join digest"))
+    )
+    .map_err(|_| DirectV11RealConsumerError::Identity("soil top-boundary owner join digest"))
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, serde::Deserialize, PartialEq, serde::Serialize)]
 pub struct CoveredParentOwnerJoinReceiptV1 {
     pub run_identity: Digest32,
     pub parent_interval_sha256: Digest32,
@@ -104,6 +238,9 @@ pub struct CoveredParentOwnerJoinReceiptV1 {
 
 pub(crate) struct CoveredPhysicalCustodyJoinInputs<'a> {
     pub snow_soil_heat_receipts: &'a BTreeMap<u32, SnowSoilHeatReceiptV1>,
+    pub adaptive_terminal_snow_soil_heat_receipts: &'a BTreeMap<u32, SnowSoilHeatReceiptV1>,
+    pub adaptive_terminal_snow_soil_trial_receipts:
+        &'a BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1>,
     pub terminal_snow_soil_heat_receipts:
         &'a BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1>,
     pub terminal_events: &'a BTreeMap<u32, DirectSnowTerminalEventResult>,
@@ -126,7 +263,9 @@ impl CoveredParentOwnerJoinReceiptV1 {
         for (destination, receipt) in final_boundaries {
             receipt.validate()?;
             if destination != receipt.destination() {
-                return Err(DirectV11RealConsumerError::Identity("covered boundary map key"));
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered boundary map key",
+                ));
             }
         }
         for (lane_id, receipt) in final_lane_boundaries {
@@ -135,25 +274,31 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 return Err(DirectV11RealConsumerError::Identity("covered lane map key"));
             }
         }
-        let boundary_fields = final_boundaries.values().map(|receipt| {
-            openwepp_coupled_time::FramedField {
+        let boundary_fields = final_boundaries
+            .values()
+            .map(|receipt| openwepp_coupled_time::FramedField {
                 tag: "final_boundary_receipt",
                 value: receipt.receipt_sha256().as_bytes(),
-            }
-        }).collect::<Vec<_>>();
-        let lane_fields = final_lane_boundaries.values().map(|receipt| {
-            openwepp_coupled_time::FramedField {
+            })
+            .collect::<Vec<_>>();
+        let lane_fields = final_lane_boundaries
+            .values()
+            .map(|receipt| openwepp_coupled_time::FramedField {
                 tag: "final_lane_boundary_receipt",
                 value: receipt.receipt_sha256.as_bytes(),
-            }
-        }).collect::<Vec<_>>();
+            })
+            .collect::<Vec<_>>();
         if openwepp_coupled_time::framed_sha256(
-            "covered-stage3-final-boundary-set-v1", &boundary_fields,
-        ).map_err(|_| DirectV11RealConsumerError::Identity("covered boundary receipt set"))?
+            "covered-stage3-final-boundary-set-v1",
+            &boundary_fields,
+        )
+        .map_err(|_| DirectV11RealConsumerError::Identity("covered boundary receipt set"))?
             != self.final_boundary_receipt_set_sha256
             || openwepp_coupled_time::framed_sha256(
-                "covered-stage3-final-lane-boundary-set-v1", &lane_fields,
-            ).map_err(|_| DirectV11RealConsumerError::Identity("covered lane receipt set"))?
+                "covered-stage3-final-lane-boundary-set-v1",
+                &lane_fields,
+            )
+            .map_err(|_| DirectV11RealConsumerError::Identity("covered lane receipt set"))?
                 != self.final_lane_boundary_receipt_set_sha256
         {
             return Err(DirectV11RealConsumerError::Identity(
@@ -216,22 +361,32 @@ impl CoveredParentOwnerJoinReceiptV1 {
         ];
         if owners.keys().map(String::as_str).collect::<BTreeSet<_>>()
             != expected.into_iter().collect::<BTreeSet<_>>()
-            || final_boundaries.is_empty()
-            || final_lane_boundaries.is_empty()
-            || (physical_custody.snow_soil_heat_receipts.is_empty()
-                && physical_custody.terminal_snow_soil_heat_receipts.is_empty())
-            || physical_custody.physical_outcome_ledgers.is_empty()
-            || component_carriers.keys().collect::<BTreeSet<_>>()
-                != final_boundaries
-                    .iter()
-                    .filter_map(|(destination, receipt)| {
-                        matches!(receipt, FinalStage3TileBoundaryReceiptV1::V11Canopy(_))
-                            .then_some(destination)
-                    })
-                    .collect::<BTreeSet<_>>()
         {
             return Err(DirectV11RealConsumerError::Identity(
-                "covered parent-owner join topology",
+                "covered parent-owner owner topology",
+            ));
+        }
+        if final_boundaries.is_empty() || final_lane_boundaries.is_empty() {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered parent-owner boundary topology",
+            ));
+        }
+        if physical_custody.physical_outcome_ledgers.is_empty() {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered parent-owner physical-ledger topology",
+            ));
+        }
+        if component_carriers.keys().collect::<BTreeSet<_>>()
+            != final_boundaries
+                .iter()
+                .filter_map(|(destination, receipt)| {
+                    matches!(receipt, FinalStage3TileBoundaryReceiptV1::V11Canopy(_))
+                        .then_some(destination)
+                })
+                .collect::<BTreeSet<_>>()
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered parent-owner component topology",
             ));
         }
         for owner in owners.values() {
@@ -245,9 +400,9 @@ impl CoveredParentOwnerJoinReceiptV1 {
             .collect::<Result<Vec<_>, _>>()
             .map_err(|_| DirectV11RealConsumerError::Identity("covered ending owner set"))?;
         let ending_complete_owner_set_sha256 =
-            openwepp_coupled_time::complete_owner_set_digest(&ending_owner_states).map_err(|_| {
-                DirectV11RealConsumerError::Identity("covered ending complete-owner digest")
-            })?;
+            openwepp_coupled_time::complete_owner_set_digest(&ending_owner_states).map_err(
+                |_| DirectV11RealConsumerError::Identity("covered ending complete-owner digest"),
+            )?;
         for (destination, receipt) in final_boundaries {
             receipt.validate()?;
             if destination != receipt.destination() {
@@ -370,27 +525,89 @@ impl CoveredParentOwnerJoinReceiptV1 {
             &component_fields,
         )
         .map_err(|_| DirectV11RealConsumerError::Identity("component carrier receipt set"))?;
-        if physical_custody.beginning_stage3_states.keys().copied().collect::<BTreeSet<_>>()
-            != physical_custody.ending_stage3_states.keys().copied().collect::<BTreeSet<_>>()
+        if physical_custody
+            .beginning_stage3_states
+            .keys()
+            .copied()
+            .collect::<BTreeSet<_>>()
+            != physical_custody
+                .ending_stage3_states
+                .keys()
+                .copied()
+                .collect::<BTreeSet<_>>()
         {
             return Err(DirectV11RealConsumerError::Identity(
                 "snow-soil beginning/ending lane set",
             ));
         }
-        let required_snow_soil_lanes = physical_custody.beginning_stage3_states
+        let required_snow_soil_lanes = physical_custody
+            .beginning_stage3_states
             .iter()
             .filter_map(|(lane_id, beginning)| {
                 let ending = physical_custody.ending_stage3_states.get(lane_id)?;
-                (crate::hydrology::stage3_is_resolved_thermal_domain(beginning)
-                    && crate::hydrology::stage3_is_resolved_thermal_domain(ending))
+                let beginning_resolved =
+                    crate::hydrology::stage3_is_resolved_thermal_domain(beginning);
+                let ending_resolved = crate::hydrology::stage3_is_resolved_thermal_domain(ending);
+                let ending_terminal = crate::hydrology::stage3_is_terminal_event_domain(ending);
+                // Persistent snow--soil custody spans every ordinary covered
+                // step whose two endpoints both have a projectable bottom
+                // thermal node.  A terminal->terminal adaptive step instead
+                // carries its exact trial receipt, and terminal->dormant uses
+                // the terminal receipt below.  Terminal->resolved is solid
+                // reappearance: SC-SNOWENERGY-001@22 admits no snow--soil
+                // exchange across that boundary, and the physical ledger
+                // binds the canonical no-exchange receipt instead.
+                requires_persistent_snow_soil_receipt(
+                    beginning_resolved,
+                    ending_resolved,
+                    ending_terminal,
+                )
                 .then_some(*lane_id)
             })
             .collect::<BTreeSet<_>>();
-        if physical_custody.snow_soil_heat_receipts.keys().copied().collect::<BTreeSet<_>>()
+        if physical_custody
+            .snow_soil_heat_receipts
+            .keys()
+            .copied()
+            .collect::<BTreeSet<_>>()
             != required_snow_soil_lanes
         {
             return Err(DirectV11RealConsumerError::Identity(
                 "snow-soil receipt active-lane set",
+            ));
+        }
+        let required_adaptive_terminal_lanes = physical_custody
+            .beginning_stage3_states
+            .iter()
+            .filter_map(|(lane_id, beginning)| {
+                let ending = physical_custody.ending_stage3_states.get(lane_id)?;
+                requires_adaptive_terminal_snow_soil_receipt(
+                    crate::hydrology::stage3_is_terminal_event_domain(beginning),
+                    crate::hydrology::stage3_is_terminal_event_domain(ending),
+                )
+                .then_some(*lane_id)
+            })
+            .collect::<BTreeSet<_>>();
+        let adaptive_terminal_heat_lanes = physical_custody
+            .adaptive_terminal_snow_soil_heat_receipts
+            .keys()
+            .copied()
+            .collect::<BTreeSet<_>>();
+        let adaptive_terminal_trial_lanes = physical_custody
+            .adaptive_terminal_snow_soil_trial_receipts
+            .keys()
+            .copied()
+            .collect::<BTreeSet<_>>();
+        let emitted_adaptive_terminal_lanes = adaptive_terminal_heat_lanes
+            .union(&adaptive_terminal_trial_lanes)
+            .copied()
+            .collect::<BTreeSet<_>>();
+        if emitted_adaptive_terminal_lanes != required_adaptive_terminal_lanes
+            || !adaptive_terminal_heat_lanes.is_disjoint(&adaptive_terminal_trial_lanes)
+            || !required_adaptive_terminal_lanes.is_disjoint(&required_snow_soil_lanes)
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "adaptive terminal snow-soil receipt active-lane set",
             ));
         }
         let required_terminal_lanes = physical_custody
@@ -426,8 +643,9 @@ impl CoveredParentOwnerJoinReceiptV1 {
         let mut snow_soil_fields =
             Vec::with_capacity(physical_custody.snow_soil_heat_receipts.len());
         for (lane_id, receipt) in physical_custody.snow_soil_heat_receipts {
-            crate::snow_stage3_v11_attachment::validate_snow_soil_heat_receipt(receipt)
-                .map_err(|error| DirectV11RealConsumerError::from_stage3_physical_custody(&error))?;
+            crate::snow_stage3_v11_attachment::validate_snow_soil_heat_receipt(receipt).map_err(
+                |error| DirectV11RealConsumerError::from_stage3_physical_custody(&error),
+            )?;
             if *lane_id != receipt.lane_id {
                 return Err(DirectV11RealConsumerError::Identity(
                     "snow-soil parent receipt lane key",
@@ -444,12 +662,48 @@ impl CoveredParentOwnerJoinReceiptV1 {
         )
         .map_err(|_| DirectV11RealConsumerError::Identity("snow-soil receipt set"))?;
         let mut terminal_snow_soil_fields = Vec::with_capacity(
-            physical_custody.terminal_snow_soil_heat_receipts.len(),
+            physical_custody.terminal_snow_soil_heat_receipts.len()
+                + physical_custody
+                    .adaptive_terminal_snow_soil_heat_receipts
+                    .len()
+                + physical_custody
+                    .adaptive_terminal_snow_soil_trial_receipts
+                    .len(),
         );
-        for (lane_id, receipt) in physical_custody.terminal_snow_soil_heat_receipts {
+        for (lane_id, receipt) in physical_custody.adaptive_terminal_snow_soil_heat_receipts {
+            crate::snow_stage3_v11_attachment::validate_snow_soil_heat_receipt(receipt).map_err(
+                |error| DirectV11RealConsumerError::from_stage3_physical_custody(&error),
+            )?;
+            if *lane_id != receipt.lane_id {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "adaptive terminal snow-soil parent receipt lane key",
+                ));
+            }
+            terminal_snow_soil_fields.push(openwepp_coupled_time::FramedField {
+                tag: "adaptive_terminal_snow_soil_heat_receipt",
+                value: receipt.receipt_sha256.as_bytes(),
+            });
+        }
+        for (lane_id, receipt) in physical_custody.adaptive_terminal_snow_soil_trial_receipts {
             receipt.validate().map_err(|_| {
-                DirectV11RealConsumerError::Identity("terminal snow-soil receipt")
+                DirectV11RealConsumerError::Identity(
+                    "adaptive terminal snow-soil trial receipt seal",
+                )
             })?;
+            if *lane_id != receipt.lane_id {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "adaptive terminal snow-soil parent receipt lane key",
+                ));
+            }
+            terminal_snow_soil_fields.push(openwepp_coupled_time::FramedField {
+                tag: "adaptive_terminal_snow_soil_trial_receipt",
+                value: receipt.receipt_sha256.as_bytes(),
+            });
+        }
+        for (lane_id, receipt) in physical_custody.terminal_snow_soil_heat_receipts {
+            receipt
+                .validate()
+                .map_err(|_| DirectV11RealConsumerError::Identity("terminal snow-soil receipt"))?;
             if *lane_id != receipt.lane_id {
                 return Err(DirectV11RealConsumerError::Identity(
                     "terminal snow-soil parent receipt lane key",
@@ -460,14 +714,11 @@ impl CoveredParentOwnerJoinReceiptV1 {
                 value: receipt.receipt_sha256.as_bytes(),
             });
         }
-        let terminal_snow_soil_heat_receipt_set_sha256 =
-            openwepp_coupled_time::framed_sha256(
-                "covered-terminal-snow-soil-heat-receipt-set-v1",
-                &terminal_snow_soil_fields,
-            )
-            .map_err(|_| {
-                DirectV11RealConsumerError::Identity("terminal snow-soil receipt set")
-            })?;
+        let terminal_snow_soil_heat_receipt_set_sha256 = openwepp_coupled_time::framed_sha256(
+            "covered-terminal-snow-soil-heat-receipt-set-v1",
+            &terminal_snow_soil_fields,
+        )
+        .map_err(|_| DirectV11RealConsumerError::Identity("terminal snow-soil receipt set"))?;
         let physical_outcome_ledger_set_sha256 =
             physical_outcome_ledger::ledger_set_digest(physical_custody.physical_outcome_ledgers);
         if physical_outcome_ledger_set_sha256 == Digest32::zero() {
@@ -487,8 +738,9 @@ impl CoveredParentOwnerJoinReceiptV1 {
             &lane_fields,
         )
         .map_err(|_| DirectV11RealConsumerError::Identity("covered lane receipt set"))?;
-        let stage3_physical_state_sha256 =
-            digest_bytes(&canonical_stage3_snow_owner_bytes_v11(physical_custody.ending_stage3_states)?);
+        let stage3_physical_state_sha256 = digest_bytes(&canonical_stage3_snow_owner_bytes_v11(
+            physical_custody.ending_stage3_states,
+        )?);
         let owner_digest = |name: &'static str| {
             owners.get(name).map(|owner| owner.state_sha256).ok_or(
                 DirectV11RealConsumerError::Identity("covered parent-owner join owner"),
@@ -571,30 +823,75 @@ impl CoveredParentOwnerJoinReceiptV1 {
             &[
                 digest_field("run_identity", self.run_identity.as_bytes()),
                 digest_field("parent_interval", self.parent_interval_sha256.as_bytes()),
-                digest_field("parent_transaction", self.parent_transaction_sha256.as_bytes()),
+                digest_field(
+                    "parent_transaction",
+                    self.parent_transaction_sha256.as_bytes(),
+                ),
                 digest_field("segment", self.segment_sha256.as_bytes()),
                 digest_field("accepted_slab", self.accepted_slab_sha256.as_bytes()),
                 digest_field("forcing_receipt", self.forcing_receipt_sha256.as_bytes()),
-                digest_field("beginning_complete_owner_set", self.beginning_complete_owner_set_sha256.as_bytes()),
-                digest_field("ending_complete_owner_set", self.ending_complete_owner_set_sha256.as_bytes()),
+                digest_field(
+                    "beginning_complete_owner_set",
+                    self.beginning_complete_owner_set_sha256.as_bytes(),
+                ),
+                digest_field(
+                    "ending_complete_owner_set",
+                    self.ending_complete_owner_set_sha256.as_bytes(),
+                ),
                 digest_field("support_start_ns", &start),
                 digest_field("support_end_ns", &end),
-                digest_field("final_boundary_set", self.final_boundary_receipt_set_sha256.as_bytes()),
-                digest_field("final_lane_boundary_set", self.final_lane_boundary_receipt_set_sha256.as_bytes()),
-                digest_field("component_carrier_set", self.component_carrier_receipt_set_sha256.as_bytes()),
-                digest_field("snow_soil_heat_receipt_set", self.snow_soil_heat_receipt_set_sha256.as_bytes()),
-                digest_field("terminal_snow_soil_heat_receipt_set", self.terminal_snow_soil_heat_receipt_set_sha256.as_bytes()),
-                digest_field("physical_outcome_ledger_set", self.physical_outcome_ledger_set_sha256.as_bytes()),
-                digest_field("wb14_child_receipt_set", self.wb14_child_receipt_set_sha256.as_bytes()),
+                digest_field(
+                    "final_boundary_set",
+                    self.final_boundary_receipt_set_sha256.as_bytes(),
+                ),
+                digest_field(
+                    "final_lane_boundary_set",
+                    self.final_lane_boundary_receipt_set_sha256.as_bytes(),
+                ),
+                digest_field(
+                    "component_carrier_set",
+                    self.component_carrier_receipt_set_sha256.as_bytes(),
+                ),
+                digest_field(
+                    "snow_soil_heat_receipt_set",
+                    self.snow_soil_heat_receipt_set_sha256.as_bytes(),
+                ),
+                digest_field(
+                    "terminal_snow_soil_heat_receipt_set",
+                    self.terminal_snow_soil_heat_receipt_set_sha256.as_bytes(),
+                ),
+                digest_field(
+                    "physical_outcome_ledger_set",
+                    self.physical_outcome_ledger_set_sha256.as_bytes(),
+                ),
+                digest_field(
+                    "wb14_child_receipt_set",
+                    self.wb14_child_receipt_set_sha256.as_bytes(),
+                ),
                 digest_field("wb14_parent_receipt_set", wb14_parent.as_bytes()),
-                digest_field("stage3_physical_state", self.stage3_physical_state_sha256.as_bytes()),
+                digest_field(
+                    "stage3_physical_state",
+                    self.stage3_physical_state_sha256.as_bytes(),
+                ),
                 digest_field("vegetation_owner", self.vegetation_owner_sha256.as_bytes()),
                 digest_field("snow_owner", self.snow_owner_sha256.as_bytes()),
-                digest_field("land_surface_energy_owner", self.land_surface_energy_owner_sha256.as_bytes()),
+                digest_field(
+                    "land_surface_energy_owner",
+                    self.land_surface_energy_owner_sha256.as_bytes(),
+                ),
                 digest_field("hydrology_owner", self.hydrology_owner_sha256.as_bytes()),
-                digest_field("biogeochemistry_owner", self.biogeochemistry_owner_sha256.as_bytes()),
-                digest_field("soil_thermal_owner", self.soil_thermal_owner_sha256.as_bytes()),
-                digest_field("surface_liquid_owner", self.surface_liquid_owner_sha256.as_bytes()),
+                digest_field(
+                    "biogeochemistry_owner",
+                    self.biogeochemistry_owner_sha256.as_bytes(),
+                ),
+                digest_field(
+                    "soil_thermal_owner",
+                    self.soil_thermal_owner_sha256.as_bytes(),
+                ),
+                digest_field(
+                    "surface_liquid_owner",
+                    self.surface_liquid_owner_sha256.as_bytes(),
+                ),
             ],
         )
         .map_err(|_| DirectV11RealConsumerError::Identity("covered parent-owner join digest"))
@@ -620,9 +917,50 @@ fn validate_exact_snow_owner_bytes(
     Ok(())
 }
 
+fn validate_adaptive_snow_derived_integrity_v1(
+    states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+) -> Result<(), DirectV11RealConsumerError> {
+    for (lane_id, state) in states {
+        if state.lane_id != *lane_id {
+            return Err(DirectV11RealConsumerError::Identity(
+                "adaptive snow derived-cache lane identity",
+            ));
+        }
+        Wb11HydrologyKernel::validate_stage3_persistent_state(state).map_err(|_| {
+            DirectV11RealConsumerError::Identity("adaptive snow derived-cache candidate validation")
+        })?;
+        let mut represented_mass_swe_m = 0.0;
+        let mut weighted_settle_day_mass = 0.0;
+        for layer in &state.layers {
+            // SC-SNOWENERGY-001@22 INV-043: the canonical layer geometry
+            // projection applies the water-density conversion before dividing
+            // by stored density. The operation ordering is part of the exact
+            // derived-cache identity and matches every Stage-3 layer producer.
+            let reconstructed_thickness_m = layer.mass_swe_m * 1_000.0 / layer.density_kg_m3;
+            if reconstructed_thickness_m.to_bits() != layer.thickness_m.to_bits() {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "adaptive snow mass-depth-density derived identity",
+                ));
+            }
+            represented_mass_swe_m += layer.mass_swe_m;
+            weighted_settle_day_mass += layer.settle_day_count * layer.mass_swe_m;
+        }
+        if represented_mass_swe_m > 0.0 {
+            let weighted_settle_day_count = weighted_settle_day_mass / represented_mass_swe_m;
+            if !weighted_settle_day_count.is_finite() || weighted_settle_day_count < 0.0 {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "adaptive snow weighted-settle derived identity",
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
 pub(crate) fn canonical_stage3_snow_owner_bytes_v11(
     states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
 ) -> Result<Vec<u8>, DirectV11RealConsumerError> {
+    validate_adaptive_snow_derived_integrity_v1(states)?;
     #[derive(Serialize)]
     struct CanonicalSnowOwner<'a> {
         schema: &'static str,
@@ -635,19 +973,6 @@ pub(crate) fn canonical_stage3_snow_owner_bytes_v11(
     .map_err(|_| DirectV11RealConsumerError::Identity("canonical Stage-3 snow bytes"))
 }
 
-pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_receipts(
-    states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
-    lane_receipts: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
-    receipts: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
-) -> Result<Vec<u8>, DirectV11RealConsumerError> {
-    canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
-        states,
-        &BTreeMap::new(),
-        lane_receipts,
-        receipts,
-    )
-}
-
 pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
     states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
     pending_terminal_parcels: &BTreeMap<
@@ -657,6 +982,7 @@ pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
     lane_receipts: &BTreeMap<u32, LaneStage3BoundaryReceiptV1>,
     receipts: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
 ) -> Result<Vec<u8>, DirectV11RealConsumerError> {
+    validate_adaptive_snow_derived_integrity_v1(states)?;
     if pending_terminal_parcels.is_empty() {
         #[derive(Serialize)]
         struct CanonicalSnowOwner<'a> {
@@ -712,14 +1038,29 @@ pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
 /// Shared V11 post-boundary transaction assembly. Both lower-boundary
 /// adopters use this owner/resource/finalization path; only the envelope
 /// construction differs between snow-free and covered segments.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum AcceptedPublicationFinalizationPostureV1 {
+    RetainFinal,
+    DeferTerminalProvisional { pre_event_authority_sha256: Digest32 },
+}
+
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn finalize_v11_imported_segment(
     beginning: &DirectV10RealConsumerShadow,
     input: &V11ImportedV10SegmentInput,
     envelope: &UncommittedCoveredV8OwnerEnvelope,
+    compositional_envelopes: Option<&[UncommittedCoveredV8OwnerEnvelope]>,
+    precomputed_physical_ending: Option<&DirectV10RealConsumerShadow>,
     ending_snow_owner_bytes: Vec<u8>,
     day_index: usize,
+    interval_index: usize,
+    publication_interval: &DirectV11SnowCoveredSegmentInput,
     soil_top_boundary_credits: &[SoilThermalTopBoundaryCreditV1],
+    physical_outcome_ledgers: &BTreeMap<
+        u32,
+        physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1,
+    >,
+    publication_posture: AcceptedPublicationFinalizationPostureV1,
 ) -> Result<
     (
         V11ImportedV10SegmentOutput,
@@ -728,6 +1069,7 @@ pub(crate) fn finalize_v11_imported_segment(
     ),
     DirectV11RealConsumerError,
 > {
+    let reused_precomputed_physical_ending = precomputed_physical_ending.is_some();
     let support_receipt = LseSupportAdmissibilityReceiptV1::admit(
         &beginning.inner.lse_configuration,
         &beginning.inner.lse_state,
@@ -746,37 +1088,64 @@ pub(crate) fn finalize_v11_imported_segment(
     envelope.validate().map_err(|error| {
         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
     })?;
-    let mut resource_debits = v11_nitrogen_resource_debits(
-        envelope,
-        &beginning.inner.lse_configuration,
-        input,
-    )?;
-    resource_debits.extend(v11_water_resource_debits(
-        envelope,
-        &input.configuration,
-        input,
-    )?);
-
-    let mut candidate = beginning.clone();
-    let accepted_soil_credit_set = candidate
-        .inner
-        .accept_envelope_with_soil_top_boundary_credits(
-            envelope.transaction_id(),
+    let resource_debits = if let Some(envelopes) = compositional_envelopes {
+        v11_composed_resource_debits(
+            envelopes,
+            &beginning.inner.lse_configuration,
+            &input.configuration,
+            input,
+        )?
+    } else {
+        let mut debits =
+            v11_nitrogen_resource_debits(envelope, &beginning.inner.lse_configuration, input)?;
+        debits.extend(v11_water_resource_debits(
             envelope,
-            soil_top_boundary_credits,
-        )
-        .map_err(|error| {
-            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-        })?;
-    let joined_soil_owner = soil_thermal_owner_with_top_boundary_credit_join_sha256(
-        digest32_from_lower_hex(candidate.inner.soil_thermal.snapshot_sha256.as_str())?,
-        &accepted_soil_credit_set.accepted_credit_set_sha256,
-    )?;
-    if joined_soil_owner == Digest32::zero() {
-        return Err(DirectV11RealConsumerError::Identity(
-            "covered soil top-boundary owner join",
-        ));
-    }
+            &input.configuration,
+            input,
+        )?);
+        debits
+    };
+    let material_transfers = compositional_envelopes.map_or_else(
+        || envelope.vegetation().material_proposals().to_vec(),
+        |envelopes| {
+            envelopes
+                .iter()
+                .flat_map(|child| child.vegetation().material_proposals().iter().cloned())
+                .collect()
+        },
+    );
+    let mut candidate = if let Some(precomputed) = precomputed_physical_ending {
+        let mut candidate = precomputed.clone();
+        // A composed physical endpoint may carry trial-local support history
+        // from preceding physical children. That cache is neither physical
+        // owner state nor accepted publication authority. The enclosing slab
+        // publishes once from its authenticated beginning; exact child order
+        // remains bound by the terminal snow-soil trial-receipt chain.
+        candidate.accepted_publication_history = beginning.accepted_publication_history.clone();
+        candidate
+    } else {
+        let mut candidate = beginning.clone();
+        let accepted_soil_credit_set = candidate
+            .inner
+            .accept_envelope_with_soil_top_boundary_credits(
+                envelope.transaction_id(),
+                envelope,
+                soil_top_boundary_credits,
+            )
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+            })?;
+        let joined_soil_owner = soil_thermal_owner_with_top_boundary_credit_join_sha256(
+            digest32_from_lower_hex(candidate.inner.soil_thermal.snapshot_sha256.as_str())?,
+            &accepted_soil_credit_set.accepted_credit_set_sha256,
+        )?;
+        if joined_soil_owner == Digest32::zero() {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered soil top-boundary owner join",
+            ));
+        }
+        candidate
+    };
     candidate.vegetation_state = project_v9_runtime_to_v10(
         candidate.inner.vegetation_state(),
         &candidate.vegetation_configuration,
@@ -800,17 +1169,40 @@ pub(crate) fn finalize_v11_imported_segment(
         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
     })?;
 
-    let segment_ending = candidate.vegetation_state.clone();
+    // Carrier trials retain parent-normalized owner candidates so a later
+    // physical child can consume them without inventing an accepted parent
+    // transaction.  The outer V11 adapter, however, authenticates the
+    // imported V10 segment ending as exactly one transaction newer than its
+    // beginning before it removes that segment-local identity.  Rebase only
+    // those logical lineage fields here; all physical values remain the
+    // precomputed accepted-envelope result.
+    let parent_transaction = input.beginning.0.last_transaction_id;
+    let accepted_transaction = parent_transaction.checked_add(1).ok_or(
+        DirectV11RealConsumerError::Identity("accepted vegetation transaction overflow"),
+    )?;
+    let expected_candidate_transaction = if reused_precomputed_physical_ending {
+        parent_transaction
+    } else {
+        accepted_transaction
+    };
+    if candidate.vegetation_state.0.last_transaction_id != expected_candidate_transaction
+        || candidate.inner.vegetation_state.0.last_transaction_id
+            != expected_candidate_transaction
+    {
+        return Err(DirectV11RealConsumerError::Identity(
+            "accepted vegetation candidate transaction lineage",
+        ));
+    }
+    let mut segment_ending = candidate.vegetation_state.clone();
+    normalize_v8_parent_lineage(&mut segment_ending.0, accepted_transaction);
     normalize_v11_staged_parent_lineage(&mut candidate, input.beginning.0.last_transaction_id)?;
     let snow = V11OwnerEnvelope::try_new("snow".to_owned(), ending_snow_owner_bytes)?;
-    let surface = candidate
-        .inner
-        .hydrology_frame
-        .surface_liquid_shadow
-        .as_ref()
-        .ok_or(DirectV11RealConsumerError::Identity(
-            "missing staged surface-liquid owner",
-        ))?;
+    // WB14 can retain an in-parent working state whose effective surface
+    // owner is newer than the frame shadow. Publish the same effective owner
+    // that the immediate snow-liquid receiver consumes; otherwise a wider
+    // accepted support can expose a stale predecessor byte string even
+    // though its physical candidate and ledger are valid.
+    let surface = candidate.effective_surface_liquid_state_for_zero_duration_receiver()?;
     let surface_bytes = surface
         .canonical_bytes(&candidate.inner.surface_configuration)
         .map_err(|error| {
@@ -876,7 +1268,49 @@ pub(crate) fn finalize_v11_imported_segment(
         &beginning_hydrology_adapter,
         &hydrology_adapter,
         &beginning.inner.biogeochemistry,
+        &candidate.inner.biogeochemistry,
+        compositional_envelopes.is_some(),
     )?;
+    let mut accepted_ending_owners = ending_resource_owners.clone();
+    accepted_ending_owners.insert(
+        "vegetation".to_owned(),
+        accepted_v11_vegetation_owner(input, &segment_ending)?,
+    );
+    let ending_owner_states = accepted_ending_owners
+        .values()
+        .map(V11OwnerEnvelope::to_owner_state)
+        .collect::<Result<Vec<_>, _>>()?;
+    let ending_complete_owner_set_sha256 =
+        openwepp_coupled_time::complete_owner_set_digest(&ending_owner_states).map_err(|_| {
+            DirectV11RealConsumerError::Identity("accepted publication ending complete-owner set")
+        })?;
+    match publication_posture {
+        AcceptedPublicationFinalizationPostureV1::RetainFinal => {
+            candidate.retain_accepted_publication_support(
+                day_index,
+                interval_index,
+                input,
+                ending_complete_owner_set_sha256,
+                support_receipt.clone(),
+                publication_interval.lse_forcing.clone(),
+                publication_interval.vegetation_forcing.clone(),
+                publication_interval.wb14_parameters.clone(),
+                resource_debits.clone(),
+                material_transfers.clone(),
+                envelope.hydrology(),
+                Some(physical_outcome_ledgers),
+            )?;
+        }
+        AcceptedPublicationFinalizationPostureV1::DeferTerminalProvisional {
+            pre_event_authority_sha256,
+        } => {
+            if pre_event_authority_sha256 == Digest32::zero() {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "terminal provisional publication deferral authority",
+                ));
+            }
+        }
+    }
     let output = V11ImportedV10SegmentOutput {
         ending: segment_ending,
         lse_support_receipt: V11LseSupportReceiptEnvelope::from_canonical_json(
@@ -891,7 +1325,7 @@ pub(crate) fn finalize_v11_imported_segment(
         admitted_resource_fluxes: Vec::<V11AdmittedResourceFlux>::new(),
         shared_resource_transitions,
         ending_resource_owners,
-        material_transfers: envelope.vegetation().material_proposals().to_vec(),
+        material_transfers,
     };
     Ok((output, candidate, support_receipt))
 }
@@ -1073,17 +1507,139 @@ pub(crate) fn normalize_v8_parent_lineage(
     state.state_sha256 = state.canonical_sha256();
 }
 
+/// Reconstruct the exact V11 vegetation envelope that the outer accepted
+/// segment transaction installs after importing the V10 ending.  The V11
+/// model/configuration identity comes from the authenticated beginning owner;
+/// the physical ending is the just-accepted imported ending, with the same
+/// parent-lineage normalization used by `stage_imported_ending`.
+pub(crate) fn accepted_v11_vegetation_owner(
+    input: &V11ImportedV10SegmentInput,
+    imported_ending: &V10CoupledOwnedState,
+) -> Result<V11OwnerEnvelope, DirectV11RealConsumerError> {
+    let beginning_envelope = input.staged_resource_owners.get("vegetation").ok_or(
+        DirectV11RealConsumerError::Identity("accepted vegetation beginning owner"),
+    )?;
+    beginning_envelope.to_owner_state()?;
+    let beginning: openwepp_vegetation::v11::V11CoupledOwnedState =
+        serde_json::from_slice(&beginning_envelope.state_bytes).map_err(|_| {
+            DirectV11RealConsumerError::Identity("accepted vegetation beginning state")
+        })?;
+    let parent = input.beginning.0.last_transaction_id;
+    if beginning.last_parent_transaction_id != parent {
+        return Err(DirectV11RealConsumerError::Identity(
+            "accepted vegetation parent lineage",
+        ));
+    }
+
+    let mut physical = imported_ending.0.clone();
+    physical
+        .model_definition_sha256
+        .clone_from(&beginning.model_definition_sha256);
+    physical
+        .configuration_sha256
+        .clone_from(&beginning.configuration_sha256);
+    normalize_v8_parent_lineage(&mut physical, parent);
+    let mut ending = openwepp_vegetation::v11::V11CoupledOwnedState {
+        model_definition_sha256: beginning.model_definition_sha256,
+        configuration_sha256: beginning.configuration_sha256,
+        state_sha256: String::new(),
+        physical,
+        last_parent_transaction_id: parent,
+    };
+    ending.state_sha256 = ending.canonical_sha256()?;
+    Ok(openwepp_vegetation::v11::v11_vegetation_owner_envelope(
+        &ending,
+    )?)
+}
+
+fn v11_composed_resource_debits(
+    envelopes: &[UncommittedCoveredV8OwnerEnvelope],
+    lse_configuration: &openwepp_land_surface_energy::LandSurfaceEnergyConfiguration,
+    vegetation_configuration: &VegetationConfiguration,
+    input: &V11ImportedV10SegmentInput,
+) -> Result<Vec<V11ResourceDebit>, DirectV11RealConsumerError> {
+    if envelopes.is_empty() {
+        return Err(DirectV11RealConsumerError::Identity(
+            "V11 empty compositional resource custody",
+        ));
+    }
+    type DebitKey = (
+        String,
+        V11ResourceKey,
+        String,
+        String,
+        String,
+        String,
+        String,
+        String,
+    );
+    let mut composed = BTreeMap::<DebitKey, V11ResourceDebit>::new();
+    for envelope in envelopes {
+        let mut child = v11_nitrogen_resource_debits(envelope, lse_configuration, input)?;
+        child.extend(v11_water_resource_debits(
+            envelope,
+            vegetation_configuration,
+            input,
+        )?);
+        for debit in child {
+            let key = (
+                debit.owner_id.clone(),
+                debit.resource_key.clone(),
+                debit.ofe_id.clone(),
+                debit.tile_id.clone(),
+                debit.occupancy_id.clone(),
+                debit.layer_id.clone(),
+                debit.source_id.clone(),
+                debit.amount_basis.clone(),
+            );
+            if let Some(aggregate) = composed.get_mut(&key) {
+                aggregate.request += debit.request;
+                aggregate.authorization += debit.authorization;
+                aggregate.final_use += debit.final_use;
+                if !aggregate.request.is_finite()
+                    || !aggregate.authorization.is_finite()
+                    || !aggregate.final_use.is_finite()
+                {
+                    return Err(DirectV11RealConsumerError::Identity(
+                        "V11 compositional resource debit finite sum",
+                    ));
+                }
+            } else {
+                composed.insert(key, debit);
+            }
+        }
+    }
+    let mut debits = composed
+        .into_values()
+        .map(|mut debit| {
+            debit.receipt_id = Digest32::zero();
+            V11ResourceDebit::new(debit).map_err(|_| {
+                DirectV11RealConsumerError::Identity("V11 compositional resource debit")
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    debits.sort_by(|left, right| {
+        left.owner_id
+            .cmp(&right.owner_id)
+            .then_with(|| left.occupancy_id.cmp(&right.occupancy_id))
+            .then_with(|| left.layer_id.cmp(&right.layer_id))
+            .then_with(|| left.resource_key.cmp(&right.resource_key))
+            .then_with(|| left.ofe_id.cmp(&right.ofe_id))
+            .then_with(|| left.tile_id.cmp(&right.tile_id))
+            .then_with(|| left.source_id.cmp(&right.source_id))
+            .then_with(|| left.amount_basis.cmp(&right.amount_basis))
+    });
+    Ok(debits)
+}
+
 pub(crate) fn v11_nitrogen_resource_debits(
     envelope: &UncommittedCoveredV8OwnerEnvelope,
     lse_configuration: &openwepp_land_surface_energy::LandSurfaceEnergyConfiguration,
     input: &V11ImportedV10SegmentInput,
 ) -> Result<Vec<V11ResourceDebit>, DirectV11RealConsumerError> {
     let (requests, authorizations, uses) = envelope.vegetation().nitrogen_protocol();
-    if validate_v11_nitrogen_protocol_cardinality(
-        requests.len(),
-        authorizations.len(),
-        uses.len(),
-    )? {
+    if validate_v11_nitrogen_protocol_cardinality(requests.len(), authorizations.len(), uses.len())?
+    {
         return Ok(Vec::new());
     }
     let occupancies = input.configuration.expected_occupancies();
@@ -1201,9 +1757,12 @@ pub(crate) fn v11_bgc_debit_scope(
             ambiguous_strata.insert(occupancy.stratum_id.as_str().to_owned());
             continue;
         }
-        let ofe = (*matching.iter().next().ok_or(DirectV11RealConsumerError::Identity(
-            "V11 BGC stratum/OFE scope",
-        ))?)
+        let ofe = (*matching
+            .iter()
+            .next()
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "V11 BGC stratum/OFE scope",
+            ))?)
         .to_owned();
         if stratum_ofe_ids
             .insert(occupancy.stratum_id.as_str().to_owned(), ofe.clone())
@@ -1245,16 +1804,20 @@ mod nitrogen_protocol_cardinality_tests {
     #[test]
     fn empty_protocol_is_admissible_and_every_partial_empty_protocol_rejects() {
         assert!(validate_v11_nitrogen_protocol_cardinality(0, 0, 0).expect("empty protocol"));
-        for counts in [(0, 0, 1), (0, 1, 0), (1, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0)] {
+        for counts in [
+            (0, 0, 1),
+            (0, 1, 0),
+            (1, 0, 0),
+            (0, 1, 1),
+            (1, 0, 1),
+            (1, 1, 0),
+        ] {
             assert!(
                 validate_v11_nitrogen_protocol_cardinality(counts.0, counts.1, counts.2).is_err(),
                 "partial-empty poison {counts:?}",
             );
         }
-        assert!(
-            !validate_v11_nitrogen_protocol_cardinality(1, 1, 1)
-                .expect("nonempty protocol")
-        );
+        assert!(!validate_v11_nitrogen_protocol_cardinality(1, 1, 1).expect("nonempty protocol"));
     }
 
     #[test]
@@ -1303,11 +1866,13 @@ mod nitrogen_protocol_cardinality_tests {
     #[test]
     fn bgc_ofe_resolution_rejects_two_covered_vegetated_ofes() {
         let fixture = two_ofe_routed_endpoint_fixture();
-        assert!(v11_bgc_bearing_ofe(
-            &fixture.vegetation_configuration.expected_occupancies(),
-            &fixture.lse_configuration,
-        )
-        .is_err());
+        assert!(
+            v11_bgc_bearing_ofe(
+                &fixture.vegetation_configuration.expected_occupancies(),
+                &fixture.lse_configuration,
+            )
+            .is_err()
+        );
     }
 
     #[test]
@@ -1351,8 +1916,7 @@ mod nitrogen_protocol_cardinality_tests {
             source_id: "nh4".into(),
             amount_basis: "kg_n_m2".into(),
         };
-        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1))
-            .expect("support");
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1)).expect("support");
         let values = [
             0.001_626_199_161_107_315_3,
             0.000_000_038_444_775_879_237_09,
@@ -1382,15 +1946,29 @@ mod nitrogen_protocol_cardinality_tests {
             make(3, "stratum-a", values[0]),
         ];
         let ids = v11_linked_debit_ids(&debits, &shared, true);
-        assert_eq!(ids, vec![Digest32::from_bytes([3; 32]), Digest32::from_bytes([2; 32]), Digest32::from_bytes([1; 32])]);
+        assert_eq!(
+            ids,
+            vec![
+                Digest32::from_bytes([3; 32]),
+                Digest32::from_bytes([2; 32]),
+                Digest32::from_bytes([1; 32])
+            ]
+        );
         let semantic = ids.iter().fold(0.0_f64, |sum, id| {
-            sum + debits.iter().find(|debit| debit.receipt_id == *id).expect("linked").final_use
+            sum + debits
+                .iter()
+                .find(|debit| debit.receipt_id == *id)
+                .expect("linked")
+                .final_use
         });
         let alternate_permutation = debits
             .iter()
             .map(|debit| debit.final_use)
             .fold(0.0_f64, |sum, value| sum + value);
-        assert_eq!(semantic.to_bits(), 0.001_626_254_196_334_025_4_f64.to_bits());
+        assert_eq!(
+            semantic.to_bits(),
+            0.001_626_254_196_334_025_4_f64.to_bits()
+        );
         assert_eq!(
             alternate_permutation.to_bits(),
             0.001_626_254_196_334_025_1_f64.to_bits()
@@ -1407,6 +1985,8 @@ pub(crate) fn v11_shared_resource_transitions(
     beginning_hydrology: &RealHydrologyShadowAdapter,
     ending_hydrology: &RealHydrologyShadowAdapter,
     beginning_bgc: &openwepp_biogeochemistry::BiogeochemistryState,
+    ending_bgc: &openwepp_biogeochemistry::BiogeochemistryState,
+    compositional: bool,
 ) -> Result<Vec<V11SharedResourceOwnerTransition>, DirectV11RealConsumerError> {
     let hydrology_digest = owners
         .get("hydrology")
@@ -1436,9 +2016,12 @@ pub(crate) fn v11_shared_resource_transitions(
         .next()
         .filter(|_| bgc_ofes.len() == 1)
         .copied();
-    if envelope.biogeochemistry().mineral_operands().iter().any(|operand| {
-        operand.finalized_use_kg_n_m2 > 0.0
-    }) && ofe_id.is_none()
+    if envelope
+        .biogeochemistry()
+        .mineral_operands()
+        .iter()
+        .any(|operand| operand.finalized_use_kg_n_m2 > 0.0)
+        && ofe_id.is_none()
     {
         return Err(DirectV11RealConsumerError::Identity(
             "V11 exact-one BGC transition OFE",
@@ -1450,8 +2033,10 @@ pub(crate) fn v11_shared_resource_transitions(
             input,
             debits,
             beginning_bgc,
+            ending_bgc,
             ofe_id,
             bgc_digest,
+            compositional,
         )?);
     }
     Ok(rows)
@@ -1515,8 +2100,10 @@ pub(crate) fn v11_bgc_owner_transitions(
     input: &V11ImportedV10SegmentInput,
     debits: &[V11ResourceDebit],
     beginning_bgc: &openwepp_biogeochemistry::BiogeochemistryState,
+    ending_bgc: &openwepp_biogeochemistry::BiogeochemistryState,
     ofe_id: &str,
     owner_digest: Digest32,
+    compositional: bool,
 ) -> Result<Vec<V11SharedResourceOwnerTransition>, DirectV11RealConsumerError> {
     let mut rows = Vec::new();
     for operand in envelope.biogeochemistry().mineral_operands() {
@@ -1555,15 +2142,22 @@ pub(crate) fn v11_bgc_owner_transitions(
             MineralNitrogenSpecies::Ammonium => beginning_layer.ammonium_n,
             MineralNitrogenSpecies::Nitrate => beginning_layer.nitrate_n,
         };
+        let ending_layer = ending_bgc
+            .layers
+            .get(operand.key.layer_id.as_str())
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "V11 ending BGC layer binding",
+            ))?;
+        let ending_amount = match operand.key.species {
+            MineralNitrogenSpecies::Ammonium => ending_layer.ammonium_n,
+            MineralNitrogenSpecies::Nitrate => ending_layer.nitrate_n,
+        };
         let linked_use = ids
             .iter()
             .map(|id| {
-                debits
-                    .iter()
-                    .find(|debit| debit.receipt_id == *id)
-                    .ok_or(DirectV11RealConsumerError::Identity(
-                        "V11 BGC linked debit identity",
-                    ))
+                debits.iter().find(|debit| debit.receipt_id == *id).ok_or(
+                    DirectV11RealConsumerError::Identity("V11 BGC linked debit identity"),
+                )
             })
             .try_fold(0.0_f64, |sum, debit| {
                 let next = sum + debit?.final_use;
@@ -1573,8 +2167,16 @@ pub(crate) fn v11_bgc_owner_transitions(
                         "V11 BGC finalized-use sum",
                     ))
             })?;
-        if linked_use.to_bits() != operand.finalized_use_kg_n_m2.to_bits()
-            || (beginning_amount - linked_use).to_bits() != operand.ending_kg_n_m2.to_bits()
+        let reconstructed_ending = beginning_amount - linked_use;
+        if (!compositional
+            && (linked_use.to_bits() != operand.finalized_use_kg_n_m2.to_bits()
+                || ending_amount.to_bits() != operand.ending_kg_n_m2.to_bits()))
+            || reconstructed_ending.to_bits() != ending_amount.to_bits()
+                && (!compositional
+                    || !v11_compositional_pool_roundoff_within_one_ulp(
+                        reconstructed_ending,
+                        ending_amount,
+                    ))
         {
             return Err(DirectV11RealConsumerError::Identity(
                 "V11 BGC mineral-pool delta",
@@ -1584,12 +2186,20 @@ pub(crate) fn v11_bgc_owner_transitions(
             input,
             key,
             beginning_amount,
-            operand.ending_kg_n_m2,
+            ending_amount,
             ids,
             owner_digest,
         )?);
     }
     Ok(rows)
+}
+
+fn v11_compositional_pool_roundoff_within_one_ulp(reconstructed: f64, installed: f64) -> bool {
+    reconstructed.is_finite()
+        && installed.is_finite()
+        && reconstructed >= 0.0
+        && installed >= 0.0
+        && reconstructed.to_bits().abs_diff(installed.to_bits()) <= 1
 }
 
 pub(crate) fn v11_linked_debit_ids(
@@ -1722,6 +2332,27 @@ pub(crate) fn v11_water_resource_debits(
 mod owner_join_tests {
     use super::*;
     use openwepp_coupled_time::{ModelTimeNs, TimeSupport};
+
+    #[test]
+    fn compositional_pool_roundoff_accepts_only_one_ulp() {
+        let value = 1.0_f64;
+        assert!(v11_compositional_pool_roundoff_within_one_ulp(value, value));
+        assert!(v11_compositional_pool_roundoff_within_one_ulp(
+            value,
+            f64::from_bits(value.to_bits() + 1),
+        ));
+        assert!(!v11_compositional_pool_roundoff_within_one_ulp(
+            value,
+            f64::from_bits(value.to_bits() + 2),
+        ));
+        assert!(!v11_compositional_pool_roundoff_within_one_ulp(
+            f64::NAN,
+            value,
+        ));
+        assert!(!v11_compositional_pool_roundoff_within_one_ulp(
+            -value, value,
+        ));
+    }
 
     #[test]
     fn final_owner_join_seal_rejects_each_owner_digest_substitution() {

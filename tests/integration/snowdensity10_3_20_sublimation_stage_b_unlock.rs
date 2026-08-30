@@ -16,6 +16,10 @@ const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00c_day_input_builder_impl.rs"
 );
+const STAGE3_CANOPY_AUTHORITY: &str = concat!(
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
+    "00c_stage3_canopy_authority.rs"
+);
 const TOOL: &str = "tools/snowfreeze_observed/sublimation_stage_b_unlock.py";
 const REPORT: &str = concat!(
     "docs/work-packages/20260628-snowdensity-10-3-20-sublimation-stage-b-unlock-001/",
@@ -58,20 +62,21 @@ fn contract_and_package_bind_stage_b_unlock_authority() {
 
 #[test]
 fn stage_b_selector_is_opt_in_and_no_user_surface_is_added() {
-    let builder = read(BUILDER);
+    let builder = format!("{}\n{}", read(BUILDER), read(STAGE3_CANOPY_AUTHORITY));
     for marker in [
         "OPENWEPP_SNOWDENSITY1038_MELT_MODEL",
-        "SnowMeltModel::CoeLiquidHoldingCapacityV1",
-        "SnowMeltModel::CoeOpenSublimationStageAV1",
-        "SnowMeltModel::CoeOpenSublimationStageBV1",
-        "coe_open_sublimation_stage_b_v1",
-        "must be legacy_coe, coe_liquid_holding_capacity_v1, coe_open_sublimation_stage_a_v1, or coe_open_sublimation_stage_b_v1",
+        "reject_retired_stage3_snow_selector_envs",
+        "retired snow selector",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
     assert!(
-        !builder.contains("snow-melt-model") && !builder.contains("run_file_disable_option"),
-        "Stage B must not add parser/runfile/user CLI or .run disable surfaces"
+        !builder.contains("SnowMeltModel::CoeOpenSublimationStageAV1")
+            && !builder.contains("SnowMeltModel::CoeOpenSublimationStageBV1"),
+        "historical Stage A/B diagnostic models must not be selectable in production"
     );
 }
 

@@ -1,16 +1,17 @@
-schema = "openwepp-hillslope-runfile-v1"
 run_name = "wshedw7r-p102-H1"
+schema = "openwepp-hillslope-runfile-v1"
 unit_system = "metric"
 
 [inputs]
-soil = "H1.sol"
-management = "H1.man"
-slope = "H1.slp"
 climate = "H1.cli"
-wepp_ui = true
+management = "H1.man"
 pmetpara = "pmetpara.txt"
+slope = "H1.slp"
+snow_stage3_v11_owner_seed = "H1.source.run.snow_stage3_v11_owner_seed.json"
+soil = "H1.sol"
+wepp_ui = true
 
 [outputs]
-pass = "unused/H1.hbp"
 loss = "unused/H1.loss.json"
+pass = "unused/H1.hbp"
 pass_parquet = "unused/H1.pass.parquet"

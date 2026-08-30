@@ -26,7 +26,7 @@ impl EventClass {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Serialize)]
 pub struct AcceptedEventReceiptV1 {
     pub(crate) receipt_id: ReceiptId,
     pub(crate) event_id: EventId,
@@ -78,6 +78,117 @@ impl AcceptedEventReceiptV1 {
     #[must_use]
     pub const fn parent_transaction_id(&self) -> crate::ParentTransactionId {
         self.parent_transaction_id
+    }
+
+    /// Validate that this accepted receipt commits the exact canonical ledger
+    /// entries retained by a downstream custody receipt.
+    pub fn validate_ledger_entries(
+        &self,
+        entries: &[LedgerEntryV1],
+    ) -> Result<(), CoupledTimeError> {
+        self.validate()?;
+        if self.ledger_digest != ledger_digest(entries)? {
+            return Err(CoupledTimeError::EventTransition);
+        }
+        Ok(())
+    }
+
+    /// Reconstruct every identity carried by an accepted event receipt. This
+    /// is used when an event receipt is retained beyond the live clock as an
+    /// explicit zero-duration owner-handoff authority.
+    pub fn validate(&self) -> Result<(), CoupledTimeError> {
+        let tick = self.tick.get().to_be_bytes();
+        let ordinal = self.ordinal.to_be_bytes();
+        let event = framed_sha256(
+            "event",
+            &[
+                FramedField {
+                    tag: "parent_transaction_id",
+                    value: self.parent_transaction_id.digest().as_bytes(),
+                },
+                FramedField {
+                    tag: "tick_ns",
+                    value: &tick,
+                },
+                FramedField {
+                    tag: "event_class",
+                    value: self.class.wire().as_bytes(),
+                },
+                FramedField {
+                    tag: "event_ordinal",
+                    value: &ordinal,
+                },
+                FramedField {
+                    tag: "source_owner_id",
+                    value: self.source_owner_id.as_bytes(),
+                },
+                FramedField {
+                    tag: "event_context",
+                    value: self.event_context_digest.as_bytes(),
+                },
+            ],
+        )?;
+        let end_clock = crate::digest_bytes(
+            &[
+                &self.begin_clock.as_bytes()[..],
+                &event.as_bytes()[..],
+                &self.end_owner_set.as_bytes()[..],
+            ]
+            .concat(),
+        );
+        let receipt = framed_sha256(
+            "event-receipt-v2",
+            &[
+                FramedField {
+                    tag: "parent_transaction_id",
+                    value: self.parent_transaction_id.digest().as_bytes(),
+                },
+                FramedField {
+                    tag: "event_id",
+                    value: event.as_bytes(),
+                },
+                FramedField {
+                    tag: "tick_ns",
+                    value: &tick,
+                },
+                FramedField {
+                    tag: "ordinal",
+                    value: &ordinal,
+                },
+                FramedField {
+                    tag: "begin_clock",
+                    value: self.begin_clock.as_bytes(),
+                },
+                FramedField {
+                    tag: "end_clock",
+                    value: end_clock.as_bytes(),
+                },
+                FramedField {
+                    tag: "begin_owner_set",
+                    value: self.begin_owner_set.as_bytes(),
+                },
+                FramedField {
+                    tag: "end_owner_set",
+                    value: self.end_owner_set.as_bytes(),
+                },
+                FramedField {
+                    tag: "event_context",
+                    value: self.event_context_digest.as_bytes(),
+                },
+                FramedField {
+                    tag: "ledger_digest",
+                    value: self.ledger_digest.as_bytes(),
+                },
+            ],
+        )?;
+        if self.source_owner_id.is_empty()
+            || self.event_id.digest() != event
+            || self.end_clock != end_clock
+            || self.receipt_id.digest() != receipt
+        {
+            return Err(CoupledTimeError::EventTransition);
+        }
+        Ok(())
     }
 }
 
@@ -430,12 +541,21 @@ fn apply_event(
     {
         return Err(CoupledTimeError::EventTransition);
     }
-    let progress = event.ending_owners != clock.complete_owner_set
+    let owner_or_regime_progress = event.ending_owners != clock.complete_owner_set
         || event.successor_regime_id != clock.active_regime_id
         || event.successor_participants != clock.active_participant_set;
-    if !progress {
+    let receipt_custody_progress = event.class == EventClass::OwnershipTransfer
+        && event.mutation_set.is_empty()
+        && !event.ledger_entries.is_empty()
+        && event
+            .ledger_entries
+            .iter()
+            .all(LedgerEntryV1::is_nonzero_custody_authority);
+    if !owner_or_regime_progress && !receipt_custody_progress {
         return Err(CoupledTimeError::EventCycle);
     }
+    let predecessor_event_ordinal = clock.event_ordinal;
+    let predecessor_owner_set = owner_set_digest(&clock.complete_owner_set)?;
     clock.event_ordinal = clock
         .event_ordinal
         .checked_add(1)
@@ -454,13 +574,23 @@ fn apply_event(
         participant_bytes.extend_from_slice(participant.as_bytes());
         participant_bytes.push(0);
     }
-    clock.active_segment_id = crate::SegmentId::derive(
-        clock.parent_transaction_id,
-        clock.segment_ordinal,
-        TimeSupport::new(clock.active_segment_start, clock.active_segment_end)?,
-        crate::digest_bytes(clock.active_regime_id.as_bytes()),
-        crate::digest_bytes(&participant_bytes),
-    )?;
+    clock.active_segment_id = if clock.active_segment_start == clock.active_segment_end {
+        crate::SegmentId::derive_terminal_event_boundary(
+            clock.parent_transaction_id,
+            clock.parent_support,
+            clock.active_segment_start,
+            predecessor_event_ordinal,
+            predecessor_owner_set,
+        )?
+    } else {
+        crate::SegmentId::derive(
+            clock.parent_transaction_id,
+            clock.segment_ordinal,
+            TimeSupport::new(clock.active_segment_start, clock.active_segment_end)?,
+            crate::digest_bytes(clock.active_regime_id.as_bytes()),
+            crate::digest_bytes(&participant_bytes),
+        )?
+    };
     clock.accepted_clock_digest = event.receipt.end_clock;
     clock.accepted_event_receipts.push(event.receipt.clone());
     Ok(event.receipt)

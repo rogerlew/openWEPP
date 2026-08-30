@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 18
+contract_version: 26
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -14,7 +14,7 @@ consumer_scope:
   - Snow sublimation and melt components
   - Snow-energy diagnostics and assurance outputs
 evidence_level: static+independent_oracle+contract_vectors
-last_reviewed: 2026-08-24
+last_reviewed: 2026-08-29
 supersedes: []
 superseded_by: []
 ---
@@ -999,6 +999,9 @@ state, CoE exclusion, and recipient absence on failure are exact.
 | `TOL-SNOWENERGY-001` | Terminal step-doubling, event-root, and independent mass/energy closure tolerances are distinct and never repair identity or state. | typed numerical failure |
 | `TOL-SNOWENERGY-002` | OFE tile-fraction closure residual `abs(sum_i(f_i)-1) <= 1e-12` (dimensionless) admits only floating-point summation roundoff; it never changes, rescales, or renormalizes any fraction or flux. Identity, ordering, cardinality, duplication, area basis, boundary class, model definition, and state joins remain exact. | typed topology failure |
 | `TOL-SNOWENERGY-003` | Covered fixed-point state convergence uses absolute bounds only: `1e-9 m` for SWE, thickness, liquid, and refrozen depth; `1e-8 K` for temperature difference; `1e-6 kg m^-2` for cumulative/detached mass; and `1e-6 J m^-2` for cold content and cumulative energy. Density and all structural/count-like fields are exact. No relative term, clamp, canonicalization, or cross-unit substitution is admitted. | typed nonconvergence |
+| `TOL-SNOWENERGY-004` | `OPENWEPP_STAGE3_ADAPTIVE_OWNER_TOLERANCE_V1` governs only direct-versus-composed complete-owner truncation error. Snow depth uses `1e-9 m + 5e-3*max_abs`, snow mass uses `5e-6 kg m^-2 + 5e-3*max_abs`, snow energy uses `1e-6 J m^-2 + 5e-3*max_abs`, and snow temperature uses `1e-2 K + 1e-8*max_abs`. Soil-thermal energy alone uses `1e-6 J m^-2 + 1.5e-2*max_abs`; LSE energy uses `1e-6 J m^-2 + 5e-3*max_abs`. Other complete-owner fields retain their owning-contract absolute floor and `1e-3` relative tolerance for extensive mass/depth/energy or `1e-6` for other intensive state; temperature uses `1e-2 K + 1e-8*max_abs`. These constants do not govern or relax independent mass/energy ledger closure. Exact topology, active-set, posture, ordering, schema, and thermodynamic-provider identities remain exact. | typed adaptive refinement or qualification hold |
+| `TOL-SNOWENERGY-005` | Final snow--soil receipt nonlinear termination admits only finite reconstructed-endpoint residuals `<=1e-9 J m^-2` for applied energy and `<=1e-8 K` for each ending temperature. The receipt retains the exact equal/opposite energy actually consumed and reseals only exact installed candidate identities. The energy bound is 1,000 times smaller than the unchanged physical-ledger closure threshold; it cannot excuse a sign, node, topology, support, owner, digest, mass/energy-ledger, or discrete-phase mismatch. | bounded fixed-point retry; cap exhaustion remains typed nonconvergence |
+| `TOL-SNOWENERGY-006` | A refreeze-capacity operation that selects `m_refreeze=Q_cc/L_f` may canonicalize only its finite binary64 quotient/product remainder `Q_cc-L_f*m_refreeze` in `[-1e-9,0) J m^-2` to exact `+0 J m^-2`. This threshold is 1,000 times smaller than the unchanged `1e-6 J m^-2` physical energy-ledger closure bound. It changes neither refrozen mass nor fusion energy; any more-negative result, any nonfinite operand, a non-capacity-limited branch, or arbitrary negative cold content is a typed domain failure. | exact zero canonicalization at the constitutive operation; otherwise typed domain failure |
 
 - Analytical evidence uses an absolute tolerance of `1e-9` for dimensionless
   identity checks and `1e-6 W m^-2` for independently reconstructed fluxes.
@@ -1144,6 +1147,7 @@ operands.
 | `TOL-SNOWENERGY-001` | Terminal step-doubling, event-root, and independent mass/energy closure tolerances are distinct and never repair identity or state. | typed numerical failure |
 | `TOL-SNOWENERGY-002` | OFE tile fractions close within `1e-12` dimensionless summation residual without normalization; every nonnumeric topology join remains exact. | typed topology failure |
 | `TOL-SNOWENERGY-003` | Covered Stage 3 fixed-point state uses physical-class absolute bounds only; fingerprints are reconstructed per candidate, while density and structural/count-like state remain exact. | typed nonconvergence |
+| `TOL-SNOWENERGY-006` | Only a refreeze-capacity `Q_cc/L_f` quotient/product remainder in `[-1e-9,0) J m^-2` canonicalizes to exact zero; mass, fusion energy, and physical closure thresholds are unchanged. | constitutive refreeze validator |
 | `OBL-SNOWENERGY-P-009` | Emit one immutable terminal receiver receipt or a typed failure; never partially commit. | receiver transaction |
 | `OBL-SNOWENERGY-C-016` | Reconstruct snow, liquid, vapor, fusion energy, and time without post-event snow operands or aliases. | receiver validator |
 | `INV-SNOWENERGY-041` | Terminal numerical tolerances are typed, distinct, and never repair identity, support, or state. | numerical validator |
@@ -1175,7 +1179,187 @@ The package rows below map active package-local binding residue through version
 | `SNOWENERGY-STAGE3-EVOLVING-CARRIER-PLAUSIBILITY` | `docs/work-packages/20260807-snow-stage3-evolving-state-carrier-plausibility-reconciliation-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-017, INV-SNOWENERGY-029, INV-SNOWENERGY-032, OBL-SNOWENERGY-P-007, OBL-SNOWENERGY-C-014` | `dual review and verification required` | Distinguishes evaluation-only raw vapor/latent opportunity from actual bounded sequential transfer; no production correction or persistence authority. |
 | `SNOWENERGY-STAGE3-WIND-SOURCE-CUSTODY` | `docs/work-packages/20260807-snow-stage3-wind-source-custody-and-exposure-authority-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-031, INV-SNOWENERGY-033` | `dual review and verification required` | Separates nominal source height, raw CLI wind, PMET-local adjustment, and virtual Stage 3 geometry; provider recovery directly proves retained output equality and statically reconstructs the local path while deployed/server and exposure authority remain missing. |
 | `SNOWENERGY-TERMINAL-ENTHALPY-EVENT` | `docs/work-packages/20260807-snow-terminal-enthalpy-event-numerics-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-034, INV-SNOWENERGY-041, OBL-SNOWENERGY-P-008, OBL-SNOWENERGY-C-015` | `flagged-binding-addition` | Admits evaluation-only shallow-pack enthalpy/error-control/event mechanics while keeping liquid, energy, and remaining-time receiving-surface custody censored. |
-| `SNOWENERGY-TERMINAL-RECEIVER-TRANSACTION` | `docs/work-packages/20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-035, OBL-SNOWENERGY-P-009, OBL-SNOWENERGY-C-016` | `flagged-binding-addition` | Admits a fresh default-off terminal receiver transaction; it does not alter evaluation-only `INV-SNOWENERGY-034` or authorize production cutover. |
+| `SNOWENERGY-TERMINAL-RECEIVER-TRANSACTION` | `docs/work-packages/20260819-snow-stage3-terminal-meltout-lse-handoff-implementation-001/` | `historical` | `maps-to-existing-INV` | `INV-SNOWENERGY-035, OBL-SNOWENERGY-P-009, OBL-SNOWENERGY-C-016` | `historical` | Preserves the default-off receiver evidence superseded by version 22. |
+| `SNOWENERGY-ADAPTIVE-COMPOSITIONAL-V22` | `docs/work-packages/20260826-snow-stage3-adaptive-compositional-microstepping-001/` | `active` | `maps-to-existing-INV` | `INV-SNOWENERGY-048, INV-SNOWENERGY-049, INV-SNOWENERGY-050` | `flagged-binding-addition` | Owner-selected bounded vapor, same-step phase equilibrium, adaptive complete-owner composition, and accepted-microstep terminal transfer. Rejected versions 19-21 remain historical. |
+
+## Adaptive compositional Stage-3 phase-equilibrium successor
+
+Version 22 supersedes `INV-SNOWENERGY-034` and the terminal portions of
+`INV-SNOWENERGY-029/030/035` where they prescribe melt-before-deposition,
+continuous root localization, sub-60-second attempts, censored terminal energy, or
+an evaluation-only/default-off receiver. Their historical evidence remains
+binding for the behavior it observed and as negative regression evidence; it is
+not active production authority after cutover. Versions 19 through 21 remain historical rejected candidates and are not restored.
+
+For every accepted Stage-3 microstep let beginning ice, retained liquid, and
+nonnegative cold content be `I0`, `L0`, and `C0`; actual signed vapor mass be
+`V`; external liquid entering snow custody be `Lin`; complete bounded energy be
+`Q`; and fusion latent heat be `Lf`. Define `D=max(V,0)` and
+`S=min(max(-V,0),I0)`. Raw sublimation opportunity and its latent energy are
+truncated together before `Q` is assembled. Deposition is retained exactly.
+The vapor latent term is already one component of `Q` and is never credited a
+second time.
+
+The phase projection uses enthalpy relative to all water being ice at 0 C:
+
+    W = I0 + L0 + D - S + Lin
+    E = -C0 + Lf * (L0 + Lin) + Q
+
+If `E<0`, the endpoint is `(I1,L1,C1,U)=(W,0,-E,0)`. If
+`0<=E<Lf*W`, it is `(W-E/Lf,E/Lf,0,0)`. If `E>=Lf*W`, it is
+`(0,W,0,max(E-Lf*W,0))`; equality produces exact zero ice and exact zero
+unallocated energy. With `Lpre=L0+Lin`, define
+`melt=max(L1-Lpre,0)` and `refreeze=max(Lpre-L1,0)`.
+
+The accepted endpoint independently closes:
+
+    I0 + D + refreeze - S - melt - I1 = 0
+    L0 + Lin + melt - refreeze - L1 = 0
+    Q - (C0-C1) - Lf*melt + Lf*refreeze - U = 0
+
+Material positive `I1` with material positive `U` is forbidden. Positive solid
+is never tolerance-deleted. Same-microstep deposited ice participates in phase
+equilibrium; after disappearance atmospheric vapor belongs to the snow-free
+LSE owner and only authorized solid precipitation may recreate snow.
+
+`INV-SNOWENERGY-048` — Actual vapor custody is a typed record carrying raw and
+actual mass, raw and actual latent energy, positive finite specific latent heat
+for nonzero transfer, and deposition/sublimation/none disposition. Complete
+energy replaces raw latent opportunity with actual bounded latent energy once.
+Raw-as-actual, mass-only truncation, energy-only truncation, sign inversion,
+vapor-as-liquid, or duplicate latent credit fails closed.
+
+`INV-SNOWENERGY-049` — Every accepted adaptive step installs the more-resolved
+composed complete-owner result. Positive supports are exact integer multiples
+of the 60-second (`60_000_000_000 ns`) temporal floor; stable ordinary
+supports must accept steps substantially larger than that floor. Direct and composed trials reevaluate every
+state-dependent carrier and owner from their own immutable beginning state and
+exact projected support. Trial states are unpublished. Physical comparison uses
+the named `OPENWEPP_STAGE3_ADAPTIVE_OWNER_TOLERANCE_V1` authority in
+`TOL-SNOWENERGY-004`, owner-specific absolute/relative tolerances, and exact discrete predicates; a
+discrete mismatch rejects and refines the joint step.
+
+For covered supports strictly above the 60-second floor, the bounded outer
+solve applies under-relaxed Picard to the current Stage 3 and soil iterates,
+`x_next=x+w*(F(x)-x)`, with
+`w=max(0.25,min(0.5,120 s/support_duration))` and at most 96 iterations. The
+exact 60-second floor begins with the raw authentic Picard update. It switches
+to `w=0.5` only after authentic Stage 3 candidates exhibit an `A/B/A` cycle:
+candidate `n` and `n-2` must pass the existing `TOL-SNOWENERGY-003` comparison,
+including exact density and every structural/discrete predicate, while
+candidate `n` and `n-1` do not. The switch is monotonic for the remainder of
+that unpublished bounded solve. Acceptance still requires every
+native-unit `TOL-SNOWENERGY-003` norm plus LSE and boundary norms; exhaustion
+is a typed refinable trial failure and never publishes a candidate. The exact
+Stage-3 lower-boundary/column operand-join closure is likewise refinable only
+above the floor because it can identify a coarse support spanning a phase
+transition; the same failure at the floor remains fail-closed.
+
+Relaxation is prohibited across any schema, terminal-model, layer-cardinality,
+density, settling, initial/input, per-layer represented-mass, or aggregate
+resolved/terminal/dormant posture change. Stage-3 temperature and thickness
+are reconstructed from the relaxed extensive mass/cold content and exact
+density; cumulative water and energy close independently. Soil transaction
+lineage is exact and both nested owner digests are canonically resealed. Every
+snow--soil heat receipt is joined to the actual numerical iterate before its
+equal/opposite credit is consumed. A failed reconstruction, posture, digest,
+or receipt join declines relaxation and retains typed refinement.
+
+Final snow--soil receipt sealing retains bit-for-bit the equal/opposite heat
+that the snow and soil solvers actually consumed. It then reconstructs the
+Crank--Nicolson receipt from the installed endpoint temperatures. Only when
+the reconstructed-versus-consumed energy residual is finite and at most
+`1e-9 J m^-2` and both endpoint-temperature residuals are finite and at most
+`1e-8 K` may the consumed receipt bind the exact installed candidate digests
+and reseal its complete hash. This bounded nonlinear termination roundoff is
+`TOL-SNOWENERGY-005`; it is three orders of magnitude smaller than the
+unchanged `1e-6 J m^-2` physical-ledger closure threshold and does not change
+the applied snow debit or soil credit. A larger residual consumes another
+bounded fixed-point iteration and cap exhaustion remains fail-closed. Final
+publication remains exact owner-identity replay and receipt reseal from the
+admitted map image; an unpublished numerical iterate never becomes accepted
+owner authority.
+
+When an accepted terminal support is the ordered composition of multiple exact
+physical children, its precipitation parcel set retains every child parcel
+exactly once. Child supports are contiguous and cover the accepted envelope;
+lane topology, destination identities, and OFE basis are identical. Parcel
+support is rebound to the enclosing support, and semantic ordinals are assigned
+in physical-child order within each destination/phase/source route before the
+complete canonical set is sorted and resealed. Mass and enthalpy-provider bits,
+source identity, producer beginning identity, and destination remain unchanged.
+The accepted physical ledger consumes this enclosing set, while final boundary
+receipts retain the distinct final-child set. Omission, duplication, order or
+topology substitution, noncontiguous support, or a changed physical operand
+fails before publication.
+
+The terminal snow--soil receipt chain is summed in exact physical-child order.
+Its aggregate must equal the terminal event's independently accumulated heat;
+only finite absolute binary64 regrouping residual within
+`TOL-SNOWENERGY-005` (`1e-9 J m^-2`) is admitted and recorded by the transient
+qualification audit. One bit over the bound fails closed. The accepted heat
+remains the exact ordered receipt sum, and the snow/soil equal-opposite ledger
+threshold is unchanged.
+
+`INV-SNOWENERGY-052` — Exact-floor period-two contraction is a conditional
+numerical iterate policy only. At `60_000_000_000 ns`, raw Picard remains the
+default; after and only after the authentic `A/B/A` predicate above, the
+candidate weight is exactly `0.5` for the remainder of that solve. A raw
+convergent map never activates damping. The authentic candidate density and
+every schema, event, topology, posture, settling, initial/input, and receipt
+identity remain unblended and exact; mass/energy closure is reconstructed on
+every unpublished iterate. Final acceptance and replay use only an authentic
+map image. A discrete change, invalid reconstruction, receipt mismatch, or
+96-iteration exhaustion remains fail-closed, and no support below the exact
+floor is admitted.
+
+The persistent-layer refreeze operation preserves nonnegative cold content at
+its generating seam. When liquid availability reaches the exact capacity
+`Q_cc/L_f`, binary64 division followed by multiplication is not generally
+bit-reversible even though the constitutive remainder is algebraically zero.
+`TOL-SNOWENERGY-006` therefore canonicalizes only the resulting finite
+remainder in `[-1e-9,0) J m^-2` to exact positive zero. The selected refrozen
+mass and its `L_f*m_refreeze` energy remain unchanged and are retained in the
+ordinary water and energy ledgers; the independently reconstructed raw
+remainder must remain within the named bound. A material negative remainder,
+or negative cold content from any other operation, fails closed and is never
+clamped during persistence.
+
+`INV-SNOWENERGY-050` — A terminal event is owned only by an accepted microstep
+whose ending ice is exact zero and whose mass, liquid, energy, owner, topology,
+and receipt closures pass. Its liquid endpoint is transferred exactly once to
+surface-liquid/WB14 custody; the remaining parent support is reevaluated under
+the snow-free owner. No separate root solver, post-event snow flux, censored
+snow energy, or alternate snow model is admitted.
+
+`INV-SNOWENERGY-051` — Stage 3 terminal liquid is a zero-Celsius phase
+reference. At committed publication only, a mass-weighted temperature
+bit-identical to the first binary64 value above `273.15 K`
+(`0x4071126666666667`) canonicalizes to exact `273.15 K`; exact reference is
+unchanged and every other value is unchanged and remains subject to the
+existing nonpositive-Celsius outcome guard. This exact representation rule
+changes no mass, energy, support, phase decision, or ledger tolerance.
+
+Test obligations include all cold/mixed/melt phase branches, bounded
+sublimation with paired latent truncation, deposition below/at/above melt
+balance, beginning/external liquid and refreeze, raw/actual poisons, the real
+deposition-at-meltout endpoint and perturbations, direct/composed consistency,
+floor acceptance/failure, deterministic replay, and independent linked-ledger
+reconstruction. Calibration is not applicable: the projection is conservation
+and controller tolerances are numerical constants, not fitted parameters.
+
+The 2026-08-27 owner amendment changes temporal admission only, replacing the
+provisional 600-ms floor with an exact 60-second floor. Bounded-vapor custody,
+phase-equilibrium and closure equations, topology, receipt identity/order,
+exact rollback, and all fail-closed obligations remain unchanged. Every prior
+floor-dependent result, attempt count, event tick, trace, and performance
+claim is superseded and requires fresh execution. The 2026-08-28 performance
+amendment retains that floor and authorizes only the result-blind solver and
+controller policies stated above; it does not relax ledger closure or exact
+discrete-event authority. The version-25 exact-floor contraction amendment
+supersedes only version 23's undamped exact-floor sentence; all convergence
+tolerances, exact density/discrete predicates, ledgers, events, receipts,
+rollback, cap exhaustion, and authentic final replay remain unchanged.
 
 ## Gap Register
 
@@ -1530,6 +1714,12 @@ Validation completes before snow or soil owner mutation, and any failure uses
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 26 | 2026-08-29 | Bound accepted terminal composition to every exact physical child's contiguous precipitation and snow--soil receipt custody. The enclosing parcel set preserves physical operands and child order while resealing envelope support; final-child boundary evidence remains distinct. Terminal receipt/event regrouping uses only existing `TOL-SNOWENERGY-005`, with one-bit-over rejection and unchanged physical-ledger closure. | Multi-child terminal reconstruction, material omission diagnosis, exact-side receipt test, EROD16 progression, and canonical one-day replacement qualification |
+| 25 | 2026-08-28 | Admitted conditional exact-floor period-two contraction: 60-second solves remain raw unless authentic Stage 3 candidates satisfy the existing exact-discrete/native-unit `A/B/A` predicate, after which `w=0.5` applies for that solve only. This replaces the briefly tested unconditional exact-floor damping that regressed the canonical one-day controller to near-floor stepping. Density and every discrete authority remain unblended; the floor, tolerances, 96-iteration cap, authentic final replay, ledgers, events, receipts, and rollback are unchanged. | P102 exact-floor limiting-coordinate audit; focused raw-convergent, exact-density-cycle, cumulative-closure, event/topology-poison vectors; replacement one-day telemetry |
+| 24 | 2026-08-28 | Admitted only exact-zero canonicalization for finite binary64 refreeze-capacity quotient/product cancellation under `TOL-SNOWENERGY-006`; retained the selected refrozen mass, fusion energy, unchanged physical-ledger tolerance, and typed failure for every material or unrelated negative cold-content result. | P102 real-consumer boundary failure operands; focused exact-side and poison vectors with independent water/energy reconstruction; bounded P102 replay |
+| 23 performance amendment | 2026-08-28 | Replaced the covered-support period-2 Picard failure with bounded support-scaled under-relaxation and a `0.25` long-support contraction floor; authentic candidate density remains unblended and bitwise-exact while continuous state is damped. Retained undamped exact-floor outer-Picard behavior and typed cap exhaustion, admitted audited complete-owner truncation-error controller bounds, and added causal receipt resealing under `TOL-SNOWENERGY-005`. Exact equal/opposite applied energy, ledger thresholds, exact installed-owner identities, and every discrete predicate remain unchanged. | Default-off real-fixture fixed-point/comparison/receipt audits, focused 60/120/420/1800-second convergence and exact-side runs, and canonical one-day replacement qualification |
+| 22 owner amendment | 2026-08-27 | Replaced the provisional 600-ms temporal floor with exact 60-second (`60_000_000_000 ns`) adaptive admission. Conservation, bounded-vapor/phase, custody, topology, receipt, rollback, and fail-closed authority are unchanged; stable ordinary supports must accept substantially larger steps. | Direct owner amendment; floor-dependent execution evidence superseded, replacement runs pending |
+| 22 | 2026-08-26 | Replaced the old terminal phase ordering/root exception with bounded vapor-energy custody, same-microstep deposited-ice phase equilibrium, linked closure, adaptive composed-result ownership, and accepted-microstep terminal transfer. Versions 19-21 remain rejected historical candidates. | Direct owner decision in the adaptive compositional microstepping package; physical conservation and existing complete-carrier authority |
 | 18 | 2026-08-24 | Admitted persistent snow--soil boundary authority: one OFE/lane interface, bottom snow volume to first OFE soil node, two-half-layer series resistance, Crank--Nicolson beginning/end evaluation inside the covered fixed point, exact equal/opposite candidate custody, reconstructable receipt, and atomic rollback. | Pinned `frostn.for`/`tmpadj.for` series-resistance provenance; `SC-LANDSURFACEENERGY-001@8`; Child-1 contract-derived guards |
 | 17 | 2026-08-24 | Admitted persistent-support precipitation custody: sealed ordered phase-parcel sets, present empty-set zero, open raw-rain versus covered route-distinct vegetation-terminal-liquid exclusivity, solid ground-snow bypass, OFE-ground aggregation, and exact same-set mass/advection consumption. No interception or canopy-snow physics was added. | Direct Child-1 checkpoint authority; `SC-VEGETATION-001@28`; `SC-LANDSURFACEENERGY-001`; contract-derived source guards |
 | 13 | 2026-08-19 | Added fresh default-off `terminal_receiver_v1` authority (`INV-SNOWENERGY-035`) for earliest-event closure, exact-one 0 C liquid/enthalpy custody, remaining-time support, and post-event snow-operand exclusion while preserving all carrier/efficacy/production holds and evaluation-only INV-034 semantics. | Contract-first terminal handoff package |

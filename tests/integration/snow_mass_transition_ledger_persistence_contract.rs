@@ -20,6 +20,9 @@ const RUNNER_SNOW_AUTHORITY: &str = include_str!(
 const RUNNER_CAPTURE: &str = include_str!(
     "../../crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00g_snow_diagnostic_capture.rs"
 );
+const V11_PRODUCTION_TESTS: &str = include_str!(
+    "../../crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs"
+);
 use openwepp_hillslope_orchestrator::{
     DirectActiveSnowPartitionInputs, DirectSnowDiagnosticCapture, DirectSnowHourlyForcing,
     DirectSnowLayerState, DirectSnowLiquidDispositionLedger, DirectSnowMassTransitionLedgerError,
@@ -94,6 +97,16 @@ fn runner_resolves_capture_before_the_snow_solve_and_real_writer_requires_payloa
         .find("snow_liquid_partition(")
         .expect("snow solve must exist");
     assert!(capture_position < solve_position);
+    for required in [
+        "stable_minimum_production_support_accepts_one_direct_trial",
+        "stable adaptive receipt validates",
+        "accepted_microsteps.len(), 1",
+    ] {
+        assert!(
+            V11_PRODUCTION_TESTS.contains(required),
+            "missing real V11 success/closure evidence: {required}"
+        );
+    }
 }
 
 #[test]
@@ -149,8 +162,8 @@ fn capture_inputs() -> DirectActiveSnowPartitionInputs {
         canopy_cover_fraction: 0.0,
         wind_m_s: 2.0,
         dewpoint_c: 0.0,
-        snow_melt_model: SnowMeltModel::CoeLiquidHoldingCapacityV1,
-        snow_density_model: SnowDensityModel::PhysicsBulkMultilayerDensityV1,
+        snow_melt_model: SnowMeltModel::AdaptiveCompositionalStage3V1,
+        snow_density_model: SnowDensityModel::PhysicsBulkDensityCompactionV1,
         stage3_liquid_routing_model: SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1,
         surface_energy_options:
             openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions::default(),
@@ -172,32 +185,25 @@ fn capture_inputs() -> DirectActiveSnowPartitionInputs {
 }
 
 #[test]
-fn disabled_capture_removes_payload_without_changing_production_or_guards() {
+fn diagnostic_capture_cannot_bypass_retired_partition_entrypoint() {
     let inputs = capture_inputs();
-    let disabled = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
+    let disabled_error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
         &inputs,
         DirectSnowDiagnosticCapture::Disabled,
     )
-    .expect("disabled capture solve");
-    let mut verbose = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
+    .expect_err("disabled capture cannot bypass the retired WB11 partition path");
+    let verbose_error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture(
         &inputs,
         DirectSnowDiagnosticCapture::Verbose,
     )
-    .expect("verbose capture solve");
-    assert!(disabled.verbose_diagnostics.is_none());
-    assert!(verbose.verbose_diagnostics.is_some());
-    assert!(disabled.stage3_outcome().enabled);
-    assert!(disabled.solid_to_liquid_ledger().liquid_handoff_m > 0.0);
-    assert!(disabled.liquid_disposition_ledger().incoming_liquid_m > 0.0);
-    verbose.verbose_diagnostics = None;
-    assert_eq!(
-        disabled, verbose,
-        "capture cannot alter production outcomes"
+    .expect_err("verbose capture cannot bypass the retired WB11 partition path");
+    let disabled_rendered = disabled_error.to_string();
+    let verbose_rendered = verbose_error.to_string();
+    assert!(
+        disabled_rendered.contains("snow.adaptive_stage3_legacy_shortwave_entry"),
+        "unexpected disabled-capture cutover error: {disabled_error}"
     );
-    disabled
-        .mass_transition_ledgers
-        .validate()
-        .expect("disabled capture retains compact closure guards");
+    assert_eq!(disabled_rendered, verbose_rendered);
 }
 
 #[test]

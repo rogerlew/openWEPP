@@ -30,6 +30,10 @@ const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00c_day_input_builder_impl.rs"
 );
+const STAGE3_CANOPY_AUTHORITY: &str = concat!(
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
+    "00c_stage3_canopy_authority.rs"
+);
 const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 const TOL: f64 = 1.0e-12;
 
@@ -179,19 +183,21 @@ fn climate_class_candidate_requires_authoritative_operands_and_conserves_when_ex
 
 #[test]
 fn selector_is_internal_opt_in_only_and_artifact_records_non_promotion() {
-    let builder = read(BUILDER);
+    let builder = format!("{}\n{}", read(BUILDER), read(STAGE3_CANOPY_AUTHORITY));
     for marker in [
         "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
-        "physics_bulk_climate_class_density_v1",
-        "SnowDensityModel::PhysicsBulkClimateClassDensityV1",
-        "sturm_climate_class",
-        "sturm_day_of_year",
-        "direct_production_sturm_climate_class_for_density_candidate",
-        "sturm1995_climate_class_from_normals",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1",
+        "reject_retired_stage3_snow_selector_envs",
+        "retired snow selector",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
+    assert!(
+        !builder.contains("\"physics_bulk_climate_class_density_v1\" => Ok"),
+        "non-promoted climate-class candidate must remain unselectable in production"
+    );
     assert!(
         !read(CLI).contains("physics_bulk_climate_class_density_v1"),
         "climate-class candidate must not be exposed as user CLI"

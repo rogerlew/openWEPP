@@ -3,13 +3,12 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
-use openwepp_runner::{
-    HillslopeCliError, HillslopeRunReport, HillslopeRunRequest, SidecarPolicy,
-    execute_hillslope_run,
-};
+use openwepp_runner::{HillslopeCliError, HillslopeRunReport, HillslopeRunRequest, SidecarPolicy};
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
 use serde_json::Value;
+
+mod common;
 
 const RUNFILE_CONTRACT: &str =
     include_str!("../../docs/contracts/openwepp-hillslope-runfile-contract.md");
@@ -178,8 +177,9 @@ pass = "output/H1.hbp"
 loss = "output/H1.loss.json"
 "#;
 
-    let error = execute_fixture_with_runfile(runfile, "cli03_schema_mismatch")
-        .expect_err("schema mismatch should fail hard");
+    let error =
+        execute_pre_stage3_validation_fixture_with_runfile(runfile, "cli03_schema_mismatch")
+            .expect_err("schema mismatch should fail hard");
 
     assert_eq!(error.code(), "CLIHILL-E-010");
     assert!(error.to_string().contains("unsupported schema"));
@@ -204,7 +204,7 @@ pass = "output/H1.hbp"
 loss = "output/H1.loss.json"
 "#;
 
-    let error = execute_fixture_with_runfile(runfile, "cli03_non_metric")
+    let error = execute_pre_stage3_validation_fixture_with_runfile(runfile, "cli03_non_metric")
         .expect_err("non-metric unit_system should fail hard");
 
     assert!(
@@ -232,8 +232,9 @@ pass = "output/H1.hbp"
 loss = "output/H1.loss.json"
 "#;
 
-    let error = execute_fixture_with_runfile(runfile, "cli03_unresolved_inputs")
-        .expect_err("unresolved required .run inputs should fail hard");
+    let error =
+        execute_pre_stage3_validation_fixture_with_runfile(runfile, "cli03_unresolved_inputs")
+            .expect_err("unresolved required .run inputs should fail hard");
 
     assert!(
         error.to_string().contains("missing")
@@ -263,8 +264,9 @@ pass = "output/H1.hbp"
 loss = "output/H1.loss.json"
 "#;
 
-    let error = execute_fixture_with_runfile(runfile, "cli03_missing_pmetpara")
-        .expect_err("strict runfile mode must reject a missing pmetpara override");
+    let error =
+        execute_pre_stage3_validation_fixture_with_runfile(runfile, "cli03_missing_pmetpara")
+            .expect_err("strict runfile mode must reject a missing pmetpara override");
 
     assert_eq!(error.code(), "CLIHILL-E-010");
     let message = error.to_string();
@@ -381,8 +383,11 @@ wat = " "
     ];
 
     for (index, (runfile, expected)) in cases.into_iter().enumerate() {
-        let error = execute_fixture_with_runfile(runfile, &format!("m07_branch_{index}"))
-            .expect_err("branch fixture must fail closed");
+        let error = execute_pre_stage3_validation_fixture_with_runfile(
+            runfile,
+            &format!("m07_branch_{index}"),
+        )
+        .expect_err("branch fixture must fail closed");
         assert_eq!(error.code(), "CLIHILL-E-010");
         assert!(
             error.to_string().contains(expected),
@@ -559,10 +564,9 @@ pass = "output/H1.hbp"
 loss = "output/H1.loss.json"
 "#;
 
-    let error = execute_fixture_with_runfile_report_with_mode_and_customizer(
+    let error = execute_pre_stage3_validation_fixture_with_customizer(
         runfile,
         "cli03_mofe02_soil_guard",
-        false,
         |run_dir| {
             write_single_ofe_slope(&run_dir.join("case.slp"));
             write_soil_with_ntemp(&run_dir.join("case.sol"), 2);
@@ -595,10 +599,9 @@ pass = "output/H1.hbp"
 loss = "output/H1.loss.json"
 "#;
 
-    let error = execute_fixture_with_runfile_report_with_mode_and_customizer(
+    let error = execute_pre_stage3_validation_fixture_with_customizer(
         runfile,
         "cli03_mofe02_slope_mismatch",
-        false,
         |run_dir| write_two_ofe_slope(&run_dir.join("case.slp")),
     )
     .expect_err("slope topology mismatch should fail before runtime merge");
@@ -628,10 +631,9 @@ pass = "output/H1.hbp"
 loss = "output/H1.loss.json"
 "#;
 
-    let error = execute_fixture_with_runfile_report_with_mode_and_customizer(
+    let error = execute_pre_stage3_validation_fixture_with_customizer(
         runfile,
         "cli03_mofe02_management_soil_mismatch",
-        false,
         |run_dir| {
             write_two_ofe_slope(&run_dir.join("case.slp"));
             write_soil_with_ntemp(&run_dir.join("case.sol"), 2);
@@ -663,10 +665,9 @@ pass = "output/H1.hbp"
 loss = "output/H1.loss.json"
 "#;
 
-    let error = execute_fixture_with_runfile_report_with_mode_and_customizer(
+    let error = execute_pre_stage3_validation_fixture_with_customizer(
         runfile,
         "cli03_mofe02_triad_mismatch",
-        false,
         |run_dir| {
             write_two_ofe_slope(&run_dir.join("case.slp"));
             write_soil_with_ntemp(&run_dir.join("case.sol"), 3);
@@ -1243,11 +1244,12 @@ wat = "output/H1.wat.parquet"
     assert!(report.output_loss.is_file());
 }
 
-fn execute_fixture_with_runfile(
+fn execute_pre_stage3_validation_fixture_with_runfile(
     runfile_payload: &str,
     prefix: &str,
 ) -> Result<(), HillslopeCliError> {
-    execute_fixture_with_runfile_report(runfile_payload, prefix).map(|_| ())
+    execute_pre_stage3_validation_fixture_with_customizer(runfile_payload, prefix, |_| {})
+        .map(|_| ())
 }
 
 fn execute_fixture_with_runfile_report(
@@ -1288,13 +1290,45 @@ fn execute_fixture_with_runfile_report_with_mode_and_customizer(
     fs::write(&run_file_path, runfile_payload).expect("runfile fixture should be writable");
 
     let output_dir = temp_run_dir.join("output");
-    let report = execute_hillslope_run(
+    let report = common::execute_with_adaptive_stage3_owner_seed(
         &HillslopeRunRequest {
             run_dir: temp_run_dir.clone(),
             run_file: PathBuf::from("case.run"),
             output_dir,
             sidecar_policy: SidecarPolicy::Compat,
             legacy_sidecar_discovery,
+            manifest_path: None,
+        },
+        &["openwepp-cli-hill".to_string()],
+    )?;
+
+    Ok((report, temp_run_dir))
+}
+
+fn execute_pre_stage3_validation_fixture_with_customizer(
+    runfile_payload: &str,
+    prefix: &str,
+    customizer: impl FnOnce(&Path),
+) -> Result<(HillslopeRunReport, PathBuf), HillslopeCliError> {
+    let _execution_guard = runner_execution_lock()
+        .lock()
+        .expect("runner execution lock should be acquirable");
+
+    let source_fixture_dir = fixture_path("hillslope_run_dir");
+    let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, prefix);
+    customizer(&temp_run_dir);
+
+    let run_file_path = temp_run_dir.join("case.run");
+    fs::write(&run_file_path, runfile_payload).expect("runfile fixture should be writable");
+
+    let output_dir = temp_run_dir.join("output");
+    let report = common::execute_pre_stage3_validation_failure(
+        &HillslopeRunRequest {
+            run_dir: temp_run_dir.clone(),
+            run_file: PathBuf::from("case.run"),
+            output_dir,
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
             manifest_path: None,
         },
         &["openwepp-cli-hill".to_string()],

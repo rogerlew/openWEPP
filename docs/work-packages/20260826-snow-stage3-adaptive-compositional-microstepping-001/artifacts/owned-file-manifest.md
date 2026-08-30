@@ -1,0 +1,307 @@
+# Owned file manifest
+
+Status: exact terminal workspace manifest recorded before broad closure gate
+
+Evidence mode: `Static` from `git status --short` on 2026-08-29.
+
+The package's declared compiler-discovered write set contains the following
+296 modified/untracked paths. Status prefixes are retained verbatim.
+Unrelated pre-existing work was not identified within this authorized package
+workspace; no path was reverted or silently omitted.
+
+- ` M` `Cargo.lock`
+- ` M` `Cargo.toml`
+- ` M` `assurance/v2/identity.lock.json`
+- ` M` `assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json`
+- ` M` `crates/openwepp-assurance/src/v2/amendment.rs`
+- ` M` `crates/openwepp-coupled-time/src/clock.rs`
+- ` M` `crates/openwepp-coupled-time/src/event.rs`
+- ` M` `crates/openwepp-coupled-time/src/identity.rs`
+- ` M` `crates/openwepp-coupled-time/src/restart.rs`
+- ` M` `crates/openwepp-coupled-time/src/transaction.rs`
+- ` M` `crates/openwepp-coupled-time/src/wire.rs`
+- ` M` `crates/openwepp-coupled-time/tests/authority.rs`
+- ` M` `crates/openwepp-coupled-time/tests/frozen_oracle.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/canonical_owner_bytes.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_shadow.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure_comparison.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_enthalpy_closure.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_coordinator.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_terminal_tests.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress_tests.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner_tests.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_wb14.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/discrete_terminal_support_root.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/08_snow_albedo.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/09_snow_density.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling/frost.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling/frost_entry.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/infiltration_reconciliation.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/ksatadj.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/mod.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/persistent_state.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/stage3_evaluation_validation_tests/persistent_tests.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/support.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/terminal_event.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/snow_mass_transition.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/typed_boundary.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_v8_owner.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/strict_v8_endpoint.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/v8_input_projection.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/lib.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/09_snow_free_half_hour_forcing.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_owner_v4.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_discrete_endpoint_evidence.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_open_boundary.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_terminal_handoff.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_helpers.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipts.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_tests.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_chronology.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/terminal_candidate_numerics.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_engine.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/fixed_point.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/owner_finalization.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/physical_outcome_ledger.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/receipt_sets.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/regime.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests_tail.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs`
+- ` M` `crates/openwepp-land-surface-energy/src/covered_liquid.rs`
+- ` M` `crates/openwepp-land-surface-energy/src/covered_output.rs`
+- ` M` `crates/openwepp-land-surface-energy/src/forcing.rs`
+- ` M` `crates/openwepp-land-surface-energy/src/solver.rs`
+- ` M` `crates/openwepp-land-surface-energy/src/solver_tests.rs`
+- ` M` `crates/openwepp-land-surface-energy/src/support.rs`
+- ` M` `crates/openwepp-land-surface-energy/src/transaction.rs`
+- ` M` `crates/openwepp-persisted-restart-v1/src/checkpoint.rs`
+- ` M` `crates/openwepp-persisted-restart-v1/src/evidence_fixture.rs`
+- ` M` `crates/openwepp-persisted-restart-v1/src/gsi_forcing.rs`
+- ` M` `crates/openwepp-persisted-restart-v1/src/hydrology_restart.rs`
+- ` M` `crates/openwepp-persisted-restart-v1/src/lib.rs`
+- ` M` `crates/openwepp-runner/Cargo.toml`
+- ` M` `crates/openwepp-runner/src/bin/openwepp-cli-hill.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/03_tests.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00h_snow_stage3_evaluation_trace.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00j_snow_terminal_event_trace.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/intake_lane_setup/runfile_helpers.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/laned_active.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/mod.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/output_transaction.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/tests03/direct_publication_source_guards.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/tests03/eb04w2b_warm_snow.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/tests03/simimpl.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/tests03/stage3_evaluation_publication_parity.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/tests03/wat5_output_transaction.rs`
+- ` M` `crates/openwepp-runner/src/lib.rs`
+- ` M` `crates/openwepp-runner/src/shared.rs`
+- ` M` `crates/openwepp-runner/src/watershed_supervisor.rs`
+- ` M` `crates/openwepp-runner/tests/simimpl04_runner_kernel_execution_contract.rs`
+- ` M` `crates/openwepp-runner/tests/simimpl04_wb13_publication_contract.rs`
+- ` M` `crates/openwepp-runner/tests/simimpl04_wepp_ui_mode_closure_contract.rs`
+- ` M` `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs`
+- ` M` `crates/openwepp-runner/tests/wshedw10_chaninp_absent_default_contract.rs`
+- ` M` `crates/openwepp-vegetation/src/transaction.rs`
+- ` M` `crates/openwepp-vegetation/src/v11.rs`
+- ` M` `docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md`
+- ` M` `docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md`
+- ` M` `docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md`
+- ` M` `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md`
+- ` M` `docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md`
+- ` M` `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md`
+- ` M` `docs/specifications/science-contracts/index.md`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/artifact-manifest.json`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-cross-midnight-vector.json`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-in-progress-vector.json`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-multi-destination-vector.json`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-schema.json`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/checkpoint-vector.json`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/direct-run-frame-field-classification.md`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/artifacts/generated-field-metadata.json`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/bin/generate_authority_artifacts.rs`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/gsi_forcing.rs`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/hydrology_restart.rs`
+- ` M` `docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/lib.rs`
+- ` M` `docs/work-packages/20260817-snow-free-half-hour-forcing-authority-001/artifacts/forcing-schema.json`
+- ` M` `docs/work-packages/20260817-snow-free-half-hour-forcing-authority-001/artifacts/model-definition.json`
+- ` M` `docs/work-packages/20260817-snow-free-half-hour-forcing-authority-001/artifacts/openwepp_snow_free_half_hour_forcing_v1_vectors.json`
+- ` M` `docs/work-packages/20260817-snow-free-half-hour-forcing-authority-001/artifacts/receipt-provider-definition.json`
+- ` M` `docs/work-packages/20260817-snow-free-half-hour-forcing-authority-001/artifacts/reference_calculator.py`
+- ` M` `docs/work-packages/20260820-coupled-time-authority-implementation-001/artifacts/coupled-time-vectors.json`
+- ` M` `docs/work-packages/20260820-coupled-time-authority-implementation-001/artifacts/reference_model.py`
+- ` M` `docs/work-packages/README.md`
+- ` M` `tests/fixtures/watershed/p102-sediment-active/runs/H1.source.run`
+- ` M` `tests/integration/assurance_v2_amendment_contract.rs`
+- ` M` `tests/integration/cli01_runner_hillslope_integration.rs`
+- ` M` `tests/integration/cli03_runner_contract_derived_tests.rs`
+- ` M` `tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs`
+- ` M` `tests/integration/coupled_time_authority_contract.rs`
+- ` M` `tests/integration/dff_ws1_native_forest_cli.rs`
+- ` M` `tests/integration/dff_ws2_ksatadj_direct_runtime.rs`
+- ` M` `tests/integration/dff_ws3_directional_burn_validation.rs`
+- ` M` `tests/integration/direct_v10_real_consumer_checkpoint_v1_contract.rs`
+- ` M` `tests/integration/erod16_wave1_continuity_fixture_conservation.rs`
+- ` M` `tests/integration/erosion_multi_ofe_p102_chain.rs`
+- ` M` `tests/integration/erosion_single_ofe_p61_sediment.rs`
+- ` M` `tests/integration/hphys0208_fc_threshold_coupled_residual_contract.rs`
+- ` M` `tests/integration/hphys0209_profilewp_adjudication_contract.rs`
+- ` M` `tests/integration/land_surface_energy_balance_authority_contract.rs`
+- ` M` `tests/integration/land_surface_energy_strict_v8_public_contract.rs`
+- ` M` `tests/integration/laned_shadow_h2637.rs`
+- ` M` `tests/integration/paradigm2_stage0_surface_energy_balance_contract.rs`
+- ` M` `tests/integration/paradigm2_stage1_layered_snow_density.rs`
+- ` M` `tests/integration/paradigm2_stage3_decouple_water_temperature.rs`
+- ` M` `tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs`
+- ` M` `tests/integration/pl14s_tier_a_candidate_emission_and_replay_contract.rs`
+- ` M` `tests/integration/snow_free_half_hour_forcing_adapter_contract.rs`
+- ` M` `tests/integration/snow_free_half_hour_forcing_authority_contract.rs`
+- ` M` `tests/integration/snow_mass_transition_ledger_persistence_contract.rs`
+- ` M` `tests/integration/snow_stage3_legacy_predecessor_bridge_contract.rs`
+- ` M` `tests/integration/snow_stage3_persistent_accumulation_shadow_contract.rs`
+- ` M` `tests/integration/snow_stage3_shadow_observability_contract.rs`
+- ` M` `tests/integration/snow_stage3_shared_carrier_authority_contract.rs`
+- ` M` `tests/integration/snow_stage3_shared_carrier_terminal_handoff_implementation.rs`
+- ` M` `tests/integration/snow_stage3_terminal_receiver_authority_contract.rs`
+- ` M` `tests/integration/snow_stage3_turbulent_operator_reconciliation_contract.rs`
+- ` M` `tests/integration/snow_stage3_v11_constitutive_boundary_contract.rs`
+- ` M` `tests/integration/snow_stage3_wind_source_custody_contract.rs`
+- ` M` `tests/integration/snow_surface_eb03_contract.rs`
+- ` M` `tests/integration/snow_surface_eb03_runtime.rs`
+- ` M` `tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs`
+- ` M` `tests/integration/snowdensity05f_melt_closure_handoff.rs`
+- ` M` `tests/integration/snowdensity07_runtime_opt_in.rs`
+- ` M` `tests/integration/snowdensity08_gate_rerun.rs`
+- ` M` `tests/integration/snowdensity09_coupled_wat_rerun.rs`
+- ` M` `tests/integration/snowdensity10_3_11_spring_compaction_densification.rs`
+- ` M` `tests/integration/snowdensity10_3_15_default_activation_active_cap.rs`
+- ` M` `tests/integration/snowdensity10_3_16_open_surface_ablation_stage_a.rs`
+- ` M` `tests/integration/snowdensity10_3_17_shallow_pack_compaction_guard.rs`
+- ` M` `tests/integration/snowdensity10_3_19_harder_pomeroy_default_activation.rs`
+- ` M` `tests/integration/snowdensity10_3_1a_per_day_cancov.rs`
+- ` M` `tests/integration/snowdensity10_3_20_sublimation_stage_b_unlock.rs`
+- ` M` `tests/integration/snowdensity10_3_22_climate_class_density_specialization.rs`
+- ` M` `tests/integration/snowdensity10_3_7_winter_thaw_melt_response_correction.rs`
+- ` M` `tests/integration/snowdensity10_3_8_liquid_holding_capacity.rs`
+- ` M` `tests/integration/surface_liquid_hydrology_custody_authority_contract.rs`
+- ` M` `tests/integration/vegetation_boundary_authority_contract.rs`
+- `??` `assurance/v2/transactions/0af4bb65cce769ba59ac30a67aa5ec05c86bf006b3c206d06faecca772ac78d4.json`
+- `??` `assurance/v2/transactions/367bd112581e74958157bce4073c78079757e5d93c3672fe18fa4547822b0f2f.json`
+- `??` `assurance/v2/transactions/a78950525c44c559fdf994558e771fdeb359d368e71f69c371e91d61e4841e60.json`
+- `??` `assurance/v2/transactions/e3be3292a392ce81133c17aaab644ad66db063fa003c1bf48a13306850fdad7b.json`
+- `??` `crates/openwepp-assurance/src/v2/amendment_role_assignments.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_event_helpers.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_numeric_helpers.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests_tail.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_support_liquid.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_cutover_source_guards.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure_projection_helpers.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure_receipt_routing.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_zero_duration_snow.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/cqr_row5_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_evaluation_validation_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver_cumulative_order_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_frontend.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_identity.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_outcomes.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_production_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_receipt_identity.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_error.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_receipt_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment_runtime.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_committed_day_archive.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_forcing_digest.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_integrated_boundary_ledger.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_parent_chronology_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification_accumulator_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification_record_identity.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification_record_identity_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification_route_wire.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_production_qualification_route_wire_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_qualification_crossjoin_child_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_qualification_crossjoin_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_real_parent_execution.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_reappearance_transition.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_snow_free_successor.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_subslab_owner_adjacency_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_boundary_receiver.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_closure.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_discovery_order.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_event_ordinal_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_test_controls.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_execution_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_precomputed_package.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_preterminal_disposition.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_proposal_core.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_receiver_custody.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_terminal_receiver_topology.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_physical_reconstruction_helpers.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_receipt_reseal_helpers.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_reuse_gate_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_tail_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_equilibrium_fixture.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention/`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_rotation_tests.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_root_zone_configuration.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_soil_thermal.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v11_error.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_routing_tests.rs`
+- `??` `crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs`
+- `??` `crates/openwepp-land-surface-energy/src/solver_covered_solve.rs`
+- `??` `crates/openwepp-persisted-restart-v1/src/snow_stage3_v11.rs`
+- `??` `crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_owner_join.rs`
+- `??` `crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_tests.rs`
+- `??` `crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v3.rs`
+- `??` `crates/openwepp-persisted-restart-v1/src/snow_stage3_v11_v3_tests.rs`
+- `??` `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_stage3_canopy_authority.rs`
+- `??` `crates/openwepp-runner/src/hillslope/snow_stage3_v11_production_seed.rs`
+- `??` `crates/openwepp-runner/src/hillslope/snow_stage3_v11_production_seed_inventory_tests.rs`
+- `??` `crates/openwepp-runner/src/hillslope/snow_stage3_v11_qualification_audit.rs`
+- `??` `crates/openwepp-runner/src/hillslope/test_fixture_authority.rs`
+- `??` `crates/openwepp-runner/src/hillslope/tests03/stage3_runner_qualification.rs`
+- `??` `crates/openwepp-runner/src/hillslope/transaction_spool.rs`
+- `??` `crates/openwepp-runner/tests/common/`
+- `??` `crates/openwepp-runner/tests/fixtures/`
+- `??` `crates/openwepp-runner/tests/test_fixture_authority_contract.rs`
+- `??` `crates/openwepp-runner/tests/watershed_cli_behavior_contract_tail.inc`
+- `??` `crates/openwepp-vegetation/src/v11/tests/v11_custody_tests.rs`
+- `??` `crates/openwepp-vegetation/src/v11_lse_receipt_impl.rs`
+- `??` `docs/work-packages/20260826-snow-stage3-adaptive-compositional-microstepping-001/`
+- `??` `tests/fixtures/watershed/p102-sediment-active/runs/H1.source.run.snow_stage3_v11_owner_seed.json`
+- `??` `tests/integration/common/`
+- `??` `tests/integration/snow_stage3_adaptive_compositional_contract.rs`

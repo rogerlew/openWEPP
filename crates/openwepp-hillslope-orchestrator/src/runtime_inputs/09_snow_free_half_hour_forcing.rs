@@ -4,8 +4,7 @@ use openwepp_meteorology::snow_free_forcing::{
     fao56_station_pressure_kpa, liquid_specific_enthalpy_j_kg, weiss_norman_partition,
 };
 use openwepp_plant_phenology::{
-    GsiDailyForcing, GsiDailyIndicators, GsiDailyResult, GsiDate, GsiError, GsiParameters,
-    GsiState,
+    GsiDailyForcing, GsiDailyIndicators, GsiDailyResult, GsiDate, GsiError, GsiParameters, GsiState,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -292,7 +291,10 @@ fn restore_direct_gsi_state(
     )?)
 }
 
-#[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+#[cfg(any(
+    feature = "restart-authority-evidence",
+    feature = "persisted-restart-v1"
+))]
 pub fn restart_authority_restore_gsi_state(
     value: &DirectGsiOwnerStateV1,
 ) -> Result<GsiState, SnowFreeHalfHourForcingError> {
@@ -300,7 +302,10 @@ pub fn restart_authority_restore_gsi_state(
 }
 
 /// Project the actual live GSI state for restart-authority evidence.
-#[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+#[cfg(any(
+    feature = "restart-authority-evidence",
+    feature = "persisted-restart-v1"
+))]
 pub fn restart_authority_project_gsi_state(
     state: &GsiState,
 ) -> Result<DirectGsiOwnerStateV1, SnowFreeHalfHourForcingError> {
@@ -388,6 +393,7 @@ pub struct SnowFreeHalfHourProviderCursor {
     next_day_index: usize,
     configuration_sha256: Option<String>,
     pending_carry: Vec<SnowFreePrecipitationParcelReceipt>,
+    pending_solid_carry: Vec<SnowFreeSolidPrecipitationParcelReceipt>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -396,6 +402,7 @@ struct SnowFreeHalfHourProviderCursorSnapshot {
     next_day_index: usize,
     configuration_sha256: Option<String>,
     pending_carry: Vec<SnowFreePrecipitationParcelReceipt>,
+    pending_solid_carry: Vec<SnowFreeSolidPrecipitationParcelReceipt>,
 }
 
 impl SnowFreeHalfHourProviderCursor {
@@ -407,10 +414,12 @@ impl SnowFreeHalfHourProviderCursor {
     ) -> Result<(), SnowFreeHalfHourForcingError> {
         configuration.validate()?;
         if self.next_day_index != expected_next_day_index
-            || self.configuration_sha256.as_ref().is_some_and(|digest| {
-                digest != &configuration.configuration_sha256()
-            })
-            || (self.configuration_sha256.is_none() && !self.pending_carry.is_empty())
+            || self
+                .configuration_sha256
+                .as_ref()
+                .is_some_and(|digest| digest != &configuration.configuration_sha256())
+            || (self.configuration_sha256.is_none()
+                && (!self.pending_carry.is_empty() || !self.pending_solid_carry.is_empty()))
         {
             return Err(SnowFreeHalfHourForcingError::Identity(
                 "provider cursor configuration",
@@ -439,11 +448,11 @@ impl SnowFreeHalfHourProviderCursor {
             next_day_index: snapshot.next_day_index,
             configuration_sha256: snapshot.configuration_sha256,
             pending_carry: snapshot.pending_carry,
+            pending_solid_carry: snapshot.pending_solid_carry,
         };
         let expected_configuration_sha256 = snow_free_static_configuration_sha256(configuration);
         if value.next_day_index != expected_next_day_index
-            || value.configuration_sha256.as_deref()
-                != Some(expected_configuration_sha256.as_str())
+            || value.configuration_sha256.as_deref() != Some(expected_configuration_sha256.as_str())
         {
             return Err(SnowFreeHalfHourForcingError::Identity(
                 "restored provider cursor",
@@ -461,16 +470,29 @@ impl SnowFreeHalfHourProviderCursor {
                 &parcel.destination_ofe_id,
                 &parcel.destination_tile_id,
                 &parcel.parcel_id,
-            ))
-                || !destinations.contains(&(
-                    &parcel.destination_ofe_id,
-                    &parcel.destination_tile_id,
-                ))
+            )) || !destinations
+                .contains(&(&parcel.destination_ofe_id, &parcel.destination_tile_id))
                 || parcel.start_s < 0.0
                 || parcel.end_s > 86_400.0
             {
                 return Err(SnowFreeHalfHourForcingError::Identity(
                     "restored provider carry",
+                ));
+            }
+        }
+        for parcel in &value.pending_solid_carry {
+            validate_solid_precipitation_parcel(parcel)?;
+            if !parcel_ids.insert((
+                &parcel.destination_ofe_id,
+                &parcel.destination_tile_id,
+                &parcel.parcel_id,
+            )) || !destinations
+                .contains(&(&parcel.destination_ofe_id, &parcel.destination_tile_id))
+                || parcel.start_s < 0.0
+                || parcel.end_s > 86_400.0
+            {
+                return Err(SnowFreeHalfHourForcingError::Identity(
+                    "restored provider solid carry",
                 ));
             }
         }
@@ -489,6 +511,25 @@ pub struct SnowFreePrecipitationParcelReceipt {
     pub end_s: f64,
     pub mass_kg_m2: f64,
     pub temperature_k: f64,
+    pub enthalpy_j_m2: f64,
+}
+
+/// A solid atmospheric precipitation parcel. Solid custody is distinct from
+/// liquid rain custody so snow-free LSE projection cannot reinterpret snow as
+/// liquid water merely because both phases share one climate source.
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SnowFreeSolidPrecipitationParcelReceipt {
+    pub parcel_id: String,
+    pub source_owner_id: String,
+    pub destination_ofe_id: String,
+    pub destination_tile_id: String,
+    pub start_s: f64,
+    pub end_s: f64,
+    pub mass_kg_m2: f64,
+    pub temperature_k: f64,
+    /// Sensible ice enthalpy relative to ice at the melting point.  Solid
+    /// parcels never borrow the liquid-water enthalpy convention.
     pub enthalpy_j_m2: f64,
 }
 
@@ -526,7 +567,14 @@ pub struct SnowFreeHalfHourIntervalReceipt {
     pub gsi: f64,
     pub gsi_receipt_sha256: String,
     pub wb14_configuration_sha256: String,
+    pub active_precipitation_m: f64,
+    pub rain_m: f64,
+    pub snowfall_m: f64,
+    pub rain_fraction: f64,
+    pub snow_fraction: f64,
+    pub hydrometeor_temperature_c: Option<f64>,
     pub precipitation_parcels: Vec<SnowFreePrecipitationParcelReceipt>,
+    pub solid_precipitation_parcels: Vec<SnowFreeSolidPrecipitationParcelReceipt>,
     pub interval_receipt_sha256: String,
 }
 
@@ -541,6 +589,7 @@ pub struct SnowFreeHalfHourDayReceipt {
     pub daily_horizontal_energy_mj_m2: f64,
     pub intervals: Vec<SnowFreeHalfHourIntervalReceipt>,
     pub next_day_precipitation_carry: Vec<SnowFreePrecipitationParcelReceipt>,
+    pub next_day_solid_precipitation_carry: Vec<SnowFreeSolidPrecipitationParcelReceipt>,
     pub receipt_sha256: String,
 }
 
@@ -599,7 +648,10 @@ impl PreparedSnowFreeGsiDayV1 {
 }
 
 /// Reconstruct a prepared day exclusively from admitted restart owners.
-#[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+#[cfg(any(
+    feature = "restart-authority-evidence",
+    feature = "persisted-restart-v1"
+))]
 pub fn restart_authority_prepare_from_restored_receipts(
     gsi_receipt: DirectGsiDailyReceiptV1,
     ending_gsi_state: GsiState,
@@ -610,9 +662,8 @@ pub fn restart_authority_prepare_from_restored_receipts(
 ) -> Result<PreparedSnowFreeGsiDayV1, SnowFreeHalfHourForcingError> {
     gsi_receipt.validate()?;
     let direct_ending = direct_gsi_state(&ending_gsi_state)?;
-    let gsi_day_index = usize::try_from(gsi_receipt.day_index).map_err(|_| {
-        SnowFreeHalfHourForcingError::Identity("restart GSI day index width")
-    })?;
+    let gsi_day_index = usize::try_from(gsi_receipt.day_index)
+        .map_err(|_| SnowFreeHalfHourForcingError::Identity("restart GSI day index width"))?;
     if direct_ending != gsi_receipt.ending_state {
         return Err(SnowFreeHalfHourForcingError::Identity(
             "restart staged GSI ending state",
@@ -648,15 +699,15 @@ pub fn restart_authority_prepare_from_restored_receipts(
             || receipt.intervals.iter().any(|interval| {
                 interval.ofe_id != destination.ofe_id
                     || interval.tile_id != destination.tile_id
-                    || interval.wb14_configuration_sha256
-                        != destination.wb14_configuration_sha256
+                    || interval.wb14_configuration_sha256 != destination.wb14_configuration_sha256
                     || interval.co2_pa.to_bits() != configuration.co2_pa.to_bits()
                     || interval.reference_height_m.to_bits()
                         != configuration.reference_height_m.to_bits()
             })
-            || receipt.intervals.iter().any(|interval| {
-                interval.gsi_receipt_sha256 != gsi_receipt.receipt_sha256
-            })
+            || receipt
+                .intervals
+                .iter()
+                .any(|interval| interval.gsi_receipt_sha256 != gsi_receipt.receipt_sha256)
         {
             return Err(SnowFreeHalfHourForcingError::Identity(
                 "restart forcing/GSI receipt join",
@@ -672,6 +723,15 @@ pub fn restart_authority_prepare_from_restored_receipts(
             "restart ending cursor carry",
         ));
     }
+    let expected_solid_carry = receipts
+        .iter()
+        .flat_map(|receipt| receipt.next_day_solid_precipitation_carry.iter().cloned())
+        .collect::<Vec<_>>();
+    if expected_solid_carry != ending_cursor.pending_solid_carry {
+        return Err(SnowFreeHalfHourForcingError::Identity(
+            "restart ending cursor solid carry",
+        ));
+    }
     for pending in &beginning_cursor.pending_carry {
         let found = receipts
             .iter()
@@ -682,6 +742,19 @@ pub fn restart_authority_prepare_from_restored_receipts(
         if found != 1 {
             return Err(SnowFreeHalfHourForcingError::Identity(
                 "restart beginning cursor carry consumption",
+            ));
+        }
+    }
+    for pending in &beginning_cursor.pending_solid_carry {
+        let found = receipts
+            .iter()
+            .flat_map(|receipt| &receipt.intervals)
+            .flat_map(|interval| &interval.solid_precipitation_parcels)
+            .filter(|parcel| *parcel == pending)
+            .count();
+        if found != 1 {
+            return Err(SnowFreeHalfHourForcingError::Identity(
+                "restart beginning cursor solid carry consumption",
             ));
         }
     }
@@ -763,9 +836,7 @@ impl SnowFreeHalfHourDayReceipt {
                     != format!("{}:{}:{expected}", self.run_id, self.day_index)
                 || interval.interval_receipt_sha256 != canonical_sha256(interval)?
             {
-                return Err(SnowFreeHalfHourForcingError::Identity(
-                    "interval receipt",
-                ));
+                return Err(SnowFreeHalfHourForcingError::Identity("interval receipt"));
             }
             validate_interval_physics(interval)?;
             let interval_start_s = f64::from(
@@ -789,6 +860,19 @@ impl SnowFreeHalfHourDayReceipt {
                     ));
                 }
             }
+            for parcel in &interval.solid_precipitation_parcels {
+                validate_solid_precipitation_parcel(parcel)?;
+                if !parcel_ids.insert(&parcel.parcel_id)
+                    || parcel.destination_ofe_id != interval.ofe_id
+                    || parcel.destination_tile_id != interval.tile_id
+                    || parcel.start_s < interval_start_s
+                    || parcel.end_s > interval_end_s
+                {
+                    return Err(SnowFreeHalfHourForcingError::Identity(
+                        "interval solid parcel binding",
+                    ));
+                }
+            }
         }
         for parcel in &self.next_day_precipitation_carry {
             validate_precipitation_parcel(parcel)?;
@@ -800,6 +884,19 @@ impl SnowFreeHalfHourDayReceipt {
             {
                 return Err(SnowFreeHalfHourForcingError::Identity(
                     "carry parcel binding",
+                ));
+            }
+        }
+        for parcel in &self.next_day_solid_precipitation_carry {
+            validate_solid_precipitation_parcel(parcel)?;
+            if !parcel_ids.insert(&parcel.parcel_id)
+                || parcel.source_owner_id != self.source_climate_sha256
+                || parcel.destination_ofe_id != *expected_ofe
+                || parcel.destination_tile_id != *expected_tile
+                || parcel.end_s > 86_400.0
+            {
+                return Err(SnowFreeHalfHourForcingError::Identity(
+                    "solid carry parcel binding",
                 ));
             }
         }
@@ -819,9 +916,7 @@ impl SnowFreeHalfHourDayReceipt {
             ));
         }
         if self.receipt_sha256 != canonical_sha256(self)? {
-            return Err(SnowFreeHalfHourForcingError::Identity(
-                "day receipt digest",
-            ));
+            return Err(SnowFreeHalfHourForcingError::Identity("day receipt digest"));
         }
         Ok(())
     }
@@ -888,6 +983,14 @@ fn validate_parent_hold(
 fn validate_interval_physics(
     interval: &SnowFreeHalfHourIntervalReceipt,
 ) -> Result<(), SnowFreeHalfHourForcingError> {
+    validate_half_hour_precipitation_phase(HalfHourPrecipitationPhase {
+        active_precipitation_m: interval.active_precipitation_m,
+        rain_m: interval.rain_m,
+        snowfall_m: interval.snowfall_m,
+        rain_fraction: interval.rain_fraction,
+        snow_fraction: interval.snow_fraction,
+        hydrometeor_temperature_c: interval.hydrometeor_temperature_c,
+    })?;
     let operands = [
         interval.air_temperature_c,
         interval.dew_point_c,
@@ -912,7 +1015,39 @@ fn validate_interval_physics(
         + interval.diffuse_visible_w_m2
         + interval.direct_nir_w_m2
         + interval.diffuse_nir_w_m2;
+    let precipitation_operands = [
+        interval.active_precipitation_m,
+        interval.rain_m,
+        interval.snowfall_m,
+        interval.rain_fraction,
+        interval.snow_fraction,
+    ];
+    let precipitation_scale = interval.active_precipitation_m.abs().max(1.0);
     if operands.iter().any(|value| !value.is_finite())
+        || precipitation_operands
+            .iter()
+            .any(|value| !value.is_finite())
+        || precipitation_operands.iter().any(|value| *value < 0.0)
+        || !(0.0..=1.0).contains(&interval.rain_fraction)
+        || !(0.0..=1.0).contains(&interval.snow_fraction)
+        || interval
+            .hydrometeor_temperature_c
+            .is_some_and(|value| !value.is_finite())
+        || (interval.rain_m + interval.snowfall_m / 10.0 - interval.active_precipitation_m).abs()
+            > 1.0e-12 * precipitation_scale
+        || (interval.active_precipitation_m > 0.0
+            && ((interval.rain_fraction + interval.snow_fraction - 1.0).abs() > 1.0e-12
+                || (interval.rain_m - interval.active_precipitation_m * interval.rain_fraction)
+                    .abs()
+                    > 1.0e-12 * precipitation_scale
+                || (interval.snowfall_m / 10.0
+                    - interval.active_precipitation_m * interval.snow_fraction)
+                    .abs()
+                    > 1.0e-12 * precipitation_scale))
+        || (interval.active_precipitation_m == 0.0
+            && (interval.rain_fraction != 0.0
+                || interval.snow_fraction != 0.0
+                || interval.hydrometeor_temperature_c.is_some()))
         || interval.wind_m_s <= 0.0
         || interval.pressure_kpa <= interval.actual_vapor_pressure_kpa
         || interval.specific_humidity_kg_kg < 0.0
@@ -930,14 +1065,52 @@ fn validate_interval_physics(
         || !is_sha256(&interval.gsi_receipt_sha256)
         || !is_sha256(&interval.wb14_configuration_sha256)
         || (reconstructed_shortwave - interval.global_horizontal_shortwave_w_m2).abs()
-            > 1.0e-12
-                * interval
-                    .global_horizontal_shortwave_w_m2
-                    .abs()
-                    .max(1.0)
+            > 1.0e-12 * interval.global_horizontal_shortwave_w_m2.abs().max(1.0)
     {
         return Err(SnowFreeHalfHourForcingError::Closure(
             "interval physical operands",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_half_hour_precipitation_phase(
+    phase: HalfHourPrecipitationPhase,
+) -> Result<(), SnowFreeHalfHourForcingError> {
+    let operands = [
+        phase.active_precipitation_m,
+        phase.rain_m,
+        phase.snowfall_m,
+        phase.rain_fraction,
+        phase.snow_fraction,
+    ];
+    let scale = phase.active_precipitation_m.abs().max(1.0);
+    let invalid_domain = operands.iter().any(|value| !value.is_finite() || *value < 0.0)
+        || !(0.0..=1.0).contains(&phase.rain_fraction)
+        || !(0.0..=1.0).contains(&phase.snow_fraction)
+        || phase
+            .hydrometeor_temperature_c
+            .is_some_and(|value| !value.is_finite());
+    let invalid_dry = phase.active_precipitation_m == 0.0
+        && (phase.rain_m != 0.0
+            || phase.snowfall_m != 0.0
+            || phase.rain_fraction != 0.0
+            || phase.snow_fraction != 0.0
+            || phase.hydrometeor_temperature_c.is_some());
+    let invalid_wet = phase.active_precipitation_m > 0.0
+        && (phase.hydrometeor_temperature_c.is_none()
+            || (phase.rain_m + phase.snowfall_m / 10.0 - phase.active_precipitation_m).abs()
+                > 1.0e-12 * scale
+            || (phase.rain_fraction + phase.snow_fraction - 1.0).abs() > 1.0e-12
+            || (phase.rain_m - phase.active_precipitation_m * phase.rain_fraction).abs()
+                > 1.0e-12 * scale
+            || (phase.snowfall_m / 10.0
+                - phase.active_precipitation_m * phase.snow_fraction)
+                .abs()
+                > 1.0e-12 * scale);
+    if invalid_domain || invalid_dry || invalid_wet {
+        return Err(SnowFreeHalfHourForcingError::Closure(
+            "interval precipitation phase",
         ));
     }
     Ok(())
@@ -996,10 +1169,53 @@ struct HourlyParentContext {
     sunmap: Simimpl28SunmapResult,
 }
 
-type PrecipitationSupport = (f64, f64, f64);
-type ChildMassesAndCarry = ([f64; 48], Vec<PrecipitationSupport>);
+#[derive(Clone, Copy, Debug, Default)]
+struct HalfHourPrecipitationPhase {
+    active_precipitation_m: f64,
+    rain_m: f64,
+    snowfall_m: f64,
+    rain_fraction: f64,
+    snow_fraction: f64,
+    hydrometeor_temperature_c: Option<f64>,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct PrecipitationCarrySupport {
+    start_s: f64,
+    end_s: f64,
+    phase: HalfHourPrecipitationPhase,
+}
+
+type ChildPhaseAndCarry = (
+    [HalfHourPrecipitationPhase; 48],
+    Vec<PrecipitationCarrySupport>,
+);
 
 impl HillslopeClimateRuntimeRequest {
+    /// Canonical production solar-geometry authority used by the Stage-3
+    /// surface-energy capability. This projects only the immutable climate
+    /// date/radiation and site geometry; it does not invoke the retired
+    /// diagnostic winter snow/phase forcing path.
+    pub fn stage3_daily_extraterrestrial_radiation_mj_m2(
+        &self,
+        day_index: usize,
+        avg_slope: f64,
+        azimuth: f64,
+    ) -> Result<f64, SnowFreeHalfHourForcingError> {
+        let selected = select_day_forcing(&self.shared, day_index)?;
+        let (day, month, year, radly) = match selected {
+            HillslopeClimateDailyForcing::NoBreakpoint(value) => {
+                (value.day, value.mon, value.year, value.rad)
+            }
+            HillslopeClimateDailyForcing::Breakpoint(value) => {
+                (value.day, value.mon, value.year, value.rad)
+            }
+        };
+        let day_of_year = simimpl28_day_of_year(day, month, year)?;
+        let geometry = simimpl28_aspect_geometry(self.metadata.deglat, avg_slope, azimuth)?;
+        Ok(simimpl28_sunmap(radly, day_of_year, geometry)?.rpoth_mj_m2)
+    }
+
     pub fn prepare_snow_free_gsi_day_from_repository(
         &self,
         day_index: usize,
@@ -1012,8 +1228,7 @@ impl HillslopeClimateRuntimeRequest {
         if configuration.run_id.is_empty()
             || configuration.gsi_owner_configuration_sha256
                 != gsi_owner_configuration.configuration_sha256
-            || self.metadata.deglat.to_bits()
-                != gsi_owner_configuration.latitude_degrees.to_bits()
+            || self.metadata.deglat.to_bits() != gsi_owner_configuration.latitude_degrees.to_bits()
         {
             return Err(SnowFreeHalfHourForcingError::Identity(
                 "repository GSI owner join",
@@ -1036,29 +1251,20 @@ impl HillslopeClimateRuntimeRequest {
                 TemperatureCelsius::try_new(temperature_c)
                     .map_err(|_| SnowFreeHalfHourForcingError::Unsupported("GSI daily VPD"))?,
             )
-            .map(
-                openwepp_meteorology::psychrometrics::VaporPressureKilopascals::as_kilopascals,
-            )
+            .map(openwepp_meteorology::psychrometrics::VaporPressureKilopascals::as_kilopascals)
             .map_err(|_| SnowFreeHalfHourForcingError::Unsupported("GSI daily VPD"))
         };
-        let mean_saturation_kpa =
-            f64::midpoint(saturation_kpa(tmax)?, saturation_kpa(tmin)?);
+        let mean_saturation_kpa = f64::midpoint(saturation_kpa(tmax)?, saturation_kpa(tmin)?);
         let actual_vapor_pressure_kpa = saturation_kpa(dew_point)?;
-        let vapor_pressure_deficit_pa =
-            (mean_saturation_kpa - actual_vapor_pressure_kpa) * 1_000.0;
+        let vapor_pressure_deficit_pa = (mean_saturation_kpa - actual_vapor_pressure_kpa) * 1_000.0;
         if !vapor_pressure_deficit_pa.is_finite() || vapor_pressure_deficit_pa < 0.0 {
-            return Err(SnowFreeHalfHourForcingError::Unsupported(
-                "GSI daily VPD",
-            ));
+            return Err(SnowFreeHalfHourForcingError::Unsupported("GSI daily VPD"));
         }
         let forcing = GsiDailyForcing {
             minimum_temperature_c: tmin,
             vapor_pressure_deficit_pa,
             latitude_degrees: self.metadata.deglat,
-            date: GsiDate {
-                year,
-                ordinal_day,
-            },
+            date: GsiDate { year, ordinal_day },
         };
         let (gsi_receipt, ending_gsi_state) = DirectGsiDailyReceiptV1::prepare_owned(
             gsi_state,
@@ -1101,8 +1307,7 @@ impl HillslopeClimateRuntimeRequest {
                 != u64::try_from(day_index)
                     .map_err(|_| SnowFreeHalfHourForcingError::Identity("GSI day index"))?
             || gsi_receipt.source_climate_sha256 != expected_source_climate_sha256
-            || gsi_receipt.forcing.latitude_degrees.to_bits()
-                != self.metadata.deglat.to_bits()
+            || gsi_receipt.forcing.latitude_degrees.to_bits() != self.metadata.deglat.to_bits()
         {
             return Err(SnowFreeHalfHourForcingError::Identity(
                 "provider GSI owner configuration",
@@ -1149,7 +1354,7 @@ impl HillslopeClimateRuntimeRequest {
         let forcing = select_day_forcing(&self.shared, day_index)?;
         let source_climate_sha256 = source_climate_sha256(self, day_index, forcing);
         let parents = build_snow_free_hourly_parents(forcing, &self.metadata)?;
-        let (child_masses, carry_supports) = precipitation_child_masses(forcing, &parents)?;
+        let (child_phases, carry_supports) = precipitation_child_phases(forcing, &parents)?;
         let daily_energy = parents
             .iter()
             .map(|parent| parent.global_horizontal_shortwave_w_m2 * 3_600.0 / 1_000_000.0)
@@ -1162,20 +1367,29 @@ impl HillslopeClimateRuntimeRequest {
                 destination,
                 &source_climate_sha256,
                 &parents,
-                &child_masses,
+                &child_phases,
                 &carry_supports,
                 daily_energy,
             )?;
             receipt.validate()?;
             receipts.push(receipt);
         }
-        apply_pending_carry(&mut receipts, &cursor.pending_carry)?;
+        apply_pending_carry(
+            &mut receipts,
+            &cursor.pending_carry,
+            &cursor.pending_solid_carry,
+        )?;
         let pending_carry = receipts
             .iter()
             .flat_map(|receipt| receipt.next_day_precipitation_carry.iter().cloned())
             .collect();
+        let pending_solid_carry = receipts
+            .iter()
+            .flat_map(|receipt| receipt.next_day_solid_precipitation_carry.iter().cloned())
+            .collect();
         let mut ending_cursor = cursor.clone();
         ending_cursor.pending_carry = pending_carry;
+        ending_cursor.pending_solid_carry = pending_solid_carry;
         ending_cursor.configuration_sha256 = Some(configuration_sha256);
         ending_cursor.next_day_index += 1;
         Ok(ValidatedSnowFreeHalfHourForcingReceipts {
@@ -1204,6 +1418,7 @@ fn snow_free_static_configuration_sha256(value: &SnowFreeHalfHourStaticConfigura
 fn apply_pending_carry(
     receipts: &mut [SnowFreeHalfHourDayReceipt],
     pending: &[SnowFreePrecipitationParcelReceipt],
+    pending_solid: &[SnowFreeSolidPrecipitationParcelReceipt],
 ) -> Result<(), SnowFreeHalfHourForcingError> {
     for parcel in pending {
         let receipt = receipts
@@ -1212,27 +1427,68 @@ fn apply_pending_carry(
                 receipt.intervals[0].ofe_id == parcel.destination_ofe_id
                     && receipt.intervals[0].tile_id == parcel.destination_tile_id
             })
-            .ok_or(SnowFreeHalfHourForcingError::Identity(
-                "carry destination",
-            ))?;
+            .ok_or(SnowFreeHalfHourForcingError::Identity("carry destination"))?;
         let mut interval_index = None;
         for (index, interval) in receipt.intervals.iter().enumerate() {
-            let start = f64::from(u32::try_from(interval.start_s).map_err(|_| {
-                SnowFreeHalfHourForcingError::Identity("interval support")
-            })?);
-            let end = f64::from(u32::try_from(interval.end_s).map_err(|_| {
-                SnowFreeHalfHourForcingError::Identity("interval support")
-            })?);
+            let start = f64::from(
+                u32::try_from(interval.start_s)
+                    .map_err(|_| SnowFreeHalfHourForcingError::Identity("interval support"))?,
+            );
+            let end = f64::from(
+                u32::try_from(interval.end_s)
+                    .map_err(|_| SnowFreeHalfHourForcingError::Identity("interval support"))?,
+            );
             if parcel.start_s >= start && parcel.end_s <= end {
                 interval_index = Some(index);
                 break;
             }
         }
-        let interval = receipt.intervals.get_mut(interval_index.ok_or(
-            SnowFreeHalfHourForcingError::Identity("carry support"),
-        )?)
-        .ok_or(SnowFreeHalfHourForcingError::Identity("carry support"))?;
+        let interval = receipt
+            .intervals
+            .get_mut(interval_index.ok_or(SnowFreeHalfHourForcingError::Identity("carry support"))?)
+            .ok_or(SnowFreeHalfHourForcingError::Identity("carry support"))?;
+        if interval.hydrometeor_temperature_c.is_none() {
+            interval.hydrometeor_temperature_c = Some(parcel.temperature_k - 273.15);
+        }
         interval.precipitation_parcels.push(parcel.clone());
+        interval.rain_m += parcel.mass_kg_m2 / 1_000.0;
+        interval.active_precipitation_m += parcel.mass_kg_m2 / 1_000.0;
+        interval.rain_fraction = interval.rain_m / interval.active_precipitation_m;
+        interval.snow_fraction = interval.snowfall_m / 10.0 / interval.active_precipitation_m;
+        interval.interval_receipt_sha256 = canonical_sha256(interval)?;
+    }
+    for parcel in pending_solid {
+        let receipt = receipts
+            .iter_mut()
+            .find(|receipt| {
+                receipt.intervals[0].ofe_id == parcel.destination_ofe_id
+                    && receipt.intervals[0].tile_id == parcel.destination_tile_id
+            })
+            .ok_or(SnowFreeHalfHourForcingError::Identity(
+                "solid carry destination",
+            ))?;
+        let interval_index = receipt
+            .intervals
+            .iter()
+            .position(|interval| {
+                let start = interval.start_s as f64;
+                let end = interval.end_s as f64;
+                parcel.start_s >= start && parcel.end_s <= end
+            })
+            .ok_or(SnowFreeHalfHourForcingError::Identity(
+                "solid carry support",
+            ))?;
+        let interval = receipt.intervals.get_mut(interval_index).ok_or(
+            SnowFreeHalfHourForcingError::Identity("solid carry support"),
+        )?;
+        if interval.hydrometeor_temperature_c.is_none() {
+            interval.hydrometeor_temperature_c = Some(parcel.temperature_k - 273.15);
+        }
+        interval.solid_precipitation_parcels.push(parcel.clone());
+        interval.snowfall_m += parcel.mass_kg_m2 / 100.0;
+        interval.active_precipitation_m += parcel.mass_kg_m2 / 1_000.0;
+        interval.rain_fraction = interval.rain_m / interval.active_precipitation_m;
+        interval.snow_fraction = interval.snowfall_m / 10.0 / interval.active_precipitation_m;
         interval.interval_receipt_sha256 = canonical_sha256(interval)?;
     }
     for receipt in receipts {
@@ -1338,17 +1594,49 @@ fn source_climate_sha256(
     digest.update(request.metadata.deglat.to_bits().to_le_bytes());
     digest.update(request.metadata.elev.to_bits().to_le_bytes());
     digest.update((day_index as u64).to_le_bytes());
-    let (day, month, year, precipitation, tmax, tmin, radiation, wind, dew, storm_start, times, intensities) =
-        match forcing {
-            HillslopeClimateDailyForcing::NoBreakpoint(value) => (
-                value.day, value.mon, value.year, value.prcp, value.tmax, value.tmin, value.rad,
-                value.vwind, value.tdpt, None, &value.timem, &value.intsty,
-            ),
-            HillslopeClimateDailyForcing::Breakpoint(value) => (
-                value.day, value.mon, value.year, value.prcp, value.tmax, value.tmin, value.rad,
-                value.vwind, value.tdpt, Some(value.stmstr), &value.timem, &value.intsty,
-            ),
-        };
+    let (
+        day,
+        month,
+        year,
+        precipitation,
+        tmax,
+        tmin,
+        radiation,
+        wind,
+        dew,
+        storm_start,
+        times,
+        intensities,
+    ) = match forcing {
+        HillslopeClimateDailyForcing::NoBreakpoint(value) => (
+            value.day,
+            value.mon,
+            value.year,
+            value.prcp,
+            value.tmax,
+            value.tmin,
+            value.rad,
+            value.vwind,
+            value.tdpt,
+            None,
+            &value.timem,
+            &value.intsty,
+        ),
+        HillslopeClimateDailyForcing::Breakpoint(value) => (
+            value.day,
+            value.mon,
+            value.year,
+            value.prcp,
+            value.tmax,
+            value.tmin,
+            value.rad,
+            value.vwind,
+            value.tdpt,
+            Some(value.stmstr),
+            &value.timem,
+            &value.intsty,
+        ),
+    };
     digest.update(day.to_le_bytes());
     digest.update(month.to_le_bytes());
     digest.update(year.to_le_bytes());
@@ -1401,11 +1689,23 @@ fn build_snow_free_hourly_parents(
 ) -> Result<[SnowFreeHourlyParent; 24], SnowFreeHalfHourForcingError> {
     let (day, month, year, tmax, tmin, radly, dew_point_c, wind_m_s) = match forcing {
         HillslopeClimateDailyForcing::NoBreakpoint(value) => (
-            value.day, value.mon, value.year, value.tmax, value.tmin, value.rad, value.tdpt,
+            value.day,
+            value.mon,
+            value.year,
+            value.tmax,
+            value.tmin,
+            value.rad,
+            value.tdpt,
             value.vwind,
         ),
         HillslopeClimateDailyForcing::Breakpoint(value) => (
-            value.day, value.mon, value.year, value.tmax, value.tmin, value.rad, value.tdpt,
+            value.day,
+            value.mon,
+            value.year,
+            value.tmax,
+            value.tmin,
+            value.rad,
+            value.tdpt,
             value.vwind,
         ),
     };
@@ -1495,10 +1795,9 @@ fn build_hourly_parent(
         .map_err(|_| SnowFreeHalfHourForcingError::Unsupported("air saturation"))?
         .as_kilopascals();
     let vpd_kpa = saturation - actual_vapor_pressure_kpa;
-    let phase_relative_humidity = FractionUnitInterval::try_new(
-        (actual_vapor_pressure_kpa / saturation).min(1.0),
-    )
-    .map_err(|_| SnowFreeHalfHourForcingError::Unsupported("phase relative humidity"))?;
+    let phase_relative_humidity =
+        FractionUnitInterval::try_new((actual_vapor_pressure_kpa / saturation).min(1.0))
+            .map_err(|_| SnowFreeHalfHourForcingError::Unsupported("phase relative humidity"))?;
     let phase = harder_pomeroy_phase_from_relative_humidity(
         air,
         phase_relative_humidity,
@@ -1538,11 +1837,11 @@ fn build_hourly_parent(
     })
 }
 
-fn precipitation_child_masses(
+fn precipitation_child_phases(
     forcing: &HillslopeClimateDailyForcing,
     parents: &[SnowFreeHourlyParent; 24],
-) -> Result<ChildMassesAndCarry, SnowFreeHalfHourForcingError> {
-    let mut masses = [0.0; 48];
+) -> Result<ChildPhaseAndCarry, SnowFreeHalfHourForcingError> {
+    let mut phases = [HalfHourPrecipitationPhase::default(); 48];
     let mut carry = Vec::new();
     match forcing {
         HillslopeClimateDailyForcing::Breakpoint(value) => {
@@ -1551,14 +1850,22 @@ fn precipitation_child_masses(
                 let start = offset + value.timem[segment];
                 let end = offset + value.timem[segment + 1];
                 let intensity = value.intsty[segment];
-                for (index, mass) in masses.iter_mut().enumerate() {
+                for (index, child) in phases.iter_mut().enumerate() {
                     let index_u32 = u32::try_from(index).map_err(|_| {
                         SnowFreeHalfHourForcingError::Identity("child interval index")
                     })?;
                     let child_start = f64::from(index_u32) * SNOW_FREE_INTERVAL_S;
                     let child_end = child_start + SNOW_FREE_INTERVAL_S;
                     let overlap = (child_end.min(end) - child_start.max(start)).max(0.0);
-                    *mass += 1_000.0 * overlap * intensity;
+                    let active_m = overlap * intensity;
+                    if active_m > 0.0 {
+                        let snow_fraction = parents[index / 2].snow_fraction;
+                        child.active_precipitation_m += active_m;
+                        child.rain_m += active_m * (1.0 - snow_fraction);
+                        child.snowfall_m += active_m * snow_fraction * 10.0;
+                        child.hydrometeor_temperature_c =
+                            Some(parents[index / 2].hydrometeor_temperature_c);
+                    }
                 }
                 if end > 86_400.0 {
                     let translated_start = (start - 86_400.0).max(0.0);
@@ -1569,19 +1876,41 @@ fn precipitation_child_masses(
                         let overlap_start = child_start.max(translated_start);
                         let overlap_end = child_end.min(translated_end);
                         if overlap_end > overlap_start && intensity > 0.0 {
-                            carry.push((overlap_start, overlap_end, intensity));
+                            let active_m = (overlap_end - overlap_start) * intensity;
+                            let snow_fraction = parents[23].snow_fraction;
+                            carry.push(PrecipitationCarrySupport {
+                                start_s: overlap_start,
+                                end_s: overlap_end,
+                                phase: HalfHourPrecipitationPhase {
+                                    active_precipitation_m: active_m,
+                                    rain_m: active_m * (1.0 - snow_fraction),
+                                    snowfall_m: active_m * snow_fraction * 10.0,
+                                    rain_fraction: 1.0 - snow_fraction,
+                                    snow_fraction,
+                                    hydrometeor_temperature_c: Some(
+                                        parents[23].hydrometeor_temperature_c,
+                                    ),
+                                },
+                            });
                         }
                     }
                 }
             }
-            let admitted_mass = masses.iter().sum::<f64>()
+            for child in &mut phases {
+                if child.active_precipitation_m > 0.0 {
+                    child.rain_fraction = child.rain_m / child.active_precipitation_m;
+                    child.snow_fraction = child.snowfall_m / 10.0 / child.active_precipitation_m;
+                }
+            }
+            let admitted_depth = phases
+                .iter()
+                .map(|child| child.active_precipitation_m)
+                .sum::<f64>()
                 + carry
                     .iter()
-                    .map(|(start, end, intensity)| 1_000.0 * (end - start) * intensity)
+                    .map(|support| support.phase.active_precipitation_m)
                     .sum::<f64>();
-            if (admitted_mass - value.prcp * 1_000.0).abs()
-                > 1.0e-12 * (value.prcp * 1_000.0).abs().max(1.0)
-            {
+            if (admitted_depth - value.prcp).abs() > 1.0e-12 * value.prcp.abs().max(1.0) {
                 return Err(SnowFreeHalfHourForcingError::Closure(
                     "breakpoint daily precipitation",
                 ));
@@ -1604,19 +1933,30 @@ fn precipitation_child_masses(
                     value.tdpt,
                     SnowPhasePartitionModel::HarderPomeroyHourly,
                 )?;
-                let hour_index = usize::try_from(hour - 1).map_err(|_| {
-                    SnowFreeHalfHourForcingError::Identity("parent hour index")
-                })?;
-                masses[2 * hour_index] = 500.0 * partition.hrrain_m;
-                masses[2 * hour_index + 1] = 500.0 * partition.hrrain_m;
-                if partition.hrsnow_m > 0.0 {
-                    return Err(SnowFreeHalfHourForcingError::Unsupported(
-                        "snow or mixed precipitation",
-                    ));
-                }
+                let hour_index = usize::try_from(hour - 1)
+                    .map_err(|_| SnowFreeHalfHourForcingError::Identity("parent hour index"))?;
+                let child = if partition.active_precipitation_m > 0.0 {
+                    HalfHourPrecipitationPhase {
+                        active_precipitation_m: 0.5 * partition.active_precipitation_m,
+                        rain_m: 0.5 * partition.hrrain_m,
+                        snowfall_m: 0.5 * partition.hrsnow_m,
+                        rain_fraction: partition.rain_fraction,
+                        snow_fraction: partition.snow_fraction,
+                        hydrometeor_temperature_c: partition.hydrometeor_temperature_c,
+                    }
+                } else {
+                    HalfHourPrecipitationPhase::default()
+                };
+                phases[2 * hour_index] = child;
+                phases[2 * hour_index + 1] = child;
             }
-            if (masses.iter().sum::<f64>() - value.prcp * 1_000.0).abs()
-                > 1.0e-12 * (value.prcp * 1_000.0).abs().max(1.0)
+            if (phases
+                .iter()
+                .map(|child| child.active_precipitation_m)
+                .sum::<f64>()
+                - value.prcp)
+                .abs()
+                > 1.0e-12 * value.prcp.abs().max(1.0)
             {
                 return Err(SnowFreeHalfHourForcingError::Closure(
                     "parent-hour daily precipitation",
@@ -1624,19 +1964,7 @@ fn precipitation_child_masses(
             }
         }
     }
-    for (index, mass) in masses.iter().enumerate() {
-        if *mass > 0.0 && parents[index / 2].snow_fraction > 0.0 {
-            return Err(SnowFreeHalfHourForcingError::Unsupported(
-                "snow or mixed precipitation",
-            ));
-        }
-    }
-    if !carry.is_empty() && parents[23].snow_fraction > 0.0 {
-        return Err(SnowFreeHalfHourForcingError::Unsupported(
-            "snow or mixed precipitation carry",
-        ));
-    }
-    Ok((masses, carry))
+    Ok((phases, carry))
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1646,8 +1974,8 @@ fn build_destination_receipt(
     destination: &SnowFreeHalfHourDestination,
     source_climate_sha256: &str,
     parents: &[SnowFreeHourlyParent; 24],
-    child_masses: &[f64; 48],
-    carry_supports: &[(f64, f64, f64)],
+    child_phases: &[HalfHourPrecipitationPhase; 48],
+    carry_supports: &[PrecipitationCarrySupport],
     daily_energy: f64,
 ) -> Result<SnowFreeHalfHourDayReceipt, SnowFreeHalfHourForcingError> {
     let mut intervals = Vec::with_capacity(SNOW_FREE_INTERVAL_COUNT);
@@ -1657,7 +1985,8 @@ fn build_destination_receipt(
             .map_err(|_| SnowFreeHalfHourForcingError::Identity("child interval index"))?;
         let interval_start_s = f64::from(interval_u32) * SNOW_FREE_INTERVAL_S;
         let interval_end_s = interval_start_s + SNOW_FREE_INTERVAL_S;
-        let precipitation_parcels = if child_masses[interval_index] == 0.0 {
+        let phase = child_phases[interval_index];
+        let precipitation_parcels = if phase.rain_m == 0.0 {
             Vec::new()
         } else {
             vec![precipitation_parcel(
@@ -1667,8 +1996,26 @@ fn build_destination_receipt(
                 source_climate_sha256,
                 interval_start_s,
                 interval_end_s,
-                child_masses[interval_index],
-                parent.hydrometeor_temperature_c,
+                phase.rain_m * 1_000.0,
+                phase
+                    .hydrometeor_temperature_c
+                    .unwrap_or(parent.hydrometeor_temperature_c),
+            )]
+        };
+        let solid_precipitation_parcels = if phase.snowfall_m == 0.0 {
+            Vec::new()
+        } else {
+            vec![solid_precipitation_parcel(
+                day_index,
+                interval_index,
+                destination,
+                source_climate_sha256,
+                interval_start_s,
+                interval_end_s,
+                phase.snowfall_m * 100.0,
+                phase
+                    .hydrometeor_temperature_c
+                    .unwrap_or(parent.hydrometeor_temperature_c),
             )]
         };
         let mut interval = SnowFreeHalfHourIntervalReceipt {
@@ -1703,25 +2050,51 @@ fn build_destination_receipt(
             gsi: configuration.gsi,
             gsi_receipt_sha256: configuration.gsi_receipt_sha256.clone(),
             wb14_configuration_sha256: destination.wb14_configuration_sha256.clone(),
+            active_precipitation_m: phase.active_precipitation_m,
+            rain_m: phase.rain_m,
+            snowfall_m: phase.snowfall_m,
+            rain_fraction: phase.rain_fraction,
+            snow_fraction: phase.snow_fraction,
+            hydrometeor_temperature_c: phase.hydrometeor_temperature_c,
             precipitation_parcels,
+            solid_precipitation_parcels,
             interval_receipt_sha256: String::new(),
         };
         interval.interval_receipt_sha256 = canonical_sha256(&interval)?;
         intervals.push(interval);
     }
     let mut next_day_precipitation_carry = Vec::with_capacity(carry_supports.len());
-    for (index, (start, end, intensity)) in carry_supports.iter().copied().enumerate() {
+    let mut next_day_solid_precipitation_carry = Vec::with_capacity(carry_supports.len());
+    for (index, support) in carry_supports.iter().copied().enumerate() {
         let parent = parents[23];
-        next_day_precipitation_carry.push(precipitation_parcel(
-            day_index,
-            48 + index,
-            destination,
-            source_climate_sha256,
-            start,
-            end,
-            1_000.0 * (end - start) * intensity,
-            parent.hydrometeor_temperature_c,
-        ));
+        let hydrometeor_temperature_c = support
+            .phase
+            .hydrometeor_temperature_c
+            .unwrap_or(parent.hydrometeor_temperature_c);
+        if support.phase.rain_m > 0.0 {
+            next_day_precipitation_carry.push(precipitation_parcel(
+                day_index,
+                48 + index,
+                destination,
+                source_climate_sha256,
+                support.start_s,
+                support.end_s,
+                support.phase.rain_m * 1_000.0,
+                hydrometeor_temperature_c,
+            ));
+        }
+        if support.phase.snowfall_m > 0.0 {
+            next_day_solid_precipitation_carry.push(solid_precipitation_parcel(
+                day_index,
+                48 + index,
+                destination,
+                source_climate_sha256,
+                support.start_s,
+                support.end_s,
+                support.phase.snowfall_m * 100.0,
+                hydrometeor_temperature_c,
+            ));
+        }
     }
     let mut receipt = SnowFreeHalfHourDayReceipt {
         provider_version: "OPENWEPP_SNOW_FREE_HALF_HOUR_FORCING_V1".to_string(),
@@ -1732,10 +2105,43 @@ fn build_destination_receipt(
         daily_horizontal_energy_mj_m2: daily_energy,
         intervals,
         next_day_precipitation_carry,
+        next_day_solid_precipitation_carry,
         receipt_sha256: String::new(),
     };
     receipt.receipt_sha256 = canonical_sha256(&receipt)?;
     Ok(receipt)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn solid_precipitation_parcel(
+    day_index: usize,
+    parcel_index: usize,
+    destination: &SnowFreeHalfHourDestination,
+    source_climate_sha256: &str,
+    start_s: f64,
+    end_s: f64,
+    mass_kg_m2: f64,
+    hydrometeor_temperature_c: f64,
+) -> SnowFreeSolidPrecipitationParcelReceipt {
+    const ICE_HEAT_CAPACITY_J_KG_K: f64 = 2_100.0;
+    const MELTING_TEMPERATURE_K: f64 = 273.15;
+    // Harder-Pomeroy supplies one bulk hydrometeor temperature for a mixed
+    // phase. The solid parcel is separately bounded by the melting point;
+    // liquid custody retains the unmodified bulk temperature below.
+    let temperature_k = celsius_to_kelvin(hydrometeor_temperature_c.min(0.0));
+    SnowFreeSolidPrecipitationParcelReceipt {
+        parcel_id: format!("climate-snow:{day_index}:{parcel_index}"),
+        source_owner_id: source_climate_sha256.to_string(),
+        destination_ofe_id: destination.ofe_id.clone(),
+        destination_tile_id: destination.tile_id.clone(),
+        start_s,
+        end_s,
+        mass_kg_m2,
+        temperature_k,
+        enthalpy_j_m2: mass_kg_m2
+            * ICE_HEAT_CAPACITY_J_KG_K
+            * (temperature_k - MELTING_TEMPERATURE_K),
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1788,6 +2194,37 @@ fn validate_precipitation_parcel(
     Ok(())
 }
 
+fn validate_solid_precipitation_parcel(
+    parcel: &SnowFreeSolidPrecipitationParcelReceipt,
+) -> Result<(), SnowFreeHalfHourForcingError> {
+    const ICE_HEAT_CAPACITY_J_KG_K: f64 = 2_100.0;
+    const MELTING_TEMPERATURE_K: f64 = 273.15;
+    let expected_enthalpy = parcel.mass_kg_m2
+        * ICE_HEAT_CAPACITY_J_KG_K
+        * (parcel.temperature_k - MELTING_TEMPERATURE_K);
+    if parcel.parcel_id.is_empty()
+        || parcel.source_owner_id.is_empty()
+        || parcel.destination_ofe_id.is_empty()
+        || parcel.destination_tile_id.is_empty()
+        || !parcel.start_s.is_finite()
+        || !parcel.end_s.is_finite()
+        || parcel.start_s < 0.0
+        || parcel.end_s <= parcel.start_s
+        || !parcel.mass_kg_m2.is_finite()
+        || parcel.mass_kg_m2 < 0.0
+        || !parcel.temperature_k.is_finite()
+        || parcel.temperature_k <= 0.0
+        || parcel.temperature_k > MELTING_TEMPERATURE_K
+        || !parcel.enthalpy_j_m2.is_finite()
+        || parcel.enthalpy_j_m2.to_bits() != expected_enthalpy.to_bits()
+    {
+        return Err(SnowFreeHalfHourForcingError::Identity(
+            "solid precipitation parcel",
+        ));
+    }
+    Ok(())
+}
+
 fn canonical_sha256<T: Serialize>(value: &T) -> Result<String, SnowFreeHalfHourForcingError> {
     let mut json = serde_json::to_value(value)
         .map_err(|error| SnowFreeHalfHourForcingError::Serialization(error.to_string()))?;
@@ -1799,4 +2236,176 @@ fn canonical_sha256<T: Serialize>(value: &T) -> Result<String, SnowFreeHalfHourF
         .map_err(|error| SnowFreeHalfHourForcingError::Serialization(error.to_string()))?;
     bytes.push(b'\n');
     Ok(format!("{:x}", Sha256::digest(bytes)))
+}
+
+#[cfg(test)]
+mod snow_free_half_hour_phase_tests {
+    use super::*;
+
+    #[test]
+    fn dry_phase_metadata_and_mixed_geometric_closure_poisons_fail_closed() {
+        validate_half_hour_precipitation_phase(HalfHourPrecipitationPhase::default())
+            .expect("canonical dry phase");
+
+        let dry_metadata_poison = HalfHourPrecipitationPhase {
+            hydrometeor_temperature_c: Some(-1.0),
+            ..HalfHourPrecipitationPhase::default()
+        };
+        assert_eq!(
+            validate_half_hour_precipitation_phase(dry_metadata_poison),
+            Err(SnowFreeHalfHourForcingError::Closure(
+                "interval precipitation phase"
+            ))
+        );
+
+        let mixed = HalfHourPrecipitationPhase {
+            active_precipitation_m: 0.01,
+            rain_m: 0.006,
+            snowfall_m: 0.04,
+            rain_fraction: 0.6,
+            snow_fraction: 0.4,
+            hydrometeor_temperature_c: Some(-0.5),
+        };
+        validate_half_hour_precipitation_phase(mixed).expect("canonical mixed phase");
+
+        let mut geometric_poison = mixed;
+        geometric_poison.snowfall_m = 0.004;
+        assert_eq!(
+            validate_half_hour_precipitation_phase(geometric_poison),
+            Err(SnowFreeHalfHourForcingError::Closure(
+                "interval precipitation phase"
+            ))
+        );
+
+        let mut temperature_provider_poison = mixed;
+        temperature_provider_poison.hydrometeor_temperature_c = None;
+        assert_eq!(
+            validate_half_hour_precipitation_phase(temperature_provider_poison),
+            Err(SnowFreeHalfHourForcingError::Closure(
+                "interval precipitation phase"
+            ))
+        );
+    }
+
+    #[test]
+    fn solid_parcel_enthalpy_poison_fails_closed() {
+        let canonical = solid_precipitation_parcel(
+            0,
+            0,
+            &SnowFreeHalfHourDestination {
+                ofe_id: "ofe-1".to_owned(),
+                tile_id: "tile-1".to_owned(),
+                wb14_configuration_sha256: "0".repeat(64),
+            },
+            &"1".repeat(64),
+            0.0,
+            SNOW_FREE_INTERVAL_S,
+            1.0,
+            -1.0,
+        );
+        validate_solid_precipitation_parcel(&canonical).expect("canonical solid parcel");
+
+        let mut poisoned = canonical;
+        poisoned.enthalpy_j_m2 += 1.0;
+        assert_eq!(
+            validate_solid_precipitation_parcel(&poisoned),
+            Err(SnowFreeHalfHourForcingError::Identity(
+                "solid precipitation parcel"
+            ))
+        );
+    }
+
+    #[test]
+    fn warm_mixed_phase_splits_solid_temperature_without_changing_liquid_custody() {
+        const BULK_HYDROMETEOR_TEMPERATURE_C: f64 = 1.25;
+        const ACTIVE_PRECIPITATION_M: f64 = 0.01;
+        const RAIN_FRACTION: f64 = 0.6;
+        const SNOW_FRACTION: f64 = 0.4;
+        const MELTING_TEMPERATURE_K: f64 = 273.15;
+        let rain_m = ACTIVE_PRECIPITATION_M * RAIN_FRACTION;
+        let snowfall_m = ACTIVE_PRECIPITATION_M * SNOW_FRACTION * 10.0;
+        let phase = HalfHourPrecipitationPhase {
+            active_precipitation_m: ACTIVE_PRECIPITATION_M,
+            rain_m,
+            snowfall_m,
+            rain_fraction: RAIN_FRACTION,
+            snow_fraction: SNOW_FRACTION,
+            hydrometeor_temperature_c: Some(BULK_HYDROMETEOR_TEMPERATURE_C),
+        };
+        validate_half_hour_precipitation_phase(phase).expect("warm mixed phase closure");
+
+        let destination = SnowFreeHalfHourDestination {
+            ofe_id: "ofe-warm-mixed".to_owned(),
+            tile_id: "tile-warm-mixed".to_owned(),
+            wb14_configuration_sha256: "0".repeat(64),
+        };
+        let source_climate_sha256 = "1".repeat(64);
+        let liquid = precipitation_parcel(
+            7,
+            11,
+            &destination,
+            &source_climate_sha256,
+            19_800.0,
+            21_600.0,
+            rain_m * 1_000.0,
+            BULK_HYDROMETEOR_TEMPERATURE_C,
+        );
+        let solid = solid_precipitation_parcel(
+            7,
+            11,
+            &destination,
+            &source_climate_sha256,
+            19_800.0,
+            21_600.0,
+            snowfall_m * 100.0,
+            BULK_HYDROMETEOR_TEMPERATURE_C,
+        );
+
+        validate_precipitation_parcel(&liquid).expect("warm liquid parcel");
+        validate_solid_precipitation_parcel(&solid).expect("bounded solid parcel");
+        assert_eq!(solid.temperature_k.to_bits(), MELTING_TEMPERATURE_K.to_bits());
+        assert_eq!(solid.enthalpy_j_m2.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(
+            liquid.temperature_k.to_bits(),
+            celsius_to_kelvin(BULK_HYDROMETEOR_TEMPERATURE_C).to_bits()
+        );
+        assert_eq!(
+            liquid.enthalpy_j_m2.to_bits(),
+            (liquid.mass_kg_m2 * liquid_specific_enthalpy_j_kg(liquid.temperature_k)).to_bits()
+        );
+        assert_eq!(liquid.mass_kg_m2.to_bits(), (rain_m * 1_000.0).to_bits());
+        assert_eq!(solid.mass_kg_m2.to_bits(), (snowfall_m * 100.0).to_bits());
+        assert_eq!(
+            (liquid.mass_kg_m2 + solid.mass_kg_m2).to_bits(),
+            (ACTIVE_PRECIPITATION_M * 1_000.0).to_bits()
+        );
+        assert_eq!(liquid.source_owner_id, source_climate_sha256);
+        assert_eq!(solid.source_owner_id, source_climate_sha256);
+        assert_eq!(liquid.destination_ofe_id, solid.destination_ofe_id);
+        assert_eq!(liquid.destination_tile_id, solid.destination_tile_id);
+        assert_eq!(liquid.start_s.to_bits(), solid.start_s.to_bits());
+        assert_eq!(liquid.end_s.to_bits(), solid.end_s.to_bits());
+        assert_ne!(liquid.parcel_id, solid.parcel_id);
+
+        let mut temperature_poison = solid.clone();
+        temperature_poison.temperature_k = MELTING_TEMPERATURE_K + 0.01;
+        temperature_poison.enthalpy_j_m2 = temperature_poison.mass_kg_m2
+            * 2_100.0
+            * (temperature_poison.temperature_k - MELTING_TEMPERATURE_K);
+        assert_eq!(
+            validate_solid_precipitation_parcel(&temperature_poison),
+            Err(SnowFreeHalfHourForcingError::Identity(
+                "solid precipitation parcel"
+            ))
+        );
+
+        let mut source_poison = solid;
+        source_poison.source_owner_id.clear();
+        assert_eq!(
+            validate_solid_precipitation_parcel(&source_poison),
+            Err(SnowFreeHalfHourForcingError::Identity(
+                "solid precipitation parcel"
+            ))
+        );
+    }
 }

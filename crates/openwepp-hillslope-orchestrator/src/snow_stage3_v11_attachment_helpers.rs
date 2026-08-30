@@ -7,6 +7,161 @@ fn owner_states_from_envelopes(
         .collect::<Result<Vec<_>, _>>()?;
     Ok(values)
 }
+
+/// Install the logical V11 parent-finalization owner transition after the
+/// positive-support segment has been accepted. Parent finalization advances
+/// vegetation transaction lineage at the already accepted parent endpoint;
+/// it is therefore a zero-duration ownership event, never another physics
+/// support or a mutation of the sealed positive slab.
+fn install_v11_parent_finalization_owner_transition(
+    clock: &mut CoupledClockStateV1,
+    consumer: &mut DirectV10RealConsumerShadow,
+    configuration: &VegetationConfigurationV11,
+    finalized: &mut V11ParentCandidate,
+) -> Result<AcceptedEventReceiptV1, DirectSnowStage3V11AttachmentError> {
+    let mut candidate_clock = clock.clone();
+    let mut candidate_consumer = consumer.clone();
+    let mut candidate_finalized = finalized.clone();
+    if clock.accepted_until() != clock.parent_support().end_ns() {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "V11 parent finalization before accepted endpoint",
+        ));
+    }
+    let mut ending_by_owner = candidate_finalized
+        .ending_complete_owners
+        .iter()
+        .map(|owner| (owner.owner_id().to_owned(), owner.clone()))
+        .collect::<BTreeMap<_, _>>();
+    if ending_by_owner.len() != clock.owners().len() {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "V11 parent finalization owner cardinality",
+        ));
+    }
+    let retained_bgc =
+        ending_by_owner
+            .get("bgc")
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "V11 parent finalization BGC owner",
+            ))?;
+    let clock_bgc = candidate_clock
+        .owners()
+        .iter()
+        .find(|owner| owner.owner_id() == "bgc")
+        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+            "V11 parent finalization clock BGC owner",
+        ))?;
+    if retained_bgc != clock_bgc {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "V11 parent finalization retained BGC predecessor",
+        ));
+    }
+    let finalized_bgc = candidate_consumer
+        .accept_v11_parent_finalization(configuration, &candidate_finalized.ending_state)?
+        .to_owner_state()?;
+    ending_by_owner.insert("bgc".to_owned(), finalized_bgc.clone());
+    let finalized_bgc_slot = candidate_finalized
+        .ending_complete_owners
+        .iter_mut()
+        .find(|owner| owner.owner_id() == "bgc")
+        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+            "V11 parent finalization candidate BGC owner",
+        ))?;
+    *finalized_bgc_slot = finalized_bgc;
+    let ending_owners = candidate_clock
+        .owners()
+        .iter()
+        .map(|beginning| {
+            ending_by_owner.get(beginning.owner_id()).cloned().ok_or(
+                DirectSnowStage3V11AttachmentError::Identity(
+                    "V11 parent finalization owner manifest",
+                ),
+            )
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let expected_vegetation =
+        v11_vegetation_owner_envelope(&candidate_finalized.ending_state)?.to_owner_state()?;
+    let mutation_set = candidate_clock
+        .owners()
+        .iter()
+        .zip(&ending_owners)
+        .filter_map(|(beginning, ending)| {
+            (beginning != ending).then(|| beginning.owner_id().to_owned())
+        })
+        .collect::<Vec<_>>();
+    if ending_by_owner.get("vegetation") != Some(&expected_vegetation)
+        || !matches!(mutation_set.as_slice(), [vegetation] if vegetation == "vegetation")
+            && !matches!(
+                mutation_set.as_slice(),
+                [bgc, vegetation] if bgc == "bgc" && vegetation == "vegetation"
+            )
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "V11 parent finalization exact logical mutation",
+        ));
+    }
+    let beginning_owner_set = complete_owner_set_digest(candidate_clock.owners())?;
+    let ending_owner_set = complete_owner_set_digest(&ending_owners)?;
+    let tick = clock.accepted_until();
+    let tick_bytes = tick.get().to_be_bytes();
+    let context = framed_sha256(
+        "stage3-v11-parent-finalization",
+        &[
+            FramedField {
+                tag: "parent_transaction_id",
+                value: candidate_clock.parent_transaction_id().digest().as_bytes(),
+            },
+            FramedField {
+                tag: "tick_ns",
+                value: &tick_bytes,
+            },
+            FramedField {
+                tag: "beginning_owner_set",
+                value: beginning_owner_set.as_bytes(),
+            },
+            FramedField {
+                tag: "ending_owner_set",
+                value: ending_owner_set.as_bytes(),
+            },
+        ],
+    )?;
+    let ledger = LedgerEntryV1::new(
+        "v11-parent-finalization".to_owned(),
+        "canonical-owner-transition".to_owned(),
+        context,
+        context,
+        context,
+    )?;
+    let event = EventProposalV1::new(
+        EventClass::OwnershipTransfer,
+        "vegetation".to_owned(),
+        context,
+        ending_owners.clone(),
+        mutation_set.clone(),
+        "snow-stage3-v11".to_owned(),
+        candidate_clock.active_participants().to_vec(),
+        vec![ledger],
+    )?;
+    let mut queue = EventQueueV1::new(tick, vec![event])?;
+    let accepted = queue.apply_next(&mut candidate_clock)?.ok_or(
+        DirectSnowStage3V11AttachmentError::Identity("V11 parent finalization event application"),
+    )?;
+    if queue.apply_next(&mut candidate_clock)?.is_some()
+        || accepted.beginning_owner_set_digest() != beginning_owner_set
+        || accepted.ending_owner_set_digest() != ending_owner_set
+        || complete_owner_set_digest(candidate_clock.owners())? != ending_owner_set
+        || candidate_clock.owners() != ending_owners
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "V11 parent finalization event owner join",
+        ));
+    }
+    accepted.validate()?;
+    candidate_consumer.retain_accepted_publication_zero_duration_event(&accepted)?;
+    *clock = candidate_clock;
+    *consumer = candidate_consumer;
+    *finalized = candidate_finalized;
+    Ok(accepted)
+}
 /// The Stage-3 persistent state is the sole authoritative snow owner. The
 /// hydrology winter-column fields remain a checked compatibility projection;
 /// they are intentionally absent from this canonical owner envelope.

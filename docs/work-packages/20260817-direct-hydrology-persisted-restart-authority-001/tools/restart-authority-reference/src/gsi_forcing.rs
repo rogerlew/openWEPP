@@ -4,6 +4,7 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
     DirectGsiOwnerStateV1, DirectGsiParametersV1, DirectGsiResultV1, SnowFreeHalfHourDayReceipt,
     SnowFreeHalfHourDestination, SnowFreeHalfHourIntervalReceipt, SnowFreeHalfHourProviderCursor,
     SnowFreeHalfHourStaticConfiguration, SnowFreePrecipitationParcelReceipt,
+    SnowFreeSolidPrecipitationParcelReceipt,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -508,6 +509,50 @@ impl SnowFreePrecipitationParcelRestartV1 {
     }
 }
 
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SnowFreeSolidPrecipitationParcelRestartV1 {
+    pub parcel_id: String,
+    pub source_owner_id: String,
+    pub destination_ofe_id: String,
+    pub destination_tile_id: String,
+    pub start_s: HexF64,
+    pub end_s: HexF64,
+    pub mass_kg_m2: HexF64,
+    pub temperature_k: HexF64,
+    pub enthalpy_j_m2: HexF64,
+}
+
+impl SnowFreeSolidPrecipitationParcelRestartV1 {
+    fn project(v: &SnowFreeSolidPrecipitationParcelReceipt) -> Self {
+        Self {
+            parcel_id: v.parcel_id.clone(),
+            source_owner_id: v.source_owner_id.clone(),
+            destination_ofe_id: v.destination_ofe_id.clone(),
+            destination_tile_id: v.destination_tile_id.clone(),
+            start_s: HexF64::from_f64(v.start_s),
+            end_s: HexF64::from_f64(v.end_s),
+            mass_kg_m2: HexF64::from_f64(v.mass_kg_m2),
+            temperature_k: HexF64::from_f64(v.temperature_k),
+            enthalpy_j_m2: HexF64::from_f64(v.enthalpy_j_m2),
+        }
+    }
+
+    fn restore(&self) -> Result<SnowFreeSolidPrecipitationParcelReceipt, GsiForcingRestartError> {
+        Ok(SnowFreeSolidPrecipitationParcelReceipt {
+            parcel_id: self.parcel_id.clone(),
+            source_owner_id: self.source_owner_id.clone(),
+            destination_ofe_id: self.destination_ofe_id.clone(),
+            destination_tile_id: self.destination_tile_id.clone(),
+            start_s: f("solid_parcel.start_s", &self.start_s)?,
+            end_s: f("solid_parcel.end_s", &self.end_s)?,
+            mass_kg_m2: f("solid_parcel.mass", &self.mass_kg_m2)?,
+            temperature_k: f("solid_parcel.temperature", &self.temperature_k)?,
+            enthalpy_j_m2: f("solid_parcel.enthalpy", &self.enthalpy_j_m2)?,
+        })
+    }
+}
+
 // The interval and day DTOs deliberately name every runtime field. Their
 // restoration is admitted only through the runtime day-receipt validator.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -544,7 +589,14 @@ pub struct SnowFreeHalfHourIntervalReceiptRestartV1 {
     pub gsi: HexF64,
     pub gsi_receipt_sha256: Sha256Hex,
     pub wb14_configuration_sha256: Sha256Hex,
+    pub active_precipitation_m: HexF64,
+    pub rain_m: HexF64,
+    pub snowfall_m: HexF64,
+    pub rain_fraction: HexF64,
+    pub snow_fraction: HexF64,
+    pub hydrometeor_temperature_c: Option<HexF64>,
     pub precipitation_parcels: Vec<SnowFreePrecipitationParcelRestartV1>,
+    pub solid_precipitation_parcels: Vec<SnowFreeSolidPrecipitationParcelRestartV1>,
     pub interval_receipt_sha256: Sha256Hex,
 }
 macro_rules! pf {
@@ -590,10 +642,21 @@ impl SnowFreeHalfHourIntervalReceiptRestartV1 {
             gsi: pf!(v, gsi),
             gsi_receipt_sha256: sha(v.gsi_receipt_sha256.clone())?,
             wb14_configuration_sha256: sha(v.wb14_configuration_sha256.clone())?,
+            active_precipitation_m: pf!(v, active_precipitation_m),
+            rain_m: pf!(v, rain_m),
+            snowfall_m: pf!(v, snowfall_m),
+            rain_fraction: pf!(v, rain_fraction),
+            snow_fraction: pf!(v, snow_fraction),
+            hydrometeor_temperature_c: v.hydrometeor_temperature_c.map(HexF64::from_f64),
             precipitation_parcels: v
                 .precipitation_parcels
                 .iter()
                 .map(SnowFreePrecipitationParcelRestartV1::project)
+                .collect(),
+            solid_precipitation_parcels: v
+                .solid_precipitation_parcels
+                .iter()
+                .map(SnowFreeSolidPrecipitationParcelRestartV1::project)
                 .collect(),
             interval_receipt_sha256: sha(v.interval_receipt_sha256.clone())?,
         })
@@ -641,10 +704,28 @@ impl SnowFreeHalfHourIntervalReceiptRestartV1 {
             gsi: f("interval.gsi", &self.gsi)?,
             gsi_receipt_sha256: native_sha(&self.gsi_receipt_sha256),
             wb14_configuration_sha256: native_sha(&self.wb14_configuration_sha256),
+            active_precipitation_m: f(
+                "interval.active_precipitation_m",
+                &self.active_precipitation_m,
+            )?,
+            rain_m: f("interval.rain_m", &self.rain_m)?,
+            snowfall_m: f("interval.snowfall_m", &self.snowfall_m)?,
+            rain_fraction: f("interval.rain_fraction", &self.rain_fraction)?,
+            snow_fraction: f("interval.snow_fraction", &self.snow_fraction)?,
+            hydrometeor_temperature_c: self
+                .hydrometeor_temperature_c
+                .as_ref()
+                .map(|value| f("interval.hydrometeor_temperature_c", value))
+                .transpose()?,
             precipitation_parcels: self
                 .precipitation_parcels
                 .iter()
                 .map(SnowFreePrecipitationParcelRestartV1::restore)
+                .collect::<Result<_, _>>()?,
+            solid_precipitation_parcels: self
+                .solid_precipitation_parcels
+                .iter()
+                .map(SnowFreeSolidPrecipitationParcelRestartV1::restore)
                 .collect::<Result<_, _>>()?,
             interval_receipt_sha256: native_sha(&self.interval_receipt_sha256),
         })
@@ -662,6 +743,7 @@ pub struct SnowFreeHalfHourDayReceiptRestartV1 {
     pub daily_horizontal_energy_mj_m2: HexF64,
     pub intervals: Vec<SnowFreeHalfHourIntervalReceiptRestartV1>,
     pub next_day_precipitation_carry: Vec<SnowFreePrecipitationParcelRestartV1>,
+    pub next_day_solid_precipitation_carry: Vec<SnowFreeSolidPrecipitationParcelRestartV1>,
     pub receipt_sha256: Sha256Hex,
 }
 impl SnowFreeHalfHourDayReceiptRestartV1 {
@@ -686,6 +768,11 @@ impl SnowFreeHalfHourDayReceiptRestartV1 {
                 .next_day_precipitation_carry
                 .iter()
                 .map(SnowFreePrecipitationParcelRestartV1::project)
+                .collect(),
+            next_day_solid_precipitation_carry: v
+                .next_day_solid_precipitation_carry
+                .iter()
+                .map(SnowFreeSolidPrecipitationParcelRestartV1::project)
                 .collect(),
             receipt_sha256: sha(v.receipt_sha256.clone())?,
         })
@@ -714,6 +801,11 @@ impl SnowFreeHalfHourDayReceiptRestartV1 {
                 .iter()
                 .map(SnowFreePrecipitationParcelRestartV1::restore)
                 .collect::<Result<_, _>>()?,
+            next_day_solid_precipitation_carry: self
+                .next_day_solid_precipitation_carry
+                .iter()
+                .map(SnowFreeSolidPrecipitationParcelRestartV1::restore)
+                .collect::<Result<_, _>>()?,
             receipt_sha256: native_sha(&self.receipt_sha256),
         };
         v.validate()
@@ -727,6 +819,7 @@ struct NativeCursorSnapshot {
     next_day_index: usize,
     configuration_sha256: Option<String>,
     pending_carry: Vec<SnowFreePrecipitationParcelReceipt>,
+    pending_solid_carry: Vec<SnowFreeSolidPrecipitationParcelReceipt>,
 }
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -734,6 +827,7 @@ pub struct SnowFreeHalfHourProviderCursorRestartV1 {
     pub next_day_index: WireDayIndex,
     pub static_configuration_sha256: Sha256Hex,
     pub pending_carry: Vec<SnowFreePrecipitationParcelRestartV1>,
+    pub pending_solid_carry: Vec<SnowFreeSolidPrecipitationParcelRestartV1>,
     pub cursor_sha256: Sha256Hex,
 }
 #[derive(Serialize)]
@@ -741,6 +835,7 @@ struct CursorDigestInput<'a> {
     next_day_index: &'a WireDayIndex,
     static_configuration_sha256: &'a Sha256Hex,
     pending_carry: &'a [SnowFreePrecipitationParcelRestartV1],
+    pending_solid_carry: &'a [SnowFreeSolidPrecipitationParcelRestartV1],
 }
 impl SnowFreeHalfHourProviderCursorRestartV1 {
     pub fn seal(&mut self) -> Result<(), GsiForcingRestartError> {
@@ -748,6 +843,7 @@ impl SnowFreeHalfHourProviderCursorRestartV1 {
             next_day_index: &self.next_day_index,
             static_configuration_sha256: &self.static_configuration_sha256,
             pending_carry: &self.pending_carry,
+            pending_solid_carry: &self.pending_solid_carry,
         })
         .map_err(|_| GsiForcingRestartError::Identity("cursor digest"))?)?;
         Ok(())
@@ -783,6 +879,11 @@ impl SnowFreeHalfHourProviderCursorRestartV1 {
                 .iter()
                 .map(SnowFreePrecipitationParcelRestartV1::project)
                 .collect(),
+            pending_solid_carry: snapshot
+                .pending_solid_carry
+                .iter()
+                .map(SnowFreeSolidPrecipitationParcelRestartV1::project)
+                .collect(),
             cursor_sha256: sha("0".repeat(64))?,
         };
         dto.seal()?;
@@ -797,6 +898,7 @@ impl SnowFreeHalfHourProviderCursorRestartV1 {
             next_day_index: &self.next_day_index,
             static_configuration_sha256: &self.static_configuration_sha256,
             pending_carry: &self.pending_carry,
+            pending_solid_carry: &self.pending_solid_carry,
         })
         .map_err(|_| GsiForcingRestartError::Identity("cursor digest"))?;
         if digest != self.cursor_sha256.as_str()
@@ -814,6 +916,11 @@ impl SnowFreeHalfHourProviderCursorRestartV1 {
                 .pending_carry
                 .iter()
                 .map(SnowFreePrecipitationParcelRestartV1::restore)
+                .collect::<Result<_, _>>()?,
+            pending_solid_carry: self
+                .pending_solid_carry
+                .iter()
+                .map(SnowFreeSolidPrecipitationParcelRestartV1::restore)
                 .collect::<Result<_, _>>()?,
         };
         let bytes = serde_json::to_vec(&snapshot)

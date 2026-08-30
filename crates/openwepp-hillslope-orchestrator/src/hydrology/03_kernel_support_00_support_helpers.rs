@@ -1,6 +1,5 @@
-
-use crate::winter_column::DirectSnowLayerState;
 use crate::runtime_inputs::SnowPhasePartitionModel;
+use crate::winter_column::DirectSnowLayerState;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct DirectSnowMeltHourDiagnostics {
@@ -142,21 +141,13 @@ mod tests {
 
         let redistribution =
             Wb11HydrologyKernel::redistribute_daily_signed_snowmelt(&mut hourly_state);
-        let routed_hourly_sum_m = hourly_state
-            .iter()
-            .map(|hourly| hourly.melt_m)
-            .sum::<f64>();
+        let routed_hourly_sum_m = hourly_state.iter().map(|hourly| hourly.melt_m).sum::<f64>();
 
-        assert!(
-            (redistribution.routed_melt_total_m - positive_pack_loss_m).abs() <= 1.0e-12
-        );
-        assert!(
-            (redistribution.snowpack_state_loss_m - positive_pack_loss_m).abs() <= 1.0e-12
-        );
+        assert!((redistribution.routed_melt_total_m - positive_pack_loss_m).abs() <= 1.0e-12);
+        assert!((redistribution.snowpack_state_loss_m - positive_pack_loss_m).abs() <= 1.0e-12);
         assert!((routed_hourly_sum_m - positive_pack_loss_m).abs() <= 1.0e-12);
         assert!(hourly_state.iter().all(|hourly| hourly.melt_m >= 0.0));
     }
-
 }
 
 #[derive(Debug, Clone)]
@@ -406,6 +397,35 @@ pub struct DirectSnowStage3PersistentDayResult {
     pub terminal_event: Option<DirectSnowTerminalEventResult>,
     pub terminal_intervals: Vec<DirectSnowTerminalEventResult>,
     pub(crate) covered_terminal_ending_joint: Option<CoveredTerminalJointTrialStateV1>,
+    pub(crate) covered_terminal_accepted_microsteps: Vec<CoveredTerminalAcceptedMicrostepV1>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct CoveredTerminalAcceptedMicrostepV1 {
+    pub support: openwepp_coupled_time::TimeSupport,
+    pub beginning_ice_kg_m2: f64,
+    pub beginning_liquid_kg_m2: f64,
+    pub beginning_cold_content_j_m2: f64,
+    pub ending_ice_kg_m2: f64,
+    pub ending_liquid_kg_m2: f64,
+    pub ending_cold_content_j_m2: f64,
+    pub complete_energy_j_m2: f64,
+    pub shortwave_energy_j_m2: f64,
+    pub longwave_energy_j_m2: f64,
+    pub sensible_energy_j_m2: f64,
+    pub latent_energy_j_m2: f64,
+    pub advected_energy_j_m2: f64,
+    pub snow_soil_heat_energy_j_m2: f64,
+    pub cold_energy_change_j_m2: f64,
+    pub refrozen_kg_m2: f64,
+    pub deposition_kg_m2: f64,
+    pub sublimation_kg_m2: f64,
+    pub melt_kg_m2: f64,
+    pub unallocated_energy_j_m2: f64,
+    pub external_liquid_kg_m2: f64,
+    pub carrier_ending_joint: CoveredTerminalJointTrialStateV1,
+    pub hydrology_ending_joint: CoveredTerminalJointTrialStateV1,
+    pub ending_state: DirectSnowStage3PersistentState,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -433,7 +453,7 @@ impl DirectSnowTerminalEventRequest {
     };
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct DirectSnowTerminalEventResult {
     pub model: DirectSnowTerminalEventModel,
     pub event_occurred: bool,
@@ -1002,7 +1022,6 @@ impl DirectSnowStage3Diagnostics {
             hourly_surface_energy: [DirectSnowSurfaceEnergyHourDiagnostics::zero(); 24],
         }
     }
-
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -1078,7 +1097,13 @@ pub struct DirectActiveSnowPartitionInputs {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectFrostHourlyForcing {
     pub radiation_mj_m2: f64,
     pub air_temperature_c: f64,
@@ -1097,7 +1122,13 @@ impl DirectFrostHourlyForcing {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectFrostControlInputs {
     pub frost_file_present: bool,
     pub wint_red_enabled: bool,
@@ -1113,7 +1144,13 @@ pub struct DirectFrostControlInputs {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectFrostThermalInputs {
     pub snow_depth_m: f64,
     pub snow_density_kg_m3: f64,
@@ -1131,7 +1168,13 @@ pub struct DirectFrostThermalInputs {
 // via `Wb11HydrologyKernel::fit_seasonal_temperature_curve`, and carried as
 // the single authority so the kernel never re-fits per solve.
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct FrostSeasonalTemperatureCurve {
     pub annual_mean_c: f64,
     pub amplitude_c: f64,
@@ -1237,7 +1280,13 @@ pub struct DirectActiveFrostPartitionInputs {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectWinterFrostComputeInputs {
     pub controls: DirectFrostControlInputs,
     pub thermal: DirectFrostThermalInputs,
@@ -1249,7 +1298,13 @@ pub struct DirectWinterFrostComputeInputs {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectFrostLayerProjection {
     pub layer_index: usize,
     pub theta_after_m: f64,
@@ -1258,7 +1313,13 @@ pub struct DirectFrostLayerProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectFrostLayerShadowProjection {
     pub layer_index: usize,
     pub st_m: f64,
@@ -1271,7 +1332,13 @@ pub struct DirectFrostLayerShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectFrostFineLayerProjection {
     pub layer_index: usize,
     pub fine_index: usize,
@@ -1283,7 +1350,13 @@ pub struct DirectFrostFineLayerProjection {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectWinterFrostPartitionOutcome {
     pub active_frost_coupling: bool,
     pub dthaw_after_m: f64,
@@ -1404,22 +1477,28 @@ pub(crate) struct FrostFineLayerDiagnosticState {
 
 const SNOW_RUNTIME_DEPTH_M_SYMBOL: &str = "snow.runtime_depth_m";
 const SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL: &str = "snow.runtime_density_kg_m3";
-const SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL: &str = "snow.runtime_settle_day_count";const SNOW_HOURLY_MELT_ROOT: &str = "snow.hourly.melt_m";const SNOW_HOURLY_RAIN_ROOT: &str = "snow.hourly.rain_m";const SNOW_HOURLY_SNOWFALL_ROOT: &str = "snow.hourly.snowfall_m";
+const SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL: &str = "snow.runtime_settle_day_count";
+const SNOW_HOURLY_MELT_ROOT: &str = "snow.hourly.melt_m";
+const SNOW_HOURLY_RAIN_ROOT: &str = "snow.hourly.rain_m";
+const SNOW_HOURLY_SNOWFALL_ROOT: &str = "snow.hourly.snowfall_m";
 const SNOW_HOURLY_SUBLIMATION_ROOT: &str = "snow.hourly.sublimation_m";
 
 const WINTER_HOURLY_RAD_ROOT: &str = "winter.hourly.rad_mj_m2";
 const WINTER_HOURLY_AIR_TEMP_ROOT: &str = "winter.hourly.air_temp_c";
-const WINTER_HOURLY_CLOUD_ROOT: &str = "winter.hourly.cloud_fraction";const FROST_RUNTIME_FRDP_M_SYMBOL: &str = "frost.runtime_frdp_m";
+const WINTER_HOURLY_CLOUD_ROOT: &str = "winter.hourly.cloud_fraction";
+const FROST_RUNTIME_FRDP_M_SYMBOL: &str = "frost.runtime_frdp_m";
 const FROST_RUNTIME_THDP_M_SYMBOL: &str = "frost.runtime_thdp_m";
 const FROST_RUNTIME_TFRDP_M_SYMBOL: &str = "frost.runtime_tfrdp_m";
 const FROST_RUNTIME_TTHAWD_M_SYMBOL: &str = "frost.runtime_tthawd_m";
-const FROST_RUNTIME_FGTHWD_FLAG_SYMBOL: &str = "frost.runtime_fgthwd_flag";const FROST_RUNTIME_FINE_FGFRST_ROOT: &str = "frost.runtime_fgfrst";
+const FROST_RUNTIME_FGTHWD_FLAG_SYMBOL: &str = "frost.runtime_fgthwd_flag";
+const FROST_RUNTIME_FINE_FGFRST_ROOT: &str = "frost.runtime_fgfrst";
 const FROST_RUNTIME_FINE_SLFSD_M_ROOT: &str = "frost.runtime_slfsd_m";
 const FROST_RUNTIME_FINE_SLSIC_M_ROOT: &str = "frost.runtime_slsic_m";
 const FROST_RUNTIME_FINE_SLSW_THETA_ROOT: &str = "frost.runtime_slsw_theta";
 const FROST_RUNTIME_FINE_SLTIME_S_ROOT: &str = "frost.runtime_sltime_s";
 const FROST_RUNTIME_LAYER_YST_M_ROOT: &str = "frost.runtime_yst_m";
-const FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT: &str = "frost.runtime_nwfrzz_m";const FROST_RUNTIME_SNOW_DEPTH_SYMBOL: &str = "snow.runtime_depth_m";
+const FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT: &str = "frost.runtime_nwfrzz_m";
+const FROST_RUNTIME_SNOW_DEPTH_SYMBOL: &str = "snow.runtime_depth_m";
 const FROST_RUNTIME_RESIDUE_DEPTH_SYMBOL: &str = "frost.runtime_residue_depth_m";
 const FROST_LANDUSE_CLASS_PROXY_SYMBOL: &str = "landuse.class_proxy";
 const FROST_RUNTIME_TILLAGE_DEPTH_M: f64 = 0.20;
@@ -1452,36 +1531,29 @@ const SNOW_SUBLIMATION_MIN_AIR_TEMP_K: f64 = 173.15;
 const SNOW_SUBLIMATION_KPA_TO_PA: f64 = 1_000.0;
 const SNOW_SUBLIMATION_RHO_WATER_KG_M3: f64 = 1_000.0;
 const SNOW_SUBLIMATION_STAGE_B_ACTIVE_LAYER_DEPTH_M: f64 = 0.25;
-const SNOW_SUBLIMATION_STAGE_B_ICE_HEAT_CAPACITY_J_KG_K: f64 = 2_100.0;// UNIT-CONVERSION-ALLOW: mm_m_scale legacy minimum snow-depth threshold in meters, not conversion.
+const SNOW_SUBLIMATION_STAGE_B_ICE_HEAT_CAPACITY_J_KG_K: f64 = 2_100.0; // UNIT-CONVERSION-ALLOW: mm_m_scale legacy minimum snow-depth threshold in meters, not conversion.
 const SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M: f64 = 0.001;
 
-
 mod support_helpers_mod;
-pub use support_helpers_mod::{
-    DirectKsatadjEffectiveConductivityInputs, DirectKsatadjEffectiveConductivityOutcome,
-    DirectKsatadjLayerInputs, DirectSnowDiagnosticCapture,
-    DirectSnowLiquidDispositionLedger, DirectSnowMassTransitionLedgerError,
-    DirectSnowMassTransitionLedgers, DirectSnowSolidToLiquidLedger,
-    DirectSnowStage3Outcome, DirectSnowVerboseDiagnostics,
-};
 pub(crate) use support_helpers_mod::DirectSnowStage3Resolution;
-pub(crate) use support_helpers_mod::{
-    CoveredProbeChildIdentityV1, CoveredTerminalExecutionMode,
-    CoveredTerminalBatchCarrierCandidatesV2, CoveredTerminalBatchHydrologyJoinV2,
-    CoveredTerminalBatchJoinedResultV2, CoveredTerminalBatchPrefixRequestV2,
-    CoveredTerminalBatchProviderV2, CoveredTerminalBatchTrialProviderV2,
-    CoveredTerminalBatchTrialRequestV2, CoveredTerminalBatchTrialResultV2,
-    CoveredTerminalLaneTrialStateV2,
-    CoveredTerminalEndingSnowHintV1, CoveredTerminalJointTrialStateV1,
-    CoveredTerminalTrialProviderV1, JointTrialAuthorityV1, ProbeChildAuthorityV1,
-    CoveredTerminalTrialRequestV1, CoveredTerminalTrialRoleV1,
-    CoveredTerminalTrialTransitionV1, STAGE3_DEFAULT_SNOW_ALBEDO,
-    NoEvidence, TerminalEvidenceMode,
-    stage3_has_represented_ice,
-    stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
-};
 #[cfg(test)]
 pub(crate) use support_helpers_mod::{
     CaptureEvidence, CaptureState, CapturedProviderOutcome, TerminalCouplingSelectionReason,
-    TerminalPairPosition,
+    TerminalFloorDecision, TerminalPairPosition,
+};
+pub(crate) use support_helpers_mod::{
+    CoveredProbeChildIdentityV1, CoveredTerminalBatchCarrierCandidatesV2,
+    CoveredTerminalBatchTrialRequestV2, CoveredTerminalBatchTrialResultV2,
+    CoveredTerminalExecutionMode, CoveredTerminalJointTrialStateV1,
+    CoveredTerminalLaneTrialStateV2, CoveredTerminalTrialRequestV1, CoveredTerminalTrialRoleV1,
+    CoveredTerminalTrialTransitionV1, JointTrialAuthorityV1, NoEvidence, ProbeChildAuthorityV1,
+    STAGE3_DEFAULT_SNOW_ALBEDO, STAGE3_LATENT_HEAT_FUSION_J_KG, TerminalEvidenceMode,
+    stage3_has_represented_ice, stage3_is_resolved_thermal_domain, stage3_is_terminal_event_domain,
+    stage3_total_represented_ice_swe_m,
+};
+pub use support_helpers_mod::{
+    DirectKsatadjEffectiveConductivityInputs, DirectKsatadjEffectiveConductivityOutcome,
+    DirectKsatadjLayerInputs, DirectSnowDiagnosticCapture, DirectSnowLiquidDispositionLedger,
+    DirectSnowMassTransitionLedgerError, DirectSnowMassTransitionLedgers,
+    DirectSnowSolidToLiquidLedger, DirectSnowStage3Outcome, DirectSnowVerboseDiagnostics,
 };

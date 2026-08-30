@@ -871,6 +871,9 @@ fn complete_typed_wire_schema(node: &mut serde_json::Value, property_name: Optio
             Some("initialized_area_m2") | Some("enrichment_ratio") => {
                 *node = serde_json::json!({"anyOf":[{"type":"null"},hex_f64()]})
             }
+            Some("hydrometeor_temperature_c") => {
+                *node = serde_json::json!({"anyOf":[{"type":"null"},hex_f64()]})
+            }
             Some("last_accepted_transaction_id") => {
                 *node = serde_json::json!({"anyOf":[{"type":"null"},hex_u128()]})
             }
@@ -935,7 +938,14 @@ fn complete_typed_wire_schema(node: &mut serde_json::Value, property_name: Optio
     {
         node["items"] = match property_name {
             Some("history_oldest_first") => hex_f64(),
-            Some("pending_carry") => object(vec![
+            Some(
+                "pending_carry"
+                | "precipitation_parcels"
+                | "next_day_precipitation_carry"
+                | "pending_solid_carry"
+                | "solid_precipitation_parcels"
+                | "next_day_solid_precipitation_carry",
+            ) => object(vec![
                 ("parcel_id", serde_json::json!({"type":"string"})),
                 ("source_owner_id", serde_json::json!({"type":"string"})),
                 ("destination_ofe_id", serde_json::json!({"type":"string"})),

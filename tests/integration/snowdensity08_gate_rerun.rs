@@ -15,6 +15,10 @@ const DIRECT_PUBLICATION_BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00c_day_input_builder_impl.rs"
 );
+const STAGE3_CANOPY_AUTHORITY: &str = concat!(
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
+    "00c_stage3_canopy_authority.rs"
+);
 const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 
 #[test]
@@ -44,13 +48,24 @@ fn snowdensity08_contract_and_package_bind_gate_rerun_authority() {
 
 #[test]
 fn snowdensity08_default_is_superseded_by_10_3_15_and_script_reports_blocker() {
-    let builder = read(DIRECT_PUBLICATION_BUILDER);
+    let builder = format!(
+        "{}\n{}",
+        read(DIRECT_PUBLICATION_BUILDER),
+        read(STAGE3_CANOPY_AUTHORITY)
+    );
+    for marker in [
+        "reject_retired_stage3_snow_selector_envs",
+        "SNOWDENSITY09_DENSITY_MODEL_ENV",
+        "retired snow selector",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
+    ] {
+        assert_contains(&builder, marker, DIRECT_PUBLICATION_BUILDER);
+    }
     assert!(
-        builder.contains("SNOWDENSITY09_DENSITY_MODEL_ENV")
-            && builder.contains("Err(std::env::VarError::NotPresent)")
-            && builder.contains("SnowDensityModel::PhysicsBulkDensityCompactionV1")
-            && builder.contains("\"legacy_wepp\" => Ok"),
-        "SNOWDENSITY-10.3.15 must supersede the SNOWDENSITY-08 default while retaining legacy rollback"
+        !builder.contains("\"legacy_wepp\" => Ok"),
+        "retired density rollback must remain historical rather than selectable"
     );
     assert!(
         !read(CLI).contains("physics_bulk_density_compaction_v1"),

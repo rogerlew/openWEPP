@@ -50,7 +50,12 @@ fn snowdensity05f_production_default_and_cli_remain_confined() {
     );
     assert_contains(
         &builder,
-        "Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe)",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "direct publication snow/frost sources",
+    );
+    assert_not_contains(
+        &builder,
+        "SnowMeltModel::LegacyCoe",
         "direct publication snow/frost sources",
     );
     assert_not_contains(

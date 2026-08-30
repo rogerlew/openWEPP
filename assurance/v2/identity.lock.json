@@ -7,7 +7,7 @@
     "base_ref": "15763d7f6d5d4125333d9b7583424c714f5f5ea4",
     "legacy_catalog_sha256": "063bfb0d3b63b1aa5abccdf877e97ffd3fa447b08458aced723963e8461c3a64"
   },
-  "previous_generation_id": "637f45224b280b5328c190d05114f3dba2e24922943f6bade70d7afb7c26bc4f",
+  "previous_generation_id": "931f2f31c529378f63377c3fda7ea1906654f5d2fd7ef114eb4b0b47e18fe809",
   "sources": {
     "assurance/v2/README.md": "44a10480c37ac73435885bad01d26688bcd8da43c749991a21fd68ac00bd5942",
     "assurance/v2/catalog.yaml": "1289473939310b18a3a0ef1c14a6947a02aa5e6bac3a590ac66017f2a7877311",
@@ -70,8 +70,8 @@
     "docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md": "752c834592654cf0b7017a46dc82b5b6483e0c3a5b3279dffe77a5e71e5b027d",
     "docs/specifications/science-contracts/contracts/SC-PLANT-001.md": "76c876d91ec95dfb18b436ebd1ff232f31d412bf42bc82cdd272d158a7ee459c",
     "docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md": "c3cc6da20f39ead5b465db66be5bd5b60b99d1326c219955444075fdff05c991",
-    "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": "b95ba52c9d3212f1248f836a552a48247e17eaa5b4c8489823fa8aae3dcde372",
-    "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": "976f052f8c74366b1406b95dbe79968691dab326ee9e266c3d4b730cd5a08e6b",
+    "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md": "c1a63635617350324d293199b5a478c28e439554efdcf88fd300b419f3afabcf",
+    "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4",
     "docs/work-packages/20260625-snowfrost-fidelity-i0-non-snotel-rubric-baseline-001/artifacts/non_snotel_rubric_baseline.json": "b3806ced25cf01eb4c7558eee8e9d7f3f486633aa708e93dbe63b115e76a8930",
     "docs/work-packages/20260627-snowdensity-10-3-5b-hourly-partition-jennings-validation-001/artifacts/jennings-validation-report.json": "f5d261379f2aaed862a4ad6734e76e3d8123f56df46ca7739fa2fab86c2d6ef8",
     "docs/work-packages/20260628-snowdensity-10-3-19-harder-pomeroy-default-activation-001/artifacts/harder-pomeroy-default-activation.json": "f511c11d73b2a0b03cb7ef8f573ddc9309ffd336f2790cd1218514a74565747a",
@@ -135,7 +135,7 @@
   "review_locks": {
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json": "ac2dc30278685b4e3dc6e50b49dcf0960ffe1eaaa10bef29a335e4d455d71b31",
     "assurance/v2/reports/native-forest-canopy-phenology-evaluation/review.lock.json": "5595ad882d3a5248693a5a272af489768241fce002e5e935772f7bfd4ff1de8b",
-    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "0f3c7cb80e6ff5d2bcd4a9b256ba9d12bcbd7e08cea53e532eea3c63298c56bb"
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "6b9a86b6222d6b14648009163675d6ffcaa9f737271b6da4a481edd3d764c4b4"
   },
-  "generation_id": "bddd853e1e723231ce6bf9ec8b9be863eafbf277b98ab991031dc6ed6c4d3274"
+  "generation_id": "5c275785cc0af6681c2430b19857aa85166e4f16e3402a8b9b532385a8382a83"
 }

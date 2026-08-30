@@ -60,20 +60,121 @@ fn v1_rejects_explicit_stage3_null_as_an_extra_member() {
 }
 
 #[test]
-fn v1_rejects_explicit_v11_attachment_null_as_an_extra_member() {
+fn v1_requires_a_null_v11_successor_slot_and_rejects_v2_content() {
     let bytes = fs::read(Path::new(ARTIFACTS).join("checkpoint-in-progress-vector.json")).unwrap();
-    let mut value: Value = serde_json::from_slice(&bytes).unwrap();
-    value["phase"]["staged_scientific"]["direct_hydrology"]
-        .as_object_mut()
-        .unwrap()
-        .insert("snow_stage3_v11_attachment".into(), Value::Null);
-    let poisoned = serde_json::to_vec(&value).unwrap();
-    let parsed: Value = serde_json::from_slice(&poisoned).expect("poison remains valid JSON");
+    let value: Value = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(
-        parsed["phase"]["staged_scientific"]["direct_hydrology"]["snow_stage3_v11_attachment"],
+        value["phase"]["staged_scientific"]["direct_hydrology"]["snow_stage3_v11_attachment"],
         Value::Null
     );
-    assert!(from_canonical_bytes::<DirectV10RealConsumerCheckpointV1>(&poisoned).is_err());
+
+    let mut missing = value.clone();
+    missing["phase"]["staged_scientific"]["direct_hydrology"]
+        .as_object_mut()
+        .unwrap()
+        .remove("snow_stage3_v11_attachment");
+    assert!(
+        from_canonical_bytes::<DirectV10RealConsumerCheckpointV1>(
+            &serde_json::to_vec(&missing).unwrap()
+        )
+        .is_err()
+    );
+
+    let mut substituted = value;
+    substituted["phase"]["staged_scientific"]["direct_hydrology"]["snow_stage3_v11_attachment"] =
+        serde_json::json!({"schema":"V2"});
+    assert!(
+        from_canonical_bytes::<DirectV10RealConsumerCheckpointV1>(
+            &serde_json::to_vec(&substituted).unwrap()
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn v1_forcing_receipt_and_cursor_successor_fields_are_required_and_frozen() {
+    let bytes = fs::read(Path::new(ARTIFACTS).join("checkpoint-in-progress-vector.json")).unwrap();
+    let value: Value = serde_json::from_slice(&bytes).unwrap();
+    let interval = &value["phase"]["validated_forcing_day_receipts"][0]["intervals"][0];
+    for field in [
+        "active_precipitation_m",
+        "rain_m",
+        "snowfall_m",
+        "rain_fraction",
+        "snow_fraction",
+        "hydrometeor_temperature_c",
+        "solid_precipitation_parcels",
+    ] {
+        assert!(!interval[field].is_null() || field == "hydrometeor_temperature_c");
+        let mut poisoned = value.clone();
+        poisoned["phase"]["validated_forcing_day_receipts"][0]["intervals"][0]
+            .as_object_mut()
+            .unwrap()
+            .remove(field);
+        assert!(
+            from_canonical_bytes::<DirectV10RealConsumerCheckpointV1>(
+                &serde_json::to_vec(&poisoned).unwrap()
+            )
+            .is_err(),
+            "missing {field} must fail closed"
+        );
+    }
+
+    for (path, field) in [
+        ("ending_provider_cursor", "pending_solid_carry"),
+        (
+            "validated_forcing_day_receipts",
+            "next_day_solid_precipitation_carry",
+        ),
+    ] {
+        let mut poisoned = value.clone();
+        let object = if path == "ending_provider_cursor" {
+            poisoned["phase"][path].as_object_mut().unwrap()
+        } else {
+            poisoned["phase"][path][0].as_object_mut().unwrap()
+        };
+        object.remove(field);
+        assert!(
+            from_canonical_bytes::<DirectV10RealConsumerCheckpointV1>(
+                &serde_json::to_vec(&poisoned).unwrap()
+            )
+            .is_err(),
+            "missing {field} must fail closed"
+        );
+    }
+
+    let schema: Value = serde_json::from_slice(
+        &fs::read(Path::new(ARTIFACTS).join("checkpoint-schema.json")).unwrap(),
+    )
+    .unwrap();
+    let in_progress = schema["properties"]["phase"]["oneOf"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|branch| branch["properties"]["kind"]["const"] == "in_progress_day")
+        .unwrap();
+    let interval_required = in_progress["properties"]["validated_forcing_day_receipts"]["items"]
+        ["properties"]["intervals"]["items"]["required"]
+        .as_array()
+        .unwrap();
+    for field in [
+        "active_precipitation_m",
+        "rain_m",
+        "snowfall_m",
+        "rain_fraction",
+        "snow_fraction",
+        "hydrometeor_temperature_c",
+        "solid_precipitation_parcels",
+    ] {
+        assert!(interval_required.iter().any(|value| value == field));
+    }
+    assert!(
+        in_progress["properties"]["ending_provider_cursor"]["required"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|value| value == "pending_solid_carry")
+    );
 }
 
 #[test]

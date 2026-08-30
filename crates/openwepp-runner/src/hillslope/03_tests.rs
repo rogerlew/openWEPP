@@ -44,7 +44,42 @@ mod tests {
     include!("tests03/canopy_litter_boundary_helpers.rs");
     include!("tests03/eb04w2b_warm_snow.rs");
     include!("tests03/stage3_evaluation_publication_parity.rs");
+    include!("tests03/stage3_runner_qualification.rs");
     include!("tests03/wat5_output_transaction.rs");
+
+    #[test]
+    fn stage3_v11_canopy_postures_admit_open_crop_and_native_forest_authority() {
+        assert_eq!(
+            stage3_v11_nonforest_canopy_cover(0.0)
+                .expect("open canopy is an admitted limiting posture")
+                .to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert_eq!(
+            stage3_v11_nonforest_canopy_cover(0.37)
+                .expect("management-derived crop canopy is admitted")
+                .to_bits(),
+            0.37_f64.to_bits()
+        );
+        let forest = Stage3V11NativeForestCanopyOperands {
+            evergreen_fraction: 0.25,
+            summer_foliar_biomass_kg_m2: 0.8,
+            structural_canopy_cover_fraction: 0.1,
+            canopy_cover_coefficient_m2_kg: 1.2,
+        };
+        let expected_forest = 0.1_f64
+            .max(1.0 - (-1.2_f64 * (0.8 * (0.25 + 0.75 * 0.4))).exp())
+            .min(openwepp_plant_phenology::FOREST_CANOPY_COVER_CAP);
+        assert_eq!(
+            stage3_v11_canopy_cover_from_authority(Some(forest), 0.4, 0.0)
+                .expect("native forest canopy retains its GSI-derived authority")
+                .to_bits(),
+            expected_forest.to_bits()
+        );
+        for invalid in [-f64::EPSILON, 1.0, f64::NAN, f64::INFINITY] {
+            assert!(stage3_v11_nonforest_canopy_cover(invalid).is_err());
+        }
+    }
 
     #[test]
     fn wat5_named_unit_conversions_validate_known_vectors_and_domains() {
@@ -118,23 +153,27 @@ mod tests {
     ) -> (HillslopeRunReport, PathBuf) {
         reset_direct_runtime_audit_counters();
 
-        let source_fixture_dir = fixture_path("hillslope_run_dir");
-        let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, prefix);
+        let temp_run_dir = prepare_explicit_stage3_fixture_dir(prefix, false);
         let output_dir = temp_run_dir.join("output");
 
-        let report = execute_hillslope_run_with_runtime_policy(
-            &HillslopeRunRequest {
-                run_dir: temp_run_dir.clone(),
-                run_file: PathBuf::from("case.run"),
-                output_dir,
-                sidecar_policy: SidecarPolicy::Compat,
-                legacy_sidecar_discovery,
-                manifest_path: None,
-            },
-            &["openwepp-cli-hill".to_string()],
-            runtime_policy,
-        )
-        .expect("fixture run should complete");
+        let report =
+            crate::hillslope::snow_stage3_v11_production_seed::with_explicit_test_owner_seed(
+                || {
+                    execute_hillslope_run_with_runtime_policy(
+                        &HillslopeRunRequest {
+                            run_dir: temp_run_dir.clone(),
+                            run_file: PathBuf::from("case.run"),
+                            output_dir,
+                            sidecar_policy: SidecarPolicy::Compat,
+                            legacy_sidecar_discovery,
+                            manifest_path: None,
+                        },
+                        &["openwepp-cli-hill".to_string()],
+                        runtime_policy,
+                    )
+                    .expect("fixture run should complete")
+                },
+            );
 
         (report, temp_run_dir)
     }
@@ -221,8 +260,8 @@ mod tests {
             ForestCanopyParameters, ForestCanopyState, GsiDailyForcing, GsiDate, GsiParameters,
         };
 
-        let parameters = |evergreen_fraction: f64, structural_biomass_kg_m2: f64| {
-            ForestCanopyParameters {
+        let parameters =
+            |evergreen_fraction: f64, structural_biomass_kg_m2: f64| ForestCanopyParameters {
                 gsi: GsiParameters {
                     minimum_temperature_inactive_c: 0.0,
                     minimum_temperature_unconstrained_c: 10.0,
@@ -237,8 +276,7 @@ mod tests {
                 structural_canopy_cover_fraction: 0.0,
                 structural_biomass_kg_m2,
                 canopy_cover_coefficient_m2_kg: 2.0,
-            }
-        };
+            };
         let forcing = |ordinal_day: u16, minimum_temperature_c: f64| GsiDailyForcing {
             minimum_temperature_c,
             vapor_pressure_deficit_pa: 500.0,
@@ -248,9 +286,8 @@ mod tests {
                 ordinal_day,
             },
         };
-        let independent_height = |foliar: f64, structural: f64| {
-            (1.0 - (-3.0_f64 * (foliar + structural)).exp()) * 0.2
-        };
+        let independent_height =
+            |foliar: f64, structural: f64| (1.0 - (-3.0_f64 * (foliar + structural)).exp()) * 0.2;
 
         let mut deciduous = ForestCanopyState::new_uninitialized();
         let off = deciduous
@@ -463,15 +500,22 @@ mod tests {
         }));
         reset_direct_runtime_audit_counters();
         reset_native_canopy_runtime_traces();
+        let request = HillslopeRunRequest {
+            run_dir: temp_run_dir.clone(),
+            run_file: PathBuf::from("case.run"),
+            output_dir: temp_run_dir.join("output"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        };
+        test_fixture_authority::author_stage3_v11_owner_seed_fixture(
+            &request,
+            test_fixture_authority::Stage3TestFixtureSeedProfile::CompleteOwner,
+            test_fixture_authority::Stage3TestFixtureSeedBinding::ExplicitRunfile,
+        )
+        .expect("native-forest fixture should bind its exact Stage-3 owner seed");
         let report = execute_hillslope_run_with_runtime_policy(
-            &HillslopeRunRequest {
-                run_dir: temp_run_dir.clone(),
-                run_file: PathBuf::from("case.run"),
-                output_dir: temp_run_dir.join("output"),
-                sidecar_policy: SidecarPolicy::Compat,
-                legacy_sidecar_discovery: false,
-                manifest_path: None,
-            },
+            &request,
             &["openwepp-cli-hill".to_string()],
             HillslopeRuntimeSelectionPolicy::default(),
         )
@@ -489,15 +533,21 @@ mod tests {
         )
         .expect("research trace must be valid JSON");
         assert_eq!(
-            first_research.pointer("/schema").and_then(serde_json::Value::as_str),
+            first_research
+                .pointer("/schema")
+                .and_then(serde_json::Value::as_str),
             Some("openwepp-canopy-research-daily-v1")
         );
         assert_eq!(
-            first_research.pointer("/site_id").and_then(serde_json::Value::as_str),
+            first_research
+                .pointer("/site_id")
+                .and_then(serde_json::Value::as_str),
             Some("test_site")
         );
         assert_eq!(
-            first_research.pointer("/arm_id").and_then(serde_json::Value::as_str),
+            first_research
+                .pointer("/arm_id")
+                .and_then(serde_json::Value::as_str),
             Some("native_forest")
         );
         assert_eq!(
@@ -557,8 +607,7 @@ mod tests {
                 "{after} must consume the same independently reconstructed daily source"
             );
         }
-        let interrill_mass =
-            research_number("/residue/interrill_ground_residue_after_kg_m2");
+        let interrill_mass = research_number("/residue/interrill_ground_residue_after_kg_m2");
         let rill_mass = research_number("/residue/rill_ground_residue_after_kg_m2");
         let weight = research_number("/residue/rescov_interrill_weight");
         let cover_factor = research_number("/residue/residue_cover_factor_m2_kg");
@@ -637,7 +686,10 @@ mod tests {
         };
         let first = traces[0];
         assert_eq!(first.builder.needle_litter_status, "complete");
-        assert_eq!(first.builder.needle_litter_source_mode, "prescribed_scenario");
+        assert_eq!(
+            first.builder.needle_litter_source_mode,
+            "prescribed_scenario"
+        );
         assert_eq!(first.builder.fine_woody_litter_status, "complete");
         assert_eq!(
             first.builder.fine_woody_litter_source_mode,
@@ -853,15 +905,22 @@ mod tests {
             site_id: "test_site".to_string(),
             arm_id: "native_forest_incomplete_sources".to_string(),
         }));
+        let incomplete_request = HillslopeRunRequest {
+            run_dir: temp_run_dir.clone(),
+            run_file: PathBuf::from("case.run"),
+            output_dir: temp_run_dir.join("output-incomplete"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        };
+        test_fixture_authority::author_stage3_v11_owner_seed_fixture(
+            &incomplete_request,
+            test_fixture_authority::Stage3TestFixtureSeedProfile::CompleteOwner,
+            test_fixture_authority::Stage3TestFixtureSeedBinding::ExplicitRunfile,
+        )
+        .expect("changed management fixture should reseal its exact Stage-3 owner seed");
         execute_hillslope_run_with_runtime_policy(
-            &HillslopeRunRequest {
-                run_dir: temp_run_dir.clone(),
-                run_file: PathBuf::from("case.run"),
-                output_dir: temp_run_dir.join("output-incomplete"),
-                sidecar_policy: SidecarPolicy::Compat,
-                legacy_sidecar_discovery: false,
-                manifest_path: None,
-            },
+            &incomplete_request,
             &["openwepp-cli-hill".to_string()],
             HillslopeRuntimeSelectionPolicy::default(),
         )
@@ -920,20 +979,31 @@ mod tests {
             "date,deposited_kg_m2\n2000-01-01,0.003\n",
         )
         .expect("narrow fine-woody forcing should write");
+        let outside_request = HillslopeRunRequest {
+            run_dir: temp_run_dir.clone(),
+            run_file: PathBuf::from("case.run"),
+            output_dir: temp_run_dir.join("output-outside-support"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        };
+        test_fixture_authority::author_stage3_v11_owner_seed_fixture(
+            &outside_request,
+            test_fixture_authority::Stage3TestFixtureSeedProfile::CompleteOwner,
+            test_fixture_authority::Stage3TestFixtureSeedBinding::ExplicitRunfile,
+        )
+        .expect("narrow-support fixture should reseal its exact Stage-3 owner seed");
         let outside_error = execute_hillslope_run_with_runtime_policy(
-            &HillslopeRunRequest {
-                run_dir: temp_run_dir.clone(),
-                run_file: PathBuf::from("case.run"),
-                output_dir: temp_run_dir.join("output-outside-support"),
-                sidecar_policy: SidecarPolicy::Compat,
-                legacy_sidecar_discovery: false,
-                manifest_path: None,
-            },
+            &outside_request,
             &["openwepp-cli-hill".to_string()],
             HillslopeRuntimeSelectionPolicy::default(),
         )
         .expect_err("runtime access outside authenticated support must fail");
-        assert!(outside_error.to_string().contains("outside authenticated support"));
+        assert!(
+            outside_error
+                .to_string()
+                .contains("outside authenticated support")
+        );
     }
 
     fn r5c_day_span_run_count() -> u64 {
@@ -2125,47 +2195,6 @@ mod tests {
             .expect("conductivity should invert to density");
         assert!((inverted - 300.0).abs() < 1.0e-6);
         assert!(invert_sturm1997_snow_density_kg_m3(0.0, 1.0).is_err());
-    }
-
-    #[test]
-    fn cqr_row7_snow_selector_parsers_cover_defaults_variants_and_rejections() {
-        assert_eq!(
-            parse_snowdensity1015_default_snow_density_model(None)
-                .expect("missing density selector should default"),
-            openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1
-        );
-        assert_eq!(
-            parse_snowdensity1015_default_snow_density_model(Some("legacy_wepp"))
-                .expect("legacy density selector should parse"),
-            openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp
-        );
-        assert!(parse_snowdensity1015_default_snow_density_model(Some("bad_density")).is_err());
-
-        assert_eq!(
-            parse_snowdensity1037_diagnostic_snow_melt_model(None)
-                .expect("missing diagnostic melt selector should default"),
-            openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe
-        );
-        assert_eq!(
-            parse_snowdensity1037_diagnostic_snow_melt_model(
-                Some("coe_winter_thaw_state_loss_v1",)
-            )
-            .expect("diagnostic melt selector should parse"),
-            openwepp_hillslope_orchestrator::SnowMeltModel::CoeWinterThawStateLossV1
-        );
-        assert!(parse_snowdensity1037_diagnostic_snow_melt_model(Some("bad_melt")).is_err());
-
-        assert_eq!(
-            parse_snowdensity1015_default_snow_melt_model(None)
-                .expect("missing default melt selector should default"),
-            openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1
-        );
-        assert_eq!(
-            parse_snowdensity1015_default_snow_melt_model(Some("coe_open_sublimation_stage_b_v1",))
-                .expect("default melt selector should parse stage B"),
-            openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageBV1
-        );
-        assert!(parse_snowdensity1015_default_snow_melt_model(Some("bad_default_melt")).is_err());
     }
 
     fn cqr_row7_test_climate_file() -> ClimateFile {

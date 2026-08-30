@@ -17,6 +17,7 @@ from dataclasses import dataclass
 SIGMA = 5.670_374_419e-8
 RHO_W = 1000.0
 CP_W = 4218.0
+CP_ICE = 2100.0
 TOL = 1.0e-12
 
 
@@ -236,6 +237,84 @@ def canonical_bytes(value: object) -> bytes:
     return (json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode()
 
 
+def half_hour_phase(active_precipitation_m: float, phase: dict[str, float]) -> dict[str, float | None]:
+    if active_precipitation_m == 0.0:
+        return {
+            "active_precipitation_m": 0.0,
+            "rain_m": 0.0,
+            "snowfall_m": 0.0,
+            "rain_fraction": 0.0,
+            "snow_fraction": 0.0,
+            "hydrometeor_temperature_c": None,
+        }
+    rain_fraction = phase["rain_fraction"]
+    snow_fraction = phase["snow_fraction"]
+    value: dict[str, float | None] = {
+        "active_precipitation_m": active_precipitation_m,
+        "rain_m": active_precipitation_m * rain_fraction,
+        # The provider retains SIMIMPL28's snowfall-depth scale; dividing this
+        # value by ten reconstructs its contribution to active precipitation.
+        "snowfall_m": active_precipitation_m * snow_fraction * 10.0,
+        "rain_fraction": rain_fraction,
+        "snow_fraction": snow_fraction,
+        "hydrometeor_temperature_c": phase["hydrometeor_temperature_c"],
+    }
+    reconstructed = float(value["rain_m"]) + float(value["snowfall_m"]) / 10.0
+    if abs(reconstructed - active_precipitation_m) > TOL * max(1.0, active_precipitation_m):
+        raise AuthorityDomain("precipitation:phase_closure")
+    return value
+
+
+def liquid_precipitation_parcel(
+    *,
+    day_index: int,
+    parcel_index: int,
+    source_climate_sha256: str,
+    start_s: float,
+    end_s: float,
+    mass_kg_m2: float,
+    hydrometeor_temperature_c: float,
+) -> dict[str, object]:
+    temperature_k = hydrometeor_temperature_c + 273.15
+    return {
+        "parcel_id": f"climate-rain:{day_index}:{parcel_index}",
+        "source_owner_id": source_climate_sha256,
+        "destination_ofe_id": "ofe-1",
+        "destination_tile_id": "forest-1",
+        "start_s": start_s,
+        "end_s": end_s,
+        "mass_kg_m2": mass_kg_m2,
+        "temperature_k": temperature_k,
+        "enthalpy_j_m2": mass_kg_m2 * CP_W * (temperature_k - 273.15),
+    }
+
+
+def solid_precipitation_parcel(
+    *,
+    day_index: int,
+    parcel_index: int,
+    source_climate_sha256: str,
+    start_s: float,
+    end_s: float,
+    mass_kg_m2: float,
+    hydrometeor_temperature_c: float,
+) -> dict[str, object]:
+    # Harder-Pomeroy provides one bulk mixed-phase temperature. Solid custody
+    # is independently bounded at the melting point, as in the typed provider.
+    temperature_k = min(hydrometeor_temperature_c, 0.0) + 273.15
+    return {
+        "parcel_id": f"climate-snow:{day_index}:{parcel_index}",
+        "source_owner_id": source_climate_sha256,
+        "destination_ofe_id": "ofe-1",
+        "destination_tile_id": "forest-1",
+        "start_s": start_s,
+        "end_s": end_s,
+        "mass_kg_m2": mass_kg_m2,
+        "temperature_k": temperature_k,
+        "enthalpy_j_m2": mass_kg_m2 * CP_ICE * (temperature_k - 273.15),
+    }
+
+
 def simimpl_declination(day_of_year: int) -> float:
     return 0.00698 - 0.4067 * math.cos((day_of_year + 10.0) * 0.0172)
 
@@ -301,19 +380,55 @@ def simimpl_parents(*, day_of_year: int, latitude_deg: float, radiation_ly: floa
 
 
 def complete_day_receipt() -> dict[str, object]:
-    provider_sha = "4658de9f7590897633ffbfe0facedd52b5c9b9754f7d829f25869ef2c592f153"
+    provider_sha = "a94b22fcf5675285e54f4645dd36edec50148285801d8e7fd96fabb091cacbd0"
     climate_sha = "b" * 64
-    parents, daily_energy = simimpl_parents(day_of_year=172, latitude_deg=41.1, radiation_ly=420.0, tmax_c=28.0, tmin_c=22.0)
+    parents, daily_energy = simimpl_parents(
+        day_of_year=172,
+        latitude_deg=41.1,
+        radiation_ly=420.0,
+        tmax_c=2.0,
+        tmin_c=-4.0,
+    )
     pressure = fao_pressure_kpa(1225.0)
-    rain_masses, _ = event_relative_breakpoint_masses(13.25, [Segment(0.0, 2700.0, 2.0e-6)])
+    active_masses, _ = event_relative_breakpoint_masses(
+        13.25,
+        [Segment(0.0, 2700.0, 2.0e-6)],
+    )
     intervals: list[dict[str, object]] = []
     for interval_index in range(48):
         parent = parents[interval_index // 2]
-        dew_point_c = 20.0
+        dew_point_c = -5.0
         moisture = humidity(parent["air_temperature_c"], dew_point_c, pressure)
         phase = harder_pomeroy_hourly(parent["air_temperature_c"], dew_point_c)
-        if rain_masses[interval_index] > 0.0 and phase["snow_fraction"] > 0.0:
-            raise AuthorityDomain("precipitation:snow_or_mixed_phase")
+        active_precipitation_m = active_masses[interval_index] / RHO_W
+        child_phase = half_hour_phase(active_precipitation_m, phase)
+        hydrometeor_temperature_c = child_phase["hydrometeor_temperature_c"]
+        precipitation_parcels: list[dict[str, object]] = []
+        solid_precipitation_parcels: list[dict[str, object]] = []
+        if hydrometeor_temperature_c is not None and float(child_phase["rain_m"]) > 0.0:
+            precipitation_parcels.append(
+                liquid_precipitation_parcel(
+                    day_index=0,
+                    parcel_index=interval_index,
+                    source_climate_sha256=climate_sha,
+                    start_s=1800 * interval_index,
+                    end_s=1800 * (interval_index + 1),
+                    mass_kg_m2=float(child_phase["rain_m"]) * RHO_W,
+                    hydrometeor_temperature_c=float(hydrometeor_temperature_c),
+                )
+            )
+        if hydrometeor_temperature_c is not None and float(child_phase["snowfall_m"]) > 0.0:
+            solid_precipitation_parcels.append(
+                solid_precipitation_parcel(
+                    day_index=0,
+                    parcel_index=interval_index,
+                    source_climate_sha256=climate_sha,
+                    start_s=1800 * interval_index,
+                    end_s=1800 * (interval_index + 1),
+                    mass_kg_m2=float(child_phase["snowfall_m"]) * 100.0,
+                    hydrometeor_temperature_c=float(hydrometeor_temperature_c),
+                )
+            )
         shortwave = weiss_norman(parent["global_horizontal_shortwave_w_m2"], parent["solar_zenith_cosine"], pressure)
         interval = {
             "provider_definition_sha256": provider_sha,
@@ -344,20 +459,24 @@ def complete_day_receipt() -> dict[str, object]:
             "gsi": 0.75,
             "gsi_receipt_sha256": "c" * 64,
             "wb14_configuration_sha256": "d" * 64,
-            "precipitation_parcels": [] if rain_masses[interval_index] == 0.0 else [{
-                "parcel_id": f"climate-rain:0:{interval_index}",
-                "source_owner_id": "climate-day-0",
-                "destination_ofe_id": "ofe-1",
-                "destination_tile_id": "forest-1",
-                "start_s": 1800 * interval_index,
-                "end_s": 1800 * (interval_index + 1),
-                "mass_kg_m2": rain_masses[interval_index],
-                "temperature_k": phase["hydrometeor_temperature_c"] + 273.15,
-                "enthalpy_j_m2": rain_masses[interval_index] * CP_W * phase["hydrometeor_temperature_c"],
-            }],
+            **child_phase,
+            "precipitation_parcels": precipitation_parcels,
+            "solid_precipitation_parcels": solid_precipitation_parcels,
         }
         interval["interval_receipt_sha256"] = hashlib.sha256(canonical_bytes(interval)).hexdigest()
         intervals.append(interval)
+    expected_active_depth = math.fsum(active_masses) / RHO_W
+    found_active_depth = math.fsum(float(interval["active_precipitation_m"]) for interval in intervals)
+    if abs(found_active_depth - expected_active_depth) > TOL * max(1.0, expected_active_depth):
+        raise AuthorityDomain("precipitation:daily_phase_closure")
+    found_parcel_mass = math.fsum(
+        float(parcel["mass_kg_m2"])
+        for interval in intervals
+        for key in ("precipitation_parcels", "solid_precipitation_parcels")
+        for parcel in interval[key]
+    )
+    if abs(found_parcel_mass - RHO_W * expected_active_depth) > TOL * max(1.0, found_parcel_mass):
+        raise AuthorityDomain("precipitation:daily_parcel_closure")
     body: dict[str, object] = {
         "provider_version": "OPENWEPP_SNOW_FREE_HALF_HOUR_FORCING_V1",
         "provider_definition_sha256": provider_sha,
@@ -367,9 +486,69 @@ def complete_day_receipt() -> dict[str, object]:
         "daily_horizontal_energy_mj_m2": daily_energy,
         "intervals": intervals,
         "next_day_precipitation_carry": [],
+        "next_day_solid_precipitation_carry": [],
     }
     body["receipt_sha256"] = hashlib.sha256(canonical_bytes(body)).hexdigest()
     return body
+
+
+def validate_phase_and_parcels(interval: dict[str, object]) -> None:
+    active = float(interval["active_precipitation_m"])
+    rain = float(interval["rain_m"])
+    snowfall = float(interval["snowfall_m"])
+    rain_fraction = float(interval["rain_fraction"])
+    snow_fraction = float(interval["snow_fraction"])
+    hydrometeor = interval["hydrometeor_temperature_c"]
+    values = (active, rain, snowfall, rain_fraction, snow_fraction)
+    if any(not math.isfinite(value) or value < 0.0 for value in values):
+        raise AuthorityDomain("receipt:phase_domain")
+    scale = max(1.0, active)
+    if active == 0.0:
+        if any(value != 0.0 for value in values[1:]) or hydrometeor is not None:
+            raise AuthorityDomain("receipt:dry_phase_metadata")
+    else:
+        if hydrometeor is None or not math.isfinite(float(hydrometeor)):
+            raise AuthorityDomain("receipt:hydrometeor_temperature")
+        if abs(rain + snowfall / 10.0 - active) > TOL * scale:
+            raise AuthorityDomain("receipt:phase_depth_closure")
+        if abs(rain_fraction + snow_fraction - 1.0) > TOL:
+            raise AuthorityDomain("receipt:phase_fraction_closure")
+        if abs(rain - active * rain_fraction) > TOL * scale:
+            raise AuthorityDomain("receipt:rain_fraction_binding")
+        if abs(snowfall / 10.0 - active * snow_fraction) > TOL * scale:
+            raise AuthorityDomain("receipt:snow_fraction_binding")
+
+    liquid = interval["precipitation_parcels"]
+    solid = interval["solid_precipitation_parcels"]
+    if not isinstance(liquid, list) or not isinstance(solid, list):
+        raise AuthorityDomain("receipt:parcel_shape")
+    if len(liquid) != (1 if rain > 0.0 else 0) or len(solid) != (1 if snowfall > 0.0 else 0):
+        raise AuthorityDomain("receipt:parcel_phase_cardinality")
+    if active == 0.0:
+        return
+
+    expected_liquid_mass = rain * RHO_W
+    expected_solid_mass = snowfall * 100.0
+    if liquid:
+        parcel = liquid[0]
+        expected_temperature = float(hydrometeor) + 273.15
+        expected_enthalpy = expected_liquid_mass * CP_W * (expected_temperature - 273.15)
+        if (
+            parcel["mass_kg_m2"] != expected_liquid_mass
+            or parcel["temperature_k"] != expected_temperature
+            or abs(parcel["enthalpy_j_m2"] - expected_enthalpy) > TOL * max(1.0, abs(expected_enthalpy))
+        ):
+            raise AuthorityDomain("receipt:liquid_parcel_binding")
+    if solid:
+        parcel = solid[0]
+        expected_temperature = min(float(hydrometeor), 0.0) + 273.15
+        expected_enthalpy = expected_solid_mass * CP_ICE * (expected_temperature - 273.15)
+        if (
+            parcel["mass_kg_m2"] != expected_solid_mass
+            or parcel["temperature_k"] != expected_temperature
+            or abs(parcel["enthalpy_j_m2"] - expected_enthalpy) > TOL * max(1.0, abs(expected_enthalpy))
+        ):
+            raise AuthorityDomain("receipt:solid_parcel_binding")
 
 
 def validate_day_receipt(receipt: dict[str, object]) -> None:
@@ -397,10 +576,12 @@ def validate_day_receipt(receipt: dict[str, object]) -> None:
         digest_body.pop("interval_receipt_sha256", None)
         if supplied != hashlib.sha256(canonical_bytes(digest_body)).hexdigest():
             raise AuthorityDomain("receipt:interval_digest")
-        for parcel in interval["precipitation_parcels"]:
-            expected_enthalpy = parcel["mass_kg_m2"] * CP_W * (parcel["temperature_k"] - 273.15)
-            if abs(parcel["enthalpy_j_m2"] - expected_enthalpy) > TOL * max(1.0, abs(expected_enthalpy)):
-                raise AuthorityDomain("receipt:parcel_enthalpy")
+        validate_phase_and_parcels(interval)
+    if not isinstance(receipt.get("next_day_precipitation_carry"), list) or not isinstance(
+        receipt.get("next_day_solid_precipitation_carry"),
+        list,
+    ):
+        raise AuthorityDomain("receipt:carry_shape")
     supplied_day = receipt["receipt_sha256"]
     day_body = dict(receipt)
     day_body.pop("receipt_sha256", None)
@@ -456,10 +637,36 @@ def change_physical_operand(receipt: dict[str, object]) -> None:
     receipt["intervals"][7]["wind_m_s"] = 2.500_000_000_000_000_4
 
 
-def reject_snow_phase() -> None:
-    if harder_pomeroy_hourly(-2.0, -3.0)["snow_fraction"] > 0.0:
-        raise AuthorityDomain("precipitation:snow_or_mixed_phase")
-    raise AssertionError("cold phase unexpectedly contains no snow")
+def mixed_phase_partition_case() -> dict[str, object]:
+    active_precipitation_m = 0.0036
+    phase = harder_pomeroy_hourly(-2.0, -3.0)
+    child_phase = half_hour_phase(active_precipitation_m, phase)
+    hydrometeor = float(child_phase["hydrometeor_temperature_c"])
+    liquid = liquid_precipitation_parcel(
+        day_index=0,
+        parcel_index=0,
+        source_climate_sha256="b" * 64,
+        start_s=0.0,
+        end_s=1800.0,
+        mass_kg_m2=float(child_phase["rain_m"]) * RHO_W,
+        hydrometeor_temperature_c=hydrometeor,
+    )
+    solid = solid_precipitation_parcel(
+        day_index=0,
+        parcel_index=0,
+        source_climate_sha256="b" * 64,
+        start_s=0.0,
+        end_s=1800.0,
+        mass_kg_m2=float(child_phase["snowfall_m"]) * 100.0,
+        hydrometeor_temperature_c=hydrometeor,
+    )
+    return {
+        "name": "mixed_phase_partition",
+        "status": "accepted",
+        **child_phase,
+        "precipitation_parcels": [liquid],
+        "solid_precipitation_parcels": [solid],
+    }
 
 
 def digest_poison_matrix() -> dict[str, object]:
@@ -530,20 +737,34 @@ def heterogeneous_multi_ofe_case() -> dict[str, str]:
 
 def schema_valid_midnight_carry() -> dict[str, object]:
     current, carry = event_relative_breakpoint_masses(23.5, [Segment(0.0, 3600.0, 2.0e-5)])
-    phase = harder_pomeroy_hourly(24.0, 20.0)
-    mass = RHO_W * (carry[0]["end_s"] - carry[0]["start_s"]) * carry[0]["intensity_m_s"]
-    parcel = {
-        "parcel_id": "climate-rain:carry:0",
-        "source_owner_id": "climate-day-0",
-        "destination_ofe_id": "ofe-1",
-        "destination_tile_id": "forest-1",
-        "start_s": carry[0]["start_s"],
-        "end_s": carry[0]["end_s"],
-        "mass_kg_m2": mass,
-        "temperature_k": phase["hydrometeor_temperature_c"] + 273.15,
-        "enthalpy_j_m2": mass * CP_W * phase["hydrometeor_temperature_c"],
+    phase = harder_pomeroy_hourly(-2.0, -3.0)
+    active_depth = (carry[0]["end_s"] - carry[0]["start_s"]) * carry[0]["intensity_m_s"]
+    child_phase = half_hour_phase(active_depth, phase)
+    hydrometeor = float(child_phase["hydrometeor_temperature_c"])
+    liquid = liquid_precipitation_parcel(
+        day_index=0,
+        parcel_index=48,
+        source_climate_sha256="b" * 64,
+        start_s=carry[0]["start_s"],
+        end_s=carry[0]["end_s"],
+        mass_kg_m2=float(child_phase["rain_m"]) * RHO_W,
+        hydrometeor_temperature_c=hydrometeor,
+    )
+    solid = solid_precipitation_parcel(
+        day_index=0,
+        parcel_index=48,
+        source_climate_sha256="b" * 64,
+        start_s=carry[0]["start_s"],
+        end_s=carry[0]["end_s"],
+        mass_kg_m2=float(child_phase["snowfall_m"]) * 100.0,
+        hydrometeor_temperature_c=hydrometeor,
+    )
+    return {
+        "current_day_mass_kg_m2": math.fsum(current),
+        **child_phase,
+        "next_day_precipitation_carry": [liquid],
+        "next_day_solid_precipitation_carry": [solid],
     }
-    return {"current_day_mass_kg_m2": math.fsum(current), "next_day_carry": [parcel]}
 
 
 def payload() -> dict[str, object]:
@@ -576,7 +797,7 @@ def payload() -> dict[str, object]:
         poisoned_receipt_case("mixed_provider_version", change_provider),
         poisoned_receipt_case("one_bit_physical_operand", change_physical_operand),
         heterogeneous_multi_ofe_case(),
-        rejected("snow_or_mixed_phase", reject_snow_phase),
+        mixed_phase_partition_case(),
         digest_poison_matrix(),
     ]
     complete_receipt = complete_day_receipt()

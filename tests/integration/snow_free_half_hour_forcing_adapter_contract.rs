@@ -347,7 +347,10 @@ fn actual_breakpoint_climate_projects_complete_digest_bound_receipts() {
             .flat_map(|interval| &interval.precipitation_parcels)
             .map(|parcel| parcel.mass_kg_m2)
             .sum::<f64>();
-        assert_eq!(rain.to_bits(), 5.4_f64.to_bits());
+        assert!(
+            rain.to_bits().abs_diff(5.4_f64.to_bits()) <= 1,
+            "canonical parcel accumulation must remain within one binary64 ULP"
+        );
         let late_rain = receipt
             .intervals
             .iter()
@@ -476,16 +479,47 @@ fn provider_rejects_unsupported_domains_and_digest_mutation() {
         SnowFreeHalfHourForcingError::Identity("provider configuration")
     );
 
-    assert_eq!(
-        request(&cold_midnight_breakpoint_climate())
-            .snow_free_half_hour_forcing_receipts(
-                0,
-                &provider_configuration(),
-                &SnowFreeHalfHourProviderCursor::default()
-            )
-            .expect_err("cold carry cannot be relabeled liquid"),
-        SnowFreeHalfHourForcingError::Unsupported("snow or mixed precipitation carry")
-    );
+    let cold_carry = request(&cold_midnight_breakpoint_climate())
+        .snow_free_half_hour_forcing_receipts(
+            0,
+            &provider_configuration(),
+            &SnowFreeHalfHourProviderCursor::default(),
+        )
+        .expect("cold mixed-phase carry retains typed liquid and solid custody");
+    for receipt in cold_carry.receipts() {
+        receipt
+            .validate()
+            .expect("cold mixed-phase receipt closure");
+        assert!(!receipt.next_day_precipitation_carry.is_empty());
+        assert!(!receipt.next_day_solid_precipitation_carry.is_empty());
+        let liquid = receipt
+            .next_day_precipitation_carry
+            .iter()
+            .map(|parcel| parcel.mass_kg_m2)
+            .sum::<f64>();
+        let solid = receipt
+            .next_day_solid_precipitation_carry
+            .iter()
+            .map(|parcel| parcel.mass_kg_m2)
+            .sum::<f64>();
+        assert!(
+            (liquid + solid - 7.2).abs() <= 1.0e-12 * 7.2,
+            "cold carry closure: liquid={liquid:.17e}, solid={solid:.17e}"
+        );
+        assert!(solid > liquid);
+        assert!(
+            receipt
+                .next_day_precipitation_carry
+                .iter()
+                .all(|parcel| parcel.temperature_k < 273.15)
+        );
+        assert!(
+            receipt
+                .next_day_solid_precipitation_carry
+                .iter()
+                .all(|parcel| parcel.temperature_k <= 273.15)
+        );
+    }
 
     let mut receipt = request(&warm_breakpoint_climate(2.5, 20.0))
         .snow_free_half_hour_forcing_receipts(

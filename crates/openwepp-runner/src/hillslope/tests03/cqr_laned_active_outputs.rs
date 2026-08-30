@@ -437,13 +437,375 @@ fn cqr_laned_active_trace_writer_rejects_invalid_numeric_values_before_output() 
 
 #[test]
 fn cqr_execute_direct_publication_stream_runs_real_fixture_consumer() {
-    let (report, output_dir) = execute_fixture_run("cqr_ha08_execute_stream");
+    let _fixed_point_audit_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_covered_fixed_point_iteration_audit_v1();
+    let (report, output_dir) = execute_explicit_stage3_fixture_run("cqr_ha08_execute_stream");
+    let fixed_point_audit = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_covered_fixed_point_iteration_audit_v1();
+    assert!(fixed_point_audit.iter().any(|entry| {
+        entry.converged
+            && entry.support.duration_ns() == 60_000_000_000
+            && (1..=96).contains(&entry.completed_iterations)
+    }));
+    assert!(fixed_point_audit.iter().any(|entry| {
+        entry.converged
+            && entry.support.duration_ns() > 60_000_000_000
+            && (1..=96).contains(&entry.completed_iterations)
+    }));
     assert!(report.output_pass.is_file());
     assert!(report.output_loss.is_file());
     assert!(report.manifest_path.is_file());
     let manifest = std::fs::read_to_string(&report.manifest_path).expect("run manifest");
     assert!(manifest.contains("R7C-DIRECT-PRODUCTION-EXECUTOR"));
     let _ = std::fs::remove_dir_all(output_dir);
+}
+
+#[test]
+#[ignore = "diagnostic-only one-day qualification telemetry"]
+#[allow(clippy::too_many_lines)]
+fn cqr_stage3_one_day_qualification_with_telemetry() {
+    let _execution_guard = runner_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    crate::hillslope::snow_stage3_v11_qualification_audit::begin();
+    let _fixed_point_audit_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_covered_fixed_point_iteration_audit_v1();
+    openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_comparison_test_audit();
+    openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_stage3_physical_outcome_closure_audit_v1();
+    let run_dir = prepare_explicit_stage3_fixture_dir("cqr_stage3_one_day_telemetry", true);
+    let output_dir = run_dir.join("output");
+    let _telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_parent_telemetry_v1(
+        49,
+        std::time::Duration::from_secs(3_600),
+    )
+    .expect("valid telemetry bound");
+    let result =
+        crate::hillslope::snow_stage3_v11_production_seed::with_explicit_test_owner_seed(|| {
+            execute_hillslope_run_with_runtime_policy(
+                &HillslopeRunRequest {
+                    run_dir: run_dir.clone(),
+                    run_file: PathBuf::from("case.run"),
+                    output_dir,
+                    sidecar_policy: SidecarPolicy::Compat,
+                    legacy_sidecar_discovery: false,
+                    manifest_path: None,
+                },
+                &["openwepp-cli-hill".to_string()],
+                HillslopeRuntimeSelectionPolicy::new(
+                    HillslopeRuntimeSelection::DirectProductionExecutor,
+                    HillslopeDefaultRuntimeActivation::default(),
+                ),
+            )
+        });
+    let rows = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_parent_telemetry_v1();
+    for row in &rows {
+        eprintln!(
+            "STAGE3_PARENT_TELEMETRY ordinal={} support={}..{} direct={} split={} accepted={} rejected={} owner_joins={} event_groups={} terminal_parcels={} publication_supports={} publication_events={} adaptive_bytes={:?} coupled_inline_bytes={} owner_bytes={:?} parent_ms={} cumulative_ms={}",
+            row.parent_ordinal,
+            row.support.start_ns().get(),
+            row.support.end_ns().get(),
+            row.direct_trial_count,
+            row.split_child_trial_count,
+            row.accepted_microstep_count,
+            row.rejected_candidate_count,
+            row.owner_join_count,
+            row.event_group_count,
+            row.terminal_parcel_count,
+            row.publication_support_count,
+            row.publication_event_count,
+            row.adaptive_receipt_bytes,
+            row.coupled_receipt_inline_bytes,
+            row.retained_complete_owner_bytes,
+            row.parent_elapsed.as_millis(),
+            row.cumulative_elapsed.as_millis(),
+        );
+        eprintln!(
+            "STAGE3_PARENT_PHASES ordinal={} accepted_widths={:?} rejection_phase={} rejection_event={} rejection_both={} rejection_other={} covered_direct={}/{}ms covered_composed={}/{}ms terminal_direct={}/{}ms terminal_composed={}/{}ms fixed_point={}/{}iter/max{} fixed_point_phases=operands{}ms/envelope{}ms/stage3{}ms/soil{}ms/finalization{}ms envelope_subphases=projection{}ms/solver_ready{}ms/physical{}ms/receipts{}ms/owner{}ms publication_append={}/{}ms/cow{} publication_full_validation={}/{}ms reuse_validation={}/{}ms/hit{}/fallback{} child_memo=hit{}/direct{}/composed{}/fallback{}",
+            row.parent_ordinal,
+            row.accepted_width_histogram,
+            row.phase_rejection_count,
+            row.event_rejection_count,
+            row.phase_and_event_rejection_count,
+            row.other_rejection_count,
+            row.covered_direct_trial_phase_count,
+            row.covered_direct_trial_phase_elapsed.as_millis(),
+            row.covered_composed_trial_phase_count,
+            row.covered_composed_trial_phase_elapsed.as_millis(),
+            row.terminal_direct_trial_phase_count,
+            row.terminal_direct_trial_phase_elapsed.as_millis(),
+            row.terminal_composed_trial_phase_count,
+            row.terminal_composed_trial_phase_elapsed.as_millis(),
+            row.fixed_point_evaluation_count,
+            row.fixed_point_iteration_total,
+            row.fixed_point_iteration_maximum,
+            row.fixed_point_operand_elapsed.as_millis(),
+            row.fixed_point_envelope_elapsed.as_millis(),
+            row.fixed_point_stage3_elapsed.as_millis(),
+            row.fixed_point_soil_elapsed.as_millis(),
+            row.fixed_point_finalization_elapsed.as_millis(),
+            row.provisional_envelope_projection_elapsed.as_millis(),
+            row.provisional_envelope_solver_ready_elapsed.as_millis(),
+            row.provisional_envelope_physical_elapsed.as_millis(),
+            row.provisional_envelope_receipts_elapsed.as_millis(),
+            row.provisional_envelope_owner_elapsed.as_millis(),
+            row.publication_append_count,
+            row.publication_append_elapsed.as_millis(),
+            row.publication_cow_count,
+            row.publication_full_validation_count,
+            row.publication_full_validation_elapsed.as_millis(),
+            row.reuse_validation_count,
+            row.reuse_validation_elapsed.as_millis(),
+            row.reuse_hit_count,
+            row.reuse_fallback_count,
+            row.covered_child_memo_hit_count,
+            row.covered_child_memo_direct_hit_count,
+            row.covered_child_memo_composed_hit_count,
+            row.covered_child_memo_fallback_count,
+        );
+    }
+    let fixed_point_audit = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_covered_fixed_point_iteration_audit_v1();
+    let comparison_audit = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_comparison_test_audit();
+    let closure_audit = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_stage3_physical_outcome_closure_audit_v1();
+    let comparison_rejections = comparison_audit
+        .iter()
+        .filter(|entry| {
+            entry.maximum_scaled_error > 1.0 || entry.first_discrete_surface_kind.is_some()
+        })
+        .count();
+    let comparison_scaled_rejections = comparison_audit
+        .iter()
+        .filter(|entry| entry.maximum_scaled_error > 1.0)
+        .count();
+    let comparison_discrete_rejections = comparison_audit
+        .iter()
+        .filter(|entry| entry.first_discrete_surface_kind.is_some())
+        .count();
+    let mut comparison_rejections_by_owner_path = BTreeMap::<(String, String), u64>::new();
+    for entry in comparison_audit.iter().filter(|entry| {
+        entry.maximum_scaled_error > 1.0 || entry.first_discrete_surface_kind.is_some()
+    }) {
+        *comparison_rejections_by_owner_path
+            .entry((
+                entry
+                    .maximum_owner_id
+                    .clone()
+                    .unwrap_or_else(|| "none".to_owned()),
+                entry
+                    .maximum_path
+                    .clone()
+                    .unwrap_or_else(|| "none".to_owned()),
+            ))
+            .or_default() += 1;
+    }
+    let fixed_point_nonconverged = fixed_point_audit
+        .iter()
+        .filter(|entry| !entry.converged)
+        .count();
+    let receipt_reseal_max_abs_residual_j_m2 = fixed_point_audit
+        .iter()
+        .map(|entry| f64::from_bits(entry.receipt_reseal_max_abs_residual_bits))
+        .fold(0.0_f64, f64::max);
+    let receipt_reseal_max_abs_temperature_residual_k = fixed_point_audit
+        .iter()
+        .map(|entry| {
+            f64::from_bits(entry.receipt_reseal_max_abs_temperature_residual_bits)
+        })
+        .fold(0.0_f64, f64::max);
+    eprintln!(
+        "STAGE3_LIMITING_REJECTIONS fixed_point_nonconverged={fixed_point_nonconverged} comparison_rejections={comparison_rejections} comparison_scaled={comparison_scaled_rejections} comparison_discrete={comparison_discrete_rejections} comparison_by_owner_path={comparison_rejections_by_owner_path:?}",
+    );
+    eprintln!(
+        "STAGE3_LEDGER_CLOSURE validated={} maximum_abs_mass_residual_kg_m2={:.17e} mass_tolerance_kg_m2=1.0e-9 maximum_abs_energy_residual_j_m2={:.17e} energy_tolerance_j_m2=1.0e-6",
+        closure_audit.validated_ledger_count,
+        closure_audit.maximum_abs_mass_residual_kg_m2,
+        closure_audit.maximum_abs_energy_residual_j_m2,
+    );
+    eprintln!(
+        "STAGE3_RECEIPT_RESEAL maximum_abs_energy_residual_j_m2={:.17e} roundoff_bound_j_m2={:.17e} maximum_abs_temperature_residual_k={:.17e} temperature_bound_k={:.17e}",
+        receipt_reseal_max_abs_residual_j_m2,
+        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::STAGE3_V11_SNOW_SOIL_RECEIPT_RESEAL_ROUNDOFF_J_M2,
+        receipt_reseal_max_abs_temperature_residual_k,
+        openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::STAGE3_V11_SNOW_SOIL_RECEIPT_RESEAL_ROUNDOFF_TEMPERATURE_K,
+    );
+    assert!(
+        receipt_reseal_max_abs_residual_j_m2
+            <= openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::STAGE3_V11_SNOW_SOIL_RECEIPT_RESEAL_ROUNDOFF_J_M2
+    );
+    assert!(
+        receipt_reseal_max_abs_temperature_residual_k
+            <= openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::STAGE3_V11_SNOW_SOIL_RECEIPT_RESEAL_ROUNDOFF_TEMPERATURE_K
+    );
+    let report = result.expect("one-day telemetry qualification must complete");
+    let qualification = crate::hillslope::snow_stage3_v11_qualification_audit::take();
+    let snapshot = qualification
+        .committed_snapshot
+        .as_ref()
+        .expect("sealed one-day qualification snapshot");
+    snapshot
+        .validate()
+        .expect("valid one-day qualification snapshot");
+
+    assert_eq!(rows.len(), 48);
+    assert_eq!(qualification.support_chronology_by_day.len(), 1);
+    assert_eq!(qualification.support_chronology_by_day[&0].len(), 48);
+    assert_eq!(snapshot.next_day_index, 1);
+    assert_eq!(snapshot.committed_day_count, 1);
+    assert_eq!(snapshot.total_parent_support_count, 48);
+    assert_eq!(snapshot.adaptive_support_receipt_count, 48);
+    assert_eq!(snapshot.snow_free_successor_receipt_count, 0);
+    assert_eq!(snapshot.snow_free_parent_support_count, 0);
+    let rejected_candidate_count = rows
+        .iter()
+        .map(|row| row.rejected_candidate_count)
+        .sum::<u64>();
+    let reconciled_rejection_count = rows
+        .iter()
+        .map(|row| {
+            row.phase_rejection_count + row.event_rejection_count
+                - row.phase_and_event_rejection_count
+                + row.other_rejection_count
+        })
+        .sum::<u64>();
+    assert_eq!(reconciled_rejection_count, rejected_candidate_count);
+    assert!(closure_audit.validated_ledger_count > 0);
+    assert!(closure_audit.maximum_abs_mass_residual_kg_m2 <= 1.0e-9);
+    assert!(closure_audit.maximum_abs_energy_residual_j_m2 <= 1.0e-6);
+    assert!(fixed_point_audit.iter().any(|entry| {
+        entry.converged
+            && entry.support.duration_ns() == 60_000_000_000
+            && (1..=96).contains(&entry.completed_iterations)
+    }));
+    assert!(fixed_point_audit.iter().any(|entry| {
+        entry.converged
+            && entry.support.duration_ns() > 60_000_000_000
+            && (1..=96).contains(&entry.completed_iterations)
+    }));
+    assert!(report.output_pass.is_file());
+    assert!(report.output_loss.is_file());
+    assert!(report.manifest_path.is_file());
+    let _ = std::fs::remove_dir_all(run_dir);
+}
+
+#[test]
+#[ignore = "diagnostic-only first covered-parent fixed-point attribution"]
+fn cqr_stage3_first_covered_parent_fixed_point_diagnostic() {
+    let _execution_guard = runner_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let _fixed_point_audit_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_covered_fixed_point_iteration_audit_v1();
+    openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_comparison_test_audit();
+    let run_dir = prepare_explicit_stage3_fixture_dir("cqr_stage3_first_covered_parent", true);
+    let output_dir = run_dir.join("output");
+    let _telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_parent_telemetry_v1(
+        5,
+        std::time::Duration::from_secs(590),
+    )
+    .expect("valid telemetry bound");
+    let result =
+        crate::hillslope::snow_stage3_v11_production_seed::with_explicit_test_owner_seed(|| {
+            execute_hillslope_run_with_runtime_policy(
+                &HillslopeRunRequest {
+                    run_dir: run_dir.clone(),
+                    run_file: PathBuf::from("case.run"),
+                    output_dir,
+                    sidecar_policy: SidecarPolicy::Compat,
+                    legacy_sidecar_discovery: false,
+                    manifest_path: None,
+                },
+                &["openwepp-cli-hill".to_string()],
+                HillslopeRuntimeSelectionPolicy::new(
+                    HillslopeRuntimeSelection::DirectProductionExecutor,
+                    HillslopeDefaultRuntimeActivation::default(),
+                ),
+            )
+        });
+    let fixed_point_audit = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_covered_fixed_point_iteration_audit_v1();
+    let comparison_audit = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_comparison_test_audit();
+    for entry in &comparison_audit {
+        eprintln!("ADAPTIVE_ERROR_DIAGNOSTIC {entry:?}");
+    }
+    for entry in &fixed_point_audit {
+        eprintln!(
+            "COVERED_FP_DIAGNOSTIC support={}..{} width={} iterations={} converged={} receipt_reseal_max_abs_residual_j_m2={:.17e} receipt_reseal_max_abs_temperature_residual_k={:.17e} limit_detail={:?}",
+            entry.support.start_ns().get(),
+            entry.support.end_ns().get(),
+            entry.support.end_ns().get() - entry.support.start_ns().get(),
+            entry.completed_iterations,
+            entry.converged,
+            f64::from_bits(entry.receipt_reseal_max_abs_residual_bits),
+            f64::from_bits(entry.receipt_reseal_max_abs_temperature_residual_bits),
+            entry.limit_detail,
+        );
+    }
+    let error = result.expect_err("five-parent gate must stop at its result-blind bound");
+    assert!(
+        format!("{error:?}").contains("diagnostic completed-parent telemetry stop"),
+        "unexpected stop: {error:?}",
+    );
+    assert!(fixed_point_audit.iter().any(|entry| {
+        entry.support.duration_ns() == 120_000_000_000
+            && entry.converged
+            && entry.completed_iterations <= 64
+    }));
+    assert!(fixed_point_audit.iter().any(|entry| {
+        entry.support.duration_ns() > 120_000_000_000
+            && !entry.converged
+            && entry.completed_iterations == 96
+    }));
+    let _ = std::fs::remove_dir_all(run_dir);
+}
+
+#[test]
+#[ignore = "focused real parent-0 adaptive publication cross-join"]
+fn cqr_stage3_parent0_adaptive_publication_crossjoin() {
+    let _execution_guard = runner_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let run_dir = prepare_explicit_stage3_fixture_dir("cqr_stage3_parent0_crossjoin", true);
+    let output_dir = run_dir.join("output");
+    let _telemetry_guard = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::begin_adaptive_parent_telemetry_v1(
+        1,
+        std::time::Duration::from_secs(30),
+    )
+    .expect("valid telemetry bound");
+    let result =
+        crate::hillslope::snow_stage3_v11_production_seed::with_explicit_test_owner_seed(|| {
+            execute_hillslope_run_with_runtime_policy(
+                &HillslopeRunRequest {
+                    run_dir: run_dir.clone(),
+                    run_file: PathBuf::from("case.run"),
+                    output_dir,
+                    sidecar_policy: SidecarPolicy::Compat,
+                    legacy_sidecar_discovery: false,
+                    manifest_path: None,
+                },
+                &["openwepp-cli-hill".to_string()],
+                HillslopeRuntimeSelectionPolicy::new(
+                    HillslopeRuntimeSelection::DirectProductionExecutor,
+                    HillslopeDefaultRuntimeActivation::default(),
+                ),
+            )
+        });
+    let rows = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_parent_telemetry_v1();
+    let error = result.expect_err("one-parent gate must stop at its result-blind bound");
+    let detail = format!("{error:?}");
+    assert!(
+        detail.contains("diagnostic completed-parent telemetry stop"),
+        "unexpected stop: {detail}",
+    );
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].parent_ordinal, 0);
+    assert_eq!(rows[0].accepted_microstep_count, 24);
+    assert_eq!(rows[0].owner_join_count, 25);
+    assert_eq!(rows[0].publication_support_count, 25);
+    assert_eq!(
+        rows[0].accepted_width_histogram,
+        vec![(60_000_000_000, 23), (420_000_000_000, 1)],
+    );
+    let _ = std::fs::remove_dir_all(run_dir);
 }
 
 #[test]
@@ -739,36 +1101,25 @@ fn cqr_selector_subprocess_probe() {
         return;
     };
     let (result, temp) = execute_scoped_selector_fixture(&format!("cqr_ha08_{case}"));
-    match case.as_str() {
-        "conflict" => assert!(
-            result
-                .expect_err("active and disable selectors must conflict")
-                .to_string()
-                .contains("mutually exclusive")
+    assert!(
+        matches!(
+            case.as_str(),
+            "conflict" | "disable" | "shadow" | "shadow_only" | "profile"
         ),
-        "disable" => assert!(
-            result
-                .expect("explicit disable must run legacy/off")
-                .output_pass
-                .is_file()
-        ),
-        "shadow" => assert!(
-            result
-                .expect_err("active owner and shadow must conflict")
-                .to_string()
-                .contains("mutually exclusive")
-        ),
-        "shadow_only" => {
-            let report = result.expect("shadow fixture must complete");
-            let manifest = std::fs::read_to_string(report.manifest_path).expect("shadow manifest");
-            assert!(manifest.contains("laned_shadow"));
-        }
-        "profile" => {
-            let report = result.expect("active profile fixture must complete");
-            let manifest = std::fs::read_to_string(report.manifest_path).expect("active manifest");
-            assert!(manifest.contains("laned_active"));
-        }
-        _ => panic!("unknown selector probe {case}"),
+        "unknown selector probe {case}"
+    );
+    let error = result.expect_err("retired Lane-D selector must fail closed at the V11 owner");
+    let detail = error.to_string();
+    for required in [
+        "stage3_v11_owner",
+        "constitutive Stage-3/V11 owner is the sole production hydrology/routing path",
+        "retired Lane-D selector",
+        "is not admitted",
+    ] {
+        assert!(
+            detail.contains(required),
+            "selector case {case} missing fail-closed detail {required}: {detail}"
+        );
     }
     let _ = std::fs::remove_dir_all(temp);
 }
@@ -776,7 +1127,7 @@ fn cqr_selector_subprocess_probe() {
 #[test]
 fn cqr_laned_active_selectors_cover_disable_conflict_shadow_and_profile_paths() {
     let test_name = "hillslope::tests::cqr_laned_active_outputs::cqr_selector_subprocess_probe";
-    for case in ["conflict", "disable", "shadow"] {
+    for case in ["conflict", "disable", "shadow", "shadow_only", "profile"] {
         let status = std::process::Command::new(std::env::current_exe().expect("test executable"))
             .args(["--exact", test_name, "--nocapture"])
             .env("CQR_HA08_SELECTOR_CASE", case)

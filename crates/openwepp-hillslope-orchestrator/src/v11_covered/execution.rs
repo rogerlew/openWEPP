@@ -1,4 +1,190 @@
 /// One explicit default-off invocation of the actual `DirectV10` owner stack.
+#[cfg(test)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) struct CoveredCarrierLiveConsumptionRowV1 {
+    pub lane_id: u32,
+    pub forcing_sha256: Digest32,
+    pub reference_specific_humidity_bits: u64,
+    pub snow_specific_humidity_bits: u64,
+    pub shared_specific_humidity_bits: u64,
+    pub snow_vapor_into_surface_bits: u64,
+}
+
+#[cfg(test)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) struct CoveredCarrierCondensationCreditAuditV1 {
+    pub transaction_id: u128,
+    pub hydrology_owner_id: String,
+    pub ofe_id: String,
+    pub tile_id: String,
+    pub surface_id: String,
+    pub amount_bits: u64,
+}
+
+#[cfg(test)]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) struct OpenSnowLiveConsumptionRowV1 {
+    pub lane_id: u32,
+    pub forcing_sha256: Digest32,
+    pub reference_specific_humidity_bits: u64,
+    pub snow_specific_humidity_bits: u64,
+    pub vapor_outward_bits: u64,
+}
+
+#[cfg(test)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub(crate) struct CoveredCarrierLiveConsumptionAuditV1 {
+    pub carrier_rows: Vec<CoveredCarrierLiveConsumptionRowV1>,
+    pub open_snow_rows: Vec<OpenSnowLiveConsumptionRowV1>,
+    pub condensation_credits: Vec<CoveredCarrierCondensationCreditAuditV1>,
+}
+
+#[cfg(test)]
+std::thread_local! {
+    static COVERED_CARRIER_LIVE_CONSUMPTION_AUDIT: std::cell::RefCell<Option<CoveredCarrierLiveConsumptionAuditV1>> = const { std::cell::RefCell::new(None) };
+}
+
+#[cfg(test)]
+pub(crate) fn begin_covered_carrier_live_consumption_audit() {
+    COVERED_CARRIER_LIVE_CONSUMPTION_AUDIT.with(|audit| {
+        *audit.borrow_mut() = Some(CoveredCarrierLiveConsumptionAuditV1::default());
+    });
+}
+
+#[cfg(test)]
+pub(crate) fn take_covered_carrier_live_consumption_audit() -> CoveredCarrierLiveConsumptionAuditV1
+{
+    COVERED_CARRIER_LIVE_CONSUMPTION_AUDIT
+        .with(|audit| audit.borrow_mut().take().unwrap_or_default())
+}
+
+#[cfg(test)]
+fn audit_covered_carrier_live_row(row: CoveredCarrierLiveConsumptionRowV1) {
+    COVERED_CARRIER_LIVE_CONSUMPTION_AUDIT.with(|audit| {
+        if let Some(audit) = audit.borrow_mut().as_mut() {
+            audit.carrier_rows.push(row);
+        }
+    });
+}
+
+#[cfg(test)]
+fn audit_covered_carrier_condensation_credits(
+    credits: &[openwepp_land_surface_energy::CondensationCredit],
+) {
+    COVERED_CARRIER_LIVE_CONSUMPTION_AUDIT.with(|audit| {
+        if let Some(audit) = audit.borrow_mut().as_mut() {
+            audit
+                .condensation_credits
+                .extend(
+                    credits
+                        .iter()
+                        .map(|credit| CoveredCarrierCondensationCreditAuditV1 {
+                            transaction_id: credit.transaction_id.0,
+                            hydrology_owner_id: credit.hydrology_owner_id.as_str().to_owned(),
+                            ofe_id: credit.ofe_id.as_str().to_owned(),
+                            tile_id: credit.tile_id.as_str().to_owned(),
+                            surface_id: credit.surface_id.as_str().to_owned(),
+                            amount_bits: credit.amount_kg_m2_stand_ground.to_bits(),
+                        }),
+                );
+        }
+    });
+}
+
+#[cfg(not(test))]
+fn audit_covered_carrier_condensation_credits(
+    _: &[openwepp_land_surface_energy::CondensationCredit],
+) {
+}
+
+fn shared_carrier_specific_humidity_v1(
+    surfaces: &[CarrierSurface],
+) -> Result<f64, DirectV11RealConsumerError> {
+    let mut denominator = 0.0;
+    let mut numerator = 0.0;
+    let mut common_active_bits = None;
+    let mut equal_active_nodes = true;
+    for surface in surfaces {
+        let conductance = surface.vapor_conductance_m_s;
+        if !conductance.is_finite()
+            || conductance < 0.0
+            || !surface.specific_humidity.is_finite()
+            || !(0.0..=1.0).contains(&surface.specific_humidity)
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered carrier humidity conductance domain",
+            ));
+        }
+        if conductance.to_bits() == 0.0_f64.to_bits() {
+            continue;
+        }
+        denominator += conductance;
+        numerator += conductance * surface.specific_humidity;
+        match common_active_bits {
+            None => common_active_bits = Some(surface.specific_humidity.to_bits()),
+            Some(bits) => equal_active_nodes &= bits == surface.specific_humidity.to_bits(),
+        }
+    }
+    if !denominator.is_finite() || denominator <= 0.0 || !numerator.is_finite() {
+        return Err(DirectV11RealConsumerError::Identity(
+            "covered carrier humidity denominator",
+        ));
+    }
+    if equal_active_nodes {
+        return Ok(f64::from_bits(common_active_bits.ok_or(
+            DirectV11RealConsumerError::Identity("covered carrier active humidity set"),
+        )?));
+    }
+    let shared = numerator / denominator;
+    if !shared.is_finite() || !(0.0..=1.0).contains(&shared) {
+        return Err(DirectV11RealConsumerError::Identity(
+            "covered carrier shared humidity domain",
+        ));
+    }
+    Ok(shared)
+}
+
+#[cfg(test)]
+mod shared_carrier_specific_humidity_tests {
+    use super::*;
+
+    fn surface(q: f64, conductance: f64) -> CarrierSurface {
+        CarrierSurface {
+            temperature_k: 273.15,
+            specific_humidity: q,
+            heat_conductance_m_s: conductance,
+            vapor_conductance_m_s: conductance,
+        }
+    }
+
+    #[test]
+    fn equal_active_nodes_are_exact_and_active_one_bit_poison_uses_weighted_solve() {
+        let q = 0.003_757_503_415_507_667_5_f64;
+        let inactive_poison_q = f64::from_bits(q.to_bits() + 9);
+        let exact = shared_carrier_specific_humidity_v1(&[
+            surface(q, 1.0),
+            surface(inactive_poison_q, 0.0),
+            surface(q, 3.0),
+        ])
+        .expect("equal active-node humidity");
+        assert_eq!(exact.to_bits(), q.to_bits());
+
+        let active_poison_q = f64::from_bits(q.to_bits() + 1);
+        let weighted = shared_carrier_specific_humidity_v1(&[
+            surface(q, 1.0),
+            surface(inactive_poison_q, 0.0),
+            surface(active_poison_q, 1.0),
+        ])
+        .expect("one-bit active-node weighted humidity");
+        let expected = (q + active_poison_q) / 2.0;
+        assert_eq!(weighted.to_bits(), expected.to_bits());
+        assert_ne!(weighted.to_bits(), q.to_bits());
+
+        assert!(shared_carrier_specific_humidity_v1(&[surface(q, 0.0), surface(q, 0.0),]).is_err());
+        assert!(shared_carrier_specific_humidity_v1(&[surface(q, -f64::MIN_POSITIVE)]).is_err());
+    }
+}
+
 #[derive(Clone)]
 pub struct DirectV11RealConsumerStack<'a> {
     pub beginning: DirectV10RealConsumerShadow,
@@ -66,19 +252,27 @@ pub(crate) fn validate_precipitation_producer_manifest(
         ));
     }
     for expected in manifest {
-        let matching = set.parcels.iter().filter(|parcel| {
-            parcel.destination_topology_index == expected.destination_topology_index
-                && parcel.source == expected.source
-                && parcel.semantic_receipt_ordinal == expected.semantic_receipt_ordinal
-        }).collect::<Vec<_>>();
+        let matching = set
+            .parcels
+            .iter()
+            .filter(|parcel| {
+                parcel.destination_topology_index == expected.destination_topology_index
+                    && parcel.source == expected.source
+                    && parcel.semantic_receipt_ordinal == expected.semantic_receipt_ordinal
+            })
+            .collect::<Vec<_>>();
         if expected.mass_kg_m2_tile_ground == 0.0 {
             if !matching.is_empty() {
-                return Err(DirectV11RealConsumerError::Identity("zero precipitation producer route parcel"));
+                return Err(DirectV11RealConsumerError::Identity(
+                    "zero precipitation producer route parcel",
+                ));
             }
             continue;
         }
         let [parcel] = matching.as_slice() else {
-            return Err(DirectV11RealConsumerError::Identity("precipitation producer route parcel cardinality"));
+            return Err(DirectV11RealConsumerError::Identity(
+                "precipitation producer route parcel cardinality",
+            ));
         };
         let provider_matches = parcel.enthalpy_provider == expected.enthalpy_provider;
         if parcel.mass_kg_m2_tile_ground.to_bits() != expected.mass_kg_m2_tile_ground.to_bits()
@@ -86,7 +280,9 @@ pub(crate) fn validate_precipitation_producer_manifest(
             || parcel.producer_beginning_state_sha256 != expected.producer_beginning_state_sha256
             || !provider_matches
         {
-            return Err(DirectV11RealConsumerError::Identity("precipitation producer route parcel manifest"));
+            return Err(DirectV11RealConsumerError::Identity(
+                "precipitation producer route parcel manifest",
+            ));
         }
     }
     Ok(())
@@ -96,8 +292,7 @@ const STAGE3_SNOW_DENSITY_KG_M3: f64 = 100.0;
 
 struct LanePrecipitationBuildContext<'a, 'stack> {
     stack: &'a DirectV11SnowCoveredRealConsumerStack<'stack>,
-    envelope: &'a UncommittedCoveredV8OwnerEnvelope,
-    interval_s: f64,
+    canopy_releases: &'a crate::land_surface_energy_shadow::FixedCapCanopyReleasesByDestination,
     support: openwepp_coupled_time::TimeSupport,
     lane_id: u32,
     ofe_id: OfeId,
@@ -133,37 +328,52 @@ fn append_covered_liquid_routes(
     parcels: &mut Vec<Stage3PrecipitationPhaseParcelV1>,
 ) -> Result<(), DirectV11RealConsumerError> {
     let key = (destination.ofe_id.clone(), destination.tile_id.clone());
-    let releases = context
-        .envelope
-        .fixed_cap_canopy_releases_by_destination(context.interval_s)
-        .map_err(|_| DirectV11RealConsumerError::Identity("fixed-cap precipitation release"))?;
-    let (release, source_identity) = releases.get(&key).ok_or(
-        DirectV11RealConsumerError::Identity("covered precipitation release destination"),
-    )?;
+    let (release, source_identity) =
+        context
+            .canopy_releases
+            .get(&key)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "covered precipitation release destination",
+            ))?;
     for (source, amount) in [
-        (Stage3PrecipitationSourceV1::VegetationTerminalThroughfall, &release.throughfall),
-        (Stage3PrecipitationSourceV1::VegetationTerminalInitialDrainage, &release.initial_drainage),
-        (Stage3PrecipitationSourceV1::VegetationTerminalSecondDrainage, &release.second_drainage),
-        (Stage3PrecipitationSourceV1::VegetationTerminalStemflow, &release.stemflow),
+        (
+            Stage3PrecipitationSourceV1::VegetationTerminalThroughfall,
+            &release.throughfall,
+        ),
+        (
+            Stage3PrecipitationSourceV1::VegetationTerminalInitialDrainage,
+            &release.initial_drainage,
+        ),
+        (
+            Stage3PrecipitationSourceV1::VegetationTerminalSecondDrainage,
+            &release.second_drainage,
+        ),
+        (
+            Stage3PrecipitationSourceV1::VegetationTerminalStemflow,
+            &release.stemflow,
+        ),
     ] {
-        append_precipitation_parcel(parcels, Stage3PrecipitationPhaseParcelV1 {
-            support: context.support,
-            lane_id: context.lane_id,
-            destination_topology_index: destination.topology_index,
-            destination_ofe_id: destination.ofe_id.clone(),
-            destination_tile_id: destination.tile_id.clone(),
-            phase: Stage3PrecipitationPhaseV1::Liquid,
-            source,
-            semantic_receipt_ordinal: 0,
-            mass_kg_m2_tile_ground: amount.mass_kg_m2_tile_ground,
-            enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::SpecificEnthalpy {
-                specific_enthalpy_j_kg: amount.specific_liquid_enthalpy_j_kg,
-                provider_receipt_sha256: *source_identity,
+        append_precipitation_parcel(
+            parcels,
+            Stage3PrecipitationPhaseParcelV1 {
+                support: context.support,
+                lane_id: context.lane_id,
+                destination_topology_index: destination.topology_index,
+                destination_ofe_id: destination.ofe_id.clone(),
+                destination_tile_id: destination.tile_id.clone(),
+                phase: Stage3PrecipitationPhaseV1::Liquid,
+                source,
+                semantic_receipt_ordinal: 0,
+                mass_kg_m2_tile_ground: amount.mass_kg_m2_tile_ground,
+                enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::SpecificEnthalpy {
+                    specific_enthalpy_j_kg: amount.specific_liquid_enthalpy_j_kg,
+                    provider_receipt_sha256: *source_identity,
+                },
+                source_identity_sha256: *source_identity,
+                producer_beginning_state_sha256: context.beginning_vegetation_state_sha256,
+                receipt_sha256: Digest32::zero(),
             },
-            source_identity_sha256: *source_identity,
-            producer_beginning_state_sha256: context.beginning_vegetation_state_sha256,
-            receipt_sha256: Digest32::zero(),
-        })?;
+        )?;
     }
     Ok(())
 }
@@ -173,36 +383,55 @@ fn append_open_raw_rain_routes(
     destination: &Stage3PrecipitationDestinationV1,
     parcels: &mut Vec<Stage3PrecipitationPhaseParcelV1>,
 ) -> Result<(), DirectV11RealConsumerError> {
-    for (ordinal, atmospheric) in context.stack.interval.lse_forcing.precipitation_parcels.iter()
-        .filter(|parcel| parcel.destination_ofe_id == destination.ofe_id
-            && parcel.destination_tile_id == destination.tile_id).enumerate()
+    for (ordinal, atmospheric) in context
+        .stack
+        .interval
+        .lse_forcing
+        .precipitation_parcels
+        .iter()
+        .filter(|parcel| {
+            parcel.destination_ofe_id == destination.ofe_id
+                && parcel.destination_tile_id == destination.tile_id
+        })
+        .enumerate()
     {
-        let source_identity = digest_bytes(&serde_json::to_vec(atmospheric).map_err(|_| {
-            DirectV11RealConsumerError::Identity("open rain source framing")
-        })?);
-        append_precipitation_parcel(parcels, Stage3PrecipitationPhaseParcelV1 {
-            support: context.support,
-            lane_id: context.lane_id,
-            destination_topology_index: destination.topology_index,
-            destination_ofe_id: destination.ofe_id.clone(),
-            destination_tile_id: destination.tile_id.clone(),
-            phase: Stage3PrecipitationPhaseV1::Liquid,
-            source: Stage3PrecipitationSourceV1::OpenRawRain,
-            semantic_receipt_ordinal: u32::try_from(ordinal).map_err(|_| {
-                DirectV11RealConsumerError::Identity("open rain semantic ordinal")
-            })?,
-            mass_kg_m2_tile_ground: atmospheric.amount_kg_m2_destination_tile_ground,
-            enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::SpecificEnthalpy {
-                specific_enthalpy_j_kg: atmospheric.specific_liquid_enthalpy_j_kg.ok_or(
-                    DirectV11RealConsumerError::Identity("open rain enthalpy provider"))?,
-                provider_receipt_sha256: source_identity,
+        let source_identity = digest_bytes(
+            &serde_json::to_vec(atmospheric)
+                .map_err(|_| DirectV11RealConsumerError::Identity("open rain source framing"))?,
+        );
+        append_precipitation_parcel(
+            parcels,
+            Stage3PrecipitationPhaseParcelV1 {
+                support: context.support,
+                lane_id: context.lane_id,
+                destination_topology_index: destination.topology_index,
+                destination_ofe_id: destination.ofe_id.clone(),
+                destination_tile_id: destination.tile_id.clone(),
+                phase: Stage3PrecipitationPhaseV1::Liquid,
+                source: Stage3PrecipitationSourceV1::OpenRawRain,
+                semantic_receipt_ordinal: u32::try_from(ordinal).map_err(|_| {
+                    DirectV11RealConsumerError::Identity("open rain semantic ordinal")
+                })?,
+                mass_kg_m2_tile_ground: atmospheric.amount_kg_m2_destination_tile_ground,
+                enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::SpecificEnthalpy {
+                    specific_enthalpy_j_kg: atmospheric.specific_liquid_enthalpy_j_kg.ok_or(
+                        DirectV11RealConsumerError::Identity("open rain enthalpy provider"),
+                    )?,
+                    provider_receipt_sha256: source_identity,
+                },
+                source_identity_sha256: source_identity,
+                producer_beginning_state_sha256: digest32_from_lower_hex(
+                    atmospheric
+                        .source_state_sha256
+                        .as_ref()
+                        .ok_or(DirectV11RealConsumerError::Identity(
+                            "open rain source-state identity",
+                        ))?
+                        .as_str(),
+                )?,
+                receipt_sha256: Digest32::zero(),
             },
-            source_identity_sha256: source_identity,
-            producer_beginning_state_sha256: digest32_from_lower_hex(atmospheric
-                .source_state_sha256.as_ref().ok_or(DirectV11RealConsumerError::Identity(
-                    "open rain source-state identity"))?.as_str())?,
-            receipt_sha256: Digest32::zero(),
-        })?;
+        )?;
     }
     Ok(())
 }
@@ -212,26 +441,29 @@ fn build_destination_parcels(
     destination: &Stage3PrecipitationDestinationV1,
 ) -> Result<Vec<Stage3PrecipitationPhaseParcelV1>, DirectV11RealConsumerError> {
     let mut parcels = Vec::new();
-    append_precipitation_parcel(&mut parcels, Stage3PrecipitationPhaseParcelV1 {
-        support: context.support,
-        lane_id: context.lane_id,
-        destination_topology_index: destination.topology_index,
-        destination_ofe_id: destination.ofe_id.clone(),
-        destination_tile_id: destination.tile_id.clone(),
-        phase: Stage3PrecipitationPhaseV1::Solid,
-        source: Stage3PrecipitationSourceV1::AtmosphericGroundSnow,
-        semantic_receipt_ordinal: 0,
-        mass_kg_m2_tile_ground: context.forcing.forcing.snowfall_m * STAGE3_SNOW_DENSITY_KG_M3,
-        enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::Temperature {
-            temperature_k: context.temperature_k,
-            reference_temperature_k: 273.16,
-            specific_heat_j_kg_k: context.solid_specific_heat_j_kg_k,
-            provider_receipt_sha256: context.forcing_identity_sha256,
+    append_precipitation_parcel(
+        &mut parcels,
+        Stage3PrecipitationPhaseParcelV1 {
+            support: context.support,
+            lane_id: context.lane_id,
+            destination_topology_index: destination.topology_index,
+            destination_ofe_id: destination.ofe_id.clone(),
+            destination_tile_id: destination.tile_id.clone(),
+            phase: Stage3PrecipitationPhaseV1::Solid,
+            source: Stage3PrecipitationSourceV1::AtmosphericGroundSnow,
+            semantic_receipt_ordinal: 0,
+            mass_kg_m2_tile_ground: context.forcing.forcing.snowfall_m * STAGE3_SNOW_DENSITY_KG_M3,
+            enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::Temperature {
+                temperature_k: context.temperature_k,
+                reference_temperature_k: 273.16,
+                specific_heat_j_kg_k: context.solid_specific_heat_j_kg_k,
+                provider_receipt_sha256: context.forcing_identity_sha256,
+            },
+            source_identity_sha256: context.forcing_identity_sha256,
+            producer_beginning_state_sha256: context.forcing_identity_sha256,
+            receipt_sha256: Digest32::zero(),
         },
-        source_identity_sha256: context.forcing_identity_sha256,
-        producer_beginning_state_sha256: context.forcing_identity_sha256,
-        receipt_sha256: Digest32::zero(),
-    })?;
+    )?;
     if destination.canopy_covered {
         append_covered_liquid_routes(context, destination, &mut parcels)?;
     } else {
@@ -245,9 +477,17 @@ fn append_open_producer_manifest(
     destination: &Stage3PrecipitationDestinationV1,
     manifest: &mut Vec<PrecipitationProducerManifestRowV1>,
 ) -> Result<(), DirectV11RealConsumerError> {
-    for (ordinal, atmospheric) in context.stack.interval.lse_forcing.precipitation_parcels.iter()
-        .filter(|parcel| parcel.destination_ofe_id == destination.ofe_id
-            && parcel.destination_tile_id == destination.tile_id).enumerate()
+    for (ordinal, atmospheric) in context
+        .stack
+        .interval
+        .lse_forcing
+        .precipitation_parcels
+        .iter()
+        .filter(|parcel| {
+            parcel.destination_ofe_id == destination.ofe_id
+                && parcel.destination_tile_id == destination.tile_id
+        })
+        .enumerate()
     {
         let source_identity = digest_bytes(&serde_json::to_vec(atmospheric).map_err(|_| {
             DirectV11RealConsumerError::Identity("open rain producer manifest framing")
@@ -261,13 +501,20 @@ fn append_open_producer_manifest(
             mass_kg_m2_tile_ground: atmospheric.amount_kg_m2_destination_tile_ground,
             enthalpy_provider: Stage3PrecipitationEnthalpyProviderV1::SpecificEnthalpy {
                 specific_enthalpy_j_kg: atmospheric.specific_liquid_enthalpy_j_kg.ok_or(
-                    DirectV11RealConsumerError::Identity("open rain producer manifest enthalpy"))?,
+                    DirectV11RealConsumerError::Identity("open rain producer manifest enthalpy"),
+                )?,
                 provider_receipt_sha256: source_identity,
             },
             source_identity_sha256: source_identity,
-            producer_beginning_state_sha256: digest32_from_lower_hex(atmospheric
-                .source_state_sha256.as_ref().ok_or(DirectV11RealConsumerError::Identity(
-                    "open rain producer manifest state"))?.as_str())?,
+            producer_beginning_state_sha256: digest32_from_lower_hex(
+                atmospheric
+                    .source_state_sha256
+                    .as_ref()
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "open rain producer manifest state",
+                    ))?
+                    .as_str(),
+            )?,
         });
     }
     Ok(())
@@ -279,18 +526,30 @@ fn append_covered_producer_manifest(
     manifest: &mut Vec<PrecipitationProducerManifestRowV1>,
 ) -> Result<(), DirectV11RealConsumerError> {
     let key = (destination.ofe_id.clone(), destination.tile_id.clone());
-    let releases = context
-        .envelope
-        .fixed_cap_canopy_releases_by_destination(context.interval_s)
-        .map_err(|_| DirectV11RealConsumerError::Identity("fixed-cap precipitation release"))?;
-    let (release, source_identity) = releases.get(&key).ok_or(
-        DirectV11RealConsumerError::Identity("covered precipitation producer manifest destination"),
-    )?;
+    let (release, source_identity) =
+        context
+            .canopy_releases
+            .get(&key)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "covered precipitation producer manifest destination",
+            ))?;
     for (source, amount) in [
-        (Stage3PrecipitationSourceV1::VegetationTerminalThroughfall, &release.throughfall),
-        (Stage3PrecipitationSourceV1::VegetationTerminalInitialDrainage, &release.initial_drainage),
-        (Stage3PrecipitationSourceV1::VegetationTerminalSecondDrainage, &release.second_drainage),
-        (Stage3PrecipitationSourceV1::VegetationTerminalStemflow, &release.stemflow),
+        (
+            Stage3PrecipitationSourceV1::VegetationTerminalThroughfall,
+            &release.throughfall,
+        ),
+        (
+            Stage3PrecipitationSourceV1::VegetationTerminalInitialDrainage,
+            &release.initial_drainage,
+        ),
+        (
+            Stage3PrecipitationSourceV1::VegetationTerminalSecondDrainage,
+            &release.second_drainage,
+        ),
+        (
+            Stage3PrecipitationSourceV1::VegetationTerminalStemflow,
+            &release.stemflow,
+        ),
     ] {
         manifest.push(PrecipitationProducerManifestRowV1 {
             destination_topology_index: destination.topology_index,
@@ -343,31 +602,55 @@ fn build_lane_precipitation_set(
 ) -> Result<Stage3PrecipitationPhaseParcelSetV1, DirectV11RealConsumerError> {
     let mut destinations = Vec::new();
     let mut parcels = Vec::new();
-    for record in context.stack.beginning.inner.surface_configuration.records.iter()
+    for record in context
+        .stack
+        .beginning
+        .inner
+        .surface_configuration
+        .records
+        .iter()
         .filter(|record| record.key.ofe_id == context.ofe_id)
     {
-        let topology_index = u32::try_from(destinations.len()).map_err(|_| {
-            DirectV11RealConsumerError::Identity("precipitation topology width")
-        })?;
+        let topology_index = u32::try_from(destinations.len())
+            .map_err(|_| DirectV11RealConsumerError::Identity("precipitation topology width"))?;
         let key = (record.key.ofe_id.clone(), record.key.tile_id.clone());
         let destination = Stage3PrecipitationDestinationV1 {
             topology_index,
             ofe_id: record.key.ofe_id.clone(),
             tile_id: record.key.tile_id.clone(),
             fraction_of_ofe: record.tile_fraction,
-            canopy_covered: matches!(context.stack.snow_surface_forcing_by_destination.get(&key),
-                Some(SealedStage3TileBoundaryForcingV1::V11CanopyCovered(_))),
-            destination_identity_sha256: digest_bytes(&serde_json::to_vec(record).map_err(|_| {
-                DirectV11RealConsumerError::Identity("precipitation topology framing")
-            })?),
+            canopy_covered: matches!(
+                context.stack.snow_surface_forcing_by_destination.get(&key),
+                Some(SealedStage3TileBoundaryForcingV1::V11CanopyCovered(_))
+            ),
+            destination_identity_sha256: digest_bytes(&serde_json::to_vec(record).map_err(
+                |_| DirectV11RealConsumerError::Identity("precipitation topology framing"),
+            )?),
         };
         parcels.extend(build_destination_parcels(context, &destination)?);
         destinations.push(destination);
     }
-    parcels.sort_by_key(|parcel| (parcel.lane_id, parcel.destination_topology_index,
-        parcel.phase, parcel.source, parcel.semantic_receipt_ordinal));
-    let topology_identity_sha256 = digest_bytes(&destinations.iter().flat_map(|destination|
-        destination.destination_identity_sha256.as_bytes().iter().copied()).collect::<Vec<_>>());
+    parcels.sort_by_key(|parcel| {
+        (
+            parcel.lane_id,
+            parcel.destination_topology_index,
+            parcel.phase,
+            parcel.source,
+            parcel.semantic_receipt_ordinal,
+        )
+    });
+    let topology_identity_sha256 = digest_bytes(
+        &destinations
+            .iter()
+            .flat_map(|destination| {
+                destination
+                    .destination_identity_sha256
+                    .as_bytes()
+                    .iter()
+                    .copied()
+            })
+            .collect::<Vec<_>>(),
+    );
     Stage3PrecipitationPhaseParcelSetV1 {
         schema_version: 1,
         support: context.support,
@@ -379,7 +662,9 @@ fn build_lane_precipitation_set(
         destinations,
         parcels,
         receipt_sha256: Digest32::zero(),
-    }.seal().map_err(|error| DirectV11RealConsumerError::from_stage3_physical_custody(&error))
+    }
+    .seal()
+    .map_err(|error| DirectV11RealConsumerError::from_stage3_physical_custody(&error))
 }
 
 /// Explicit covered lower-boundary adopter for the V11 imported transaction.
@@ -400,8 +685,7 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     pub day_index: usize,
     pub interval_index: usize,
     pub finalize_wb14_parent_interval: bool,
-    pub wb14_coupled_child_binding:
-        crate::direct_runtime::DirectWb14CoupledChildBindingV1,
+    pub wb14_coupled_child_binding: crate::direct_runtime::DirectWb14CoupledChildBindingV1,
     terminal_endpoint_mode: bool,
     ending: Option<DirectV10RealConsumerShadow>,
     ending_stage3_by_lane: Option<BTreeMap<u32, DirectSnowStage3PersistentState>>,
@@ -412,9 +696,10 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     last_component_carrier_receipts:
         Option<BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>>,
     last_snow_soil_heat_receipts: Option<BTreeMap<u32, SnowSoilHeatReceiptV1>>,
-    last_terminal_snow_soil_heat_receipts: Option<
-        BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1>,
-    >,
+    last_terminal_snow_soil_heat_receipts:
+        Option<BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1>>,
+    last_adaptive_terminal_snow_soil_trial_receipts:
+        Option<BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1>>,
     last_precipitation_parcel_sets: Option<BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>>,
     last_physical_outcome_ledgers:
         Option<BTreeMap<u32, physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1>>,
@@ -426,6 +711,34 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     last_wb14_parent_receipt_set_sha256: Option<String>,
     last_wb14_child_replay_bytes: Option<Vec<u8>>,
     last_wb14_parent_replay_bytes: Option<Vec<u8>>,
+    ordinary_physical_reuse_seed: Option<CoveredOrdinaryPhysicalReuseSeedV1>,
+    terminal_physical_reuse_seed: Option<CoveredTerminalPhysicalReuseSeedV1>,
+    terminal_publication_posture: TerminalPublicationPostureV1,
+    last_publication_retained: Option<bool>,
+}
+
+#[derive(Clone)]
+struct CoveredOrdinaryPhysicalReuseSeedV1 {
+    physical_authority: CoveredOrdinaryPhysicalAuthorityV1,
+    envelope: UncommittedCoveredV8OwnerEnvelope,
+}
+
+#[derive(Clone)]
+struct CoveredTerminalPhysicalReuseSeedV1 {
+    physical_authority_sha256: Digest32,
+    envelope: UncommittedCoveredV8OwnerEnvelope,
+    compositional_envelopes: Vec<UncommittedCoveredV8OwnerEnvelope>,
+    ending_snow_owner_bytes: Vec<u8>,
+    soil_top_boundary_credits: Vec<SoilThermalTopBoundaryCreditV1>,
+}
+
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+enum TerminalPublicationPostureV1 {
+    #[default]
+    RetainFinal,
+    DeferProvisional {
+        pre_event_authority_sha256: Digest32,
+    },
 }
 
 /// Fully accepted positive-duration terminal endpoint.  Every field is
@@ -433,20 +746,224 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
 /// not rerun Stage 3, LSE, or probe/root physics.
 #[derive(Clone)]
 pub(crate) struct PrecomputedTerminalAcceptedEndpointV1 {
-    pub carrier_phase: CoveredCarrierPhaseResultV1,
+    pub carrier_phase: Box<CoveredCarrierPhaseResultV1>,
+    /// Ordered exact physical carrier children whose supports compose the
+    /// enclosing accepted slab. The final member is `carrier_phase`.
+    pub carrier_phase_chain: Vec<CoveredCarrierPhaseResultV1>,
     pub ending_stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
     pub terminal_events: BTreeMap<u32, DirectSnowTerminalEventResult>,
+    /// Actual vapor transfer on the final physical child for each event lane.
+    /// The enclosing event aggregate remains in `terminal_events`.
+    pub final_child_actual_vapor_to_canopy_air_kg_m2_by_lane: BTreeMap<u32, f64>,
     pub terminal_snow_soil_trial_receipts:
         BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1>,
+    /// Ordered exact physical-child receipts whose supports compose the
+    /// enclosing accepted slab. The final member is retained separately in
+    /// `terminal_snow_soil_trial_receipts` as the limiting-boundary lineage.
+    pub terminal_snow_soil_trial_receipt_chains_by_lane:
+        BTreeMap<u32, Vec<physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1>>,
     /// Parcels already pending at the positive-support beginning.  Newly
     /// produced event parcels belong to the later zero-duration transition.
     pub beginning_pending_terminal_parcels:
         BTreeMap<Digest32, crate::snow_stage3_v11_attachment::DirectSnowStage3V11TerminalParcel>,
+    /// Coupled-time acceptance envelope. This is intentionally distinct from
+    /// the final physical child's carrier/trial support.
+    pub accepted_envelope_support: openwepp_coupled_time::TimeSupport,
     pub accepted_slab_sha256: Digest32,
+    pub beginning_owner_set_sha256: Digest32,
+    /// Exact unpublished WB14 trial authorization retained across the later
+    /// accepted-slab publication rebind.
+    pub wb14_replay_trial_sha256: Digest32,
+    pub wb14_replay_beginning_owner_set_sha256: Digest32,
     pub wb14_child_receipt_set_sha256: Digest32,
     pub wb14_parent_receipt_set_sha256: Option<Digest32>,
+    pub pre_event_authority_sha256: Digest32,
 }
 
+pub(crate) fn precomputed_terminal_pre_event_authority_sha256_v1(
+    endpoint: &PrecomputedTerminalAcceptedEndpointV1,
+) -> Result<Digest32, DirectV11RealConsumerError> {
+    let physical_authority = precomputed_terminal_physical_authority_sha256_v1(endpoint)?;
+    let parent_receipt = endpoint
+        .wb14_parent_receipt_set_sha256
+        .unwrap_or_else(|| digest_bytes(b"no-parent-receipt"));
+    framed_sha256(
+        "stage3-v11-terminal-pre-event-publication-authority-v2",
+        &[
+            FramedField {
+                tag: "physical_authority",
+                value: physical_authority.as_bytes(),
+            },
+            FramedField {
+                tag: "accepted_slab",
+                value: endpoint.accepted_slab_sha256.as_bytes(),
+            },
+            FramedField {
+                tag: "wb14_child_receipt_set",
+                value: endpoint.wb14_child_receipt_set_sha256.as_bytes(),
+            },
+            FramedField {
+                tag: "wb14_parent_receipt_set",
+                value: parent_receipt.as_bytes(),
+            },
+        ],
+    )
+    .map_err(|_| {
+        DirectV11RealConsumerError::Identity("terminal pre-event publication authority framing")
+    })
+}
+
+fn precomputed_terminal_physical_authority_sha256_v1(
+    endpoint: &PrecomputedTerminalAcceptedEndpointV1,
+) -> Result<Digest32, DirectV11RealConsumerError> {
+    if endpoint.carrier_phase_chain.is_empty() {
+        return Err(DirectV11RealConsumerError::Identity(
+            "terminal pre-event empty carrier chain",
+        ));
+    }
+    let mut carrier_chain_evidence = Vec::new();
+    carrier_chain_evidence.extend_from_slice(
+        &u64::try_from(endpoint.carrier_phase_chain.len())
+            .map_err(|_| {
+                DirectV11RealConsumerError::Identity(
+                    "terminal pre-event carrier-chain count width",
+                )
+            })?
+            .to_be_bytes(),
+    );
+    for phase in &endpoint.carrier_phase_chain {
+        let support = phase.transition.boundary.support;
+        carrier_chain_evidence.extend_from_slice(&support.start_ns().get().to_be_bytes());
+        carrier_chain_evidence.extend_from_slice(&support.end_ns().get().to_be_bytes());
+        carrier_chain_evidence.extend_from_slice(
+            phase.transition.probe_child_identity.receipt_sha256.as_bytes(),
+        );
+        carrier_chain_evidence.extend_from_slice(
+            phase.ending_candidates.joint().receipt_sha256().as_bytes(),
+        );
+        for (lane_id, set) in &phase.precipitation_sets {
+            carrier_chain_evidence.extend_from_slice(&lane_id.to_be_bytes());
+            carrier_chain_evidence.extend_from_slice(set.receipt_sha256.as_bytes());
+        }
+    }
+    let mut lane_evidence = Vec::new();
+    for (lane_id, event) in &endpoint.terminal_events {
+        let ending = endpoint.ending_stage3_by_lane.get(lane_id).ok_or(
+            DirectV11RealConsumerError::Identity("terminal pre-event ending lane"),
+        )?;
+        let trial = endpoint
+            .terminal_snow_soil_trial_receipts
+            .get(lane_id)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "terminal pre-event trial lane",
+            ))?;
+        lane_evidence.extend_from_slice(&lane_id.to_be_bytes());
+        lane_evidence.extend_from_slice(
+            digest_bytes(&serde_json::to_vec(event).map_err(|_| {
+                DirectV11RealConsumerError::Identity("terminal pre-event event bytes")
+            })?)
+            .as_bytes(),
+        );
+        lane_evidence.extend_from_slice(
+            digest_bytes(&Wb11HydrologyKernel::serialize_stage3_persistent_state(
+                ending,
+            )?)
+            .as_bytes(),
+        );
+        lane_evidence.extend_from_slice(trial.receipt_sha256.as_bytes());
+        lane_evidence.extend_from_slice(
+            &endpoint
+                .final_child_actual_vapor_to_canopy_air_kg_m2_by_lane
+                .get(lane_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "terminal pre-event final-child vapor lane",
+                ))?
+                .to_bits()
+                .to_be_bytes(),
+        );
+        let chain = endpoint
+            .terminal_snow_soil_trial_receipt_chains_by_lane
+            .get(lane_id)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "terminal pre-event trial chain lane",
+            ))?;
+        lane_evidence.extend_from_slice(&(chain.len() as u64).to_be_bytes());
+        for receipt in chain {
+            lane_evidence.extend_from_slice(receipt.receipt_sha256.as_bytes());
+        }
+    }
+    let mut pending_evidence = Vec::new();
+    for (digest, parcel) in &endpoint.beginning_pending_terminal_parcels {
+        pending_evidence.extend_from_slice(digest.as_bytes());
+        pending_evidence.extend_from_slice(parcel.parcel_digest.as_bytes());
+    }
+    let support = endpoint.carrier_phase.transition.boundary.support;
+    let accepted_support = endpoint.accepted_envelope_support;
+    framed_sha256(
+        "stage3-v11-terminal-pre-event-physical-authority-v1",
+        &[
+            FramedField {
+                tag: "support_start",
+                value: &support.start_ns().get().to_be_bytes(),
+            },
+            FramedField {
+                tag: "support_end",
+                value: &support.end_ns().get().to_be_bytes(),
+            },
+            FramedField {
+                tag: "accepted_support_start",
+                value: &accepted_support.start_ns().get().to_be_bytes(),
+            },
+            FramedField {
+                tag: "accepted_support_end",
+                value: &accepted_support.end_ns().get().to_be_bytes(),
+            },
+            FramedField {
+                tag: "beginning_owner_set",
+                value: endpoint.beginning_owner_set_sha256.as_bytes(),
+            },
+            FramedField {
+                tag: "carrier_ending_joint",
+                value: endpoint
+                    .carrier_phase
+                    .ending_candidates
+                    .joint()
+                    .receipt_sha256()
+                    .as_bytes(),
+            },
+            FramedField {
+                tag: "carrier_child_receipt",
+                value: endpoint
+                    .carrier_phase
+                    .transition
+                    .probe_child_identity
+                    .receipt_sha256
+                    .as_bytes(),
+            },
+            FramedField {
+                tag: "carrier_chain",
+                value: &carrier_chain_evidence,
+            },
+            FramedField {
+                tag: "wb14_replay_trial",
+                value: endpoint.wb14_replay_trial_sha256.as_bytes(),
+            },
+            FramedField {
+                tag: "wb14_replay_beginning_owner_set",
+                value: endpoint.wb14_replay_beginning_owner_set_sha256.as_bytes(),
+            },
+            FramedField {
+                tag: "lanes",
+                value: &lane_evidence,
+            },
+            FramedField {
+                tag: "pending_parcels",
+                value: &pending_evidence,
+            },
+        ],
+    )
+    .map_err(|_| DirectV11RealConsumerError::Identity("terminal pre-event authority seal"))
+}
 
 pub struct DirectV11SnowCoveredStackInputs<'a> {
     pub interval: &'a DirectV11SnowCoveredSegmentInput,
@@ -460,8 +977,7 @@ pub struct DirectV11SnowCoveredStackInputs<'a> {
     pub day_index: usize,
     pub interval_index: usize,
     pub finalize_wb14_parent_interval: bool,
-    pub wb14_coupled_child_binding:
-        crate::direct_runtime::DirectWb14CoupledChildBindingV1,
+    pub wb14_coupled_child_binding: crate::direct_runtime::DirectWb14CoupledChildBindingV1,
 }
 
 impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
@@ -492,6 +1008,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             last_component_carrier_receipts: None,
             last_snow_soil_heat_receipts: None,
             last_terminal_snow_soil_heat_receipts: None,
+            last_adaptive_terminal_snow_soil_trial_receipts: None,
             last_precipitation_parcel_sets: None,
             last_physical_outcome_ledgers: None,
             last_terminal_events: None,
@@ -499,7 +1016,70 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             last_wb14_parent_receipt_set_sha256: None,
             last_wb14_child_replay_bytes: None,
             last_wb14_parent_replay_bytes: None,
+            ordinary_physical_reuse_seed: None,
+            terminal_physical_reuse_seed: None,
+            terminal_publication_posture: TerminalPublicationPostureV1::RetainFinal,
+            last_publication_retained: None,
         }
+    }
+
+    pub(crate) fn prepare_ordinary_physical_reuse(
+        mut self,
+        final_binding: crate::direct_runtime::DirectWb14CoupledChildBindingV1,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        let started = crate::snow_stage3_v11_attachment::adaptive_parent_telemetry_enabled_v1()
+            .then(std::time::Instant::now);
+        let result = if self.terminal_endpoint_mode || self.ordinary_physical_reuse_seed.is_none() {
+            Err(DirectV11RealConsumerError::Identity(
+                "covered ordinary physical reuse seed",
+            ))
+        } else {
+            self.wb14_coupled_child_binding = final_binding;
+            Ok(self)
+        };
+        if let Some(started) = started {
+            crate::snow_stage3_v11_attachment::record_adaptive_parent_reuse_validation_v1(
+                started.elapsed(),
+                result.is_ok(),
+            );
+        }
+        result
+    }
+
+    pub(crate) fn prepare_terminal_physical_reuse(
+        mut self,
+        final_binding: crate::direct_runtime::DirectWb14CoupledChildBindingV1,
+        endpoint: PrecomputedTerminalAcceptedEndpointV1,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        let started = crate::snow_stage3_v11_attachment::adaptive_parent_telemetry_enabled_v1()
+            .then(std::time::Instant::now);
+        let result = (|| {
+            let seed = self.terminal_physical_reuse_seed.as_ref().ok_or(
+                DirectV11RealConsumerError::Identity("covered terminal physical reuse seed"),
+            )?;
+            if !self.terminal_endpoint_mode
+                || self.last_publication_retained != Some(false)
+                || endpoint.pre_event_authority_sha256
+                    != precomputed_terminal_pre_event_authority_sha256_v1(&endpoint)?
+                || seed.physical_authority_sha256
+                    != precomputed_terminal_physical_authority_sha256_v1(&endpoint)?
+            {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered terminal physical reuse identity",
+                ));
+            }
+            self.wb14_coupled_child_binding = final_binding;
+            self.terminal_publication_posture = TerminalPublicationPostureV1::RetainFinal;
+            self.precomputed_terminal_accepted = Some(endpoint);
+            Ok(self)
+        })();
+        if let Some(started) = started {
+            crate::snow_stage3_v11_attachment::record_adaptive_parent_reuse_validation_v1(
+                started.elapsed(),
+                result.is_ok(),
+            );
+        }
+        result
     }
 
     #[must_use]
@@ -512,16 +1092,57 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         self
     }
 
+    pub(crate) fn with_precomputed_terminal_provisional_endpoint(
+        mut self,
+        endpoint: PrecomputedTerminalAcceptedEndpointV1,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        if endpoint.pre_event_authority_sha256 == Digest32::zero() {
+            return Err(DirectV11RealConsumerError::Identity(
+                "terminal provisional publication authority",
+            ));
+        }
+        self.terminal_endpoint_mode = true;
+        self.terminal_publication_posture = TerminalPublicationPostureV1::DeferProvisional {
+            pre_event_authority_sha256: endpoint.pre_event_authority_sha256,
+        };
+        self.precomputed_terminal_accepted = Some(endpoint);
+        Ok(self)
+    }
 
     fn precipitation_parcel_sets(
         &self,
         support: openwepp_coupled_time::TimeSupport,
         envelope: &UncommittedCoveredV8OwnerEnvelope,
-    ) -> Result<BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>, DirectV11RealConsumerError> {
+    ) -> Result<BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>, DirectV11RealConsumerError>
+    {
         let interval_s = f64::from_bits(self.interval.lse_forcing.interval_s.to_bits());
-        let beginning_vegetation_state_sha256 = digest32_from_lower_hex(
-            self.beginning.vegetation_state.0.state_sha256.as_str(),
-        )?;
+        let canopy_releases = envelope
+            .fixed_cap_canopy_releases_by_destination(interval_s)
+            .map_err(|_| DirectV11RealConsumerError::Identity("fixed-cap precipitation release"))?;
+        self.precipitation_parcel_sets_with_releases(support, &canopy_releases)
+    }
+
+    fn precipitation_parcel_sets_from_physical(
+        &self,
+        support: openwepp_coupled_time::TimeSupport,
+        physical: &crate::land_surface_energy_shadow::ProvisionalCoveredV8PhysicalEvaluationV1,
+    ) -> Result<BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>, DirectV11RealConsumerError>
+    {
+        let interval_s = f64::from_bits(self.interval.lse_forcing.interval_s.to_bits());
+        let canopy_releases = physical
+            .fixed_cap_canopy_releases_by_destination(interval_s)
+            .map_err(|_| DirectV11RealConsumerError::Identity("fixed-cap precipitation release"))?;
+        self.precipitation_parcel_sets_with_releases(support, &canopy_releases)
+    }
+
+    fn precipitation_parcel_sets_with_releases(
+        &self,
+        support: openwepp_coupled_time::TimeSupport,
+        canopy_releases: &crate::land_surface_energy_shadow::FixedCapCanopyReleasesByDestination,
+    ) -> Result<BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>, DirectV11RealConsumerError>
+    {
+        let beginning_vegetation_state_sha256 =
+            digest32_from_lower_hex(self.beginning.vegetation_state.0.state_sha256.as_str())?;
         let mut sets = BTreeMap::new();
         for (lane_id, ofe_id) in self.covered_lane_to_ofe(&self.stage3_beginning_by_lane)? {
             let forcing = self.stage3_forcing_by_lane.get(&lane_id).copied().ok_or(
@@ -535,16 +1156,17 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                     |_| DirectV11RealConsumerError::Identity("precipitation beginning snow seal"),
                 )?,
             );
-            let forcing_identity_sha256 = digest32_from_lower_hex(
-                stage3_support_forcing_digest(forcing)?.as_str(),
-            )?;
+            let forcing_identity_sha256 =
+                digest32_from_lower_hex(stage3_support_forcing_digest(forcing)?.as_str())?;
             let has_precipitation =
                 forcing.forcing.rain_m > 0.0 || forcing.forcing.snowfall_m > 0.0;
             let temperature_c = match forcing.forcing.hydrometeor_temperature_c {
                 Some(value) => value,
-                None if has_precipitation => return Err(DirectV11RealConsumerError::Identity(
-                    "precipitation temperature provider",
-                )),
+                None if has_precipitation => {
+                    return Err(DirectV11RealConsumerError::Identity(
+                        "precipitation temperature provider",
+                    ));
+                }
                 None => 0.0,
             };
             let temperature = TemperatureCelsius::try_new(temperature_c).map_err(|_| {
@@ -552,8 +1174,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             })?;
             let context = LanePrecipitationBuildContext {
                 stack: self,
-                envelope,
-                interval_s,
+                canopy_releases,
                 support,
                 lane_id,
                 ofe_id,
@@ -562,11 +1183,10 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 beginning_vegetation_state_sha256,
                 forcing_identity_sha256,
                 temperature_k: celsius_to_kelvin(temperature_c),
-                solid_specific_heat_j_kg_k: openwepp_meteorology::surface_energy::specific_heat_ice(
-                    temperature,
-                )
-                .map_err(|_| DirectV11RealConsumerError::Identity("snow specific heat"))?
-                .as_joules_per_kilogram_kelvin(),
+                solid_specific_heat_j_kg_k:
+                    openwepp_meteorology::surface_energy::specific_heat_ice(temperature)
+                        .map_err(|_| DirectV11RealConsumerError::Identity("snow specific heat"))?
+                        .as_joules_per_kilogram_kelvin(),
             };
             let set = build_lane_precipitation_set(&context)?;
             let manifest = construct_precipitation_producer_manifest(&context, &set.destinations)?;
@@ -582,7 +1202,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         lane_id: u32,
         stage3_state: &DirectSnowStage3PersistentState,
         vegetation_state: &V8CoupledOwnedState,
-        _stage3_forcing: DirectSnowStage3SupportInput,
+        stage3_forcing: DirectSnowStage3SupportInput,
         sealed: &SealedCoveredCarrierForcing,
         tile_override: Option<&TileId>,
         _interval_s: f64,
@@ -654,6 +1274,19 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         let (canopy_heat, canopy_vapor) = occupancies.iter().try_fold(
             (0.0, 0.0),
             |(heat, vapor), (stratum, _)| -> Result<(f64, f64), DirectV11RealConsumerError> {
+                let persistent = vegetation_state.strata.get(&stratum.stratum_id).ok_or(
+                    DirectV11RealConsumerError::Identity("covered persistent stratum"),
+                )?;
+                if persistent.leaf_area.to_bits() == 0.0_f64.to_bits()
+                    && persistent.stem_area.to_bits() == 0.0_f64.to_bits()
+                    && persistent.root_area.to_bits() == 0.0_f64.to_bits()
+                {
+                    // SC-VEGETATION-001@29 exact inactive-coordinate class:
+                    // the canopy-air coordinate remains live, but an
+                    // occupancy with no leaf/stem/root area contributes no
+                    // component heat or vapor conductance to the carrier.
+                    return Ok((heat, vapor));
+                }
                 let u_star = canopy_surface_friction_velocity(
                     canopy_wind,
                     self.interval.vegetation_forcing.reference_height_m,
@@ -682,20 +1315,26 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         .map_err(|_| DirectV11RealConsumerError::Identity("reference exposure"))?;
         let snow_resistance = reference_resistance;
         let snow_conductance = 1.0 / snow_resistance;
-        let surface = if crate::hydrology::stage3_is_terminal_event_domain(stage3_state) {
-            Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(stage3_state)
-        } else {
-            Wb11HydrologyKernel::project_stage3_surface_state_v1(stage3_state)
-        }
-            .map_err(|_| DirectV11RealConsumerError::Identity("snow active-volume surface"))?;
-        let snow_temperature_k = surface.surface_temperature_k;
+        let snow_temperature_k =
+            if stage3_state.layers.is_empty() && stage3_forcing.forcing.snowfall_m > 0.0 {
+                273.15
+            } else {
+                let surface = if crate::hydrology::stage3_is_terminal_event_domain(stage3_state) {
+                    Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(stage3_state)
+                } else {
+                    Wb11HydrologyKernel::project_stage3_surface_state_v1(stage3_state)
+                }
+                .map_err(|_| DirectV11RealConsumerError::Identity("snow active-volume surface"))?;
+                surface.surface_temperature_k
+            };
         let snow_temperature = TemperatureCelsius::try_new(snow_temperature_k - 273.15)
             .map_err(|_| DirectV11RealConsumerError::Identity("snow temperature"))?;
-        let saturation_pressure_pa = kilopascals_to_pascals(
-            saturation_vapor_pressure_ice_kpa(snow_temperature)
-                .map_err(|_| DirectV11RealConsumerError::Identity("snow saturation pressure"))?
-                .as_kilopascals(),
-        );
+        let saturation_pressure_pa =
+            openwepp_meteorology::surface_energy::saturation_vapor_pressure_snobal_pa(
+                snow_temperature,
+            )
+            .map_err(|_| DirectV11RealConsumerError::Identity("snow saturation pressure"))?
+            .as_pascals();
         let air_pressure_pa = self.interval.lse_forcing.air_pressure_pa;
         if !air_pressure_pa.is_finite() || air_pressure_pa <= 0.378 * saturation_pressure_pa {
             return Err(DirectV11RealConsumerError::Identity(
@@ -738,17 +1377,11 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         let heat_total = reference.heat_conductance_m_s
             + canopy.heat_conductance_m_s
             + snow.heat_conductance_m_s;
-        let vapor_total = reference.vapor_conductance_m_s
-            + canopy.vapor_conductance_m_s
-            + snow.vapor_conductance_m_s;
         let shared_temperature = (reference.heat_conductance_m_s * reference.temperature_k
             + canopy.heat_conductance_m_s * canopy.temperature_k
             + snow.heat_conductance_m_s * snow.temperature_k)
             / heat_total;
-        let shared_humidity = (reference.vapor_conductance_m_s * reference.specific_humidity
-            + canopy.vapor_conductance_m_s * canopy.specific_humidity
-            + snow.vapor_conductance_m_s * snow.specific_humidity)
-            / vapor_total;
+        let shared_humidity = shared_carrier_specific_humidity_v1(&[reference, canopy, snow])?;
         let snow_sensible = -sealed.rho_air_kg_m3
             * sealed.cp_air_j_kg_k
             * snow.heat_conductance_m_s
@@ -756,6 +1389,15 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         let snow_vapor = -sealed.rho_air_kg_m3
             * snow.vapor_conductance_m_s
             * (snow.specific_humidity - shared_humidity);
+        #[cfg(test)]
+        audit_covered_carrier_live_row(CoveredCarrierLiveConsumptionRowV1 {
+            lane_id,
+            forcing_sha256: sealed.diagnostic_seed_context_digest(),
+            reference_specific_humidity_bits: reference.specific_humidity.to_bits(),
+            snow_specific_humidity_bits: snow.specific_humidity.to_bits(),
+            shared_specific_humidity_bits: shared_humidity.to_bits(),
+            snow_vapor_into_surface_bits: (-snow_vapor).to_bits(),
+        });
         let sky_view = (1.0 - sealed.effective_canopy_cover).powf(1.6);
         let canopy_longwave = components
             .iter()
@@ -909,7 +1551,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
 
     fn final_lane_boundary_receipts(
         &self,
-        input: &V11ImportedV10SegmentInput,
+        receipt_support: openwepp_coupled_time::TimeSupport,
         final_receipts: &BTreeMap<(OfeId, TileId), FinalStage3TileBoundaryReceiptV1>,
         precipitation_sets: &BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>,
     ) -> Result<BTreeMap<u32, LaneStage3BoundaryReceiptV1>, DirectV11RealConsumerError> {
@@ -1013,13 +1655,13 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 }
                 let common_snow_temperature_k = contributions[0].snow_temperature_k;
                 let common_latent_heat_j_kg = contributions[0].latent_heat_j_kg;
-                aggregate[2] = (aggregate[1] * f64::from_bits(input.support.duration_s_bits()))
+                aggregate[2] = (aggregate[1] * f64::from_bits(receipt_support.duration_s_bits()))
                     * common_latent_heat_j_kg;
                 let lane_receipt = LaneStage3BoundaryReceiptV1::try_new(
                     LaneStage3BoundaryReceiptV1 {
                         lane_id,
                         ofe_id,
-                        support: input.support,
+                        support: receipt_support,
                         area_basis: Stage3LaneAreaBasisV1::OfeGround,
                         topology_configuration_sha256,
                         provisional_carrier_receipt_sha256: Digest32::zero(),
@@ -1040,6 +1682,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                         aggregate_snow_net_longwave_w_m2: aggregate[4],
                         aggregate_snow_temperature_k: common_snow_temperature_k,
                         aggregate_latent_heat_j_kg: common_latent_heat_j_kg,
+                        terminal_bounded_vapor_receipt: None,
                         receipt_sha256: Digest32::zero(),
                     },
                     &expected_topology,
@@ -1127,6 +1770,24 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         ),
         DirectV11RealConsumerError,
     > {
+        self.open_snow_boundaries_by_destination_with_beginning(
+            stage3_states,
+            &self.stage3_beginning_by_lane,
+        )
+    }
+
+    fn open_snow_boundaries_by_destination_with_beginning(
+        &self,
+        stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+        beginning_stage3_states: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    ) -> Result<
+        (
+            BTreeMap<(OfeId, TileId), Digest32>,
+            BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+            BTreeMap<(OfeId, TileId), OpenSnowTileBoundaryCandidateV1>,
+        ),
+        DirectV11RealConsumerError,
+    > {
         let mut diagnostics = BTreeMap::new();
         let mut boundaries = BTreeMap::new();
         let mut candidates = BTreeMap::new();
@@ -1151,20 +1812,36 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                     .ok_or(DirectV11RealConsumerError::Identity(
                         "open-snow current Stage-3 lane",
                     ))?;
-            let beginning = self.stage3_beginning_by_lane.get(&lane_id).ok_or(
+            let beginning = beginning_stage3_states.get(&lane_id).ok_or(
                 DirectV11RealConsumerError::Identity("open-snow beginning Stage-3 lane"),
             )?;
-            let beginning_digest = if crate::hydrology::stage3_is_terminal_event_domain(beginning) {
+            let beginning_digest = if beginning.layers.is_empty() && forcing.snowfall_m > 0.0 {
+                digest_bytes(
+                    &Wb11HydrologyKernel::serialize_stage3_persistent_state(beginning).map_err(
+                        |_| {
+                            DirectV11RealConsumerError::Identity(
+                                "open-snow reappearance beginning state",
+                            )
+                        },
+                    )?,
+                )
+            } else if crate::hydrology::stage3_is_terminal_event_domain(beginning) {
                 Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(beginning)
+                    .map_err(|_| {
+                        DirectV11RealConsumerError::Identity(
+                            "open-snow beginning active-volume surface",
+                        )
+                    })?
+                    .beginning_stage3_state_sha256
             } else {
                 Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning)
-            }
-                .map_err(|_| {
-                    DirectV11RealConsumerError::Identity(
-                        "open-snow beginning active-volume surface",
-                    )
-                })?
-                .beginning_stage3_state_sha256;
+                    .map_err(|_| {
+                        DirectV11RealConsumerError::Identity(
+                            "open-snow beginning active-volume surface",
+                        )
+                    })?
+                    .beginning_stage3_state_sha256
+            };
             let stage3_inputs = self.stage3_inputs_by_lane.get(&lane_id).ok_or(
                 DirectV11RealConsumerError::Identity("open-snow Stage-3 inputs"),
             )?;
@@ -1174,6 +1851,29 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 stage3_inputs,
                 forcing,
             )?;
+            #[cfg(test)]
+            COVERED_CARRIER_LIVE_CONSUMPTION_AUDIT.with(|audit| {
+                if let Some(audit) = audit.borrow_mut().as_mut() {
+                    let saturation_pressure_pa =
+                        openwepp_meteorology::surface_energy::saturation_vapor_pressure_snobal_pa(
+                            TemperatureCelsius::try_new(candidate.snow_temperature_k - 273.15)
+                                .expect("audited open-snow temperature"),
+                        )
+                        .expect("audited open-snow saturation pressure")
+                        .as_pascals();
+                    let snow_q = 0.622 * saturation_pressure_pa
+                        / (forcing.air_pressure_pa - 0.378 * saturation_pressure_pa);
+                    audit.open_snow_rows.push(OpenSnowLiveConsumptionRowV1 {
+                        lane_id,
+                        forcing_sha256: forcing.receipt_sha256,
+                        reference_specific_humidity_bits: forcing
+                            .reference_specific_humidity_kg_kg
+                            .to_bits(),
+                        snow_specific_humidity_bits: snow_q.to_bits(),
+                        vapor_outward_bits: candidate.vapor_outward_kg_m2_s.to_bits(),
+                    });
+                }
+            });
             let carrier_receipt_id = Sha256Digest::try_new(digest32_hex(
                 candidate.exposure_receipt_sha256,
             ))
@@ -1211,7 +1911,25 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 final_canopy_boundary_receipt_sha256: None,
             };
             boundary.validate().map_err(|_| {
-                DirectV11RealConsumerError::Identity("open-snow lower boundary operands")
+                DirectV11RealConsumerError::OpenSnowLowerBoundaryDomain {
+                    lane_id,
+                    ofe_id: destination.0.as_str().to_owned(),
+                    tile_id: destination.1.as_str().to_owned(),
+                    start_ns: forcing.support.start_ns().get(),
+                    end_ns: forcing.support.end_ns().get(),
+                    snow_temperature_k: candidate.snow_temperature_k,
+                    latent_heat_j_kg: candidate.latent_heat_j_kg,
+                    sensible_outward_w_m2: candidate.sensible_outward_w_m2,
+                    vapor_outward_kg_m2_s: candidate.vapor_outward_kg_m2_s,
+                    net_longwave_w_m2: candidate.snow_net_longwave_w_m2,
+                    shortwave_absorbed_w_m2: candidate.snow_absorbed_shortwave_w_m2,
+                    albedo,
+                    beginning_stage3: digest32_hex(candidate.beginning_stage3_state_sha256),
+                    forcing: digest32_hex(candidate.forcing_receipt_sha256),
+                    exposure: digest32_hex(candidate.exposure_receipt_sha256),
+                    optical: digest32_hex(candidate.optical_receipt_sha256),
+                    longwave: digest32_hex(candidate.longwave_receipt_sha256),
+                }
             })?;
             diagnostics.insert(destination.clone(), candidate.exposure_receipt_sha256);
             boundaries.insert(destination.clone(), boundary);
@@ -1334,6 +2052,46 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         let longwave = envelope
             .covered_snow_longwave_by_destination()
             .map_err(|_| DirectV11RealConsumerError::Identity("covered reciprocal longwave set"))?;
+        self.corrected_covered_boundaries_from_fluxes(base, shortwave, longwave)
+    }
+
+    fn corrected_covered_boundaries_from_physical(
+        &self,
+        base: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+        physical: &crate::land_surface_energy_shadow::ProvisionalCoveredV8PhysicalEvaluationV1,
+    ) -> Result<
+        (
+            BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+            BTreeMap<u32, f64>,
+            BTreeMap<u32, f64>,
+        ),
+        DirectV11RealConsumerError,
+    > {
+        if base.is_empty() {
+            return Ok((BTreeMap::new(), BTreeMap::new(), BTreeMap::new()));
+        }
+        let shortwave = physical
+            .covered_snow_shortwave_by_destination()
+            .map_err(|_| DirectV11RealConsumerError::Identity("covered optical shortwave set"))?;
+        let longwave = physical
+            .covered_snow_longwave_by_destination()
+            .map_err(|_| DirectV11RealConsumerError::Identity("covered reciprocal longwave set"))?;
+        self.corrected_covered_boundaries_from_fluxes(base, shortwave, longwave)
+    }
+
+    fn corrected_covered_boundaries_from_fluxes(
+        &self,
+        base: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+        shortwave: BTreeMap<(OfeId, TileId), f64>,
+        longwave: BTreeMap<(OfeId, TileId), f64>,
+    ) -> Result<
+        (
+            BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+            BTreeMap<u32, f64>,
+            BTreeMap<u32, f64>,
+        ),
+        DirectV11RealConsumerError,
+    > {
         if shortwave.keys().collect::<BTreeSet<_>>() != base.keys().collect::<BTreeSet<_>>()
             || longwave.keys().collect::<BTreeSet<_>>() != base.keys().collect::<BTreeSet<_>>()
         {
@@ -1431,7 +2189,9 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
 
     fn seal_final_covered_boundaries(
         &self,
-        input: &V11ImportedV10SegmentInput,
+        receipt_support: openwepp_coupled_time::TimeSupport,
+        beginning_v11_state_sha256: Digest32,
+        physical_beginning_stage3_by_lane: &BTreeMap<u32, DirectSnowStage3PersistentState>,
         boundaries: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
         destination_receipts: &BTreeMap<(OfeId, TileId), CoveredCarrierInitialGuessV1>,
         envelope: &UncommittedCoveredV8OwnerEnvelope,
@@ -1458,7 +2218,6 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         let longwave = envelope
             .covered_snow_longwave_by_destination()
             .map_err(|_| DirectV11RealConsumerError::Identity("covered final longwave receipts"))?;
-        let beginning_v11_state_sha256 = digest32_from_lower_hex(&input.beginning.0.state_sha256)?;
         let mut final_boundaries = boundaries.clone();
         let mut final_receipts = BTreeMap::new();
         for (destination, boundary) in boundaries {
@@ -1495,27 +2254,46 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                     "covered final boundary lane join",
                 ))?
                 .production_lane_id;
-            let beginning_stage3 = self.stage3_beginning_by_lane.get(&lane_id).ok_or(
+            let beginning_stage3 = physical_beginning_stage3_by_lane.get(&lane_id).ok_or(
                 DirectV11RealConsumerError::Identity("covered final beginning Stage-3 state"),
             )?;
+            let reappearance = self
+                .stage3_forcing_by_lane
+                .get(&lane_id)
+                .is_some_and(|forcing| forcing.forcing.snowfall_m > 0.0);
             let beginning_stage3_state_sha256 =
-                if crate::hydrology::stage3_is_terminal_event_domain(beginning_stage3) {
+                if beginning_stage3.layers.is_empty() && reappearance {
+                    digest_bytes(
+                        &Wb11HydrologyKernel::serialize_stage3_persistent_state(beginning_stage3)
+                            .map_err(|_| {
+                            DirectV11RealConsumerError::Identity(
+                                "covered final reappearance beginning state",
+                            )
+                        })?,
+                    )
+                } else if crate::hydrology::stage3_is_terminal_event_domain(beginning_stage3) {
                     Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(beginning_stage3)
+                        .map_err(|_| {
+                            DirectV11RealConsumerError::Identity(
+                                "covered final beginning active-volume surface",
+                            )
+                        })?
+                        .beginning_stage3_state_sha256
                 } else {
                     Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning_stage3)
-                }
-                    .map_err(|_| {
-                        DirectV11RealConsumerError::Identity(
-                            "covered final beginning active-volume surface",
-                        )
-                    })?
-                    .beginning_stage3_state_sha256;
+                        .map_err(|_| {
+                            DirectV11RealConsumerError::Identity(
+                                "covered final beginning active-volume surface",
+                            )
+                        })?
+                        .beginning_stage3_state_sha256
+                };
             let optical_receipt_sha256 = digest32_from_lower_hex(optical.receipt_sha256.as_str())?;
             let reciprocal_longwave_receipt_sha256 =
-                reciprocal_longwave_receipt_digest(destination, input.support, *final_longwave);
+                reciprocal_longwave_receipt_digest(destination, receipt_support, *final_longwave);
             let final_receipt = FinalStage3CanopyBoundaryReceiptV1::try_new(
                 FinalStage3CanopyBoundaryReceiptInputs {
-                    support: input.support,
+                    support: receipt_support,
                     destination: destination.clone(),
                     beginning_v11_state_sha256,
                     beginning_stage3_state_sha256,
@@ -1528,7 +2306,7 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                     vapor_to_canopy_air_kg_m2_s: boundary.vapor_to_canopy_air_kg_m2_s,
                     latent_energy_to_canopy_air_j_m2: boundary.vapor_to_canopy_air_kg_m2_s
                         * boundary.latent_heat_j_kg
-                        * f64::from_bits(input.support.duration_s_bits()),
+                        * f64::from_bits(receipt_support.duration_s_bits()),
                     snow_temperature_k: boundary.snow_temperature_k,
                     latent_heat_j_kg: boundary.latent_heat_j_kg,
                     snow_absorbed_shortwave_w_m2: optical.absorbed_w_m2_tile.total(),
@@ -1775,9 +2553,15 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 reciprocal_longwave_receipt_sha256: None,
                 final_canopy_boundary_receipt_sha256: None,
             };
-            boundary
-                .validate()
-                .map_err(|_| DirectV11RealConsumerError::Identity("covered boundary operands"))?;
+            boundary.validate().map_err(|_| {
+                if covered_boundary_only_cold_temperature_is_refinable_v1(&boundary) {
+                    DirectV11RealConsumerError::AdaptiveRefinement(
+                        "covered Stage-3 lower-boundary temperature below constitutive domain",
+                    )
+                } else {
+                    DirectV11RealConsumerError::Identity("covered boundary operands")
+                }
+            })?;
             if boundaries.insert(destination.clone(), boundary).is_some() {
                 return Err(DirectV11RealConsumerError::Identity(
                     "duplicate covered destination lower boundary",
@@ -1823,21 +2607,28 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                     Wb11HydrologyKernel::project_stage3_surface_state_v1(state)
                 };
                 let (snow_temperature_k, latent_heat_j_kg) = match projected {
-                        Ok(surface) => (surface.surface_temperature_k, surface.latent_heat_j_kg),
-                        // A dormant endpoint has no snow temperature.  The
-                        // boundary entering this merge is the last physical
-                        // pre-event boundary produced by the covered fixed
-                        // point, so retain it as the limiting boundary rather
-                        // than inventing a post-event melting-point node.
-                        Err(_) if self.terminal_endpoint_mode && state.layers.is_empty() => {
-                            (boundary.snow_temperature_k, boundary.latent_heat_j_kg)
-                        }
-                        Err(_) => {
-                            return Err(DirectV11RealConsumerError::Identity(
-                                "covered Stage-3 state boundary active-volume surface",
-                            ));
-                        }
-                    };
+                    Ok(surface) => (surface.surface_temperature_k, surface.latent_heat_j_kg),
+                    // A dormant endpoint has no snow temperature.  The
+                    // boundary entering this merge is the last physical
+                    // pre-event boundary produced by the covered fixed
+                    // point, so retain it as the limiting boundary rather
+                    // than inventing a post-event melting-point node.
+                    Err(_)
+                        if (self.terminal_endpoint_mode
+                            || self
+                                .stage3_forcing_by_lane
+                                .get(&lane_id)
+                                .is_some_and(|forcing| forcing.forcing.snowfall_m > 0.0))
+                            && state.layers.is_empty() =>
+                    {
+                        (boundary.snow_temperature_k, boundary.latent_heat_j_kg)
+                    }
+                    Err(_) => {
+                        return Err(DirectV11RealConsumerError::Identity(
+                            "covered Stage-3 state boundary active-volume surface",
+                        ));
+                    }
+                };
                 let mut merged = boundary.clone();
                 merged.snow_temperature_k = snow_temperature_k;
                 merged.latent_heat_j_kg = latent_heat_j_kg;
@@ -1850,7 +2641,15 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
     }
 
     pub fn take_staged_ending(&mut self) -> Option<DirectV10RealConsumerShadow> {
+        if self.last_publication_retained == Some(false) {
+            return None;
+        }
         self.ending.take()
+    }
+
+    #[must_use]
+    pub(crate) const fn last_publication_retained(&self) -> Option<bool> {
+        self.last_publication_retained
     }
 
     pub fn take_staged_stage3(&mut self) -> Option<BTreeMap<u32, DirectSnowStage3PersistentState>> {
@@ -1897,6 +2696,13 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         self.last_terminal_snow_soil_heat_receipts.as_ref()
     }
 
+    pub(crate) fn last_adaptive_terminal_snow_soil_trial_receipts(
+        &self,
+    ) -> Option<&BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1>> {
+        self.last_adaptive_terminal_snow_soil_trial_receipts
+            .as_ref()
+    }
+
     #[allow(dead_code)]
     pub(crate) fn last_precipitation_parcel_sets(
         &self,
@@ -1911,14 +2717,38 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
     }
 
     pub(crate) fn last_wb14_receipt_sets(&self) -> Option<(&str, Option<&str>)> {
-        self.last_wb14_child_receipt_set_sha256.as_deref().map(|child| {
-            (child, self.last_wb14_parent_receipt_set_sha256.as_deref())
-        })
+        self.last_wb14_child_receipt_set_sha256
+            .as_deref()
+            .map(|child| (child, self.last_wb14_parent_receipt_set_sha256.as_deref()))
     }
 
     pub(crate) fn last_wb14_replay_bytes(&self) -> Option<(&[u8], Option<&[u8]>)> {
-        self.last_wb14_child_replay_bytes.as_deref().map(|child| {
-            (child, self.last_wb14_parent_replay_bytes.as_deref())
-        })
+        self.last_wb14_child_replay_bytes
+            .as_deref()
+            .map(|child| (child, self.last_wb14_parent_replay_bytes.as_deref()))
     }
+}
+
+fn covered_boundary_only_cold_temperature_is_refinable_v1(
+    boundary: &Stage3SnowCoveredLowerBoundary,
+) -> bool {
+    (0.0..200.0).contains(&boundary.snow_temperature_k)
+        && [
+            boundary.latent_heat_j_kg,
+            boundary.sensible_to_canopy_air_w_m2,
+            boundary.vapor_to_canopy_air_kg_m2_s,
+            boundary.net_longwave_w_m2,
+            boundary.shortwave_absorbed_w_m2,
+            boundary.precipitation_advection_w_m2,
+        ]
+        .iter()
+        .all(|value| value.is_finite())
+        && boundary.latent_heat_j_kg > 0.0
+        && !boundary.carrier_receipt_id.as_str().is_empty()
+        && !boundary.stage3_albedo_state_sha256.as_str().is_empty()
+        && !boundary.forcing_receipt_sha256.as_str().is_empty()
+        && boundary.snow_vis_albedo.is_finite()
+        && boundary.snow_nir_albedo.is_finite()
+        && (0.0..=1.0).contains(&boundary.snow_vis_albedo)
+        && (0.0..=1.0).contains(&boundary.snow_nir_albedo)
 }

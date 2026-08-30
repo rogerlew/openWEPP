@@ -5,18 +5,46 @@
 // publish any receipt into the owning stack.
 
 use crate::hydrology::{
-    CoveredProbeChildIdentityV1, CoveredTerminalJointTrialStateV1,
-    CoveredTerminalTrialRequestV1, CoveredTerminalTrialTransitionV1,
+    CoveredProbeChildIdentityV1, CoveredTerminalBatchCarrierCandidatesV2,
+    CoveredTerminalBatchTrialRequestV2, CoveredTerminalJointTrialStateV1,
+    CoveredTerminalLaneTrialStateV2, CoveredTerminalTrialRequestV1,
+    CoveredTerminalTrialTransitionV1,
 };
+
+#[cfg(test)]
+std::thread_local! {
+    static COVERED_CARRIER_SUPPORT_AUDIT: std::cell::RefCell<Option<Vec<TimeSupport>>> = const { std::cell::RefCell::new(None) };
+}
+
+#[cfg(test)]
+pub(crate) fn begin_covered_carrier_support_audit() {
+    COVERED_CARRIER_SUPPORT_AUDIT.with(|audit| *audit.borrow_mut() = Some(Vec::new()));
+}
+
+#[cfg(test)]
+pub(crate) fn take_covered_carrier_support_audit() -> Vec<TimeSupport> {
+    COVERED_CARRIER_SUPPORT_AUDIT.with(|audit| audit.borrow_mut().take().unwrap_or_default())
+}
+
+#[cfg(test)]
+pub(crate) fn audit_covered_carrier_support(support: TimeSupport) {
+    COVERED_CARRIER_SUPPORT_AUDIT.with(|audit| {
+        if let Some(supports) = audit.borrow_mut().as_mut() {
+            supports.push(support);
+        }
+    });
+}
+
+#[cfg(not(test))]
+pub(crate) fn audit_covered_carrier_support(_: TimeSupport) {}
 
 /// Snow operand presented to the shared covered carrier engine.
 ///
 /// Persistent execution uses the canonical Stage-3 lane map. Terminal trials
 /// retain that map only as lineage and replace the target lane's physical
 /// bottom/surface operands with the aggregate one-volume trial state.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub(crate) enum CoveredSnowBoundaryStateV1 {
-    Persistent,
     TerminalTrial {
         lane_id: u32,
         ice_kg_m2: f64,
@@ -26,6 +54,9 @@ pub(crate) enum CoveredSnowBoundaryStateV1 {
         depth_m: f64,
         density_kg_m3: f64,
     },
+    BatchTerminalTrial {
+        lanes: BTreeMap<u32, CoveredTerminalLaneTrialStateV2>,
+    },
 }
 
 /// Whether a shared carrier result is an unpublished probe or the candidate
@@ -33,60 +64,203 @@ pub(crate) enum CoveredSnowBoundaryStateV1 {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum CoveredCarrierExecutionIdentityV1 {
     Probe(CoveredProbeChildIdentityV1),
-    Accepted,
 }
 
 impl CoveredSnowBoundaryStateV1 {
+    fn lane_states(
+        &self,
+        request: &CoveredTerminalTrialRequestV1,
+    ) -> BTreeMap<u32, CoveredTerminalLaneTrialStateV2> {
+        match self {
+            Self::TerminalTrial {
+                lane_id,
+                ice_kg_m2,
+                liquid_kg_m2,
+                cold_content_j_m2,
+                surface_temperature_k,
+                depth_m,
+                density_kg_m3,
+            } => BTreeMap::from([(
+                *lane_id,
+                CoveredTerminalLaneTrialStateV2 {
+                    lane_id: *lane_id,
+                    ice_kg_m2: *ice_kg_m2,
+                    liquid_kg_m2: *liquid_kg_m2,
+                    cold_content_j_m2: *cold_content_j_m2,
+                    surface_temperature_c: *surface_temperature_k - 273.15,
+                    snow_depth_m: *depth_m,
+                    snow_density_kg_m3: *density_kg_m3,
+                    resolved_beginning: crate::hydrology::stage3_is_resolved_thermal_domain(
+                        &request.beginning_stage3_state,
+                    ),
+                    candidate_event_tick: None,
+                },
+            )]),
+            Self::BatchTerminalTrial { lanes } => lanes.clone(),
+        }
+    }
+
+    fn apply_to_boundary_sets(
+        &self,
+        bindings: &[crate::direct_runtime::DirectSurfaceLiquidOfeBinding],
+        covered_boundaries: &mut BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+        open_boundaries: &mut BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+    ) -> Result<(), DirectV11RealConsumerError> {
+        self.apply_to_boundary_sets_with_topology(
+            bindings,
+            covered_boundaries,
+            open_boundaries,
+            true,
+        )
+    }
+
     fn apply_to_boundaries(
-        self,
+        &self,
         bindings: &[crate::direct_runtime::DirectSurfaceLiquidOfeBinding],
         boundaries: &mut BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
     ) -> Result<(), DirectV11RealConsumerError> {
-        let Self::TerminalTrial {
-            lane_id,
-            ice_kg_m2,
-            liquid_kg_m2,
-            cold_content_j_m2,
-            surface_temperature_k,
-            depth_m,
-            density_kg_m3,
-        } = self
-        else {
-            return Ok(());
+        self.apply_to_boundary_sets_with_topology(bindings, boundaries, &mut BTreeMap::new(), false)
+    }
+
+    fn apply_to_boundary_sets_with_topology(
+        &self,
+        bindings: &[crate::direct_runtime::DirectSurfaceLiquidOfeBinding],
+        covered_boundaries: &mut BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+        open_boundaries: &mut BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+        require_every_lane: bool,
+    ) -> Result<(), DirectV11RealConsumerError> {
+        let lanes = match self {
+            Self::TerminalTrial {
+                lane_id,
+                ice_kg_m2,
+                liquid_kg_m2,
+                cold_content_j_m2,
+                surface_temperature_k,
+                depth_m,
+                density_kg_m3,
+            } => BTreeMap::from([(
+                *lane_id,
+                CoveredTerminalLaneTrialStateV2 {
+                    lane_id: *lane_id,
+                    ice_kg_m2: *ice_kg_m2,
+                    liquid_kg_m2: *liquid_kg_m2,
+                    cold_content_j_m2: *cold_content_j_m2,
+                    surface_temperature_c: *surface_temperature_k - 273.15,
+                    snow_depth_m: *depth_m,
+                    snow_density_kg_m3: *density_kg_m3,
+                    resolved_beginning: false,
+                    candidate_event_tick: None,
+                },
+            )]),
+            Self::BatchTerminalTrial { lanes } => lanes.clone(),
         };
-        if !surface_temperature_k.is_finite()
-            || surface_temperature_k <= 0.0
-            || !ice_kg_m2.is_finite()
-            || ice_kg_m2 < 0.0
-            || !liquid_kg_m2.is_finite()
-            || liquid_kg_m2 < 0.0
-            || !cold_content_j_m2.is_finite()
-            || cold_content_j_m2 < 0.0
-            || !depth_m.is_finite()
-            || depth_m < 0.0
-            || !density_kg_m3.is_finite()
-            || density_kg_m3 < 0.0
-            || (ice_kg_m2 - density_kg_m3 * depth_m).abs() > 1.0e-9
-        {
-            return Err(DirectV11RealConsumerError::Identity(
-                "covered terminal trial snow boundary state",
-            ));
-        }
-        let mut matched = false;
-        for (destination, boundary) in boundaries {
-            if bindings.iter().any(|binding| {
-                binding.ofe_id == destination.0 && binding.production_lane_id == lane_id
-            }) {
-                matched = true;
-                boundary.snow_temperature_k = surface_temperature_k;
+        for (lane_id, lane) in lanes {
+            let surface_temperature_k = lane.surface_temperature_c + 273.15;
+            if lane.lane_id != lane_id
+                || !surface_temperature_k.is_finite()
+                || surface_temperature_k <= 0.0
+                || !lane.ice_kg_m2.is_finite()
+                || lane.ice_kg_m2 < 0.0
+                || !lane.liquid_kg_m2.is_finite()
+                || lane.liquid_kg_m2 < 0.0
+                || !lane.cold_content_j_m2.is_finite()
+                || lane.cold_content_j_m2 < 0.0
+                || !lane.snow_depth_m.is_finite()
+                || lane.snow_depth_m < 0.0
+                || !lane.snow_density_kg_m3.is_finite()
+                || lane.snow_density_kg_m3 <= 0.0
+                || (lane.ice_kg_m2 - lane.snow_density_kg_m3 * lane.snow_depth_m).abs() > 1.0e-9
+            {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered terminal trial snow boundary state",
+                ));
+            }
+            let surface_temperature = TemperatureCelsius::try_new(lane.surface_temperature_c)
+                .map_err(|_| {
+                    DirectV11RealConsumerError::Identity(
+                        "covered terminal trial snow boundary temperature",
+                    )
+                })?;
+            let latent_heat_j_kg =
+                openwepp_meteorology::surface_energy::latent_heat_for_surface_temperature(
+                    surface_temperature,
+                )
+                .map_err(|_| {
+                    DirectV11RealConsumerError::Identity(
+                        "covered terminal trial snow boundary latent heat",
+                    )
+                })?
+                .as_joules_per_kilogram();
+            let mut matched = false;
+            for boundaries in [&mut *covered_boundaries, &mut *open_boundaries] {
+                for (destination, boundary) in boundaries {
+                    if bindings.iter().any(|binding| {
+                        binding.ofe_id == destination.0 && binding.production_lane_id == lane_id
+                    }) {
+                        matched = true;
+                        boundary.snow_temperature_k = surface_temperature_k;
+                        boundary.latent_heat_j_kg = latent_heat_j_kg;
+                    }
+                }
+            }
+            if require_every_lane && !matched {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered terminal trial lane topology",
+                ));
             }
         }
-        if !matched {
-            return Err(DirectV11RealConsumerError::Identity(
-                "covered terminal trial lane topology",
-            ));
-        }
         Ok(())
+    }
+
+    fn project_trial_stage3_states(
+        &self,
+        request: &CoveredTerminalTrialRequestV1,
+        beginning: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    ) -> Result<BTreeMap<u32, DirectSnowStage3PersistentState>, DirectV11RealConsumerError> {
+        let mut projected = beginning.clone();
+        for (lane_id, lane) in self.lane_states(request) {
+            let state = projected
+                .get_mut(&lane_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered terminal trial Stage-3 lane",
+                ))?;
+            let settle_day_count = state
+                .layers
+                .first()
+                .map_or(0.0, |layer| layer.settle_day_count);
+            let refrozen_liquid_m = state
+                .layers
+                .iter()
+                .map(|layer| layer.refrozen_liquid_m)
+                .sum::<f64>();
+            state.layers = if lane.ice_kg_m2 > 0.0 {
+                let mass_swe_m = lane.ice_kg_m2 / 1_000.0;
+                vec![crate::DirectSnowLayerState {
+                    mass_swe_m,
+                    thickness_m: mass_swe_m * 1_000.0 / lane.snow_density_kg_m3,
+                    density_kg_m3: lane.snow_density_kg_m3,
+                    settle_day_count,
+                    temperature_c: lane.surface_temperature_c,
+                    liquid_water_m: lane.liquid_kg_m2 / 1_000.0,
+                    cold_content_j_m2: lane.cold_content_j_m2,
+                    refrozen_liquid_m,
+                }]
+            } else {
+                Vec::new()
+            };
+            state.detached_retained_liquid_kg_m2 = if lane.ice_kg_m2 > 0.0 {
+                0.0
+            } else {
+                lane.liquid_kg_m2
+            };
+            state.fingerprint = Wb11HydrologyKernel::stage3_persistent_state_fingerprint(state);
+            Wb11HydrologyKernel::validate_stage3_persistent_state(state).map_err(|_| {
+                DirectV11RealConsumerError::Identity(
+                    "covered terminal trial projected Stage-3 state",
+                )
+            })?;
+        }
+        Ok(projected)
     }
 }
 
@@ -138,9 +312,7 @@ impl CoveredCarrierEphemeralCandidatesV1 {
         &self.shadow
     }
 
-    pub(crate) const fn stage3_by_lane(
-        &self,
-    ) -> &BTreeMap<u32, DirectSnowStage3PersistentState> {
+    pub(crate) const fn stage3_by_lane(&self) -> &BTreeMap<u32, DirectSnowStage3PersistentState> {
         &self.stage3_by_lane
     }
 
@@ -149,27 +321,47 @@ impl CoveredCarrierEphemeralCandidatesV1 {
     ) -> Option<&physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1> {
         self.terminal_snow_soil_trial_receipt.as_ref()
     }
+
+    pub(crate) fn try_with_selected_stage3_by_lane(
+        &self,
+        joint: CoveredTerminalJointTrialStateV1,
+        stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        let mut selected = Self::try_new(joint, self.shadow.clone(), stage3_by_lane)?;
+        selected.terminal_snow_soil_trial_receipt =
+            self.terminal_snow_soil_trial_receipt.clone();
+        Ok(selected)
+    }
 }
 
 /// Result of one genuine carrier-only mapping at an exact trial support.
 #[derive(Clone)]
 pub(crate) struct CoveredCarrierPhaseResultV1 {
     pub transition: CoveredTerminalTrialTransitionV1,
+    /// Typed physical beginning for this exact child. This is not the
+    /// enclosing accepted slab beginning when terminal integration composes
+    /// multiple children.
+    pub beginning_candidates: CoveredCarrierEphemeralCandidatesV1,
     pub ending_candidates: CoveredCarrierEphemeralCandidatesV1,
+    pub beginning_stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
     pub precipitation_sets: BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>,
     /// Winning unpublished carrier envelope retained for exact accepted
     /// evidence sealing. Publication must not rerun LSE to recover it.
     pub carrier_envelope: UncommittedCoveredV8OwnerEnvelope,
     /// Complete covered/open lower-boundary candidate consumed by Stage 3.
-    pub complete_lower_boundaries:
-        BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+    pub complete_lower_boundaries: BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
     /// Reduced-carrier source receipts needed to seal final destination
     /// evidence without recomputing carrier physics.
-    pub carrier_source_receipts:
-        BTreeMap<(OfeId, TileId), CoveredCarrierInitialGuessV1>,
+    pub carrier_source_receipts: BTreeMap<(OfeId, TileId), CoveredCarrierInitialGuessV1>,
+    pub open_snow_candidates: BTreeMap<(OfeId, TileId), OpenSnowTileBoundaryCandidateV1>,
     pub covered_lse_states: BTreeMap<(OfeId, TileId), CoveredLseIterationState>,
     pub soil_candidate: SoilThermalSnapshot,
+    #[cfg(test)]
     pub soil_top_boundary_credit: SoilThermalTopBoundaryCreditV1,
+    pub batch_boundaries_by_lane: BTreeMap<u32, Stage3SnowSurfaceBoundaryReceiptV1>,
+    pub batch_terminal_snow_soil_trial_receipts_by_lane:
+        BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1>,
+    pub batch_soil_top_boundary_credits_by_lane: BTreeMap<u32, SoilThermalTopBoundaryCreditV1>,
     pub wb14_child_receipt_set_sha256: String,
     pub wb14_parent_receipt_set_sha256: Option<String>,
     pub wb14_child_replay_bytes: Vec<u8>,
@@ -188,8 +380,20 @@ pub(crate) struct CoveredCarrierCandidateLayoutCountsV1 {
     pub precipitation_lane_count: usize,
 }
 
-#[cfg(test)]
 impl CoveredCarrierPhaseResultV1 {
+    pub(crate) fn batch_carrier_candidates_v2(&self) -> CoveredTerminalBatchCarrierCandidatesV2 {
+        CoveredTerminalBatchCarrierCandidatesV2 {
+            support: self.transition.boundary.support,
+            beginning_joint_sha256: self.transition.beginning_joint.receipt_sha256(),
+            carrier_joint: self.transition.ending_joint.clone(),
+            boundaries_by_lane: self.batch_boundaries_by_lane.clone(),
+            ordered_q_ss_receipts_by_lane: self
+                .batch_terminal_snow_soil_trial_receipts_by_lane
+                .clone(),
+        }
+    }
+
+    #[cfg(test)]
     pub(crate) fn candidate_layout_counts_v1(&self) -> CoveredCarrierCandidateLayoutCountsV1 {
         CoveredCarrierCandidateLayoutCountsV1 {
             owner_count: self.ending_candidates.joint.owner_bytes().len(),
@@ -237,6 +441,67 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         )
     }
 
+    /// Construct one carrier candidate for every active lane in a batch.
+    /// All lane temperatures are installed in the lower-boundary set before
+    /// the single carrier envelope and six shared owners are evaluated.
+    pub(crate) fn execute_covered_carrier_batch_phase_v2(
+        &self,
+        beginning: &CoveredCarrierEphemeralCandidatesV1,
+        request: &CoveredTerminalBatchTrialRequestV2,
+        child: CoveredProbeChildIdentityV1,
+    ) -> Result<CoveredCarrierPhaseResultV1, DirectV11RealConsumerError> {
+        let (&leader_id, leader) =
+            request
+                .lanes
+                .first_key_value()
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered carrier empty terminal batch",
+                ))?;
+        let expected_active_lanes = beginning
+            .stage3_by_lane()
+            .iter()
+            .filter_map(|(lane_id, state)| {
+                (crate::hydrology::stage3_is_resolved_thermal_domain(state)
+                    || crate::hydrology::stage3_is_terminal_event_domain(state))
+                .then_some(*lane_id)
+            })
+            .collect::<BTreeSet<_>>();
+        if request.beginning_joint != *beginning.joint()
+            || request.lanes.keys().copied().collect::<BTreeSet<_>>() != expected_active_lanes
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered carrier batch beginning topology",
+            ));
+        }
+        let beginning_stage3_state = beginning.stage3_by_lane().get(&leader_id).cloned().ok_or(
+            DirectV11RealConsumerError::Identity("covered carrier batch leader state"),
+        )?;
+        let leader_request = CoveredTerminalTrialRequestV1 {
+            lane_id: leader_id,
+            support: request.support,
+            role: request.role,
+            attempt_ordinal: request.attempt_ordinal,
+            coupling_iteration: 0,
+            ice_kg_m2: leader.ice_kg_m2,
+            liquid_kg_m2: leader.liquid_kg_m2,
+            cold_content_j_m2: leader.cold_content_j_m2,
+            surface_temperature_c: leader.surface_temperature_c,
+            snow_depth_m: leader.snow_depth_m,
+            snow_density_kg_m3: leader.snow_density_kg_m3,
+            beginning_stage3_state: Box::new(beginning_stage3_state),
+            ending_snow_hint: None,
+            beginning_joint: request.beginning_joint.clone(),
+        };
+        self.execute_shared_covered_carrier_engine_v1(
+            beginning,
+            &leader_request,
+            CoveredSnowBoundaryStateV1::BatchTerminalTrial {
+                lanes: request.lanes.clone(),
+            },
+            CoveredCarrierExecutionIdentityV1::Probe(child),
+        )
+    }
+
     /// Execute the value-returning covered carrier engine without adopting a
     /// slab or publishing any receipt. Both persistent and terminal callers
     /// use this mapping; execution identity controls only lineage, never
@@ -248,11 +513,8 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         snow_boundary_state: CoveredSnowBoundaryStateV1,
         execution_identity: CoveredCarrierExecutionIdentityV1,
     ) -> Result<CoveredCarrierPhaseResultV1, DirectV11RealConsumerError> {
-        let CoveredCarrierExecutionIdentityV1::Probe(child) = execution_identity else {
-            return Err(DirectV11RealConsumerError::Identity(
-                "accepted shared carrier engine not yet joined",
-            ));
-        };
+        audit_covered_carrier_support(request.support);
+        let CoveredCarrierExecutionIdentityV1::Probe(child) = execution_identity;
         if child.trial_support != request.support
             || child.role != request.role
             || child.attempt_ordinal != request.attempt_ordinal
@@ -297,12 +559,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             self.stage3_inputs_by_lane,
             self.stage3_forcing_by_lane,
         )?;
-        let mut seed =
-            self.merge_latest_stage3_state_operands(&seed, &beginning.stage3_by_lane)?;
-        snow_boundary_state.apply_to_boundaries(
-            &beginning.shadow.inner.surface_configuration.ofe_bindings,
-            &mut seed,
-        )?;
+        let mut seed = self.merge_latest_stage3_state_operands(&seed, &beginning.stage3_by_lane)?;
         // Stage-3 lower-boundary construction, rather than the broader
         // carrier-diagnostic receipt topology, is the authority for which
         // destinations enter the covered LSE branch. Ordinary canopy/open
@@ -315,8 +572,18 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 "covered carrier Stage-3 lower-boundary membership",
             ));
         }
-        let (open_diagnostics, open_boundaries, _) =
-            self.open_snow_boundaries_by_destination(&beginning.stage3_by_lane)?;
+        let trial_stage3_by_lane =
+            snow_boundary_state.project_trial_stage3_states(request, &beginning.stage3_by_lane)?;
+        let (open_diagnostics, mut open_boundaries, open_snow_candidates) = self
+            .open_snow_boundaries_by_destination_with_beginning(
+                &trial_stage3_by_lane,
+                &beginning.stage3_by_lane,
+            )?;
+        snow_boundary_state.apply_to_boundary_sets(
+            &beginning.shadow.inner.surface_configuration.ofe_bindings,
+            &mut seed,
+            &mut open_boundaries,
+        )?;
         if covered_destinations
             .iter()
             .any(|destination| open_boundaries.contains_key(destination))
@@ -329,8 +596,8 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         // terminal solver owns the outer fixed-point replay and returns the
         // preceding snow estimate through `ending_snow_hint`; iterating only
         // the carrier here would omit snow and soil from convergence.
-        let envelope = self.build_covered_carrier_envelope_value_v1(
-            CoveredCarrierEnvelopeBuildV1 {
+        let envelope =
+            self.build_covered_carrier_envelope_value_v1(CoveredCarrierEnvelopeBuildV1 {
                 candidate: &beginning.shadow,
                 interval_s,
                 duration_s_bits: request.support.duration_s_bits(),
@@ -342,104 +609,114 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 // authority to reinterpret that operand as a final optical
                 // boundary.
                 provisional: true,
-                finalize_wb14_parent_interval: false,
-            },
-        )?;
+                finalize_wb14_parent_interval: self.finalize_wb14_parent_interval,
+            })?;
         let (corrected, lse_states) = self.rebuild_covered_lse_carrier_value_v1(
             &seed,
             &envelope,
             &beginning.stage3_by_lane,
-            snow_boundary_state,
+            snow_boundary_state.clone(),
         )?;
         let precipitation_sets = self.precipitation_parcel_sets(request.support, &envelope)?;
-        let lane_id = request.lane_id;
-        let ofe_id = self
-            .covered_lane_to_ofe(&beginning.stage3_by_lane)?
-            .remove(&lane_id)
-            .ok_or(DirectV11RealConsumerError::Identity(
-                "covered carrier terminal snow-soil OFE",
-            ))?;
-        let configured_ofe = beginning
-            .shadow
-            .inner
-            .lse_configuration
-            .ofes
-            .iter()
-            .find(|value| value.ofe_id == ofe_id)
-            .ok_or(DirectV11RealConsumerError::Identity(
-                "covered carrier terminal configured OFE",
-            ))?;
-        let configured_top = configured_ofe.soil_interface_layers.first().ok_or(
-            DirectV11RealConsumerError::Identity("covered carrier terminal configured soil top"),
-        )?;
-        let beginning_soil_ofe = beginning
-            .shadow
-            .inner
-            .soil_thermal
-            .ofes
-            .iter()
-            .find(|value| value.ofe_id == ofe_id)
-            .ok_or(DirectV11RealConsumerError::Identity(
-                "covered carrier terminal beginning soil OFE",
-            ))?;
-        let beginning_soil_top = beginning_soil_ofe.ordered_layers.first().ok_or(
-            DirectV11RealConsumerError::Identity("covered carrier terminal beginning soil top"),
-        )?;
-        let stage3_inputs = self.stage3_inputs_by_lane.get(&lane_id).ok_or(
-            DirectV11RealConsumerError::Identity("covered carrier terminal Stage-3 inputs"),
-        )?;
-        let terminal_soil_trial = physical_outcome_ledger::evaluate_terminal_snow_bottom_soil_trial_v1(
-            &physical_outcome_ledger::TerminalSnowBottomSoilTrialInputsV1 {
-                support: request.support,
-                lane_id,
-                ofe_id: &ofe_id,
-                canonical_source_sha256: child.receipt_sha256,
-                ice_kg_m2: request.ice_kg_m2,
-                liquid_kg_m2: request.liquid_kg_m2,
-                cold_content_j_m2: request.cold_content_j_m2,
-                depth_m: request.snow_depth_m,
-                density_kg_m3: request.snow_density_kg_m3,
-                temperature_k: request.surface_temperature_c + 273.15,
-                atmospheric_pressure_pa: stage3_inputs
-                    .surface_energy_options
-                    .atmospheric_pressure_pa,
-                first_soil_configuration: configured_top,
-                beginning_first_soil: beginning_soil_top,
-            },
-        )
-        .map_err(|_| {
-            DirectV11RealConsumerError::Identity("covered carrier terminal snow-soil trial")
-        })?;
-        let terminal_soil_credit = SoilThermalTopBoundaryCreditV1 {
-            lane_id,
-            ofe_id: ofe_id.clone(),
-            first_layer_id: configured_top.layer_id.clone(),
-            beginning_owner_id: beginning.shadow.inner.soil_thermal.owner_id.clone(),
-            beginning_configuration_sha256: beginning
+        let lane_states = snow_boundary_state.lane_states(request);
+        if lane_states.is_empty() {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered carrier terminal lane set",
+            ));
+        }
+        let lane_to_ofe = self.covered_lane_to_ofe(&beginning.stage3_by_lane)?;
+        let mut terminal_soil_trials = BTreeMap::new();
+        let mut terminal_soil_credits = BTreeMap::new();
+        for (lane_id, lane) in &lane_states {
+            let ofe_id =
+                lane_to_ofe
+                    .get(lane_id)
+                    .cloned()
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "covered carrier terminal snow-soil OFE",
+                    ))?;
+            let configured_ofe = beginning
+                .shadow
+                .inner
+                .lse_configuration
+                .ofes
+                .iter()
+                .find(|value| value.ofe_id == ofe_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered carrier terminal configured OFE",
+                ))?;
+            let configured_top = configured_ofe.soil_interface_layers.first().ok_or(
+                DirectV11RealConsumerError::Identity(
+                    "covered carrier terminal configured soil top",
+                ),
+            )?;
+            let beginning_soil_ofe = beginning
                 .shadow
                 .inner
                 .soil_thermal
-                .configuration_sha256
-                .clone(),
-            beginning_state_sha256: beginning
-                .shadow
-                .inner
-                .soil_thermal
-                .state_sha256
-                .clone(),
-            support_start_ns: i64::try_from(request.support.start_ns().get()).map_err(|_| {
-                DirectV11RealConsumerError::Identity("terminal soil credit support start")
-            })?,
-            support_end_ns: i64::try_from(request.support.end_ns().get()).map_err(|_| {
-                DirectV11RealConsumerError::Identity("terminal soil credit support end")
-            })?,
-            accepted_positive_downward_j_m2_ofe_ground: terminal_soil_trial.soil_heat_j_m2,
-            soil_thermal_credit_j_m2_ofe_ground: terminal_soil_trial.soil_heat_j_m2,
-            snow_soil_heat_receipt_sha256: Sha256Digest::try_new(digest32_hex(
-                terminal_soil_trial.receipt.receipt_sha256,
-            ))
-            .map_err(|_| DirectV11RealConsumerError::Identity("terminal soil credit digest"))?,
-        };
+                .ofes
+                .iter()
+                .find(|value| value.ofe_id == ofe_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered carrier terminal beginning soil OFE",
+                ))?;
+            let beginning_soil_top = beginning_soil_ofe.ordered_layers.first().ok_or(
+                DirectV11RealConsumerError::Identity("covered carrier terminal beginning soil top"),
+            )?;
+            let stage3_inputs = self.stage3_inputs_by_lane.get(lane_id).ok_or(
+                DirectV11RealConsumerError::Identity("covered carrier terminal Stage-3 inputs"),
+            )?;
+            let terminal_soil_trial =
+                physical_outcome_ledger::evaluate_terminal_snow_bottom_soil_trial_v1(
+                    &physical_outcome_ledger::TerminalSnowBottomSoilTrialInputsV1 {
+                        support: request.support,
+                        lane_id: *lane_id,
+                        ofe_id: &ofe_id,
+                        canonical_source_sha256: child.receipt_sha256,
+                        ice_kg_m2: lane.ice_kg_m2,
+                        liquid_kg_m2: lane.liquid_kg_m2,
+                        cold_content_j_m2: lane.cold_content_j_m2,
+                        depth_m: lane.snow_depth_m,
+                        density_kg_m3: lane.snow_density_kg_m3,
+                        temperature_k: lane.surface_temperature_c + 273.15,
+                        atmospheric_pressure_pa: stage3_inputs
+                            .surface_energy_options
+                            .atmospheric_pressure_pa,
+                        first_soil_configuration: configured_top,
+                        beginning_first_soil: beginning_soil_top,
+                    },
+                )
+                .map_err(|_| {
+                    DirectV11RealConsumerError::Identity("covered carrier terminal snow-soil trial")
+                })?;
+            let terminal_soil_credit = SoilThermalTopBoundaryCreditV1 {
+                lane_id: *lane_id,
+                ofe_id,
+                first_layer_id: configured_top.layer_id.clone(),
+                beginning_owner_id: beginning.shadow.inner.soil_thermal.owner_id.clone(),
+                beginning_configuration_sha256: beginning
+                    .shadow
+                    .inner
+                    .soil_thermal
+                    .configuration_sha256
+                    .clone(),
+                beginning_state_sha256: beginning.shadow.inner.soil_thermal.state_sha256.clone(),
+                support_start_ns: i64::try_from(request.support.start_ns().get()).map_err(
+                    |_| DirectV11RealConsumerError::Identity("terminal soil credit support start"),
+                )?,
+                support_end_ns: i64::try_from(request.support.end_ns().get()).map_err(|_| {
+                    DirectV11RealConsumerError::Identity("terminal soil credit support end")
+                })?,
+                accepted_positive_downward_j_m2_ofe_ground: terminal_soil_trial.soil_heat_j_m2,
+                soil_thermal_credit_j_m2_ofe_ground: terminal_soil_trial.soil_heat_j_m2,
+                snow_soil_heat_receipt_sha256: Sha256Digest::try_new(digest32_hex(
+                    terminal_soil_trial.receipt.receipt_sha256,
+                ))
+                .map_err(|_| DirectV11RealConsumerError::Identity("terminal soil credit digest"))?,
+            };
+            terminal_soil_credits.insert(*lane_id, terminal_soil_credit);
+            terminal_soil_trials.insert(*lane_id, terminal_soil_trial);
+        }
         let destination_receipts = carrier_receipts
             .iter()
             .map(|(key, value)| (key.clone(), value.diagnostic_sha256))
@@ -449,51 +726,77 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         for (destination, boundary) in open_boundaries {
             corrected.insert(destination, boundary);
         }
-        let terms = self.lane_stage3_terms_from_boundaries(
-            &destination_receipts,
-            &corrected,
-            interval_s,
-        )?;
-        let lane_terms = terms.get(&lane_id).ok_or(
-            DirectV11RealConsumerError::Identity("covered carrier active lane"),
-        )?;
-        let precipitation = precipitation_sets.get(&lane_id).ok_or(
-            DirectV11RealConsumerError::Identity("covered carrier precipitation lane"),
-        )?;
-        let (_, advection) = reconstruct_precipitation_mass_and_advected_heat(precipitation)
-            .map_err(|error| DirectV11RealConsumerError::from_stage3_physical_custody(&error))?;
-        let snow = beginning.stage3_by_lane.get(&lane_id).ok_or(
-            DirectV11RealConsumerError::Identity("covered carrier snow lane"),
-        )?;
-        let snow_digest = if crate::hydrology::stage3_is_terminal_event_domain(snow) {
-            Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(snow)
-        } else {
-            Wb11HydrologyKernel::project_stage3_surface_state_v1(snow)
+        let terms =
+            self.lane_stage3_terms_from_boundaries(&destination_receipts, &corrected, interval_s)?;
+        let mut boundaries_by_lane = BTreeMap::new();
+        for lane_id in lane_states.keys() {
+            let lane_terms = terms
+                .get(lane_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered carrier active lane",
+                ))?;
+            let precipitation =
+                precipitation_sets
+                    .get(lane_id)
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "covered carrier precipitation lane",
+                    ))?;
+            let (_, advection) = reconstruct_precipitation_mass_and_advected_heat(precipitation)
+                .map_err(|error| {
+                    DirectV11RealConsumerError::from_stage3_physical_custody(&error)
+                })?;
+            let snow = beginning.stage3_by_lane.get(lane_id).ok_or(
+                DirectV11RealConsumerError::Identity("covered carrier snow lane"),
+            )?;
+            let snow_digest = if crate::hydrology::stage3_is_terminal_event_domain(snow) {
+                Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(snow)
+            } else {
+                Wb11HydrologyKernel::project_stage3_surface_state_v1(snow)
+            }
+            .map_err(|_| DirectV11RealConsumerError::Identity("covered carrier snow projection"))?
+            .beginning_stage3_state_sha256;
+            let (sensible, vapor, latent) = outward_snow_fluxes_to_stage3(
+                lane_terms.sensible_to_canopy_air_w_m2,
+                lane_terms.vapor_to_canopy_air_kg_m2_s,
+                lane_terms.latent_energy_to_canopy_air_j_m2,
+                interval_s,
+            );
+            let terminal_soil_trial =
+                terminal_soil_trials
+                    .get(lane_id)
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "covered carrier terminal trial join",
+                    ))?;
+            boundaries_by_lane.insert(
+                *lane_id,
+                Stage3SnowSurfaceBoundaryReceiptV1::try_new(
+                    Stage3SnowSurfaceBoundaryReceiptInputs {
+                        support: request.support,
+                        sensible_energy_j_m2: sensible,
+                        vapor_mass_kg_m2: vapor,
+                        latent_energy_j_m2: latent,
+                        shortwave_energy_j_m2: lane_terms.snow_absorbed_shortwave_w_m2 * interval_s,
+                        net_longwave_energy_j_m2: lane_terms.snow_net_longwave_w_m2 * interval_s,
+                        precipitation_advection_j_m2: advection,
+                        snow_soil_heat_j_m2: terminal_soil_trial.snow_heat_j_m2,
+                        latent_heat_j_kg: lane_terms.latent_heat_j_kg,
+                        beginning_stage3_state_sha256: snow_digest,
+                        identity: Stage3BoundaryIdentity::Provisional {
+                            carrier_receipt_sha256: lane_terms.provisional_carrier_receipt_sha256,
+                        },
+                    },
+                )?,
+            );
         }
-        .map_err(|_| DirectV11RealConsumerError::Identity("covered carrier snow projection"))?
-        .beginning_stage3_state_sha256;
-        let (sensible, vapor, latent) = outward_snow_fluxes_to_stage3(
-            lane_terms.sensible_to_canopy_air_w_m2,
-            lane_terms.vapor_to_canopy_air_kg_m2_s,
-            lane_terms.latent_energy_to_canopy_air_j_m2,
-            interval_s,
-        );
-        let boundary = Stage3SnowSurfaceBoundaryReceiptV1::try_new(
-            Stage3SnowSurfaceBoundaryReceiptInputs {
-                support: request.support,
-                sensible_energy_j_m2: sensible,
-                vapor_mass_kg_m2: vapor,
-                latent_energy_j_m2: latent,
-                shortwave_energy_j_m2: lane_terms.snow_absorbed_shortwave_w_m2 * interval_s,
-                net_longwave_energy_j_m2: lane_terms.snow_net_longwave_w_m2 * interval_s,
-                precipitation_advection_j_m2: advection,
-                snow_soil_heat_j_m2: terminal_soil_trial.snow_heat_j_m2,
-                latent_heat_j_kg: lane_terms.latent_heat_j_kg,
-                beginning_stage3_state_sha256: snow_digest,
-                identity: Stage3BoundaryIdentity::Provisional {
-                    carrier_receipt_sha256: lane_terms.provisional_carrier_receipt_sha256,
-                },
-            },
+        let boundary = *boundaries_by_lane.get(&request.lane_id).ok_or(
+            DirectV11RealConsumerError::Identity("covered carrier leader boundary"),
+        )?;
+        #[cfg(test)]
+        let terminal_soil_credit = terminal_soil_credits.get(&request.lane_id).cloned().ok_or(
+            DirectV11RealConsumerError::Identity("covered carrier leader soil credit"),
+        )?;
+        let terminal_soil_trial = terminal_soil_trials.get(&request.lane_id).ok_or(
+            DirectV11RealConsumerError::Identity("covered carrier leader soil trial"),
         )?;
 
         // Adopt only into the unpublished clone. This evolves the six
@@ -507,11 +810,43 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             .accept_envelope_with_soil_top_boundary_credits(
                 envelope.transaction_id(),
                 &envelope,
-                &[terminal_soil_credit.clone()],
+                &terminal_soil_credits.values().cloned().collect::<Vec<_>>(),
             )
             .map_err(|error| {
                 DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
             })?;
+        // A trial is a complete unpublished owner candidate, not merely the
+        // inner V9 carrier state. Apply the same V10 projections and parent
+        // lineage normalization used by accepted segment finalization so a
+        // composed child can begin from the exact installable owner set.
+        candidate.vegetation_state = project_v9_runtime_to_v10(
+            candidate.inner.vegetation_state(),
+            &candidate.vegetation_configuration,
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::V10(error))
+        })?;
+        candidate.lse_state = project_validated_v1_runtime_to_v2(
+            &candidate.inner.lse_configuration,
+            candidate.inner.lse_state(),
+            &candidate.lse_configuration,
+            &openwepp_land_surface_energy::Sha256Digest::try_new(
+                candidate
+                    .vegetation_configuration
+                    .configuration_sha256
+                    .clone(),
+            )
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
+            })?,
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
+        })?;
+        normalize_v11_staged_parent_lineage(
+            &mut candidate,
+            beginning.shadow.vegetation_state.0.last_transaction_id,
+        )?;
         let soil_candidate = candidate.inner.soil_thermal.clone();
         let wb14_child_receipt_set_sha256 = envelope
             .hydrology()
@@ -544,8 +879,10 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             .clone();
         ending_owner_bytes.insert("snow".to_owned(), trial_snow);
         let ending_joint = CoveredTerminalJointTrialStateV1::try_new(
-            beginning.joint.authority().clone(), ending_owner_bytes)
-            .map_err(|_| DirectV11RealConsumerError::Identity("covered carrier ending joint"))?;
+            beginning.joint.authority().clone(),
+            ending_owner_bytes,
+        )
+        .map_err(|_| DirectV11RealConsumerError::Identity("covered carrier ending joint"))?;
         let mut ending_candidates = CoveredCarrierEphemeralCandidatesV1::try_new(
             ending_joint,
             candidate,
@@ -558,18 +895,28 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             beginning_joint: beginning.joint.clone(),
             ending_joint: ending_candidates.joint.clone(),
             probe_child_identity: child,
-            trial_snow_soil_receipt: Some(terminal_soil_trial.receipt),
+            trial_snow_soil_receipt: Some(terminal_soil_trial.receipt.clone()),
         };
         Ok(CoveredCarrierPhaseResultV1 {
             transition,
+            beginning_candidates: beginning.clone(),
             ending_candidates,
+            beginning_stage3_by_lane: beginning.stage3_by_lane.clone(),
             precipitation_sets,
             carrier_envelope: envelope,
             complete_lower_boundaries: corrected,
             carrier_source_receipts: carrier_receipts,
+            open_snow_candidates,
             covered_lse_states: lse_states,
             soil_candidate,
+            #[cfg(test)]
             soil_top_boundary_credit: terminal_soil_credit,
+            batch_boundaries_by_lane: boundaries_by_lane,
+            batch_terminal_snow_soil_trial_receipts_by_lane: terminal_soil_trials
+                .iter()
+                .map(|(lane_id, trial)| (*lane_id, trial.receipt.clone()))
+                .collect(),
+            batch_soil_top_boundary_credits_by_lane: terminal_soil_credits,
             wb14_child_receipt_set_sha256,
             wb14_parent_receipt_set_sha256,
             wb14_child_replay_bytes,
@@ -580,6 +927,29 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
 
 #[cfg(test)]
 mod covered_carrier_phase_tests {
+    use super::*;
+
+    fn test_boundary(latent_heat_j_kg: f64) -> Stage3SnowCoveredLowerBoundary {
+        let digest = Sha256Digest::try_new("11".repeat(32)).expect("digest");
+        Stage3SnowCoveredLowerBoundary {
+            snow_temperature_k: 273.15,
+            latent_heat_j_kg,
+            sensible_to_canopy_air_w_m2: 0.0,
+            vapor_to_canopy_air_kg_m2_s: 0.0,
+            net_longwave_w_m2: 0.0,
+            shortwave_absorbed_w_m2: 0.0,
+            precipitation_advection_w_m2: 0.0,
+            carrier_receipt_id: digest.clone(),
+            snow_vis_albedo: 0.8,
+            snow_nir_albedo: 0.8,
+            stage3_albedo_state_sha256: digest.clone(),
+            forcing_receipt_sha256: digest,
+            optical_receipt_sha256: None,
+            reciprocal_longwave_receipt_sha256: None,
+            final_canopy_boundary_receipt_sha256: None,
+        }
+    }
+
     #[test]
     fn phase_has_no_stage3_evaluation_or_publication_surface() {
         let source = include_str!("carrier_phase.rs");
@@ -613,12 +983,100 @@ mod covered_carrier_phase_tests {
             .expect("implementation source");
         assert!(source.contains("execute_covered_carrier_phase_v1(\n        &self,"));
         assert!(source.contains("child.trial_support != request.support"));
-        assert!(source.contains("child.beginning_joint_sha256 != beginning.joint.receipt_sha256()"));
+        assert!(
+            source.contains("child.beginning_joint_sha256 != beginning.joint.receipt_sha256()")
+        );
         assert!(source.contains("forcing.duration_seconds.to_bits() != interval_s.to_bits()"));
-        assert!(source.contains("boundary.snow_temperature_k = trial_temperature_k"));
+        assert!(source.contains("boundary.snow_temperature_k = surface_temperature_k"));
+        assert!(source.contains("boundary.latent_heat_j_kg = latent_heat_j_kg"));
         assert!(source.contains("One provider call is one joint carrier mapping"));
         assert!(source.contains("provisional: true"));
         assert!(source.contains("accept_envelope(envelope.transaction_id(), &envelope)"));
         assert!(!implementation.contains("let ending_candidates = beginning.clone()"));
+    }
+
+    #[test]
+    fn batch_phase_enters_the_shared_engine_once_with_complete_lane_state() {
+        let source = include_str!("carrier_phase.rs");
+        let body = source
+            .split("pub(crate) fn execute_covered_carrier_batch_phase_v2")
+            .nth(1)
+            .expect("batch carrier entry")
+            .split("fn execute_shared_covered_carrier_engine_v1")
+            .next()
+            .expect("batch carrier body");
+        assert_eq!(
+            body.matches("self.execute_shared_covered_carrier_engine_v1(")
+                .count(),
+            1,
+            "one batch candidate must advance the shared carrier once",
+        );
+        assert!(
+            body.contains("BatchTerminalTrial {\n                lanes: request.lanes.clone(),")
+        );
+
+        let engine = source
+            .split("fn execute_shared_covered_carrier_engine_v1")
+            .nth(1)
+            .expect("shared carrier engine");
+        assert!(engine.contains("let lane_states = snow_boundary_state.lane_states(request);"));
+        assert!(engine.contains("for (lane_id, lane) in &lane_states"));
+        assert!(engine.contains("for lane_id in lane_states.keys()"));
+        assert!(engine.contains("batch_terminal_snow_soil_trial_receipts_by_lane"));
+    }
+
+    #[test]
+    fn terminal_trial_rebinds_common_temperature_and_latent_heat_together() {
+        let ofe_id = OfeId::try_new("ofe-1").expect("OFE");
+        let covered_key = (ofe_id.clone(), TileId::try_new("covered").expect("tile"));
+        let open_key = (ofe_id.clone(), TileId::try_new("open").expect("tile"));
+        let top_layer = SoilLayerId::try_new("soil-1").expect("soil layer");
+        let bindings = vec![crate::direct_runtime::DirectSurfaceLiquidOfeBinding {
+            ofe_id,
+            production_lane_index: 0,
+            production_lane_id: 1,
+            ordered_soil_layer_ids: vec![top_layer.clone()],
+            infiltration_soil_thermal_layer_id: top_layer,
+        }];
+        let mut covered_boundaries =
+            BTreeMap::from([(covered_key.clone(), test_boundary(2_500_000.0))]);
+        let mut open_boundaries = BTreeMap::from([(open_key.clone(), test_boundary(2_900_000.0))]);
+        let temperature_c = -12.345_678_9;
+        CoveredSnowBoundaryStateV1::TerminalTrial {
+            lane_id: 1,
+            ice_kg_m2: 0.25,
+            liquid_kg_m2: 0.0,
+            cold_content_j_m2: 6_481.481_422_5,
+            surface_temperature_k: temperature_c + 273.15,
+            depth_m: 0.0025,
+            density_kg_m3: 100.0,
+        }
+        .apply_to_boundary_sets(&bindings, &mut covered_boundaries, &mut open_boundaries)
+        .expect("terminal trial boundary rebind");
+
+        let covered = covered_boundaries
+            .get(&covered_key)
+            .expect("covered boundary");
+        let open = open_boundaries.get(&open_key).expect("open boundary");
+        let expected_temperature_k = temperature_c + 273.15;
+        let expected_latent =
+            openwepp_meteorology::surface_energy::latent_heat_for_surface_temperature(
+                TemperatureCelsius::try_new(temperature_c).expect("temperature"),
+            )
+            .expect("latent heat")
+            .as_joules_per_kilogram();
+        assert_eq!(
+            covered.snow_temperature_k.to_bits(),
+            expected_temperature_k.to_bits()
+        );
+        assert_eq!(
+            open.snow_temperature_k.to_bits(),
+            expected_temperature_k.to_bits()
+        );
+        assert_eq!(
+            covered.latent_heat_j_kg.to_bits(),
+            expected_latent.to_bits()
+        );
+        assert_eq!(open.latent_heat_j_kg.to_bits(), expected_latent.to_bits());
     }
 }

@@ -23,7 +23,13 @@ impl DirectSnowDiagnosticCapture {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectSnowSolidToLiquidLedger {
     pub raw_signed_melt_m: f64,
     pub redistributed_positive_melt_m: f64,
@@ -33,7 +39,13 @@ pub struct DirectSnowSolidToLiquidLedger {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectSnowLiquidDispositionLedger {
     pub incoming_liquid_m: f64,
     pub routed_liquid_m: f64,
@@ -43,18 +55,30 @@ pub struct DirectSnowLiquidDispositionLedger {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectSnowStage3Outcome {
     pub enabled: bool,
     #[cfg_attr(
-        any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"),
+        any(
+            feature = "restart-authority-evidence",
+            feature = "persisted-restart-v1"
+        ),
         serde(serialize_with = "serialize_optional_temperature_celsius")
     )]
     pub meltwater_temperature_c: Option<TemperatureCelsius>,
     pub sublimation_m: f64,
 }
 
-#[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+#[cfg(any(
+    feature = "restart-authority-evidence",
+    feature = "persisted-restart-v1"
+))]
 #[allow(clippy::ref_option)]
 fn serialize_optional_temperature_celsius<S>(
     value: &Option<TemperatureCelsius>,
@@ -77,7 +101,13 @@ where
 /// duplicated upstream handoff / downstream incoming operands from diverging
 /// after the authoritative solve.
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectSnowMassTransitionLedgers {
     solid_to_liquid: DirectSnowSolidToLiquidLedger,
     liquid_disposition: DirectSnowLiquidDispositionLedger,
@@ -168,11 +198,8 @@ impl DirectSnowMassTransitionLedgers {
         liquid_disposition: DirectSnowLiquidDispositionLedger,
         stage3_outcome: DirectSnowStage3Outcome,
     ) -> Result<Self, DirectSnowMassTransitionLedgerError> {
-        let candidate = Self::from_authoritative_parts(
-            solid_to_liquid,
-            liquid_disposition,
-            stage3_outcome,
-        );
+        let candidate =
+            Self::from_authoritative_parts(solid_to_liquid, liquid_disposition, stage3_outcome);
         candidate.validate()?;
         Ok(candidate)
     }
@@ -262,8 +289,7 @@ impl DirectSnowMassTransitionLedgers {
             - disposition.routed_liquid_m
             - disposition.retained_liquid_delta_m
             - disposition.refrozen_liquid_m;
-        if disposition.liquid_closure_residual_m.abs()
-            > SNOW_STAGE3_LIQUID_CLOSURE_TOLERANCE_M
+        if disposition.liquid_closure_residual_m.abs() > SNOW_STAGE3_LIQUID_CLOSURE_TOLERANCE_M
             || (reconstructed_residual_m - disposition.liquid_closure_residual_m).abs()
                 > SNOW_STAGE3_LIQUID_CLOSURE_TOLERANCE_M
         {

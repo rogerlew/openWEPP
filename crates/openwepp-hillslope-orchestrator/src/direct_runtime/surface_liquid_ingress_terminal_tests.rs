@@ -47,6 +47,7 @@ fn finite_routing_area_underflow_fails_before_receipt() {
         start_s: 0.0,
         end_s: INTERVAL_S,
         mass_kg_m2_basis_ofe_ground: 1.0,
+        temperature_k: 273.15,
         enthalpy_j_m2_basis_ofe_ground: 1.0,
     };
     let mut pending = BTreeMap::new();

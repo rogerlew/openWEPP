@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "openwepp.snow_free_half_hour_forcing.v1",
   "type": "object",
-  "required": ["provider_version", "provider_definition_sha256", "source_climate_sha256", "run_id", "day_index", "daily_horizontal_energy_mj_m2", "intervals", "next_day_precipitation_carry", "receipt_sha256"],
+  "required": ["provider_version", "provider_definition_sha256", "source_climate_sha256", "run_id", "day_index", "daily_horizontal_energy_mj_m2", "intervals", "next_day_precipitation_carry", "next_day_solid_precipitation_carry", "receipt_sha256"],
   "properties": {
     "provider_version": {"const": "OPENWEPP_SNOW_FREE_HALF_HOUR_FORCING_V1"},
     "provider_definition_sha256": {"$ref": "#/$defs/digest"},
@@ -12,6 +12,7 @@
     "daily_horizontal_energy_mj_m2": {"type": "number", "minimum": 0},
     "intervals": {"type": "array", "minItems": 48, "maxItems": 48, "items": {"$ref": "#/$defs/interval"}},
     "next_day_precipitation_carry": {"type": "array", "items": {"$ref": "#/$defs/parcel"}},
+    "next_day_solid_precipitation_carry": {"type": "array", "items": {"$ref": "#/$defs/solid_parcel"}},
     "receipt_sha256": {"$ref": "#/$defs/digest"}
   },
   "additionalProperties": false,
@@ -33,9 +34,25 @@
       },
       "additionalProperties": false
     },
+    "solid_parcel": {
+      "type": "object",
+      "required": ["parcel_id", "source_owner_id", "destination_ofe_id", "destination_tile_id", "start_s", "end_s", "mass_kg_m2", "temperature_k", "enthalpy_j_m2"],
+      "properties": {
+        "parcel_id": {"type": "string", "minLength": 1},
+        "source_owner_id": {"type": "string", "minLength": 1},
+        "destination_ofe_id": {"type": "string", "minLength": 1},
+        "destination_tile_id": {"type": "string", "minLength": 1},
+        "start_s": {"type": "number", "minimum": 0},
+        "end_s": {"type": "number", "exclusiveMinimum": 0},
+        "mass_kg_m2": {"type": "number", "minimum": 0},
+        "temperature_k": {"type": "number", "exclusiveMinimum": 0, "maximum": 273.15},
+        "enthalpy_j_m2": {"type": "number", "maximum": 0}
+      },
+      "additionalProperties": false
+    },
     "interval": {
       "type": "object",
-      "required": ["provider_definition_sha256", "source_climate_sha256", "run_id", "day_index", "ofe_id", "tile_id", "interval_index", "transaction_id", "start_s", "end_s", "parent_hour_index", "air_temperature_c", "dew_point_c", "wind_m_s", "pressure_kpa", "actual_vapor_pressure_kpa", "specific_humidity_kg_kg", "vpd_kpa", "cloud_fraction", "solar_zenith_cosine", "global_horizontal_shortwave_w_m2", "direct_visible_w_m2", "diffuse_visible_w_m2", "direct_nir_w_m2", "diffuse_nir_w_m2", "downward_longwave_w_m2", "co2_pa", "reference_height_m", "gsi", "gsi_receipt_sha256", "wb14_configuration_sha256", "precipitation_parcels", "interval_receipt_sha256"],
+      "required": ["provider_definition_sha256", "source_climate_sha256", "run_id", "day_index", "ofe_id", "tile_id", "interval_index", "transaction_id", "start_s", "end_s", "parent_hour_index", "air_temperature_c", "dew_point_c", "wind_m_s", "pressure_kpa", "actual_vapor_pressure_kpa", "specific_humidity_kg_kg", "vpd_kpa", "cloud_fraction", "solar_zenith_cosine", "global_horizontal_shortwave_w_m2", "direct_visible_w_m2", "diffuse_visible_w_m2", "direct_nir_w_m2", "diffuse_nir_w_m2", "downward_longwave_w_m2", "co2_pa", "reference_height_m", "gsi", "gsi_receipt_sha256", "wb14_configuration_sha256", "active_precipitation_m", "rain_m", "snowfall_m", "rain_fraction", "snow_fraction", "hydrometeor_temperature_c", "precipitation_parcels", "solid_precipitation_parcels", "interval_receipt_sha256"],
       "properties": {
         "provider_definition_sha256": {"$ref": "#/$defs/digest"},
         "source_climate_sha256": {"$ref": "#/$defs/digest"},
@@ -68,7 +85,14 @@
         "gsi": {"type": "number"},
         "gsi_receipt_sha256": {"$ref": "#/$defs/digest"},
         "wb14_configuration_sha256": {"$ref": "#/$defs/digest"},
+        "active_precipitation_m": {"type": "number", "minimum": 0},
+        "rain_m": {"type": "number", "minimum": 0},
+        "snowfall_m": {"type": "number", "minimum": 0},
+        "rain_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+        "snow_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+        "hydrometeor_temperature_c": {"type": ["number", "null"]},
         "precipitation_parcels": {"type": "array", "items": {"$ref": "#/$defs/parcel"}},
+        "solid_precipitation_parcels": {"type": "array", "items": {"$ref": "#/$defs/solid_parcel"}},
         "interval_receipt_sha256": {"$ref": "#/$defs/digest"}
       },
       "additionalProperties": false

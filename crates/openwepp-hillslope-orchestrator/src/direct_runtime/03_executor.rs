@@ -319,13 +319,98 @@ impl DirectFrameExecutor {
         ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
         S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
     {
-        self.run_publication_stream_with_day_hook(
+        self.run_publication_stream_with_stage3_day_preparation_and_day_hook(
             frame,
             metadata,
+            Self::reject_unprepared_stage3_attachment,
             build_day_input,
             consume_row,
             |_| Ok(()),
         )
+    }
+
+    /// Execute the production publication stream with one mutable Stage-3
+    /// preparation boundary per complete scheduler day.
+    ///
+    /// `prepare_stage3_day` runs before the first lane input for that day. The
+    /// staged Stage-3 candidate is committed only after every lane and the
+    /// complete-day boundary have succeeded. The closure is runner-owned so
+    /// sealed provider/GSI supports can be constructed just in time without
+    /// exposing a snow-model selector.
+    #[allow(clippy::too_many_lines)]
+    pub fn run_publication_stream_with_stage3_day_preparation_and_interleaved_day_inputs_and_day_frames<
+        F,
+        P,
+        S,
+    >(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        prepare_stage3_day: P,
+        build_day_input: F,
+        consume_row: S,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        P: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+    {
+        self.run_publication_stream_with_stage3_day_preparation_and_day_hook(
+            frame,
+            metadata,
+            prepare_stage3_day,
+            build_day_input,
+            consume_row,
+            |_| Ok(()),
+        )
+    }
+
+    /// Stream a constitutive Stage-3 run against a cloned frame and archive
+    /// each complete day only after every retained lane row has been accepted
+    /// by the caller. The original frame is installed only after the complete
+    /// run succeeds; external sinks therefore must remain transaction-private
+    /// until this method returns successfully.
+    pub fn run_atomic_publication_stream_with_stage3_day_preparation_and_committed_day_archive<
+        F,
+        P,
+        S,
+        A,
+    >(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        prepare_stage3_day: P,
+        build_day_input: F,
+        consume_row: S,
+        archive_committed_day: A,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        P: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+        A: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
+    {
+        let mut candidate = frame.clone();
+        let execution = self
+            .run_publication_stream_with_stage3_day_preparation_and_day_hook_and_archive(
+                &mut candidate,
+                metadata,
+                prepare_stage3_day,
+                build_day_input,
+                consume_row,
+                |_| Ok(()),
+                archive_committed_day,
+            )?;
+        *frame = candidate;
+        Ok(execution)
     }
 
     /// Execute the ordinary scheduler into an immutable publication batch.
@@ -356,6 +441,52 @@ impl DirectFrameExecutor {
                 Ok(())
             },
         )?;
+        *frame = candidate;
+        Ok(DirectPublicationBatchExecution {
+            report: execution.report,
+            identity: execution.identity,
+            metadata,
+            rows,
+        })
+    }
+
+    /// Execute an atomic production publication batch with one runner-owned
+    /// Stage-3 preparation boundary per complete scheduler day.
+    ///
+    /// The cloned frame preserves whole-run rollback: neither a prepared
+    /// Stage-3 candidate nor ordinary day owners are installed if any later
+    /// day or lane fails.
+    pub fn run_publication_batch_with_stage3_day_preparation_and_interleaved_day_inputs_and_day_frames<
+        F,
+        P,
+    >(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        prepare_stage3_day: P,
+        build_day_input: F,
+    ) -> Result<DirectPublicationBatchExecution, DirectRuntimeError>
+    where
+        P: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+    {
+        let mut candidate = frame.clone();
+        let mut rows = Vec::<(DirectPublicationDayRow, DirectDayFrame)>::new();
+        let execution = self
+            .run_publication_stream_with_stage3_day_preparation_and_interleaved_day_inputs_and_day_frames(
+                &mut candidate,
+                metadata.clone(),
+                prepare_stage3_day,
+                build_day_input,
+                |row, day_frame| {
+                    rows.push((row.clone(), day_frame.clone()));
+                    Ok(())
+                },
+            )?;
         *frame = candidate;
         Ok(DirectPublicationBatchExecution {
             report: execution.report,
@@ -797,14 +928,13 @@ impl DirectFrameExecutor {
         Ok(execution)
     }
 
-    #[allow(clippy::too_many_lines)]
     fn run_publication_stream_with_day_hook<F, S, H>(
         &self,
         frame: &mut DirectRunFrame,
         metadata: DirectPublicationRunMetadata,
-        mut build_day_input: F,
-        mut consume_row: S,
-        mut run_day_shadow: H,
+        build_day_input: F,
+        consume_row: S,
+        run_day_shadow: H,
     ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
     where
         F: FnMut(
@@ -815,6 +945,133 @@ impl DirectFrameExecutor {
         S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
         H: FnMut(DirectPublicationDayHook<'_>) -> Result<(), DirectRuntimeError>,
     {
+        self.run_publication_stream_with_stage3_day_preparation_and_day_hook(
+            frame,
+            metadata,
+            Self::reject_unprepared_stage3_attachment,
+            build_day_input,
+            consume_row,
+            run_day_shadow,
+        )
+    }
+
+    /// Compatibility adapter for callers that do not own Stage-3 provider
+    /// preparation. It preserves the established publication API only when no
+    /// constitutive Stage-3 attachment is installed; an installed attachment
+    /// must use the explicit mutable day-preparation API and cannot be skipped.
+    fn reject_unprepared_stage3_attachment(
+        frame: &mut DirectRunFrame,
+        _day_index: usize,
+    ) -> Result<(), DirectRuntimeError> {
+        if frame.snow_stage3_v11_attachment.is_some() {
+            return Err(DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "snow_stage3_v11.scheduler_prepare",
+                detail: "installed Stage-3 attachment requires the explicit day-preparation publication API".into(),
+            });
+        }
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn run_publication_stream_with_stage3_day_preparation_and_day_hook<F, P, S, H>(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        prepare_stage3_day: P,
+        build_day_input: F,
+        consume_row: S,
+        run_day_shadow: H,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        P: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+        H: FnMut(DirectPublicationDayHook<'_>) -> Result<(), DirectRuntimeError>,
+    {
+        self.run_publication_stream_with_stage3_day_preparation_and_day_hook_and_archive(
+            frame,
+            metadata,
+            prepare_stage3_day,
+            build_day_input,
+            consume_row,
+            run_day_shadow,
+            |_, _| Ok(()),
+        )
+    }
+
+    fn run_publication_stream_with_stage3_day_preparation_and_day_hook_and_archive<
+        F,
+        P,
+        S,
+        H,
+        A,
+    >(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        prepare_stage3_day: P,
+        build_day_input: F,
+        consume_row: S,
+        run_day_shadow: H,
+        archive_committed_day: A,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        P: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+        H: FnMut(DirectPublicationDayHook<'_>) -> Result<(), DirectRuntimeError>,
+        A: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
+    {
+        self.run_publication_stream_with_stage3_day_preparation_and_commit_hook(
+            frame,
+            metadata,
+            prepare_stage3_day,
+            build_day_input,
+            consume_row,
+            run_day_shadow,
+            |frame, _day_index, publication_inputs| {
+                frame.commit_snow_stage3_shadow(publication_inputs)
+            },
+            archive_committed_day,
+        )
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn run_publication_stream_with_stage3_day_preparation_and_commit_hook<F, P, S, H, C, A>(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        mut prepare_stage3_day: P,
+        mut build_day_input: F,
+        mut consume_row: S,
+        mut run_day_shadow: H,
+        mut commit_stage3_day: C,
+        mut archive_committed_day: A,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        P: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+        H: FnMut(DirectPublicationDayHook<'_>) -> Result<(), DirectRuntimeError>,
+        C: FnMut(
+            &mut DirectRunFrame,
+            usize,
+            &[DirectPublicationDayInput],
+        ) -> Result<(), DirectRuntimeError>,
+        A: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
+    {
         // D15A (rev 27): the opt-in ACTIVE owner takes the two-phase day
         // loop; the default path below is textually untouched
         // (`INV-OFEROUTE-010`).
@@ -822,8 +1079,10 @@ impl DirectFrameExecutor {
             return self.run_laned_active_publication_stream(
                 frame,
                 metadata,
+                prepare_stage3_day,
                 build_day_input,
                 consume_row,
+                |frame, day_index| commit_stage3_day(frame, day_index, &[]),
             );
         }
         DIRECT_AUDIT.record_publication_capture_run();
@@ -851,6 +1110,72 @@ impl DirectFrameExecutor {
         );
 
         for day_index in 0..frame.identity.day_count {
+            let stage3_v11_owned_day = frame.snow_stage3_v11_attachment.is_some();
+            prepare_stage3_day(frame, day_index)?;
+            if stage3_v11_owned_day {
+                let mut publication_inputs = Vec::with_capacity(frame.identity.lane_count);
+                for lane_index in 0..frame.identity.lane_count {
+                    publication_inputs.push(build_day_input(frame, day_index, lane_index)?);
+                }
+                // The prepared V11 candidate already executed the complete
+                // 48-support owner transaction.  Running the ordinary daily
+                // lane spans here would execute the legacy snow/water path a
+                // second time and let its frame overwrite the adaptive owner.
+                run_day_shadow(DirectPublicationDayHook::CompleteDay { day_index })?;
+                commit_stage3_day(frame, day_index, &publication_inputs)?;
+                let committed_day_frames = frame
+                    .committed_snow_stage3_publication_day(day_index)?
+                    .lane_frames()
+                    .to_vec();
+                if committed_day_frames.len() != frame.identity.lane_count {
+                    return Err(DirectRuntimeError::FrameLaneCountMismatch {
+                        identity_lane_count: frame.identity.lane_count,
+                        actual_lane_count: committed_day_frames.len(),
+                    });
+                }
+                for (lane_index, mut day_frame) in
+                    committed_day_frames.into_iter().enumerate()
+                {
+                    let day_input = publication_inputs.get(lane_index).ok_or(
+                        DirectRuntimeError::LaneIndexOutOfRange {
+                            lane_index,
+                            lane_count: publication_inputs.len(),
+                        },
+                    )?;
+                    // Calendar is exogenous, but the climate values were
+                    // already retained from the exact accepted supports.
+                    // Validate identity and never overwrite accepted owner
+                    // operands with a post-commit runner reconstruction.
+                    frame
+                        .committed_snow_stage3_publication_day(day_index)?
+                        .validate_publication_exogenous_input(lane_index, day_input)?;
+                    let lane = frame.lanes.get(lane_index).ok_or(
+                        DirectRuntimeError::LaneIndexOutOfRange {
+                            lane_index,
+                            lane_count: frame.lanes.len(),
+                        },
+                    )?;
+                    let row =
+                        DirectPublicationDayRow::from_day_frame(&day_frame, day_input, lane)?;
+                    row_count = row_count.checked_add(1).ok_or(
+                        DirectRuntimeError::DirectDomainViolation {
+                            field: "publication.row_count",
+                        },
+                    )?;
+                    for phase in phase_plan {
+                        let view = day_frame.phase_view(phase);
+                        let _phase = view.phase();
+                        phase_view_count += 1;
+                        counters.record_phase_status(phase, Self::phase_lifecycle_status(phase));
+                    }
+                    counters.record_day_frame_commit();
+                    run_day_shadow(DirectPublicationDayHook::CommittedDay)?;
+                    consume_row(&row, &day_frame)?;
+                }
+                archive_committed_day(frame, day_index)?;
+                continue;
+            }
+            let mut committed_day_rows = Vec::with_capacity(frame.identity.lane_count);
             for lane_index in 0..frame.identity.lane_count {
                 let day_input = build_day_input(frame, day_index, lane_index)?;
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
@@ -902,11 +1227,14 @@ impl DirectFrameExecutor {
                 }
                 frame.commit_day_frame(&day_frame)?;
                 counters.record_day_frame_commit();
-                frame.commit_snow_stage3_shadow()?;
                 run_day_shadow(DirectPublicationDayHook::CommittedDay)?;
-                consume_row(&row, &day_frame)?;
+                committed_day_rows.push((row, day_frame));
             }
             run_day_shadow(DirectPublicationDayHook::CompleteDay { day_index })?;
+            commit_stage3_day(frame, day_index, &[])?;
+            for (row, day_frame) in &committed_day_rows {
+                consume_row(row, day_frame)?;
+            }
         }
         if row_count != expected_row_count {
             return Err(DirectRuntimeError::PublicationRowCountMismatch {
@@ -1141,7 +1469,7 @@ impl DirectFrameExecutor {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn publish_laned_active_day<S>(
+    fn publish_laned_active_day(
         frame: &mut DirectRunFrame,
         day_frames: &mut [DirectDayFrame],
         day_inputs: &[DirectPublicationDayInput],
@@ -1151,11 +1479,8 @@ impl DirectFrameExecutor {
         phase_view_count: &mut u64,
         counters: &mut DirectExecutionCounters,
         row_count: &mut usize,
-        consume_row: &mut S,
-    ) -> Result<(), DirectRuntimeError>
-    where
-        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
-    {
+        committed_day_rows: &mut Vec<(DirectPublicationDayRow, DirectDayFrame)>,
+    ) -> Result<(), DirectRuntimeError> {
         let lane_count = frame.identity.lane_count;
         let day_index = day_frames[0].day_index;
         for lane_index in 0..lane_count {
@@ -1202,26 +1527,30 @@ impl DirectFrameExecutor {
             }
             frame.commit_day_frame(day_frame)?;
             counters.record_day_frame_commit();
-            consume_row(&row, day_frame)?;
+            committed_day_rows.push((row, day_frame.clone()));
         }
         Ok(())
     }
 
     #[allow(clippy::too_many_lines)]
-    fn run_laned_active_publication_stream<F, S>(
+    fn run_laned_active_publication_stream<F, P, S, C>(
         &self,
         frame: &mut DirectRunFrame,
         metadata: DirectPublicationRunMetadata,
+        mut prepare_stage3_day: P,
         mut build_day_input: F,
         mut consume_row: S,
+        mut commit_stage3_day: C,
     ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
     where
+        P: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
         F: FnMut(
             &DirectRunFrame,
             usize,
             usize,
         ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
         S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+        C: FnMut(&mut DirectRunFrame, usize) -> Result<(), DirectRuntimeError>,
     {
         DIRECT_AUDIT.record_publication_capture_run();
         let config =
@@ -1265,6 +1594,7 @@ impl DirectFrameExecutor {
 
         let lane_count = frame.identity.lane_count;
         for day_index in 0..frame.identity.day_count {
+            prepare_stage3_day(frame, day_index)?;
             // Phase 1: hydrology for every lane, in lane order, with the
             // SURFACE transfer suppressed (router ownership) and the LATERAL
             // transfer published unchanged.
@@ -1301,6 +1631,7 @@ impl DirectFrameExecutor {
             // guards, run erosion/ledger, build rows, publish dynamic transfer
             // operands, and commit in lane order. The erosion-inflow refresh
             // remains here so lane N+1 sees lane N's same-day erosion output.
+            let mut committed_day_rows = Vec::with_capacity(lane_count);
             Self::publish_laned_active_day(
                 frame,
                 &mut day_frames,
@@ -1311,8 +1642,12 @@ impl DirectFrameExecutor {
                 &mut phase_view_count,
                 &mut counters,
                 &mut row_count,
-                &mut consume_row,
+                &mut committed_day_rows,
             )?;
+            commit_stage3_day(frame, day_index)?;
+            for (row, day_frame) in &committed_day_rows {
+                consume_row(row, day_frame)?;
+            }
         }
         if row_count != expected_row_count {
             return Err(DirectRuntimeError::PublicationRowCountMismatch {

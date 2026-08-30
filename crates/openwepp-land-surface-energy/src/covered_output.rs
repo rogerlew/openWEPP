@@ -269,11 +269,7 @@ pub struct CoveredColumnLongwaveOperands {
 }
 
 impl CoveredColumnLongwaveOperands {
-    fn validate(
-        &self,
-        occupancies: &[CoveredOccupancyEnergyOperands],
-    ) -> Result<(), LandSurfaceEnergyError> {
-        let count = occupancies.len();
+    fn validate_topology(&self, count: usize) -> Result<(), LandSurfaceEnergyError> {
         if !self.atmospheric_downward_w_m2_tile.is_finite()
             || !self.top_upward_w_m2_tile.is_finite()
             || !self.ground_net_w_m2_tile.is_finite()
@@ -298,6 +294,15 @@ impl CoveredColumnLongwaveOperands {
                 "covered longwave topology",
             ));
         }
+        Ok(())
+    }
+
+    fn validate(
+        &self,
+        occupancies: &[CoveredOccupancyEnergyOperands],
+    ) -> Result<(), LandSurfaceEnergyError> {
+        let count = occupancies.len();
+        self.validate_topology(count)?;
         let mut component_total = 0.0;
         for (index, ((identity, values), occupancy)) in self
             .occupancy_component_net_w_m2_tile
@@ -310,8 +315,15 @@ impl CoveredColumnLongwaveOperands {
                 .iter()
                 .map(|surface| surface.emissive_area_m2_m2_tile)
                 .sum::<f64>();
+            let exact_inactive = emissive_area.to_bits() == 0.0_f64.to_bits()
+                && surfaces
+                    .iter()
+                    .all(|surface| surface.emissive_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits())
+                && values
+                    .iter()
+                    .all(|value| value.to_bits() == 0.0_f64.to_bits());
             if identity != &occupancy.occupancy_id
-                || emissive_area <= 0.0
+                || (!exact_inactive && emissive_area <= 0.0)
                 || values.iter().any(|value| !value.is_finite())
                 || !values.iter().zip(surfaces).all(|(value, surface)| {
                     value.to_bits() == surface.net_longwave_w_m2_tile.to_bits()
@@ -320,6 +332,21 @@ impl CoveredColumnLongwaveOperands {
                 return Err(LandSurfaceEnergyError::ComponentClosure(
                     "covered longwave component ownership",
                 ));
+            }
+            let layer_total = values.iter().sum::<f64>();
+            let boundary_reconstruction = self.downward_boundaries_w_m2_tile[index]
+                - self.downward_boundaries_w_m2_tile[index + 1]
+                + self.upward_boundaries_w_m2_tile[index + 1]
+                - self.upward_boundaries_w_m2_tile[index];
+            if exact_inactive {
+                if layer_total.to_bits() != 0.0_f64.to_bits()
+                    || boundary_reconstruction.to_bits() != 0.0_f64.to_bits()
+                {
+                    return Err(LandSurfaceEnergyError::ComponentClosure(
+                        "covered inactive reciprocal longwave layer",
+                    ));
+                }
+                continue;
             }
             let exchange = (1.0 - self.transmissivities[index])
                 * (self.downward_boundaries_w_m2_tile[index]
@@ -338,11 +365,6 @@ impl CoveredColumnLongwaveOperands {
                     ));
                 }
             }
-            let layer_total = values.iter().sum::<f64>();
-            let boundary_reconstruction = self.downward_boundaries_w_m2_tile[index]
-                - self.downward_boundaries_w_m2_tile[index + 1]
-                + self.upward_boundaries_w_m2_tile[index + 1]
-                - self.upward_boundaries_w_m2_tile[index];
             if (layer_total - boundary_reconstruction).abs()
                 > energy_tolerance(layer_total.abs() + boundary_reconstruction.abs())
             {
@@ -391,8 +413,49 @@ pub struct CoveredCanopyAirEnergyOperands {
     pub canopy_air_specific_humidity_kg_kg: f64,
     pub ground_sensible_to_canopy_air_w_m2_tile: f64,
     pub ground_vapor_to_canopy_air_kg_m2_tile_s: f64,
+    pub canopy_sensible_w_m2_tile: f64,
+    pub canopy_vapor_kg_m2_tile_s: f64,
     pub sensible_to_reference_air_w_m2_tile: f64,
     pub vapor_to_reference_air_kg_m2_tile_s: f64,
+    pub shared_heat_residual_w_m2_tile: f64,
+    pub shared_heat_tolerance_w_m2_tile: f64,
+    pub shared_vapor_residual_kg_m2_tile_s: f64,
+    pub shared_vapor_tolerance_kg_m2_tile_s: f64,
+}
+
+impl CoveredCanopyAirEnergyOperands {
+    fn validate(self) -> Result<(), LandSurfaceEnergyError> {
+        if [
+            self.rho_air_kg_m3,
+            self.cp_air_j_kg_k,
+            self.canopy_air_temperature_k,
+            self.canopy_air_specific_humidity_kg_kg,
+            self.ground_sensible_to_canopy_air_w_m2_tile,
+            self.ground_vapor_to_canopy_air_kg_m2_tile_s,
+            self.canopy_sensible_w_m2_tile,
+            self.canopy_vapor_kg_m2_tile_s,
+            self.sensible_to_reference_air_w_m2_tile,
+            self.vapor_to_reference_air_kg_m2_tile_s,
+            self.shared_heat_residual_w_m2_tile,
+            self.shared_heat_tolerance_w_m2_tile,
+            self.shared_vapor_residual_kg_m2_tile_s,
+            self.shared_vapor_tolerance_kg_m2_tile_s,
+        ]
+        .iter()
+        .any(|value| !value.is_finite())
+            || self.rho_air_kg_m3 <= 0.0
+            || self.cp_air_j_kg_k <= 0.0
+            || self.canopy_air_temperature_k <= 0.0
+            || self.canopy_air_specific_humidity_kg_kg < 0.0
+            || self.shared_heat_tolerance_w_m2_tile <= 0.0
+            || self.shared_vapor_tolerance_kg_m2_tile_s <= 0.0
+        {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "covered canopy-air operand domain",
+            ));
+        }
+        Ok(())
+    }
 }
 
 /// Complete covered-column energy receipt supplementing the ground surface,
@@ -437,38 +500,28 @@ impl CoveredColumnEnergyOperands {
         self.shortwave.validate(&self.occupancies)?;
         self.longwave.validate(&self.occupancies)?;
         let air = self.canopy_air;
-        if [
-            air.rho_air_kg_m3,
-            air.cp_air_j_kg_k,
-            air.canopy_air_temperature_k,
-            air.canopy_air_specific_humidity_kg_kg,
-            air.ground_sensible_to_canopy_air_w_m2_tile,
-            air.ground_vapor_to_canopy_air_kg_m2_tile_s,
-            air.sensible_to_reference_air_w_m2_tile,
-            air.vapor_to_reference_air_kg_m2_tile_s,
-        ]
-        .iter()
-        .any(|value| !value.is_finite())
-            || air.rho_air_kg_m3 <= 0.0
-            || air.cp_air_j_kg_k <= 0.0
-            || air.canopy_air_temperature_k <= 0.0
-            || air.canopy_air_specific_humidity_kg_kg < 0.0
-        {
-            return Err(LandSurfaceEnergyError::ComponentClosure(
-                "covered canopy-air operand domain",
-            ));
-        }
+        air.validate()?;
         let canopy_sensible: f64 = self
             .occupancies
             .iter()
-            .flat_map(CoveredOccupancyEnergyOperands::surfaces)
-            .map(|surface| surface.sensible_to_canopy_air_w_m2_tile)
+            .map(|occupancy| {
+                occupancy
+                    .surfaces()
+                    .iter()
+                    .map(|surface| surface.sensible_to_canopy_air_w_m2_tile)
+                    .sum::<f64>()
+            })
             .sum();
         let canopy_vapor: f64 = self
             .occupancies
             .iter()
-            .flat_map(CoveredOccupancyEnergyOperands::surfaces)
-            .map(|surface| surface.signed_vapor_to_canopy_air_kg_m2_tile_s)
+            .map(|occupancy| {
+                occupancy
+                    .surfaces()
+                    .iter()
+                    .map(|surface| surface.signed_vapor_to_canopy_air_kg_m2_tile_s)
+                    .sum::<f64>()
+            })
             .sum();
         for surface in self
             .occupancies
@@ -506,19 +559,12 @@ impl CoveredColumnEnergyOperands {
             - air.sensible_to_reference_air_w_m2_tile;
         let vapor_residual = canopy_vapor + air.ground_vapor_to_canopy_air_kg_m2_tile_s
             - air.vapor_to_reference_air_kg_m2_tile_s;
-        if heat_residual.abs()
-            > energy_tolerance(
-                canopy_sensible.abs()
-                    + air.ground_sensible_to_canopy_air_w_m2_tile.abs()
-                    + air.sensible_to_reference_air_w_m2_tile.abs(),
-            )
-            || vapor_residual.abs()
-                > water_tolerance(
-                    canopy_vapor
-                        .abs()
-                        .max(air.ground_vapor_to_canopy_air_kg_m2_tile_s.abs())
-                        .max(air.vapor_to_reference_air_kg_m2_tile_s.abs()),
-                )
+        if canopy_sensible.to_bits() != air.canopy_sensible_w_m2_tile.to_bits()
+            || canopy_vapor.to_bits() != air.canopy_vapor_kg_m2_tile_s.to_bits()
+            || heat_residual.to_bits() != air.shared_heat_residual_w_m2_tile.to_bits()
+            || vapor_residual.to_bits() != air.shared_vapor_residual_kg_m2_tile_s.to_bits()
+            || heat_residual.abs() > air.shared_heat_tolerance_w_m2_tile
+            || vapor_residual.abs() > air.shared_vapor_tolerance_kg_m2_tile_s
         {
             return Err(LandSurfaceEnergyError::ControlVolumeClosure(
                 "covered canopy-air heat/vapor",
@@ -619,8 +665,14 @@ pub struct CoveredColumnEvaluation {
     pub ground_stemflow_kg_m2_tile: f64,
     pub ground_sensible_to_canopy_air_w_m2: f64,
     pub lower_boundary_vapor_to_canopy_air_kg_m2_s: f64,
+    pub canopy_sensible_w_m2: f64,
+    pub canopy_vapor_kg_m2_s: f64,
     pub sensible_to_reference_air_w_m2: f64,
     pub vapor_to_reference_air_kg_m2_s: f64,
+    pub shared_heat_residual_w_m2: f64,
+    pub shared_heat_tolerance_w_m2: f64,
+    pub shared_vapor_residual_kg_m2_s: f64,
+    pub shared_vapor_tolerance_kg_m2_s: f64,
 }
 
 #[cfg(test)]
@@ -663,31 +715,17 @@ mod tests {
         }
     }
 
-    fn valid_column() -> CoveredColumnEnergyOperands {
+    fn valid_occupancy() -> (
+        CoveredOccupancyEnergyOperands,
+        CoveredOccupancyShortwaveInputs,
+        [f64; 4],
+    ) {
         let mut occupancy = CoveredOccupancyEnergyOperands {
             occupancy_id: "canopy-rank-0".into(),
             sun_leaf: surface(10.0, -2.0, 2.0e-6, 296.0),
             shade_leaf: surface(20.0, -3.0, 3.0e-6, 295.0),
             wet_surface: surface(7.0, -4.0, 4.0e-6, 289.0),
             dry_stem: surface(30.0, -5.0, 0.0, 293.0),
-        };
-        let ground_terminal = BandDirectionalFluxes {
-            direct_vis: 1.0,
-            diffuse_vis: 2.0,
-            direct_nir: 3.0,
-            diffuse_nir: 4.0,
-        };
-        let ground_absorbed = BandDirectionalFluxes {
-            direct_vis: 0.5,
-            diffuse_vis: 1.0,
-            direct_nir: 1.5,
-            diffuse_nir: 2.0,
-        };
-        let ground_reflected = BandDirectionalFluxes {
-            direct_vis: 0.5,
-            diffuse_vis: 1.0,
-            direct_nir: 1.5,
-            diffuse_nir: 2.0,
         };
         let radiation = CoveredOccupancyShortwaveInputs {
             occupancy_id: occupancy.occupancy_id.clone(),
@@ -724,10 +762,38 @@ mod tests {
             surface.heat_conductance_m_s_tile =
                 surface.sensible_to_canopy_air_w_m2_tile / (surface.surface_temperature_k - 300.0);
         }
+        (occupancy, radiation, component_longwave)
+    }
+
+    fn valid_column() -> CoveredColumnEnergyOperands {
+        let (occupancy, radiation, component_longwave) = valid_occupancy();
+        let ground_terminal = BandDirectionalFluxes {
+            direct_vis: 1.0,
+            diffuse_vis: 2.0,
+            direct_nir: 3.0,
+            diffuse_nir: 4.0,
+        };
+        let ground_absorbed = BandDirectionalFluxes {
+            direct_vis: 0.5,
+            diffuse_vis: 1.0,
+            direct_nir: 1.5,
+            diffuse_nir: 2.0,
+        };
+        let ground_reflected = BandDirectionalFluxes {
+            direct_vis: 0.5,
+            diffuse_vis: 1.0,
+            direct_nir: 1.5,
+            diffuse_nir: 2.0,
+        };
         let canopy_sensible: f64 = occupancy
             .surfaces()
             .iter()
             .map(|surface| surface.sensible_to_canopy_air_w_m2_tile)
+            .sum();
+        let canopy_vapor: f64 = occupancy
+            .surfaces()
+            .iter()
+            .map(|surface| surface.signed_vapor_to_canopy_air_kg_m2_tile_s)
             .sum();
         let component_longwave_sum = component_longwave.iter().sum::<f64>();
         let top_upward = 100.0 - 80.0 + 50.0 - component_longwave_sum;
@@ -740,8 +806,18 @@ mod tests {
                 canopy_air_specific_humidity_kg_kg: 0.01,
                 ground_sensible_to_canopy_air_w_m2_tile: 2.0,
                 ground_vapor_to_canopy_air_kg_m2_tile_s: 1.0e-6,
+                canopy_sensible_w_m2_tile: canopy_sensible,
+                canopy_vapor_kg_m2_tile_s: canopy_vapor,
                 sensible_to_reference_air_w_m2_tile: canopy_sensible + 2.0,
-                vapor_to_reference_air_kg_m2_tile_s: 10.0e-6,
+                vapor_to_reference_air_kg_m2_tile_s: canopy_vapor + 1.0e-6,
+                shared_heat_residual_w_m2_tile: 0.0,
+                shared_heat_tolerance_w_m2_tile: energy_tolerance(
+                    canopy_sensible.abs() + 2.0 + (canopy_sensible + 2.0).abs(),
+                ),
+                shared_vapor_residual_kg_m2_tile_s: 0.0,
+                shared_vapor_tolerance_kg_m2_tile_s: water_tolerance(
+                    canopy_vapor.abs().max(1.0e-6),
+                ),
             },
             shortwave: CoveredColumnShortwaveOperands {
                 incident_w_m2_tile: BandDirectionalFluxes {
@@ -956,6 +1032,49 @@ mod tests {
                 f64::from_bits(stage3.net_longwave_w_m2_tile.to_bits() + 1);
         }
         assert!(poisoned_longwave.validate().is_err());
+    }
+
+    #[test]
+    fn exact_inactive_longwave_requires_zero_area_and_zero_component_flux() {
+        let mut column = valid_column();
+        let occupancy = &mut column.occupancies[0];
+        for surface in [
+            &mut occupancy.sun_leaf,
+            &mut occupancy.shade_leaf,
+            &mut occupancy.wet_surface,
+            &mut occupancy.dry_stem,
+        ] {
+            surface.emissive_area_m2_m2_tile = 0.0;
+            surface.net_longwave_w_m2_tile = 0.0;
+        }
+        column.longwave.occupancy_component_net_w_m2_tile[0].1 = [0.0; 4];
+        column.longwave.transmissivities[0] = 1.0;
+        column.longwave.downward_boundaries_w_m2_tile = vec![100.0, 100.0];
+        column.longwave.upward_boundaries_w_m2_tile = vec![50.0, 50.0];
+        column.longwave.top_upward_w_m2_tile = 50.0;
+        column.longwave.ground_net_w_m2_tile = 50.0;
+        column
+            .longwave
+            .validate(&column.occupancies)
+            .expect("exact inactive longwave component");
+
+        let mut component_poison = column.clone();
+        component_poison.longwave.occupancy_component_net_w_m2_tile[0].1[0] = f64::from_bits(1);
+        assert!(
+            component_poison
+                .longwave
+                .validate(&component_poison.occupancies)
+                .is_err()
+        );
+
+        let mut aggregate_poison = column.clone();
+        aggregate_poison.longwave.downward_boundaries_w_m2_tile[1] = 99.0;
+        assert!(
+            aggregate_poison
+                .longwave
+                .validate(&aggregate_poison.occupancies)
+                .is_err()
+        );
     }
 
     #[test]

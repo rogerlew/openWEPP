@@ -225,7 +225,7 @@ fn canonical_schema_and_registry_entry_are_bound() {
 
     for required in [
         "contract_id: SC-VEGETATION-001",
-        "contract_version: 29",
+        "contract_version: 30",
         "Version 13 admits `OPENWEPP_C3_WOODY_V9`",
         "Version 7 admits the constitutive equations, topology inheritance, and V3",
         "Earlier-version statements limiting admission to",
@@ -248,12 +248,14 @@ fn canonical_schema_and_registry_entry_are_bound() {
     for field in [
         lifecycle,
         "| `docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md` |",
-        "| `static+independent_oracle+contract_vectors` | `2026-08-26` |",
-        "v29 preserves exact V9 generation-host provenance",
-        "v28 mineral-N ordering remains binding",
+        "| `static+independent_oracle+contract_vectors` | `2026-08-29` |",
+        "v30 retains V9 generation-host/provider-equivalence",
     ] {
         assert!(registry_row.contains(field), "registry row missing {field}");
     }
+    assert!(contract.contains(
+        "| 2026-08-24 | 28 | Codex | Defined the pre-hash `(stratum_id,soil_layer_id,species)` mineral-N debit order"
+    ));
 }
 
 #[test]
@@ -596,6 +598,26 @@ fn assurance_receipts_form_the_recorded_generation_chain() {
     let terminal_residue = read(
         "assurance/v2/transactions/df95b74417166de4ef891f20db27f3b1cad1c0d89be907b7fa582323a21363c6.json",
     );
+    let first_snow_adoption: Value = serde_json::from_str(&read(
+        "assurance/v2/transactions/e3be3292a392ce81133c17aaab644ad66db063fa003c1bf48a13306850fdad7b.json",
+    ))
+    .expect("typed first snow source-adoption receipt");
+    let final_snow_adoption: Value = serde_json::from_str(&read(
+        "assurance/v2/transactions/a78950525c44c559fdf994558e771fdeb359d368e71f69c371e91d61e4841e60.json",
+    ))
+    .expect("typed final snow source-adoption receipt");
+    let energy_contract_adoption: Value = serde_json::from_str(&read(
+        "assurance/v2/transactions/367bd112581e74958157bce4073c78079757e5d93c3672fe18fa4547822b0f2f.json",
+    ))
+    .expect("typed energy-contract source-adoption receipt");
+    let terminal_snow_adoption: Value = serde_json::from_str(&read(
+        "assurance/v2/transactions/0af4bb65cce769ba59ac30a67aa5ec05c86bf006b3c206d06faecca772ac78d4.json",
+    ))
+    .expect("typed terminal snow source-adoption receipt");
+    let compositional_terminal_adoption: Value = serde_json::from_str(&read(
+        "assurance/v2/transactions/f1ad46344455412f03748bfd7b0fc272322cbf5a7a7ea43123015b275a8e7b0a.json",
+    ))
+    .expect("typed compositional-terminal source-adoption receipt");
     let identity = read("assurance/v2/identity.lock.json");
     let impact = read(&format!("{PACKAGE}/artifacts/assurance-impact.md"));
 
@@ -642,8 +664,32 @@ fn assurance_receipts_form_the_recorded_generation_chain() {
     }
     let identity: Value = serde_json::from_str(&identity).expect("typed assurance identity lock");
     assert_eq!(
-        identity["generation_id"],
+        first_snow_adoption["old_generation_id"],
         "bddd853e1e723231ce6bf9ec8b9be863eafbf277b98ab991031dc6ed6c4d3274"
+    );
+    assert_eq!(
+        first_snow_adoption["new_generation_id"],
+        final_snow_adoption["old_generation_id"]
+    );
+    assert_eq!(
+        final_snow_adoption["new_generation_id"],
+        energy_contract_adoption["old_generation_id"]
+    );
+    assert_eq!(
+        energy_contract_adoption["new_generation_id"],
+        terminal_snow_adoption["old_generation_id"]
+    );
+    assert_eq!(
+        terminal_snow_adoption["new_generation_id"],
+        compositional_terminal_adoption["old_generation_id"]
+    );
+    assert_eq!(
+        compositional_terminal_adoption["new_generation_id"],
+        identity["generation_id"]
+    );
+    assert_eq!(
+        identity["generation_id"],
+        "5c275785cc0af6681c2430b19857aa85166e4f16e3402a8b9b532385a8382a83"
     );
     assert!(impact.contains(
         "initial `SC-PLANT-001.md` | `3208ab181e5eb9261a51bb3d8ea63d25c133244b8cf25b6949b4f4eb3a26cc1f`"
@@ -674,7 +720,7 @@ fn coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted() {
     ));
 
     for required in [
-        "contract_version: 29",
+        "contract_version: 30",
         "OPENWEPP_C3_WOODY_V1",
         "OPENWEPP_C3_WOODY_V2",
         "OPENWEPP_C3_WOODY_V3",

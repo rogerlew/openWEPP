@@ -162,7 +162,13 @@ pub struct DirectLaneConstructorInputs {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectSnowRuntimeCarry {
     pub runtime_swe_m: f64,
     pub runtime_depth_m: f64,
@@ -236,7 +242,13 @@ fn direct_snow_runtime_carry_from_winter_state(
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectFrostRuntimeCarry {
     pub active_frost_coupling: bool,
     pub dfrost_m: f64,
@@ -271,7 +283,13 @@ pub struct DirectFrostRuntimeCarry {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectFrostLayerShadowCarry {
     pub layer_index: usize,
     pub st_m: f64,
@@ -284,7 +302,13 @@ pub struct DirectFrostLayerShadowCarry {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectFrostFineLayerCarry {
     pub layer_index: usize,
     pub fine_index: usize,
@@ -474,7 +498,13 @@ impl DirectLaneConstructorInputs {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
+#[cfg_attr(
+    any(
+        feature = "restart-authority-evidence",
+        feature = "persisted-restart-v1"
+    ),
+    derive(serde::Serialize)
+)]
 pub struct DirectDayConstructorInputs {
     pub forcing: DirectDayForcing,
     pub normalization_inputs: DirectNormalizationInputs,
@@ -560,9 +590,8 @@ pub struct DirectRunFrame {
     /// `None` preserves the production lane exactly; shadow consumers must
     /// provide a strict digest-bound state before requesting this owner.
     pub surface_liquid_shadow: Option<Box<DirectSurfaceLiquidOwnedState>>,
-    /// Default-off persistent Stage-3/V11 shadow. The ordinary scheduler
-    /// advances and commits it only when this attachment is explicitly
-    /// installed by a typed sealed configuration.
+    /// Historical pre-V11 shadow attachment retained only by unit diagnostics.
+    #[cfg(test)]
     pub snow_stage3_shadow: Option<Box<snow_stage3_shadow::DirectSnowStage3ShadowAttachment>>,
     /// Default-off constitutive Stage-3/V11 attachment. Its candidate is
     /// staged from a sealed 48-support forcing capability and installed only
@@ -596,6 +625,7 @@ impl DirectRunFrame {
             lane_transfer_shadow_projection: None,
             groundwater: DirectGroundwaterRunState::disabled(),
             surface_liquid_shadow: None,
+            #[cfg(test)]
             snow_stage3_shadow: None,
             snow_stage3_v11_attachment: None,
             laned_active: None,
@@ -627,6 +657,7 @@ impl DirectRunFrame {
             lane_transfer_shadow_projection: None,
             groundwater: DirectGroundwaterRunState::disabled(),
             surface_liquid_shadow: None,
+            #[cfg(test)]
             snow_stage3_shadow: None,
             snow_stage3_v11_attachment: None,
             laned_active: None,

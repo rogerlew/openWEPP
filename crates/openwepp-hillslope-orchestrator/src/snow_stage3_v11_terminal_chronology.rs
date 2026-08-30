@@ -1,7 +1,7 @@
 /// One independently reproduced lane endpoint proposed to the terminal parent
 /// chronology. Candidate discovery is outside this type; construction admits
 /// only the exact result of a shortened covered solve.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Stage3V11ActualTerminalCandidateV1 {
     pub lane_id: u32,
     pub tick: ModelTimeNs,
@@ -67,12 +67,19 @@ impl Stage3V11ActualTerminalCandidateV1 {
                 "actual terminal candidate identity/support",
             ));
         }
-        let evaluated_ns = quantize_seconds_to_tick(
+        if (self.event.terminal_entry_offset_seconds + self.event.evaluated_seconds).to_bits()
+            != self.event.hour_offset_seconds.to_bits()
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Terminal(
+                "actual terminal endpoint relative chronology",
+            ));
+        }
+        let endpoint_ns = quantize_seconds_to_tick(
             ModelTimeNs::new(0),
             ModelTimeNs::new(parent.duration_ns()),
-            self.event.evaluated_seconds,
+            self.event.hour_offset_seconds,
         )?;
-        if evaluated_ns.get() != self.support.duration_ns()
+        if endpoint_ns.get() != self.support.duration_ns()
             || self.event.end_ice_kg_m2.abs() > 1.0e-12
         {
             return Err(DirectSnowStage3V11AttachmentError::Terminal(
@@ -86,7 +93,7 @@ impl Stage3V11ActualTerminalCandidateV1 {
 /// Deterministic event group selected at one common earliest tick. Every lane
 /// in this group has independently reproduced the same endpoint using its
 /// shortened physical support; lanes with later candidates remain active.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Stage3V11TerminalEventGroupV1 {
     pub tick: ModelTimeNs,
     pub ordinal: u64,
@@ -96,13 +103,51 @@ pub struct Stage3V11TerminalEventGroupV1 {
     pub candidates: Vec<Stage3V11ActualTerminalCandidateV1>,
     pub discovery_receipt_sha256: Digest32,
     pub proposal_core_sha256: Option<Digest32>,
+    /// Ordered identities of the exact ProducedUnconsumed parcel set sealed
+    /// by the accepted terminal physical ledger. These identities remain as
+    /// predecessor evidence even when the receiver consumes the parcels
+    /// within the same atomic parent support.
+    pub produced_unconsumed_parcel_digests: Vec<Digest32>,
+    /// Exact typed custody retained even when a parent-end receiver consumes
+    /// the parcel before any following positive support can retain it.
+    #[serde(default)]
+    pub produced_unconsumed_parcels: Vec<Stage3V11TerminalReceiverCustodyV1>,
     pub receipt_sha256: Digest32,
     pub accepted_event_receipt: Option<AcceptedEventReceiptV1>,
     pub accepted_group_receipt_sha256: Option<Digest32>,
     pub terminal_physical_ledger: Option<Stage3V11TerminalPhysicalLedgerV1>,
+    /// V3-only durable capacity/routing custody for a parent-end terminal
+    /// receiver. Legacy V1/V2 receipt bytes deliberately exclude this
+    /// separately sealed supplement.
+    #[serde(skip)]
+    pub terminal_receiver_custody_v2: Option<Stage3TerminalLiquidCustodyV2>,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct Stage3V11TerminalReceiverDestinationCustodyV1 {
+    pub destination_ofe_id: String,
+    pub destination_tile_id: String,
+    pub destination_fraction: f64,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct Stage3V11TerminalReceiverCustodyV1 {
+    pub support: TimeSupport,
+    pub source_lane_id: u32,
+    pub parent_transaction_id: Digest32,
+    pub event_ordinal: u32,
+    pub terminal_event_proposal_core_id: Digest32,
+    pub event_result_digest: Digest32,
+    pub receiver_topology_sha256: Digest32,
+    pub destination_ofe_id: String,
+    pub receiver_destinations: Vec<Stage3V11TerminalReceiverDestinationCustodyV1>,
+    pub mass_kg_m2_tile_ground: f64,
+    pub temperature_k: f64,
+    pub specific_liquid_enthalpy_j_kg: f64,
+    pub parcel_digest: Digest32,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Stage3V11TerminalPhysicalLedgerV1 {
     pub support: TimeSupport,
     pub event_result_set_sha256: Digest32,
@@ -347,9 +392,12 @@ pub fn select_common_earliest_actual_terminal_group_v1(
         candidates: selected,
         discovery_receipt_sha256: receipt_sha256,
         proposal_core_sha256: None,
+        produced_unconsumed_parcel_digests: Vec::new(),
+        produced_unconsumed_parcels: Vec::new(),
         receipt_sha256,
         accepted_event_receipt: None,
         accepted_group_receipt_sha256: None,
         terminal_physical_ledger: None,
+        terminal_receiver_custody_v2: None,
     }))
 }

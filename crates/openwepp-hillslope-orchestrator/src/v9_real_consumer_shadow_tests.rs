@@ -2,6 +2,33 @@
 mod tests {
     use std::collections::{BTreeMap, BTreeSet};
 
+    use crate::hydrology::{
+        DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowStage3SupportInput,
+        DirectSnowSurfaceEnergyOptions, DirectSnowTerminalEventRequest, SnowDensityModel,
+        SnowMeltModel, SnowStage3LiquidRoutingModel, SnowSurfaceLongwaveModel,
+        SnowSurfaceSublimationModel, Wb11HydrologyKernel, stage3_is_resolved_thermal_domain,
+    };
+    use crate::snow_stage3_open_boundary::{
+        SealedOpenSnowExposureReceiptV1, SealedOpenSnowTileForcingInputsV1,
+        SealedOpenSnowTileForcingV1, SealedStage3TileBoundaryForcingV1,
+    };
+    use crate::snow_stage3_terminal_handoff::{
+        CanopyLongwaveComponent, CarrierSurface, CompleteOwnerSet, ParticipantSupportReceipt,
+        SealedCoveredCarrierForcing, SealedCoveredCarrierForcingInputs, SealedExposureReceipt,
+        SegmentPhase, SharedCarrierInput, SnowCarrierLedgerInput, SnowFreeContinuationInput,
+        SnowStage3HandoffRuntime, SnowStage3OwnerExecutionReceipt,
+        SnowStage3TerminalHandoffRequest, TerminalEventInput, TerminalStateRates,
+    };
+    use crate::snow_stage3_v11_attachment::{
+        DirectSnowStage3V11StaticContext, PreparedStage3V11DayV1,
+        PreparedStage3V11SupportIdentityV1, PreparedStage3V11SupportV1, Stage3V11FailureInjection,
+        execute_covered_real_v11_parent,
+    };
+    use crate::v9_real_consumer_shadow::{
+        DirectV11SnowCoveredRealConsumerStack, DirectV11SnowCoveredSegmentInput,
+        DirectV11SnowCoveredStackInputs,
+    };
+    use crate::winter_column::DirectSnowLayerState;
     use openwepp_coupled_time::{
         ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, Digest32, LedgerEntryV1,
         ModelTimeNs, OwnerState, ParentAuthorityV1, ParentIntervalId, ParentTransactionId,
@@ -14,41 +41,10 @@ mod tests {
         OfeId, SoilThermalLayerCandidate, V2_MODEL_DEFINITION_SHA256, V2_MODEL_VERSION,
         V2_VEGETATION_MODEL_DEFINITION_SHA256, V2_VEGETATION_MODEL_VERSION,
     };
-    use crate::snow_stage3_terminal_handoff::{
-        CanopyLongwaveComponent, CarrierSurface, CompleteOwnerSet, ParticipantSupportReceipt,
-        SealedCoveredCarrierForcing, SealedCoveredCarrierForcingInputs, SealedExposureReceipt,
-        SegmentPhase, SharedCarrierInput, SnowCarrierLedgerInput,
-        SnowFreeContinuationInput, SnowStage3HandoffRuntime, SnowStage3OwnerExecutionReceipt,
-        SnowStage3TerminalHandoffRequest, TerminalEventInput,
-        TerminalStateRates,
-    };
-    use crate::snow_stage3_open_boundary::{
-        SealedOpenSnowExposureReceiptV1, SealedOpenSnowTileForcingInputsV1,
-        SealedOpenSnowTileForcingV1, SealedStage3TileBoundaryForcingV1,
-    };
-    use crate::snow_stage3_v11_attachment::{
-        DirectSnowStage3V11StaticContext, DirectSnowStage3V11TerminalParcelPosture,
-        PreparedStage3V11DayV1,
-        PreparedStage3V11SupportIdentityV1, PreparedStage3V11SupportV1,
-        STAGE3_V11_PARENT_SUPPORT_NS, Stage3LaneLifecycleV1, Stage3V11FailureInjection,
-        execute_covered_real_v11_parent, stage3_lane_lifecycle,
-    };
-    use crate::v9_real_consumer_shadow::{
-        DirectV11SnowCoveredRealConsumerStack, DirectV11SnowCoveredSegmentInput,
-        DirectV11SnowCoveredStackInputs,
-    };
-    use crate::hydrology::{
-        DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, DirectSnowStage3SupportInput,
-        DirectSnowSurfaceEnergyOptions, DirectSnowTerminalEventRequest,
-        SnowDensityModel, SnowMeltModel, SnowStage3LiquidRoutingModel, SnowSurfaceLongwaveModel,
-        Wb11HydrologyKernel, stage3_is_resolved_thermal_domain,
-    };
-    use crate::winter_column::DirectSnowLayerState;
     use openwepp_vegetation::v11::{
         V11_COMPLETE_OWNER_MANIFEST, V11ExecutionError, V11OwnerEnvelope, V11ParentCandidate,
         V11ParentTransaction, V11ResourceDebit, V11SharedResourceOwnerTransition,
-        migrate_v10_runtime_to_v11,
-        v11_vegetation_owner_envelope,
+        migrate_v10_runtime_to_v11, v11_vegetation_owner_envelope,
     };
 
     fn test_wb14_coupled_binding() -> crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
@@ -69,12 +65,11 @@ mod tests {
     };
 
     use super::*;
-    use crate::land_surface_energy_shadow::{EndpointFixture, endpoint_fixture};
     use crate::land_surface_energy_shadow::strict_v8_endpoint::endpoint_rollback_tests::two_ofe_routed_endpoint_fixture;
+    use crate::land_surface_energy_shadow::{EndpointFixture, endpoint_fixture};
     use crate::runtime_inputs::{
         PreparedSnowFreeGsiDayV1, SnowFreeHalfHourProviderCursor,
-        SnowFreeHalfHourStaticConfiguration,
-        build_hillslope_climate_runtime_request,
+        SnowFreeHalfHourStaticConfiguration, build_hillslope_climate_runtime_request,
     };
     use crate::{
         DirectExecutorMode, DirectFrameExecutor, DirectLanedActiveConfig,
@@ -172,8 +167,62 @@ mod tests {
     }
 
     #[allow(clippy::too_many_lines)]
+    fn v10_nonredistributing_shadow_fixture() -> (DirectV10RealConsumerShadow, EndpointFixture) {
+        // The sealed live-soil fixture projects `soil potential + gravity`
+        // to exactly -2,200 mm. Seed the root node below that authority so
+        // these successful-stack tests request uptake rather than the
+        // explicitly unsupported hydraulic-redistribution branch.
+        v10_shadow_fixture_from_with_root_potential(endpoint_fixture(), -2_500.0)
+    }
+
+    #[test]
+    fn bare_root_zone_allows_empty_strata_but_v10_rejects_canopy_mismatch() {
+        let (shadow, _) = v10_shadow_fixture();
+        let bare_root = DirectRootZoneHydraulicConfiguration::try_new(
+            shadow
+                .root_zone_hydraulic_configuration
+                .ordered_layers
+                .clone(),
+            Vec::new(),
+        )
+        .expect("bare/open root-zone topology");
+        let mismatch = DirectV10RealConsumerShadow::try_new(
+            shadow.vegetation_configuration.clone(),
+            shadow.vegetation_state.clone(),
+            shadow.inner.vegetation_owner_id.clone(),
+            shadow.lse_configuration.clone(),
+            shadow.lse_state.clone(),
+            shadow.inner.surface_configuration.clone(),
+            shadow.inner.layer_maps.clone(),
+            shadow.inner.soil_thermal.clone(),
+            shadow.inner.biogeochemistry.clone(),
+            shadow.inner.hydrology_frame.clone(),
+            shadow.inner.next_day_index,
+            shadow.gsi_owner_configuration.clone(),
+            shadow.gsi_state.clone(),
+            shadow.provider_static_configuration.clone(),
+            shadow.provider_cursor.clone(),
+            bare_root,
+        );
+        assert!(matches!(
+            mismatch,
+            Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Identity("root-zone topology/configuration join")
+            ))
+        ));
+    }
+
+    #[allow(clippy::too_many_lines)]
     fn v10_shadow_fixture_from(
+        fixture: EndpointFixture,
+    ) -> (DirectV10RealConsumerShadow, EndpointFixture) {
+        v10_shadow_fixture_from_with_root_potential(fixture, -1_900.0)
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn v10_shadow_fixture_from_with_root_potential(
         mut fixture: EndpointFixture,
+        root_node_potential_mm: f64,
     ) -> (DirectV10RealConsumerShadow, EndpointFixture) {
         let mut wet_frame = fixture.hydrology.beginning_frame().clone();
         for lane in &mut wet_frame.lanes {
@@ -214,10 +263,21 @@ mod tests {
                 .find(|stratum| stratum.stratum_id == occupancy_id.stratum_id)
                 .expect("occupancy stratum")
                 .height_m;
-            occupancy.root_node_potential_mm = -1_900.0;
-            occupancy.stem_potential_mm = -1_900.0 - 1_000.0 * height_m;
-            occupancy.sun_leaf_potential_mm = occupancy.stem_potential_mm - 100.0;
-            occupancy.shade_leaf_potential_mm = occupancy.stem_potential_mm - 100.0;
+            if adaptive_production_path_coverage::equilibrium_fixture_requested() {
+                // The equilibrium fixture has exact-zero leaf, stem, and root
+                // areas. Keep its numerical warm starts on the typed inactive
+                // branch while all owners/configured topology remain sealed.
+                occupancy.root_node_potential_mm = 0.0;
+                occupancy.stem_potential_mm = 0.0;
+                occupancy.sun_leaf_potential_mm = 0.0;
+                occupancy.shade_leaf_potential_mm = 0.0;
+                occupancy.beta_hyd = 1.0;
+            } else {
+                occupancy.root_node_potential_mm = root_node_potential_mm;
+                occupancy.stem_potential_mm = root_node_potential_mm - 1_000.0 * height_m;
+                occupancy.sun_leaf_potential_mm = occupancy.stem_potential_mm - 100.0;
+                occupancy.shade_leaf_potential_mm = occupancy.stem_potential_mm - 100.0;
+            }
         }
         vegetation_payload.state_sha256 = vegetation_payload.canonical_sha256();
         let vegetation_state = V10CoupledOwnedState(vegetation_payload);
@@ -373,6 +433,39 @@ mod tests {
         DirectV9ShadowDayInput::try_new(0, intervals).expect("shadow day input")
     }
 
+    fn prepare_repository_gsi_day(
+        shadow: &DirectV10RealConsumerShadow,
+        fixture: &EndpointFixture,
+        source: &str,
+    ) -> (PreparedSnowFreeGsiDayV1, DirectV9ShadowIntervalInput) {
+        let template = day_input(fixture);
+        let climate = parse_climate_from_str(source, ParserMode::Strict).expect("strict climate");
+        let request = build_hillslope_climate_runtime_request(&climate).expect("climate request");
+        let legacy_configuration = shadow
+            .snow_free_provider_configuration(&template)
+            .expect("owner-derived provider configuration");
+        let configuration = SnowFreeHalfHourStaticConfiguration {
+            run_id: legacy_configuration.run_id,
+            co2_pa: legacy_configuration.co2_pa,
+            reference_height_m: legacy_configuration.reference_height_m,
+            gsi_owner_configuration_sha256: shadow
+                .gsi_owner_configuration()
+                .configuration_sha256
+                .clone(),
+            destinations: legacy_configuration.destinations,
+        };
+        let prepared = request
+            .prepare_snow_free_gsi_day_from_repository(
+                0,
+                &configuration,
+                shadow.gsi_owner_configuration(),
+                shadow.gsi_state(),
+                shadow.provider_cursor(),
+            )
+            .expect("staged GSI/provider owners");
+        (prepared, template.intervals[0].clone())
+    }
+
     fn production_day_input() -> DirectPublicationDayInput {
         let mut input = DirectPublicationDayInput::calendar_only(DirectPublicationCalendarDay {
             year: 2026,
@@ -405,10 +498,14 @@ mod tests {
             canopy_cover_fraction: 0.45,
             wind_m_s: 3.0,
             dewpoint_c: -15.0,
-            snow_melt_model: SnowMeltModel::CoeLiquidHoldingCapacityV1,
+            snow_melt_model: SnowMeltModel::AdaptiveCompositionalStage3V1,
             snow_density_model: SnowDensityModel::PhysicsBulkDensityCompactionV1,
             stage3_liquid_routing_model: SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1,
-            surface_energy_options: DirectSnowSurfaceEnergyOptions::default(),
+            surface_energy_options: DirectSnowSurfaceEnergyOptions {
+                longwave_model: SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+                sublimation_model: SnowSurfaceSublimationModel::NeutralBulkStage3V1,
+                ..DirectSnowSurfaceEnergyOptions::default()
+            },
             sturm_climate_class: None,
             sturm_day_of_year: None,
             coe_boundary_depth_m: 0.40,
@@ -425,11 +522,9 @@ mod tests {
     fn digest_from_receipt(value: &str) -> Digest32 {
         let mut bytes = [0_u8; 32];
         for (index, chunk) in value.as_bytes().chunks_exact(2).enumerate() {
-            bytes[index] = u8::from_str_radix(
-                std::str::from_utf8(chunk).expect("lower-hex receipt"),
-                16,
-            )
-            .expect("lower-hex receipt digits");
+            bytes[index] =
+                u8::from_str_radix(std::str::from_utf8(chunk).expect("lower-hex receipt"), 16)
+                    .expect("lower-hex receipt digits");
         }
         Digest32::from_bytes(bytes)
     }
@@ -440,13 +535,7 @@ mod tests {
         lane_id: u32,
         day_index: usize,
     ) -> Vec<PreparedStage3V11SupportV1> {
-        attachment_supports_with_start_offset(
-            provider,
-            interval_template,
-            lane_id,
-            day_index,
-            0,
-        )
+        attachment_supports_with_start_offset(provider, interval_template, lane_id, day_index, 0)
     }
 
     fn attachment_supports_with_start_offset(
@@ -458,8 +547,8 @@ mod tests {
     ) -> Vec<PreparedStage3V11SupportV1> {
         (0..INTERVALS_PER_DAY)
             .map(|interval_index| {
-                let provider_interval = &provider.forcing_receipts().receipts()[0].intervals
-                    [interval_index];
+                let provider_interval =
+                    &provider.forcing_receipts().receipts()[0].intervals[interval_index];
                 let mut interval = interval_template.clone();
                 interval.lse_forcing.air_temperature_k =
                     openwepp_meteorology::snow_free_forcing::celsius_to_kelvin(
@@ -488,13 +577,11 @@ mod tests {
                 interval.vegetation_forcing.wind_m_s = provider_interval.wind_m_s;
                 interval.vegetation_forcing.specific_humidity =
                     provider_interval.specific_humidity_kg_kg;
-                interval.vegetation_forcing.direct_par_w_m2 =
-                    provider_interval.direct_visible_w_m2;
+                interval.vegetation_forcing.direct_par_w_m2 = provider_interval.direct_visible_w_m2;
                 interval.vegetation_forcing.diffuse_par_w_m2 =
                     provider_interval.diffuse_visible_w_m2;
                 interval.vegetation_forcing.direct_nir_w_m2 = provider_interval.direct_nir_w_m2;
-                interval.vegetation_forcing.diffuse_nir_w_m2 =
-                    provider_interval.diffuse_nir_w_m2;
+                interval.vegetation_forcing.diffuse_nir_w_m2 = provider_interval.diffuse_nir_w_m2;
                 interval.vegetation_forcing.longwave_down_w_m2 =
                     provider_interval.downward_longwave_w_m2;
                 let mut snow_inputs = attachment_stage3_inputs();
@@ -607,9 +694,9 @@ mod tests {
                 "v11-canopy".to_owned(),
             ],
             support_receipts: vec![
-                child2c_support("shared-carrier", "support-carrier-v1", 600_000_000),
-                child2c_support("stage3-snow", "support-stage3-v1", 600_000_000),
-                child2c_support("v11-canopy", "support-v11-v1", 600_000_000),
+                child2c_support("shared-carrier", "support-carrier-v1", 60_000_000_000),
+                child2c_support("stage3-snow", "support-stage3-v1", 60_000_000_000),
+                child2c_support("v11-canopy", "support-v11-v1", 60_000_000_000),
             ],
             atmospheric_longwave_w_m2: 280.0,
             effective_canopy_cover: 0.5,
@@ -659,12 +746,75 @@ mod tests {
                 "v11-canopy".to_owned(),
             ],
             support_receipts: vec![
-                child2c_support("shared-carrier", "support-carrier-v1", 600_000_000),
-                child2c_support("stage3-snow", "support-stage3-v1", 600_000_000),
-                child2c_support("v11-canopy", "support-v11-v1", 600_000_000),
+                child2c_support("shared-carrier", "support-carrier-v1", 60_000_000_000),
+                child2c_support("stage3-snow", "support-stage3-v1", 60_000_000_000),
+                child2c_support("v11-canopy", "support-v11-v1", 60_000_000_000),
             ],
         })
         .expect("sealed covered carrier forcing")
+    }
+
+    fn equilibrium_canopy_specific_humidity(pressure_pa: f64) -> f64 {
+        // SC-VEGETATION-001 Table 5.2 at the exact 273.15 K liquid
+        // saturation boundary: every positive-order polynomial term is zero.
+        let saturation_pressure_pa = 100.0 * 6.112_134_76;
+        0.622 * saturation_pressure_pa / (pressure_pa - 0.378 * saturation_pressure_pa)
+    }
+
+    fn equilibrium_stage3_reference_specific_humidity(pressure_pa: f64) -> f64 {
+        // SC-SNOWENERGY-001@22: the covered carrier terminates at the Stage-3
+        // SNOBAL saturation law. At the exact 0 C snow surface, derive the
+        // carrier humidity from that same constitutive pressure so the sealed
+        // boundary has exactly zero vapor exchange by construction.
+        let saturation_pressure_pa =
+            openwepp_meteorology::surface_energy::saturation_vapor_pressure_snobal_pa(
+                openwepp_unit_boundary::TemperatureCelsius::try_new(0.0)
+                    .expect("equilibrium Stage-3 temperature"),
+            )
+            .expect("equilibrium Stage-3 saturation pressure")
+            .as_pascals();
+        0.622 * saturation_pressure_pa / (pressure_pa - 0.378 * saturation_pressure_pa)
+    }
+
+    fn equilibrium_child2c_carrier_forcing() -> SealedCoveredCarrierForcing {
+        let temperature_k = 273.15;
+        let specific_humidity = equilibrium_stage3_reference_specific_humidity(101_325.0);
+        SealedCoveredCarrierForcing::try_new(SealedCoveredCarrierForcingInputs {
+            rho_air_kg_m3: 1.2,
+            cp_air_j_kg_k: 1005.0,
+            reference_temperature_k: temperature_k,
+            reference_specific_humidity: specific_humidity,
+            atmospheric_longwave_w_m2: 5.670_374_419e-8 * temperature_k.powi(4),
+            effective_canopy_cover: 0.5,
+            exposure: SealedExposureReceipt {
+                receipt_id: "exposure-v1".to_owned(),
+                provider: "sealed-stage3-exposure".to_owned(),
+                provider_digest: "exposure-provider-digest".to_owned(),
+                source: "sealed-exposure-v1".to_owned(),
+                wind_m_s: 3.0,
+                transfer_height_m: 5.0,
+                roughness_m: 0.005,
+            },
+            active_participants: vec![
+                "shared-carrier".to_owned(),
+                "stage3-snow".to_owned(),
+                "v11-canopy".to_owned(),
+            ],
+            support_receipts: vec![
+                child2c_support(
+                    "shared-carrier",
+                    "support-carrier-equilibrium-v1",
+                    60_000_000_000,
+                ),
+                child2c_support(
+                    "stage3-snow",
+                    "support-stage3-equilibrium-v1",
+                    60_000_000_000,
+                ),
+                child2c_support("v11-canopy", "support-v11-equilibrium-v1", 60_000_000_000),
+            ],
+        })
+        .expect("sealed equilibrium covered carrier forcing")
     }
 
     fn child2c_event(parent_end_ns: u128) -> TerminalEventInput {
@@ -677,11 +827,11 @@ mod tests {
             proposed_event_tick: ModelTimeNs::new(0),
             candidate_ticks: vec![ModelTimeNs::new(0)],
             pre_active_participants: vec![
-                child2c_support("shared-carrier", "support-carrier-v1", 600_000_000),
-                child2c_support("stage3-snow", "support-stage3-v1", 600_000_000),
-                child2c_support("v11-canopy", "support-v11-v1", 600_000_000),
+                child2c_support("shared-carrier", "support-carrier-v1", 60_000_000_000),
+                child2c_support("stage3-snow", "support-stage3-v1", 60_000_000_000),
+                child2c_support("v11-canopy", "support-v11-v1", 60_000_000_000),
             ],
-            post_active_participants: vec![child2c_support("v11", "v11-post", 600_000_000)],
+            post_active_participants: vec![child2c_support("v11", "v11-post", 60_000_000_000)],
             event_time_tolerance_ns: ModelTimeNs::new(0),
             snow_mass_tolerance_kg_m2: 0.0,
             liquid_mass_tolerance_kg_m2: 0.0,
@@ -903,9 +1053,13 @@ mod tests {
             let stack = DirectV11RealConsumerStack::new(&staged_shadow, &interval, 0, ordinal);
             let mut executor =
                 crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-            let segment =
-                execute_direct_v11_segment(&migrated.configuration, &parent, receipt, &mut executor)
-                    .expect("actual segmented V11 execution");
+            let segment = execute_direct_v11_segment(
+                &migrated.configuration,
+                &parent,
+                receipt,
+                &mut executor,
+            )
+            .expect("actual segmented V11 execution");
             for transition in &segment.shared_resource_transitions {
                 let owner = segment
                     .ending_resource_owners
@@ -933,16 +1087,19 @@ mod tests {
                     let linked = segment
                         .resource_debits
                         .iter()
-                        .filter(|debit| {
-                            transition.debit_receipt_ids.contains(&debit.receipt_id)
-                        })
+                        .filter(|debit| transition.debit_receipt_ids.contains(&debit.receipt_id))
                         .collect::<Vec<_>>();
                     assert_eq!(linked.len(), transition.debit_receipt_ids.len());
                     let used = linked.iter().fold(0.0_f64, |sum, debit| {
                         assert_eq!(debit.tile_id, "stratum_scoped");
-                        assert!(migrated.configuration.imported_v10.strata.iter().any(
-                            |stratum| stratum.stratum_id.as_str() == debit.occupancy_id
-                        ));
+                        assert!(
+                            migrated
+                                .configuration
+                                .imported_v10
+                                .strata
+                                .iter()
+                                .any(|stratum| stratum.stratum_id.as_str() == debit.occupancy_id)
+                        );
                         sum + debit.final_use
                     });
                     assert_eq!(
@@ -990,7 +1147,7 @@ mod tests {
 
     #[test]
     fn v11_full_support_runs_actual_v10_stack_and_finalizes_once() {
-        let (shadow, fixture) = v10_shadow_fixture();
+        let (shadow, fixture) = v10_nonredistributing_shadow_fixture();
         let interval = day_input(&fixture).intervals.remove(0);
         let migrated =
             migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
@@ -1011,8 +1168,9 @@ mod tests {
         .expect("parent");
         let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-        let segment = execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
-            .expect("actual V11 segment");
+        let segment =
+            execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+                .expect("actual V11 segment");
         accept_direct_v11_segment(
             &mut parent,
             &migrated.configuration,
@@ -1052,7 +1210,7 @@ mod tests {
     include!("v9_real_consumer_shadow_wb14_tests.rs");
     #[test]
     fn child2c_scheduler_commits_the_concrete_v11_lse_bgc_soil_owner_candidate() {
-        let (shadow, fixture) = v10_shadow_fixture();
+        let (shadow, fixture) = v10_nonredistributing_shadow_fixture();
         let base_interval = day_input(&fixture).intervals.remove(0);
         let migrated =
             migrate_v10_runtime_to_v11(&shadow.vegetation_configuration, &shadow.vegetation_state)
@@ -1134,10 +1292,14 @@ mod tests {
         let committed = owner_executor
             .committed_shadow()
             .expect("concrete owner candidate committed");
-        assert_eq!(committed.inner.lse_state.last_accepted_transaction_id,
-            Some(TransactionId(40)));
-        assert_eq!(committed.inner.soil_thermal.last_accepted_transaction_id,
-            Some(TransactionId(40)));
+        assert_eq!(
+            committed.inner.lse_state.last_accepted_transaction_id,
+            Some(TransactionId(40))
+        );
+        assert_eq!(
+            committed.inner.soil_thermal.last_accepted_transaction_id,
+            Some(TransactionId(40))
+        );
         assert_eq!(committed.inner.biogeochemistry.last_transaction_id, 40);
     }
 
@@ -1153,7 +1315,7 @@ mod tests {
             .values()
             .map(|owner| owner.to_owner_state().expect("clock owner"))
             .collect::<Vec<_>>();
-        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 599_999_999);
+        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 59_999_999_999);
         let parent = V11ParentTransaction::new_with_complete_owners(
             &migrated.configuration,
             &migrated.state,
@@ -1162,19 +1324,20 @@ mod tests {
             owners,
         )
         .expect("parent");
-        let interval = segment_interval(&base_interval, 599_999_999, 41, 0.0);
+        let interval = segment_interval(&base_interval, 59_999_999_999, 41, 0.0);
         let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
         let before = parent.staged_state().clone();
-        let error = execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
-            .expect_err("one tick below the LSE minimum must be rejected");
+        let error =
+            execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+                .expect_err("one tick below the LSE minimum must be rejected");
         assert!(matches!(
             error,
             V11ExecutionError::Executor(DirectV11RealConsumerError::Runtime(
                 DirectV10RealConsumerError::LandSurface(
                     LandSurfaceEnergyError::SupportBelowMinimum {
-                        requested_ns: 599_999_999,
-                        minimum_ns: 600_000_000,
+                        requested_ns: 59_999_999_999,
+                        minimum_ns: 60_000_000_000,
                     }
                 )
             ))
@@ -1186,12 +1349,12 @@ mod tests {
 
     #[test]
     fn v11_actual_stack_accepts_sequential_unequal_supports_once_per_parent() {
-        let (shadow, fixture) = v10_shadow_fixture();
+        let (shadow, fixture) = v10_nonredistributing_shadow_fixture();
         let interval = day_input(&fixture).intervals.remove(0);
         for durations in [
             vec![600_000_000_000, 1_200_000_000_000],
             vec![1_200_000_000_000, 600_000_000_000],
-            vec![300_000_000_000, 500_000_000_000, 1_000_000_000_000],
+            vec![300_000_000_000, 480_000_000_000, 1_020_000_000_000],
         ] {
             let candidate = run_actual_v11_segments(
                 &shadow,
@@ -1259,7 +1422,7 @@ mod tests {
             .find(|tile| tile.tile_id.as_str() == "lower-forest")
             .expect("lower vegetation tile");
         assert_ne!(lower.tile_id, lower.vegetation_tile_id);
-        let (shadow, fixture) = v10_shadow_fixture_from(fixture);
+        let (shadow, fixture) = v10_shadow_fixture_from_with_root_potential(fixture, -2_500.0);
         let mut interval = day_input(&fixture).intervals.remove(0);
         interval.wb14_parameters = ["ofe-1", "ofe-2"]
             .into_iter()
@@ -1290,34 +1453,42 @@ mod tests {
         .expect("parent");
         let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-        let injected = crate::v11_vegetation_consumer::execute_direct_v11_segment_with_post_bgc_fault(
-            &migrated.configuration,
-            &parent,
-            &slab,
-            &mut executor,
-        );
+        let injected =
+            crate::v11_vegetation_consumer::execute_direct_v11_segment_with_post_bgc_fault(
+                &migrated.configuration,
+                &parent,
+                &slab,
+                &mut executor,
+            );
         let injected_debug = format!("{injected:?}");
-        assert!(matches!(
-            injected,
-            Err(V11ExecutionError::Executor(DirectV11RealConsumerError::Identity(
-                "injected post-BGC-transition fault"
-            )))
-        ), "{injected_debug}");
+        assert!(
+            matches!(
+                injected,
+                Err(V11ExecutionError::Executor(
+                    DirectV11RealConsumerError::Identity("injected post-BGC-transition fault")
+                ))
+            ),
+            "{injected_debug}"
+        );
         assert_eq!(parent.staged_resource_owners(), &owner_bytes);
         assert_eq!(parent.staged_state(), &migrated.state);
         assert_eq!(executor.stack.beginning, shadow);
         assert!(executor.stack.take_staged_ending().is_none());
         let stack = DirectV11RealConsumerStack::new(&shadow, &interval, 0, 0);
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-        let candidate = execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
-            .expect("open-first/vegetated-second real consumer");
+        let candidate =
+            execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+                .expect("open-first/vegetated-second real consumer");
         assert_eq!(candidate.ending_resource_owners.len(), 7);
         let bgc_debits = candidate
             .resource_debits
             .iter()
             .filter(|debit| debit.owner_id == "bgc" && debit.final_use > 0.0)
             .collect::<Vec<_>>();
-        assert!(!bgc_debits.is_empty(), "fixture must exercise mineral-N use");
+        assert!(
+            !bgc_debits.is_empty(),
+            "fixture must exercise mineral-N use"
+        );
         assert!(bgc_debits.iter().all(|debit| {
             debit.ofe_id == "ofe-2"
                 && debit.tile_id == "stratum_scoped"
@@ -1328,10 +1499,9 @@ mod tests {
             .iter()
             .filter(|transition| transition.shared_resource_key.owner_id == "bgc")
         {
-            let ending_bgc: openwepp_biogeochemistry::BiogeochemistryState = serde_json::from_slice(
-                &candidate.ending_resource_owners["bgc"].state_bytes,
-            )
-            .expect("decoded ending BGC owner");
+            let ending_bgc: openwepp_biogeochemistry::BiogeochemistryState =
+                serde_json::from_slice(&candidate.ending_resource_owners["bgc"].state_bytes)
+                    .expect("decoded ending BGC owner");
             let beginning_layer = shadow
                 .inner
                 .biogeochemistry()
@@ -1351,19 +1521,22 @@ mod tests {
                 }
                 _ => panic!("BGC transition must be mineral nitrogen"),
             };
-            let used = transition.debit_receipt_ids.iter().fold(0.0_f64, |sum, id| {
-                sum + candidate
-                    .resource_debits
-                    .iter()
-                    .find(|debit| debit.receipt_id == *id)
-                    .expect("linked BGC debit")
-                    .final_use
-            });
+            let used = transition
+                .debit_receipt_ids
+                .iter()
+                .fold(0.0_f64, |sum, id| {
+                    sum + candidate
+                        .resource_debits
+                        .iter()
+                        .find(|debit| debit.receipt_id == *id)
+                        .expect("linked BGC debit")
+                        .final_use
+                });
+            assert_eq!((beginning_pool - used).to_bits(), ending_pool.to_bits());
             assert_eq!(
-                (beginning_pool - used).to_bits(),
-                ending_pool.to_bits()
+                transition.beginning_amount.to_bits(),
+                beginning_pool.to_bits()
             );
-            assert_eq!(transition.beginning_amount.to_bits(), beginning_pool.to_bits());
             assert_eq!(transition.ending_amount.to_bits(), ending_pool.to_bits());
         }
         assert_eq!(parent.staged_resource_owners(), &owner_bytes);
@@ -1424,12 +1597,14 @@ mod tests {
             }
             let bytes = serde_json::to_vec(&poison).expect("serialized checkpoint poison");
             let decoded = serde_json::from_slice(&bytes).expect("decoded checkpoint poison");
-            assert!(V11ParentTransaction::restore_with_bgc_scope(
-                &migrated.configuration,
-                decoded,
-                Some(&bgc_scope),
-            )
-            .is_err());
+            assert!(
+                V11ParentTransaction::restore_with_bgc_scope(
+                    &migrated.configuration,
+                    decoded,
+                    Some(&bgc_scope),
+                )
+                .is_err()
+            );
         };
         assert_checkpoint_poison(|debit| debit.tile_id = "occupancy_scoped".into());
         assert_checkpoint_poison(|debit| debit.occupancy_id = "unknown-stratum".into());
@@ -1440,7 +1615,7 @@ mod tests {
 
     #[test]
     fn v11_actual_stack_is_forcing_order_observable() {
-        let (shadow, fixture) = v10_shadow_fixture();
+        let (shadow, fixture) = v10_nonredistributing_shadow_fixture();
         let interval = day_input(&fixture).intervals.remove(0);
         let warm_then_cool = run_actual_v11_segments(
             &shadow,
@@ -1473,9 +1648,9 @@ mod tests {
 
     #[test]
     fn v11_actual_stack_accepts_the_declared_lse_minimum_support() {
-        let (shadow, fixture) = v10_shadow_fixture();
+        let (shadow, fixture) = v10_nonredistributing_shadow_fixture();
         let interval = day_input(&fixture).intervals.remove(0);
-        let candidate = run_actual_v11_segments(&shadow, &interval, &[600_000_000], &[0.0]);
+        let candidate = run_actual_v11_segments(&shadow, &interval, &[60_000_000_000], &[0.0]);
         assert_eq!(candidate.accepted_segments.len(), 1);
         assert_eq!(candidate.ending_complete_owners.len(), 7);
     }
@@ -1492,7 +1667,7 @@ mod tests {
             .values()
             .map(|owner| owner.to_owner_state().expect("clock owner"))
             .collect::<Vec<_>>();
-        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 599_999_999);
+        let (parent_id, slab) = accepted_v11_slab(&clock_owners, 59_999_999_999);
         let parent = V11ParentTransaction::new_with_complete_owners(
             &migrated.configuration,
             &migrated.state,
@@ -1501,18 +1676,19 @@ mod tests {
             owners,
         )
         .expect("parent");
-        let segmented = segment_interval(&interval, 599_999_999, 41, 0.0);
+        let segmented = segment_interval(&interval, 59_999_999_999, 41, 0.0);
         let stack = DirectV11RealConsumerStack::new(&shadow, &segmented, 0, 0);
         let mut executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack };
-        let error = execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
-            .expect_err("one tick below the LSE minimum must be rejected");
+        let error =
+            execute_direct_v11_segment(&migrated.configuration, &parent, &slab, &mut executor)
+                .expect_err("one tick below the LSE minimum must be rejected");
         assert!(matches!(
             error,
             V11ExecutionError::Executor(DirectV11RealConsumerError::Runtime(
                 DirectV10RealConsumerError::LandSurface(
                     LandSurfaceEnergyError::SupportBelowMinimum {
-                        requested_ns: 599_999_999,
-                        minimum_ns: 600_000_000,
+                        requested_ns: 59_999_999_999,
+                        minimum_ns: 60_000_000_000,
                     }
                 )
             ))
@@ -1563,6 +1739,84 @@ mod tests {
             )
             .expect("real Child4 consumes repository-derived provider day");
         assert_eq!(shadow.inner.accepted_interval_count(), 48);
+    }
+
+    #[test]
+    fn v11_repository_projection_binds_fresh_gsi_on_unpublished_candidate() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let beginning = shadow.clone();
+        assert_eq!(shadow.inner.provider_gsi_receipt_sha256, "0".repeat(64));
+        let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 0.0 2.5 180.0 20.0\n";
+        let (prepared, template) = prepare_repository_gsi_day(&shadow, &fixture, source);
+        let fresh_digest = prepared.gsi_receipt().receipt_sha256.clone();
+
+        let intervals = shadow
+            .prepare_v11_intervals_from_repository(&prepared, &template)
+            .expect("fresh GSI digest is bound on an unpublished candidate");
+
+        assert_eq!(intervals.len(), INTERVALS_PER_DAY);
+        assert_ne!(fresh_digest, "0".repeat(64));
+        assert_eq!(
+            shadow, beginning,
+            "preparation may not publish candidate state"
+        );
+    }
+
+    #[test]
+    fn v11_repository_projection_rejects_substituted_gsi_receipt_digest() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let beginning = shadow.clone();
+        let source_a = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 0.0 2.5 180.0 20.0\n";
+        let source_b = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 456\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 31.0 21.0 0.0 2.5 180.0 18.0\n";
+        let (prepared_a, template) = prepare_repository_gsi_day(&shadow, &fixture, source_a);
+        let (prepared_b, _) = prepare_repository_gsi_day(&shadow, &fixture, source_b);
+        assert_ne!(
+            prepared_a.gsi_receipt().receipt_sha256,
+            prepared_b.gsi_receipt().receipt_sha256
+        );
+
+        let error = shadow
+            .project_v11_repository_forcing_on_unpublished_candidate(
+                prepared_a.gsi_receipt(),
+                prepared_b.forcing_receipts(),
+                &template,
+            )
+            .expect_err("forcing receipts sealed to another GSI receipt must be rejected");
+
+        assert!(matches!(
+            error,
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Identity("repository GSI owner receipt")
+            ))
+        ));
+        assert_eq!(
+            shadow, beginning,
+            "substitution failure may not mutate state"
+        );
+    }
+
+    #[test]
+    fn v11_repository_projection_failure_rolls_back_unpublished_binding() {
+        let (shadow, fixture) = v10_shadow_fixture();
+        let beginning = shadow.clone();
+        let source = "5.30\n1 0 0\nTEST STATION 1500\nDAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT\n41.1 -120.0 1225.0 30 2000 1 CLIGEN 5.30 --seed 123\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n20 6 2000 0.0 0.0 0.0 0.0 28.0 22.0 0.0 2.5 180.0 20.0\n";
+        let (prepared, mut template) = prepare_repository_gsi_day(&shadow, &fixture, source);
+        template.vegetation_forcing.reference_height_m += 1.0;
+
+        let error = shadow
+            .prepare_v11_intervals_from_repository(&prepared, &template)
+            .expect_err("post-bind live-owner projection failure");
+
+        assert!(matches!(
+            error,
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::Identity("repository forcing live-owner scalar join")
+            ))
+        ));
+        assert_eq!(
+            shadow, beginning,
+            "failed candidate must remain unpublished"
+        );
     }
 
     #[test]
@@ -1922,14 +2176,16 @@ mod tests {
         let beginning = shadow.clone();
         let mut input = day_input(&fixture);
         input.intervals[0].lse_forcing.snow_present_at_beginning = true;
-        assert!(matches!(
-            shadow.execute_first_interval_for_test(&input),
-            Err(DirectV10RealConsumerError::Runtime(
-                DirectV9RealConsumerError::Unsupported(
-                    "forcing transaction, cadence, or snow domain"
-                )
-            ))
-        ));
+        let result = shadow.execute_first_interval_for_test(&input);
+        assert!(
+            matches!(
+                result,
+                Err(DirectV10RealConsumerError::Runtime(
+                    DirectV9RealConsumerError::Unsupported("forcing snow domain")
+                ))
+            ),
+            "{result:?}"
+        );
         assert_eq!(shadow, beginning);
     }
 
@@ -2240,19 +2496,37 @@ mod tests {
         let candidates = soil_candidates(&fixture);
         let credit = top_boundary_credit(&fixture);
         let beginning = fixture.thermal.ofes[0].ordered_layers[0].enthalpy_j_m2_ofe_ground;
-        let tile_credit = candidates.iter()
-            .map(|candidate| candidate.layers[0].ground_heat_credit_j_m2_ofe_ground).sum::<f64>();
+        let tile_credit = candidates
+            .iter()
+            .map(|candidate| candidate.layers[0].ground_heat_credit_j_m2_ofe_ground)
+            .sum::<f64>();
         let accepted = aggregate_soil_thermal_ending_with_top_boundary_credits(
-            &fixture.thermal, &fixture.lse_configuration, TransactionId(41), &candidates,
+            &fixture.thermal,
+            &fixture.lse_configuration,
+            TransactionId(41),
+            &candidates,
             std::slice::from_ref(&credit),
-        ).expect("OFE credit");
-        assert_eq!(accepted.ending.ofes[0].ordered_layers[0].enthalpy_j_m2_ofe_ground.to_bits(),
-            (beginning + tile_credit + 125.0).to_bits());
+        )
+        .expect("OFE credit");
+        assert_eq!(
+            accepted.ending.ofes[0].ordered_layers[0]
+                .enthalpy_j_m2_ofe_ground
+                .to_bits(),
+            (beginning + tile_credit + 125.0).to_bits()
+        );
         let mut reversed = candidates;
         reversed.reverse();
-        assert_eq!(aggregate_soil_thermal_ending_with_top_boundary_credits(
-            &fixture.thermal, &fixture.lse_configuration, TransactionId(41), &reversed, &[credit],
-        ).expect("tile-order-independent OFE credit"), accepted);
+        assert_eq!(
+            aggregate_soil_thermal_ending_with_top_boundary_credits(
+                &fixture.thermal,
+                &fixture.lse_configuration,
+                TransactionId(41),
+                &reversed,
+                &[credit],
+            )
+            .expect("tile-order-independent OFE credit"),
+            accepted
+        );
     }
 
     #[test]
@@ -2263,8 +2537,13 @@ mod tests {
         let beginning = fixture.thermal.clone();
         let reject = |credits: &[SoilThermalTopBoundaryCreditV1]| {
             aggregate_soil_thermal_ending_with_top_boundary_credits(
-                &fixture.thermal, &fixture.lse_configuration, TransactionId(41), &candidates, credits,
-            ).is_err()
+                &fixture.thermal,
+                &fixture.lse_configuration,
+                TransactionId(41),
+                &candidates,
+                credits,
+            )
+            .is_err()
         };
         let mut wrong_ofe = valid.clone();
         wrong_ofe.ofe_id = OfeId::try_new("wrong-ofe").expect("OFE");
@@ -2463,8 +2742,7 @@ mod tests {
             .into_iter()
             .enumerate()
             .map(|(interval_index, support)| {
-                let interval = &day_zero.forcing_receipts().receipts()[0].intervals
-                    [interval_index];
+                let interval = &day_zero.forcing_receipts().receipts()[0].intervals[interval_index];
                 support
                     .with_provider_open_snow_destination((
                         OfeId::try_new(interval.ofe_id.clone()).expect("open request OFE"),
@@ -2473,9 +2751,8 @@ mod tests {
                     .expect("provider-owned open request")
             })
             .collect();
-        let bound_open =
-            PreparedStage3V11DayV1::bind_provider_day(&day_zero, 0, open_requests)
-                .expect("provider-owned open atmosphere seal");
+        let bound_open = PreparedStage3V11DayV1::bind_provider_day(&day_zero, 0, open_requests)
+            .expect("provider-owned open atmosphere seal");
         let first_open = bound_open.supports()[0]
             .snow_surface_forcing_by_destination()
             .values()
@@ -2521,39 +2798,34 @@ mod tests {
                 &initial_cursor,
             )
             .expect("rainy provider capability");
-        assert!(rainy_day
-            .forcing_receipts()
-            .receipts()
-            .iter()
-            .flat_map(|day| day.intervals.iter())
-            .any(|interval| !interval.precipitation_parcels.is_empty()));
-        let rainy_open_requests = attachment_supports(
-            &rainy_day,
-            &template.intervals[0],
-            lane_id,
-            0,
-        )
-        .into_iter()
-        .enumerate()
-        .map(|(interval_index, support)| {
-            let interval = &rainy_day.forcing_receipts().receipts()[0].intervals
-                [interval_index];
-            support
-                .with_provider_open_snow_destination((
-                    OfeId::try_new(interval.ofe_id.clone()).expect("rain poison OFE"),
-                    TileId::try_new(interval.tile_id.clone()).expect("rain poison tile"),
-                ))
-                .expect("rain poison open request")
-        })
-        .collect();
+        assert!(
+            rainy_day
+                .forcing_receipts()
+                .receipts()
+                .iter()
+                .flat_map(|day| day.intervals.iter())
+                .any(|interval| !interval.precipitation_parcels.is_empty())
+        );
+        let rainy_open_requests =
+            attachment_supports(&rainy_day, &template.intervals[0], lane_id, 0)
+                .into_iter()
+                .enumerate()
+                .map(|(interval_index, support)| {
+                    let interval =
+                        &rainy_day.forcing_receipts().receipts()[0].intervals[interval_index];
+                    support
+                        .with_provider_open_snow_destination((
+                            OfeId::try_new(interval.ofe_id.clone()).expect("rain poison OFE"),
+                            TileId::try_new(interval.tile_id.clone()).expect("rain poison tile"),
+                        ))
+                        .expect("rain poison open request")
+                })
+                .collect();
         let gsi_before_rain_poison = initial_gsi.clone();
         let cursor_before_rain_poison = initial_cursor.clone();
-        assert!(PreparedStage3V11DayV1::bind_provider_day(
-            &rainy_day,
-            0,
-            rainy_open_requests,
-        )
-        .is_err());
+        assert!(
+            PreparedStage3V11DayV1::bind_provider_day(&rainy_day, 0, rainy_open_requests,).is_err()
+        );
         assert_eq!(initial_gsi, gsi_before_rain_poison);
         assert_eq!(initial_cursor, cursor_before_rain_poison);
         assert_eq!(bound_day_zero.supports()[0].support().start_ns().get(), 0);
@@ -2596,24 +2868,28 @@ mod tests {
             bound_day_one.accepted_gsi_receipt(),
             "sequential days must carry distinct GSI receipts"
         );
-        assert!(PreparedStage3V11DayV1::bind_provider_day(
-            &day_one,
-            1,
-            attachment_supports(&day_zero_replay, &template.intervals[0], lane_id, 0),
-        )
-        .is_err());
-        assert!(PreparedStage3V11DayV1::bind_provider_day(
-            &day_zero_replay,
-            0,
-            attachment_supports_with_start_offset(
-                &day_zero_replay,
-                &template.intervals[0],
-                lane_id,
-                0,
+        assert!(
+            PreparedStage3V11DayV1::bind_provider_day(
+                &day_one,
                 1,
-            ),
-        )
-        .is_err());
+                attachment_supports(&day_zero_replay, &template.intervals[0], lane_id, 0),
+            )
+            .is_err()
+        );
+        assert!(
+            PreparedStage3V11DayV1::bind_provider_day(
+                &day_zero_replay,
+                0,
+                attachment_supports_with_start_offset(
+                    &day_zero_replay,
+                    &template.intervals[0],
+                    lane_id,
+                    0,
+                    1,
+                ),
+            )
+            .is_err()
+        );
         let day_one_replay = day_one.clone();
         let mut gsi_after_day_one = gsi_after_day_zero.clone();
         let mut cursor_after_day_one = cursor_after_day_zero.clone();
@@ -2624,155 +2900,43 @@ mod tests {
             .validate_for_configuration(&configuration, 2)
             .expect("provider cursor advances to day two");
 
-        assert!(day_zero_replay
-            .commit(&mut gsi_after_day_one.clone(), &mut cursor_after_day_one.clone())
-            .is_err());
-        assert!(request
-            .prepare_snow_free_gsi_day_from_repository(
-                2,
-                &configuration,
-                shadow.gsi_owner_configuration(),
-                &initial_gsi,
-                &initial_cursor,
-            )
-            .is_err());
+        assert!(
+            day_zero_replay
+                .commit(
+                    &mut gsi_after_day_one.clone(),
+                    &mut cursor_after_day_one.clone()
+                )
+                .is_err()
+        );
+        assert!(
+            request
+                .prepare_snow_free_gsi_day_from_repository(
+                    2,
+                    &configuration,
+                    shadow.gsi_owner_configuration(),
+                    &initial_gsi,
+                    &initial_cursor,
+                )
+                .is_err()
+        );
 
         let mut substituted_gsi = initial_gsi;
         let mut correct_cursor = cursor_after_day_zero;
-        assert!(day_one_replay
-            .clone()
-            .commit(&mut substituted_gsi, &mut correct_cursor)
-            .is_err());
+        assert!(
+            day_one_replay
+                .clone()
+                .commit(&mut substituted_gsi, &mut correct_cursor)
+                .is_err()
+        );
 
         let mut correct_gsi = gsi_after_day_zero;
         let mut rewound_cursor = initial_cursor;
-        assert!(day_one_replay
-            .commit(&mut correct_gsi, &mut rewound_cursor)
-            .is_err());
+        assert!(
+            day_one_replay
+                .commit(&mut correct_gsi, &mut rewound_cursor)
+                .is_err()
+        );
     }
 
-    #[test]
-    fn downstream_scheduler_failure_discards_production_and_complete_shadow_candidate() {
-        let (mut shadow, fixture) = shadow_fixture();
-        let mut production = fixture.hydrology.beginning_frame().clone();
-        let production_before = production.clone();
-        let shadow_before = shadow.clone();
-        let shadow_input = day_input(&fixture);
-        let production_input = production_day_input();
-        let error = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
-            .run_publication_stream_with_v9_real_consumer_shadow(
-                &mut production,
-                DirectPublicationRunMetadata {
-                    run_name: "v9-shadow-rollback".into(),
-                    runtime_selection: "direct-default-off-shadow-test".into(),
-                    output_policy: "test-only".into(),
-                },
-                |_, _, _| Ok(production_input.clone()),
-                |_, _, _| Ok(shadow_input.clone()),
-                |_, _| {
-                    Err(crate::DirectRuntimeError::PublicationSinkFailure {
-                        detail: "injected after shadow day".into(),
-                    })
-                },
-                &mut shadow,
-            )
-            .expect_err("injected downstream failure");
-        assert!(matches!(
-            error,
-            crate::DirectRuntimeError::PublicationSinkFailure { .. }
-        ));
-        assert_eq!(production, production_before);
-        assert_eq!(shadow, shadow_before);
-    }
-
-    #[test]
-    fn active_routing_is_typed_unsupported_before_any_shadow_or_production_change() {
-        let (mut shadow, fixture) = shadow_fixture();
-        let mut production = fixture.hydrology.beginning_frame().clone();
-        production.laned_active = Some(Box::new(DirectLanedActiveConfig {
-            lanes: vec![DirectLanedActiveLaneConfig {
-                slplen_m: 10.0,
-                width_m: 10.0,
-                mean_gradient: 0.01,
-                skin_friction_coefficient_ko: 500.0,
-                form_drag_coefficient: 0.0,
-                roughness_element_height_m: 0.0,
-                roughness_concentration: 0.0,
-                vegetation_drag_coefficient: 0.0,
-                canopy_height_m: None,
-            }],
-            mesh_policy: DirectLanedActiveMeshPolicy::FixedCells { cells: 10 },
-            max_dt_s: 300.0,
-            trace_enabled: false,
-            trace_detail_filter: None,
-            step_trace_enabled: false,
-        }));
-        let production_before = production.clone();
-        let shadow_before = shadow.clone();
-        let shadow_input = day_input(&fixture);
-        let production_input = production_day_input();
-        let error = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
-            .run_publication_stream_with_v9_real_consumer_shadow(
-                &mut production,
-                DirectPublicationRunMetadata {
-                    run_name: "v9-active-unsupported".into(),
-                    runtime_selection: "direct-default-off-shadow-test".into(),
-                    output_policy: "test-only".into(),
-                },
-                |_, _, _| Ok(production_input.clone()),
-                |_, _, _| Ok(shadow_input.clone()),
-                |_, _| Ok(()),
-                &mut shadow,
-            )
-            .expect_err("active routing must reject");
-        assert!(matches!(
-            error,
-            crate::DirectRuntimeError::DirectDomainViolation {
-                field: "v9_shadow.laned_active_unsupported"
-            }
-        ));
-        assert_eq!(production, production_before);
-        assert_eq!(shadow, shadow_before);
-    }
-
-    #[test]
-    fn repository_day_receipt_mismatch_discards_both_candidates() {
-        let (mut shadow, fixture) = shadow_fixture();
-        let mut production = fixture.hydrology.beginning_frame().clone();
-        let production_before = production.clone();
-        let shadow_before = shadow.clone();
-        let shadow_input = day_input(&fixture);
-        let mut actual_input = production_day_input();
-        actual_input.precipitation_m = f64::from_bits(actual_input.precipitation_m.to_bits() ^ 1);
-        let mut published_row_count = 0_usize;
-        let error = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
-            .run_publication_stream_with_v9_real_consumer_shadow(
-                &mut production,
-                DirectPublicationRunMetadata {
-                    run_name: "v9-provider-poison".into(),
-                    runtime_selection: "direct-default-off-shadow-test".into(),
-                    output_policy: "test-only".into(),
-                },
-                |_, _, _| Ok(actual_input.clone()),
-                |_, _, _| Ok(shadow_input.clone()),
-                |_, _| {
-                    published_row_count += 1;
-                    Ok(())
-                },
-                &mut shadow,
-            )
-            .expect_err("repository receipt mismatch");
-        assert!(matches!(
-            error,
-            crate::DirectRuntimeError::V9RealConsumerShadowFailure {
-                category: "identity",
-                ..
-            }
-        ));
-        assert_eq!(published_row_count, 0);
-        assert_eq!(production, production_before);
-        assert_eq!(shadow, shadow_before);
-    }
-
-include!("v9_real_consumer_shadow_tests_tail.rs");
+    include!("v9_real_consumer_shadow_tests_tail.rs");
 }

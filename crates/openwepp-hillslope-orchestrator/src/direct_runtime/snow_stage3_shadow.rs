@@ -893,9 +893,9 @@ mod tests {
             enabled: true,
             event_lane_index: 0,
             event_day_index: 0,
-            parent_duration_ns: 1_800_000_000,
-            event_elapsed_ns: 1_200_000_000,
-            minimum_support_ns: 600_000_000,
+            parent_duration_ns: 180_000_000_000,
+            event_elapsed_ns: 120_000_000_000,
+            minimum_support_ns: 60_000_000_000,
             sealed_forcing: DirectSnowStage3SealedForcing {
                 exposure: SealedExposureReceipt {
                     receipt_id: "exposure-1".into(),
@@ -1019,15 +1019,15 @@ mod tests {
         assert_eq!(attachment.runtime().receipt_chain().len(), 1);
         assert_eq!(
             attachment.runtime().accepted_cursor_ns().get(),
-            1_800_000_000
+            180_000_000_000
         );
         let receipt = attachment
             .runtime()
             .receipt_history()
             .first()
             .expect("terminal receipt");
-        assert_eq!(receipt.accepted_event_tick.get(), 1_200_000_000);
-        assert_eq!(receipt.continuation_duration_ns.get(), 600_000_000);
+        assert_eq!(receipt.accepted_event_tick.get(), 120_000_000_000);
+        assert_eq!(receipt.continuation_duration_ns.get(), 60_000_000_000);
         assert_eq!(resumed_attachment.runtime(), attachment.runtime());
         assert_eq!(
             resumed_before_event.surface_liquid_shadow,

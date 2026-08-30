@@ -1,3 +1,8 @@
+#[cfg(feature = "test-fixture-authority")]
+use openwepp_runner::{
+    HillslopeRunRequest, SidecarPolicy, Stage3TestFixtureSeedBinding, Stage3TestFixtureSeedProfile,
+    author_stage3_v11_owner_seed_fixture,
+};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -16,6 +21,7 @@ fn wshedw10_watershed_cli_absent_chaninp_uses_typed_legacy_defaults() {
 
     let run_dir = build_watershed_fixture_dir("wshedw10_absent_chaninp_default");
     write_hillslope_source_runfile_fixture(&run_dir, 1);
+    bind_stage3_owner_seed(&run_dir, 1);
     write_watershed_runfile_without_chaninp(&run_dir);
 
     let output_dir = run_dir.join("out");
@@ -41,6 +47,26 @@ fn wshedw10_watershed_cli_absent_chaninp_uses_typed_legacy_defaults() {
     );
     assert_all_watershed_outputs_exist(&output_dir);
 }
+
+#[cfg(feature = "test-fixture-authority")]
+fn bind_stage3_owner_seed(run_dir: &Path, hillslope_id: u32) {
+    author_stage3_v11_owner_seed_fixture(
+        &HillslopeRunRequest {
+            run_dir: run_dir.to_path_buf(),
+            run_file: PathBuf::from(format!("H{hillslope_id}.source.run")),
+            output_dir: run_dir.join("stage3-fixture-output"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        },
+        Stage3TestFixtureSeedProfile::CompleteOwner,
+        Stage3TestFixtureSeedBinding::ExplicitRunfile,
+    )
+    .expect("WSHED-W10 fixture should bind an exact explicit Stage-3 owner seed");
+}
+
+#[cfg(not(feature = "test-fixture-authority"))]
+fn bind_stage3_owner_seed(_run_dir: &Path, _hillslope_id: u32) {}
 
 fn build_watershed_fixture_dir(prefix: &str) -> PathBuf {
     let destination = unique_temp_dir(prefix);

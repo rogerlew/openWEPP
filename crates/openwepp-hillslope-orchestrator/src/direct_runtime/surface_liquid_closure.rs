@@ -44,6 +44,11 @@ use super::surface_liquid_owner::{
     checked_surface_liquid_sum,
 };
 
+const REPRESENTATIONAL_CREDIT_ABSOLUTE_KG_M2: f64 = 1.0e-14;
+const REPRESENTATIONAL_CREDIT_EPSILON_MULTIPLIER: f64 = 64.0;
+
+include!("surface_liquid_closure_projection_helpers.rs");
+
 fn contextual_closure_failure(
     transaction_id: TransactionId,
     store_key: &DirectSurfaceLiquidStoreKey,
@@ -184,6 +189,10 @@ impl DirectSurfaceLiquidClosureOperands {
     #[must_use]
     pub fn source_parcels(&self) -> &[DirectSurfaceLiquidParcelClosureOperands] {
         &self.source_parcels
+    }
+
+    pub(super) fn store_operands_match(&self, expected: &Self) -> bool {
+        self.stores == expected.stores
     }
 
     pub(super) fn first_source_identity_mismatch(
@@ -663,6 +672,7 @@ fn projected_parcel_order(left: &RawParcelSegment, right: &RawParcelSegment) -> 
 
 struct ParcelArithmeticProjection {
     expected: BTreeMap<ParcelJoinKey, AmountPair>,
+    expected_temperature_k: BTreeMap<ParcelJoinKey, f64>,
     actual: BTreeMap<ParcelJoinKey, AmountPair>,
     expected_source_mass: BTreeMap<(OfeId, String), f64>,
     actual_source_mass: BTreeMap<(OfeId, String), f64>,
@@ -1229,10 +1239,15 @@ fn validate_surface_liquid_closure_operands_inner(
                 "independent closure transaction mismatch",
             ));
         }
+        // Store arithmetic owns the first closure-class comparison. Running it
+        // before parcel projection preserves E010 for a finite but substituted
+        // frozen store while still returning E003 for non-projectable store
+        // arithmetic. Parcel preflight must not reclassify that substitution
+        // merely because it changes the independently replayed capacity.
+        validate_store_equations(configuration, resource, operands)?;
         preflight_surface_liquid_closure_arithmetic(configuration, resource, operands, receipts)?;
         arithmetic_preflight::validate_partition_input_identities(configuration, operands)?;
         validate_frozen_source_identities(configuration, resource, input, operands)?;
-        validate_store_equations(configuration, resource, operands)?;
         validate_parcel_joins(configuration, operands, receipts, ending)
     })();
     result.map_err(|error| {
@@ -1499,6 +1514,25 @@ fn add_expected_partition(
     expected.entry(key).or_default().checked_add(mass, enthalpy)
 }
 
+fn add_expected_temperature(
+    expected: &mut BTreeMap<ParcelJoinKey, f64>,
+    key: ParcelJoinKey,
+    temperature_k: f64,
+) -> Option<()> {
+    if !temperature_k.is_finite() || !(200.0..=350.0).contains(&temperature_k) {
+        return None;
+    }
+    match expected.entry(key) {
+        std::collections::btree_map::Entry::Vacant(entry) => {
+            entry.insert(temperature_k);
+            Some(())
+        }
+        std::collections::btree_map::Entry::Occupied(entry) => {
+            (entry.get().to_bits() == temperature_k.to_bits()).then_some(())
+        }
+    }
+}
+
 fn project_actual_receipt_arithmetic(
     configuration: &DirectSurfaceLiquidConfiguration,
     operands: &DirectSurfaceLiquidClosureOperands,
@@ -1575,6 +1609,7 @@ fn project_parcel_arithmetic(
         .collect::<Result<BTreeMap<_, _>, _>>()?;
 
     let mut expected = BTreeMap::<ParcelJoinKey, AmountPair>::new();
+    let mut expected_temperature_k = BTreeMap::<ParcelJoinKey, f64>::new();
     let (raw_ofe_mass, raw_source_mass) =
         raw_parent_reconstruction::reconstruct_raw_parent_mass(configuration, operands)?;
     let mut replayed_ofe_enthalpy = BTreeMap::<OfeId, f64>::new();
@@ -1762,7 +1797,7 @@ fn project_parcel_arithmetic(
                         )
                     })?
             };
-            let _h_mix =
+            let h_mix =
                 checked_surface_liquid_div(supply_enthalpy, supply_mass).ok_or_else(|| {
                     contextual_ofe_comparison_failure(
                         DirectSurfaceLiquidErrorCode::E003,
@@ -1772,9 +1807,36 @@ fn project_parcel_arithmetic(
                         "partition mixture enthalpy arithmetic",
                     )
                 })?;
+            let temperature_k = checked_surface_liquid_div(h_mix, LIQUID_HEAT_CAPACITY_J_KG_K)
+                .and_then(|offset| checked_surface_liquid_add(REFERENCE_TEMPERATURE_K, offset))
+                .ok_or_else(|| {
+                    contextual_ofe_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        ofe_id,
+                        "partition mixture temperature arithmetic",
+                    )
+                })?;
             let mut allocated_infiltration = 0.0;
+            let mut allocated_excess = 0.0;
             let mut allocated_mixed_enthalpy = 0.0;
             let count = contributions.len();
+            let use_excess_authority =
+                enthalpy_reconstruction::direct_infiltration_requires_excess_authority(
+                    total_infiltration,
+                    supply_mass,
+                    contributions.iter().map(|row| row.1),
+                )
+                .ok_or_else(|| {
+                    contextual_ofe_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        ofe_id,
+                        "partition infiltration authority arithmetic",
+                    )
+                })?;
             let mut excess_by_store =
                 BTreeMap::<DirectSurfaceLiquidStoreKey, Vec<(RawParcelSegment, f64, f64)>>::new();
             for (index, (segment, mass, _)) in contributions.into_iter().enumerate() {
@@ -1794,23 +1856,25 @@ fn project_parcel_arithmetic(
                     )
                 })?;
                 allocated_mixed_enthalpy = allocated;
-                let infiltrated = if full_infiltration {
-                    Some(mass)
-                } else if index + 1 == count {
-                    checked_surface_liquid_sub(total_infiltration, allocated_infiltration)
-                } else {
-                    checked_surface_liquid_mul(total_infiltration, mass)
-                        .and_then(|value| checked_surface_liquid_div(value, supply_mass))
-                }
-                .ok_or_else(|| {
-                    contextual_ofe_comparison_failure(
-                        DirectSurfaceLiquidErrorCode::E003,
-                        operands.transaction_id,
-                        &configuration.owner_id,
-                        ofe_id,
-                        "partition infiltration allocation arithmetic",
+                let (infiltrated, excess) =
+                    enthalpy_reconstruction::allocate_infiltration_and_excess(
+                        total_infiltration,
+                        supply_mass,
+                        allocated_infiltration,
+                        allocated_excess,
+                        mass,
+                        index + 1 == count,
+                        use_excess_authority,
                     )
-                })?;
+                    .ok_or_else(|| {
+                        contextual_ofe_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            ofe_id,
+                            "partition infiltration allocation arithmetic",
+                        )
+                    })?;
                 allocated_infiltration =
                     checked_surface_liquid_add(allocated_infiltration, infiltrated).ok_or_else(
                         || {
@@ -1823,6 +1887,16 @@ fn project_parcel_arithmetic(
                             )
                         },
                     )?;
+                allocated_excess = checked_surface_liquid_add(allocated_excess, excess)
+                    .ok_or_else(|| {
+                        contextual_ofe_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            ofe_id,
+                            "partition excess accumulation arithmetic",
+                        )
+                    })?;
                 let infiltration_recipient =
                     DirectSurfaceLiquidReceiptRecipient::SoilInfiltration {
                         ofe_id: binding.ofe_id.clone(),
@@ -1839,15 +1913,6 @@ fn project_parcel_arithmetic(
                     start_s,
                     end_s,
                 );
-                let excess = checked_surface_liquid_sub(mass, infiltrated).ok_or_else(|| {
-                    contextual_ofe_comparison_failure(
-                        DirectSurfaceLiquidErrorCode::E003,
-                        operands.transaction_id,
-                        &configuration.owner_id,
-                        ofe_id,
-                        "partition excess arithmetic",
-                    )
-                })?;
                 let (infiltration_q, excess_q) =
                     enthalpy_reconstruction::split_first_then_remainder(
                         mixed_part_q,
@@ -1864,7 +1929,10 @@ fn project_parcel_arithmetic(
                             "partition infiltration enthalpy arithmetic",
                         )
                     })?;
-                add_expected_partition(&mut expected, key, infiltrated, infiltration_q)
+                add_expected_temperature(&mut expected_temperature_k, key.clone(), temperature_k)
+                    .and_then(|()| {
+                        add_expected_partition(&mut expected, key, infiltrated, infiltration_q)
+                    })
                     .ok_or_else(|| {
                         contextual_ofe_comparison_failure(
                             DirectSurfaceLiquidErrorCode::E003,
@@ -1927,18 +1995,59 @@ fn project_parcel_arithmetic(
                             "partition excess aggregate arithmetic",
                         )
                     })?;
-                let total_retained = total_excess.min(available);
+                let capacity_ofe = checked_surface_liquid_mul(
+                    configured.tile_fraction,
+                    configured.capacity_kg_m2_tile,
+                )
+                .ok_or_else(|| {
+                    contextual_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        &store_key,
+                        None,
+                        "partition capacity envelope arithmetic",
+                    )
+                })?;
+                let stored_ofe =
+                    checked_surface_liquid_mul(configured.tile_fraction, current_liquid)
+                        .ok_or_else(|| {
+                            contextual_comparison_failure(
+                                DirectSurfaceLiquidErrorCode::E003,
+                                operands.transaction_id,
+                                &configuration.owner_id,
+                                &store_key,
+                                None,
+                                "partition storage envelope arithmetic",
+                            )
+                        })?;
+                let raw_retained = total_excess.min(available);
+                let total_retained = independently_project_effective_retained_mass(
+                    raw_retained,
+                    capacity_ofe,
+                    stored_ofe,
+                    total_excess,
+                )
+                .ok_or_else(|| {
+                    contextual_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        &store_key,
+                        None,
+                        "partition representational-credit envelope arithmetic",
+                    )
+                })?;
                 let mut allocated_retained = 0.0;
                 let part_count = parts.len();
                 for (index, (segment, excess, excess_q)) in parts.into_iter().enumerate() {
-                    let retained = if index + 1 == part_count {
-                        checked_surface_liquid_sub(total_retained, allocated_retained)
-                    } else if total_excess == 0.0 {
-                        Some(0.0)
-                    } else {
-                        checked_surface_liquid_mul(total_retained, excess)
-                            .and_then(|value| checked_surface_liquid_div(value, total_excess))
-                    }
+                    let retained = enthalpy_reconstruction::allocate_retained_mass(
+                        total_retained,
+                        total_excess,
+                        allocated_retained,
+                        excess,
+                        index + 1 == part_count,
+                    )
                     .ok_or_else(|| {
                         contextual_comparison_failure(
                             DirectSurfaceLiquidErrorCode::E003,
@@ -1995,17 +2104,24 @@ fn project_parcel_arithmetic(
                             start_s,
                             end_s,
                         );
-                        add_expected_partition(&mut expected, key, retained, retained_q)
-                            .ok_or_else(|| {
-                                contextual_comparison_failure(
-                                    DirectSurfaceLiquidErrorCode::E003,
-                                    operands.transaction_id,
-                                    &configuration.owner_id,
-                                    &store_key,
-                                    Some(segment.source_parcel_id.clone()),
-                                    "partition retained enthalpy arithmetic",
-                                )
-                            })?;
+                        add_expected_temperature(
+                            &mut expected_temperature_k,
+                            key.clone(),
+                            temperature_k,
+                        )
+                        .and_then(|()| {
+                            add_expected_partition(&mut expected, key, retained, retained_q)
+                        })
+                        .ok_or_else(|| {
+                            contextual_comparison_failure(
+                                DirectSurfaceLiquidErrorCode::E003,
+                                operands.transaction_id,
+                                &configuration.owner_id,
+                                &store_key,
+                                Some(segment.source_parcel_id.clone()),
+                                "partition retained enthalpy arithmetic",
+                            )
+                        })?;
                     }
                     if runoff == 0.0 {
                         continue;
@@ -2096,33 +2212,42 @@ fn project_parcel_arithmetic(
                         start_s,
                         end_s,
                     );
-                    add_expected_partition(&mut expected, key, runoff, runoff_q).ok_or_else(
-                        || {
-                            contextual_comparison_failure(
-                                DirectSurfaceLiquidErrorCode::E003,
-                                operands.transaction_id,
-                                &configuration.owner_id,
-                                &store_key,
-                                Some(segment.source_parcel_id.clone()),
-                                "partition runoff enthalpy arithmetic",
-                            )
-                        },
-                    )?;
+                    add_expected_temperature(
+                        &mut expected_temperature_k,
+                        key.clone(),
+                        temperature_k,
+                    )
+                    .and_then(|()| add_expected_partition(&mut expected, key, runoff, runoff_q))
+                    .ok_or_else(|| {
+                        contextual_comparison_failure(
+                            DirectSurfaceLiquidErrorCode::E003,
+                            operands.transaction_id,
+                            &configuration.owner_id,
+                            &store_key,
+                            Some(segment.source_parcel_id.clone()),
+                            "partition runoff enthalpy arithmetic",
+                        )
+                    })?;
                 }
-                let retained_tile =
-                    checked_surface_liquid_div(total_retained, configured.tile_fraction)
-                        .and_then(|value| checked_surface_liquid_add(current_liquid, value))
-                        .ok_or_else(|| {
-                            contextual_comparison_failure(
-                                DirectSurfaceLiquidErrorCode::E003,
-                                operands.transaction_id,
-                                &configuration.owner_id,
-                                &store_key,
-                                None,
-                                "partition retained store update arithmetic",
-                            )
-                        })?;
-                store_liquid.insert(store_key, retained_tile);
+                let ending_liquid = independently_project_ending_store(
+                    current_liquid,
+                    configured.capacity_kg_m2_tile,
+                    configured.tile_fraction,
+                    available_tile,
+                    available,
+                    total_retained,
+                )
+                .ok_or_else(|| {
+                    contextual_comparison_failure(
+                        DirectSurfaceLiquidErrorCode::E003,
+                        operands.transaction_id,
+                        &configuration.owner_id,
+                        &store_key,
+                        None,
+                        "partition retained store update arithmetic",
+                    )
+                })?;
+                store_liquid.insert(store_key, ending_liquid);
             }
         }
         expected_continuations.insert(
@@ -2228,6 +2353,7 @@ fn project_parcel_arithmetic(
     }
     Ok(ParcelArithmeticProjection {
         expected,
+        expected_temperature_k,
         actual,
         expected_source_mass,
         actual_source_mass,
@@ -2778,7 +2904,19 @@ fn validate_parcel_joins(
                 )
             },
         )?;
-        validate_receipt_enthalpy(&configuration.owner_id, receipt)?;
+        let expected_temperature_k = projection
+            .expected_temperature_k
+            .get(&receipt_join_key(&configuration.owner_id, receipt))
+            .copied()
+            .ok_or_else(|| {
+                contextual_closure_failure(
+                    operands.transaction_id,
+                    &receipt.origin_store_key,
+                    Some(receipt.parcel_id.clone()),
+                    "receipt temperature has no independent partition lineage",
+                )
+            })?;
+        validate_receipt_enthalpy(&configuration.owner_id, receipt, expected_temperature_k)?;
     }
 
     compare_parcel_projection(
@@ -2790,191 +2928,64 @@ fn validate_parcel_joins(
     validate_projected_ending_state(configuration, operands, ending, &projection)
 }
 
-fn validate_projected_ending_state(
-    configuration: &DirectSurfaceLiquidConfiguration,
-    operands: &DirectSurfaceLiquidClosureOperands,
-    ending: &DirectSurfaceLiquidOwnedState,
-    projection: &ParcelArithmeticProjection,
-) -> Result<(), DirectSurfaceLiquidError> {
-    if ending.owner_id != configuration.owner_id
-        || ending.configuration_sha256 != configuration.configuration_sha256
-    {
-        return Err(ending_aggregate_failure(
-            operands.transaction_id,
-            &configuration.owner_id,
-            "projected ending-state owner/configuration",
-        ));
+#[cfg(test)]
+mod full_capacity_projection_tests {
+    use super::*;
+
+    #[test]
+    fn independent_projection_reconstructs_exact_full_capacity_endpoint() {
+        let capacity_tile = 6.0_f64;
+        let tile_fraction = 0.38_f64;
+        let available_tile = capacity_tile;
+        let available_ofe = tile_fraction * available_tile;
+        assert_eq!(
+            (available_ofe / tile_fraction).to_bits(),
+            capacity_tile.to_bits() + 1,
+        );
+        assert_eq!(
+            independently_project_ending_store(
+                0.0,
+                capacity_tile,
+                tile_fraction,
+                available_tile,
+                available_ofe,
+                available_ofe,
+            )
+            .expect("independent full-capacity projection")
+            .to_bits(),
+            capacity_tile.to_bits(),
+        );
     }
 
-    let actual_store_keys = ending
-        .records
-        .iter()
-        .map(|row| row.key.clone())
-        .collect::<Vec<_>>();
-    let expected_store_keys = configuration
-        .records
-        .iter()
-        .map(|row| row.key.clone())
-        .collect::<Vec<_>>();
-    if let Some(offender) =
-        first_membership_aware_mismatch(&actual_store_keys, &expected_store_keys)
-    {
-        return Err(contextual_comparison_failure(
-            DirectSurfaceLiquidErrorCode::E010,
-            operands.transaction_id,
-            &configuration.owner_id,
-            &offender,
-            None,
-            "projected ending store membership/order",
-        ));
-    }
-    for (actual, configured) in ending.records.iter().zip(&configuration.records) {
-        let expected_liquid = projection
-            .expected_store_liquid
-            .get(&configured.key)
-            .copied()
-            .ok_or(DirectSurfaceLiquidError::Closure(
-                "projected ending store absent from independent projection",
-            ))?;
-        if actual.liquid_kg_m2_tile.to_bits() != expected_liquid.to_bits()
-            || actual.last_accepted_transaction_id != Some(operands.transaction_id)
-        {
-            return Err(contextual_comparison_failure(
-                DirectSurfaceLiquidErrorCode::E010,
-                operands.transaction_id,
-                &configuration.owner_id,
-                &configured.key,
-                None,
-                "projected ending store join",
-            ));
-        }
-    }
-
-    let actual_continuation_ids = ending
-        .continuations
-        .iter()
-        .map(|row| row.ofe_id.clone())
-        .collect::<Vec<_>>();
-    if let Some(offender) =
-        first_membership_aware_mismatch(&actual_continuation_ids, &configuration.ofe_topology)
-    {
-        return Err(contextual_ofe_comparison_failure(
-            DirectSurfaceLiquidErrorCode::E010,
-            operands.transaction_id,
-            &configuration.owner_id,
-            &offender,
-            "projected ending continuation membership/order",
-        ));
-    }
-    for (actual, expected_ofe) in ending.continuations.iter().zip(&configuration.ofe_topology) {
-        let expected = projection.expected_continuations.get(expected_ofe).ok_or(
-            DirectSurfaceLiquidError::Closure(
-                "projected ending continuation absent from independent projection",
-            ),
-        )?;
-        if actual.day_index != expected.day_index
-            || actual.next_interval_index != expected.next_interval_index
-            || actual.cumulative_supply_m.to_bits() != expected.cumulative_supply_m.to_bits()
-            || actual.cumulative_infiltration_m.to_bits()
-                != expected.cumulative_infiltration_m.to_bits()
-            || actual.last_accepted_transaction_id != Some(expected.transaction_id)
-        {
-            return Err(contextual_ofe_comparison_failure(
-                DirectSurfaceLiquidErrorCode::E010,
-                operands.transaction_id,
-                &configuration.owner_id,
-                expected_ofe,
-                "projected ending continuation join",
-            ));
-        }
-    }
-
-    validate_projected_ending_digest(configuration, operands, ending)
-}
-
-fn validate_receipt_recipient(
-    configuration: &DirectSurfaceLiquidConfiguration,
-    binding: &super::surface_liquid_owner::DirectSurfaceLiquidOfeBinding,
-    route_record: &DirectSurfaceLiquidConfigurationRecord,
-    receipt: &DirectSurfaceLiquidParcelReceipt,
-) -> Result<(), DirectSurfaceLiquidError> {
-    let valid = match (&receipt.disposition, &receipt.recipient) {
-        (
-            DirectSurfaceLiquidReceiptDisposition::Infiltration,
-            DirectSurfaceLiquidReceiptRecipient::SoilInfiltration {
-                ofe_id,
-                production_lane_index,
-                production_lane_id,
-                ordered_soil_layer_ids,
-                soil_thermal_layer_id,
-            },
-        ) => {
-            ofe_id == &binding.ofe_id
-                && production_lane_index == &binding.production_lane_index
-                && production_lane_id == &binding.production_lane_id
-                && ordered_soil_layer_ids == &binding.ordered_soil_layer_ids
-                && soil_thermal_layer_id == &binding.infiltration_soil_thermal_layer_id
-        }
-        (
-            DirectSurfaceLiquidReceiptDisposition::RetainedSurface,
-            DirectSurfaceLiquidReceiptRecipient::SurfaceStore { store_key },
-        ) => store_key == &receipt.recipient_store_key,
-        (
-            DirectSurfaceLiquidReceiptDisposition::RoutedRunoff,
-            DirectSurfaceLiquidReceiptRecipient::RoutedOfe {
-                source_ofe_id,
-                destination_ofe_id,
-                destination_store_key,
-            },
-        ) => match route_destination(configuration, route_record) {
-            Ok((expected_ofe, expected_record)) => {
-                source_ofe_id == &receipt.basis_ofe_id
-                    && destination_ofe_id == &expected_ofe
-                    && destination_store_key == &expected_record.key
-            }
-            Err(_) => false,
-        },
-        (
-            DirectSurfaceLiquidReceiptDisposition::OutletRunoff,
-            DirectSurfaceLiquidReceiptRecipient::Outlet { ofe_id },
-        ) => {
-            ofe_id == &receipt.basis_ofe_id
-                && route_record.runon_destination_ofe_id.is_none()
-                && route_record.runon_destination_tile_id.is_none()
-        }
-        _ => false,
-    };
-    if valid {
-        Ok(())
-    } else {
-        Err(DirectSurfaceLiquidError::Closure(
-            "wrong typed parcel recipient",
-        ))
+    #[test]
+    fn independent_projection_rejects_substituted_capacity_basis() {
+        let capacity_tile = 6.0_f64;
+        let tile_fraction = 0.38_f64;
+        let available_tile = capacity_tile;
+        let available_ofe = tile_fraction * available_tile;
+        assert!(
+            independently_project_ending_store(
+                0.0,
+                capacity_tile,
+                tile_fraction,
+                f64::from_bits(available_tile.to_bits() - 1),
+                available_ofe,
+                available_ofe,
+            )
+            .is_none()
+        );
+        assert!(
+            independently_project_ending_store(
+                0.0,
+                capacity_tile,
+                tile_fraction,
+                available_tile,
+                available_ofe,
+                f64::from_bits(available_ofe.to_bits() + 1),
+            )
+            .is_none()
+        );
     }
 }
 
-fn route_destination<'a>(
-    configuration: &'a DirectSurfaceLiquidConfiguration,
-    route_record: &DirectSurfaceLiquidConfigurationRecord,
-) -> Result<(OfeId, &'a DirectSurfaceLiquidConfigurationRecord), DirectSurfaceLiquidError> {
-    let destination_ofe =
-        route_record
-            .runon_destination_ofe_id
-            .clone()
-            .ok_or(DirectSurfaceLiquidError::Closure(
-                "routed receipt on terminal OFE",
-            ))?;
-    let destination_tile = route_record.runon_destination_tile_id.as_ref().ok_or(
-        DirectSurfaceLiquidError::Closure("routed receipt missing destination tile"),
-    )?;
-    let destination = configuration
-        .records
-        .iter()
-        .find(|record| {
-            record.key.ofe_id == destination_ofe && record.key.tile_id == *destination_tile
-        })
-        .ok_or(DirectSurfaceLiquidError::Closure(
-            "routed receipt destination missing",
-        ))?;
-    Ok((destination_ofe, destination))
-}
+include!("surface_liquid_closure_receipt_routing.rs");

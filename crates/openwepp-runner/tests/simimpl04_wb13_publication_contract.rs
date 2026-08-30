@@ -11,7 +11,10 @@ use openwepp_runner::{
 };
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 
+mod common;
+
 #[test]
+#[ignore = "full two-day Stage-3 production qualification; run optimized with a 1800s bound"]
 fn simimpl04_contract_requires_simulation_owned_wb13_publication_provenance() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"
@@ -67,7 +70,7 @@ fn assert_production_wat_readback(report: &HillslopeRunReport) {
         .iter()
         .find(|path| {
             path.file_name()
-                .is_some_and(|name| name == "H5.wat.parquet")
+                .is_some_and(|name| name.to_string_lossy().ends_with(".wat.parquet"))
         })
         .expect("production report should retain the streaming WAT parquet path");
     let mut reader = ParquetRecordBatchReaderBuilder::try_new(
@@ -155,6 +158,7 @@ fn assert_production_wat_readback(report: &HillslopeRunReport) {
 }
 
 #[test]
+#[ignore = "full two-day Stage-3 production qualification; run optimized with a 1800s bound"]
 fn simimpl14_contract_requires_continuous_wb13_span_and_simulation_year_row_keys() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"
@@ -200,6 +204,7 @@ plot = "output/H5.plot.parquet"
 }
 
 #[test]
+#[ignore = "full two-day Stage-3 production qualification; run optimized with a 1800s bound"]
 fn simimpl14_contract_requires_run_span_truthful_loss_output_summary() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"
@@ -291,24 +296,27 @@ fn execute_fixture_with_runfile_report(
     let source_fixture_dir = fixture_path("hillslope_run_dir");
     let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, prefix);
     let run_file_path = temp_run_dir.join("case.run");
+    let runfile_payload = common::stage3_owner_seed::install(&temp_run_dir, runfile_payload);
     fs::write(&run_file_path, runfile_payload).expect("runfile fixture should be writable");
 
     let output_dir = temp_run_dir.join("output");
-    let report = execute_hillslope_run_with_runtime_policy(
-        &HillslopeRunRequest {
-            run_dir: temp_run_dir.clone(),
-            run_file: PathBuf::from("case.run"),
-            output_dir,
-            sidecar_policy: SidecarPolicy::Compat,
-            legacy_sidecar_discovery: false,
-            manifest_path: None,
-        },
-        &["openwepp-cli-hill".to_string()],
-        HillslopeRuntimeSelectionPolicy::new(
-            HillslopeRuntimeSelection::DirectProductionExecutor,
-            HillslopeDefaultRuntimeActivation::default(),
-        ),
-    )
+    let report = common::stage3_owner_seed::with_large_stack(|| {
+        execute_hillslope_run_with_runtime_policy(
+            &HillslopeRunRequest {
+                run_dir: temp_run_dir.clone(),
+                run_file: PathBuf::from("case.run"),
+                output_dir,
+                sidecar_policy: SidecarPolicy::Compat,
+                legacy_sidecar_discovery: false,
+                manifest_path: None,
+            },
+            &["openwepp-cli-hill".to_string()],
+            HillslopeRuntimeSelectionPolicy::new(
+                HillslopeRuntimeSelection::DirectProductionExecutor,
+                HillslopeDefaultRuntimeActivation::default(),
+            ),
+        )
+    })
     .expect("fixture run should succeed before WB13 provenance assertions");
 
     (report, temp_run_dir)

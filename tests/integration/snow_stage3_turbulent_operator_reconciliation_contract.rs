@@ -247,7 +247,8 @@ fn v130_retains_additive_default_off_operator_reconciliation() {
     let contract = read(CONTRACT);
 
     for required in [
-        "contract_version: 136",
+        "contract_version: 140",
+        "| `2026-08-06` | `130` | `Codex` |",
         "REF-SNOWFREEZE-STAGE3-OPERATOR-RECONCILIATION",
         "INV-SNOWFREEZE-096",
         "OBL-SNOWFREEZE-P-069",
@@ -297,8 +298,8 @@ fn v130_retains_production_and_claim_holds() {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
     for required in [
-        "v136",
-        "v18 admits OFE/lane snow--soil boundary custody and preserves v17 precipitation custody, v16 convergence, and restart holds",
+        "v140 owner amendment selects an exact 60-second adaptive Stage-3 floor",
+        "v26 retains bounded vapor/phase custody, the exact 60-second fallback",
         "production",
         "cutover",
     ] {
@@ -490,7 +491,8 @@ fn inactive_operator_lifecycle_returns_before_hourly_forcing_acquisition() {
 
     assert!(inactive_guard < inactive_return);
     assert!(inactive_return < forcing_acquisition);
-    assert!(function.contains("self.snow_stage3_evaluation_operator,"));
+    assert!(function.contains("let persistent_requested = true;"));
+    assert!(function.contains("SnowStage3EvaluationOperator::PersistentAccumulationShadowV1"));
     assert!(function.contains("&& !persistent_requested"));
 }
 
@@ -561,7 +563,8 @@ fn v131_binds_raw_opportunity_separately_from_bounded_transfer() {
     assert_v131_normative_sections(&snow, &energy);
 
     for required in [
-        "contract_version: 136",
+        "contract_version: 140",
+        "| `2026-08-07` | `131` | `Codex` |",
         "INV-SNOWFREEZE-098",
         "OBL-SNOWFREEZE-P-071",
         "OBL-SNOWFREEZE-C-013",
@@ -573,7 +576,8 @@ fn v131_binds_raw_opportunity_separately_from_bounded_transfer() {
         assert!(snow.contains(required), "{CONTRACT} missing {required}");
     }
     for required in [
-        "contract_version: 18",
+        "contract_version: 26",
+        "Version 18 defines the persistent Stage 3 snow--soil conductive boundary",
         "`m_v,raw`",
         "Signed bounded vapor transfer",
         "INV-SNOWENERGY-032",
@@ -729,8 +733,10 @@ fn v131_retains_fail_closed_authority_gaps_and_protected_boundaries() {
     assert!(energy.contains("makes no production correction"));
     assert!(package.contains("Quantify an isolated consequence only if"));
     assert!(package.contains("otherwise record implementation/reference parity"));
-    assert!(index.contains("v136 admits a separate default-off terminal receiver chronology"));
-    assert!(index.contains(
-        "v18 admits OFE/lane snow--soil boundary custody and preserves v17 precipitation custody, v16 convergence, and restart holds"
-    ));
+    assert!(
+        index.contains("v140 owner amendment selects an exact 60-second adaptive Stage-3 floor")
+    );
+    assert!(
+        index.contains("v26 retains bounded vapor/phase custody, the exact 60-second fallback")
+    );
 }

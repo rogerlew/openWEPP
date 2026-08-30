@@ -3,9 +3,9 @@ use crate::{
     DirectErosionRuntimeCarryRestartV1, DirectEvapotranspirationStageRestartV1,
     DirectGroundwaterRunStateRestartV1, DirectGrowthStateSurfaceRestartV1,
     DirectLaneTransferLedgerRestartV1, DirectRunTransferDownstreamOperandsRestartV1,
-    DirectSubsurfaceLayerRestartV1, DirectSurfaceLiquidOwnedStateRestartV1,
-    DirectTransferBuffersRestartV1, DirectWaterStateRestartV1, DirectWinterColumnRestartV1, HexF64,
-    Sha256Hex,
+    DirectSnowStage3V11AttachmentRestartV2, DirectSubsurfaceLayerRestartV1,
+    DirectSurfaceLiquidOwnedStateRestartV1, DirectTransferBuffersRestartV1,
+    DirectWaterStateRestartV1, DirectWinterColumnRestartV1, HexF64, Sha256Hex,
 };
 use openwepp_hillslope_orchestrator::{
     DirectDayConstructorInputs, DirectLaneFrame, DirectLaneTransferLedger, DirectPhaseKind,
@@ -30,22 +30,6 @@ pub enum HydrologyRestartError {
 
 fn nested(error: impl std::fmt::Display) -> HydrologyRestartError {
     HydrologyRestartError::Nested(error.to_string())
-}
-fn reject_unsupported_stage3_restart_surfaces(
-    has_legacy_shadow: bool,
-    has_v11_attachment: bool,
-) -> Result<(), HydrologyRestartError> {
-    if has_legacy_shadow {
-        return Err(HydrologyRestartError::Unsupported(
-            "snow_stage3_shadow_requires_successor_restart",
-        ));
-    }
-    if has_v11_attachment {
-        return Err(HydrologyRestartError::Unsupported(
-            "snow_stage3_v11_attachment_requires_successor_restart",
-        ));
-    }
-    Ok(())
 }
 fn hexify_floats(value: &mut serde_json::Value) {
     match value {
@@ -321,6 +305,8 @@ pub struct DirectHydrologyRestartV1 {
     pub lane_transfer_downstream_operands: DirectRunTransferDownstreamOperandsRestartV1,
     pub groundwater: DirectGroundwaterRunStateRestartV1,
     pub surface_liquid_owned_state: Option<Box<DirectSurfaceLiquidOwnedStateRestartV1>>,
+    #[serde(default)]
+    pub snow_stage3_v11_attachment: Option<Box<DirectSnowStage3V11AttachmentRestartV2>>,
 }
 
 pub struct ExpectedDirectHydrologyRestartContext<'a> {
@@ -337,10 +323,6 @@ impl DirectHydrologyRestartV1 {
         phase_plan_sha256: Sha256Hex,
         day_input_digests: &[Sha256Hex],
     ) -> Result<Self, HydrologyRestartError> {
-        reject_unsupported_stage3_restart_surfaces(
-            value.snow_stage3_shadow.is_some(),
-            value.snow_stage3_v11_attachment.is_some(),
-        )?;
         let DirectRunFrame {
             identity,
             lanes,
@@ -351,8 +333,7 @@ impl DirectHydrologyRestartV1 {
             lane_transfer_shadow_projection,
             groundwater,
             surface_liquid_shadow,
-            snow_stage3_shadow: _,
-            snow_stage3_v11_attachment: _,
+            snow_stage3_v11_attachment,
             laned_active,
             laned_active_summary,
         } = value;
@@ -412,7 +393,7 @@ impl DirectHydrologyRestartV1 {
                 .map_err(|_| HydrologyRestartError::Domain("lane_count"))?,
             day_count: u64::try_from(identity.day_count)
                 .map_err(|_| HydrologyRestartError::Domain("day_count"))?,
-            phase_plan_sha256,
+            phase_plan_sha256: phase_plan_sha256.clone(),
             lanes: lanes
                 .iter()
                 .zip(day_input_digests)
@@ -435,10 +416,34 @@ impl DirectHydrologyRestartV1 {
                 .transpose()
                 .map_err(nested)?
                 .map(Box::new),
+            snow_stage3_v11_attachment: snow_stage3_v11_attachment
+                .as_deref()
+                .map(|attachment| {
+                    DirectSnowStage3V11AttachmentRestartV2::project(
+                        attachment,
+                        &phase_plan_sha256,
+                        day_input_digests,
+                    )
+                })
+                .transpose()
+                .map_err(nested)?
+                .map(Box::new),
         })
     }
 
     pub fn restore(
+        &self,
+        context: &ExpectedDirectHydrologyRestartContext<'_>,
+    ) -> Result<DirectRunFrame, HydrologyRestartError> {
+        if self.snow_stage3_v11_attachment.is_some() {
+            return Err(HydrologyRestartError::Unsupported(
+                "snow_stage3_v11_attachment_restore_requires_context",
+            ));
+        }
+        self.restore_without_stage3(context)
+    }
+
+    fn restore_without_stage3(
         &self,
         context: &ExpectedDirectHydrologyRestartContext<'_>,
     ) -> Result<DirectRunFrame, HydrologyRestartError> {
@@ -541,11 +546,51 @@ impl DirectHydrologyRestartV1 {
                 .transpose()
                 .map_err(nested)?
                 .map(Box::new),
-            snow_stage3_shadow: None,
             snow_stage3_v11_attachment: None,
             laned_active: None,
             laned_active_summary: None,
         };
+        Ok(frame)
+    }
+
+    pub fn restore_with_stage3_v11(
+        &self,
+        context: &ExpectedDirectHydrologyRestartContext<'_>,
+        stage3_context: &crate::ExpectedSnowStage3V11RestartContext<'_>,
+    ) -> Result<DirectRunFrame, HydrologyRestartError> {
+        let consumer_context = stage3_context.real_consumer_context;
+        if context.phase_plan != consumer_context.phase_plan
+            || context.phase_plan_sha256 != consumer_context.phase_plan_sha256
+            || context.day_inputs != consumer_context.day_inputs
+            || context.day_input_digests != consumer_context.day_input_digests
+            || context.surface_liquid_configuration != consumer_context.surface_liquid_configuration
+            || context.surface_liquid_configuration
+                != &stage3_context.static_context.surface_liquid_configuration
+        {
+            return Err(HydrologyRestartError::Join(
+                "Stage-3/V11 direct and real-consumer restart contexts",
+            ));
+        }
+        let mut frame = self.restore_without_stage3(context)?;
+        let attachment = self
+            .snow_stage3_v11_attachment
+            .as_deref()
+            .ok_or(HydrologyRestartError::Join(
+                "missing snow_stage3_v11_attachment restart",
+            ))?
+            .restore(stage3_context)
+            .map_err(nested)?;
+        let frame_lane_ids = frame
+            .lanes
+            .iter()
+            .map(|lane| lane.lane_id)
+            .collect::<Vec<_>>();
+        if frame_lane_ids != attachment.static_context.lane_ids {
+            return Err(HydrologyRestartError::Join(
+                "Stage-3/V11 restored lane topology",
+            ));
+        }
+        frame.snow_stage3_v11_attachment = Some(Box::new(attachment));
         Ok(frame)
     }
 }
@@ -554,15 +599,10 @@ impl DirectHydrologyRestartV1 {
 mod tests {
     use super::*;
     use openwepp_hillslope_orchestrator::DirectGroundIngressMode;
-    use openwepp_hillslope_orchestrator::snow_stage3_terminal_handoff::{
-        CanopyLongwaveComponent, SealedExposureReceipt,
-    };
     use openwepp_hillslope_orchestrator::{
-        DirectLaneConstructorInputs, DirectOfeWb14Parameters, DirectRunConstructorInputs,
-        DirectSnowStage3SealedForcing, DirectSnowStage3ShadowConfiguration,
-        DirectSnowStage3StagedSurfaceReceipt, DirectSurfaceLiquidConfiguration,
+        DirectLaneConstructorInputs, DirectRunConstructorInputs, DirectSurfaceLiquidConfiguration,
         DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidOfeBinding,
-        DirectSurfaceLiquidOwnedState, DirectSurfaceLiquidStoreKey,
+        DirectSurfaceLiquidStoreKey,
     };
     use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId};
     use openwepp_land_surface_energy::{OfeId, SourceId, SurfaceClass, SurfaceId, WaterSourceType};
@@ -652,87 +692,8 @@ mod tests {
         (phase, days)
     }
 
-    fn stage3_configuration(
-        surface_liquid_configuration: DirectSurfaceLiquidConfiguration,
-    ) -> DirectSnowStage3ShadowConfiguration {
-        let receipt = DirectSnowStage3StagedSurfaceReceipt {
-            receipt_id: "restart-v1-poison".into(),
-            temperature_k: 273.15,
-            specific_humidity: 0.001,
-            heat_transfer_m_s: 0.01,
-            vapor_transfer_m_s: 0.01,
-        };
-        DirectSnowStage3ShadowConfiguration {
-            enabled: true,
-            event_lane_index: 0,
-            event_day_index: 0,
-            parent_duration_ns: 1_800_000_000,
-            event_elapsed_ns: 1_200_000_000,
-            minimum_support_ns: 600_000_000,
-            sealed_forcing: DirectSnowStage3SealedForcing {
-                exposure: SealedExposureReceipt {
-                    receipt_id: "restart-v1-exposure".into(),
-                    provider: "sealed-stage3-exposure".into(),
-                    provider_digest: "restart-v1-provider".into(),
-                    source: "sealed-exposure-v1".into(),
-                    wind_m_s: 2.0,
-                    transfer_height_m: 5.0,
-                    roughness_m: 0.005,
-                },
-                air_temperature_k: 273.15,
-                air_specific_humidity: 0.001,
-                atmospheric_longwave_w_m2: 300.0,
-                canopy: receipt.clone(),
-                snow: receipt,
-                canopy_longwave_components: vec![CanopyLongwaveComponent {
-                    temperature_k: 273.15,
-                    emissive_area_weight: 1.0,
-                }],
-            },
-            surface_liquid_configuration,
-            wb14_parameters: vec![DirectOfeWb14Parameters {
-                ofe_id: OfeId::try_new("only").unwrap(),
-                effective_conductivity_m_s: 1.0e-6,
-                matric_potential_m: 0.1,
-                infiltration_storage_capacity_m: 1.0,
-            }],
-        }
-    }
-
     #[test]
-    fn stage3_runtime_requires_a_versioned_successor_restart() {
-        let mut source = frame();
-        let surface = surface_configuration();
-        let initial_liquid = surface
-            .records
-            .iter()
-            .map(|record| (record.key.clone(), 0.0))
-            .collect();
-        source.surface_liquid_shadow = Some(Box::new(
-            DirectSurfaceLiquidOwnedState::new_initial(&surface, &initial_liquid, 0).unwrap(),
-        ));
-        source
-            .configure_snow_stage3_shadow(stage3_configuration(surface))
-            .unwrap();
-        let (phase, days) = cache_digests(&source);
-        assert!(matches!(
-            DirectHydrologyRestartV1::project(&source, phase, &days),
-            Err(HydrologyRestartError::Unsupported(
-                "snow_stage3_shadow_requires_successor_restart"
-            ))
-        ));
-    }
-
-    #[test]
-    fn production_v11_only_runtime_requires_a_versioned_successor_restart() {
-        assert!(matches!(
-            reject_unsupported_stage3_restart_surfaces(false, true),
-            Err(HydrologyRestartError::Unsupported(
-                "snow_stage3_v11_attachment_requires_successor_restart"
-            ))
-        ));
-        assert!(reject_unsupported_stage3_restart_surfaces(false, false).is_ok());
-
+    fn production_v11_runtime_uses_the_versioned_successor_restart() {
         let scheduler = include_str!(
             "../../openwepp-hillslope-orchestrator/src/direct_runtime/snow_stage3_v11_scheduler.rs"
         );

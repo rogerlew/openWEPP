@@ -11,9 +11,9 @@ const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00c_day_input_builder_impl.rs"
 );
-const AUTHORITY_IMPL: &str = concat!(
+const STAGE3_CANOPY_AUTHORITY: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
-    "00a_snow_frost_authority_impl.rs"
+    "00c_stage3_canopy_authority.rs"
 );
 const REPORT: &str = concat!(
     "docs/work-packages/20260626-snowdensity-09-diagnostic-coupled-wat-rerun-001/",
@@ -49,7 +49,7 @@ fn snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat() {
 }
 
 #[test]
-fn snowdensity09_selector_is_now_10_3_15_default_with_legacy_rollback() {
+fn snowdensity09_selector_is_rejected_after_atomic_stage3_cutover() {
     let cli = read(CLI);
     assert!(
         !cli.contains("SNOWDENSITY09")
@@ -58,27 +58,22 @@ fn snowdensity09_selector_is_now_10_3_15_default_with_legacy_rollback() {
         "openwepp-cli-hill must not expose a user CLI density selector"
     );
 
-    let builder = read(BUILDER);
+    let builder = format!("{}\n{}", read(BUILDER), read(STAGE3_CANOPY_AUTHORITY));
     for marker in [
         "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
-        "snowdensity1015_default_snow_density_model",
-        "SnowDensityModel::LegacyWepp",
+        "reject_retired_stage3_snow_selector_envs",
+        "retired snow selector",
+        "adaptive compositional Stage-3 owner has one typed production configuration",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
         "SnowDensityModel::PhysicsBulkDensityCompactionV1",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1",
-        "\\\"snow_density_model\\\":\\\"{}\\\"",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
     assert!(
-        !builder.contains("SnowDensityModel::PhysicsBulkSpringDensificationV1"),
-        "rejected spring densification must not remain accepted by the active default selector"
-    );
-
-    let authority_impl = read(AUTHORITY_IMPL);
-    assert_contains(
-        &authority_impl,
-        "snow_density_model: self.snow_density_model",
-        AUTHORITY_IMPL,
+        !builder.contains("\"legacy_wepp\" => Ok")
+            && !builder.contains("SnowDensityModel::PhysicsBulkSpringDensificationV1"),
+        "historical density selectors must not re-enter the sole production path"
     );
 }
 

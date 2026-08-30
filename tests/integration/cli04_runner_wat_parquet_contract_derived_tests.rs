@@ -6,10 +6,9 @@ use std::sync::{Mutex, OnceLock};
 
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 
-use openwepp_runner::{
-    HillslopeCliError, HillslopeRunReport, HillslopeRunRequest, SidecarPolicy,
-    execute_hillslope_run,
-};
+use openwepp_runner::{HillslopeCliError, HillslopeRunReport, HillslopeRunRequest, SidecarPolicy};
+
+mod common;
 
 const RUNFILE_CONTRACT: &str =
     include_str!("../../docs/contracts/openwepp-hillslope-runfile-contract.md");
@@ -195,7 +194,7 @@ fn execute_fixture_with_runfile_report(
     fs::write(&run_file_path, runfile_payload).expect("runfile fixture should be writable");
 
     let output_dir = temp_run_dir.join("output");
-    let report = execute_hillslope_run(
+    let report = common::execute_with_adaptive_stage3_owner_seed(
         &HillslopeRunRequest {
             run_dir: temp_run_dir.clone(),
             run_file: PathBuf::from("case.run"),

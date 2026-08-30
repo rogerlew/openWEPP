@@ -1,5 +1,4 @@
-const SNOWFROST_STAGE2_INSULATION_MODEL_ENV: &str =
-    "OPENWEPP_SNOWFROST_STAGE2_INSULATION_MODEL";
+const SNOWFROST_STAGE2_INSULATION_MODEL_ENV: &str = "OPENWEPP_SNOWFROST_STAGE2_INSULATION_MODEL";
 
 impl DirectProductionSnowFrostAuthority {
     fn initial_snow_lane_state(&self) -> DirectSnowLaneState {
@@ -136,7 +135,10 @@ impl DirectProductionSnowFrostAuthority {
                 lane_index,
                 day_index,
                 lane.water.soil_water_m,
-                lane.subsurface_layers.iter().map(|layer| layer.theta_m).sum(),
+                lane.subsurface_layers
+                    .iter()
+                    .map(|layer| layer.theta_m)
+                    .sum(),
                 lane.subsurface_layers
                     .iter()
                     .map(|layer| layer.frozen_water_m)
@@ -204,8 +206,8 @@ impl DirectProductionSnowFrostAuthority {
                     day_index + 1
                 ))
             })?;
-        let mut frost_hourly =
-            [DirectFrostHourlyForcing::zero(); openwepp_hillslope_orchestrator::DIRECT_WINTER_HOURLY_FORCING_COUNT];
+        let mut frost_hourly = [DirectFrostHourlyForcing::zero();
+            openwepp_hillslope_orchestrator::DIRECT_WINTER_HOURLY_FORCING_COUNT];
         for (index, hourly) in hourly.into_iter().enumerate() {
             frost_hourly[index] = DirectFrostHourlyForcing {
                 radiation_mj_m2: hourly.radiation_mj_m2,
@@ -291,11 +293,10 @@ impl DirectProductionSnowFrostAuthority {
         context: &DirectProductionFrostTypedComputeContext<'_>,
         compute_inputs: &DirectWinterFrostComputeInputs,
     ) -> Result<DirectWinterFrostPartitionOutcome, HillslopeCliError> {
-        let soil_conductivity_m_s =
-            direct_production_typed_frost_soil_conductivity(
-                context.typed_authority,
-                &context.lane.subsurface_layers,
-            )?;
+        let soil_conductivity_m_s = direct_production_typed_frost_soil_conductivity(
+            context.typed_authority,
+            &context.lane.subsurface_layers,
+        )?;
         let layers = direct_production_frost_layer_inputs(
             context.lane_index,
             &context.lane.subsurface_layers,
@@ -392,8 +393,10 @@ impl DirectProductionSnowFrostAuthority {
         interval_index: u64,
         persistent_state: Option<&openwepp_hillslope_orchestrator::DirectSnowStage3PersistentState>,
     ) -> Result<DirectProductionSnowPartitionResult, HillslopeCliError> {
-        let persistent_requested = self.snow_stage3_evaluation_operator
-            == Some(openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator::PersistentAccumulationShadowV1);
+        // Historical day-oriented diagnostics have exactly one evaluator.
+        // Production never reaches this method: the V11 attachment owns and
+        // advances its sealed 48-support day before publication.
+        let persistent_requested = true;
         if self.snow_terminal_enthalpy_event_requested && !persistent_requested {
             return Err(direct_production_executor_blocked(
                 "terminal snow enthalpy event requires persistent_accumulation_shadow_v1",
@@ -408,22 +411,22 @@ impl DirectProductionSnowFrostAuthority {
                 hyetograph_rainfall_m,
                 snow_lane_state,
                 capture,
-                self.snow_stage3_evaluation_operator,
+                    Some(openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator::PersistentAccumulationShadowV1),
                 ),
                 persistent: None,
             });
         }
         let hourly_context = DirectWinterHourlyContext {
-                    snow_runtime_swe_m: snow_lane_state.runtime_swe_m,
-                    frost_runtime_depth_m: 0.0,
-                    frost_runtime_frozen_water_m: 0.0,
-                    frost_file_present: false,
-                    frost_wint_red_enabled: false,
-                    avg_slope: winter_hourly_geometry.avg_slope,
-                    azimuth: winter_hourly_geometry.azimuth,
-                    snow_rst_c: self.snow_rst_c,
-                    snow_phase_model: self.snow_phase_model,
-                };
+            snow_runtime_swe_m: snow_lane_state.runtime_swe_m,
+            frost_runtime_depth_m: 0.0,
+            frost_runtime_frozen_water_m: 0.0,
+            frost_file_present: false,
+            frost_wint_red_enabled: false,
+            avg_slope: winter_hourly_geometry.avg_slope,
+            azimuth: winter_hourly_geometry.azimuth,
+            snow_rst_c: self.snow_rst_c,
+            snow_phase_model: self.snow_phase_model,
+        };
         let hourly = if persistent_requested {
             climate_request
                 .diagnostic_winter_hourly_forcing(day_index, hourly_context)
@@ -447,8 +450,8 @@ impl DirectProductionSnowFrostAuthority {
         let daily_extraterrestrial_radiation_mj_m2 =
             hourly[0].daily_extraterrestrial_radiation_mj_m2;
         let daylight = hourly[0].daylight;
-        let mut snow_hourly =
-            [DirectSnowHourlyForcing::zero(); openwepp_hillslope_orchestrator::runtime_inputs::DIRECT_WINTER_HOURLY_FORCING_COUNT];
+        let mut snow_hourly = [DirectSnowHourlyForcing::zero();
+            openwepp_hillslope_orchestrator::runtime_inputs::DIRECT_WINTER_HOURLY_FORCING_COUNT];
         for (index, hourly) in hourly.into_iter().enumerate() {
             snow_hourly[index] = DirectSnowHourlyForcing {
                 active_precipitation_m: hourly.active_precipitation_m,
@@ -500,7 +503,7 @@ impl DirectProductionSnowFrostAuthority {
         let standard = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_with_capture_and_reconciliation(
             &partition_inputs,
             capture,
-            (!persistent_requested).then_some(self.snow_stage3_evaluation_operator).flatten(),
+            None,
         )
         .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_publication_frame",
@@ -557,15 +560,21 @@ impl DirectProductionSnowFrostAuthority {
                     interval_index,
                 )
             };
-            Some(evaluated
-            .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_publication_frame",
-                detail: format!("{SIMOUT_GUARD_ID} persistent snow evaluation failed: {source}"),
-            })?)
+            Some(
+                evaluated.map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_publication_frame",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} persistent snow evaluation failed: {source}"
+                    ),
+                })?,
+            )
         } else {
             None
         };
-        Ok(DirectProductionSnowPartitionResult { standard, persistent })
+        Ok(DirectProductionSnowPartitionResult {
+            standard,
+            persistent,
+        })
     }
 }
 
@@ -574,9 +583,7 @@ fn inactive_direct_snow_evaluation_result(
     hyetograph_rainfall_m: f64,
     snow_lane_state: &DirectSnowLaneState,
     capture: openwepp_hillslope_orchestrator::DirectSnowDiagnosticCapture,
-    evaluation_operator: Option<
-        openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator,
-    >,
+    evaluation_operator: Option<openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator>,
 ) -> openwepp_hillslope_orchestrator::DirectSnowStage3EvaluationWithReconciliationResult {
     let authoritative = inactive_direct_snow_liquid_partition(
         snow_density_model,
@@ -646,8 +653,8 @@ enum DirectProductionSnowFrostInsulationModel {
     LayeredResistanceV1,
 }
 
-fn direct_production_snow_frost_insulation_model(
-) -> Result<DirectProductionSnowFrostInsulationModel, HillslopeCliError> {
+fn direct_production_snow_frost_insulation_model()
+-> Result<DirectProductionSnowFrostInsulationModel, HillslopeCliError> {
     match std::env::var(SNOWFROST_STAGE2_INSULATION_MODEL_ENV) {
         Ok(value) => match value.trim() {
             "" | "bulk_depth_density" => {
@@ -722,8 +729,7 @@ fn layered_snow_frost_insulation_depth_density(
     let mut resistance_m2_k_w = 0.0;
     for layer in &snow.layers {
         let thickness_m = require_stage2_layer_value("layer.thickness_m", layer.thickness_m)?;
-        let density_kg_m3 =
-            require_stage2_layer_value("layer.density_kg_m3", layer.density_kg_m3)?;
+        let density_kg_m3 = require_stage2_layer_value("layer.density_kg_m3", layer.density_kg_m3)?;
         if thickness_m <= SNOW_LAYER_CLOSURE_TOLERANCE_M {
             continue;
         }

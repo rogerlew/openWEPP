@@ -1,14 +1,86 @@
-const SNOWDENSITY09_DENSITY_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL";
-const SNOWDENSITY1035_PHASE_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL";
-const SNOWDENSITY1037_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1037_MELT_MODEL";
-const SNOWDENSITY1038_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1038_MELT_MODEL";
-const PARADIGM2_STAGE3_LIQUID_MODEL_ENV: &str = "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL";
-const SNOW_SURFACE_LONGWAVE_MODEL_ENV: &str = "OPENWEPP_SNOW_SURFACE_LONGWAVE_MODEL";
-const SNOW_SURFACE_SUBLIMATION_MODEL_ENV: &str = "OPENWEPP_SNOW_SURFACE_SUBLIMATION_MODEL";
-const SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV: &str =
-    "OPENWEPP_SNOW_STAGE3_COMPLETE_CARRIER_SHADOW";
-const SNOW_STAGE3_EVALUATION_OPERATOR_ENV: &str =
-    "OPENWEPP_SNOW_STAGE3_EVALUATION_OPERATOR";
+include!("00c_stage3_canopy_authority.rs");
+
+#[allow(clippy::result_large_err)]
+fn stage3_v11_provider_hourly_forcing(
+    day: &openwepp_hillslope_orchestrator::runtime_inputs::SnowFreeHalfHourDayReceipt,
+) -> Result<[DirectSnowHourlyForcing; 24], DirectSnowStage3V11AttachmentError> {
+    if day.intervals.len() != 48 {
+        return Err(DirectSnowStage3V11AttachmentError::Support(
+            "repository half-hour cardinality",
+        ));
+    }
+    let mut hourly = [DirectSnowHourlyForcing::zero(); 24];
+    for (hour_index, pair) in day.intervals.chunks_exact(2).enumerate() {
+        let active_precipitation_m = pair
+            .iter()
+            .map(|interval| interval.active_precipitation_m)
+            .sum::<f64>();
+        let rain_m = pair.iter().map(|interval| interval.rain_m).sum::<f64>();
+        let snowfall_m = pair.iter().map(|interval| interval.snowfall_m).sum::<f64>();
+        let hydrometeor_temperature_c = if active_precipitation_m > 0.0 {
+            let weighted = pair.iter().try_fold(0.0, |sum, interval| {
+                interval
+                    .hydrometeor_temperature_c
+                    .map(|temperature| sum + temperature * interval.active_precipitation_m)
+                    .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                        "repository hydrometeor temperature",
+                    ))
+            })?;
+            Some(weighted / active_precipitation_m)
+        } else {
+            None
+        };
+        hourly[hour_index] = DirectSnowHourlyForcing {
+            active_precipitation_m,
+            rain_m,
+            snowfall_m,
+            radiation_mj_m2: pair
+                .iter()
+                .map(|interval| {
+                    interval.global_horizontal_shortwave_w_m2 * 1_800.0 / 1_000_000.0
+                })
+                .sum(),
+            air_temperature_c: f64::midpoint(
+                pair[0].air_temperature_c,
+                pair[1].air_temperature_c,
+            ),
+            cloud_fraction: f64::midpoint(pair[0].cloud_fraction, pair[1].cloud_fraction),
+            phase_model: openwepp_hillslope_orchestrator::runtime_inputs::SnowPhasePartitionModel::HarderPomeroyHourly,
+            rain_fraction: if active_precipitation_m > 0.0 {
+                rain_m / active_precipitation_m
+            } else {
+                0.0
+            },
+            snow_fraction: if active_precipitation_m > 0.0 {
+                snowfall_m / active_precipitation_m
+            } else {
+                0.0
+            },
+            hydrometeor_temperature_c,
+        };
+    }
+    Ok(hourly)
+}
+
+#[allow(clippy::result_large_err)]
+fn stage3_v11_daily_extraterrestrial_radiation(
+    climate: &HillslopeClimateRuntimeRequest,
+    day_index: usize,
+    geometry: DirectProductionWinterHourlyGeometry,
+) -> Result<f64, DirectSnowStage3V11AttachmentError> {
+    climate
+        .stage3_daily_extraterrestrial_radiation_mj_m2(
+            day_index,
+            geometry.avg_slope,
+            geometry.azimuth,
+        )
+        .map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Support(
+                "repository extraterrestrial-radiation projection",
+            )
+        })
+}
+
 #[derive(Clone, Debug)]
 struct CanopyResearchTraceConfig {
     path: std::ffi::OsString,
@@ -17,8 +89,8 @@ struct CanopyResearchTraceConfig {
 }
 
 #[cfg(test)]
-fn canopy_research_trace_test_config(
-) -> &'static std::sync::Mutex<Option<CanopyResearchTraceConfig>> {
+fn canopy_research_trace_test_config()
+-> &'static std::sync::Mutex<Option<CanopyResearchTraceConfig>> {
     static CONFIG: std::sync::OnceLock<std::sync::Mutex<Option<CanopyResearchTraceConfig>>> =
         std::sync::OnceLock::new();
     CONFIG.get_or_init(|| std::sync::Mutex::new(None))
@@ -56,8 +128,7 @@ fn canopy_research_trace_config_from_values(
     }))
 }
 
-fn canopy_research_trace_config(
-) -> Result<Option<CanopyResearchTraceConfig>, HillslopeCliError> {
+fn canopy_research_trace_config() -> Result<Option<CanopyResearchTraceConfig>, HillslopeCliError> {
     #[cfg(test)]
     if let Some(config) = canopy_research_trace_test_config()
         .lock()
@@ -139,10 +210,6 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             .collect::<Vec<_>>();
         let forest_canopy_state = vec![None; lane_authority.len()];
         let canopy_research_pending = vec![None; lane_authority.len()];
-        let persistent_enabled = lane_authority.iter().any(|authority| {
-            authority.snow_frost.snow_stage3_evaluation_operator
-                == Some(openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator::PersistentAccumulationShadowV1)
-        });
         let persistent_lane_count = lane_authority.len();
         Ok(Self {
             climate_request,
@@ -151,11 +218,299 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             residue_cover_state: std::cell::RefCell::new(residue_cover_state),
             forest_canopy_state: std::cell::RefCell::new(forest_canopy_state),
             canopy_research_pending: std::cell::RefCell::new(canopy_research_pending),
-            snow_stage3_historical_evaluation_state: persistent_enabled
-                .then(|| std::cell::RefCell::new(vec![None; persistent_lane_count])),
+            snow_stage3_historical_evaluation_state: Some(std::cell::RefCell::new(vec![
+                None;
+                persistent_lane_count
+            ])),
             winter_hourly_geometry: seed_authority.winter_hourly_geometry,
             sturm_climate_class,
         })
+    }
+
+    /// Build only the calendar/exogenous publication identity for a day whose
+    /// physical owners were advanced by the constitutive V11 attachment.
+    /// Calling the historical daily builder here would execute `CoE` snow and
+    /// the ordinary day hydrology a second time.
+    fn build_stage3_v11_publication_input(
+        &self,
+        frame: &DirectRunFrame,
+        day_index: usize,
+        lane_index: usize,
+    ) -> Result<DirectPublicationDayInput, HillslopeCliError> {
+        let (day, _simulation_year, forcing) = self.climate_day_for_build(day_index)?;
+        let lane = Self::frame_lane_for_build(frame, lane_index)?;
+        let authority = self.lane_authority(lane_index)?;
+        let mut input =
+            DirectPublicationDayInput::calendar_only(direct_publication_calendar_day(&day)?);
+        input.precipitation_m = forcing.prcp_m;
+        input.effective_temperature_c = day.effective_temperature_c;
+        input.initial_soil_water_m = Some(direct_production_lane_soil_water(lane, lane_index)?);
+        // WB13's four profile symbols are parsed-soil, day-invariant
+        // publication authority. Retain them with the exact current lane soil
+        // configuration for the attachment's commit-time cross-join; do not
+        // invoke the historical snow/day-hydrology builder.
+        input.hydrology_projection_inputs = Some(authority.hydrology_projection);
+        input.subsurface_compute_inputs =
+            Some(authority.subsurface_inputs(lane_index, &lane.subsurface_layers)?);
+        Ok(input)
+    }
+
+    #[allow(
+        clippy::result_large_err,
+        clippy::too_many_arguments,
+        clippy::too_many_lines
+    )]
+    fn build_stage3_v11_support_inputs(
+        &self,
+        beginning_canopy_cover_by_lane: &[f64],
+        provider: &PreparedSnowFreeGsiDayV1,
+        snow_free_v11_interval: &DirectV9ShadowIntervalInput,
+        snow_surface_v11_interval: &DirectV11SnowCoveredSegmentInput,
+        support_index: usize,
+        support: openwepp_coupled_time::TimeSupport,
+        lane_ids: &[u32],
+        production_seed: &crate::hillslope::snow_stage3_v11_production_seed::DirectSnowStage3V11ProductionSeedV1,
+    ) -> Result<DirectSnowStage3V11DualRegimeSupportInputsV1, DirectSnowStage3V11AttachmentError>
+    {
+        let static_authority = production_seed.support_static_authority();
+        let destination_days = provider.forcing_receipts().receipts();
+        let first_day =
+            destination_days
+                .first()
+                .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                    "repository destination set",
+                ))?;
+        let provider_interval = first_day.intervals.get(support_index).ok_or(
+            DirectSnowStage3V11AttachmentError::Support("repository interval cardinality"),
+        )?;
+        #[cfg(test)]
+        crate::hillslope::snow_stage3_v11_qualification_audit::record_support(
+            provider_interval.day_index,
+            support_index,
+            support,
+        );
+        let (day, simulation_year, daily) = self
+            .climate_day_for_build(provider_interval.day_index)
+            .map_err(|_| DirectSnowStage3V11AttachmentError::Support("runner climate day"))?;
+        let hourly = stage3_v11_provider_hourly_forcing(first_day)?;
+        let lane_ofes = static_authority
+            .interval_template()
+            .wb14_parameters
+            .iter()
+            .map(|value| value.ofe_id.as_str())
+            .collect::<Vec<_>>();
+        if lane_ids.len() != lane_ofes.len() || lane_ids.len() != self.lane_authority.len() {
+            return Err(DirectSnowStage3V11AttachmentError::Support(
+                "runner lane/OFE support topology",
+            ));
+        }
+
+        let mut snow_inputs_by_lane = BTreeMap::new();
+        let mut support_forcing_by_lane = BTreeMap::new();
+        let mut support_identity_by_lane = BTreeMap::new();
+        let mut destination_capabilities = BTreeMap::new();
+        for (lane_index, (&lane_id, lane_ofe)) in lane_ids.iter().zip(lane_ofes.iter()).enumerate()
+        {
+            let lane_interval = destination_days
+                .iter()
+                .filter_map(|destination| destination.intervals.get(support_index))
+                .find(|interval| interval.ofe_id == *lane_ofe)
+                .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                    "runner lane/provider OFE join",
+                ))?;
+            let canopy_cover = self.stage3_v11_canopy_cover_for_provider(
+                day,
+                simulation_year,
+                lane_index,
+                provider.gsi_receipt().result.growing_season_index,
+                beginning_canopy_cover_by_lane
+                    .get(lane_index)
+                    .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                        "runner canopy live lane",
+                    ))?
+                    .to_owned(),
+            )?;
+            let snow_authority = &self
+                .lane_authority
+                .get(lane_index)
+                .ok_or(DirectSnowStage3V11AttachmentError::Support(
+                    "runner lane snow authority",
+                ))?
+                .snow_frost;
+            let surface_energy_options =
+                openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyOptions {
+                    longwave_model: openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
+                    sublimation_model: openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel::NeutralBulkStage3V1,
+                    daily_solar_radiation_mj_m2: first_day.daily_horizontal_energy_mj_m2,
+                    daily_extraterrestrial_radiation_mj_m2: stage3_v11_daily_extraterrestrial_radiation(
+                        self.climate_request,
+                        provider_interval.day_index,
+                        self.winter_hourly_geometry,
+                    )?,
+                    daylight: first_day.daily_horizontal_energy_mj_m2 > 0.0,
+                    atmospheric_pressure_pa: lane_interval.pressure_kpa * 1_000.0,
+                    turbulent_geometry: openwepp_hillslope_orchestrator::DirectSnowTurbulentGeometry::CLIGEN_V1,
+                    complete_carrier_shadow: true,
+                };
+            snow_inputs_by_lane.insert(
+                lane_id,
+                DirectActiveSnowPartitionInputs {
+                    hyetograph_rainfall_m: lane_interval.rain_m,
+                    rst_c: snow_authority.snow_rst_c,
+                    newsnw_kg_m3: snow_authority.snow_newsnw_kg_m3,
+                    ssd_kg_m3: snow_authority.snow_ssd_kg_m3,
+                    runtime_swe_m: 0.0,
+                    runtime_depth_m: 0.0,
+                    runtime_density_kg_m3: 0.0,
+                    runtime_settle_day_count: 0.0,
+                    liquid_water_retained_m: 0.0,
+                    tmax_c: daily.tmax_c,
+                    tmin_c: daily.tmin_c,
+                    canopy_cover_fraction: canopy_cover,
+                    wind_m_s: lane_interval.wind_m_s,
+                    dewpoint_c: lane_interval.dew_point_c,
+                    snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel::AdaptiveCompositionalStage3V1,
+                    snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1,
+                    stage3_liquid_routing_model: openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1,
+                    surface_energy_options,
+                    sturm_climate_class: None,
+                    sturm_day_of_year: None,
+                    coe_boundary_depth_m: 0.0,
+                    coe_boundary_density_kg_m3: 0.0,
+                    coe_boundary_settle_day_count: 0.0,
+                    snow_albedo_model: None,
+                    snow_albedo_state: None,
+                    snow_layers: Vec::new(),
+                    underlying_surface_albedo: static_authority.underlying_surface_albedo(),
+                    hourly,
+                },
+            );
+            support_forcing_by_lane.insert(
+                lane_id,
+                DirectSnowStage3SupportInput {
+                    forcing: DirectSnowHourlyForcing {
+                        active_precipitation_m: lane_interval.active_precipitation_m,
+                        rain_m: lane_interval.rain_m,
+                        snowfall_m: lane_interval.snowfall_m,
+                        radiation_mj_m2: lane_interval.global_horizontal_shortwave_w_m2
+                            * 1_800.0
+                            / 1_000_000.0,
+                        air_temperature_c: lane_interval.air_temperature_c,
+                        cloud_fraction: lane_interval.cloud_fraction,
+                        phase_model: openwepp_hillslope_orchestrator::runtime_inputs::SnowPhasePartitionModel::HarderPomeroyHourly,
+                        rain_fraction: lane_interval.rain_fraction,
+                        snow_fraction: lane_interval.snow_fraction,
+                        hydrometeor_temperature_c: lane_interval.hydrometeor_temperature_c,
+                    },
+                    duration_seconds: 1_800.0,
+                },
+            );
+
+            let identities = destination_days
+                .iter()
+                .filter_map(|destination| destination.intervals.get(support_index))
+                .filter(|interval| interval.ofe_id == *lane_ofe)
+                .map(|interval| {
+                    let key = (
+                        openwepp_land_surface_energy::OfeId::try_new(interval.ofe_id.clone())
+                            .map_err(|_| {
+                                DirectSnowStage3V11AttachmentError::Identity(
+                                    "runner provider OFE identity",
+                                )
+                            })?,
+                        openwepp_kernel_contract::TileId::try_new(interval.tile_id.clone())
+                            .map_err(|_| {
+                                DirectSnowStage3V11AttachmentError::Identity(
+                                    "runner provider tile identity",
+                                )
+                            })?,
+                    );
+                    let identity = if production_seed
+                        .destination_is_canopy_covered(&interval.tile_id)
+                    {
+                        let carrier = SealedCoveredCarrierForcing::try_from_repository_interval(
+                            interval,
+                            static_authority.rho_air_kg_m3(),
+                            static_authority.cp_air_j_kg_k(),
+                            canopy_cover,
+                        )?;
+                        let identity =
+                            PreparedStage3V11SupportIdentityV1::from_provider_covered_interval(
+                                interval, &carrier,
+                            )?;
+                        destination_capabilities.insert(
+                            key,
+                            DirectSnowStage3V11DestinationCapabilityV1::CanopyCovered(carrier),
+                        );
+                        identity
+                    } else {
+                        let identity =
+                            PreparedStage3V11SupportIdentityV1::from_provider_open_interval(
+                                support, interval,
+                            )?;
+                        destination_capabilities.insert(
+                            key,
+                            DirectSnowStage3V11DestinationCapabilityV1::OpenProviderProjection,
+                        );
+                        identity
+                    };
+                    Ok(identity)
+                })
+                .collect::<Result<Vec<_>, DirectSnowStage3V11AttachmentError>>()?;
+            if identities.is_empty() {
+                return Err(DirectSnowStage3V11AttachmentError::Support(
+                    "runner lane destination set",
+                ));
+            }
+            support_identity_by_lane.insert(lane_id, identities);
+        }
+        Ok(DirectSnowStage3V11DualRegimeSupportInputsV1 {
+            snow_inputs_by_lane,
+            support_forcing_by_lane,
+            snow_free_v11_interval: snow_free_v11_interval.clone(),
+            snow_surface_v11_interval: snow_surface_v11_interval.clone(),
+            support_identity_by_lane,
+            destination_capabilities,
+            hard_boundaries: Vec::new(),
+        })
+    }
+
+    #[allow(clippy::result_large_err)]
+    fn stage3_v11_canopy_cover_for_provider(
+        &self,
+        day: ClimateDayProjection,
+        simulation_year: i32,
+        lane_index: usize,
+        growing_season_index: f64,
+        beginning_canopy_cover_fraction: f64,
+    ) -> Result<f64, DirectSnowStage3V11AttachmentError> {
+        let authority = self.lane_authority.get(lane_index).ok_or(
+            DirectSnowStage3V11AttachmentError::Support("runner canopy lane"),
+        )?;
+        let runtime_year = usize::try_from(simulation_year).map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Support("runner canopy simulation year")
+        })?;
+        let selection = authority
+            .growth
+            .active_crop(runtime_year, usize::from(day.julian_day), lane_index + 1)
+            .map_err(|_| DirectSnowStage3V11AttachmentError::Support("runner canopy schedule"))?;
+        let native_forest = selection
+            .as_ref()
+            .and_then(|selection| selection.crop.forest_phenology)
+            .zip(selection.as_ref())
+            .map(
+                |(phenology, selection)| Stage3V11NativeForestCanopyOperands {
+                    evergreen_fraction: phenology.evergreen_fraction,
+                    summer_foliar_biomass_kg_m2: phenology.summer_foliar_biomass_kg_m2,
+                    structural_canopy_cover_fraction: phenology.structural_canopy_cover_fraction,
+                    canopy_cover_coefficient_m2_kg: selection.crop.bb,
+                },
+            );
+        stage3_v11_canopy_cover_from_authority(
+            native_forest,
+            growing_season_index,
+            beginning_canopy_cover_fraction,
+        )
     }
 
     #[allow(clippy::too_many_lines)]
@@ -211,9 +566,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let persistent_state = self
             .snow_stage3_historical_evaluation_state
             .as_ref()
-            .and_then(|states| {
-            states.borrow().get(lane_index).cloned().flatten()
-        });
+            .and_then(|states| states.borrow().get(lane_index).cloned().flatten());
         let snow_result = authority.snow_frost.snow_liquid_partition(
             self.climate_request,
             day_index,
@@ -226,9 +579,11 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             self.winter_hourly_geometry,
             snow_diagnostic_capture.capture,
             lane_index,
-            u64::try_from(day_index).map_err(|_| direct_production_executor_blocked(
-                "day index cannot be represented by persistent snow shadow",
-            ))?,
+            u64::try_from(day_index).map_err(|_| {
+                direct_production_executor_blocked(
+                    "day index cannot be represented by persistent snow shadow",
+                )
+            })?,
             persistent_state.as_ref(),
         )?;
         let persistent_day = snow_result.persistent;
@@ -264,10 +619,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             &snow_lane_state,
             self.winter_hourly_geometry,
             rainfall_input_m > 1.0e-12
-                || snow_liquid
-                    .solid_to_liquid_ledger()
-                    .liquid_handoff_m
-                    > 1.0e-12,
+                || snow_liquid.solid_to_liquid_ledger().liquid_handoff_m > 1.0e-12,
             Some(residue_cover_projection.state_after.residue_depth_m),
             Some(growth_state_for_publication.canopy_height_m),
         )?;
@@ -294,8 +646,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 needle_litter_input_kg_m2: (residue_cover_projection.needle_litter_status
                     == "complete")
                     .then_some(residue_cover_projection.needle_litter_input_kg_m2),
-                fine_woody_litter_input_kg_m2: (residue_cover_projection
-                    .fine_woody_litter_status
+                fine_woody_litter_input_kg_m2: (residue_cover_projection.fine_woody_litter_status
                     == "complete")
                     .then_some(residue_cover_projection.fine_woody_litter_input_kg_m2),
                 needle_litter_status: residue_cover_projection.needle_litter_status,
@@ -441,16 +792,11 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         apply_direct_production_frost_context(&mut day_input, frost_context);
         day_input.frost_runtime_carry =
             direct_publication_frost_runtime_carry_from_lane_state(&lane.winter_column.frost);
-        maybe_write_r7h_direct_production_snow_trace(
-            &snow_diagnostic_capture,
-            &snow_trace_row,
-        )?;
-        if let (Some(states), Some(next_state)) =
-            (
-                &self.snow_stage3_historical_evaluation_state,
-                persistent_next_state,
-            )
-        {
+        maybe_write_r7h_direct_production_snow_trace(&snow_diagnostic_capture, &snow_trace_row)?;
+        if let (Some(states), Some(next_state)) = (
+            &self.snow_stage3_historical_evaluation_state,
+            persistent_next_state,
+        ) {
             states.borrow_mut()[lane_index] = Some(next_state);
         }
         Ok(day_input)
@@ -698,7 +1044,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
     pub(crate) fn write_canopy_research_trace(
         &self,
         day_frame: &openwepp_hillslope_orchestrator::DirectDayFrame,
-        builder: Option<NativeCanopyBuilderTrace>,
+        builder: Option<&NativeCanopyBuilderTrace>,
     ) -> Result<(), HillslopeCliError> {
         let Some(config) = canopy_research_trace_config()? else {
             return Ok(());
@@ -711,9 +1057,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         } else {
             day_frame.annual_growth.state_after
         };
-        let surface_before_decay_kg_m2 =
-            day_frame.decomposition.surface_residue_seed_kg_m2
-                + day_frame.decomposition.surface_litter_input_kg_m2;
+        let surface_before_decay_kg_m2 = day_frame.decomposition.surface_residue_seed_kg_m2
+            + day_frame.decomposition.surface_litter_input_kg_m2;
         let decomposition_loss_kg_m2 =
             surface_before_decay_kg_m2 * (1.0 - day_frame.decomposition.surface_decay_factor);
         let gsi = builder.daily.gsi;
@@ -762,13 +1107,15 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 "erosion_rill_cover_fraction": day_frame.erosion_daily_consumers.map(|consumers| consumers.rill_cover_fraction),
                 "frost_residue_depth_m": day_frame.frost_daily_consumers.map(|consumers| consumers.residue_depth_m)
             },
-            "residue": canopy_research_residue_value(day_frame, &builder, decomposition_loss_kg_m2)
+            "residue": canopy_research_residue_value(day_frame, builder, decomposition_loss_kg_m2)
         });
         validate_canopy_research_trace_value(&value)?;
         let mut line = serde_json::to_string(&value).map_err(|error| {
             HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "canopy_research_trace",
-                detail: format!("{SIMOUT_GUARD_ID} failed serializing canopy research trace: {error}"),
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} failed serializing canopy research trace: {error}"
+                ),
             }
         })?;
         line.push('\n');
@@ -794,6 +1141,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         })
     }
 
+    #[cfg(test)]
     pub(crate) fn laned_shadow_lane_day_operands(
         &self,
         day_frame: &openwepp_hillslope_orchestrator::DirectDayFrame,
@@ -830,9 +1178,7 @@ fn canopy_research_residue_value(
     builder: &NativeCanopyBuilderTrace,
     decomposition_loss_kg_m2: f64,
 ) -> serde_json::Value {
-    let weight = day_frame
-        .residue_partition_inputs
-        .rescov_interrill_weight;
+    let weight = day_frame.residue_partition_inputs.rescov_interrill_weight;
     serde_json::json!({
         "leaf_litter_input_kg_m2": builder.leaf_litter_input_kg_m2,
         "needle_litter_input_kg_m2": builder.needle_litter_input_kg_m2,
@@ -1096,9 +1442,7 @@ fn validate_canopy_research_trace_value(
                     "{SIMOUT_GUARD_ID} canopy research trace required value {path} is null or nonfinite"
                 ),
             }),
-            serde_json::Value::Number(number)
-                if number.as_f64().is_some_and(f64::is_finite) =>
-            {
+            serde_json::Value::Number(number) if number.as_f64().is_some_and(f64::is_finite) => {
                 Ok(())
             }
             serde_json::Value::Number(_) => Err(HillslopeCliError::RuntimeSurfaceFailure {
@@ -1124,17 +1468,17 @@ fn write_canopy_research_trace_line(
     path: &std::ffi::OsStr,
     line: &[u8],
 ) -> Result<(), HillslopeCliError> {
-        let mut file = std::fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(path)
-            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "canopy_research_trace",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} failed opening canopy research trace {}: {error}",
-                    std::path::PathBuf::from(path).display()
-                ),
-            })?;
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "canopy_research_trace",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} failed opening canopy research trace {}: {error}",
+                std::path::PathBuf::from(path).display()
+            ),
+        })?;
     std::io::Write::write_all(&mut file, line).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
             surface: "canopy_research_trace",
@@ -1155,12 +1499,14 @@ fn maybe_write_r7h_direct_production_snow_trace(
     else {
         return Ok(());
     };
-    let path = request.selected_path.as_ref().ok_or_else(|| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_trace",
-            detail: format!("{SIMOUT_GUARD_ID} selected snow trace path was lost"),
-        }
-    })?;
+    let path =
+        request
+            .selected_path
+            .as_ref()
+            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_snow_trace",
+                detail: format!("{SIMOUT_GUARD_ID} selected snow trace path was lost"),
+            })?;
     if let Some(persistent) = context.stage3_persistent {
         if persistent.state.schema_version == 2 {
             validate_snow_terminal_event_trace_consumer(persistent).map_err(|detail| {
@@ -1227,11 +1573,8 @@ fn r7h_direct_production_snow_trace_line(
     let thermal = direct_snow_trace_thermal_diagnostics(&verbose_diagnostics.stage3);
     let layers_before = direct_snow_trace_layers(&snow_lane_state.layers);
     let layers_after = direct_snow_trace_layers(&snow_liquid.snow_layers_after);
-    let schema = direct_snow_trace_schema(
-        stage3_evaluation,
-        stage3_reconciliation,
-        stage3_persistent,
-    );
+    let schema =
+        direct_snow_trace_schema(stage3_evaluation, stage3_reconciliation, stage3_persistent);
     let line = format!(
         "{{\"schema\":\"{schema}\",\
 \"day_index\":{day_index},\
@@ -1432,9 +1775,7 @@ fn direct_snow_trace_stage3_hourly_fields(
     diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
 ) -> DirectSnowStage3HourlyTraceFields {
     DirectSnowStage3HourlyTraceFields {
-        shortwave: direct_snow_trace_hourly_values(diagnostics, |hour| {
-            hour.net_shortwave_w_m2
-        }),
+        shortwave: direct_snow_trace_hourly_values(diagnostics, |hour| hour.net_shortwave_w_m2),
         longwave: direct_snow_trace_hourly_values(diagnostics, |hour| hour.net_longwave_w_m2),
         vapor_mass: direct_snow_trace_hourly_values(diagnostics, |hour| {
             hour.vapor_mass_exchange_kg_m2
@@ -1459,9 +1800,7 @@ fn direct_snow_trace_stage3_hourly_fields(
         lower_mass: direct_snow_trace_hourly_values(diagnostics, |hour| {
             hour.lower_layer_mass_kg_m2
         }),
-        lower_depth: direct_snow_trace_hourly_values(diagnostics, |hour| {
-            hour.lower_layer_depth_m
-        }),
+        lower_depth: direct_snow_trace_hourly_values(diagnostics, |hour| hour.lower_layer_depth_m),
         lower_temperature: direct_snow_trace_hourly_values(diagnostics, |hour| {
             hour.lower_layer_temperature_c
         }),
@@ -1474,9 +1813,7 @@ fn direct_snow_trace_stage3_hourly_fields(
         shadow_cold_energy_change: direct_snow_trace_hourly_values(diagnostics, |hour| {
             hour.shadow_cold_energy_change_j_m2
         }),
-        shadow_melt: direct_snow_trace_hourly_values(diagnostics, |hour| {
-            hour.shadow_melt_kg_m2
-        }),
+        shadow_melt: direct_snow_trace_hourly_values(diagnostics, |hour| hour.shadow_melt_kg_m2),
         shadow_terminal_energy: direct_snow_trace_hourly_values(diagnostics, |hour| {
             hour.shadow_unallocated_after_exhaustion_j_m2
         }),
@@ -1584,17 +1921,11 @@ fn direct_snow_trace_stage3_fields(
         direct_production_trace_number(diagnostics.shadow_excess_energy_j_m2),
         direct_production_trace_number(diagnostics.shadow_sublimation_kg_m2),
         direct_production_trace_number(diagnostics.shadow_melt_kg_m2),
-        direct_production_trace_number(
-            diagnostics.shadow_unallocated_after_exhaustion_j_m2
-        ),
-        direct_production_trace_number(
-            diagnostics.shadow_maximum_energy_closure_residual_j_m2
-        ),
+        direct_production_trace_number(diagnostics.shadow_unallocated_after_exhaustion_j_m2),
+        direct_production_trace_number(diagnostics.shadow_maximum_energy_closure_residual_j_m2),
         direct_production_trace_number(diagnostics.latent_refreeze_energy_j_m2),
         direct_production_trace_number(diagnostics.cold_content_export_j_m2),
-        direct_production_trace_number(
-            diagnostics.mass_latent_identity_residual_j_m2
-        ),
+        direct_production_trace_number(diagnostics.mass_latent_identity_residual_j_m2),
         direct_production_trace_number(diagnostics.unused_positive_energy_j_m2),
         direct_production_trace_number(diagnostics.thermal_domain_suspended_seconds),
         direct_production_trace_number(diagnostics.minimum_unresolved_thermal_mass_kg_m2),
@@ -1606,9 +1937,7 @@ fn direct_snow_trace_stage3_fields(
 
 fn direct_snow_trace_hourly_values(
     diagnostics: &openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics,
-    value: impl Fn(
-        &openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyHourDiagnostics,
-    ) -> f64,
+    value: impl Fn(&openwepp_hillslope_orchestrator::DirectSnowSurfaceEnergyHourDiagnostics) -> f64,
 ) -> String {
     let values = diagnostics
         .hourly_surface_energy
@@ -1662,18 +1991,12 @@ mod stage3_trace_field_tests {
         assert_eq!(value["stage3_hourly_active_mass_kg_m2"][0], 41.0);
         assert_eq!(value["stage3_hourly_active_depth_m"][0], 0.22);
         assert_eq!(value["stage3_hourly_active_temperature_c"][0], -1.5);
-        assert_eq!(
-            value["stage3_hourly_active_cold_content_j_m2"][0],
-            12_500.0
-        );
+        assert_eq!(value["stage3_hourly_active_cold_content_j_m2"][0], 12_500.0);
         assert_eq!(value["stage3_hourly_lower_present_fraction"][0], 0.75);
         assert_eq!(value["stage3_hourly_lower_mass_kg_m2"][0], 64.0);
         assert_eq!(value["stage3_hourly_lower_depth_m"][0], 0.31);
         assert_eq!(value["stage3_hourly_lower_temperature_c"][0], -2.25);
-        assert_eq!(
-            value["stage3_hourly_lower_cold_content_j_m2"][0],
-            23_500.0
-        );
+        assert_eq!(value["stage3_hourly_lower_cold_content_j_m2"][0], 23_500.0);
     }
 
     #[test]
@@ -1754,7 +2077,8 @@ mod stage3_trace_field_tests {
         };
 
         let fields = direct_snow_trace_stage3_evaluation_fields(&evaluation);
-        let row = format!("{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v5\",{fields}}}\n");
+        let row =
+            format!("{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v5\",{fields}}}\n");
         let path = std::env::temp_dir().join(format!(
             "openwepp-stage3-v5-consumer-{}.jsonl",
             std::process::id()
@@ -1886,9 +2210,7 @@ fn direct_snow_trace_thermal_fields(thermal: &DirectSnowTraceThermalDiagnostics)
         direct_production_trace_number(thermal.minimum_substep_seconds),
         direct_production_trace_number(thermal.maximum_active_energy_residual_j_m2),
         direct_production_trace_number(thermal.maximum_lower_energy_residual_j_m2),
-        direct_production_trace_number(
-            thermal.maximum_conduction_cancellation_residual_j_m2
-        ),
+        direct_production_trace_number(thermal.maximum_conduction_cancellation_residual_j_m2),
     )
 }
 
@@ -1897,10 +2219,12 @@ fn direct_snow_trace_thermal_diagnostics(
 ) -> DirectSnowTraceThermalDiagnostics {
     let mut diagnostics = DirectSnowTraceThermalDiagnostics::default();
     for hour in stage3_diagnostics.hourly_surface_energy {
-        diagnostics.maximum_active_depth_m =
-            diagnostics.maximum_active_depth_m.max(hour.active_layer_depth_m);
-        diagnostics.maximum_lower_depth_m =
-            diagnostics.maximum_lower_depth_m.max(hour.lower_layer_depth_m);
+        diagnostics.maximum_active_depth_m = diagnostics
+            .maximum_active_depth_m
+            .max(hour.active_layer_depth_m);
+        diagnostics.maximum_lower_depth_m = diagnostics
+            .maximum_lower_depth_m
+            .max(hour.lower_layer_depth_m);
         diagnostics.maximum_active_mass_kg_m2 = diagnostics
             .maximum_active_mass_kg_m2
             .max(hour.active_layer_mass_kg_m2);
@@ -1910,31 +2234,22 @@ fn direct_snow_trace_thermal_diagnostics(
         diagnostics.maximum_abs_g0_w_m2 = diagnostics
             .maximum_abs_g0_w_m2
             .max(hour.peak_substep_applied_g0_w_m2.abs());
-        if hour.peak_substep_requested_g0_w_m2.abs()
-            > diagnostics.peak_g0_requested_w_m2.abs()
-        {
+        if hour.peak_substep_requested_g0_w_m2.abs() > diagnostics.peak_g0_requested_w_m2.abs() {
             diagnostics.peak_g0_w_m2 = hour.peak_substep_applied_g0_w_m2;
-            diagnostics.peak_g0_requested_w_m2 =
-                hour.peak_substep_requested_g0_w_m2;
-            diagnostics.peak_g0_rejected_w_m2 =
-                hour.peak_substep_rejected_g0_w_m2;
+            diagnostics.peak_g0_requested_w_m2 = hour.peak_substep_requested_g0_w_m2;
+            diagnostics.peak_g0_rejected_w_m2 = hour.peak_substep_rejected_g0_w_m2;
             diagnostics.peak_g0_pressure_pa = hour.peak_substep_pressure_pa;
-            diagnostics.peak_g0_active_temperature_c =
-                hour.peak_substep_active_temperature_c;
-            diagnostics.peak_g0_lower_temperature_c =
-                hour.peak_substep_lower_temperature_c;
-            diagnostics.peak_g0_active_depth_m =
-                hour.peak_substep_active_depth_m;
-            diagnostics.peak_g0_lower_depth_m =
-                hour.peak_substep_lower_depth_m;
+            diagnostics.peak_g0_active_temperature_c = hour.peak_substep_active_temperature_c;
+            diagnostics.peak_g0_lower_temperature_c = hour.peak_substep_lower_temperature_c;
+            diagnostics.peak_g0_active_depth_m = hour.peak_substep_active_depth_m;
+            diagnostics.peak_g0_lower_depth_m = hour.peak_substep_lower_depth_m;
             diagnostics.peak_g0_active_conductivity_w_m_k =
                 hour.peak_substep_active_conductivity_w_m_k;
             diagnostics.peak_g0_lower_conductivity_w_m_k =
                 hour.peak_substep_lower_conductivity_w_m_k;
             diagnostics.peak_g0_active_resistance_m2_k_w =
                 hour.peak_substep_active_resistance_m2_k_w;
-            diagnostics.peak_g0_lower_resistance_m2_k_w =
-                hour.peak_substep_lower_resistance_m2_k_w;
+            diagnostics.peak_g0_lower_resistance_m2_k_w = hour.peak_substep_lower_resistance_m2_k_w;
         }
         if hour.minimum_substep_seconds > 0.0
             && (diagnostics.minimum_substep_seconds == 0.0
@@ -2144,86 +2459,6 @@ fn direct_production_trace_env_usize(name: &str) -> Option<usize> {
     std::env::var(name).ok()?.trim().parse::<usize>().ok()
 }
 
-fn parse_snowdensity1015_default_snow_density_model(
-    value: Option<&str>,
-) -> Result<openwepp_hillslope_orchestrator::SnowDensityModel, HillslopeCliError> {
-    match value.map_or("", str::trim) {
-        "" | "physics_bulk_density_compaction_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1)
-        }
-        "legacy_wepp" => Ok(openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp),
-        "physics_bulk_shallow_guard_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkShallowGuardV1)
-        }
-        "physics_bulk_climate_class_density_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkClimateClassDensityV1)
-        }
-        "physics_bulk_multilayer_density_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkMultilayerDensityV1)
-        }
-        observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_density_model",
-            detail: format!(
-                "{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1, observed {observed}"
-            ),
-        }),
-    }
-}
-
-fn parse_snowdensity1037_diagnostic_snow_melt_model(
-    value: Option<&str>,
-) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
-    match value.map_or("", str::trim) {
-        "" | "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
-        "coe_winter_thaw_state_loss_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeWinterThawStateLossV1)
-        }
-        observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_melt_model",
-            detail: format!(
-                "{SIMOUT_GUARD_ID} {SNOWDENSITY1037_MELT_MODEL_ENV} must be legacy_coe or coe_winter_thaw_state_loss_v1, observed {observed}"
-            ),
-        }),
-    }
-}
-
-fn parse_snowdensity1015_default_snow_melt_model(
-    value: Option<&str>,
-) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
-    match value.map_or("", str::trim) {
-        "" | "coe_liquid_holding_capacity_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1)
-        }
-        "coe_open_sublimation_stage_a_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageAV1)
-        }
-        "coe_open_sublimation_stage_b_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageBV1)
-        }
-        "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
-        observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_melt_model",
-            detail: format!(
-                "{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be legacy_coe, coe_liquid_holding_capacity_v1, coe_open_sublimation_stage_a_v1, or coe_open_sublimation_stage_b_v1, observed {observed}"
-            ),
-        }),
-    }
-}
-
-fn snowdensity1015_default_snow_density_model()
--> Result<openwepp_hillslope_orchestrator::SnowDensityModel, HillslopeCliError> {
-    match std::env::var(SNOWDENSITY09_DENSITY_MODEL_ENV) {
-        Ok(value) => parse_snowdensity1015_default_snow_density_model(Some(&value)),
-        Err(std::env::VarError::NotPresent) => {
-            parse_snowdensity1015_default_snow_density_model(None)
-        }
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_density_model",
-            detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be UTF-8"),
-        }),
-    }
-}
-
 fn direct_production_sturm_climate_class_for_density_candidate(
     climate_request: &HillslopeClimateRuntimeRequest,
     climate_span: &ClimateRunSpanSummary,
@@ -2244,228 +2479,6 @@ fn direct_production_sturm_climate_class_for_density_candidate(
                 "{SIMOUT_GUARD_ID} failed assigning Sturm 1995 climate class from run forcing normals: {source}"
             ),
         })
-}
-
-fn paradigm2_stage3_liquid_routing_model()
--> Result<openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel, HillslopeCliError> {
-    match std::env::var(PARADIGM2_STAGE3_LIQUID_MODEL_ENV) {
-        Ok(value) => match value.trim() {
-            "" | "disabled" => {
-                Ok(openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled)
-            }
-            "layered_thermal_liquid_v1" => Ok(
-                openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1,
-            ),
-            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_stage3_liquid_routing_model",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} {PARADIGM2_STAGE3_LIQUID_MODEL_ENV} must be disabled, layered_thermal_liquid_v1, or empty default, observed {observed}"
-                ),
-            }),
-        },
-        Err(std::env::VarError::NotPresent) => {
-            Ok(openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled)
-        }
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_stage3_liquid_routing_model",
-            detail: format!("{SIMOUT_GUARD_ID} {PARADIGM2_STAGE3_LIQUID_MODEL_ENV} must be UTF-8"),
-        }),
-    }
-}
-
-fn snow_surface_longwave_model()
--> Result<openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel, HillslopeCliError> {
-    match std::env::var(SNOW_SURFACE_LONGWAVE_MODEL_ENV) {
-        Ok(value) => match value.trim() {
-            "" | "disabled" => Ok(openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel::Disabled),
-            "dilley_unsworth_subcanopy_v1" => Ok(
-                openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1,
-            ),
-            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_snow_surface_longwave_model",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOW_SURFACE_LONGWAVE_MODEL_ENV} must be disabled, dilley_unsworth_subcanopy_v1, or empty default, observed {observed}"
-                ),
-            }),
-        },
-        Err(std::env::VarError::NotPresent) => Ok(
-            openwepp_hillslope_orchestrator::SnowSurfaceLongwaveModel::Disabled,
-        ),
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_surface_longwave_model",
-            detail: format!("{SIMOUT_GUARD_ID} {SNOW_SURFACE_LONGWAVE_MODEL_ENV} must be UTF-8"),
-        }),
-    }
-}
-
-fn snow_surface_sublimation_model()
--> Result<openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel, HillslopeCliError> {
-    match std::env::var(SNOW_SURFACE_SUBLIMATION_MODEL_ENV) {
-        Ok(value) => match value.trim() {
-            "" | "disabled" => Ok(
-                openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel::Disabled,
-            ),
-            "neutral_bulk_stage3_v1" => Ok(
-                openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel::NeutralBulkStage3V1,
-            ),
-            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_snow_surface_sublimation_model",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOW_SURFACE_SUBLIMATION_MODEL_ENV} must be disabled, neutral_bulk_stage3_v1, or empty default, observed {observed}"
-                ),
-            }),
-        },
-        Err(std::env::VarError::NotPresent) => Ok(
-            openwepp_hillslope_orchestrator::SnowSurfaceSublimationModel::Disabled,
-        ),
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_surface_sublimation_model",
-            detail: format!("{SIMOUT_GUARD_ID} {SNOW_SURFACE_SUBLIMATION_MODEL_ENV} must be UTF-8"),
-        }),
-    }
-}
-
-fn snow_stage3_evaluation_operator() -> Result<
-    Option<openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator>,
-    HillslopeCliError,
-> {
-    let explicit = std::env::var(SNOW_STAGE3_EVALUATION_OPERATOR_ENV).map_err(|error| match error {
-        std::env::VarError::NotPresent => None,
-        std::env::VarError::NotUnicode(_) => Some(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_stage3_evaluation_operator",
-            detail: format!(
-                "{SIMOUT_GUARD_ID} {SNOW_STAGE3_EVALUATION_OPERATOR_ENV} must be UTF-8"
-            ),
-        }),
-    });
-    let legacy = std::env::var(SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV).map_err(|error| match error {
-        std::env::VarError::NotPresent => None,
-        std::env::VarError::NotUnicode(_) => Some(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_stage3_complete_carrier_shadow",
-            detail: format!(
-                "{SIMOUT_GUARD_ID} {SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV} must be UTF-8"
-            ),
-        }),
-    });
-    match (explicit, legacy) {
-        (Err(Some(error)), _) | (_, Err(Some(error))) => Err(error),
-        (explicit, legacy) => snow_stage3_evaluation_operator_from_values(
-            explicit.ok().as_deref(),
-            legacy.ok().as_deref(),
-        ),
-    }
-}
-
-fn snow_stage3_evaluation_operator_from_values(
-    explicit_value: Option<&str>,
-    legacy_value: Option<&str>,
-) -> Result<
-    Option<openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator>,
-    HillslopeCliError,
-> {
-    use openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator;
-
-    let explicit = match explicit_value {
-        None => None,
-        Some(value) => Some(match value.trim() {
-            "" | "disabled" => None,
-            "same_state_paired_carrier_v1" => {
-                Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1)
-            }
-            "sequential_resolved_shadow_v1" => {
-                Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1)
-            }
-            "persistent_accumulation_shadow_v1" => {
-                Some(SnowStage3EvaluationOperator::PersistentAccumulationShadowV1)
-            }
-            observed => {
-                return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                    surface: "direct_production_snow_stage3_evaluation_operator",
-                    detail: format!(
-                        "{SIMOUT_GUARD_ID} {SNOW_STAGE3_EVALUATION_OPERATOR_ENV} must be disabled, same_state_paired_carrier_v1, sequential_resolved_shadow_v1, persistent_accumulation_shadow_v1, or empty default, observed {observed}"
-                    ),
-                });
-            }
-        }),
-    };
-    let legacy = match legacy_value {
-        None => None,
-        Some(value) => Some(match value.trim() {
-            "" | "0" | "false" | "disabled" => None,
-            "1" | "true" | "enabled" => {
-                Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1)
-            }
-            observed => {
-                return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                    surface: "direct_production_snow_stage3_complete_carrier_shadow",
-                    detail: format!(
-                        "{SIMOUT_GUARD_ID} {SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV} must be enabled, disabled, true, false, 1, 0, or empty default, observed {observed}"
-                    ),
-                });
-            }
-        }),
-    };
-    match (explicit, legacy) {
-        (Some(explicit_value), Some(legacy_value)) if explicit_value != legacy_value => {
-            Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_snow_stage3_evaluation_operator",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} conflicting {SNOW_STAGE3_EVALUATION_OPERATOR_ENV} and {SNOW_STAGE3_COMPLETE_CARRIER_SHADOW_ENV} requests"
-                ),
-            })
-        }
-        (Some(value), _) | (_, Some(value)) => Ok(value),
-        (None, None) => Ok(None),
-    }
-}
-
-#[cfg(test)]
-mod stage3_evaluation_operator_tests {
-    use super::*;
-    use openwepp_hillslope_orchestrator::SnowStage3EvaluationOperator;
-
-    #[test]
-    fn default_and_legacy_compatibility_are_typed() {
-        assert_eq!(
-            snow_stage3_evaluation_operator_from_values(None, None)
-                .expect("absent default"),
-            None
-        );
-        assert_eq!(
-            snow_stage3_evaluation_operator_from_values(None, Some("enabled"))
-                .expect("legacy compatibility spelling"),
-            Some(SnowStage3EvaluationOperator::SequentialResolvedShadowV1)
-        );
-        assert_eq!(
-            snow_stage3_evaluation_operator_from_values(
-                Some("same_state_paired_carrier_v1"),
-                None,
-            )
-            .expect("typed paired request"),
-            Some(SnowStage3EvaluationOperator::SameStatePairedCarrierV1)
-        );
-        assert_eq!(
-            snow_stage3_evaluation_operator_from_values(
-                Some("persistent_accumulation_shadow_v1"),
-                None,
-            )
-            .expect("typed persistent request"),
-            Some(SnowStage3EvaluationOperator::PersistentAccumulationShadowV1)
-        );
-    }
-
-    #[test]
-    fn conflicting_or_unknown_requests_fail_closed() {
-        let conflict = snow_stage3_evaluation_operator_from_values(
-            Some("same_state_paired_carrier_v1"),
-            Some("enabled"),
-        )
-        .expect_err("legacy sequential request conflicts with paired request");
-        assert!(conflict.to_string().contains("conflicting"));
-        let unsupported = snow_stage3_evaluation_operator_from_values(Some("generic"), None)
-            .expect_err("generic operator is not admitted");
-        assert!(unsupported.to_string().contains("generic"));
-    }
 }
 
 fn direct_production_sturm1995_climate_normals(
@@ -2573,58 +2586,6 @@ impl DirectProductionSturm1995MonthlyAccumulator {
     }
 }
 
-fn snowdensity1035_diagnostic_snow_phase_model()
--> Result<openwepp_hillslope_orchestrator::SnowPhasePartitionModel, HillslopeCliError> {
-    match std::env::var(SNOWDENSITY1035_PHASE_MODEL_ENV) {
-        Ok(value) => match value.trim() {
-            "" | "harder_pomeroy_hourly" => {
-                Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::HarderPomeroyHourly)
-            }
-            "legacy_rst" => Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst),
-            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_snow_phase_model",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOWDENSITY1035_PHASE_MODEL_ENV} must be legacy_rst, harder_pomeroy_hourly, or empty default, observed {observed}"
-                ),
-            }),
-        },
-        Err(std::env::VarError::NotPresent) => {
-            Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::HarderPomeroyHourly)
-        }
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_phase_model",
-            detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY1035_PHASE_MODEL_ENV} must be UTF-8"),
-        }),
-    }
-}
-
-#[allow(dead_code)]
-fn snowdensity1037_diagnostic_snow_melt_model()
--> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
-    match std::env::var(SNOWDENSITY1037_MELT_MODEL_ENV) {
-        Ok(value) => parse_snowdensity1037_diagnostic_snow_melt_model(Some(&value)),
-        Err(std::env::VarError::NotPresent) => {
-            parse_snowdensity1037_diagnostic_snow_melt_model(None)
-        }
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_melt_model",
-            detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY1037_MELT_MODEL_ENV} must be UTF-8"),
-        }),
-    }
-}
-
-fn snowdensity1015_default_snow_melt_model()
--> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
-    match std::env::var(SNOWDENSITY1038_MELT_MODEL_ENV) {
-        Ok(value) => parse_snowdensity1015_default_snow_melt_model(Some(&value)),
-        Err(std::env::VarError::NotPresent) => parse_snowdensity1015_default_snow_melt_model(None),
-        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_melt_model",
-            detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be UTF-8"),
-        }),
-    }
-}
-
 // E.3 stage 2e (Wave-2 deleted): erosion activation is the Wave-1 seed
 // alone. SC-SED-001 1b-C: the seed must attach EVERY day so the
 // persistent consolidation carry (`rfcum`/`daydis`) advances daily per
@@ -2692,13 +2653,7 @@ fn advance_native_canopy_with_checked_height(
     forcing: openwepp_plant_phenology::GsiDailyForcing,
     canopy_height_coefficient_m2_kg: f64,
     maximum_canopy_height_m: f64,
-) -> Result<
-    (
-        openwepp_plant_phenology::ForestCanopyDailyResult,
-        f64,
-    ),
-    HillslopeCliError,
-> {
+) -> Result<(openwepp_plant_phenology::ForestCanopyDailyResult, f64), HillslopeCliError> {
     let mut candidate_state = committed_state
         .clone()
         .unwrap_or_else(openwepp_plant_phenology::ForestCanopyState::new_uninitialized);
@@ -2716,6 +2671,7 @@ fn advance_native_canopy_with_checked_height(
     Ok((daily, canopy_height_m))
 }
 
+#[cfg(test)]
 fn build_laned_shadow_lane_day_operands(
     lane_index: usize,
     day_index: usize,

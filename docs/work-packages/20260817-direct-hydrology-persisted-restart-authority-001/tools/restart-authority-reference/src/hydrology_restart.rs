@@ -305,6 +305,7 @@ pub struct DirectHydrologyRestartV1 {
     pub lane_transfer_downstream_operands: DirectRunTransferDownstreamOperandsRestartV1,
     pub groundwater: DirectGroundwaterRunStateRestartV1,
     pub surface_liquid_owned_state: Option<Box<DirectSurfaceLiquidOwnedStateRestartV1>>,
+    pub snow_stage3_v11_attachment: serde_json::Value,
 }
 
 pub struct ExpectedDirectHydrologyRestartContext<'a> {
@@ -331,8 +332,7 @@ impl DirectHydrologyRestartV1 {
             lane_transfer_shadow_projection,
             groundwater,
             surface_liquid_shadow,
-            snow_stage3_shadow: _,
-            snow_stage3_v11_attachment: _,
+            snow_stage3_v11_attachment,
             laned_active,
             laned_active_summary,
         } = value;
@@ -347,6 +347,11 @@ impl DirectHydrologyRestartV1 {
         }
         if laned_active.is_some() || laned_active_summary.is_some() {
             return Err(HydrologyRestartError::Unsupported("laned_active"));
+        }
+        if snow_stage3_v11_attachment.is_some() {
+            return Err(HydrologyRestartError::Unsupported(
+                "snow_stage3_v11_attachment_v2",
+            ));
         }
         if phase_plan != &DirectPhasePlan::default() {
             return Err(HydrologyRestartError::Unsupported(
@@ -415,6 +420,7 @@ impl DirectHydrologyRestartV1 {
                 .transpose()
                 .map_err(nested)?
                 .map(Box::new),
+            snow_stage3_v11_attachment: serde_json::Value::Null,
         })
     }
 
@@ -424,6 +430,11 @@ impl DirectHydrologyRestartV1 {
     ) -> Result<DirectRunFrame, HydrologyRestartError> {
         if self.runtime_posture != DirectRuntimePostureV1::Standard {
             return Err(HydrologyRestartError::Unsupported("laned_active"));
+        }
+        if !self.snow_stage3_v11_attachment.is_null() {
+            return Err(HydrologyRestartError::Unsupported(
+                "snow_stage3_v11_attachment_v2",
+            ));
         }
         if &self.phase_plan_sha256 != context.phase_plan_sha256
             || self.phase_plan_sha256 != canonical_phase_plan_sha256(context.phase_plan)?
@@ -521,7 +532,6 @@ impl DirectHydrologyRestartV1 {
                 .transpose()
                 .map_err(nested)?
                 .map(Box::new),
-            snow_stage3_shadow: None,
             snow_stage3_v11_attachment: None,
             laned_active: None,
             laned_active_summary: None,

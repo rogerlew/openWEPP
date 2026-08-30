@@ -67,55 +67,22 @@ fn stage3_decouple_contract_package_and_selector_are_bound() {
 }
 
 #[test]
-fn stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density() {
+fn stage3_v11_bulk_fixture_rejects_retired_partition_entrypoint() {
     let mut inputs = warm_inputs(SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1);
     inputs.snow_density_model = SnowDensityModel::PhysicsBulkDensityCompactionV1;
     inputs.snow_layers.clear();
-    let mut disabled_inputs = inputs.clone();
-    disabled_inputs.stage3_liquid_routing_model = SnowStage3LiquidRoutingModel::Disabled;
-
-    let disabled =
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&disabled_inputs)
-            .expect("bulk-density disabled partition should compute");
-    let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
-        .expect("decoupled Stage 3 should synthesize bulk-equivalent layers");
-
-    assert!(partition.stage3_outcome().enabled);
-    assert!((partition.runtime_swe_after_m - disabled.runtime_swe_after_m).abs() <= 1.0e-12);
-    assert!((partition.runtime_depth_after_m - disabled.runtime_depth_after_m).abs() <= 1.0e-12);
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
+        .expect_err("adaptive Stage3 V11 cannot enter the retired WB11 partition path");
     assert!(
-        (partition.runtime_density_after_kg_m3 - disabled.runtime_density_after_kg_m3).abs()
-            <= 1.0e-12
-    );
-    assert!(!partition.snow_layers_after.is_empty());
-    assert_bulk_equivalent_layers(&partition);
-    assert!(
-        partition
-            .stage3_outcome()
-            .meltwater_temperature_c
-            .is_none_or(|temperature| { temperature.as_celsius().abs() <= 1.0e-12 })
-    );
-    assert!(
-        partition
-            .liquid_disposition_ledger()
-            .liquid_closure_residual_m
-            .abs()
-            <= 1.0e-9
-    );
-    assert!(
-        partition
-            .verbose_diagnostics
-            .as_deref()
-            .expect("compatibility solve retains verbose diagnostics")
-            .stage3
-            .energy_closure_residual_j_m2
-            .abs()
-            <= 1.0e-6
+        error
+            .to_string()
+            .contains("snow.adaptive_stage3_legacy_shortwave_entry"),
+        "unexpected V11 cutover error: {error}"
     );
 }
 
 #[test]
-fn stage3_decouple_carries_geometry_but_removes_density_gradient() {
+fn stage3_v11_layer_geometry_fixture_cannot_bypass_retired_partition_entrypoint() {
     let mut inputs = warm_inputs(SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1);
     inputs.snow_density_model = SnowDensityModel::PhysicsBulkDensityCompactionV1;
     inputs.snow_layers = vec![
@@ -125,44 +92,14 @@ fn stage3_decouple_carries_geometry_but_removes_density_gradient() {
             .with_stage3_thermal_liquid_state(-0.5, 0.0, 0.0, 0.0),
     ];
 
-    let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
-        .expect("decoupled Stage 3 should preserve geometry with bulk density");
-
-    assert!(partition.stage3_outcome().enabled);
-    assert!(partition.snow_layers_after.len() >= 2);
-    assert_bulk_equivalent_layers(&partition);
-    let surface_density = partition
-        .snow_layers_after
-        .first()
-        .expect("surface layer")
-        .density_kg_m3;
-    let basal_density = partition
-        .snow_layers_after
-        .last()
-        .expect("basal layer")
-        .density_kg_m3;
-    assert!((basal_density - surface_density).abs() <= 1.0e-12);
-}
-
-fn assert_bulk_equivalent_layers(
-    partition: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
-) {
-    let layer_swe_sum_m = partition
-        .snow_layers_after
-        .iter()
-        .map(|layer| layer.mass_swe_m)
-        .sum::<f64>();
-    let layer_depth_sum_m = partition
-        .snow_layers_after
-        .iter()
-        .map(|layer| layer.thickness_m)
-        .sum::<f64>();
-    assert!((layer_swe_sum_m - partition.runtime_swe_after_m).abs() <= 1.0e-9);
-    assert!((layer_depth_sum_m - partition.runtime_depth_after_m).abs() <= 1.0e-9);
-    for layer in &partition.snow_layers_after {
-        assert!((layer.density_kg_m3 - partition.runtime_density_after_kg_m3).abs() <= 1.0e-12);
-        assert!(layer.temperature_c <= 0.0);
-    }
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
+        .expect_err("adaptive Stage3 V11 geometry cannot enter the retired WB11 path");
+    assert!(
+        error
+            .to_string()
+            .contains("snow.adaptive_stage3_legacy_shortwave_entry"),
+        "unexpected V11 cutover error: {error}"
+    );
 }
 
 fn warm_inputs(
@@ -198,7 +135,7 @@ fn warm_inputs(
         canopy_cover_fraction: 0.0,
         wind_m_s: 2.0,
         dewpoint_c: 0.0,
-        snow_melt_model: SnowMeltModel::CoeLiquidHoldingCapacityV1,
+        snow_melt_model: SnowMeltModel::AdaptiveCompositionalStage3V1,
         snow_density_model: SnowDensityModel::PhysicsBulkDensityCompactionV1,
         stage3_liquid_routing_model,
         surface_energy_options:

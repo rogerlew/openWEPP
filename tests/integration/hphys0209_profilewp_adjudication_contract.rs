@@ -3,9 +3,11 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
-use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
+use openwepp_runner::{HillslopeRunRequest, SidecarPolicy};
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
+
+mod common;
 
 const EPS: f64 = 1.0e-9;
 
@@ -103,7 +105,7 @@ fn hphys0209_wp_authority_perturbation_changes_profile_wp_without_profile_geomet
 }
 
 fn execute_fixture_and_load_first_row(run_dir: &Path) -> Row {
-    let report = execute_hillslope_run(
+    let report = common::execute_with_adaptive_stage3_owner_seed(
         &HillslopeRunRequest {
             run_dir: run_dir.to_path_buf(),
             run_file: PathBuf::from("case.run"),

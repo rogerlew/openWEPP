@@ -13,6 +13,10 @@ const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00c_day_input_builder_impl.rs"
 );
+const STAGE3_CANOPY_AUTHORITY: &str = concat!(
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
+    "00c_stage3_canopy_authority.rs"
+);
 const TOOL: &str = "tools/snowfreeze_observed/spring_compaction_densification_candidate.py";
 const REPORT: &str = concat!(
     "docs/work-packages/20260627-snowdensity-10-3-11-spring-compaction-densification-candidate-001/",
@@ -108,17 +112,21 @@ fn runtime_candidate_preserves_swe_and_density_cap() {
 
 #[test]
 fn selector_and_tool_keep_diagnostic_boundaries() {
-    let builder = read(BUILDER);
+    let builder = format!("{}\n{}", read(BUILDER), read(STAGE3_CANOPY_AUTHORITY));
     for marker in [
         "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
+        "reject_retired_stage3_snow_selector_envs",
+        "retired snow selector",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
         "SnowDensityModel::PhysicsBulkDensityCompactionV1",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
     assert!(
-        !builder.contains("SnowDensityModel::PhysicsBulkSpringDensificationV1"),
-        "SNOWDENSITY-10.3.15 must not retain rejected spring densification in the active selector"
+        !builder.contains("SnowDensityModel::PhysicsBulkSpringDensificationV1")
+            && !builder.contains("\"legacy_wepp\" => Ok"),
+        "historical density selectors must not re-enter the sole production path"
     );
 
     let tool = read(TOOL);

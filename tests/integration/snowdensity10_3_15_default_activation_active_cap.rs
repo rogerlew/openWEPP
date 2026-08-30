@@ -11,9 +11,9 @@ const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00c_day_input_builder_impl.rs"
 );
-const STATIC_AUTHORITY_BUILDER: &str = concat!(
+const STAGE3_CANOPY_AUTHORITY: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
-    "00_builders_and_authority.rs"
+    "00c_stage3_canopy_authority.rs"
 );
 const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 const TOOL: &str = "tools/snowfreeze_observed/default_activation_active_cap.py";
@@ -53,30 +53,29 @@ fn contract_and_package_bind_default_activation_authority() {
 
 #[test]
 fn implementation_selects_activated_default_without_user_surface() {
-    let builder = format!("{}\n{}", read(BUILDER), read(STATIC_AUTHORITY_BUILDER));
+    let builder = format!("{}\n{}", read(BUILDER), read(STAGE3_CANOPY_AUTHORITY));
     for marker in [
         "OPENWEPP_SNOWDENSITY1038_MELT_MODEL",
         "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
-        "snowdensity1015_default_snow_density_model",
-        "snowdensity1015_default_snow_melt_model",
-        "Err(std::env::VarError::NotPresent)",
+        "reject_retired_stage3_snow_selector_envs",
+        "retired snow selector",
+        "adaptive compositional Stage-3 owner has one typed production configuration",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
         "SnowDensityModel::PhysicsBulkDensityCompactionV1",
-        "SnowMeltModel::CoeLiquidHoldingCapacityV1",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1",
-        "must be legacy_coe, coe_liquid_holding_capacity_v1, coe_open_sublimation_stage_a_v1, or coe_open_sublimation_stage_b_v1",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
-    assert!(
-        !builder.contains("SnowDensityModel::PhysicsBulkSpringDensificationV1"),
-        "active default selector must not accept rejected spring densification"
-    );
-
-    for marker in [
-        "snow_density_model: snowdensity1015_default_snow_density_model()?",
-        "snow_melt_model: snowdensity1015_default_snow_melt_model()?",
+    for retired_branch in [
+        "SnowDensityModel::PhysicsBulkSpringDensificationV1",
+        "SnowMeltModel::CoeLiquidHoldingCapacityV1",
+        "\"legacy_wepp\" => Ok",
+        "\"legacy_coe\" => Ok",
     ] {
-        assert_contains(&builder, marker, BUILDER);
+        assert!(
+            !builder.contains(retired_branch),
+            "retired selector branch re-entered production: {retired_branch}"
+        );
     }
 
     let cli = read(CLI);

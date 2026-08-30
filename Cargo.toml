@@ -104,6 +104,7 @@ openwepp-meteorology = { path = "crates/openwepp-meteorology", version = "0.1.0"
 openwepp-plant-phenology = { path = "crates/openwepp-plant-phenology", version = "0.1.0" }
 openwepp-persisted-restart-v1 = { path = "crates/openwepp-persisted-restart-v1", version = "0.1.0" }
 openwepp-unit-boundary = { path = "crates/openwepp-unit-boundary", version = "0.1.0" }
+openwepp-runner = { path = "crates/openwepp-runner", version = "0.1.0", features = ["test-fixture-authority"] }
 
 [[test]]
 name = "infile_slope_parser_contract"
@@ -796,6 +797,10 @@ path = "tests/integration/snow_stage3_persistent_accumulation_shadow_contract.rs
 [[test]]
 name = "snow_terminal_enthalpy_event_numerics_contract"
 path = "tests/integration/snow_terminal_enthalpy_event_numerics_contract.rs"
+
+[[test]]
+name = "snow_stage3_adaptive_compositional_contract"
+path = "tests/integration/snow_stage3_adaptive_compositional_contract.rs"
 
 [[test]]
 name = "snow_stage3_terminal_receiver_authority_contract"

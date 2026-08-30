@@ -68,15 +68,21 @@ def constraints(c):
     ordered=sorted(tied,key=lambda x:(CLASSES[x["class"]],x["owner"].encode(),x["digest"]))
     return {"status":"accepted","end":str(end),"ordered":[f'{x["class"]}:{x["owner"]}:{x["digest"]}' for x in ordered]}
 def events(c):
-    xs=sorted(c["events"],key=lambda e:(EVENTS[e["class"]],e["owner"].encode(),e["digest"])); state=c["begin_owner_sha256"]; seen=set(c.get("accepted_event_ids",[])); semantic=set(); receipts=[]
+    xs=sorted(c["events"],key=lambda e:(EVENTS[e["class"]],e["owner"].encode(),e["digest"])); state=c["begin_owner_sha256"]; regime=c.get("begin_regime_sha256"); participants=c.get("begin_participant_sha256"); seen=set(c.get("accepted_event_ids",[])); semantic=set(); receipts=[]
     if len(xs)>c.get("same_tick_event_budget",256): fail("EventBudgetExhausted")
     for e in xs:
         if e["event_id"] in seen: fail("EventReplay")
         if not e["ledger_closed"]: fail("LedgerNotClosed")
         if e["begin_owner_sha256"]!=state: fail("EventCustodyConflict")
+        if "mutation_set" in e:
+            ledger=e.get("ledger",[])
+            if any(x["debit"]!=x["credit"] for x in ledger): fail("LedgerNotClosed")
+            physical=(e["end_owner_sha256"]!=state or e["regime_sha256"]!=regime or e["participant_sha256"]!=participants)
+            custody=(e["class"]=="OwnershipTransfer" and e["mutation_set"]==[] and len(ledger)>0 and all(x["debit"]!="0" and x["credit"]!="0" and x["lineage"]!="0" for x in ledger))
+            if not physical and not custody: fail("EventNoProgressCycle")
         key=(e["tick"],e["end_owner_sha256"],e["regime_sha256"],e["participant_sha256"],tuple(e["pending_event_ids"]))
         if key in semantic: fail("EventNoProgressCycle")
-        semantic.add(key); seen.add(e["event_id"]); state=e["end_owner_sha256"]; receipts.append(f'{e["class"]}:{e["event_id"]}:{state}')
+        semantic.add(key); seen.add(e["event_id"]); state=e["end_owner_sha256"]; regime=e["regime_sha256"]; participants=e["participant_sha256"]; receipts.append(f'{e["class"]}:{e["event_id"]}:{state}')
     return {"status":"accepted","event_ordinal":c["event_ordinal"]+len(xs),"end_owner_sha256":state,"receipts":receipts}
 def retry(c):
     if c["controller_policy"]!=c["restart_controller_policy"]: fail("ControllerPolicyMismatch")

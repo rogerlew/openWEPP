@@ -11,13 +11,9 @@ const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00c_day_input_builder_impl.rs"
 );
-const STATIC_AUTHORITY_BUILDER: &str = concat!(
+const STAGE3_CANOPY_AUTHORITY: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
-    "00_builders_and_authority.rs"
-);
-const AUTHORITY_IMPL: &str = concat!(
-    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
-    "00a_snow_frost_authority_impl.rs"
+    "00c_stage3_canopy_authority.rs"
 );
 const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 const TOOL: &str = "tools/snowfreeze_observed/harder_pomeroy_default_activation.py";
@@ -60,37 +56,21 @@ fn contract_and_package_bind_harder_pomeroy_default_activation() {
 
 #[test]
 fn implementation_selects_harder_pomeroy_without_env_and_preserves_rollback() {
-    let builder = format!("{}\n{}", read(BUILDER), read(STATIC_AUTHORITY_BUILDER));
+    let builder = format!("{}\n{}", read(BUILDER), read(STAGE3_CANOPY_AUTHORITY));
     for marker in [
         "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL",
-        "\"\" | \"harder_pomeroy_hourly\"",
-        "\"legacy_rst\"",
-        "SnowPhasePartitionModel::HarderPomeroyHourly",
-        "SnowPhasePartitionModel::LegacyRst",
-        "Err(std::env::VarError::NotPresent)",
-        "must be legacy_rst, harder_pomeroy_hourly, or empty default",
-        "\\\"snow_phase_model\\\":\\\"{}\\\"",
-        "snow_phase_model.id()",
+        "reject_retired_stage3_snow_selector_envs",
+        "retired snow selector",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
-
-    assert_contains(
-        &builder,
-        "snow_phase_model: snowdensity1035_diagnostic_snow_phase_model()?",
-        BUILDER,
-    );
-
-    let authority = read(AUTHORITY_IMPL);
-    assert_contains(
-        &authority,
-        "snow_phase_model: self.snow_phase_model",
-        AUTHORITY_IMPL,
-    );
-    assert_contains(
-        &authority,
-        "SnowPhasePartitionModel::LegacyRst",
-        AUTHORITY_IMPL,
+    assert!(
+        !builder.contains("\"harder_pomeroy_hourly\" => Ok")
+            && !builder.contains("\"legacy_rst\" => Ok"),
+        "historical phase selector branches must not re-enter production"
     );
 
     let cli = read(CLI);

@@ -17,7 +17,7 @@ use thiserror::Error;
 pub const SHARED_CARRIER_ID: &str = "shared-carrier";
 pub const STAGE3_SNOW_ID: &str = "stage3-snow";
 pub const V11_CANOPY_ID: &str = "v11-canopy";
-pub const LSE_MINIMUM_SUPPORT_NS: u128 = 600_000_000;
+pub const LSE_MINIMUM_SUPPORT_NS: u128 = 60_000_000_000;
 pub const COMPLETE_OWNER_MANIFEST: [&str; 7] = [
     "vegetation",
     "snow",
@@ -323,6 +323,61 @@ pub struct SealedCoveredCarrierForcingInputs {
 }
 
 impl SealedCoveredCarrierForcing {
+    /// Seal the covered-carrier capability directly from one accepted
+    /// repository interval. Exposure and participant receipts are derived
+    /// from repository/support identity; callers provide only the explicit
+    /// thermodynamic owner constants and the canopy producer's current
+    /// effective cover.
+    pub fn try_from_repository_interval(
+        interval: &crate::runtime_inputs::SnowFreeHalfHourIntervalReceipt,
+        rho_air_kg_m3: f64,
+        cp_air_j_kg_k: f64,
+        effective_canopy_cover: f64,
+    ) -> Result<Self, SnowStage3HandoffError> {
+        let exposure = SealedExposureReceipt {
+            receipt_id: format!("stage3-exposure-{}", interval.interval_receipt_sha256),
+            provider: "sealed-stage3-exposure".to_owned(),
+            provider_digest: interval.provider_definition_sha256.clone(),
+            source: "sealed-exposure-v1".to_owned(),
+            wind_m_s: interval.wind_m_s,
+            transfer_height_m: 5.0,
+            roughness_m: 0.005,
+        };
+        let active_participants = [SHARED_CARRIER_ID, STAGE3_SNOW_ID, V11_CANOPY_ID]
+            .into_iter()
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+        let support_receipts = active_participants
+            .iter()
+            .map(|participant_id| {
+                let mut preimage = Vec::new();
+                preimage.extend_from_slice(interval.interval_receipt_sha256.as_bytes());
+                preimage.extend_from_slice(participant_id.as_bytes());
+                let receipt_digest = digest_bytes(&preimage)
+                    .as_bytes()
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>();
+                ParticipantSupportReceipt {
+                    participant_id: participant_id.clone(),
+                    support_receipt_id: format!("stage3-support-{}", receipt_digest),
+                    minimum_support_ns: ModelTimeNs::new(LSE_MINIMUM_SUPPORT_NS),
+                }
+            })
+            .collect();
+        Self::try_new(SealedCoveredCarrierForcingInputs {
+            rho_air_kg_m3,
+            cp_air_j_kg_k,
+            reference_temperature_k: interval.air_temperature_c + 273.15,
+            reference_specific_humidity: interval.specific_humidity_kg_kg,
+            atmospheric_longwave_w_m2: interval.downward_longwave_w_m2,
+            effective_canopy_cover,
+            exposure,
+            active_participants,
+            support_receipts,
+        })
+    }
+
     pub fn try_new(
         inputs: SealedCoveredCarrierForcingInputs,
     ) -> Result<Self, SnowStage3HandoffError> {
@@ -543,7 +598,7 @@ impl Stage3SnowSurfaceBoundaryReceiptV1 {
 /// corrections are known. Stage 3 and the V11 parent retain this digest as a
 /// join rather than continuing to identify corrected values by a provisional
 /// carrier receipt.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct FinalStage3CanopyBoundaryReceiptV1 {
     pub support: TimeSupport,
     pub destination: (OfeId, TileId),
@@ -751,6 +806,130 @@ pub struct LaneBoundaryContributionV1 {
     pub latent_heat_j_kg: f64,
 }
 
+/// Terminal-only custody that retains the constitutive carrier opportunity
+/// while publishing the mass-limited vapor and latent transfer actually
+/// accepted by Stage 3.
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct TerminalBoundedVaporReceiptV1 {
+    pub support: TimeSupport,
+    pub lane_id: u32,
+    pub ofe_id: OfeId,
+    pub topology_configuration_sha256: Digest32,
+    pub raw_destination_receipt_set_sha256: Digest32,
+    pub terminal_event_result_sha256: Digest32,
+    pub raw_vapor_to_canopy_air_kg_m2_s: f64,
+    pub raw_latent_energy_to_canopy_air_j_m2: f64,
+    pub actual_vapor_to_canopy_air_kg_m2_s: f64,
+    pub actual_vapor_to_canopy_air_kg_m2: f64,
+    pub actual_latent_energy_to_canopy_air_j_m2: f64,
+    pub latent_heat_j_kg: f64,
+    pub receipt_sha256: Digest32,
+}
+
+impl TerminalBoundedVaporReceiptV1 {
+    fn try_new(
+        lane: &LaneStage3BoundaryReceiptV1,
+        terminal_event_result_sha256: Digest32,
+        actual_vapor_to_canopy_air_kg_m2: f64,
+        actual_latent_energy_to_canopy_air_j_m2: f64,
+    ) -> Result<Self, SnowStage3HandoffError> {
+        let duration_s = f64::from_bits(lane.support.duration_s_bits());
+        let mut value = Self {
+            support: lane.support,
+            lane_id: lane.lane_id,
+            ofe_id: lane.ofe_id.clone(),
+            topology_configuration_sha256: lane.topology_configuration_sha256,
+            raw_destination_receipt_set_sha256: lane.final_destination_receipt_sha256,
+            terminal_event_result_sha256,
+            raw_vapor_to_canopy_air_kg_m2_s: lane.aggregate_vapor_to_canopy_air_kg_m2_s,
+            raw_latent_energy_to_canopy_air_j_m2: lane.aggregate_latent_energy_to_canopy_air_j_m2,
+            actual_vapor_to_canopy_air_kg_m2_s: actual_vapor_to_canopy_air_kg_m2 / duration_s,
+            actual_vapor_to_canopy_air_kg_m2,
+            actual_latent_energy_to_canopy_air_j_m2,
+            latent_heat_j_kg: lane.aggregate_latent_heat_j_kg,
+            receipt_sha256: Digest32::zero(),
+        };
+        value.receipt_sha256 = value.reconstructed_digest();
+        value.validate()?;
+        Ok(value)
+    }
+
+    pub fn validate(&self) -> Result<(), SnowStage3HandoffError> {
+        let duration_s = f64::from_bits(self.support.duration_s_bits());
+        let finite = [
+            self.raw_vapor_to_canopy_air_kg_m2_s,
+            self.raw_latent_energy_to_canopy_air_j_m2,
+            self.actual_vapor_to_canopy_air_kg_m2_s,
+            self.actual_vapor_to_canopy_air_kg_m2,
+            self.actual_latent_energy_to_canopy_air_j_m2,
+            self.latent_heat_j_kg,
+        ]
+        .iter()
+        .all(|value| value.is_finite());
+        let raw_mass = self.raw_vapor_to_canopy_air_kg_m2_s * duration_s;
+        let raw_latent = raw_mass * self.latent_heat_j_kg;
+        let actual_mass = self.actual_vapor_to_canopy_air_kg_m2_s * duration_s;
+        let actual_latent = self.actual_vapor_to_canopy_air_kg_m2 * self.latent_heat_j_kg;
+        let same_direction = self.raw_vapor_to_canopy_air_kg_m2_s == 0.0
+            && self.actual_vapor_to_canopy_air_kg_m2 == 0.0
+            || self.raw_vapor_to_canopy_air_kg_m2_s.is_sign_positive()
+                == self.actual_vapor_to_canopy_air_kg_m2.is_sign_positive();
+        let bounded = if self.raw_vapor_to_canopy_air_kg_m2_s > 0.0 {
+            self.actual_vapor_to_canopy_air_kg_m2 >= 0.0
+                && self.actual_vapor_to_canopy_air_kg_m2 <= raw_mass + CLOSURE_TOLERANCE
+        } else {
+            (self.actual_vapor_to_canopy_air_kg_m2 - raw_mass).abs() <= CLOSURE_TOLERANCE
+        };
+        if self.ofe_id.as_str().is_empty()
+            || self.topology_configuration_sha256 == Digest32::zero()
+            || self.raw_destination_receipt_set_sha256 == Digest32::zero()
+            || self.terminal_event_result_sha256 == Digest32::zero()
+            || self.receipt_sha256 == Digest32::zero()
+            || !finite
+            || duration_s <= 0.0
+            || self.latent_heat_j_kg <= 0.0
+            || !same_direction
+            || !bounded
+            || (raw_latent - self.raw_latent_energy_to_canopy_air_j_m2).abs() > CLOSURE_TOLERANCE
+            || (actual_mass - self.actual_vapor_to_canopy_air_kg_m2).abs() > CLOSURE_TOLERANCE
+            || (actual_latent - self.actual_latent_energy_to_canopy_air_j_m2).abs()
+                > CLOSURE_TOLERANCE
+            || self.receipt_sha256 != self.reconstructed_digest()
+        {
+            return Err(SnowStage3HandoffError::InvalidCarrier(
+                "terminal bounded vapor/latent receipt",
+            ));
+        }
+        Ok(())
+    }
+
+    fn reconstructed_digest(&self) -> Digest32 {
+        let mut bytes = b"OPENWEPP_TERMINAL_BOUNDED_VAPOR_RECEIPT_V1\0".to_vec();
+        bytes.extend_from_slice(&self.support.start_ns().get().to_le_bytes());
+        bytes.extend_from_slice(&self.support.end_ns().get().to_le_bytes());
+        bytes.extend_from_slice(&self.lane_id.to_le_bytes());
+        append_framed_str(&mut bytes, self.ofe_id.as_str());
+        for digest in [
+            self.topology_configuration_sha256,
+            self.raw_destination_receipt_set_sha256,
+            self.terminal_event_result_sha256,
+        ] {
+            bytes.extend_from_slice(digest.as_bytes());
+        }
+        for value in [
+            self.raw_vapor_to_canopy_air_kg_m2_s,
+            self.raw_latent_energy_to_canopy_air_j_m2,
+            self.actual_vapor_to_canopy_air_kg_m2_s,
+            self.actual_vapor_to_canopy_air_kg_m2,
+            self.actual_latent_energy_to_canopy_air_j_m2,
+            self.latent_heat_j_kg,
+        ] {
+            bytes.extend_from_slice(&value.to_bits().to_le_bytes());
+        }
+        digest_bytes(&bytes)
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct LaneStage3BoundaryReceiptV1 {
     pub lane_id: u32,
@@ -771,6 +950,8 @@ pub struct LaneStage3BoundaryReceiptV1 {
     pub aggregate_snow_net_longwave_w_m2: f64,
     pub aggregate_snow_temperature_k: f64,
     pub aggregate_latent_heat_j_kg: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub terminal_bounded_vapor_receipt: Option<TerminalBoundedVaporReceiptV1>,
     pub receipt_sha256: Digest32,
 }
 
@@ -798,6 +979,35 @@ impl LaneStage3BoundaryReceiptV1 {
             ));
         }
         Ok(())
+    }
+
+    pub(crate) fn with_terminal_bounded_vapor(
+        mut self,
+        terminal_event_result_sha256: Digest32,
+        actual_vapor_to_canopy_air_kg_m2: f64,
+        actual_latent_energy_to_canopy_air_j_m2: f64,
+    ) -> Result<Self, SnowStage3HandoffError> {
+        if self.terminal_bounded_vapor_receipt.is_some() {
+            return Err(SnowStage3HandoffError::InvalidCarrier(
+                "duplicate terminal bounded vapor receipt",
+            ));
+        }
+        self.validate()?;
+        let bounded = TerminalBoundedVaporReceiptV1::try_new(
+            &self,
+            terminal_event_result_sha256,
+            actual_vapor_to_canopy_air_kg_m2,
+            actual_latent_energy_to_canopy_air_j_m2,
+        )?;
+        self.aggregate_vapor_to_canopy_air_kg_m2_s = bounded.actual_vapor_to_canopy_air_kg_m2_s;
+        self.aggregate_latent_energy_to_canopy_air_j_m2 =
+            bounded.actual_latent_energy_to_canopy_air_j_m2;
+        self.terminal_bounded_vapor_receipt = Some(bounded);
+        self.receipt_sha256 = Digest32::zero();
+        self.validate_body()?;
+        self.receipt_sha256 = lane_stage3_boundary_receipt_digest(&self);
+        self.validate()?;
+        Ok(self)
     }
 
     fn validate_body(&self) -> Result<(), SnowStage3HandoffError> {
@@ -903,6 +1113,18 @@ impl LaneStage3BoundaryReceiptV1 {
         }
         aggregates[5] = common.snow_temperature_k;
         aggregates[6] = common.latent_heat_j_kg;
+        let expected_vapor = self
+            .terminal_bounded_vapor_receipt
+            .as_ref()
+            .map_or(aggregates[1], |receipt| {
+                receipt.actual_vapor_to_canopy_air_kg_m2_s
+            });
+        let expected_latent = self
+            .terminal_bounded_vapor_receipt
+            .as_ref()
+            .map_or(aggregates[2], |receipt| {
+                receipt.actual_latent_energy_to_canopy_air_j_m2
+            });
         let expected = [
             self.aggregate_sensible_to_canopy_air_w_m2,
             self.aggregate_vapor_to_canopy_air_kg_m2_s,
@@ -913,7 +1135,14 @@ impl LaneStage3BoundaryReceiptV1 {
         ];
         if expected
             .iter()
-            .zip(aggregates.into_iter().take(6))
+            .zip([
+                aggregates[0],
+                expected_vapor,
+                expected_latent,
+                aggregates[3],
+                aggregates[4],
+                aggregates[5],
+            ])
             .enumerate()
             .any(|(index, (actual, reconstructed))| {
                 if index == 2 {
@@ -936,6 +1165,28 @@ impl LaneStage3BoundaryReceiptV1 {
             return Err(SnowStage3HandoffError::InvalidCarrier(
                 "lane Stage-3 aggregate latent mass-energy identity",
             ));
+        }
+        if let Some(receipt) = &self.terminal_bounded_vapor_receipt {
+            receipt.validate()?;
+            if receipt.support != self.support
+                || receipt.lane_id != self.lane_id
+                || receipt.ofe_id != self.ofe_id
+                || receipt.topology_configuration_sha256 != self.topology_configuration_sha256
+                || receipt.raw_destination_receipt_set_sha256
+                    != self.final_destination_receipt_sha256
+                || receipt.raw_vapor_to_canopy_air_kg_m2_s.to_bits() != aggregates[1].to_bits()
+                || (receipt.raw_latent_energy_to_canopy_air_j_m2 - aggregates[2]).abs()
+                    > CLOSURE_TOLERANCE
+                || receipt.actual_vapor_to_canopy_air_kg_m2_s.to_bits()
+                    != self.aggregate_vapor_to_canopy_air_kg_m2_s.to_bits()
+                || receipt.actual_latent_energy_to_canopy_air_j_m2.to_bits()
+                    != self.aggregate_latent_energy_to_canopy_air_j_m2.to_bits()
+                || receipt.latent_heat_j_kg.to_bits() != self.aggregate_latent_heat_j_kg.to_bits()
+            {
+                return Err(SnowStage3HandoffError::InvalidCarrier(
+                    "terminal bounded vapor lane join",
+                ));
+            }
         }
         let expected_latent_energy =
             self.aggregate_vapor_to_canopy_air_kg_m2_s * common.latent_heat_j_kg * duration_s;
@@ -1071,6 +1322,9 @@ fn lane_stage3_boundary_receipt_digest(value: &LaneStage3BoundaryReceiptV1) -> D
         value.aggregate_latent_heat_j_kg,
     ] {
         bytes.extend_from_slice(&scalar.to_bits().to_le_bytes());
+    }
+    if let Some(receipt) = &value.terminal_bounded_vapor_receipt {
+        bytes.extend_from_slice(receipt.receipt_sha256.as_bytes());
     }
     digest_bytes(&bytes)
 }
@@ -2223,6 +2477,7 @@ mod tests {
                 aggregate_snow_net_longwave_w_m2: contribution.snow_net_longwave_w_m2,
                 aggregate_snow_temperature_k: contribution.snow_temperature_k,
                 aggregate_latent_heat_j_kg: contribution.latent_heat_j_kg,
+                terminal_bounded_vapor_receipt: None,
                 receipt_sha256: Digest32::zero(),
             },
             &expected_topology,
@@ -2315,6 +2570,7 @@ mod tests {
                 aggregate_snow_net_longwave_w_m2: 0.0,
                 aggregate_snow_temperature_k: 268.0,
                 aggregate_latent_heat_j_kg: 2_500_000.0,
+                terminal_bounded_vapor_receipt: None,
                 receipt_sha256: Digest32::zero(),
             },
             &expected_topology,
@@ -2338,5 +2594,108 @@ mod tests {
         poisoned_model.ordered_destinations[1].boundary_model_definition_sha256 =
             Digest32::from_bytes([99; 32]);
         assert!(LaneStage3BoundaryReceiptV1::try_new(poisoned_model, &expected_topology).is_err());
+    }
+
+    #[test]
+    fn terminal_bounded_vapor_receipt_retains_raw_opportunity_and_seals_actual_transfer() {
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_800_000_000_000))
+            .expect("valid support");
+        let contribution = LaneBoundaryContributionV1 {
+            tile_id: TileId::try_new("open").expect("tile"),
+            tile_fraction: 1.0,
+            boundary_class: Stage3TileBoundaryClassV1::OpenSnow,
+            boundary_model_definition_sha256: Digest32::from_bytes([9; 32]),
+            beginning_stage3_state_sha256: Digest32::from_bytes([10; 32]),
+            provisional_carrier_receipt_sha256: Digest32::from_bytes([11; 32]),
+            optical_receipt_sha256: Digest32::from_bytes([12; 32]),
+            reciprocal_longwave_receipt_sha256: Digest32::from_bytes([13; 32]),
+            final_boundary_receipt_sha256: Digest32::from_bytes([14; 32]),
+            sensible_to_canopy_air_w_m2: 0.0,
+            vapor_to_canopy_air_kg_m2_s: 2.0e-6,
+            latent_energy_to_canopy_air_j_m2: 9_000.0,
+            snow_absorbed_shortwave_w_m2: 0.0,
+            snow_net_longwave_w_m2: 0.0,
+            snow_temperature_k: 268.0,
+            latent_heat_j_kg: 2_500_000.0,
+        };
+        let topology = [LaneBoundaryTopologyExpectationV1 {
+            tile_id: contribution.tile_id.clone(),
+            tile_fraction_bits: contribution.tile_fraction.to_bits(),
+            boundary_class: contribution.boundary_class,
+            boundary_model_definition_sha256: contribution.boundary_model_definition_sha256,
+        }];
+        let raw = LaneStage3BoundaryReceiptV1::try_new(
+            LaneStage3BoundaryReceiptV1 {
+                lane_id: 1,
+                ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+                support,
+                area_basis: Stage3LaneAreaBasisV1::OfeGround,
+                topology_configuration_sha256: Digest32::from_bytes([2; 32]),
+                provisional_carrier_receipt_sha256: Digest32::zero(),
+                optical_receipt_sha256: Digest32::zero(),
+                reciprocal_longwave_receipt_sha256: Digest32::zero(),
+                final_destination_receipt_sha256: Digest32::zero(),
+                precipitation_parcel_set_sha256: Digest32::from_bytes([7; 32]),
+                ordered_destinations: vec![contribution],
+                aggregate_sensible_to_canopy_air_w_m2: 0.0,
+                aggregate_vapor_to_canopy_air_kg_m2_s: 2.0e-6,
+                aggregate_latent_energy_to_canopy_air_j_m2: 9_000.0,
+                aggregate_snow_absorbed_shortwave_w_m2: 0.0,
+                aggregate_snow_net_longwave_w_m2: 0.0,
+                aggregate_snow_temperature_k: 268.0,
+                aggregate_latent_heat_j_kg: 2_500_000.0,
+                terminal_bounded_vapor_receipt: None,
+                receipt_sha256: Digest32::zero(),
+            },
+            &topology,
+        )
+        .expect("raw lane opportunity");
+        let raw_receipt_sha256 = raw.final_destination_receipt_sha256;
+        let actual_mass = 8.0e-5;
+        let actual_latent = actual_mass * 2_500_000.0;
+        let bounded = raw
+            .with_terminal_bounded_vapor(Digest32::from_bytes([44; 32]), actual_mass, actual_latent)
+            .expect("bounded terminal receipt");
+        let custody = bounded
+            .terminal_bounded_vapor_receipt
+            .as_ref()
+            .expect("typed bounded custody");
+        assert_eq!(
+            custody.raw_destination_receipt_set_sha256,
+            raw_receipt_sha256
+        );
+        assert_eq!(
+            custody.raw_vapor_to_canopy_air_kg_m2_s.to_bits(),
+            2.0e-6_f64.to_bits()
+        );
+        assert_eq!(
+            custody.raw_latent_energy_to_canopy_air_j_m2.to_bits(),
+            9_000.0_f64.to_bits()
+        );
+        assert_eq!(
+            custody.actual_vapor_to_canopy_air_kg_m2.to_bits(),
+            actual_mass.to_bits()
+        );
+        assert_eq!(
+            bounded.aggregate_latent_energy_to_canopy_air_j_m2.to_bits(),
+            actual_latent.to_bits()
+        );
+        bounded.validate().expect("bounded lane validates");
+
+        let mut mass_only_poison = bounded.clone();
+        mass_only_poison
+            .terminal_bounded_vapor_receipt
+            .as_mut()
+            .expect("typed custody")
+            .actual_vapor_to_canopy_air_kg_m2 += 1.0e-6;
+        assert!(mass_only_poison.validate().is_err());
+
+        let mut omitted_event_identity = bounded;
+        omitted_event_identity
+            .terminal_bounded_vapor_receipt
+            .as_mut()
+            .expect("typed custody")
+            .terminal_event_result_sha256 = Digest32::zero();
+        assert!(omitted_event_identity.validate().is_err());
     }
 }

@@ -30,9 +30,7 @@ pub(super) const INTERVAL_S: f64 = 1_800.0;
 pub(super) const WATER_DENSITY_KG_M3: f64 = 1_000.0;
 pub(super) const LIQUID_HEAT_CAPACITY_J_KG_K: f64 = 4_218.0;
 pub(super) const REFERENCE_TEMPERATURE_K: f64 = 273.15;
-#[cfg(test)]
 const MASS_ABSOLUTE_TOLERANCE_KG_M2: f64 = 1.0e-14;
-#[cfg(test)]
 const SCALE_MULTIPLIER: f64 = 64.0;
 
 fn production_binding_failure(
@@ -508,6 +506,34 @@ impl DirectSurfaceLiquidIngressCandidate {
                 self.ending_state.recomputed_sha256().ok(),
             )
         })?;
+        if !self
+            .closure_operands
+            .store_operands_match(&expected.closure_operands)
+        {
+            let closure_ending_state = self.closure_ending_state()?;
+            super::surface_liquid_closure::validate_surface_liquid_closure_operands_with_input(
+                configuration,
+                resource,
+                input,
+                &self.closure_operands,
+                &self.receipts,
+                &closure_ending_state,
+            )
+            .map_err(|error| {
+                let code = error.code();
+                error.complete_context(
+                    code,
+                    DirectSurfaceLiquidPhase::IndependentClosure,
+                    DirectSurfaceLiquidErrorContext {
+                        transaction_id: Some(input.transaction_id),
+                        owner_id: Some(configuration.owner_id.clone()),
+                        ..DirectSurfaceLiquidErrorContext::default()
+                    },
+                    Some(resource.beginning_state().state_sha256.clone()),
+                    self.ending_state.recomputed_sha256().ok(),
+                )
+            })?;
+        }
         if let Some(context) = self.producer_mismatch_context(&expected, configuration, input) {
             return Err(DirectSurfaceLiquidError::canonical_failure(
                 DirectSurfaceLiquidErrorCode::E009,
@@ -717,6 +743,7 @@ struct TimedParcel {
     start_s: f64,
     end_s: f64,
     mass_kg_m2_basis_ofe_ground: f64,
+    temperature_k: f64,
     enthalpy_j_m2_basis_ofe_ground: f64,
 }
 
@@ -769,28 +796,6 @@ pub(super) fn canonical_parcel_order(
         .then_with(|| left.origin_store_key.cmp(right.origin_store_key))
         .then_with(|| left.kind.cmp(&right.kind))
         .then_with(|| left.source_parcel_id.cmp(right.source_parcel_id))
-}
-
-fn parcel_temperature_k(
-    parcel: &TimedParcel,
-    transaction_id: TransactionId,
-    key: &DirectSurfaceLiquidStoreKey,
-) -> Result<f64, DirectSurfaceLiquidError> {
-    let specific_enthalpy = checked_surface_liquid_div(
-        parcel.enthalpy_j_m2_basis_ofe_ground,
-        parcel.mass_kg_m2_basis_ofe_ground,
-    )
-    .and_then(|value| checked_surface_liquid_div(value, LIQUID_HEAT_CAPACITY_J_KG_K))
-    .and_then(|value| checked_surface_liquid_add(REFERENCE_TEMPERATURE_K, value))
-    .ok_or_else(|| {
-        ingress_arithmetic_failure(
-            transaction_id,
-            key,
-            Some(parcel.parcel_id.clone()),
-            "parcel temperature reconstruction is nonfinite or underflowed",
-        )
-    })?;
-    Ok(specific_enthalpy)
 }
 
 #[derive(Default)]
@@ -868,6 +873,7 @@ pub fn execute_surface_liquid_ingress(
 /// The persistent day/interval cursor advances only for the child that closes
 /// the coupled parent; cumulative Green-Ampt state remains available to every
 /// accepted child candidate.
+#[cfg(test)]
 pub(crate) fn execute_surface_liquid_ingress_with_parent_finalization(
     configuration: &DirectSurfaceLiquidConfiguration,
     resource: &DirectSurfaceLiquidResourceCandidate,
@@ -883,6 +889,7 @@ pub(crate) fn execute_surface_liquid_ingress_with_parent_finalization(
     )
 }
 
+#[cfg(test)]
 pub(crate) fn execute_surface_liquid_ingress_with_parent_state(
     configuration: &DirectSurfaceLiquidConfiguration,
     resource: &DirectSurfaceLiquidResourceCandidate,
@@ -1069,11 +1076,12 @@ fn execute_surface_liquid_ingress_inner(
             )
         })
         .collect::<BTreeMap<_, _>>();
+    let selected_upper_bound_ns = selected_upper_bound_s * 1.0e9;
     if !selected_upper_bound_s.is_finite()
-        || !matches!(
-            selected_upper_bound_s.to_bits(),
-            0x409c_2000_0000_0000 | 0x408c_2000_0000_0000 | 0x404e_0000_0000_0000
-        )
+        || selected_upper_bound_s < 60.0
+        || !selected_upper_bound_ns.is_finite()
+        || selected_upper_bound_ns.fract() != 0.0
+        || (selected_upper_bound_ns as u128) % 60_000_000_000 != 0
         || input.interval_s > selected_upper_bound_s
     {
         return Err(DirectSurfaceLiquidError::Domain(
@@ -1560,6 +1568,7 @@ fn validate_and_build_local_ingress(
                 start_s: 0.0,
                 end_s: input.interval_s,
                 mass_kg_m2_basis_ofe_ground: overflow.amount_kg_m2_ofe_ground,
+                temperature_k: overflow.temperature_k,
                 enthalpy_j_m2_basis_ofe_ground: enthalpy,
             });
     }
@@ -1628,6 +1637,7 @@ fn append_tile_ingress(
                     start_s: parcel.amount.start_s,
                     end_s: parcel.amount.end_s,
                     mass_kg_m2_basis_ofe_ground: mass,
+                    temperature_k: parcel.amount.temperature_k,
                     enthalpy_j_m2_basis_ofe_ground: enthalpy,
                 });
             }
@@ -1734,6 +1744,7 @@ fn append_external_runon(
             start_s: parcel.amount.start_s,
             end_s: parcel.amount.end_s,
             mass_kg_m2_basis_ofe_ground: mass,
+            temperature_k: parcel.amount.temperature_k,
             enthalpy_j_m2_basis_ofe_ground: enthalpy,
         });
     }
@@ -1781,6 +1792,7 @@ fn append_amount(
         start_s: amount.start_s,
         end_s: amount.end_s,
         mass_kg_m2_basis_ofe_ground: mass,
+        temperature_k: amount.temperature_k,
         enthalpy_j_m2_basis_ofe_ground: enthalpy,
     });
     Ok(())
@@ -2066,8 +2078,22 @@ fn advance_one_ofe(
                 )
             })?;
         let mut allocated_infiltration = 0.0;
+        let mut allocated_excess = 0.0;
         let mut allocated_mixed_enthalpy = 0.0;
         let contribution_count = contributions.len();
+        let use_excess_authority = direct_infiltration_requires_excess_authority(
+            total_infiltration,
+            supply_mass,
+            contributions.iter().map(|row| row.1),
+        )
+        .ok_or_else(|| {
+            ingress_arithmetic_failure(
+                transaction_id,
+                arithmetic_key,
+                None,
+                "infiltration allocation authority is nonfinite",
+            )
+        })?;
         let mut excess_parts = Vec::with_capacity(contribution_count);
         for (index, (parcel, mass, _)) in contributions.into_iter().enumerate() {
             let mixed_part_q = if index + 1 == contribution_count {
@@ -2095,38 +2121,23 @@ fn advance_one_ofe(
                         )
                     },
                 )?;
-            let infiltrated = if full_infiltration {
-                mass
-            } else if index + 1 == contribution_count {
-                checked_surface_liquid_sub(total_infiltration, allocated_infiltration).ok_or_else(
-                    || {
-                        ingress_arithmetic_failure(
-                            transaction_id,
-                            arithmetic_key,
-                            Some(parcel.parcel_id.clone()),
-                            "infiltration allocation remainder is nonfinite",
-                        )
-                    },
-                )?
-            } else {
-                let numerator =
-                    checked_surface_liquid_mul(total_infiltration, mass).ok_or_else(|| {
-                        ingress_arithmetic_failure(
-                            transaction_id,
-                            arithmetic_key,
-                            Some(parcel.parcel_id.clone()),
-                            "infiltration allocation numerator is nonfinite or underflowed",
-                        )
-                    })?;
-                checked_surface_liquid_div(numerator, supply_mass).ok_or_else(|| {
-                    ingress_arithmetic_failure(
-                        transaction_id,
-                        arithmetic_key,
-                        Some(parcel.parcel_id.clone()),
-                        "infiltration allocation share is nonfinite or underflowed",
-                    )
-                })?
-            };
+            let (infiltrated, excess) = allocate_infiltration_and_excess(
+                total_infiltration,
+                supply_mass,
+                allocated_infiltration,
+                allocated_excess,
+                mass,
+                index + 1 == contribution_count,
+                use_excess_authority,
+            )
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    arithmetic_key,
+                    Some(parcel.parcel_id.clone()),
+                    "infiltration/excess allocation is nonfinite or outside its source mass",
+                )
+            })?;
             allocated_infiltration =
                 checked_surface_liquid_add(allocated_infiltration, infiltrated).ok_or_else(
                     || {
@@ -2138,14 +2149,15 @@ fn advance_one_ofe(
                         )
                     },
                 )?;
-            let excess = checked_surface_liquid_sub(mass, infiltrated).ok_or_else(|| {
-                ingress_arithmetic_failure(
-                    transaction_id,
-                    arithmetic_key,
-                    Some(parcel.parcel_id.clone()),
-                    "parcel excess mass is nonfinite",
-                )
-            })?;
+            allocated_excess =
+                checked_surface_liquid_add(allocated_excess, excess).ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        arithmetic_key,
+                        Some(parcel.parcel_id.clone()),
+                        "excess allocation accumulation is nonfinite",
+                    )
+                })?;
             let infiltration_q = if excess == 0.0 {
                 Some(mixed_part_q)
             } else if infiltrated == 0.0 {
@@ -2331,7 +2343,7 @@ fn retain_excess_proportionally(
                         "surface retention capacity difference is nonfinite",
                     )
                 })?;
-        let available = checked_surface_liquid_mul(configured.tile_fraction, available_tile)
+        let raw_available = checked_surface_liquid_mul(configured.tile_fraction, available_tile)
             .ok_or_else(|| {
                 ingress_arithmetic_failure(
                     transaction_id,
@@ -2340,11 +2352,32 @@ fn retain_excess_proportionally(
                     "surface retention area conversion is nonfinite or underflowed",
                 )
             })?;
-        if available < 0.0 {
+        if raw_available < 0.0 {
             return Err(DirectSurfaceLiquidError::Bound(
                 "negative surface retention capacity",
             ));
         }
+        let capacity_ofe =
+            checked_surface_liquid_mul(configured.tile_fraction, configured.capacity_kg_m2_tile)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        &store_key,
+                        None,
+                        "surface capacity envelope conversion is nonfinite or underflowed",
+                    )
+                })?;
+        let stored_ofe =
+            checked_surface_liquid_mul(configured.tile_fraction, state.liquid_kg_m2_tile)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        &store_key,
+                        None,
+                        "surface storage envelope conversion is nonfinite or underflowed",
+                    )
+                })?;
+        let available = raw_available;
         let total_excess =
             checked_surface_liquid_sum(parts.iter().map(|row| row.1)).ok_or_else(|| {
                 ingress_arithmetic_failure(
@@ -2354,40 +2387,35 @@ fn retain_excess_proportionally(
                     "surface excess mass accumulation is nonfinite",
                 )
             })?;
-        let total_retained = total_excess.min(available);
+        let raw_retained = total_excess.min(available);
+        let total_retained =
+            effective_retained_mass(raw_retained, capacity_ofe, stored_ofe, total_excess)
+                .ok_or_else(|| {
+                    ingress_arithmetic_failure(
+                        transaction_id,
+                        &store_key,
+                        None,
+                        "surface representational-credit envelope is nonfinite",
+                    )
+                })?;
         let mut allocated_retained = 0.0;
         let count = parts.len();
         for (part_index, (parcel, excess, excess_q)) in parts.into_iter().enumerate() {
-            let retained_mass = if part_index + 1 == count {
-                checked_surface_liquid_sub(total_retained, allocated_retained).ok_or_else(|| {
-                    ingress_arithmetic_failure(
-                        transaction_id,
-                        &store_key,
-                        Some(parcel.parcel_id.clone()),
-                        "retained allocation remainder is nonfinite",
-                    )
-                })?
-            } else if total_excess == 0.0 {
-                0.0
-            } else {
-                let numerator =
-                    checked_surface_liquid_mul(total_retained, excess).ok_or_else(|| {
-                        ingress_arithmetic_failure(
-                            transaction_id,
-                            &store_key,
-                            Some(parcel.parcel_id.clone()),
-                            "retained allocation numerator is nonfinite or underflowed",
-                        )
-                    })?;
-                checked_surface_liquid_div(numerator, total_excess).ok_or_else(|| {
-                    ingress_arithmetic_failure(
-                        transaction_id,
-                        &store_key,
-                        Some(parcel.parcel_id.clone()),
-                        "retained allocation share is nonfinite or underflowed",
-                    )
-                })?
-            };
+            let retained_mass = allocate_retained_mass(
+                total_retained,
+                total_excess,
+                allocated_retained,
+                excess,
+                part_index + 1 == count,
+            )
+            .ok_or_else(|| {
+                ingress_arithmetic_failure(
+                    transaction_id,
+                    &store_key,
+                    Some(parcel.parcel_id.clone()),
+                    "retained allocation is nonfinite or outside its source excess",
+                )
+            })?;
             allocated_retained = checked_surface_liquid_add(allocated_retained, retained_mass)
                 .ok_or_else(|| {
                     ingress_arithmetic_failure(
@@ -2456,30 +2484,28 @@ fn retain_excess_proportionally(
                     start_s,
                     end_s,
                     mass_kg_m2_basis_ofe_ground: runoff_mass,
+                    temperature_k,
                     enthalpy_j_m2_basis_ofe_ground: runoff_q,
                 });
             }
         }
-        let retained_tile = checked_surface_liquid_div(total_retained, configured.tile_fraction)
-            .ok_or_else(|| {
-                ingress_arithmetic_failure(
-                    transaction_id,
-                    &store_key,
-                    None,
-                    "retained OFE-to-tile conversion is nonfinite or underflowed",
-                )
-            })?;
-        state.liquid_kg_m2_tile =
-            checked_surface_liquid_add(state.liquid_kg_m2_tile, retained_tile).ok_or_else(
-                || {
-                    ingress_arithmetic_failure(
-                        transaction_id,
-                        &store_key,
-                        None,
-                        "ending surface store accumulation is nonfinite",
-                    )
-                },
-            )?;
+        let (_, ending_liquid_kg_m2_tile) = retained_tile_credit_and_ending_store(
+            state.liquid_kg_m2_tile,
+            configured.capacity_kg_m2_tile,
+            configured.tile_fraction,
+            available_tile,
+            available,
+            total_retained,
+        )
+        .ok_or_else(|| {
+            ingress_arithmetic_failure(
+                transaction_id,
+                &store_key,
+                None,
+                "ending surface store retention is outside exact capacity authority",
+            )
+        })?;
+        state.liquid_kg_m2_tile = ending_liquid_kg_m2_tile;
     }
     Ok((retained_receipts, runoff_parcels))
 }
@@ -2524,7 +2550,6 @@ fn route_runoff(
                     )
                 })?;
             for parcel in runoff {
-                let parcel_temperature = parcel_temperature_k(&parcel, transaction_id, &route.key)?;
                 let routed_mass =
                     checked_surface_liquid_mul(parcel.mass_kg_m2_basis_ofe_ground, area_ratio)
                         .ok_or_else(|| {
@@ -2557,7 +2582,7 @@ fn route_runoff(
                     parcel.start_s,
                     parcel.end_s,
                     parcel.mass_kg_m2_basis_ofe_ground,
-                    parcel_temperature,
+                    parcel.temperature_k,
                     parcel.enthalpy_j_m2_basis_ofe_ground,
                     transaction_id,
                 ));
@@ -2573,13 +2598,13 @@ fn route_runoff(
                         start_s: parcel.start_s,
                         end_s: parcel.end_s,
                         mass_kg_m2_basis_ofe_ground: routed_mass,
+                        temperature_k: parcel.temperature_k,
                         enthalpy_j_m2_basis_ofe_ground: routed_enthalpy,
                     });
             }
         }
         (None, None) => {
             for parcel in runoff {
-                let parcel_temperature = parcel_temperature_k(&parcel, transaction_id, &route.key)?;
                 receipts.push(receipt(
                     &parcel,
                     DirectSurfaceLiquidReceiptDisposition::OutletRunoff,
@@ -2590,7 +2615,7 @@ fn route_runoff(
                     parcel.start_s,
                     parcel.end_s,
                     parcel.mass_kg_m2_basis_ofe_ground,
-                    parcel_temperature,
+                    parcel.temperature_k,
                     parcel.enthalpy_j_m2_basis_ofe_ground,
                     transaction_id,
                 ));
@@ -2688,9 +2713,199 @@ fn require_nonnegative(value: f64, field: &'static str) -> Result<(), DirectSurf
     }
 }
 
-#[cfg(test)]
 fn mass_tolerance(scale: f64) -> f64 {
     MASS_ABSOLUTE_TOLERANCE_KG_M2 + SCALE_MULTIPLIER * f64::EPSILON * scale
+}
+
+pub(super) fn effective_retained_mass(
+    raw_retained: f64,
+    capacity_ofe: f64,
+    stored_ofe: f64,
+    total_excess: f64,
+) -> Option<f64> {
+    if !raw_retained.is_finite()
+        || raw_retained < 0.0
+        || !capacity_ofe.is_finite()
+        || capacity_ofe < 0.0
+        || !stored_ofe.is_finite()
+        || stored_ofe < 0.0
+        || !total_excess.is_finite()
+        || total_excess < 0.0
+    {
+        return None;
+    }
+    let scale = checked_surface_liquid_add(capacity_ofe.abs(), stored_ofe.abs())
+        .and_then(|partial| checked_surface_liquid_add(partial, total_excess.abs()))?;
+    let envelope = mass_tolerance(scale);
+    envelope
+        .is_finite()
+        .then_some(if raw_retained > 0.0 && raw_retained <= envelope {
+            0.0
+        } else {
+            raw_retained
+        })
+}
+
+fn retained_tile_credit_and_ending_store(
+    beginning_tile: f64,
+    capacity_tile: f64,
+    tile_fraction: f64,
+    available_tile: f64,
+    available_ofe: f64,
+    retained_ofe: f64,
+) -> Option<(f64, f64)> {
+    if !beginning_tile.is_finite()
+        || beginning_tile < 0.0
+        || !capacity_tile.is_finite()
+        || capacity_tile < beginning_tile
+        || !tile_fraction.is_finite()
+        || tile_fraction <= 0.0
+        || !available_tile.is_finite()
+        || available_tile < 0.0
+        || !available_ofe.is_finite()
+        || available_ofe < 0.0
+        || !retained_ofe.is_finite()
+        || retained_ofe < 0.0
+        || retained_ofe > available_ofe
+        || checked_surface_liquid_sub(capacity_tile, beginning_tile)?.to_bits()
+            != available_tile.to_bits()
+        || checked_surface_liquid_mul(tile_fraction, available_tile)?.to_bits()
+            != available_ofe.to_bits()
+    {
+        return None;
+    }
+
+    if retained_ofe.to_bits() == available_ofe.to_bits() {
+        // Exact full-capacity authority is already reconstructed in tile and
+        // OFE bases above. Re-dividing the OFE amount can round one ULP beyond
+        // capacity for a non-binary tile fraction, so the owner installs the
+        // exact sealed tile remainder and its exact capacity endpoint.
+        return Some((available_tile, capacity_tile));
+    }
+
+    let retained_tile = checked_surface_liquid_div(retained_ofe, tile_fraction)?;
+    let ending_tile = checked_surface_liquid_add(beginning_tile, retained_tile)?;
+    (ending_tile <= capacity_tile).then_some((retained_tile, ending_tile))
+}
+
+pub(super) fn allocate_retained_mass(
+    total_retained: f64,
+    total_excess: f64,
+    allocated_retained: f64,
+    excess: f64,
+    is_last: bool,
+) -> Option<f64> {
+    if !total_retained.is_finite()
+        || total_retained < 0.0
+        || !total_excess.is_finite()
+        || total_excess < 0.0
+        || !allocated_retained.is_finite()
+        || allocated_retained < 0.0
+        || !excess.is_finite()
+        || excess < 0.0
+        || total_retained > total_excess
+    {
+        return None;
+    }
+    let retained = if total_retained.to_bits() == total_excess.to_bits() {
+        excess
+    } else if total_retained == 0.0 {
+        0.0
+    } else if is_last {
+        checked_surface_liquid_sub(total_retained, allocated_retained)?
+    } else {
+        checked_surface_liquid_mul(total_retained, excess)
+            .and_then(|numerator| checked_surface_liquid_div(numerator, total_excess))?
+    };
+    (retained.is_finite() && retained >= 0.0 && retained <= excess).then_some(retained)
+}
+
+fn direct_infiltration_requires_excess_authority(
+    total_infiltration: f64,
+    supply_mass: f64,
+    masses: impl IntoIterator<Item = f64>,
+) -> Option<bool> {
+    if !total_infiltration.is_finite()
+        || total_infiltration < 0.0
+        || !supply_mass.is_finite()
+        || supply_mass <= 0.0
+        || total_infiltration > supply_mass
+    {
+        return None;
+    }
+    let masses = masses.into_iter().collect::<Vec<_>>();
+    let mut allocated = 0.0;
+    let count = masses.len();
+    for (index, mass) in masses.into_iter().enumerate() {
+        if !mass.is_finite() || mass < 0.0 {
+            return None;
+        }
+        let infiltrated = if total_infiltration.to_bits() == supply_mass.to_bits() {
+            mass
+        } else if index + 1 == count {
+            checked_surface_liquid_sub(total_infiltration, allocated)?
+        } else {
+            checked_surface_liquid_mul(total_infiltration, mass)
+                .and_then(|numerator| checked_surface_liquid_div(numerator, supply_mass))?
+        };
+        if infiltrated < 0.0 || infiltrated > mass {
+            return Some(true);
+        }
+        allocated = checked_surface_liquid_add(allocated, infiltrated)?;
+    }
+    Some(false)
+}
+
+fn allocate_infiltration_and_excess(
+    total_infiltration: f64,
+    supply_mass: f64,
+    allocated_infiltration: f64,
+    allocated_excess: f64,
+    mass: f64,
+    is_last: bool,
+    use_excess_authority: bool,
+) -> Option<(f64, f64)> {
+    if !total_infiltration.is_finite()
+        || total_infiltration < 0.0
+        || !supply_mass.is_finite()
+        || supply_mass <= 0.0
+        || total_infiltration > supply_mass
+        || !allocated_infiltration.is_finite()
+        || allocated_infiltration < 0.0
+        || !allocated_excess.is_finite()
+        || allocated_excess < 0.0
+        || !mass.is_finite()
+        || mass < 0.0
+    {
+        return None;
+    }
+    let total_excess = checked_surface_liquid_sub(supply_mass, total_infiltration)?;
+    let (infiltrated, excess) = if total_infiltration.to_bits() == supply_mass.to_bits() {
+        (mass, 0.0)
+    } else if use_excess_authority {
+        let excess = if is_last {
+            checked_surface_liquid_sub(total_excess, allocated_excess)?
+        } else {
+            checked_surface_liquid_mul(total_excess, mass)
+                .and_then(|numerator| checked_surface_liquid_div(numerator, supply_mass))?
+        };
+        (checked_surface_liquid_sub(mass, excess)?, excess)
+    } else {
+        let infiltrated = if is_last {
+            checked_surface_liquid_sub(total_infiltration, allocated_infiltration)?
+        } else {
+            checked_surface_liquid_mul(total_infiltration, mass)
+                .and_then(|numerator| checked_surface_liquid_div(numerator, supply_mass))?
+        };
+        (infiltrated, checked_surface_liquid_sub(mass, infiltrated)?)
+    };
+    (infiltrated.is_finite()
+        && infiltrated >= 0.0
+        && infiltrated <= mass
+        && excess.is_finite()
+        && excess >= 0.0
+        && excess <= mass)
+        .then_some((infiltrated, excess))
 }
 
 #[cfg(test)]

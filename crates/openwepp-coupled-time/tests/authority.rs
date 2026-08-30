@@ -31,6 +31,24 @@ fn clock(end: u128) -> CoupledClockStateV1 {
     )
     .unwrap()
 }
+
+#[test]
+fn pristine_restart_roundtrip_preserves_absent_last_step_marker() {
+    let restart = CoupledTimeRestartV2::new(
+        d(90),
+        d(91),
+        clock(10),
+        DiagnosticReductionV1::new("pristine".into(), "1".into()).unwrap(),
+        None,
+        vec![],
+    )
+    .unwrap();
+    let bytes = restart.to_canonical_json().unwrap();
+    let restored = CoupledTimeRestartV2::from_canonical_json(&bytes, d(90), d(91), d(4)).unwrap();
+    assert_eq!(restored, restart);
+    assert_eq!(restored.to_canonical_json().unwrap(), bytes);
+}
+
 fn constraint(clock: &CoupledClockStateV1, end: u128) -> ConstraintReductionReceiptV1 {
     let value = StepConstraintV1::new(
         clock_parent(clock),
@@ -158,6 +176,243 @@ fn event_queue_orders_and_replay_is_closed() {
 }
 
 #[test]
+fn receipt_bearing_ownership_noop_advances_once_and_false_noops_reject() {
+    let mut c = clock(10);
+    let predecessor_segment = c.active_segment_id();
+    let proposal = EventProposalV1::new(
+        EventClass::OwnershipTransfer,
+        "A".into(),
+        d(110),
+        c.owners().to_vec(),
+        vec![],
+        "r0".into(),
+        vec!["A".into()],
+        vec![
+            LedgerEntryV1::new(
+                "runoff-custody".into(),
+                "kg-and-j".into(),
+                d(111),
+                d(111),
+                d(112),
+            )
+            .unwrap(),
+        ],
+    )
+    .unwrap();
+    let mut queue = EventQueueV1::new(t(0), vec![proposal]).unwrap();
+    let accepted = queue.apply_next(&mut c).unwrap().unwrap();
+    assert_eq!(accepted.ordinal(), 0);
+    assert_eq!(c.event_ordinal(), 1);
+    assert_ne!(c.active_segment_id(), predecessor_segment);
+    assert_eq!(c.accepted_event_receipts(), &[accepted]);
+    assert!(queue.apply_next(&mut c).unwrap().is_none());
+
+    let false_noop = EventProposalV1::new(
+        EventClass::OwnershipTransfer,
+        "A".into(),
+        d(113),
+        c.owners().to_vec(),
+        vec![],
+        "r0".into(),
+        vec!["A".into()],
+        vec![
+            LedgerEntryV1::new(
+                "missing-custody".into(),
+                "kg-and-j".into(),
+                Digest32::zero(),
+                Digest32::zero(),
+                d(114),
+            )
+            .unwrap(),
+        ],
+    )
+    .unwrap();
+    assert_eq!(
+        EventQueueV1::new(t(0), vec![false_noop])
+            .unwrap()
+            .apply_next(&mut c)
+            .unwrap_err(),
+        CoupledTimeError::EventCycle,
+    );
+    assert_eq!(c.event_ordinal(), 1);
+
+    let zero_lineage = EventProposalV1::new(
+        EventClass::OwnershipTransfer,
+        "A".into(),
+        d(115),
+        c.owners().to_vec(),
+        vec![],
+        "r0".into(),
+        vec!["A".into()],
+        vec![
+            LedgerEntryV1::new(
+                "zero-lineage".into(),
+                "kg-and-j".into(),
+                d(116),
+                d(116),
+                Digest32::zero(),
+            )
+            .unwrap(),
+        ],
+    )
+    .unwrap();
+    assert_eq!(
+        EventQueueV1::new(t(0), vec![zero_lineage])
+            .unwrap()
+            .apply_next(&mut c)
+            .unwrap_err(),
+        CoupledTimeError::EventCycle,
+    );
+
+    let wrong_class = EventProposalV1::new(
+        EventClass::DiagnosticMarker,
+        "A".into(),
+        d(117),
+        c.owners().to_vec(),
+        vec![],
+        "r0".into(),
+        vec!["A".into()],
+        vec![
+            LedgerEntryV1::new(
+                "wrong-class".into(),
+                "kg-and-j".into(),
+                d(118),
+                d(118),
+                d(119),
+            )
+            .unwrap(),
+        ],
+    )
+    .unwrap();
+    assert_eq!(
+        EventQueueV1::new(t(0), vec![wrong_class])
+            .unwrap()
+            .apply_next(&mut c)
+            .unwrap_err(),
+        CoupledTimeError::EventCycle,
+    );
+    assert_eq!(c.event_ordinal(), 1);
+}
+
+#[test]
+fn parent_end_event_installs_typed_boundary_without_successor_support() {
+    let mut c = clock(10);
+    let con = constraint(&c, 10);
+    let slab = CoupledSlabCandidateV1::new(
+        &c,
+        segment(&c),
+        TimeSupport::new(t(0), t(10)).unwrap(),
+        &con,
+        vec![owner("A", b"a"), owner("B", b"b")],
+        vec![LedgerEntryV1::new("water".into(), "kg".into(), d(13), d(13), d(14)).unwrap()],
+    )
+    .unwrap();
+    accept_slab(&mut c, slab).unwrap();
+    let predecessor_owner_set = complete_owner_set_digest(c.owners()).unwrap();
+    let expected_boundary = SegmentId::derive_terminal_event_boundary(
+        c.parent_transaction_id(),
+        c.parent_support(),
+        t(10),
+        0,
+        predecessor_owner_set,
+    )
+    .unwrap();
+    let event = EventProposalV1::new(
+        EventClass::OwnershipTransfer,
+        "A".into(),
+        d(15),
+        vec![owner("A", b"terminal"), owner("B", b"b")],
+        vec!["A".into()],
+        "terminal".into(),
+        vec!["B".into()],
+        vec![LedgerEntryV1::new("melt".into(), "kg".into(), d(16), d(16), d(17)).unwrap()],
+    )
+    .unwrap();
+    let receipt = EventQueueV1::new(t(10), vec![event])
+        .unwrap()
+        .apply_next(&mut c)
+        .unwrap()
+        .unwrap();
+    assert_eq!(receipt.tick(), t(10));
+    assert!(c.is_complete());
+    assert_eq!(c.active_segment_id(), expected_boundary);
+
+    let restart = CoupledTimeRestartV2::new(
+        d(18),
+        d(19),
+        c,
+        DiagnosticReductionV1::new("terminal".into(), "1".into()).unwrap(),
+        None,
+        vec![],
+    )
+    .unwrap();
+    let bytes = restart.to_canonical_json().unwrap();
+    let restored = CoupledTimeRestartV2::from_canonical_json(&bytes, d(18), d(19), d(4)).unwrap();
+    assert_eq!(restored.to_canonical_json().unwrap(), bytes);
+
+    let text = String::from_utf8(bytes).unwrap();
+    let boundary = serde_json::to_string(&expected_boundary).unwrap();
+    let malformed_boundary = serde_json::to_string(&SegmentId::from_digest(d(20))).unwrap();
+    let malformed = text.replacen(
+        &format!("\"segment_id\":{boundary}"),
+        &format!("\"segment_id\":{malformed_boundary}"),
+        1,
+    );
+    assert_ne!(malformed, text);
+    assert!(
+        CoupledTimeRestartV2::from_canonical_json(malformed.as_bytes(), d(18), d(19), d(4),)
+            .is_err()
+    );
+    let nonterminal = text.replacen(
+        "\"start_ns\":\"10\",\"end_ns\":\"10\"",
+        "\"start_ns\":\"9\",\"end_ns\":\"9\"",
+        1,
+    );
+    assert_ne!(nonterminal, text);
+    assert!(
+        CoupledTimeRestartV2::from_canonical_json(nonterminal.as_bytes(), d(18), d(19), d(4),)
+            .is_err()
+    );
+}
+
+#[test]
+fn terminal_event_boundary_identity_rejects_nonterminal_tick_and_binds_every_authority() {
+    let support = TimeSupport::new(t(0), t(10)).unwrap();
+    let parent = ParentTransactionId::from_digest(d(30));
+    let owner_set = d(31);
+    assert!(matches!(
+        SegmentId::derive_terminal_event_boundary(parent, support, t(0), 0, owner_set),
+        Err(CoupledTimeError::InvalidSupport)
+    ));
+    let canonical =
+        SegmentId::derive_terminal_event_boundary(parent, support, t(10), 0, owner_set).unwrap();
+    let changed_parent = SegmentId::derive_terminal_event_boundary(
+        ParentTransactionId::from_digest(d(32)),
+        support,
+        t(10),
+        0,
+        owner_set,
+    )
+    .unwrap();
+    let shifted_support = TimeSupport::new(t(1), t(10)).unwrap();
+    let changed_support =
+        SegmentId::derive_terminal_event_boundary(parent, shifted_support, t(10), 0, owner_set)
+            .unwrap();
+    let changed_ordinal =
+        SegmentId::derive_terminal_event_boundary(parent, support, t(10), 1, owner_set).unwrap();
+    let changed_owner =
+        SegmentId::derive_terminal_event_boundary(parent, support, t(10), 0, d(33)).unwrap();
+    for poison in [
+        changed_parent,
+        changed_support,
+        changed_ordinal,
+        changed_owner,
+    ] {
+        assert_ne!(canonical, poison);
+    }
+}
+
+#[test]
 fn event_transition_rejects_nonexistent_mutation_set_member() {
     let mut c = clock(10);
     let event = EventProposalV1::new(
@@ -251,6 +506,140 @@ fn same_tick_event_proposals_chain_against_accepted_state() {
     assert_eq!(
         reductions[0].maximum().unwrap().to_bits(),
         8.25_f64.to_bits()
+    );
+}
+
+#[test]
+fn accepted_event_receipt_validates_exact_retained_ledger_entries() {
+    let mut c = clock(10);
+    let slab_constraint = constraint(&c, 10);
+    let slab = CoupledSlabCandidateV1::new(
+        &c,
+        segment(&c),
+        TimeSupport::new(t(0), t(10)).unwrap(),
+        &slab_constraint,
+        vec![owner("A", b"a"), owner("B", b"b")],
+        vec![LedgerEntryV1::new("water".into(), "kg".into(), d(18), d(18), d(19)).unwrap()],
+    )
+    .unwrap();
+    accept_slab(&mut c, slab).unwrap();
+
+    let retained_ledger =
+        vec![LedgerEntryV1::new("handoff".into(), "kg".into(), d(20), d(20), d(21)).unwrap()];
+    let event = EventProposalV1::new(
+        EventClass::OwnershipTransfer,
+        "A".into(),
+        d(22),
+        vec![owner("A", b"accepted"), owner("B", b"b")],
+        vec!["A".into()],
+        "accepted".into(),
+        vec!["B".into()],
+        retained_ledger.clone(),
+    )
+    .unwrap();
+    let accepted = EventQueueV1::new(t(10), vec![event])
+        .unwrap()
+        .apply_next(&mut c)
+        .unwrap()
+        .unwrap();
+
+    accepted.validate_ledger_entries(&retained_ledger).unwrap();
+    let substituted =
+        vec![LedgerEntryV1::new("handoff".into(), "kg".into(), d(20), d(20), d(23)).unwrap()];
+    assert_eq!(
+        accepted.validate_ledger_entries(&substituted),
+        Err(CoupledTimeError::EventTransition),
+    );
+    assert_eq!(
+        accepted.validate_ledger_entries(&[]),
+        Err(CoupledTimeError::LedgerFailure),
+    );
+    let extra = vec![
+        LedgerEntryV1::new("handoff".into(), "kg".into(), d(20), d(20), d(21)).unwrap(),
+        LedgerEntryV1::new("runoff".into(), "kg".into(), d(24), d(24), d(25)).unwrap(),
+    ];
+    assert_eq!(
+        accepted.validate_ledger_entries(&extra),
+        Err(CoupledTimeError::EventTransition),
+    );
+    let reordered = vec![extra[1].clone(), extra[0].clone()];
+    assert_eq!(
+        accepted.validate_ledger_entries(&reordered),
+        Err(CoupledTimeError::LedgerFailure),
+    );
+}
+
+#[test]
+fn same_tick_accepted_event_order_is_ordinal_not_context_digest_order() {
+    let mut c = clock(10);
+    let slab_constraint = constraint(&c, 10);
+    let slab = CoupledSlabCandidateV1::new(
+        &c,
+        segment(&c),
+        TimeSupport::new(t(0), t(10)).unwrap(),
+        &slab_constraint,
+        vec![owner("A", b"a"), owner("B", b"b")],
+        vec![LedgerEntryV1::new("water".into(), "kg".into(), d(70), d(70), d(71)).unwrap()],
+    )
+    .unwrap();
+    accept_slab(&mut c, slab).unwrap();
+
+    for (context, state, ledger) in [
+        (d(200), b"first".as_slice(), d(72)),
+        (d(100), b"second".as_slice(), d(73)),
+    ] {
+        let event = EventProposalV1::new(
+            EventClass::OwnershipTransfer,
+            "A".into(),
+            context,
+            vec![owner("A", state), owner("B", b"b")],
+            vec!["A".into()],
+            "same-tick".into(),
+            vec!["B".into()],
+            vec![LedgerEntryV1::new("handoff".into(), "kg".into(), ledger, ledger, d(74)).unwrap()],
+        )
+        .unwrap();
+        EventQueueV1::new(t(10), vec![event])
+            .unwrap()
+            .apply_next(&mut c)
+            .unwrap()
+            .unwrap();
+    }
+    assert_eq!(
+        c.accepted_event_receipts()[0].event_context_digest(),
+        d(200)
+    );
+    assert_eq!(
+        c.accepted_event_receipts()[1].event_context_digest(),
+        d(100)
+    );
+
+    let restart = CoupledTimeRestartV2::new(
+        d(75),
+        d(76),
+        c,
+        DiagnosticReductionV1::new("same-tick".into(), "1".into()).unwrap(),
+        None,
+        vec![],
+    )
+    .unwrap();
+    let bytes = restart.to_canonical_json().unwrap();
+    let restored = CoupledTimeRestartV2::from_canonical_json(&bytes, d(75), d(76), d(4)).unwrap();
+    assert_eq!(restored.to_canonical_json().unwrap(), bytes);
+
+    let mut reordered: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    reordered["accepted_event_receipts"]
+        .as_array_mut()
+        .unwrap()
+        .swap(0, 1);
+    assert!(
+        CoupledTimeRestartV2::from_canonical_json(
+            &serde_json::to_vec(&reordered).unwrap(),
+            d(75),
+            d(76),
+            d(4),
+        )
+        .is_err()
     );
 }
 

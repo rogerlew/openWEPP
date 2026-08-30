@@ -7,6 +7,10 @@ rust-version.workspace = true
 repository.workspace = true
 publish = false
 
+[features]
+default = []
+test-fixture-authority = ["openwepp-persisted-restart-v1/fixtures"]
+
 [lints]
 workspace = true
 
@@ -14,6 +18,10 @@ workspace = true
 openwepp-hillslope-output = { path = "../openwepp-hillslope-output", version = "0.1.0" }
 openwepp-watershed-output = { path = "../openwepp-watershed-output", version = "0.1.0" }
 openwepp-hillslope-orchestrator = { path = "../openwepp-hillslope-orchestrator", version = "0.1.0" }
+openwepp-persisted-restart-v1 = { path = "../openwepp-persisted-restart-v1", version = "0.1.0" }
+openwepp-coupled-time = { path = "../openwepp-coupled-time", version = "0.1.0" }
+openwepp-land-surface-energy = { path = "../openwepp-land-surface-energy", version = "0.1.0" }
+openwepp-vegetation = { path = "../openwepp-vegetation", version = "0.1.0" }
 openwepp-input-contract = { path = "../openwepp-input-contract", version = "0.1.0" }
 openwepp-kernel-contract = { path = "../openwepp-kernel-contract", version = "0.1.0" }
 openwepp-legacy-bridge = { path = "../openwepp-legacy-bridge", version = "0.1.0" }
@@ -24,6 +32,7 @@ openwepp-topology = { path = "../openwepp-topology", version = "0.1.0" }
 openwepp-watershed-orchestrator = { path = "../openwepp-watershed-orchestrator", version = "0.1.0" }
 openwepp-unit-boundary = { path = "../openwepp-unit-boundary", version = "0.1.0" }
 arrow-array = "54.3.1"
+flate2 = "1.1.0"
 parquet = { version = "54.3.1", default-features = false, features = ["arrow", "snap"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -53,3 +62,4 @@ path = "src/bin/openwepp-snowbench.rs"
 
 [dev-dependencies]
 arrow-schema = "54.3.1"
+openwepp-persisted-restart-v1 = { path = "../openwepp-persisted-restart-v1", version = "0.1.0", features = ["fixtures"] }

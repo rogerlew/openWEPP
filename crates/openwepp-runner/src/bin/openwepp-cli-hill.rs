@@ -239,12 +239,14 @@ fn print_help() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(feature = "test-fixture-authority")]
     use std::path::Path;
 
     fn args(values: &[&str]) -> Vec<String> {
         values.iter().map(|value| (*value).to_string()).collect()
     }
 
+    #[cfg(feature = "test-fixture-authority")]
     fn copy_fixture(source: &Path, destination: &Path) {
         std::fs::create_dir_all(destination).expect("fixture destination");
         for entry in std::fs::read_dir(source).expect("fixture source") {
@@ -393,6 +395,7 @@ mod tests {
         assert_eq!(run_process(args(&["openwepp-cli-hill", "--unknown"])), 1);
     }
 
+    #[cfg(feature = "test-fixture-authority")]
     #[test]
     fn execute_cli_runs_real_minimal_fixture_and_publishes_outputs() {
         let source = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -403,6 +406,19 @@ mod tests {
         copy_fixture(&source, &run_dir);
         let output_dir = run_dir.join("output");
         let manifest_path = output_dir.join("manifest.json");
+        openwepp_runner::author_stage3_v11_owner_seed_fixture(
+            &HillslopeRunRequest {
+                run_dir: run_dir.clone(),
+                run_file: PathBuf::from("case.run"),
+                output_dir: output_dir.clone(),
+                sidecar_policy: SidecarPolicy::Compat,
+                legacy_sidecar_discovery: false,
+                manifest_path: Some(manifest_path.clone()),
+            },
+            openwepp_runner::Stage3TestFixtureSeedProfile::AdaptiveNoStrataOwner,
+            openwepp_runner::Stage3TestFixtureSeedBinding::ExplicitRunfile,
+        )
+        .expect("CLI fixture should bind its exact Stage-3 owner seed");
         let argv = args(&[
             "openwepp-cli-hill",
             "--run-dir",

@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use openwepp_runner::{CoeMeltModel, CoeMeltRequest, run_coe_melt_snowbench};
 
@@ -36,50 +36,22 @@ fn snowdensity10_3_1a_contract_and_package_bind_daily_cancov() {
 }
 
 #[test]
-fn snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar() {
+fn snowdensity10_3_1a_historical_coe_replay_is_rejected_by_stage3_cutover() {
     let output_dir = PathBuf::from("target/snowdensity10_3_1a_contract/css_lab");
     let _ = fs::remove_dir_all(&output_dir);
 
-    let report = run_coe_melt_snowbench(&CoeMeltRequest {
+    let error = run_coe_melt_snowbench(&CoeMeltRequest {
         run_dir: PathBuf::from("tests/fixtures/snotel_observed/snotel_css_lab_ca"),
         run_file: None,
-        output_dir: output_dir.clone(),
+        output_dir,
         model: CoeMeltModel::LegacyCoe,
     })
-    .expect("CoE melt replay should consume direct-runtime canopy series");
-
-    assert_eq!(
-        report.canopy_source,
-        "direct_production_day_input.growth_state_for_publication.cancov"
-    );
-    assert_eq!(report.canopy_series_summary.day_count, report.day_count);
-    assert_close(
-        report.constants.canopy_cover_fraction,
-        report.canopy_series_summary.mean,
-        1.0e-12,
-    );
+    .expect_err("historical CoE replay must not bypass the Stage3 V11 owner");
+    let message = error.to_string();
     assert!(
-        Path::new(&report.canopy_series_path).is_file(),
-        "canopy series sidecar should exist"
-    );
-
-    let canopy_series = read(&report.canopy_series_path);
-    assert!(canopy_series.starts_with("date,day_index,canopy_cover_fraction,source\n"));
-    assert_eq!(
-        canopy_series
-            .lines()
-            .filter(|line| !line.trim().is_empty())
-            .count()
-            - 1,
-        report.day_count
-    );
-
-    let coe_boundary = read(&output_dir.join("coe_melt_snow.csv").display().to_string());
-    assert!(
-        coe_boundary.starts_with(
-            "date,snow_water_before_m,snow_input_m,rain_input_m,rain_retained_m,rain_released_m,liquid_holding_capacity_m,liquid_water_retained_m,liquid_water_released_m,snow_water_m,snow_depth_m,snow_density_kg_m3,raw_melt_m,gross_positive_generated_melt_m,redistributed_melt_m,routed_melt_m,snowpack_swe_loss_m,sublimation_m,snowpack_swe_balance_residual_m,routed_state_loss_residual_m,state_loss_available_storage_margin_m,snow_albedo,source\n"
-        ),
-        "CoE boundary CSV schema should include conservation and liquid-capacity operands"
+        message.contains("snow.adaptive_stage3_legacy_sublimation_entry")
+            && message.contains("outside [Some(0.0), Some(0.0)]"),
+        "expected the typed Stage3 legacy-entry rejection, got {message}"
     );
 }
 
@@ -128,13 +100,5 @@ fn assert_not_contains(text: &str, marker: &str, path: &str) {
     assert!(
         !text.contains(marker),
         "expected {path} not to contain marker: {marker}"
-    );
-}
-
-fn assert_close(actual: f64, expected: f64, tolerance: f64) {
-    let delta = (actual - expected).abs();
-    assert!(
-        delta <= tolerance,
-        "expected {actual} ~= {expected} within {tolerance}, delta={delta}"
     );
 }

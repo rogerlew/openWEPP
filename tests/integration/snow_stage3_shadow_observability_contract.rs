@@ -11,6 +11,8 @@ const EVALUATION: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/s
 const ERRORS: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/02_guard_errors.rs";
 const RUNNER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs";
 const RUNNER_EVALUATION: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00h_snow_stage3_evaluation_trace.rs";
+const RUNNER_CUTOVER_GUARD: &str =
+    "crates/openwepp-runner/src/hillslope/tests03/stage3_evaluation_publication_parity.rs";
 const PUBLICATION: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/02_publication_and_manifest_helpers.rs";
 const BUILDERS: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";
 
@@ -229,11 +231,20 @@ fn real_trace_consumer_has_enabled_only_v5_and_all_audit_families() {
         "stage3_evaluation_hourly_energy_closure_residual_j_m2",
         "stage3_evaluation_requested_seconds",
         "stage3_evaluation_evaluated_seconds",
-        "schema_v5_consumer_reconstructs_shadow_operands_and_rejects_production_aliases",
-        "full_solver_rows_reconstruct_all_v5_operands_and_reject_adjacent_aliases",
     ] {
         assert!(runner.contains(required), "{RUNNER} missing {required}");
     }
+    assert!(
+        runner.contains("retired_day_oriented_stage3_entry_fails_closed"),
+        "retired day-oriented evaluation must remain fail-closed at the runner trace boundary"
+    );
+    let cutover_guard = read(RUNNER_CUTOVER_GUARD);
+    assert!(
+        cutover_guard.contains("stage3_v11_publication_uses_only_the_atomic_support_stream")
+            && cutover_guard.contains("build_stage3_v11_support_inputs")
+            && cutover_guard.contains("stream_sink.observe_row(row)"),
+        "current runner guard must bind publication to the sole atomic V11 support stream"
+    );
     assert!(!runner.contains("complete_carrier_shadow: bool"));
 }
 

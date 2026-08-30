@@ -15,7 +15,8 @@ fn contracts_admit_only_event_local_terminal_snow_numerics() {
     let energy = read(ENERGY);
     let freeze = read(FREEZE);
     for required in [
-        "contract_version: 18",
+        "contract_version: 26",
+        "Version 18 defines the persistent Stage 3 snow--soil conductive boundary",
         "INV-SNOWENERGY-034",
         "OBL-SNOWENERGY-P-008",
         "OBL-SNOWENERGY-C-015",
@@ -30,7 +31,8 @@ fn contracts_admit_only_event_local_terminal_snow_numerics() {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
     for required in [
-        "contract_version: 136",
+        "contract_version: 140",
+        "| `2026-08-07` | `135` | `Codex` |",
         "INV-SNOWFREEZE-101",
         "OBL-SNOWFREEZE-P-073",
         "OBL-SNOWFREEZE-C-015",
@@ -59,11 +61,23 @@ fn terminal_endpoint_identity_includes_deposition_and_refreeze() {
 #[test]
 fn package_and_index_preserve_receiving_surface_and_production_boundaries() {
     let package = read(PACKAGE);
+    let energy = read(ENERGY);
+    let freeze = read(FREEZE);
     let index = read(INDEX);
     assert!(package.contains("No land-surface, soil, frost, infiltration, runoff"));
     assert!(package.contains("No assignment of terminal unallocated energy"));
     assert!(package.contains("No physical seasonal efficacy"));
-    assert!(index.contains("v18 admits OFE/lane snow--soil boundary custody"));
-    assert!(index.contains("preserves v17 precipitation custody, v16 convergence"));
-    assert!(index.contains("INV-101 remains evaluation-only"));
+    assert!(
+        index.contains("v26 retains bounded vapor/phase custody, the exact 60-second fallback")
+    );
+    assert!(
+        index.contains("v140 owner amendment selects an exact 60-second adaptive Stage-3 floor")
+    );
+    assert!(
+        energy.contains("Version 18 defines the persistent Stage 3 snow--soil conductive boundary")
+    );
+    assert!(
+        freeze.contains("Version 140 supersedes the active mechanics of `INV-SNOWFREEZE-101/102`")
+    );
+    assert!(freeze.contains("The old receiver evidence remains\nhistorical evidence"));
 }

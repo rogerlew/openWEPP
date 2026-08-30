@@ -12,9 +12,9 @@ const DIRECT_PUBLICATION_BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00c_day_input_builder_impl.rs"
 );
-const DIRECT_PUBLICATION_SNOW_FROST_IMPL: &str = concat!(
+const STAGE3_CANOPY_AUTHORITY: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
-    "00a_snow_frost_authority_impl.rs"
+    "00c_stage3_canopy_authority.rs"
 );
 const HOUR_COUNT: usize = 24;
 const TOL: f64 = 1.0e-12;
@@ -266,25 +266,31 @@ fn snowdensity07_runtime_opt_in_is_superseded_by_10_3_15_default_activation() {
     let builder = format!(
         "{}\n{}",
         read(DIRECT_PUBLICATION_BUILDER),
-        read(DIRECT_PUBLICATION_SNOW_FROST_IMPL)
+        read(STAGE3_CANOPY_AUTHORITY)
     );
 
-    assert!(
-        builder.contains("SNOWDENSITY09_DENSITY_MODEL_ENV")
-            && builder.contains("Err(std::env::VarError::NotPresent)")
-            && builder.contains("SnowDensityModel::PhysicsBulkDensityCompactionV1")
-            && builder.contains("\"legacy_wepp\" => Ok"),
-        "SNOWDENSITY-10.3.15 must make physics_bulk_density_compaction_v1 the absent-selector default while retaining legacy rollback"
-    );
-    assert!(
-        builder.contains("snow_density_model: self.snow_density_model")
-            && builder.contains("SnowDensityModel::PhysicsBulkDensityCompactionV1"),
-        "surface-driven publication path must preserve selected density handoff"
-    );
-    assert!(
-        builder.contains("SNOWDENSITY1037_MELT_MODEL_ENV")
-            && builder.contains("SnowMeltModel::LegacyCoe")
-            && builder.contains("SnowMeltModel::CoeLiquidHoldingCapacityV1"),
-        "historical melt diagnostic hook and active default/rollback models must remain visible"
-    );
+    for marker in [
+        "reject_retired_stage3_snow_selector_envs",
+        "SNOWDENSITY09_DENSITY_MODEL_ENV",
+        "retired snow selector",
+        "adaptive compositional Stage-3 owner has one typed production configuration",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
+    ] {
+        assert!(
+            builder.contains(marker),
+            "missing Stage-3 cutover marker: {marker}"
+        );
+    }
+    for retired_branch in [
+        "\"legacy_wepp\" => Ok",
+        "SnowMeltModel::LegacyCoe",
+        "SnowMeltModel::CoeLiquidHoldingCapacityV1",
+    ] {
+        assert!(
+            !builder.contains(retired_branch),
+            "retired selector branch re-entered production: {retired_branch}"
+        );
+    }
 }

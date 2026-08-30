@@ -13,7 +13,8 @@ fn read(path: &str) -> String {
 fn v134_admits_exactly_one_mechanics_only_persistent_operator() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 136",
+        "contract_version: 140",
+        "| `2026-08-07` | `134` | `Codex` |",
         "INV-SNOWFREEZE-100",
         "OBL-SNOWFREEZE-P-072",
         "OBL-SNOWFREEZE-C-014",
@@ -29,7 +30,8 @@ fn v134_admits_exactly_one_mechanics_only_persistent_operator() {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
     assert!(
-        read(INDEX).contains("v136 admits a separate default-off terminal receiver chronology")
+        read(INDEX)
+            .contains("v140 owner amendment selects an exact 60-second adaptive Stage-3 floor")
     );
     assert!(read(PACKAGE).contains("Wind\nexposure"));
 }

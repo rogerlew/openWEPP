@@ -716,8 +716,10 @@ fn rewrite_hillslope_runfile_inputs(
     for key in ["soil", "management", "slope", "climate"] {
         rewrite_required_input_path(inputs, source_run_file, key)?;
     }
-    if inputs.contains_key("pmetpara") {
-        rewrite_optional_input_path(inputs, source_run_file, "pmetpara")?;
+    for key in ["pmetpara", "snow_stage3_v11_owner_seed"] {
+        if inputs.contains_key(key) {
+            rewrite_optional_input_path(inputs, source_run_file, key)?;
+        }
     }
     Ok(())
 }

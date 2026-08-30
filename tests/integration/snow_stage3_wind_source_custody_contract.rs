@@ -15,7 +15,8 @@ fn v11_v134_separate_source_adjusted_and_virtual_wind() {
     let snow = read(SNOW);
 
     for required in [
-        "contract_version: 18",
+        "contract_version: 26",
+        "Version 18 defines the persistent Stage 3 snow--soil conductive boundary",
         "INV-SNOWENERGY-033",
         "`z_u,source`",
         "nominal `10 m`",
@@ -30,7 +31,8 @@ fn v11_v134_separate_source_adjusted_and_virtual_wind() {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
     for required in [
-        "contract_version: 136",
+        "contract_version: 140",
+        "| `2026-08-07` | `132` | `Codex` |",
         "INV-SNOWFREEZE-099",
         "`fwv_m_s` is local and cannot feed snow",
         "never measurement height",

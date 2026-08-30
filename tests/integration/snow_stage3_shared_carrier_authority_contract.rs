@@ -129,7 +129,7 @@ fn canonical_contracts_bind_child_2c_authority_without_activation() {
         "R_E = snow_error / epsilon_M",
         "base-10 strings representing unsigned",
         "LseSupportAdmissibilityReceiptV1",
-        "dt >= 600000000 ns",
+        "dt >= 60000000000 ns",
         "One shared canopy-air node",
         "SNOWENERGY-E-WIND-001",
         "SNOWENERGY-E-REGIME-001",
@@ -151,15 +151,15 @@ fn canonical_contracts_bind_child_2c_authority_without_activation() {
 }
 
 #[test]
-fn snow_energy_v18_physical_custody_is_approved_and_preserves_v17_precipitation() {
+fn current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation() {
     let contract = read("docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md");
     let registry = read("docs/specifications/science-contracts/index.md");
 
     for required in [
         "status: approved",
         "maturity: active",
-        "contract_version: 18",
-        "last_reviewed: 2026-08-24",
+        "contract_version: 26",
+        "last_reviewed: 2026-08-29",
         "INV-SNOWENERGY-042",
         "INV-SNOWENERGY-043",
         "INV-SNOWENERGY-044",
@@ -205,7 +205,7 @@ fn snow_energy_v18_physical_custody_is_approved_and_preserves_v17_precipitation(
     assert!(registry.contains(
         "| `SC-SNOWENERGY-001` | Snow-Surface Energy and Sub-Canopy Longwave Contract | `approved` | `active` |"
     ));
-    assert!(registry.contains("v18 admits OFE/lane snow--soil boundary custody"));
+    assert!(registry.contains("v26 retains bounded vapor/phase custody"));
     assert!(!registry.contains("v14 binds the default-off shared V11/Stage 3 carrier"));
     assert_eq!(contract.matches("| `INV-SNOWENERGY-041` |").count(), 1);
     assert_eq!(contract.matches("| `INV-SNOWENERGY-042` |").count(), 2);
@@ -227,7 +227,7 @@ fn snow_energy_v18_physical_custody_is_approved_and_preserves_v17_precipitation(
     let lse_contract =
         read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
     for required in [
-        "contract_version: 8",
+        "contract_version: 12",
         "INV-LANDSURFACEENERGY-124",
         "INV-LANDSURFACEENERGY-125",
         "INV-LANDSURFACEENERGY-126",
@@ -251,11 +251,11 @@ fn snow_energy_v18_physical_custody_is_approved_and_preserves_v17_precipitation(
         "Stage3PrecipitationPhaseParcelSetV1",
         "validate_precipitation_phase_parcel_set",
         "precipitation_advected_heat_j_m2_tile_ground",
-        "SNOWENERGY-E-PRECIP-001",
+        "DirectSnowStage3V11AttachmentError::Precipitation",
         "SnowSoilHeatReceiptV1",
         "validate_snow_soil_heat_receipt",
         "snow_soil_heat_w_m2_ofe_ground",
-        "SNOWENERGY-E-SOIL-HEAT-001",
+        "DirectSnowStage3V11AttachmentError::SnowSoilHeat",
     ] {
         assert!(
             attachment.contains(required),
@@ -369,7 +369,10 @@ fn independent_reference_model_reconstructs_carrier_boundary_and_ledgers() {
                 approx(&result[key], &case["expected"][key], &format!("{id} {key}"));
             }
             assert_eq!(result["exposure_receipt_id"], "exposure-v1");
-            assert_eq!(result["common_minimum_support_ns"], "600000000");
+            assert_eq!(
+                result["common_minimum_support_ns"], "600000000",
+                "superseded v17 reference vector retains its historical authority"
+            );
         } else if case["id"] == "independent_snow_liquid_vapor_energy_time_reconstruction" {
             for key in [
                 "snow_ice_end_kg_m2",

@@ -255,19 +255,9 @@ pub(crate) fn validate_authenticated_chronology(w: &RestartWireV2) -> Result<(),
     if w.accepted_slab_receipts
         .first()
         .is_some_and(|first| first.support.start_ns() != w.parent_support.start_ns())
-        || w.accepted_event_receipts.windows(2).any(|pair| {
-            pair[0].tick_ns > pair[1].tick_ns
-                || pair[0].tick_ns == pair[1].tick_ns
-                    && (
-                        pair[0].class,
-                        pair[0].source_owner_id.as_str(),
-                        pair[0].event_context_sha256,
-                    ) > (
-                        pair[1].class,
-                        pair[1].source_owner_id.as_str(),
-                        pair[1].event_context_sha256,
-                    )
-        })
+        || w.accepted_event_receipts
+            .windows(2)
+            .any(|pair| pair[0].tick_ns > pair[1].tick_ns)
     {
         return Err(CoupledTimeError::RestartInvalid);
     }

@@ -32,6 +32,12 @@ impl LedgerEntryV1 {
             operand_lineage_digest: lineage,
         })
     }
+
+    pub(crate) fn is_nonzero_custody_authority(&self) -> bool {
+        self.debit_digest != Digest32::zero()
+            && self.credit_digest != Digest32::zero()
+            && self.operand_lineage_digest != Digest32::zero()
+    }
 }
 
 pub(crate) fn owner_set_digest(owners: &[OwnerState]) -> Result<Digest32, CoupledTimeError> {

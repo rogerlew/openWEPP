@@ -80,7 +80,7 @@ fn consume_receipt(consumed: bool, fingerprint_matches: bool) -> Result<bool, &'
 }
 
 #[test]
-fn terminal_receiver_is_fresh_default_off_authority() {
+fn terminal_receiver_history_is_retained_but_superseded_by_adaptive_v140() {
     let energy = read(ENERGY);
     let freeze = read(FREEZE);
     for required in [
@@ -95,6 +95,8 @@ fn terminal_receiver_is_fresh_default_off_authority() {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
     for required in [
+        "Version 140 supersedes the active mechanics of `INV-SNOWFREEZE-101/102`",
+        "The old receiver evidence remains historical evidence",
         "INV-SNOWFREEZE-102",
         "preserves `INV-SNOWFREEZE-101` as evaluation-only",
         "earliest localized exhaustion",
@@ -145,9 +147,9 @@ fn all_owner_failure_rolls_back_and_index_records_lifecycle() {
         assert!(txn.contains(required), "{TXN} missing {required}");
     }
     for required in [
-        "v136 admits a separate default-off terminal receiver chronology",
-        "v18 admits OFE/lane snow--soil boundary custody and preserves v17 precipitation custody, v16 convergence, and restart holds",
-        "v29 preserves exact V9 generation-host provenance",
+        "v140 owner amendment selects an exact 60-second adaptive Stage-3 floor",
+        "v26 retains bounded vapor/phase custody, the exact 60-second fallback",
+        "v30 retains V9 generation-host/provider-equivalence",
     ] {
         assert!(index.contains(required), "{INDEX} missing {required}");
     }

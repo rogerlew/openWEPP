@@ -14,7 +14,7 @@ use crate::{
     MODEL_DEFINITION_SHA256, MODEL_VERSION, Sha256Digest,
 };
 
-pub const MINIMUM_SUPPORT_NS: u128 = 600_000_000;
+pub const MINIMUM_SUPPORT_NS: u128 = 60_000_000_000;
 const DOMAIN: &[u8] = b"OPENWEPP_LSE_SUPPORT_ADMISSION_V1\0";
 const TOLERANCE_POLICY: &str = "energy_absolute=1e-6;energy_relative=1e-10";
 const NUMERICAL_POLICY: &str = "iterations=50;backtracking=0..20;strict-decrease";
@@ -215,6 +215,21 @@ impl LseSupportAdmissibilityReceiptV1 {
 mod tests {
     use super::*;
 
+    fn authority_configuration_and_state()
+    -> (LandSurfaceEnergyConfiguration, LandSurfaceEnergyState) {
+        let vectors: serde_json::Value = serde_json::from_str(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json"
+        )))
+        .expect("frozen LSE authority vectors");
+        let configuration =
+            serde_json::from_value(vectors["strict_schema_instances"]["configuration"].clone())
+                .expect("authority configuration");
+        let state = serde_json::from_value(vectors["strict_schema_instances"]["state"].clone())
+            .expect("authority state");
+        (configuration, state)
+    }
+
     #[test]
     fn decimal_and_hex_domains_are_closed() {
         assert!(valid_decimal("0", true));
@@ -246,5 +261,45 @@ mod tests {
             canonical_digest(&forged).expect("forged digest"),
             baseline.receipt_sha256
         );
+    }
+
+    #[test]
+    fn exact_sixty_second_support_floor_rejects_one_tick_below_and_admits_stable_larger_support() {
+        let (configuration, state) = authority_configuration_and_state();
+        let soil = Sha256Digest::try_new("a".repeat(64)).expect("soil digest");
+        let admit = |duration_ns| {
+            LseSupportAdmissibilityReceiptV1::admit(
+                &configuration,
+                &state,
+                "1".repeat(64),
+                "2".repeat(64),
+                "3".repeat(64),
+                0,
+                17_u128,
+                17_u128 + duration_ns,
+                ((duration_ns as f64) / 1_000_000_000.0).to_bits(),
+                soil.clone(),
+            )
+        };
+
+        assert_eq!(
+            admit(59_999_999_999),
+            Err(LandSurfaceEnergyError::SupportBelowMinimum {
+                requested_ns: 59_999_999_999,
+                minimum_ns: 60_000_000_000,
+            })
+        );
+        let exact = admit(60_000_000_000).expect("exact 60-second support");
+        assert_eq!(exact.requested_support_ns, "60000000000");
+        assert_eq!(exact.minimum_support_ns, "60000000000");
+        exact
+            .validate(&configuration, &state, &soil)
+            .expect("exact-floor receipt replay");
+
+        let ordinary = admit(120_000_000_000).expect("ordinary larger support");
+        ordinary
+            .validate(&configuration, &state, &soil)
+            .expect("larger-support receipt replay");
+        assert_ne!(ordinary.receipt_sha256, exact.receipt_sha256);
     }
 }

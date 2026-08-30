@@ -39,26 +39,6 @@ pub(crate) fn trace_enabled() -> bool {
     trace_enabled_from_value(std::env::var(ACTIVE_TRACE_ENV).ok().as_deref())
 }
 
-pub(crate) fn validate_trace_selector_env() -> Result<(), HillslopeCliError> {
-    let mut state = ActiveTraceSelectorState::default();
-    if env_enabled() {
-        state = state.with_active();
-    }
-    if trace_enabled() {
-        state = state.with_trace();
-    }
-    if std::env::var_os(ACTIVE_TRACE_DETAIL_ENV).is_some() {
-        state = state.with_trace_detail();
-    }
-    if step_trace_enabled() {
-        state = state.with_step_trace();
-    }
-    if std::env::var_os(ACTIVE_MAX_DT_ENV).is_some() {
-        state = state.with_max_dt();
-    }
-    validate_trace_selector_combination(state)
-}
-
 #[derive(Debug, Default, Clone, Copy)]
 struct ActiveTraceSelectorState(u8);
 
@@ -280,18 +260,6 @@ fn max_dt_s_from_value(value: Option<&str>) -> Result<f64, HillslopeCliError> {
         });
     }
     Ok(max_dt_s)
-}
-
-/// ADR-0037 abandonment removal: the former implicit selector is rejected
-/// whenever present so stale operator environments cannot silently proceed.
-pub(crate) fn reject_abandoned_implicit_selector_env() -> Result<(), HillslopeCliError> {
-    if std::env::var_os("OPENWEPP_LANED_ACTIVE_IMPLICIT").is_some() {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "OPENWEPP_LANED_ACTIVE_IMPLICIT",
-            detail: "OPENWEPP_LANED_ACTIVE_IMPLICIT was removed by ADR-0037: hybrid implicit-explicit stepping is abandoned and archived on branch abandoned/hybrid-implicit-stepping; unset this variable to run the active plain router".to_string(),
-        });
-    }
-    Ok(())
 }
 
 #[cfg(test)]

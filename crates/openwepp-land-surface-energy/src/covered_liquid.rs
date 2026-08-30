@@ -5,6 +5,16 @@ use serde::Serialize;
 use crate::physics::{REFERENCE_TEMPERATURE_K, WATER_HEAT_CAPACITY_J_KG_K};
 use crate::{CoveredOccupancyInputs, LandSurfaceEnergyError};
 
+const LIQUID_REFERENCE_NEXT_UP_BITS: u64 = 0x4071_1266_6666_6667;
+
+fn canonical_liquid_reference_temperature_k(temperature_k: f64) -> f64 {
+    if temperature_k.to_bits() == LIQUID_REFERENCE_NEXT_UP_BITS {
+        REFERENCE_TEMPERATURE_K
+    } else {
+        temperature_k
+    }
+}
+
 /// Numerical pass that produced an E04 liquid candidate.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
 pub enum CoveredLiquidPass {
@@ -103,6 +113,14 @@ pub(crate) struct CoveredLiquidPreparation {
     pub(crate) wet_fraction: f64,
 }
 
+fn drain_to_capacity(store_before_drainage: f64, capacity: f64) -> (f64, f64) {
+    if store_before_drainage > capacity {
+        (store_before_drainage - capacity, capacity)
+    } else {
+        (0.0, store_before_drainage)
+    }
+}
+
 pub(crate) fn prepare_covered_liquid(
     occupancy: &CoveredOccupancyInputs,
     incident_rain: f64,
@@ -138,8 +156,7 @@ pub(crate) fn prepare_covered_liquid(
     let throughfall = (1.0 - occupancy.stemflow_fraction) * free;
     let capacity = occupancy.liquid_capacity_kg_m2_plant * plant_area;
     let store_before_drainage = occupancy.beginning_canopy_liquid_kg_m2_tile + intercepted;
-    let initial_drainage = (store_before_drainage - capacity).max(0.0);
-    let preliminary_store = store_before_drainage - initial_drainage;
+    let (initial_drainage, preliminary_store) = drain_to_capacity(store_before_drainage, capacity);
     let wet_fraction = if capacity > 0.0 {
         (preliminary_store / capacity).powf(2.0 / 3.0)
     } else {
@@ -168,6 +185,8 @@ pub(crate) fn finalize_covered_liquid(
             "covered E04 finalization",
         ));
     }
+    let wet_surface_temperature_k =
+        canonical_liquid_reference_temperature_k(wet_surface_temperature_k);
     if wet_surface_temperature_k < REFERENCE_TEMPERATURE_K {
         return Err(LandSurfaceEnergyError::UnsupportedDomain(
             "covered_canopy_snow",
@@ -184,13 +203,9 @@ pub(crate) fn finalize_covered_liquid(
     } else {
         let condensation = -signed_vapor_amount;
         let store_with_condensation = preparation.preliminary_store + condensation;
-        let second_drainage = (store_with_condensation - preparation.capacity).max(0.0);
-        (
-            store_with_condensation - second_drainage,
-            0.0,
-            condensation,
-            second_drainage,
-        )
+        let (second_drainage, ending_store) =
+            drain_to_capacity(store_with_condensation, preparation.capacity);
+        (ending_store, 0.0, condensation, second_drainage)
     };
     let result = CoveredOccupancyLiquidLedger {
         pass,
@@ -210,4 +225,126 @@ pub(crate) fn finalize_covered_liquid(
     };
     result.validate()?;
     Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn empty_preparation() -> CoveredLiquidPreparation {
+        CoveredLiquidPreparation {
+            beginning_store: 0.0,
+            incident_rain: 0.0,
+            preliminary_store: 0.0,
+            throughfall: 0.0,
+            stemflow: 0.0,
+            initial_drainage: 0.0,
+            capacity: 0.0,
+            wet_fraction: 0.0,
+        }
+    }
+
+    #[test]
+    fn exact_first_upward_reference_neighbor_is_canonicalized() {
+        let ledger = finalize_covered_liquid(
+            empty_preparation(),
+            0.0,
+            f64::from_bits(LIQUID_REFERENCE_NEXT_UP_BITS),
+            CoveredLiquidPass::FixedAuthorizationFinal,
+        )
+        .expect("one-ULP reference representation is admitted");
+
+        assert_eq!(
+            ledger.wet_surface_temperature_k.to_bits(),
+            REFERENCE_TEMPERATURE_K.to_bits()
+        );
+        assert_eq!(ledger.wet_surface_specific_enthalpy_j_kg.to_bits(), 0);
+    }
+
+    #[test]
+    fn liquid_reference_canonicalization_has_an_exact_bit_boundary() {
+        let at_reference = finalize_covered_liquid(
+            empty_preparation(),
+            0.0,
+            REFERENCE_TEMPERATURE_K,
+            CoveredLiquidPass::FixedAuthorizationFinal,
+        )
+        .expect("exact reference is admitted");
+        assert_eq!(
+            at_reference.wet_surface_temperature_k.to_bits(),
+            REFERENCE_TEMPERATURE_K.to_bits()
+        );
+
+        let second_neighbor = f64::from_bits(LIQUID_REFERENCE_NEXT_UP_BITS + 1);
+        let above = finalize_covered_liquid(
+            empty_preparation(),
+            0.0,
+            second_neighbor,
+            CoveredLiquidPass::FixedAuthorizationFinal,
+        )
+        .expect("second neighbor remains a physical temperature");
+        assert_eq!(
+            above.wet_surface_temperature_k.to_bits(),
+            second_neighbor.to_bits()
+        );
+        assert!(above.wet_surface_specific_enthalpy_j_kg > 0.0);
+
+        let below = f64::from_bits(REFERENCE_TEMPERATURE_K.to_bits() - 1);
+        assert!(matches!(
+            finalize_covered_liquid(
+                empty_preparation(),
+                0.0,
+                below,
+                CoveredLiquidPass::FixedAuthorizationFinal,
+            ),
+            Err(LandSurfaceEnergyError::UnsupportedDomain(
+                "covered_canopy_snow"
+            ))
+        ));
+    }
+
+    #[test]
+    fn saturated_fixture_drainage_retains_exact_capacity() {
+        let capacity = f64::from_bits(0x3fd3_020c_49ba_5e37);
+        let store_before_drainage = f64::from_bits(0x3ff9_74cb_d1f7_a2af);
+
+        let subtractive_drainage = store_before_drainage - capacity;
+        let subtractive_store = store_before_drainage - subtractive_drainage;
+        assert_eq!(subtractive_store.to_bits(), capacity.to_bits() + 1);
+        assert!((subtractive_store / capacity).powf(2.0 / 3.0) > 1.0);
+
+        let (drainage, retained_store) = drain_to_capacity(store_before_drainage, capacity);
+        assert_eq!(drainage.to_bits(), subtractive_drainage.to_bits());
+        assert_eq!(retained_store.to_bits(), capacity.to_bits());
+        assert_eq!(
+            (retained_store / capacity).powf(2.0 / 3.0).to_bits(),
+            1.0_f64.to_bits()
+        );
+    }
+
+    #[test]
+    fn wet_fraction_above_one_remains_a_typed_poison() {
+        let poison = CoveredOccupancyLiquidLedger {
+            pass: CoveredLiquidPass::FixedAuthorizationFinal,
+            beginning_store_kg_m2_tile: 0.0,
+            incident_rain_kg_m2_tile: 0.0,
+            ending_store_kg_m2_tile: 0.0,
+            evaporation_kg_m2_tile: 0.0,
+            condensation_kg_m2_tile: 0.0,
+            throughfall_kg_m2_tile: 0.0,
+            stemflow_kg_m2_tile: 0.0,
+            initial_drainage_kg_m2_tile: 0.0,
+            second_drainage_kg_m2_tile: 0.0,
+            wet_fraction: f64::from_bits(1.0_f64.to_bits() + 1),
+            wet_surface_temperature_k: REFERENCE_TEMPERATURE_K,
+            wet_surface_specific_enthalpy_j_kg: 0.0,
+        };
+
+        assert!(matches!(
+            poison.validate(),
+            Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "covered occupancy liquid ledger"
+            ))
+        ));
+    }
 }

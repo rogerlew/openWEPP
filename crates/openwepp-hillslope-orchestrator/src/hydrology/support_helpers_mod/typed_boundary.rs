@@ -138,5 +138,4 @@ impl Wb11HydrologyKernel {
     pub(crate) fn diagnostic_count_to_f64(value: usize) -> f64 {
         value as f64
     }
-
 }

@@ -39,6 +39,7 @@ const STAGE3_ALLOWED_RUNTIME_FILES: &[&str] = &[
     "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/evaluation.rs",
     "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation/stage3_solver/stage3_evaluation_validation_tests/persistent_tests.rs",
     "crates/openwepp-hillslope-orchestrator/src/snow_stage3_open_boundary.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v11_covered/carrier_phase.rs",
     "crates/openwepp-hillslope-orchestrator/src/v11_covered/execution.rs",
     "crates/openwepp-hillslope-orchestrator/src/v11_covered/physical_outcome_ledger.rs",
     "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_tests.rs",
@@ -71,6 +72,13 @@ fn collect_rust_files(root: &Path, files: &mut Vec<PathBuf>) {
             files.push(path);
         }
     }
+}
+
+fn is_test_only_rust_source(relative_path: &str) -> bool {
+    relative_path.ends_with("_tests.rs")
+        || relative_path
+            .split('/')
+            .any(|component| component == "tests")
 }
 
 #[test]
@@ -178,6 +186,9 @@ fn production_runtime_sources_only_wire_stage0_flux_primitives_through_stage3_op
             .strip_prefix(repo_path(""))
             .unwrap_or(path.as_path())
             .to_string_lossy();
+        if is_test_only_rust_source(&relative_path) {
+            continue;
+        }
         for token in SURFACE_ENERGY_RUNTIME_TOKENS {
             if text.contains(token)
                 && !STAGE3_ALLOWED_RUNTIME_FILES

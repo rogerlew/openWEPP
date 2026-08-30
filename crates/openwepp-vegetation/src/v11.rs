@@ -435,177 +435,7 @@ struct LseSupportReceiptWire {
     receipt_sha256: String,
 }
 
-impl V11LseSupportReceiptEnvelope {
-    pub fn from_canonical_json(canonical_json: Vec<u8>) -> Result<Self, V11Error> {
-        let value: serde_json::Value =
-            serde_json::from_slice(&canonical_json).map_err(V11Error::Schema)?;
-        let field = |name: &'static str| -> Result<String, V11Error> {
-            value
-                .get(name)
-                .and_then(serde_json::Value::as_str)
-                .map(str::to_owned)
-                .ok_or(V11Error::LseSupportReceipt)
-        };
-        let envelope = Self {
-            parent_transaction_id: field("parent_transaction_id")?,
-            segment_id: field("segment_id")?,
-            accepted_slab_id: field("accepted_slab_id")?,
-            slab_ordinal: field("slab_ordinal")?,
-            support_start_ns: field("support_start_ns")?,
-            support_end_ns: field("support_end_ns")?,
-            requested_support_ns: field("requested_support_ns")?,
-            duration_s_bits: field("duration_s_bits")?,
-            configuration_sha256: field("configuration_sha256")?,
-            beginning_state_sha256: field("beginning_state_sha256")?,
-            beginning_soil_thermal_state_sha256: field("beginning_soil_thermal_state_sha256")?,
-            receipt_sha256: field("receipt_sha256")?,
-            canonical_bytes_sha256: format!("{:x}", Sha256::digest(&canonical_json)),
-            canonical_json,
-        };
-        envelope.validate_closed_bytes()?;
-        Ok(envelope)
-    }
-
-    fn validate_closed_bytes(&self) -> Result<(), V11Error> {
-        if format!("{:x}", Sha256::digest(&self.canonical_json)) != self.canonical_bytes_sha256
-            || !is_lower_hex(&self.receipt_sha256, 64)
-            || !is_lower_hex(&self.canonical_bytes_sha256, 64)
-            || !is_lower_hex(&self.configuration_sha256, 64)
-            || !is_lower_hex(&self.beginning_state_sha256, 64)
-            || !is_lower_hex(&self.beginning_soil_thermal_state_sha256, 64)
-        {
-            return Err(V11Error::LseSupportReceipt);
-        }
-        let wire: LseSupportReceiptWire =
-            serde_json::from_slice(&self.canonical_json).map_err(V11Error::Schema)?;
-        if serde_json::to_vec(&wire).map_err(V11Error::Schema)? != self.canonical_json
-            || wire.receipt_sha256 != self.receipt_sha256
-            || wire.model_version != "OPENWEPP_SNOW_FREE_LSE_V1"
-            || wire.model_definition_sha256
-                != "e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f"
-            || wire.tolerance_policy_sha256
-                != format!(
-                    "{:x}",
-                    Sha256::digest(b"energy_absolute=1e-6;energy_relative=1e-10")
-                )
-            || wire.numerical_policy_sha256
-                != format!(
-                    "{:x}",
-                    Sha256::digest(b"iterations=50;backtracking=0..20;strict-decrease")
-                )
-            || wire.minimum_support_ns != "600000000"
-        {
-            return Err(V11Error::LseSupportReceipt);
-        }
-        let mut blank = wire;
-        blank.receipt_sha256.clear();
-        let mut preimage = b"OPENWEPP_LSE_SUPPORT_ADMISSION_V1\0".to_vec();
-        preimage.extend(serde_json::to_vec(&blank).map_err(V11Error::Schema)?);
-        if format!("{:x}", Sha256::digest(preimage)) != self.receipt_sha256 {
-            return Err(V11Error::LseSupportReceipt);
-        }
-        let reconstructed = Self::from_json_without_recursion(&self.canonical_json)?;
-        if reconstructed != *self {
-            return Err(V11Error::LseSupportReceipt);
-        }
-        Ok(())
-    }
-
-    fn from_json_without_recursion(bytes: &[u8]) -> Result<Self, V11Error> {
-        let value: serde_json::Value = serde_json::from_slice(bytes).map_err(V11Error::Schema)?;
-        let field = |name: &'static str| -> Result<String, V11Error> {
-            value
-                .get(name)
-                .and_then(serde_json::Value::as_str)
-                .map(str::to_owned)
-                .ok_or(V11Error::LseSupportReceipt)
-        };
-        Ok(Self {
-            parent_transaction_id: field("parent_transaction_id")?,
-            segment_id: field("segment_id")?,
-            accepted_slab_id: field("accepted_slab_id")?,
-            slab_ordinal: field("slab_ordinal")?,
-            support_start_ns: field("support_start_ns")?,
-            support_end_ns: field("support_end_ns")?,
-            requested_support_ns: field("requested_support_ns")?,
-            duration_s_bits: field("duration_s_bits")?,
-            configuration_sha256: field("configuration_sha256")?,
-            beginning_state_sha256: field("beginning_state_sha256")?,
-            beginning_soil_thermal_state_sha256: field("beginning_soil_thermal_state_sha256")?,
-            receipt_sha256: field("receipt_sha256")?,
-            canonical_bytes_sha256: format!("{:x}", Sha256::digest(bytes)),
-            canonical_json: bytes.to_vec(),
-        })
-    }
-
-    pub fn validate_join(&self, slab: &AcceptedSlabReceiptV1) -> Result<(), V11Error> {
-        self.validate_closed_bytes()?;
-        let support = slab.support();
-        if self.parent_transaction_id != digest_hex(slab.parent_transaction_id().digest())
-            || self.segment_id != digest_hex(slab.segment_id().digest())
-            || self.accepted_slab_id != digest_hex(slab.slab_id().digest())
-            || self.slab_ordinal != slab.slab_ordinal().to_string()
-            || self.support_start_ns != support.start_ns().get().to_string()
-            || self.support_end_ns != support.end_ns().get().to_string()
-            || self.requested_support_ns != support.duration_ns().to_string()
-            || self.duration_s_bits != format!("{:016x}", support.duration_s_bits())
-        {
-            return Err(V11Error::LseSupportReceipt);
-        }
-        Ok(())
-    }
-
-    fn validate_beginning_owners(
-        &self,
-        owners: &BTreeMap<String, V11OwnerEnvelope>,
-    ) -> Result<(), V11Error> {
-        let lse: serde_json::Value = serde_json::from_slice(
-            &owners
-                .get("land_surface_energy")
-                .ok_or(V11Error::LseSupportReceipt)?
-                .state_bytes,
-        )
-        .map_err(V11Error::Schema)?;
-        let soil: serde_json::Value = serde_json::from_slice(
-            &owners
-                .get("soil_thermal")
-                .ok_or(V11Error::LseSupportReceipt)?
-                .state_bytes,
-        )
-        .map_err(V11Error::Schema)?;
-        if lse
-            .get("configuration_sha256")
-            .and_then(serde_json::Value::as_str)
-            != Some(self.configuration_sha256.as_str())
-            || lse.get("state_sha256").and_then(serde_json::Value::as_str)
-                != Some(self.beginning_state_sha256.as_str())
-            || soil.get("state_sha256").and_then(serde_json::Value::as_str)
-                != Some(self.beginning_soil_thermal_state_sha256.as_str())
-        {
-            return Err(V11Error::LseSupportReceipt);
-        }
-        Ok(())
-    }
-
-    fn validate_checkpoint_join(
-        &self,
-        segment: &V11AcceptedSegmentCheckpoint,
-    ) -> Result<(), V11Error> {
-        self.validate_closed_bytes()?;
-        if self.parent_transaction_id != digest_hex(segment.parent_transaction_id.digest())
-            || self.segment_id != digest_hex(segment.segment_id.digest())
-            || self.accepted_slab_id != digest_hex(segment.slab_id.digest())
-            || self.slab_ordinal != segment.slab_ordinal.to_string()
-            || self.support_start_ns != segment.support.start_ns().get().to_string()
-            || self.support_end_ns != segment.support.end_ns().get().to_string()
-            || self.requested_support_ns != segment.support.duration_ns().to_string()
-            || self.duration_s_bits != format!("{:016x}", segment.duration_s_bits)
-        {
-            return Err(V11Error::LseSupportReceipt);
-        }
-        Ok(())
-    }
-}
+include!("v11_lse_receipt_impl.rs");
 
 fn is_lower_hex(value: &str, length: usize) -> bool {
     value.len() == length
@@ -778,6 +608,7 @@ pub struct V11ParentTransaction {
     accepted_until_ns: u128,
     accepted_segments: Vec<V11AcceptedSegmentCandidate>,
     accepted_segment_checkpoints: Vec<V11AcceptedSegmentCheckpoint>,
+    accepted_zero_duration_owner_transitions: Vec<V11ZeroDurationOwnerTransitionCheckpoint>,
     cumulative_debits: BTreeMap<(String, V11ResourceKey), f64>,
     beginning_complete_owners: BTreeMap<String, V11OwnerEnvelope>,
     staged_resource_owners: BTreeMap<String, V11OwnerEnvelope>,
@@ -806,6 +637,7 @@ impl V11ParentTransaction {
             accepted_until_ns: parent_start_ns.get(),
             accepted_segments: Vec::new(),
             accepted_segment_checkpoints: Vec::new(),
+            accepted_zero_duration_owner_transitions: Vec::new(),
             cumulative_debits: BTreeMap::new(),
             beginning_complete_owners: staged_resource_owners.clone(),
             staged_resource_owners,
@@ -845,11 +677,47 @@ impl V11ParentTransaction {
         ending_owners: BTreeMap<String, V11OwnerEnvelope>,
         mutation_set: &[String],
     ) -> Result<(), V11Error> {
+        self.accept_zero_duration_owner_transition_inner(
+            configuration,
+            tick,
+            ending_owners,
+            mutation_set,
+            None,
+        )
+    }
+
+    /// Retain an exact no-op owner checkpoint whose physical transfer is
+    /// independently sealed by a nonzero custody receipt set.
+    pub fn accept_zero_duration_custody_noop(
+        &mut self,
+        configuration: &VegetationConfigurationV11,
+        tick: ModelTimeNs,
+        ending_owners: BTreeMap<String, V11OwnerEnvelope>,
+        custody_receipt_sha256: Digest32,
+    ) -> Result<(), V11Error> {
+        self.accept_zero_duration_owner_transition_inner(
+            configuration,
+            tick,
+            ending_owners,
+            &[],
+            Some(custody_receipt_sha256),
+        )
+    }
+
+    fn accept_zero_duration_owner_transition_inner(
+        &mut self,
+        configuration: &VegetationConfigurationV11,
+        tick: ModelTimeNs,
+        ending_owners: BTreeMap<String, V11OwnerEnvelope>,
+        mutation_set: &[String],
+        custody_receipt_sha256: Option<Digest32>,
+    ) -> Result<(), V11Error> {
         self.validate(configuration)?;
         validate_complete_owners(&ending_owners)?;
         if self.finalized
             || tick.get() != self.accepted_until_ns
-            || mutation_set.is_empty()
+            || mutation_set.is_empty() != custody_receipt_sha256.is_some()
+            || custody_receipt_sha256 == Some(Digest32::zero())
             || mutation_set.windows(2).any(|pair| pair[0] >= pair[1])
             || ending_owners.get("vegetation")
                 != Some(&v11_vegetation_owner_envelope(&self.staged_state)?)
@@ -869,6 +737,16 @@ impl V11ParentTransaction {
         if mutation_set != exact_mutation_set {
             return Err(V11Error::ResourceOwnerCandidate);
         }
+        self.accepted_zero_duration_owner_transitions.push(
+            V11ZeroDurationOwnerTransitionCheckpoint {
+                accepted_segment_count: u32::try_from(self.accepted_segment_checkpoints.len())
+                    .map_err(|_| V11Error::RestartCheckpoint)?,
+                tick_ns: tick.get(),
+                ending_complete_owners: ending_owners.clone(),
+                mutation_set: mutation_set.to_vec(),
+                custody_receipt_sha256,
+            },
+        );
         self.staged_resource_owners = ending_owners;
         Ok(())
     }
@@ -1054,6 +932,24 @@ pub struct V11ParentCandidate {
     pub ending_complete_owners: Vec<OwnerState>,
 }
 
+impl V11ParentCandidate {
+    /// Compare the complete sealed parent-candidate authority while ignoring
+    /// only the evaluator-owned accepted-segment payload cache. Restored
+    /// parents reconstruct every accepted segment from its checkpoint and do
+    /// not repopulate that transient cache.
+    #[must_use]
+    pub fn has_same_checkpoint_authority(&self, other: &Self) -> bool {
+        self.parent_transaction_id == other.parent_transaction_id
+            && self.beginning_state_sha256 == other.beginning_state_sha256
+            && self.ending_state == other.ending_state
+            && self.accepted_segment_checkpoints == other.accepted_segment_checkpoints
+            && self.cumulative_debits == other.cumulative_debits
+            && self.material_transfers == other.material_transfers
+            && self.beginning_complete_owners == other.beginning_complete_owners
+            && self.ending_complete_owners == other.ending_complete_owners
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct V11AcceptedSegmentCheckpoint {
@@ -1109,10 +1005,76 @@ pub struct V11ParentTransactionCheckpoint {
     #[serde(with = "u128_string")]
     pub accepted_until_ns: u128,
     pub accepted_segments: Vec<V11AcceptedSegmentCheckpoint>,
+    pub accepted_zero_duration_owner_transitions: Vec<V11ZeroDurationOwnerTransitionCheckpoint>,
     pub cumulative_debits: Vec<V11CumulativeDebit>,
     pub beginning_complete_owners: BTreeMap<String, V11OwnerEnvelope>,
     pub staged_complete_owners: BTreeMap<String, V11OwnerEnvelope>,
     pub finalized: bool,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct V11ZeroDurationOwnerTransitionCheckpoint {
+    pub accepted_segment_count: u32,
+    #[serde(with = "u128_string")]
+    pub tick_ns: u128,
+    pub ending_complete_owners: BTreeMap<String, V11OwnerEnvelope>,
+    pub mutation_set: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub custody_receipt_sha256: Option<Digest32>,
+}
+
+fn apply_checkpoint_zero_duration_owner_transitions(
+    transitions: &[V11ZeroDurationOwnerTransitionCheckpoint],
+    next_transition: &mut usize,
+    accepted_segment_count: usize,
+    tick_ns: u128,
+    staged_state: &V11CoupledOwnedState,
+    staged_owners: &mut BTreeMap<String, V11OwnerEnvelope>,
+) -> Result<(), V11Error> {
+    let accepted_segment_count =
+        u32::try_from(accepted_segment_count).map_err(|_| V11Error::RestartCheckpoint)?;
+    while let Some(transition) = transitions.get(*next_transition) {
+        if transition.accepted_segment_count > accepted_segment_count {
+            break;
+        }
+        if transition.accepted_segment_count != accepted_segment_count
+            || transition.tick_ns != tick_ns
+            || transition.mutation_set.is_empty() != transition.custody_receipt_sha256.is_some()
+            || transition.custody_receipt_sha256 == Some(Digest32::zero())
+            || transition
+                .mutation_set
+                .windows(2)
+                .any(|pair| pair[0] >= pair[1])
+        {
+            return Err(V11Error::RestartCheckpoint);
+        }
+        validate_complete_owners(&transition.ending_complete_owners)
+            .map_err(|_| V11Error::RestartCheckpoint)?;
+        if transition.ending_complete_owners.get("vegetation")
+            != Some(&v11_vegetation_owner_envelope(staged_state)?)
+        {
+            return Err(V11Error::RestartCheckpoint);
+        }
+        let exact_mutation_set = staged_owners
+            .iter()
+            .filter_map(|(owner_id, beginning)| {
+                transition
+                    .ending_complete_owners
+                    .get(owner_id)
+                    .is_some_and(|ending| ending != beginning)
+                    .then(|| owner_id.clone())
+            })
+            .collect::<Vec<_>>();
+        if transition.mutation_set != exact_mutation_set {
+            return Err(V11Error::RestartCheckpoint);
+        }
+        staged_owners.clone_from(&transition.ending_complete_owners);
+        *next_transition = next_transition
+            .checked_add(1)
+            .ok_or(V11Error::RestartCheckpoint)?;
+    }
+    Ok(())
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -1133,6 +1095,9 @@ impl V11ParentTransaction {
             staged_state: self.staged_state.clone(),
             accepted_until_ns: self.accepted_until_ns,
             accepted_segments: self.accepted_segment_checkpoints.clone(),
+            accepted_zero_duration_owner_transitions: self
+                .accepted_zero_duration_owner_transitions
+                .clone(),
             cumulative_debits: self
                 .cumulative_debits
                 .iter()
@@ -1161,9 +1126,7 @@ impl V11ParentTransaction {
         checkpoint: V11ParentTransactionCheckpoint,
         bgc_scope: Option<&V11BgcDebitScope>,
     ) -> Result<Self, V11Error> {
-        if checkpoint.schema != "OPENWEPP_C3_WOODY_V11_PARENT_CHECKPOINT_V1"
-            || checkpoint.finalized
-            || checkpoint.accepted_segments.is_empty()
+        if checkpoint.schema != "OPENWEPP_C3_WOODY_V11_PARENT_CHECKPOINT_V1" || checkpoint.finalized
         {
             return Err(V11Error::RestartCheckpoint);
         }
@@ -1178,12 +1141,31 @@ impl V11ParentTransaction {
         {
             return Err(V11Error::RestartCheckpoint);
         }
-        let mut cursor = checkpoint.accepted_segments[0].support.start_ns().get();
-        let mut predecessor_state_sha256 = checkpoint.beginning_state.state_sha256.clone();
+        // A parent may be checkpointed before its first positive-duration
+        // segment, including immediately after an authenticated zero-duration
+        // owner transition.  In that posture `accepted_until_ns` is both the
+        // parent cursor and the transition tick.  Positive-segment checkpoints
+        // continue to derive the beginning cursor from their first receipt.
+        let mut cursor = checkpoint
+            .accepted_segments
+            .first()
+            .map_or(checkpoint.accepted_until_ns, |segment| {
+                segment.support.start_ns().get()
+            });
+        let mut predecessor_state = checkpoint.beginning_state.clone();
         let mut prior_transitions = Vec::<V11SharedResourceOwnerTransition>::new();
         let mut predecessor_owners = checkpoint.beginning_complete_owners.clone();
         let mut cumulative = BTreeMap::<(String, V11ResourceKey), f64>::new();
+        let mut next_zero_duration_transition = 0_usize;
         for (index, segment) in checkpoint.accepted_segments.iter().enumerate() {
+            apply_checkpoint_zero_duration_owner_transitions(
+                &checkpoint.accepted_zero_duration_owner_transitions,
+                &mut next_zero_duration_transition,
+                index,
+                cursor,
+                &predecessor_state,
+                &mut predecessor_owners,
+            )?;
             if segment.parent_transaction_id != checkpoint.parent_transaction_id
                 || index > 0
                     && checkpoint.accepted_segments[index - 1]
@@ -1192,7 +1174,7 @@ impl V11ParentTransaction {
                         != Some(segment.slab_ordinal)
                 || segment.support.start_ns().get() != cursor
                 || segment.duration_s_bits != segment.support.duration_s_bits()
-                || segment.beginning_state_sha256 != predecessor_state_sha256
+                || segment.beginning_state_sha256 != predecessor_state.state_sha256
             {
                 return Err(V11Error::RestartCheckpoint);
             }
@@ -1252,8 +1234,16 @@ impl V11ParentTransaction {
             prior_transitions.clone_from(&segment.shared_resource_transitions);
             predecessor_owners.clone_from(&segment.ending_resource_owners);
             cursor = segment.support.end_ns().get();
-            predecessor_state_sha256.clone_from(&segment.ending_state.state_sha256);
+            predecessor_state.clone_from(&segment.ending_state);
         }
+        apply_checkpoint_zero_duration_owner_transitions(
+            &checkpoint.accepted_zero_duration_owner_transitions,
+            &mut next_zero_duration_transition,
+            checkpoint.accepted_segments.len(),
+            cursor,
+            &predecessor_state,
+            &mut predecessor_owners,
+        )?;
         let checkpoint_cumulative = checkpoint
             .cumulative_debits
             .iter()
@@ -1267,13 +1257,10 @@ impl V11ParentTransaction {
         if checkpoint_cumulative.len() != checkpoint.cumulative_debits.len()
             || cursor != checkpoint.accepted_until_ns
             || !cumulative_debits_bit_equal(&cumulative, &checkpoint_cumulative)
-            || checkpoint.accepted_segments.last().map(|s| &s.ending_state)
-                != Some(&checkpoint.staged_state)
-            || checkpoint
-                .accepted_segments
-                .last()
-                .map(|s| &s.ending_resource_owners)
-                != Some(&checkpoint.staged_complete_owners)
+            || next_zero_duration_transition
+                != checkpoint.accepted_zero_duration_owner_transitions.len()
+            || predecessor_state != checkpoint.staged_state
+            || predecessor_owners != checkpoint.staged_complete_owners
         {
             return Err(V11Error::RestartCheckpoint);
         }
@@ -1284,6 +1271,8 @@ impl V11ParentTransaction {
             accepted_until_ns: checkpoint.accepted_until_ns,
             accepted_segments: Vec::new(),
             accepted_segment_checkpoints: checkpoint.accepted_segments,
+            accepted_zero_duration_owner_transitions: checkpoint
+                .accepted_zero_duration_owner_transitions,
             cumulative_debits: checkpoint_cumulative,
             beginning_complete_owners: checkpoint.beginning_complete_owners,
             staged_resource_owners: checkpoint.staged_complete_owners,
@@ -1312,6 +1301,50 @@ fn imported_v10_view(
     let projected = V10CoupledOwnedState(physical);
     projected.validate(&config).map_err(V11Error::V10State)?;
     Ok((config, projected))
+}
+
+/// Project a validated finalized V11 parent state back onto its exact imported
+/// V10 owner representation. This is used only for the zero-duration logical
+/// parent-lineage handoff; it does not execute or modify constitutive physics.
+pub fn project_v11_runtime_to_v10(
+    configuration: &VegetationConfigurationV11,
+    state: &V11CoupledOwnedState,
+) -> Result<(VegetationConfiguration, V10CoupledOwnedState), V11Error> {
+    state.validate(configuration)?;
+    imported_v10_view(configuration, state)
+}
+
+/// Validate that `finalized` differs from the retained imported V10 owner only
+/// by the exact logical parent-lineage fields advanced by V11 finalization,
+/// then return that finalized state in its V10 representation.
+pub fn project_v11_parent_finalization_to_v10(
+    configuration: &VegetationConfigurationV11,
+    beginning: &V10CoupledOwnedState,
+    finalized: &V11CoupledOwnedState,
+) -> Result<(VegetationConfiguration, V10CoupledOwnedState), V11Error> {
+    beginning
+        .validate(&configuration.imported_v10)
+        .map_err(V11Error::V10State)?;
+    finalized.validate(configuration)?;
+    let migrated = migrate_v10_runtime_to_v11(&configuration.imported_v10, beginning)?;
+    if migrated.configuration.configuration_sha256 != configuration.configuration_sha256
+        || migrated.configuration.nominal_cadence_ns != configuration.nominal_cadence_ns
+        || migrated.configuration.imported_v10 != configuration.imported_v10
+    {
+        return Err(V11Error::MigrationIdentity);
+    }
+    let mut expected = migrated.state;
+    expected.last_parent_transaction_id = finalized.last_parent_transaction_id;
+    normalize_parent_transaction_lineage(
+        &mut expected.physical,
+        finalized.last_parent_transaction_id,
+    );
+    expected.physical.state_sha256 = expected.physical.canonical_sha256();
+    expected.state_sha256 = expected.canonical_sha256()?;
+    if expected != *finalized {
+        return Err(V11Error::ResourceOwnerCandidate);
+    }
+    imported_v10_view(configuration, finalized)
 }
 
 fn stage_imported_ending(
@@ -1605,7 +1638,7 @@ fn validate_resource_custody(
                 t.shared_resource_key.resource,
                 V11SharedResourceKind::Ammonium | V11SharedResourceKind::Nitrate
             )
-            && (t.beginning_amount - used).to_bits() != t.ending_amount.to_bits()
+            && !nonnegative_finite_values_within_one_ulp(t.beginning_amount - used, t.ending_amount)
         {
             return Err(V11Error::ResourceCustody);
         }
@@ -1628,6 +1661,14 @@ fn validate_resource_custody(
         return Err(V11Error::ResourceCustody);
     }
     Ok(())
+}
+
+fn nonnegative_finite_values_within_one_ulp(left: f64, right: f64) -> bool {
+    left.is_finite()
+        && right.is_finite()
+        && left >= 0.0
+        && right >= 0.0
+        && left.to_bits().abs_diff(right.to_bits()) <= 1
 }
 
 fn is_bgc_mineral_transition(value: &V11SharedResourceOwnerTransition) -> bool {
@@ -1846,7 +1887,7 @@ fn ordered_owner_states(
 pub enum V11ExecutionError<E> {
     #[error("VEG-E-122: V11 authority rejected segment: {0}")]
     V11(#[from] V11Error),
-    #[error("VEG-E-123: imported V10 segment execution failed")]
+    #[error("VEG-E-123: imported V10 segment execution failed: {0}")]
     Executor(E),
 }
 
@@ -1921,6 +1962,31 @@ mod tests {
         ParentAuthorityV1, ParentIntervalId, StepConstraintV1, accept_slab,
         complete_owner_set_digest, digest_bytes, reduce_constraints,
     };
+
+    #[test]
+    fn shared_inventory_regrouping_bound_is_exactly_one_ulp() {
+        let value = 1.0_f64;
+        assert!(nonnegative_finite_values_within_one_ulp(value, value));
+        assert!(nonnegative_finite_values_within_one_ulp(
+            value,
+            f64::from_bits(value.to_bits() + 1),
+        ));
+        assert!(!nonnegative_finite_values_within_one_ulp(
+            value,
+            f64::from_bits(value.to_bits() + 2),
+        ));
+        assert!(!nonnegative_finite_values_within_one_ulp(f64::NAN, value,));
+        assert!(!nonnegative_finite_values_within_one_ulp(-value, value));
+    }
+
+    #[test]
+    fn imported_executor_error_display_retains_nested_typed_cause() {
+        let error = V11ExecutionError::Executor("nested-direct-v10-cause");
+        assert_eq!(
+            error.to_string(),
+            "VEG-E-123: imported V10 segment execution failed: nested-direct-v10-cause"
+        );
+    }
 
     fn v10_fixture() -> (VegetationConfiguration, V10CoupledOwnedState) {
         let (v8_config, v8_state) = crate::v8_state::v8_test_fixture();
@@ -2118,7 +2184,7 @@ mod tests {
             ),
             requested_support_ns: support.duration_ns().to_string(),
             duration_s_bits: format!("{:016x}", support.duration_s_bits()),
-            minimum_support_ns: "600000000".into(),
+            minimum_support_ns: "60000000000".into(),
             receipt_sha256: String::new(),
         };
         let mut preimage = b"OPENWEPP_LSE_SUPPORT_ADMISSION_V1\0".to_vec();
@@ -2332,6 +2398,225 @@ mod tests {
             )
             .expect("exact snow mutation");
         assert_eq!(exact.staged_resource_owners(), &ending_owners);
+
+        let mut ordinary_empty = make_parent();
+        assert!(
+            ordinary_empty
+                .accept_zero_duration_owner_transition(
+                    &migrated.configuration,
+                    ModelTimeNs::new(0),
+                    beginning_owners.clone(),
+                    &[],
+                )
+                .is_err()
+        );
+        let mut missing_receipt = make_parent();
+        assert!(
+            missing_receipt
+                .accept_zero_duration_custody_noop(
+                    &migrated.configuration,
+                    ModelTimeNs::new(0),
+                    beginning_owners.clone(),
+                    Digest32::zero(),
+                )
+                .is_err()
+        );
+        let mut false_noop = make_parent();
+        assert!(
+            false_noop
+                .accept_zero_duration_custody_noop(
+                    &migrated.configuration,
+                    ModelTimeNs::new(0),
+                    ending_owners,
+                    Digest32::from_bytes([0x51; 32]),
+                )
+                .is_err()
+        );
+        let mut receipt_noop = make_parent();
+        receipt_noop
+            .accept_zero_duration_custody_noop(
+                &migrated.configuration,
+                ModelTimeNs::new(0),
+                beginning_owners,
+                Digest32::from_bytes([0x52; 32]),
+            )
+            .expect("receipt-bearing exact no-op");
+        let checkpoint = receipt_noop.checkpoint();
+        assert_eq!(
+            checkpoint.accepted_zero_duration_owner_transitions[0].custody_receipt_sha256,
+            Some(Digest32::from_bytes([0x52; 32])),
+        );
+        let restored = V11ParentTransaction::restore(&migrated.configuration, checkpoint.clone())
+            .expect("restore receipt-bearing no-op");
+        assert_eq!(restored.checkpoint(), checkpoint);
+        let mut omitted = checkpoint.clone();
+        omitted.accepted_zero_duration_owner_transitions[0].custody_receipt_sha256 = None;
+        assert!(V11ParentTransaction::restore(&migrated.configuration, omitted).is_err());
+        let mut substituted = checkpoint;
+        substituted.accepted_zero_duration_owner_transitions[0].custody_receipt_sha256 =
+            Some(Digest32::zero());
+        assert!(V11ParentTransaction::restore(&migrated.configuration, substituted).is_err());
+    }
+
+    #[test]
+    fn checkpoint_restores_before_first_segment_and_rejects_state_substitution() {
+        let (v10_configuration, v10_state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
+        let owners = complete_owners(&migrated.state);
+        let (parent_id, _) = accepted_receipts(&owners, &[1_800_000_000_000]);
+        let parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        let checkpoint = parent.checkpoint();
+        let restored = V11ParentTransaction::restore(&migrated.configuration, checkpoint.clone())
+            .expect("restore initial parent");
+        assert_eq!(restored.checkpoint(), checkpoint);
+
+        let mut state_substitution = checkpoint;
+        state_substitution.staged_state.last_parent_transaction_id =
+            state_substitution.staged_state.last_parent_transaction_id + 1;
+        assert!(
+            V11ParentTransaction::restore(&migrated.configuration, state_substitution).is_err()
+        );
+    }
+
+    #[test]
+    fn parent_candidate_checkpoint_authority_ignores_only_transient_segment_cache() {
+        let (v10_configuration, v10_state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state)
+            .expect("migrate V11 fixture");
+        let owners = complete_owners(&migrated.state);
+        let (parent_id, receipts) = accepted_receipts(&owners, &[1_800_000_000_000]);
+        let mut live = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("live parent");
+        let segment = staged_candidate(&live, receipts[0].clone(), None);
+        live.accept_segment(&migrated.configuration, segment)
+            .expect("accepted segment");
+        let checkpoint = live.checkpoint();
+        let restored = V11ParentTransaction::restore(&migrated.configuration, checkpoint.clone())
+            .expect("restored parent");
+        assert_eq!(restored.checkpoint(), checkpoint);
+
+        let live_candidate = live
+            .finalize(&migrated.configuration)
+            .expect("live candidate");
+        let restored_candidate = restored
+            .finalize(&migrated.configuration)
+            .expect("restored candidate");
+        assert_eq!(live_candidate.accepted_segments.len(), 1);
+        assert!(restored_candidate.accepted_segments.is_empty());
+        assert!(live_candidate.has_same_checkpoint_authority(&restored_candidate));
+
+        let mut checkpoint_poison = restored_candidate.clone();
+        checkpoint_poison.accepted_segment_checkpoints[0]
+            .beginning_state_sha256
+            .replace_range(..1, "f");
+        assert!(
+            !live_candidate.has_same_checkpoint_authority(&checkpoint_poison),
+            "changed accepted checkpoint must reject",
+        );
+        let mut ending_owner_poison = restored_candidate;
+        let ending_owner = &ending_owner_poison.ending_complete_owners[0];
+        let mut ending_owner_bytes = ending_owner.state_bytes().to_vec();
+        ending_owner_bytes.push(0);
+        ending_owner_poison.ending_complete_owners[0] =
+            OwnerState::new(ending_owner.owner_id().to_owned(), ending_owner_bytes)
+                .expect("poison owner");
+        assert!(
+            !live_candidate.has_same_checkpoint_authority(&ending_owner_poison),
+            "changed ending owner must reject",
+        );
+    }
+
+    #[test]
+    fn checkpoint_restores_ordered_same_tick_owner_transitions_and_rejects_poisons() {
+        let (v10_configuration, v10_state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
+        let owners = complete_owners(&migrated.state);
+        let (parent_id, receipts) = accepted_receipts(&owners, &[1_800_000_000_000]);
+        let mut parent = V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            owners,
+        )
+        .expect("parent");
+        let candidate = staged_candidate(&parent, receipts[0].clone(), None);
+        parent
+            .accept_segment(&migrated.configuration, candidate)
+            .expect("stage");
+
+        let mutate_owner =
+            |owners: &BTreeMap<String, V11OwnerEnvelope>, owner_id: &str, marker: u8| {
+                let mut ending = owners.clone();
+                let mut bytes = ending
+                    .get(owner_id)
+                    .expect("mutated owner")
+                    .state_bytes
+                    .clone();
+                bytes.push(marker);
+                ending.insert(
+                    owner_id.to_owned(),
+                    V11OwnerEnvelope::try_new(owner_id.to_owned(), bytes).expect("ending owner"),
+                );
+                ending
+            };
+        let snow_ending = mutate_owner(parent.staged_resource_owners(), "snow", 1);
+        parent
+            .accept_zero_duration_owner_transition(
+                &migrated.configuration,
+                ModelTimeNs::new(1_800_000_000_000),
+                snow_ending,
+                &["snow".to_owned()],
+            )
+            .expect("snow transition");
+        let lse_ending = mutate_owner(parent.staged_resource_owners(), "land_surface_energy", 2);
+        parent
+            .accept_zero_duration_owner_transition(
+                &migrated.configuration,
+                ModelTimeNs::new(1_800_000_000_000),
+                lse_ending,
+                &["land_surface_energy".to_owned()],
+            )
+            .expect("LSE transition");
+
+        let checkpoint = parent.checkpoint();
+        let restored = V11ParentTransaction::restore(&migrated.configuration, checkpoint.clone())
+            .expect("restore transitions");
+        assert_eq!(restored.checkpoint(), checkpoint);
+
+        let mut omission = checkpoint.clone();
+        omission.accepted_zero_duration_owner_transitions.remove(0);
+        assert!(V11ParentTransaction::restore(&migrated.configuration, omission).is_err());
+
+        let mut substitution = checkpoint.clone();
+        substitution.accepted_zero_duration_owner_transitions[0].accepted_segment_count = 0;
+        assert!(V11ParentTransaction::restore(&migrated.configuration, substitution).is_err());
+
+        let mut order = checkpoint.clone();
+        order.accepted_zero_duration_owner_transitions.reverse();
+        assert!(V11ParentTransaction::restore(&migrated.configuration, order).is_err());
+
+        let mut same_tick_duplicate = checkpoint;
+        let duplicate = same_tick_duplicate.accepted_zero_duration_owner_transitions[0].clone();
+        same_tick_duplicate
+            .accepted_zero_duration_owner_transitions
+            .insert(1, duplicate);
+        assert!(
+            V11ParentTransaction::restore(&migrated.configuration, same_tick_duplicate).is_err()
+        );
     }
 
     #[test]
@@ -2590,325 +2875,6 @@ mod tests {
     }
     #[path = "v11_bgc_tests.rs"]
     mod bgc_tests;
-    #[test]
-    #[allow(clippy::too_many_lines)]
-    fn closed_multi_occupancy_water_and_mineral_n_custody_rejects_aliases() {
-        use openwepp_kernel_contract::{MineralNitrogenSpecies, OccupancyId, StratumId, TileId};
-        let (mut v10_configuration, mut v10_state) = v10_fixture();
-        v10_configuration.strata[0].root_layers.truncate(1);
-        v10_configuration.configuration_sha256 =
-            v10_configuration.canonical_sha256().expect("config");
-        v10_state.0.configuration_sha256 = v10_configuration.configuration_sha256.clone();
-        v10_state.0.state_sha256 = v10_state.0.canonical_sha256();
-        v10_configuration.initial_state_sha256 = v10_state.0.state_sha256.clone();
-        let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
-        let owners = complete_owners(&migrated.state);
-        let (_, receipts) = accepted_receipts(&owners, &[1_800_000_000_000]);
-        let receipt = &receipts[0];
-        let configured_stratum = migrated
-            .configuration
-            .imported_v10
-            .expected_occupancies()
-            .into_iter()
-            .next()
-            .expect("configured occupancy")
-            .stratum_id
-            .as_str()
-            .to_owned();
-        let bgc_scope = V11BgcDebitScope::try_new(BTreeMap::from([(
-            configured_stratum.clone(),
-            "ofe-1".into(),
-        )]))
-        .expect("BGC scope");
-        let layer = migrated.configuration.imported_v10.strata[0].root_layers[0]
-            .layer_id
-            .clone();
-        let layer_id = layer.as_str().to_owned();
-        let water_key = V11ResourceKey::Water(WaterResourceKey {
-            occupancy_id: OccupancyId {
-                stratum_id: StratumId::try_new("s1").expect("s"),
-                tile_id: TileId::try_new("t1").expect("t"),
-            },
-            layer_id: layer.clone(),
-        });
-        let nh4 = V11ResourceKey::MineralNitrogen(MineralNitrogenKey {
-            layer_id: layer.clone(),
-            species: MineralNitrogenSpecies::Ammonium,
-        });
-        let no3 = V11ResourceKey::MineralNitrogen(MineralNitrogenKey {
-            layer_id: layer,
-            species: MineralNitrogenSpecies::Nitrate,
-        });
-        let make =
-            |occupancy: &str, key: V11ResourceKey, owner: &str, source: &str, amount: f64| {
-                V11ResourceDebit::new(V11ResourceDebit {
-                    receipt_id: Digest32::zero(),
-                    parent_transaction_id: receipt.parent_transaction_id(),
-                    segment_id: receipt.segment_id(),
-                    accepted_slab_id: receipt.slab_id(),
-                    support: receipt.support(),
-                    owner_id: owner.into(),
-                    resource_key: key,
-                    ofe_id: "ofe-1".into(),
-                    tile_id: if owner == "bgc" {
-                        "stratum_scoped".into()
-                    } else {
-                        format!("tile-{occupancy}")
-                    },
-                    occupancy_id: occupancy.into(),
-                    layer_id: layer_id.clone(),
-                    source_id: source.into(),
-                    amount_basis: if owner == "bgc" {
-                        "kg_n_m2".into()
-                    } else {
-                        "kg_m2".into()
-                    },
-                    request: amount,
-                    authorization: amount,
-                    final_use: amount,
-                })
-                .expect("debit")
-            };
-        let mut debits = vec![
-            make("a", water_key.clone(), "hydrology", "soil_water", 4.0),
-            make("b", water_key, "hydrology", "soil_water", 4.0),
-            make(&configured_stratum, nh4.clone(), "bgc", "nh4", 0.1),
-            make(&configured_stratum, no3.clone(), "bgc", "no3", 0.2),
-        ];
-        debits.sort_by(|left, right| {
-            left.owner_id.cmp(&right.owner_id).then_with(|| {
-                if left.owner_id == "bgc" {
-                    left.occupancy_id
-                        .cmp(&right.occupancy_id)
-                        .then_with(|| left.layer_id.cmp(&right.layer_id))
-                        .then_with(|| left.resource_key.cmp(&right.resource_key))
-                } else {
-                    left.receipt_id.cmp(&right.receipt_id)
-                }
-            })
-        });
-        let transition = |owner: &str,
-                          key: V11ResourceKey,
-                          source: &str,
-                          begin: f64,
-                          end: f64,
-                          ids: Vec<Digest32>| {
-            let resource = match key {
-                V11ResourceKey::Water(_) => V11SharedResourceKind::Water,
-                V11ResourceKey::MineralNitrogen(key) => match key.species {
-                    MineralNitrogenSpecies::Ammonium => V11SharedResourceKind::Ammonium,
-                    MineralNitrogenSpecies::Nitrate => V11SharedResourceKind::Nitrate,
-                },
-            };
-            V11SharedResourceOwnerTransition::new(V11SharedResourceOwnerTransition {
-                transition_id: Digest32::zero(),
-                parent_transaction_id: receipt.parent_transaction_id(),
-                segment_id: receipt.segment_id(),
-                accepted_slab_id: receipt.slab_id(),
-                support: receipt.support(),
-                shared_resource_key: V11SharedResourceKey {
-                    resource,
-                    owner_id: owner.into(),
-                    ofe_id: "ofe-1".into(),
-                    layer_id: layer_id.clone(),
-                    source_id: source.into(),
-                    amount_basis: if owner == "bgc" {
-                        "kg_n_m2".into()
-                    } else {
-                        "kg_m2".into()
-                    },
-                },
-                beginning_amount: begin,
-                ending_amount: end,
-                debit_receipt_ids: ids,
-                admitted_flux_receipt_ids: vec![],
-                owner_candidate_sha256: owners[owner].state_sha256,
-            })
-            .expect("transition")
-        };
-        let water_ids = debits
-            .iter()
-            .filter(|d| d.owner_id == "hydrology")
-            .map(|d| d.receipt_id)
-            .collect();
-        let transitions = vec![
-            transition(
-                "bgc",
-                nh4,
-                "nh4",
-                1.0,
-                0.9,
-                vec![
-                    debits
-                        .iter()
-                        .find(|d| d.source_id == "nh4")
-                        .unwrap()
-                        .receipt_id,
-                ],
-            ),
-            transition(
-                "bgc",
-                no3,
-                "no3",
-                2.0,
-                1.8,
-                vec![
-                    debits
-                        .iter()
-                        .find(|d| d.source_id == "no3")
-                        .unwrap()
-                        .receipt_id,
-                ],
-            ),
-            transition(
-                "hydrology",
-                debits
-                    .iter()
-                    .find(|d| d.owner_id == "hydrology")
-                    .unwrap()
-                    .resource_key
-                    .clone(),
-                "soil_water",
-                10.0,
-                2.0,
-                water_ids,
-            ),
-        ];
-        let candidates =
-            build_complete_owner_candidates(receipt, &owners, &transitions).expect("candidates");
-        validate_resource_custody(
-            &migrated.configuration,
-            Some(&bgc_scope),
-            receipt.parent_transaction_id(),
-            receipt.segment_id(),
-            receipt.slab_id(),
-            receipt.slab_ordinal(),
-            receipt.support(),
-            &debits,
-            &[],
-            &transitions,
-            &candidates,
-            None,
-        )
-        .expect("valid custody");
-
-        let assert_poison =
-            |poisoned_debits: &[V11ResourceDebit],
-             poisoned_transitions: &[V11SharedResourceOwnerTransition]| {
-                let poisoned_candidates =
-                    build_complete_owner_candidates(receipt, &owners, poisoned_transitions)
-                        .expect("poison candidates");
-                assert!(
-                    validate_resource_custody(
-                        &migrated.configuration,
-                        Some(&bgc_scope),
-                        receipt.parent_transaction_id(),
-                        receipt.segment_id(),
-                        receipt.slab_id(),
-                        receipt.slab_ordinal(),
-                        receipt.support(),
-                        poisoned_debits,
-                        &[],
-                        poisoned_transitions,
-                        &poisoned_candidates,
-                        None,
-                    )
-                    .is_err()
-                );
-            };
-
-        let mut wrong_delta = transitions.clone();
-        wrong_delta[0].ending_amount = 0.8;
-        wrong_delta[0] = V11SharedResourceOwnerTransition::new(wrong_delta[0].clone())
-            .expect("rebind wrong delta");
-        assert_poison(&debits, &wrong_delta);
-
-        let omitted = transitions[1..].to_vec();
-        assert_poison(&debits, &omitted);
-
-        let mut substituted = debits.clone();
-        let nitrogen = substituted
-            .iter_mut()
-            .find(|debit| debit.source_id == "nh4")
-            .expect("nitrogen debit");
-        nitrogen.ofe_id = "ofe-2".into();
-        *nitrogen = V11ResourceDebit::new(nitrogen.clone()).expect("rebind substituted OFE");
-        substituted.sort_by_key(|debit| debit.receipt_id);
-        assert_poison(&substituted, &transitions);
-
-        let assert_resealed_bgc_scope_poison = |mutate: fn(&mut V11ResourceDebit)| {
-            let mut poisoned_debits = debits.clone();
-            let debit = poisoned_debits
-                .iter_mut()
-                .find(|debit| debit.source_id == "nh4")
-                .expect("NH4 debit");
-            let old_id = debit.receipt_id;
-            mutate(debit);
-            *debit = V11ResourceDebit::new(debit.clone()).expect("resealed debit");
-            let new_id = debit.receipt_id;
-            let mut poisoned_transitions = transitions.clone();
-            let transition = poisoned_transitions
-                .iter_mut()
-                .find(|transition| transition.debit_receipt_ids.contains(&old_id))
-                .expect("linked transition");
-            transition.debit_receipt_ids = vec![new_id];
-            *transition = V11SharedResourceOwnerTransition::new(transition.clone())
-                .expect("resealed transition");
-            assert_poison(&poisoned_debits, &poisoned_transitions);
-        };
-        assert_resealed_bgc_scope_poison(|debit| debit.tile_id = "occupancy_scoped".into());
-        assert_resealed_bgc_scope_poison(|debit| debit.occupancy_id = "unknown-stratum".into());
-        assert_resealed_bgc_scope_poison(|debit| debit.source_id = "no3".into());
-        assert_resealed_bgc_scope_poison(|debit| debit.layer_id = "wrong-layer".into());
-        assert_resealed_bgc_scope_poison(|debit| debit.amount_basis = "kg_m2".into());
-
-        let mut reversed = transitions.clone();
-        let water = reversed
-            .iter_mut()
-            .find(|transition| transition.shared_resource_key.owner_id == "hydrology")
-            .expect("water transition");
-        water.debit_receipt_ids.reverse();
-        *water = V11SharedResourceOwnerTransition::new(water.clone()).expect("rebind order");
-        assert_poison(&debits, &reversed);
-
-        let mut duplicate = transitions.clone();
-        let nh4_transition = duplicate
-            .iter_mut()
-            .find(|transition| {
-                transition.shared_resource_key.resource == V11SharedResourceKind::Ammonium
-            })
-            .expect("NH4 transition");
-        nh4_transition
-            .debit_receipt_ids
-            .push(nh4_transition.debit_receipt_ids[0]);
-        *nh4_transition = V11SharedResourceOwnerTransition::new(nh4_transition.clone())
-            .expect("rebind duplicate");
-        assert_poison(&debits, &duplicate);
-
-        let mut overbook = debits.clone();
-        for d in overbook.iter_mut().filter(|d| d.owner_id == "hydrology") {
-            d.request = 6.;
-            d.authorization = 6.;
-            d.final_use = 6.;
-            *d = V11ResourceDebit::new(d.clone()).expect("rebind");
-        }
-        overbook.sort_by_key(|d| d.receipt_id);
-        assert!(
-            validate_resource_custody(
-                &migrated.configuration,
-                Some(&bgc_scope),
-                receipt.parent_transaction_id(),
-                receipt.segment_id(),
-                receipt.slab_id(),
-                receipt.slab_ordinal(),
-                receipt.support(),
-                &overbook,
-                &[],
-                &transitions,
-                &candidates,
-                None
-            )
-            .is_err()
-        );
-    }
+    #[path = "v11_custody_tests.rs"]
+    mod custody_tests;
 }

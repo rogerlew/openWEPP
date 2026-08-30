@@ -919,6 +919,51 @@ fn manifest_adoption_accepts_complete_owned_internal_source_set() {
 }
 
 #[test]
+fn manifest_adoption_accepts_complete_declared_external_source_set() {
+    let fixture = fixture("assurance-adopt-declared-external-source-set");
+    let manifest = PathBuf::from(format!("assurance/v2/reports/{SNOW}/report.yaml"));
+    let sources = [
+        PathBuf::from("tests/fixtures/cancov_forest/README.md"),
+        PathBuf::from("tests/fixtures/snowfreeze_observed/README.md"),
+    ];
+    for (ordinal, source) in sources.iter().enumerate() {
+        let mut bytes = fs::read(fixture.path.join(source)).unwrap();
+        bytes.extend_from_slice(format!("\nDeclared external drift {ordinal}.\n").as_bytes());
+        fs::write(fixture.path.join(source), bytes).unwrap();
+    }
+
+    let before = capture_tree(&fixture.path.join("assurance/v2"));
+    let checked = adopt_report_source(&fixture.path, SNOW, &manifest, V2AmendMode::Check).unwrap();
+    assert!(checked.changed);
+    for source in &sources {
+        assert!(
+            checked
+                .affected_paths
+                .contains(&source.display().to_string())
+        );
+    }
+    assert_eq!(before, capture_tree(&fixture.path.join("assurance/v2")));
+
+    let applied = adopt_report_source(&fixture.path, SNOW, &manifest, V2AmendMode::Apply).unwrap();
+    assert_eq!(checked, applied);
+    let identity: serde_json::Value = serde_json::from_slice(
+        &fs::read(fixture.path.join("assurance/v2/identity.lock.json")).unwrap(),
+    )
+    .unwrap();
+    for source in &sources {
+        let bytes = fs::read(fixture.path.join(source)).unwrap();
+        assert_eq!(
+            identity["sources"][source.to_str().unwrap()].as_str(),
+            Some(sha256_bytes(&bytes).as_str()),
+        );
+    }
+    openwepp_assurance::V2Repository::open(&fixture.path)
+        .unwrap()
+        .validate_report(SNOW)
+        .unwrap();
+}
+
+#[test]
 fn manifest_adoption_admits_new_declared_external_local_content() {
     let fixture = fixture("assurance-adopt-new-declared-source");
     let manifest = PathBuf::from(format!("assurance/v2/reports/{CANOPY}/report.yaml"));

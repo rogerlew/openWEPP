@@ -16,6 +16,10 @@ const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00c_day_input_builder_impl.rs"
 );
+const STAGE3_CANOPY_AUTHORITY: &str = concat!(
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
+    "00c_stage3_canopy_authority.rs"
+);
 const SNOWBENCH: &str = "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs";
 const TOL: f64 = 1.0e-12;
 
@@ -164,21 +168,25 @@ fn stage_a_exports_vapor_without_routing_it_as_liquid() {
 
 #[test]
 fn selector_and_trace_are_opt_in_only() {
-    let builder = repo_text(BUILDER);
+    let builder = format!(
+        "{}\n{}",
+        repo_text(BUILDER),
+        repo_text(STAGE3_CANOPY_AUTHORITY)
+    );
     for marker in [
         "OPENWEPP_SNOWDENSITY1038_MELT_MODEL",
-        "SnowMeltModel::CoeLiquidHoldingCapacityV1",
-        "SnowMeltModel::CoeOpenSublimationStageAV1",
-        "coe_open_sublimation_stage_a_v1",
-        "must be legacy_coe, coe_liquid_holding_capacity_v1, coe_open_sublimation_stage_a_v1, or coe_open_sublimation_stage_b_v1",
-        "\\\"sublimation_m\\\":{}",
+        "reject_retired_stage3_snow_selector_envs",
+        "retired snow selector",
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
-    assert_contains(
-        &builder,
-        "Err(std::env::VarError::NotPresent)",
-        "absent selector must remain explicitly handled",
+    assert!(
+        !builder.contains("SnowMeltModel::CoeOpenSublimationStageAV1")
+            && !builder.contains("\"coe_open_sublimation_stage_a_v1\" => Ok"),
+        "historical Stage A diagnostics must not be selectable in production"
     );
     assert!(
         !builder.contains("snow-melt-model"),

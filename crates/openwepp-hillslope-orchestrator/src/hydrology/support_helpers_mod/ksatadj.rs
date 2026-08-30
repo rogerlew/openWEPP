@@ -373,8 +373,10 @@ impl Wb11HydrologyKernel {
             Some(WB11_ZERO_THRESHOLD),
             None,
         )?;
-        Ok(((upper_ks_mm_h - lower_ks_mm_h) / denominator) * ((sat_frac / ksatrec).exp() - 1.0)
-            + lower_ks_mm_h)
+        Ok(
+            ((upper_ks_mm_h - lower_ks_mm_h) / denominator) * ((sat_frac / ksatrec).exp() - 1.0)
+                + lower_ks_mm_h,
+        )
     }
 
     fn direct_ksatadj_effective_9002_plus_mm_h(
@@ -384,11 +386,8 @@ impl Wb11HydrologyKernel {
         upper_ks_mm_h: f64,
         metrics: DirectKsatadjMetrics,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let exponent = Self::direct_ksatadj_9002_exponent(
-            phase_class,
-            metrics.avthetafc,
-            metrics.avthetadr,
-        )?;
+        let exponent =
+            Self::direct_ksatadj_9002_exponent(phase_class, metrics.avthetafc, metrics.avthetadr)?;
         let mut effective_ks_mm_h = upper_ks_mm_h * metrics.sat_frac.powf(exponent);
         if (solwpv - 9003.0).abs() <= WB11_ZERO_THRESHOLD {
             let lkeff = Self::direct_ksatadj_required_finite_option(
@@ -448,7 +447,8 @@ impl Wb11HydrologyKernel {
         symbol: BoundarySymbol,
         value: Option<f64>,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let value = Self::direct_ksatadj_required_finite_option(phase_class, symbol.clone(), value)?;
+        let value =
+            Self::direct_ksatadj_required_finite_option(phase_class, symbol.clone(), value)?;
         Self::direct_ksatadj_require_value(
             phase_class,
             symbol,
@@ -464,10 +464,13 @@ impl Wb11HydrologyKernel {
         symbol: BoundarySymbol,
         value: Option<f64>,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let value = value.ok_or_else(|| Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
-            phase_class,
-            symbol: symbol.clone(),
-        })?;
+        let value =
+            value.ok_or_else(
+                || Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class,
+                    symbol: symbol.clone(),
+                },
+            )?;
         if !value.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
                 phase_class,
@@ -603,10 +606,9 @@ mod tests {
         let lower_ks_mm_h = upper_ks_mm_h / 2.5;
         let sat_frac = 0.41 / 0.55;
         let denominator = (1.0_f64 / 0.75_f64).exp() - 1.0;
-        let expected_mm_h =
-            ((upper_ks_mm_h - lower_ks_mm_h) / denominator)
-                * ((sat_frac / 0.75_f64).exp() - 1.0)
-                + lower_ks_mm_h;
+        let expected_mm_h = ((upper_ks_mm_h - lower_ks_mm_h) / denominator)
+            * ((sat_frac / 0.75_f64).exp() - 1.0)
+            + lower_ks_mm_h;
 
         assert_close(outcome.effective_conductivity_mm_h, expected_mm_h);
         assert_close(outcome.effective_conductivity_m_s, expected_mm_h / 3.6e6);

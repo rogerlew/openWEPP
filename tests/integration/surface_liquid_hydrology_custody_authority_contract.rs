@@ -102,7 +102,7 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
     let contract = read(CONTRACT);
     for required in [
         "contract_id: SC-SURFACELIQUID-001",
-        "contract_version: 9",
+        "contract_version: 13",
         "status: approved",
         "maturity: active",
         "INV-SURFACELIQUID-001",
@@ -123,7 +123,8 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
         "No executable `Default`",
         "SURFACELIQUID-E-001",
         "SURFACELIQUID-E-002",
-        "greatest positive finite binary64 `c_k<=c_0`",
+        "select the greatest positive finite",
+        "binary64 `c_k<=c_0` satisfying both predicates",
         "no canonical-last remainder",
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
@@ -165,7 +166,7 @@ fn version_8_child_slab_authority_binds_complete_transaction_before_release() {
         "downstream runon within that child",
         "Inactive owners are byte-identical carries",
         "Independent `validate()` reconstruction",
-        "one 1800-second child bit-identical complete production-",
+        "One 1800-second child must return the historical interval outcome bitwise.",
         "two unequal-area OFEs",
         "final-owner-join rollback",
     ] {
@@ -187,7 +188,10 @@ fn version_9_binds_multi_lane_stage3_parent_release() {
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
-    assert!(registry.contains("v9 releases lane-keyed multi-lane covered Stage-3 parents"));
+    assert!(
+        registry
+            .contains("v13 retains the exact 60-second adaptive floor and conservative routing",)
+    );
     assert!(!registry.contains("multi-lane covered Stage-3 remains unauthorized"));
 }
 

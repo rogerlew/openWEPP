@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 29
+contract_version: 30
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-08-26
+last_reviewed: 2026-08-29
 supersedes: []
 superseded_by: []
 ---
@@ -2692,6 +2692,21 @@ remain independently unique and authentic. Omission,
 substitution, duplicate linkage, extra linkage, or a changed transition order
 rejects and preserves all beginning owners byte-identically.
 
+An accepted terminal support composed from multiple exact physical children
+retains every child's debit and material proposal in physical-child order.
+Duplicate semantic debit keys are replaced by one enclosing-slab debit whose
+request, authorization, and finalized-use fields are ordinary binary64 left
+folds in that order; no child may be omitted, duplicated, reordered, or
+re-solved. The installed BGC ending remains the exact sequential child ending.
+Because reconstructing that ending as `beginning - enclosing_finalized_use`
+regroups binary64 subtraction, live transition validation admits equality or
+at most one ULP between finite nonnegative values. This audit-only roundoff
+bound does not replace the sequential owner ending or relax inventory custody;
+two ULPs, nonfinite values, negative values, changed debit order, or any
+custody mismatch reject. The transition retains beginning, ending, ordered
+debit IDs, and amounts so the admitted residual is independently
+reconstructable.
+
 Live V11 acceptance and checkpoint restoration independently validate every
 mineral-N debit against the admitted vegetation configuration: `owner_id` is
 the literal `bgc`; the resource key is typed mineral N; `tile_id` is the
@@ -2707,8 +2722,9 @@ basis. For each exact debit-receipt key, receipts are ordered by accepted
 chronology and cumulative vegetation use is an ordinary IEEE-754 binary64 left
 fold seeded by exact `+0.0`; every intermediate must be finite. Water, NH4, and
 NO3 remain separate. Reassociation, sorting by magnitude, compensated/`fsum`
-arithmetic, tolerance closure, and aggregate mineral-N substitution are
-forbidden.
+arithmetic, tolerance closure beyond the exact one-ULP terminal audit bound
+above, and aggregate mineral-N substitution outside that exact accepted-child
+composition are forbidden.
 
 Every segment also carries a typed shared-resource owner transition keyed by
 owner, OFE, layer, and source. It binds exact shared beginning and ending
@@ -2958,13 +2974,22 @@ implementation package.
 
 V11 passes coupled-time support identity, ordering, and event chronology at
 nanosecond resolution, but an actual LSE physical segment must carry the sealed
-`LseSupportAdmissibilityReceiptV1` required by `SC-LANDSURFACEENERGY-001@6`.
+`LseSupportAdmissibilityReceiptV1` required by `SC-LANDSURFACEENERGY-001@9`.
 The V11 positive population therefore has a structural 1 ns coupled-time
-identity case, an actual LSE support-at-`600000000` ns case, and a typed
-`600000000 - 1` ns pre-Newton rejection with exact rollback and restart
+identity case, an actual LSE support-at-`60000000000` ns case, and a typed
+`60000000000 - 1` ns pre-Newton rejection with exact rollback and restart
 equivalence. The old unconditional actual-stack 1 ns positive case is removed;
 no physical result is scaled, frozen, or substituted. A zero-duration event
 remains an event transition/skip, not an admitted positive LSE slab.
+
+The 2026-08-27 owner amendment changes only this temporal admission boundary:
+the exact positive-support floor is 60 seconds (`60_000_000_000 ns`). It does
+not change vegetation constitutive equations, conservation or custody,
+phase/topology predicates, receipt identity, rollback, or fail-closed
+behavior. Stable ordinary supports must accept steps substantially larger than
+the floor. Every earlier result whose admission, tick, trace, or performance
+depended on the provisional 0.6-second floor is superseded and must be rerun;
+this amendment records no replacement execution result.
 
 The support receipt is slab-specific: a valid receipt from one parent,
 segment, slab ordinal, or absolute support interval cannot be replayed for a
@@ -2981,6 +3006,8 @@ constitutive behavior unchanged.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-29 | 30 | Codex | Bound accepted terminal composition to every exact physical child's ordered resource/material custody, canonical same-key enclosing debit folds, the exact sequential BGC ending, and an audit-only one-ULP binary64 regrouping bound with one-bit-over rejection. |
+| 2026-08-27 | 29 owner amendment | Codex | Replaced the provisional 0.6-second positive-support floor with exactly 60 seconds (`60_000_000_000 ns`). Vegetation physics, conservation/custody, phase/topology, receipt, rollback, and fail-closed obligations remain unchanged; stable ordinary supports must accept substantially larger steps. Prior floor-dependent evidence is superseded and awaits rerun. |
 | 2026-08-20 | 15 | Codex | Drafted immutable-V10 V11 segmented support, staged custody, additive restart, exact compatibility, and one atomic parent finalization. |
 | 2026-08-20 | 16 | Codex | Superseded nonimplementable V11 restart V1 with additive V2 complete typed checkpoint/owner/reduction/publication authority after implementation inventory exposed the closed-schema contradiction. |
 | 2026-08-20 | 17 | Codex | Closed restart V2 seven-owner canonical state, complete-suffix equality, event custody, ordered collection, and durable outbox identity findings. |

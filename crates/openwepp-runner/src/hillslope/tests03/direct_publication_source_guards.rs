@@ -72,6 +72,118 @@ fn r7f_production_direct_uses_typed_day_input_builder() {
 }
 
 #[test]
+fn stage3_v11_production_has_one_typed_snow_authority_and_no_retired_selector_parser() {
+    let runner = include_str!("../05_runner_execution_and_outputs.rs");
+    let authority =
+        include_str!("../direct_publication/day_input_and_helpers/00_builders_and_authority.rs");
+    let builder =
+        include_str!("../direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs");
+    let terminal_trace = include_str!(
+        "../direct_publication/day_input_and_helpers/00j_snow_terminal_event_trace.rs"
+    );
+
+    assert!(
+        runner.contains("reject_retired_stage3_snow_selector_envs()?"),
+        "production must fail closed before consuming any retired snow selector"
+    );
+    for required in [
+        "SnowMeltModel::AdaptiveCompositionalStage3V1",
+        "SnowPhasePartitionModel::HarderPomeroyHourly",
+        "SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1",
+        "SnowSurfaceLongwaveModel::DilleyUnsworthSubcanopyV1",
+        "SnowSurfaceSublimationModel::NeutralBulkStage3V1",
+    ] {
+        assert!(
+            authority.contains(required),
+            "typed production authority must bind {required}"
+        );
+    }
+    assert!(
+        !authority.contains("snow_stage3_evaluation_operator:"),
+        "the retired evaluation-operator selector must not remain in typed production authority"
+    );
+    let selector_sources = [builder, terminal_trace].join("\n");
+    for forbidden in [
+        "parse_snowdensity",
+        "snowdensity1015_default_snow_density_model(",
+        "snowdensity1015_default_snow_melt_model(",
+        "snowdensity1035_diagnostic_snow_phase_model(",
+        "snowdensity1037_diagnostic_snow_melt_model(",
+        "paradigm2_stage3_liquid_routing_model(",
+        "snow_surface_longwave_model()",
+        "snow_surface_sublimation_model()",
+        "snow_terminal_enthalpy_event_requested()",
+        "SnowMeltModel::CoeLiquidHoldingCapacityV1",
+    ] {
+        assert!(
+            !selector_sources.contains(forbidden),
+            "retired production snow selector/operator reappeared: {forbidden}"
+        );
+    }
+    let support_builder = builder
+        .split("fn build_stage3_v11_support_inputs")
+        .nth(1)
+        .and_then(|tail| tail.split("\n    fn ").next())
+        .expect("Stage-3 V11 support builder must be present");
+    assert!(
+        !support_builder.contains("diagnostic_winter_hourly_forcing"),
+        "production V11 supports must use the sealed repository forcing authority"
+    );
+}
+
+#[test]
+fn stage3_v11_runner_streams_rows_and_durably_archives_each_day_without_batch_retention() {
+    let runner = include_str!("../05_runner_execution_and_outputs.rs");
+    for required in [
+        "run_atomic_publication_stream_with_stage3_day_preparation_and_committed_day_archive",
+        "append_durable_stream(",
+        "write_snow_stage3_v11_pending_committed_day_evidence(writer)",
+        "appended_content_sha256 != expected_content_sha256",
+        "acknowledge_snow_stage3_v11_committed_day_archive(record_sha256)",
+        ".append(archive_entry)",
+    ] {
+        assert!(
+            runner.contains(required),
+            "production Stage-3 runner must retain archive/streaming gate {required}"
+        );
+    }
+    assert!(
+        !runner.contains("run_publication_batch_with_stage3_day_preparation_and_interleaved_day_inputs_and_day_frames"),
+        "production Stage-3 runner must not retain a whole-run row/day-frame batch"
+    );
+    let run_body = runner
+        .split("pub fn execute_hillslope_run_with_runtime_policy")
+        .nth(1)
+        .expect("runner entry point must be present");
+    let archive_provenance_index = run_body
+        .find("let stage3_evidence_archive = HillslopeStage3EvidenceArchiveProvenance")
+        .expect("sealed Stage-3 archive provenance must be retained");
+    let consuming_artifact_index = run_body
+        .find("execution.direct_publication = build_direct_publication_artifacts")
+        .expect("direct publication artifact consumer must be present");
+    assert!(
+        archive_provenance_index < consuming_artifact_index,
+        "Stage-3 archive provenance must be retained before direct publication consumes the retained execution seal"
+    );
+}
+
+#[test]
+fn output_checksums_stream_large_files_without_whole_file_materialization() {
+    let shared = include_str!("../../shared.rs");
+    let checksum_body = shared
+        .split("pub(crate) fn sha256_file_hex")
+        .nth(1)
+        .and_then(|tail| tail.split("\n}\n").next())
+        .expect("file checksum implementation must be present");
+    assert!(checksum_body.contains("BufReader::new(File::open(path)?)"));
+    assert!(checksum_body.contains("reader.read(&mut buffer)?"));
+    assert!(
+        !checksum_body.contains("std::fs::read"),
+        "large output checksums must not materialize the complete archive"
+    );
+}
+
+#[test]
 fn typed_seed_authority_direct_setup_skips_symbol_map_seed_surface() {
     let source = include_str!("../00_runner_intake_and_lane_setup.rs");
     let setup_body = source
@@ -456,48 +568,41 @@ fn r7g_direct_production_reads_winter_column_frost_and_deletes_bridge() {
 }
 
 #[test]
-fn laned_shadow_consumes_live_dynamic_friction_operands() {
+fn retired_laned_shadow_is_absent_from_the_stage3_v11_stream() {
     let runner_source = include_str!("../05_runner_execution_and_outputs.rs");
-    let shadow_source = include_str!("../laned_shadow.rs");
-    let builder_source = direct_publication_day_input_and_helpers_source();
+    let execution = runner_source
+        .split("fn execute_direct_publication_stream(")
+        .nth(1)
+        .and_then(|tail| tail.split("\nfn ").next())
+        .expect("direct production execution body");
+
+    for required in [
+        "run_atomic_publication_stream_with_stage3_day_preparation_and_committed_day_archive",
+        "build_stage3_v11_support_inputs",
+        "stream_sink.observe_row(row)",
+    ] {
+        assert!(
+            execution.contains(required),
+            "Stage3 V11 must retain its atomic streaming production seam: {required}"
+        );
+    }
+
+    for retired in [
+        "run_publication_batch_with_interleaved_day_inputs_and_day_frames",
+        "batch.rows()",
+        "laned_shadow_lane_day_operands",
+        "LanedShadowCollector",
+        "observe_row(row, operands)",
+    ] {
+        assert!(
+            !execution.contains(retired),
+            "retired Lane-D publication path must not re-enter Stage3 V11 production: {retired}"
+        );
+    }
 
     assert!(
-        runner_source.contains("run_publication_batch_with_interleaved_day_inputs_and_day_frames")
-            && runner_source.contains("batch.rows()"),
-        "Lane D shadow must consume the immutable frame-aware batch so dynamic operands come from the executed day frame"
-    );
-    assert!(
-        runner_source.contains("laned_shadow_lane_day_operands(day_frame)")
-            && runner_source.contains("collector")
-            && runner_source.contains("observe_row(row, operands)"),
-        "Lane D shadow consumer must pass live day-frame operands into the collector"
-    );
-    assert!(
-        builder_source.contains("day_frame.wb14_hourly_rainfall_m")
-            && builder_source
-                .contains("day_frame.evapotranspiration_compute_inputs.leaf_area_index",)
-            && builder_source
-                .contains("day_frame.evapotranspiration_compute_inputs.canopy_height_m",)
-            && !builder_source.contains("authority.evapotranspiration.canopy_height_m"),
-        "Lane D shadow operand builder must source I, LAI, and h_c from the live post-growth frame"
-    );
-    assert!(
-        builder_source.contains("leaf_area_index > 0.0 && canopy_height_m <= 0.0"),
-        "Lane D shadow must fail closed when vegetation is active but canhgt is missing/non-positive"
-    );
-    assert!(
-        shadow_source
-            .contains("seam_source_rates_from_hourly_depths(&operands.hourly_rainfall_m)",),
-        "Lane D shadow must convert WB14 hourly rainfall depth to rate for skin intensity"
-    );
-    assert!(
-        shadow_source.contains("cell.leaf_area_index = operands.leaf_area_index")
-            && shadow_source.contains("cell.canopy_height_m = operands.canopy_height_m"),
-        "Lane D shadow must write dynamic vegetation operands into CellParameters"
-    );
-    assert!(
-        !shadow_source.contains("let intensity = |_ofe: usize, _t: f64| 0.0"),
-        "Lane D shadow must not retain the missing-source all-lane I=0 placeholder"
+        runner_source.contains("reject_retired_laned_runtime_envs()?"),
+        "runner must continue to fail closed on retired Lane-D runtime selectors"
     );
 }
 
@@ -506,8 +611,9 @@ fn laned_shadow_consumes_live_dynamic_friction_operands() {
 fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
     let builder =
         include_str!("../direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs",);
-    let frost =
-        include_str!("../direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs",);
+    let frost = include_str!(
+        "../direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs",
+    );
     let residue =
         include_str!("../direct_publication/day_input_and_helpers/00d_authority_runtime_impl.rs",);
     let growth =
@@ -579,9 +685,8 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
             "the executor must publish the typed state to its real downstream consumers"
         );
     assert!(
-        erosion.contains(
-            "growth_state.active_action == DirectGrowthAction::TypedStateOverride",
-        ) && erosion.contains("growth.canopy_height_m")
+        erosion.contains("growth_state.active_action == DirectGrowthAction::TypedStateOverride",)
+            && erosion.contains("growth.canopy_height_m")
             && erosion.contains(".map_or(0.0, |pmet| pmet.canopy_height_m)"),
         "native active erosion must consume post-growth height while legacy paths retain PMET semantics"
     );
@@ -614,16 +719,12 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
         "the three-source sum must enter the real decomposition input once"
     );
     assert_eq!(
-        residue
-            .matches("+ external.needle_kg_m2")
-            .count(),
+        residue.matches("+ external.needle_kg_m2").count(),
         1,
         "external needle influx must not have a downstream re-addition path"
     );
     assert_eq!(
-        residue
-            .matches("+ external.fine_woody_kg_m2")
-            .count(),
+        residue.matches("+ external.fine_woody_kg_m2").count(),
         1,
         "external fine-woody influx must not have a downstream re-addition path"
     );

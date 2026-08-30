@@ -25,6 +25,20 @@ const OPEN_SNOW_TRANSFER_HEIGHT_M: f64 = 5.0;
 const OPEN_SNOW_ROUGHNESS_M: f64 = 0.005;
 const SIGMA_W_M2_K4: f64 = 5.670_374_419e-8;
 
+fn open_snow_vapor_outward_kg_m2_s(
+    reference_specific_humidity_kg_kg: f64,
+    snow_specific_humidity_kg_kg: f64,
+    turbulent_mass_flux_into_snow_kg_m2_s: f64,
+) -> f64 {
+    // Equal constitutive humidity nodes have exactly zero exchange. Preserve
+    // the ordinary signed Monin-Obukhov result for every unequal pair.
+    if reference_specific_humidity_kg_kg.to_bits() == snow_specific_humidity_kg_kg.to_bits() {
+        0.0
+    } else {
+        -turbulent_mass_flux_into_snow_kg_m2_s
+    }
+}
+
 /// Closed physical forcing class for every active Stage 3 snow-surface tile.
 #[derive(Clone, Debug, PartialEq)]
 pub enum SealedStage3TileBoundaryForcingV1 {
@@ -45,7 +59,7 @@ impl SealedStage3TileBoundaryForcingV1 {
 }
 
 /// Closed final destination receipt set consumed by Stage 3 lane aggregation.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, serde::Deserialize, PartialEq, serde::Serialize)]
 pub enum FinalStage3TileBoundaryReceiptV1 {
     V11Canopy(FinalStage3CanopyBoundaryReceiptV1),
     OpenSnow(FinalStage3OpenSnowBoundaryReceiptV1),
@@ -287,12 +301,13 @@ impl SealedOpenSnowTileForcingV1 {
     pub(crate) fn try_new(
         inputs: SealedOpenSnowTileForcingInputsV1,
     ) -> Result<Self, SnowStage3HandoffError> {
-        if inputs.rain_m.to_bits() != 0.0_f64.to_bits()
-            || inputs.snowfall_m.to_bits() != 0.0_f64.to_bits()
-            || inputs.precipitation_parcel_count != 0
+        if !inputs.rain_m.is_finite()
+            || inputs.rain_m < 0.0
+            || !inputs.snowfall_m.is_finite()
+            || inputs.snowfall_m < 0.0
         {
             return Err(SnowStage3HandoffError::InvalidCarrier(
-                "open-snow precipitation custody is unavailable",
+                "open-snow precipitation custody domain",
             ));
         }
         let mut value = Self {
@@ -340,9 +355,10 @@ impl SealedOpenSnowTileForcingV1 {
             || self.reference_temperature_k <= 0.0
             || !(0.0..=1.0).contains(&self.reference_specific_humidity_kg_kg)
             || self.air_pressure_pa <= 0.0
-            || self.rain_m.to_bits() != 0.0_f64.to_bits()
-            || self.snowfall_m.to_bits() != 0.0_f64.to_bits()
-            || self.precipitation_parcel_count != 0
+            || !self.rain_m.is_finite()
+            || self.rain_m < 0.0
+            || !self.snowfall_m.is_finite()
+            || self.snowfall_m < 0.0
             || [
                 self.atmospheric_downward_longwave_w_m2,
                 self.direct_vis_w_m2,
@@ -412,7 +428,7 @@ impl SealedOpenSnowTileForcingV1 {
 }
 
 /// Physical open-snow boundary evaluated from current Stage 3 state.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, serde::Deserialize, PartialEq, serde::Serialize)]
 pub struct OpenSnowTileBoundaryCandidateV1 {
     pub support: TimeSupport,
     pub destination: (OfeId, TileId),
@@ -432,7 +448,7 @@ pub struct OpenSnowTileBoundaryCandidateV1 {
 
 /// Final accepted open-snow boundary. It is physically disjoint from the
 /// canopy receipt and seals the exact Stage 3 ending selected by replay.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, serde::Deserialize, PartialEq, serde::Serialize)]
 pub struct FinalStage3OpenSnowBoundaryReceiptV1 {
     pub candidate: OpenSnowTileBoundaryCandidateV1,
     pub ending_stage3_state_sha256: Digest32,
@@ -552,19 +568,31 @@ pub fn evaluate_open_snow_tile_boundary(
     forcing: &SealedOpenSnowTileForcingV1,
 ) -> Result<OpenSnowTileBoundaryCandidateV1, SnowStage3HandoffError> {
     forcing.validate()?;
-    if beginning_stage3_state_sha256 == Digest32::zero() || beginning_stage3.layers.is_empty() {
+    if beginning_stage3_state_sha256 == Digest32::zero()
+        || beginning_stage3.layers.is_empty() && forcing.snowfall_m <= 0.0
+    {
         return Err(SnowStage3HandoffError::InvalidState(
             "open-snow beginning Stage 3 state",
         ));
     }
-    let surface = if crate::hydrology::stage3_is_terminal_event_domain(beginning_stage3) {
-        Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(beginning_stage3)
+    let (snow_temperature_k, latent_heat_j_kg) = if beginning_stage3.layers.is_empty() {
+        let temperature = TemperatureCelsius::try_new(0.0)
+            .map_err(|_| SnowStage3HandoffError::InvalidState("reappearance temperature"))?;
+        let latent =
+            openwepp_meteorology::surface_energy::latent_heat_for_surface_temperature(temperature)
+                .map_err(|_| SnowStage3HandoffError::InvalidState("reappearance latent heat"))?
+                .as_joules_per_kilogram();
+        (273.15, latent)
     } else {
-        Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning_stage3)
-    }
-    .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow active-volume surface"))?;
-    let snow_temperature_k = surface.surface_temperature_k;
-    let temperature = TemperatureCelsius::try_new(surface.surface_temperature_k - 273.15)
+        let surface = if crate::hydrology::stage3_is_terminal_event_domain(beginning_stage3) {
+            Wb11HydrologyKernel::project_stage3_terminal_surface_state_v1(beginning_stage3)
+        } else {
+            Wb11HydrologyKernel::project_stage3_surface_state_v1(beginning_stage3)
+        }
+        .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow active-volume surface"))?;
+        (surface.surface_temperature_k, surface.latent_heat_j_kg)
+    };
+    let temperature = TemperatureCelsius::try_new(snow_temperature_k - 273.15)
         .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow temperature"))?;
     let saturation_pressure_pa = saturation_vapor_pressure_snobal_pa(temperature)
         .map_err(|_| SnowStage3HandoffError::InvalidState("open-snow saturation pressure"))?
@@ -574,6 +602,8 @@ pub fn evaluate_open_snow_tile_boundary(
             "open-snow saturation specific humidity pressure",
         ));
     }
+    let snow_specific_humidity_kg_kg =
+        0.622 * saturation_pressure_pa / (forcing.air_pressure_pa - 0.378 * saturation_pressure_pa);
     let air_vapor_pressure_pa = forcing.reference_specific_humidity_kg_kg * forcing.air_pressure_pa
         / (0.622 + 0.378 * forcing.reference_specific_humidity_kg_kg);
     let positive_length = |value| {
@@ -604,11 +634,14 @@ pub fn evaluate_open_snow_tile_boundary(
     // destination tile receipts retain the producer convention positive
     // outward from snow until the sole Stage-3 construction seam.
     let sensible_outward_w_m2 = -turbulent.fluxes.sensible_heat.as_watts_per_square_meter();
-    let vapor_outward_kg_m2_s = -turbulent
-        .fluxes
-        .mass_flux
-        .as_kilograms_per_square_meter_second();
-    let latent_heat_j_kg = surface.latent_heat_j_kg;
+    let vapor_outward_kg_m2_s = open_snow_vapor_outward_kg_m2_s(
+        forcing.reference_specific_humidity_kg_kg,
+        snow_specific_humidity_kg_kg,
+        turbulent
+            .fluxes
+            .mass_flux
+            .as_kilograms_per_square_meter_second(),
+    );
     let latent_energy_outward_j_m2 = vapor_outward_kg_m2_s
         * latent_heat_j_kg
         * f64::from_bits(forcing.support.duration_s_bits());
@@ -738,25 +771,48 @@ mod tests {
     }
 
     #[test]
-    fn open_precipitation_custody_is_fail_closed() {
+    fn open_precipitation_custody_is_sealed_and_domain_checked() {
         let mut rain = forcing_inputs("open-a");
         rain.rain_m = 1.0e-3;
-        assert!(matches!(
-            SealedOpenSnowTileForcingV1::try_new(rain),
-            Err(SnowStage3HandoffError::InvalidCarrier(
-                "open-snow precipitation custody is unavailable"
-            ))
-        ));
+        rain.precipitation_parcel_count = 1;
+        assert!(SealedOpenSnowTileForcingV1::try_new(rain).is_ok());
         let mut snow = forcing_inputs("open-a");
         snow.snowfall_m = 1.0e-3;
-        assert!(SealedOpenSnowTileForcingV1::try_new(snow).is_err());
+        snow.precipitation_parcel_count = 1;
+        assert!(SealedOpenSnowTileForcingV1::try_new(snow).is_ok());
         let mut parcel = forcing_inputs("open-a");
         parcel.precipitation_parcel_count = 1;
-        assert!(SealedOpenSnowTileForcingV1::try_new(parcel).is_err());
+        assert!(SealedOpenSnowTileForcingV1::try_new(parcel).is_ok());
+
+        let mut negative = forcing_inputs("open-a");
+        negative.snowfall_m = -1.0e-3;
+        assert!(matches!(
+            SealedOpenSnowTileForcingV1::try_new(negative),
+            Err(SnowStage3HandoffError::InvalidCarrier(
+                "open-snow precipitation custody domain"
+            ))
+        ));
 
         let mut resealed_surface = SealedOpenSnowTileForcingV1::try_new(forcing_inputs("open-a"))
             .expect("dry sealed forcing");
         resealed_surface.rain_m = f64::from_bits(1);
         assert!(resealed_surface.validate().is_err());
+    }
+
+    #[test]
+    fn equal_open_snow_humidity_emits_positive_zero_and_one_bit_poison_uses_flux() {
+        let humidity = 0.003_757_503_415_507_667_5;
+        let mass_flux_into_snow = 1.25e-6;
+        assert_eq!(
+            open_snow_vapor_outward_kg_m2_s(humidity, humidity, mass_flux_into_snow).to_bits(),
+            0.0_f64.to_bits(),
+        );
+
+        let one_bit_higher = f64::from_bits(humidity.to_bits() + 1);
+        assert_eq!(
+            open_snow_vapor_outward_kg_m2_s(humidity, one_bit_higher, mass_flux_into_snow,)
+                .to_bits(),
+            (-mass_flux_into_snow).to_bits(),
+        );
     }
 }

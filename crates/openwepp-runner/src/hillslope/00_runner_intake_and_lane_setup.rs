@@ -7,44 +7,47 @@ use std::path::{Path, PathBuf};
 use crate::hillslope::intake_lane_setup::{
     legacy_sunmap_horizontal_radpot_ly, saturation_vapor_pressure_kpa,
 };
-use openwepp_hillslope_orchestrator::runtime_inputs::{
-    DirectWinterHourlyContext, HillslopeClimateRuntimeRequest, HillslopeDirectClimateDayForcing,
-    SlopeRuntimeSurfaceOptions,
-    build_hillslope_climate_runtime_request,
-    build_hillslope_pl_runtime_surfaces_from_management,
-    project_typed_frost_runtime, project_typed_snow_runtime, project_typed_soil_wb11_runtime,
-    TypedSoilWb11RuntimeProjection,
-};
-use openwepp_hillslope_orchestrator::{
-    DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs, DirectCanopyInterceptionInputs, DirectErod13Inputs,
-    DirectErosionInputs, DirectEvapotranspirationComputeInputs,
-    DirectEvapotranspirationPmetInputs, DirectEvapotranspirationStageState,
-    DirectDayFrame, DirectExecutorMode, DirectFrameExecutor,
-    DirectFrostControlInputs, DirectFrostFineLayerProjection, DirectFrostHourlyForcing,
-    DirectFrostLaneState, DirectFrostLayerCarryProjection, DirectFrostLayerInput,
-    DirectFrostLayerShadowProjection,
-    DirectFrostPriorStateInput, DirectFrostRuntimeCarry, DirectFrostThermalInputs,
-    FrostSeasonalTemperatureCurve,
-    DirectDecompositionAction, DirectDecompositionActiveContext, DirectDecompositionInputs,
-    DirectGroundwaterAuthority,
-    DirectGrowthAction, DirectGrowthActiveContext, DirectGrowthInputs, DirectGrowthStateSurface,
-    DirectHydrologyProjectionInputs, DirectKsatadjEffectiveConductivityInputs,
-    DirectKsatadjLayerInputs, DirectWinterFrostComputeInputs,
-    DirectWinterFrostPartitionOutcome,
-    DirectInfiltrationDepressionInputs, DirectLaneConstructorInputs, DirectLaneFrame,
-    DirectLiquidInputInputs, DirectPercolationInputs, DirectPublicationCalendarDay,
-    DirectPublicationDayInput, DirectPublicationDayRow, DirectPublicationRunMetadata,
-    DirectRunConstructorInputs, DirectRunFrame,
-    DirectRunIdentity, DirectRuntimeAuditSnapshot, DirectRuntimeError,
-    DirectStreamingPublicationExecution,
-    DirectSnowCouplingInputs, DirectSnowHourlyForcing, DirectSnowLaneState,
-    DirectResiduePartitionInputs, DirectStorageInputInputs, DirectSubsurfaceComputeInputs,
-    DirectSubsurfaceLayerState, DirectWb14HyetographInterval,
-    DirectWb14InfiltrationProducerInputs,
-    Wb11HydrologyKernel, compute_direct_canopy_interception, direct_runtime_audit_snapshot,
-};
 #[cfg(test)]
 use openwepp_hillslope_orchestrator::DirectRunPublicationFrame;
+use openwepp_hillslope_orchestrator::runtime_inputs::{
+    DirectWinterHourlyContext, HillslopeClimateRuntimeRequest, HillslopeDirectClimateDayForcing,
+    PreparedSnowFreeGsiDayV1, SlopeRuntimeSurfaceOptions, TypedSoilWb11RuntimeProjection,
+    build_hillslope_climate_runtime_request, build_hillslope_pl_runtime_surfaces_from_management,
+    project_typed_frost_runtime, project_typed_snow_runtime, project_typed_soil_wb11_runtime,
+};
+use openwepp_hillslope_orchestrator::snow_stage3_terminal_handoff::SealedCoveredCarrierForcing;
+use openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::{
+    DirectSnowStage3V11AttachmentError, PreparedStage3V11SupportIdentityV1,
+};
+use openwepp_hillslope_orchestrator::v9_real_consumer_shadow::{
+    DirectV9ShadowIntervalInput, DirectV11SnowCoveredSegmentInput,
+};
+use openwepp_hillslope_orchestrator::{
+    DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs,
+    DirectCanopyInterceptionInputs, DirectDayFrame, DirectDecompositionAction,
+    DirectDecompositionActiveContext, DirectDecompositionInputs, DirectErod13Inputs,
+    DirectErosionInputs, DirectEvapotranspirationComputeInputs, DirectEvapotranspirationPmetInputs,
+    DirectEvapotranspirationStageState, DirectExecutorMode, DirectFrameExecutor,
+    DirectFrostControlInputs, DirectFrostFineLayerProjection, DirectFrostHourlyForcing,
+    DirectFrostLaneState, DirectFrostLayerCarryProjection, DirectFrostLayerInput,
+    DirectFrostLayerShadowProjection, DirectFrostPriorStateInput, DirectFrostRuntimeCarry,
+    DirectFrostThermalInputs, DirectGroundwaterAuthority, DirectGrowthAction,
+    DirectGrowthActiveContext, DirectGrowthInputs, DirectGrowthStateSurface,
+    DirectHydrologyProjectionInputs, DirectInfiltrationDepressionInputs,
+    DirectKsatadjEffectiveConductivityInputs, DirectKsatadjLayerInputs,
+    DirectLaneConstructorInputs, DirectLaneFrame, DirectLiquidInputInputs, DirectPercolationInputs,
+    DirectPublicationCalendarDay, DirectPublicationDayInput, DirectPublicationDayRow,
+    DirectPublicationRunMetadata, DirectResiduePartitionInputs, DirectRunConstructorInputs,
+    DirectRunFrame, DirectRunIdentity, DirectRuntimeAuditSnapshot, DirectRuntimeError,
+    DirectSnowCouplingInputs, DirectSnowHourlyForcing, DirectSnowLaneState,
+    DirectSnowStage3SupportInput, DirectSnowStage3V11DestinationCapabilityV1,
+    DirectSnowStage3V11DualRegimeSupportInputsV1, DirectStorageInputInputs,
+    DirectStreamingPublicationExecution, DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerState,
+    DirectWb14HyetographInterval, DirectWb14InfiltrationProducerInputs,
+    DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome,
+    FrostSeasonalTemperatureCurve, Wb11HydrologyKernel, compute_direct_canopy_interception,
+    direct_runtime_audit_snapshot,
+};
 use openwepp_hillslope_output::contracts::{HillslopeOutputConfig, validate_output_contract};
 use openwepp_hillslope_output::hillslope_pass::{
     HillslopePassParquetRowGroupWriter, HillslopePassRow,
@@ -82,9 +85,7 @@ use openwepp_input_contract::parsers::soil::{
 use openwepp_input_contract::parsers::wepp_ui::{
     WeppUiParseResult, WeppUiParserOptions, parse_wepp_ui_from_path,
 };
-use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue,
-};
+use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
 use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
     SidecarRequirement, adapt_sidecar_bindings,
@@ -97,17 +98,17 @@ use crate::api::{
     HillslopeRuntimeSelection, HillslopeRuntimeSelectionPolicy,
     HillslopeRuntimeSelectionResolution,
 };
-use crate::hillslope::intake_lane_setup::StaticOfeLaneSlice;
 use crate::constants::{
     DAILY_EXECUTION_LANE, DAILY_TIMESTEP_SECONDS, DIRECT_PUBLICATION_FRAME_PUBLICATION_SOURCE,
     HILLSLOPE_RUN_MANIFEST_SCHEMA_ID, HILLSLOPE_RUNFILE_SCHEMA_ID, HOURLY_EXECUTION_LANE,
     HOURLY_TIMESTEP_SECONDS, REQUIRED_RUN_OUTPUT_LOSS, REQUIRED_RUN_OUTPUT_PASS,
     SIMCONS_INTAKE_GUARD_ID, SIMCOUP_GUARD_ID, SIMIMPL09_ADOPT_PROFILE,
-    SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM,
-    SIMMODE_TIMESTEP_GUARD_ID, SIMOUT_GUARD_ID, SIMPIPE_GUARD_ID, SUBHOURLY_EXECUTION_LANE,
-    WB13_PUBLICATION_SOURCE_DIRECT_PUBLICATION_FRAME, WUI_MODE_GUARD_ID,
+    SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM, SIMMODE_TIMESTEP_GUARD_ID, SIMOUT_GUARD_ID,
+    SIMPIPE_GUARD_ID, SUBHOURLY_EXECUTION_LANE, WB13_PUBLICATION_SOURCE_DIRECT_PUBLICATION_FRAME,
+    WUI_MODE_GUARD_ID,
 };
 use crate::errors::HillslopeCliError;
+use crate::hillslope::intake_lane_setup::StaticOfeLaneSlice;
 use crate::release::write_release_sidecar_for_binary;
 use crate::role::BinaryRole;
 use crate::shared::{
@@ -120,7 +121,6 @@ const EROD14_QIN_POLICY_WAVE2_DISABLED: &str = "wave2-disabled";
 // Wave-1 hourly sediment-coupled handoff (prior-lane erosion qout + qsout +
 // class fractions + continuity state), never a water-transfer substitute.
 const EROD14_QIN_POLICY_WAVE1_SEDIMENT_COUPLED: &str = "wave1-hourly-sediment-coupled-handoff";
-
 
 #[derive(Debug, Serialize)]
 struct HillslopeRunManifest {
@@ -140,6 +140,7 @@ struct HillslopeRunManifest {
     resolved_sidecars: BTreeMap<String, String>,
     input_checksums: BTreeMap<String, String>,
     output_checksums: BTreeMap<String, String>,
+    stage3_evidence_archive: HillslopeStage3EvidenceArchiveProvenance,
     wat5_output: HillslopeWat5OutputProvenance,
     runtime_selection: HillslopeRuntimeSelectionProvenance,
     mode_selection: HillslopeModeSelectionProvenance,
@@ -159,6 +160,22 @@ struct HillslopeWat5OutputProvenance {
     selector: &'static str,
     output_path: Option<String>,
     dataset_schema: Option<&'static str>,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeStage3EvidenceArchiveProvenance {
+    schema: &'static str,
+    output_path: String,
+    record_count: u64,
+    ordered_root_sha256: openwepp_coupled_time::Digest32,
+    canonical_uncompressed_bytes: u64,
+    stored_record_bytes: u64,
+    archived_day_count: usize,
+    ordered_day_chain_sha256: openwepp_coupled_time::Digest32,
+    archive_content_root_sha256: openwepp_coupled_time::Digest32,
+    archived_prefix_receipt_sha256: openwepp_coupled_time::Digest32,
+    archive_manifest:
+        openwepp_hillslope_orchestrator::Stage3CommittedDayArchiveManifestV1,
 }
 
 #[derive(Debug, Serialize)]
@@ -544,6 +561,7 @@ struct HillslopeRunfileInputs {
     #[serde(default)]
     wepp_ui: bool,
     pmetpara: Option<String>,
+    snow_stage3_v11_owner_seed: Option<String>,
     snow: Option<RunfileSnowInline>,
     frost: Option<RunfileFrostInline>,
 }
@@ -588,6 +606,7 @@ struct RunfileFrostInline {
 struct RunfileSidecarOverrides {
     wepp_ui: bool,
     pmetpara_path: Option<PathBuf>,
+    snow_stage3_v11_owner_seed_path: Option<PathBuf>,
     snow: Option<RunfileSnowInline>,
     frost: Option<RunfileFrostInline>,
 }
@@ -635,6 +654,7 @@ struct HillslopeSidecarInputPaths {
     wepp_ui: Option<PathBuf>,
     pmetpara: Option<PathBuf>,
     gwcoeff: Option<PathBuf>,
+    snow_stage3_v11_owner_seed: Option<PathBuf>,
 }
 
 struct HillslopeSidecarResolution {
@@ -648,6 +668,7 @@ struct HillslopeSidecarResolution {
     sidecar_warnings: Vec<String>,
     input_paths: HillslopeSidecarInputPaths,
     discovery_mode: &'static str,
+    snow_stage3_v11_owner_seed_path: Option<PathBuf>,
 }
 
 struct StaticHillslopeRuntimeSetup {
@@ -668,6 +689,7 @@ struct HillslopeClimateExecution {
     climate_span: ClimateRunSpanSummary,
     coupling_vectors: HillslopeCouplingVectorProvenance,
     multi_ofe_wave1_chained: bool,
+    #[cfg(test)]
     laned_shadow: Option<crate::hillslope::laned_shadow::LanedShadowSummary>,
     laned_active: Option<openwepp_hillslope_orchestrator::DirectLanedActiveRunSummary>,
     scheduler_outcome_class: &'static str,
@@ -691,9 +713,15 @@ struct DirectPublicationArtifacts {
 struct RetainedDirectPublication {
     execution: DirectStreamingPublicationExecution,
     stream: DirectPublicationStreamResult,
+    stage3_archive: crate::hillslope::transaction_spool::CanonicalRecordSpoolSeal,
+    stage3_archived_prefix:
+        openwepp_hillslope_orchestrator::Stage3ArchivedReceiptPrefixV1,
+    stage3_archive_manifest:
+        openwepp_hillslope_orchestrator::Stage3CommittedDayArchiveManifestV1,
     /// Lane D seam shadow summary (`OPENWEPP_LANED_SHADOW=1` opt-in);
     /// `None` when the shadow is off — the manifest then carries no
     /// shadow keys (`INV-OFEROUTE-010` byte-identity posture).
+    #[cfg(test)]
     laned_shadow: Option<crate::hillslope::laned_shadow::LanedShadowSummary>,
     /// Lane D ACTIVE owner run summary (`OPENWEPP_LANED_ACTIVE=1` opt-in,
     /// rev 27); `None` when inactive — the manifest then carries no active
@@ -741,6 +769,7 @@ struct HillslopeManifestPublication<'a> {
     argv: &'a [String],
     inputs: &'a ParsedHillslopeRunInputs,
     targets: &'a HillslopeOutputTargets,
+    stage3_evidence_archive: HillslopeStage3EvidenceArchiveProvenance,
     sidecars: HillslopeSidecarManifestInputs<'a>,
     timestep_policy: HillslopeTimestepPolicyProvenance,
     adapter_boundary: HillslopeAdapterBoundaryProvenance,
@@ -801,14 +830,12 @@ fn parse_hillslope_slope_input(
     request: &HillslopeRunRequest,
     slope_path: &Path,
 ) -> Result<SlopeProfile, HillslopeCliError> {
-    parse_slope_file(
-        slope_path,
-        request.sidecar_policy.as_slope_parser_options(),
+    parse_slope_file(slope_path, request.sidecar_policy.as_slope_parser_options()).map_err(
+        |error| HillslopeCliError::ParseFailure {
+            surface: "slope",
+            detail: error.to_string(),
+        },
     )
-    .map_err(|error| HillslopeCliError::ParseFailure {
-        surface: "slope",
-        detail: error.to_string(),
-    })
 }
 
 fn parse_hillslope_management_input(
@@ -880,12 +907,15 @@ fn resolve_hillslope_output_targets(
 ) -> Result<HillslopeOutputTargets, HillslopeCliError> {
     let [output_pass, output_loss] = required_output_paths(&runfile.output_config);
     let optional_outputs = optional_output_paths(&runfile.output_config);
+    #[cfg(test)]
     let laned_active_trace = crate::hillslope::laned_active::trace_enabled().then(|| {
         output_pass.parent().map_or_else(
             || PathBuf::from("laned_active_trace.jsonl"),
             |parent| parent.join("laned_active_trace.jsonl"),
         )
     });
+    #[cfg(not(test))]
+    let laned_active_trace = None;
     let output_hillslope_id = parse_hillslope_id_from_output_pass_path(&output_pass)?;
     Ok(HillslopeOutputTargets {
         output_pass,
@@ -939,12 +969,25 @@ fn resolve_legacy_hillslope_sidecars(
     let mut input_paths = HillslopeSidecarInputPaths::default();
     let snow_path = legacy_sidecar_path(&sidecar_response.bindings, "snow", request, "snow.txt");
     let frost_path = legacy_sidecar_path(&sidecar_response.bindings, "frost", request, "frost.txt");
-    let wepp_ui_path =
-        legacy_sidecar_path(&sidecar_response.bindings, "wepp_ui", request, "wepp_ui.txt");
-    let pmetpara_path =
-        legacy_sidecar_path(&sidecar_response.bindings, "pmetpara", request, "pmetpara.txt");
-    let gwcoeff_path =
-        legacy_sidecar_path(&sidecar_response.bindings, "gwcoeff", request, "gwcoeff.txt");
+    let wepp_ui_path = legacy_sidecar_path(
+        &sidecar_response.bindings,
+        "wepp_ui",
+        request,
+        "wepp_ui.txt",
+    );
+    let pmetpara_path = legacy_sidecar_path(
+        &sidecar_response.bindings,
+        "pmetpara",
+        request,
+        "pmetpara.txt",
+    );
+    let gwcoeff_path = legacy_sidecar_path(
+        &sidecar_response.bindings,
+        "gwcoeff",
+        request,
+        "gwcoeff.txt",
+    );
+    let snow_stage3_v11_owner_seed_path = request.run_dir.join("snow_stage3_v11_owner_seed.json");
     record_existing_legacy_sidecars(
         &mut resolved_sidecars,
         &mut input_paths,
@@ -953,6 +996,12 @@ fn resolve_legacy_hillslope_sidecars(
         &wepp_ui_path,
         &pmetpara_path,
         &gwcoeff_path,
+    );
+    record_existing_sidecar(
+        &mut resolved_sidecars,
+        &mut input_paths.snow_stage3_v11_owner_seed,
+        "snow_stage3_v11_owner_seed",
+        &snow_stage3_v11_owner_seed_path,
     );
 
     let snow = parse_legacy_snow_sidecar(request, &snow_path)?;
@@ -977,6 +1026,9 @@ fn resolve_legacy_hillslope_sidecars(
         sidecar_warnings,
         input_paths,
         discovery_mode: "legacy-sidecar-discovery",
+        snow_stage3_v11_owner_seed_path: snow_stage3_v11_owner_seed_path
+            .is_file()
+            .then_some(snow_stage3_v11_owner_seed_path),
     })
 }
 
@@ -1038,7 +1090,12 @@ fn record_existing_legacy_sidecars(
     gwcoeff_path: &Path,
 ) {
     record_existing_sidecar(resolved_sidecars, &mut input_paths.snow, "snow", snow_path);
-    record_existing_sidecar(resolved_sidecars, &mut input_paths.frost, "frost", frost_path);
+    record_existing_sidecar(
+        resolved_sidecars,
+        &mut input_paths.frost,
+        "frost",
+        frost_path,
+    );
     record_existing_sidecar(
         resolved_sidecars,
         &mut input_paths.wepp_ui,
@@ -1143,21 +1200,21 @@ fn parse_gwcoeff_sidecar(
     request: &HillslopeRunRequest,
     gwcoeff_path: &Path,
 ) -> Result<GwcoeffFile, HillslopeCliError> {
-    parse_gwcoeff_from_path(gwcoeff_path, request.sidecar_policy.as_gwcoeff_parse_options())
-        .map_err(|error| HillslopeCliError::ParseFailure {
-            surface: "gwcoeff",
-            detail: error.to_string(),
-        })
+    parse_gwcoeff_from_path(
+        gwcoeff_path,
+        request.sidecar_policy.as_gwcoeff_parse_options(),
+    )
+    .map_err(|error| HillslopeCliError::ParseFailure {
+        surface: "gwcoeff",
+        detail: error.to_string(),
+    })
 }
 
 fn gwcoeff_warnings(gwcoeff: &GwcoeffFile) -> impl Iterator<Item = String> + '_ {
-    gwcoeff.warnings.iter().map(|warning| {
-        format!(
-            "{} {}",
-            warning.code.as_str(),
-            warning.message
-        )
-    })
+    gwcoeff
+        .warnings
+        .iter()
+        .map(|warning| format!("{} {}", warning.code.as_str(), warning.message))
 }
 
 fn resolve_runfile_hillslope_sidecars(
@@ -1188,7 +1245,12 @@ fn resolve_runfile_hillslope_sidecars(
         "wepp_ui",
         &wepp_ui_path,
     );
-    let wepp_ui = parse_wepp_ui_sidecar(request, &wepp_ui_path, sidecar_overrides.wepp_ui, soil_versions)?;
+    let wepp_ui = parse_wepp_ui_sidecar(
+        request,
+        &wepp_ui_path,
+        sidecar_overrides.wepp_ui,
+        soil_versions,
+    )?;
     sidecar_warnings.extend(wepp_ui_warnings(&wepp_ui));
     let pmetpara = parse_runfile_pmetpara_sidecar(
         request,
@@ -1205,6 +1267,14 @@ fn resolve_runfile_hillslope_sidecars(
     );
     let gwcoeff = parse_gwcoeff_sidecar(request, &default_gwcoeff_path)?;
     sidecar_warnings.extend(gwcoeff_warnings(&gwcoeff));
+    if let Some(path) = sidecar_overrides.snow_stage3_v11_owner_seed_path.as_ref() {
+        record_existing_sidecar(
+            &mut resolved_sidecars,
+            &mut input_paths.snow_stage3_v11_owner_seed,
+            "snow_stage3_v11_owner_seed",
+            path,
+        );
+    }
 
     Ok(HillslopeSidecarResolution {
         snow,
@@ -1219,6 +1289,7 @@ fn resolve_runfile_hillslope_sidecars(
         sidecar_warnings,
         input_paths,
         discovery_mode: "runfile-sidecar-overrides",
+        snow_stage3_v11_owner_seed_path: sidecar_overrides.snow_stage3_v11_owner_seed_path.clone(),
     })
 }
 
@@ -1370,8 +1441,9 @@ fn build_static_hillslope_runtime_setup(
         .collect::<Vec<_>>();
     let per_ofe_runoff_publication_geometries =
         build_per_ofe_runoff_publication_geometries(&static_per_ofe_slices)?;
-    let lane_context =
-        crate::hillslope::intake_lane_setup::build_execution_lane_context(&sidecars.mode_selection)?;
+    let lane_context = crate::hillslope::intake_lane_setup::build_execution_lane_context(
+        &sidecars.mode_selection,
+    )?;
     let timestep_policy =
         crate::hillslope::intake_lane_setup::build_timestep_policy_provenance(&lane_context);
     let adapter_boundary =

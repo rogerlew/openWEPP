@@ -523,7 +523,8 @@ impl CoupledOwnedState {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct SnowFreeForcing {
     pub air_temperature_k: f64,
     pub pressure_pa: f64,
@@ -546,7 +547,8 @@ pub struct SnowFreeForcing {
     pub gsi: f64,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct SoilLayerForcing {
     pub layer_id: SoilLayerId,
     pub water_beginning_kg_m2: f64,

@@ -744,6 +744,9 @@ impl Stage3LowerBoundaryEnergyOperands {
     }
 }
 
+/// The variants remain inline because this public operand shape is embedded in
+/// accepted transaction state; boxing would change its API and memory layout.
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, PartialEq)]
 pub enum CoveredLowerBoundaryEnergyOperands {
     SnowFree(TileEnergyOperandSet),
@@ -769,6 +772,101 @@ pub struct CoveredTileEnergyOperandSet {
 }
 
 impl CoveredTileEnergyOperandSet {
+    fn validate_stage3_lower_boundary_join(
+        &self,
+        stage3: &Stage3LowerBoundaryEnergyOperands,
+    ) -> Result<(), LandSurfaceEnergyError> {
+        // A provisional LSE solve has to be allowed to produce the
+        // corrected optical and reciprocal-longwave values that seal
+        // the next boundary. Once the final receipt is attached,
+        // however, every primitive is an exact cross-join. This keeps
+        // the solve fail-closed without mistaking its predictor for
+        // the accepted transaction.
+        let final_receipt_sealed = stage3.final_canopy_boundary_receipt_sha256.is_some();
+        let joins_match = stage3.optical.terminal_w_m2_tile
+            == self.column.shortwave.ground_terminal_w_m2_tile
+            && stage3.optical.absorbed_w_m2_tile == self.column.shortwave.ground_absorbed_w_m2_tile
+            && stage3.optical.reflected_w_m2_tile
+                == self.column.shortwave.ground_reflected_w_m2_tile
+            && stage3.sensible_to_canopy_air_w_m2_tile.to_bits()
+                == self
+                    .column
+                    .canopy_air
+                    .ground_sensible_to_canopy_air_w_m2_tile
+                    .to_bits()
+            && stage3.vapor_to_canopy_air_kg_m2_tile_s.to_bits()
+                == self
+                    .column
+                    .canopy_air
+                    .ground_vapor_to_canopy_air_kg_m2_tile_s
+                    .to_bits()
+            && stage3.net_longwave_w_m2_tile.to_bits()
+                == self.column.longwave.ground_net_w_m2_tile.to_bits()
+            && stage3.boundary_energy_w_m2_tile.to_bits()
+                == self.column.stage3_lower_boundary_energy_w_m2_tile.to_bits();
+        if final_receipt_sealed && !joins_match {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "Stage-3 lower-boundary/column operand join",
+            ));
+        }
+        let reconstructed = stage3.optical.absorbed_w_m2_tile.total()
+            + stage3.net_longwave_w_m2_tile
+            + stage3.precipitation_advection_w_m2_tile
+            - stage3.sensible_to_canopy_air_w_m2_tile
+            - stage3.vapor_to_canopy_air_kg_m2_tile_s * stage3.latent_heat_j_kg;
+        if reconstructed.to_bits() != stage3.boundary_energy_w_m2_tile.to_bits() {
+            return Err(LandSurfaceEnergyError::ControlVolumeClosure(
+                "Stage-3 independently reconstructed lower boundary",
+            ));
+        }
+        if final_receipt_sealed
+            && (stage3.optical_receipt_sha256.as_ref()
+                != self.column.optical_receipt_sha256.as_ref()
+                || stage3.reciprocal_longwave_receipt_sha256.as_ref()
+                    != self.column.reciprocal_longwave_receipt_sha256.as_ref()
+                || stage3.final_canopy_boundary_receipt_sha256.as_ref()
+                    != self.column.final_canopy_boundary_receipt_sha256.as_ref())
+        {
+            return Err(LandSurfaceEnergyError::StateLineage(
+                "Stage-3 lower-boundary receipt identity join",
+            ));
+        }
+        Ok(())
+    }
+
+    fn validate_snow_free_lower_boundary_join(
+        &self,
+        ground: &TileEnergyOperandSet,
+    ) -> Result<(), LandSurfaceEnergyError> {
+        if ground.surface.absorbed_shortwave_w_m2.to_bits()
+            != self
+                .column
+                .shortwave
+                .ground_absorbed_w_m2_tile
+                .total()
+                .to_bits()
+            || ground.surface.sensible_w_m2.to_bits()
+                != self
+                    .column
+                    .canopy_air
+                    .ground_sensible_to_canopy_air_w_m2_tile
+                    .to_bits()
+            || ground.surface.signed_vapor_kg_m2_s.to_bits()
+                != self
+                    .column
+                    .canopy_air
+                    .ground_vapor_to_canopy_air_kg_m2_tile_s
+                    .to_bits()
+            || ground.surface.net_longwave_w_m2.to_bits()
+                != self.column.longwave.ground_net_w_m2_tile.to_bits()
+        {
+            return Err(LandSurfaceEnergyError::ComponentClosure(
+                "covered ground/column energy join",
+            ));
+        }
+        Ok(())
+    }
+
     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
         self.column.validate()?;
         self.lower_boundary.validate()?;
@@ -776,64 +874,7 @@ impl CoveredTileEnergyOperandSet {
             (
                 CoveredColumnAuthority::V11SnowCovered,
                 CoveredLowerBoundaryEnergyOperands::Stage3SnowCovered(stage3),
-            ) => {
-                // A provisional LSE solve has to be allowed to produce the
-                // corrected optical and reciprocal-longwave values that seal
-                // the next boundary. Once the final receipt is attached,
-                // however, every primitive is an exact cross-join. This keeps
-                // the solve fail-closed without mistaking its predictor for
-                // the accepted transaction.
-                let final_receipt_sealed = stage3.final_canopy_boundary_receipt_sha256.is_some();
-                let joins_match = stage3.optical.terminal_w_m2_tile
-                    == self.column.shortwave.ground_terminal_w_m2_tile
-                    && stage3.optical.absorbed_w_m2_tile
-                        == self.column.shortwave.ground_absorbed_w_m2_tile
-                    && stage3.optical.reflected_w_m2_tile
-                        == self.column.shortwave.ground_reflected_w_m2_tile
-                    && stage3.sensible_to_canopy_air_w_m2_tile.to_bits()
-                        == self
-                            .column
-                            .canopy_air
-                            .ground_sensible_to_canopy_air_w_m2_tile
-                            .to_bits()
-                    && stage3.vapor_to_canopy_air_kg_m2_tile_s.to_bits()
-                        == self
-                            .column
-                            .canopy_air
-                            .ground_vapor_to_canopy_air_kg_m2_tile_s
-                            .to_bits()
-                    && stage3.net_longwave_w_m2_tile.to_bits()
-                        == self.column.longwave.ground_net_w_m2_tile.to_bits()
-                    && stage3.boundary_energy_w_m2_tile.to_bits()
-                        == self.column.stage3_lower_boundary_energy_w_m2_tile.to_bits();
-                if final_receipt_sealed && !joins_match {
-                    return Err(LandSurfaceEnergyError::ComponentClosure(
-                        "Stage-3 lower-boundary/column operand join",
-                    ));
-                }
-                let reconstructed = stage3.optical.absorbed_w_m2_tile.total()
-                    + stage3.net_longwave_w_m2_tile
-                    + stage3.precipitation_advection_w_m2_tile
-                    - stage3.sensible_to_canopy_air_w_m2_tile
-                    - stage3.vapor_to_canopy_air_kg_m2_tile_s * stage3.latent_heat_j_kg;
-                if reconstructed.to_bits() != stage3.boundary_energy_w_m2_tile.to_bits() {
-                    return Err(LandSurfaceEnergyError::ControlVolumeClosure(
-                        "Stage-3 independently reconstructed lower boundary",
-                    ));
-                }
-                if final_receipt_sealed
-                    && (stage3.optical_receipt_sha256.as_ref()
-                        != self.column.optical_receipt_sha256.as_ref()
-                        || stage3.reciprocal_longwave_receipt_sha256.as_ref()
-                            != self.column.reciprocal_longwave_receipt_sha256.as_ref()
-                        || stage3.final_canopy_boundary_receipt_sha256.as_ref()
-                            != self.column.final_canopy_boundary_receipt_sha256.as_ref())
-                {
-                    return Err(LandSurfaceEnergyError::StateLineage(
-                        "Stage-3 lower-boundary receipt identity join",
-                    ));
-                }
-            }
+            ) => self.validate_stage3_lower_boundary_join(stage3)?,
             (
                 CoveredColumnAuthority::V11SnowCovered,
                 CoveredLowerBoundaryEnergyOperands::SnowFree(_),
@@ -848,32 +889,7 @@ impl CoveredTileEnergyOperandSet {
                 ));
             }
             (_, CoveredLowerBoundaryEnergyOperands::SnowFree(ground)) => {
-                if ground.surface.absorbed_shortwave_w_m2.to_bits()
-                    != self
-                        .column
-                        .shortwave
-                        .ground_absorbed_w_m2_tile
-                        .total()
-                        .to_bits()
-                    || ground.surface.sensible_w_m2.to_bits()
-                        != self
-                            .column
-                            .canopy_air
-                            .ground_sensible_to_canopy_air_w_m2_tile
-                            .to_bits()
-                    || ground.surface.signed_vapor_kg_m2_s.to_bits()
-                        != self
-                            .column
-                            .canopy_air
-                            .ground_vapor_to_canopy_air_kg_m2_tile_s
-                            .to_bits()
-                    || ground.surface.net_longwave_w_m2.to_bits()
-                        != self.column.longwave.ground_net_w_m2_tile.to_bits()
-                {
-                    return Err(LandSurfaceEnergyError::ComponentClosure(
-                        "covered ground/column energy join",
-                    ));
-                }
+                self.validate_snow_free_lower_boundary_join(ground)?;
             }
         }
         Ok(())
@@ -1862,8 +1878,14 @@ fn build_covered_energy_operands(
                 ground_sensible_to_canopy_air_w_m2_tile: evaluation
                     .ground_sensible_to_canopy_air_w_m2,
                 ground_vapor_to_canopy_air_kg_m2_tile_s: ground_vapor,
+                canopy_sensible_w_m2_tile: evaluation.canopy_sensible_w_m2,
+                canopy_vapor_kg_m2_tile_s: evaluation.canopy_vapor_kg_m2_s,
                 sensible_to_reference_air_w_m2_tile: evaluation.sensible_to_reference_air_w_m2,
                 vapor_to_reference_air_kg_m2_tile_s: evaluation.vapor_to_reference_air_kg_m2_s,
+                shared_heat_residual_w_m2_tile: evaluation.shared_heat_residual_w_m2,
+                shared_heat_tolerance_w_m2_tile: evaluation.shared_heat_tolerance_w_m2,
+                shared_vapor_residual_kg_m2_tile_s: evaluation.shared_vapor_residual_kg_m2_s,
+                shared_vapor_tolerance_kg_m2_tile_s: evaluation.shared_vapor_tolerance_kg_m2_s,
             },
             shortwave: CoveredColumnShortwaveOperands {
                 incident_w_m2_tile: phase.beginning.shortwave.incident_w_m2_tile,
@@ -2222,6 +2244,8 @@ fn accepted_covered_vegetation_operands(
             (evaluation.emax_kg_m2_s[0] * block[4] + evaluation.emax_kg_m2_s[1] * block[5])
                 / maximum
         };
+        let signed_wet_phase_change_kg_m2_tile_ground =
+            evaluation.liquid.evaporation_kg_m2_tile - evaluation.liquid.condensation_kg_m2_tile;
         occupancies.push(AcceptedCoveredOccupancyOperands {
             occupancy_id: runtime_identity.occupancy_id.clone(),
             sun_leaf_area_m2_m2_tile_ground: input.sun.leaf_area_m2_m2_tile,
@@ -2237,7 +2261,7 @@ fn accepted_covered_vegetation_operands(
             beta_hyd,
             sun_leaf_temperature_k: evaluation.component_temperatures_k[0],
             shade_leaf_temperature_k: evaluation.component_temperatures_k[1],
-            wet_surface_temperature_k: evaluation.component_temperatures_k[2],
+            wet_surface_temperature_k: evaluation.liquid.wet_surface_temperature_k,
             dry_stem_temperature_k: evaluation.component_temperatures_k[3],
             sun_ci_pa: evaluation.ci_pa[0],
             shade_ci_pa: evaluation.ci_pa[1],
@@ -2253,8 +2277,7 @@ fn accepted_covered_vegetation_operands(
                 [0],
             shade_dark_respiration_umol_co2_m2_leaf_s: evaluation
                 .dark_respiration_umol_co2_m2_leaf_s[1],
-            signed_wet_phase_change_kg_m2_tile_ground: evaluation.wet_vapor_kg_m2_s
-                * phase.identity.interval_s,
+            signed_wet_phase_change_kg_m2_tile_ground,
             wet_phase_branch: evaluation.wet_branch,
             liquid: evaluation.liquid,
             root_water,
@@ -2489,11 +2512,12 @@ fn require_v10_exact_full_supply(
 }
 
 fn sealed_v10_nonpositive_assimilation(phase: &CoveredPotentialPhase) -> bool {
-    phase.beginning.authority == crate::CoveredColumnAuthority::V10NonpositiveAssimilation
+    phase.beginning.authority.admits_nonpositive_assimilation()
         && phase.gas_branches.iter().flatten().any(|branch| {
             matches!(
                 branch,
-                crate::V10LeafGasBranch::ExactZeroPar
+                crate::V10LeafGasBranch::Inactive
+                    | crate::V10LeafGasBranch::ExactZeroPar
                     | crate::V10LeafGasBranch::RespirationDominated
             )
         })
