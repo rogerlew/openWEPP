@@ -29,7 +29,7 @@ pub use v2::{
     SurfaceLiquidConfigurationRecordV2, SurfaceLiquidConfigurationV2, SurfaceLiquidOwnedStateV2,
     SurfaceLiquidOwnerClosureRecordV2, SurfaceLiquidOwnerEnvelopeV2,
     SurfaceLiquidOwnerModelDefinitionV2, SurfaceLiquidOwnerSourceIdentityV2,
-    SurfaceLiquidStateRecordV2, validate_surface_liquid_owner_mass_closure_v2,
+    SurfaceLiquidStateRecordV2, migrate_v1_to_v2, validate_surface_liquid_owner_mass_closure_v2,
 };
 pub use v2_restart::SurfaceLiquidOwnerRestartV2;
 pub use v3_projection::{

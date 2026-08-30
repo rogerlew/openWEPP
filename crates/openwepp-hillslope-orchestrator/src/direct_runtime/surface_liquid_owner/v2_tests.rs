@@ -152,6 +152,24 @@ fn v1_migration_preserves_frozen_bytes_and_initializes_positive_zero_ice() {
 }
 
 #[test]
+fn named_v1_to_v2_migration_is_equivalent_and_rejects_poisoned_v1_identity() {
+    let configuration = configuration_v2();
+    let v1 = state(configuration.parent());
+    let enthalpy = enthalpy_by_key(configuration.parent());
+    let named =
+        migrate_v1_to_v2(&configuration, &v1, &enthalpy).expect("named checked V1 to V2 migration");
+    let associated = SurfaceLiquidOwnedStateV2::migrate_from_v1(&configuration, &v1, &enthalpy)
+        .expect("associated checked V1 to V2 migration");
+    assert_eq!(named, associated);
+
+    let mut poisoned = v1;
+    poisoned.state_sha256 = digest('f');
+    let error = migrate_v1_to_v2(&configuration, &poisoned, &enthalpy)
+        .expect_err("poisoned V1 digest must fail closed");
+    assert_eq!(error.code(), DirectSurfaceLiquidErrorCode::E002);
+}
+
+#[test]
 fn explicit_ice_seed_is_finite_bounded_and_never_donates_to_bare_surface() {
     let configuration = configuration_v2();
     let parent_state = state(configuration.parent());

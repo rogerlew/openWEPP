@@ -216,7 +216,7 @@ pub use direct_runtime::{
     SurfaceLiquidOwnerClosureRecordV2, SurfaceLiquidOwnerEnvelopeV2,
     SurfaceLiquidOwnerModelDefinitionV2, SurfaceLiquidOwnerRestartV2,
     SurfaceLiquidOwnerSourceIdentityV2, SurfaceLiquidStateRecordV2,
-    apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals,
+    apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals, migrate_v1_to_v2,
     validate_surface_liquid_owner_mass_closure_v2, zero_duration_snow_liquid_receipt_set_sha256,
 };
 #[cfg(test)]

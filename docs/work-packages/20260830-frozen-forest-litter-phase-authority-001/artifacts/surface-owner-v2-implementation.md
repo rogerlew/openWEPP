@@ -17,7 +17,8 @@ changed. New modules below `direct_runtime/surface_liquid_owner/` implement:
 - explicit finite nonnegative liquid/liquid-water-equivalent-ice state and
   finite surface enthalpy;
 - checked V1-to-V2 migration with exact positive-zero ice and caller-supplied
-  enthalpy, without temperature-derived ice;
+  enthalpy, without temperature-derived ice, including the public one-way
+  `migrate_v1_to_v2` contract handoff and no production downgrade API;
 - immutable tagged V1/V2 owner envelopes, deterministic canonical bytes and
   digests, V2 restart framing/round-trip, and typed identity/domain failures;
 - candidate replacement that preserves the immutable beginning envelope and
@@ -37,12 +38,13 @@ nix develop -c cargo nextest run -p openwepp-hillslope-orchestrator \
   --lib surface_liquid_owner::v2_tests --no-fail-fast
 ```
 
-Result: `PASS`; Nextest run `07110ac1-de79-43fc-b4a6-d584b2947168`;
-7 passed, 0 failed, 1138 skipped. Vectors cover source/constant/capacity
+Result: `PASS`; Nextest run `73a65f16-4489-4623-93fa-6a1137c08e7f`;
+8 passed, 0 failed, 1157 skipped. Vectors cover source/constant/capacity
 identity, frozen V1 byte preservation, exact-zero migration, explicit-ice
 seed, bare-ice rejection, configuration/state/envelope/restart round-trip,
-test-only downgrade refusal, exact rollback, and independent phase-separated
-mass closure.
+named-wrapper equivalence and poisoned-V1 fail-closed rejection, test-only
+downgrade refusal, exact rollback, and independent phase-separated mass
+closure.
 
 Ran:
 
@@ -85,7 +87,8 @@ diagnostics in `surface_liquid_owner`, its two export blocks, or the new
 crate-root export block. No lint suppression was added, and this artifact does
 not misstate the full shared-crate Clippy as passing.
 
-Ran the v14 contract-derived focused vector after implementation:
+Ran the v14 and v15 contract-derived focused vectors after the projection and
+named migration handoff were present:
 
 ```text
 nix develop -c cargo nextest run \
@@ -94,11 +97,19 @@ nix develop -c cargo nextest run \
   --no-fail-fast
 ```
 
-Result: expected next-slice red; terminal Nextest run
-`6c7e9ab4-2aeb-4479-84cf-410875e0354c`. The source scan advanced past
-`pub enum SurfaceLiquidOwnerEnvelopeV2` and failed only on
-`SurfaceLiquidCompleteOwnerProjectionV3`, which this assignment explicitly
-excluded. This is not real-consumer or package-closure evidence.
+Result: `PASS`; Nextest run `cd135635-23e7-408e-804f-a5048ebb8f72`; 1
+passed, 14 skipped.
+
+```text
+nix develop -c cargo nextest run \
+  --test surface_liquid_hydrology_custody_authority_contract \
+  version_15_binds_exact_soil_energy_credit_custody_before_production \
+  --no-fail-fast
+```
+
+Result: `PASS`; Nextest run `5d74be15-9d75-420a-b095-8d182d465aa5`; 1
+passed, 14 skipped. These source-level authority filters do not replace the
+successor integration slice's real-consumer evidence.
 
 Ran: explicit `rustfmt` over all six touched Rust files: `PASS`.
 
@@ -119,6 +130,7 @@ SurfaceLiquidOwnerModelDefinitionV2
 SurfaceLiquidOwnerRestartV2
 SurfaceLiquidOwnerSourceIdentityV2
 SurfaceLiquidStateRecordV2
+migrate_v1_to_v2
 validate_surface_liquid_owner_mass_closure_v2
 ```
 
@@ -129,6 +141,6 @@ then construct the distinct `SurfaceLiquidCompleteOwnerProjectionV3`. It must
 not infer ice, donate current ingress, expose ice to WB14, or use the test-only
 zero-ice representation helper.
 
-Line counts at handoff: frozen `surface_liquid_owner.rs` 2933 lines (existing
-WARN); new `v2.rs` 1474 lines; new `v2_restart.rs` 158 lines; new
-`v2_tests.rs` 367 lines. No new file reaches the 2000-line warning threshold.
+Line counts at handoff: shared `surface_liquid_owner.rs` 2947 lines (existing
+WARN); new `v2.rs` 1487 lines; new `v2_restart.rs` 158 lines; new
+`v2_tests.rs` 385 lines. No new file reaches the 2000-line warning threshold.

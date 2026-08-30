@@ -556,6 +556,19 @@ struct CanonicalSurfaceLiquidOwnedStateV2 {
     continuations: Vec<super::CanonicalSurfaceLiquidContinuationState>,
 }
 
+/// Performs the one-way checked migration from the frozen V1 owner state.
+///
+/// The successor initializes every litter-ice field to exact positive zero and
+/// requires explicit enthalpy operands. Production intentionally exposes no
+/// inverse migration or downgrade path.
+pub fn migrate_v1_to_v2(
+    configuration: &SurfaceLiquidConfigurationV2,
+    state: &DirectSurfaceLiquidOwnedState,
+    surface_enthalpy_by_key: &BTreeMap<DirectSurfaceLiquidStoreKey, f64>,
+) -> Result<SurfaceLiquidOwnedStateV2, DirectSurfaceLiquidError> {
+    SurfaceLiquidOwnedStateV2::migrate_from_v1(configuration, state, surface_enthalpy_by_key)
+}
+
 impl SurfaceLiquidOwnedStateV2 {
     pub fn new_initial(
         configuration: &SurfaceLiquidConfigurationV2,
