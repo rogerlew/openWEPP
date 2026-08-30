@@ -1,6 +1,6 @@
 # Frozen forest-litter phase authority and implementation
 
-Status: `ACTIVE — AUTHORITY FREEZE`
+Status: `ACTIVE — CONTRACT-FIRST RED`
 
 Execution mode: `contract-first package-end-to-end`
 
@@ -44,8 +44,11 @@ order. This is a genuine distinct-authority successor, not a solver clamp.
 Use R-156 selected forest-litter equations and `T_ref=273.15 K`; use official
 SURFEX v8 `ice_litter` for `tau_ice=3300 s`, bounded kinetic ordering, and the
 conservation-resolved sign `phase=freeze-melt`; select `L_f=333700 J kg^-1`
-from that named instantiation. Record and test every discrepancy. Refuse
-`zertol` cleanup and later soil correction. No surrogate physics is allowed.
+from that named instantiation. Ice capacity is the source's liquid-water-
+equivalent `0.85*rho_w*dz`, and both litter phases use the paper's liquid-water
+saturation function. Record and test every discrepancy. Refuse `zertol`
+cleanup, `xwgmin` frozen-fraction regularization, and later soil correction.
+No surrogate physics is allowed.
 
 ## Intended write set
 
@@ -59,6 +62,8 @@ from that named instantiation. Record and test every discrepancy. Refuse
   listed in that manifest;
 - `tests/integration/land_surface_energy_balance_authority_contract.rs` and
   applicable surface-liquid authority/real-consumer tests;
+- `docs/sim-contract-boundary-units.md` and the exact boundary-unit registry
+  contract binding listed in the owned-file manifest;
 - `tools/release/authority-policy/impact-map.json` exact bindings only.
 
 ## Mandatory sequence
@@ -81,6 +86,11 @@ cleanup, ice-as-WB14 supply, current-ingress donation, and producer residuals.
 
 Risk is `CRITICAL`. Parameter posture is implementation/calibration-not-
 applicable: fixed published constants only, no empirical calibration claim.
+
+`SC-EVAP-001` remains unchanged: its daily WB17 soil/residue/canopy ET scope
+does not own this subdaily, pre-WB14 surface-liquid/ice vapor transaction.
+SC-LSE v14 owns that transaction and cross-binds SC-SURFACELIQUID v14 and
+SC-WATBAL-001 without admitting litter ice as WB14 supply or soil `frozwt`.
 
 Subagent authorization: REQUIRED. Standing user authority explicitly permits
 workers for bounded implementation ownership, comparator runners for heavy
