@@ -1,5 +1,15 @@
 # Work Packages
 
+## 20260830-workspace-gate-hold-lift-001
+
+Active owner-authorized hold-lift for the mandatory warnings-denied workspace
+Clippy and complete full-workspace correctness failures blocking the Stage-3
+fixed-point optimization package. It performs exact baseline/current failure
+classification, narrow behavior-preserving corrections, exact-clean heavy
+reruns through delegated comparator runners, dual review, and dual
+verification. Test weakening and implicit baseline waivers are forbidden.
+Status: `ACTIVE — INTAKE`.
+
 ## 20260830-snow-stage3-cold-content-fixed-point-optimization-001
 
 Executed owner-authorized optimization of the remaining Stage-3 covered
