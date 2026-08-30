@@ -356,9 +356,19 @@ fn execute_multi_tile_runtime_with_mode(
     pending_hook: PendingEnvelopeHook<'_>,
     validate_ofe_energy: bool,
 ) -> Result<MultiTileRuntimeResult, LandSurfaceEnergyShadowError> {
+    use crate::snow_stage3_v11_attachment::{
+        begin_adaptive_parent_fixed_point_phase_v1 as profile_start,
+        record_adaptive_parent_profile_detail_v1 as profile_record,
+    };
+
+    let topology_started = profile_start();
     let projected_tiles =
         validate_and_sort_projected_tiles(projected_tiles, surface_configuration)?;
+    profile_record("physical topology", topology_started);
+    let potential_started = profile_start();
     let potential_phases = solve_all_potential(projected_tiles, failure_hook)?;
+    profile_record("physical potential", potential_started);
+    let request_started = profile_start();
     let request_batch = combined_request_batch(&potential_phases)?;
     publish_pending_debug(
         pending_hook,
@@ -366,8 +376,10 @@ fn execute_multi_tile_runtime_with_mode(
         &request_batch,
     )?;
     run_failure_hook(failure_hook, MultiTileFailurePhase::CombinedRequests)?;
+    profile_record("physical request", request_started);
     let mut retained_final_tiles = None;
 
+    let unified_started = profile_start();
     let hydrology_candidate = super::covered_derived_ingress::execute_unified_with_derived_ingress(
         soil_adapter,
         surface_configuration,
@@ -376,6 +388,7 @@ fn execute_multi_tile_runtime_with_mode(
         soil_sources,
         ingress_schedule,
         |authorizations| {
+            let final_tile_started = profile_start();
             publish_pending(
                 pending_hook,
                 PendingPayloadKind::Authorization,
@@ -388,6 +401,8 @@ fn execute_multi_tile_runtime_with_mode(
                 failure_hook,
                 pending_hook,
             )?;
+            profile_record("physical final tile", final_tile_started);
+            let protocol_started = profile_start();
             let protocol = combined_protocol(&request_batch, authorizations, &final_tiles)?;
             publish_pending(pending_hook, PendingPayloadKind::FinalProtocol, &protocol)?;
             let ending_tiles = final_tiles
@@ -406,6 +421,8 @@ fn execute_multi_tile_runtime_with_mode(
                 soil_thermal,
                 rollback_hashes,
             )?;
+            profile_record("physical protocol", protocol_started);
+            let ingress_started = profile_start();
             let covered_final_tiles = final_tiles
                 .iter()
                 .filter_map(|tile| match tile {
@@ -440,9 +457,12 @@ fn execute_multi_tile_runtime_with_mode(
                 run_failure_hook(failure_hook, MultiTileFailurePhase::OpenIngress)?;
             }
             retained_final_tiles = Some(final_tiles);
+            profile_record("physical ingress", ingress_started);
             Ok((sealed, ingress))
         },
     )?;
+    profile_record("physical unified", unified_started);
+    let post_started = profile_start();
     run_failure_hook(failure_hook, MultiTileFailurePhase::UnifiedHydrology)?;
 
     let finalized_tiles = retained_final_tiles.ok_or(LandSurfaceEnergyShadowError::Identity(
@@ -458,6 +478,7 @@ fn execute_multi_tile_runtime_with_mode(
         Vec::new()
     };
     run_failure_hook(failure_hook, MultiTileFailurePhase::OfeEnergy)?;
+    profile_record("physical post", post_started);
     Ok(MultiTileRuntimeResult {
         potential_request_batch: request_batch,
         potential_tiles: potential_phases,

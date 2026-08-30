@@ -498,6 +498,7 @@ fn cqr_stage3_one_day_qualification_with_telemetry() {
         });
     let rows = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_parent_telemetry_v1();
     for row in &rows {
+        let profile = &row.profile_detail;
         eprintln!(
             "STAGE3_PARENT_TELEMETRY ordinal={} support={}..{} direct={} split={} accepted={} rejected={} owner_joins={} event_groups={} terminal_parcels={} publication_supports={} publication_events={} adaptive_bytes={:?} coupled_inline_bytes={} owner_bytes={:?} parent_ms={} cumulative_ms={}",
             row.parent_ordinal,
@@ -560,6 +561,32 @@ fn cqr_stage3_one_day_qualification_with_telemetry() {
             row.covered_child_memo_direct_hit_count,
             row.covered_child_memo_composed_hit_count,
             row.covered_child_memo_fallback_count,
+        );
+        eprintln!(
+            "STAGE3_PROFILE_DETAIL ordinal={} physical=topology{}ms/potential{}ms/request{}ms/unified{}ms/final_tile{}ms/protocol{}ms/ingress{}ms/post{}ms unified_detail=preflight{}ms/authorization{}ms/entry_validation{}ms/protocol_validation{}ms/candidate{}ms candidate_detail=soil{}ms/surface_resource{}ms/surface_ingress{}ms/receivers{}ms/validation{}ms finalization=candidate{}ms/sealed_source{}ms/install{}ms/identity_replay{}ms",
+            row.parent_ordinal,
+            profile.physical_topology_elapsed.as_millis(),
+            profile.physical_potential_elapsed.as_millis(),
+            profile.physical_request_elapsed.as_millis(),
+            profile.physical_unified_elapsed.as_millis(),
+            profile.physical_final_tile_elapsed.as_millis(),
+            profile.physical_protocol_elapsed.as_millis(),
+            profile.physical_ingress_elapsed.as_millis(),
+            profile.physical_post_elapsed.as_millis(),
+            profile.unified_preflight_elapsed.as_millis(),
+            profile.unified_authorization_elapsed.as_millis(),
+            profile.unified_entry_validation_elapsed.as_millis(),
+            profile.unified_protocol_validation_elapsed.as_millis(),
+            profile.unified_candidate_elapsed.as_millis(),
+            profile.candidate_soil_elapsed.as_millis(),
+            profile.candidate_surface_resource_elapsed.as_millis(),
+            profile.candidate_surface_ingress_elapsed.as_millis(),
+            profile.candidate_receivers_elapsed.as_millis(),
+            profile.candidate_validation_elapsed.as_millis(),
+            profile.finalization_candidate_elapsed.as_millis(),
+            profile.finalization_sealed_source_elapsed.as_millis(),
+            profile.finalization_install_elapsed.as_millis(),
+            profile.finalization_identity_replay_elapsed.as_millis(),
         );
     }
     let fixed_point_audit = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_covered_fixed_point_iteration_audit_v1();
@@ -720,6 +747,36 @@ fn cqr_stage3_first_covered_parent_fixed_point_diagnostic() {
                 ),
             )
         });
+    let rows = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_parent_telemetry_v1();
+    for row in &rows {
+        let profile = &row.profile_detail;
+        eprintln!(
+            "STAGE3_PROFILE_DETAIL ordinal={} physical=topology{}ms/potential{}ms/request{}ms/unified{}ms/final_tile{}ms/protocol{}ms/ingress{}ms/post{}ms unified_detail=preflight{}ms/authorization{}ms/entry_validation{}ms/protocol_validation{}ms/candidate{}ms candidate_detail=soil{}ms/surface_resource{}ms/surface_ingress{}ms/receivers{}ms/validation{}ms finalization=candidate{}ms/sealed_source{}ms/install{}ms/identity_replay{}ms",
+            row.parent_ordinal,
+            profile.physical_topology_elapsed.as_millis(),
+            profile.physical_potential_elapsed.as_millis(),
+            profile.physical_request_elapsed.as_millis(),
+            profile.physical_unified_elapsed.as_millis(),
+            profile.physical_final_tile_elapsed.as_millis(),
+            profile.physical_protocol_elapsed.as_millis(),
+            profile.physical_ingress_elapsed.as_millis(),
+            profile.physical_post_elapsed.as_millis(),
+            profile.unified_preflight_elapsed.as_millis(),
+            profile.unified_authorization_elapsed.as_millis(),
+            profile.unified_entry_validation_elapsed.as_millis(),
+            profile.unified_protocol_validation_elapsed.as_millis(),
+            profile.unified_candidate_elapsed.as_millis(),
+            profile.candidate_soil_elapsed.as_millis(),
+            profile.candidate_surface_resource_elapsed.as_millis(),
+            profile.candidate_surface_ingress_elapsed.as_millis(),
+            profile.candidate_receivers_elapsed.as_millis(),
+            profile.candidate_validation_elapsed.as_millis(),
+            profile.finalization_candidate_elapsed.as_millis(),
+            profile.finalization_sealed_source_elapsed.as_millis(),
+            profile.finalization_install_elapsed.as_millis(),
+            profile.finalization_identity_replay_elapsed.as_millis(),
+        );
+    }
     let fixed_point_audit = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_covered_fixed_point_iteration_audit_v1();
     let comparison_audit = openwepp_hillslope_orchestrator::snow_stage3_v11_attachment::take_adaptive_comparison_test_audit();
     for entry in &comparison_audit {
@@ -743,6 +800,7 @@ fn cqr_stage3_first_covered_parent_fixed_point_diagnostic() {
         format!("{error:?}").contains("diagnostic completed-parent telemetry stop"),
         "unexpected stop: {error:?}",
     );
+    assert_eq!(rows.len(), 5);
     assert!(fixed_point_audit.iter().any(|entry| {
         entry.support.duration_ns() == 120_000_000_000
             && entry.converged

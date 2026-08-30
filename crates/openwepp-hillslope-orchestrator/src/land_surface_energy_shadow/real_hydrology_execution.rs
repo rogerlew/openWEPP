@@ -564,22 +564,32 @@ fn construct_unified_candidate(
     wb14_parent_working_state: Option<&DirectWb14ParentWorkingState>,
     wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
 ) -> Result<UnifiedRealHydrologyCandidate, LandSurfaceEnergyShadowError> {
+    use crate::snow_stage3_v11_attachment::{
+        begin_adaptive_parent_fixed_point_phase_v1 as profile_start,
+        record_adaptive_parent_profile_detail_v1 as profile_record,
+    };
+
     let UnifiedLseFinalization {
         water_protocol,
         mut ending_tile_states_pre_ingress,
         mut soil_thermal_candidates,
         rollback_hashes,
     } = finalized;
+    let soil_started = profile_start();
     let (soil_uses, surface_uses) =
         partition_finalized_uses(&arbitration, &water_protocol.finalized_uses)?;
     let soil_candidate =
         soil_adapter.candidate_from_finalized_uses(&arbitration.soil, &soil_uses)?;
+    profile_record("candidate soil", soil_started);
+    let surface_resource_started = profile_start();
     let surface_resource = apply_surface_liquid_resource_phase(
         surface_configuration,
         &arbitration.surface,
         &surface_uses,
         &water_protocol.condensation_credits,
     )?;
+    profile_record("candidate surface resource", surface_resource_started);
+    let surface_ingress_started = profile_start();
     let surface_ingress = execute_surface_liquid_ingress_with_parent_state_and_coupled_binding(
         surface_configuration,
         &surface_resource,
@@ -588,6 +598,8 @@ fn construct_unified_candidate(
         finalize_wb14_parent_interval,
         wb14_coupled_child_binding,
     )?;
+    profile_record("candidate surface ingress", surface_ingress_started);
+    let receivers_started = profile_start();
     let mut ending_frame = soil_candidate.ending_frame().clone();
     let receiver_closure_operands = apply_ingress_to_real_receivers(
         soil_adapter.owner,
@@ -601,6 +613,8 @@ fn construct_unified_candidate(
         &rollback_hashes,
         &water_protocol.beginning_snapshot_sha256,
     )?;
+    profile_record("candidate receivers", receivers_started);
+    let validation_started = profile_start();
     ending_frame.surface_liquid_shadow = Some(Box::new(surface_ingress.ending_state().clone()));
     let candidate = UnifiedRealHydrologyCandidate {
         transaction_id: arbitration.transaction_id,
@@ -617,6 +631,7 @@ fn construct_unified_candidate(
         rollback_hashes,
     };
     candidate.validate(surface_configuration)?;
+    profile_record("candidate validation", validation_started);
     Ok(candidate)
 }
 

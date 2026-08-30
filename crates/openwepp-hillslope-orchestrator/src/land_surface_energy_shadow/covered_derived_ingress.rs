@@ -387,6 +387,12 @@ where
         LandSurfaceEnergyShadowError,
     >,
 {
+    use crate::snow_stage3_v11_attachment::{
+        begin_adaptive_parent_fixed_point_phase_v1 as profile_start,
+        record_adaptive_parent_profile_detail_v1 as profile_record,
+    };
+
+    let preflight_started = profile_start();
     let request_preflight = validate_request_before_authorization(
         soil_adapter,
         surface_configuration,
@@ -395,6 +401,8 @@ where
         soil_sources,
         schedule,
     )?;
+    profile_record("unified preflight", preflight_started);
+    let authorization_started = profile_start();
     let beginning_surface = soil_adapter
         .owner
         .beginning_frame()
@@ -439,10 +447,12 @@ where
         soil,
         surface,
     };
+    profile_record("unified authorization", authorization_started);
     let (finalized, ingress) = finalize_fixed_caps(&arbitration.authorizations)?;
 
     // Bind the exact derived bytes—not a fabricated placeholder—to the full
     // ingress identity, attempted-operation hash, and cadence preflight.
+    let entry_validation_started = profile_start();
     let actual_entry = super::unified_entry_preflight::validate_unified_entry(
         soil_adapter,
         surface_configuration,
@@ -460,14 +470,18 @@ where
             "derived ingress changed immutable request preflight",
         ));
     }
+    profile_record("unified entry validation", entry_validation_started);
+    let protocol_validation_started = profile_start();
     validate_final_protocol(
         &finalized.water_protocol,
         &arbitration,
         &request_preflight.actual_snapshot,
         &surface_configuration.owner_id,
     )?;
+    profile_record("unified protocol validation", protocol_validation_started);
     let finalized_protocol = finalized.water_protocol.clone();
-    construct_unified_candidate(
+    let candidate_started = profile_start();
+    let candidate = construct_unified_candidate(
         soil_adapter,
         surface_configuration,
         receiver_expectations,
@@ -479,7 +493,9 @@ where
         schedule.wb14_parent_working_state.as_ref(),
         schedule.wb14_coupled_child_binding,
     )
-    .map_err(|error| canonicalize_finalized_error(error, &finalized_protocol))
+    .map_err(|error| canonicalize_finalized_error(error, &finalized_protocol));
+    profile_record("unified candidate", candidate_started);
+    candidate
 }
 
 #[cfg(test)]

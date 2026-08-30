@@ -1,9 +1,23 @@
 # Line-count governance
 
-Status: PASS
+Status: HOLD — exact-current pre-existing `open_snow.rs` threshold breach
 
 Evidence mode: `Ran + Static`. Touched 2000+ `.rs` files retain WARN rationale;
-no non-generated `.rs` file is at or above the 3,000-line closure threshold.
+the exact-current `open_snow.rs` breach is recorded below and prevents a PASS.
+
+## 2026-08-29 profiling reconciliation
+
+Static: the profiling increment initially pushed
+`snow_stage3_v11_attachment.rs` above 3,000 lines. Its flat diagnostic fields
+were mechanically consolidated into `snow_stage3_v11_profile.rs`; terminal
+counts are `2,981` and `58` lines respectively, so that new breach is closed.
+
+Static: exact-current reconciliation also found `v11_covered/open_snow.rs` at
+`3,228` lines (`3,219` before the nine profiling timer lines). This supersedes
+the earlier statement that no 3,000+ path remained. The profiling-only owner
+direction does not authorize an unrelated 229-line mechanical split, and the
+package remains HOLD rather than claiming line-count closure. The detailed
+timers add no new nested state or control flow beyond result-blind timing calls.
 
 ## Terminal mechanical splits
 

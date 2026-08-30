@@ -305,3 +305,19 @@ workspace; no path was reverted or silently omitted.
 - `??` `tests/fixtures/watershed/p102-sediment-active/runs/H1.source.run.snow_stage3_v11_owner_seed.json`
 - `??` `tests/integration/common/`
 - `??` `tests/integration/snow_stage3_adaptive_compositional_contract.rs`
+
+## 2026-08-29 profiling-only follow-on
+
+- ` M` `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/covered_derived_ingress.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/multi_tile_runtime.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_adaptive_execution.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs`
+- `??` `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_profile.rs`
+- ` M` `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs`
+- ` M` `crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs`
+- ` M` `docs/work-packages/20260826-snow-stage3-adaptive-compositional-microstepping-001/artifacts/gate-results.md`
+- ` M` `docs/work-packages/20260826-snow-stage3-adaptive-compositional-microstepping-001/artifacts/implementation-intent.md`
+- ` M` `docs/work-packages/20260826-snow-stage3-adaptive-compositional-microstepping-001/artifacts/line-count-governance.md`
+- `??` `docs/work-packages/20260826-snow-stage3-adaptive-compositional-microstepping-001/artifacts/one-day-wall-time-attribution.md`
+- ` M` `docs/work-packages/20260826-snow-stage3-adaptive-compositional-microstepping-001/artifacts/owned-file-manifest.md`

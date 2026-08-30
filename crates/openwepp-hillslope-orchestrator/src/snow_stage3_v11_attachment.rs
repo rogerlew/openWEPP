@@ -7,6 +7,10 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+#[path = "snow_stage3_v11_profile.rs"]
+mod profile;
+pub use profile::AdaptiveParentProfileDetailV1;
+
 use openwepp_coupled_time::{
     AcceptedEventReceiptV1, ConstraintClass, CoupledClockStateV1, CoupledSlabCandidateV1, Digest32,
     EventClass, EventProposalV1, EventQueueV1, FramedField, LedgerEntryV1, ModelTimeNs, OwnerState,
@@ -159,6 +163,7 @@ pub struct AdaptiveParentTelemetryV1 {
     pub provisional_envelope_physical_elapsed: std::time::Duration,
     pub provisional_envelope_receipts_elapsed: std::time::Duration,
     pub provisional_envelope_owner_elapsed: std::time::Duration,
+    pub profile_detail: AdaptiveParentProfileDetailV1,
     pub fixed_point_stage3_elapsed: std::time::Duration,
     pub fixed_point_soil_elapsed: std::time::Duration,
     pub fixed_point_finalization_elapsed: std::time::Duration,
@@ -199,6 +204,7 @@ struct AdaptiveParentTelemetryAccumulatorV1 {
     provisional_envelope_physical_elapsed: std::time::Duration,
     provisional_envelope_receipts_elapsed: std::time::Duration,
     provisional_envelope_owner_elapsed: std::time::Duration,
+    profile_detail: AdaptiveParentProfileDetailV1,
     fixed_point_stage3_elapsed: std::time::Duration,
     fixed_point_soil_elapsed: std::time::Duration,
     fixed_point_finalization_elapsed: std::time::Duration,
@@ -310,6 +316,7 @@ pub(crate) fn record_adaptive_parent_telemetry_v1(mut row: AdaptiveParentTelemet
         row.provisional_envelope_receipts_elapsed =
             accumulator.provisional_envelope_receipts_elapsed;
         row.provisional_envelope_owner_elapsed = accumulator.provisional_envelope_owner_elapsed;
+        row.profile_detail = accumulator.profile_detail;
         row.fixed_point_stage3_elapsed = accumulator.fixed_point_stage3_elapsed;
         row.fixed_point_soil_elapsed = accumulator.fixed_point_soil_elapsed;
         row.fixed_point_finalization_elapsed = accumulator.fixed_point_finalization_elapsed;
@@ -452,6 +459,25 @@ pub(crate) fn record_adaptive_parent_provisional_envelope_phase_v1(
             _ => return,
         };
         *destination = destination.saturating_add(started.elapsed());
+    });
+}
+
+/// Records diagnostic-only nested attribution inside the physical carrier and
+/// converged-candidate replay. This telemetry is active only under the explicit
+/// thread-local parent guard and never enters owner state, receipts, restart,
+/// publication, or controller decisions.
+pub(crate) fn record_adaptive_parent_profile_detail_v1(
+    phase: &'static str,
+    started: Option<std::time::Instant>,
+) {
+    let Some(started) = started else { return };
+    ADAPTIVE_PARENT_TELEMETRY.with(|state| {
+        let mut state = state.borrow_mut();
+        let Some(state) = state.as_mut() else { return };
+        state
+            .accumulator
+            .profile_detail
+            .record(phase, started.elapsed());
     });
 }
 

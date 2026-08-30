@@ -2925,6 +2925,7 @@ where
                 provisional_envelope_physical_elapsed: std::time::Duration::ZERO,
                 provisional_envelope_receipts_elapsed: std::time::Duration::ZERO,
                 provisional_envelope_owner_elapsed: std::time::Duration::ZERO,
+                profile_detail: Default::default(),
                 fixed_point_stage3_elapsed: std::time::Duration::ZERO,
                 fixed_point_soil_elapsed: std::time::Duration::ZERO,
                 fixed_point_finalization_elapsed: std::time::Duration::ZERO,

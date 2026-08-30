@@ -2305,6 +2305,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
             use crate::snow_stage3_v11_attachment::{
                 begin_adaptive_parent_fixed_point_phase_v1 as phase_start,
                 record_adaptive_parent_fixed_point_phase_v1 as phase_record,
+                record_adaptive_parent_profile_detail_v1 as profile_record,
             };
             for iteration in 0..COVERED_FIXED_POINT_POLICY.max_iterations {
                 let operand_started = phase_start();
@@ -2511,6 +2512,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                 // exact installation; the preceding receipt was only the
                 // fixed-point operand generated from the prior trial.
                 let finalization_started = phase_start();
+                let finalization_candidate_started = phase_start();
                 let final_snow_soil_receipts = self.snow_soil_heat_receipts(
                     input.support,
                     &stage3_candidate,
@@ -2577,6 +2579,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     &accepted_snow_soil_receipts,
                     &final_precipitation_sets,
                 )?;
+                profile_record("finalization candidate", finalization_candidate_started);
                 if !covered_fixed_point_boundaries_equal(
                     &final_input_boundaries,
                     &final_rebuilt_boundaries,
@@ -2620,6 +2623,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     previous_complete_boundaries = Some(final_complete_boundaries);
                     continue;
                 }
+                let sealed_source_started = phase_start();
                 let sealed_source_input_boundaries = self.merge_latest_stage3_state_operands(
                     &final_rebuilt_boundaries,
                     &final_stage3_candidate,
@@ -2745,6 +2749,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     apply_covered_receipt_reseal_density_perturbation_for_test(&mut reconstructed);
                     reconstructed
                 };
+                profile_record("finalization sealed source", sealed_source_started);
                 if !covered_fixed_point_stage3_states_equal(
                     &final_stage3_candidate,
                     &final_ending_stage3,
@@ -2786,6 +2791,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                 // used to discover the fixed point.  Re-seal from the replay
                 // outputs, then prove that receipt metadata cannot perturb any
                 // physical result.
+                let install_started = phase_start();
                 let installed_v8_digest = digest32_from_lower_hex(
                     &final_envelope.vegetation().ending_state().state_sha256,
                 )?;
@@ -2988,6 +2994,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                                 ),
                         )
                     })?;
+                profile_record("finalization install", install_started);
                 if !snow_soil_receipt_reseal_roundoff_within_bound_v1(
                     installed_receipt_max_abs_energy_residual,
                     installed_receipt_max_abs_temperature_residual,
@@ -3045,6 +3052,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     installed_receipt_max_abs_energy_residual,
                     installed_receipt_max_abs_temperature_residual,
                 );
+                let identity_replay_started = phase_start();
                 // Keep the exact equal/opposite heat that both solvers
                 // actually consumed. The reconstructed endpoint receipt is a
                 // convergence audit, not a replacement physical credit. Once
@@ -3091,6 +3099,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         ))
                     })?
                     .ending;
+                profile_record("finalization identity replay", identity_replay_started);
                 if identity_replayed_stage3 != installed_stage3
                     || identity_replayed_soil != installed_soil
                 {
