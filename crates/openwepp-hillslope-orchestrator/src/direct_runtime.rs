@@ -438,6 +438,8 @@ pub use surface_liquid_owner::{
     DirectSurfaceLiquidFailure, DirectSurfaceLiquidOfeBinding, DirectSurfaceLiquidOwnedState,
     DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
     DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
+    SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V3_SCHEMA,
+    SurfaceLiquidCompleteOwnerProjectionIdentityV3, SurfaceLiquidCompleteOwnerProjectionV3,
     SurfaceLiquidConfigurationRecordV2, SurfaceLiquidConfigurationV2, SurfaceLiquidOwnedStateV2,
     SurfaceLiquidOwnerClosureRecordV2, SurfaceLiquidOwnerEnvelopeV2,
     SurfaceLiquidOwnerModelDefinitionV2, SurfaceLiquidOwnerRestartV2,

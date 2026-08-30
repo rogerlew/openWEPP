@@ -210,6 +210,8 @@ pub use direct_runtime::{
     DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
     DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
     DirectZeroDurationSnowLiquidDispositionV1, DirectZeroDurationSnowLiquidReceiptV1,
+    SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V3_SCHEMA,
+    SurfaceLiquidCompleteOwnerProjectionIdentityV3, SurfaceLiquidCompleteOwnerProjectionV3,
     SurfaceLiquidConfigurationRecordV2, SurfaceLiquidConfigurationV2, SurfaceLiquidOwnedStateV2,
     SurfaceLiquidOwnerClosureRecordV2, SurfaceLiquidOwnerEnvelopeV2,
     SurfaceLiquidOwnerModelDefinitionV2, SurfaceLiquidOwnerRestartV2,

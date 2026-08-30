@@ -17,6 +17,7 @@ use thiserror::Error;
 mod resource_validation;
 
 mod v2;
+mod v3_projection;
 // This is a bounded integration seam whose production consumer is installed
 // by the successor complete-owner projection. Keep the handoff compilable
 // without weakening warnings on the already-live V1 path.
@@ -31,6 +32,10 @@ pub use v2::{
     SurfaceLiquidStateRecordV2, validate_surface_liquid_owner_mass_closure_v2,
 };
 pub use v2_restart::SurfaceLiquidOwnerRestartV2;
+pub use v3_projection::{
+    SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V3_SCHEMA,
+    SurfaceLiquidCompleteOwnerProjectionIdentityV3, SurfaceLiquidCompleteOwnerProjectionV3,
+};
 
 use resource_validation::preflight_resource_phase_inputs;
 
