@@ -1,3 +1,3 @@
 # Archived prompts
 
-Contains the executed package-end-to-end kickoff prompt.
+No archived prompt remains while review closure is active.

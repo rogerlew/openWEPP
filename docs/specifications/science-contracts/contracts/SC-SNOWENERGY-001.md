@@ -4,7 +4,7 @@ title: Snow-Surface Energy and Sub-Canopy Longwave Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + snow-process reviewer
-contract_version: 28
+contract_version: 29
 producer_scope:
   - Hourly atmospheric longwave evaluated from hourly temperature and daily vapor/cloud state
   - Native-canopy effective cover to diffuse sky-view translation
@@ -742,6 +742,9 @@ bounded-latent production target.
 | snow flux is requested after the accepted event or in a snow-free regime | reject before evaluation | runtime | `SNOWENERGY-E-REGIME-001` |
 | canopy-intercepted snow is supplied to this surface carrier | reject as out of scope | runtime | `SNOWENERGY-E-SCOPE-001` |
 | component-weighted canopy longwave or reciprocal ledger does not close | reject without candidate publication | runtime | `SNOWENERGY-E-LW-001` |
+| An authentic finalization rebuild misses an unchanged convergence predicate and support-scaled relaxation is admitted | Advance only the unpublished Stage 3 iterate with the existing guarded candidate weight; retain authentic final LSE and complete boundaries plus converged authentic soil. | runtime/numerical | typed nonconvergence on cap exhaustion; relaxed iterate never publishes |
+| A relaxed finalization restart is followed by the first otherwise-converged provisional Picard image | Consume exactly one additional guarded support-scaled Picard update before finalization is retried. | runtime/numerical | typed nonconvergence on cap exhaustion; no tolerance bypass |
+| Finalization relaxation encounters a schema, terminal-model, lane, interval, layer, settling, initial/input, represented-mass, aggregate-posture, reconstruction, or closure mismatch | Decline contraction and retain the raw authentic final candidate as the next unpublished iterate. Candidate density is always copied bitwise and never interpolated; its difference remains nonconverged until an authentic image satisfies the exact comparison. | runtime/numerical | typed nonconvergence/refinement; no state repair |
 
 `R_a,min` is the numerically explicit `1e-9 MJ m^-2 d^-1`
 divide/branch threshold.
@@ -834,6 +837,7 @@ divide/branch threshold.
 | `INV-SNOWENERGY-040` | Canopy-intercepted snow is outside this carrier and cannot enter its mass or energy ledgers. | Child 2C scope authority | `[INFERENCE][Static]` | scope guard | `SNOWENERGY-E-SCOPE-001` |
 | `INV-SNOWENERGY-042` | One persistent Stage 3 lane owner is OFE-ground. Complete typed tile-ground snow-surface fluxes aggregate exactly once as `sum_i(f_i X_i)` over an ordered tile set closing to one within `TOL-SNOWENERGY-002`; the tolerance never authorizes renormalization. Every contribution binds the same beginning lane-state identity, snow-surface temperature, and latent heat. Missing, duplicate, wrong-class, wrong-model, covered-subset-normalized, or restart topology/basis substitutions fail closed. Uniform terminal liquid preserves `sum_i(f_i M_i)=M_lane`; dividing the complete lane amount by every tile fraction is prohibited. | `REF-SNOWENERGY-USER-OFE-GROUND-V15`; single-column Stage 3 and terminal-receiver state semantics | `[DIRECT][Static] + [INFERENCE][Static]` | lane topology/source-set/common-state/restart guards | `SNOWENERGY-E-CARRIER-001` |
 | `INV-SNOWENERGY-043` | Covered fixed-point acceptance first reconstructs and validates each candidate fingerprint independently. Schema, terminal-event model, lane, interval, layer cardinality/order, density, and stored count-like settling chronology compare exactly. Numeric state compares only under the physical-class absolute bounds in `TOL-SNOWENERGY-003`; candidate fingerprint equality is neither required nor a substitute for those comparisons. | existing Stage 3 closure scales and covered carrier temperature policy | `[DIRECT][Static] + [INFERENCE][Static]` | typed convergence/nonconvergence and stale-fingerprint guards | `SNOWENERGY-E-CARRIER-001` |
+| `INV-SNOWENERGY-054` | A failed authentic finalization rebuild applies the existing guarded support-scaled contraction only to unpublished continuous Stage 3 state, retains authentic final LSE/boundaries and converged soil, and consumes exactly one additional guarded Picard crossing before retry. Authentic candidate density is copied bitwise and never interpolated; a density difference still prevents convergence and final acceptance remains authentic-map-only. | version-23 bounded Picard authority, version-28 finalization diagnosis, physical closure | `[DIRECT][Static] + [INFERENCE][Ran]` | finalization restart/refusal, exactly-once stabilization state, candidate-density, cumulative-closure, and authentic-publication guards | typed nonconvergence/refinement; no relaxed publication |
 | `INV-SNOWENERGY-044` | Additive restart must not restore `OPENWEPP_LANE_STAGE3_BOUNDARY_RECEIPT_V1`. Before restart implementation, a normative V2 successor must exclude numerical initial-guess identity and exactly join configured lane/OFE and tile topology, covered/open final boundaries, component carrier, installed LSE owner, complete snow owner, wet-liquid authorization, and canonical parent/restart framing. Until its exact fields, framing, ordering, and test vectors are admitted, the successor is `SCHEMA_UNDEFINED / IMPLEMENTATION_BLOCKED`. | canonical receipt/restart governance; v15 adopter-wire limitation | `[INFERENCE][Static]` | schema/version/topology/owner replay guards | restart hard `HOLD` |
 | `INV-SNOWENERGY-045` | Each accepted support owns exactly one sealed, canonically ordered precipitation phase-parcel set. A parcel binds support, lane/OFE, destination tile, phase, tile-ground mass basis, source and destination identities, temperature/enthalpy provider, producer beginning-state identity, and receipt identity. Zero precipitation is a present, complete empty set, never an omitted owner. | `REF-SNOWENERGY-PRECIP-CUSTODY-V17` | `[DIRECT][Static] + [INFERENCE][Static]` | parcel-set schema/order/cardinality/identity guard | `SNOWENERGY-E-PRECIP-001` |
 | `INV-SNOWENERGY-046` | At each ground destination, liquid custody is exclusive: an open destination receives its sealed raw atmospheric rain parcel, while a covered destination receives only terminal throughfall/drainage and stemflow parcels produced under `SC-VEGETATION-001@28`. Raw rain and vegetation release cannot both be delivered to one destination. Solid atmospheric precipitation bypasses vegetation, remains ground-snow precipitation, and canopy-intercepted snow remains excluded. | `SC-VEGETATION-001@28`; `REF-SNOWENERGY-PRECIP-CUSTODY-V17` | `[DIRECT][Static]` | destination/source/phase exclusivity guard | `SNOWENERGY-E-PRECIP-001` |
@@ -1135,6 +1139,18 @@ The implementation increment must reproduce package artifact
     negative vectors reject full-step flux, omitted deposition/refreeze,
     post-event snow energy, producer residuals, request/state mismatch, and any
     receiving-surface interpretation.
+31. finalization-restart vectors at 60-second and ordinary supports proving raw
+    exact-floor behavior, support-scaled contraction, cumulative closure,
+    bitwise authentic candidate density without interpolation, and continued
+    exact-density nonconvergence until an authentic candidate matches;
+32. refusal vectors for terminal-model, topology/cardinality, settling,
+    initial/input, represented-mass, aggregate-posture, invalid reconstruction,
+    and cumulative-closure changes, each retaining the raw authentic candidate;
+    and
+33. a stateful seam vector proving a relaxed finalization restart survives
+    intervening nonconvergence, consumes exactly one otherwise-converged Picard
+    crossing, permits the next authentic finalization retry, and never routes
+    the relaxed intermediate to publication or replay.
 
 Producer-only analytical vectors cannot close runtime activation. EB-03 must
 prove the real shared Stage 3 snow-energy consumer reads the contracted
@@ -1153,6 +1169,7 @@ operands.
 | `INV-SNOWENERGY-041` | Terminal numerical tolerances are typed, distinct, and never repair identity, support, or state. | numerical validator |
 | `INV-SNOWENERGY-043` | Covered convergence reconstructs candidate fingerprints and separates exact structure/count/density from unit-specific absolute numeric residuals. | convergence validator |
 | `INV-SNOWENERGY-044` | Lane receipt V1 is non-restorable; V2 restart schema remains undefined and blocked pending exact normative framing and replay joins. | restart schema/version guard |
+| `INV-SNOWENERGY-054` | Failed finalization uses only the guarded unpublished Stage 3 contraction, retains authentic LSE/boundary/soil operands, copies candidate density bitwise without interpolation, consumes one stabilization crossing, and publishes only an authentic map image. | fixed-point finalization and publication guards |
 | `OBL-SNOWENERGY-C-019` | Apply only `TOL-SNOWENERGY-003` after independent fingerprint validation. | covered fixed-point consumer |
 | `OBL-SNOWENERGY-C-020` | Reject V1/inferred restart wire and require the complete V2 topology/owner replay join. | additive-restart consumer |
 
@@ -1275,10 +1292,14 @@ enabled, introduces no new tolerance, and does not bypass any authentic-map
 comparison.
 
 Relaxation is prohibited across any schema, terminal-model, layer-cardinality,
-density, settling, initial/input, per-layer represented-mass, or aggregate
-resolved/terminal/dormant posture change. Stage-3 temperature and thickness
-are reconstructed from the relaxed extensive mass/cold content and exact
-density; cumulative water and energy close independently. Soil transaction
+settling, initial/input, per-layer represented-mass, or aggregate
+resolved/terminal/dormant posture change. Density is never interpolated: every
+unpublished relaxed layer copies the authentic candidate density bit-for-bit,
+and thickness is reconstructed from relaxed mass and that exact candidate
+density. A density difference remains nonconverged under
+`TOL-SNOWENERGY-003` and therefore cannot be accepted until an authentic map
+image matches; it does not disable damping of otherwise-admitted continuous
+mass/energy coordinates. Cumulative water and energy close independently. Soil transaction
 lineage is exact and both nested owner digests are canonically resealed. Every
 snow--soil heat receipt is joined to the actual numerical iterate before its
 equal/opposite credit is consumed. A failed reconstruction, posture, digest,
@@ -1353,9 +1374,11 @@ persisted.
 `INV-SNOWENERGY-054` — A nonconverged authentic finalization rebuild advances
 the unpublished Stage 3 iterate with the same support-scaled candidate weight
 as outer Picard. The convex update is permitted only across the exact schema,
-terminal-event, lane, interval, layer, density, settling, initial/input,
+terminal-event, lane, interval, layer, settling, initial/input,
 represented-mass, and aggregate phase-posture identities already required for
-Picard relaxation, and every reconstructed intermediate must retain valid
+Picard relaxation. Density is copied bitwise from the authentic candidate and
+never interpolated; a density difference remains an exact convergence failure
+until authentic-map equality is reached. Every reconstructed intermediate must retain valid
 cumulative mass/energy closure. Authentic final LSE and boundary operands are
 retained for the next evaluation; soil is not blended across this transition.
 If any relaxation guard fails, the raw authentic final candidate is used.
@@ -1766,6 +1789,7 @@ Validation completes before snow or soil owner mutation, and any failure uses
 
 | Version | Date | Change | Evidence |
 |---:|---|---|---|
+| 29 | 2026-08-30 | Reconciled the version-23 exact-candidate-density rule with finalization relaxation: density is never interpolated, remains bitwise authentic-candidate state, and continues to block convergence until an authentic image matches, while otherwise-admitted continuous coordinates may remain damped. Added finalization/stabilization branches, the primary invariant/guard binding, and formal vector obligations; replaced the boolean stabilization predicate with a stateful exactly-once seam. No tolerance, floor, cap, physical ledger, discrete guard, or publication rule changed. | Independent review RA-001/RA-003/RB-003; candidate-density finalization vector; stateful exactly-once stabilization vector; affected contract and canonical qualification reruns |
 | 28 | 2026-08-30 | Applied the existing support-scaled convex Stage 3 iterate policy to a nonconverged authentic finalization rebuild, preventing the finalization transition from discarding damping and repeatedly restarting a cold-content residual. After such a restart, one further guarded Picard update stabilizes the first provisional tolerance crossing before finalization is retried. Retained authentic final LSE/boundary operands, converged soil, every discrete/posture/refusal guard, unchanged convergence tolerances and iteration cap, and authentic-map-only publication. | Default-off iteration-history trace distinguishing 100 cold-only finalization/Picard caps from 27 materially nonconverged maps and one receipt-replay cap; contract-derived transition/refusal/stabilization vectors; replacement focused and canonical one-day qualifications |
 | 27 | 2026-08-30 | Classified only the persistent per-layer `refrozen_liquid_m` tracer as within-trial factorization lineage for adaptive direct-versus-composed error estimation. The accepted composed value remains exact owner/restart state, while independent ice-flux refreeze reconstruction and all mass, liquid, cold-content, temperature, cumulative, phase, event, topology, custody, receipt, and energy guards remain unchanged. | One-day cap-signature audit; direct/composed factorization-history vectors; physical-scalar anti-evasion matrix; accepted-publication ledger reconstruction; replacement one-day qualification |
 | 26 | 2026-08-29 | Bound accepted terminal composition to every exact physical child's contiguous precipitation and snow--soil receipt custody. The enclosing parcel set preserves physical operands and child order while resealing envelope support; final-child boundary evidence remains distinct. Terminal receipt/event regrouping uses only existing `TOL-SNOWENERGY-005`, with one-bit-over rejection and unchanged physical-ledger closure. | Multi-child terminal reconstruction, material omission diagnosis, exact-side receipt test, EROD16 progression, and canonical one-day replacement qualification |

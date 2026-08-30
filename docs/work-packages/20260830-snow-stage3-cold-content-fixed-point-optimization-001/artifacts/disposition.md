@@ -1,6 +1,6 @@
 # Disposition
 
-Status: `EXECUTED-HOLD`
+Status: `REVIEW-CORRECTION-ACTIVE`
 
 Evidence mode: `Static + Ran`
 
@@ -10,8 +10,13 @@ improve; the exact floor does not increase; discrete-event comparison failures
 remain zero; and all conservation/receipt thresholds remain unchanged and
 pass. No production diagnostic persists.
 
-Disposition is `HOLD`, not `COMPLETE`, solely because dual independent review
-and verification are mandatory and higher-precedence session policy prohibits
-delegated agents. This is a process/evidence blocker, not a known kernel
-correctness failure. The broad no-stack test observation and crate-wide clippy
-backlog are recorded in gate results and are not concealed.
+The prior `HOLD` was caused solely by absent session-level delegation authority.
+The owner supplied standing authorization on 2026-08-30, so independent review
+and verification were reopened.
+
+Review A returned `NO-GO` with RA-001..003; Review B returned `NO-GO` with
+RB-001..005. Every finding is accepted. Version 29 and the stateful seam resolve
+RA-001, RA-003, and RB-003; corrected line-count evidence resolves RB-005.
+RB-001/RB-002 require exact-source full-profile and warnings-denied execution,
+and RB-004 requires a clean source-bound canonical rerun. Re-review and dual
+verification remain pending, so no final disposition is claimed.

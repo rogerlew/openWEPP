@@ -1,6 +1,6 @@
 # Stage-3 cold-content fixed-point optimization
 
-Status: `EXECUTED-HOLD`
+Status: `REVIEW-CLOSURE-ACTIVE`
 
 Execution mode: `package-end-to-end`
 
@@ -13,6 +13,7 @@ This is a living ExecPlan maintained under `docs/codex_exec_plans.md`.
 - [x] 2026-08-30: select and contract a bounded finalization-restart correction.
 - [x] 2026-08-30: implement and run focused qualification.
 - [x] 2026-08-30: run canonical one-day qualification and reconcile disposition.
+- [ ] 2026-08-30: complete newly authorized independent review and verification.
 
 ## Surprises and discoveries
 
@@ -31,6 +32,11 @@ This is a living ExecPlan maintained under `docs/codex_exec_plans.md`.
   but exposed a one-step tolerance-crossing cycle: entering tolerance disabled
   damping and immediately recreated the finalization residual. One additional
   guarded Picard update after that first crossing removed the cycle.
+- Independent review found that v28's density wording contradicted the
+  intentional version-23 runtime rule: density is copied bitwise from the
+  authentic candidate and never interpolated, while a density difference still
+  prevents convergence. Version 29 reconciles that authority and completes the
+  missing branch/guard/vector bindings.
 
 ## Decision log
 
@@ -48,6 +54,12 @@ This is a living ExecPlan maintained under `docs/codex_exec_plans.md`.
   otherwise-converged crossing after an applied finalization restart.
   Rationale: the update retains the same authentic maps and unchanged
   tolerances while preventing the observed on/off damping cycle.
+  Date/author: 2026-08-30, Codex.
+- Decision: accept every Review A/B finding and hold verification until the
+  review-correction gates are exact-source-bound.
+  Rationale: reviewers identified contract/profile, behavioral-test, source
+  identity, full-regression, warnings-denied, and line-count evidence defects;
+  none may be dismissed as merely procedural.
   Date/author: 2026-08-30, Codex.
 
 ## Outcomes and retrospective
@@ -187,15 +199,19 @@ reconciles the terminal diff, reviews findings, verifies gates, and disposes.
 ## Review, verification, and security
 
 Dual independent review and dual verification are required before `COMPLETE`.
-Higher-precedence session policy currently prohibits delegated subagents, so
-execution must not falsely label a local audit as independent; technical work
-continues and final disposition remains review-bound if that policy persists.
-Line-count governance applies at 2,000/3,000 lines. Security impact is
-`NONE`: no network, credential, privilege, dependency, unsafe, or external
-message surface is authorized.
+Line-count governance applies at 2,000/3,000 lines. Security impact is `NONE`:
+no network, credential, privilege, dependency, unsafe, or external message
+surface is authorized.
 
-Subagent authorization: none for this execution; local validation is required
-and no delegated work may be claimed.
+Subagent authorization: this package explicitly authorizes subagent
+spawning/delegation to two independent review subagents and two independent
+verification subagents for the terminal package diff, science/numerics
+contract compliance, test adequacy, gate-evidence audit, and final disposition.
+Expected outputs are compact findings or verification results written to the
+package's `review_agent_{a,b}.md` and `verification_agent_{a,b}.md` artifacts.
+Write access is limited to the assigned package artifact; production, contract,
+test, and all other package files are read-only. The standing user/session
+authorization was supplied on 2026-08-30.
 
 ## Gate evidence non-deferral
 

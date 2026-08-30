@@ -476,13 +476,27 @@ fn covered_fixed_point_relaxation_weight_v1(
     Some(support_scaled.clamp(0.25, 0.5))
 }
 
-fn covered_fixed_point_picard_accepts_convergence_v1(
-    coupled_map_converged: bool,
-    finalization_stabilization_pending: bool,
-    relaxation_enabled: bool,
-) -> bool {
-    coupled_map_converged
-        && !(finalization_stabilization_pending && relaxation_enabled)
+#[derive(Default)]
+struct CoveredFinalizationStabilizationV1 {
+    pending: bool,
+}
+
+impl CoveredFinalizationStabilizationV1 {
+    fn observe_restart(&mut self, relaxed_restart_applied: bool) {
+        self.pending = relaxed_restart_applied;
+    }
+
+    fn picard_accepts_convergence(
+        &mut self,
+        coupled_map_converged: bool,
+        relaxation_enabled: bool,
+    ) -> bool {
+        if coupled_map_converged && self.pending && relaxation_enabled {
+            self.pending = false;
+            return false;
+        }
+        coupled_map_converged
+    }
 }
 
 fn covered_fixed_point_finalization_stage3_iterate_v1(

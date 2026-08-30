@@ -15,7 +15,7 @@ the raw candidate. After correcting that transition, it exposed one remaining
 on/off tolerance cycle, corrected by the single guarded stabilization update.
 All temporary tracing was removed before terminal qualification.
 
-## Canonical one-day result
+## Initial one-day result — superseded for closure identity
 
 Baseline commit: `792af753e`. Terminal command:
 
@@ -51,3 +51,9 @@ Ledger closure: maximum mass residual
 `1.07434061646927148e-11 K` versus `1e-8`. Log:
 `/tmp/stage3_fp_cold/one-day-terminal-source.log`, SHA-256
 `6dc433684d8d8470f88d43273afcbbad42544b10f9981e286f6f0b5c1a9835c0`.
+
+Review finding RB-004 correctly notes that this run's log identifies a dirty
+tree and the artifact did not retain a complete source manifest. Its metrics
+remain diagnostic evidence but no longer support the exact-terminal closure
+claim. A clean-commit replacement run is required after review corrections are
+committed.

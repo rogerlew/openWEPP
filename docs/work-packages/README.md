@@ -9,9 +9,8 @@ one-day baseline is 504 accepted / 227 rejected trials, 128 fixed-point caps,
 wall. Terminal qualification is 491 accepted / 205 rejected, 32 fixed-point
 caps, two cold-content-only caps, 49 exact-floor supports, and 336.52 seconds
 body wall without tolerance relaxation, event/discrete weakening, or persisted
-microstepping diagnostics. Technical gates pass; mandatory independent review
-and verification are prohibited by current session policy. Status:
-`EXECUTED-HOLD`.
+microstepping diagnostics. Technical gates pass; owner-authorized independent
+review and verification are active. Status: `REVIEW-CLOSURE-ACTIVE`.
 
 ## 20260826-snow-stage3-adaptive-compositional-microstepping-001
 

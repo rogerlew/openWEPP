@@ -16,3 +16,9 @@ derived temperature/thickness/fingerprint, and refuses to blend when any guard
 fails. Terminal one-day mass, energy, receipt-energy, and receipt-temperature
 closure all pass their unchanged bounds. No numerical tolerance was loosened.
 No production microstepping diagnostic was retained.
+
+Review correction completes the v29 kernel-profile schema: the canonical
+branch/guard table, primary invariant/guard map, child obligation map, and test
+vector obligations now explicitly cover finalization restart, refusal,
+candidate-density handling, exactly-once stabilization, and authentic-only
+publication.

@@ -1725,7 +1725,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
         let exact_floor_support = support_duration_ns == minimum_support_ns;
         let coarse_support_relaxation_enabled = support_duration_ns > minimum_support_ns;
         let mut exact_floor_period_two_relaxation_enabled = false;
-        let mut finalization_stabilization_pending = false;
+        let mut finalization_stabilization = CoveredFinalizationStabilizationV1::default();
         let mut accepted_snow_soil_receipts = self.snow_soil_heat_receipts(
             input.support,
             &iteration_stage3_states,
@@ -1919,12 +1919,10 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                         });
                 let coupled_map_converged =
                     lse_converged && stage3_converged && soil_converged && boundary_converged;
-                let converged = covered_fixed_point_picard_accepts_convergence_v1(
+                let converged = finalization_stabilization.picard_accepts_convergence(
                     coupled_map_converged,
-                    finalization_stabilization_pending,
                     relaxation_enabled,
                 );
-                let finalization_stabilization_crossing = coupled_map_converged && !converged;
                 let picard_relaxation_weight = (!converged)
                     .then(|| {
                         covered_fixed_point_relaxation_weight_v1(
@@ -1990,9 +1988,6 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                     iteration_soil_state = next_iteration_soil.unwrap_or(soil_candidate);
                     iteration_boundaries = Some(next_covered_boundaries);
                     previous_complete_boundaries = Some(next_boundaries);
-                    if finalization_stabilization_crossing {
-                        finalization_stabilization_pending = false;
-                    }
                     continue;
                 }
 
@@ -2112,8 +2107,8 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack
                             input.support.duration_ns(),
                             exact_floor_period_two_relaxation_enabled,
                         );
-                    finalization_stabilization_pending =
-                        next_iteration_stage3 != final_stage3_candidate;
+                    finalization_stabilization
+                        .observe_restart(next_iteration_stage3 != final_stage3_candidate);
                     iteration_stage3_states = next_iteration_stage3;
                     previous_soil_state = Some(soil_candidate.clone());
                     iteration_soil_state = soil_candidate;

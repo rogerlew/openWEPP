@@ -177,6 +177,29 @@ fn finalization_restart_reuses_guarded_support_scaled_stage3_contraction() {
     Wb11HydrologyKernel::validate_stage3_persistent_cumulative_closure(&restarted[&7])
         .expect("finalization iterate retains cumulative closure");
 
+    let mut density_candidate = candidate[&7].clone();
+    density_candidate.layers[0].density_kg_m3 =
+        f64::from_bits(density_candidate.layers[0].density_kg_m3.to_bits() + 1);
+    density_candidate.layers[0].thickness_m = density_candidate.layers[0].mass_swe_m * 1_000.0
+        / density_candidate.layers[0].density_kg_m3;
+    reseal(&mut density_candidate);
+    let density_candidate = BTreeMap::from([(7, density_candidate)]);
+    let density_restarted = covered_fixed_point_finalization_stage3_iterate_v1(
+        &original,
+        &density_candidate,
+        420_000_000_000,
+        false,
+    );
+    assert_eq!(
+        density_restarted[&7].layers[0].density_kg_m3.to_bits(),
+        density_candidate[&7].layers[0].density_kg_m3.to_bits(),
+        "authentic candidate density remains exact and is never interpolated",
+    );
+    assert!(!covered_fixed_point_stage3_states_equal(
+        &original,
+        &density_restarted,
+    ));
+
     assert_eq!(
         covered_fixed_point_finalization_stage3_iterate_v1(
             &original,
@@ -212,18 +235,23 @@ fn finalization_restart_declines_contraction_across_discrete_event_change() {
 
 #[test]
 fn finalization_restart_requires_one_relaxed_picard_stabilization_crossing() {
-    assert!(!covered_fixed_point_picard_accepts_convergence_v1(
-        true, true, true,
-    ));
-    assert!(covered_fixed_point_picard_accepts_convergence_v1(
-        true, false, true,
-    ));
-    assert!(covered_fixed_point_picard_accepts_convergence_v1(
-        true, true, false,
-    ));
-    assert!(!covered_fixed_point_picard_accepts_convergence_v1(
-        false, false, true,
-    ));
+    let mut stabilization = CoveredFinalizationStabilizationV1::default();
+    stabilization.observe_restart(true);
+    assert!(!stabilization.picard_accepts_convergence(false, true));
+    assert!(stabilization.pending, "nonconvergence retains the pending seam");
+    assert!(!stabilization.picard_accepts_convergence(true, true));
+    assert!(
+        !stabilization.pending,
+        "the first otherwise-converged relaxed crossing is consumed exactly once",
+    );
+    assert!(stabilization.picard_accepts_convergence(true, true));
+
+    stabilization.observe_restart(false);
+    assert!(stabilization.picard_accepts_convergence(true, false));
+    assert!(
+        !stabilization.pending,
+        "a raw exact-floor restart cannot create a stabilization crossing",
+    );
 }
 
 #[test]

@@ -1,6 +1,6 @@
 # Terminal diff reconciliation
 
-Status: `PASS`
+Status: `STALE — review correction active`
 
 Evidence mode: `Static + Ran`
 
@@ -19,3 +19,7 @@ canonical diagnostic runner. `git diff --check` passes. Terminal formatting,
 workspace all-target/all-feature check, contract admission, focused policy
 tests, affected contracts, authority anti-evasion guards, and the canonical
 fixture all pass.
+
+Independent reviews invalidated this reconciliation through accepted
+RA-001/RA-003 and RB-003/RB-005 corrections. Recompute the terminal diff and
+source identity after the correction commit and exact-source gates.

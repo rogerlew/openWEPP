@@ -1,8 +1,7 @@
 # Verification B
 
-Status: `BLOCKED — independent verifier prohibited by current session policy`
+Status: `DISPATCH-READY`
 
 Evidence mode: `not-run`
 
-Local terminal gates are recorded in `gate-results.md` but are not mislabeled
-as independent verification.
+Standing user/session delegation authority was supplied on 2026-08-30.
