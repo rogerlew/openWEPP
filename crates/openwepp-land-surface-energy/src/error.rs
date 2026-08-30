@@ -91,6 +91,14 @@ pub enum LandSurfaceEnergyError {
     LatentJoin(&'static str),
     #[error("ground-heat equal/opposite join failed: {0}")]
     GroundHeatJoin(&'static str),
+    #[error("LSEB-E-045: frozen-litter V3 identity/domain/migration violation: {0}")]
+    FrozenLitterV3Identity(&'static str),
+    #[error("LSEB-E-046: frozen-litter phase-specific vapor custody/enthalpy violation: {0}")]
+    FrozenLitterVapor(&'static str),
+    #[error("LSEB-E-047: frozen-litter phase mass/fusion/ending-capacity closure violation: {0}")]
+    FrozenLitterPhaseClosure(&'static str),
+    #[error("LSEB-E-048: frozen-litter chronology/receipt/restart/rollback violation: {0}")]
+    FrozenLitterTransaction(&'static str),
 }
 
 impl LandSurfaceEnergyError {
@@ -154,9 +162,11 @@ impl LandSurfaceEnergyError {
     pub const fn class(&self) -> LandSurfaceEnergyErrorClass {
         match self {
             Self::MalformedSerialization(_) => LandSurfaceEnergyErrorClass::Malformed,
-            Self::Identity { .. } | Self::StateLineage(_) | Self::SupportReceipt(_) => {
-                LandSurfaceEnergyErrorClass::Identity
-            }
+            Self::Identity { .. }
+            | Self::StateLineage(_)
+            | Self::SupportReceipt(_)
+            | Self::FrozenLitterV3Identity(_)
+            | Self::FrozenLitterTransaction(_) => LandSurfaceEnergyErrorClass::Identity,
             Self::Topology { class, .. } => match class {
                 TopologyErrorClass::Domain => LandSurfaceEnergyErrorClass::Domain,
                 TopologyErrorClass::Cardinality => LandSurfaceEnergyErrorClass::Cardinality,
@@ -181,7 +191,9 @@ impl LandSurfaceEnergyError {
             Self::ComponentClosure(_)
             | Self::ControlVolumeClosure(_)
             | Self::LatentJoin(_)
-            | Self::GroundHeatJoin(_) => LandSurfaceEnergyErrorClass::Closure,
+            | Self::GroundHeatJoin(_)
+            | Self::FrozenLitterVapor(_)
+            | Self::FrozenLitterPhaseClosure(_) => LandSurfaceEnergyErrorClass::Closure,
         }
     }
 

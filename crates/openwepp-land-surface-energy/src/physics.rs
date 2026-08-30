@@ -20,6 +20,12 @@ use crate::LandSurfaceEnergyError;
 
 pub const STEFAN_BOLTZMANN_W_M2_K4: f64 = 5.670_374_419e-8;
 pub const WATER_HEAT_CAPACITY_J_KG_K: f64 = 4_218.0;
+pub const LITTER_ICE_HEAT_CAPACITY_J_KG_K: f64 = 2_106.0;
+pub const LITTER_ICE_DENSITY_KG_M3: f64 = 920.0;
+pub const WATER_DENSITY_KG_M3: f64 = 1_000.0;
+pub const LITTER_FUSION_ENTHALPY_J_KG: f64 = 333_700.0;
+pub const LITTER_ICE_TIMESCALE_S: f64 = 3_300.0;
+pub const LITTER_ICE_VOLUMETRIC_CAPACITY: f64 = 0.85;
 pub const AIR_HEAT_CAPACITY_J_KG_K: f64 = 1_004.64;
 pub const DRY_AIR_GAS_CONSTANT_J_KG_K: f64 = 287.05;
 pub const WATER_VAPOR_GAS_CONSTANT_J_KG_K: f64 = 461.5;
@@ -82,6 +88,13 @@ pub fn liquid_enthalpy_j_kg(temperature_k: f64) -> f64 {
 #[must_use]
 pub fn vaporization_enthalpy_j_kg(temperature_k: f64) -> f64 {
     2_501_000.0 - 2_369.0 * (temperature_k - REFERENCE_TEMPERATURE_K)
+}
+
+/// Sublimation enthalpy selected by the V3 litter authority. The fusion term
+/// is kept explicit so an ice-vapor operand cannot alias liquid vapor.
+#[must_use]
+pub fn sublimation_enthalpy_j_kg(temperature_k: f64) -> f64 {
+    vaporization_enthalpy_j_kg(temperature_k) + LITTER_FUSION_ENTHALPY_J_KG
 }
 
 pub fn vapor_export_w_m2(

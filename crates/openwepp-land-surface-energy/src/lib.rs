@@ -12,14 +12,20 @@ pub mod diagnostics;
 pub mod error;
 pub mod forcing;
 pub mod identity;
+pub mod litter_phase;
+pub mod litter_phase_closure;
+pub mod litter_phase_output;
 mod numerics;
 pub mod owner_envelope;
 pub mod physics;
 pub mod solver;
+pub mod solver_litter_phase;
 pub mod state;
 pub mod support;
 pub mod transaction;
+pub mod transaction_v3;
 pub mod v2_state;
+pub mod v3_state;
 pub mod water;
 
 pub use closure::*;
@@ -30,13 +36,19 @@ pub use diagnostics::*;
 pub use error::*;
 pub use forcing::*;
 pub use identity::*;
+pub use litter_phase::*;
+pub use litter_phase_closure::*;
+pub use litter_phase_output::*;
 pub use owner_envelope::*;
 pub use physics::*;
 pub use solver::*;
+pub use solver_litter_phase::*;
 pub use state::*;
 pub use support::*;
 pub use transaction::*;
+pub use transaction_v3::*;
 pub use v2_state::*;
+pub use v3_state::*;
 pub use water::*;
 
 /// Immutable model name admitted by `SC-LANDSURFACEENERGY-001@3`.
@@ -56,6 +68,17 @@ pub const V2_MODEL_DEFINITION_SHA256: &str =
 pub const V2_VEGETATION_MODEL_VERSION: &str = "OPENWEPP_C3_WOODY_V10";
 pub const V2_VEGETATION_MODEL_DEFINITION_SHA256: &str =
     "0c42b025b6f9282d85afd5c8819ec9cc60d66a2b79ac6d5922bfdcc8026dd182";
+/// Immutable snow-free forest-litter liquid/ice successor identity.
+pub const V3_MODEL_VERSION: &str = "OPENWEPP_SNOW_FREE_LSE_V3";
+/// SHA-256 of `artifacts/openwepp_snow_free_lse_v3_definition.json`.
+pub const V3_MODEL_DEFINITION_SHA256: &str =
+    "309986036843cd1a5b83ede42655581fc2d2619ab8ab3d6224b812f86bf30ef6";
+/// Immutable sealed phase-receipt identity.
+pub const V3_PHASE_RECEIPT_VERSION: &str = "OPENWEPP_FOREST_LITTER_PHASE_RECEIPT_V1";
+pub const V3_IDENTITY_ERROR_CODE: &str = "LSEB-E-045";
+pub const V3_VAPOR_ERROR_CODE: &str = "LSEB-E-046";
+pub const V3_PHASE_CLOSURE_ERROR_CODE: &str = "LSEB-E-047";
+pub const V3_TRANSACTION_ERROR_CODE: &str = "LSEB-E-048";
 
 #[cfg(test)]
 mod covered_oracle_conformance_tests;

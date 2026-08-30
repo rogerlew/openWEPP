@@ -1,0 +1,61 @@
+{
+  "basis": {
+    "mass": "kg H2O m^-2 tile-ground",
+    "energy": "J m^-2 tile-ground",
+    "temperature": "K",
+    "litter_depth_m": 0.04,
+    "dry_heat_capacity_j_m2_k": 3235.68,
+    "liquid_capacity_kg_m2_tile": 6.0,
+    "ice_capacity_kg_m2_tile": 34.0
+  },
+  "vectors": [
+    {
+      "id": "exact-empty-reference-60s",
+      "interval_s": 60.0,
+      "beginning_liquid": 0.0,
+      "beginning_ice": 0.0,
+      "phase_free_temperature_k": 273.15,
+      "expected_frozen_fraction": 0.0,
+      "expected_freeze": 0.0,
+      "expected_melt": 0.0
+    },
+    {
+      "id": "cold-all-liquid-3300s",
+      "interval_s": 3300.0,
+      "beginning_liquid": 4.0,
+      "beginning_ice": 0.0,
+      "phase_free_temperature_k": 268.15,
+      "expected_cold_energy_mass_bound": 1.1612346418939168,
+      "expected_freeze": 1.1612346418939168,
+      "expected_melt": 0.0,
+      "expected_fusion_energy": 387504.00000000006
+    },
+    {
+      "id": "warm-all-ice-6600s",
+      "interval_s": 6600.0,
+      "beginning_liquid": 0.0,
+      "beginning_ice": 2.0,
+      "phase_free_temperature_k": 278.15,
+      "expected_warm_energy_mass_bound": 1.1612346418939168,
+      "expected_melt": 2.0,
+      "expected_freeze": 0.0,
+      "expected_fusion_energy": -667400.0
+    }
+  ],
+  "anti_mutants": [
+    "wrong A4 sign",
+    "273.16 K reference",
+    "917 kg m^-3 ice density",
+    "rho_i ice capacity",
+    "liquid latent heat for ice vapor",
+    "saturation over ice",
+    "total-pool outbound cap",
+    "phase before vapor",
+    "phase after ingress",
+    "pre-phase heat capacity temperature",
+    "instantaneous equilibrium",
+    "same-support re-solve",
+    "zertol cleanup",
+    "xwgmin floor"
+  ]
+}

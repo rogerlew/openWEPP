@@ -1,0 +1,64 @@
+{
+  "model_version": "OPENWEPP_SNOW_FREE_LSE_V3",
+  "parent_model_version": "OPENWEPP_SNOW_FREE_LSE_V2",
+  "parent_model_definition_sha256": "67d1681bf47c2b8b87d6195433209990b4021b7896bc50df973ac9246bfd6c19",
+  "contract_bindings": {
+    "SC-LANDSURFACEENERGY-001@14": "857b49f06fdb675cd91fe2776727388aea72d19fdb999e2e4cd6e248f0e836d1",
+    "SC-SURFACELIQUID-001@14": "bbb165f03c2f3588b32d4e97b41757612a73ef2641c4b4c8ae4d07f4a66df7e8"
+  },
+  "retained_sources": {
+    "gmd-10-1621-2017-isba-meb-litter.pdf": "2a8c14d912651457bf9205a4a963b78dd12f1aa7f243bccb025e4b81ce99716d",
+    "isba_meb.F90.source.html": "0a300739b5dc660b61d29db144dd92f886e8fdf9934eac8facc022585992087a",
+    "isba_fluxes_meb.F90.source.html": "e0378bc89ee0d52cffe14841aac56de1d8d379edf18ad29f24cfdb9ea0dfdbbc",
+    "ini_csts.F90.source.html": "f39840df4d851efc70044f9e3ad62822371ed743c3c3a8055a4c940e2f86d73a",
+    "CeCILL-C_V1-en.html": "7280115e43fa03917f2f23370519be8c9fb0b57f4c86f8da5f7ac10c070f6aa0"
+  },
+  "constants": {
+    "reference_temperature_k": 273.15,
+    "water_density_kg_m3": 1000.0,
+    "ice_density_kg_m3": 920.0,
+    "water_specific_heat_j_kg_k": 4218.0,
+    "ice_specific_heat_j_kg_k": 2106.0,
+    "fusion_enthalpy_j_kg": 333700.0,
+    "ice_timescale_s": 3300.0,
+    "ice_volumetric_capacity": 0.85,
+    "physical_fallback_floor_ns": 60000000000
+  },
+  "equations": {
+    "frozen_fraction": "zero when W_l+W_i is zero; otherwise W_i/(W_l+W_i)",
+    "saturation": "liquid-water saturation humidity for liquid and ice",
+    "signed_phase": "m_freeze-m_melt",
+    "fusion_energy": "L_f*(m_freeze-m_melt)",
+    "phase_enthalpy_coordinate": "U-L_f*W_i",
+    "ending_temperature": "T_ref+U_end/(C_dry+W_l,end*C_w+W_i,end*C_i)",
+    "ice_capacity": "0.85*rho_w*litter_depth"
+  },
+  "ordering": [
+    "immutable beginning phase availability",
+    "phase-free predecessor solve",
+    "separate finalized liquid and ice vapor",
+    "post-vapor sensible-energy installation",
+    "one bounded 3300-second kinetic phase transfer",
+    "atomic phase state and fusion-energy candidate",
+    "current liquid ingress",
+    "liquid-only WB14",
+    "whole-envelope commit"
+  ],
+  "receipt_version": "OPENWEPP_FOREST_LITTER_PHASE_RECEIPT_V1",
+  "typed_errors": ["LSEB-E-045", "LSEB-E-046", "LSEB-E-047", "LSEB-E-048"],
+  "refusals": [
+    "instantaneous equilibrium",
+    "zertol tiny-ice cleanup",
+    "xwgmin frozen-fraction regularization",
+    "soil compensation",
+    "saturation over ice",
+    "rho_i ice-capacity basis",
+    "latent-only vapor energy",
+    "current-ingress donation",
+    "ice as WB14 supply or soil frozwt",
+    "same-support phase re-solve",
+    "implicit ice initialization",
+    "production V3-to-V2 downgrade",
+    "producer-residual closure"
+  ]
+}

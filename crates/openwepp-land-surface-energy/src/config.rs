@@ -427,6 +427,17 @@ impl LandSurfaceEnergyConfiguration {
         )
     }
 
+    /// Validate the immutable V3 identity while preserving the complete V2
+    /// scientific configuration payload and vegetation coupling.
+    pub fn validate_v3(&self) -> Result<(), LandSurfaceEnergyError> {
+        self.validate_for_identity(
+            crate::V3_MODEL_VERSION,
+            crate::V3_MODEL_DEFINITION_SHA256,
+            crate::V2_VEGETATION_MODEL_VERSION,
+            crate::V2_VEGETATION_MODEL_DEFINITION_SHA256,
+        )
+    }
+
     fn validate_for_identity(
         &self,
         model_version: &str,
