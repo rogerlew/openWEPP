@@ -15,8 +15,8 @@ authentic-map-only publication.
 
 Runtime implementation is in
 `covered_fixed_point_finalization_stage3_iterate_v1` and
-`covered_fixed_point_picard_accepts_convergence_v1`. Contract registry and all
-compiler-discovered SnowEnergy consumers were advanced to version 28.
+the stateful `CoveredFinalizationStabilizationV1` seam. Contract registry and
+all compiler-discovered SnowEnergy consumers are advanced to version 29.
 
 Version 29 resolves RA-001/RB-003 without changing runtime tolerances or
 physics: candidate density is copied bitwise and never interpolated, its
@@ -25,6 +25,7 @@ guard, invariant, and test-vector tables now bind finalization restart and the
 exactly-once stabilization seam. Compiler-discovered consumers are pinned to
 version 29.
 
-Ran: `bash tools/release/check_science_contract_admission.sh --base-ref HEAD --worktree`
+Ran on the terminal generation-37 worktree:
+`bash tools/release/check_science_contract_admission.sh --base-ref be40a9435 --worktree`
 returned `A0_ADMITTED`, 49 contracts, four science surfaces, authority digest
-`9987f528f6fe862635902f4b2df0b57857f6e79fe3554fef3d80cc2333da483f`.
+`ce2befbdb7214be8194f01d3f8645663ce916a232ff476cc21692986034dad1a`.

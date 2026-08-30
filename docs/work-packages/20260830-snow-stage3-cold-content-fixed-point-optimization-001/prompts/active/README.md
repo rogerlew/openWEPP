@@ -1,3 +1,4 @@
 # Active prompts
 
-Contains the reopened review-closure kickoff prompt.
+No active prompt remains. Review and verification closed with package `HOLD`
+for failed mandatory workspace gates.

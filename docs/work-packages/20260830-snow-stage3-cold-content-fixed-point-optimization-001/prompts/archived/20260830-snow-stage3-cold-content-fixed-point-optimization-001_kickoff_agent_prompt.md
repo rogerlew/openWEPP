@@ -6,13 +6,17 @@ Autonomy: execute every remaining package phase through truthful disposition
 without asking for intervention unless a genuine authority, safety,
 external-state, or operator-decision blocker is reached.
 
-Subagent authorization: this prompt explicitly authorizes subagent
-spawning/delegation to two independent review subagents and two independent
-verification subagents for the terminal package diff, science/numerics
-contract compliance, test adequacy, gate-evidence audit, and final disposition.
-Expected outputs are compact findings or verification results in the assigned
-package artifacts. Write access is limited to each assigned artifact;
-production, contract, test, and all other package files are read-only. Standing
+Subagent requirement: REQUIRED. This prompt explicitly authorizes subagent
+spawning/delegation to two independent review subagents, two independent
+verification subagents, and a `comparator_suite_runner` subagent. Review and
+verification scope is the terminal package diff, science/numerics contract
+compliance, test adequacy, gate-evidence audit, and final disposition; expected
+outputs are compact findings or verification results in the assigned package
+artifacts, with write access limited to each assigned artifact. The comparator
+runner must execute full-workspace correctness and warnings-denied closure
+commands and return compact metrics plus retained log paths; its write access
+is read-only outside ordinary build artifacts. Production, contract, test, and
+all other package files are read-only to every delegated role. Standing
 user/session authorization was supplied on 2026-08-30.
 
 ## Required reading

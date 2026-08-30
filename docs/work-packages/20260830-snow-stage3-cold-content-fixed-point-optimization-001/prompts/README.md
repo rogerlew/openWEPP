@@ -1,3 +1,4 @@
 # Prompts
 
-The kickoff prompt is active for owner-authorized independent review closure.
+The owner-authorized review-closure kickoff prompt is archived. No active
+prompt remains.

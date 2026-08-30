@@ -1,6 +1,6 @@
 # Stage-3 cold-content fixed-point optimization
 
-Status: `REVIEW-CLOSURE-ACTIVE`
+Status: `EXECUTED-HOLD-WORKSPACE-GATES`
 
 Execution mode: `package-end-to-end`
 
@@ -13,7 +13,9 @@ This is a living ExecPlan maintained under `docs/codex_exec_plans.md`.
 - [x] 2026-08-30: select and contract a bounded finalization-restart correction.
 - [x] 2026-08-30: implement and run focused qualification.
 - [x] 2026-08-30: run canonical one-day qualification and reconcile disposition.
-- [ ] 2026-08-30: complete newly authorized independent review and verification.
+- [x] 2026-08-30: dispatch and disposition initial independent reviews.
+- [x] 2026-08-30: complete correction re-review and independent verification;
+  retain truthful HOLD for failed mandatory workspace gates.
 
 ## Surprises and discoveries
 
@@ -37,6 +39,11 @@ This is a living ExecPlan maintained under `docs/codex_exec_plans.md`.
   authentic candidate and never interpolated, while a density difference still
   prevents convergence. Version 29 reconciles that authority and completes the
   missing branch/guard/vector bindings.
+- The first complete 3,628-test profile exposed three package-owned source-scan
+  failures from the mechanical include split. Rebinding those tests to the
+  authoritative include restores all five accepted-endpoint ordering/poison
+  vectors. The same campaign also records 122 non-package failures or timeouts
+  and a failing workspace warnings-denied baseline; these remain closure gates.
 
 ## Decision log
 
@@ -61,6 +68,13 @@ This is a living ExecPlan maintained under `docs/codex_exec_plans.md`.
   identity, full-regression, warnings-denied, and line-count evidence defects;
   none may be dismissed as merely procedural.
   Date/author: 2026-08-30, Codex.
+- Decision: close every package-local correction finding but retain package
+  `HOLD` after dual verification.
+  Rationale: the delegated full correctness profile completed with 125
+  nonpassing tests and warnings-denied Clippy stopped on two diagnostics. The
+  three package-owned source-scan failures were corrected and pass focused,
+  but neither mandatory workspace command passes and no waiver exists.
+  Date/author: 2026-08-30, Codex.
 
 ## Outcomes and retrospective
 
@@ -69,13 +83,16 @@ rejected trials, down from 504/227. Fixed-point caps fell from 128 to 32 and
 cold-content-only caps from 100 to 2. The accepted-width histogram is 60 s: 49,
 120 s: 92, 180 s: 320, 240 s: 17, 300 s: 3, 420 s: 3, 480 s: 1, 900 s: 3,
 and 1800 s: 3. Exact-floor use remains 49, discrete comparison rejection
-remains zero, body wall falls from 374.23 s to 336.52 s, and mass, energy, and
+remains zero, body wall falls from 374.23 s to 339.10 s, and mass, energy, and
 receipt closure pass unchanged bounds.
 
-Technical exit criteria are satisfied. The package remains `EXECUTED-HOLD`
-only because the required dual independent reviews and verifications cannot be
-performed under the higher-precedence no-subagent session policy. Local gates
-are not mislabeled as independent evidence.
+The optimization-specific numerical, contract, conservation, and performance
+criteria are satisfied after review correction. Two independent reviews and
+two independent verifications close every package-local finding, including
+the source-order binding and generation-37 authority reconciliation. Package
+completion is prohibited: the complete 3,628-test workspace profile has 125
+nonpassing cases and warnings-denied workspace Clippy fails. Both verification
+lanes return `HOLD`; neither failed gate is waived or mislabeled.
 
 ## Objective
 
@@ -166,6 +183,7 @@ change, accepted-state canonicalization, or fallback acceptance is allowed.
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs`
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_terminal_accepted_endpoint.rs`
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs`
+- `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_tail_tests.rs`
 - `crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs`
 - `crates/openwepp-runner/src/hillslope/tests03/cqr_laned_active_outputs.rs`
 - compiler-discovered SnowEnergy contract consumers under `tests/integration/`
@@ -204,14 +222,18 @@ no network, credential, privilege, dependency, unsafe, or external message
 surface is authorized.
 
 Subagent authorization: this package explicitly authorizes subagent
-spawning/delegation to two independent review subagents and two independent
-verification subagents for the terminal package diff, science/numerics
-contract compliance, test adequacy, gate-evidence audit, and final disposition.
-Expected outputs are compact findings or verification results written to the
-package's `review_agent_{a,b}.md` and `verification_agent_{a,b}.md` artifacts.
-Write access is limited to the assigned package artifact; production, contract,
-test, and all other package files are read-only. The standing user/session
-authorization was supplied on 2026-08-30.
+spawning/delegation to two independent review subagents, two independent
+verification subagents, and a `comparator_suite_runner` subagent. Review and
+verification scope is the terminal package diff, science/numerics contract
+compliance, test adequacy, gate-evidence audit, and final disposition. Their
+expected outputs are compact findings or verification results written to the
+package's `review_agent_{a,b}.md` and `verification_agent_{a,b}.md` artifacts;
+write access is limited to each assigned artifact. The comparator runner is
+required for full-workspace correctness and warnings-denied closure commands;
+its expected output is compact metrics plus retained log paths and its write
+access is read-only outside ordinary build artifacts. Production, contract,
+test, and all other package files are read-only to every delegated role. The
+standing user/session authorization was supplied on 2026-08-30.
 
 ## Gate evidence non-deferral
 

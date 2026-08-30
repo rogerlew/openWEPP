@@ -7,10 +7,12 @@ fixed-point caps after the refreeze-history classification. The retained
 one-day baseline is 504 accepted / 227 rejected trials, 128 fixed-point caps,
 100 cold-content-only caps, 49 exact-floor supports, and 374.23 seconds body
 wall. Terminal qualification is 491 accepted / 205 rejected, 32 fixed-point
-caps, two cold-content-only caps, 49 exact-floor supports, and 336.52 seconds
+caps, two cold-content-only caps, 49 exact-floor supports, and 339.10 seconds
 body wall without tolerance relaxation, event/discrete weakening, or persisted
-microstepping diagnostics. Technical gates pass; owner-authorized independent
-review and verification are active. Status: `REVIEW-CLOSURE-ACTIVE`.
+microstepping diagnostics. Dual review and verification close all
+package-local findings, but the mandatory full workspace profile has 125
+nonpassing tests and warnings-denied Clippy fails. Status:
+`EXECUTED-HOLD-WORKSPACE-GATES`.
 
 ## 20260826-snow-stage3-adaptive-compositional-microstepping-001
 

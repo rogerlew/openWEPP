@@ -57,3 +57,25 @@ tree and the artifact did not retain a complete source manifest. Its metrics
 remain diagnostic evidence but no longer support the exact-terminal closure
 claim. A clean-commit replacement run is required after review corrections are
 committed.
+
+## Clean-commit review-correction result
+
+Source identity: clean commit
+`6953a36b881e7167b47c76040208d1024818060a`. The same canonical command passed
+with 491 accepted and 205 rejected trials. Its width histogram, 32 cap
+signatures, 45 scaled comparison rejections, zero discrete comparison
+rejections, and every closure residual are bit-for-bit identical to the
+initial result above. Body wall was 339.10 s; full command elapsed was 416.72 s
+(`user=826.43 s`, `sys=8.31 s`, maximum RSS 6,314,564 KiB).
+
+Log: `/tmp/stage3_fp_cold/one-day-review-correction.log`; SHA-256
+`c6ba3bdb3a9bfd5d0bdd35e83fdb2f448dcd97dba67d70811d418e64cb856417`.
+Timing sidecar: `/tmp/stage3_fp_cold/one-day-review-correction.time`. This clean
+source-bound run supersedes the initial dirty-tree result for closure identity
+and resolves RB-004.
+
+The full profile then exposed three source-order tests still reading
+`open_snow.rs` after the mechanical accepted-endpoint include split. Rebinding
+their shared source helper to `open_snow_terminal_accepted_endpoint.rs`
+restored the complete five-test module: 5/5 pass, nextest run
+`d72d27a7-7634-48cd-b0e1-d314de34e06e`.

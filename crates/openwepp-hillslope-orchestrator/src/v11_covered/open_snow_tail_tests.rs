@@ -219,14 +219,7 @@ mod precomputed_terminal_accepted_executor_tests {
     use super::*;
 
     fn accepted_branch_source() -> &'static str {
-        let source = include_str!("open_snow.rs");
-        source
-            .split("fn execute_precomputed_terminal_accepted_endpoint")
-            .nth(1)
-            .expect("accepted branch")
-            .split("fn physical_outcome_ledgers")
-            .next()
-            .expect("accepted branch end")
+        include_str!("open_snow_terminal_accepted_endpoint.rs")
     }
 
     #[test]

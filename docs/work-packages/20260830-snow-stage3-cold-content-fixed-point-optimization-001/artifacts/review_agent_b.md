@@ -1,6 +1,6 @@
 # Review B
 
-Status: `COMPLETE — NO-GO`
+Status: `COMPLETE — NO-GO (CORRECTION RE-REVIEWED)`
 
 Evidence mode: `Static + Ran`
 
@@ -145,3 +145,88 @@ persistence, or discrete-event correctness defect in this review, but
 RB-001 through RB-004 are current-scope closure blockers. RB-005 also requires
 artifact correction before final disposition. Re-review the amendments and
 perform independent verification after all accepted findings are resolved.
+
+## Correction re-review — `6953a36b8` plus source-order test binding
+
+Evidence mode: `Static + retained Ran evidence`
+
+Re-reviewed identity: clean correction commit
+`6953a36b881e7167b47c76040208d1024818060a`, plus the sole current worktree
+change in
+`crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_tail_tests.rs`.
+No heavy or canonical command was rerun by Review B. Retained log hashes were
+recomputed and match the amended package artifacts.
+
+### Finding dispositions
+
+| Finding | Decision | Re-review status | Evidence and rationale |
+|---|---|---|---|
+| `RB-001` | `accepted` | `OPEN` | The required full profile was finally executed to completion: all 3,628 tests were attempted, with 3,503 passing, 96 failing, 29 timing out, and zero not-run (`nextest_full.log`, SHA-256 `dbdd682aa9c654f08955f65d7b74addfad999691be21c678ecd6da977f0b35ee`). This resolves the prior *absence/incompleteness* of execution but not the required correctness result. Three package-owned stale source-scan failures are corrected by the current binding and have a retained focused 5/5 pass. The other 122 failures/timeouts remain unproven as unrelated; downstream fixture location does not exclude causality from a kernel-numerics change. The full profile also predates the current test-only terminal diff. A passing exact-terminal full profile, or a governance-authorized disposition that actually satisfies the critical requirement, is still required. |
+| `RB-002` | `accepted` | `OPEN` | The workspace warnings-denied run now reaches two early diagnostics (`openwepp-coupled-time` `filter_map_bool_then` and `openwepp-biogeochemistry` `similar_names`) before Cargo stops; log SHA-256 is `aac68d695f1d8f2e06f687c01aa199cc25d48f8d708a958763266e4323d11637`. This is a materially cleaner and more truthful result than the earlier 773-error artifact, but it remains `FAIL` and does not establish that these are the only workspace diagnostics. No passing warnings-denied result for the affected package/reverse dependents or governing exception exists. |
+| `RB-003` | `accepted` | `CLOSED` | `SC-SNOWENERGY-001` v29 now binds the finalization restart, exactly-once stabilization, refusal, density, and authentic-publication behavior in the canonical branch table (`:745-747`), primary invariant/guard map (`:840`), formal vectors (`:1142-1153`), and child obligation map (`:1172`). The density reconciliation is internally consistent: an unpublished blend copies authentic-candidate density bitwise, reconstructs thickness, and still requires exact density equality before convergence. Existing density-only coverage plus the finalization density vector prevent tolerance/continuous-coordinate aliasing. The state-owning `CoveredFinalizationStabilizationV1` retains pending state across nonconvergence and consumes it once at the first otherwise-converged relaxed crossing. No floor, tolerance, cap, ledger, event, receipt, or publication rule changed. |
+| `RB-004` | `accepted` | `CLOSED` | The replacement canonical run is bound to clean commit `6953a36b8` and passed with 491 accepted / 205 rejected, the identical width histogram, 32 caps, 45 scaled comparison rejections, zero discrete rejections, and bit-identical closure residuals. Body wall was 339.10 s. Log SHA-256 is `c6ba3bdb3a9bfd5d0bdd35e83fdb2f448dcd97dba67d70811d418e64cb856417`. The current worktree change is test-only and is excluded from the production dependency compiled by the one-day runner, so the clean executable evidence remains reusable. |
+| `RB-005` | `accepted` | `CLOSED` | The line-count artifact now correctly reports `WARN`, the actual 2,721/529-line split, the matching semantic method-body digest `97aec7ca...`, decomposition rationale, named SnowEnergy owner, and next-authorized-touch extraction intent. This satisfies the 2,000-line governance rule while remaining below the mandatory 3,000-line threshold. |
+
+### New finding RB-006 — MEDIUM — terminal package reconciliation has stale bindings
+
+The current source-order correction is correct: after the mechanical split,
+the five accepted-endpoint source-order tests must read
+`open_snow_terminal_accepted_endpoint.rs`, and the one-line `include_str!`
+change now binds the actual implementation. It is test-only, tightly scoped,
+and its retained focused 5/5 pass addresses the three failures exposed by the
+full profile.
+
+The package's terminal evidence is not yet internally reconciled, however:
+
+- `package.md` does not list `open_snow_tail_tests.rs` in the intended write
+  set, while `owned-file-manifest.md` already claims it as reconciled;
+- `gate-results.md` still summarizes the line split as 2,726/529 instead of
+  the actual 2,721/529;
+- `contract-implementation-evidence.md` still names the removed
+  `covered_fixed_point_picard_accepts_convergence_v1` helper and associates
+  consumer advancement with v28 before later describing v29; and
+- that contract artifact retains the v28 authority digest `9987f528...`, while
+  the v29 gate table records authority `a8828192...`.
+
+Disposition recommendation: `accepted`. Add the source-order test path to the
+authorized intended write set and correct the stale helper, version, line-count,
+and authority-digest statements before terminal reconciliation and
+verification. These are evidence/governance corrections; no production or
+science change is indicated.
+
+### Re-review recommendation
+
+`NO-GO / HOLD` remains the only truthful disposition. `RB-003`, `RB-004`, and
+`RB-005` are closed, and the source-order binding is correct. `RB-001` and
+`RB-002` remain closure-blocking failed requirements, not merely missing runs.
+`RB-006` must also be reconciled before verification. The clean canonical
+one-day evidence continues to support the optimization and unchanged closure,
+but it cannot substitute for a passing critical full profile or
+warnings-denied gate.
+
+## Final bounded re-review — RB-006 generation-37 correction
+
+Evidence mode: `Static + retained Ran evidence`
+
+Scope was limited to the four stale reconciliation bindings identified in
+`RB-006`; no heavy or canonical gate was rerun by Review B.
+
+`RB-006` disposition: `accepted — CLOSED`.
+
+- `package.md` and `owned-file-manifest.md` both authorize and inventory
+  `open_snow_tail_tests.rs`.
+- `gate-results.md` records the actual 2,721/529-line split.
+- `contract-implementation-evidence.md` names the stateful
+  `CoveredFinalizationStabilizationV1` seam and consistently identifies
+  SnowEnergy authority/consumers as version 29.
+- The generation-37 impact map binds the mechanically split accepted-endpoint
+  test surface by exact path, and `terminal-diff-reconciliation.md` identifies
+  generation 37 and that surface.
+- Contract evidence and the gate table agree on the exact-source A0 result:
+  `A0_ADMITTED`, 49 contracts, four science surfaces, authority SHA-256
+  `ce2befbdb7214be8194f01d3f8645663ce916a232ff476cc21692986034dad1a`.
+
+The write-set, implementation binding, line-count, authority-policy, and A0
+records now reconcile; no residual `RB-006` defect remains. `RB-001` and
+`RB-002` remain open and closure-blocking, so Review B's final recommendation
+remains `NO-GO / HOLD`.
