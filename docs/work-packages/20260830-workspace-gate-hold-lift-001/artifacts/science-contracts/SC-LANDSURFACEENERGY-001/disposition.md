@@ -31,3 +31,9 @@ interior-terminal consumers must be rerun after 001H and complete with owner
 closure/no-trial proof, and the parent-owned successor-safe INV-139 authority
 scan plus exact impact-map/A0/anti-evasion binding must land. No further 001F
 production change is indicated by current evidence.
+
+Final hardening closed the last prospective-classification edge: a typed
+governed-step threshold excess now requires all four governed norms finite.
+Per-coordinate NaN and both infinities refuse classification, while finite
+excess remains admitted. Focused 6/6 and current full LSE 103/103 pass; this
+does not change the external HOLD disposition above.

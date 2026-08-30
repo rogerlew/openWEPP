@@ -26,10 +26,18 @@ impl CoveredStepNorms {
     }
 
     fn governed_threshold_exceeded(self) -> bool {
-        self.hydraulic_mm > 1.0e-7
-            || self.beta > 1.0e-10
-            || self.temperature_k > 1.0e-8
-            || self.humidity_kg_kg > 1.0e-12
+        [
+            self.hydraulic_mm,
+            self.beta,
+            self.temperature_k,
+            self.humidity_kg_kg,
+        ]
+        .iter()
+        .all(|step| step.is_finite())
+            && (self.hydraulic_mm > 1.0e-7
+                || self.beta > 1.0e-10
+                || self.temperature_k > 1.0e-8
+                || self.humidity_kg_kg > 1.0e-12)
     }
 }
 
@@ -977,6 +985,33 @@ mod covered_halved_no_update_witness_tests {
                 true,
                 poison,
             ));
+        }
+    }
+
+    #[test]
+    fn full_trial_threshold_excess_classification_requires_every_governed_step_finite() {
+        for poison in [
+            |steps: &mut CoveredStepNorms, value| steps.hydraulic_mm = value,
+            |steps: &mut CoveredStepNorms, value| steps.beta = value,
+            |steps: &mut CoveredStepNorms, value| steps.temperature_k = value,
+            |steps: &mut CoveredStepNorms, value| steps.humidity_kg_kg = value,
+        ] {
+            for nonfinite in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+                let mut steps = passing_steps();
+                poison(&mut steps, nonfinite);
+                assert!(!steps.governed_threshold_exceeded());
+            }
+        }
+
+        for poison in [
+            |steps: &mut CoveredStepNorms| steps.hydraulic_mm = 1.0e-7 + f64::EPSILON,
+            |steps: &mut CoveredStepNorms| steps.beta = 1.0e-10 + f64::EPSILON,
+            |steps: &mut CoveredStepNorms| steps.temperature_k = 1.0e-8 + f64::EPSILON,
+            |steps: &mut CoveredStepNorms| steps.humidity_kg_kg = 1.0e-12 + f64::EPSILON,
+        ] {
+            let mut steps = passing_steps();
+            poison(&mut steps);
+            assert!(steps.governed_threshold_exceeded());
         }
     }
 }

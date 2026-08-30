@@ -22,11 +22,14 @@ Ran:
   failure/no-publication, and transaction rollback-lineage tests>'`: `6/6`
   pass, run `22872cbb-d516-4e11-9561-40c580891d1d` before the final typed-
   refusal/member-finiteness refinement;
-- exact-source controller/predicate vectors: reviewer `5/5` pass, run
-  `30d46382-50eb-48cc-8ff4-ab5b21c89a27`; producer retained `5/5` pass, run
-  `baaf9f04...`;
-- exact-source complete LSE crate: producer retained `87/87` pass, run
-  `dcd3e84b...`;
+- exact-source controller/predicate vectors before final hardening: reviewer
+  `5/5` pass, run `30d46382-50eb-48cc-8ff4-ab5b21c89a27`; producer retained
+  `5/5` pass, run `baaf9f04...`;
+- final hardening controller/predicate vectors: reviewer `6/6` pass, run
+  `9db863fd-f864-49d9-9e8a-d76d6bd50e69`; producer retained `6/6` pass, run
+  `6efcec2e-2666-4a58-b911-80a2267bf0dd`;
+- final exact-source complete LSE crate: producer retained `103/103` pass, run
+  `86f824a0-4486-4b9d-80ff-fe8fe0e8fbfd`;
 - `nix develop -c cargo nextest run --test
   land_surface_energy_balance_authority_contract`: `9/12` pass, run
   `03260332-a1b6-4d55-8b72-596fec39839e`; the stale LSE lifecycle-row assertion
@@ -54,13 +57,13 @@ accepted-current identity, primitive owner closure, and no trial installation.
 
 The corrected source extracts the installed `b=1..20` ordering into private
 controller `covered_first_domain_valid_halved_no_update_witness`
-(`solver_covered_solve.rs:68-95`) and calls that exact controller from the
-production solve (`solver_covered_solve.rs:577-615`). Its probe result
+(`solver_covered_solve.rs:76-103`) and calls that exact controller from the
+production solve (`solver_covered_solve.rs:585-623`). Its probe result
 distinguishes domain-invalid, evaluation-incomplete, and completely evaluated
 step metadata. The controller returns only `(exponent, CoveredStepNorms)`, so
 it cannot return or install a prospective trial.
 
-Static: direct controller tests at `solver_covered_solve.rs:882-935` prove
+Static: direct controller tests at `solver_covered_solve.rs:890-943` prove
 ordered skipping of domain-invalid factors to the first complete candidate;
 immediate refusal on an evaluation-incomplete or step-failing first domain-
 valid candidate; no later-candidate skip; and no probing without a typed full-
@@ -103,6 +106,23 @@ witness while solution/evaluation remain current.
 Disposition recommendation: `authority-clarified-and-closed`. Production now
 matches the prospective canonical diagnostic semantics exactly and does not
 introduce persistent microstepping telemetry.
+
+### Final narrow hardening rereview — NO FINDING
+
+Static: `governed_threshold_exceeded` now classifies a full-trial governed-step
+refusal only when all four governed norms are finite and at least one strictly
+exceeds its unchanged threshold (`solver_covered_solve.rs:28-41`). A NaN or
+either infinity in hydraulic, beta, temperature, or humidity therefore cannot
+activate the new halved no-update path. The direct test independently poisons
+all four coordinates with NaN, positive infinity, and negative infinity, then
+proves finite above-threshold classification for each coordinate
+(`solver_covered_solve.rs:991-1016`). No `ci` threshold was introduced.
+
+Ran: both independent and producer focused runs pass `6/6`; the producer's
+complete LSE crate passes `103/103`. Reviewed source SHA-256 is
+`9784b674044a61f14dcb21523fbb53f6717735c1d4e9beb22339d8ee69e91122` and the
+file is 1,207 lines. Static no-print scan is empty. No contract, public API,
+tolerance, ledger, receipt, rollback, or persistence change was found.
 
 ## Preserved behavior observed statically
 
