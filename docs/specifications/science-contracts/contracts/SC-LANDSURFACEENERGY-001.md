@@ -4,7 +4,7 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 14
+contract_version: 15
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
@@ -72,6 +72,7 @@ Out of scope in version 1:
 | `REF-LANDSURFACEENERGY-008` | `SC-SNOWENERGY-001#INV-SNOWENERGY-034` and `GAP-SNOWENERGY-011` | Schema-v8 terminal payload is censored and has no receiving-surface authority. | `[DIRECT][Static]` |
 | `REF-LANDSURFACEENERGY-009` | physical conservation of mass and first-law energy accounting | Exact ledger closure and equal/opposite shared-boundary fluxes. | `[INFERENCE][Static]` |
 | `REF-LANDSURFACEENERGY-010` | `crates/openwepp-meteorology/src/surface_energy.rs` | Existing typed flux algebra is reusable mechanics only; it is not proof of a complete runtime owner or consumer. | `[DIRECT][Static]` |
+| `REF-LANDSURFACEENERGY-011` | IEEE 754 binary64 round-to-nearest, ties-to-even; exact integer arithmetic over finite-binary64 dyadics; `SC-SURFACELIQUID-001#INV-SURFACELIQUID-022` | Receiver-owned exact soil-layer enthalpy total, one correctly rounded high term, canonical signed-dyadic carry, and exact accepted-credit custody. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 All pinned citations mean `git show
 dac3c950d8b16cc73774bf5ce2e7e11f80baac70:<path>`; the mutable checkout
@@ -101,6 +102,10 @@ into surface storage; named outgoing water terms remain non-negative.
 | `m_terminal`, `Q_terminal`, `dt_terminal` | contract units | censored schema-v8 snow-terminal payload | prohibited v1 input |
 | `epsilon_E`, `epsilon_M` | `J m^-2`, `kg m^-2` | independently reconstructed closure residuals | guards only |
 | `rho_E`, `rho_M` | `dimensionless` | non-negative relative closure coefficients | authority gap |
+| `H_hi,k` | `J m^-2 OFE-ground` | finite binary64 high term of soil-layer enthalpy | soil-thermal V2 owner |
+| `R_k` | `J m^-2 OFE-ground` | exact normalized signed-dyadic soil-layer enthalpy carry | soil-thermal V2 owner |
+| `E_k` | `J m^-2 OFE-ground` | exact soil-layer enthalpy `exact(H_hi,k)+R_k` | soil-thermal V2 owner |
+| `Q_soil,k`, `Q_top,k`, `Q_inf,k` | `J m^-2 OFE-ground interval` | exact accepted soil-internal, top-boundary, and infiltration energy operands | typed receipt inputs |
 
 ## Algorithm State Surfaces
 
@@ -201,6 +206,7 @@ mechanics reproducible but does not make the runtime algorithm promotable.
 | positive successor support is below the active adopter domain | reject before Newton and restore every owner/receipt byte | `LSEB-E-041` |
 | support/adopter/event receipt join, duration, policy, or owner digest is invalid | reject before physical evaluation | `LSEB-E-042` |
 | post-event operand or support chronology is invalid | reject before physical evaluation | `LSEB-E-043` |
+| exact-carry schema is noncanonical, identity/receipt/restart/checkpoint join fails, an operand/high term is nonfinite, exact-total rounding overflows, or exact reconstruction fails | reject before installation and roll back the complete envelope | `LSEB-E-049` |
 
 Branch priority is `snow_terminal` rejection, then `snow_present` delegation,
 then `snow_free`. No temperature-only guess may override explicit snow state.
@@ -232,6 +238,7 @@ then `snow_free`. No temperature-only guess may override explicit snow state.
 | `INV-LANDSURFACEENERGY-130` | A covered-canopy or Stage 3 terminal-liquid temperature represented as exactly one upward binary64 spacing from `T_ref` is canonicalized to exact `T_ref` at its named publication boundary; every other temperature remains unchanged or fails its existing domain guard. | exact reference-state representation authority | `[INFERENCE][Static]` | runtime/test | typed closure/domain failure |
 | `INV-LANDSURFACEENERGY-138` | Every covered-column Jacobian uses the canonical centered binary64 difference at an interior coordinate and the unique inward one-sided difference only at an exact admitted closed bound; an invalid current iterate or two inadmissible probes rejects. | deterministic numerical-domain authority | `[INFERENCE][Static]` | runtime/test | typed constitutive-domain failure |
 | `INV-LANDSURFACEENERGY-139` | When the current complete covered residual vector passes, the full Newton trial cannot satisfy the existing no-update witness because it is domain-invalid or a governed prospective step exceeds its unchanged threshold, and the first domain-valid halved trial has every governed exact prospective step norm inside those thresholds, the solver accepts the current iterate without installing the trial. | deterministic no-update termination authority | `[INFERENCE][Static]` | runtime/test | accepted current iterate or unchanged strict-decrease/fail-closed path |
+| `INV-LANDSURFACEENERGY-150` | Every soil layer retains exact receiver-owned enthalpy `E=exact(H_hi)+R`. Each candidate exactly aggregates the beginning total plus every canonical accepted soil-internal, top-boundary, and infiltration operand, rounds once to finite binary64 nearest-even `H_hi`, and stores the exact normalized signed-dyadic remainder `R`; versioned identity, receipt, restart/checkpoint, downgrade refusal, independent reconstruction, and byte-exact rollback are mandatory. | `REF-LANDSURFACEENERGY-009/011` + `SC-SURFACELIQUID-001#INV-SURFACELIQUID-022` | `[DIRECT][Static] + [INFERENCE][Static]` | runtime/test/real-consumer | `LSEB-E-049` or hard `HOLD` pending real adoption |
 
 Guard-map enforcement in version 1 is the contract-derived integration test
 and package review. Runtime mappings are intentionally future obligations; an
@@ -262,6 +269,7 @@ evidence artifact before promotion.
 | `INV-LANDSURFACEENERGY-130` | covered-liquid finalization before ledger materialization | runtime/test | exact reference-state canonicalization or existing typed reject | adaptive microstepping package |
 | `INV-LANDSURFACEENERGY-138` | covered-column Jacobian probe-domain validator | runtime/test | centered interior, unique inward closed-bound derivative, or typed reject | covered solver contract/unit/runtime vectors |
 | `INV-LANDSURFACEENERGY-139` | covered-column first-domain-valid-halving no-update witness | runtime/test | after the full trial fails the existing no-update witness by domain or governed-step refusal, accept the unchanged current iterate only when the complete current residual vector and every governed first-halved prospective step pass; otherwise retain strict-decrease update or typed numerical rejection | covered solver contract/unit/runtime vectors plus interior-terminal real consumer |
+| `INV-LANDSURFACEENERGY-150` | `SoilThermalOwnerEnvelopeV2`, exact aggregation/rounding, typed energy-credit receipt, restart/checkpoint replay, complete-owner join, and real consumers | runtime/test/governance | canonical finite exact total and atomic install, or `LSEB-E-049`; blocked promotion until WAT5, `p61`, and native-forest consumers pass | exact-carry focused vectors, split-restart equivalence, rollback hashes, and three real-consumer gates |
 | `INV-LANDSURFACEENERGY-041` | provenance/no-proxy review | governance | blocked promotion | baseline map + reviews |
 | `INV-LANDSURFACEENERGY-042` | future recipient-specific radiation ledger and poison vectors | runtime + test | blocked promotion on omitted, duplicated, or aliased recipient | vegetation/LSE integration package |
 | `INV-LANDSURFACEENERGY-043` | future latent mass-energy lineage join | runtime + test | blocked promotion on missing/mismatched `h_v`, duplicate debit, or amount/rate basis mismatch | vegetation/LSE integration package |
@@ -276,6 +284,9 @@ evidence artifact before promotion.
   and exact component lineage without silent defaults or clamps.
 - `OBL-LANDSURFACEENERGY-P-004`: reject all schema-v8 terminal payloads until a
   reviewed atomic cutover revises both snow and receiving-surface authority.
+- `OBL-LANDSURFACEENERGY-P-005`: expose every accepted soil-internal,
+  top-boundary, and infiltration energy operand with exact layer/support/source
+  identity; never supply a rounded aggregate, residual, or carry.
 - `OBL-LANDSURFACEENERGY-C-001`: ET supplies one actual evaporation debit and
   consumes no second latent debit.
 - `OBL-LANDSURFACEENERGY-C-002`: infiltration/runoff consumes one water offer,
@@ -284,6 +295,8 @@ evidence artifact before promotion.
   sole subsurface conduction/phase-state mutator.
 - `OBL-LANDSURFACEENERGY-C-004`: a real scheduler consumer must prove that the
   new state and ledger affect the intended direct path before runtime closure.
+- `OBL-LANDSURFACEENERGY-C-005`: soil thermal V2 alone owns the exact high/carry
+  representation, credit receipt, restart/checkpoint state, and atomic commit.
 
 ## Symbol Alias Map
 
@@ -295,6 +308,9 @@ evidence artifact before promotion.
 | `m_evap` | `Es`/`Er`/`Ep` are not interchangeable aliases | ET handoff | named `m` or `kg m^-2` conversion required | `SC-EVAP-001` |
 | `m_inf`, `m_runoff` | infiltration/runoff records | direct hydrology | named depth-to-area-mass conversion required | `SC-WATBAL-001`, `SC-RUNOFFPART-001` |
 | `m_terminal`, `Q_terminal`, `dt_terminal` | schema-v8 terminal fields | snow trace only | prohibited | `SC-SNOWENERGY-001` |
+| `H_hi` | `SoilThermalLayerStateV2.enthalpy_hi_j_m2_ofe_ground` | soil-thermal persistent state | `J m^-2 OFE-ground`; finite binary64 nearest-even from exact total | this contract |
+| `R` | `SoilThermalLayerStateV2.enthalpy_carry` / `ExactDyadicEnthalpy` | soil-thermal persistent state | `J m^-2 OFE-ground`; canonical normalized signed dyadic | this contract |
+| `Q_soil/Q_top/Q_inf` | `SoilThermalEnergyCreditReceiptV2.accepted_operands` | candidate credit receipt | `J m^-2 OFE-ground interval`; exact finite-binary64 dyadics | this contract + `SC-SURFACELIQUID-001` |
 
 ## Constants and Parameters with Provenance Anchors
 
@@ -320,6 +336,7 @@ over both owners atomically; until then the seam is `NON_PROMOTABLE`.
 | `E_s`, energy residual | `J m^-2` | future typed area energy | named integration only | internal guarded scalar candidate | none |
 | water stores/transfers | `kg m^-2` | future typed area mass | named depth/area-mass conversion | no final scalar exception | none |
 | `dt` | `s` | future typed duration | named cadence conversion | none | none |
+| `H_hi,R,E,Q_soil,Q_top,Q_inf` | `J m^-2 OFE-ground` | successor exact-carry registry entries required before promotion | no conversion; exact binary64-to-dyadic decode and arbitrary-precision integer aggregation | internal typed amount; no floating residual exception | none |
 
 No publication is authorized. A future implementation must update the machine
 registry and pass its unit guards before a dimensional runtime surface lands.
@@ -343,6 +360,11 @@ only after those checks and cannot repair them.
   provenance, and tests.
 - Closure, solver convergence, phase-event, and representation tolerances are
   distinct and cannot be substituted for one another.
+- Version-15 carry arithmetic has no tolerance: aggregate exactly, round once
+  to nearest-even, and require exact reconstruction. Signed-zero treatment of
+  the existing binary64 high term is unchanged; only the dyadic carry has one
+  schema-zero form. `nextafter`, forced ULPs, zero snapping, subnormal flush,
+  producer residuals, and canonical-zero changes are prohibited.
 
 ## Calibration and Identifiability
 
@@ -376,6 +398,7 @@ or an execution assumption is not empirical calibration.
 | terminal schema-v8 payload | reject with no mutation | `INV-021`, `LSEB-E-021` |
 | non-finite/domain/negative storage | reject with no clamp | `INV-002/015`, `LSEB-E-001/015` |
 | missing/duplicate lineage | reject before mutation | `INV-010/011/014`, `LSEB-E-010/011/012` |
+| exact soil-energy credit below high-term ULP | unchanged or nearest-even `H_hi`, exact nonzero `R`, and exact reconstructed `E` | `INV-150`, `LSEB-E-049` |
 
 Poison vectors shall independently omit and duplicate precipitation water and
 heat, runon water and heat, infiltration water and heat, runoff water and heat,
@@ -398,6 +421,7 @@ Real-consumer proof remains intentionally unsatisfied in version 1.
 | Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
 |---|---|---|---|---|---|---|
 | `LSE-CHILD2C-SUCCESSOR` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-121, INV-LANDSURFACEENERGY-122, INV-LANDSURFACEENERGY-123` | `flagged-binding-addition` | Accepted event receipt, post-event-only operands, and pre-Newton covered-forest support admission; no storage arithmetic change. |
+| `LSE-V15-SOIL-THERMAL-EXACT-CARRY` | Version 15 Receiver-Owned Exact Soil-Enthalpy-Carry Amendment below | `active` | `new-INV` | `INV-LANDSURFACEENERGY-150` | `flagged-binding-addition` | Exact receiver representation and custody only; no process-physics, tolerance, chronology, or temporal-floor change. |
 
 ## Gap Register and Promotability Labels
 
@@ -409,6 +433,7 @@ Real-consumer proof remains intentionally unsatisfied in version 1.
 | `GAP-LANDSURFACEENERGY-004` | No first-class runtime state, ledger, domain error, scheduler span, or real downstream consumer exists. | Later scoped implementation plus real-consumer proof. | `IMPLEMENTATION_MISSING`, `NON_PROMOTABLE` |
 | `GAP-LANDSURFACEENERGY-005` | Schema-v8 snow terminal liquid, energy, and remaining time are censored. | Atomic two-contract cutover with exact-one custody, rollback/defaults, and receiving-surface closure. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-LANDSURFACEENERGY-006` | Legacy daily ET and frost mechanics are not complete LSE authority. | Version 3 uses the selected external stack; legacy remains unchanged comparator behavior. | authority portion admitted; runtime/cutover pending |
+| `GAP-LANDSURFACEENERGY-007` | V1 soil-thermal binary64 state cannot retain accepted energy below the high-term ULP. | Version 15 V2 owner/receipt/restart/checkpoint exact carry, exact reconstruction, rollback, and real WAT5/`p61`/native-forest adoption. | `AUTHORITY_ADMITTED`, implementation pending; `NON_PROMOTABLE` |
 
 The first safe later implementation slice is a default-off, snow-free-only
 typed request/state/component-ledger/result using only admitted operands,
@@ -1479,10 +1504,119 @@ production selector, persist/reload successor state, and prove primitive-
 operand liquid/ice mass, fusion-energy, vapor-energy, WB14, and whole-envelope
 closure. Contract or source scanning alone is intentionally insufficient.
 
+## Version 15 Receiver-Owned Exact Soil-Enthalpy-Carry Amendment
+
+Version 15 corrects a representation defect only. A finite accepted energy
+credit can be far smaller than the binary64 spacing of a persistent soil-layer
+enthalpy high term. Discarding that credit violates exact energy custody, while
+forcing a high-term ULP invents energy. Therefore each soil layer's V2 owner
+stores the exact total
+
+```text
+E_k = exact(H_hi,k) + R_k                         [J m^-2 OFE-ground],
+```
+
+where `H_hi,k` is finite binary64 and `R_k` is an exact normalized signed
+dyadic. This amendment changes no flux, constitutive equation, heat capacity,
+temperature relation, phase behavior, closure tolerance, event, topology,
+support, or solver iteration. Version 14's vapor--phase--ingress--liquid-only-
+WB14 chronology and exact `60000000000 ns` fallback floor are unchanged;
+ordinary stable supports remain substantially larger than 60 seconds.
+
+The canonical wire representation is:
+
+```text
+ExactDyadicEnthalpy {
+    sign: -1 | 0 | 1,
+    coefficient_hex: lowercase hexadecimal nonnegative integer,
+    exponent2: signed decimal integer
+}
+value = sign * coefficient * 2^exponent2 J m^-2 OFE-ground.
+```
+
+Zero is uniquely `(0,"0",0)`. Nonzero values require sign `-1` or `1`, a
+positive odd coefficient in lowercase hexadecimal without a leading zero, and
+the unique exponent remaining after every factor of two is removed. The
+coefficient is arbitrary precision. Equivalent noncanonical forms, embedded
+signs, uppercase digits, even coefficients, negative zero, and zero with a
+nonzero exponent reject. Resource bounds may protect parsing but must accept
+every carry reachable from the complete configured finite transaction.
+The unique carry zero is new-schema normalization only. It cannot rewrite the
+existing binary64 high-term signed-zero representation: migration and no-op
+transactions preserve those high-term bits, and this amendment introduces no
+new high-term canonical-zero rule.
+
+`SoilThermalOwnerEnvelopeV2` contains ordered
+`SoilThermalLayerStateV2` records with `temperature_k`, `H_hi,k`, `R_k`, and
+last accepted transaction. It and `SoilThermalOwnerRestartV2`,
+`SoilThermalOwnerCheckpointV2`, and `SoilThermalEnergyCreditReceiptV2` bind the
+V2 schema and exact-carry definition digests, frozen V1 parent digest,
+configuration/model/contract versions, ordered layer set, state digest,
+transaction/predecessor, support, and receipt chain. Checked V1-to-V2 migration
+copies every V1 field and binary64 bit and adds the canonical exact-zero carry;
+it never reconstructs or changes temperature. Production downgrade is always
+rejected, including when all carries are zero.
+
+For each immutable candidate, the receiver executes:
+
+1. Validate the complete V2 beginning envelope, exact layer order and
+   identities, digest/version lineage, predecessor, support, and finite high
+   terms. Decode every canonical `R_k` and reconstruct `E_begin,k` exactly.
+2. Validate the layer-keyed credit receipt's canonical ordered list of every
+   accepted soil-internal conduction/storage, surface or snow top-boundary, and
+   infiltration energy operand. Each operand is decoded exactly from its finite
+   binary64 physical receipt and retains source owner/kind, equal-and-opposite
+   join where applicable, OFE/layer/support, transaction, units, basis, and
+   ordinal. No producer aggregate, residual, or carry is accepted.
+3. Compute using exact integer arithmetic
+   `E_candidate,k=E_begin,k+sum(Q_soil,k)+sum(Q_top,k)+sum(Q_inf,k)`.
+   Exact addition makes the result independent of machine addition order;
+   canonical receipt order remains binding custody and digest identity.
+4. Correctly round `E_candidate,k` exactly once to binary64 round-to-nearest,
+   ties-to-even, producing `H_hi,k`. Reject a nonfinite result or overflow to
+   infinity; never clamp to the largest finite value.
+5. Compute exactly `R_k=E_candidate,k-exact(H_hi,k)`, normalize it to the sole
+   wire form, and require exact independent reconstruction of `E_candidate,k`.
+6. Seal the V2 state and credit receipt, then atomically join all owners,
+   restart/checkpoint state, and enclosing transaction. Any current or later
+   failure preserves all beginning V1/V2 and production bytes exactly.
+
+The canonical WAT5 vector begins at
+`H_hi=-34315.42154113602 J m^-2` and adds accepted infiltration credit
+`-8.0670339832330148e-19 J m^-2`, only `1.10875e-7` ULP. Correct nearest-even
+rounding leaves `H_hi` unchanged and retains the exact negative nonzero carry
+`(sign=-1,coefficient_hex="1dc319224e55f",exponent2=-109)`;
+independent reconstruction closes exactly. Positive vectors also cover both
+signs, exact-halfway even-low and odd-low ties, crossings to adjacent high
+terms, opposite-sign and exact-zero cancellation, canonical-order permutation
+with identical exact totals, minimum positive/negative subnormal operands,
+normal/subnormal boundary crossings, and the largest-finite rounding boundary.
+Overflow refuses.
+
+Poison vectors cover NaN, both infinities, every noncanonical dyadic encoding,
+coefficient/exponent overflow/resource abuse, wrong schema/definition/parent/
+configuration/state/version/owner/transaction/predecessor/support/OFE/layer/
+source kind/ordinal/digest, and receipt omission/duplication/reorder/
+substitution. Every poison proves byte-exact rollback. Restart tests split
+before and after a nonzero credit, produce identical final state/receipt/
+checkpoint bytes, and reject replay. The canonical WAT5 transaction plus
+unchanged `p61` and native-forest successor consumers must read, persist,
+restore, and advance the V2 total. Producer-only, schema-only, diagnostic-only,
+or tolerance-only evidence cannot close adoption.
+
+Explicitly prohibited are producer-owned carry/residual, compensated floating
+state, tolerance or closure-envelope laundering, `nextafter`, forced-ULP
+installation, zeroing a nonzero carry, subnormal flushing, changing high-term
+signed-zero/canonical-zero semantics, a process-physics or temperature change,
+production downgrade, persistent microstepping or carry diagnostics, and
+partial commit. `LSEB-E-049` is the typed version-15 schema/domain/identity/
+receipt/exact-reconstruction/restart/rollback failure family.
+
 ## Change Log
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-08-30 | 15 | Codex | Added receiver-owned exact soil-layer enthalpy `E=exact(H_hi)+R`, canonical normalized signed-dyadic carry, exact accepted operand aggregation, one nearest-even finite high-term rounding, immutable V1-to-V2 zero-carry migration, versioned credit/restart/checkpoint custody, exact rollback, WAT5 sub-ULP and numeric/identity/restart/real-consumer gates, with no process-physics, tolerance, v14 chronology, or 60-second-floor change. |
 | 2026-08-30 | 14 | Codex | Admitted immutable snow-free forest-litter LSE V3 authority: phase-free V2 solve, separately finalized liquid/ice signed vapor, bounded 3300-second kinetic freeze/melt, exact equal-mass and fusion-energy closure with ending heat capacity, post-phase current ingress and liquid-only WB14, successor identities/restart/receipts/rollback, unchanged exact 60-second fallback, and mandatory p61/native real-consumer proof. |
 | 2026-08-30 | 13 | Codex | Extended covered-column no-update termination only to the first domain-valid halved trial when the full trial fails the existing witness by domain invalidity or governed-step excess and the current complete residual vector plus every governed halved prospective step already pass; the accepted current iterate is unchanged and all actual updates retain strict decrease. |
 | 2026-08-29 | 12 | Codex | Generalized the covered-column finite-difference stencil to use the unique inward one-sided derivative at exact admitted closed bounds for potential and final solves, while preserving the exact centered interior stencil, perturbations, scaling authority, branches, backtracking, ledgers, receipts, and rollback. |

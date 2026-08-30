@@ -122,7 +122,7 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
     let contract = read(CONTRACT);
     for required in [
         "contract_id: SC-SURFACELIQUID-001",
-        "contract_version: 14",
+        "contract_version: 15",
         "status: approved",
         "maturity: active",
         "INV-SURFACELIQUID-001",
@@ -238,6 +238,72 @@ fn version_14_binds_frozen_litter_surface_owner_v2_before_production() {
         assert!(
             production.contains(required),
             "unchanged production is missing frozen-litter V2 obligation {required}"
+        );
+    }
+}
+
+#[test]
+fn version_15_binds_exact_soil_energy_credit_custody_before_production() {
+    let contract = read(CONTRACT);
+    for required in [
+        "INV-SURFACELIQUID-022",
+        "E=exact(H_hi)+R",
+        "ExactDyadicEnthalpy",
+        "sign: -1 | 0 | 1",
+        "coefficient_hex: lowercase hexadecimal nonnegative integer",
+        "Zero has the sole form `(sign=0, coefficient_hex=\"0\", exponent2=0)`",
+        "no-op transactions preserve existing high-term zero bits",
+        "positive odd integer",
+        "SoilThermalOwnedStateV2",
+        "SoilThermalLayerStateV2",
+        "SoilThermalOwnerEnvelopeV2",
+        "SoilThermalEnergyCreditReceiptV2",
+        "SoilThermalOwnerRestartV2",
+        "SoilThermalOwnerCheckpointV2",
+        "E_candidate,k = E_begin,k + sum(Q_soil,k) + sum(Q_top,k) + sum(Q_inf,k)",
+        "round-to-nearest,\n   ties-to-even",
+        "Production\nV2-to-V1 downgrade is prohibited",
+        "H_hi=-34315.42154113602 J m^-2",
+        "Q_inf=-8.0670339832330148e-19 J m^-2",
+        "(sign=-1,coefficient_hex=\"1dc319224e55f\",exponent2=-109)",
+        "exact-halfway ties with even-low and\nodd-low high terms",
+        "minimum-positive and\nminimum-negative subnormal operands",
+        "omission, duplication, reorder, and substitution",
+        "wrong schema,\ndefinition, configuration, state, version, owner, transaction, predecessor",
+        "Every poison proves exact\nrollback",
+        "Restart gates split before and after a nonzero credit",
+        "canonical WAT5 transaction,\nunchanged `p61`, and unchanged native-forest successor paths",
+        "persisted\nmicrostepping or exact-carry diagnostics",
+        "exact 60-second fallback floor\nremain unchanged",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    assert!(read(LSE).contains("INV-LANDSURFACEENERGY-150"));
+    let registry = read("docs/specifications/science-contracts/index.md");
+    assert!(registry.contains(
+        "v15 binds accepted infiltration-energy custody to a versioned soil-thermal receiver"
+    ));
+}
+
+#[test]
+fn version_15_requires_exact_carry_owner_receipt_and_restart_symbols() {
+    let orchestrator = read_rust_tree(Path::new("crates/openwepp-hillslope-orchestrator/src"));
+    let lse = read_rust_tree(Path::new("crates/openwepp-land-surface-energy/src"));
+    let restart = read_rust_tree(Path::new("crates/openwepp-persisted-restart-v1/src"));
+    let production = format!("{orchestrator}\n{lse}\n{restart}");
+    for required in [
+        "pub struct ExactDyadicEnthalpy",
+        "pub struct SoilThermalOwnedStateV2",
+        "pub struct SoilThermalLayerStateV2",
+        "SoilThermalOwnerEnvelopeV2",
+        "pub struct SoilThermalEnergyCreditReceiptV2",
+        "pub struct SoilThermalOwnerRestartV2",
+        "pub struct SoilThermalOwnerCheckpointV2",
+    ] {
+        assert!(
+            production.contains(required),
+            "unchanged production is missing required v15 exact-carry symbol {required}"
         );
     }
 }

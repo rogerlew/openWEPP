@@ -18,6 +18,12 @@ const LSE_V3_REAL_CONSUMERS: &[&str] = &[
     "tests/integration/erosion_single_ofe_p61_sediment.rs",
     "tests/integration/dff_ws1_native_forest_cli.rs",
 ];
+const EXACT_CARRY_PRODUCTION_PATHS: &[&str] = &[
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/exact_dyadic_enthalpy.rs",
+    "crates/openwepp-land-surface-energy/src/owner_envelope.rs",
+    "crates/openwepp-land-surface-energy/src/transaction.rs",
+];
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
@@ -97,7 +103,7 @@ fn contract_preserves_adjacent_owners_and_rejects_terminal_payload() {
 fn current_version_releases_named_authority_without_production_claims() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 14",
+        "contract_version: 15",
         "status: approved",
         "maturity: active",
         "OPENWEPP_SNOW_FREE_LSE_V1",
@@ -221,6 +227,81 @@ fn version_fourteen_requires_p61_and_native_real_consumer_adoption() {
                 "unchanged real consumer {path} is missing V3 binding {required}"
             );
         }
+    }
+}
+
+#[test]
+fn version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry() {
+    let contract = read(CONTRACT);
+    for required in [
+        "INV-LANDSURFACEENERGY-150",
+        "E_k = exact(H_hi,k) + R_k",
+        "ExactDyadicEnthalpy",
+        "value = sign * coefficient * 2^exponent2 J m^-2 OFE-ground",
+        "Zero is uniquely `(0,\"0\",0)`",
+        "no\nnew high-term canonical-zero rule",
+        "positive odd coefficient",
+        "round-to-nearest,\n   ties-to-even",
+        "E_candidate,k=E_begin,k+sum(Q_soil,k)+sum(Q_top,k)+sum(Q_inf,k)",
+        "SoilThermalOwnerEnvelopeV2",
+        "SoilThermalEnergyCreditReceiptV2",
+        "SoilThermalOwnerRestartV2",
+        "SoilThermalOwnerCheckpointV2",
+        "Production downgrade is always\nrejected",
+        "-34315.42154113602 J m^-2",
+        "-8.0670339832330148e-19 J m^-2",
+        "1.10875e-7` ULP",
+        "(sign=-1,coefficient_hex=\"1dc319224e55f\",exponent2=-109)",
+        "exact-halfway even-low and odd-low ties",
+        "minimum positive/negative subnormal operands",
+        "largest-finite rounding boundary",
+        "receipt omission/duplication/reorder/\nsubstitution",
+        "wrong schema/definition/parent/\nconfiguration/state/version/owner/transaction/predecessor/support/OFE/layer/",
+        "Every poison proves byte-exact rollback",
+        "Restart tests split\nbefore and after a nonzero credit",
+        "canonical WAT5 transaction plus\nunchanged `p61` and native-forest successor consumers",
+        "`nextafter`, forced-ULP",
+        "exact `60000000000 ns` fallback floor are unchanged",
+        "LSEB-E-049",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    let wat5_credit = -8.067_033_983_233_015e-19_f64;
+    assert_eq!(
+        wat5_credit.to_bits(),
+        (-8.067_033_983_233_015e-19_f64).to_bits()
+    );
+    assert_eq!(wat5_credit.to_bits() & (1_u64 << 63), 1_u64 << 63);
+    assert_eq!(f64::from_bits(1).to_bits(), 1);
+    assert_eq!(
+        f64::from_bits((1_u64 << 63) | 1).to_bits(),
+        (1_u64 << 63) | 1
+    );
+    assert_eq!(wat5_credit.to_bits(), 0xbc2d_c319_224e_55f0);
+
+    let index = read(INDEX);
+    assert!(
+        row(&index, "SC-LANDSURFACEENERGY-001")
+            .contains("v15 adds receiver-owned exact soil-layer enthalpy")
+    );
+}
+
+#[test]
+fn version_fifteen_requires_exact_carry_production_identity() {
+    let production = read_existing(EXACT_CARRY_PRODUCTION_PATHS);
+    for required in [
+        "pub struct ExactDyadicEnthalpy",
+        "SoilThermalOwnerEnvelopeV2",
+        "pub struct SoilThermalEnergyCreditReceiptV2",
+        "pub struct SoilThermalOwnerRestartV2",
+        "pub struct SoilThermalOwnerCheckpointV2",
+        "LSEB-E-049",
+    ] {
+        assert!(
+            production.contains(required),
+            "unchanged production is missing required v15 exact-carry binding {required}"
+        );
     }
 }
 
