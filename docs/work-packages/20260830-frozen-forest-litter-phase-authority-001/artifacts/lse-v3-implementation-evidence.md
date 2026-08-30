@@ -8,8 +8,9 @@ Evidence mode: `Ran`
 
 The crate now exposes immutable `OPENWEPP_SNOW_FREE_LSE_V3` identity and
 one-way V2-to-V3 configuration/state migration without changing V1/V2 bytes.
-The V3 boundary keeps the predecessor nonlinear solve phase-free, publishes
-separate liquid/ice vapor under liquid-water saturation, accepts only
+The V3 boundary keeps freeze/melt out of the nonlinear system while evaluating
+separate liquid/ice vapor under liquid-water saturation in every V3 current-
+trial residual and finite-difference evaluation. It accepts only
 separately finalized phase rates, installs vapor once, applies one bounded
 `3300 s` phase operator, derives temperature from ending heat capacity, and
 returns a non-mutating candidate plus
@@ -18,14 +19,41 @@ returns a non-mutating candidate plus
 Receipt replay independently recomputes raw vapor from sealed atmospheric
 operands, finalized vapor mass/enthalpy, post-vapor phase state, bounded
 freeze/melt, fusion energy, ending state, and every closure field before
-checking its canonical digest. It does not accept a producer residual.
+checking its canonical digest. The receipt now seals the complete accepted
+phase-free surface-energy ledger and independently reconstructs
+`U*-U0=dt*(SW_abs+LW_net-H-Q_v,l-Q_v,i-G)`, both named vapor-energy joins,
+storage, and the producer/reconstructor delta. It does not accept a producer
+residual as closure evidence.
 
 The two model artifacts are:
 
 - `crates/openwepp-land-surface-energy/artifacts/openwepp_snow_free_lse_v3_definition.json`,
-  SHA-256 `309986036843cd1a5b83ede42655581fc2d2619ab8ab3d6224b812f86bf30ef6`;
+  SHA-256 `b8d8886d640f6993e7b6a9f22cc49a5a6d9871caf61a2f82a4041157231117fb`;
 - `crates/openwepp-land-surface-energy/artifacts/openwepp_snow_free_lse_v3_phase_vectors.json`,
-  SHA-256 `8043ce776a36de780fc19f5ce9d36069dba99dbb1f246c8bfbc68d74e9fe3c08`.
+  SHA-256 `a72500224de82c135a6a76f63764b76f2e0023a2a77b677de9363537977c7c61`.
+
+## Reopened residual correction
+
+Static pre-red: the first V3 slice called the V2 liquid-only covered evaluator
+and published phase-specific vapor only after that solve. Its receipt closure
+reconstructed phase and per-component vapor enthalpy but did not bind the
+complete beginning-to-post-vapor surface-energy ledger. That topology could
+not prove INV-LANDSURFACEENERGY-141 or the inherited V2 surface-energy balance.
+
+Positive correction: `evaluate_v3_phase_free_covered_column` replaces the
+shared canopy-vapor and litter surface-energy equations at every V3 trial with
+separate current-trial liquid/ice mass and sensible-plus-latent energy. The
+new `solve_v3_phase_free_covered_column` feeds that residual into every Newton,
+Jacobian, and backtracking evaluation; freeze/melt remain absent. Fixed
+authorization is applied per named phase as `min(current raw, authorization,
+immutable beginning availability)` for outbound mass, while inbound mass stays
+exactly constitutive.
+
+Rollback/anti-mutant evidence: focused tests reseal and reject (1) liquid
+enthalpy substituted for the ice component while keeping the aggregate ledger
+balanced, (2) a vapor-only `U*` identity that omits non-vapor storage, and
+(3) producer residual substitution. The existing failed-candidate test retains
+exact input bytes after a rejected named-phase availability violation.
 
 The definition binds current terminal contract bytes:
 
@@ -43,7 +71,8 @@ nix develop --command cargo nextest run \
   -p openwepp-land-surface-energy litter_phase --no-fail-fast
 ```
 
-Result: `PASS`, run `770fe52e-1d20-44f5-adb9-db153fe9f609`, 13/13. The
+Result after residual correction: `PASS`, run
+`3df50958-80bf-43cc-bfdd-5c06cc67a6b3`, 14/14. The
 vectors cover exact empty and nonempty reference temperature, exact 60 seconds,
 `dt=tau`, `dt>tau`, all-liquid freezing, all-ice melting, mixed vapor,
 condensation/deposition, phase-specific availability, ice-capacity saturation,
@@ -69,7 +98,8 @@ nix develop --command cargo nextest run \
   -p openwepp-land-surface-energy --no-fail-fast
 ```
 
-Result: `PASS`, run `4a7a9753-9737-4aa0-9dd4-a9d844e8ec5e`, 102/102, zero
+Result after residual correction: `PASS`, run
+`ce83e810-0a24-404f-affa-2ada02ded5f8`, 104/104, zero
 skipped.
 
 Ran:
@@ -89,7 +119,8 @@ nix develop --command cargo nextest run \
   version_fourteen_requires_successor_production_identity_and_typed_guards
 ```
 
-Result: `PASS`, run `779c603d-e5c8-4c65-b139-358eeda052a1`, 1/1. The
+Result after residual correction: `PASS`, run
+`623fe7c4-d88c-4713-995d-421dc646ba33`, 1/1. The
 contract-owned production scan found the V3 model/receipt identities and all
 four typed error families in the declared source set.
 
@@ -114,6 +145,9 @@ Its exact reported residuals were:
 | ending temperature | `0.0 K` |
 | liquid vapor energy | `0.0 J m^-2` |
 | ice vapor energy | `0.0 J m^-2` |
+| phase-free beginning/post-vapor storage | `0.0 W m^-2` |
+| complete phase-free surface energy | `-1.11022302462515654e-13 W m^-2` |
+| producer/reconstructor energy delta | `1.11022302462515654e-13 W m^-2` |
 
 The same vector froze `1.16123464189391679 kg m^-2` and melted exact zero.
 The nonzero enthalpy-coordinate residual is binary floating-point cancellation,
@@ -122,16 +156,19 @@ tolerance was changed.
 
 ## Line-count disposition
 
-No new file approaches the 2000-line warning threshold. Existing inherited
-files remain unchanged at `solver_covered_evaluation.rs=2100` and
-`transaction.rs=2762`; this increment did not edit or grow either file.
+No new file approaches the 2000-line warning threshold. The owned existing
+`solver_covered_evaluation.rs` is now 2342 lines (`WARN`, below the mandatory
+3000-line refactor threshold); the V3 correction is isolated in its appended
+current-trial evaluator pending the broader covered-evaluator decomposition.
+Inherited `transaction.rs` remains unchanged at 2762 lines.
 
 ## Integration handoff
 
 The surface-owner worker confirmed the API seam is compatible. Integration
 must provide exact beginning/candidate surface-owner digests, convert sealed
 owner liquid/ice state to `BeginningLitterPhaseState`, pass accepted phase-free
-atmospheric operands and separately finalized rates, then install
+atmospheric operands, the accepted `V3PhaseFreeSurfaceEnergyLedger`, and
+separately finalized rates, then install
 `AcceptedLitterPhaseCandidate` only through its whole-owner transaction.
 `build_v3_ending_state` constructs the matching non-mutating LSE state
 candidate. Remaining blockers are outside this worker's write set: real

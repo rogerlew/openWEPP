@@ -3,8 +3,9 @@ use sha2::{Digest, Sha256};
 
 use crate::{
     LitterPhaseTransactionIdentity, LitterPhaseTransactionInput, OfeId, Sha256Digest,
-    V3_MODEL_DEFINITION_SHA256, canonical_litter_phase_receipt_sha256, execute_litter_phase_v3,
-    litter_phase_receipt_from_json, litter_phase_receipt_json, validate_litter_phase_receipt,
+    V3_MODEL_DEFINITION_SHA256, V3PhaseFreeSurfaceEnergyLedger,
+    canonical_litter_phase_receipt_sha256, execute_litter_phase_v3, litter_phase_receipt_from_json,
+    litter_phase_receipt_json, validate_litter_phase_receipt,
 };
 
 fn configuration() -> LitterPhaseConfiguration {
@@ -68,6 +69,26 @@ fn transaction_input(
             raw.raw_ice_signed_rate_kg_m2_s
         },
     };
+    let vapor = finalize_litter_vapor(raw, finalized, state, phase_temperature, interval_seconds)
+        .expect("final vapor");
+    let post_vapor = install_finalized_vapor(configuration(), state, phase_temperature, vapor)
+        .expect("post vapor");
+    let storage =
+        (post_vapor.sensible_energy_j_m2_tile - state.sensible_energy_j_m2_tile) / interval_seconds;
+    let liquid_vapor_energy = vapor.liquid_signed_energy_j_m2 / interval_seconds;
+    let ice_vapor_energy = vapor.ice_signed_energy_j_m2 / interval_seconds;
+    let phase_free_surface_energy = V3PhaseFreeSurfaceEnergyLedger {
+        beginning_sensible_energy_j_m2: state.sensible_energy_j_m2_tile,
+        ending_sensible_energy_j_m2: post_vapor.sensible_energy_j_m2_tile,
+        absorbed_shortwave_w_m2: storage + liquid_vapor_energy + ice_vapor_energy,
+        net_longwave_w_m2: 0.0,
+        sensible_to_canopy_air_w_m2: 0.0,
+        liquid_vapor_energy_w_m2: liquid_vapor_energy,
+        ice_vapor_energy_w_m2: ice_vapor_energy,
+        ground_heat_w_m2: 0.0,
+        storage_w_m2: storage,
+        reconstructed_energy_residual_w_m2: 0.0,
+    };
     LitterPhaseTransactionInput {
         identity: LitterPhaseTransactionIdentity {
             lse_configuration_sha256: digest(0x11),
@@ -84,6 +105,7 @@ fn transaction_input(
         beginning: state,
         vapor_environment,
         finalized_vapor: finalized,
+        phase_free_surface_energy,
     }
 }
 
@@ -296,6 +318,62 @@ fn receipt_round_trip_is_exact_and_tampering_fails_closed() {
     assert!(matches!(
         validate_litter_phase_receipt(&raw_operand_poison),
         Err(LandSurfaceEnergyError::FrozenLitterVapor(_))
+    ));
+}
+
+#[test]
+fn phase_free_energy_closure_rejects_phase_alias_vapor_only_and_producer_mutants() {
+    let candidate =
+        execute_litter_phase_v3(&transaction_input(2.0, 1.0, 275.15, 275.15, 0.001, 600))
+            .expect("candidate");
+    assert!(
+        candidate
+            .receipt
+            .closure
+            .phase_free_storage_residual_w_m2
+            .abs()
+            <= 1.0e-7
+    );
+    assert!(
+        candidate
+            .receipt
+            .closure
+            .phase_free_surface_energy_residual_w_m2
+            .abs()
+            <= 1.0e-7
+    );
+
+    let mut ice_alias = candidate.receipt.clone();
+    let old_ice = ice_alias.phase_free_surface_energy.ice_vapor_energy_w_m2;
+    let liquid_alias = ice_alias.phase_free_surface_energy.liquid_vapor_energy_w_m2;
+    ice_alias.phase_free_surface_energy.ice_vapor_energy_w_m2 = liquid_alias;
+    ice_alias.phase_free_surface_energy.absorbed_shortwave_w_m2 += liquid_alias - old_ice;
+    ice_alias.receipt_sha256 =
+        canonical_litter_phase_receipt_sha256(&ice_alias).expect("resealed ice alias");
+    assert!(matches!(
+        validate_litter_phase_receipt(&ice_alias),
+        Err(LandSurfaceEnergyError::FrozenLitterPhaseClosure(_))
+    ));
+
+    let mut vapor_only = candidate.receipt.clone();
+    vapor_only.phase_free_surface_energy.absorbed_shortwave_w_m2 -=
+        vapor_only.phase_free_surface_energy.storage_w_m2;
+    vapor_only.receipt_sha256 =
+        canonical_litter_phase_receipt_sha256(&vapor_only).expect("resealed vapor-only closure");
+    assert!(matches!(
+        validate_litter_phase_receipt(&vapor_only),
+        Err(LandSurfaceEnergyError::FrozenLitterPhaseClosure(_))
+    ));
+
+    let mut producer = candidate.receipt;
+    producer
+        .phase_free_surface_energy
+        .reconstructed_energy_residual_w_m2 += 1.0;
+    producer.receipt_sha256 =
+        canonical_litter_phase_receipt_sha256(&producer).expect("resealed producer residual");
+    assert!(matches!(
+        validate_litter_phase_receipt(&producer),
+        Err(LandSurfaceEnergyError::FrozenLitterPhaseClosure(_))
     ));
 }
 

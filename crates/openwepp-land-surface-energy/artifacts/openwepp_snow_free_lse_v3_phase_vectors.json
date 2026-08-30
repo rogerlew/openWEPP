@@ -56,6 +56,11 @@
     "instantaneous equilibrium",
     "same-support re-solve",
     "zertol cleanup",
-    "xwgmin floor"
+    "xwgmin floor",
+    "post-solve-only phase vapor",
+    "aggregate vapor-energy residual",
+    "liquid enthalpy alias for ice vapor",
+    "vapor-only sensible-energy closure",
+    "producer surface-energy residual substitution"
   ]
 }

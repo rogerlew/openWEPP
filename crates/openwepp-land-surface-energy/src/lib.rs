@@ -72,7 +72,7 @@ pub const V2_VEGETATION_MODEL_DEFINITION_SHA256: &str =
 pub const V3_MODEL_VERSION: &str = "OPENWEPP_SNOW_FREE_LSE_V3";
 /// SHA-256 of `artifacts/openwepp_snow_free_lse_v3_definition.json`.
 pub const V3_MODEL_DEFINITION_SHA256: &str =
-    "309986036843cd1a5b83ede42655581fc2d2619ab8ab3d6224b812f86bf30ef6";
+    "b8d8886d640f6993e7b6a9f22cc49a5a6d9871caf61a2f82a4041157231117fb";
 /// Immutable sealed phase-receipt identity.
 pub const V3_PHASE_RECEIPT_VERSION: &str = "OPENWEPP_FOREST_LITTER_PHASE_RECEIPT_V1";
 pub const V3_IDENTITY_ERROR_CODE: &str = "LSEB-E-045";

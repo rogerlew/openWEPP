@@ -106,6 +106,9 @@ pub struct LitterPhaseClosure {
     pub ending_temperature_residual_k: f64,
     pub liquid_vapor_energy_residual_j_m2: f64,
     pub ice_vapor_energy_residual_j_m2: f64,
+    pub phase_free_storage_residual_w_m2: f64,
+    pub phase_free_surface_energy_residual_w_m2: f64,
+    pub phase_free_producer_residual_delta_w_m2: f64,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -135,6 +138,7 @@ pub struct LitterPhaseReceipt {
     pub beginning: BeginningLitterPhaseState,
     pub vapor: LitterVaporReceipt,
     pub post_vapor: PostVaporLitterState,
+    pub phase_free_surface_energy: crate::V3PhaseFreeSurfaceEnergyLedger,
     pub transfer: LitterPhaseTransfer,
     pub ending: EndingLitterPhaseState,
     pub closure: LitterPhaseClosure,

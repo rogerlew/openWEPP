@@ -27,6 +27,9 @@
   "equations": {
     "frozen_fraction": "zero when W_l+W_i is zero; otherwise W_i/(W_l+W_i)",
     "saturation": "liquid-water saturation humidity for liquid and ice",
+    "phase_free_surface_energy": "U_star-U_0=dt*(SW_abs+LW_net-H-Q_v_l-Q_v_i-G)",
+    "liquid_vapor_energy": "Q_v_l=v_l*(C_w*(T_l-T_ref)+L_v(T_l))",
+    "ice_vapor_energy": "Q_v_i=v_i*(C_i*(T_l-T_ref)+L_s(T_l))",
     "signed_phase": "m_freeze-m_melt",
     "fusion_energy": "L_f*(m_freeze-m_melt)",
     "phase_enthalpy_coordinate": "U-L_f*W_i",
@@ -35,7 +38,7 @@
   },
   "ordering": [
     "immutable beginning phase availability",
-    "phase-free predecessor solve",
+    "phase-free solve with separate current-trial liquid and ice vapor residuals",
     "separate finalized liquid and ice vapor",
     "post-vapor sensible-energy installation",
     "one bounded 3300-second kinetic phase transfer",
@@ -59,6 +62,8 @@
     "same-support phase re-solve",
     "implicit ice initialization",
     "production V3-to-V2 downgrade",
-    "producer-residual closure"
+    "producer-residual closure",
+    "post-solve-only phase vapor",
+    "aggregate vapor energy in the surface residual"
   ]
 }

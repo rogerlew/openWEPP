@@ -10,8 +10,9 @@ use crate::{
     LandSurfaceEnergyError, LitterPhaseConfiguration, LitterPhaseReceipt,
     LitterPhaseReceiptIdentity, LitterVaporEnvironment, OfeId, Sha256Digest,
     V3_MODEL_DEFINITION_SHA256, V3_MODEL_VERSION, V3_PHASE_RECEIPT_VERSION,
-    apply_bounded_litter_phase, canonical_digest, evaluate_raw_litter_vapor, finalize_litter_vapor,
-    install_finalized_vapor, publish_phase_free_litter_vapor, reconstruct_litter_phase_closure,
+    V3PhaseFreeSurfaceEnergyLedger, apply_bounded_litter_phase, canonical_digest,
+    evaluate_raw_litter_vapor, finalize_litter_vapor, install_finalized_vapor,
+    publish_phase_free_litter_vapor, reconstruct_litter_phase_closure,
     validate_beginning_litter_state, validate_litter_phase_configuration,
 };
 use openwepp_kernel_contract::{ResourceOwnerId, TileId, TransactionId};
@@ -45,6 +46,7 @@ pub struct LitterPhaseTransactionInput {
     pub beginning: BeginningLitterPhaseState,
     pub vapor_environment: LitterVaporEnvironment,
     pub finalized_vapor: FinalizedLitterVapor,
+    pub phase_free_surface_energy: V3PhaseFreeSurfaceEnergyLedger,
 }
 
 #[derive(Serialize)]
@@ -54,6 +56,7 @@ struct ReceiptDigestView<'a> {
     beginning: BeginningLitterPhaseState,
     vapor: crate::LitterVaporReceipt,
     post_vapor: crate::PostVaporLitterState,
+    phase_free_surface_energy: V3PhaseFreeSurfaceEnergyLedger,
     transfer: crate::LitterPhaseTransfer,
     ending: crate::EndingLitterPhaseState,
     closure: crate::LitterPhaseClosure,
@@ -69,6 +72,7 @@ pub fn canonical_litter_phase_receipt_sha256(
         beginning: receipt.beginning,
         vapor: receipt.vapor,
         post_vapor: receipt.post_vapor,
+        phase_free_surface_energy: receipt.phase_free_surface_energy,
         transfer: receipt.transfer,
         ending: receipt.ending,
         closure: receipt.closure,
@@ -131,6 +135,8 @@ pub fn execute_litter_phase_v3(
         input.beginning,
         vapor,
         post_vapor,
+        input.phase_free_surface_energy,
+        interval_s,
         transfer,
         ending,
     )?;
@@ -157,6 +163,7 @@ pub fn execute_litter_phase_v3(
         beginning: input.beginning,
         vapor,
         post_vapor,
+        phase_free_surface_energy: input.phase_free_surface_energy,
         transfer,
         ending,
         closure,
@@ -237,6 +244,8 @@ pub fn validate_litter_phase_receipt(
         receipt.beginning,
         expected_vapor,
         expected_post_vapor,
+        receipt.phase_free_surface_energy,
+        interval_s,
         expected_transfer,
         expected_ending,
     )?;

@@ -1500,13 +1500,13 @@ fn validate_covered_caps(
     Ok(())
 }
 
-fn covered_ground_uses_liquid_vapor_phase_domain(column: &CoveredColumnInputs) -> bool {
+pub(crate) fn covered_ground_uses_liquid_vapor_phase_domain(column: &CoveredColumnInputs) -> bool {
     column.stage3_lower_boundary.is_none()
         && !(column.ground.class == SurfaceClassKind::BareMineralSoil
             && column.ground.surface_liquid_kg_m2_tile == 0.0)
 }
 
-fn covered_trial_is_valid(
+pub(crate) fn covered_trial_is_valid(
     trial: &[f64],
     occupancy_count: usize,
     ground_uses_liquid_vapor_phase_domain: bool,
@@ -2096,5 +2096,247 @@ pub fn evaluate_covered_column(
         shared_heat_tolerance_w_m2: shared_heat_tolerance,
         shared_vapor_residual_kg_m2_s: shared_vapor,
         shared_vapor_tolerance_kg_m2_s: shared_vapor_tolerance,
+    })
+}
+
+pub(crate) fn evaluate_covered_column_v3(
+    column: &CoveredColumnInputs,
+    trial: &[f64],
+    caps: Option<&CoveredWaterCaps>,
+    frozen: Option<&CoveredFrozenBranches>,
+    context: crate::V3LitterResidualContext,
+) -> Result<crate::V3PhaseFreeCoveredEvaluation, LandSurfaceEnergyError> {
+    if column.ground.class != SurfaceClassKind::ForestLitter
+        || column.ground.storage_branch != SurfaceStorageBranch::FiniteCapacity
+        || column.stage3_lower_boundary.is_some()
+        || column.ground.surface_liquid_kg_m2_tile.to_bits()
+            != context.beginning.liquid_kg_m2_tile.to_bits()
+        || column.ground.surface_enthalpy_j_m2_tile.to_bits()
+            != context.beginning.sensible_energy_j_m2_tile.to_bits()
+    {
+        return Err(LandSurfaceEnergyError::FrozenLitterV3Identity(
+            "V3 covered-column predecessor/state join",
+        ));
+    }
+    crate::validate_litter_phase_configuration(context.configuration)?;
+    crate::validate_beginning_litter_state(context.configuration, context.beginning)?;
+    if column.interval_s.to_bits() != column.ground.interval_s.to_bits() {
+        return Err(LandSurfaceEnergyError::FrozenLitterTransaction(
+            "V3 column/ground support mismatch",
+        ));
+    }
+
+    let mut detail = evaluate_covered_column(column, trial, caps, frozen)?;
+    let rho = column.pressure_pa / (DRY_AIR_GAS_CONSTANT_J_KG_K * detail.canopy_air_temperature_k);
+    let resistance = crate::physics::under_canopy_neutral_resistance(
+        column.under_canopy_geometry,
+        column.reference_wind_m_s,
+    )?;
+    let environment = crate::LitterVaporEnvironment {
+        accepted_phase_free_temperature_k: detail.ground_temperature_k,
+        air_density_kg_m3: rho,
+        air_pressure_pa: column.pressure_pa,
+        recipient_specific_humidity_kg_kg: detail.canopy_air_specific_humidity_kg_kg,
+        litter_to_canopy_resistance_s_m: resistance.resistance_s_m,
+    };
+    let raw =
+        crate::evaluate_raw_litter_vapor(context.configuration, context.beginning, environment)?;
+    let locally_bounded = crate::FinalizedLitterVapor {
+        liquid_signed_rate_kg_m2_s: if raw.raw_liquid_signed_rate_kg_m2_s > 0.0 {
+            raw.raw_liquid_signed_rate_kg_m2_s
+                .min(context.beginning.liquid_kg_m2_tile / column.interval_s)
+        } else {
+            raw.raw_liquid_signed_rate_kg_m2_s
+        },
+        ice_signed_rate_kg_m2_s: if raw.raw_ice_signed_rate_kg_m2_s > 0.0 {
+            raw.raw_ice_signed_rate_kg_m2_s
+                .min(context.beginning.ice_kg_m2_tile / column.interval_s)
+        } else {
+            raw.raw_ice_signed_rate_kg_m2_s
+        },
+    };
+    let finalized = context
+        .finalized_vapor
+        .map_or(locally_bounded, |authorization| {
+            crate::FinalizedLitterVapor {
+                liquid_signed_rate_kg_m2_s: if raw.raw_liquid_signed_rate_kg_m2_s > 0.0 {
+                    raw.raw_liquid_signed_rate_kg_m2_s
+                        .min(authorization.liquid_signed_rate_kg_m2_s)
+                        .min(context.beginning.liquid_kg_m2_tile / column.interval_s)
+                } else {
+                    raw.raw_liquid_signed_rate_kg_m2_s
+                },
+                ice_signed_rate_kg_m2_s: if raw.raw_ice_signed_rate_kg_m2_s > 0.0 {
+                    raw.raw_ice_signed_rate_kg_m2_s
+                        .min(authorization.ice_signed_rate_kg_m2_s)
+                        .min(context.beginning.ice_kg_m2_tile / column.interval_s)
+                } else {
+                    raw.raw_ice_signed_rate_kg_m2_s
+                },
+            }
+        });
+    let vapor = crate::finalize_litter_vapor(
+        raw,
+        finalized,
+        context.beginning,
+        detail.ground_temperature_k,
+        column.interval_s,
+    )?;
+    let post_vapor = crate::install_finalized_vapor(
+        context.configuration,
+        context.beginning,
+        detail.ground_temperature_k,
+        vapor,
+    )?;
+    let storage = (post_vapor.sensible_energy_j_m2_tile
+        - context.beginning.sensible_energy_j_m2_tile)
+        / column.interval_s;
+    let liquid_vapor_energy = vapor.liquid_signed_energy_j_m2 / column.interval_s;
+    let ice_vapor_energy = vapor.ice_signed_energy_j_m2 / column.interval_s;
+    let beginning_capacity = context.configuration.dry_heat_capacity_j_m2_k
+        + context.beginning.liquid_kg_m2_tile * WATER_HEAT_CAPACITY_J_KG_K
+        + context.beginning.ice_kg_m2_tile * crate::LITTER_ICE_HEAT_CAPACITY_J_KG_K;
+    let beginning_temperature =
+        REFERENCE_TEMPERATURE_K + context.beginning.sensible_energy_j_m2_tile / beginning_capacity;
+    let first = &column.ground.soil_nodes[0];
+    let surface_conductance = harmonic_interface_conductance_w_m2_k(
+        column.ground.surface_depth_m,
+        column.ground.surface_conductivity_w_m_k,
+        first.depth_m,
+        first.conductivity_w_m_k,
+    )?;
+    let mut beginning_fluxes =
+        vec![surface_conductance * (beginning_temperature - first.beginning_temperature_k)];
+    let mut ending_fluxes =
+        vec![surface_conductance * (detail.ground_temperature_k - detail.soil_temperature_k[0])];
+    for index in 0..column.ground.soil_nodes.len().saturating_sub(1) {
+        let upper = &column.ground.soil_nodes[index];
+        let lower = &column.ground.soil_nodes[index + 1];
+        let conductance = harmonic_interface_conductance_w_m2_k(
+            upper.depth_m,
+            upper.conductivity_w_m_k,
+            lower.depth_m,
+            lower.conductivity_w_m_k,
+        )?;
+        beginning_fluxes
+            .push(conductance * (upper.beginning_temperature_k - lower.beginning_temperature_k));
+        ending_fluxes.push(
+            conductance * (detail.soil_temperature_k[index] - detail.soil_temperature_k[index + 1]),
+        );
+    }
+    let ground_heat: Vec<f64> = beginning_fluxes
+        .iter()
+        .zip(&ending_fluxes)
+        .map(|(beginning, ending)| 0.5 * (beginning + ending))
+        .collect();
+
+    let shortwave = partition_ground_shortwave(
+        column.ground.terminal_shortwave_w_m2_tile,
+        column.ground.surface_vis_albedo,
+        column.ground.surface_nir_albedo,
+    )?;
+    let absorbed_shortwave = shortwave.absorbed.total();
+    let net_longwave = detail.whole_column_longwave.ground_net_w_m2;
+    let surface_components = [
+        absorbed_shortwave,
+        net_longwave,
+        -detail.ground_sensible_to_canopy_air_w_m2,
+        -liquid_vapor_energy,
+        -ice_vapor_energy,
+        -ground_heat[0],
+        -storage,
+    ];
+    let surface_residual = surface_components.iter().sum::<f64>();
+    let surface_tolerance = energy_tolerance(
+        surface_components
+            .iter()
+            .map(|component| component.abs())
+            .sum(),
+    );
+    let occupancy_count = column.occupancies.len();
+    let shared_vapor_index = 10 * occupancy_count + 1;
+    let surface_index = 10 * occupancy_count + 2;
+    let total_vapor_rate = finalized.liquid_signed_rate_kg_m2_s + finalized.ice_signed_rate_kg_m2_s;
+    let shared_vapor =
+        detail.canopy_vapor_kg_m2_s + total_vapor_rate - detail.vapor_to_reference_air_kg_m2_s;
+    let shared_vapor_tolerance = crate::physics::water_tolerance(
+        detail
+            .canopy_vapor_kg_m2_s
+            .abs()
+            .max(total_vapor_rate.abs())
+            .max(detail.vapor_to_reference_air_kg_m2_s.abs()),
+    );
+    detail.raw_residuals[shared_vapor_index] = shared_vapor;
+    detail.tolerances[shared_vapor_index] = shared_vapor_tolerance;
+    detail.normalized_residuals[shared_vapor_index] = shared_vapor / shared_vapor_tolerance;
+    detail.raw_residuals[surface_index] = surface_residual;
+    detail.tolerances[surface_index] = surface_tolerance;
+    detail.normalized_residuals[surface_index] = surface_residual / surface_tolerance;
+    for (index, node) in column.ground.soil_nodes.iter().enumerate() {
+        let incoming = ground_heat[index];
+        let outgoing = ground_heat.get(index + 1).copied().unwrap_or(0.0);
+        let node_storage = node.heat_capacity_j_m2_k
+            * (detail.soil_temperature_k[index] - node.beginning_temperature_k)
+            / column.interval_s;
+        let residual = incoming - outgoing - node_storage;
+        let tolerance = energy_tolerance(incoming.abs() + outgoing.abs() + node_storage.abs());
+        let residual_index = surface_index + 1 + index;
+        detail.raw_residuals[residual_index] = residual;
+        detail.tolerances[residual_index] = tolerance;
+        detail.normalized_residuals[residual_index] = residual / tolerance;
+    }
+    detail.ground_heat_cn_w_m2_tile = ground_heat;
+    detail.ground_storage_w_m2_tile = storage;
+    detail.ending_surface_enthalpy_j_m2_tile = post_vapor.sensible_energy_j_m2_tile;
+    detail.lower_boundary_vapor_to_canopy_air_kg_m2_s = total_vapor_rate;
+    detail.shared_vapor_residual_kg_m2_s = shared_vapor;
+    detail.shared_vapor_tolerance_kg_m2_s = shared_vapor_tolerance;
+    detail.ground_water = GroundWaterFlux {
+        law_kg_m2_tile_s: raw.raw_liquid_signed_rate_kg_m2_s + raw.raw_ice_signed_rate_kg_m2_s,
+        final_kg_m2_tile_s: total_vapor_rate,
+        request_kg_m2_stand_ground: (raw.raw_liquid_signed_rate_kg_m2_s.max(0.0)
+            + raw.raw_ice_signed_rate_kg_m2_s.max(0.0))
+            * column.tile_fraction
+            * column.interval_s,
+        authorization_kg_m2_stand_ground: context.finalized_vapor.map(|authorized| {
+            (authorized.liquid_signed_rate_kg_m2_s.max(0.0)
+                + authorized.ice_signed_rate_kg_m2_s.max(0.0))
+                * column.tile_fraction
+                * column.interval_s
+        }),
+        finalized_use_kg_m2_stand_ground: (finalized.liquid_signed_rate_kg_m2_s.max(0.0)
+            + finalized.ice_signed_rate_kg_m2_s.max(0.0))
+            * column.tile_fraction
+            * column.interval_s,
+        condensation_credit_kg_m2_stand_ground: ((-finalized.liquid_signed_rate_kg_m2_s).max(0.0)
+            + (-finalized.ice_signed_rate_kg_m2_s).max(0.0))
+            * column.tile_fraction
+            * column.interval_s,
+        branch: if total_vapor_rate < 0.0 {
+            WaterBranch::Condensation
+        } else if context.finalized_vapor.is_some() {
+            WaterBranch::AuthorizationActiveOrTie
+        } else {
+            WaterBranch::ConstitutiveLaw
+        },
+    };
+
+    let ledger = crate::V3PhaseFreeSurfaceEnergyLedger {
+        beginning_sensible_energy_j_m2: context.beginning.sensible_energy_j_m2_tile,
+        ending_sensible_energy_j_m2: post_vapor.sensible_energy_j_m2_tile,
+        absorbed_shortwave_w_m2: absorbed_shortwave,
+        net_longwave_w_m2: net_longwave,
+        sensible_to_canopy_air_w_m2: detail.ground_sensible_to_canopy_air_w_m2,
+        liquid_vapor_energy_w_m2: liquid_vapor_energy,
+        ice_vapor_energy_w_m2: ice_vapor_energy,
+        ground_heat_w_m2: detail.ground_heat_cn_w_m2_tile[0],
+        storage_w_m2: storage,
+        reconstructed_energy_residual_w_m2: surface_residual,
+    };
+    Ok(crate::V3PhaseFreeCoveredEvaluation {
+        predecessor: detail,
+        vapor,
+        post_vapor,
+        surface_energy: ledger,
     })
 }

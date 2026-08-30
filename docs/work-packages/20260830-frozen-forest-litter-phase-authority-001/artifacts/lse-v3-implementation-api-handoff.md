@@ -10,8 +10,15 @@ Evidence mode: `Static + Ran`
   vapor/phase candidate constructor. It takes exact support nanoseconds,
   transaction/OFE/tile/owner identities and owner-state digests, selected
   litter constants, immutable beginning liquid/ice/energy/temperature, the
-  accepted phase-free atmospheric operands, and separately finalized signed
-  liquid/ice rates.
+  accepted phase-free atmospheric operands, the complete accepted
+  `V3PhaseFreeSurfaceEnergyLedger`, and separately finalized signed liquid/ice
+  rates.
+- `evaluate_v3_phase_free_covered_column` evaluates separate signed liquid and
+  ice vapor mass/energy in the current-trial residual. The potential context
+  uses local named-pool bounds; the final context carries separate fixed
+  authorizations.
+- `solve_v3_phase_free_covered_column` invokes that V3 residual for the Newton,
+  finite-difference, and backtracking path without admitting phase transfer.
 - `AcceptedLitterPhaseCandidate` returns ending liquid/ice/energy/temperature
   plus a sealed `LitterPhaseReceipt`; it does not mutate either owner.
 - `validate_litter_phase_receipt`, `litter_phase_receipt_json`, and
