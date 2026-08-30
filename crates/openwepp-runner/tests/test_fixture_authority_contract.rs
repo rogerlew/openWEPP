@@ -49,10 +49,10 @@ fn exact_live_frame_authority_binds_single_and_two_lane_fixture_artifacts() {
             &["thermal-1", "thermal-2"][..],
         ),
         (
-            "erosion_multi_ofe_p102",
-            "p102.run",
-            Stage3TestFixtureSeedProfile::CompleteOwner,
-            &["thermal-1", "thermal-2", "soil-1"][..],
+            "watershed/p102-sediment-active/runs",
+            "H1.source.run",
+            Stage3TestFixtureSeedProfile::AdaptiveNoStrataOwner,
+            &[][..],
         ),
     ] {
         let source = Path::new(env!("CARGO_MANIFEST_DIR"))

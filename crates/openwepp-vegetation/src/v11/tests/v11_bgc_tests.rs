@@ -28,11 +28,12 @@ fn bgc_three_stratum_semantic_fold_accepts_restores_and_reordered_debits_rollbac
         .into_iter()
         .enumerate()
     {
+        let rank = u32::try_from(rank).expect("rank");
         let stratum_id = StratumId::try_new(id).expect("stratum");
         let mut stratum = base_stratum.clone();
         stratum.stratum_id = stratum_id.clone();
-        stratum.vertical_rank = u32::try_from(rank + 1).expect("rank");
-        stratum.height_m = base_stratum.height_m - rank as f64;
+        stratum.vertical_rank = rank.checked_add(1).expect("rank");
+        stratum.height_m = base_stratum.height_m - f64::from(rank);
         configuration.strata.push(stratum);
         state
             .0

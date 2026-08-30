@@ -1587,7 +1587,12 @@ fn run_watershed_cli_with_current_dir(
     hillslope_binary: Option<&Path>,
     current_dir: &Path,
 ) -> std::process::Output {
-    bind_generated_hillslope_stage3_seeds(run_dir);
+    let seed_run_dir = if run_dir.is_absolute() {
+        run_dir.to_path_buf()
+    } else {
+        current_dir.join(run_dir)
+    };
+    bind_generated_hillslope_stage3_seeds(&seed_run_dir);
     let mut command = Command::new(env!("CARGO_BIN_EXE_openwepp-cli-watershed"));
     command.current_dir(current_dir);
     command
@@ -1624,6 +1629,36 @@ fn bind_generated_hillslope_stage3_seeds(run_dir: &Path) {
         if !file_name.starts_with('H') || !file_name.ends_with(".source.run") {
             continue;
         }
+        let runfile_source =
+            fs::read_to_string(&path).expect("hillslope source runfile should read");
+        let runfile: toml::Value =
+            toml::from_str(&runfile_source).expect("hillslope source runfile should parse");
+        if let Some(seed_file) = runfile
+            .get("inputs")
+            .and_then(|inputs| inputs.get("snow_stage3_v11_owner_seed"))
+            .and_then(toml::Value::as_str)
+        {
+            let seed_path = run_dir.join(seed_file);
+            let seed_bytes = fs::read(&seed_path).unwrap_or_else(|error| {
+                panic!(
+                    "explicit Stage-3 owner seed '{}' should read: {error}",
+                    seed_path.display()
+                )
+            });
+            let seed: serde_json::Value = serde_json::from_slice(&seed_bytes)
+                .expect("explicit Stage-3 owner seed should be valid JSON");
+            assert_eq!(
+                seed.get("schema").and_then(serde_json::Value::as_str),
+                Some("OPENWEPP_SNOW_STAGE3_V11_PRODUCTION_SEED_V1"),
+                "explicit Stage-3 owner seed should retain its production schema"
+            );
+            assert_eq!(
+                seed.get("version").and_then(serde_json::Value::as_u64),
+                Some(1),
+                "explicit Stage-3 owner seed should retain its production version"
+            );
+            continue;
+        }
         let request = HillslopeRunRequest {
             run_dir: run_dir.to_path_buf(),
             run_file: PathBuf::from(file_name),
@@ -1634,7 +1669,7 @@ fn bind_generated_hillslope_stage3_seeds(run_dir: &Path) {
         };
         author_stage3_v11_owner_seed_fixture(
             &request,
-            Stage3TestFixtureSeedProfile::CompleteOwner,
+            Stage3TestFixtureSeedProfile::AdaptiveNoStrataOwner,
             Stage3TestFixtureSeedBinding::ExplicitRunfile,
         )
         .expect("watershed fixture should bind an exact explicit Stage-3 owner seed");

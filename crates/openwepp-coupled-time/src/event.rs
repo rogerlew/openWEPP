@@ -289,7 +289,8 @@ impl EventTransitionV1 {
             .complete_owner_set
             .iter()
             .zip(&ending)
-            .filter_map(|(before, after)| (before != after).then(|| before.owner_id().to_owned()))
+            .filter(|(before, after)| before != after)
+            .map(|(before, _after)| before.owner_id().to_owned())
             .collect::<Vec<_>>();
         if mutation_set != exact_mutation_set {
             return Err(CoupledTimeError::EventTransition);

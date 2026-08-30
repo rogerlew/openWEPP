@@ -24,6 +24,74 @@ impl CoveredStepNorms {
             beta: Some(self.beta),
         }
     }
+
+    fn governed_threshold_exceeded(self) -> bool {
+        self.hydraulic_mm > 1.0e-7
+            || self.beta > 1.0e-10
+            || self.temperature_k > 1.0e-8
+            || self.humidity_kg_kg > 1.0e-12
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CoveredFullTrialNoUpdateRefusal {
+    DomainInvalid,
+    GovernedStepThresholdExceeded,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum CoveredHalvedTrialProbe {
+    DomainInvalid,
+    EvaluationIncomplete,
+    Complete(CoveredStepNorms),
+}
+
+fn covered_complete_residuals_pass(residuals: &[f64]) -> bool {
+    !residuals.is_empty()
+        && residuals
+            .iter()
+            .all(|residual| residual.is_finite() && residual.abs() <= 1.0)
+}
+
+fn covered_halved_no_update_witness(
+    current_residuals: &[f64],
+    full_trial_refusal: Option<CoveredFullTrialNoUpdateRefusal>,
+    is_first_domain_valid_halved_trial: bool,
+    prospective_steps: CoveredStepNorms,
+) -> bool {
+    covered_complete_residuals_pass(current_residuals)
+        && full_trial_refusal.is_some()
+        && is_first_domain_valid_halved_trial
+        && prospective_steps.accepted()
+}
+
+fn covered_first_domain_valid_halved_no_update_witness<F>(
+    current_residuals: &[f64],
+    full_trial_refusal: Option<CoveredFullTrialNoUpdateRefusal>,
+    mut probe: F,
+) -> Option<(u32, CoveredStepNorms)>
+where
+    F: FnMut(u32) -> CoveredHalvedTrialProbe,
+{
+    if !covered_complete_residuals_pass(current_residuals) || full_trial_refusal.is_none() {
+        return None;
+    }
+    for exponent in 1..=MAX_BACKTRACKING_HALVINGS {
+        match probe(exponent) {
+            CoveredHalvedTrialProbe::DomainInvalid => {}
+            CoveredHalvedTrialProbe::EvaluationIncomplete => return None,
+            CoveredHalvedTrialProbe::Complete(steps) => {
+                return covered_halved_no_update_witness(
+                    current_residuals,
+                    full_trial_refusal,
+                    true,
+                    steps,
+                )
+                .then_some((exponent, steps));
+            }
+        }
+    }
+    None
 }
 
 fn empty_step_norms() -> StepNorms {
@@ -474,13 +542,16 @@ fn solve_covered_column_impl(
             .zip(delta.iter())
             .map(|(value, change)| value + change)
             .collect();
-        if norm <= 1.0
-            && covered_trial_is_valid(
-                &prospective,
-                beginning.occupancies.len(),
-                ground_uses_liquid_vapor_phase_domain,
-            )
-        {
+        let full_trial_is_valid = covered_trial_is_valid(
+            &prospective,
+            beginning.occupancies.len(),
+            ground_uses_liquid_vapor_phase_domain,
+        );
+        let complete_current_residuals_pass =
+            covered_complete_residuals_pass(&detail.normalized_residuals);
+        let mut full_trial_refusal =
+            (!full_trial_is_valid).then_some(CoveredFullTrialNoUpdateRefusal::DomainInvalid);
+        if complete_current_residuals_pass && full_trial_is_valid {
             let prospective_detail = evaluate_covered_column(beginning, &prospective, caps, None)?;
             let prospective_steps = covered_step_norms(
                 &delta,
@@ -498,6 +569,50 @@ fn solve_covered_column_impl(
                     prospective_steps,
                 );
             }
+            if prospective_steps.governed_threshold_exceeded() {
+                full_trial_refusal =
+                    Some(CoveredFullTrialNoUpdateRefusal::GovernedStepThresholdExceeded);
+            }
+        }
+        if let Some((exponent, steps)) = covered_first_domain_valid_halved_no_update_witness(
+            &detail.normalized_residuals,
+            full_trial_refusal,
+            |exponent| {
+                let factor = 0.5_f64.powf(f64::from(exponent));
+                let trial: Vec<f64> = x
+                    .iter()
+                    .zip(delta.iter())
+                    .map(|(value, change)| value + factor * change)
+                    .collect();
+                if !covered_trial_is_valid(
+                    &trial,
+                    beginning.occupancies.len(),
+                    ground_uses_liquid_vapor_phase_domain,
+                ) {
+                    return CoveredHalvedTrialProbe::DomainInvalid;
+                }
+                let Ok(trial_detail) = evaluate_covered_column(beginning, &trial, caps, None)
+                else {
+                    return CoveredHalvedTrialProbe::EvaluationIncomplete;
+                };
+                let applied: Vec<f64> = delta.iter().map(|value| factor * value).collect();
+                let steps = covered_step_norms(
+                    &applied,
+                    beginning.occupancies.len(),
+                    &detail,
+                    &trial_detail,
+                );
+                CoveredHalvedTrialProbe::Complete(steps)
+            },
+        ) {
+            return accept_covered_candidate(
+                beginning,
+                x,
+                detail,
+                iteration,
+                backtracking_count + exponent,
+                steps,
+            );
         }
         let mut accepted = None;
         let mut rejected_step_norms = None;
@@ -732,6 +847,137 @@ mod inactive_hydraulic_source_tests {
         let mut active_branch = source;
         active_branch.branch = WaterBranch::AuthorizationActiveOrTie;
         assert!(!exact_inactive_source_water(&active_branch));
+    }
+}
+
+#[cfg(test)]
+mod covered_halved_no_update_witness_tests {
+    use super::*;
+
+    fn passing_steps() -> CoveredStepNorms {
+        CoveredStepNorms {
+            hydraulic_mm: 1.0e-7,
+            beta: 1.0e-10,
+            temperature_k: 1.0e-8,
+            humidity_kg_kg: 1.0e-12,
+            ci_pa: f64::MAX,
+        }
+    }
+
+    #[test]
+    fn each_full_witness_refusal_and_first_domain_valid_halving_admit_no_update() {
+        for refusal in [
+            CoveredFullTrialNoUpdateRefusal::DomainInvalid,
+            CoveredFullTrialNoUpdateRefusal::GovernedStepThresholdExceeded,
+        ] {
+            assert!(covered_halved_no_update_witness(
+                &[1.0, -1.0, 0.0],
+                Some(refusal),
+                true,
+                passing_steps(),
+            ));
+        }
+    }
+
+    #[test]
+    fn enclosing_preflight_skips_domain_invalid_trials_and_returns_first_complete_witness() {
+        let mut examined = Vec::new();
+        let witness = covered_first_domain_valid_halved_no_update_witness(
+            &[0.0, 1.0],
+            Some(CoveredFullTrialNoUpdateRefusal::DomainInvalid),
+            |exponent| {
+                examined.push(exponent);
+                if exponent < 3 {
+                    CoveredHalvedTrialProbe::DomainInvalid
+                } else {
+                    CoveredHalvedTrialProbe::Complete(passing_steps())
+                }
+            },
+        );
+        assert_eq!(witness, Some((3, passing_steps())));
+        assert_eq!(examined, [1, 2, 3]);
+    }
+
+    #[test]
+    fn enclosing_preflight_does_not_skip_incomplete_or_failed_first_domain_valid_trial() {
+        let mut failed_steps = passing_steps();
+        failed_steps.hydraulic_mm = 1.0e-7 + f64::EPSILON;
+        for first_domain_valid in [
+            CoveredHalvedTrialProbe::EvaluationIncomplete,
+            CoveredHalvedTrialProbe::Complete(failed_steps),
+        ] {
+            let mut examined = Vec::new();
+            let witness = covered_first_domain_valid_halved_no_update_witness(
+                &[0.0, 1.0],
+                Some(CoveredFullTrialNoUpdateRefusal::GovernedStepThresholdExceeded),
+                |exponent| {
+                    examined.push(exponent);
+                    if exponent == 1 {
+                        first_domain_valid
+                    } else {
+                        CoveredHalvedTrialProbe::Complete(passing_steps())
+                    }
+                },
+            );
+            assert_eq!(witness, None);
+            assert_eq!(examined, [1]);
+        }
+
+        let mut examined_without_trigger = false;
+        assert_eq!(
+            covered_first_domain_valid_halved_no_update_witness(&[0.0, 1.0], None, |_| {
+                examined_without_trigger = true;
+                CoveredHalvedTrialProbe::Complete(passing_steps())
+            },),
+            None
+        );
+        assert!(!examined_without_trigger);
+    }
+
+    #[test]
+    fn complete_residual_passing_full_and_later_domain_valid_poisons_refuse_the_witness() {
+        for residual_poison in [1.0 + f64::EPSILON, f64::INFINITY, f64::NAN] {
+            assert!(!covered_halved_no_update_witness(
+                &[0.0, residual_poison, 0.5],
+                Some(CoveredFullTrialNoUpdateRefusal::DomainInvalid),
+                true,
+                passing_steps(),
+            ));
+        }
+        assert!(!covered_halved_no_update_witness(
+            &[0.0, 1.0],
+            None,
+            true,
+            passing_steps(),
+        ));
+        assert!(!covered_halved_no_update_witness(
+            &[0.0, 1.0],
+            Some(CoveredFullTrialNoUpdateRefusal::DomainInvalid),
+            false,
+            passing_steps(),
+        ));
+    }
+
+    #[test]
+    fn each_governed_prospective_step_coordinate_poison_refuses_the_witness() {
+        let mut hydraulic = passing_steps();
+        hydraulic.hydraulic_mm = 1.0e-7 + f64::EPSILON;
+        let mut beta = passing_steps();
+        beta.beta = 1.0e-10 + f64::EPSILON;
+        let mut temperature = passing_steps();
+        temperature.temperature_k = 1.0e-8 + f64::EPSILON;
+        let mut humidity = passing_steps();
+        humidity.humidity_kg_kg = 1.0e-12 + f64::EPSILON;
+        let mut nonfinite = passing_steps();
+        nonfinite.beta = f64::NAN;
+        for poison in [hydraulic, beta, temperature, humidity, nonfinite] {
+            assert!(!covered_halved_no_update_witness(
+                &[0.0, 1.0],
+                Some(CoveredFullTrialNoUpdateRefusal::GovernedStepThresholdExceeded),
+                true,
+                poison,
+            ));
+        }
     }
 }
 

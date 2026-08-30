@@ -755,18 +755,18 @@ mod tests {
             .iter()
             .map(|(owner, amount)| (*owner, *amount))
             .collect::<BTreeMap<_, _>>();
-        let used = semantic.values().fold(0.0_f64, |sum, amount| sum + amount);
+        let semantic_use_total = semantic.values().fold(0.0_f64, |sum, amount| sum + amount);
         let alternate = rows.iter().fold(0.0_f64, |sum, (_, amount)| sum + amount);
-        assert_ne!(used.to_bits(), alternate.to_bits());
+        assert_ne!(semantic_use_total.to_bits(), alternate.to_bits());
         assert_eq!(
             candidate.mineral_operands()[0]
                 .finalized_use_kg_n_m2
                 .to_bits(),
-            used.to_bits()
+            semantic_use_total.to_bits()
         );
         assert_eq!(
             candidate.ending().layers["layer-1"].ammonium_n.to_bits(),
-            (0.01_f64 - used).to_bits()
+            (0.01_f64 - semantic_use_total).to_bits()
         );
         candidate.validate().expect("candidate closure");
     }

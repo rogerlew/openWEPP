@@ -34,6 +34,12 @@ Status: committed WSHED-W7R sediment-active watershed fixture.
 - Launch files:
   `runs/case.run` for `openwepp-cli-watershed` and
   `runs/H1.source.run` for generated hillslope execution.
+- Stage-3 authority:
+  `runs/H1.source.run.snow_stage3_v11_owner_seed.json` was authored directly
+  from the committed H1 inputs through the test-fixture authority API with the
+  `AdaptiveNoStrataOwner` profile. Its vegetation configuration has an empty
+  strata/root inventory; the production loader remains responsible for strict
+  envelope, custody, and digest validation.
 
 ## Run Recipe
 

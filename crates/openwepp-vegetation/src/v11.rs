@@ -727,12 +727,12 @@ impl V11ParentTransaction {
         let exact_mutation_set = self
             .staged_resource_owners
             .iter()
-            .filter_map(|(owner_id, beginning)| {
+            .filter(|(owner_id, beginning)| {
                 ending_owners
-                    .get(owner_id)
-                    .is_some_and(|ending| beginning != ending)
-                    .then(|| owner_id.clone())
+                    .get(*owner_id)
+                    .is_some_and(|ending| *beginning != ending)
             })
+            .map(|(owner_id, _)| owner_id.clone())
             .collect::<Vec<_>>();
         if mutation_set != exact_mutation_set {
             return Err(V11Error::ResourceOwnerCandidate);
@@ -1058,13 +1058,13 @@ fn apply_checkpoint_zero_duration_owner_transitions(
         }
         let exact_mutation_set = staged_owners
             .iter()
-            .filter_map(|(owner_id, beginning)| {
+            .filter(|(owner_id, beginning)| {
                 transition
                     .ending_complete_owners
-                    .get(owner_id)
-                    .is_some_and(|ending| ending != beginning)
-                    .then(|| owner_id.clone())
+                    .get(*owner_id)
+                    .is_some_and(|ending| ending != *beginning)
             })
+            .map(|(owner_id, _)| owner_id.clone())
             .collect::<Vec<_>>();
         if transition.mutation_set != exact_mutation_set {
             return Err(V11Error::RestartCheckpoint);
@@ -1083,6 +1083,106 @@ pub struct V11CumulativeDebit {
     pub owner_id: String,
     pub resource_key: V11ResourceKey,
     pub amount: f64,
+}
+
+struct V11CheckpointReplayState {
+    cursor: u128,
+    predecessor_state: V11CoupledOwnedState,
+    prior_transitions: Vec<V11SharedResourceOwnerTransition>,
+    predecessor_owners: BTreeMap<String, V11OwnerEnvelope>,
+    cumulative: BTreeMap<(String, V11ResourceKey), f64>,
+    next_zero_duration_transition: usize,
+}
+
+fn replay_checkpoint_accepted_segments(
+    configuration: &VegetationConfigurationV11,
+    checkpoint: &V11ParentTransactionCheckpoint,
+    bgc_scope: Option<&V11BgcDebitScope>,
+    replay: &mut V11CheckpointReplayState,
+) -> Result<(), V11Error> {
+    for (index, segment) in checkpoint.accepted_segments.iter().enumerate() {
+        apply_checkpoint_zero_duration_owner_transitions(
+            &checkpoint.accepted_zero_duration_owner_transitions,
+            &mut replay.next_zero_duration_transition,
+            index,
+            replay.cursor,
+            &replay.predecessor_state,
+            &mut replay.predecessor_owners,
+        )?;
+        if segment.parent_transaction_id != checkpoint.parent_transaction_id
+            || index > 0
+                && checkpoint.accepted_segments[index - 1]
+                    .slab_ordinal
+                    .checked_add(1)
+                    != Some(segment.slab_ordinal)
+            || segment.support.start_ns().get() != replay.cursor
+            || segment.duration_s_bits != segment.support.duration_s_bits()
+            || segment.beginning_state_sha256 != replay.predecessor_state.state_sha256
+        {
+            return Err(V11Error::RestartCheckpoint);
+        }
+        let reconstructed_slab = checkpoint
+            .accepted_segments
+            .get(index)
+            .ok_or(V11Error::RestartCheckpoint)?;
+        segment
+            .lse_support_receipt
+            .validate_checkpoint_join(reconstructed_slab)
+            .map_err(|_| V11Error::RestartCheckpoint)?;
+        segment
+            .lse_support_receipt
+            .validate_beginning_owners(&replay.predecessor_owners)
+            .map_err(|_| V11Error::RestartCheckpoint)?;
+        if checkpoint.accepted_segments[..index].iter().any(|prior| {
+            prior.lse_support_receipt.receipt_sha256 == segment.lse_support_receipt.receipt_sha256
+                || prior.lse_support_receipt.canonical_bytes_sha256
+                    == segment.lse_support_receipt.canonical_bytes_sha256
+        }) {
+            return Err(V11Error::RestartCheckpoint);
+        }
+        segment.ending_state.validate(configuration)?;
+        validate_debits(&segment.resource_debits)?;
+        validate_fluxes(&segment.admitted_resource_fluxes)?;
+        validate_material_transfers(&segment.material_transfers)?;
+        validate_complete_owners(&segment.ending_resource_owners)?;
+        if segment.ending_resource_owners.get("vegetation")
+            != Some(&v11_vegetation_owner_envelope(&segment.ending_state)?)
+        {
+            return Err(V11Error::RestartCheckpoint);
+        }
+        validate_resource_custody(
+            configuration,
+            bgc_scope,
+            segment.parent_transaction_id,
+            segment.segment_id,
+            segment.slab_id,
+            segment.slab_ordinal,
+            segment.support,
+            &segment.resource_debits,
+            &segment.admitted_resource_fluxes,
+            &segment.shared_resource_transitions,
+            &segment.complete_owner_candidates,
+            (!replay.prior_transitions.is_empty()).then_some(replay.prior_transitions.as_slice()),
+        )
+        .map_err(|_| V11Error::RestartCheckpoint)?;
+        for debit in &segment.resource_debits {
+            let key = (debit.owner_id.clone(), debit.resource_key.clone());
+            let value = replay.cumulative.entry(key.clone()).or_insert(0.0);
+            *value += debit.final_use;
+            if !value.is_finite() {
+                return Err(V11Error::RestartCheckpoint);
+            }
+        }
+        replay
+            .prior_transitions
+            .clone_from(&segment.shared_resource_transitions);
+        replay
+            .predecessor_owners
+            .clone_from(&segment.ending_resource_owners);
+        replay.cursor = segment.support.end_ns().get();
+        replay.predecessor_state.clone_from(&segment.ending_state);
+    }
+    Ok(())
 }
 
 impl V11ParentTransaction {
@@ -1146,103 +1246,27 @@ impl V11ParentTransaction {
         // owner transition.  In that posture `accepted_until_ns` is both the
         // parent cursor and the transition tick.  Positive-segment checkpoints
         // continue to derive the beginning cursor from their first receipt.
-        let mut cursor = checkpoint
-            .accepted_segments
-            .first()
-            .map_or(checkpoint.accepted_until_ns, |segment| {
-                segment.support.start_ns().get()
-            });
-        let mut predecessor_state = checkpoint.beginning_state.clone();
-        let mut prior_transitions = Vec::<V11SharedResourceOwnerTransition>::new();
-        let mut predecessor_owners = checkpoint.beginning_complete_owners.clone();
-        let mut cumulative = BTreeMap::<(String, V11ResourceKey), f64>::new();
-        let mut next_zero_duration_transition = 0_usize;
-        for (index, segment) in checkpoint.accepted_segments.iter().enumerate() {
-            apply_checkpoint_zero_duration_owner_transitions(
-                &checkpoint.accepted_zero_duration_owner_transitions,
-                &mut next_zero_duration_transition,
-                index,
-                cursor,
-                &predecessor_state,
-                &mut predecessor_owners,
-            )?;
-            if segment.parent_transaction_id != checkpoint.parent_transaction_id
-                || index > 0
-                    && checkpoint.accepted_segments[index - 1]
-                        .slab_ordinal
-                        .checked_add(1)
-                        != Some(segment.slab_ordinal)
-                || segment.support.start_ns().get() != cursor
-                || segment.duration_s_bits != segment.support.duration_s_bits()
-                || segment.beginning_state_sha256 != predecessor_state.state_sha256
-            {
-                return Err(V11Error::RestartCheckpoint);
-            }
-            let reconstructed_slab = checkpoint
+        let mut replay = V11CheckpointReplayState {
+            cursor: checkpoint
                 .accepted_segments
-                .get(index)
-                .ok_or(V11Error::RestartCheckpoint)?;
-            segment
-                .lse_support_receipt
-                .validate_checkpoint_join(reconstructed_slab)
-                .map_err(|_| V11Error::RestartCheckpoint)?;
-            segment
-                .lse_support_receipt
-                .validate_beginning_owners(&predecessor_owners)
-                .map_err(|_| V11Error::RestartCheckpoint)?;
-            if checkpoint.accepted_segments[..index].iter().any(|prior| {
-                prior.lse_support_receipt.receipt_sha256
-                    == segment.lse_support_receipt.receipt_sha256
-                    || prior.lse_support_receipt.canonical_bytes_sha256
-                        == segment.lse_support_receipt.canonical_bytes_sha256
-            }) {
-                return Err(V11Error::RestartCheckpoint);
-            }
-            segment.ending_state.validate(configuration)?;
-            validate_debits(&segment.resource_debits)?;
-            validate_fluxes(&segment.admitted_resource_fluxes)?;
-            validate_material_transfers(&segment.material_transfers)?;
-            validate_complete_owners(&segment.ending_resource_owners)?;
-            if segment.ending_resource_owners.get("vegetation")
-                != Some(&v11_vegetation_owner_envelope(&segment.ending_state)?)
-            {
-                return Err(V11Error::RestartCheckpoint);
-            }
-            validate_resource_custody(
-                configuration,
-                bgc_scope,
-                segment.parent_transaction_id,
-                segment.segment_id,
-                segment.slab_id,
-                segment.slab_ordinal,
-                segment.support,
-                &segment.resource_debits,
-                &segment.admitted_resource_fluxes,
-                &segment.shared_resource_transitions,
-                &segment.complete_owner_candidates,
-                (!prior_transitions.is_empty()).then_some(prior_transitions.as_slice()),
-            )
-            .map_err(|_| V11Error::RestartCheckpoint)?;
-            for debit in &segment.resource_debits {
-                let key = (debit.owner_id.clone(), debit.resource_key.clone());
-                let value = cumulative.entry(key.clone()).or_insert(0.0);
-                *value += debit.final_use;
-                if !value.is_finite() {
-                    return Err(V11Error::RestartCheckpoint);
-                }
-            }
-            prior_transitions.clone_from(&segment.shared_resource_transitions);
-            predecessor_owners.clone_from(&segment.ending_resource_owners);
-            cursor = segment.support.end_ns().get();
-            predecessor_state.clone_from(&segment.ending_state);
-        }
+                .first()
+                .map_or(checkpoint.accepted_until_ns, |segment| {
+                    segment.support.start_ns().get()
+                }),
+            predecessor_state: checkpoint.beginning_state.clone(),
+            prior_transitions: Vec::new(),
+            predecessor_owners: checkpoint.beginning_complete_owners.clone(),
+            cumulative: BTreeMap::new(),
+            next_zero_duration_transition: 0,
+        };
+        replay_checkpoint_accepted_segments(configuration, &checkpoint, bgc_scope, &mut replay)?;
         apply_checkpoint_zero_duration_owner_transitions(
             &checkpoint.accepted_zero_duration_owner_transitions,
-            &mut next_zero_duration_transition,
+            &mut replay.next_zero_duration_transition,
             checkpoint.accepted_segments.len(),
-            cursor,
-            &predecessor_state,
-            &mut predecessor_owners,
+            replay.cursor,
+            &replay.predecessor_state,
+            &mut replay.predecessor_owners,
         )?;
         let checkpoint_cumulative = checkpoint
             .cumulative_debits
@@ -1255,12 +1279,12 @@ impl V11ParentTransaction {
             })
             .collect::<BTreeMap<_, _>>();
         if checkpoint_cumulative.len() != checkpoint.cumulative_debits.len()
-            || cursor != checkpoint.accepted_until_ns
-            || !cumulative_debits_bit_equal(&cumulative, &checkpoint_cumulative)
-            || next_zero_duration_transition
+            || replay.cursor != checkpoint.accepted_until_ns
+            || !cumulative_debits_bit_equal(&replay.cumulative, &checkpoint_cumulative)
+            || replay.next_zero_duration_transition
                 != checkpoint.accepted_zero_duration_owner_transitions.len()
-            || predecessor_state != checkpoint.staged_state
-            || predecessor_owners != checkpoint.staged_complete_owners
+            || replay.predecessor_state != checkpoint.staged_state
+            || replay.predecessor_owners != checkpoint.staged_complete_owners
         {
             return Err(V11Error::RestartCheckpoint);
         }
@@ -2339,23 +2363,16 @@ mod tests {
         );
     }
 
-    #[test]
-    fn zero_duration_owner_transition_requires_exact_mutation_set() {
+    fn zero_duration_owner_transition_fixture() -> (
+        V10ToV11Migration,
+        BTreeMap<String, V11OwnerEnvelope>,
+        ParentTransactionId,
+        BTreeMap<String, V11OwnerEnvelope>,
+    ) {
         let (v10_configuration, v10_state) = v10_fixture();
         let migrated = migrate_v10_runtime_to_v11(&v10_configuration, &v10_state).expect("migrate");
         let beginning_owners = complete_owners(&migrated.state);
         let (parent_id, _) = accepted_receipts(&beginning_owners, &[1_800_000_000_000]);
-
-        let make_parent = || {
-            V11ParentTransaction::new_with_complete_owners(
-                &migrated.configuration,
-                &migrated.state,
-                parent_id,
-                ModelTimeNs::new(0),
-                beginning_owners.clone(),
-            )
-            .expect("parent")
-        };
         let mut ending_owners = beginning_owners.clone();
         let mut ending_snow_bytes = ending_owners.get("snow").expect("snow").state_bytes.clone();
         ending_snow_bytes.push(1);
@@ -2363,6 +2380,30 @@ mod tests {
             "snow".to_owned(),
             V11OwnerEnvelope::try_new("snow".to_owned(), ending_snow_bytes).expect("ending snow"),
         );
+        (migrated, beginning_owners, parent_id, ending_owners)
+    }
+
+    fn zero_duration_owner_transition_parent(
+        migrated: &V10ToV11Migration,
+        beginning_owners: &BTreeMap<String, V11OwnerEnvelope>,
+        parent_id: ParentTransactionId,
+    ) -> V11ParentTransaction {
+        V11ParentTransaction::new_with_complete_owners(
+            &migrated.configuration,
+            &migrated.state,
+            parent_id,
+            ModelTimeNs::new(0),
+            beginning_owners.clone(),
+        )
+        .expect("parent")
+    }
+
+    #[test]
+    fn zero_duration_owner_transition_requires_exact_mutation_set() {
+        let (migrated, beginning_owners, parent_id, ending_owners) =
+            zero_duration_owner_transition_fixture();
+        let make_parent =
+            || zero_duration_owner_transition_parent(&migrated, &beginning_owners, parent_id);
 
         let mut extra_member = make_parent();
         let before = extra_member.checkpoint();
@@ -2478,8 +2519,7 @@ mod tests {
         assert_eq!(restored.checkpoint(), checkpoint);
 
         let mut state_substitution = checkpoint;
-        state_substitution.staged_state.last_parent_transaction_id =
-            state_substitution.staged_state.last_parent_transaction_id + 1;
+        state_substitution.staged_state.last_parent_transaction_id += 1;
         assert!(
             V11ParentTransaction::restore(&migrated.configuration, state_substitution).is_err()
         );

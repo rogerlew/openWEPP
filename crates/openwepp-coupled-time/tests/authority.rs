@@ -175,8 +175,7 @@ fn event_queue_orders_and_replay_is_closed() {
     assert!(q.apply_next(&mut c).unwrap().is_none());
 }
 
-#[test]
-fn receipt_bearing_ownership_noop_advances_once_and_false_noops_reject() {
+fn clock_after_receipt_bearing_ownership_noop() -> CoupledClockStateV1 {
     let mut c = clock(10);
     let predecessor_segment = c.active_segment_id();
     let proposal = EventProposalV1::new(
@@ -206,7 +205,10 @@ fn receipt_bearing_ownership_noop_advances_once_and_false_noops_reject() {
     assert_ne!(c.active_segment_id(), predecessor_segment);
     assert_eq!(c.accepted_event_receipts(), &[accepted]);
     assert!(queue.apply_next(&mut c).unwrap().is_none());
+    c
+}
 
+fn assert_missing_custody_rejects(c: &mut CoupledClockStateV1) {
     let false_noop = EventProposalV1::new(
         EventClass::OwnershipTransfer,
         "A".into(),
@@ -230,12 +232,14 @@ fn receipt_bearing_ownership_noop_advances_once_and_false_noops_reject() {
     assert_eq!(
         EventQueueV1::new(t(0), vec![false_noop])
             .unwrap()
-            .apply_next(&mut c)
+            .apply_next(c)
             .unwrap_err(),
         CoupledTimeError::EventCycle,
     );
     assert_eq!(c.event_ordinal(), 1);
+}
 
+fn assert_zero_lineage_rejects(c: &mut CoupledClockStateV1) {
     let zero_lineage = EventProposalV1::new(
         EventClass::OwnershipTransfer,
         "A".into(),
@@ -259,11 +263,13 @@ fn receipt_bearing_ownership_noop_advances_once_and_false_noops_reject() {
     assert_eq!(
         EventQueueV1::new(t(0), vec![zero_lineage])
             .unwrap()
-            .apply_next(&mut c)
+            .apply_next(c)
             .unwrap_err(),
         CoupledTimeError::EventCycle,
     );
+}
 
+fn assert_wrong_class_rejects(c: &mut CoupledClockStateV1) {
     let wrong_class = EventProposalV1::new(
         EventClass::DiagnosticMarker,
         "A".into(),
@@ -287,10 +293,18 @@ fn receipt_bearing_ownership_noop_advances_once_and_false_noops_reject() {
     assert_eq!(
         EventQueueV1::new(t(0), vec![wrong_class])
             .unwrap()
-            .apply_next(&mut c)
+            .apply_next(c)
             .unwrap_err(),
         CoupledTimeError::EventCycle,
     );
+}
+
+#[test]
+fn receipt_bearing_ownership_noop_advances_once_and_false_noops_reject() {
+    let mut c = clock_after_receipt_bearing_ownership_noop();
+    assert_missing_custody_rejects(&mut c);
+    assert_zero_lineage_rejects(&mut c);
+    assert_wrong_class_rejects(&mut c);
     assert_eq!(c.event_ordinal(), 1);
 }
 

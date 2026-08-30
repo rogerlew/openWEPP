@@ -618,6 +618,10 @@ fn assurance_receipts_form_the_recorded_generation_chain() {
         "assurance/v2/transactions/f1ad46344455412f03748bfd7b0fc272322cbf5a7a7ea43123015b275a8e7b0a.json",
     ))
     .expect("typed compositional-terminal source-adoption receipt");
+    let fixed_point_terminal_adoption: Value = serde_json::from_str(&read(
+        "assurance/v2/transactions/fbebcf402b46751e84527f878fd2580e5282ffeee8d92738728847c7d29f97da.json",
+    ))
+    .expect("typed fixed-point-terminal source-adoption receipt");
     let identity = read("assurance/v2/identity.lock.json");
     let impact = read(&format!("{PACKAGE}/artifacts/assurance-impact.md"));
 
@@ -685,11 +689,15 @@ fn assurance_receipts_form_the_recorded_generation_chain() {
     );
     assert_eq!(
         compositional_terminal_adoption["new_generation_id"],
+        fixed_point_terminal_adoption["old_generation_id"]
+    );
+    assert_eq!(
+        fixed_point_terminal_adoption["new_generation_id"],
         identity["generation_id"]
     );
     assert_eq!(
         identity["generation_id"],
-        "5c275785cc0af6681c2430b19857aa85166e4f16e3402a8b9b532385a8382a83"
+        "0102e72cc94aff744e8835562ed42ceeceda295efa1e3d135611ae63343fe881"
     );
     assert!(impact.contains(
         "initial `SC-PLANT-001.md` | `3208ab181e5eb9261a51bb3d8ea63d25c133244b8cf25b6949b4f4eb3a26cc1f`"
