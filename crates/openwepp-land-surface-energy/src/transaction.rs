@@ -17,12 +17,16 @@ use crate::{
     CoveredColumnAuthority, CoveredColumnCandidate, CoveredColumnEnergyOperands,
     CoveredColumnInputs, CoveredColumnLongwaveOperands, CoveredColumnShortwaveOperands,
     CoveredColumnSolveOutcome, CoveredOccupancyEnergyOperands, CoveredOccupancyLiquidLedger,
-    CoveredSurfaceEnergyOperands, CoveredWaterCaps, DiagnosticFailureKind, GroundHeatJoinOperands,
+    CoveredSurfaceEnergyOperands, CoveredWaterCaps, DiagnosticFailureKind,
+    EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256, ExactDyadicEnthalpy, GroundHeatJoinOperands,
     GroundWaterKey, LandSurfaceEnergyError, LandSurfaceEnergyState, LatentJoinOperands,
     MODEL_DEFINITION_SHA256, MODEL_VERSION, NormalizedResidual, NumericalDiagnostics,
     NumericalFailure, NumericalFailureCode, NumericalFailureKind, OfeId, OpenSurfaceProblem,
     OpenSurfaceSolveOutcome, OwnerEnvelopeIdentity, OwnerKind, OwnerRollbackHash,
-    RequestingComponent, Sha256Digest, SoilThermalSnapshot, SolveIdentity, SolvePass, SourceId,
+    RequestingComponent, SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG,
+    SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256, Sha256Digest, SoilThermalAcceptedEnergyOperandV2,
+    SoilThermalEnergyCreditReceiptV2, SoilThermalExactCarryError, SoilThermalLayerEnergyCreditV2,
+    SoilThermalOwnerEnvelopeV2, SoilThermalSnapshot, SolveIdentity, SolvePass, SourceId,
     SourceWaterCap, Stage3SnowOpticalBoundaryReceiptV1, StandGroundWaterAmountBasis, StepNorms,
     SurfaceClass, SurfaceClassKind, SurfaceEnergyOperands, SurfaceId, TileState,
     VEGETATION_MODEL_DEFINITION_SHA256, VEGETATION_MODEL_VERSION, WaterAmount, WaterAuthorization,
@@ -2756,6 +2760,109 @@ pub fn build_lse_ending_state(
 
 pub fn specific_liquid_enthalpy(temperature_k: f64) -> Result<f64, LandSurfaceEnergyError> {
     Ok(liquid_enthalpy_j_kg(temperature_k))
+}
+
+/// Clone-only candidate: a refusal never mutates the supplied beginning owner.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SoilThermalExactCarryCandidateV2 {
+    pub ending_owner: SoilThermalOwnerEnvelopeV2,
+    pub credit_receipt: SoilThermalEnergyCreditReceiptV2,
+}
+
+pub fn apply_soil_thermal_energy_credit_v2(
+    beginning: &SoilThermalOwnerEnvelopeV2,
+    accepted_operands: &[SoilThermalAcceptedEnergyOperandV2],
+) -> Result<SoilThermalExactCarryCandidateV2, SoilThermalExactCarryError> {
+    beginning.validate()?;
+    if beginning.state.last_accepted_transaction_id != beginning.expected_predecessor_transaction_id
+        || beginning.expected_predecessor_transaction_id == Some(beginning.transaction_id)
+    {
+        return Err(SoilThermalExactCarryError::Identity(
+            "stale or replayed V2 predecessor",
+        ));
+    }
+
+    let mut ending = beginning.clone();
+    let mut layer_credits = Vec::new();
+    for ofe in &beginning.state.ofes {
+        for layer in &ofe.ordered_layers {
+            let layer_operands: Vec<_> = accepted_operands
+                .iter()
+                .filter(|operand| {
+                    operand.ofe_id == ofe.ofe_id && operand.layer_id == layer.layer_id
+                })
+                .cloned()
+                .collect();
+            let values: Vec<_> = layer_operands
+                .iter()
+                .map(|operand| operand.energy_j_m2_ofe_ground)
+                .collect();
+            let exact_total = ExactDyadicEnthalpy::exact_sum_binary64(
+                layer.enthalpy_hi_j_m2_ofe_ground,
+                &layer.enthalpy_carry,
+                &values,
+            )?;
+            let (high, carry) = if values.is_empty() {
+                (
+                    layer.enthalpy_hi_j_m2_ofe_ground,
+                    layer.enthalpy_carry.clone(),
+                )
+            } else {
+                exact_total.rounded_high_and_remainder()?
+            };
+            let ending_layer = ending.state.layer_mut(&ofe.ofe_id, &layer.layer_id).ok_or(
+                SoilThermalExactCarryError::Identity("candidate layer identity"),
+            )?;
+            ending_layer.enthalpy_hi_j_m2_ofe_ground = high;
+            ending_layer.enthalpy_carry = carry.clone();
+            ending_layer.last_accepted_transaction_id = Some(beginning.transaction_id);
+            layer_credits.push(SoilThermalLayerEnergyCreditV2 {
+                ofe_id: ofe.ofe_id.clone(),
+                layer_id: layer.layer_id.clone(),
+                beginning_enthalpy_hi_j_m2_ofe_ground: layer.enthalpy_hi_j_m2_ofe_ground,
+                beginning_enthalpy_carry: layer.enthalpy_carry.clone(),
+                ending_enthalpy_hi_j_m2_ofe_ground: high,
+                ending_enthalpy_carry: carry,
+                accepted_operands: layer_operands,
+            });
+        }
+    }
+    ending.state.last_accepted_transaction_id = Some(beginning.transaction_id);
+    ending.state.reseal()?;
+
+    let zero_digest = Sha256Digest::try_new("0".repeat(64))
+        .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?;
+    let mut receipt = SoilThermalEnergyCreditReceiptV2 {
+        receipt_tag: SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG.to_owned(),
+        schema_sha256: Sha256Digest::try_new(SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256)
+            .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?,
+        exact_carry_definition_sha256: Sha256Digest::try_new(
+            EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256,
+        )
+        .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?,
+        contract_version: 15,
+        model_version: beginning.model_version.clone(),
+        model_definition_sha256: beginning.model_definition_sha256.clone(),
+        configuration_sha256: beginning.state.configuration_sha256.clone(),
+        run_id: beginning.run_id.clone(),
+        soil_thermal_owner_id: beginning.state.owner_id.clone(),
+        transaction_id: beginning.transaction_id,
+        predecessor_transaction_id: beginning.expected_predecessor_transaction_id,
+        support_start_ns: beginning.support_start_ns,
+        support_end_ns: beginning.support_end_ns,
+        beginning_owner_state_sha256: beginning.state.state_sha256.clone(),
+        ending_owner_state_sha256: ending.state.state_sha256.clone(),
+        predecessor_receipt_chain_sha256: beginning.receipt_chain_sha256.clone(),
+        layer_credits,
+        receipt_sha256: zero_digest,
+    };
+    receipt.reseal()?;
+    ending.receipt_chain_sha256 = receipt.receipt_sha256.clone();
+    receipt.validate_independent(beginning, &ending, accepted_operands)?;
+    Ok(SoilThermalExactCarryCandidateV2 {
+        ending_owner: ending,
+        credit_receipt: receipt,
+    })
 }
 
 #[cfg(test)]
