@@ -187,6 +187,28 @@ blocked by the terminal-one-volume phase/vapor active set; it changes no
 adaptive temporal policy, tolerance, iteration cap, constitutive equation,
 event, custody, receipt, rollback, public schema, persistence, or publication.
 
+Sixth, `SC-SNOWENERGY-001` v33 supersedes the nonprogressing v32 controller on
+the exact affected terminal-one-volume covered support. Versions 31 and 32 are
+retained as diagnostic reconstruction/refusal oracles but must not remain in
+production control flow: retained evidence proves the v32 root/branch map has
+an exact period-two reset and no fresh-authentic fixed point. After an authentic
+A/B/A phase/vapor active-set cycle with identical support, identity, event,
+topology, custody, and receipt operands, v33 may invoke a private reduced
+semismooth coupled solve of the actual physical residuals. Its unknowns are
+ending total represented snow water, ending snow enthalpy, and the coupled soil
+endpoint coordinates required by the unchanged CN snow-soil receipt; every
+trial applies the unchanged canonical W/H phase projection and existing covered
+LSE equations/ordered flux reconstruction. Residuals independently close exact
+water, complete energy including signed actual-vapor latent energy, the
+unchanged soil CN block, LSE components, and sealed receipts. A safeguarded
+deterministic Newton/trust-region solve is private and unpublished; only an
+exact fresh coupled-root replay that independently reseals every receipt may be
+accepted and published. This is neither a convex event-time mixture nor
+synthetic Picard acceptance. Existing discrete event/forcing/receipt boundaries
+still force exact partition/refusal. No floor, tolerance, 96-iteration Picard
+cap, constitutive equation, event, custody, receipt, rollback, public schema,
+persistence, or diagnostic policy changes.
+
 ## Intended write set
 
 - `docs/work-packages/README.md`;
@@ -218,6 +240,11 @@ event, custody, receipt, rollback, public schema, persistence, or publication.
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/fixed_point.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs`;
+- new `crates/openwepp-hillslope-orchestrator/src/v11_covered/phase_consistent_coupled_solve.rs`;
+- `crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs` and
+  `crates/openwepp-land-surface-energy/src/transaction.rs` only if the v33
+  nested trial requires a read-only private evaluation seam, with no equation,
+  tolerance, or public-schema change;
 - `tests/integration/dff_ws2_ksatadj_direct_runtime.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs`;
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs`;
@@ -323,6 +350,21 @@ branch-entry and same-sign-v31 vectors; mixed-disposition, capacity, nonfinite,
 component/identity/event, cap, rollback, and no-intermediate-publication
 refusals; real DFF accepted/rejected counts, widths, runtime, limiting reasons,
 and independent mass/energy/vapor closure.
+
+The v33 successor repeats that contract-first sequence independently. Its
+retained pre-red must reproduce the exact 60-second and 120-second v32
+period-two/96-cap refusal, fail solely for the missing v33 coupled-solver seam,
+and bind independent cold/phase/fusion-boundary residual vectors with known
+roots and exact replay. Mandatory green evidence includes root results distinct
+from every affine v31/v32 image; nonfinite/identity/event/active-set/singularity/
+stagnation/domain/capacity/component/soil/LSE/receipt/iteration refusals; exact
+rollback; real DFF accepted/rejected counts, width histogram, solver
+invocations/residual evaluations, wall time, limiting reasons, and maximum
+mass/energy/vapor/soil/receipt residuals. Closure requires zero repeated-96
+failures and a material reduction from the retained ~1435 accepted/~1500
+rejected one-day blocker; the package records a provisional 4x reduction gate
+for both counts, plus accepted-time fraction at `>=900 s` and stable-support
+maximum width, without weakening any event tick or ledger tolerance.
 
 The same contract-first sequence applies to `WGHL-FULL-001F` under
 `SC-LANDSURFACEENERGY-001`: amend authority, author the no-update witness and

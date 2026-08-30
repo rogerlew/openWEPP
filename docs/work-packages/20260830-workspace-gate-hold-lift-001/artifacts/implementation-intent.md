@@ -14,7 +14,10 @@ remain behavior-preserving/test-authoring work. The amended package also owns:
   kink and one lies outside an already-required constitutive domain, followed
   by a contract-first v32 vapor-active-set interface/branch-entry projection
   for pure opposite-sign actual-vapor images on exact supports at or above the
-  unchanged 60-second floor; and
+  unchanged 60-second floor, then a contract-first v33 private reduced
+  semismooth solve of the unchanged coupled physical residuals after retained
+  evidence proves the v32 controller has an exact nonprogressing period-two
+  reset; and
 - accepted Stage-3 WAT5/upstream-runon publication reconstruction from sealed
   accepted operands with independent conservation evidence; and
 - a contract-first covered-column no-update termination witness limited to the
@@ -51,6 +54,12 @@ Version 32 retains that same-disposition behavior and adds only the unpublished
 opposite-sign vapor root and zero-to-one-sided branch entry defined by
 `SC-SNOWENERGY-001`; it interpolates no vapor latent energy through zero and
 changes no adaptive time policy, tolerance, cap, physics, custody, or floor.
+Version 33 removes the v31/v32 synthetic state machines from production control
+flow on the affected active-set cycle and solves the actual coupled water,
+energy, vapor, LSE, soil-CN, and receipt residuals directly. Only an exact fresh
+coupled-root replay may finalize; private trial states remain unpublished and
+ineligible. No equation, tolerance, floor, event, custody, rollback, schema, or
+persistence change is intended.
 The identical ordering applies independently to `WGHL-FULL-001F` under
 `SC-LANDSURFACEENERGY-001`; the two unchanged interior-terminal consumer tests
 are the positive pre-implementation vector, and existing strict-decrease,
