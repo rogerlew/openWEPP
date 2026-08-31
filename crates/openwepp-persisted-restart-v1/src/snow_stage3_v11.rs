@@ -939,6 +939,7 @@ fn restore_real_consumer(
         .map(|value| value.0);
     let admitted_soil = shadow
         .restart_authority_soil_thermal()
+        .map_err(|error| nested_phase("V1 soil resident admission", error))?
         .last_accepted_transaction_id
         .map(|value| value.0);
     let admitted_biogeochemistry = shadow

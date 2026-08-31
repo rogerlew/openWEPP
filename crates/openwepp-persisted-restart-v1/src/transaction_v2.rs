@@ -3,12 +3,17 @@
 use crate::{
     AcceptedIntervalCount, CompleteCommittedOwnerStateV2, DirectGsiDailyReceiptRestartV1,
     DirectGsiOwnerStateRestartV1, DirectV10CheckpointPhaseV2,
-    DirectV10ContinuationTemplateRestartV1, DirectV10RealConsumerCheckpointV2,
-    ExpectedRestartStaticContextV2, InProgressIntervalIndex, RestartAdmissionFailureV2,
-    ScientificOwnerStateSetV2, Sha256Hex, SnowFreeHalfHourDayReceiptRestartV1,
-    SnowFreeHalfHourProviderCursorRestartV1, SoilThermalRestartV2Error, WireDayIndex,
-    admit_checkpoint_v2, to_canonical_bytes,
+    DirectV10ContinuationTemplateRestartV1, DirectV10NativeOwnerHostV2,
+    DirectV10RealConsumerCheckpointV2, ExpectedRestartStaticContextV2, InProgressIntervalIndex,
+    RestartAdmissionFailureV2, ScientificOwnerStateSetV2, Sha256Hex,
+    SnowFreeHalfHourDayReceiptRestartV1, SnowFreeHalfHourProviderCursorRestartV1,
+    SoilThermalOwnerStateRestartV2, SoilThermalRestartV2Error, WireDayIndex, admit_checkpoint_v2,
+    to_canonical_bytes,
 };
+use openwepp_hillslope_orchestrator::v9_real_consumer_shadow::{
+    SoilThermalAcceptedCandidateV2, SoilThermalOrchestratorSealsV2,
+};
+use openwepp_land_surface_energy::{LandSurfaceEnergyConfiguration, SoilThermalOwnerEnvelopeV2};
 use thiserror::Error;
 
 /// Already validated non-scientific prepared-day custody supplied by the V1
@@ -40,6 +45,7 @@ pub enum RestartTransactionV2Error {
 pub struct DirectV10PreparedDayTransactionV2 {
     committed: CompleteCommittedOwnerStateV2,
     staged: ScientificOwnerStateSetV2,
+    native_soil_thermal: SoilThermalOwnerEnvelopeV2,
     prepared: PreparedDayWireOwnersV2,
     parent_v1_checkpoint_sha256: Sha256Hex,
     run: Sha256Hex,
@@ -51,7 +57,7 @@ pub struct DirectV10PreparedDayTransactionV2 {
 
 impl DirectV10PreparedDayTransactionV2 {
     #[allow(clippy::too_many_arguments)]
-    pub fn prepare(
+    fn prepare(
         committed: CompleteCommittedOwnerStateV2,
         prepared: PreparedDayWireOwnersV2,
         parent_v1_checkpoint_sha256: Sha256Hex,
@@ -68,8 +74,14 @@ impl DirectV10PreparedDayTransactionV2 {
         {
             return Err(RestartTransactionV2Error::Phase("beginning identity"));
         }
+        let native_soil_thermal = committed
+            .scientific
+            .soil_thermal_v2
+            .decode_native()?
+            .owner_envelope;
         Ok(Self {
             staged: committed.scientific.clone(),
+            native_soil_thermal,
             committed,
             prepared,
             parent_v1_checkpoint_sha256,
@@ -81,8 +93,33 @@ impl DirectV10PreparedDayTransactionV2 {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub fn prepare_from_native_host(
+        host: &DirectV10NativeOwnerHostV2,
+        prepared: PreparedDayWireOwnersV2,
+        parent_v1_checkpoint_sha256: Sha256Hex,
+        run: Sha256Hex,
+        topology: Sha256Hex,
+        day: u64,
+        accepted_at_beginning: u64,
+    ) -> Result<Self, RestartTransactionV2Error> {
+        let transaction = Self::prepare(
+            host.committed().clone(),
+            prepared,
+            parent_v1_checkpoint_sha256,
+            run,
+            topology,
+            day,
+            accepted_at_beginning,
+        )?;
+        if transaction.native_soil_thermal != *host.soil_thermal() {
+            return Err(RestartTransactionV2Error::Phase("native host custody"));
+        }
+        Ok(transaction)
+    }
+
     /// Validate one successor in isolation, then atomically replace staged state.
-    pub fn accept_interval_successor(
+    fn accept_interval_successor(
         &mut self,
         successor: ScientificOwnerStateSetV2,
         context: &ExpectedRestartStaticContextV2<'_>,
@@ -97,7 +134,8 @@ impl DirectV10PreparedDayTransactionV2 {
         )?;
         let current = self.staged.soil_thermal_v2.decode_native()?;
         let next = successor.soil_thermal_v2.decode_native()?;
-        if current.owner_envelope.state.owner_id != next.owner_envelope.state.owner_id
+        if current.owner_envelope != self.native_soil_thermal
+            || current.owner_envelope.state.owner_id != next.owner_envelope.state.owner_id
             || current.owner_envelope.state.configuration_sha256
                 != next.owner_envelope.state.configuration_sha256
             || current.owner_envelope.parent_v1_state_sha256
@@ -109,12 +147,45 @@ impl DirectV10PreparedDayTransactionV2 {
                 "soil owner predecessor chain",
             ));
         }
+        self.native_soil_thermal = next.owner_envelope;
         self.staged = successor;
         self.next = self
             .next
             .checked_add(1)
             .ok_or(RestartTransactionV2Error::Phase("interval overflow"))?;
         Ok(())
+    }
+
+    /// Consume one native accepted candidate and derive the persisted successor
+    /// inside the transaction. Callers cannot substitute an independently
+    /// fabricated soil-owner DTO at this boundary.
+    pub fn accept_native_soil_candidate(
+        &mut self,
+        beginning: SoilThermalOwnerEnvelopeV2,
+        candidate: SoilThermalAcceptedCandidateV2,
+        seals: SoilThermalOrchestratorSealsV2,
+        configuration: &LandSurfaceEnergyConfiguration,
+        context: &ExpectedRestartStaticContextV2<'_>,
+    ) -> Result<(), RestartTransactionV2Error> {
+        if beginning != self.native_soil_thermal {
+            return Err(RestartTransactionV2Error::Phase("native beginning custody"));
+        }
+        let parent_v1 = self.staged.soil_thermal_v2.parent_v1.clone();
+        let successor_soil = SoilThermalOwnerStateRestartV2::from_accepted_candidate(
+            parent_v1,
+            beginning,
+            candidate,
+            seals,
+            configuration,
+        )?;
+        let mut successor = self.staged.clone();
+        successor.soil_thermal_v2 = successor_soil;
+        self.accept_interval_successor(successor, context)
+    }
+
+    #[must_use]
+    pub const fn native_soil_thermal(&self) -> &SoilThermalOwnerEnvelopeV2 {
+        &self.native_soil_thermal
     }
 
     pub fn checkpoint(&self) -> Result<Vec<u8>, RestartTransactionV2Error> {

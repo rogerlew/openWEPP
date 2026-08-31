@@ -2,8 +2,10 @@
 
 use openwepp_kernel_contract::ResourceOwnerId;
 use openwepp_land_surface_energy::{
-    Sha256Digest, SoilThermalOwnerCheckpointV2, SoilThermalOwnerEnvelopeV2,
-    SoilThermalOwnerRestartV2, SoilThermalV2MigrationIdentity, migrate_soil_thermal_v1_to_v2,
+    PreparedSoilThermalSupportV2, Sha256Digest, SoilThermalOwnerCheckpointV2,
+    SoilThermalOwnerEnvelopeV2, SoilThermalOwnerRestartV2, SoilThermalReceiptFreeOwnerSealsV2,
+    SoilThermalV2MigrationIdentity, migrate_soil_thermal_v1_to_v2, prepare_soil_thermal_support_v2,
+    seal_soil_thermal_receipt_free_owner_v2, validate_soil_thermal_receipt_free_owner_v2,
 };
 use thiserror::Error;
 
@@ -14,49 +16,62 @@ use crate::{
     SoilThermalStateRestartV1, canonical_sha256,
 };
 
-/// Missing native LSE constructor boundary. The implementation must originate
-/// both seals from the authoritative owner implementation, never from a digest
-/// formula duplicated by persisted restart.
-pub trait SoilThermalNativeSealConstructorV2: SoilThermalNativeSealAuthorityV2 {
-    fn construct_seals(
-        &self,
-        envelope: &SoilThermalOwnerEnvelopeV2,
-    ) -> Result<(SoilThermalOwnerRestartV2, SoilThermalOwnerCheckpointV2), &'static str>;
-}
-
 #[derive(Debug, Error)]
 pub enum RestartProjectionV2Error {
     #[error("v1_soil_owner")]
     V1SoilOwner,
     #[error("native_migration")]
     NativeMigration,
-    #[error("native_seal_constructor_unavailable")]
-    NativeSealConstructorUnavailable,
     #[error(transparent)]
     Restart(#[from] SoilThermalRestartV2Error),
 }
 
-pub fn migrate_soil_thermal_restart_v1_to_v2(
-    parent: SoilThermalStateRestartV1,
-    expected_owner_id: &ResourceOwnerId,
-    expected_configuration_sha256: &Sha256Digest,
-    identity: SoilThermalV2MigrationIdentity,
-    constructor: &dyn SoilThermalNativeSealConstructorV2,
+struct ReceiptFreeNativeSealAuthorityV2<'a> {
+    prepared: &'a PreparedSoilThermalSupportV2,
+    seals: &'a SoilThermalReceiptFreeOwnerSealsV2,
+}
+
+impl SoilThermalNativeSealAuthorityV2 for ReceiptFreeNativeSealAuthorityV2<'_> {
+    fn validate_restart_seal(
+        &self,
+        envelope: &SoilThermalOwnerEnvelopeV2,
+        seal: &SoilThermalOwnerRestartV2,
+    ) -> Result<(), &'static str> {
+        if envelope != self.prepared.beginning_owner() || seal != &self.seals.restart {
+            return Err("receipt-free restart join");
+        }
+        validate_soil_thermal_receipt_free_owner_v2(self.prepared, self.seals)
+            .map_err(|_| "receipt-free restart seal")
+    }
+
+    fn validate_checkpoint_seal(
+        &self,
+        envelope: &SoilThermalOwnerEnvelopeV2,
+        seal: &SoilThermalOwnerCheckpointV2,
+    ) -> Result<(), &'static str> {
+        if envelope != self.prepared.beginning_owner() || seal != &self.seals.checkpoint {
+            return Err("receipt-free checkpoint join");
+        }
+        validate_soil_thermal_receipt_free_owner_v2(self.prepared, self.seals)
+            .map_err(|_| "receipt-free checkpoint seal")
+    }
+}
+
+pub fn project_receipt_free_soil_thermal_owner_state_v2(
+    parent_v1: SoilThermalStateRestartV1,
+    prepared: &PreparedSoilThermalSupportV2,
+    seals: &SoilThermalReceiptFreeOwnerSealsV2,
 ) -> Result<SoilThermalOwnerStateRestartV2, RestartProjectionV2Error> {
-    let snapshot = parent
-        .restore(expected_owner_id, expected_configuration_sha256)
-        .map_err(|_| RestartProjectionV2Error::V1SoilOwner)?;
-    let envelope = migrate_soil_thermal_v1_to_v2(&snapshot, identity)
+    validate_soil_thermal_receipt_free_owner_v2(prepared, seals)
         .map_err(|_| RestartProjectionV2Error::NativeMigration)?;
-    let (restart_seal, checkpoint_seal) = constructor
-        .construct_seals(&envelope)
-        .map_err(|_| RestartProjectionV2Error::NativeSealConstructorUnavailable)?;
+    let owner = prepared.beginning_owner();
+    let authority = ReceiptFreeNativeSealAuthorityV2 { prepared, seals };
     SoilThermalOwnerStateRestartV2::from_native(
-        parent,
+        parent_v1,
         SoilThermalNativeBundleV2 {
-            owner_envelope: envelope,
-            restart_seal,
-            checkpoint_seal,
+            owner_envelope: owner.clone(),
+            restart_seal: seals.restart.clone(),
+            checkpoint_seal: seals.checkpoint.clone(),
             credit_beginning_owner_envelope: None,
             latest_credit_receipt: None,
             expected_accepted_operands: Vec::new(),
@@ -64,11 +79,52 @@ pub fn migrate_soil_thermal_restart_v1_to_v2(
             native_expected_source_set: None,
             native_orchestrator_seals: None,
         },
-        expected_owner_id,
-        expected_configuration_sha256,
-        constructor,
+        &owner.state.owner_id,
+        &owner.state.configuration_sha256,
+        &authority,
     )
     .map_err(Into::into)
+}
+
+pub fn bootstrap_soil_thermal_restart_v1_to_v2(
+    parent: SoilThermalStateRestartV1,
+    expected_owner_id: &ResourceOwnerId,
+    expected_configuration_sha256: &Sha256Digest,
+    identity: SoilThermalV2MigrationIdentity,
+) -> Result<SoilThermalOwnerStateRestartV2, RestartProjectionV2Error> {
+    let snapshot = parent
+        .restore(expected_owner_id, expected_configuration_sha256)
+        .map_err(|_| RestartProjectionV2Error::V1SoilOwner)?;
+    let envelope = migrate_soil_thermal_v1_to_v2(&snapshot, identity)
+        .map_err(|_| RestartProjectionV2Error::NativeMigration)?;
+    let prepared = prepare_soil_thermal_support_v2(
+        &envelope,
+        envelope.transaction_id,
+        envelope.support_start_ns,
+        envelope.support_end_ns,
+    )
+    .map_err(|_| RestartProjectionV2Error::NativeMigration)?;
+    let seals = seal_soil_thermal_receipt_free_owner_v2(&prepared)
+        .map_err(|_| RestartProjectionV2Error::NativeMigration)?;
+    project_receipt_free_soil_thermal_owner_state_v2(parent, &prepared, &seals)
+}
+
+/// Checked one-way bootstrap of a complete committed owner set. The V1 soil
+/// payload is retained only as the immutable parent bound by the V2 owner;
+/// runtime custody is the canonical native zero-carry V2 envelope.
+pub fn bootstrap_complete_owner_state_v1_to_v2(
+    parent: CompleteCommittedOwnerStateV1,
+    expected_owner_id: &ResourceOwnerId,
+    expected_configuration_sha256: &Sha256Digest,
+    identity: SoilThermalV2MigrationIdentity,
+) -> Result<CompleteCommittedOwnerStateV2, RestartProjectionV2Error> {
+    let soil_thermal_v2 = bootstrap_soil_thermal_restart_v1_to_v2(
+        parent.scientific.soil_thermal.clone(),
+        expected_owner_id,
+        expected_configuration_sha256,
+        identity,
+    )?;
+    Ok(substitute_complete_soil_owner_v2(parent, soil_thermal_v2))
 }
 
 #[must_use]

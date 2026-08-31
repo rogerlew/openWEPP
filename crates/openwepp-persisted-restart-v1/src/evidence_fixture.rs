@@ -164,8 +164,12 @@ pub fn project_evidence_scientific_owners(
             day_input_digests,
         )
         .unwrap(),
-        soil_thermal: SoilThermalStateRestartV1::project(shadow.restart_authority_soil_thermal())
-            .unwrap(),
+        soil_thermal: SoilThermalStateRestartV1::project(
+            shadow
+                .restart_authority_soil_thermal()
+                .expect("V1 evidence fixture resident"),
+        )
+        .unwrap(),
         biogeochemistry: BiogeochemistryStateRestartV1::project(
             shadow.restart_authority_biogeochemistry(),
         )
@@ -464,7 +468,10 @@ fn restart_authority_owner_fixture_from_runtime(
     lse_state.0.last_accepted_transaction_id =
         Some(openwepp_kernel_contract::TransactionId(lineage));
     lse_state.0.state_sha256 = lse_state.0.canonical_sha256().unwrap();
-    let mut soil_thermal = shadow.restart_authority_soil_thermal().clone();
+    let mut soil_thermal = shadow
+        .restart_authority_soil_thermal()
+        .expect("V1 evidence fixture resident")
+        .clone();
     soil_thermal.last_accepted_transaction_id =
         Some(openwepp_kernel_contract::TransactionId(lineage));
     openwepp_hillslope_orchestrator::v9_real_consumer_shadow::restart_authority_seal_soil_thermal_digests(&mut soil_thermal)
@@ -878,11 +885,13 @@ mod tests {
                 .runtime
                 .shadow
                 .restart_authority_soil_thermal()
+                .expect("V1 evidence fixture resident")
                 .owner_id,
             soil_thermal_configuration_sha256: &fixture
                 .runtime
                 .shadow
                 .restart_authority_soil_thermal()
+                .expect("V1 evidence fixture resident")
                 .configuration_sha256,
             lse_configuration: fixture.runtime.shadow.restart_authority_lse_configuration(),
             surface_liquid_configuration: fixture
@@ -1010,9 +1019,13 @@ mod tests {
             topology_sha256: &topology,
             vegetation_configuration: shadow.restart_authority_vegetation_configuration(),
             vegetation_owner_id: shadow.restart_authority_vegetation_owner_id(),
-            soil_thermal_owner_id: &shadow.restart_authority_soil_thermal().owner_id,
+            soil_thermal_owner_id: &shadow
+                .restart_authority_soil_thermal()
+                .expect("V1 evidence fixture resident")
+                .owner_id,
             soil_thermal_configuration_sha256: &shadow
                 .restart_authority_soil_thermal()
+                .expect("V1 evidence fixture resident")
                 .configuration_sha256,
             lse_configuration: shadow.restart_authority_lse_configuration(),
             surface_liquid_configuration: shadow.restart_authority_surface_configuration(),
@@ -1183,12 +1196,14 @@ mod tests {
                 .runtime
                 .shadow
                 .restart_authority_soil_thermal()
+                .expect("V1 evidence fixture resident")
                 .owner_id,
             soil_thermal_configuration_sha256: &fixture
                 .owners
                 .runtime
                 .shadow
                 .restart_authority_soil_thermal()
+                .expect("V1 evidence fixture resident")
                 .configuration_sha256,
             lse_configuration: fixture
                 .owners

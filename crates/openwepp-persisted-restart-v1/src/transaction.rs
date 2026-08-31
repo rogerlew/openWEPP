@@ -310,9 +310,14 @@ mod tests {
         let source = &fixture.owners.runtime.shadow;
         let vegetation_configuration = source.restart_authority_vegetation_configuration().clone();
         let vegetation_owner_id = source.restart_authority_vegetation_owner_id().clone();
-        let soil_thermal_owner_id = source.restart_authority_soil_thermal().owner_id.clone();
+        let soil_thermal_owner_id = source
+            .restart_authority_soil_thermal()
+            .expect("V1 transaction fixture soil resident")
+            .owner_id
+            .clone();
         let soil_thermal_configuration_sha256 = source
             .restart_authority_soil_thermal()
+            .expect("V1 transaction fixture soil resident")
             .configuration_sha256
             .clone();
         let lse_configuration = source.restart_authority_lse_configuration().clone();

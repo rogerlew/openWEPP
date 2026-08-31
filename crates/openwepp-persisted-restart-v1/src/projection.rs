@@ -36,8 +36,12 @@ pub fn project_scientific_owner_state_v1(
             day_input_digests,
         )
         .map_err(|_| "hydrology projection")?,
-        soil_thermal: SoilThermalStateRestartV1::project(shadow.restart_authority_soil_thermal())
-            .map_err(|_| "soil projection")?,
+        soil_thermal: SoilThermalStateRestartV1::project(
+            shadow
+                .restart_authority_soil_thermal()
+                .map_err(|_| "V1 soil resident projection")?,
+        )
+        .map_err(|_| "soil projection")?,
         biogeochemistry: BiogeochemistryStateRestartV1::project(
             shadow.restart_authority_biogeochemistry(),
         )

@@ -1050,12 +1050,14 @@ fn exercise_adaptive_restart_posture_inner(
             .runtime
             .shadow
             .restart_authority_soil_thermal()
+            .expect("V1 Stage-3 fixture soil resident")
             .owner_id,
         soil_thermal_configuration_sha256: &fixture
             .owners
             .runtime
             .shadow
             .restart_authority_soil_thermal()
+            .expect("V1 Stage-3 fixture soil resident")
             .configuration_sha256,
         lse_configuration: fixture
             .owners
@@ -1218,8 +1220,12 @@ fn exercise_adaptive_restart_posture_inner(
         "restored in-progress day hydrology"
     );
     assert!(
-        restored_day_consumer.restart_authority_soil_thermal()
-            == interrupted_day_consumer.restart_authority_soil_thermal(),
+        restored_day_consumer
+            .restart_authority_soil_thermal()
+            .expect("restored V1 day soil resident")
+            == interrupted_day_consumer
+                .restart_authority_soil_thermal()
+                .expect("interrupted V1 day soil resident"),
         "restored in-progress day soil"
     );
     assert!(
@@ -1319,8 +1325,12 @@ fn exercise_adaptive_restart_posture_inner(
         "restored support hydrology"
     );
     assert!(
-        restored_consumer.restart_authority_soil_thermal()
-            == interrupted_consumer.restart_authority_soil_thermal(),
+        restored_consumer
+            .restart_authority_soil_thermal()
+            .expect("restored V1 support soil resident")
+            == interrupted_consumer
+                .restart_authority_soil_thermal()
+                .expect("interrupted V1 support soil resident"),
         "restored support soil"
     );
     assert!(
@@ -1565,11 +1575,13 @@ fn production_attachment_round_trips_canonical_v2_and_rejects_poison() {
             .runtime
             .shadow
             .restart_authority_soil_thermal()
+            .expect("V1 Stage-3 fixture soil resident")
             .owner_id,
         soil_thermal_configuration_sha256: &fixture
             .runtime
             .shadow
             .restart_authority_soil_thermal()
+            .expect("V1 Stage-3 fixture soil resident")
             .configuration_sha256,
         lse_configuration: fixture.runtime.shadow.restart_authority_lse_configuration(),
         surface_liquid_configuration: fixture

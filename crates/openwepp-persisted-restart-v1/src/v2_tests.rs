@@ -41,19 +41,23 @@ mod fixtures {
     };
     use openwepp_kernel_contract::TransactionId;
     use openwepp_land_surface_energy::{
-        ExactDyadicEnthalpy, Sha256Digest, SoilThermalOwnerCheckpointV2,
-        SoilThermalOwnerEnvelopeV2, SoilThermalOwnerRestartV2, SoilThermalV2MigrationIdentity,
+        ExactDyadicEnthalpy, PreparedSoilThermalSupportV2, Sha256Digest,
+        SoilThermalOwnerCheckpointV2, SoilThermalOwnerEnvelopeV2, SoilThermalOwnerRestartV2,
+        SoilThermalReceiptFreeOwnerSealsV2, SoilThermalV2MigrationIdentity,
+        prepare_soil_thermal_support_v2, seal_soil_thermal_receipt_free_owner_v2,
+        validate_soil_thermal_receipt_free_owner_v2,
     };
 
     use crate::{
         AcceptedIntervalCount, DirectV10CheckpointPhaseV2, DirectV10ContinuationTemplateRestartV1,
-        DirectV10PreparedDayTransactionV2, DirectV10RealConsumerCheckpointV2,
-        DirectV10RestartHostV2, ExpectedRestartStaticContextV2, IsolatedRestoredCheckpointV2,
-        PreparedDayWireOwnersV2, RestartAdmissionFailureV2, Sha256Hex,
-        SoilThermalNativeSealAuthorityV2, SoilThermalNativeSealConstructorV2,
-        SoilThermalOwnerStateRestartV2, SoilThermalRestartV2Error, WireDayIndex,
-        admit_and_install_checkpoint_v2, admit_checkpoint_v2, checkpoint_identities_v1,
-        checkpoint_identities_v2, migrate_soil_thermal_restart_v1_to_v2,
+        DirectV10NativeOwnerHostV2, DirectV10PreparedDayTransactionV2,
+        DirectV10RealConsumerCheckpointV2, DirectV10RestartHostV2, ExpectedRestartStaticContextV2,
+        IsolatedRestoredCheckpointV2, PreparedDayWireOwnersV2, RestartAdmissionFailureV2,
+        Sha256Hex, SoilThermalNativeSealAuthorityV2, SoilThermalOwnerStateRestartV2,
+        SoilThermalRestartV2Error, WireDayIndex, admit_and_install_checkpoint_v2,
+        admit_checkpoint_v2, bootstrap_complete_owner_state_v1_to_v2,
+        bootstrap_soil_thermal_restart_v1_to_v2, checkpoint_identities_v1,
+        checkpoint_identities_v2, project_receipt_free_soil_thermal_owner_state_v2,
         refuse_soil_thermal_restart_v2_to_v1, restart_authority_owner_fixture,
         restart_authority_prepared_day_fixture, substitute_complete_soil_owner_v2,
         to_canonical_bytes,
@@ -67,18 +71,22 @@ mod fixtures {
         Sha256Hex::try_new(fill.to_string().repeat(64)).expect("wire digest")
     }
 
-    struct TestNativeAuthority;
+    struct ReceiptFreeAuthority<'a> {
+        prepared: &'a PreparedSoilThermalSupportV2,
+        seals: &'a SoilThermalReceiptFreeOwnerSealsV2,
+    }
 
-    impl SoilThermalNativeSealAuthorityV2 for TestNativeAuthority {
+    impl SoilThermalNativeSealAuthorityV2 for ReceiptFreeAuthority<'_> {
         fn validate_restart_seal(
             &self,
             envelope: &SoilThermalOwnerEnvelopeV2,
             seal: &SoilThermalOwnerRestartV2,
         ) -> Result<(), &'static str> {
-            (seal.owner_state_sha256 == envelope.state.state_sha256
-                && seal.restart_sha256.as_str() == "a".repeat(64))
-            .then_some(())
-            .ok_or("test restart seal")
+            if envelope != self.prepared.beginning_owner() || seal != &self.seals.restart {
+                return Err("receipt-free restart join");
+            }
+            validate_soil_thermal_receipt_free_owner_v2(self.prepared, self.seals)
+                .map_err(|_| "receipt-free restart validation")
         }
 
         fn validate_checkpoint_seal(
@@ -86,47 +94,30 @@ mod fixtures {
             envelope: &SoilThermalOwnerEnvelopeV2,
             seal: &SoilThermalOwnerCheckpointV2,
         ) -> Result<(), &'static str> {
-            (seal.owner_state_sha256 == envelope.state.state_sha256
-                && seal.checkpoint_sha256.as_str() == "b".repeat(64))
-            .then_some(())
-            .ok_or("test checkpoint seal")
+            if envelope != self.prepared.beginning_owner() || seal != &self.seals.checkpoint {
+                return Err("receipt-free checkpoint join");
+            }
+            validate_soil_thermal_receipt_free_owner_v2(self.prepared, self.seals)
+                .map_err(|_| "receipt-free checkpoint validation")
         }
     }
 
-    impl SoilThermalNativeSealConstructorV2 for TestNativeAuthority {
-        fn construct_seals(
-            &self,
-            envelope: &SoilThermalOwnerEnvelopeV2,
-        ) -> Result<(SoilThermalOwnerRestartV2, SoilThermalOwnerCheckpointV2), &'static str>
-        {
-            Ok(seals(envelope))
-        }
-    }
-
-    fn seals(
+    fn receipt_free_material(
         envelope: &SoilThermalOwnerEnvelopeV2,
-    ) -> (SoilThermalOwnerRestartV2, SoilThermalOwnerCheckpointV2) {
-        let restart = SoilThermalOwnerRestartV2 {
-            owner_tag: envelope.owner_tag.clone(),
-            schema_sha256: envelope.schema_sha256.clone(),
-            exact_carry_definition_sha256: envelope.exact_carry_definition_sha256.clone(),
-            parent_v1_state_sha256: envelope.parent_v1_state_sha256.clone(),
-            owner_state_sha256: envelope.state.state_sha256.clone(),
-            last_accepted_transaction_id: envelope.state.last_accepted_transaction_id,
-            receipt_chain_sha256: envelope.receipt_chain_sha256.clone(),
-            restart_sha256: digest('a'),
-        };
-        let checkpoint = SoilThermalOwnerCheckpointV2 {
-            owner_tag: envelope.owner_tag.clone(),
-            schema_sha256: envelope.schema_sha256.clone(),
-            exact_carry_definition_sha256: envelope.exact_carry_definition_sha256.clone(),
-            parent_v1_state_sha256: envelope.parent_v1_state_sha256.clone(),
-            owner_state_sha256: envelope.state.state_sha256.clone(),
-            last_accepted_transaction_id: envelope.state.last_accepted_transaction_id,
-            receipt_chain_sha256: envelope.receipt_chain_sha256.clone(),
-            checkpoint_sha256: digest('b'),
-        };
-        (restart, checkpoint)
+    ) -> (
+        PreparedSoilThermalSupportV2,
+        SoilThermalReceiptFreeOwnerSealsV2,
+    ) {
+        let prepared = prepare_soil_thermal_support_v2(
+            envelope,
+            envelope.transaction_id,
+            envelope.support_start_ns,
+            envelope.support_end_ns,
+        )
+        .expect("prepare receipt-free owner");
+        let seals =
+            seal_soil_thermal_receipt_free_owner_v2(&prepared).expect("seal receipt-free owner");
+        (prepared, seals)
     }
 
     fn migrated() -> (
@@ -136,9 +127,14 @@ mod fixtures {
         let fixture = restart_authority_owner_fixture();
         let parent = fixture.owners().scientific.soil_thermal.clone();
         let shadow = &fixture.runtime.shadow;
-        let owner = shadow.restart_authority_soil_thermal().owner_id.clone();
+        let owner = shadow
+            .restart_authority_soil_thermal()
+            .expect("V1 fixture soil resident")
+            .owner_id
+            .clone();
         let configuration = shadow
             .restart_authority_soil_thermal()
+            .expect("V1 fixture soil resident")
             .configuration_sha256
             .clone();
         let identity = SoilThermalV2MigrationIdentity {
@@ -150,14 +146,9 @@ mod fixtures {
             support_end_ns: 60_000_000_000,
             receipt_chain_sha256: digest('d'),
         };
-        let state = migrate_soil_thermal_restart_v1_to_v2(
-            parent,
-            &owner,
-            &configuration,
-            identity,
-            &TestNativeAuthority,
-        )
-        .expect("checked migration");
+        let state =
+            bootstrap_soil_thermal_restart_v1_to_v2(parent, &owner, &configuration, identity)
+                .expect("checked migration");
         (fixture, state)
     }
 
@@ -208,37 +199,42 @@ mod fixtures {
             .runtime
             .shadow
             .restart_authority_soil_thermal()
+            .expect("V1 fixture soil resident")
             .owner_id
             .clone();
         let configuration = fixture
             .runtime
             .shadow
             .restart_authority_soil_thermal()
+            .expect("V1 fixture soil resident")
             .configuration_sha256
             .clone();
         let parent = migrated.parent_v1.clone();
-        let mut native = migrated.decode_native().expect("native");
-        let layer = &mut native.owner_envelope.state.ofes[0].ordered_layers[0];
+        let mut envelope = migrated.decode_native().expect("native").owner_envelope;
+        let layer = &mut envelope.state.ofes[0].ordered_layers[0];
         layer.enthalpy_hi_j_m2_ofe_ground = -34315.42154113602;
         layer.enthalpy_carry =
             ExactDyadicEnthalpy::try_new(-1, "1dc319224e55f", -109).expect("WAT5 carry");
-        native.owner_envelope.state.reseal().expect("reseal state");
-        let (restart_seal, checkpoint_seal) = seals(&native.owner_envelope);
-        native.restart_seal = restart_seal;
-        native.checkpoint_seal = checkpoint_seal;
-        let state = SoilThermalOwnerStateRestartV2::from_native(
-            parent,
-            native,
-            &owner,
-            &configuration,
-            &TestNativeAuthority,
+        envelope.state.reseal().expect("reseal state");
+        let prepared = prepare_soil_thermal_support_v2(
+            &envelope,
+            envelope.transaction_id,
+            envelope.support_start_ns,
+            envelope.support_end_ns,
         )
-        .expect("persist WAT5 carry");
+        .expect("prepare WAT5 owner");
+        let seals = seal_soil_thermal_receipt_free_owner_v2(&prepared).expect("seal WAT5 owner");
+        let state = project_receipt_free_soil_thermal_owner_state_v2(parent, &prepared, &seals)
+            .expect("persist WAT5 carry");
         let bytes = to_canonical_bytes(&state).expect("canonical bytes");
         let decoded: SoilThermalOwnerStateRestartV2 =
             crate::from_canonical_bytes(&bytes).expect("canonical decode");
+        let authority = ReceiptFreeAuthority {
+            prepared: &prepared,
+            seals: &seals,
+        };
         let layer = &decoded
-            .validate(&owner, &configuration, &TestNativeAuthority)
+            .validate(&owner, &configuration, &authority)
             .expect("validate")
             .state
             .ofes[0]
@@ -260,6 +256,7 @@ mod fixtures {
             .decode_native()
             .expect("native migration")
             .owner_envelope;
+        let (receipt_free_prepared, receipt_free_seals) = receipt_free_material(&beginning);
         let configuration = fixture.runtime.shadow.restart_authority_lse_configuration();
         let expected =
             SoilThermalExpectedAcceptedOperandSetV2::try_new(&beginning, configuration, Vec::new())
@@ -279,11 +276,15 @@ mod fixtures {
         let bytes = to_canonical_bytes(&state).expect("persisted candidate bytes");
         let decoded: SoilThermalOwnerStateRestartV2 =
             crate::from_canonical_bytes(&bytes).expect("canonical candidate bytes");
+        let receipt_free_authority = ReceiptFreeAuthority {
+            prepared: &receipt_free_prepared,
+            seals: &receipt_free_seals,
+        };
         decoded
             .validate_with_configuration(
                 &configuration.soil_thermal_configuration.owner_id,
                 configuration,
-                &TestNativeAuthority,
+                &receipt_free_authority,
             )
             .expect("native receipt and seal replay");
     }
@@ -292,11 +293,17 @@ mod fixtures {
     fn synthetic_split_before_and_after_credit_is_admitted_and_replay_refuses() {
         let fixture = restart_authority_prepared_day_fixture();
         let shadow = &fixture.owners.runtime.shadow;
-        let parent = fixture.owners.committed.scientific.soil_thermal.clone();
-        let migrated = migrate_soil_thermal_restart_v1_to_v2(
-            parent,
-            &shadow.restart_authority_soil_thermal().owner_id,
-            &shadow.restart_authority_soil_thermal().configuration_sha256,
+        let configuration = shadow.restart_authority_lse_configuration();
+        let committed = bootstrap_complete_owner_state_v1_to_v2(
+            fixture.owners.committed.clone(),
+            &shadow
+                .restart_authority_soil_thermal()
+                .expect("V1 fixture soil resident")
+                .owner_id,
+            &shadow
+                .restart_authority_soil_thermal()
+                .expect("V1 fixture soil resident")
+                .configuration_sha256,
             SoilThermalV2MigrationIdentity {
                 model_version: "OPENWEPP_SOIL_THERMAL_EXACT_CARRY_V2".to_owned(),
                 model_definition_sha256: digest('c'),
@@ -306,14 +313,43 @@ mod fixtures {
                 support_end_ns: 60_000_000_000,
                 receipt_chain_sha256: digest('d'),
             },
-            &TestNativeAuthority,
         )
         .expect("split migration");
-        let beginning = migrated
+        let beginning = committed
+            .scientific
+            .soil_thermal_v2
             .decode_native()
             .expect("beginning native")
             .owner_envelope;
-        let configuration = shadow.restart_authority_lse_configuration();
+        let prepared_native = prepare_soil_thermal_support_v2(
+            &beginning,
+            beginning.transaction_id,
+            beginning.support_start_ns,
+            beginning.support_end_ns,
+        )
+        .expect("prepare native beginning");
+        let receipt_free_seals = seal_soil_thermal_receipt_free_owner_v2(&prepared_native)
+            .expect("seal native beginning");
+        let host = DirectV10NativeOwnerHostV2::from_receipt_free_native(
+            committed.clone(),
+            &prepared_native,
+            &receipt_free_seals,
+            configuration,
+        )
+        .expect("native owner host");
+        let target_before_refusal = host.clone();
+        let mut poisoned_seals = receipt_free_seals.clone();
+        poisoned_seals.receipt_free_seal_sha256 = digest('f');
+        assert!(
+            DirectV10NativeOwnerHostV2::from_receipt_free_native(
+                committed.clone(),
+                &prepared_native,
+                &poisoned_seals,
+                configuration,
+            )
+            .is_err()
+        );
+        assert_eq!(host, target_before_refusal, "native host refusal is atomic");
         let expected =
             SoilThermalExpectedAcceptedOperandSetV2::try_new(&beginning, configuration, Vec::new())
                 .expect("split expected set");
@@ -321,25 +357,22 @@ mod fixtures {
             .expect("split candidate");
         let seals =
             seal_soil_thermal_accepted_candidate_v2(&beginning, &candidate).expect("split seals");
-        let successor_soil = SoilThermalOwnerStateRestartV2::from_accepted_candidate(
-            migrated.parent_v1.clone(),
-            beginning,
-            candidate,
-            seals,
-            configuration,
-        )
-        .expect("split persisted candidate");
-        let committed =
-            substitute_complete_soil_owner_v2(fixture.owners.committed.clone(), migrated);
         let (run, topology) =
             checkpoint_identities_v2(&committed, shadow.root_zone_hydraulic_configuration())
                 .expect("split identities");
+        let receipt_free_authority = ReceiptFreeAuthority {
+            prepared: &prepared_native,
+            seals: &receipt_free_seals,
+        };
         let context = ExpectedRestartStaticContextV2 {
             run_identity_sha256: &run,
             topology_sha256: &topology,
-            soil_thermal_owner_id: &shadow.restart_authority_soil_thermal().owner_id,
+            soil_thermal_owner_id: &shadow
+                .restart_authority_soil_thermal()
+                .expect("V1 fixture soil resident")
+                .owner_id,
             lse_configuration: configuration,
-            native_seal_authority: &TestNativeAuthority,
+            native_seal_authority: &receipt_free_authority,
         };
         let prepared = PreparedDayWireOwnersV2 {
             accepted_gsi_daily_receipt: fixture.gsi_receipt.clone(),
@@ -350,8 +383,8 @@ mod fixtures {
                 &fixture.template,
             ),
         };
-        let mut transaction = DirectV10PreparedDayTransactionV2::prepare(
-            committed.clone(),
+        let mut transaction = DirectV10PreparedDayTransactionV2::prepare_from_native_host(
+            &host,
             prepared,
             wire_digest('e'),
             run.clone(),
@@ -362,18 +395,28 @@ mod fixtures {
         .expect("prepare V2 split");
         let before = transaction.checkpoint().expect("before-credit checkpoint");
         admit_checkpoint_v2(&before, &context).expect("admit before-credit split");
-        let mut successor = committed.scientific.clone();
-        successor.soil_thermal_v2 = successor_soil;
         transaction
-            .accept_interval_successor(successor.clone(), &context)
+            .accept_native_soil_candidate(
+                beginning.clone(),
+                candidate.clone(),
+                seals.clone(),
+                configuration,
+                &context,
+            )
             .expect("accept exact credit");
         let after = transaction.checkpoint().expect("after-credit checkpoint");
         admit_checkpoint_v2(&after, &context).expect("admit after-credit split");
+        let before_replay = transaction.checkpoint().expect("before replay");
         assert!(
             transaction
-                .accept_interval_successor(successor, &context)
+                .accept_native_soil_candidate(beginning, candidate, seals, configuration, &context,)
                 .is_err(),
             "same credit cannot replay against its own ending owner"
+        );
+        assert_eq!(
+            transaction.checkpoint().expect("after replay refusal"),
+            before_replay,
+            "replay refusal is atomic"
         );
     }
 
@@ -416,6 +459,22 @@ mod fixtures {
     fn checkpoint_admission_and_atomic_host_rollback_are_fail_closed() {
         let (checkpoint, fixture) = between_days_checkpoint();
         let bytes = to_canonical_bytes(&checkpoint).expect("checkpoint bytes");
+        let envelope = match &checkpoint.phase {
+            DirectV10CheckpointPhaseV2::BetweenDays { committed, .. } => {
+                committed
+                    .scientific
+                    .soil_thermal_v2
+                    .decode_native()
+                    .expect("checkpoint soil owner")
+                    .owner_envelope
+            }
+            DirectV10CheckpointPhaseV2::InProgressDay { .. } => panic!("between-days fixture"),
+        };
+        let (prepared, seals) = receipt_free_material(&envelope);
+        let authority = ReceiptFreeAuthority {
+            prepared: &prepared,
+            seals: &seals,
+        };
         let context = ExpectedRestartStaticContextV2 {
             run_identity_sha256: &checkpoint.run_identity_sha256,
             topology_sha256: &checkpoint.topology_sha256,
@@ -423,9 +482,10 @@ mod fixtures {
                 .runtime
                 .shadow
                 .restart_authority_soil_thermal()
+                .expect("V1 fixture soil resident")
                 .owner_id,
             lse_configuration: fixture.runtime.shadow.restart_authority_lse_configuration(),
-            native_seal_authority: &TestNativeAuthority,
+            native_seal_authority: &authority,
         };
         let admitted = admit_checkpoint_v2(&bytes, &context).expect("admit V2");
         let mut host = DirectV10RestartHostV2::from_isolated(admitted.clone());
@@ -446,6 +506,22 @@ mod fixtures {
     #[test]
     fn omission_reorder_cross_version_and_diagnostic_keys_refuse() {
         let (checkpoint, fixture) = between_days_checkpoint();
+        let envelope = match &checkpoint.phase {
+            DirectV10CheckpointPhaseV2::BetweenDays { committed, .. } => {
+                committed
+                    .scientific
+                    .soil_thermal_v2
+                    .decode_native()
+                    .expect("checkpoint soil owner")
+                    .owner_envelope
+            }
+            DirectV10CheckpointPhaseV2::InProgressDay { .. } => panic!("between-days fixture"),
+        };
+        let (prepared, seals) = receipt_free_material(&envelope);
+        let authority = ReceiptFreeAuthority {
+            prepared: &prepared,
+            seals: &seals,
+        };
         let context = ExpectedRestartStaticContextV2 {
             run_identity_sha256: &checkpoint.run_identity_sha256,
             topology_sha256: &checkpoint.topology_sha256,
@@ -453,9 +529,10 @@ mod fixtures {
                 .runtime
                 .shadow
                 .restart_authority_soil_thermal()
+                .expect("V1 fixture soil resident")
                 .owner_id,
             lse_configuration: fixture.runtime.shadow.restart_authority_lse_configuration(),
-            native_seal_authority: &TestNativeAuthority,
+            native_seal_authority: &authority,
         };
         let bytes = to_canonical_bytes(&checkpoint).expect("bytes");
         let text = std::str::from_utf8(&bytes).expect("UTF-8 checkpoint");

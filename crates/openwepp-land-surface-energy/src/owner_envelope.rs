@@ -6,9 +6,9 @@ use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, Transaction
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    ComponentId, ExactDyadicEnthalpy, LandSurfaceEnergyError, OfeId, Sha256Digest,
-    SoilThermalExactCarryError, SourceId, WaterProtocol, WaterSourceType, canonical_digest,
-    require_finite, require_finite_nonnegative,
+    ComponentId, ExactDyadicEnthalpy, LandSurfaceEnergyError, MINIMUM_SUPPORT_NS, OfeId,
+    Sha256Digest, SoilThermalExactCarryError, SourceId, WaterProtocol, WaterSourceType,
+    canonical_digest, require_finite, require_finite_nonnegative,
 };
 
 pub const SOIL_THERMAL_OWNER_V2_TAG: &str = "OPENWEPP_SOIL_THERMAL_OWNER_V2";
@@ -285,6 +285,78 @@ pub struct SoilThermalOwnerCheckpointV2 {
     pub checkpoint_sha256: Sha256Digest,
 }
 
+/// Native receipt-free seals for one prepared beginning owner.
+///
+/// These seals are valid only while the current support has no accepted
+/// energy receipt: the state lineage equals the expected predecessor and is
+/// not the support transaction itself.
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SoilThermalReceiptFreeOwnerSealsV2 {
+    pub restart: SoilThermalOwnerRestartV2,
+    pub checkpoint: SoilThermalOwnerCheckpointV2,
+    pub receipt_free_seal_sha256: Sha256Digest,
+}
+
+/// Borrowed physical read surface. It cannot outlive or replace the native
+/// owner envelope and therefore cannot become a second authoritative owner.
+#[derive(Clone, Copy)]
+pub struct SoilThermalPhysicalReadViewV2<'a> {
+    owner: &'a SoilThermalOwnerEnvelopeV2,
+}
+
+impl<'a> SoilThermalPhysicalReadViewV2<'a> {
+    #[must_use]
+    pub const fn owner(&self) -> &'a SoilThermalOwnerEnvelopeV2 {
+        self.owner
+    }
+
+    #[must_use]
+    pub fn layer(
+        &self,
+        ofe_id: &OfeId,
+        layer_id: &SoilLayerId,
+    ) -> Option<&'a SoilThermalLayerStateV2> {
+        self.owner.state.layer(ofe_id, layer_id)
+    }
+
+    pub fn exact_layer_enthalpy(
+        &self,
+        ofe_id: &OfeId,
+        layer_id: &SoilLayerId,
+    ) -> Result<ExactDyadicEnthalpy, SoilThermalExactCarryError> {
+        let layer = self
+            .layer(ofe_id, layer_id)
+            .ok_or(SoilThermalExactCarryError::Identity(
+                "physical read layer identity",
+            ))?;
+        Ok(ExactDyadicEnthalpy::exact_sum([
+            &ExactDyadicEnthalpy::from_f64(layer.enthalpy_hi_j_m2_ofe_ground)?,
+            &layer.enthalpy_carry,
+        ])?)
+    }
+}
+
+/// Prepared native beginning owner for one half-open physical support.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PreparedSoilThermalSupportV2 {
+    beginning_owner: SoilThermalOwnerEnvelopeV2,
+}
+
+impl PreparedSoilThermalSupportV2 {
+    #[must_use]
+    pub const fn beginning_owner(&self) -> &SoilThermalOwnerEnvelopeV2 {
+        &self.beginning_owner
+    }
+
+    #[must_use]
+    pub const fn physical_read_view(&self) -> SoilThermalPhysicalReadViewV2<'_> {
+        SoilThermalPhysicalReadViewV2 {
+            owner: &self.beginning_owner,
+        }
+    }
+}
+
 #[derive(Serialize)]
 struct SoilThermalStateDigestBody<'a> {
     owner_tag: &'static str,
@@ -413,6 +485,7 @@ impl SoilThermalOwnerEnvelopeV2 {
             || self.run_id.trim().is_empty()
             || self.transaction_id.0 == 0
             || self.support_start_ns >= self.support_end_ns
+            || self.support_end_ns - self.support_start_ns < MINIMUM_SUPPORT_NS
             || !matches!(
                 self.state.last_accepted_transaction_id,
                 value if value == self.expected_predecessor_transaction_id
@@ -507,6 +580,162 @@ pub fn migrate_soil_thermal_v1_to_v2(
     };
     envelope.validate()?;
     Ok(envelope)
+}
+
+pub fn prepare_soil_thermal_support_v2(
+    accepted_owner: &SoilThermalOwnerEnvelopeV2,
+    transaction_id: TransactionId,
+    support_start_ns: u128,
+    support_end_ns: u128,
+) -> Result<PreparedSoilThermalSupportV2, SoilThermalExactCarryError> {
+    accepted_owner.validate()?;
+    if transaction_id.0 == 0
+        || Some(transaction_id) == accepted_owner.state.last_accepted_transaction_id
+        || support_start_ns >= support_end_ns
+        || support_end_ns - support_start_ns < MINIMUM_SUPPORT_NS
+    {
+        return Err(SoilThermalExactCarryError::Identity(
+            "prepared support transaction or bounds",
+        ));
+    }
+    let mut beginning_owner = accepted_owner.clone();
+    beginning_owner.transaction_id = transaction_id;
+    beginning_owner.expected_predecessor_transaction_id =
+        accepted_owner.state.last_accepted_transaction_id;
+    beginning_owner.support_start_ns = support_start_ns;
+    beginning_owner.support_end_ns = support_end_ns;
+    beginning_owner.validate()?;
+    Ok(PreparedSoilThermalSupportV2 { beginning_owner })
+}
+
+fn soil_thermal_restart_v2_sha256(
+    restart: &SoilThermalOwnerRestartV2,
+) -> Result<Sha256Digest, SoilThermalExactCarryError> {
+    canonical_digest(&(
+        "OPENWEPP_SOIL_THERMAL_OWNER_RESTART_V2",
+        &restart.owner_tag,
+        &restart.schema_sha256,
+        &restart.exact_carry_definition_sha256,
+        &restart.parent_v1_state_sha256,
+        &restart.owner_state_sha256,
+        restart.last_accepted_transaction_id,
+        &restart.receipt_chain_sha256,
+    ))
+    .map_err(|error| exact_carry_serialization(&error))
+}
+
+fn soil_thermal_checkpoint_v2_sha256(
+    checkpoint: &SoilThermalOwnerCheckpointV2,
+) -> Result<Sha256Digest, SoilThermalExactCarryError> {
+    canonical_digest(&(
+        "OPENWEPP_SOIL_THERMAL_OWNER_CHECKPOINT_V2",
+        &checkpoint.owner_tag,
+        &checkpoint.schema_sha256,
+        &checkpoint.exact_carry_definition_sha256,
+        &checkpoint.parent_v1_state_sha256,
+        &checkpoint.owner_state_sha256,
+        checkpoint.last_accepted_transaction_id,
+        &checkpoint.receipt_chain_sha256,
+    ))
+    .map_err(|error| exact_carry_serialization(&error))
+}
+
+pub fn seal_soil_thermal_receipt_free_owner_v2(
+    prepared: &PreparedSoilThermalSupportV2,
+) -> Result<SoilThermalReceiptFreeOwnerSealsV2, SoilThermalExactCarryError> {
+    let owner = prepared.beginning_owner();
+    owner.validate()?;
+    if owner.state.last_accepted_transaction_id != owner.expected_predecessor_transaction_id
+        || owner.state.last_accepted_transaction_id == Some(owner.transaction_id)
+    {
+        return Err(SoilThermalExactCarryError::Identity(
+            "receipt-free owner has current accepted transaction",
+        ));
+    }
+    let zero =
+        Sha256Digest::try_new("0".repeat(64)).map_err(|error| exact_carry_serialization(&error))?;
+    let mut restart = SoilThermalOwnerRestartV2 {
+        owner_tag: owner.owner_tag.clone(),
+        schema_sha256: owner.schema_sha256.clone(),
+        exact_carry_definition_sha256: owner.exact_carry_definition_sha256.clone(),
+        parent_v1_state_sha256: owner.parent_v1_state_sha256.clone(),
+        owner_state_sha256: owner.state.state_sha256.clone(),
+        last_accepted_transaction_id: owner.state.last_accepted_transaction_id,
+        receipt_chain_sha256: owner.receipt_chain_sha256.clone(),
+        restart_sha256: zero.clone(),
+    };
+    restart.restart_sha256 = soil_thermal_restart_v2_sha256(&restart)?;
+    let mut checkpoint = SoilThermalOwnerCheckpointV2 {
+        owner_tag: owner.owner_tag.clone(),
+        schema_sha256: owner.schema_sha256.clone(),
+        exact_carry_definition_sha256: owner.exact_carry_definition_sha256.clone(),
+        parent_v1_state_sha256: owner.parent_v1_state_sha256.clone(),
+        owner_state_sha256: owner.state.state_sha256.clone(),
+        last_accepted_transaction_id: owner.state.last_accepted_transaction_id,
+        receipt_chain_sha256: owner.receipt_chain_sha256.clone(),
+        checkpoint_sha256: zero,
+    };
+    checkpoint.checkpoint_sha256 = soil_thermal_checkpoint_v2_sha256(&checkpoint)?;
+    let receipt_free_seal_sha256 = canonical_digest(&(
+        "OPENWEPP_SOIL_THERMAL_RECEIPT_FREE_OWNER_SEALS_V2",
+        &restart,
+        &checkpoint,
+        owner.transaction_id,
+        owner.support_start_ns,
+        owner.support_end_ns,
+    ))
+    .map_err(|error| exact_carry_serialization(&error))?;
+    let seals = SoilThermalReceiptFreeOwnerSealsV2 {
+        restart,
+        checkpoint,
+        receipt_free_seal_sha256,
+    };
+    validate_soil_thermal_receipt_free_owner_v2(prepared, &seals)?;
+    Ok(seals)
+}
+
+pub fn validate_soil_thermal_receipt_free_owner_v2(
+    prepared: &PreparedSoilThermalSupportV2,
+    seals: &SoilThermalReceiptFreeOwnerSealsV2,
+) -> Result<(), SoilThermalExactCarryError> {
+    let owner = prepared.beginning_owner();
+    owner.validate()?;
+    let common = owner.state.last_accepted_transaction_id
+        == owner.expected_predecessor_transaction_id
+        && owner.state.last_accepted_transaction_id != Some(owner.transaction_id)
+        && seals.restart.owner_tag == owner.owner_tag
+        && seals.restart.schema_sha256 == owner.schema_sha256
+        && seals.restart.exact_carry_definition_sha256 == owner.exact_carry_definition_sha256
+        && seals.restart.parent_v1_state_sha256 == owner.parent_v1_state_sha256
+        && seals.restart.owner_state_sha256 == owner.state.state_sha256
+        && seals.restart.last_accepted_transaction_id == owner.state.last_accepted_transaction_id
+        && seals.restart.receipt_chain_sha256 == owner.receipt_chain_sha256
+        && seals.restart.restart_sha256 == soil_thermal_restart_v2_sha256(&seals.restart)?
+        && seals.checkpoint.owner_tag == owner.owner_tag
+        && seals.checkpoint.schema_sha256 == owner.schema_sha256
+        && seals.checkpoint.exact_carry_definition_sha256 == owner.exact_carry_definition_sha256
+        && seals.checkpoint.parent_v1_state_sha256 == owner.parent_v1_state_sha256
+        && seals.checkpoint.owner_state_sha256 == owner.state.state_sha256
+        && seals.checkpoint.last_accepted_transaction_id
+            == owner.state.last_accepted_transaction_id
+        && seals.checkpoint.receipt_chain_sha256 == owner.receipt_chain_sha256
+        && seals.checkpoint.checkpoint_sha256
+            == soil_thermal_checkpoint_v2_sha256(&seals.checkpoint)?
+        && seals.receipt_free_seal_sha256
+            == canonical_digest(&(
+                "OPENWEPP_SOIL_THERMAL_RECEIPT_FREE_OWNER_SEALS_V2",
+                &seals.restart,
+                &seals.checkpoint,
+                owner.transaction_id,
+                owner.support_start_ns,
+                owner.support_end_ns,
+            ))
+            .map_err(|error| exact_carry_serialization(&error))?;
+    common
+        .then_some(())
+        .ok_or(SoilThermalExactCarryError::Identity(
+            "receipt-free owner seal join",
+        ))
 }
 
 pub fn refuse_soil_thermal_v2_to_v1_downgrade(

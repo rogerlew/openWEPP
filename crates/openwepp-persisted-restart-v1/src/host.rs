@@ -323,12 +323,14 @@ mod tests {
                 .runtime
                 .shadow
                 .restart_authority_soil_thermal()
+                .expect("V1 host fixture soil resident")
                 .owner_id,
             soil_thermal_configuration_sha256: &fixture
                 .owners
                 .runtime
                 .shadow
                 .restart_authority_soil_thermal()
+                .expect("V1 host fixture soil resident")
                 .configuration_sha256,
             lse_configuration: fixture
                 .owners

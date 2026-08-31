@@ -23,16 +23,16 @@ use crate::{
     MODEL_DEFINITION_SHA256, MODEL_VERSION, NormalizedResidual, NumericalDiagnostics,
     NumericalFailure, NumericalFailureCode, NumericalFailureKind, OfeId, OpenSurfaceProblem,
     OpenSurfaceSolveOutcome, OwnerEnvelopeIdentity, OwnerKind, OwnerRollbackHash,
-    RequestingComponent, SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG,
+    PreparedSoilThermalSupportV2, RequestingComponent, SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG,
     SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256, Sha256Digest, SoilThermalAcceptedEnergyOperandV2,
     SoilThermalEnergyCreditReceiptV2, SoilThermalExactCarryError, SoilThermalLayerEnergyCreditV2,
-    SoilThermalOwnerEnvelopeV2, SoilThermalSnapshot, SoilThermalTemperatureProjectionV2,
-    SolveIdentity, SolvePass, SourceId, SourceWaterCap, Stage3SnowOpticalBoundaryReceiptV1,
-    StandGroundWaterAmountBasis, StepNorms, SurfaceClass, SurfaceClassKind, SurfaceEnergyOperands,
-    SurfaceId, TileState, VEGETATION_MODEL_DEFINITION_SHA256, VEGETATION_MODEL_VERSION,
-    WaterAmount, WaterAuthorization, WaterProtocol, WaterSourceType, canonical_digest,
-    evaluate_covered_column, evaluate_open_surface, liquid_enthalpy_j_kg, solve_covered_column,
-    solve_open_surface,
+    SoilThermalOwnedStateV2, SoilThermalOwnerEnvelopeV2, SoilThermalSnapshot,
+    SoilThermalTemperatureProjectionV2, SolveIdentity, SolvePass, SourceId, SourceWaterCap,
+    Stage3SnowOpticalBoundaryReceiptV1, StandGroundWaterAmountBasis, StepNorms, SurfaceClass,
+    SurfaceClassKind, SurfaceEnergyOperands, SurfaceId, TileState,
+    VEGETATION_MODEL_DEFINITION_SHA256, VEGETATION_MODEL_VERSION, WaterAmount, WaterAuthorization,
+    WaterProtocol, WaterSourceType, canonical_digest, evaluate_covered_column,
+    evaluate_open_surface, liquid_enthalpy_j_kg, solve_covered_column, solve_open_surface,
     solver::{covered_failure_residuals, open_failure_residuals},
     validate_ground_heat_join, validate_latent_join, validate_surface_energy,
 };
@@ -2770,6 +2770,38 @@ pub struct SoilThermalExactCarryCandidateV2 {
     pub credit_receipt: SoilThermalEnergyCreditReceiptV2,
 }
 
+/// Unpublished exact receiver trial. It contains no accepted receipt and has
+/// no installation API; only final receipt sealing can publish its ending.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SoilThermalTrialStateV2 {
+    transaction_id: TransactionId,
+    beginning_state_sha256: Sha256Digest,
+    ending_state: SoilThermalOwnedStateV2,
+    layer_credits: Vec<SoilThermalLayerEnergyCreditV2>,
+}
+
+impl SoilThermalTrialStateV2 {
+    #[must_use]
+    pub const fn transaction_id(&self) -> TransactionId {
+        self.transaction_id
+    }
+
+    #[must_use]
+    pub const fn beginning_state_sha256(&self) -> &Sha256Digest {
+        &self.beginning_state_sha256
+    }
+
+    #[must_use]
+    pub const fn ending_state(&self) -> &SoilThermalOwnedStateV2 {
+        &self.ending_state
+    }
+
+    #[must_use]
+    pub fn layer_credits(&self) -> &[SoilThermalLayerEnergyCreditV2] {
+        &self.layer_credits
+    }
+}
+
 fn unique_temperature_projection<'a>(
     projections: &'a [SoilThermalTemperatureProjectionV2],
     ofe_id: &OfeId,
@@ -2810,6 +2842,73 @@ pub fn apply_soil_thermal_energy_credit_v2(
     accepted_operands: &[SoilThermalAcceptedEnergyOperandV2],
     temperature_projections: &[SoilThermalTemperatureProjectionV2],
 ) -> Result<SoilThermalExactCarryCandidateV2, SoilThermalExactCarryError> {
+    validate_exact_carry_predecessor(beginning)?;
+
+    let trial = advance_soil_thermal_trial_from_beginning_v2(
+        beginning,
+        accepted_operands,
+        temperature_projections,
+    )?;
+    let mut ending = beginning.clone();
+    ending.state = trial.ending_state;
+
+    let zero_digest = Sha256Digest::try_new("0".repeat(64))
+        .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?;
+    let mut receipt = SoilThermalEnergyCreditReceiptV2 {
+        receipt_tag: SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG.to_owned(),
+        schema_sha256: Sha256Digest::try_new(SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256)
+            .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?,
+        exact_carry_definition_sha256: Sha256Digest::try_new(
+            EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256,
+        )
+        .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?,
+        contract_version: 15,
+        model_version: beginning.model_version.clone(),
+        model_definition_sha256: beginning.model_definition_sha256.clone(),
+        configuration_sha256: beginning.state.configuration_sha256.clone(),
+        run_id: beginning.run_id.clone(),
+        soil_thermal_owner_id: beginning.state.owner_id.clone(),
+        transaction_id: beginning.transaction_id,
+        predecessor_transaction_id: beginning.expected_predecessor_transaction_id,
+        support_start_ns: beginning.support_start_ns,
+        support_end_ns: beginning.support_end_ns,
+        beginning_owner_state_sha256: beginning.state.state_sha256.clone(),
+        ending_owner_state_sha256: ending.state.state_sha256.clone(),
+        predecessor_receipt_chain_sha256: beginning.receipt_chain_sha256.clone(),
+        layer_credits: trial.layer_credits,
+        receipt_sha256: zero_digest,
+    };
+    receipt.reseal()?;
+    ending.receipt_chain_sha256 = receipt.receipt_sha256.clone();
+    receipt.validate_independent(
+        beginning,
+        &ending,
+        accepted_operands,
+        temperature_projections,
+    )?;
+    Ok(SoilThermalExactCarryCandidateV2 {
+        ending_owner: ending,
+        credit_receipt: receipt,
+    })
+}
+
+pub fn advance_soil_thermal_trial_v2(
+    prepared: &PreparedSoilThermalSupportV2,
+    physical_operands: &[SoilThermalAcceptedEnergyOperandV2],
+    temperature_projections: &[SoilThermalTemperatureProjectionV2],
+) -> Result<SoilThermalTrialStateV2, SoilThermalExactCarryError> {
+    advance_soil_thermal_trial_from_beginning_v2(
+        prepared.beginning_owner(),
+        physical_operands,
+        temperature_projections,
+    )
+}
+
+fn advance_soil_thermal_trial_from_beginning_v2(
+    beginning: &SoilThermalOwnerEnvelopeV2,
+    accepted_operands: &[SoilThermalAcceptedEnergyOperandV2],
+    temperature_projections: &[SoilThermalTemperatureProjectionV2],
+) -> Result<SoilThermalTrialStateV2, SoilThermalExactCarryError> {
     validate_exact_carry_predecessor(beginning)?;
 
     let mut ending = beginning.clone();
@@ -2868,46 +2967,16 @@ pub fn apply_soil_thermal_energy_credit_v2(
     }
     ending.state.last_accepted_transaction_id = Some(beginning.transaction_id);
     ending.state.reseal()?;
-
-    let zero_digest = Sha256Digest::try_new("0".repeat(64))
-        .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?;
-    let mut receipt = SoilThermalEnergyCreditReceiptV2 {
-        receipt_tag: SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG.to_owned(),
-        schema_sha256: Sha256Digest::try_new(SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256)
-            .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?,
-        exact_carry_definition_sha256: Sha256Digest::try_new(
-            EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256,
-        )
-        .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?,
-        contract_version: 15,
-        model_version: beginning.model_version.clone(),
-        model_definition_sha256: beginning.model_definition_sha256.clone(),
-        configuration_sha256: beginning.state.configuration_sha256.clone(),
-        run_id: beginning.run_id.clone(),
-        soil_thermal_owner_id: beginning.state.owner_id.clone(),
+    Ok(SoilThermalTrialStateV2 {
         transaction_id: beginning.transaction_id,
-        predecessor_transaction_id: beginning.expected_predecessor_transaction_id,
-        support_start_ns: beginning.support_start_ns,
-        support_end_ns: beginning.support_end_ns,
-        beginning_owner_state_sha256: beginning.state.state_sha256.clone(),
-        ending_owner_state_sha256: ending.state.state_sha256.clone(),
-        predecessor_receipt_chain_sha256: beginning.receipt_chain_sha256.clone(),
+        beginning_state_sha256: beginning.state.state_sha256.clone(),
+        ending_state: ending.state,
         layer_credits,
-        receipt_sha256: zero_digest,
-    };
-    receipt.reseal()?;
-    ending.receipt_chain_sha256 = receipt.receipt_sha256.clone();
-    receipt.validate_independent(
-        beginning,
-        &ending,
-        accepted_operands,
-        temperature_projections,
-    )?;
-    Ok(SoilThermalExactCarryCandidateV2 {
-        ending_owner: ending,
-        credit_receipt: receipt,
     })
 }
 
 #[cfg(test)]
 include!("transaction_tests.rs");
+
+#[cfg(test)]
+include!("soil_thermal_v2_cutover_tests.rs");

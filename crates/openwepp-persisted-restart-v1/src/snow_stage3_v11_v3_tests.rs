@@ -227,12 +227,14 @@ fn assert_nonzero_archive_v3_stable_fixture() {
             .runtime
             .shadow
             .restart_authority_soil_thermal()
+            .expect("V1 V3 fixture soil resident")
             .owner_id,
         soil_thermal_configuration_sha256: &fixture
             .owners
             .runtime
             .shadow
             .restart_authority_soil_thermal()
+            .expect("V1 V3 fixture soil resident")
             .configuration_sha256,
         lse_configuration: fixture
             .owners
