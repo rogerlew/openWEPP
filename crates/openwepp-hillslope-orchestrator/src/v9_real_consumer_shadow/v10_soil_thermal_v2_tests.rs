@@ -248,6 +248,12 @@ fn direct_v10_try_new_v2_is_single_resident_and_poisoned_install_is_atomic() {
     let soil_text = std::str::from_utf8(soil_bytes).expect("soil JSON");
     assert!(soil_text.contains("OPENWEPP_DIRECT_V10_SOIL_THERMAL_RESIDENT_V2"));
     assert!(!soil_text.contains("snapshot_sha256"));
+    let vegetation_envelope = v11_soil_thermal_owner_envelope(&v2_shadow.inner.soil_thermal)
+        .expect("V11 native V2 soil owner envelope");
+    assert_eq!(
+        vegetation_envelope.state_bytes, *soil_bytes,
+        "V11 support custody must carry the canonical active V2 owner bytes"
+    );
 
     let beginning = prepared.beginning_owner();
     let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
@@ -256,12 +262,9 @@ fn direct_v10_try_new_v2_is_single_resident_and_poisoned_install_is_atomic() {
         vec![exact_operand(beginning, 0.25)],
     )
     .expect("expected operands");
-    let accepted = aggregate_soil_thermal_ending_v2(
-        beginning,
-        &v2_shadow.inner.lse_configuration,
-        &expected,
-    )
-    .expect("accepted candidate");
+    let accepted =
+        aggregate_soil_thermal_ending_v2(beginning, &v2_shadow.inner.lse_configuration, &expected)
+            .expect("accepted candidate");
     let mut poison =
         seal_soil_thermal_accepted_candidate_v2(beginning, &accepted).expect("accepted seals");
     poison.orchestrator_seal_sha256 = digest('f');

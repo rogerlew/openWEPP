@@ -454,6 +454,18 @@ fn v11_owner_envelope<T: Serialize>(
     )?)
 }
 
+pub(crate) fn v11_soil_thermal_owner_envelope(
+    owner: &DirectSoilThermalResident,
+) -> Result<V11OwnerEnvelope, DirectV11RealConsumerError> {
+    V11OwnerEnvelope::try_new(
+        "soil_thermal".to_owned(),
+        owner
+            .canonical_active_owner_bytes()
+            .map_err(DirectV10RealConsumerError::Runtime)?,
+    )
+    .map_err(Into::into)
+}
+
 impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealConsumerStack<'_> {
     type Error = DirectV11RealConsumerError;
 
@@ -634,7 +646,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
             ),
             (
                 "soil_thermal".to_owned(),
-                v11_owner_envelope("soil_thermal", &candidate.inner.soil_thermal)?,
+                v11_soil_thermal_owner_envelope(&candidate.inner.soil_thermal)?,
             ),
         ]
         .into_iter()

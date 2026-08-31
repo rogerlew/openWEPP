@@ -2243,6 +2243,171 @@ mod tests {
         .expect("sealed receipt")
     }
 
+    fn native_v2_soil_owner_bytes(nonzero_carry: bool) -> (Vec<u8>, String) {
+        let mut state = SoilThermalOwnedStateV2Wire {
+            owner_id: "soil-thermal".to_owned(),
+            configuration_sha256: "6".repeat(64),
+            state_sha256: "0".repeat(64),
+            last_accepted_transaction_id: Some(40),
+            ofes: vec![SoilThermalOfeStateV2Wire {
+                ofe_id: "ofe-1".to_owned(),
+                ordered_layers: vec![SoilThermalLayerStateV2Wire {
+                    layer_id: "soil-1".to_owned(),
+                    temperature_k: 273.15,
+                    enthalpy_hi_j_m2_ofe_ground: 1.0,
+                    enthalpy_carry: if nonzero_carry {
+                        ExactDyadicEnthalpyWire {
+                            sign: 1,
+                            coefficient_hex: "1".to_owned(),
+                            exponent2: -100,
+                        }
+                    } else {
+                        ExactDyadicEnthalpyWire {
+                            sign: 0,
+                            coefficient_hex: "0".to_owned(),
+                            exponent2: 0,
+                        }
+                    },
+                    last_accepted_transaction_id: Some(40),
+                }],
+            }],
+        };
+        let body = SoilThermalStateDigestBodyV2 {
+            owner_tag: SOIL_THERMAL_OWNER_V2_TAG,
+            schema_sha256: SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256,
+            exact_carry_definition_sha256: EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256,
+            owner_id: &state.owner_id,
+            configuration_sha256: &state.configuration_sha256,
+            last_accepted_transaction_id: state.last_accepted_transaction_id,
+            ofes: &state.ofes,
+        };
+        state.state_sha256 = format!(
+            "{:x}",
+            Sha256::digest(cpython_json_exponents(
+                &serde_json::to_vec(&body).expect("V2 digest body")
+            ))
+        );
+        let digest = state.state_sha256.clone();
+        let resident = DirectV10SoilThermalResidentV2Wire {
+            schema: DIRECT_V10_SOIL_THERMAL_RESIDENT_V2_SCHEMA.to_owned(),
+            owner: SoilThermalOwnerEnvelopeV2Wire {
+                owner_tag: SOIL_THERMAL_OWNER_V2_TAG.to_owned(),
+                schema_sha256: SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256.to_owned(),
+                exact_carry_definition_sha256: EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256
+                    .to_owned(),
+                parent_v1_state_sha256: "7".repeat(64),
+                contract_version: 15,
+                model_version: "OPENWEPP_SOIL_THERMAL_V1".to_owned(),
+                model_definition_sha256: "8".repeat(64),
+                run_id: "native-v2-receipt".to_owned(),
+                transaction_id: 41,
+                expected_predecessor_transaction_id: Some(40),
+                support_start_ns: 0,
+                support_end_ns: 60_000_000_000,
+                receipt_chain_sha256: "9".repeat(64),
+                state,
+            },
+            latest_credit_receipt_sha256: None,
+            expected_operand_set_sha256: None,
+            orchestrator_seal_sha256: None,
+            receipt_free_seal_sha256: Some("d".repeat(64)),
+        };
+        (
+            serde_json::to_vec(&resident).expect("native V2 soil owner"),
+            digest,
+        )
+    }
+
+    #[test]
+    fn lse_support_receipt_v1_owner_join_bytes_remain_golden() {
+        let (configuration, state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&configuration, &state).expect("migration");
+        let owners = complete_owners(&migrated.state);
+        let (_, receipts) = accepted_receipts(&owners, &[60_000_000_000]);
+        let receipt = test_lse_support_receipt(&receipts[0]);
+        let before = receipt.canonical_json.clone();
+
+        receipt
+            .validate_beginning_owners(&owners)
+            .expect("frozen V1 owner join");
+        assert_eq!(
+            V11LseSupportReceiptEnvelope::from_canonical_json(before.clone())
+                .expect("frozen receipt bytes")
+                .canonical_json,
+            before
+        );
+    }
+
+    #[test]
+    fn native_v2_lse_support_receipt_binds_state_carry_owner_and_support() {
+        let (configuration, state) = v10_fixture();
+        let migrated = migrate_v10_runtime_to_v11(&configuration, &state).expect("migration");
+        let mut owners = complete_owners(&migrated.state);
+        let (soil_bytes, soil_state_sha256) = native_v2_soil_owner_bytes(false);
+        let (nonzero_bytes, nonzero_state_sha256) = native_v2_soil_owner_bytes(true);
+        assert_eq!(
+            validated_soil_beginning_state_sha256(&nonzero_bytes)
+                .expect("nonzero exact-carry V2 owner"),
+            nonzero_state_sha256
+        );
+        owners.insert(
+            "soil_thermal".to_owned(),
+            V11OwnerEnvelope::try_new("soil_thermal".to_owned(), soil_bytes.clone())
+                .expect("native V2 owner envelope"),
+        );
+        let (_, receipts) = accepted_receipts(&owners, &[60_000_000_000, 120_000_000_000]);
+        let receipt = reframe_test_lse_receipt(
+            &test_lse_support_receipt(&receipts[0]),
+            None,
+            Some(soil_state_sha256.clone()),
+        );
+        receipt
+            .validate_beginning_owners(&owners)
+            .expect("native V2 owner join");
+        assert!(
+            receipt.validate_join(&receipts[1]).is_err(),
+            "stale support"
+        );
+
+        let stale_state = test_lse_support_receipt(&receipts[0]);
+        assert!(
+            stale_state.validate_beginning_owners(&owners).is_err(),
+            "stale soil state"
+        );
+
+        let poison = |mut value: serde_json::Value| {
+            serde_json::to_vec(&value.take()).expect("poisoned V2 owner bytes")
+        };
+        let mut carry: serde_json::Value =
+            serde_json::from_slice(&soil_bytes).expect("native V2 JSON");
+        carry["owner"]["state"]["ofes"][0]["ordered_layers"][0]["enthalpy_carry"] =
+            serde_json::json!({"sign": 1, "coefficient_hex": "1", "exponent2": -100});
+        assert!(
+            validated_soil_beginning_state_sha256(&poison(carry)).is_err(),
+            "same state digest cannot admit a carry mutation"
+        );
+
+        let mut owner: serde_json::Value =
+            serde_json::from_slice(&soil_bytes).expect("native V2 JSON");
+        owner["owner"]["state"]["owner_id"] = serde_json::json!("substituted-soil-owner");
+        assert!(validated_soil_beginning_state_sha256(&poison(owner)).is_err());
+
+        let mut tag: serde_json::Value =
+            serde_json::from_slice(&soil_bytes).expect("native V2 JSON");
+        tag["owner"]["owner_tag"] = serde_json::json!("OPENWEPP_SOIL_THERMAL_OWNER_V1");
+        assert!(validated_soil_beginning_state_sha256(&poison(tag)).is_err());
+
+        let mut schema: serde_json::Value =
+            serde_json::from_slice(&soil_bytes).expect("native V2 JSON");
+        schema["schema"] = serde_json::json!("OPENWEPP_DIRECT_V10_SOIL_THERMAL_RESIDENT_V3");
+        assert!(validated_soil_beginning_state_sha256(&poison(schema)).is_err());
+
+        let mut mixed: serde_json::Value =
+            serde_json::from_slice(&soil_bytes).expect("native V2 JSON");
+        mixed["state_sha256"] = serde_json::json!(soil_state_sha256);
+        assert!(validated_soil_beginning_state_sha256(&poison(mixed)).is_err());
+    }
+
     #[test]
     fn embedded_v11_definition_is_identity_distinct() {
         assert_ne!(v11_model_sha256(), V10_MODEL_SHA256);
