@@ -1776,317 +1776,164 @@ where
     M: crate::hydrology::TerminalEvidenceMode<Option<CoveredTerminalJointTrialStateV1>>,
 {
     let parent_telemetry_started = std::time::Instant::now();
-    let support_beginning_stage3 = beginning_stage3.clone();
-    let support_beginning_terminal_parcels = beginning_terminal_parcels.clone();
-    let solid_reappearance = canonical_solid_reappearance_transition_v1(
+    let mut execution = match initialize_adaptive_parent_execution_v1(
         context,
         beginning_parent,
         beginning_consumer,
         beginning_clock,
         prepared,
-        &support_beginning_stage3,
-        &support_beginning_terminal_parcels,
-    )?;
-    let solid_reappearance_event = solid_reappearance
-        .as_ref()
-        .map(|transition| transition.accepted_event.clone());
-    let debited_prepared = solid_reappearance
-        .as_ref()
-        .map(|transition| prepared.after_solid_reappearance_debit(&transition.lanes))
-        .transpose()?;
-    let mut restart = restart;
-    let (
-        mut parent,
-        mut consumer,
-        mut clock,
-        mut stage3,
-        mut owner_joins,
-        mut event_groups,
-        mut terminal_parcels,
-        mut pending_terminal_parcels,
-        mut expected_child_beginning,
-        mut adaptive_receipts,
-        mut snow_free_successor_receipts,
-    ) = if let Some(checkpoint) = restart.as_ref() {
-        let current = checkpoint.support_current.as_ref().ok_or(
-            DirectSnowStage3V11AttachmentError::Identity("restart current adaptive support"),
-        )?;
-        (
-            current.v11_parent_state.clone(),
-            current.real_consumer.clone(),
-            current.coupled_clock.clone(),
-            current.stage3_by_lane.clone(),
-            checkpoint.support_owner_joins.clone(),
-            checkpoint.support_event_groups.clone(),
-            checkpoint.support_terminal_parcels.clone(),
-            current.terminal_parcels.clone(),
-            checkpoint.expected_child_beginning,
-            checkpoint.adaptive_receipts.clone(),
-            checkpoint.support_snow_free_successor_receipts.clone(),
-        )
-    } else {
-        (
-            beginning_parent.clone(),
-            beginning_consumer.clone(),
-            beginning_clock.clone(),
-            beginning_stage3,
-            Vec::new(),
-            Vec::new(),
-            Vec::new(),
-            beginning_terminal_parcels,
-            complete_owner_set_digest(beginning_clock.owners())?,
-            AdaptiveReceiptAccumulatorV1::default(),
-            Vec::new(),
-        )
+        beginning_stage3,
+        beginning_terminal_parcels,
+        failure_injection,
+        restart,
+        interrupt_at,
+    )? {
+        AdaptiveParentInitializationOutcomeV1::Paused(outcome) => return Ok(*outcome),
+        AdaptiveParentInitializationOutcomeV1::Ready(execution) => execution,
     };
-    const ADAPTIVE_MIN_STEP_NS: u128 = STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
-    if prepared.support.duration_ns() % ADAPTIVE_MIN_STEP_NS != 0 {
-        return Err(DirectSnowStage3V11AttachmentError::Support(
-            "adaptive parent support is outside the 60-second grid",
-        ));
-    }
-    let mut adaptive_trial_quanta = restart.as_ref().map_or_else(
-        // Start at the complete remaining parent support. This proposal is
-        // result-blind and lets stable supports complete in one accepted
-        // composed transaction; rejection still halves deterministically.
-        || adaptive_test_initial_quanta(prepared.support.duration_ns() / ADAPTIVE_MIN_STEP_NS),
-        |checkpoint| checkpoint.adaptive_trial_quanta,
-    );
-    // Candidate-local physical results are deliberately ephemeral. They are
-    // never checkpointed or published: an exact key may only avoid repeating
-    // a child transaction that was already closed while constructing a
-    // rejected composed candidate.
-    let mut covered_trial_memo = Vec::<AdaptiveCoveredTrialMemoEntryV1>::new();
-    macro_rules! interrupt {
-        ($posture:expr, $request:expr) => {
-            if let Some(outcome) = adaptive_interruption_outcome_v2(
-                interrupt_at,
-                $posture,
-                &mut restart,
-                $request,
-                &parent,
-                &consumer,
-                &clock,
-                &stage3,
-                &pending_terminal_parcels,
-                &owner_joins,
-                &event_groups,
-                &terminal_parcels,
-                expected_child_beginning,
-                &adaptive_receipts,
-                &snow_free_successor_receipts,
-                adaptive_trial_quanta,
-            )? {
-                return Ok(*outcome);
-            }
-        };
-    }
-    if let Some(transition) = solid_reappearance {
-        let already_applied = clock
-            .accepted_event_receipts()
-            .iter()
-            .any(|receipt| receipt == &transition.accepted_event);
-        if already_applied {
-            let publication_retained =
-                consumer.retains_accepted_publication_event_handoff(&transition.accepted_event);
-            let publication_is_ordered_tail =
-                consumer.accepted_publication_event_handoff_is_tail(&transition.accepted_event);
-            let at_open_parent_beginning = clock.accepted_until() == prepared.support.start_ns();
-            validate_solid_reappearance_publication_posture_v1(
-                at_open_parent_beginning,
-                stage3 == transition.stage3,
-                publication_retained,
-                publication_is_ordered_tail,
-            )?;
-        } else {
-            if clock.accepted_until() != prepared.support.start_ns()
-                || stage3 != support_beginning_stage3
-                || complete_owner_set_digest(clock.owners())?
-                    != complete_owner_set_digest(beginning_clock.owners())?
-            {
-                return Err(DirectSnowStage3V11AttachmentError::Identity(
-                    "solid reappearance omitted event",
-                ));
-            }
-            interrupt!(
-                DirectSnowStage3V11InterruptionPostureV2::BeforeSnowReappearance,
-                None::<&Stage3AdaptiveParentRequestReceiptV1>
-            );
-            parent = transition.parent;
-            consumer = transition.consumer;
-            clock = transition.clock;
-            stage3 = transition.stage3;
-            expected_child_beginning = complete_owner_set_digest(clock.owners())?;
-            interrupt!(
-                DirectSnowStage3V11InterruptionPostureV2::AfterSnowReappearance,
-                None::<&Stage3AdaptiveParentRequestReceiptV1>
-            );
+    execution = match execute_adaptive_parent_loop_closure_v1(execution, |execution| {
+        let AdaptiveParentExecutionStateV1 {
+            prepared,
+            mut restart,
+            mut parent,
+            mut consumer,
+            mut clock,
+            mut stage3,
+            mut owner_joins,
+            mut event_groups,
+            mut terminal_parcels,
+            mut pending_terminal_parcels,
+            mut expected_child_beginning,
+            mut adaptive_receipts,
+            mut snow_free_successor_receipts,
+            mut adaptive_trial_quanta,
+            mut covered_trial_memo,
+        } = *execution;
+        const ADAPTIVE_MIN_STEP_NS: u128 = STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
+        macro_rules! interrupt {
+            ($posture:expr, $request:expr) => {
+                if let Some(outcome) = adaptive_interruption_outcome_v2(
+                    interrupt_at,
+                    $posture,
+                    &mut restart,
+                    $request,
+                    &parent,
+                    &consumer,
+                    &clock,
+                    &stage3,
+                    &pending_terminal_parcels,
+                    &owner_joins,
+                    &event_groups,
+                    &terminal_parcels,
+                    expected_child_beginning,
+                    &adaptive_receipts,
+                    &snow_free_successor_receipts,
+                    adaptive_trial_quanta,
+                )? {
+                    return Ok(AdaptiveParentLoopOutcomeV1::Paused(outcome));
+                }
+            };
         }
-    }
-    // Accepted publication is committed-support authority.  Keep the
-    // reappearance event private while the positive support is open; install
-    // it only in the candidate-local consumer immediately before evaluating
-    // that support, so an accepted candidate publishes event + support
-    // atomically while Before/AfterReappearance checkpoints cannot expose an
-    // orphan event.
-    if let Some(event) = solid_reappearance_event.as_ref()
-        && clock.accepted_until() == prepared.support.start_ns()
-    {
-        if consumer.retains_accepted_publication_event_handoff(event) {
-            return Err(DirectSnowStage3V11AttachmentError::Identity(
-                "solid reappearance orphan publication event",
-            ));
-        }
-        consumer.retain_accepted_publication_zero_duration_event_for_following_support(
-            event,
-            complete_owner_set_digest(beginning_clock.owners())?,
-            prepared.support,
-        )?;
-    }
-    let prepared = debited_prepared.as_ref().unwrap_or(prepared);
-    // A parent-end terminal event has no positive-duration loop remainder.
-    // Resume its retained zero-duration receiver explicitly before the loop;
-    // otherwise `accepted_until == support.end` would skip the receiver and
-    // finalize from the pre-receiver owner set.
-    if clock.accepted_until() == prepared.support.end_ns() && !pending_terminal_parcels.is_empty() {
-        let endpoint = owner_joins
-            .last()
-            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                "resumed parent-end terminal receiver endpoint support",
-            ))?;
-        let terminal_group_index = event_groups.len().checked_sub(1).ok_or(
-            DirectSnowStage3V11AttachmentError::Identity(
-                "resumed parent-end terminal receiver event group",
-            ),
-        )?;
-        interrupt!(
-            DirectSnowStage3V11InterruptionPostureV2::BeforeTerminalReceiver,
-            None::<&Stage3AdaptiveParentRequestReceiptV1>
-        );
-        let terminal_group = event_groups.get_mut(terminal_group_index).ok_or(
-            DirectSnowStage3V11AttachmentError::Identity(
-                "resumed parent-end terminal receiver event group",
-            ),
-        )?;
-        consume_parent_end_terminal_parcels_v1(
-            context,
-            &mut parent,
-            &mut consumer,
-            &mut clock,
-            &stage3,
-            &mut terminal_parcels,
-            &mut pending_terminal_parcels,
-            endpoint,
-            terminal_group,
-        )?;
-        expected_child_beginning = complete_owner_set_digest(clock.owners())?;
-        interrupt!(
-            DirectSnowStage3V11InterruptionPostureV2::AfterTerminalReceiver,
-            None::<&Stage3AdaptiveParentRequestReceiptV1>
-        );
-        if failure_injection == Some(Stage3V11FailureInjection::ParentEndTerminalReceiverCompleted)
-        {
-            return Err(DirectSnowStage3V11AttachmentError::Identity(
-                "injected parent-end terminal receiver rollback",
-            ));
-        }
-    }
-    while clock.accepted_until() < prepared.support.end_ns() {
-        let active_lanes = stage3
-            .iter()
-            .filter_map(|(lane, state)| {
-                (stage3_is_resolved_thermal_domain(state)
-                    || crate::hydrology::stage3_is_terminal_event_domain(state)
-                    || (state.layers.is_empty()
-                        && prepared
-                            .support_forcing_by_lane
-                            .get(lane)
-                            .is_some_and(|forcing| forcing.forcing.snowfall_m > 0.0)))
-                .then_some(*lane)
-            })
-            .collect::<BTreeSet<_>>();
-        if active_lanes.is_empty() {
-            let receiver_pending = !pending_terminal_parcels.is_empty();
-            if receiver_pending {
-                interrupt!(
-                    DirectSnowStage3V11InterruptionPostureV2::BeforeTerminalReceiver,
-                    None::<&Stage3AdaptiveParentRequestReceiptV1>
-                );
-            }
-            let successor_end = if receiver_pending {
-                ModelTimeNs::new(
-                    clock
-                        .accepted_until()
-                        .get()
-                        .checked_add(ADAPTIVE_MIN_STEP_NS)
-                        .ok_or_else(|| {
-                            adaptive_receipt_identity_error("terminal receiver support overflow")
-                        })?
-                        .min(prepared.support.end_ns().get()),
-                )
-            } else if !snow_free_successor_receipts.is_empty() {
-                let terminal_child_end =
-                    adaptive_terminal_child_end_v1(&adaptive_receipts, prepared.support)?;
-                if clock.accepted_until() >= terminal_child_end {
-                    prepared.support.end_ns()
-                } else {
-                    let cadence_ns = adaptive_trial_quanta
-                        .checked_mul(ADAPTIVE_MIN_STEP_NS)
-                        .filter(|duration| *duration > 0)
-                        .ok_or_else(|| {
-                            adaptive_receipt_identity_error("successor cadence overflow")
-                        })?;
+        while clock.accepted_until() < prepared.support.end_ns() {
+            let active_lanes = stage3
+                .iter()
+                .filter_map(|(lane, state)| {
+                    (stage3_is_resolved_thermal_domain(state)
+                        || crate::hydrology::stage3_is_terminal_event_domain(state)
+                        || (state.layers.is_empty()
+                            && prepared
+                                .support_forcing_by_lane
+                                .get(lane)
+                                .is_some_and(|forcing| forcing.forcing.snowfall_m > 0.0)))
+                    .then_some(*lane)
+                })
+                .collect::<BTreeSet<_>>();
+            if active_lanes.is_empty() {
+                let receiver_pending = !pending_terminal_parcels.is_empty();
+                if receiver_pending {
+                    interrupt!(
+                        DirectSnowStage3V11InterruptionPostureV2::BeforeTerminalReceiver,
+                        None::<&Stage3AdaptiveParentRequestReceiptV1>
+                    );
+                }
+                let successor_end = if receiver_pending {
                     ModelTimeNs::new(
                         clock
                             .accepted_until()
                             .get()
-                            .checked_add(cadence_ns)
+                            .checked_add(ADAPTIVE_MIN_STEP_NS)
                             .ok_or_else(|| {
-                                adaptive_receipt_identity_error("successor support overflow")
+                                adaptive_receipt_identity_error(
+                                    "terminal receiver support overflow",
+                                )
                             })?
-                            .min(terminal_child_end.get()),
+                            .min(prepared.support.end_ns().get()),
                     )
+                } else if !snow_free_successor_receipts.is_empty() {
+                    let terminal_child_end =
+                        adaptive_terminal_child_end_v1(&adaptive_receipts, prepared.support)?;
+                    if clock.accepted_until() >= terminal_child_end {
+                        prepared.support.end_ns()
+                    } else {
+                        let cadence_ns = adaptive_trial_quanta
+                            .checked_mul(ADAPTIVE_MIN_STEP_NS)
+                            .filter(|duration| *duration > 0)
+                            .ok_or_else(|| {
+                                adaptive_receipt_identity_error("successor cadence overflow")
+                            })?;
+                        ModelTimeNs::new(
+                            clock
+                                .accepted_until()
+                                .get()
+                                .checked_add(cadence_ns)
+                                .ok_or_else(|| {
+                                    adaptive_receipt_identity_error("successor support overflow")
+                                })?
+                                .min(terminal_child_end.get()),
+                        )
+                    }
+                } else {
+                    prepared.support.end_ns()
+                };
+                let remainder_support = TimeSupport::new(clock.accepted_until(), successor_end)?;
+                if receiver_pending && remainder_support.duration_ns() != ADAPTIVE_MIN_STEP_NS {
+                    return Err(DirectSnowStage3V11AttachmentError::Support(
+                        "terminal receiver cannot obtain one minimum quantum",
+                    ));
                 }
-            } else {
-                prepared.support.end_ns()
-            };
-            let remainder_support = TimeSupport::new(clock.accepted_until(), successor_end)?;
-            if receiver_pending && remainder_support.duration_ns() != ADAPTIVE_MIN_STEP_NS {
-                return Err(DirectSnowStage3V11AttachmentError::Support(
-                    "terminal receiver cannot obtain one minimum quantum",
-                ));
-            }
-            let mut successor = prepared
-                .coupled_subslab(
-                    remainder_support,
-                    u32::try_from(owner_joins.len()).map_err(|_| {
-                        DirectSnowStage3V11AttachmentError::Identity("successor subslab ordinal")
-                    })?,
-                )?
-                .snow_free_successor()?;
-            if receiver_pending {
-                successor = successor.with_terminal_receiver_parcels(&pending_terminal_parcels)?;
-            }
-            if remainder_support.end_ns() == prepared.support.end_ns() {
-                for state in stage3.values_mut() {
-                    let beginning = state.clone();
-                    Wb11HydrologyKernel::project_stage3_parent_cadence_state(
-                        &beginning, state, true,
-                    )?;
+                let mut successor = prepared
+                    .coupled_subslab(
+                        remainder_support,
+                        u32::try_from(owner_joins.len()).map_err(|_| {
+                            DirectSnowStage3V11AttachmentError::Identity(
+                                "successor subslab ordinal",
+                            )
+                        })?,
+                    )?
+                    .snow_free_successor()?;
+                if receiver_pending {
+                    successor =
+                        successor.with_terminal_receiver_parcels(&pending_terminal_parcels)?;
                 }
-            }
-            let ending_snow_owner_bytes = if receiver_pending {
-                canonical_stage3_snow_owner_bytes(&stage3)?
-            } else if pending_terminal_parcels.is_empty() {
-                canonical_stage3_snow_owner_bytes(&stage3)?
-            } else {
-                return Err(DirectSnowStage3V11AttachmentError::Identity(
-                    "unreachable terminal receiver posture",
-                ));
-            };
-            let beginning_pending_terminal_parcels = pending_terminal_parcels.clone();
-            let (next_parent, next_consumer, next_clock, _, accepted_support) =
-                execute_real_v11_parent(
+                if remainder_support.end_ns() == prepared.support.end_ns() {
+                    for state in stage3.values_mut() {
+                        let beginning = state.clone();
+                        Wb11HydrologyKernel::project_stage3_parent_cadence_state(
+                            &beginning, state, true,
+                        )?;
+                    }
+                }
+                let ending_snow_owner_bytes = if receiver_pending {
+                    canonical_stage3_snow_owner_bytes(&stage3)?
+                } else if pending_terminal_parcels.is_empty() {
+                    canonical_stage3_snow_owner_bytes(&stage3)?
+                } else {
+                    return Err(DirectSnowStage3V11AttachmentError::Identity(
+                        "unreachable terminal receiver posture",
+                    ));
+                };
+                let beginning_pending_terminal_parcels = pending_terminal_parcels.clone();
+                let next = execute_adaptive_snow_free_successor_v1(
                     context,
                     &parent,
                     &consumer,
@@ -2096,214 +1943,334 @@ where
                     interval_index,
                     forcing_receipt,
                     ending_snow_owner_bytes,
-                    false,
                 )?;
-            if receiver_pending {
-                for parcel in pending_terminal_parcels.values() {
-                    if let Some(produced) = terminal_parcels
-                        .iter_mut()
-                        .find(|value| value.parcel_digest == parcel.parcel_digest)
-                    {
-                        produced.posture = DirectSnowStage3V11TerminalParcelPosture::Consumed;
-                    } else {
-                        let mut consumed = parcel.clone();
-                        consumed.posture = DirectSnowStage3V11TerminalParcelPosture::Consumed;
-                        terminal_parcels.push(consumed);
+                if receiver_pending {
+                    for parcel in pending_terminal_parcels.values() {
+                        if let Some(produced) = terminal_parcels
+                            .iter_mut()
+                            .find(|value| value.parcel_digest == parcel.parcel_digest)
+                        {
+                            produced.posture = DirectSnowStage3V11TerminalParcelPosture::Consumed;
+                        } else {
+                            let mut consumed = parcel.clone();
+                            consumed.posture = DirectSnowStage3V11TerminalParcelPosture::Consumed;
+                            terminal_parcels.push(consumed);
+                        }
+                    }
+                    pending_terminal_parcels.clear();
+                }
+                snow_free_successor_receipts.push(Stage3SnowFreeSuccessorReceiptV1::seal(
+                    &successor,
+                    day_index,
+                    interval_index,
+                    beginning_parent.parent_transaction_id(),
+                    u32::try_from(snow_free_successor_receipts.len()).map_err(|_| {
+                        DirectSnowStage3V11AttachmentError::Identity(
+                            "snow-free successor receipt ordinal",
+                        )
+                    })?,
+                    forcing_receipt,
+                    &beginning_pending_terminal_parcels,
+                    &pending_terminal_parcels,
+                    next.accepted_support,
+                )?);
+                parent = next.parent;
+                consumer = next.consumer;
+                clock = next.clock;
+                if receiver_pending {
+                    expected_child_beginning = complete_owner_set_digest(clock.owners())?;
+                    interrupt!(
+                        DirectSnowStage3V11InterruptionPostureV2::AfterTerminalReceiver,
+                        None::<&Stage3AdaptiveParentRequestReceiptV1>
+                    );
+                }
+                if clock.accepted_until() == prepared.support.end_ns() {
+                    break;
+                }
+                continue;
+            }
+            let candidate_ceiling = prepared
+                .hard_boundaries
+                .iter()
+                .copied()
+                .find(|boundary| {
+                    *boundary > clock.accepted_until() && *boundary < prepared.support.end_ns()
+                })
+                .unwrap_or(prepared.support.end_ns());
+            let available_ns = candidate_ceiling.get() - clock.accepted_until().get();
+            if available_ns == 0 || available_ns % ADAPTIVE_MIN_STEP_NS != 0 {
+                return Err(DirectSnowStage3V11AttachmentError::Support(
+                    "adaptive hard boundary is outside the 60-second grid",
+                ));
+            }
+            let available_quanta = available_ns / ADAPTIVE_MIN_STEP_NS;
+            let candidate_quanta = adaptive_trial_quanta.min(available_quanta).max(1);
+            let candidate_ns = candidate_quanta * ADAPTIVE_MIN_STEP_NS;
+            let end_ns = ModelTimeNs::new(clock.accepted_until().get() + candidate_ns);
+            let support = TimeSupport::new(clock.accepted_until(), end_ns)?;
+            let child_ordinal = u32::try_from(owner_joins.len()).map_err(|_| {
+                DirectSnowStage3V11AttachmentError::Identity("coupled subslab ordinal overflow")
+            })?;
+            let adaptive_request = adaptive_receipts.request(
+                context,
+                &clock,
+                prepared.support,
+                support,
+                forcing_receipt,
+                candidate_quanta,
+            )?;
+            if let Some(checkpoint) = restart.as_mut() {
+                if let Some(expected) = checkpoint.pending_adaptive_request.take() {
+                    if expected != adaptive_request {
+                        return Err(DirectSnowStage3V11AttachmentError::Identity(
+                            "restart pending adaptive request join",
+                        ));
                     }
                 }
-                pending_terminal_parcels.clear();
             }
-            snow_free_successor_receipts.push(Stage3SnowFreeSuccessorReceiptV1::seal(
-                &successor,
-                day_index,
-                interval_index,
-                beginning_parent.parent_transaction_id(),
-                u32::try_from(snow_free_successor_receipts.len()).map_err(|_| {
-                    DirectSnowStage3V11AttachmentError::Identity(
-                        "snow-free successor receipt ordinal",
-                    )
-                })?,
-                forcing_receipt,
-                &beginning_pending_terminal_parcels,
-                &pending_terminal_parcels,
-                accepted_support,
-            )?);
-            parent = next_parent;
-            consumer = next_consumer;
-            clock = next_clock;
-            if receiver_pending {
-                expected_child_beginning = complete_owner_set_digest(clock.owners())?;
+            let snow_reappearance = stage3.iter().any(|(lane, state)| {
+                state.layers.is_empty()
+                    && prepared
+                        .support_forcing_by_lane
+                        .get(lane)
+                        .is_some_and(|forcing| forcing.forcing.snowfall_m > 0.0)
+            });
+            if stage3
+                .values()
+                .any(crate::hydrology::stage3_is_terminal_event_domain)
+            {
                 interrupt!(
-                    DirectSnowStage3V11InterruptionPostureV2::AfterTerminalReceiver,
+                    DirectSnowStage3V11InterruptionPostureV2::BeforeTerminalEvent,
+                    Some(&adaptive_request)
+                );
+                let event_ordinal = u64::try_from(clock.event_ordinal()).map_err(|_| {
+                    DirectSnowStage3V11AttachmentError::Identity("terminal event ordinal width")
+                })?;
+                let (accepted, maximum_scaled_error) =
+                    match select_adaptive_terminal_candidate_v1::<M>(
+                        context,
+                        &parent,
+                        &consumer,
+                        &clock,
+                        &prepared,
+                        day_index,
+                        interval_index,
+                        forcing_receipt,
+                        &stage3,
+                        &pending_terminal_parcels,
+                        &mut adaptive_receipts,
+                        &adaptive_request,
+                        support,
+                        candidate_quanta,
+                        child_ordinal,
+                        event_ordinal,
+                        evidence,
+                    )? {
+                        AdaptiveCandidateSelectionV1::Accepted {
+                            trial,
+                            maximum_scaled_error,
+                        } => (*trial, maximum_scaled_error),
+                        AdaptiveCandidateSelectionV1::Refine { next_trial_quanta } => {
+                            adaptive_trial_quanta = next_trial_quanta;
+                            continue;
+                        }
+                    };
+                let AdaptiveTerminalPathV1 {
+                    mut actual,
+                    ending_pending_terminal_parcels,
+                } = accepted;
+                let mut terminal_predecessor = expected_child_beginning;
+                for receipt in &actual.receipts {
+                    if receipt.owner_join.beginning_complete_owner_set_sha256
+                        != terminal_predecessor
+                    {
+                        return Err(DirectSnowStage3V11AttachmentError::Identity(
+                            "terminal child complete-owner predecessor join",
+                        ));
+                    }
+                    terminal_predecessor = receipt.effective_ending_complete_owner_set_sha256();
+                }
+                parent = actual.parent;
+                consumer = actual.consumer;
+                clock = actual.clock;
+                stage3 = actual.stage3;
+                owner_joins.append(&mut actual.receipts);
+                if let Some(group) = actual.group.take() {
+                    event_groups.push(group);
+                }
+                pending_terminal_parcels = ending_pending_terminal_parcels;
+                terminal_parcels.append(&mut actual.parcels);
+                if clock.accepted_until() == prepared.support.end_ns()
+                    && !pending_terminal_parcels.is_empty()
+                {
+                    expected_child_beginning = complete_owner_set_digest(clock.owners())?;
+                    interrupt!(
+                        DirectSnowStage3V11InterruptionPostureV2::AfterTerminalEvent,
+                        None::<&Stage3AdaptiveParentRequestReceiptV1>
+                    );
+                    let endpoint =
+                        owner_joins
+                            .last()
+                            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                                "parent-end terminal receiver endpoint support",
+                            ))?;
+                    let terminal_group_index = event_groups.len().checked_sub(1).ok_or(
+                        DirectSnowStage3V11AttachmentError::Identity(
+                            "parent-end terminal receiver event group",
+                        ),
+                    )?;
+                    interrupt!(
+                        DirectSnowStage3V11InterruptionPostureV2::BeforeTerminalReceiver,
+                        None::<&Stage3AdaptiveParentRequestReceiptV1>
+                    );
+                    let terminal_group = event_groups.get_mut(terminal_group_index).ok_or(
+                        DirectSnowStage3V11AttachmentError::Identity(
+                            "parent-end terminal receiver event group",
+                        ),
+                    )?;
+                    consume_parent_end_terminal_parcels_v1(
+                        context,
+                        &mut parent,
+                        &mut consumer,
+                        &mut clock,
+                        &stage3,
+                        &mut terminal_parcels,
+                        &mut pending_terminal_parcels,
+                        endpoint,
+                        terminal_group,
+                    )?;
+                    expected_child_beginning = complete_owner_set_digest(clock.owners())?;
+                    interrupt!(
+                        DirectSnowStage3V11InterruptionPostureV2::AfterTerminalReceiver,
+                        None::<&Stage3AdaptiveParentRequestReceiptV1>
+                    );
+                    if failure_injection
+                        == Some(Stage3V11FailureInjection::ParentEndTerminalReceiverCompleted)
+                    {
+                        return Err(DirectSnowStage3V11AttachmentError::Identity(
+                            "injected parent-end terminal receiver rollback",
+                        ));
+                    }
+                }
+                expected_child_beginning = complete_owner_set_digest(clock.owners())?;
+                let remaining_quanta =
+                    (candidate_ceiling.get() - clock.accepted_until().get()) / ADAPTIVE_MIN_STEP_NS;
+                adaptive_trial_quanta = if maximum_scaled_error < 0.125 {
+                    adaptive_test_growth_quanta(candidate_quanta, remaining_quanta)
+                } else {
+                    candidate_quanta.min(remaining_quanta)
+                };
+                if !pending_terminal_parcels.is_empty() {
+                    interrupt!(
+                        DirectSnowStage3V11InterruptionPostureV2::AfterTerminalEvent,
+                        None::<&Stage3AdaptiveParentRequestReceiptV1>
+                    );
+                }
+                interrupt!(
+                    DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
                     None::<&Stage3AdaptiveParentRequestReceiptV1>
                 );
+                continue;
             }
-            if clock.accepted_until() == prepared.support.end_ns() {
-                break;
+            if snow_reappearance {
+                interrupt!(
+                    DirectSnowStage3V11InterruptionPostureV2::BeforeSnowReappearance,
+                    Some(&adaptive_request)
+                );
             }
-            continue;
-        }
-        let candidate_ceiling = prepared
-            .hard_boundaries
-            .iter()
-            .copied()
-            .find(|boundary| {
-                *boundary > clock.accepted_until() && *boundary < prepared.support.end_ns()
-            })
-            .unwrap_or(prepared.support.end_ns());
-        let available_ns = candidate_ceiling.get() - clock.accepted_until().get();
-        if available_ns == 0 || available_ns % ADAPTIVE_MIN_STEP_NS != 0 {
-            return Err(DirectSnowStage3V11AttachmentError::Support(
-                "adaptive hard boundary is outside the 60-second grid",
-            ));
-        }
-        let available_quanta = available_ns / ADAPTIVE_MIN_STEP_NS;
-        let candidate_quanta = adaptive_trial_quanta.min(available_quanta).max(1);
-        let candidate_ns = candidate_quanta * ADAPTIVE_MIN_STEP_NS;
-        let end_ns = ModelTimeNs::new(clock.accepted_until().get() + candidate_ns);
-        let support = TimeSupport::new(clock.accepted_until(), end_ns)?;
-        let child_ordinal = u32::try_from(owner_joins.len()).map_err(|_| {
-            DirectSnowStage3V11AttachmentError::Identity("coupled subslab ordinal overflow")
-        })?;
-        let adaptive_request = adaptive_receipts.request(
-            context,
-            &clock,
-            prepared.support,
-            support,
-            forcing_receipt,
-            candidate_quanta,
-        )?;
-        if let Some(checkpoint) = restart.as_mut() {
-            if let Some(expected) = checkpoint.pending_adaptive_request.take() {
-                if expected != adaptive_request {
-                    return Err(DirectSnowStage3V11AttachmentError::Identity(
-                        "restart pending adaptive request join",
-                    ));
-                }
-            }
-        }
-        let snow_reappearance = stage3.iter().any(|(lane, state)| {
-            state.layers.is_empty()
-                && prepared
-                    .support_forcing_by_lane
-                    .get(lane)
-                    .is_some_and(|forcing| forcing.forcing.snowfall_m > 0.0)
-        });
-        if stage3
-            .values()
-            .any(crate::hydrology::stage3_is_terminal_event_domain)
-        {
-            interrupt!(
-                DirectSnowStage3V11InterruptionPostureV2::BeforeTerminalEvent,
-                Some(&adaptive_request)
-            );
-            let event_ordinal = u64::try_from(clock.event_ordinal()).map_err(|_| {
-                DirectSnowStage3V11AttachmentError::Identity("terminal event ordinal width")
-            })?;
-            let (accepted, maximum_scaled_error) = match select_adaptive_terminal_candidate_v1::<M>(
+            let (accepted, maximum_scaled_error) = match select_adaptive_covered_candidate_v1(
                 context,
                 &parent,
                 &consumer,
                 &clock,
-                prepared,
+                &prepared,
                 day_index,
                 interval_index,
                 forcing_receipt,
                 &stage3,
                 &pending_terminal_parcels,
+                &mut covered_trial_memo,
                 &mut adaptive_receipts,
                 &adaptive_request,
                 support,
                 candidate_quanta,
                 child_ordinal,
-                event_ordinal,
-                evidence,
             )? {
                 AdaptiveCandidateSelectionV1::Accepted {
                     trial,
                     maximum_scaled_error,
-                } => (*trial, maximum_scaled_error),
+                } => (trial, maximum_scaled_error),
                 AdaptiveCandidateSelectionV1::Refine { next_trial_quanta } => {
                     adaptive_trial_quanta = next_trial_quanta;
                     continue;
                 }
             };
-            let AdaptiveTerminalPathV1 {
-                mut actual,
-                ending_pending_terminal_parcels,
-            } = accepted;
-            let mut terminal_predecessor = expected_child_beginning;
-            for receipt in &actual.receipts {
-                if receipt.owner_join.beginning_complete_owner_set_sha256 != terminal_predecessor {
-                    return Err(DirectSnowStage3V11AttachmentError::Identity(
-                        "terminal child complete-owner predecessor join",
-                    ));
-                }
-                terminal_predecessor = receipt.effective_ending_complete_owner_set_sha256();
-            }
-            parent = actual.parent;
-            consumer = actual.consumer;
-            clock = actual.clock;
-            stage3 = actual.stage3;
-            owner_joins.append(&mut actual.receipts);
-            if let Some(group) = actual.group.take() {
-                event_groups.push(group);
-            }
-            pending_terminal_parcels = ending_pending_terminal_parcels;
-            terminal_parcels.append(&mut actual.parcels);
-            if clock.accepted_until() == prepared.support.end_ns()
-                && !pending_terminal_parcels.is_empty()
-            {
-                expected_child_beginning = complete_owner_set_digest(clock.owners())?;
-                interrupt!(
-                    DirectSnowStage3V11InterruptionPostureV2::AfterTerminalEvent,
-                    None::<&Stage3AdaptiveParentRequestReceiptV1>
-                );
-                let endpoint =
-                    owner_joins
-                        .last()
-                        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                            "parent-end terminal receiver endpoint support",
-                        ))?;
-                let terminal_group_index = event_groups.len().checked_sub(1).ok_or(
-                    DirectSnowStage3V11AttachmentError::Identity(
-                        "parent-end terminal receiver event group",
-                    ),
-                )?;
-                interrupt!(
-                    DirectSnowStage3V11InterruptionPostureV2::BeforeTerminalReceiver,
-                    None::<&Stage3AdaptiveParentRequestReceiptV1>
-                );
-                let terminal_group = event_groups.get_mut(terminal_group_index).ok_or(
-                    DirectSnowStage3V11AttachmentError::Identity(
-                        "parent-end terminal receiver event group",
-                    ),
-                )?;
-                consume_parent_end_terminal_parcels_v1(
-                    context,
-                    &mut parent,
-                    &mut consumer,
-                    &mut clock,
-                    &stage3,
-                    &mut terminal_parcels,
-                    &mut pending_terminal_parcels,
-                    endpoint,
-                    terminal_group,
-                )?;
-                expected_child_beginning = complete_owner_set_digest(clock.owners())?;
-                interrupt!(
-                    DirectSnowStage3V11InterruptionPostureV2::AfterTerminalReceiver,
-                    None::<&Stage3AdaptiveParentRequestReceiptV1>
-                );
+            for (offset, receipt) in accepted.receipts.iter().enumerate() {
+                let accepted_ordinal = owner_joins.len() + offset + 1;
                 if failure_injection
-                    == Some(Stage3V11FailureInjection::ParentEndTerminalReceiverCompleted)
+                    == Some(Stage3V11FailureInjection::OutcomeLedgerBuilt(
+                        accepted_ordinal,
+                    ))
                 {
                     return Err(DirectSnowStage3V11AttachmentError::Identity(
-                        "injected parent-end terminal receiver rollback",
+                        "injected post-outcome-ledger rollback",
+                    ));
+                }
+                if failure_injection
+                    == Some(Stage3V11FailureInjection::PrecipitationReceiptRejected(
+                        accepted_ordinal,
+                    ))
+                {
+                    return Err(DirectSnowStage3V11AttachmentError::Precipitation(
+                        "injected live precipitation-receipt rejection",
+                    ));
+                }
+                if failure_injection
+                    == Some(Stage3V11FailureInjection::SnowSoilHeatReceiptRejected(
+                        accepted_ordinal,
+                    ))
+                {
+                    return Err(DirectSnowStage3V11AttachmentError::SnowSoilHeat(
+                        "injected live snow-soil-receipt rejection",
+                    ));
+                }
+                let expected = if offset == 0 {
+                    expected_child_beginning
+                } else {
+                    accepted.receipts[offset - 1].effective_ending_complete_owner_set_sha256()
+                };
+                if receipt.owner_join.beginning_complete_owner_set_sha256 != expected {
+                    return Err(DirectSnowStage3V11AttachmentError::Identity(
+                        "adaptive accepted child predecessor join",
                     ));
                 }
             }
-            expected_child_beginning = complete_owner_set_digest(clock.owners())?;
+            expected_child_beginning = accepted
+                .receipts
+                .last()
+                .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                    "adaptive accepted receipt cardinality",
+                ))?
+                .effective_ending_complete_owner_set_sha256();
+            if complete_owner_set_digest(accepted.clock.owners())? != expected_child_beginning {
+                return Err(DirectSnowStage3V11AttachmentError::Identity(
+                    "adaptive accepted ending complete-owner clock join",
+                ));
+            }
+            parent = *accepted.parent;
+            consumer = *accepted.consumer;
+            clock = *accepted.clock;
+            stage3 = *accepted.stage3;
+            owner_joins.extend(accepted.receipts);
+            for accepted_ordinal in 1..=owner_joins.len() {
+                if failure_injection
+                    == Some(Stage3V11FailureInjection::SubslabAccepted(accepted_ordinal))
+                {
+                    return Err(DirectSnowStage3V11AttachmentError::Identity(
+                        "injected coupled subslab rollback",
+                    ));
+                }
+            }
             let remaining_quanta =
                 (candidate_ceiling.get() - clock.accepted_until().get()) / ADAPTIVE_MIN_STEP_NS;
             adaptive_trial_quanta = if maximum_scaled_error < 0.125 {
@@ -2311,9 +2278,9 @@ where
             } else {
                 candidate_quanta.min(remaining_quanta)
             };
-            if !pending_terminal_parcels.is_empty() {
+            if snow_reappearance {
                 interrupt!(
-                    DirectSnowStage3V11InterruptionPostureV2::AfterTerminalEvent,
+                    DirectSnowStage3V11InterruptionPostureV2::AfterSnowReappearance,
                     None::<&Stage3AdaptiveParentRequestReceiptV1>
                 );
             }
@@ -2321,242 +2288,39 @@ where
                 DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
                 None::<&Stage3AdaptiveParentRequestReceiptV1>
             );
-            continue;
         }
-        if snow_reappearance {
-            interrupt!(
-                DirectSnowStage3V11InterruptionPostureV2::BeforeSnowReappearance,
-                Some(&adaptive_request)
-            );
-        }
-        let (accepted, maximum_scaled_error) = match select_adaptive_covered_candidate_v1(
-            context,
-            &parent,
-            &consumer,
-            &clock,
-            prepared,
-            day_index,
-            interval_index,
-            forcing_receipt,
-            &stage3,
-            &pending_terminal_parcels,
-            &mut covered_trial_memo,
-            &mut adaptive_receipts,
-            &adaptive_request,
-            support,
-            candidate_quanta,
-            child_ordinal,
-        )? {
-            AdaptiveCandidateSelectionV1::Accepted {
-                trial,
-                maximum_scaled_error,
-            } => (trial, maximum_scaled_error),
-            AdaptiveCandidateSelectionV1::Refine { next_trial_quanta } => {
-                adaptive_trial_quanta = next_trial_quanta;
-                continue;
-            }
-        };
-        for (offset, receipt) in accepted.receipts.iter().enumerate() {
-            let accepted_ordinal = owner_joins.len() + offset + 1;
-            if failure_injection
-                == Some(Stage3V11FailureInjection::OutcomeLedgerBuilt(
-                    accepted_ordinal,
-                ))
-            {
-                return Err(DirectSnowStage3V11AttachmentError::Identity(
-                    "injected post-outcome-ledger rollback",
-                ));
-            }
-            if failure_injection
-                == Some(Stage3V11FailureInjection::PrecipitationReceiptRejected(
-                    accepted_ordinal,
-                ))
-            {
-                return Err(DirectSnowStage3V11AttachmentError::Precipitation(
-                    "injected live precipitation-receipt rejection",
-                ));
-            }
-            if failure_injection
-                == Some(Stage3V11FailureInjection::SnowSoilHeatReceiptRejected(
-                    accepted_ordinal,
-                ))
-            {
-                return Err(DirectSnowStage3V11AttachmentError::SnowSoilHeat(
-                    "injected live snow-soil-receipt rejection",
-                ));
-            }
-            let expected = if offset == 0 {
-                expected_child_beginning
-            } else {
-                accepted.receipts[offset - 1].effective_ending_complete_owner_set_sha256()
-            };
-            if receipt.owner_join.beginning_complete_owner_set_sha256 != expected {
-                return Err(DirectSnowStage3V11AttachmentError::Identity(
-                    "adaptive accepted child predecessor join",
-                ));
-            }
-        }
-        expected_child_beginning = accepted
-            .receipts
-            .last()
-            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
-                "adaptive accepted receipt cardinality",
-            ))?
-            .effective_ending_complete_owner_set_sha256();
-        if complete_owner_set_digest(accepted.clock.owners())? != expected_child_beginning {
-            return Err(DirectSnowStage3V11AttachmentError::Identity(
-                "adaptive accepted ending complete-owner clock join",
-            ));
-        }
-        parent = *accepted.parent;
-        consumer = *accepted.consumer;
-        clock = *accepted.clock;
-        stage3 = *accepted.stage3;
-        owner_joins.extend(accepted.receipts);
-        for accepted_ordinal in 1..=owner_joins.len() {
-            if failure_injection
-                == Some(Stage3V11FailureInjection::SubslabAccepted(accepted_ordinal))
-            {
-                return Err(DirectSnowStage3V11AttachmentError::Identity(
-                    "injected coupled subslab rollback",
-                ));
-            }
-        }
-        let remaining_quanta =
-            (candidate_ceiling.get() - clock.accepted_until().get()) / ADAPTIVE_MIN_STEP_NS;
-        adaptive_trial_quanta = if maximum_scaled_error < 0.125 {
-            adaptive_test_growth_quanta(candidate_quanta, remaining_quanta)
-        } else {
-            candidate_quanta.min(remaining_quanta)
-        };
-        if snow_reappearance {
-            interrupt!(
-                DirectSnowStage3V11InterruptionPostureV2::AfterSnowReappearance,
-                None::<&Stage3AdaptiveParentRequestReceiptV1>
-            );
-        }
-        interrupt!(
-            DirectSnowStage3V11InterruptionPostureV2::AdaptiveMicrostepBoundary,
-            None::<&Stage3AdaptiveParentRequestReceiptV1>
-        );
-    }
-    if failure_injection == Some(Stage3V11FailureInjection::FinalOwnerJoinCompleted) {
-        return Err(DirectSnowStage3V11AttachmentError::Identity(
-            "injected post-owner-join rollback",
-        ));
-    }
-    let mut finalized = parent.clone().finalize(&context.vegetation_configuration)?;
-    install_v11_parent_finalization_owner_transition(
-        &mut clock,
-        &mut consumer,
-        &context.vegetation_configuration,
-        &mut finalized,
-    )?;
-    let adaptive_support_receipt = adaptive_receipts.finalize(&clock, prepared.support)?;
-    validate_adaptive_parent_publication_crossjoin_v1(
-        &adaptive_support_receipt,
-        &owner_joins,
-        &snow_free_successor_receipts,
-        &consumer,
-        day_index,
-    )?;
-    if crate::snow_stage3_v11_attachment::adaptive_parent_telemetry_enabled_v1() {
-        let transient_diagnostics = adaptive_support_receipt.transient_diagnostics()?;
-        let parent_elapsed = parent_telemetry_started.elapsed();
-        let (publication_support_count, publication_event_count) =
-            consumer.adaptive_parent_telemetry_publication_shape_v1();
-        let retained_complete_owner_bytes = consumer
-            .canonical_owner_state_bytes()
-            .ok()
-            .map(|owners| owners.values().map(Vec::len).sum());
-        let adaptive_receipt_bytes = serde_json::to_vec(&adaptive_support_receipt)
-            .ok()
-            .map(|bytes| bytes.len());
-        let coupled_receipt_inline_bytes = std::mem::size_of_val(owner_joins.as_slice())
-            + std::mem::size_of_val(event_groups.as_slice())
-            + std::mem::size_of_val(terminal_parcels.as_slice());
-        let mut accepted_widths = BTreeMap::<u128, u64>::new();
-        for accepted in &adaptive_support_receipt.accepted_microsteps {
-            let count = accepted_widths
-                .entry(accepted.context.step_support.duration_ns())
-                .or_default();
-            *count = count.saturating_add(1);
-        }
-        if crate::snow_stage3_v11_attachment::record_adaptive_parent_telemetry_v1(
-            crate::snow_stage3_v11_attachment::AdaptiveParentTelemetryV1 {
-                parent_ordinal: interval_index,
-                support: prepared.support,
-                direct_trial_count: transient_diagnostics.direct_trial_count,
-                split_child_trial_count: transient_diagnostics.split_child_trial_count,
-                accepted_microstep_count: transient_diagnostics.accepted_microstep_count,
-                rejected_candidate_count: transient_diagnostics.rejected_candidate_count,
-                owner_join_count: owner_joins.len(),
-                event_group_count: event_groups.len(),
-                terminal_parcel_count: terminal_parcels.len(),
-                publication_support_count,
-                publication_event_count,
-                adaptive_receipt_bytes,
-                coupled_receipt_inline_bytes,
-                retained_complete_owner_bytes,
-                accepted_width_histogram: accepted_widths.into_iter().collect(),
-                phase_rejection_count: 0,
-                event_rejection_count: 0,
-                phase_and_event_rejection_count: 0,
-                other_rejection_count: 0,
-                covered_direct_trial_phase_count: 0,
-                covered_direct_trial_phase_elapsed: std::time::Duration::ZERO,
-                covered_composed_trial_phase_count: 0,
-                covered_composed_trial_phase_elapsed: std::time::Duration::ZERO,
-                terminal_direct_trial_phase_count: 0,
-                terminal_direct_trial_phase_elapsed: std::time::Duration::ZERO,
-                terminal_composed_trial_phase_count: 0,
-                terminal_composed_trial_phase_elapsed: std::time::Duration::ZERO,
-                fixed_point_evaluation_count: 0,
-                fixed_point_iteration_total: 0,
-                fixed_point_iteration_maximum: 0,
-                fixed_point_operand_elapsed: std::time::Duration::ZERO,
-                fixed_point_envelope_elapsed: std::time::Duration::ZERO,
-                provisional_envelope_projection_elapsed: std::time::Duration::ZERO,
-                provisional_envelope_solver_ready_elapsed: std::time::Duration::ZERO,
-                provisional_envelope_physical_elapsed: std::time::Duration::ZERO,
-                provisional_envelope_receipts_elapsed: std::time::Duration::ZERO,
-                provisional_envelope_owner_elapsed: std::time::Duration::ZERO,
-                profile_detail: Default::default(),
-                fixed_point_stage3_elapsed: std::time::Duration::ZERO,
-                fixed_point_soil_elapsed: std::time::Duration::ZERO,
-                fixed_point_finalization_elapsed: std::time::Duration::ZERO,
-                publication_append_count: 0,
-                publication_append_elapsed: std::time::Duration::ZERO,
-                publication_cow_count: 0,
-                publication_full_validation_count: 0,
-                publication_full_validation_elapsed: std::time::Duration::ZERO,
-                reuse_validation_count: 0,
-                reuse_validation_elapsed: std::time::Duration::ZERO,
-                reuse_hit_count: 0,
-                reuse_fallback_count: 0,
-                covered_child_memo_hit_count: 0,
-                covered_child_memo_fallback_count: 0,
-                covered_child_memo_direct_hit_count: 0,
-                covered_child_memo_composed_hit_count: 0,
-                parent_elapsed,
-                cumulative_elapsed: std::time::Duration::ZERO,
+        Ok(AdaptiveParentLoopOutcomeV1::Complete(Box::new(
+            AdaptiveParentExecutionStateV1 {
+                prepared,
+                restart,
+                parent,
+                consumer,
+                clock,
+                stage3,
+                owner_joins,
+                event_groups,
+                terminal_parcels,
+                pending_terminal_parcels,
+                expected_child_beginning,
+                adaptive_receipts,
+                snow_free_successor_receipts,
+                adaptive_trial_quanta,
+                covered_trial_memo,
             },
-        ) {
-            return Err(DirectSnowStage3V11AttachmentError::AdaptiveTelemetryStop);
-        }
-    }
-    Ok(AdaptiveSupportExecutionOutcomeV2::Complete((
-        parent,
-        consumer,
-        clock,
-        finalized,
-        stage3,
-        owner_joins,
-        event_groups,
-        terminal_parcels,
-        adaptive_support_receipt,
-        snow_free_successor_receipts,
-    )))
+        )))
+    })? {
+        AdaptiveParentLoopOutcomeV1::Paused(outcome) => return Ok(*outcome),
+        AdaptiveParentLoopOutcomeV1::Complete(execution) => execution,
+    };
+    finalize_adaptive_parent_execution_state_v1(
+        context,
+        failure_injection,
+        day_index,
+        interval_index,
+        parent_telemetry_started,
+        execution,
+    )
+    .map(|outcome| *outcome)
 }
 
 #[cfg(test)]

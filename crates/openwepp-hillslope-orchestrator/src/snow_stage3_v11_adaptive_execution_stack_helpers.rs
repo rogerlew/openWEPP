@@ -8,6 +8,64 @@ enum AdaptiveCandidateSelectionV1<T> {
     },
 }
 
+enum AdaptiveParentLoopOutcomeV1 {
+    Paused(Box<AdaptiveSupportExecutionOutcomeV2>),
+    Complete(Box<AdaptiveParentExecutionStateV1>),
+}
+
+struct AdaptiveSnowFreeSuccessorExecutionV1 {
+    parent: V11ParentTransaction,
+    consumer: DirectV10RealConsumerShadow,
+    clock: CoupledClockStateV1,
+    accepted_support: RealV11AcceptedSupportIdentityV1,
+}
+
+#[allow(clippy::too_many_arguments)]
+#[inline(never)]
+fn execute_adaptive_snow_free_successor_v1(
+    context: &DirectSnowStage3V11StaticContext,
+    parent: &V11ParentTransaction,
+    consumer: &DirectV10RealConsumerShadow,
+    clock: &CoupledClockStateV1,
+    successor: &DirectSnowStage3V11PreparedSupport,
+    day_index: usize,
+    interval_index: usize,
+    forcing_receipt: Digest32,
+    ending_snow_owner_bytes: Vec<u8>,
+) -> Result<Box<AdaptiveSnowFreeSuccessorExecutionV1>, DirectSnowStage3V11AttachmentError> {
+    let (parent, consumer, clock, _, accepted_support) = execute_real_v11_parent(
+        context,
+        parent,
+        consumer,
+        clock,
+        successor,
+        day_index,
+        interval_index,
+        forcing_receipt,
+        ending_snow_owner_bytes,
+        false,
+    )?;
+    Ok(Box::new(AdaptiveSnowFreeSuccessorExecutionV1 {
+        parent,
+        consumer,
+        clock,
+        accepted_support,
+    }))
+}
+
+#[inline(never)]
+fn execute_adaptive_parent_loop_closure_v1<F>(
+    execution: Box<AdaptiveParentExecutionStateV1>,
+    execute: F,
+) -> Result<AdaptiveParentLoopOutcomeV1, DirectSnowStage3V11AttachmentError>
+where
+    F: FnOnce(
+        Box<AdaptiveParentExecutionStateV1>,
+    ) -> Result<AdaptiveParentLoopOutcomeV1, DirectSnowStage3V11AttachmentError>,
+{
+    execute(execution)
+}
+
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 #[inline(never)]
 fn select_adaptive_covered_candidate_v1(
@@ -603,5 +661,432 @@ fn adaptive_interruption_outcome_v2(
             .ok_or(DirectSnowStage3V11AttachmentError::Identity(
                 "adaptive interruption checkpoint",
             ))?,
+    ))))
+}
+
+struct AdaptiveParentExecutionStateV1 {
+    prepared: DirectSnowStage3V11PreparedSupport,
+    restart: Option<Box<DirectSnowStage3V11InProgressExecutionV2>>,
+    parent: V11ParentTransaction,
+    consumer: DirectV10RealConsumerShadow,
+    clock: CoupledClockStateV1,
+    stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    owner_joins: Vec<Stage3CoupledSubslabReceiptV1>,
+    event_groups: Vec<Stage3V11TerminalEventGroupV1>,
+    terminal_parcels: Vec<DirectSnowStage3V11TerminalParcel>,
+    pending_terminal_parcels: BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
+    expected_child_beginning: Digest32,
+    adaptive_receipts: AdaptiveReceiptAccumulatorV1,
+    snow_free_successor_receipts: Vec<Stage3SnowFreeSuccessorReceiptV1>,
+    adaptive_trial_quanta: u128,
+    covered_trial_memo: Vec<AdaptiveCoveredTrialMemoEntryV1>,
+}
+
+enum AdaptiveParentInitializationOutcomeV1 {
+    Paused(Box<AdaptiveSupportExecutionOutcomeV2>),
+    Ready(Box<AdaptiveParentExecutionStateV1>),
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+#[inline(never)]
+fn initialize_adaptive_parent_execution_v1(
+    context: &DirectSnowStage3V11StaticContext,
+    beginning_parent: &V11ParentTransaction,
+    beginning_consumer: &DirectV10RealConsumerShadow,
+    beginning_clock: &CoupledClockStateV1,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    beginning_stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    beginning_terminal_parcels: BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
+    failure_injection: Option<Stage3V11FailureInjection>,
+    restart: Option<Box<DirectSnowStage3V11InProgressExecutionV2>>,
+    interrupt_at: Option<DirectSnowStage3V11InterruptionPostureV2>,
+) -> Result<AdaptiveParentInitializationOutcomeV1, DirectSnowStage3V11AttachmentError> {
+    let support_beginning_stage3 = beginning_stage3.clone();
+    let support_beginning_terminal_parcels = beginning_terminal_parcels.clone();
+    let solid_reappearance = canonical_solid_reappearance_transition_v1(
+        context,
+        beginning_parent,
+        beginning_consumer,
+        beginning_clock,
+        prepared,
+        &support_beginning_stage3,
+        &support_beginning_terminal_parcels,
+    )?;
+    let solid_reappearance_event = solid_reappearance
+        .as_ref()
+        .map(|transition| transition.accepted_event.clone());
+    let debited_prepared = solid_reappearance
+        .as_ref()
+        .map(|transition| prepared.after_solid_reappearance_debit(&transition.lanes))
+        .transpose()?;
+    let mut restart = restart;
+    let (
+        mut parent,
+        mut consumer,
+        mut clock,
+        mut stage3,
+        owner_joins,
+        mut event_groups,
+        mut terminal_parcels,
+        mut pending_terminal_parcels,
+        mut expected_child_beginning,
+        adaptive_receipts,
+        snow_free_successor_receipts,
+    ) = if let Some(checkpoint) = restart.as_ref() {
+        let current = checkpoint.support_current.as_ref().ok_or(
+            DirectSnowStage3V11AttachmentError::Identity("restart current adaptive support"),
+        )?;
+        (
+            current.v11_parent_state.clone(),
+            current.real_consumer.clone(),
+            current.coupled_clock.clone(),
+            current.stage3_by_lane.clone(),
+            checkpoint.support_owner_joins.clone(),
+            checkpoint.support_event_groups.clone(),
+            checkpoint.support_terminal_parcels.clone(),
+            current.terminal_parcels.clone(),
+            checkpoint.expected_child_beginning,
+            checkpoint.adaptive_receipts.clone(),
+            checkpoint.support_snow_free_successor_receipts.clone(),
+        )
+    } else {
+        (
+            beginning_parent.clone(),
+            beginning_consumer.clone(),
+            beginning_clock.clone(),
+            beginning_stage3,
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            beginning_terminal_parcels,
+            complete_owner_set_digest(beginning_clock.owners())?,
+            AdaptiveReceiptAccumulatorV1::default(),
+            Vec::new(),
+        )
+    };
+    const ADAPTIVE_MIN_STEP_NS: u128 = STAGE3_V11_ADAPTIVE_MINIMUM_SUPPORT_NS;
+    if prepared.support.duration_ns() % ADAPTIVE_MIN_STEP_NS != 0 {
+        return Err(DirectSnowStage3V11AttachmentError::Support(
+            "adaptive parent support is outside the 60-second grid",
+        ));
+    }
+    let adaptive_trial_quanta = restart.as_ref().map_or_else(
+        || adaptive_test_initial_quanta(prepared.support.duration_ns() / ADAPTIVE_MIN_STEP_NS),
+        |checkpoint| checkpoint.adaptive_trial_quanta,
+    );
+    macro_rules! interrupt {
+        ($posture:expr) => {
+            if let Some(outcome) = adaptive_interruption_outcome_v2(
+                interrupt_at,
+                $posture,
+                &mut restart,
+                None,
+                &parent,
+                &consumer,
+                &clock,
+                &stage3,
+                &pending_terminal_parcels,
+                &owner_joins,
+                &event_groups,
+                &terminal_parcels,
+                expected_child_beginning,
+                &adaptive_receipts,
+                &snow_free_successor_receipts,
+                adaptive_trial_quanta,
+            )? {
+                return Ok(AdaptiveParentInitializationOutcomeV1::Paused(outcome));
+            }
+        };
+    }
+    if let Some(transition) = solid_reappearance {
+        let already_applied = clock
+            .accepted_event_receipts()
+            .iter()
+            .any(|receipt| receipt == &transition.accepted_event);
+        if already_applied {
+            let publication_retained =
+                consumer.retains_accepted_publication_event_handoff(&transition.accepted_event);
+            let publication_is_ordered_tail =
+                consumer.accepted_publication_event_handoff_is_tail(&transition.accepted_event);
+            let at_open_parent_beginning = clock.accepted_until() == prepared.support.start_ns();
+            validate_solid_reappearance_publication_posture_v1(
+                at_open_parent_beginning,
+                stage3 == transition.stage3,
+                publication_retained,
+                publication_is_ordered_tail,
+            )?;
+        } else {
+            if clock.accepted_until() != prepared.support.start_ns()
+                || stage3 != support_beginning_stage3
+                || complete_owner_set_digest(clock.owners())?
+                    != complete_owner_set_digest(beginning_clock.owners())?
+            {
+                return Err(DirectSnowStage3V11AttachmentError::Identity(
+                    "solid reappearance omitted event",
+                ));
+            }
+            interrupt!(DirectSnowStage3V11InterruptionPostureV2::BeforeSnowReappearance);
+            parent = transition.parent;
+            consumer = transition.consumer;
+            clock = transition.clock;
+            stage3 = transition.stage3;
+            expected_child_beginning = complete_owner_set_digest(clock.owners())?;
+            interrupt!(DirectSnowStage3V11InterruptionPostureV2::AfterSnowReappearance);
+        }
+    }
+    if let Some(event) = solid_reappearance_event.as_ref()
+        && clock.accepted_until() == prepared.support.start_ns()
+    {
+        if consumer.retains_accepted_publication_event_handoff(event) {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "solid reappearance orphan publication event",
+            ));
+        }
+        consumer.retain_accepted_publication_zero_duration_event_for_following_support(
+            event,
+            complete_owner_set_digest(beginning_clock.owners())?,
+            prepared.support,
+        )?;
+    }
+    let prepared = debited_prepared.unwrap_or_else(|| prepared.clone());
+    if clock.accepted_until() == prepared.support.end_ns() && !pending_terminal_parcels.is_empty() {
+        let endpoint = owner_joins
+            .last()
+            .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+                "resumed parent-end terminal receiver endpoint support",
+            ))?;
+        let terminal_group_index = event_groups.len().checked_sub(1).ok_or(
+            DirectSnowStage3V11AttachmentError::Identity(
+                "resumed parent-end terminal receiver event group",
+            ),
+        )?;
+        interrupt!(DirectSnowStage3V11InterruptionPostureV2::BeforeTerminalReceiver);
+        let terminal_group = event_groups.get_mut(terminal_group_index).ok_or(
+            DirectSnowStage3V11AttachmentError::Identity(
+                "resumed parent-end terminal receiver event group",
+            ),
+        )?;
+        consume_parent_end_terminal_parcels_v1(
+            context,
+            &mut parent,
+            &mut consumer,
+            &mut clock,
+            &stage3,
+            &mut terminal_parcels,
+            &mut pending_terminal_parcels,
+            endpoint,
+            terminal_group,
+        )?;
+        expected_child_beginning = complete_owner_set_digest(clock.owners())?;
+        interrupt!(DirectSnowStage3V11InterruptionPostureV2::AfterTerminalReceiver);
+        if failure_injection == Some(Stage3V11FailureInjection::ParentEndTerminalReceiverCompleted)
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "injected parent-end terminal receiver rollback",
+            ));
+        }
+    }
+    Ok(AdaptiveParentInitializationOutcomeV1::Ready(Box::new(
+        AdaptiveParentExecutionStateV1 {
+            prepared,
+            restart,
+            parent,
+            consumer,
+            clock,
+            stage3,
+            owner_joins,
+            event_groups,
+            terminal_parcels,
+            pending_terminal_parcels,
+            expected_child_beginning,
+            adaptive_receipts,
+            snow_free_successor_receipts,
+            adaptive_trial_quanta,
+            covered_trial_memo: Vec::new(),
+        },
+    )))
+}
+
+#[allow(clippy::too_many_arguments)]
+#[inline(never)]
+fn finalize_adaptive_parent_execution_state_v1(
+    context: &DirectSnowStage3V11StaticContext,
+    failure_injection: Option<Stage3V11FailureInjection>,
+    day_index: usize,
+    interval_index: usize,
+    parent_telemetry_started: std::time::Instant,
+    execution: Box<AdaptiveParentExecutionStateV1>,
+) -> Result<Box<AdaptiveSupportExecutionOutcomeV2>, DirectSnowStage3V11AttachmentError> {
+    let AdaptiveParentExecutionStateV1 {
+        prepared,
+        restart: _,
+        parent,
+        consumer,
+        clock,
+        stage3,
+        owner_joins,
+        event_groups,
+        terminal_parcels,
+        pending_terminal_parcels: _,
+        expected_child_beginning: _,
+        adaptive_receipts,
+        snow_free_successor_receipts,
+        adaptive_trial_quanta: _,
+        covered_trial_memo: _,
+    } = *execution;
+    finalize_adaptive_parent_execution_v1(
+        context,
+        failure_injection,
+        &prepared,
+        day_index,
+        interval_index,
+        parent_telemetry_started,
+        parent,
+        consumer,
+        clock,
+        stage3,
+        owner_joins,
+        event_groups,
+        terminal_parcels,
+        adaptive_receipts,
+        snow_free_successor_receipts,
+    )
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+#[inline(never)]
+fn finalize_adaptive_parent_execution_v1(
+    context: &DirectSnowStage3V11StaticContext,
+    failure_injection: Option<Stage3V11FailureInjection>,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    day_index: usize,
+    interval_index: usize,
+    parent_telemetry_started: std::time::Instant,
+    parent: V11ParentTransaction,
+    mut consumer: DirectV10RealConsumerShadow,
+    mut clock: CoupledClockStateV1,
+    stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    owner_joins: Vec<Stage3CoupledSubslabReceiptV1>,
+    event_groups: Vec<Stage3V11TerminalEventGroupV1>,
+    terminal_parcels: Vec<DirectSnowStage3V11TerminalParcel>,
+    adaptive_receipts: AdaptiveReceiptAccumulatorV1,
+    snow_free_successor_receipts: Vec<Stage3SnowFreeSuccessorReceiptV1>,
+) -> Result<Box<AdaptiveSupportExecutionOutcomeV2>, DirectSnowStage3V11AttachmentError> {
+    if failure_injection == Some(Stage3V11FailureInjection::FinalOwnerJoinCompleted) {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "injected post-owner-join rollback",
+        ));
+    }
+    let mut finalized = parent.clone().finalize(&context.vegetation_configuration)?;
+    install_v11_parent_finalization_owner_transition(
+        &mut clock,
+        &mut consumer,
+        &context.vegetation_configuration,
+        &mut finalized,
+    )?;
+    let adaptive_support_receipt = adaptive_receipts.finalize(&clock, prepared.support)?;
+    validate_adaptive_parent_publication_crossjoin_v1(
+        &adaptive_support_receipt,
+        &owner_joins,
+        &snow_free_successor_receipts,
+        &consumer,
+        day_index,
+    )?;
+    if crate::snow_stage3_v11_attachment::adaptive_parent_telemetry_enabled_v1() {
+        let transient_diagnostics = adaptive_support_receipt.transient_diagnostics()?;
+        let parent_elapsed = parent_telemetry_started.elapsed();
+        let (publication_support_count, publication_event_count) =
+            consumer.adaptive_parent_telemetry_publication_shape_v1();
+        let retained_complete_owner_bytes = consumer
+            .canonical_owner_state_bytes()
+            .ok()
+            .map(|owners| owners.values().map(Vec::len).sum());
+        let adaptive_receipt_bytes = serde_json::to_vec(&adaptive_support_receipt)
+            .ok()
+            .map(|bytes| bytes.len());
+        let coupled_receipt_inline_bytes = std::mem::size_of_val(owner_joins.as_slice())
+            + std::mem::size_of_val(event_groups.as_slice())
+            + std::mem::size_of_val(terminal_parcels.as_slice());
+        let mut accepted_widths = BTreeMap::<u128, u64>::new();
+        for accepted in &adaptive_support_receipt.accepted_microsteps {
+            let count = accepted_widths
+                .entry(accepted.context.step_support.duration_ns())
+                .or_default();
+            *count = count.saturating_add(1);
+        }
+        if crate::snow_stage3_v11_attachment::record_adaptive_parent_telemetry_v1(
+            crate::snow_stage3_v11_attachment::AdaptiveParentTelemetryV1 {
+                parent_ordinal: interval_index,
+                support: prepared.support,
+                direct_trial_count: transient_diagnostics.direct_trial_count,
+                split_child_trial_count: transient_diagnostics.split_child_trial_count,
+                accepted_microstep_count: transient_diagnostics.accepted_microstep_count,
+                rejected_candidate_count: transient_diagnostics.rejected_candidate_count,
+                owner_join_count: owner_joins.len(),
+                event_group_count: event_groups.len(),
+                terminal_parcel_count: terminal_parcels.len(),
+                publication_support_count,
+                publication_event_count,
+                adaptive_receipt_bytes,
+                coupled_receipt_inline_bytes,
+                retained_complete_owner_bytes,
+                accepted_width_histogram: accepted_widths.into_iter().collect(),
+                phase_rejection_count: 0,
+                event_rejection_count: 0,
+                phase_and_event_rejection_count: 0,
+                other_rejection_count: 0,
+                covered_direct_trial_phase_count: 0,
+                covered_direct_trial_phase_elapsed: std::time::Duration::ZERO,
+                covered_composed_trial_phase_count: 0,
+                covered_composed_trial_phase_elapsed: std::time::Duration::ZERO,
+                terminal_direct_trial_phase_count: 0,
+                terminal_direct_trial_phase_elapsed: std::time::Duration::ZERO,
+                terminal_composed_trial_phase_count: 0,
+                terminal_composed_trial_phase_elapsed: std::time::Duration::ZERO,
+                fixed_point_evaluation_count: 0,
+                fixed_point_iteration_total: 0,
+                fixed_point_iteration_maximum: 0,
+                fixed_point_operand_elapsed: std::time::Duration::ZERO,
+                fixed_point_envelope_elapsed: std::time::Duration::ZERO,
+                provisional_envelope_projection_elapsed: std::time::Duration::ZERO,
+                provisional_envelope_solver_ready_elapsed: std::time::Duration::ZERO,
+                provisional_envelope_physical_elapsed: std::time::Duration::ZERO,
+                provisional_envelope_receipts_elapsed: std::time::Duration::ZERO,
+                provisional_envelope_owner_elapsed: std::time::Duration::ZERO,
+                profile_detail: Default::default(),
+                fixed_point_stage3_elapsed: std::time::Duration::ZERO,
+                fixed_point_soil_elapsed: std::time::Duration::ZERO,
+                fixed_point_finalization_elapsed: std::time::Duration::ZERO,
+                publication_append_count: 0,
+                publication_append_elapsed: std::time::Duration::ZERO,
+                publication_cow_count: 0,
+                publication_full_validation_count: 0,
+                publication_full_validation_elapsed: std::time::Duration::ZERO,
+                reuse_validation_count: 0,
+                reuse_validation_elapsed: std::time::Duration::ZERO,
+                reuse_hit_count: 0,
+                reuse_fallback_count: 0,
+                covered_child_memo_hit_count: 0,
+                covered_child_memo_fallback_count: 0,
+                covered_child_memo_direct_hit_count: 0,
+                covered_child_memo_composed_hit_count: 0,
+                parent_elapsed,
+                cumulative_elapsed: std::time::Duration::ZERO,
+            },
+        ) {
+            return Err(DirectSnowStage3V11AttachmentError::AdaptiveTelemetryStop);
+        }
+    }
+    Ok(Box::new(AdaptiveSupportExecutionOutcomeV2::Complete((
+        parent,
+        consumer,
+        clock,
+        finalized,
+        stage3,
+        owner_joins,
+        event_groups,
+        terminal_parcels,
+        adaptive_support_receipt,
+        snow_free_successor_receipts,
     ))))
 }
