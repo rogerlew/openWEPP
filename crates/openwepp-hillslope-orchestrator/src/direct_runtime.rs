@@ -431,6 +431,11 @@ pub(crate) use surface_liquid_ingress::{
     rebind_wb14_replay_to_accepted_slab, validate_wb14_child_replay_binding,
     validate_wb14_parent_replay, wb14_child_replay_binding,
 };
+pub(crate) use surface_liquid_owner::v2_ingress_adapter::{
+    DirectSurfaceLiquidIngressCandidateV2, DirectWb14ParentWorkingStateV2,
+    execute_surface_liquid_ingress_v2_with_parent_state_and_coupled_binding,
+    prepare_surface_liquid_resource_candidate_v2,
+};
 pub use surface_liquid_owner::{
     DirectGroundIngressMode, DirectSurfaceLiquidArbitration, DirectSurfaceLiquidConfiguration,
     DirectSurfaceLiquidConfigurationRecord, DirectSurfaceLiquidContinuationState,

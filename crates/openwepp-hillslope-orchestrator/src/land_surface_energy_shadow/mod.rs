@@ -84,6 +84,15 @@ pub use strict_v8_endpoint::endpoint_rollback_tests::{
     EndpointFixture, endpoint_fixture, two_ofe_routed_endpoint_fixture,
 };
 mod unified_entry_preflight;
+// The successor coordinator is an admitted candidate-only seam. The active
+// V9 consumer adopts it in the following manifest slice; keeping it dormant
+// here must not weaken lints on the established V8 runtime.
+#[allow(dead_code)]
+pub(crate) mod v3_execution;
+pub(crate) mod v3_input_projection;
+pub(crate) mod v3_rollback;
+#[cfg(test)]
+mod v3_tests;
 mod v8_input_projection;
 mod v8_projection;
 mod v8_rollback;
