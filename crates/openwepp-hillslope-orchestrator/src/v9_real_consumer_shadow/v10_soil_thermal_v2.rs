@@ -263,6 +263,47 @@ impl DirectSoilThermalResident {
         )
         .map_err(|_| DirectV9RealConsumerError::OwnerClosure("prepare V2 soil support"))
     }
+
+    /// Prepare the next native V2 support from the resident's authenticated
+    /// custody chain.
+    ///
+    /// A receipt-free resident already names the transaction reserved for its
+    /// first accepted child. After acceptance, the installed owner is the
+    /// predecessor authority and the next child receives the checked numeric
+    /// successor. The support join is independently enforced by
+    /// `validate_prepared_beginning`; callers cannot reuse a parent-envelope
+    /// transaction across accepted children.
+    pub fn prepare_next_v2_support(
+        &self,
+        support_start_ns: u128,
+        support_end_ns: u128,
+    ) -> Result<openwepp_land_surface_energy::PreparedSoilThermalSupportV2, DirectV9RealConsumerError>
+    {
+        let resident = self.v2()?;
+        resident.validate()?;
+        let transaction_id = if resident.receipt_free_seals.is_some() {
+            resident.owner.transaction_id
+        } else {
+            resident
+                .owner
+                .transaction_id
+                .0
+                .checked_add(1)
+                .map(TransactionId)
+                .ok_or(DirectV9RealConsumerError::OwnerClosure(
+                    "accepted V2 support transaction overflow",
+                ))?
+        };
+        let prepared = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
+            &resident.owner,
+            transaction_id,
+            support_start_ns,
+            support_end_ns,
+        )
+        .map_err(|_| DirectV9RealConsumerError::OwnerClosure("prepare next V2 soil support"))?;
+        resident.validate_prepared_beginning(prepared.beginning_owner())?;
+        Ok(prepared)
+    }
 }
 
 impl DirectSoilThermalCandidate {
@@ -543,6 +584,20 @@ impl DirectV10RealConsumerShadow {
         self.inner
             .soil_thermal
             .prepare_v2_support(transaction_id, support_start_ns, support_end_ns)
+            .map_err(Into::into)
+    }
+
+    pub fn prepare_next_soil_thermal_support_v2(
+        &self,
+        support_start_ns: u128,
+        support_end_ns: u128,
+    ) -> Result<
+        openwepp_land_surface_energy::PreparedSoilThermalSupportV2,
+        DirectV10RealConsumerError,
+    > {
+        self.inner
+            .soil_thermal
+            .prepare_next_v2_support(support_start_ns, support_end_ns)
             .map_err(Into::into)
     }
 

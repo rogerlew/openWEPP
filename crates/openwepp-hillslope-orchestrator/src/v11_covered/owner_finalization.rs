@@ -202,6 +202,13 @@ mod terminal_custody_lane_set_tests {
                 .count(),
             1
         );
+        assert_eq!(
+            receiver
+                .matches("prepare_next_soil_thermal_support_v2(")
+                .count(),
+            1
+        );
+        assert!(!receiver.contains("prepare_soil_thermal_support_v2("));
         let finalization = source
             .rsplit("pub(crate) fn finalize_v11_imported_segment")
             .next()
@@ -215,6 +222,78 @@ mod terminal_custody_lane_set_tests {
                 .count(),
             1
         );
+        assert_eq!(
+            finalization
+                .matches("install_soil_thermal_accepted_v2_from_beginning(")
+                .count(),
+            1
+        );
+        assert!(finalization.contains(
+            ".install_soil_thermal_accepted_v2_from_beginning(\n                    beginning,"
+        ));
+        assert!(
+            !finalization
+                .contains("candidate.inner.soil_thermal = beginning.inner.soil_thermal.clone()")
+        );
+        assert!(!finalization.contains("if !v2_soil"));
+    }
+
+    #[test]
+    fn native_v2_accepted_vegetation_lineage_matches_support_transaction() {
+        for reused in [false, true] {
+            validate_accepted_vegetation_candidate_transaction_lineage_v1(
+                true, reused, 40, 41, 41, 41, 41,
+            )
+            .expect("V2 accepted candidate is the exact support transaction");
+        }
+    }
+
+    #[test]
+    fn native_v2_accepted_vegetation_lineage_rejects_transaction_poisons() {
+        for (envelope, outer, inner) in [
+            (41, 40, 40), // stale predecessor candidate
+            (40, 41, 41), // replayed predecessor support
+            (42, 42, 42), // candidate from a crossing support
+            (41, 42, 42), // substituted successor candidate
+            (41, 41, 40), // split outer/inner lineage
+        ] {
+            assert!(matches!(
+                validate_accepted_vegetation_candidate_transaction_lineage_v1(
+                    true, true, 40, 41, envelope, outer, inner,
+                ),
+                Err(DirectV11RealConsumerError::Identity(
+                    "accepted vegetation candidate transaction lineage"
+                ))
+            ));
+        }
+    }
+
+    #[test]
+    fn v1_accepted_vegetation_lineage_postures_remain_unchanged() {
+        validate_accepted_vegetation_candidate_transaction_lineage_v1(
+            false, true, 40, 41, 41, 40, 40,
+        )
+        .expect("V1 reused candidate retains predecessor lineage");
+        validate_accepted_vegetation_candidate_transaction_lineage_v1(
+            false, false, 40, 41, 41, 41, 41,
+        )
+        .expect("V1 fresh candidate retains accepted lineage");
+    }
+
+    #[test]
+    fn native_v2_preinstall_soil_posture_requires_one_exact_owner() {
+        validate_native_v2_preinstall_soil_posture_v1(true, false)
+            .expect("authenticated beginning resident");
+        validate_native_v2_preinstall_soil_posture_v1(false, true)
+            .expect("selected unpublished ending resident");
+        for poison in [(false, false), (true, true)] {
+            assert!(matches!(
+                validate_native_v2_preinstall_soil_posture_v1(poison.0, poison.1),
+                Err(DirectV11RealConsumerError::Identity(
+                    "V2 accepted soil preinstall owner posture"
+                ))
+            ));
+        }
     }
 }
 
@@ -1098,8 +1177,7 @@ fn accepted_v2_soil_candidate_for_v11_segment(
     DirectV11RealConsumerError,
 > {
     let prepared = beginning
-        .prepare_soil_thermal_support_v2(
-            envelope.transaction_id(),
+        .prepare_next_soil_thermal_support_v2(
             input.support.start_ns().get(),
             input.support.end_ns().get(),
         )
@@ -1277,6 +1355,49 @@ fn accepted_v2_soil_candidate_for_v11_segment(
     Ok((prepared, accepted, seals))
 }
 
+fn validate_accepted_vegetation_candidate_transaction_lineage_v1(
+    v2_soil: bool,
+    reused_precomputed_physical_ending: bool,
+    parent_transaction: u128,
+    accepted_transaction: u128,
+    envelope_transaction: u128,
+    candidate_outer_transaction: u128,
+    candidate_inner_transaction: u128,
+) -> Result<(), DirectV11RealConsumerError> {
+    let expected_candidate_transaction = if v2_soil {
+        if envelope_transaction != accepted_transaction {
+            return Err(DirectV11RealConsumerError::Identity(
+                "accepted vegetation candidate transaction lineage",
+            ));
+        }
+        accepted_transaction
+    } else if reused_precomputed_physical_ending {
+        parent_transaction
+    } else {
+        accepted_transaction
+    };
+    if candidate_outer_transaction != expected_candidate_transaction
+        || candidate_inner_transaction != expected_candidate_transaction
+    {
+        return Err(DirectV11RealConsumerError::Identity(
+            "accepted vegetation candidate transaction lineage",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_native_v2_preinstall_soil_posture_v1(
+    matches_authenticated_beginning: bool,
+    matches_selected_ending: bool,
+) -> Result<(), DirectV11RealConsumerError> {
+    if matches_authenticated_beginning == matches_selected_ending {
+        return Err(DirectV11RealConsumerError::Identity(
+            "V2 accepted soil preinstall owner posture",
+        ));
+    }
+    Ok(())
+}
+
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn finalize_v11_imported_segment(
     beginning: &DirectV10RealConsumerShadow,
@@ -1391,6 +1512,19 @@ pub(crate) fn finalize_v11_imported_segment(
         }
         candidate
     };
+    let v2_soil = matches!(
+        beginning.inner.soil_thermal,
+        DirectSoilThermalResident::V2(_)
+    );
+    if v2_soil && reused_precomputed_physical_ending {
+        candidate.inner.vegetation_state = project_v8_runtime_to_v9(
+            envelope.vegetation().ending_state(),
+            &candidate.inner.vegetation_configuration,
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
+        })?;
+    }
     candidate.vegetation_state = project_v9_runtime_to_v10(
         candidate.inner.vegetation_state(),
         &candidate.vegetation_configuration,
@@ -1414,13 +1548,11 @@ pub(crate) fn finalize_v11_imported_segment(
         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
     })?;
 
-    // Carrier trials retain parent-normalized owner candidates so a later
-    // physical child can consume them without inventing an accepted parent
-    // transaction.  The outer V11 adapter, however, authenticates the
-    // imported V10 segment ending as exactly one transaction newer than its
-    // beginning before it removes that segment-local identity.  Rebase only
-    // those logical lineage fields here; all physical values remain the
-    // precomputed accepted-envelope result.
+    // Reused V1 carrier trials retain parent-normalized owner candidates.  A
+    // native-V2 endpoint instead retains the selected unpublished candidate
+    // sealed to the support envelope transaction.  Require that distinction
+    // before rebasing the remaining staged owner lineages; no physical value
+    // or V2 soil candidate is reconstructed here.
     let parent_transaction = input.beginning.0.last_transaction_id;
     let accepted_transaction =
         parent_transaction
@@ -1428,22 +1560,15 @@ pub(crate) fn finalize_v11_imported_segment(
             .ok_or(DirectV11RealConsumerError::Identity(
                 "accepted vegetation transaction overflow",
             ))?;
-    let expected_candidate_transaction = if reused_precomputed_physical_ending {
-        parent_transaction
-    } else {
-        accepted_transaction
-    };
-    if candidate.vegetation_state.0.last_transaction_id != expected_candidate_transaction
-        || candidate.inner.vegetation_state.0.last_transaction_id != expected_candidate_transaction
-    {
-        return Err(DirectV11RealConsumerError::Identity(
-            "accepted vegetation candidate transaction lineage",
-        ));
-    }
-    let v2_soil = matches!(
-        beginning.inner.soil_thermal,
-        DirectSoilThermalResident::V2(_)
-    );
+    validate_accepted_vegetation_candidate_transaction_lineage_v1(
+        v2_soil,
+        reused_precomputed_physical_ending,
+        parent_transaction,
+        accepted_transaction,
+        envelope.transaction_id().0,
+        candidate.vegetation_state.0.last_transaction_id,
+        candidate.inner.vegetation_state.0.last_transaction_id,
+    )?;
     if v2_soil {
         if reused_precomputed_physical_ending {
             normalize_v11_staged_parent_lineage(&mut candidate, accepted_transaction)?;
@@ -1455,15 +1580,41 @@ pub(crate) fn finalize_v11_imported_segment(
             compositional_envelopes,
             soil_top_boundary_credits,
         )?;
-        candidate
-            .install_soil_thermal_accepted_v2(prepared.beginning_owner(), accepted, seals)
-            .map_err(DirectV11RealConsumerError::Runtime)?;
+        if reused_precomputed_physical_ending {
+            let preinstall_soil_owner = candidate
+                .soil_thermal_v2()
+                .map_err(DirectV11RealConsumerError::Runtime)?
+                .owner();
+            let authenticated_beginning_soil_owner = beginning
+                .soil_thermal_v2()
+                .map_err(DirectV11RealConsumerError::Runtime)?
+                .owner();
+            validate_native_v2_preinstall_soil_posture_v1(
+                preinstall_soil_owner == authenticated_beginning_soil_owner,
+                preinstall_soil_owner == &accepted.ending_owner,
+            )?;
+            candidate
+                .install_soil_thermal_accepted_v2_from_beginning(
+                    beginning,
+                    prepared.beginning_owner(),
+                    accepted,
+                    seals,
+                )
+                .map_err(DirectV11RealConsumerError::Runtime)?;
+        } else {
+            candidate
+                .install_soil_thermal_accepted_v2(prepared.beginning_owner(), accepted, seals)
+                .map_err(DirectV11RealConsumerError::Runtime)?;
+        }
     }
     let mut segment_ending = candidate.vegetation_state.clone();
     normalize_v8_parent_lineage(&mut segment_ending.0, accepted_transaction);
-    if !v2_soil {
-        normalize_v11_staged_parent_lineage(&mut candidate, input.beginning.0.last_transaction_id)?;
-    }
+    // `segment_ending` is the accepted successor consumed by V11. The shadow
+    // retained for the next child must instead equal V11's imported V10 view,
+    // whose logical owners are normalized to the parent transaction. For V2,
+    // this helper deliberately leaves the installed exact-carry soil resident
+    // untouched while rebasing vegetation, LSE, surface, and BGC lineage.
+    normalize_v11_staged_parent_lineage(&mut candidate, input.beginning.0.last_transaction_id)?;
     let snow = V11OwnerEnvelope::try_new("snow".to_owned(), ending_snow_owner_bytes)?;
     // WB14 can retain an in-parent working state whose effective surface
     // owner is newer than the frame shadow. Publish the same effective owner

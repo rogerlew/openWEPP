@@ -624,11 +624,7 @@ fn unpublished_v2_soil_trial(
 ) -> Result<DirectSoilThermalCandidate, DirectV11RealConsumerError> {
     let prepared = beginning
         .shadow
-        .prepare_soil_thermal_support_v2(
-            envelope.transaction_id(),
-            support.start_ns().get(),
-            support.end_ns().get(),
-        )
+        .prepare_next_soil_thermal_support_v2(support.start_ns().get(), support.end_ns().get())
         .map_err(DirectV11RealConsumerError::Runtime)?;
     let source_owner_id = ResourceOwnerId::try_new("snow").map_err(|_| {
         DirectV11RealConsumerError::Identity("unpublished V2 terminal soil source owner")
@@ -647,7 +643,7 @@ fn unpublished_v2_soil_trial(
         .unwrap_or_default();
     operands.extend(
         crate::land_surface_energy_shadow::physical_soil_energy_operands_v2(
-            envelope.transaction_id(),
+            prepared.beginning_owner().transaction_id,
             support.start_ns().get(),
             support.end_ns().get(),
             &beginning.shadow.inner.lse_configuration.owner_id,
@@ -1713,6 +1709,9 @@ mod covered_carrier_phase_tests {
             .next()
             .expect("V2 unpublished trial body");
         assert!(body.contains("advance_soil_thermal_trial_v2("));
+        assert!(body.contains("prepare_next_soil_thermal_support_v2("));
+        assert!(body.contains("prepared.beginning_owner().transaction_id"));
+        assert!(!body.contains("prepare_soil_thermal_support_v2("));
         for forbidden in [
             "apply_soil_thermal_energy_credit_v2(",
             "aggregate_soil_thermal_ending_v2(",

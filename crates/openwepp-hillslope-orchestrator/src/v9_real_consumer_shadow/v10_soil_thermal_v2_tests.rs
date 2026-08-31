@@ -250,6 +250,10 @@ fn authoritative_beginning_installs_once_and_reuses_exact_ending_without_second_
 #[test]
 fn authoritative_successor_support_retains_nonzero_carry_and_one_install_custody() {
     let (authoritative, first_prepared) = native_v2_shadow_for_parent('6');
+    let derived_first = authoritative
+        .prepare_next_soil_thermal_support_v2(0, 60_000_000_000)
+        .expect("first support transaction from receipt-free custody");
+    assert_eq!(derived_first.beginning_owner(), first_prepared.beginning_owner());
     let first_transaction = first_prepared.beginning_owner().transaction_id;
     let (first_accepted, first_seals) = accepted_bundle(
         &first_prepared,
@@ -268,10 +272,11 @@ fn authoritative_successor_support_retains_nonzero_carry_and_one_install_custody
         )
         .expect("first accepted support");
 
-    let successor_transaction = TransactionId(first_transaction.0 + 1);
     let successor_prepared = first_ending
-        .prepare_soil_thermal_support_v2(successor_transaction, 60_000_000_000, 120_000_000_000)
+        .prepare_next_soil_thermal_support_v2(60_000_000_000, 120_000_000_000)
         .expect("successor prepared from installed resident");
+    let successor_transaction = successor_prepared.beginning_owner().transaction_id;
+    assert_eq!(successor_transaction, TransactionId(first_transaction.0 + 1));
     assert!(
         successor_prepared
             .beginning_owner()
@@ -307,6 +312,63 @@ fn authoritative_successor_support_retains_nonzero_carry_and_one_install_custody
             .last_accepted_transaction_id,
         Some(successor_transaction)
     );
+
+    let third = successor_ending
+        .prepare_next_soil_thermal_support_v2(120_000_000_000, 180_000_000_000)
+        .expect("third support from second installed predecessor");
+    assert_eq!(
+        third.beginning_owner().transaction_id,
+        TransactionId(successor_transaction.0 + 1)
+    );
+    assert_eq!(
+        third.beginning_owner().expected_predecessor_transaction_id,
+        Some(successor_transaction)
+    );
+    assert_eq!(
+        third.beginning_owner().receipt_chain_sha256,
+        successor_ending
+            .soil_thermal_v2()
+            .expect("successor resident")
+            .owner()
+            .receipt_chain_sha256
+    );
+    assert!(
+        third
+            .beginning_owner()
+            .state
+            .ofes
+            .iter()
+            .flat_map(|ofe| &ofe.ordered_layers)
+            .any(|layer| layer.enthalpy_carry.sign != 0),
+        "third beginning must retain the exact installed carry"
+    );
+
+    let before = successor_ending
+        .inner
+        .soil_thermal
+        .canonical_active_owner_bytes()
+        .expect("before support poison bytes");
+    for (start, end) in [
+        (60_000_000_000, 120_000_000_000),
+        (120_000_000_001, 180_000_000_001),
+        (120_000_000_000, 179_999_999_999),
+    ] {
+        assert!(
+            successor_ending
+                .prepare_next_soil_thermal_support_v2(start, end)
+                .is_err(),
+            "stale, noncontiguous, and sub-floor supports must fail closed"
+        );
+        assert_eq!(
+            successor_ending
+                .inner
+                .soil_thermal
+                .canonical_active_owner_bytes()
+                .expect("after support poison bytes"),
+            before,
+            "preparation refusal must not mutate the installed resident"
+        );
+    }
 }
 
 #[test]
