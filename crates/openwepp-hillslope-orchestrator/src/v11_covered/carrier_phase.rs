@@ -274,6 +274,7 @@ pub(crate) struct CoveredCarrierEphemeralCandidatesV1 {
     joint: CoveredTerminalJointTrialStateV1,
     shadow: DirectV10RealConsumerShadow,
     stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    soil_candidate: Option<DirectSoilThermalCandidate>,
     terminal_snow_soil_trial_receipt:
         Option<physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1>,
 }
@@ -284,7 +285,24 @@ impl CoveredCarrierEphemeralCandidatesV1 {
         shadow: DirectV10RealConsumerShadow,
         stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
     ) -> Result<Self, DirectV11RealConsumerError> {
-        let actual = shadow.canonical_owner_state_bytes()?;
+        Self::try_new_with_soil_candidate(joint, shadow, stage3_by_lane, None)
+    }
+
+    fn try_new_with_soil_candidate(
+        joint: CoveredTerminalJointTrialStateV1,
+        shadow: DirectV10RealConsumerShadow,
+        stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+        soil_candidate: Option<DirectSoilThermalCandidate>,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        let mut actual = shadow.canonical_owner_state_bytes()?;
+        if let Some(DirectSoilThermalCandidate::V2(trial)) = &soil_candidate {
+            actual.insert(
+                "soil_thermal".to_owned(),
+                serde_json::to_vec(trial.ending_state()).map_err(|_| {
+                    DirectV11RealConsumerError::Identity("covered carrier V2 trial owner bytes")
+                })?,
+            );
+        }
         if actual.iter().any(|(owner_id, bytes)| {
             owner_id != "snow"
                 && joint
@@ -300,6 +318,7 @@ impl CoveredCarrierEphemeralCandidatesV1 {
             joint,
             shadow,
             stage3_by_lane,
+            soil_candidate,
             terminal_snow_soil_trial_receipt: None,
         })
     }
@@ -327,9 +346,13 @@ impl CoveredCarrierEphemeralCandidatesV1 {
         joint: CoveredTerminalJointTrialStateV1,
         stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
     ) -> Result<Self, DirectV11RealConsumerError> {
-        let mut selected = Self::try_new(joint, self.shadow.clone(), stage3_by_lane)?;
-        selected.terminal_snow_soil_trial_receipt =
-            self.terminal_snow_soil_trial_receipt.clone();
+        let mut selected = Self::try_new_with_soil_candidate(
+            joint,
+            self.shadow.clone(),
+            stage3_by_lane,
+            self.soil_candidate.clone(),
+        )?;
+        selected.terminal_snow_soil_trial_receipt = self.terminal_snow_soil_trial_receipt.clone();
         Ok(selected)
     }
 }
@@ -355,7 +378,7 @@ pub(crate) struct CoveredCarrierPhaseResultV1 {
     pub carrier_source_receipts: BTreeMap<(OfeId, TileId), CoveredCarrierInitialGuessV1>,
     pub open_snow_candidates: BTreeMap<(OfeId, TileId), OpenSnowTileBoundaryCandidateV1>,
     pub covered_lse_states: BTreeMap<(OfeId, TileId), CoveredLseIterationState>,
-    pub soil_candidate: SoilThermalSnapshot,
+    pub soil_candidate: DirectSoilThermalCandidate,
     #[cfg(test)]
     pub soil_top_boundary_credit: SoilThermalTopBoundaryCreditV1,
     pub batch_boundaries_by_lane: BTreeMap<u32, Stage3SnowSurfaceBoundaryReceiptV1>,
@@ -400,9 +423,10 @@ impl CoveredCarrierPhaseResultV1 {
             snow_lane_count: self.ending_candidates.stage3_by_lane.len(),
             soil_layer_count: self
                 .soil_candidate
-                .ofes
-                .iter()
-                .map(|ofe| ofe.ordered_layers.len())
+                .read_view()
+                .ordered_ofes()
+                .into_iter()
+                .map(|ofe| ofe.ordered_layers().len())
                 .sum(),
             covered_destination_count: self.covered_lse_states.len(),
             lse_component_surface_count: self
@@ -414,6 +438,146 @@ impl CoveredCarrierPhaseResultV1 {
             precipitation_lane_count: self.precipitation_sets.len(),
         }
     }
+}
+
+pub(crate) fn stage_unpublished_v2_carrier_owners(
+    candidate: &mut DirectV10RealConsumerShadow,
+    envelope: &UncommittedCoveredV8OwnerEnvelope,
+) -> Result<(), DirectV11RealConsumerError> {
+    envelope.validate().map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
+    })?;
+    candidate.inner.vegetation_state = project_v8_runtime_to_v9(
+        envelope.vegetation().ending_state(),
+        &candidate.inner.vegetation_configuration,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
+    })?;
+    candidate.inner.lse_state = build_lse_ending_state(
+        &candidate.inner.lse_state,
+        envelope.transaction_id(),
+        envelope.hydrology().ending_lse_tile_states().to_vec(),
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+            DirectV9RealConsumerError::LandSurface(error),
+        ))
+    })?;
+    candidate.inner.biogeochemistry = envelope.biogeochemistry().ending().clone();
+    candidate.inner.hydrology_frame = envelope.hydrology().ending_frame().clone();
+    candidate.inner.wb14_parent_working_state = envelope
+        .hydrology()
+        .surface_ingress()
+        .parent_working_state()
+        .cloned();
+    if envelope
+        .hydrology()
+        .surface_ingress()
+        .advances_persistent_parent_interval()
+    {
+        candidate.inner.accepted_interval_count = candidate
+            .inner
+            .accepted_interval_count
+            .checked_add(1)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "unpublished V2 carrier accepted interval count overflow",
+            ))?;
+    }
+    Ok(())
+}
+
+fn unpublished_v2_soil_trial(
+    beginning: &CoveredCarrierEphemeralCandidatesV1,
+    envelope: &UncommittedCoveredV8OwnerEnvelope,
+    support: TimeSupport,
+    credits: &[SoilThermalTopBoundaryCreditV1],
+) -> Result<DirectSoilThermalCandidate, DirectV11RealConsumerError> {
+    let prepared = beginning
+        .shadow
+        .prepare_soil_thermal_support_v2(
+            envelope.transaction_id(),
+            support.start_ns().get(),
+            support.end_ns().get(),
+        )
+        .map_err(DirectV11RealConsumerError::Runtime)?;
+    let source_owner_id = ResourceOwnerId::try_new("snow").map_err(|_| {
+        DirectV11RealConsumerError::Identity("unpublished V2 terminal soil source owner")
+    })?;
+    let mut operands = beginning
+        .soil_candidate
+        .as_ref()
+        .and_then(|candidate| candidate.v2().ok())
+        .map(|trial| {
+            trial
+                .layer_credits()
+                .iter()
+                .flat_map(|credit| credit.accepted_operands.iter().cloned())
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    operands.extend(
+        crate::land_surface_energy_shadow::physical_soil_energy_operands_v2(
+            envelope.transaction_id(),
+            support.start_ns().get(),
+            support.end_ns().get(),
+            &beginning.shadow.inner.lse_configuration.owner_id,
+            &beginning.shadow.inner.surface_configuration.owner_id,
+            envelope.hydrology().pre_ingress_soil_thermal_candidates(),
+            envelope.hydrology().surface_ingress(),
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::LandSurfaceShadow(error),
+            ))
+        })?,
+    );
+    operands.extend(
+        soil_thermal_top_boundary_operands_v2(
+            prepared.beginning_owner(),
+            credits,
+            &source_owner_id,
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+        })?,
+    );
+    let mut ordinals = BTreeMap::new();
+    for operand in &mut operands {
+        let ordinal = ordinals
+            .entry((
+                operand.ofe_id.clone(),
+                operand.layer_id.clone(),
+                operand.source_kind,
+            ))
+            .or_insert(0_u32);
+        operand.ordinal = *ordinal;
+        *ordinal = ordinal
+            .checked_add(1)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "unpublished V2 soil operand ordinal overflow",
+            ))?;
+    }
+    canonicalize_v2_operand_order(prepared.beginning_owner(), &mut operands).map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+    })?;
+    let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
+        prepared.beginning_owner(),
+        &beginning.shadow.inner.lse_configuration,
+        operands,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+    })?;
+    let trial = openwepp_land_surface_energy::advance_soil_thermal_trial_v2(
+        &prepared,
+        expected.accepted_operands(),
+        expected.temperature_projections(),
+    )
+    .map_err(|_| DirectV11RealConsumerError::Identity("unpublished V2 soil trial"))?;
+    DirectSoilThermalCandidate::from_v2(trial).map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+    })
 }
 
 impl DirectV11SnowCoveredRealConsumerStack<'_> {
@@ -654,15 +818,20 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 .shadow
                 .inner
                 .soil_thermal
-                .ofes
-                .iter()
-                .find(|value| value.ofe_id == ofe_id)
+                .read_view()
+                .ordered_ofes()
+                .into_iter()
+                .find(|value| value.ofe_id() == &ofe_id)
                 .ok_or(DirectV11RealConsumerError::Identity(
                     "covered carrier terminal beginning soil OFE",
                 ))?;
-            let beginning_soil_top = beginning_soil_ofe.ordered_layers.first().ok_or(
-                DirectV11RealConsumerError::Identity("covered carrier terminal beginning soil top"),
-            )?;
+            let beginning_soil_top = beginning_soil_ofe
+                .ordered_layers()
+                .into_iter()
+                .next()
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "covered carrier terminal beginning soil top",
+                ))?;
             let stage3_inputs = self.stage3_inputs_by_lane.get(lane_id).ok_or(
                 DirectV11RealConsumerError::Identity("covered carrier terminal Stage-3 inputs"),
             )?;
@@ -683,6 +852,13 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                             .surface_energy_options
                             .atmospheric_pressure_pa,
                         first_soil_configuration: configured_top,
+                        beginning_soil_owner_id: beginning.shadow.inner.soil_thermal.owner_id(),
+                        beginning_soil_state_sha256: beginning
+                            .shadow
+                            .inner
+                            .soil_thermal
+                            .state_sha256(),
+                        transaction_id: envelope.transaction_id(),
                         beginning_first_soil: beginning_soil_top,
                     },
                 )
@@ -693,14 +869,14 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 lane_id: *lane_id,
                 ofe_id,
                 first_layer_id: configured_top.layer_id.clone(),
-                beginning_owner_id: beginning.shadow.inner.soil_thermal.owner_id.clone(),
+                beginning_owner_id: beginning.shadow.inner.soil_thermal.owner_id().clone(),
                 beginning_configuration_sha256: beginning
                     .shadow
                     .inner
                     .soil_thermal
-                    .configuration_sha256
+                    .configuration_sha256()
                     .clone(),
-                beginning_state_sha256: beginning.shadow.inner.soil_thermal.state_sha256.clone(),
+                beginning_state_sha256: beginning.shadow.inner.soil_thermal.state_sha256().clone(),
                 support_start_ns: i64::try_from(request.support.start_ns().get()).map_err(
                     |_| DirectV11RealConsumerError::Identity("terminal soil credit support start"),
                 )?,
@@ -805,16 +981,47 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         // (snow) candidate after applying this boundary.
         let mut candidate = beginning.shadow.clone();
         candidate.inner.authority = CoveredColumnAuthority::V11SnowCovered;
-        candidate
-            .inner
-            .accept_envelope_with_soil_top_boundary_credits(
-                envelope.transaction_id(),
-                &envelope,
-                &terminal_soil_credits.values().cloned().collect::<Vec<_>>(),
-            )
-            .map_err(|error| {
-                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-            })?;
+        let ordered_soil_credits = terminal_soil_credits.values().cloned().collect::<Vec<_>>();
+        let soil_candidate = match &beginning.shadow.inner.soil_thermal {
+            DirectSoilThermalResident::V1(_) => {
+                candidate
+                    .inner
+                    .accept_envelope_with_soil_top_boundary_credits(
+                        envelope.transaction_id(),
+                        &envelope,
+                        &ordered_soil_credits,
+                    )
+                    .map_err(|error| {
+                        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                            error,
+                        ))
+                    })?;
+                DirectSoilThermalCandidate::from_v1(
+                    candidate
+                        .inner
+                        .soil_thermal
+                        .v1()
+                        .map_err(|error| {
+                            DirectV11RealConsumerError::Runtime(
+                                DirectV10RealConsumerError::Runtime(error),
+                            )
+                        })?
+                        .clone(),
+                )
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+                })?
+            }
+            DirectSoilThermalResident::V2(_) => {
+                stage_unpublished_v2_carrier_owners(&mut candidate, &envelope)?;
+                unpublished_v2_soil_trial(
+                    beginning,
+                    &envelope,
+                    request.support,
+                    &ordered_soil_credits,
+                )?
+            }
+        };
         // A trial is a complete unpublished owner candidate, not merely the
         // inner V9 carrier state. Apply the same V10 projections and parent
         // lineage normalization used by accepted segment finalization so a
@@ -847,7 +1054,6 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             &mut candidate,
             beginning.shadow.vegetation_state.0.last_transaction_id,
         )?;
-        let soil_candidate = candidate.inner.soil_thermal.clone();
         let wb14_child_receipt_set_sha256 = envelope
             .hydrology()
             .surface_ingress()
@@ -869,6 +1075,14 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             .wb14_parent_replay_bytes()
             .map(ToOwned::to_owned);
         let mut ending_owner_bytes = candidate.canonical_owner_state_bytes()?;
+        if let DirectSoilThermalCandidate::V2(trial) = &soil_candidate {
+            ending_owner_bytes.insert(
+                "soil_thermal".to_owned(),
+                serde_json::to_vec(trial.ending_state()).map_err(|_| {
+                    DirectV11RealConsumerError::Identity("unpublished V2 soil trial owner bytes")
+                })?,
+            );
+        }
         let trial_snow = request
             .beginning_joint
             .owner_bytes()
@@ -883,11 +1097,14 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             ending_owner_bytes,
         )
         .map_err(|_| DirectV11RealConsumerError::Identity("covered carrier ending joint"))?;
-        let mut ending_candidates = CoveredCarrierEphemeralCandidatesV1::try_new(
-            ending_joint,
-            candidate,
-            beginning.stage3_by_lane.clone(),
-        )?;
+        let mut ending_candidates =
+            CoveredCarrierEphemeralCandidatesV1::try_new_with_soil_candidate(
+                ending_joint,
+                candidate,
+                beginning.stage3_by_lane.clone(),
+                matches!(&soil_candidate, DirectSoilThermalCandidate::V2(_))
+                    .then(|| soil_candidate.clone()),
+            )?;
         ending_candidates.terminal_snow_soil_trial_receipt =
             Some(terminal_soil_trial.receipt.clone());
         let transition = CoveredTerminalTrialTransitionV1 {
@@ -970,6 +1187,30 @@ mod covered_carrier_phase_tests {
             assert!(
                 !implementation.contains(forbidden),
                 "carrier phase reached forbidden publication/evaluation surface: {forbidden}"
+            );
+        }
+    }
+
+    #[test]
+    fn v2_carrier_composition_is_trial_only_and_receipt_free() {
+        let source = include_str!("carrier_phase.rs");
+        let body = source
+            .split("fn unpublished_v2_soil_trial(")
+            .nth(1)
+            .expect("V2 unpublished trial")
+            .split("impl DirectV11SnowCoveredRealConsumerStack")
+            .next()
+            .expect("V2 unpublished trial body");
+        assert!(body.contains("advance_soil_thermal_trial_v2("));
+        for forbidden in [
+            "apply_soil_thermal_energy_credit_v2(",
+            "aggregate_soil_thermal_ending_v2(",
+            "seal_soil_thermal_accepted_candidate_v2(",
+            "install_soil_thermal_accepted_v2(",
+        ] {
+            assert!(
+                !body.contains(forbidden),
+                "unpublished V2 carrier emitted accepted custody: {forbidden}"
             );
         }
     }

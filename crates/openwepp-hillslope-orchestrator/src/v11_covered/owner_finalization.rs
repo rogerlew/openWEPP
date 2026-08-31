@@ -179,6 +179,43 @@ mod terminal_custody_lane_set_tests {
         assert!(requires_persistent_snow_soil_receipt(true, true, false));
         assert!(requires_persistent_snow_soil_receipt(true, false, true));
     }
+
+    #[test]
+    fn v2_finalization_has_one_accepted_receiver_and_one_install() {
+        let source = include_str!("owner_finalization.rs");
+        let receiver = source
+            .rsplit("fn accepted_v2_soil_candidate_for_v11_segment(")
+            .next()
+            .expect("V2 accepted receiver")
+            .split("pub(crate) fn finalize_v11_imported_segment")
+            .next()
+            .expect("V2 accepted receiver body");
+        assert_eq!(
+            receiver
+                .matches("aggregate_soil_thermal_ending_v2(")
+                .count(),
+            1
+        );
+        assert_eq!(
+            receiver
+                .matches("seal_soil_thermal_accepted_candidate_v2(")
+                .count(),
+            1
+        );
+        let finalization = source
+            .rsplit("pub(crate) fn finalize_v11_imported_segment")
+            .next()
+            .expect("V11 finalization")
+            .split("pub(crate) fn digest32_hex")
+            .next()
+            .expect("V11 finalization body");
+        assert_eq!(
+            finalization
+                .matches("install_soil_thermal_accepted_v2(")
+                .count(),
+            1
+        );
+    }
 }
 
 pub(crate) fn soil_thermal_owner_with_top_boundary_credit_join_sha256(
@@ -1041,7 +1078,203 @@ pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum AcceptedPublicationFinalizationPostureV1 {
     RetainFinal,
-    DeferTerminalProvisional { pre_event_authority_sha256: Digest32 },
+    DeferTerminalProvisional {
+        pre_event_authority_sha256: Digest32,
+    },
+}
+
+fn accepted_v2_soil_candidate_for_v11_segment(
+    beginning: &DirectV10RealConsumerShadow,
+    input: &V11ImportedV10SegmentInput,
+    envelope: &UncommittedCoveredV8OwnerEnvelope,
+    compositional_envelopes: Option<&[UncommittedCoveredV8OwnerEnvelope]>,
+    soil_top_boundary_credits: &[SoilThermalTopBoundaryCreditV1],
+) -> Result<
+    (
+        openwepp_land_surface_energy::PreparedSoilThermalSupportV2,
+        SoilThermalAcceptedCandidateV2,
+        SoilThermalOrchestratorSealsV2,
+    ),
+    DirectV11RealConsumerError,
+> {
+    let prepared = beginning
+        .prepare_soil_thermal_support_v2(
+            envelope.transaction_id(),
+            input.support.start_ns().get(),
+            input.support.end_ns().get(),
+        )
+        .map_err(DirectV11RealConsumerError::Runtime)?;
+    let mut child_supports = soil_top_boundary_credits
+        .iter()
+        .map(|credit| (credit.support_start_ns, credit.support_end_ns))
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let envelopes = compositional_envelopes.unwrap_or(std::slice::from_ref(envelope));
+    if envelopes.is_empty() {
+        return Err(DirectV11RealConsumerError::Identity(
+            "V2 accepted soil empty carrier composition",
+        ));
+    }
+    if child_supports.is_empty() && envelopes.len() == 1 {
+        child_supports.push((
+            i64::try_from(input.support.start_ns().get()).map_err(|_| {
+                DirectV11RealConsumerError::Identity("V2 accepted soil support start")
+            })?,
+            i64::try_from(input.support.end_ns().get()).map_err(|_| {
+                DirectV11RealConsumerError::Identity("V2 accepted soil support end")
+            })?,
+        ));
+    }
+    if child_supports.len() != envelopes.len()
+        || child_supports.first().is_none_or(|support| {
+            u128::try_from(support.0).ok() != Some(input.support.start_ns().get())
+        })
+        || child_supports.last().is_none_or(|support| {
+            u128::try_from(support.1).ok() != Some(input.support.end_ns().get())
+        })
+        || child_supports.windows(2).any(|pair| pair[0].1 != pair[1].0)
+    {
+        return Err(DirectV11RealConsumerError::Identity(
+            "V2 accepted soil child support partition",
+        ));
+    }
+
+    let mut operands = Vec::new();
+    for (child, (start, end)) in envelopes.iter().zip(&child_supports) {
+        let start = u128::try_from(*start).map_err(|_| {
+            DirectV11RealConsumerError::Identity("V2 accepted soil child support start")
+        })?;
+        let end = u128::try_from(*end).map_err(|_| {
+            DirectV11RealConsumerError::Identity("V2 accepted soil child support end")
+        })?;
+        operands.extend(
+            crate::land_surface_energy_shadow::physical_soil_energy_operands_v2(
+                child.transaction_id(),
+                start,
+                end,
+                &beginning.inner.lse_configuration.owner_id,
+                &beginning.inner.surface_configuration.owner_id,
+                child.hydrology().pre_ingress_soil_thermal_candidates(),
+                child.hydrology().surface_ingress(),
+            )
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                    DirectV9RealConsumerError::LandSurfaceShadow(error),
+                ))
+            })?,
+        );
+    }
+
+    let snow_owner = ResourceOwnerId::try_new("snow")
+        .map_err(|_| DirectV11RealConsumerError::Identity("V2 accepted soil snow owner"))?;
+    let parent_start = i64::try_from(input.support.start_ns().get()).map_err(|_| {
+        DirectV11RealConsumerError::Identity("V2 accepted soil parent support start")
+    })?;
+    let parent_end = i64::try_from(input.support.end_ns().get())
+        .map_err(|_| DirectV11RealConsumerError::Identity("V2 accepted soil parent support end"))?;
+    for credit in soil_top_boundary_credits {
+        let ofe = prepared
+            .beginning_owner()
+            .state
+            .ofes
+            .iter()
+            .find(|ofe| ofe.ofe_id == credit.ofe_id)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "V2 accepted top-boundary OFE",
+            ))?;
+        let layer = ofe
+            .ordered_layers
+            .first()
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "V2 accepted top-boundary layer",
+            ))?;
+        if credit.beginning_owner_id != prepared.beginning_owner().state.owner_id
+            || credit.beginning_configuration_sha256
+                != prepared.beginning_owner().state.configuration_sha256
+            || credit.beginning_state_sha256 != prepared.beginning_owner().state.state_sha256
+            || credit.first_layer_id != layer.layer_id
+            || credit.support_start_ns < parent_start
+            || credit.support_end_ns > parent_end
+            || credit.support_start_ns >= credit.support_end_ns
+            || credit.soil_thermal_credit_j_m2_ofe_ground.to_bits()
+                != credit.accepted_positive_downward_j_m2_ofe_ground.to_bits()
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "V2 accepted top-boundary identity or support",
+            ));
+        }
+        operands.push(
+            openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2 {
+                ofe_id: credit.ofe_id.clone(),
+                layer_id: credit.first_layer_id.clone(),
+                source_kind:
+                    openwepp_land_surface_energy::SoilThermalEnergyOperandKindV2::TopBoundary,
+                source_owner_id: snow_owner.clone(),
+                debit_credit_identity_sha256: credit.snow_soil_heat_receipt_sha256.clone(),
+                ordinal: credit.lane_id,
+                units: "J m^-2 OFE-ground".to_owned(),
+                basis: "ofe_ground".to_owned(),
+                energy_j_m2_ofe_ground: credit.soil_thermal_credit_j_m2_ofe_ground,
+            },
+        );
+    }
+    operands.sort_by(|left, right| {
+        (
+            &left.ofe_id,
+            &left.layer_id,
+            left.source_kind,
+            left.ordinal,
+            &left.debit_credit_identity_sha256,
+        )
+            .cmp(&(
+                &right.ofe_id,
+                &right.layer_id,
+                right.source_kind,
+                right.ordinal,
+                &right.debit_credit_identity_sha256,
+            ))
+    });
+    let mut ordinals = BTreeMap::new();
+    for operand in &mut operands {
+        let ordinal = ordinals
+            .entry((
+                operand.ofe_id.clone(),
+                operand.layer_id.clone(),
+                operand.source_kind,
+            ))
+            .or_insert(0_u32);
+        operand.ordinal = *ordinal;
+        *ordinal = ordinal
+            .checked_add(1)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "V2 accepted soil operand ordinal overflow",
+            ))?;
+    }
+    canonicalize_v2_operand_order(prepared.beginning_owner(), &mut operands).map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+    })?;
+    let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
+        prepared.beginning_owner(),
+        &beginning.inner.lse_configuration,
+        operands,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+    })?;
+    let accepted = aggregate_soil_thermal_ending_v2(
+        prepared.beginning_owner(),
+        &beginning.inner.lse_configuration,
+        &expected,
+    )
+    .map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+    })?;
+    let seals = seal_soil_thermal_accepted_candidate_v2(prepared.beginning_owner(), &accepted)
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+        })?;
+    Ok((prepared, accepted, seals))
 }
 
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
@@ -1080,7 +1313,7 @@ pub(crate) fn finalize_v11_imported_segment(
         input.support.start_ns().get(),
         input.support.end_ns().get(),
         input.duration_s_bits,
-        beginning.inner.soil_thermal.state_sha256.clone(),
+        beginning.inner.soil_thermal.state_sha256().clone(),
     )
     .map_err(|error| {
         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
@@ -1125,24 +1358,36 @@ pub(crate) fn finalize_v11_imported_segment(
         candidate
     } else {
         let mut candidate = beginning.clone();
-        let accepted_soil_credit_set = candidate
-            .inner
-            .accept_envelope_with_soil_top_boundary_credits(
-                envelope.transaction_id(),
-                envelope,
-                soil_top_boundary_credits,
-            )
-            .map_err(|error| {
-                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-            })?;
-        let joined_soil_owner = soil_thermal_owner_with_top_boundary_credit_join_sha256(
-            digest32_from_lower_hex(candidate.inner.soil_thermal.snapshot_sha256.as_str())?,
-            &accepted_soil_credit_set.accepted_credit_set_sha256,
-        )?;
-        if joined_soil_owner == Digest32::zero() {
-            return Err(DirectV11RealConsumerError::Identity(
-                "covered soil top-boundary owner join",
-            ));
+        match &beginning.inner.soil_thermal {
+            DirectSoilThermalResident::V1(_) => {
+                let accepted_soil_credit_set = candidate
+                    .inner
+                    .accept_envelope_with_soil_top_boundary_credits(
+                        envelope.transaction_id(),
+                        envelope,
+                        soil_top_boundary_credits,
+                    )
+                    .map_err(|error| {
+                        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                            error,
+                        ))
+                    })?;
+                let soil = candidate.inner.soil_thermal.v1().map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+                })?;
+                let joined_soil_owner = soil_thermal_owner_with_top_boundary_credit_join_sha256(
+                    digest32_from_lower_hex(soil.snapshot_sha256.as_str())?,
+                    &accepted_soil_credit_set.accepted_credit_set_sha256,
+                )?;
+                if joined_soil_owner == Digest32::zero() {
+                    return Err(DirectV11RealConsumerError::Identity(
+                        "covered soil top-boundary owner join",
+                    ));
+                }
+            }
+            DirectSoilThermalResident::V2(_) => {
+                super::super::stage_unpublished_v2_carrier_owners(&mut candidate, envelope)?;
+            }
         }
         candidate
     };
@@ -1177,25 +1422,48 @@ pub(crate) fn finalize_v11_imported_segment(
     // those logical lineage fields here; all physical values remain the
     // precomputed accepted-envelope result.
     let parent_transaction = input.beginning.0.last_transaction_id;
-    let accepted_transaction = parent_transaction.checked_add(1).ok_or(
-        DirectV11RealConsumerError::Identity("accepted vegetation transaction overflow"),
-    )?;
+    let accepted_transaction =
+        parent_transaction
+            .checked_add(1)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "accepted vegetation transaction overflow",
+            ))?;
     let expected_candidate_transaction = if reused_precomputed_physical_ending {
         parent_transaction
     } else {
         accepted_transaction
     };
     if candidate.vegetation_state.0.last_transaction_id != expected_candidate_transaction
-        || candidate.inner.vegetation_state.0.last_transaction_id
-            != expected_candidate_transaction
+        || candidate.inner.vegetation_state.0.last_transaction_id != expected_candidate_transaction
     {
         return Err(DirectV11RealConsumerError::Identity(
             "accepted vegetation candidate transaction lineage",
         ));
     }
+    let v2_soil = matches!(
+        beginning.inner.soil_thermal,
+        DirectSoilThermalResident::V2(_)
+    );
+    if v2_soil {
+        if reused_precomputed_physical_ending {
+            normalize_v11_staged_parent_lineage(&mut candidate, accepted_transaction)?;
+        }
+        let (prepared, accepted, seals) = accepted_v2_soil_candidate_for_v11_segment(
+            beginning,
+            input,
+            envelope,
+            compositional_envelopes,
+            soil_top_boundary_credits,
+        )?;
+        candidate
+            .install_soil_thermal_accepted_v2(prepared.beginning_owner(), accepted, seals)
+            .map_err(DirectV11RealConsumerError::Runtime)?;
+    }
     let mut segment_ending = candidate.vegetation_state.clone();
     normalize_v8_parent_lineage(&mut segment_ending.0, accepted_transaction);
-    normalize_v11_staged_parent_lineage(&mut candidate, input.beginning.0.last_transaction_id)?;
+    if !v2_soil {
+        normalize_v11_staged_parent_lineage(&mut candidate, input.beginning.0.last_transaction_id)?;
+    }
     let snow = V11OwnerEnvelope::try_new("snow".to_owned(), ending_snow_owner_bytes)?;
     // WB14 can retain an in-parent working state whose effective surface
     // owner is newer than the frame shadow. Publish the same effective owner
@@ -1467,28 +1735,26 @@ pub(crate) fn normalize_v11_staged_parent_lineage(
         })?;
     }
     staged.inner.biogeochemistry.last_transaction_id = parent;
-    staged.inner.soil_thermal.last_accepted_transaction_id = transaction;
-    let soil_transaction = transaction.ok_or(DirectV11RealConsumerError::Identity(
-        "zero parent transaction lineage",
-    ))?;
-    staged.inner.soil_thermal.state_sha256 = digest_soil_state(
-        &staged.inner.soil_thermal.owner_id,
-        soil_transaction,
-        &staged.inner.soil_thermal.ofes,
-    )
-    .map_err(|error| {
-        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-    })?;
-    staged.inner.soil_thermal.snapshot_sha256 = digest_soil_snapshot(
-        &staged.inner.soil_thermal.owner_id,
-        &staged.inner.soil_thermal.configuration_sha256,
-        &staged.inner.soil_thermal.state_sha256,
-        soil_transaction,
-        &staged.inner.soil_thermal.ofes,
-    )
-    .map_err(|error| {
-        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-    })?;
+    if let DirectSoilThermalResident::V1(soil) = &mut staged.inner.soil_thermal {
+        soil.last_accepted_transaction_id = transaction;
+        let soil_transaction = transaction.ok_or(DirectV11RealConsumerError::Identity(
+            "zero parent transaction lineage",
+        ))?;
+        soil.state_sha256 = digest_soil_state(&soil.owner_id, soil_transaction, &soil.ofes)
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+            })?;
+        soil.snapshot_sha256 = digest_soil_snapshot(
+            &soil.owner_id,
+            &soil.configuration_sha256,
+            &soil.state_sha256,
+            soil_transaction,
+            &soil.ofes,
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+        })?;
+    }
     Ok(())
 }
 
@@ -2142,12 +2408,9 @@ pub(crate) fn v11_bgc_owner_transitions(
             MineralNitrogenSpecies::Ammonium => beginning_layer.ammonium_n,
             MineralNitrogenSpecies::Nitrate => beginning_layer.nitrate_n,
         };
-        let ending_layer = ending_bgc
-            .layers
-            .get(operand.key.layer_id.as_str())
-            .ok_or(DirectV11RealConsumerError::Identity(
-                "V11 ending BGC layer binding",
-            ))?;
+        let ending_layer = ending_bgc.layers.get(operand.key.layer_id.as_str()).ok_or(
+            DirectV11RealConsumerError::Identity("V11 ending BGC layer binding"),
+        )?;
         let ending_amount = match operand.key.species {
             MineralNitrogenSpecies::Ammonium => ending_layer.ammonium_n,
             MineralNitrogenSpecies::Nitrate => ending_layer.nitrate_n,
