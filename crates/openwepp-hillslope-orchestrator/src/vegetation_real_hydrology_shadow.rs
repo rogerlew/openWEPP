@@ -287,6 +287,18 @@ impl RealHydrologyShadowAdapter {
         hydrology_owner_id: ResourceOwnerId,
         layer_maps: &[RealHydrologyLaneLayerMap],
     ) -> Result<Self, RealHydrologyShadowError> {
+        #[inline(never)]
+        fn seed_day_frame_boxed(
+            frame: &DirectRunFrame,
+            lane_index: usize,
+            day_index: usize,
+        ) -> Result<Box<DirectDayFrame>, RealHydrologyShadowError> {
+            frame
+                .seed_day_frame(lane_index, day_index)
+                .map(Box::new)
+                .map_err(|_| RealHydrologyShadowError::Identity("production day-frame seed failed"))
+        }
+
         if day_index >= frame.identity.day_count {
             return Err(RealHydrologyShadowError::Identity(
                 "day index outside run identity",
@@ -303,10 +315,10 @@ impl RealHydrologyShadowAdapter {
             ));
         }
 
-        let beginning_day_frames = (0..frame.lanes.len())
-            .map(|lane_index| frame.seed_day_frame(lane_index, day_index))
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|_| RealHydrologyShadowError::Identity("production day-frame seed failed"))?;
+        let mut beginning_day_frames = Vec::with_capacity(frame.lanes.len());
+        for lane_index in 0..frame.lanes.len() {
+            beginning_day_frames.push(*seed_day_frame_boxed(frame, lane_index, day_index)?);
+        }
 
         let (layer_facts, layer_indexes) =
             extract_layer_facts(frame, &beginning_day_frames, layer_maps)?;
