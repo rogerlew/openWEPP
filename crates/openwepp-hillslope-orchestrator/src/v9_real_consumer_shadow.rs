@@ -2377,118 +2377,304 @@ impl DirectV9RealConsumerShadow {
                 vegetation_forcing,
             )?,
         };
-        let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
         if physical_only {
-            let bits = v11_duration_s_bits.ok_or(DirectV9RealConsumerError::Identity(
-                "physical-only endpoint requires V11 duration",
-            ))?;
-            let destinations = covered_destinations.ok_or(DirectV9RealConsumerError::Identity(
-                "physical-only covered endpoint destination set",
-            ))?;
-            let physical = execute_v8_lse_runtime_shadow_v11_physical_with_carriers(
-                &v8_configuration,
-                &v8_beginning,
-                &self.vegetation_owner_id,
-                &canopy_forcing,
-                &self.lse_configuration,
-                &self.lse_state,
-                &input.lse_forcing,
-                &soil_adapter,
-                &self.surface_configuration,
+            return self.construct_canopy_soil_physical_only_envelope(
                 day_index,
                 interval_index,
-                &input.wb14_parameters,
-                soil_thermal,
-                &nitrogen,
-                &self.biogeochemistry,
-                openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered,
+                input,
+                v11_duration_s_bits,
+                covered_destinations,
                 covered_lower_boundaries,
-                bits,
-                Some(destinations),
                 finalize_wb14_parent_interval,
-                self.wb14_parent_working_state.as_ref(),
                 wb14_coupled_child_binding,
-            )?;
-            return Ok(CanopySoilEvaluationV1::PhysicalOnly(
-                ProvisionalCoveredV8PhysicalEvaluationV1::try_new(physical)?,
-            ));
-        }
-        let envelope = match v11_duration_s_bits {
-            Some(bits) => match covered_destinations {
-                Some(destinations) => execute_v8_lse_runtime_shadow_v11_with_carriers(
-                    &v8_configuration,
-                    &v8_beginning,
-                    &self.vegetation_owner_id,
-                    &canopy_forcing,
-                    &self.lse_configuration,
-                    &self.lse_state,
-                    &input.lse_forcing,
-                    &soil_adapter,
-                    &self.surface_configuration,
-                    day_index,
-                    interval_index,
-                    &input.wb14_parameters,
-                    soil_thermal,
-                    &nitrogen,
-                    &self.biogeochemistry,
-                    // This entry point is the typed V11 snow-covered carrier
-                    // path even for unpublished probe envelopes. Read-only
-                    // disposition changes publication authority, not the
-                    // physical lower-boundary model used by LSE.
-                    openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered,
-                    covered_lower_boundaries,
-                    bits,
-                    !provisional_v11,
-                    Some(destinations),
-                    finalize_wb14_parent_interval,
-                    self.wb14_parent_working_state.as_ref(),
-                    wb14_coupled_child_binding,
-                )?,
-                None => crate::land_surface_energy_shadow::execute_v8_lse_runtime_shadow_v11(
-                    &v8_configuration,
-                    &v8_beginning,
-                    &self.vegetation_owner_id,
-                    &canopy_forcing,
-                    &self.lse_configuration,
-                    &self.lse_state,
-                    &input.lse_forcing,
-                    &soil_adapter,
-                    &self.surface_configuration,
-                    day_index,
-                    interval_index,
-                    &input.wb14_parameters,
-                    soil_thermal,
-                    &nitrogen,
-                    &self.biogeochemistry,
-                    self.authority,
-                    covered_lower_boundaries,
-                    bits,
-                    !provisional_v11,
-                    finalize_wb14_parent_interval,
-                    self.wb14_parent_working_state.as_ref(),
-                    wb14_coupled_child_binding,
-                )?,
-            },
-            None => execute_v8_lse_runtime_shadow_internal(
                 &v8_configuration,
                 &v8_beginning,
-                &self.vegetation_owner_id,
+                &hydrology,
+                soil_thermal,
                 &canopy_forcing,
-                &self.lse_configuration,
-                &self.lse_state,
-                &input.lse_forcing,
-                &soil_adapter,
-                &self.surface_configuration,
+            );
+        }
+        self.construct_canopy_soil_complete_envelope(
+            day_index,
+            interval_index,
+            input,
+            v11_duration_s_bits,
+            covered_destinations,
+            covered_lower_boundaries,
+            provisional_v11,
+            finalize_wb14_parent_interval,
+            wb14_coupled_child_binding,
+            &v8_configuration,
+            &v8_beginning,
+            &hydrology,
+            soil_thermal,
+            &canopy_forcing,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[inline(never)]
+    fn construct_canopy_soil_physical_only_envelope(
+        &self,
+        day_index: usize,
+        interval_index: u8,
+        input: &DirectV9ShadowIntervalInput,
+        v11_duration_s_bits: Option<u64>,
+        covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
+        covered_lower_boundaries: Option<
+            &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+        >,
+        finalize_wb14_parent_interval: bool,
+        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
+        v8_configuration: &VegetationConfiguration,
+        v8_beginning: &V8CoupledOwnedState,
+        hydrology: &RealHydrologyShadowAdapter,
+        soil_thermal: &SoilThermalSnapshot,
+        canopy_forcing: &V8CanopyForcingReceipt,
+    ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
+        let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
+        let bits = v11_duration_s_bits.ok_or(DirectV9RealConsumerError::Identity(
+            "physical-only endpoint requires V11 duration",
+        ))?;
+        let destinations = covered_destinations.ok_or(DirectV9RealConsumerError::Identity(
+            "physical-only covered endpoint destination set",
+        ))?;
+        let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(hydrology);
+        let physical = execute_v8_lse_runtime_shadow_v11_physical_with_carriers(
+            v8_configuration,
+            v8_beginning,
+            &self.vegetation_owner_id,
+            canopy_forcing,
+            &self.lse_configuration,
+            &self.lse_state,
+            &input.lse_forcing,
+            &soil_adapter,
+            &self.surface_configuration,
+            day_index,
+            interval_index,
+            &input.wb14_parameters,
+            soil_thermal,
+            &nitrogen,
+            &self.biogeochemistry,
+            openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered,
+            covered_lower_boundaries,
+            bits,
+            Some(destinations),
+            finalize_wb14_parent_interval,
+            self.wb14_parent_working_state.as_ref(),
+            wb14_coupled_child_binding,
+        )?;
+        Ok(CanopySoilEvaluationV1::PhysicalOnly(
+            ProvisionalCoveredV8PhysicalEvaluationV1::try_new(physical)?,
+        ))
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[inline(never)]
+    fn construct_canopy_soil_complete_envelope(
+        &self,
+        day_index: usize,
+        interval_index: u8,
+        input: &DirectV9ShadowIntervalInput,
+        v11_duration_s_bits: Option<u64>,
+        covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
+        covered_lower_boundaries: Option<
+            &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+        >,
+        provisional_v11: bool,
+        finalize_wb14_parent_interval: bool,
+        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
+        v8_configuration: &VegetationConfiguration,
+        v8_beginning: &V8CoupledOwnedState,
+        hydrology: &RealHydrologyShadowAdapter,
+        soil_thermal: &SoilThermalSnapshot,
+        canopy_forcing: &V8CanopyForcingReceipt,
+    ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
+        let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
+        let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(hydrology);
+        match v11_duration_s_bits {
+            Some(bits) => match covered_destinations {
+                Some(destinations) => self.construct_canopy_soil_complete_v11_with_carriers(
+                    day_index,
+                    interval_index,
+                    input,
+                    bits,
+                    destinations,
+                    covered_lower_boundaries,
+                    provisional_v11,
+                    finalize_wb14_parent_interval,
+                    wb14_coupled_child_binding,
+                    v8_configuration,
+                    v8_beginning,
+                    &soil_adapter,
+                    soil_thermal,
+                    canopy_forcing,
+                    &nitrogen,
+                ),
+                None => self.construct_canopy_soil_complete_v11(
+                    day_index,
+                    interval_index,
+                    input,
+                    bits,
+                    covered_lower_boundaries,
+                    provisional_v11,
+                    finalize_wb14_parent_interval,
+                    wb14_coupled_child_binding,
+                    v8_configuration,
+                    v8_beginning,
+                    &soil_adapter,
+                    soil_thermal,
+                    canopy_forcing,
+                    &nitrogen,
+                ),
+            },
+            None => self.construct_canopy_soil_complete_v8(
                 day_index,
                 interval_index,
-                &input.wb14_parameters,
+                input,
+                v8_configuration,
+                v8_beginning,
+                &soil_adapter,
                 soil_thermal,
+                canopy_forcing,
                 &nitrogen,
-                &self.biogeochemistry,
-                None,
-                self.authority,
-            )?,
-        };
+            ),
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[inline(never)]
+    fn construct_canopy_soil_complete_v11_with_carriers(
+        &self,
+        day_index: usize,
+        interval_index: u8,
+        input: &DirectV9ShadowIntervalInput,
+        duration_s_bits: u64,
+        destinations: &BTreeSet<(OfeId, TileId)>,
+        covered_lower_boundaries: Option<
+            &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+        >,
+        provisional_v11: bool,
+        finalize_wb14_parent_interval: bool,
+        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
+        v8_configuration: &VegetationConfiguration,
+        v8_beginning: &V8CoupledOwnedState,
+        soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+        soil_thermal: &SoilThermalSnapshot,
+        canopy_forcing: &V8CanopyForcingReceipt,
+        nitrogen: &BiogeochemistryNitrogenArbiter,
+    ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
+        let envelope = execute_v8_lse_runtime_shadow_v11_with_carriers(
+            v8_configuration,
+            v8_beginning,
+            &self.vegetation_owner_id,
+            canopy_forcing,
+            &self.lse_configuration,
+            &self.lse_state,
+            &input.lse_forcing,
+            soil_adapter,
+            &self.surface_configuration,
+            day_index,
+            interval_index,
+            &input.wb14_parameters,
+            soil_thermal,
+            nitrogen,
+            &self.biogeochemistry,
+            // This entry point is the typed V11 snow-covered carrier path
+            // even for unpublished probe envelopes.
+            openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered,
+            covered_lower_boundaries,
+            duration_s_bits,
+            !provisional_v11,
+            Some(destinations),
+            finalize_wb14_parent_interval,
+            self.wb14_parent_working_state.as_ref(),
+            wb14_coupled_child_binding,
+        )?;
+        Ok(CanopySoilEvaluationV1::Complete(envelope))
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[inline(never)]
+    fn construct_canopy_soil_complete_v11(
+        &self,
+        day_index: usize,
+        interval_index: u8,
+        input: &DirectV9ShadowIntervalInput,
+        duration_s_bits: u64,
+        covered_lower_boundaries: Option<
+            &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+        >,
+        provisional_v11: bool,
+        finalize_wb14_parent_interval: bool,
+        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
+        v8_configuration: &VegetationConfiguration,
+        v8_beginning: &V8CoupledOwnedState,
+        soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+        soil_thermal: &SoilThermalSnapshot,
+        canopy_forcing: &V8CanopyForcingReceipt,
+        nitrogen: &BiogeochemistryNitrogenArbiter,
+    ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
+        let envelope = crate::land_surface_energy_shadow::execute_v8_lse_runtime_shadow_v11(
+            v8_configuration,
+            v8_beginning,
+            &self.vegetation_owner_id,
+            canopy_forcing,
+            &self.lse_configuration,
+            &self.lse_state,
+            &input.lse_forcing,
+            soil_adapter,
+            &self.surface_configuration,
+            day_index,
+            interval_index,
+            &input.wb14_parameters,
+            soil_thermal,
+            nitrogen,
+            &self.biogeochemistry,
+            self.authority,
+            covered_lower_boundaries,
+            duration_s_bits,
+            !provisional_v11,
+            finalize_wb14_parent_interval,
+            self.wb14_parent_working_state.as_ref(),
+            wb14_coupled_child_binding,
+        )?;
+        Ok(CanopySoilEvaluationV1::Complete(envelope))
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[inline(never)]
+    fn construct_canopy_soil_complete_v8(
+        &self,
+        day_index: usize,
+        interval_index: u8,
+        input: &DirectV9ShadowIntervalInput,
+        v8_configuration: &VegetationConfiguration,
+        v8_beginning: &V8CoupledOwnedState,
+        soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+        soil_thermal: &SoilThermalSnapshot,
+        canopy_forcing: &V8CanopyForcingReceipt,
+        nitrogen: &BiogeochemistryNitrogenArbiter,
+    ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
+        let envelope = execute_v8_lse_runtime_shadow_internal(
+            v8_configuration,
+            v8_beginning,
+            &self.vegetation_owner_id,
+            canopy_forcing,
+            &self.lse_configuration,
+            &self.lse_state,
+            &input.lse_forcing,
+            soil_adapter,
+            &self.surface_configuration,
+            day_index,
+            interval_index,
+            &input.wb14_parameters,
+            soil_thermal,
+            nitrogen,
+            &self.biogeochemistry,
+            None,
+            self.authority,
+        )?;
         Ok(CanopySoilEvaluationV1::Complete(envelope))
     }
 
