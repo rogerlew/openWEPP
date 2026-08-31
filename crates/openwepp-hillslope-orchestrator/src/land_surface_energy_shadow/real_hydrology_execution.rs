@@ -603,6 +603,9 @@ fn construct_unified_candidate(
     profile_record("candidate surface ingress", surface_ingress_started);
     let receivers_started = profile_start();
     let mut ending_frame = soil_candidate.ending_frame().clone();
+    let pre_ingress_soil_thermal_candidates = soil_thermal_candidates.clone();
+    let pre_ingress_soil_thermal_sha256 =
+        finalization_receiver_sets_sha256(&[], &pre_ingress_soil_thermal_candidates, &[]);
     let receiver_closure_operands = apply_ingress_to_real_receivers(
         soil_adapter.owner,
         surface_configuration,
@@ -628,6 +631,8 @@ fn construct_unified_candidate(
         surface_resource,
         surface_ingress,
         ending_lse_tile_states: ending_tile_states_pre_ingress,
+        pre_ingress_soil_thermal_candidates,
+        pre_ingress_soil_thermal_sha256,
         soil_thermal_candidates,
         receiver_closure_operands,
         rollback_hashes,

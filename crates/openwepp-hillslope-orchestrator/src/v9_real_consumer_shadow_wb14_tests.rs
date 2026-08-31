@@ -2723,8 +2723,20 @@ fn exercise_complete_wb14_cadence(
         open_only_ending.inner.lse_state.tiles, open_shadow.inner.lse_state.tiles,
         "open-only execution changes receipt chronology but not LSE tile physics",
     );
-    let accepted_soil = &open_only_ending.inner.soil_thermal.ofes[0].ordered_layers;
-    let beginning_soil = &open_shadow.inner.soil_thermal.ofes[0].ordered_layers;
+    let accepted_soil = &open_only_ending
+        .inner
+        .soil_thermal
+        .v1()
+        .expect("V1 soil resident")
+        .ofes[0]
+        .ordered_layers;
+    let beginning_soil = &open_shadow
+        .inner
+        .soil_thermal
+        .v1()
+        .expect("V1 soil resident")
+        .ofes[0]
+        .ordered_layers;
     assert_ne!(
         accepted_soil[0].temperature_k.to_bits(),
         beginning_soil[0].temperature_k.to_bits(),

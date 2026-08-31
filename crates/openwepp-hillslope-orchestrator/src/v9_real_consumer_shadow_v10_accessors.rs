@@ -43,8 +43,8 @@ impl DirectV10RealConsumerShadow {
             .cloned()
             .collect::<Vec<_>>();
         let events = self.accepted_publication_history.event_handoffs();
-        let traversed = validate_accepted_publication_authority(&resident_shared, events)
-            .map_err(|_| {
+        let traversed =
+            validate_accepted_publication_authority(&resident_shared, events).map_err(|_| {
                 DirectV10RealConsumerError::Runtime(DirectV9RealConsumerError::Identity(
                     "restart V3 resident publication authority chronology",
                 ))
@@ -123,19 +123,14 @@ impl DirectV10RealConsumerShadow {
         {
             lane.day_inputs.clone_from(inputs);
         }
-        if candidate
-            .inner
-            .hydrology_frame
-            .identity
-            .day_count
-            != continuation_day_count
+        if candidate.inner.hydrology_frame.identity.day_count != continuation_day_count
             || candidate
                 .inner
                 .hydrology_frame
-            .lanes
-            .iter()
-            .zip(continuation_inputs)
-            .any(|(lane, expected)| &lane.day_inputs != expected)
+                .lanes
+                .iter()
+                .zip(continuation_inputs)
+                .any(|(lane, expected)| &lane.day_inputs != expected)
         {
             return Err(DirectV10RealConsumerError::Runtime(
                 DirectV9RealConsumerError::Identity(
@@ -229,21 +224,19 @@ impl DirectV10RealConsumerShadow {
                 )
             })
             .collect::<Vec<_>>();
-        let initial_beginning = accepted_support_records
-            .first()
-            .map(|support| {
-                self.accepted_publication_history
-                    .event_handoffs()
-                    .first()
-                    .filter(|event| {
-                        event.tick() == support.support.start_ns()
-                            && event.parent_transaction_id() == support.parent_transaction_id
-                    })
-                    .map_or(
-                        support.beginning_complete_owner_set_sha256,
-                        openwepp_coupled_time::AcceptedEventReceiptV1::beginning_owner_set_digest,
-                    )
-            });
+        let initial_beginning = accepted_support_records.first().map(|support| {
+            self.accepted_publication_history
+                .event_handoffs()
+                .first()
+                .filter(|event| {
+                    event.tick() == support.support.start_ns()
+                        && event.parent_transaction_id() == support.parent_transaction_id
+                })
+                .map_or(
+                    support.beginning_complete_owner_set_sha256,
+                    openwepp_coupled_time::AcceptedEventReceiptV1::beginning_owner_set_digest,
+                )
+        });
         if initial_beginning != Some(expected_initial_beginning)
             || !ordered_subsequence_is_complete_v1(&accepted_supports, accepted_subslabs)
             || self
@@ -349,7 +342,8 @@ impl DirectV10RealConsumerShadow {
             .validate(&inner.vegetation_configuration)
             .map_err(DirectV9RealConsumerError::V9)?;
         inner.lse_state.validate(&inner.lse_configuration)?;
-        inner.soil_thermal.validate()?;
+        let soil_thermal = inner.soil_thermal.v1()?;
+        soil_thermal.validate()?;
         let transaction_id = TransactionId(inner.vegetation_state.0.last_transaction_id);
         if inner
             .lse_state
@@ -360,8 +354,7 @@ impl DirectV10RealConsumerShadow {
                 DirectV9RealConsumerError::Identity("restart V9 vegetation/LSE lineage"),
             ));
         }
-        if inner
-            .soil_thermal
+        if soil_thermal
             .last_accepted_transaction_id
             .is_some_and(|value| value != transaction_id)
         {
@@ -377,7 +370,7 @@ impl DirectV10RealConsumerShadow {
         }
         if inner.accepted_interval_count != 0
             && (inner.lse_state.last_accepted_transaction_id != Some(transaction_id)
-                || inner.soil_thermal.last_accepted_transaction_id != Some(transaction_id))
+                || soil_thermal.last_accepted_transaction_id != Some(transaction_id))
         {
             return Err(DirectV10RealConsumerError::Runtime(
                 DirectV9RealConsumerError::Identity("restart V9 accepted physical lineage"),
@@ -553,36 +546,39 @@ impl DirectV10RealConsumerShadow {
                 "zero-duration terminal receiver binding",
             ));
         }
-        let inputs = parcels
-            .iter()
-            .flat_map(|parcel| {
-                parcel.receiver_destinations.iter().map(move |destination| {
-                    Ok(crate::direct_runtime::DirectZeroDurationSnowLiquidInputV1 {
-                        output_receipt_sha256: *parcel.parcel_digest.as_bytes(),
-                        output_set_sha256: *output_set_sha256.as_bytes(),
-                        predecessor_owner_set_sha256: *predecessor_owner_set_sha256.as_bytes(),
-                        receiver_context_sha256: *receiver_context_sha256.as_bytes(),
-                        support_start_ns: parcel.support.start_ns().get(),
-                        support_end_ns: parcel.support.end_ns().get(),
-                        receiver_ordinal,
-                        ofe_id: OfeId::try_new(destination.destination_ofe_id.clone()).map_err(|_| {
-                            DirectV11RealConsumerError::Identity(
-                                "zero-duration terminal receiver OFE",
-                            )
-                        })?,
-                        tile_id: TileId::try_new(destination.destination_tile_id.clone()).map_err(|_| {
-                            DirectV11RealConsumerError::Identity(
-                                "zero-duration terminal receiver tile",
-                            )
-                        })?,
-                        tile_fraction: destination.destination_fraction,
-                        mass_kg_m2_tile_ground: parcel.mass_kg_m2_tile_ground,
-                        sensible_enthalpy_j_m2_tile_ground: parcel.mass_kg_m2_tile_ground
-                            * parcel.specific_liquid_enthalpy_j_kg,
+        let inputs =
+            parcels
+                .iter()
+                .flat_map(|parcel| {
+                    parcel.receiver_destinations.iter().map(move |destination| {
+                        Ok(crate::direct_runtime::DirectZeroDurationSnowLiquidInputV1 {
+                            output_receipt_sha256: *parcel.parcel_digest.as_bytes(),
+                            output_set_sha256: *output_set_sha256.as_bytes(),
+                            predecessor_owner_set_sha256: *predecessor_owner_set_sha256.as_bytes(),
+                            receiver_context_sha256: *receiver_context_sha256.as_bytes(),
+                            support_start_ns: parcel.support.start_ns().get(),
+                            support_end_ns: parcel.support.end_ns().get(),
+                            receiver_ordinal,
+                            ofe_id: OfeId::try_new(destination.destination_ofe_id.clone())
+                                .map_err(|_| {
+                                    DirectV11RealConsumerError::Identity(
+                                        "zero-duration terminal receiver OFE",
+                                    )
+                                })?,
+                            tile_id: TileId::try_new(destination.destination_tile_id.clone())
+                                .map_err(|_| {
+                                    DirectV11RealConsumerError::Identity(
+                                        "zero-duration terminal receiver tile",
+                                    )
+                                })?,
+                            tile_fraction: destination.destination_fraction,
+                            mass_kg_m2_tile_ground: parcel.mass_kg_m2_tile_ground,
+                            sensible_enthalpy_j_m2_tile_ground: parcel.mass_kg_m2_tile_ground
+                                * parcel.specific_liquid_enthalpy_j_kg,
+                        })
                     })
                 })
-            })
-            .collect::<Result<Vec<_>, DirectV11RealConsumerError>>()?;
+                .collect::<Result<Vec<_>, DirectV11RealConsumerError>>()?;
         let mut candidate = self.clone();
         let beginning = candidate
             .inner
@@ -628,11 +624,13 @@ impl DirectV10RealConsumerShadow {
                     "zero-duration terminal receiver LSE topology",
                 ));
             }
-            let tile_v2 = matching_v2.into_iter().next().ok_or(
-                DirectV11RealConsumerError::Identity(
-                    "zero-duration terminal receiver LSE tile",
-                ),
-            )?;
+            let tile_v2 =
+                matching_v2
+                    .into_iter()
+                    .next()
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "zero-duration terminal receiver LSE tile",
+                    ))?;
             let tile_physical = matching_physical.into_iter().next().ok_or(
                 DirectV11RealConsumerError::Identity(
                     "zero-duration terminal receiver physical LSE tile",
@@ -653,11 +651,12 @@ impl DirectV10RealConsumerShadow {
         ending_lse.0.state_sha256 = ending_lse.0.canonical_sha256().map_err(|_| {
             DirectV11RealConsumerError::Identity("zero-duration terminal receiver LSE seal")
         })?;
-        ending_physical_lse.state_sha256 = ending_physical_lse.canonical_sha256().map_err(|_| {
-            DirectV11RealConsumerError::Identity(
-                "zero-duration terminal receiver physical LSE seal",
-            )
-        })?;
+        ending_physical_lse.state_sha256 =
+            ending_physical_lse.canonical_sha256().map_err(|_| {
+                DirectV11RealConsumerError::Identity(
+                    "zero-duration terminal receiver physical LSE seal",
+                )
+            })?;
         ending_physical_lse
             .validate(&candidate.inner.lse_configuration)
             .map_err(|_| {
@@ -665,9 +664,11 @@ impl DirectV10RealConsumerShadow {
                     "zero-duration terminal receiver physical LSE state",
                 )
             })?;
-        ending_lse.validate(&candidate.lse_configuration).map_err(|_| {
-            DirectV11RealConsumerError::Identity("zero-duration terminal receiver LSE state")
-        })?;
+        ending_lse
+            .validate(&candidate.lse_configuration)
+            .map_err(|_| {
+                DirectV11RealConsumerError::Identity("zero-duration terminal receiver LSE state")
+            })?;
         let lse_bytes = serde_json::to_vec(&ending_physical_lse).map_err(|_| {
             DirectV11RealConsumerError::Identity("zero-duration terminal receiver LSE bytes")
         })?;
@@ -738,9 +739,7 @@ impl DirectV10RealConsumerShadow {
         let mut inputs = Vec::new();
         for output in outputs {
             output.validate()?;
-            if output.mass_kg_m2_ofe_ground() <= 0.0
-                || !seen.insert(output.receipt_sha256())
-            {
+            if output.mass_kg_m2_ofe_ground() <= 0.0 || !seen.insert(output.receipt_sha256()) {
                 return Err(DirectV11RealConsumerError::Identity(
                     "zero-duration support-liquid receiver output identity",
                 ));
@@ -751,23 +750,21 @@ impl DirectV10RealConsumerShadow {
                 ));
             }
             for destination in &output.destinations {
-                inputs.push(
-                    crate::direct_runtime::DirectZeroDurationSnowLiquidInputV1 {
-                        output_receipt_sha256: *output.receipt_sha256().as_bytes(),
-                        output_set_sha256: *output_set_sha256.as_bytes(),
-                        predecessor_owner_set_sha256: *predecessor_owner_set_sha256.as_bytes(),
-                        receiver_context_sha256: *receiver_context_sha256.as_bytes(),
-                        support_start_ns: output.support.start_ns().get(),
-                        support_end_ns: output.support.end_ns().get(),
-                        receiver_ordinal,
-                        ofe_id: destination.ofe_id.clone(),
-                        tile_id: destination.tile_id.clone(),
-                        tile_fraction: destination.tile_fraction,
-                        mass_kg_m2_tile_ground: destination.mass_kg_m2_tile_ground,
-                        sensible_enthalpy_j_m2_tile_ground: destination
-                            .sensible_enthalpy_j_m2_tile_ground,
-                    },
-                );
+                inputs.push(crate::direct_runtime::DirectZeroDurationSnowLiquidInputV1 {
+                    output_receipt_sha256: *output.receipt_sha256().as_bytes(),
+                    output_set_sha256: *output_set_sha256.as_bytes(),
+                    predecessor_owner_set_sha256: *predecessor_owner_set_sha256.as_bytes(),
+                    receiver_context_sha256: *receiver_context_sha256.as_bytes(),
+                    support_start_ns: output.support.start_ns().get(),
+                    support_end_ns: output.support.end_ns().get(),
+                    receiver_ordinal,
+                    ofe_id: destination.ofe_id.clone(),
+                    tile_id: destination.tile_id.clone(),
+                    tile_fraction: destination.tile_fraction,
+                    mass_kg_m2_tile_ground: destination.mass_kg_m2_tile_ground,
+                    sensible_enthalpy_j_m2_tile_ground: destination
+                        .sensible_enthalpy_j_m2_tile_ground,
+                });
             }
         }
         let mut candidate = self.clone();
@@ -820,11 +817,13 @@ impl DirectV10RealConsumerShadow {
                     "zero-duration support-liquid receiver LSE topology",
                 ));
             }
-            let tile_v2 = matching_v2.into_iter().next().ok_or(
-                DirectV11RealConsumerError::Identity(
-                    "zero-duration support-liquid receiver LSE tile",
-                ),
-            )?;
+            let tile_v2 =
+                matching_v2
+                    .into_iter()
+                    .next()
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "zero-duration support-liquid receiver LSE tile",
+                    ))?;
             let tile_physical = matching_physical.into_iter().next().ok_or(
                 DirectV11RealConsumerError::Identity(
                     "zero-duration support-liquid receiver physical LSE tile",
@@ -845,17 +844,11 @@ impl DirectV10RealConsumerShadow {
         // A zero-duration ownership transfer is sequenced by its coupled-time
         // event ordinal and typed receiver receipt chain. It does not consume
         // a positive-duration LSE transaction ordinal.
-        ending_lse.0.state_sha256 = ending_lse
-            .0
-            .canonical_sha256()
-            .map_err(|_| {
-                DirectV11RealConsumerError::Identity(
-                    "zero-duration support-liquid receiver LSE seal",
-                )
-            })?;
-        ending_physical_lse.state_sha256 = ending_physical_lse
-            .canonical_sha256()
-            .map_err(|_| {
+        ending_lse.0.state_sha256 = ending_lse.0.canonical_sha256().map_err(|_| {
+            DirectV11RealConsumerError::Identity("zero-duration support-liquid receiver LSE seal")
+        })?;
+        ending_physical_lse.state_sha256 =
+            ending_physical_lse.canonical_sha256().map_err(|_| {
                 DirectV11RealConsumerError::Identity(
                     "zero-duration support-liquid receiver physical LSE seal",
                 )
@@ -875,9 +868,7 @@ impl DirectV10RealConsumerShadow {
                 )
             })?;
         let lse_bytes = serde_json::to_vec(&ending_physical_lse).map_err(|_| {
-            DirectV11RealConsumerError::Identity(
-                "zero-duration support-liquid receiver LSE bytes",
-            )
+            DirectV11RealConsumerError::Identity("zero-duration support-liquid receiver LSE bytes")
         })?;
         if let Some(parent) = parent_working {
             candidate.inner.wb14_parent_working_state = Some(
@@ -909,13 +900,9 @@ impl DirectV10RealConsumerShadow {
         &self,
         support: TimeSupport,
     ) -> Result<Vec<Stage3AcceptedSnowLiquidOutputV1>, DirectV11RealConsumerError> {
-        let retained = self
-            .accepted_publication_history
-            .supports()
-            .last()
-            .ok_or(DirectV11RealConsumerError::Identity(
-                "support-liquid receiver publication support",
-            ))?;
+        let retained = self.accepted_publication_history.supports().last().ok_or(
+            DirectV11RealConsumerError::Identity("support-liquid receiver publication support"),
+        )?;
         if retained.support() != support {
             return Err(DirectV11RealConsumerError::Identity(
                 "support-liquid receiver publication chronology",
@@ -1019,10 +1006,8 @@ impl DirectV10RealConsumerShadow {
     }
 
     #[must_use]
-    pub(crate) const fn qualification_soil_thermal(
-        &self,
-    ) -> &openwepp_land_surface_energy::SoilThermalSnapshot {
-        self.inner.soil_thermal()
+    pub(crate) fn qualification_soil_thermal(&self) -> DirectSoilThermalReadView<'_> {
+        self.inner.soil_thermal.read_view()
     }
 
     #[must_use]
@@ -1065,7 +1050,9 @@ impl DirectV10RealConsumerShadow {
 
 #[cfg(test)]
 mod accepted_publication_subsequence_tests {
-    use super::{genesis_pre_support_event_authority_is_exact_v1, ordered_subsequence_is_complete_v1};
+    use super::{
+        genesis_pre_support_event_authority_is_exact_v1, ordered_subsequence_is_complete_v1,
+    };
     use openwepp_coupled_time::{Digest32, ModelTimeNs, TimeSupport};
 
     #[test]

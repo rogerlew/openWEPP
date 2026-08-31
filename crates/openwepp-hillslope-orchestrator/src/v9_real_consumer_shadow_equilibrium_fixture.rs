@@ -88,15 +88,18 @@ pub fn restart_authority_equilibrate_complete_owner_fixture(
             "restart equilibrium beginning-owner lineage",
         ));
     }
-    for ofe in &mut shadow.inner.soil_thermal.ofes {
-        for layer in &mut ofe.ordered_layers {
-            layer.temperature_k = EQUILIBRIUM_TEMPERATURE_K;
-            layer.enthalpy_j_m2_ofe_ground = 0.0;
+    {
+        let soil_thermal = shadow.inner.soil_thermal.v1_mut()?;
+        for ofe in &mut soil_thermal.ofes {
+            for layer in &mut ofe.ordered_layers {
+                layer.temperature_k = EQUILIBRIUM_TEMPERATURE_K;
+                layer.enthalpy_j_m2_ofe_ground = 0.0;
+            }
         }
+        soil_thermal.last_accepted_transaction_id = Some(TransactionId(transaction_id));
+        restart_authority_seal_soil_thermal_digests(soil_thermal)?;
+        soil_thermal.validate()?;
+        restart_authority_validate_soil_thermal_digests(soil_thermal)?;
     }
-    shadow.inner.soil_thermal.last_accepted_transaction_id = Some(TransactionId(transaction_id));
-    restart_authority_seal_soil_thermal_digests(&mut shadow.inner.soil_thermal)?;
-    shadow.inner.soil_thermal.validate()?;
-    restart_authority_validate_soil_thermal_digests(&shadow.inner.soil_thermal)?;
     Ok(())
 }

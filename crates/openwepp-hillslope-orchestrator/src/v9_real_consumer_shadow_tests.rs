@@ -162,7 +162,7 @@ mod tests {
     }
 
     #[allow(clippy::too_many_lines)]
-    fn v10_shadow_fixture() -> (DirectV10RealConsumerShadow, EndpointFixture) {
+    pub(super) fn v10_shadow_fixture() -> (DirectV10RealConsumerShadow, EndpointFixture) {
         v10_shadow_fixture_from(endpoint_fixture())
     }
 
@@ -194,7 +194,12 @@ mod tests {
             shadow.lse_state.clone(),
             shadow.inner.surface_configuration.clone(),
             shadow.inner.layer_maps.clone(),
-            shadow.inner.soil_thermal.clone(),
+            shadow
+                .inner
+                .soil_thermal
+                .v1()
+                .expect("V1 soil resident")
+                .clone(),
             shadow.inner.biogeochemistry.clone(),
             shadow.inner.hydrology_frame.clone(),
             shadow.inner.next_day_index,
@@ -1137,7 +1142,7 @@ mod tests {
             );
             assert_eq!(
                 support_receipt.beginning_soil_thermal_state_sha256,
-                staged_shadow.inner.soil_thermal.state_sha256,
+                staged_shadow.inner.soil_thermal.state_sha256().clone(),
                 "support receipt must bind the staged beginning soil owner"
             );
             staged_shadow = executor.stack.take_staged_ending().expect("staged ending");
@@ -1297,7 +1302,10 @@ mod tests {
             Some(TransactionId(40))
         );
         assert_eq!(
-            committed.inner.soil_thermal.last_accepted_transaction_id,
+            committed
+                .inner
+                .soil_thermal
+                .last_accepted_transaction_id(),
             Some(TransactionId(40))
         );
         assert_eq!(committed.inner.biogeochemistry.last_transaction_id, 40);
@@ -1898,7 +1906,10 @@ mod tests {
         let canonical = project_live_vegetation_forcing(
             provider,
             &fixture.hydrology,
-            shadow.inner.soil_thermal(),
+            shadow
+                .inner
+                .soil_thermal()
+                .expect("V1 soil resident"),
             shadow.inner.root_zone_hydraulic_configuration.as_ref(),
             &shadow.inner.surface_configuration,
             &shadow.inner.lse_configuration,
@@ -1924,7 +1935,10 @@ mod tests {
         let projected = project_live_vegetation_forcing(
             &poisoned,
             &fixture.hydrology,
-            shadow.inner.soil_thermal(),
+            shadow
+                .inner
+                .soil_thermal()
+                .expect("V1 soil resident"),
             shadow.inner.root_zone_hydraulic_configuration.as_ref(),
             &shadow.inner.surface_configuration,
             &shadow.inner.lse_configuration,
@@ -2214,7 +2228,12 @@ mod tests {
                 lse_state,
                 shadow.inner.surface_configuration.clone(),
                 shadow.inner.layer_maps.clone(),
-                shadow.inner.soil_thermal.clone(),
+                shadow
+                    .inner
+                    .soil_thermal
+                    .v1()
+                    .expect("V1 soil resident")
+                    .clone(),
                 shadow.inner.biogeochemistry.clone(),
                 shadow.inner.hydrology_frame.clone(),
                 shadow.inner.next_day_index,
@@ -2361,7 +2380,8 @@ mod tests {
         let mut checkpoint = first_half.checkpoint();
         checkpoint.shadow.vegetation_state = vegetation;
         checkpoint.shadow.lse_state = lse;
-        checkpoint.shadow.soil_thermal = soil;
+        checkpoint.shadow.soil_thermal =
+            DirectSoilThermalResident::try_new_v1(soil).expect("V1 soil resident");
         checkpoint.shadow.biogeochemistry = bgc;
         let mut restarted = DirectV9RealConsumerShadow::restore(checkpoint)
             .expect("complete typed restart owner reload");
@@ -2570,7 +2590,11 @@ mod tests {
         shadow.lse_state.last_accepted_transaction_id = Some(TransactionId(39));
         assert!(shadow.validate_complete_owner_set().is_err());
         let (mut shadow, _) = shadow_fixture();
-        shadow.soil_thermal.last_accepted_transaction_id = Some(TransactionId(39));
+        shadow
+            .soil_thermal
+            .v1_mut()
+            .expect("V1 soil resident")
+            .last_accepted_transaction_id = Some(TransactionId(39));
         assert!(shadow.validate_complete_owner_set().is_err());
         let (mut shadow, _) = shadow_fixture();
         shadow.layer_maps[0].ofe_lane.lane_id = u32::MAX;

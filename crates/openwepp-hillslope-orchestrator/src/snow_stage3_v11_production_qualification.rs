@@ -1625,17 +1625,17 @@ impl DirectSnowStage3V11ShadowAttachment {
         soil.validate()
             .map_err(|_| qualification_error("qualification soil-thermal validation"))?;
         let soil_thermal_ofes = soil
-            .ofes
-            .iter()
+            .ordered_ofes()
+            .into_iter()
             .map(|ofe| SnowStage3V11QualifiedSoilThermalOfeV1 {
-                ofe_id: ofe.ofe_id.as_str().to_owned(),
+                ofe_id: ofe.ofe_id().as_str().to_owned(),
                 ordered_layers: ofe
-                    .ordered_layers
-                    .iter()
+                    .ordered_layers()
+                    .into_iter()
                     .map(|layer| SnowStage3V11QualifiedSoilThermalLayerV1 {
-                        layer_id: layer.layer_id.as_str().to_owned(),
-                        temperature_k: layer.temperature_k,
-                        enthalpy_j_m2: layer.enthalpy_j_m2_ofe_ground,
+                        layer_id: layer.layer_id().as_str().to_owned(),
+                        temperature_k: layer.temperature_k(),
+                        enthalpy_j_m2: layer.enthalpy_high_j_m2_ofe_ground(),
                     })
                     .collect(),
             })
@@ -1867,17 +1867,17 @@ impl DirectSnowStage3V11ShadowAttachment {
         soil.validate()
             .map_err(|_| qualification_error("qualification bounded soil validation"))?;
         let soil_thermal_ofes = soil
-            .ofes
-            .iter()
+            .ordered_ofes()
+            .into_iter()
             .map(|ofe| SnowStage3V11QualifiedSoilThermalOfeV1 {
-                ofe_id: ofe.ofe_id.as_str().to_owned(),
+                ofe_id: ofe.ofe_id().as_str().to_owned(),
                 ordered_layers: ofe
-                    .ordered_layers
-                    .iter()
+                    .ordered_layers()
+                    .into_iter()
                     .map(|layer| SnowStage3V11QualifiedSoilThermalLayerV1 {
-                        layer_id: layer.layer_id.as_str().to_owned(),
-                        temperature_k: layer.temperature_k,
-                        enthalpy_j_m2: layer.enthalpy_j_m2_ofe_ground,
+                        layer_id: layer.layer_id().as_str().to_owned(),
+                        temperature_k: layer.temperature_k(),
+                        enthalpy_j_m2: layer.enthalpy_high_j_m2_ofe_ground(),
                     })
                     .collect(),
             })

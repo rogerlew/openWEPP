@@ -322,6 +322,7 @@ fn project_repository_forcing_receipts_to_v9_day(
 }
 
 include!("v9_real_consumer_shadow_forcing.rs");
+include!("v9_real_consumer_shadow/v10_soil_thermal_v2.rs");
 #[derive(Clone, Debug, PartialEq)]
 pub struct DirectV9RealConsumerShadow {
     authority: CoveredColumnAuthority,
@@ -333,7 +334,7 @@ pub struct DirectV9RealConsumerShadow {
     lse_state: LandSurfaceEnergyState,
     surface_configuration: DirectSurfaceLiquidConfiguration,
     layer_maps: Vec<RealHydrologyLaneLayerMap>,
-    soil_thermal: SoilThermalSnapshot,
+    soil_thermal: DirectSoilThermalResident,
     biogeochemistry: BiogeochemistryState,
     hydrology_frame: DirectRunFrame,
     next_day_index: usize,
@@ -481,7 +482,7 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
             input.support.start_ns().get(),
             input.support.end_ns().get(),
             input.duration_s_bits,
-            self.beginning.inner.soil_thermal.state_sha256.clone(),
+            self.beginning.inner.soil_thermal.state_sha256().clone(),
         )
         .map_err(|error| {
             DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
@@ -966,6 +967,85 @@ impl DirectV10RealConsumerShadow {
         provider_cursor: SnowFreeHalfHourProviderCursor,
         root_zone_hydraulic_configuration: DirectRootZoneHydraulicConfiguration,
     ) -> Result<Self, DirectV10RealConsumerError> {
+        Self::try_new_with_soil_resident(
+            vegetation_configuration,
+            vegetation_state,
+            vegetation_owner_id,
+            lse_configuration,
+            lse_state,
+            surface_configuration,
+            layer_maps,
+            DirectSoilThermalResident::try_new_v1(soil_thermal)?,
+            biogeochemistry,
+            hydrology_frame,
+            next_day_index,
+            gsi_owner_configuration,
+            gsi_state,
+            provider_static_configuration,
+            provider_cursor,
+            root_zone_hydraulic_configuration,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    pub fn try_new_v2(
+        vegetation_configuration: VegetationConfiguration,
+        vegetation_state: V10CoupledOwnedState,
+        vegetation_owner_id: ResourceOwnerId,
+        lse_configuration: LandSurfaceEnergyConfiguration,
+        lse_state: LandSurfaceEnergyV2State,
+        surface_configuration: DirectSurfaceLiquidConfiguration,
+        layer_maps: Vec<RealHydrologyLaneLayerMap>,
+        prepared_soil_thermal: openwepp_land_surface_energy::PreparedSoilThermalSupportV2,
+        soil_thermal_seals: openwepp_land_surface_energy::SoilThermalReceiptFreeOwnerSealsV2,
+        biogeochemistry: BiogeochemistryState,
+        hydrology_frame: DirectRunFrame,
+        next_day_index: usize,
+        gsi_owner_configuration: DirectGsiOwnerConfigurationV1,
+        gsi_state: GsiState,
+        provider_static_configuration: SnowFreeHalfHourStaticConfiguration,
+        provider_cursor: SnowFreeHalfHourProviderCursor,
+        root_zone_hydraulic_configuration: DirectRootZoneHydraulicConfiguration,
+    ) -> Result<Self, DirectV10RealConsumerError> {
+        Self::try_new_with_soil_resident(
+            vegetation_configuration,
+            vegetation_state,
+            vegetation_owner_id,
+            lse_configuration,
+            lse_state,
+            surface_configuration,
+            layer_maps,
+            DirectSoilThermalResident::try_new_v2(prepared_soil_thermal, soil_thermal_seals)?,
+            biogeochemistry,
+            hydrology_frame,
+            next_day_index,
+            gsi_owner_configuration,
+            gsi_state,
+            provider_static_configuration,
+            provider_cursor,
+            root_zone_hydraulic_configuration,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn try_new_with_soil_resident(
+        vegetation_configuration: VegetationConfiguration,
+        vegetation_state: V10CoupledOwnedState,
+        vegetation_owner_id: ResourceOwnerId,
+        lse_configuration: LandSurfaceEnergyConfiguration,
+        lse_state: LandSurfaceEnergyV2State,
+        surface_configuration: DirectSurfaceLiquidConfiguration,
+        layer_maps: Vec<RealHydrologyLaneLayerMap>,
+        soil_thermal: DirectSoilThermalResident,
+        biogeochemistry: BiogeochemistryState,
+        hydrology_frame: DirectRunFrame,
+        next_day_index: usize,
+        gsi_owner_configuration: DirectGsiOwnerConfigurationV1,
+        gsi_state: GsiState,
+        provider_static_configuration: SnowFreeHalfHourStaticConfiguration,
+        provider_cursor: SnowFreeHalfHourProviderCursor,
+        root_zone_hydraulic_configuration: DirectRootZoneHydraulicConfiguration,
+    ) -> Result<Self, DirectV10RealConsumerError> {
         gsi_owner_configuration.validate()?;
         provider_static_configuration.validate()?;
         let expected_root_layers = layer_maps
@@ -1369,7 +1449,9 @@ impl DirectV10RealConsumerShadow {
         feature = "persisted-restart-v1"
     ))]
     #[must_use]
-    pub const fn restart_authority_soil_thermal(&self) -> &SoilThermalSnapshot {
+    pub fn restart_authority_soil_thermal(
+        &self,
+    ) -> Result<&SoilThermalSnapshot, DirectV9RealConsumerError> {
         self.inner.soil_thermal()
     }
 
@@ -1876,7 +1958,7 @@ impl DirectV9RealConsumerShadow {
             lse_state,
             surface_configuration,
             layer_maps,
-            soil_thermal,
+            DirectSoilThermalResident::try_new_v1(soil_thermal)?,
             biogeochemistry,
             hydrology_frame,
             next_day_index,
@@ -1894,7 +1976,7 @@ impl DirectV9RealConsumerShadow {
         lse_state: LandSurfaceEnergyState,
         surface_configuration: DirectSurfaceLiquidConfiguration,
         layer_maps: Vec<RealHydrologyLaneLayerMap>,
-        soil_thermal: SoilThermalSnapshot,
+        soil_thermal: DirectSoilThermalResident,
         biogeochemistry: BiogeochemistryState,
         hydrology_frame: DirectRunFrame,
         next_day_index: usize,
@@ -2027,8 +2109,8 @@ impl DirectV9RealConsumerShadow {
     }
 
     #[must_use]
-    pub const fn soil_thermal(&self) -> &SoilThermalSnapshot {
-        &self.soil_thermal
+    pub fn soil_thermal(&self) -> Result<&SoilThermalSnapshot, DirectV9RealConsumerError> {
+        self.soil_thermal.v1()
     }
 
     #[must_use]
@@ -2251,6 +2333,7 @@ impl DirectV9RealConsumerShadow {
             &self.layer_maps,
         )?;
         let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hydrology);
+        let soil_thermal = self.soil_thermal.v1()?;
         let hydrology_snapshot = unified_beginning_hydrology_snapshot_sha256(
             &soil_adapter,
             &self.surface_configuration,
@@ -2259,7 +2342,7 @@ impl DirectV9RealConsumerShadow {
         let (vegetation_forcing, root_zone_hydraulics) = project_live_vegetation_forcing(
             &input.vegetation_forcing,
             &hydrology,
-            &self.soil_thermal,
+            soil_thermal,
             self.root_zone_hydraulic_configuration.as_ref(),
             &self.surface_configuration,
             &self.lse_configuration,
@@ -2278,7 +2361,7 @@ impl DirectV9RealConsumerShadow {
                 self.lse_configuration.configuration_sha256.clone(),
                 forcing_sha256,
                 hydrology_snapshot,
-                self.soil_thermal.snapshot_sha256.clone(),
+                soil_thermal.snapshot_sha256.clone(),
                 transaction_id,
                 vegetation_forcing,
                 receipts,
@@ -2289,7 +2372,7 @@ impl DirectV9RealConsumerShadow {
                 self.lse_configuration.configuration_sha256.clone(),
                 forcing_sha256,
                 hydrology_snapshot,
-                self.soil_thermal.snapshot_sha256.clone(),
+                soil_thermal.snapshot_sha256.clone(),
                 transaction_id,
                 vegetation_forcing,
             )?,
@@ -2315,7 +2398,7 @@ impl DirectV9RealConsumerShadow {
                 day_index,
                 interval_index,
                 &input.wb14_parameters,
-                &self.soil_thermal,
+                soil_thermal,
                 &nitrogen,
                 &self.biogeochemistry,
                 openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered,
@@ -2345,7 +2428,7 @@ impl DirectV9RealConsumerShadow {
                     day_index,
                     interval_index,
                     &input.wb14_parameters,
-                    &self.soil_thermal,
+                    soil_thermal,
                     &nitrogen,
                     &self.biogeochemistry,
                     // This entry point is the typed V11 snow-covered carrier
@@ -2374,7 +2457,7 @@ impl DirectV9RealConsumerShadow {
                     day_index,
                     interval_index,
                     &input.wb14_parameters,
-                    &self.soil_thermal,
+                    soil_thermal,
                     &nitrogen,
                     &self.biogeochemistry,
                     self.authority,
@@ -2399,7 +2482,7 @@ impl DirectV9RealConsumerShadow {
                 day_index,
                 interval_index,
                 &input.wb14_parameters,
-                &self.soil_thermal,
+                soil_thermal,
                 &nitrogen,
                 &self.biogeochemistry,
                 None,
@@ -2530,14 +2613,14 @@ impl DirectV9RealConsumerShadow {
             envelope.hydrology().ending_lse_tile_states().to_vec(),
         )?;
         let soil_thermal = aggregate_soil_thermal_ending(
-            &self.soil_thermal,
+            self.soil_thermal.v1()?,
             &self.lse_configuration,
             transaction_id,
             envelope.hydrology().soil_thermal_candidates(),
         )?;
         self.vegetation_state = vegetation_state;
         self.lse_state = lse_state;
-        self.soil_thermal = soil_thermal;
+        self.soil_thermal = DirectSoilThermalResident::try_new_v1(soil_thermal)?;
         self.biogeochemistry = envelope.biogeochemistry().ending().clone();
         self.hydrology_frame = envelope.hydrology().ending_frame().clone();
         self.wb14_parent_working_state = envelope
@@ -2570,7 +2653,7 @@ impl DirectV9RealConsumerShadow {
                 ));
             }
         }
-        let beginning_soil = self.soil_thermal.clone();
+        let beginning_soil = self.soil_thermal.v1()?.clone();
         self.accept_envelope(transaction_id, envelope)?;
         let accepted = aggregate_soil_thermal_ending_with_top_boundary_credits(
             &beginning_soil,
@@ -2579,7 +2662,7 @@ impl DirectV9RealConsumerShadow {
             envelope.hydrology().soil_thermal_candidates(),
             credits,
         )?;
-        self.soil_thermal = accepted.ending.clone();
+        self.soil_thermal = DirectSoilThermalResident::try_new_v1(accepted.ending.clone())?;
         Ok(accepted)
     }
 
@@ -2595,11 +2678,11 @@ impl DirectV9RealConsumerShadow {
             .is_none_or(|value| value == transaction_id);
         let soil_transaction_matches = self
             .soil_thermal
-            .last_accepted_transaction_id
+            .last_accepted_transaction_id()
             .is_none_or(|value| value == transaction_id);
         let complete_accepted_lineage = self.accepted_interval_count == 0
             || (self.lse_state.last_accepted_transaction_id == Some(transaction_id)
-                && self.soil_thermal.last_accepted_transaction_id == Some(transaction_id));
+                && self.soil_thermal.last_accepted_transaction_id() == Some(transaction_id));
         let mapping_matches = self
             .surface_configuration
             .ofe_bindings
@@ -2631,7 +2714,7 @@ impl DirectV9RealConsumerShadow {
         struct ShadowBytes<'a> {
             vegetation: &'a V9CoupledOwnedState,
             lse: &'a LandSurfaceEnergyState,
-            soil_thermal: &'a SoilThermalSnapshot,
+            soil_thermal: &'a DirectSoilThermalResident,
             biogeochemistry: &'a BiogeochemistryState,
             hydrology_debug: String,
             next_day_index: usize,

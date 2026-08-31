@@ -263,6 +263,8 @@ pub struct UnifiedRealHydrologyCandidate {
     surface_resource: DirectSurfaceLiquidResourceCandidate,
     surface_ingress: DirectSurfaceLiquidIngressCandidate,
     ending_lse_tile_states: Vec<TileState>,
+    pre_ingress_soil_thermal_candidates: Vec<SoilThermalTileCandidate>,
+    pre_ingress_soil_thermal_sha256: String,
     soil_thermal_candidates: Vec<SoilThermalTileCandidate>,
     receiver_closure_operands: RealReceiverClosureOperands,
     rollback_hashes: Vec<OwnerRollbackHash>,
@@ -606,6 +608,16 @@ impl UnifiedLseFinalization {
 
 impl UnifiedRealHydrologyCandidate {
     #[must_use]
+    pub fn pre_ingress_soil_thermal_candidates(&self) -> &[SoilThermalTileCandidate] {
+        &self.pre_ingress_soil_thermal_candidates
+    }
+
+    #[must_use]
+    pub fn pre_ingress_soil_thermal_sha256(&self) -> &str {
+        &self.pre_ingress_soil_thermal_sha256
+    }
+
+    #[must_use]
     pub const fn transaction_id(&self) -> TransactionId {
         self.transaction_id
     }
@@ -690,6 +702,13 @@ impl UnifiedRealHydrologyCandidate {
                 != configuration.ofe_bindings.len()
             || self.receiver_closure_operands.lse_tiles.len() != configuration.records.len()
             || self.receiver_closure_operands.soil_thermal.len() != configuration.records.len()
+            || self.pre_ingress_soil_thermal_candidates.len() != self.soil_thermal_candidates.len()
+            || self.pre_ingress_soil_thermal_sha256
+                != finalization_receiver_sets_sha256(
+                    &[],
+                    &self.pre_ingress_soil_thermal_candidates,
+                    &[],
+                )
         {
             return Err(self.atomic_failure(
                 OwnerKind::Hydrology,
@@ -726,6 +745,19 @@ impl UnifiedRealHydrologyCandidate {
             .iter()
             .zip(&self.receiver_closure_operands.soil_thermal)
         {
+            let pre_ingress = self
+                .pre_ingress_soil_thermal_candidates
+                .iter()
+                .find(|candidate| {
+                    candidate.ofe_id == tile.ofe_id && candidate.tile_id == tile.tile_id
+                })
+                .ok_or_else(|| {
+                    self.atomic_failure(
+                        OwnerKind::SoilThermal,
+                        &self.receiver_closure_operands.soil_thermal_owner_id,
+                        "pre-ingress soil-thermal candidate custody",
+                    )
+                })?;
             let Some(layer) = tile
                 .layers
                 .iter()
@@ -742,6 +774,31 @@ impl UnifiedRealHydrologyCandidate {
                     OwnerKind::SoilThermal,
                     &self.receiver_closure_operands.soil_thermal_owner_id,
                     "soil-thermal candidate/receiver closure join",
+                ));
+            }
+            if pre_ingress.owner_id != tile.owner_id
+                || pre_ingress.beginning_state_sha256 != tile.beginning_state_sha256
+                || pre_ingress.layers.len() != tile.layers.len()
+                || pre_ingress
+                    .layers
+                    .iter()
+                    .zip(&tile.layers)
+                    .any(|(before, after)| {
+                        before.layer_id != after.layer_id
+                            || before.beginning_enthalpy_j_m2_ofe_ground.to_bits()
+                                != after.beginning_enthalpy_j_m2_ofe_ground.to_bits()
+                            || before.ground_heat_credit_j_m2_ofe_ground.to_bits()
+                                != after.ground_heat_credit_j_m2_ofe_ground.to_bits()
+                            || before
+                                .infiltration_enthalpy_credit_j_m2_ofe_ground
+                                .to_bits()
+                                != 0.0_f64.to_bits()
+                    })
+            {
+                return Err(self.atomic_failure(
+                    OwnerKind::SoilThermal,
+                    &self.receiver_closure_operands.soil_thermal_owner_id,
+                    "pre-ingress/post-ingress soil-thermal custody",
                 ));
             }
             require_receiver_close(

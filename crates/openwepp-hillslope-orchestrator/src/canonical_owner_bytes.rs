@@ -1197,7 +1197,10 @@ impl DirectV10RealConsumerShadow {
         );
         owners.insert(
             "soil_thermal".to_owned(),
-            serde_json::to_vec(&self.inner.soil_thermal)?,
+            self.inner
+                .soil_thermal
+                .canonical_active_owner_bytes()
+                .map_err(DirectV10RealConsumerError::Runtime)?,
         );
         Ok(owners)
     }
