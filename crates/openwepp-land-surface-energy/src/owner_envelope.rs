@@ -7,8 +7,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     ComponentId, ExactDyadicEnthalpy, LandSurfaceEnergyError, MINIMUM_SUPPORT_NS, OfeId,
-    Sha256Digest, SoilThermalExactCarryError, SourceId, WaterProtocol, WaterSourceType,
-    canonical_digest, require_finite, require_finite_nonnegative,
+    SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG, Sha256Digest, SoilThermalAcceptedEnergyOperandV2,
+    SoilThermalEnergyCreditReceiptV2, SoilThermalExactCarryError, SoilThermalLayerEnergyCreditV2,
+    SoilThermalTemperatureProjectionV2, SourceId, WaterProtocol, WaterSourceType, canonical_digest,
+    require_finite, require_finite_nonnegative,
 };
 
 pub const SOIL_THERMAL_OWNER_V2_TAG: &str = "OPENWEPP_SOIL_THERMAL_OWNER_V2";
@@ -237,6 +239,27 @@ pub struct SoilThermalSnapshotV2 {
     pub state: SoilThermalOwnedStateV2,
 }
 
+impl SoilThermalSnapshotV2 {
+    pub fn validate(&self) -> Result<(), SoilThermalExactCarryError> {
+        if self.owner_tag != SOIL_THERMAL_OWNER_V2_TAG
+            || self.schema_sha256.as_str() != SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256
+            || self.exact_carry_definition_sha256.as_str()
+                != EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256
+        {
+            return Err(SoilThermalExactCarryError::Identity(
+                "V2 snapshot tag, schema, or exact-carry definition",
+            ));
+        }
+        self.state.validate()?;
+        let expected =
+            canonical_digest(&self.state).map_err(|error| exact_carry_serialization(&error))?;
+        if self.snapshot_sha256 != expected {
+            return Err(SoilThermalExactCarryError::Identity("V2 snapshot digest"));
+        }
+        Ok(())
+    }
+}
+
 /// Complete tagged V2 candidate identity and owner state.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -334,6 +357,178 @@ impl<'a> SoilThermalPhysicalReadViewV2<'a> {
             &ExactDyadicEnthalpy::from_f64(layer.enthalpy_hi_j_m2_ofe_ground)?,
             &layer.enthalpy_carry,
         ])?)
+    }
+}
+
+/// Complete immutable beginning identity retained by a provisional
+/// soil-thermal candidate.
+#[derive(Clone, Debug, PartialEq)]
+#[allow(
+    clippy::large_enum_variant,
+    reason = "the provisional candidate must retain the complete authenticated V2 identity inline"
+)]
+pub enum SoilThermalCandidateBeginningIdentity {
+    V1 {
+        configuration_sha256: Sha256Digest,
+        last_accepted_transaction_id: Option<TransactionId>,
+    },
+    V2 {
+        owner_tag: String,
+        schema_sha256: Sha256Digest,
+        exact_carry_definition_sha256: Sha256Digest,
+        parent_v1_state_sha256: Sha256Digest,
+        contract_version: u32,
+        model_version: String,
+        model_definition_sha256: Sha256Digest,
+        run_id: String,
+        configuration_sha256: Sha256Digest,
+        transaction_id: TransactionId,
+        expected_predecessor_transaction_id: Option<TransactionId>,
+        support_start_ns: u128,
+        support_end_ns: u128,
+        receipt_chain_sha256: Sha256Digest,
+    },
+}
+
+/// Typed read-only beginning accepted by LSE finalization. V2 remains a
+/// borrowed view of its authenticated owner rather than a projected V1 cache.
+#[derive(Clone, Copy)]
+pub enum SoilThermalFinalizationBeginning<'a> {
+    V1(&'a SoilThermalSnapshot),
+    V2(SoilThermalPhysicalReadViewV2<'a>),
+}
+
+pub(crate) struct SoilThermalLayerRead<'a> {
+    pub(crate) layer_id: &'a SoilLayerId,
+    pub(crate) temperature_k: f64,
+    pub(crate) enthalpy_hi_j_m2_ofe_ground: f64,
+    pub(crate) enthalpy_carry: Option<&'a ExactDyadicEnthalpy>,
+}
+
+pub(crate) enum SoilThermalOfeRead<'a> {
+    V1(&'a SoilThermalOfeSnapshot),
+    V2(&'a SoilThermalOfeStateV2),
+}
+
+impl<'a> SoilThermalFinalizationBeginning<'a> {
+    pub(crate) fn validate(self) -> Result<(), LandSurfaceEnergyError> {
+        match self {
+            Self::V1(snapshot) => snapshot.validate(),
+            Self::V2(view) => {
+                let owner = view.owner();
+                owner
+                    .validate()
+                    .map_err(|_| LandSurfaceEnergyError::OwnerEnvelope("invalid V2 beginning"))?;
+                if owner.state.last_accepted_transaction_id
+                    != owner.expected_predecessor_transaction_id
+                    || owner.state.last_accepted_transaction_id == Some(owner.transaction_id)
+                {
+                    return Err(LandSurfaceEnergyError::OwnerEnvelope(
+                        "invalid V2 beginning lineage",
+                    ));
+                }
+                Ok(())
+            }
+        }
+    }
+
+    pub(crate) fn ofe(self, ofe_id: &OfeId) -> Option<SoilThermalOfeRead<'a>> {
+        match self {
+            Self::V1(snapshot) => snapshot
+                .ofes
+                .iter()
+                .find(|row| &row.ofe_id == ofe_id)
+                .map(SoilThermalOfeRead::V1),
+            Self::V2(view) => view
+                .owner()
+                .state
+                .ofes
+                .iter()
+                .find(|row| &row.ofe_id == ofe_id)
+                .map(SoilThermalOfeRead::V2),
+        }
+    }
+
+    #[must_use]
+    pub fn owner_id(self) -> &'a ResourceOwnerId {
+        match self {
+            Self::V1(snapshot) => &snapshot.owner_id,
+            Self::V2(view) => &view.owner().state.owner_id,
+        }
+    }
+
+    #[must_use]
+    pub fn state_sha256(self) -> &'a Sha256Digest {
+        match self {
+            Self::V1(snapshot) => &snapshot.state_sha256,
+            Self::V2(view) => &view.owner().state.state_sha256,
+        }
+    }
+
+    #[must_use]
+    pub const fn is_v2(self) -> bool {
+        matches!(self, Self::V2(_))
+    }
+
+    #[must_use]
+    pub fn candidate_identity(self) -> SoilThermalCandidateBeginningIdentity {
+        match self {
+            Self::V1(snapshot) => SoilThermalCandidateBeginningIdentity::V1 {
+                configuration_sha256: snapshot.configuration_sha256.clone(),
+                last_accepted_transaction_id: snapshot.last_accepted_transaction_id,
+            },
+            Self::V2(view) => {
+                let owner = view.owner();
+                SoilThermalCandidateBeginningIdentity::V2 {
+                    owner_tag: owner.owner_tag.clone(),
+                    schema_sha256: owner.schema_sha256.clone(),
+                    exact_carry_definition_sha256: owner.exact_carry_definition_sha256.clone(),
+                    parent_v1_state_sha256: owner.parent_v1_state_sha256.clone(),
+                    contract_version: owner.contract_version,
+                    model_version: owner.model_version.clone(),
+                    model_definition_sha256: owner.model_definition_sha256.clone(),
+                    run_id: owner.run_id.clone(),
+                    configuration_sha256: owner.state.configuration_sha256.clone(),
+                    transaction_id: owner.transaction_id,
+                    expected_predecessor_transaction_id: owner.expected_predecessor_transaction_id,
+                    support_start_ns: owner.support_start_ns,
+                    support_end_ns: owner.support_end_ns,
+                    receipt_chain_sha256: owner.receipt_chain_sha256.clone(),
+                }
+            }
+        }
+    }
+}
+
+impl<'a> SoilThermalOfeRead<'a> {
+    pub(crate) fn len(&self) -> usize {
+        match self {
+            Self::V1(ofe) => ofe.ordered_layers.len(),
+            Self::V2(ofe) => ofe.ordered_layers.len(),
+        }
+    }
+
+    pub(crate) fn layer(&self, index: usize) -> Option<SoilThermalLayerRead<'a>> {
+        match self {
+            Self::V1(ofe) => ofe
+                .ordered_layers
+                .get(index)
+                .map(|layer| SoilThermalLayerRead {
+                    layer_id: &layer.layer_id,
+                    temperature_k: layer.temperature_k,
+                    enthalpy_hi_j_m2_ofe_ground: layer.enthalpy_j_m2_ofe_ground,
+                    enthalpy_carry: None,
+                }),
+            Self::V2(ofe) => ofe
+                .ordered_layers
+                .get(index)
+                .map(|layer| SoilThermalLayerRead {
+                    layer_id: &layer.layer_id,
+                    temperature_k: layer.temperature_k,
+                    enthalpy_hi_j_m2_ofe_ground: layer.enthalpy_hi_j_m2_ofe_ground,
+                    enthalpy_carry: Some(&layer.enthalpy_carry),
+                }),
+        }
     }
 }
 
@@ -971,4 +1166,215 @@ impl OwnerEnvelopeIdentity {
             .map_err(|violation| violation.error)?;
         self.candidate_owner_receipts.validate_owner_set()
     }
+}
+
+/// Clone-only candidate: a refusal never mutates the supplied beginning owner.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SoilThermalExactCarryCandidateV2 {
+    pub ending_owner: SoilThermalOwnerEnvelopeV2,
+    pub credit_receipt: SoilThermalEnergyCreditReceiptV2,
+}
+
+/// Unpublished exact receiver trial. It contains no accepted receipt and has
+/// no installation API; only final receipt sealing can publish its ending.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SoilThermalTrialStateV2 {
+    transaction_id: TransactionId,
+    beginning_state_sha256: Sha256Digest,
+    ending_state: SoilThermalOwnedStateV2,
+    layer_credits: Vec<SoilThermalLayerEnergyCreditV2>,
+}
+
+impl SoilThermalTrialStateV2 {
+    #[must_use]
+    pub const fn transaction_id(&self) -> TransactionId {
+        self.transaction_id
+    }
+
+    #[must_use]
+    pub const fn beginning_state_sha256(&self) -> &Sha256Digest {
+        &self.beginning_state_sha256
+    }
+
+    #[must_use]
+    pub const fn ending_state(&self) -> &SoilThermalOwnedStateV2 {
+        &self.ending_state
+    }
+
+    #[must_use]
+    pub fn layer_credits(&self) -> &[SoilThermalLayerEnergyCreditV2] {
+        &self.layer_credits
+    }
+}
+
+fn unique_temperature_projection<'a>(
+    projections: &'a [SoilThermalTemperatureProjectionV2],
+    ofe_id: &OfeId,
+    layer_id: &SoilLayerId,
+) -> Result<&'a SoilThermalTemperatureProjectionV2, SoilThermalExactCarryError> {
+    let mut matches = projections
+        .iter()
+        .filter(|row| &row.ofe_id == ofe_id && &row.layer_id == layer_id);
+    let projection = matches
+        .next()
+        .ok_or(SoilThermalExactCarryError::Cardinality(
+            "missing layer temperature projection",
+        ))?;
+    if matches.next().is_some() {
+        return Err(SoilThermalExactCarryError::Cardinality(
+            "duplicate layer temperature projection",
+        ));
+    }
+    Ok(projection)
+}
+
+fn validate_exact_carry_predecessor(
+    beginning: &SoilThermalOwnerEnvelopeV2,
+) -> Result<(), SoilThermalExactCarryError> {
+    beginning.validate()?;
+    if beginning.state.last_accepted_transaction_id != beginning.expected_predecessor_transaction_id
+        || beginning.expected_predecessor_transaction_id == Some(beginning.transaction_id)
+    {
+        return Err(SoilThermalExactCarryError::Identity(
+            "stale or replayed V2 predecessor",
+        ));
+    }
+    Ok(())
+}
+
+pub fn apply_soil_thermal_energy_credit_v2(
+    beginning: &SoilThermalOwnerEnvelopeV2,
+    accepted_operands: &[SoilThermalAcceptedEnergyOperandV2],
+    temperature_projections: &[SoilThermalTemperatureProjectionV2],
+) -> Result<SoilThermalExactCarryCandidateV2, SoilThermalExactCarryError> {
+    validate_exact_carry_predecessor(beginning)?;
+    let trial = advance_soil_thermal_trial_from_beginning_v2(
+        beginning,
+        accepted_operands,
+        temperature_projections,
+    )?;
+    let mut ending = beginning.clone();
+    ending.state = trial.ending_state;
+
+    let zero_digest = Sha256Digest::try_new("0".repeat(64))
+        .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?;
+    let mut receipt = SoilThermalEnergyCreditReceiptV2 {
+        receipt_tag: SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG.to_owned(),
+        schema_sha256: Sha256Digest::try_new(SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256)
+            .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?,
+        exact_carry_definition_sha256: Sha256Digest::try_new(
+            EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256,
+        )
+        .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?,
+        contract_version: 15,
+        model_version: beginning.model_version.clone(),
+        model_definition_sha256: beginning.model_definition_sha256.clone(),
+        configuration_sha256: beginning.state.configuration_sha256.clone(),
+        run_id: beginning.run_id.clone(),
+        soil_thermal_owner_id: beginning.state.owner_id.clone(),
+        transaction_id: beginning.transaction_id,
+        predecessor_transaction_id: beginning.expected_predecessor_transaction_id,
+        support_start_ns: beginning.support_start_ns,
+        support_end_ns: beginning.support_end_ns,
+        beginning_owner_state_sha256: beginning.state.state_sha256.clone(),
+        ending_owner_state_sha256: ending.state.state_sha256.clone(),
+        predecessor_receipt_chain_sha256: beginning.receipt_chain_sha256.clone(),
+        layer_credits: trial.layer_credits,
+        receipt_sha256: zero_digest,
+    };
+    receipt.reseal()?;
+    ending.receipt_chain_sha256 = receipt.receipt_sha256.clone();
+    receipt.validate_independent(
+        beginning,
+        &ending,
+        accepted_operands,
+        temperature_projections,
+    )?;
+    Ok(SoilThermalExactCarryCandidateV2 {
+        ending_owner: ending,
+        credit_receipt: receipt,
+    })
+}
+
+pub fn advance_soil_thermal_trial_v2(
+    prepared: &PreparedSoilThermalSupportV2,
+    physical_operands: &[SoilThermalAcceptedEnergyOperandV2],
+    temperature_projections: &[SoilThermalTemperatureProjectionV2],
+) -> Result<SoilThermalTrialStateV2, SoilThermalExactCarryError> {
+    advance_soil_thermal_trial_from_beginning_v2(
+        prepared.beginning_owner(),
+        physical_operands,
+        temperature_projections,
+    )
+}
+
+fn advance_soil_thermal_trial_from_beginning_v2(
+    beginning: &SoilThermalOwnerEnvelopeV2,
+    accepted_operands: &[SoilThermalAcceptedEnergyOperandV2],
+    temperature_projections: &[SoilThermalTemperatureProjectionV2],
+) -> Result<SoilThermalTrialStateV2, SoilThermalExactCarryError> {
+    validate_exact_carry_predecessor(beginning)?;
+
+    let mut ending = beginning.clone();
+    let mut layer_credits = Vec::new();
+    for ofe in &beginning.state.ofes {
+        for layer in &ofe.ordered_layers {
+            let projection = unique_temperature_projection(
+                temperature_projections,
+                &ofe.ofe_id,
+                &layer.layer_id,
+            )?;
+            let layer_operands: Vec<_> = accepted_operands
+                .iter()
+                .filter(|operand| {
+                    operand.ofe_id == ofe.ofe_id && operand.layer_id == layer.layer_id
+                })
+                .cloned()
+                .collect();
+            let values: Vec<_> = layer_operands
+                .iter()
+                .map(|operand| operand.energy_j_m2_ofe_ground)
+                .collect();
+            let exact_total = ExactDyadicEnthalpy::exact_sum_binary64(
+                layer.enthalpy_hi_j_m2_ofe_ground,
+                &layer.enthalpy_carry,
+                &values,
+            )?;
+            let (high, carry) = if values.is_empty() {
+                (
+                    layer.enthalpy_hi_j_m2_ofe_ground,
+                    layer.enthalpy_carry.clone(),
+                )
+            } else {
+                exact_total.rounded_high_and_remainder()?
+            };
+            let ending_layer = ending.state.layer_mut(&ofe.ofe_id, &layer.layer_id).ok_or(
+                SoilThermalExactCarryError::Identity("candidate layer identity"),
+            )?;
+            ending_layer.enthalpy_hi_j_m2_ofe_ground = high;
+            ending_layer.enthalpy_carry = carry.clone();
+            ending_layer.temperature_k = projection.ending_temperature_k;
+            ending_layer.last_accepted_transaction_id = Some(beginning.transaction_id);
+            layer_credits.push(SoilThermalLayerEnergyCreditV2 {
+                ofe_id: ofe.ofe_id.clone(),
+                layer_id: layer.layer_id.clone(),
+                beginning_enthalpy_hi_j_m2_ofe_ground: layer.enthalpy_hi_j_m2_ofe_ground,
+                beginning_enthalpy_carry: layer.enthalpy_carry.clone(),
+                beginning_temperature_k: layer.temperature_k,
+                ending_enthalpy_hi_j_m2_ofe_ground: high,
+                ending_enthalpy_carry: carry,
+                ending_temperature_k: projection.ending_temperature_k,
+                heat_capacity_j_m2_k: projection.heat_capacity_j_m2_k,
+                accepted_operands: layer_operands,
+            });
+        }
+    }
+    ending.state.last_accepted_transaction_id = Some(beginning.transaction_id);
+    ending.state.reseal()?;
+    Ok(SoilThermalTrialStateV2 {
+        transaction_id: beginning.transaction_id,
+        beginning_state_sha256: beginning.state.state_sha256.clone(),
+        ending_state: ending.state,
+        layer_credits,
+    })
 }

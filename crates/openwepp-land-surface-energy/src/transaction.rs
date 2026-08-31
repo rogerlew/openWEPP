@@ -17,24 +17,27 @@ use crate::{
     CoveredColumnAuthority, CoveredColumnCandidate, CoveredColumnEnergyOperands,
     CoveredColumnInputs, CoveredColumnLongwaveOperands, CoveredColumnShortwaveOperands,
     CoveredColumnSolveOutcome, CoveredOccupancyEnergyOperands, CoveredOccupancyLiquidLedger,
-    CoveredSurfaceEnergyOperands, CoveredWaterCaps, DiagnosticFailureKind,
-    EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256, ExactDyadicEnthalpy, GroundHeatJoinOperands,
-    GroundWaterKey, LandSurfaceEnergyError, LandSurfaceEnergyState, LatentJoinOperands,
-    MODEL_DEFINITION_SHA256, MODEL_VERSION, NormalizedResidual, NumericalDiagnostics,
-    NumericalFailure, NumericalFailureCode, NumericalFailureKind, OfeId, OpenSurfaceProblem,
-    OpenSurfaceSolveOutcome, OwnerEnvelopeIdentity, OwnerKind, OwnerRollbackHash,
-    PreparedSoilThermalSupportV2, RequestingComponent, SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG,
-    SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256, Sha256Digest, SoilThermalAcceptedEnergyOperandV2,
-    SoilThermalEnergyCreditReceiptV2, SoilThermalExactCarryError, SoilThermalLayerEnergyCreditV2,
-    SoilThermalOwnedStateV2, SoilThermalOwnerEnvelopeV2, SoilThermalSnapshot,
-    SoilThermalTemperatureProjectionV2, SolveIdentity, SolvePass, SourceId, SourceWaterCap,
-    Stage3SnowOpticalBoundaryReceiptV1, StandGroundWaterAmountBasis, StepNorms, SurfaceClass,
-    SurfaceClassKind, SurfaceEnergyOperands, SurfaceId, TileState,
+    CoveredSurfaceEnergyOperands, CoveredWaterCaps, DiagnosticFailureKind, ExactDyadicEnthalpy,
+    GroundHeatJoinOperands, GroundWaterKey, LandSurfaceEnergyError, LandSurfaceEnergyState,
+    LatentJoinOperands, MODEL_DEFINITION_SHA256, MODEL_VERSION, NormalizedResidual,
+    NumericalDiagnostics, NumericalFailure, NumericalFailureCode, NumericalFailureKind, OfeId,
+    OpenSurfaceProblem, OpenSurfaceSolveOutcome, OwnerEnvelopeIdentity, OwnerKind,
+    OwnerRollbackHash, RequestingComponent, Sha256Digest, SoilThermalCandidateBeginningIdentity,
+    SoilThermalFinalizationBeginning, SoilThermalSnapshot, SolveIdentity, SolvePass, SourceId,
+    SourceWaterCap, Stage3SnowOpticalBoundaryReceiptV1, StandGroundWaterAmountBasis, StepNorms,
+    SurfaceClass, SurfaceClassKind, SurfaceEnergyOperands, SurfaceId, TileState,
     VEGETATION_MODEL_DEFINITION_SHA256, VEGETATION_MODEL_VERSION, WaterAmount, WaterAuthorization,
     WaterProtocol, WaterSourceType, canonical_digest, evaluate_covered_column,
     evaluate_open_surface, liquid_enthalpy_j_kg, solve_covered_column, solve_open_surface,
     solver::{covered_failure_residuals, open_failure_residuals},
     validate_ground_heat_join, validate_latent_join, validate_surface_energy,
+};
+
+#[cfg(test)]
+use crate::{
+    SoilThermalAcceptedEnergyOperandV2, SoilThermalOwnerEnvelopeV2,
+    SoilThermalTemperatureProjectionV2, advance_soil_thermal_trial_v2,
+    apply_soil_thermal_energy_credit_v2,
 };
 
 #[derive(Clone, Debug, PartialEq)]
@@ -905,6 +908,7 @@ impl CoveredTileEnergyOperandSet {
 pub struct SoilThermalLayerCandidate {
     pub layer_id: SoilLayerId,
     pub beginning_enthalpy_j_m2_ofe_ground: f64,
+    pub beginning_enthalpy_carry: ExactDyadicEnthalpy,
     pub ground_heat_credit_j_m2_ofe_ground: f64,
     pub infiltration_enthalpy_credit_j_m2_ofe_ground: f64,
     pub ending_enthalpy_j_m2_ofe_ground: f64,
@@ -915,9 +919,75 @@ pub struct SoilThermalLayerCandidate {
 pub struct SoilThermalTileCandidate {
     pub owner_id: ResourceOwnerId,
     pub beginning_state_sha256: Sha256Digest,
+    pub beginning_identity: SoilThermalCandidateBeginningIdentity,
     pub ofe_id: OfeId,
     pub tile_id: TileId,
     pub layers: Vec<SoilThermalLayerCandidate>,
+}
+
+fn validate_soil_thermal_finalization_beginning(
+    soil: SoilThermalFinalizationBeginning<'_>,
+    identity: &RuntimeTileIdentity,
+    mismatch: &'static str,
+) -> Result<(), LandSurfaceEnergyError> {
+    soil.validate()?;
+    if soil.owner_id() != &identity.soil_thermal_owner_id
+        || soil.state_sha256() != &identity.beginning_soil_thermal_state_sha256
+    {
+        return Err(LandSurfaceEnergyError::OwnerEnvelope(mismatch));
+    }
+    if let SoilThermalFinalizationBeginning::V2(view) = soil
+        && view.owner().transaction_id != identity.transaction_id
+    {
+        return Err(LandSurfaceEnergyError::OwnerEnvelope(mismatch));
+    }
+    Ok(())
+}
+
+/// Builds a read-only, zero-change candidate for a branch whose authoritative
+/// physics intentionally performs no soil constitutive solve.
+pub fn build_soil_thermal_passthrough_candidate(
+    identity: &RuntimeTileIdentity,
+    soil: SoilThermalFinalizationBeginning<'_>,
+) -> Result<SoilThermalTileCandidate, LandSurfaceEnergyError> {
+    validate_soil_thermal_finalization_beginning(
+        soil,
+        identity,
+        "soil thermal pass-through beginning identity mismatch",
+    )?;
+    let beginning_ofe = soil
+        .ofe(&identity.ofe_id)
+        .ok_or(LandSurfaceEnergyError::OwnerEnvelope(
+            "missing pass-through soil thermal OFE",
+        ))?;
+    let mut layers = Vec::with_capacity(beginning_ofe.len());
+    for index in 0..beginning_ofe.len() {
+        let beginning = beginning_ofe
+            .layer(index)
+            .ok_or(LandSurfaceEnergyError::OwnerEnvelope(
+                "missing pass-through soil thermal layer",
+            ))?;
+        layers.push(SoilThermalLayerCandidate {
+            layer_id: beginning.layer_id.clone(),
+            beginning_enthalpy_j_m2_ofe_ground: beginning.enthalpy_hi_j_m2_ofe_ground,
+            beginning_enthalpy_carry: beginning
+                .enthalpy_carry
+                .cloned()
+                .unwrap_or_else(ExactDyadicEnthalpy::zero),
+            ground_heat_credit_j_m2_ofe_ground: 0.0,
+            infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
+            ending_enthalpy_j_m2_ofe_ground: beginning.enthalpy_hi_j_m2_ofe_ground,
+            ending_temperature_k: beginning.temperature_k,
+        });
+    }
+    Ok(SoilThermalTileCandidate {
+        owner_id: soil.owner_id().clone(),
+        beginning_state_sha256: soil.state_sha256().clone(),
+        beginning_identity: soil.candidate_identity(),
+        ofe_id: identity.ofe_id.clone(),
+        tile_id: identity.tile_id.clone(),
+        layers,
+    })
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -1160,38 +1230,49 @@ pub fn validate_five_owner_envelope(
 
 fn build_energy_and_soil(
     identity: &RuntimeTileIdentity,
-    _problem: &OpenSurfaceProblem,
+    problem: &OpenSurfaceProblem,
     final_value: &AcceptedOpenSurface,
-    soil: &SoilThermalSnapshot,
+    soil: SoilThermalFinalizationBeginning<'_>,
 ) -> Result<(TileEnergyOperandSet, SoilThermalTileCandidate), LandSurfaceEnergyError> {
-    soil.validate()?;
-    if soil.owner_id != identity.soil_thermal_owner_id
-        || soil.state_sha256 != identity.beginning_soil_thermal_state_sha256
-    {
-        return Err(LandSurfaceEnergyError::OwnerEnvelope(
-            "soil thermal beginning identity mismatch",
-        ));
-    }
+    validate_soil_thermal_finalization_beginning(
+        soil,
+        identity,
+        "soil thermal beginning identity mismatch",
+    )?;
     let beginning_ofe = soil
-        .ofes
-        .iter()
-        .find(|row| row.ofe_id == identity.ofe_id)
+        .ofe(&identity.ofe_id)
         .ok_or(LandSurfaceEnergyError::OwnerEnvelope(
             "missing soil thermal OFE",
         ))?;
-    if beginning_ofe.ordered_layers.len() != final_value.evaluation.soil_thermal.len() {
+    if beginning_ofe.len() != final_value.evaluation.soil_thermal.len() {
         return Err(LandSurfaceEnergyError::OwnerEnvelope(
             "soil thermal layer cardinality mismatch",
         ));
     }
     let mut joins = Vec::new();
     let mut layers = Vec::new();
-    for ((beginning, residual), ending_temperature) in beginning_ofe
-        .ordered_layers
+    for (index, (residual, ending_temperature)) in final_value
+        .evaluation
+        .soil_thermal
         .iter()
-        .zip(&final_value.evaluation.soil_thermal)
         .zip(&final_value.evaluation.soil_temperature_k)
+        .enumerate()
     {
+        let beginning = beginning_ofe
+            .layer(index)
+            .ok_or(LandSurfaceEnergyError::OwnerEnvelope(
+                "missing soil thermal layer",
+            ))?;
+        if soil.is_v2()
+            && problem.soil_nodes.get(index).is_none_or(|node| {
+                node.layer_id != beginning.layer_id.as_str()
+                    || node.beginning_temperature_k.to_bits() != beginning.temperature_k.to_bits()
+            })
+        {
+            return Err(LandSurfaceEnergyError::OwnerEnvelope(
+                "V2 soil thermal physical beginning mismatch",
+            ));
+        }
         if beginning.layer_id.as_str() != residual.layer_id {
             return Err(LandSurfaceEnergyError::OwnerEnvelope(
                 "soil thermal layer order mismatch",
@@ -1209,10 +1290,14 @@ fn build_energy_and_soil(
         let storage = residual.storage_w_m2 * identity.tile_fraction * identity.interval_s;
         layers.push(SoilThermalLayerCandidate {
             layer_id: beginning.layer_id.clone(),
-            beginning_enthalpy_j_m2_ofe_ground: beginning.enthalpy_j_m2_ofe_ground,
+            beginning_enthalpy_j_m2_ofe_ground: beginning.enthalpy_hi_j_m2_ofe_ground,
+            beginning_enthalpy_carry: beginning
+                .enthalpy_carry
+                .cloned()
+                .unwrap_or_else(ExactDyadicEnthalpy::zero),
             ground_heat_credit_j_m2_ofe_ground: credit,
             infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
-            ending_enthalpy_j_m2_ofe_ground: beginning.enthalpy_j_m2_ofe_ground + storage,
+            ending_enthalpy_j_m2_ofe_ground: beginning.enthalpy_hi_j_m2_ofe_ground + storage,
             ending_temperature_k: *ending_temperature,
         });
     }
@@ -1241,8 +1326,9 @@ fn build_energy_and_soil(
     Ok((
         energy,
         SoilThermalTileCandidate {
-            owner_id: soil.owner_id.clone(),
-            beginning_state_sha256: soil.state_sha256.clone(),
+            owner_id: soil.owner_id().clone(),
+            beginning_state_sha256: soil.state_sha256().clone(),
+            beginning_identity: soil.candidate_identity(),
             ofe_id: identity.ofe_id.clone(),
             tile_id: identity.tile_id.clone(),
             layers,
@@ -1272,6 +1358,22 @@ pub fn finalize_open_phase(
     authorization: &WaterAuthorization,
     final_initial_trial: Option<Vec<f64>>,
     soil: &SoilThermalSnapshot,
+) -> Result<FinalTileCandidate<AcceptedOpenSurface>, LandSurfaceEnergyError> {
+    finalize_open_phase_with_soil_thermal_beginning(
+        phase,
+        expected_beginning_lse_state_sha256,
+        authorization,
+        final_initial_trial,
+        SoilThermalFinalizationBeginning::V1(soil),
+    )
+}
+
+pub fn finalize_open_phase_with_soil_thermal_beginning(
+    phase: &OpenPotentialPhase,
+    expected_beginning_lse_state_sha256: &Sha256Digest,
+    authorization: &WaterAuthorization,
+    final_initial_trial: Option<Vec<f64>>,
+    soil: SoilThermalFinalizationBeginning<'_>,
 ) -> Result<FinalTileCandidate<AcceptedOpenSurface>, LandSurfaceEnergyError> {
     if expected_beginning_lse_state_sha256 != &phase.identity.beginning_lse_state_sha256 {
         return Err(LandSurfaceEnergyError::StateLineage(
@@ -1685,26 +1787,21 @@ impl AcceptedCoveredVegetationOperands {
 fn build_covered_soil_candidate(
     phase: &CoveredPotentialPhase,
     final_value: &CoveredColumnCandidate,
-    soil: &SoilThermalSnapshot,
+    soil: SoilThermalFinalizationBeginning<'_>,
 ) -> Result<SoilThermalTileCandidate, LandSurfaceEnergyError> {
-    soil.validate()?;
     let identity = &phase.identity;
-    if soil.owner_id != identity.soil_thermal_owner_id
-        || soil.state_sha256 != identity.beginning_soil_thermal_state_sha256
-    {
-        return Err(LandSurfaceEnergyError::OwnerEnvelope(
-            "covered soil thermal beginning identity mismatch",
-        ));
-    }
+    validate_soil_thermal_finalization_beginning(
+        soil,
+        identity,
+        "covered soil thermal beginning identity mismatch",
+    )?;
     let beginning_ofe = soil
-        .ofes
-        .iter()
-        .find(|row| row.ofe_id == identity.ofe_id)
+        .ofe(&identity.ofe_id)
         .ok_or(LandSurfaceEnergyError::OwnerEnvelope(
             "missing covered soil thermal OFE",
         ))?;
     let evaluation = &final_value.evaluation;
-    if beginning_ofe.ordered_layers.len() != evaluation.soil_temperature_k.len()
+    if beginning_ofe.len() != evaluation.soil_temperature_k.len()
         || phase.beginning.ground.soil_nodes.len() != evaluation.soil_temperature_k.len()
     {
         return Err(LandSurfaceEnergyError::OwnerEnvelope(
@@ -1712,16 +1809,30 @@ fn build_covered_soil_candidate(
         ));
     }
     let mut layers = Vec::with_capacity(evaluation.soil_temperature_k.len());
-    for (((beginning, node), ending_temperature), incoming) in beginning_ofe
-        .ordered_layers
+    for (index, ((node, ending_temperature), incoming)) in phase
+        .beginning
+        .ground
+        .soil_nodes
         .iter()
-        .zip(&phase.beginning.ground.soil_nodes)
         .zip(&evaluation.soil_temperature_k)
         .zip(&evaluation.ground_heat_cn_w_m2_tile)
+        .enumerate()
     {
+        let beginning = beginning_ofe
+            .layer(index)
+            .ok_or(LandSurfaceEnergyError::OwnerEnvelope(
+                "missing covered soil thermal layer",
+            ))?;
         if beginning.layer_id.as_str() != node.layer_id {
             return Err(LandSurfaceEnergyError::OwnerEnvelope(
                 "covered soil layer order mismatch",
+            ));
+        }
+        if soil.is_v2()
+            && beginning.temperature_k.to_bits() != node.beginning_temperature_k.to_bits()
+        {
+            return Err(LandSurfaceEnergyError::OwnerEnvelope(
+                "covered V2 soil thermal physical beginning mismatch",
             ));
         }
         let storage = node.heat_capacity_j_m2_k
@@ -1729,18 +1840,23 @@ fn build_covered_soil_candidate(
             * identity.tile_fraction;
         layers.push(SoilThermalLayerCandidate {
             layer_id: beginning.layer_id.clone(),
-            beginning_enthalpy_j_m2_ofe_ground: beginning.enthalpy_j_m2_ofe_ground,
+            beginning_enthalpy_j_m2_ofe_ground: beginning.enthalpy_hi_j_m2_ofe_ground,
+            beginning_enthalpy_carry: beginning
+                .enthalpy_carry
+                .cloned()
+                .unwrap_or_else(ExactDyadicEnthalpy::zero),
             ground_heat_credit_j_m2_ofe_ground: incoming
                 * identity.tile_fraction
                 * identity.interval_s,
             infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
-            ending_enthalpy_j_m2_ofe_ground: beginning.enthalpy_j_m2_ofe_ground + storage,
+            ending_enthalpy_j_m2_ofe_ground: beginning.enthalpy_hi_j_m2_ofe_ground + storage,
             ending_temperature_k: *ending_temperature,
         });
     }
     Ok(SoilThermalTileCandidate {
-        owner_id: soil.owner_id.clone(),
-        beginning_state_sha256: soil.state_sha256.clone(),
+        owner_id: soil.owner_id().clone(),
+        beginning_state_sha256: soil.state_sha256().clone(),
+        beginning_identity: soil.candidate_identity(),
         ofe_id: identity.ofe_id.clone(),
         tile_id: identity.tile_id.clone(),
         layers,
@@ -2037,7 +2153,7 @@ fn stage3_lower_boundary_energy(
 fn build_covered_energy_and_soil(
     phase: &CoveredPotentialPhase,
     final_value: &CoveredColumnCandidate,
-    soil: &SoilThermalSnapshot,
+    soil: SoilThermalFinalizationBeginning<'_>,
 ) -> Result<(CoveredTileEnergyOperandSet, SoilThermalTileCandidate), LandSurfaceEnergyError> {
     Ok((
         build_covered_energy_operands(phase, final_value)?,
@@ -2562,6 +2678,22 @@ pub fn finalize_covered_phase(
     final_initial_trial: Vec<f64>,
     soil: &SoilThermalSnapshot,
 ) -> Result<FinalCoveredTileCandidate, LandSurfaceEnergyError> {
+    finalize_covered_phase_with_soil_thermal_beginning(
+        phase,
+        expected_beginning_lse_state_sha256,
+        authorizations,
+        final_initial_trial,
+        SoilThermalFinalizationBeginning::V1(soil),
+    )
+}
+
+pub fn finalize_covered_phase_with_soil_thermal_beginning(
+    phase: &CoveredPotentialPhase,
+    expected_beginning_lse_state_sha256: &Sha256Digest,
+    authorizations: Vec<WaterAuthorization>,
+    final_initial_trial: Vec<f64>,
+    soil: SoilThermalFinalizationBeginning<'_>,
+) -> Result<FinalCoveredTileCandidate, LandSurfaceEnergyError> {
     if expected_beginning_lse_state_sha256 != &phase.identity.beginning_lse_state_sha256 {
         return Err(LandSurfaceEnergyError::StateLineage(
             "stale covered potential beginning state",
@@ -2763,220 +2895,11 @@ pub fn specific_liquid_enthalpy(temperature_k: f64) -> Result<f64, LandSurfaceEn
     Ok(liquid_enthalpy_j_kg(temperature_k))
 }
 
-/// Clone-only candidate: a refusal never mutates the supplied beginning owner.
-#[derive(Clone, Debug, PartialEq)]
-pub struct SoilThermalExactCarryCandidateV2 {
-    pub ending_owner: SoilThermalOwnerEnvelopeV2,
-    pub credit_receipt: SoilThermalEnergyCreditReceiptV2,
-}
-
-/// Unpublished exact receiver trial. It contains no accepted receipt and has
-/// no installation API; only final receipt sealing can publish its ending.
-#[derive(Clone, Debug, PartialEq)]
-pub struct SoilThermalTrialStateV2 {
-    transaction_id: TransactionId,
-    beginning_state_sha256: Sha256Digest,
-    ending_state: SoilThermalOwnedStateV2,
-    layer_credits: Vec<SoilThermalLayerEnergyCreditV2>,
-}
-
-impl SoilThermalTrialStateV2 {
-    #[must_use]
-    pub const fn transaction_id(&self) -> TransactionId {
-        self.transaction_id
-    }
-
-    #[must_use]
-    pub const fn beginning_state_sha256(&self) -> &Sha256Digest {
-        &self.beginning_state_sha256
-    }
-
-    #[must_use]
-    pub const fn ending_state(&self) -> &SoilThermalOwnedStateV2 {
-        &self.ending_state
-    }
-
-    #[must_use]
-    pub fn layer_credits(&self) -> &[SoilThermalLayerEnergyCreditV2] {
-        &self.layer_credits
-    }
-}
-
-fn unique_temperature_projection<'a>(
-    projections: &'a [SoilThermalTemperatureProjectionV2],
-    ofe_id: &OfeId,
-    layer_id: &SoilLayerId,
-) -> Result<&'a SoilThermalTemperatureProjectionV2, SoilThermalExactCarryError> {
-    let mut matches = projections
-        .iter()
-        .filter(|row| &row.ofe_id == ofe_id && &row.layer_id == layer_id);
-    let projection = matches
-        .next()
-        .ok_or(SoilThermalExactCarryError::Cardinality(
-            "missing layer temperature projection",
-        ))?;
-    if matches.next().is_some() {
-        return Err(SoilThermalExactCarryError::Cardinality(
-            "duplicate layer temperature projection",
-        ));
-    }
-    Ok(projection)
-}
-
-fn validate_exact_carry_predecessor(
-    beginning: &SoilThermalOwnerEnvelopeV2,
-) -> Result<(), SoilThermalExactCarryError> {
-    beginning.validate()?;
-    if beginning.state.last_accepted_transaction_id != beginning.expected_predecessor_transaction_id
-        || beginning.expected_predecessor_transaction_id == Some(beginning.transaction_id)
-    {
-        return Err(SoilThermalExactCarryError::Identity(
-            "stale or replayed V2 predecessor",
-        ));
-    }
-    Ok(())
-}
-
-pub fn apply_soil_thermal_energy_credit_v2(
-    beginning: &SoilThermalOwnerEnvelopeV2,
-    accepted_operands: &[SoilThermalAcceptedEnergyOperandV2],
-    temperature_projections: &[SoilThermalTemperatureProjectionV2],
-) -> Result<SoilThermalExactCarryCandidateV2, SoilThermalExactCarryError> {
-    validate_exact_carry_predecessor(beginning)?;
-
-    let trial = advance_soil_thermal_trial_from_beginning_v2(
-        beginning,
-        accepted_operands,
-        temperature_projections,
-    )?;
-    let mut ending = beginning.clone();
-    ending.state = trial.ending_state;
-
-    let zero_digest = Sha256Digest::try_new("0".repeat(64))
-        .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?;
-    let mut receipt = SoilThermalEnergyCreditReceiptV2 {
-        receipt_tag: SOIL_THERMAL_ENERGY_CREDIT_RECEIPT_V2_TAG.to_owned(),
-        schema_sha256: Sha256Digest::try_new(SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256)
-            .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?,
-        exact_carry_definition_sha256: Sha256Digest::try_new(
-            EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256,
-        )
-        .map_err(|error| SoilThermalExactCarryError::Serialization(error.to_string()))?,
-        contract_version: 15,
-        model_version: beginning.model_version.clone(),
-        model_definition_sha256: beginning.model_definition_sha256.clone(),
-        configuration_sha256: beginning.state.configuration_sha256.clone(),
-        run_id: beginning.run_id.clone(),
-        soil_thermal_owner_id: beginning.state.owner_id.clone(),
-        transaction_id: beginning.transaction_id,
-        predecessor_transaction_id: beginning.expected_predecessor_transaction_id,
-        support_start_ns: beginning.support_start_ns,
-        support_end_ns: beginning.support_end_ns,
-        beginning_owner_state_sha256: beginning.state.state_sha256.clone(),
-        ending_owner_state_sha256: ending.state.state_sha256.clone(),
-        predecessor_receipt_chain_sha256: beginning.receipt_chain_sha256.clone(),
-        layer_credits: trial.layer_credits,
-        receipt_sha256: zero_digest,
-    };
-    receipt.reseal()?;
-    ending.receipt_chain_sha256 = receipt.receipt_sha256.clone();
-    receipt.validate_independent(
-        beginning,
-        &ending,
-        accepted_operands,
-        temperature_projections,
-    )?;
-    Ok(SoilThermalExactCarryCandidateV2 {
-        ending_owner: ending,
-        credit_receipt: receipt,
-    })
-}
-
-pub fn advance_soil_thermal_trial_v2(
-    prepared: &PreparedSoilThermalSupportV2,
-    physical_operands: &[SoilThermalAcceptedEnergyOperandV2],
-    temperature_projections: &[SoilThermalTemperatureProjectionV2],
-) -> Result<SoilThermalTrialStateV2, SoilThermalExactCarryError> {
-    advance_soil_thermal_trial_from_beginning_v2(
-        prepared.beginning_owner(),
-        physical_operands,
-        temperature_projections,
-    )
-}
-
-fn advance_soil_thermal_trial_from_beginning_v2(
-    beginning: &SoilThermalOwnerEnvelopeV2,
-    accepted_operands: &[SoilThermalAcceptedEnergyOperandV2],
-    temperature_projections: &[SoilThermalTemperatureProjectionV2],
-) -> Result<SoilThermalTrialStateV2, SoilThermalExactCarryError> {
-    validate_exact_carry_predecessor(beginning)?;
-
-    let mut ending = beginning.clone();
-    let mut layer_credits = Vec::new();
-    for ofe in &beginning.state.ofes {
-        for layer in &ofe.ordered_layers {
-            let projection = unique_temperature_projection(
-                temperature_projections,
-                &ofe.ofe_id,
-                &layer.layer_id,
-            )?;
-            let layer_operands: Vec<_> = accepted_operands
-                .iter()
-                .filter(|operand| {
-                    operand.ofe_id == ofe.ofe_id && operand.layer_id == layer.layer_id
-                })
-                .cloned()
-                .collect();
-            let values: Vec<_> = layer_operands
-                .iter()
-                .map(|operand| operand.energy_j_m2_ofe_ground)
-                .collect();
-            let exact_total = ExactDyadicEnthalpy::exact_sum_binary64(
-                layer.enthalpy_hi_j_m2_ofe_ground,
-                &layer.enthalpy_carry,
-                &values,
-            )?;
-            let (high, carry) = if values.is_empty() {
-                (
-                    layer.enthalpy_hi_j_m2_ofe_ground,
-                    layer.enthalpy_carry.clone(),
-                )
-            } else {
-                exact_total.rounded_high_and_remainder()?
-            };
-            let ending_layer = ending.state.layer_mut(&ofe.ofe_id, &layer.layer_id).ok_or(
-                SoilThermalExactCarryError::Identity("candidate layer identity"),
-            )?;
-            ending_layer.enthalpy_hi_j_m2_ofe_ground = high;
-            ending_layer.enthalpy_carry = carry.clone();
-            ending_layer.temperature_k = projection.ending_temperature_k;
-            ending_layer.last_accepted_transaction_id = Some(beginning.transaction_id);
-            layer_credits.push(SoilThermalLayerEnergyCreditV2 {
-                ofe_id: ofe.ofe_id.clone(),
-                layer_id: layer.layer_id.clone(),
-                beginning_enthalpy_hi_j_m2_ofe_ground: layer.enthalpy_hi_j_m2_ofe_ground,
-                beginning_enthalpy_carry: layer.enthalpy_carry.clone(),
-                beginning_temperature_k: layer.temperature_k,
-                ending_enthalpy_hi_j_m2_ofe_ground: high,
-                ending_enthalpy_carry: carry,
-                ending_temperature_k: projection.ending_temperature_k,
-                heat_capacity_j_m2_k: projection.heat_capacity_j_m2_k,
-                accepted_operands: layer_operands,
-            });
-        }
-    }
-    ending.state.last_accepted_transaction_id = Some(beginning.transaction_id);
-    ending.state.reseal()?;
-    Ok(SoilThermalTrialStateV2 {
-        transaction_id: beginning.transaction_id,
-        beginning_state_sha256: beginning.state.state_sha256.clone(),
-        ending_state: ending.state,
-        layer_credits,
-    })
-}
-
 #[cfg(test)]
 include!("transaction_tests.rs");
 
 #[cfg(test)]
 include!("soil_thermal_v2_cutover_tests.rs");
+
+#[cfg(test)]
+include!("transaction_native_v2_finalization_tests.rs");

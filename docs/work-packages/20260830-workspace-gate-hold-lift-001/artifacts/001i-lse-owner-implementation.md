@@ -16,8 +16,9 @@ Current source SHA-256 identities:
 | Source | SHA-256 |
 |---|---|
 | `src/exact_dyadic_enthalpy.rs` | `c3193d7bb90c3208575ee5236e2ac44e5260e24e21cf153ac07bdeb741901be9` |
-| `src/owner_envelope.rs` | `c587686a3bef4ae65b987bcc4db5204558ced03c4a23f59af81912854b5c887f` |
-| `src/transaction.rs` | `4a76352037f168e000ced18983f8158ad9ccca650f8ab77943d9605a6338546c` |
+| `src/owner_envelope.rs` | `28af5505b3a044c8f5d7cc8b9fd2c2a2d6c9046747e30f326a0c371ba524d6fc` |
+| `src/transaction.rs` | `2a85707215dbbd065f86ade4c10716eaaaf1be31ab42b8d81a5e0da65250154b` |
+| `src/transaction_native_v2_finalization_tests.rs` | `003b7afe4c49150e7e3ad6fdec7c4c767e65d15bf2a82b9866ec0d3bd7502218` |
 | `src/lib.rs` | `2d0426b0693cfe7477cb23e7b079ea78dfb59e86806026bc94eeb76ad9158d74` |
 
 The embedded immutable V2 owner-schema definition digest is
@@ -62,12 +63,47 @@ temperature/capacity refuses with byte-exact rollback.
 | Gate | Result |
 |---|---|
 | `cargo nextest run -p openwepp-land-surface-energy -E 'test(exact_dyadic_enthalpy)' --no-fail-fast` | PASS, run `5f90d8f4-f445-4c6e-a2f3-68272b742e38`, 10/10 |
-| `cargo nextest run -p openwepp-land-surface-energy --no-fail-fast` | PASS, run `4d86528c-a1b2-4022-ad0d-3dbb3660c4cb`, 114/114, 0 skipped |
+| `cargo nextest run -p openwepp-land-surface-energy --no-fail-fast` | PASS, run `6642ed52-cc82-4c31-bba2-5e1f5c8190bc`, 119/119, 0 skipped |
 | both v15 authority tests with `-E 'test(/version_(fifteen|15)/)'` | PASS, run `c55f6717-6454-41b8-9f9c-bf42da0e8dc6`, 4/4 |
 | `cargo clippy -p openwepp-land-surface-energy --all-targets --all-features -- -D warnings` | PASS |
 | `cargo fmt --all -- --check` | PASS |
 | owned-file `git diff --check` | PASS |
 | added-line scan for `microstep`, persisted `diagnostic`, `nextafter`, forced ULP, or tolerance path | PASS, no match |
+
+## Native V2 finalization seam
+
+The later canonical-DFF integration correction adds a read-only typed
+`SoilThermalFinalizationBeginning` over either the unchanged V1 snapshot or a
+borrowed `SoilThermalPhysicalReadViewV2`. The legacy open and covered
+finalization signatures remain wrappers over new typed entry points. V2
+finalization consumes the native layer high term and temperature in the
+unchanged constitutive solve and retains the exact carry plus complete owner,
+schema, exact-definition, parent, contract/model/run/configuration,
+transaction/predecessor/support, receipt-chain, state, OFE, layer, and order
+identity in the provisional candidate. It performs no V2-to-V1 projection,
+receipt sealing, installation, or mutation.
+
+`build_soil_thermal_passthrough_candidate` provides the authenticated
+zero-change candidate required by an authoritative branch with no soil
+constitutive solve. It copies high term, carry, and temperature bit-for-bit and
+publishes exact zero physical credits.
+
+Current seam validation:
+
+| Gate | Result |
+|---|---|
+| `cargo test -p openwepp-land-surface-energy native_v2_finalization_tests -- --nocapture` | PASS, 3/3 |
+| `cargo test -p openwepp-land-surface-energy` | PASS, 119/119 plus doc tests |
+| `cargo clippy -p openwepp-land-surface-energy --all-targets -- -D warnings` | PASS |
+| LSE v15 authority filter `test(/version_fifteen/)` | PASS, nextest run `aeb5961a-810d-4a27-9ae6-0a53fdbd668a`, 2/2 |
+| surface-liquid v15 authority filter `test(/version_15/)` | PASS, nextest run `47b50450-0ad9-402b-8a24-264e74494542`, 2/2 |
+| owned-file rustfmt and `git diff --check` | PASS |
+
+Focused seam vectors prove V1 wrapper parity; zero and nonzero minimum-
+subnormal V2 carry retention; unchanged high/temperature constitutive output;
+complete V2 identity binding; pass-through exact-zero credits; stale
+transaction/state, reordered/duplicate layer, physical-temperature, and
+noncanonical-carry refusal; and byte-equivalent clone-only rollback.
 
 Focused vectors cover WAT5, positive/negative carry, even/odd halfway ties,
 adjacent crossing, exact cancellation, repeated multi-operand permutations,
@@ -81,8 +117,8 @@ reconstruction, and byte-exact rollback.
 
 ## Line-count disposition
 
-`exact_dyadic_enthalpy.rs` is 1,672 lines, `owner_envelope.rs` is 745,
-`lib.rs` is 340, and `transaction.rs` is 2,913. The transaction file remains
+`exact_dyadic_enthalpy.rs` is 1,672 lines, `owner_envelope.rs` is 1,380,
+`lib.rs` is 340, and `transaction.rs` is 2,905. The transaction file remains
 below the 3,000-line closure limit but retains the pre-existing 2,000-line
 `WARN` and does not cross the mandatory-refactor threshold. The new arithmetic
 module remains below `WARN`.
