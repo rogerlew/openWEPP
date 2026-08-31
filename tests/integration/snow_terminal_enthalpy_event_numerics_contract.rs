@@ -7,6 +7,8 @@ const FIXED_POINT: &str = "crates/openwepp-hillslope-orchestrator/src/v11_covere
 const OPEN_SNOW: &str = "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow.rs";
 const OPEN_SNOW_TESTS: &str =
     "crates/openwepp-hillslope-orchestrator/src/v11_covered/open_snow_convergence_tests.rs";
+const COUPLED_SOLVE: &str =
+    "crates/openwepp-hillslope-orchestrator/src/v11_covered/phase_consistent_coupled_solve.rs";
 const PACKAGE: &str =
     "docs/work-packages/20260807-snow-terminal-enthalpy-event-numerics-001/package.md";
 
@@ -19,7 +21,7 @@ fn contracts_admit_only_event_local_terminal_snow_numerics() {
     let energy = read(ENERGY);
     let freeze = read(FREEZE);
     for required in [
-        "contract_version: 32",
+        "contract_version: 33",
         "Version 18 defines the persistent Stage 3 snow--soil conductive boundary",
         "INV-SNOWENERGY-034",
         "OBL-SNOWENERGY-P-008",
@@ -71,7 +73,8 @@ fn package_and_index_preserve_receiving_surface_and_production_boundaries() {
     assert!(package.contains("No land-surface, soil, frost, infiltration, runoff"));
     assert!(package.contains("No assignment of terminal unallocated energy"));
     assert!(package.contains("No physical seasonal efficacy"));
-    assert!(index.contains("v32 retains v31 same-disposition `W/H`"));
+    assert!(index.contains("v33 retains the exact 60-second floor"));
+    assert!(index.contains("fresh coupled-authentic replay/reseal"));
     assert!(
         index.contains("v140 owner amendment selects an exact 60-second adaptive Stage-3 floor")
     );
@@ -105,9 +108,9 @@ fn v32_contract_binds_pure_opposite_sign_vapor_active_set_authority() {
     ] {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
-    assert!(index.contains("pure opposite-sign vapor-root interface"));
-    assert!(index.contains("exact supports at or above the floor"));
-    assert!(index.contains("affine latent interpolation is not authority"));
+    assert!(index.contains("v31/v32 production control"));
+    assert!(index.contains("exact raw-authentic same-support `A/B/A`"));
+    assert!(energy.contains("Affine interpolation of endpoint latent energy is forbidden"));
 }
 
 #[test]
@@ -161,6 +164,94 @@ fn v32_production_symbols_and_larger_direct_support_behavior_are_required() {
         assert!(
             open_snow_tests.contains(required),
             "{OPEN_SNOW_TESTS} missing production behavior obligation {required}"
+        );
+    }
+}
+
+#[test]
+fn v33_contract_binds_phase_consistent_coupled_authority() {
+    let energy = read(ENERGY);
+    let index = read(INDEX);
+    for required in [
+        "REF-SNOWENERGY-WGHL-V33",
+        "INV-SNOWENERGY-057",
+        "OBL-SNOWENERGY-C-025",
+        "exact finite `A/B/A` period-two phase/vapor active-set cycle",
+        "x = (W_1,l, H_1,l, E_soil,1,n, T_soil,1,n)_affected",
+        "(I_1,l, L_1,l, C_1,l, U_1,l) = Pi(W_1,l, H_1,l)",
+        "Q_v,l = V_l * L_s,l",
+        "deterministic safeguarded semismooth Newton",
+        "single unchanged cumulative 96-evaluation budget",
+        "phase kink is internal complementarity",
+        "Version-31/32 midpoint, vapor-interface, and branch-entry",
+        "phase_consistent_coupled_authentic_final_evaluation_v1",
+        "phase_consistent_coupled_authentic_final_replay_reseal_v1",
+        "No microstepping diagnostic may persist in production",
+    ] {
+        assert!(energy.contains(required), "{ENERGY} missing {required}");
+    }
+    assert!(index.contains("exact raw-authentic same-support `A/B/A` phase/vapor cycles"));
+    assert!(index.contains("reduced canonical `W/H` plus coupled-soil semismooth solve"));
+}
+
+fn canonical_phase_projection(total_water: f64, enthalpy: f64) -> (f64, f64, f64, f64) {
+    const L_F: f64 = 333_600.0;
+    if enthalpy < 0.0 {
+        (total_water, 0.0, -enthalpy, 0.0)
+    } else if enthalpy < L_F * total_water {
+        let liquid = enthalpy / L_F;
+        (total_water - liquid, liquid, 0.0, 0.0)
+    } else {
+        (0.0, total_water, 0.0, enthalpy - L_F * total_water)
+    }
+}
+
+#[test]
+fn v33_known_phase_roots_use_the_unchanged_canonical_projection() {
+    let cold = canonical_phase_projection(0.31, -1_234.0);
+    assert_eq!(cold, (0.31, 0.0, 1_234.0, 0.0));
+
+    let mixed = canonical_phase_projection(0.31, 333_600.0 * 0.12);
+    assert!((mixed.0 - 0.19).abs() <= f64::EPSILON);
+    assert_eq!(mixed.1.to_bits(), 0.12_f64.to_bits());
+    assert_eq!((mixed.2, mixed.3), (0.0, 0.0));
+
+    let fusion = canonical_phase_projection(0.31, 333_600.0 * 0.31);
+    assert_eq!(fusion, (0.0, 0.31, 0.0, 0.0));
+}
+
+#[test]
+fn v33_production_symbols_and_behavior_are_required() {
+    let fixed_point = read(FIXED_POINT);
+    let open_snow = read(OPEN_SNOW);
+    let open_snow_tests = read(OPEN_SNOW_TESTS);
+    let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
+    let production = format!("{fixed_point}\n{open_snow}\n{coupled}");
+
+    for required in [
+        "PhaseConsistentCoupledSolveV1",
+        "phase_consistent_coupled_solve_v1",
+        "phase_consistent_coupled_authentic_final_evaluation_v1",
+        "phase_consistent_coupled_authentic_final_replay_reseal_v1",
+    ] {
+        assert!(
+            production.contains(required),
+            "production missing version-33 symbol {required}"
+        );
+    }
+    for required in [
+        "v33_exact_60_120_authentic_period_two_invokes_reduced_solve",
+        "v33_known_root_cold_branch_closes",
+        "v33_known_root_mixed_phase_branch_closes",
+        "v33_known_root_fusion_boundary_closes",
+        "v33_root_is_distinct_from_v31_v32_affine_states",
+        "v33_coupled_authentic_final_replay_reseals",
+        "v33_reduced_solve_refuses_poisoned_cycles_and_rolls_back",
+        "v33_reduced_solve_honors_single_96_evaluation_budget",
+    ] {
+        assert!(
+            open_snow_tests.contains(required),
+            "{OPEN_SNOW_TESTS} missing version-33 behavior obligation {required}"
         );
     }
 }
