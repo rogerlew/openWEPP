@@ -357,6 +357,9 @@ impl DirectV10SoilThermalResidentV2 {
             || beginning.schema_sha256 != self.owner.schema_sha256
             || beginning.exact_carry_definition_sha256 != self.owner.exact_carry_definition_sha256
             || beginning.parent_v1_state_sha256 != self.owner.parent_v1_state_sha256
+            || beginning.model_version != self.owner.model_version
+            || beginning.model_definition_sha256 != self.owner.model_definition_sha256
+            || beginning.run_id != self.owner.run_id
             || beginning.state != self.owner.state
             || beginning.receipt_chain_sha256 != self.owner.receipt_chain_sha256
             || beginning.expected_predecessor_transaction_id
@@ -366,6 +369,33 @@ impl DirectV10SoilThermalResidentV2 {
             return Err(DirectV9RealConsumerError::OwnerClosure(
                 "V2 resident prepared-beginning join",
             ));
+        }
+        if self.receipt_free_seals.is_some() {
+            if beginning.transaction_id != self.owner.transaction_id
+                || beginning.support_start_ns < self.owner.support_start_ns
+                || beginning.support_end_ns > self.owner.support_end_ns
+            {
+                return Err(DirectV9RealConsumerError::OwnerClosure(
+                    "receipt-free V2 prepared support join",
+                ));
+            }
+        } else {
+            let next_transaction = self
+                .owner
+                .transaction_id
+                .0
+                .checked_add(1)
+                .map(TransactionId)
+                .ok_or(DirectV9RealConsumerError::OwnerClosure(
+                    "accepted V2 prepared transaction overflow",
+                ))?;
+            if beginning.transaction_id != next_transaction
+                || beginning.support_start_ns != self.owner.support_end_ns
+            {
+                return Err(DirectV9RealConsumerError::OwnerClosure(
+                    "accepted V2 prepared successor join",
+                ));
+            }
         }
         Ok(())
     }
@@ -543,8 +573,47 @@ impl DirectV10RealConsumerShadow {
         accepted: SoilThermalAcceptedCandidateV2,
         seals: SoilThermalOrchestratorSealsV2,
     ) -> Result<(), DirectV10RealConsumerError> {
-        let resident = self.inner.soil_thermal.v2()?;
-        let accepted_resident = resident.accepted(beginning, accepted, seals)?;
+        let accepted_resident = self
+            .inner
+            .soil_thermal
+            .v2()?
+            .accepted(beginning, accepted, seals)?;
+        self.install_validated_soil_thermal_resident_v2(accepted_resident, false)
+    }
+
+    /// Install one accepted V2 soil owner constructed exclusively from the
+    /// authoritative beginning host. A precomputed candidate may already
+    /// retain that exact accepted resident; that case is independently
+    /// validated and remains a byte-exact no-op rather than a second install.
+    pub fn install_soil_thermal_accepted_v2_from_beginning(
+        &mut self,
+        authoritative_beginning: &DirectV10RealConsumerShadow,
+        prepared_beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+        accepted: SoilThermalAcceptedCandidateV2,
+        seals: SoilThermalOrchestratorSealsV2,
+    ) -> Result<(), DirectV10RealConsumerError> {
+        let authoritative_resident = authoritative_beginning.inner.soil_thermal.v2()?;
+        authoritative_resident.validate()?;
+        let accepted_resident =
+            authoritative_resident.accepted(prepared_beginning, accepted, seals)?;
+        let candidate_resident = self.inner.soil_thermal.v2()?;
+        candidate_resident.validate()?;
+        if candidate_resident != authoritative_resident && candidate_resident != &accepted_resident
+        {
+            return Err(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::OwnerClosure(
+                    "V2 candidate resident beginning-or-ending join",
+                ),
+            ));
+        }
+        self.install_validated_soil_thermal_resident_v2(accepted_resident, true)
+    }
+
+    fn install_validated_soil_thermal_resident_v2(
+        &mut self,
+        accepted_resident: DirectV10SoilThermalResidentV2,
+        exact_accepted_noop: bool,
+    ) -> Result<(), DirectV10RealConsumerError> {
         let accepted_transaction = accepted_resident.owner.state.last_accepted_transaction_id;
         let expected_transaction = TransactionId(self.vegetation_state.0.last_transaction_id);
         if accepted_transaction != Some(expected_transaction)
@@ -556,6 +625,15 @@ impl DirectV10RealConsumerShadow {
                     "V2 soil atomic complete-owner transaction join",
                 ),
             ));
+        }
+        if exact_accepted_noop
+            && self
+                .inner
+                .soil_thermal
+                .v2()
+                .is_ok_and(|resident| resident == &accepted_resident)
+        {
+            return Ok(());
         }
         let mut candidate = self.clone();
         candidate.inner.soil_thermal = DirectSoilThermalResident::V2(accepted_resident);
