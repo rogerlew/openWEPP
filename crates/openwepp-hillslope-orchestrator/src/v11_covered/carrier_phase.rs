@@ -285,7 +285,13 @@ impl CoveredCarrierEphemeralCandidatesV1 {
         shadow: DirectV10RealConsumerShadow,
         stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
     ) -> Result<Self, DirectV11RealConsumerError> {
-        Self::try_new_with_soil_candidate(joint, shadow, stage3_by_lane, None)
+        Self::try_new_with_joint_posture(
+            joint,
+            shadow,
+            stage3_by_lane,
+            None,
+            CoveredCarrierTypedJointPostureV1::ResidentBeginning,
+        )
     }
 
     fn try_new_with_soil_candidate(
@@ -294,26 +300,25 @@ impl CoveredCarrierEphemeralCandidatesV1 {
         stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
         soil_candidate: Option<DirectSoilThermalCandidate>,
     ) -> Result<Self, DirectV11RealConsumerError> {
-        let mut actual = shadow.canonical_owner_state_bytes()?;
-        if let Some(DirectSoilThermalCandidate::V2(trial)) = &soil_candidate {
-            actual.insert(
-                "soil_thermal".to_owned(),
-                serde_json::to_vec(trial.ending_state()).map_err(|_| {
-                    DirectV11RealConsumerError::Identity("covered carrier V2 trial owner bytes")
-                })?,
-            );
-        }
-        if actual.iter().any(|(owner_id, bytes)| {
-            owner_id != "snow"
-                && joint
-                    .owner_bytes()
-                    .get(owner_id)
-                    .is_none_or(|joint_bytes| joint_bytes != bytes)
-        }) {
-            return Err(DirectV11RealConsumerError::Identity(
-                "covered carrier typed/joint beginning",
-            ));
-        }
+        Self::try_new_with_joint_posture(
+            joint,
+            shadow,
+            stage3_by_lane,
+            soil_candidate,
+            CoveredCarrierTypedJointPostureV1::CandidateEnding,
+        )
+    }
+
+    fn try_new_with_joint_posture(
+        joint: CoveredTerminalJointTrialStateV1,
+        shadow: DirectV10RealConsumerShadow,
+        stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
+        soil_candidate: Option<DirectSoilThermalCandidate>,
+        posture: CoveredCarrierTypedJointPostureV1,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        let actual =
+            covered_carrier_typed_owner_bytes_v1(&shadow, soil_candidate.as_ref(), posture)?;
+        validate_covered_carrier_typed_joint_v1(&joint, &actual, posture)?;
         Ok(Self {
             joint,
             shadow,
@@ -346,15 +351,98 @@ impl CoveredCarrierEphemeralCandidatesV1 {
         joint: CoveredTerminalJointTrialStateV1,
         stage3_by_lane: BTreeMap<u32, DirectSnowStage3PersistentState>,
     ) -> Result<Self, DirectV11RealConsumerError> {
-        let mut selected = Self::try_new_with_soil_candidate(
+        let beginning = covered_carrier_typed_owner_bytes_v1(
+            &self.shadow,
+            self.soil_candidate.as_ref(),
+            CoveredCarrierTypedJointPostureV1::ResidentBeginning,
+        )?;
+        let ending = covered_carrier_typed_owner_bytes_v1(
+            &self.shadow,
+            self.soil_candidate.as_ref(),
+            CoveredCarrierTypedJointPostureV1::CandidateEnding,
+        )?;
+        let beginning_matches = covered_carrier_typed_joint_matches_v1(&joint, &beginning);
+        let ending_matches = covered_carrier_typed_joint_matches_v1(&joint, &ending);
+        let posture = match (beginning_matches, ending_matches) {
+            (true, false) => CoveredCarrierTypedJointPostureV1::ResidentBeginning,
+            (false, true) => CoveredCarrierTypedJointPostureV1::CandidateEnding,
+            (true, true) if beginning == ending => {
+                CoveredCarrierTypedJointPostureV1::ResidentBeginning
+            }
+            _ => {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "covered carrier selected typed/joint cardinality",
+                ));
+            }
+        };
+        let mut selected = Self::try_new_with_joint_posture(
             joint,
             self.shadow.clone(),
             stage3_by_lane,
             self.soil_candidate.clone(),
+            posture,
         )?;
         selected.terminal_snow_soil_trial_receipt = self.terminal_snow_soil_trial_receipt.clone();
         Ok(selected)
     }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum CoveredCarrierTypedJointPostureV1 {
+    ResidentBeginning,
+    CandidateEnding,
+}
+
+fn covered_carrier_typed_owner_bytes_v1(
+    shadow: &DirectV10RealConsumerShadow,
+    soil_candidate: Option<&DirectSoilThermalCandidate>,
+    posture: CoveredCarrierTypedJointPostureV1,
+) -> Result<BTreeMap<String, Vec<u8>>, DirectV11RealConsumerError> {
+    let mut actual = shadow.canonical_owner_state_bytes()?;
+    if posture == CoveredCarrierTypedJointPostureV1::CandidateEnding
+        && let Some(DirectSoilThermalCandidate::V2(trial)) = soil_candidate
+    {
+        actual.insert(
+            "soil_thermal".to_owned(),
+            serde_json::to_vec(trial.ending_state()).map_err(|_| {
+                DirectV11RealConsumerError::Identity("covered carrier V2 trial owner bytes")
+            })?,
+        );
+    }
+    Ok(actual)
+}
+
+fn covered_carrier_typed_joint_matches_v1(
+    joint: &CoveredTerminalJointTrialStateV1,
+    actual: &BTreeMap<String, Vec<u8>>,
+) -> bool {
+    !actual.contains_key("snow")
+        && joint.owner_bytes().contains_key("snow")
+        && joint.owner_bytes().len() == actual.len() + 1
+        && actual.iter().all(|(owner_id, bytes)| {
+            joint
+                .owner_bytes()
+                .get(owner_id)
+                .is_some_and(|joint_bytes| joint_bytes == bytes)
+        })
+}
+
+fn validate_covered_carrier_typed_joint_v1(
+    joint: &CoveredTerminalJointTrialStateV1,
+    actual: &BTreeMap<String, Vec<u8>>,
+    posture: CoveredCarrierTypedJointPostureV1,
+) -> Result<(), DirectV11RealConsumerError> {
+    if covered_carrier_typed_joint_matches_v1(joint, actual) {
+        return Ok(());
+    }
+    Err(DirectV11RealConsumerError::Identity(match posture {
+        CoveredCarrierTypedJointPostureV1::ResidentBeginning => {
+            "covered carrier typed/joint beginning"
+        }
+        CoveredCarrierTypedJointPostureV1::CandidateEnding => {
+            "covered carrier typed/joint candidate ending"
+        }
+    }))
 }
 
 /// Result of one genuine carrier-only mapping at an exact trial support.
@@ -389,6 +477,47 @@ pub(crate) struct CoveredCarrierPhaseResultV1 {
     pub wb14_parent_receipt_set_sha256: Option<String>,
     pub wb14_child_replay_bytes: Vec<u8>,
     pub wb14_parent_replay_bytes: Option<Vec<u8>>,
+}
+
+struct CoveredCarrierPhysicalTrialV1 {
+    envelope: Box<UncommittedCoveredV8OwnerEnvelope>,
+    carrier_receipts: BTreeMap<(OfeId, TileId), CoveredCarrierInitialGuessV1>,
+    corrected: BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+    lse_states: BTreeMap<(OfeId, TileId), CoveredLseIterationState>,
+    precipitation_sets: BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>,
+    open_snow_candidates: BTreeMap<(OfeId, TileId), OpenSnowTileBoundaryCandidateV1>,
+    terminal_soil_trials:
+        BTreeMap<u32, physical_outcome_ledger::TerminalSnowBottomSoilTrialResultV1>,
+    terminal_soil_credits: BTreeMap<u32, SoilThermalTopBoundaryCreditV1>,
+    boundaries_by_lane: BTreeMap<u32, Stage3SnowSurfaceBoundaryReceiptV1>,
+}
+
+struct CoveredCarrierPreparedTrialV1 {
+    envelope: Box<UncommittedCoveredV8OwnerEnvelope>,
+    carrier_receipts: BTreeMap<(OfeId, TileId), CoveredCarrierInitialGuessV1>,
+    corrected: BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+    lse_states: BTreeMap<(OfeId, TileId), CoveredLseIterationState>,
+    precipitation_sets: BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>,
+    open_snow_candidates: BTreeMap<(OfeId, TileId), OpenSnowTileBoundaryCandidateV1>,
+    terminal_soil_trials:
+        BTreeMap<u32, physical_outcome_ledger::TerminalSnowBottomSoilTrialResultV1>,
+    terminal_soil_credits: BTreeMap<u32, SoilThermalTopBoundaryCreditV1>,
+    destination_receipts: BTreeMap<(OfeId, TileId), Digest32>,
+    lane_states: BTreeMap<u32, CoveredTerminalLaneTrialStateV2>,
+}
+
+struct CoveredCarrierBoundaryPreparedTrialV1 {
+    envelope: Box<UncommittedCoveredV8OwnerEnvelope>,
+    carrier_receipts: BTreeMap<(OfeId, TileId), CoveredCarrierInitialGuessV1>,
+    corrected: BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
+    lse_states: BTreeMap<(OfeId, TileId), CoveredLseIterationState>,
+    precipitation_sets: BTreeMap<u32, Stage3PrecipitationPhaseParcelSetV1>,
+    open_snow_candidates: BTreeMap<(OfeId, TileId), OpenSnowTileBoundaryCandidateV1>,
+    terminal_soil_trials:
+        BTreeMap<u32, physical_outcome_ledger::TerminalSnowBottomSoilTrialResultV1>,
+    terminal_soil_credits: BTreeMap<u32, SoilThermalTopBoundaryCreditV1>,
+    lane_states: BTreeMap<u32, CoveredTerminalLaneTrialStateV2>,
+    terms: BTreeMap<u32, LaneStage3BoundaryTerms>,
 }
 
 #[cfg(test)]
@@ -702,22 +831,52 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 ));
             }
         }
-
-        let (_, vegetation) = project_v9_runtime_to_v8(
-            &beginning.shadow.inner.vegetation_configuration,
-            &beginning.shadow.inner.vegetation_state,
-        )
-        .map_err(|error| {
-            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                DirectV9RealConsumerError::V9(error),
-            ))
+        let projected_vegetation = covered_boxed_execution_v1(|| {
+            project_v9_runtime_to_v8(
+                &beginning.shadow.inner.vegetation_configuration,
+                &beginning.shadow.inner.vegetation_state,
+            )
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                    DirectV9RealConsumerError::V9(error),
+                ))
+            })
         })?;
         let carrier_receipts = self.carrier_receipts_by_destination(
             interval_s,
-            &vegetation,
+            &projected_vegetation.1,
             &beginning.stage3_by_lane,
             self.stage3_forcing_by_lane,
         )?;
+        let prepared = self.execute_shared_covered_carrier_physical_v1(
+            beginning,
+            request,
+            snow_boundary_state,
+            &child,
+            interval_s,
+            Box::new(carrier_receipts),
+        )?;
+        let boundary_prepared =
+            self.complete_shared_covered_carrier_physical_v1(interval_s, prepared)?;
+        let physical = self.build_shared_covered_carrier_boundaries_v1(
+            beginning,
+            request,
+            interval_s,
+            boundary_prepared,
+        )?;
+        self.finalize_shared_covered_carrier_engine_v1(beginning, request, child, physical)
+    }
+
+    #[inline(never)]
+    fn execute_shared_covered_carrier_physical_v1(
+        &self,
+        beginning: &CoveredCarrierEphemeralCandidatesV1,
+        request: &CoveredTerminalTrialRequestV1,
+        snow_boundary_state: CoveredSnowBoundaryStateV1,
+        child: &CoveredProbeChildIdentityV1,
+        interval_s: f64,
+        carrier_receipts: Box<BTreeMap<(OfeId, TileId), CoveredCarrierInitialGuessV1>>,
+    ) -> Result<Box<CoveredCarrierPreparedTrialV1>, DirectV11RealConsumerError> {
         let seed = self.stage3_lower_boundaries_by_destination(
             &carrier_receipts,
             self.stage3_inputs_by_lane,
@@ -760,7 +919,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         // terminal solver owns the outer fixed-point replay and returns the
         // preceding snow estimate through `ending_snow_hint`; iterating only
         // the carrier here would omit snow and soil from convergence.
-        let envelope =
+        let envelope = covered_boxed_execution_v1(|| {
             self.build_covered_carrier_envelope_value_v1(CoveredCarrierEnvelopeBuildV1 {
                 candidate: &beginning.shadow,
                 interval_s,
@@ -774,7 +933,8 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 // boundary.
                 provisional: true,
                 finalize_wb14_parent_interval: self.finalize_wb14_parent_interval,
-            })?;
+            })
+        })?;
         let (corrected, lse_states) = self.rebuild_covered_lse_carrier_value_v1(
             &seed,
             &envelope,
@@ -902,8 +1062,78 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         for (destination, boundary) in open_boundaries {
             corrected.insert(destination, boundary);
         }
+        covered_boxed_execution_v1(|| {
+            Ok::<_, DirectV11RealConsumerError>(CoveredCarrierPreparedTrialV1 {
+                envelope,
+                carrier_receipts: *carrier_receipts,
+                corrected,
+                lse_states,
+                precipitation_sets,
+                open_snow_candidates,
+                terminal_soil_trials,
+                terminal_soil_credits,
+                destination_receipts,
+                lane_states,
+            })
+        })
+    }
+
+    #[inline(never)]
+    fn complete_shared_covered_carrier_physical_v1(
+        &self,
+        interval_s: f64,
+        prepared: Box<CoveredCarrierPreparedTrialV1>,
+    ) -> Result<Box<CoveredCarrierBoundaryPreparedTrialV1>, DirectV11RealConsumerError> {
+        let CoveredCarrierPreparedTrialV1 {
+            envelope,
+            carrier_receipts,
+            corrected,
+            lse_states,
+            precipitation_sets,
+            open_snow_candidates,
+            terminal_soil_trials,
+            terminal_soil_credits,
+            destination_receipts,
+            lane_states,
+        } = *prepared;
         let terms =
             self.lane_stage3_terms_from_boundaries(&destination_receipts, &corrected, interval_s)?;
+        covered_boxed_execution_v1(|| {
+            Ok::<_, DirectV11RealConsumerError>(CoveredCarrierBoundaryPreparedTrialV1 {
+                envelope,
+                carrier_receipts,
+                corrected,
+                lse_states,
+                precipitation_sets,
+                open_snow_candidates,
+                terminal_soil_trials,
+                terminal_soil_credits,
+                lane_states,
+                terms,
+            })
+        })
+    }
+
+    #[inline(never)]
+    fn build_shared_covered_carrier_boundaries_v1(
+        &self,
+        beginning: &CoveredCarrierEphemeralCandidatesV1,
+        request: &CoveredTerminalTrialRequestV1,
+        interval_s: f64,
+        prepared: Box<CoveredCarrierBoundaryPreparedTrialV1>,
+    ) -> Result<Box<CoveredCarrierPhysicalTrialV1>, DirectV11RealConsumerError> {
+        let CoveredCarrierBoundaryPreparedTrialV1 {
+            envelope,
+            carrier_receipts,
+            corrected,
+            lse_states,
+            precipitation_sets,
+            open_snow_candidates,
+            terminal_soil_trials,
+            terminal_soil_credits,
+            lane_states,
+            terms,
+        } = *prepared;
         let mut boundaries_by_lane = BTreeMap::new();
         for lane_id in lane_states.keys() {
             let lane_terms = terms
@@ -943,8 +1173,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                     .ok_or(DirectV11RealConsumerError::Identity(
                         "covered carrier terminal trial join",
                     ))?;
-            boundaries_by_lane.insert(
-                *lane_id,
+            let boundary = covered_boxed_execution_v1(|| {
                 Stage3SnowSurfaceBoundaryReceiptV1::try_new(
                     Stage3SnowSurfaceBoundaryReceiptInputs {
                         support: request.support,
@@ -961,12 +1190,47 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                             carrier_receipt_sha256: lane_terms.provisional_carrier_receipt_sha256,
                         },
                     },
-                )?,
-            );
+                )
+            })?;
+            boundaries_by_lane.insert(*lane_id, *boundary);
         }
-        let boundary = *boundaries_by_lane.get(&request.lane_id).ok_or(
+        covered_boxed_execution_v1(|| {
+            Ok::<_, DirectV11RealConsumerError>(CoveredCarrierPhysicalTrialV1 {
+                envelope,
+                carrier_receipts,
+                corrected,
+                lse_states,
+                precipitation_sets,
+                open_snow_candidates,
+                terminal_soil_trials,
+                terminal_soil_credits,
+                boundaries_by_lane,
+            })
+        })
+    }
+
+    #[inline(never)]
+    fn finalize_shared_covered_carrier_engine_v1(
+        &self,
+        beginning: &CoveredCarrierEphemeralCandidatesV1,
+        request: &CoveredTerminalTrialRequestV1,
+        child: CoveredProbeChildIdentityV1,
+        physical: Box<CoveredCarrierPhysicalTrialV1>,
+    ) -> Result<CoveredCarrierPhaseResultV1, DirectV11RealConsumerError> {
+        let CoveredCarrierPhysicalTrialV1 {
+            envelope,
+            carrier_receipts,
+            corrected,
+            lse_states,
+            precipitation_sets,
+            open_snow_candidates,
+            terminal_soil_trials,
+            terminal_soil_credits,
+            boundaries_by_lane,
+        } = *physical;
+        let boundary = Box::new(*boundaries_by_lane.get(&request.lane_id).ok_or(
             DirectV11RealConsumerError::Identity("covered carrier leader boundary"),
-        )?;
+        )?);
         #[cfg(test)]
         let terminal_soil_credit = terminal_soil_credits.get(&request.lane_id).cloned().ok_or(
             DirectV11RealConsumerError::Identity("covered carrier leader soil credit"),
@@ -979,77 +1243,90 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         // carrier-owned typed candidates without accepting a slab, publishing
         // a receipt, or mutating the owning stack. Hydrology seals the seventh
         // (snow) candidate after applying this boundary.
-        let mut candidate = beginning.shadow.clone();
+        let mut candidate = covered_boxed_execution_v1(|| {
+            Ok::<_, DirectV11RealConsumerError>(beginning.shadow.clone())
+        })?;
         candidate.inner.authority = CoveredColumnAuthority::V11SnowCovered;
         let ordered_soil_credits = terminal_soil_credits.values().cloned().collect::<Vec<_>>();
-        let soil_candidate = match &beginning.shadow.inner.soil_thermal {
-            DirectSoilThermalResident::V1(_) => {
-                candidate
-                    .inner
-                    .accept_envelope_with_soil_top_boundary_credits(
-                        envelope.transaction_id(),
-                        &envelope,
-                        &ordered_soil_credits,
+        let soil_candidate =
+            covered_boxed_execution_v1(|| match &beginning.shadow.inner.soil_thermal {
+                DirectSoilThermalResident::V1(_) => {
+                    candidate
+                        .inner
+                        .accept_envelope_with_soil_top_boundary_credits(
+                            envelope.transaction_id(),
+                            &envelope,
+                            &ordered_soil_credits,
+                        )
+                        .map_err(|error| {
+                            DirectV11RealConsumerError::Runtime(
+                                DirectV10RealConsumerError::Runtime(error),
+                            )
+                        })?;
+                    DirectSoilThermalCandidate::from_v1(
+                        candidate
+                            .inner
+                            .soil_thermal
+                            .v1()
+                            .map_err(|error| {
+                                DirectV11RealConsumerError::Runtime(
+                                    DirectV10RealConsumerError::Runtime(error),
+                                )
+                            })?
+                            .clone(),
                     )
                     .map_err(|error| {
                         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
                             error,
                         ))
-                    })?;
-                DirectSoilThermalCandidate::from_v1(
-                    candidate
-                        .inner
-                        .soil_thermal
-                        .v1()
-                        .map_err(|error| {
-                            DirectV11RealConsumerError::Runtime(
-                                DirectV10RealConsumerError::Runtime(error),
-                            )
-                        })?
-                        .clone(),
-                )
-                .map_err(|error| {
-                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-                })?
-            }
-            DirectSoilThermalResident::V2(_) => {
-                stage_unpublished_v2_carrier_owners(&mut candidate, &envelope)?;
-                unpublished_v2_soil_trial(
-                    beginning,
-                    &envelope,
-                    request.support,
-                    &ordered_soil_credits,
-                )?
-            }
-        };
+                    })
+                }
+                DirectSoilThermalResident::V2(_) => {
+                    stage_unpublished_v2_carrier_owners(&mut candidate, &envelope)?;
+                    unpublished_v2_soil_trial(
+                        beginning,
+                        &envelope,
+                        request.support,
+                        &ordered_soil_credits,
+                    )
+                }
+            })?;
         // A trial is a complete unpublished owner candidate, not merely the
         // inner V9 carrier state. Apply the same V10 projections and parent
         // lineage normalization used by accepted segment finalization so a
         // composed child can begin from the exact installable owner set.
-        candidate.vegetation_state = project_v9_runtime_to_v10(
-            candidate.inner.vegetation_state(),
-            &candidate.vegetation_configuration,
-        )
-        .map_err(|error| {
-            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::V10(error))
-        })?;
-        candidate.lse_state = project_validated_v1_runtime_to_v2(
-            &candidate.inner.lse_configuration,
-            candidate.inner.lse_state(),
-            &candidate.lse_configuration,
-            &openwepp_land_surface_energy::Sha256Digest::try_new(
-                candidate
-                    .vegetation_configuration
-                    .configuration_sha256
-                    .clone(),
+        let vegetation_state = covered_boxed_execution_v1(|| {
+            project_v9_runtime_to_v10(
+                candidate.inner.vegetation_state(),
+                &candidate.vegetation_configuration,
             )
             .map_err(|error| {
-                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
-            })?,
-        )
-        .map_err(|error| {
-            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::V10(error))
+            })
         })?;
+        candidate.vegetation_state = *vegetation_state;
+        let lse_state = covered_boxed_execution_v1(|| {
+            project_validated_v1_runtime_to_v2(
+                &candidate.inner.lse_configuration,
+                candidate.inner.lse_state(),
+                &candidate.lse_configuration,
+                &openwepp_land_surface_energy::Sha256Digest::try_new(
+                    candidate
+                        .vegetation_configuration
+                        .configuration_sha256
+                        .clone(),
+                )
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(
+                        error,
+                    ))
+                })?,
+            )
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
+            })
+        })?;
+        candidate.lse_state = *lse_state;
         normalize_v11_staged_parent_lineage(
             &mut candidate,
             beginning.shadow.vegetation_state.0.last_transaction_id,
@@ -1075,7 +1352,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             .wb14_parent_replay_bytes()
             .map(ToOwned::to_owned);
         let mut ending_owner_bytes = candidate.canonical_owner_state_bytes()?;
-        if let DirectSoilThermalCandidate::V2(trial) = &soil_candidate {
+        if let DirectSoilThermalCandidate::V2(trial) = &*soil_candidate {
             ending_owner_bytes.insert(
                 "soil_thermal".to_owned(),
                 serde_json::to_vec(trial.ending_state()).map_err(|_| {
@@ -1092,59 +1369,201 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             ))?
             .clone();
         ending_owner_bytes.insert("snow".to_owned(), trial_snow);
-        let ending_joint = CoveredTerminalJointTrialStateV1::try_new(
-            beginning.joint.authority().clone(),
-            ending_owner_bytes,
-        )
-        .map_err(|_| DirectV11RealConsumerError::Identity("covered carrier ending joint"))?;
-        let mut ending_candidates =
+        let ending_joint = covered_boxed_execution_v1(|| {
+            CoveredTerminalJointTrialStateV1::try_new(
+                beginning.joint.authority().clone(),
+                ending_owner_bytes,
+            )
+            .map_err(|_| DirectV11RealConsumerError::Identity("covered carrier ending joint"))
+        })?;
+        let mut ending_candidates = covered_boxed_execution_v1(|| {
             CoveredCarrierEphemeralCandidatesV1::try_new_with_soil_candidate(
-                ending_joint,
-                candidate,
+                *ending_joint,
+                *candidate,
                 beginning.stage3_by_lane.clone(),
-                matches!(&soil_candidate, DirectSoilThermalCandidate::V2(_))
-                    .then(|| soil_candidate.clone()),
-            )?;
+                matches!(&*soil_candidate, DirectSoilThermalCandidate::V2(_))
+                    .then(|| soil_candidate.as_ref().clone()),
+            )
+        })?;
         ending_candidates.terminal_snow_soil_trial_receipt =
             Some(terminal_soil_trial.receipt.clone());
-        let transition = CoveredTerminalTrialTransitionV1 {
-            boundary,
+        let transition = Box::new(CoveredTerminalTrialTransitionV1 {
+            boundary: *boundary,
             beginning_joint: beginning.joint.clone(),
             ending_joint: ending_candidates.joint.clone(),
             probe_child_identity: child,
             trial_snow_soil_receipt: Some(terminal_soil_trial.receipt.clone()),
-        };
-        Ok(CoveredCarrierPhaseResultV1 {
-            transition,
-            beginning_candidates: beginning.clone(),
-            ending_candidates,
-            beginning_stage3_by_lane: beginning.stage3_by_lane.clone(),
-            precipitation_sets,
-            carrier_envelope: envelope,
-            complete_lower_boundaries: corrected,
-            carrier_source_receipts: carrier_receipts,
-            open_snow_candidates,
-            covered_lse_states: lse_states,
-            soil_candidate,
-            #[cfg(test)]
-            soil_top_boundary_credit: terminal_soil_credit,
-            batch_boundaries_by_lane: boundaries_by_lane,
-            batch_terminal_snow_soil_trial_receipts_by_lane: terminal_soil_trials
-                .iter()
-                .map(|(lane_id, trial)| (*lane_id, trial.receipt.clone()))
-                .collect(),
-            batch_soil_top_boundary_credits_by_lane: terminal_soil_credits,
-            wb14_child_receipt_set_sha256,
-            wb14_parent_receipt_set_sha256,
-            wb14_child_replay_bytes,
-            wb14_parent_replay_bytes,
-        })
+        });
+        let result = covered_boxed_execution_v1(|| {
+            Ok::<_, DirectV11RealConsumerError>(CoveredCarrierPhaseResultV1 {
+                transition: *transition,
+                beginning_candidates: beginning.clone(),
+                ending_candidates: *ending_candidates,
+                beginning_stage3_by_lane: beginning.stage3_by_lane.clone(),
+                precipitation_sets,
+                carrier_envelope: *envelope,
+                complete_lower_boundaries: corrected,
+                carrier_source_receipts: carrier_receipts,
+                open_snow_candidates,
+                covered_lse_states: lse_states,
+                soil_candidate: *soil_candidate,
+                #[cfg(test)]
+                soil_top_boundary_credit: terminal_soil_credit,
+                batch_boundaries_by_lane: boundaries_by_lane,
+                batch_terminal_snow_soil_trial_receipts_by_lane: terminal_soil_trials
+                    .iter()
+                    .map(|(lane_id, trial)| (*lane_id, trial.receipt.clone()))
+                    .collect(),
+                batch_soil_top_boundary_credits_by_lane: terminal_soil_credits,
+                wb14_child_receipt_set_sha256,
+                wb14_parent_receipt_set_sha256,
+                wb14_child_replay_bytes,
+                wb14_parent_replay_bytes,
+            })
+        })?;
+        Ok(*result)
     }
 }
 
 #[cfg(test)]
 mod covered_carrier_phase_tests {
     use super::*;
+    use crate::hydrology::JointTrialAuthorityV1;
+    use openwepp_coupled_time::ModelTimeNs;
+
+    fn test_sha256(character: char) -> Sha256Digest {
+        Sha256Digest::try_new(character.to_string().repeat(64)).expect("test digest")
+    }
+
+    fn native_v2_shadow_and_trials() -> (
+        DirectV10RealConsumerShadow,
+        DirectSoilThermalCandidate,
+        DirectSoilThermalCandidate,
+    ) {
+        let (v1_shadow, _) = crate::v9_real_consumer_shadow::tests::v10_shadow_fixture();
+        let current_transaction = TransactionId(v1_shadow.vegetation_state.0.last_transaction_id);
+        let support_transaction = TransactionId(current_transaction.0 + 1);
+        let migrated = openwepp_land_surface_energy::migrate_soil_thermal_v1_to_v2(
+            v1_shadow
+                .inner
+                .soil_thermal
+                .v1()
+                .expect("V1 fixture resident"),
+            openwepp_land_surface_energy::SoilThermalV2MigrationIdentity {
+                model_version: v1_shadow
+                    .inner
+                    .lse_configuration
+                    .soil_thermal_configuration
+                    .model_version
+                    .clone(),
+                model_definition_sha256: v1_shadow
+                    .inner
+                    .lse_configuration
+                    .soil_thermal_configuration
+                    .model_definition_sha256
+                    .clone(),
+                run_id: "covered-carrier-native-v2".to_owned(),
+                transaction_id: current_transaction,
+                support_start_ns: 0,
+                support_end_ns: 60_000_000_000,
+                receipt_chain_sha256: test_sha256('a'),
+            },
+        )
+        .expect("checked V2 migration");
+        let prepared = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
+            &migrated,
+            support_transaction,
+            60_000_000_000,
+            120_000_000_000,
+        )
+        .expect("prepared V2 carrier support");
+        let receipt_free_seals =
+            openwepp_land_surface_energy::seal_soil_thermal_receipt_free_owner_v2(&prepared)
+                .expect("receipt-free V2 seals");
+        let v2_shadow = DirectV10RealConsumerShadow::try_new_v2(
+            v1_shadow.vegetation_configuration.clone(),
+            v1_shadow.vegetation_state.clone(),
+            v1_shadow.inner.vegetation_owner_id.clone(),
+            v1_shadow.lse_configuration.clone(),
+            v1_shadow.lse_state.clone(),
+            v1_shadow.inner.surface_configuration.clone(),
+            v1_shadow.inner.layer_maps.clone(),
+            prepared.clone(),
+            receipt_free_seals,
+            v1_shadow.inner.biogeochemistry.clone(),
+            v1_shadow.inner.hydrology_frame.clone(),
+            v1_shadow.inner.next_day_index,
+            v1_shadow.gsi_owner_configuration.clone(),
+            v1_shadow.gsi_state.clone(),
+            v1_shadow.provider_static_configuration.clone(),
+            v1_shadow.provider_cursor.clone(),
+            v1_shadow.root_zone_hydraulic_configuration.clone(),
+        )
+        .expect("native V2 shadow");
+        let trial = |energy_j_m2_ofe_ground: f64, identity: char| {
+            let beginning = prepared.beginning_owner();
+            let operand = openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2 {
+                ofe_id: beginning.state.ofes[0].ofe_id.clone(),
+                layer_id: beginning.state.ofes[0].ordered_layers[0].layer_id.clone(),
+                source_kind:
+                    openwepp_land_surface_energy::SoilThermalEnergyOperandKindV2::SoilInternal,
+                source_owner_id: ResourceOwnerId::try_new("carrier-v2-test-source")
+                    .expect("source owner"),
+                debit_credit_identity_sha256: test_sha256(identity),
+                ordinal: 0,
+                units: "J m^-2 OFE-ground".to_owned(),
+                basis: "ofe_ground".to_owned(),
+                energy_j_m2_ofe_ground,
+            };
+            let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
+                beginning,
+                &v2_shadow.inner.lse_configuration,
+                vec![operand],
+            )
+            .expect("expected V2 operands");
+            let trial = openwepp_land_surface_energy::advance_soil_thermal_trial_v2(
+                &prepared,
+                expected.accepted_operands(),
+                expected.temperature_projections(),
+            )
+            .expect("unpublished V2 trial");
+            DirectSoilThermalCandidate::from_v2(trial).expect("typed V2 candidate")
+        };
+        let candidate = trial(0.25, 'b');
+        let stale_candidate = trial(0.5, 'c');
+        (v2_shadow, candidate, stale_candidate)
+    }
+
+    fn carrier_joint(
+        shadow: &DirectV10RealConsumerShadow,
+        soil_candidate: Option<&DirectSoilThermalCandidate>,
+    ) -> CoveredTerminalJointTrialStateV1 {
+        let posture = if soil_candidate.is_some() {
+            CoveredCarrierTypedJointPostureV1::CandidateEnding
+        } else {
+            CoveredCarrierTypedJointPostureV1::ResidentBeginning
+        };
+        let mut owner_bytes = covered_carrier_typed_owner_bytes_v1(shadow, soil_candidate, posture)
+            .expect("typed owner bytes");
+        let snow = vec![7, 11, 13];
+        owner_bytes.insert("snow".to_owned(), snow.clone());
+        CoveredTerminalJointTrialStateV1::try_new(
+            JointTrialAuthorityV1 {
+                source_owner_set_sha256: Digest32::from_bytes([17; 32]),
+                lane_id: 1,
+                source_snow_owner_sha256: digest_bytes(&snow),
+                interval_index: 0,
+                state_support: TimeSupport::new(
+                    ModelTimeNs::new(60_000_000_000),
+                    ModelTimeNs::new(120_000_000_000),
+                )
+                .expect("support"),
+                accepted_predecessors: Vec::new(),
+            },
+            owner_bytes,
+        )
+        .expect("carrier joint")
+    }
 
     fn test_boundary(latent_heat_j_kg: f64) -> Stage3SnowCoveredLowerBoundary {
         let digest = Sha256Digest::try_new("11".repeat(32)).expect("digest");
@@ -1165,6 +1584,98 @@ mod covered_carrier_phase_tests {
             reciprocal_longwave_receipt_sha256: None,
             final_canopy_boundary_receipt_sha256: None,
         }
+    }
+
+    #[test]
+    fn native_v2_selected_joint_binds_resident_beginning_and_trial_ending_exactly() {
+        let (shadow, candidate, _) = native_v2_shadow_and_trials();
+        let beginning_joint = carrier_joint(&shadow, None);
+        let ending_joint = carrier_joint(&shadow, Some(&candidate));
+        let ending = CoveredCarrierEphemeralCandidatesV1::try_new_with_soil_candidate(
+            ending_joint.clone(),
+            shadow,
+            BTreeMap::new(),
+            Some(candidate.clone()),
+        )
+        .expect("typed V2 ending");
+
+        let selected_beginning = ending
+            .try_with_selected_stage3_by_lane(beginning_joint.clone(), BTreeMap::new())
+            .expect("resident beginning joint");
+        assert_eq!(selected_beginning.joint(), &beginning_joint);
+        assert_eq!(
+            selected_beginning
+                .soil_candidate
+                .as_ref()
+                .expect("retained V2 carry")
+                .state_sha256(),
+            candidate.state_sha256(),
+        );
+
+        let selected_ending = ending
+            .try_with_selected_stage3_by_lane(ending_joint.clone(), BTreeMap::new())
+            .expect("candidate ending joint");
+        assert_eq!(selected_ending.joint(), &ending_joint);
+        assert_eq!(
+            selected_ending
+                .soil_candidate
+                .as_ref()
+                .expect("selected V2 trial")
+                .state_sha256(),
+            candidate.state_sha256(),
+        );
+    }
+
+    #[test]
+    fn native_v2_selected_joint_rejects_stale_carry_and_substituted_owner() {
+        let (shadow, candidate, stale_candidate) = native_v2_shadow_and_trials();
+        let ending_joint = carrier_joint(&shadow, Some(&candidate));
+        let ending = CoveredCarrierEphemeralCandidatesV1::try_new_with_soil_candidate(
+            ending_joint.clone(),
+            shadow.clone(),
+            BTreeMap::new(),
+            Some(candidate),
+        )
+        .expect("typed V2 ending");
+
+        let mut stale = ending.clone();
+        stale.soil_candidate = Some(stale_candidate);
+        assert!(
+            stale
+                .try_with_selected_stage3_by_lane(ending_joint, BTreeMap::new())
+                .is_err(),
+            "a selected ending joint must reject a substituted exact carry",
+        );
+
+        let mut substituted_bytes = carrier_joint(&shadow, None).owner_bytes().clone();
+        substituted_bytes
+            .get_mut("hydrology")
+            .expect("hydrology owner")
+            .push(0xff);
+        let substituted_joint = CoveredTerminalJointTrialStateV1::try_new(
+            JointTrialAuthorityV1 {
+                source_owner_set_sha256: Digest32::from_bytes([17; 32]),
+                lane_id: 1,
+                source_snow_owner_sha256: digest_bytes(
+                    substituted_bytes.get("snow").expect("snow owner"),
+                ),
+                interval_index: 0,
+                state_support: TimeSupport::new(
+                    ModelTimeNs::new(60_000_000_000),
+                    ModelTimeNs::new(120_000_000_000),
+                )
+                .expect("support"),
+                accepted_predecessors: Vec::new(),
+            },
+            substituted_bytes,
+        )
+        .expect("sealed substituted joint");
+        assert!(
+            ending
+                .try_with_selected_stage3_by_lane(substituted_joint, BTreeMap::new())
+                .is_err(),
+            "a selected joint must reject any substituted non-soil owner",
+        );
     }
 
     #[test]
