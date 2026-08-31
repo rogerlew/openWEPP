@@ -191,23 +191,32 @@ Sixth, `SC-SNOWENERGY-001` v33 supersedes the nonprogressing v32 controller on
 the exact affected terminal-one-volume covered support. Versions 31 and 32 are
 retained as diagnostic reconstruction/refusal oracles but must not remain in
 production control flow: retained evidence proves the v32 root/branch map has
-an exact period-two reset and no fresh-authentic fixed point. After an authentic
-A/B/A phase/vapor active-set cycle with identical support, identity, event,
-topology, custody, and receipt operands, v33 may invoke a private reduced
-semismooth coupled solve of the actual physical residuals. Its unknowns are
-ending total represented snow water, ending snow enthalpy, and the coupled soil
-endpoint coordinates required by the unchanged CN snow-soil receipt; every
-trial applies the unchanged canonical W/H phase projection and existing covered
-LSE equations/ordered flux reconstruction. Residuals independently close exact
-water, complete energy including signed actual-vapor latent energy, the
-unchanged soil CN block, LSE components, and sealed receipts. A safeguarded
-deterministic Newton/trust-region solve is private and unpublished; only an
-exact fresh coupled-root replay that independently reseals every receipt may be
-accepted and published. This is neither a convex event-time mixture nor
-synthetic Picard acceptance. Existing discrete event/forcing/receipt boundaries
-still force exact partition/refusal. No floor, tolerance, 96-iteration Picard
-cap, constitutive equation, event, custody, receipt, rollback, public schema,
-persistence, or diagnostic policy changes.
+an exact active-set transition reset and no fresh-authentic fixed point. The
+v33 trigger is not bitwise equality of raw authentic owners. It requires exact
+unchanged support/source/event/topology/custody/receipt joins and the sequence
+`root/interface -> one-sided branch-entry -> opposite pure-vapor raw-authentic
+-> same root/interface/reset coordinates and branch predicates`, with opposite
+pure vapor disposition; asymptotically changing raw-authentic continuous owner
+fields need not compare equal.
+
+Only then may v33 invoke a private reduced semismooth coupled solve. Its
+unknowns are ending snow water/enthalpy and only the coupled soil endpoint
+coordinates required by the unchanged CN snow--soil receipt. A sealed physical
+evaluator must expose concrete `R_W/R_H/R_E/R_T`, canonical phase, existing LSE
+and CN equations, soil enthalpy--temperature closure, exact water/complete
+energy including linked vapor latent energy, equal/opposite snow--soil custody,
+and reconstructable receipt side constraints. Coordinate-map difference
+`F(x)-x` is not an admissible residual. One shared physical-evaluation budget,
+bounded by the unchanged 96, includes trigger confirmation, baseline/Jacobian,
+trust and rejected trials, fresh evaluation, and final replay without reset.
+Only an exact fresh coupled-root replay that independently reseals every receipt
+may enter private `CoveredConvergenceAdmissionV1::CoupledAuthentic`; that branch
+bypasses only Picard current/candidate equality and convergence and retains all
+residual, finalization, receipt, rollback, and publication checks. This is
+neither a convex event-time mixture nor synthetic Picard acceptance. Existing
+discrete event/forcing/receipt boundaries still force exact partition/refusal.
+No floor, tolerance, 96-evaluation cap, constitutive equation, event, custody,
+receipt, rollback, public schema, persistence, or diagnostic policy changes.
 
 ## Intended write set
 
@@ -353,18 +362,31 @@ and independent mass/energy/vapor closure.
 
 The v33 successor repeats that contract-first sequence independently. Its
 retained pre-red must reproduce the exact 60-second and 120-second v32
-period-two/96-cap refusal, fail solely for the missing v33 coupled-solver seam,
-and bind independent cold/phase/fusion-boundary residual vectors with known
-roots and exact replay. Mandatory green evidence includes root results distinct
-from every affine v31/v32 image; nonfinite/identity/event/active-set/singularity/
-stagnation/domain/capacity/component/soil/LSE/receipt/iteration refusals; exact
-rollback; real DFF accepted/rejected counts, width histogram, solver
-invocations/residual evaluations, wall time, limiting reasons, and maximum
-mass/energy/vapor/soil/receipt residuals. Closure requires zero repeated-96
-failures and a material reduction from the retained ~1435 accepted/~1500
-rejected one-day blocker; the package records a provisional 4x reduction gate
-for both counts, plus accepted-time fraction at `>=900 s` and stable-support
-maximum width, without weakening any event tick or ledger tolerance.
+transition-reset/96-cap refusal, including non-bit-equal asymptotically changing
+raw owners, and fail on the current coordinate-map `F(x)-x` draft for absent
+equation-level residual evaluator, shared physical-evaluation budget, and
+`CoupledAuthentic` admission seams while retained contract oracles pass.
+Mandatory green evidence binds exact trigger order/root coordinates/branch
+predicates/joins, concrete `R_W/R_H/R_E/R_T`, algebraic CN/LSE/receipt side
+constraints, independent cold/phase/fusion roots, and exact fresh replay. It
+also includes roots distinct from every affine v31/v32 image;
+nonfinite/identity/event/active-set/singularity/stagnation/domain/capacity/
+component/soil/LSE/receipt/budget refusals; exact rollback; and real DFF
+accepted/rejected counts, width histogram, evaluator/budget counts, wall time,
+limiting reasons, and maximum mass/energy/vapor/soil/receipt residuals. Closure
+requires zero repeated-96 failures and a material reduction from retained ~1435
+accepted/~1500 rejected; the provisional 4x gate for both counts, accepted-time
+fraction at `>=900 s`, and stable-support maximum width remain performance
+qualification without weakening any event tick or ledger tolerance.
+
+### WGHL-FULL-001D v33 corrective failure inventory
+
+| ID | Current adverse condition | Required corrective seam | Expected-red proof |
+|---|---|---|---|
+| `V33-TRIGGER-001` | Full bitwise raw-authentic `A==A` is unreachable because continuous authentic owner fields change asymptotically across the retained reset. | Detect the exact root/interface, branch-entry, opposite-authentic, same-root/reset transition record under unchanged joins; compare raw authentic images only for required pure opposite vapor disposition and branch predicates. | Contract oracle accepts differing raw continuous coordinates and refuses changed support/source/event/topology/custody/receipt, reset coordinate, branch predicate, order, or vapor side. |
+| `V33-RESIDUAL-001` | The current draft constructs `residuals = mapped_coordinates - coordinates`, which is `F(x)-x`, rather than evaluating physical ledger equations. | Add sealed `CoveredPhaseConsistentResidualInputsV1`, `CoveredPhaseConsistentResidualEvaluationV1`, and `covered_phase_consistent_residual_evaluate_v1` carrying concrete `R_W/R_H/R_E/R_T` plus CN/LSE/receipt side constraints. | Source-bound pre-red reports the forbidden map-difference draft and missing true evaluator carriers/seam. |
+| `V33-BUDGET-001` | A local remaining counter and per-call `evaluations_used` do not prove one budget across Jacobian, rejections, fresh evaluation, and final replay. | Add one `CoveredPhysicalEvaluationBudgetV1` owned by the complete covered solve and charged before every physical evaluation without nested reset. | Source-bound pre-red reports the missing shared budget owner/charge seam. |
+| `V33-ADMISSION-001` | The current draft has no typed route for a freshly replayed physical coupled root to avoid re-entering the same Picard equality failure. | Add private `CoveredConvergenceAdmissionV1::CoupledAuthentic`, bypassing only Picard equality/convergence and retaining all residual, finalization, reseal, rollback, and publication guards. | Source-bound pre-red reports the missing admission enum/variant and finalization dispatch seam. |
 
 The same contract-first sequence applies to `WGHL-FULL-001F` under
 `SC-LANDSURFACEENERGY-001`: amend authority, author the no-update witness and

@@ -74,7 +74,7 @@ fn package_and_index_preserve_receiving_surface_and_production_boundaries() {
     assert!(package.contains("No assignment of terminal unallocated energy"));
     assert!(package.contains("No physical seasonal efficacy"));
     assert!(index.contains("v33 retains the exact 60-second floor"));
-    assert!(index.contains("fresh coupled-authentic replay/reseal"));
+    assert!(index.contains("fresh `CoupledAuthentic` admission"));
     assert!(
         index.contains("v140 owner amendment selects an exact 60-second adaptive Stage-3 floor")
     );
@@ -108,8 +108,8 @@ fn v32_contract_binds_pure_opposite_sign_vapor_active_set_authority() {
     ] {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
-    assert!(index.contains("v31/v32 production control"));
-    assert!(index.contains("exact raw-authentic same-support `A/B/A`"));
+    assert!(energy.contains("v31/v32 midpoint, vapor-root, and branch-entry authority"));
+    assert!(index.contains("active-set root/interface"));
     assert!(energy.contains("Affine interpolation of endpoint latent energy is forbidden"));
 }
 
@@ -176,12 +176,23 @@ fn v33_contract_binds_phase_consistent_coupled_authority() {
         "REF-SNOWENERGY-WGHL-V33",
         "INV-SNOWENERGY-057",
         "OBL-SNOWENERGY-C-025",
-        "exact finite `A/B/A` period-two phase/vapor active-set cycle",
+        "root/interface -> one-sided branch-entry -> opposite pure-vapor raw-authentic",
+        "not required to compare bitwise equal",
+        "CoveredPhaseConsistentResidualInputsV1",
+        "CoveredPhaseConsistentResidualEvaluationV1",
+        "covered_phase_consistent_residual_evaluate_v1",
         "x = (W_1,l, H_1,l, E_soil,1,n, T_soil,1,n)_affected",
         "(I_1,l, L_1,l, C_1,l, U_1,l) = Pi(W_1,l, H_1,l)",
+        "R_W,l = W_1,l - W_0,l - DeltaW_physical,l",
+        "R_H,l = H_1,l - H_0,l - Q_complete,l",
+        "R_E,n = E_soil,1,n - E_soil,0,n - DeltaE_CN+other,n",
+        "R_T,n = T_soil,1,n - T_soil_owner(E_soil,1,n, sealed soil state)",
         "Q_v,l = V_l * L_s,l",
+        "`F(x)-x` residuals are forbidden",
         "deterministic safeguarded semismooth Newton",
-        "single unchanged cumulative 96-evaluation budget",
+        "CoveredPhysicalEvaluationBudgetV1",
+        "CoveredConvergenceAdmissionV1::CoupledAuthentic",
+        "ordinary Picard current/candidate equality and convergence",
         "phase kink is internal complementarity",
         "Version-31/32 midpoint, vapor-interface, and branch-entry",
         "phase_consistent_coupled_authentic_final_evaluation_v1",
@@ -190,8 +201,68 @@ fn v33_contract_binds_phase_consistent_coupled_authority() {
     ] {
         assert!(energy.contains(required), "{ENERGY} missing {required}");
     }
-    assert!(index.contains("exact raw-authentic same-support `A/B/A` phase/vapor cycles"));
-    assert!(index.contains("reduced canonical `W/H` plus coupled-soil semismooth solve"));
+    assert!(index.contains("without raw-owner bit equality"));
+    assert!(index.contains("concrete `R_W/R_H/R_E/R_T`"));
+    assert!(index.contains("fresh `CoupledAuthentic` admission"));
+}
+
+#[derive(Clone)]
+struct V33TransitionResetOracle {
+    exact_joins: [u64; 4],
+    root_coordinates: [u64; 2],
+    reset_coordinates: [u64; 2],
+    root_branch_predicate: u8,
+    reset_branch_predicate: u8,
+    branch_entry_vapor_side: i8,
+    opposite_raw_vapor_side: i8,
+    first_raw_owner_coordinates: [u64; 2],
+    later_raw_owner_coordinates: [u64; 2],
+}
+
+fn v33_transition_reset_oracle(trace: &V33TransitionResetOracle) -> bool {
+    trace
+        .exact_joins
+        .iter()
+        .all(|join| *join == trace.exact_joins[0])
+        && trace.root_coordinates == trace.reset_coordinates
+        && trace.root_branch_predicate == trace.reset_branch_predicate
+        && matches!(
+            (trace.branch_entry_vapor_side, trace.opposite_raw_vapor_side),
+            (1, -1) | (-1, 1)
+        )
+}
+
+#[test]
+fn v33_transition_reset_does_not_require_raw_owner_bit_equality() {
+    let trace = V33TransitionResetOracle {
+        exact_joins: [0x55; 4],
+        root_coordinates: [0.0_f64.to_bits(), 45_778.454_f64.to_bits()],
+        reset_coordinates: [0.0_f64.to_bits(), 45_778.454_f64.to_bits()],
+        root_branch_predicate: 7,
+        reset_branch_predicate: 7,
+        branch_entry_vapor_side: 1,
+        opposite_raw_vapor_side: -1,
+        first_raw_owner_coordinates: [0.305_845_f64.to_bits(), 1_001.0_f64.to_bits()],
+        later_raw_owner_coordinates: [0.305_846_f64.to_bits(), 1_000.5_f64.to_bits()],
+    };
+    assert_ne!(
+        trace.first_raw_owner_coordinates,
+        trace.later_raw_owner_coordinates
+    );
+    assert!(v33_transition_reset_oracle(&trace));
+
+    let mut changed_join = trace.clone();
+    changed_join.exact_joins[3] ^= 1;
+    assert!(!v33_transition_reset_oracle(&changed_join));
+    let mut changed_reset = trace.clone();
+    changed_reset.reset_coordinates[1] ^= 1;
+    assert!(!v33_transition_reset_oracle(&changed_reset));
+    let mut changed_predicate = trace.clone();
+    changed_predicate.reset_branch_predicate ^= 1;
+    assert!(!v33_transition_reset_oracle(&changed_predicate));
+    let mut same_vapor_side = trace;
+    same_vapor_side.opposite_raw_vapor_side = 1;
+    assert!(!v33_transition_reset_oracle(&same_vapor_side));
 }
 
 fn canonical_phase_projection(total_water: f64, enthalpy: f64) -> (f64, f64, f64, f64) {
@@ -221,37 +292,51 @@ fn v33_known_phase_roots_use_the_unchanged_canonical_projection() {
 }
 
 #[test]
-fn v33_production_symbols_and_behavior_are_required() {
+fn v33_corrective_production_seams_are_required() {
     let fixed_point = read(FIXED_POINT);
     let open_snow = read(OPEN_SNOW);
     let open_snow_tests = read(OPEN_SNOW_TESTS);
     let coupled = fs::read_to_string(COUPLED_SOLVE).unwrap_or_default();
     let production = format!("{fixed_point}\n{open_snow}\n{coupled}");
-
-    for required in [
-        "PhaseConsistentCoupledSolveV1",
-        "phase_consistent_coupled_solve_v1",
-        "phase_consistent_coupled_authentic_final_evaluation_v1",
-        "phase_consistent_coupled_authentic_final_replay_reseal_v1",
-    ] {
-        assert!(
-            production.contains(required),
-            "production missing version-33 symbol {required}"
-        );
+    let mut defects = Vec::new();
+    if coupled.contains(".map(|(mapped, coordinate)| mapped - coordinate)") {
+        defects.push("forbidden coordinate-map F(x)-x residual draft".to_owned());
+    }
+    if fixed_point.contains("previous_previous_stage3 == candidate_stage3") {
+        defects.push("forbidden bitwise raw-authentic A==A trigger".to_owned());
     }
     for required in [
-        "v33_exact_60_120_authentic_period_two_invokes_reduced_solve",
-        "v33_known_root_cold_branch_closes",
-        "v33_known_root_mixed_phase_branch_closes",
-        "v33_known_root_fusion_boundary_closes",
-        "v33_root_is_distinct_from_v31_v32_affine_states",
-        "v33_coupled_authentic_final_replay_reseals",
-        "v33_reduced_solve_refuses_poisoned_cycles_and_rolls_back",
-        "v33_reduced_solve_honors_single_96_evaluation_budget",
+        "phase_consistent_coupled_active_set_transition_reset_v1",
+        "CoveredPhaseConsistentResidualInputsV1",
+        "CoveredPhaseConsistentResidualEvaluationV1",
+        "covered_phase_consistent_residual_evaluate_v1",
+        "r_w_kg_m2",
+        "r_h_j_m2",
+        "r_e_j_m2",
+        "r_t_k",
+        "CoveredPhysicalEvaluationBudgetV1",
+        "covered_physical_evaluation_budget_charge_v1",
+        "enum CoveredConvergenceAdmissionV1",
+        "CoveredConvergenceAdmissionV1::CoupledAuthentic",
     ] {
-        assert!(
-            open_snow_tests.contains(required),
-            "{OPEN_SNOW_TESTS} missing version-33 behavior obligation {required}"
-        );
+        if !production.contains(required) {
+            defects.push(format!("missing corrective production seam {required}"));
+        }
     }
+    for required in [
+        "v33_transition_reset_allows_asymptotically_changing_authentic_owner",
+        "v33_transition_reset_refuses_join_or_reset_mutation",
+        "v33_physical_residual_evaluator_reconstructs_r_w_r_h_r_e_r_t",
+        "v33_one_budget_spans_jacobian_rejections_fresh_and_replay",
+        "v33_coupled_authentic_bypasses_only_picard_equality",
+    ] {
+        if !open_snow_tests.contains(required) {
+            defects.push(format!("missing corrective behavior obligation {required}"));
+        }
+    }
+    assert!(
+        defects.is_empty(),
+        "current version-33 draft is nonconforming:\n{}",
+        defects.join("\n")
+    );
 }
