@@ -33,6 +33,10 @@ use serde::{Deserialize, Serialize};
 
 use super::{HillslopeCliError, SIMOUT_GUARD_ID};
 
+#[path = "snow_stage3_v11_production_seed_v2_bootstrap.rs"]
+mod snow_stage3_v11_production_seed_v2_bootstrap;
+use snow_stage3_v11_production_seed_v2_bootstrap::bootstrap_soil_thermal_v2;
+
 const SCHEMA: &str = "OPENWEPP_SNOW_STAGE3_V11_PRODUCTION_SEED_V1";
 const VERSION: u16 = 1;
 const SUPPORT_STATIC_SCHEMA: &str = "OPENWEPP_SNOW_STAGE3_V11_SUPPORT_STATIC_AUTHORITY_V1";
@@ -260,20 +264,34 @@ impl DirectSnowStage3V11ProductionSeedV1 {
             .lse_v2
             .restore(&artifact.lse_configuration)
             .map_err(nested)?;
-        let soil_owner_id =
-            ResourceOwnerId::try_new(scientific.soil_thermal.owner_id.clone()).map_err(nested)?;
-        let soil_configuration_sha256 = Sha256Digest::try_new(
+        let soil_configuration = &artifact.lse_configuration.soil_thermal_configuration;
+        let soil_thermal_v1 = scientific
+            .soil_thermal
+            .restore(
+                &soil_configuration.owner_id,
+                &soil_configuration.configuration_sha256,
+            )
+            .map_err(nested)?;
+        let receipt_chain_sha256 = Sha256Digest::try_new(
             scientific
                 .soil_thermal
-                .configuration_sha256
+                .restart_payload_sha256
                 .as_str()
                 .to_owned(),
         )
         .map_err(nested)?;
-        let soil_thermal = scientific
-            .soil_thermal
-            .restore(&soil_owner_id, &soil_configuration_sha256)
-            .map_err(nested)?;
+        let (prepared_soil_thermal, soil_thermal_seals) = bootstrap_soil_thermal_v2(
+            &soil_thermal_v1,
+            &artifact.lse_configuration,
+            frame.lanes.len(),
+            artifact
+                .support_static_authority
+                .interval_template
+                .lse_forcing
+                .transaction_id,
+            &provider_static_configuration.run_id,
+            receipt_chain_sha256,
+        )?;
         let biogeochemistry = scientific.biogeochemistry.restore().map_err(nested)?;
 
         if frame.identity.run_id.to_string() != provider_static_configuration.run_id
@@ -326,7 +344,7 @@ impl DirectSnowStage3V11ProductionSeedV1 {
         let layer_maps = frame
             .lanes
             .iter()
-            .zip(&soil_thermal.ofes)
+            .zip(&prepared_soil_thermal.beginning_owner().state.ofes)
             .enumerate()
             .map(|(lane_index, (lane, ofe))| RealHydrologyLaneLayerMap {
                 ofe_lane: RealHydrologyOfeLaneId {
@@ -340,7 +358,7 @@ impl DirectSnowStage3V11ProductionSeedV1 {
                     .collect(),
             })
             .collect::<Vec<_>>();
-        let real_consumer = DirectV10RealConsumerShadow::try_new(
+        let real_consumer = DirectV10RealConsumerShadow::try_new_v2(
             artifact.vegetation_configuration.clone(),
             vegetation_state,
             artifact.vegetation_owner_id.clone(),
@@ -348,7 +366,8 @@ impl DirectSnowStage3V11ProductionSeedV1 {
             lse_state,
             surface_configuration.clone(),
             layer_maps,
-            soil_thermal,
+            prepared_soil_thermal,
+            soil_thermal_seals,
             biogeochemistry,
             frame.clone(),
             0,
@@ -893,7 +912,10 @@ fn explicit_repository_test_seed_from_owner(
     let mut vegetation_state = authority.vegetation_state().clone();
     let mut lse_configuration = authority.restart_authority_lse_configuration().clone();
     let mut lse_state = authority.lse_state().clone();
-    let mut soil_thermal = authority.restart_authority_soil_thermal().clone();
+    let mut soil_thermal = authority
+        .restart_authority_soil_thermal()
+        .map_err(nested)?
+        .clone();
     let mut biogeochemistry = authority.restart_authority_biogeochemistry().clone();
     let mut layer_maps = fixture
         .runtime
@@ -1633,6 +1655,10 @@ fn nested(error: impl std::fmt::Display) -> HillslopeCliError {
 #[cfg(test)]
 #[path = "snow_stage3_v11_production_seed_inventory_tests.rs"]
 mod snow_stage3_v11_production_seed_inventory_tests;
+
+#[cfg(test)]
+#[path = "snow_stage3_v11_production_seed_v2_bootstrap_tests.rs"]
+mod snow_stage3_v11_production_seed_v2_bootstrap_tests;
 
 #[cfg(test)]
 mod tests {

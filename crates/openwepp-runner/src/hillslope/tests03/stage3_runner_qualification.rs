@@ -869,7 +869,8 @@ fn complete_season_adaptive_reappearance_routed_water_and_bgc_runner_fixture() {
     let beginning_soil = beginning_owner
         .runtime
         .shadow
-        .restart_authority_soil_thermal();
+        .restart_authority_soil_thermal()
+        .expect("qualification fixture retains the explicit V1 soil owner");
     assert!(
         snapshot
             .soil_thermal_ofes
