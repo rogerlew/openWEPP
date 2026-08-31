@@ -395,11 +395,15 @@ fn full_thermal() -> SoilThermalSnapshot {
 }
 
 fn hydrology(frame: &DirectRunFrame) -> RealHydrologyShadowAdapter {
+    hydrology_with_interval(frame, DT)
+}
+
+fn hydrology_with_interval(frame: &DirectRunFrame, interval_s: f64) -> RealHydrologyShadowAdapter {
     RealHydrologyShadowAdapter::try_from_day_start(
         frame,
         0,
         TransactionId(41),
-        DT,
+        interval_s,
         ResourceOwnerId::try_new("production-hydrology").expect("owner"),
         &[RealHydrologyLaneLayerMap {
             ofe_lane: RealHydrologyOfeLaneId {
@@ -555,6 +559,7 @@ pub struct EndpointFixture {
     pub vegetation_configuration: VegetationConfiguration,
     pub vegetation_state: V8CoupledOwnedState,
     pub surface_configuration: DirectSurfaceLiquidConfiguration,
+    pub frame: DirectRunFrame,
     pub hydrology: RealHydrologyShadowAdapter,
     pub lse_configuration: LandSurfaceEnergyConfiguration,
     pub lse_state: LandSurfaceEnergyState,
@@ -590,6 +595,7 @@ pub fn endpoint_fixture() -> EndpointFixture {
         vegetation_configuration,
         vegetation_state,
         surface_configuration,
+        frame,
         hydrology,
         lse_configuration,
         lse_state,
@@ -773,6 +779,7 @@ pub fn two_ofe_routed_endpoint_fixture() -> EndpointFixture {
         vegetation_configuration,
         vegetation_state,
         surface_configuration,
+        frame,
         hydrology,
         lse_configuration,
         lse_state,
@@ -781,6 +788,238 @@ pub fn two_ofe_routed_endpoint_fixture() -> EndpointFixture {
         receipt,
         biogeochemistry: biogeochemistry(),
     }
+}
+
+fn migrated_v2_soil_owner(
+    fixture: &EndpointFixture,
+    duration_ns: u128,
+    carry: openwepp_land_surface_energy::ExactDyadicEnthalpy,
+) -> openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2 {
+    let mut owner = openwepp_land_surface_energy::migrate_soil_thermal_v1_to_v2(
+        &fixture.thermal,
+        openwepp_land_surface_energy::SoilThermalV2MigrationIdentity {
+            model_version: fixture
+                .lse_configuration
+                .soil_thermal_configuration
+                .model_version
+                .clone(),
+            model_definition_sha256: fixture
+                .lse_configuration
+                .soil_thermal_configuration
+                .model_definition_sha256
+                .clone(),
+            run_id: "strict-v8-native-v2-provisional".to_owned(),
+            transaction_id: TransactionId(40),
+            support_start_ns: 0,
+            support_end_ns: duration_ns,
+            receipt_chain_sha256: digest('7'),
+        },
+    )
+    .expect("migrate native V2 beginning");
+    for ofe in &mut owner.state.ofes {
+        for layer in &mut ofe.ordered_layers {
+            layer.enthalpy_carry = carry.clone();
+        }
+    }
+    owner.state.reseal().expect("reseal V2 state");
+    owner.validate().expect("native V2 owner");
+    owner
+}
+
+fn physical_evaluation(
+    fixture: &EndpointFixture,
+    duration_ns: u128,
+    soil_thermal: &V8SoilThermalPhysicalBeginning,
+) -> Result<MultiTileRuntimeResult, ExecuteV8LseRuntimeShadowError> {
+    let duration_s = duration_ns as f64 / 1_000_000_000.0;
+    let hydrology = hydrology_with_interval(&fixture.frame, duration_s);
+    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hydrology);
+    let mut forcing = fixture.forcing.clone();
+    forcing.interval_s = duration_s;
+    forcing.forcing_sha256 = forcing.canonical_sha256().expect("forcing digest");
+    let receipt = V8CanopyForcingReceipt::try_new(
+        fixture
+            .vegetation_configuration
+            .configuration_sha256
+            .clone(),
+        fixture.vegetation_state.state_sha256.clone(),
+        fixture.lse_configuration.configuration_sha256.clone(),
+        forcing.forcing_sha256.clone(),
+        unified_beginning_hydrology_snapshot_sha256(&adapter, &fixture.surface_configuration)
+            .expect("hydrology snapshot"),
+        soil_thermal
+            .snapshot_sha256()
+            .expect("soil snapshot digest"),
+        TransactionId(41),
+        snow_forcing(&hydrology),
+    )
+    .expect("canopy receipt");
+    execute_v8_lse_runtime_shadow_v11_physical_with_carriers(
+        &fixture.vegetation_configuration,
+        &fixture.vegetation_state,
+        &ResourceOwnerId::try_new("vegetation-v8").expect("owner"),
+        &receipt,
+        &fixture.lse_configuration,
+        &fixture.lse_state,
+        &forcing,
+        &adapter,
+        &fixture.surface_configuration,
+        0,
+        0,
+        &[DirectOfeWb14Parameters {
+            ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+            effective_conductivity_m_s: 1e-6,
+            matric_potential_m: 0.1,
+            infiltration_storage_capacity_m: 0.04,
+        }],
+        soil_thermal,
+        &FullNitrogen(Cell::new(0)),
+        &fixture.biogeochemistry,
+        openwepp_land_surface_energy::CoveredColumnAuthority::HistoricalV8,
+        None,
+        duration_s.to_bits(),
+        None,
+        true,
+        None,
+        None,
+    )
+}
+
+#[test]
+fn native_v2_zero_and_nonzero_carry_preserve_constitutive_image_and_owner_bytes() {
+    for duration_ns in [60_000_000_000_u128, 1_800_000_000_000_u128] {
+        let fixture = endpoint_fixture();
+        let v1 =
+            V8SoilThermalPhysicalBeginning::try_from_v1(&fixture.thermal).expect("V1 beginning");
+        let v1_physical =
+            physical_evaluation(&fixture, duration_ns, &v1).expect("V1 physical evaluation");
+        for carry in [
+            openwepp_land_surface_energy::ExactDyadicEnthalpy::zero(),
+            openwepp_land_surface_energy::ExactDyadicEnthalpy::try_new(1, "1", -100)
+                .expect("nonzero canonical carry"),
+        ] {
+            let accepted = migrated_v2_soil_owner(&fixture, duration_ns, carry.clone());
+            let prepared = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
+                &accepted,
+                TransactionId(41),
+                0,
+                duration_ns,
+            )
+            .expect("prepare V2 support");
+            let before = serde_json::to_vec(prepared.beginning_owner()).expect("owner bytes");
+            let v2 = V8SoilThermalPhysicalBeginning::try_from_v2(&prepared).expect("V2 beginning");
+            let v2_physical =
+                physical_evaluation(&fixture, duration_ns, &v2).expect("V2 physical evaluation");
+            assert_eq!(
+                serde_json::to_vec(prepared.beginning_owner()).expect("owner bytes after"),
+                before,
+                "provisional evaluation must not install or mutate the V2 owner"
+            );
+            assert!(
+                !String::from_utf8(before)
+                    .expect("owner JSON")
+                    .contains("diagnostic")
+            );
+            assert_eq!(
+                v2_physical.hydrology_candidate().ending_lse_tile_states(),
+                v1_physical.hydrology_candidate().ending_lse_tile_states(),
+                "unchanged constitutive high/T output at {duration_ns} ns"
+            );
+            let v1_candidates = v1_physical
+                .hydrology_candidate()
+                .pre_ingress_soil_thermal_candidates();
+            let v2_candidates = v2_physical
+                .hydrology_candidate()
+                .pre_ingress_soil_thermal_candidates();
+            assert_eq!(v2_candidates.len(), v1_candidates.len());
+            for (v2_tile, v1_tile) in v2_candidates.iter().zip(v1_candidates) {
+                assert_eq!(v2_tile.owner_id, v1_tile.owner_id);
+                assert_eq!(v2_tile.ofe_id, v1_tile.ofe_id);
+                assert_eq!(v2_tile.tile_id, v1_tile.tile_id);
+                for (v2_layer, v1_layer) in v2_tile.layers.iter().zip(&v1_tile.layers) {
+                    assert_eq!(v2_layer.layer_id, v1_layer.layer_id);
+                    assert_eq!(
+                        v2_layer.beginning_enthalpy_j_m2_ofe_ground.to_bits(),
+                        v1_layer.beginning_enthalpy_j_m2_ofe_ground.to_bits()
+                    );
+                    assert_eq!(v2_layer.beginning_enthalpy_carry, carry);
+                    assert_eq!(
+                        v2_layer.ending_temperature_k.to_bits(),
+                        v1_layer.ending_temperature_k.to_bits()
+                    );
+                    assert_eq!(
+                        v2_layer.ground_heat_credit_j_m2_ofe_ground.to_bits(),
+                        v1_layer.ground_heat_credit_j_m2_ofe_ground.to_bits()
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn native_v2_provisional_refuses_identity_order_and_carry_poison_without_install() {
+    let fixture = endpoint_fixture();
+    let duration_ns = 60_000_000_000_u128;
+
+    let mut identity = migrated_v2_soil_owner(
+        &fixture,
+        duration_ns,
+        openwepp_land_surface_energy::ExactDyadicEnthalpy::zero(),
+    );
+    identity.state.owner_id = ResourceOwnerId::try_new("poisoned-soil-owner").expect("owner");
+    identity.state.reseal().expect("reseal identity poison");
+    let prepared = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
+        &identity,
+        TransactionId(41),
+        0,
+        duration_ns,
+    )
+    .expect("prepare identity poison");
+    let beginning =
+        V8SoilThermalPhysicalBeginning::try_from_v2(&prepared).expect("typed identity poison");
+    assert!(physical_evaluation(&fixture, duration_ns, &beginning).is_err());
+
+    let mut order = migrated_v2_soil_owner(
+        &fixture,
+        duration_ns,
+        openwepp_land_surface_energy::ExactDyadicEnthalpy::zero(),
+    );
+    order.state.ofes[0].ordered_layers.swap(0, 1);
+    order.state.reseal().expect("reseal order poison");
+    let prepared = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
+        &order,
+        TransactionId(41),
+        0,
+        duration_ns,
+    )
+    .expect("prepare order poison");
+    let beginning =
+        V8SoilThermalPhysicalBeginning::try_from_v2(&prepared).expect("typed order poison");
+    assert!(physical_evaluation(&fixture, duration_ns, &beginning).is_err());
+
+    let mut carry = migrated_v2_soil_owner(
+        &fixture,
+        duration_ns,
+        openwepp_land_surface_energy::ExactDyadicEnthalpy::zero(),
+    );
+    carry.state.ofes[0].ordered_layers[0].enthalpy_carry =
+        openwepp_land_surface_energy::ExactDyadicEnthalpy {
+            sign: 0,
+            coefficient_hex: "1".to_owned(),
+            exponent2: 0,
+        };
+    carry.state.reseal().expect("reseal carry poison bytes");
+    assert!(
+        openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
+            &carry,
+            TransactionId(41),
+            0,
+            duration_ns,
+        )
+        .is_err(),
+        "noncanonical carry must be refused before physical evaluation"
+    );
 }
 
 const fn failure_phases() -> [V8EndpointFailureInjection; 19] {

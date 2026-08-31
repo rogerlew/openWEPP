@@ -11,14 +11,14 @@ use openwepp_land_surface_energy::UnderCanopyGeometry;
 use openwepp_land_surface_energy::{
     BandDirectionalFluxes, BiochemicalConstants, ComponentId, CoveredColumnInputs,
     CoveredColumnShortwaveInputs, CoveredOccupancyInputs, CoveredOccupancyShortwaveInputs,
-    LandSurfaceEnergyConfiguration, LandSurfaceEnergyError, LandSurfaceEnergyState,
-    LandSurfaceForcing, LeafBiochemicalInputs, OfeId, OpenNeutralGeometry, OpenSurfaceProblem,
-    RequestingComponent, RootHydraulicLayer, RootRuntimeIdentity, RuntimeTileIdentity,
-    SoilInterfaceLayer, SoilThermalNodeOperands, SoilThermalOfeSnapshot, SoilThermalSnapshot,
-    SourceId, Stage3SnowCoveredLowerBoundary, Stage3SnowOpticalBoundaryReceiptInputs,
-    Stage3SnowOpticalBoundaryReceiptV1, StandGroundWaterAmountBasis, SurfaceClassKind,
-    SurfaceConfiguration, SurfaceHeatStorageMode, SurfaceStorageBranch, TileConfiguration,
-    TileState, TurbulenceConfiguration, WaterSourceType,
+    ExactDyadicEnthalpy, LandSurfaceEnergyConfiguration, LandSurfaceEnergyError,
+    LandSurfaceEnergyState, LandSurfaceForcing, LeafBiochemicalInputs, OfeId, OpenNeutralGeometry,
+    OpenSurfaceProblem, PreparedSoilThermalSupportV2, RequestingComponent, RootHydraulicLayer,
+    RootRuntimeIdentity, RuntimeTileIdentity, SoilInterfaceLayer, SoilThermalNodeOperands,
+    SoilThermalSnapshot, SourceId, Stage3SnowCoveredLowerBoundary,
+    Stage3SnowOpticalBoundaryReceiptInputs, Stage3SnowOpticalBoundaryReceiptV1,
+    StandGroundWaterAmountBasis, SurfaceClassKind, SurfaceConfiguration, SurfaceHeatStorageMode,
+    SurfaceStorageBranch, TileConfiguration, TileState, TurbulenceConfiguration, WaterSourceType,
 };
 use openwepp_vegetation::carbon_nitrogen::{Tissue, atkin_rd25, update_t10};
 use openwepp_vegetation::energy::{
@@ -75,6 +75,147 @@ pub enum V8InputProjectionError {
     RootReceiptDigest,
     #[error("root-zone scalar domain failure")]
     RootDomain,
+}
+
+/// Authenticated, immutable soil-thermal beginning used by one provisional
+/// physical evaluation. The V2 arm is a native snapshot of the prepared
+/// support and is never projected through the frozen V1 owner schema.
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) enum V8SoilThermalPhysicalBeginning {
+    V1(SoilThermalSnapshot),
+    V2(Box<PreparedSoilThermalSupportV2>),
+}
+
+impl V8SoilThermalPhysicalBeginning {
+    pub(crate) fn try_from_v1(
+        beginning: &SoilThermalSnapshot,
+    ) -> Result<Self, V8InputProjectionError> {
+        beginning.validate()?;
+        Ok(Self::V1(beginning.clone()))
+    }
+
+    pub(crate) fn try_from_v2(
+        prepared: &PreparedSoilThermalSupportV2,
+    ) -> Result<Self, V8InputProjectionError> {
+        prepared
+            .beginning_owner()
+            .validate()
+            .map_err(|_| V8InputProjectionError::Identity("prepared V2 soil beginning"))?;
+        Ok(Self::V2(Box::new(prepared.clone())))
+    }
+
+    pub(crate) fn validate(&self) -> Result<(), V8InputProjectionError> {
+        match self {
+            Self::V1(beginning) => beginning.validate().map_err(Into::into),
+            Self::V2(beginning) => beginning
+                .beginning_owner()
+                .state
+                .validate()
+                .map_err(|_| V8InputProjectionError::Identity("native V2 soil beginning")),
+        }
+    }
+
+    pub(crate) fn owner_id(&self) -> &ResourceOwnerId {
+        match self {
+            Self::V1(beginning) => &beginning.owner_id,
+            Self::V2(beginning) => &beginning.beginning_owner().state.owner_id,
+        }
+    }
+
+    pub(crate) fn configuration_sha256(&self) -> &Sha256Digest {
+        match self {
+            Self::V1(beginning) => &beginning.configuration_sha256,
+            Self::V2(beginning) => &beginning.beginning_owner().state.configuration_sha256,
+        }
+    }
+
+    pub(crate) fn state_sha256(&self) -> &Sha256Digest {
+        match self {
+            Self::V1(beginning) => &beginning.state_sha256,
+            Self::V2(beginning) => &beginning.beginning_owner().state.state_sha256,
+        }
+    }
+
+    pub(crate) fn snapshot_sha256(&self) -> Result<Sha256Digest, V8InputProjectionError> {
+        match self {
+            Self::V1(beginning) => Ok(beginning.snapshot_sha256.clone()),
+            Self::V2(beginning) => beginning
+                .beginning_owner()
+                .snapshot()
+                .map(|snapshot| snapshot.snapshot_sha256)
+                .map_err(|_| V8InputProjectionError::Identity("native V2 soil snapshot digest")),
+        }
+    }
+
+    pub(crate) fn finalization_beginning(
+        &self,
+    ) -> openwepp_land_surface_energy::SoilThermalFinalizationBeginning<'_> {
+        match self {
+            Self::V1(beginning) => {
+                openwepp_land_surface_energy::SoilThermalFinalizationBeginning::V1(beginning)
+            }
+            Self::V2(beginning) => {
+                openwepp_land_surface_energy::SoilThermalFinalizationBeginning::V2(
+                    beginning.physical_read_view(),
+                )
+            }
+        }
+    }
+
+    pub(crate) fn ordered_ofes(&self) -> Vec<V8ProjectedSoilThermalOfe> {
+        match self {
+            Self::V1(beginning) => beginning
+                .ofes
+                .iter()
+                .map(|ofe| V8ProjectedSoilThermalOfe {
+                    ofe_id: ofe.ofe_id.clone(),
+                    ordered_layers: ofe
+                        .ordered_layers
+                        .iter()
+                        .map(|layer| V8ProjectedSoilThermalLayer {
+                            layer_id: layer.layer_id.clone(),
+                            temperature_k: layer.temperature_k,
+                            enthalpy_hi_j_m2_ofe_ground: layer.enthalpy_j_m2_ofe_ground,
+                            enthalpy_carry: ExactDyadicEnthalpy::zero(),
+                        })
+                        .collect(),
+                })
+                .collect(),
+            Self::V2(beginning) => beginning
+                .beginning_owner()
+                .state
+                .ofes
+                .iter()
+                .map(|ofe| V8ProjectedSoilThermalOfe {
+                    ofe_id: ofe.ofe_id.clone(),
+                    ordered_layers: ofe
+                        .ordered_layers
+                        .iter()
+                        .map(|layer| V8ProjectedSoilThermalLayer {
+                            layer_id: layer.layer_id.clone(),
+                            temperature_k: layer.temperature_k,
+                            enthalpy_hi_j_m2_ofe_ground: layer.enthalpy_hi_j_m2_ofe_ground,
+                            enthalpy_carry: layer.enthalpy_carry.clone(),
+                        })
+                        .collect(),
+                })
+                .collect(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct V8ProjectedSoilThermalOfe {
+    pub(crate) ofe_id: OfeId,
+    pub(crate) ordered_layers: Vec<V8ProjectedSoilThermalLayer>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct V8ProjectedSoilThermalLayer {
+    pub(crate) layer_id: openwepp_kernel_contract::SoilLayerId,
+    pub(crate) temperature_k: f64,
+    pub(crate) enthalpy_hi_j_m2_ofe_ground: f64,
+    pub(crate) enthalpy_carry: ExactDyadicEnthalpy,
 }
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -440,7 +581,7 @@ pub(crate) struct V8ProjectedGroundInput {
     pub(crate) soil_interface_layers: Vec<SoilInterfaceLayer>,
     pub(crate) state: TileState,
     pub(crate) surface_liquid: DirectSurfaceLiquidStateRecord,
-    pub(crate) soil_thermal: SoilThermalOfeSnapshot,
+    pub(crate) soil_thermal: V8ProjectedSoilThermalOfe,
     pub(crate) top_hydrology: RealHydrologyLayerFact,
 }
 
@@ -473,6 +614,7 @@ pub(crate) struct ValidatedV8RuntimeInputProjection {
     pub(crate) lse_forcing_sha256: Sha256Digest,
     pub(crate) hydrology_snapshot_sha256: Sha256Digest,
     pub(crate) soil_thermal_snapshot_sha256: Sha256Digest,
+    pub(crate) soil_thermal_beginning: V8SoilThermalPhysicalBeginning,
     pub(crate) transaction_id: TransactionId,
     pub(crate) tiles: Vec<V8ProjectedTileRuntimeInput>,
 }
@@ -499,7 +641,7 @@ pub(crate) struct V8SolverReadyTileInput {
         BTreeMap<openwepp_land_surface_energy::GroundWaterKey, RealHydrologySourceKey>,
     pub(crate) beginning_trial: Vec<f64>,
     pub(crate) vegetation_bindings: Vec<V8ComponentOccupancyBinding>,
-    pub(crate) soil_thermal: SoilThermalOfeSnapshot,
+    pub(crate) soil_thermal: V8SoilThermalPhysicalBeginning,
 }
 
 impl ValidatedV8RuntimeInputProjection {
@@ -524,7 +666,8 @@ impl ValidatedV8RuntimeInputProjection {
         self.tiles
             .iter()
             .map(|tile| {
-                let mut ready = tile.solver_ready(vegetation_owner_id)?;
+                let mut ready =
+                    tile.solver_ready(vegetation_owner_id, &self.soil_thermal_beginning)?;
                 if authority == openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered
                     && matches!(ready.physics, V8SolverReadyTilePhysics::Open(_))
                 {
@@ -579,6 +722,7 @@ impl V8ProjectedTileRuntimeInput {
     fn solver_ready(
         &self,
         vegetation_owner_id: &ResourceOwnerId,
+        soil_thermal_beginning: &V8SoilThermalPhysicalBeginning,
     ) -> Result<V8SolverReadyTileInput, V8InputProjectionError> {
         self.validate_preflight()?;
         let ground = self.ground_problem()?;
@@ -590,7 +734,7 @@ impl V8ProjectedTileRuntimeInput {
                 root_identities: Vec::new(),
                 soil_sources: BTreeMap::new(),
                 vegetation_bindings: Vec::new(),
-                soil_thermal: self.ground.soil_thermal.clone(),
+                soil_thermal: soil_thermal_beginning.clone(),
             });
         }
         let (column, roots, sources, bindings, trial) =
@@ -602,7 +746,7 @@ impl V8ProjectedTileRuntimeInput {
             soil_sources: sources,
             beginning_trial: trial,
             vegetation_bindings: bindings,
-            soil_thermal: self.ground.soil_thermal.clone(),
+            soil_thermal: soil_thermal_beginning.clone(),
         })
     }
 
@@ -1240,7 +1384,7 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
     lse_forcing: &LandSurfaceForcing,
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
-    soil_thermal: &SoilThermalSnapshot,
+    soil_thermal: &V8SoilThermalPhysicalBeginning,
     day_index: usize,
     interval_index: u8,
     authenticated_duration_s_bits: Option<u64>,
@@ -1269,7 +1413,15 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
     vegetation_state
         .validate(vegetation_configuration)
         .map_err(|_| V8InputProjectionError::Identity("invalid V8 vegetation state"))?;
-    lse_configuration.validate()?;
+    match lse_configuration.model_version.as_str() {
+        openwepp_land_surface_energy::MODEL_VERSION => lse_configuration.validate()?,
+        openwepp_land_surface_energy::V2_MODEL_VERSION => lse_configuration.validate_v2()?,
+        _ => {
+            return Err(V8InputProjectionError::Identity(
+                "unsupported LSE configuration version",
+            ));
+        }
+    }
     lse_state.validate(lse_configuration)?;
     let transaction_id = TransactionId(
         vegetation_state
@@ -1302,6 +1454,24 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
         lse_forcing,
         authenticated_duration_s_bits,
     )?;
+    if let V8SoilThermalPhysicalBeginning::V2(prepared) = soil_thermal {
+        let owner = prepared.beginning_owner();
+        let support_duration_ns = owner
+            .support_end_ns
+            .checked_sub(owner.support_start_ns)
+            .ok_or(V8InputProjectionError::Identity(
+                "native V2 soil support bounds",
+            ))?;
+        let forcing_duration = std::time::Duration::try_from_secs_f64(lse_forcing.interval_s)
+            .map_err(|_| V8InputProjectionError::Identity("native V2 forcing duration"))?;
+        if owner.transaction_id != transaction_id
+            || forcing_duration.as_nanos() != support_duration_ns
+        {
+            return Err(V8InputProjectionError::Identity(
+                "native V2 soil support join",
+            ));
+        }
+    }
     let surface_state = soil_adapter
         .owner
         .beginning_frame()
@@ -1314,10 +1484,10 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
         .validate(surface_configuration)
         .map_err(|_| V8InputProjectionError::Identity("invalid surface-liquid beginning owner"))?;
 
+    let soil_thermal_ofes = soil_thermal.ordered_ofes();
     let mut tiles = Vec::new();
     for ofe in &lse_configuration.ofes {
-        let thermal = soil_thermal
-            .ofes
+        let thermal = soil_thermal_ofes
             .iter()
             .find(|value| value.ofe_id == ofe.ofe_id)
             .ok_or(V8InputProjectionError::Topology("missing soil-thermal OFE"))?;
@@ -1413,7 +1583,7 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
                     configuration_sha256: lse_configuration.configuration_sha256.clone(),
                     beginning_lse_state_sha256: lse_state.state_sha256.clone(),
                     beginning_hydrology_snapshot_sha256: hydrology_snapshot_sha256.clone(),
-                    beginning_soil_thermal_state_sha256: soil_thermal.state_sha256.clone(),
+                    beginning_soil_thermal_state_sha256: soil_thermal.state_sha256().clone(),
                     beginning_vegetation_state_sha256: Sha256Digest::try_new(
                         vegetation_state.state_sha256.clone(),
                     )
@@ -1476,7 +1646,8 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
         lse_state_sha256: lse_state.state_sha256.clone(),
         lse_forcing_sha256: lse_forcing.forcing_sha256.clone(),
         hydrology_snapshot_sha256,
-        soil_thermal_snapshot_sha256: soil_thermal.snapshot_sha256.clone(),
+        soil_thermal_snapshot_sha256: soil_thermal.snapshot_sha256()?,
+        soil_thermal_beginning: soil_thermal.clone(),
         transaction_id,
         tiles,
     })
@@ -1489,7 +1660,7 @@ fn validate_cross_owner_lineage(
     lse_configuration: &LandSurfaceEnergyConfiguration,
     lse_forcing: &LandSurfaceForcing,
     soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
-    soil_thermal: &SoilThermalSnapshot,
+    soil_thermal: &V8SoilThermalPhysicalBeginning,
     transaction_id: TransactionId,
     canopy_forcing: &V8CanopyForcingReceipt,
     hydrology_snapshot_sha256: &Sha256Digest,
@@ -1517,7 +1688,7 @@ fn validate_cross_owner_lineage(
         lse_configuration
             .soil_thermal_configuration
             .configuration_sha256
-            == soil_thermal.configuration_sha256,
+            == *soil_thermal.configuration_sha256(),
         "cross-owner soil-thermal configuration",
     )?;
     cross_owner(
@@ -1554,7 +1725,7 @@ fn validate_cross_owner_lineage(
         "cross-owner canopy hydrology snapshot",
     )?;
     cross_owner(
-        canopy_forcing.soil_thermal_snapshot_sha256 == soil_thermal.snapshot_sha256,
+        canopy_forcing.soil_thermal_snapshot_sha256 == soil_thermal.snapshot_sha256()?,
         "cross-owner canopy soil-thermal snapshot",
     )?;
     cross_owner(
@@ -2012,7 +2183,7 @@ mod tests {
     #[allow(clippy::too_many_lines)]
     fn litter_conductivity_uses_beginning_litter_water_not_top_soil_conductivity() {
         use openwepp_kernel_contract::SoilLayerId;
-        use openwepp_land_surface_energy::{SoilThermalLayerSnapshot, SurfaceClass, SurfaceId};
+        use openwepp_land_surface_energy::{SurfaceClass, SurfaceId};
 
         let beginning_litter_water = 2.0_f64;
         let litter_thickness = 0.04_f64;
@@ -2120,12 +2291,13 @@ mod tests {
                     liquid_kg_m2_tile: beginning_litter_water,
                     last_accepted_transaction_id: None,
                 },
-                soil_thermal: SoilThermalOfeSnapshot {
+                soil_thermal: V8ProjectedSoilThermalOfe {
                     ofe_id,
-                    ordered_layers: vec![SoilThermalLayerSnapshot {
+                    ordered_layers: vec![V8ProjectedSoilThermalLayer {
                         layer_id: layer_id.clone(),
                         temperature_k: 293.0,
-                        enthalpy_j_m2_ofe_ground: 1.0,
+                        enthalpy_hi_j_m2_ofe_ground: 1.0,
+                        enthalpy_carry: ExactDyadicEnthalpy::zero(),
                     }],
                 },
                 top_hydrology: RealHydrologyLayerFact {
@@ -2154,6 +2326,22 @@ mod tests {
             lse_forcing_sha256: digest(),
             hydrology_snapshot_sha256: digest(),
             soil_thermal_snapshot_sha256: digest(),
+            soil_thermal_beginning: V8SoilThermalPhysicalBeginning::V1(SoilThermalSnapshot {
+                owner_id: owner("soil-thermal"),
+                configuration_sha256: digest(),
+                state_sha256: digest(),
+                snapshot_sha256: digest(),
+                last_accepted_transaction_id: None,
+                ofes: vec![openwepp_land_surface_energy::SoilThermalOfeSnapshot {
+                    ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
+                    ordered_layers: vec![openwepp_land_surface_energy::SoilThermalLayerSnapshot {
+                        layer_id: openwepp_kernel_contract::SoilLayerId::try_new("soil-1")
+                            .expect("layer"),
+                        temperature_k: 293.0,
+                        enthalpy_j_m2_ofe_ground: 1.0,
+                    }],
+                }],
+            }),
             transaction_id: TransactionId(1),
             tiles: vec![tile],
         };

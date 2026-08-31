@@ -37,7 +37,8 @@ use openwepp_land_surface_energy::{
     solve_open_potential_phase, solve_open_surface,
 };
 pub(crate) use openwepp_land_surface_energy::{
-    finalize_covered_phase, solve_covered_potential_phase,
+    finalize_covered_phase, finalize_covered_phase_with_soil_thermal_beginning,
+    finalize_open_phase_with_soil_thermal_beginning, solve_covered_potential_phase,
 };
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -120,13 +121,17 @@ use receiver_validation::{
 #[cfg(all(test, not(feature = "restart-authority-evidence")))]
 pub(crate) use strict_v8_endpoint::endpoint_rollback_tests::{EndpointFixture, endpoint_fixture};
 pub(crate) use strict_v8_endpoint::execute_v8_lse_runtime_shadow_internal;
+#[allow(unused_imports)]
 pub(crate) use strict_v8_endpoint::execute_v8_lse_runtime_shadow_v11;
 pub(crate) use strict_v8_endpoint::execute_v8_lse_runtime_shadow_v11_physical_with_carriers;
+#[allow(unused_imports)]
 pub(crate) use strict_v8_endpoint::execute_v8_lse_runtime_shadow_v11_with_carriers;
+pub(crate) use strict_v8_endpoint::execute_v8_lse_runtime_shadow_v11_with_native_soil_beginning;
 pub use strict_v8_endpoint::{ExecuteV8LseRuntimeShadowError, execute_v8_lse_runtime_shadow};
 pub use v8_input_projection::{V8CanopyForcingReceipt, V8InputProjectionError};
 pub(crate) use v8_input_projection::{
-    V10RootZoneLayerReceipt, V10RootZoneReceiptKey, V10RootZoneReceiptSet,
+    V8SoilThermalPhysicalBeginning, V10RootZoneLayerReceipt, V10RootZoneReceiptKey,
+    V10RootZoneReceiptSet,
 };
 pub use v8_projection::V8ProjectionError;
 pub use v8_rollback::{

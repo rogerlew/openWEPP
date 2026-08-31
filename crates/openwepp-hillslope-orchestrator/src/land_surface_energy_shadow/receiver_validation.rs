@@ -2094,11 +2094,17 @@ mod tests {
         let thermal_tiles = vec![SoilThermalTileCandidate {
             owner_id: thermal_owner.clone(),
             beginning_state_sha256: digest('4'),
+            beginning_identity:
+                openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V1 {
+                    configuration_sha256: digest('5'),
+                    last_accepted_transaction_id: None,
+                },
             ofe_id,
             tile_id,
             layers: vec![SoilThermalLayerCandidate {
                 layer_id: SoilLayerId::try_new("layer-owner-hash").expect("layer"),
                 beginning_enthalpy_j_m2_ofe_ground: 1.0,
+                beginning_enthalpy_carry: openwepp_land_surface_energy::ExactDyadicEnthalpy::zero(),
                 ground_heat_credit_j_m2_ofe_ground: 0.0,
                 infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
                 ending_enthalpy_j_m2_ofe_ground: 1.0,

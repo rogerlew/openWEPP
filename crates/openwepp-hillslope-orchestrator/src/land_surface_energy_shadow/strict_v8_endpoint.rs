@@ -33,7 +33,8 @@ use super::multi_tile_runtime::{
     execute_multi_tile_runtime, execute_multi_tile_runtime_provisional,
 };
 use super::v8_input_projection::{
-    V8SolverReadyTilePhysics, project_v8_runtime_inputs_with_carriers,
+    V8SoilThermalPhysicalBeginning, V8SolverReadyTilePhysics,
+    project_v8_runtime_inputs_with_carriers,
 };
 use super::v8_projection::{project_multi_tile_v8_passes, project_multi_tile_v8_passes_v11};
 use super::{
@@ -201,6 +202,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
         &[],
         &[],
     )?;
+    let soil_thermal_beginning = V8SoilThermalPhysicalBeginning::V1(soil_thermal.clone());
     let result = execute_v8_lse_runtime_shadow_phases(
         vegetation_configuration,
         vegetation_beginning,
@@ -214,7 +216,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
         day_index,
         interval_index,
         wb14_parameters,
-        soil_thermal,
+        &soil_thermal_beginning,
         nitrogen,
         biogeochemistry_beginning,
         injection,
@@ -281,6 +283,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_internal(
 }
 
 /// Execute the unchanged strict endpoint over one authenticated V11 slab.
+#[allow(dead_code)]
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn execute_v8_lse_runtime_shadow_v11(
     vegetation_configuration: &VegetationConfiguration,
@@ -341,6 +344,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11(
     )
 }
 
+#[allow(dead_code)]
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn execute_v8_lse_runtime_shadow_v11_with_carriers(
     vegetation_configuration: &VegetationConfiguration,
@@ -356,6 +360,76 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11_with_carriers(
     interval_index: u8,
     wb14_parameters: &[DirectOfeWb14Parameters],
     soil_thermal: &SoilThermalSnapshot,
+    nitrogen: &dyn NitrogenArbiter,
+    biogeochemistry_beginning: &BiogeochemistryState,
+    authority: openwepp_land_surface_energy::CoveredColumnAuthority,
+    covered_lower_boundaries: Option<
+        &BTreeMap<
+            (
+                openwepp_land_surface_energy::OfeId,
+                openwepp_kernel_contract::TileId,
+            ),
+            Stage3SnowCoveredLowerBoundary,
+        >,
+    >,
+    duration_s_bits: u64,
+    validate_ofe_energy: bool,
+    covered_destinations: Option<
+        &BTreeSet<(
+            openwepp_land_surface_energy::OfeId,
+            openwepp_kernel_contract::TileId,
+        )>,
+    >,
+    finalize_wb14_parent_interval: bool,
+    wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
+    wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
+) -> Result<UncommittedCoveredV8OwnerEnvelope, ExecuteV8LseRuntimeShadowError> {
+    let soil_thermal_beginning = V8SoilThermalPhysicalBeginning::V1(soil_thermal.clone());
+    execute_v8_lse_runtime_shadow_v11_with_native_soil_beginning(
+        vegetation_configuration,
+        vegetation_beginning,
+        vegetation_owner_id,
+        canopy_forcing,
+        lse_configuration,
+        lse_beginning,
+        lse_forcing,
+        soil_adapter,
+        surface_configuration,
+        day_index,
+        interval_index,
+        wb14_parameters,
+        &soil_thermal_beginning,
+        nitrogen,
+        biogeochemistry_beginning,
+        authority,
+        covered_lower_boundaries,
+        duration_s_bits,
+        validate_ofe_energy,
+        covered_destinations,
+        finalize_wb14_parent_interval,
+        wb14_parent_working_state,
+        wb14_coupled_child_binding,
+    )
+}
+
+/// Private successor overload for candidate-only V11 evaluation. It accepts
+/// a native prepared V2 beginning but still performs no soil receipt, seal,
+/// install, or owner mutation.
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+pub(crate) fn execute_v8_lse_runtime_shadow_v11_with_native_soil_beginning(
+    vegetation_configuration: &VegetationConfiguration,
+    vegetation_beginning: &V8CoupledOwnedState,
+    vegetation_owner_id: &ResourceOwnerId,
+    canopy_forcing: &V8CanopyForcingReceipt,
+    lse_configuration: &LandSurfaceEnergyConfiguration,
+    lse_beginning: &LandSurfaceEnergyState,
+    lse_forcing: &LandSurfaceForcing,
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    day_index: usize,
+    interval_index: u8,
+    wb14_parameters: &[DirectOfeWb14Parameters],
+    soil_thermal: &V8SoilThermalPhysicalBeginning,
     nitrogen: &dyn NitrogenArbiter,
     biogeochemistry_beginning: &BiogeochemistryState,
     authority: openwepp_land_surface_energy::CoveredColumnAuthority,
@@ -426,7 +500,7 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11_physical_with_carriers(
     day_index: usize,
     interval_index: u8,
     wb14_parameters: &[DirectOfeWb14Parameters],
-    soil_thermal: &SoilThermalSnapshot,
+    soil_thermal: &V8SoilThermalPhysicalBeginning,
     nitrogen: &dyn NitrogenArbiter,
     biogeochemistry_beginning: &BiogeochemistryState,
     authority: openwepp_land_surface_energy::CoveredColumnAuthority,
@@ -520,7 +594,7 @@ fn execute_v8_lse_runtime_shadow_phases(
     day_index: usize,
     interval_index: u8,
     wb14_parameters: &[DirectOfeWb14Parameters],
-    soil_thermal: &SoilThermalSnapshot,
+    soil_thermal: &V8SoilThermalPhysicalBeginning,
     nitrogen: &dyn NitrogenArbiter,
     biogeochemistry_beginning: &BiogeochemistryState,
     injection: Option<V8EndpointFailureInjection>,
@@ -653,14 +727,14 @@ fn execute_v8_lse_runtime_shadow_phases(
                     beginning,
                     potential_initial_trial: Some(tile.beginning_trial.clone()),
                     final_initial_trial: Some(tile.beginning_trial),
-                    soil_thermal: soil_thermal.clone(),
+                    soil_thermal: tile.soil_thermal,
                 })
             }
             V8SolverReadyTilePhysics::Stage3OpenSnow(beginning_state) => {
                 StrictProjectedTileProblem::Stage3OpenSnow(StrictProjectedStage3OpenSnowTile {
                     identity: tile.identity,
                     beginning_state,
-                    soil_thermal: soil_thermal.clone(),
+                    soil_thermal: tile.soil_thermal,
                 })
             }
             V8SolverReadyTilePhysics::Covered(beginning) => {
@@ -670,7 +744,7 @@ fn execute_v8_lse_runtime_shadow_phases(
                     roots: tile.root_identities,
                     potential_initial_trial: tile.beginning_trial.clone(),
                     final_initial_trial: tile.beginning_trial,
-                    soil_thermal: soil_thermal.clone(),
+                    soil_thermal: tile.soil_thermal,
                 })
             }
         };
@@ -1038,12 +1112,12 @@ fn receiver_expectations(
     configuration: &LandSurfaceEnergyConfiguration,
     beginning: &LandSurfaceEnergyState,
     hydrology_snapshot_sha256: &openwepp_land_surface_energy::Sha256Digest,
-    soil_thermal: &SoilThermalSnapshot,
+    soil_thermal: &V8SoilThermalPhysicalBeginning,
 ) -> Result<UnifiedReceiverExpectations, LandSurfaceEnergyShadowError> {
+    let thermal_ofes = soil_thermal.ordered_ofes();
     let mut ordered_layers = Vec::new();
     for ofe in &configuration.ofes {
-        let thermal = soil_thermal
-            .ofes
+        let thermal = thermal_ofes
             .iter()
             .find(|value| value.ofe_id == ofe.ofe_id)
             .ok_or(LandSurfaceEnergyShadowError::Identity(
@@ -1067,7 +1141,7 @@ fn receiver_expectations(
         configuration.hydrology_configuration.owner_id.clone(),
         hydrology_snapshot_sha256.clone(),
         configuration.soil_thermal_configuration.owner_id.clone(),
-        soil_thermal.state_sha256.clone(),
+        soil_thermal.state_sha256().clone(),
         ordered_layers,
     )
 }

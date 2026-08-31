@@ -12,18 +12,20 @@ use openwepp_land_surface_energy::{
     AcceptedOpenSurface, ClosureValue, CoveredColumnInputs, CoveredLowerBoundaryEnergyOperands,
     CoveredPotentialPhase, CoveredTileEnergyOperandSet, FinalCoveredTileCandidate,
     FinalTileCandidate, GroundWaterKey, OfeId, OpenPotentialPhase, OpenSurfaceProblem,
-    PotentialWaterRequestBatch, RootRuntimeIdentity, RuntimeTileIdentity, SoilThermalSnapshot,
+    PotentialWaterRequestBatch, RootRuntimeIdentity, RuntimeTileIdentity,
     StandGroundWaterAmountBasis, TileEnergyOperandSet, TileState, WaterAmount, WaterAuthorization,
     WaterProtocol, WeightedTileEnergyOperands, canonical_tile_fraction_sum_closes,
-    finalize_covered_phase, finalize_open_phase, solve_covered_potential_phase,
-    solve_open_potential_phase, validate_weighted_ofe_energy,
+    solve_covered_potential_phase, solve_open_potential_phase, validate_weighted_ofe_energy,
 };
 
+use super::v8_input_projection::V8SoilThermalPhysicalBeginning;
 use super::{
     CoveredIngressSchedule, DirectSurfaceLiquidConfiguration,
     LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError, OwnerKind,
     RealHydrologySourceKey, SoilThermalTileCandidate, UnifiedLseFinalization,
     UnifiedRealHydrologyCandidate, UnifiedReceiverExpectations,
+    finalize_covered_phase_with_soil_thermal_beginning,
+    finalize_open_phase_with_soil_thermal_beginning,
 };
 
 /// Strictly projected open-tile problem and its numerical trials.
@@ -33,7 +35,7 @@ pub(crate) struct StrictProjectedOpenTile {
     pub(crate) beginning: OpenSurfaceProblem,
     pub(crate) potential_initial_trial: Option<Vec<f64>>,
     pub(crate) final_initial_trial: Option<Vec<f64>>,
-    pub(crate) soil_thermal: SoilThermalSnapshot,
+    pub(crate) soil_thermal: V8SoilThermalPhysicalBeginning,
 }
 
 /// Strictly projected covered-tile problem and its numerical trials.
@@ -44,7 +46,7 @@ pub(crate) struct StrictProjectedCoveredTile {
     pub(crate) roots: Vec<RootRuntimeIdentity>,
     pub(crate) potential_initial_trial: Vec<f64>,
     pub(crate) final_initial_trial: Vec<f64>,
-    pub(crate) soil_thermal: SoilThermalSnapshot,
+    pub(crate) soil_thermal: V8SoilThermalPhysicalBeginning,
 }
 
 /// Topology-preserving member whose physical snow surface is owned entirely by
@@ -53,7 +55,7 @@ pub(crate) struct StrictProjectedCoveredTile {
 pub(crate) struct StrictProjectedStage3OpenSnowTile {
     pub(crate) identity: RuntimeTileIdentity,
     pub(crate) beginning_state: TileState,
-    pub(crate) soil_thermal: SoilThermalSnapshot,
+    pub(crate) soil_thermal: V8SoilThermalPhysicalBeginning,
 }
 
 /// One member of the exact configured heterogeneous tile set.
@@ -107,18 +109,18 @@ pub(crate) enum PotentialTilePhase {
     Open {
         phase: OpenPotentialPhase,
         final_initial_trial: Option<Vec<f64>>,
-        soil_thermal: SoilThermalSnapshot,
+        soil_thermal: V8SoilThermalPhysicalBeginning,
     },
     Stage3OpenSnow {
         identity: RuntimeTileIdentity,
         beginning_state: TileState,
-        soil_thermal: SoilThermalSnapshot,
+        soil_thermal: V8SoilThermalPhysicalBeginning,
         request_batch: PotentialWaterRequestBatch,
     },
     Covered {
         phase: CoveredPotentialPhase,
         final_initial_trial: Vec<f64>,
-        soil_thermal: SoilThermalSnapshot,
+        soil_thermal: V8SoilThermalPhysicalBeginning,
     },
 }
 
@@ -596,7 +598,9 @@ fn validate_projected_soil_order(
         StrictProjectedTileProblem::Stage3OpenSnow(value) => &value.soil_thermal,
         StrictProjectedTileProblem::Covered(value) => &value.soil_thermal,
     };
-    snapshot.validate()?;
+    snapshot
+        .validate()
+        .map_err(|_| LandSurfaceEnergyShadowError::Identity("projected soil beginning"))?;
     let binding = surface_configuration
         .ofe_bindings
         .iter()
@@ -605,13 +609,13 @@ fn validate_projected_soil_order(
             "missing configured soil ordering",
         ))?;
     let projected_ofes = snapshot
-        .ofes
-        .iter()
+        .ordered_ofes()
+        .into_iter()
         .map(|ofe| ofe.ofe_id.clone())
         .collect::<Vec<_>>();
     let layers = snapshot
-        .ofes
-        .iter()
+        .ordered_ofes()
+        .into_iter()
         .find(|ofe| ofe.ofe_id == identity.ofe_id)
         .map(|ofe| {
             ofe.ordered_layers
@@ -619,8 +623,8 @@ fn validate_projected_soil_order(
                 .map(|layer| layer.layer_id.clone())
                 .collect::<Vec<_>>()
         });
-    if snapshot.owner_id != identity.soil_thermal_owner_id
-        || snapshot.state_sha256 != identity.beginning_soil_thermal_state_sha256
+    if snapshot.owner_id() != &identity.soil_thermal_owner_id
+        || snapshot.state_sha256() != &identity.beginning_soil_thermal_state_sha256
         || projected_ofes != surface_configuration.ofe_topology
         || layers.as_ref() != Some(&binding.ordered_soil_layer_ids)
     {
@@ -772,12 +776,12 @@ fn finalize_all_tiles(
                         ));
                     }
                     Ok::<_, LandSurfaceEnergyShadowError>(FinalizedRuntimeTile::Open(
-                        finalize_open_phase(
+                        finalize_open_phase_with_soil_thermal_beginning(
                             phase,
                             &phase.identity.beginning_lse_state_sha256,
                             &subset.remove(0),
                             final_initial_trial.clone(),
-                            soil_thermal,
+                            soil_thermal.finalization_beginning(),
                         )?,
                     ))
                 }
@@ -794,34 +798,11 @@ fn finalize_all_tiles(
                             "Stage-3 open-snow pass-through authorization",
                         ));
                     }
-                    let ofe = soil_thermal
-                        .ofes
-                        .iter()
-                        .find(|row| row.ofe_id == identity.ofe_id)
-                        .ok_or(LandSurfaceEnergyShadowError::Identity(
-                            "Stage-3 open-snow soil-thermal OFE",
-                        ))?;
-                    let thermal = SoilThermalTileCandidate {
-                        owner_id: soil_thermal.owner_id.clone(),
-                        beginning_state_sha256: soil_thermal.state_sha256.clone(),
-                        ofe_id: identity.ofe_id.clone(),
-                        tile_id: identity.tile_id.clone(),
-                        layers: ofe
-                            .ordered_layers
-                            .iter()
-                            .map(
-                                |layer| openwepp_land_surface_energy::SoilThermalLayerCandidate {
-                                    layer_id: layer.layer_id.clone(),
-                                    beginning_enthalpy_j_m2_ofe_ground: layer
-                                        .enthalpy_j_m2_ofe_ground,
-                                    ground_heat_credit_j_m2_ofe_ground: 0.0,
-                                    infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
-                                    ending_enthalpy_j_m2_ofe_ground: layer.enthalpy_j_m2_ofe_ground,
-                                    ending_temperature_k: layer.temperature_k,
-                                },
-                            )
-                            .collect(),
-                    };
+                    let thermal =
+                        openwepp_land_surface_energy::build_soil_thermal_passthrough_candidate(
+                            identity,
+                            soil_thermal.finalization_beginning(),
+                        )?;
                     let water_protocol = WaterProtocol {
                         transaction_id: identity.transaction_id,
                         hydrology_owner_id: identity.hydrology_owner_id.clone(),
@@ -847,12 +828,12 @@ fn finalize_all_tiles(
                     final_initial_trial,
                     soil_thermal,
                 } => Ok::<_, LandSurfaceEnergyShadowError>(FinalizedRuntimeTile::Covered(
-                    finalize_covered_phase(
+                    finalize_covered_phase_with_soil_thermal_beginning(
                         phase,
                         &phase.identity().beginning_lse_state_sha256,
                         subset,
                         final_initial_trial.clone(),
-                        soil_thermal,
+                        soil_thermal.finalization_beginning(),
                     )?,
                 )),
             }?;

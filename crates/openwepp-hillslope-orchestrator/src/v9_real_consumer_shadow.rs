@@ -62,7 +62,8 @@ use crate::land_surface_energy_shadow::{
     V10RootZoneLayerReceipt, V10RootZoneReceiptKey, V10RootZoneReceiptSet,
     execute_v8_lse_runtime_shadow_internal,
     execute_v8_lse_runtime_shadow_v11_physical_with_carriers,
-    execute_v8_lse_runtime_shadow_v11_with_carriers, unified_beginning_hydrology_snapshot_sha256,
+    execute_v8_lse_runtime_shadow_v11_with_native_soil_beginning,
+    unified_beginning_hydrology_snapshot_sha256,
 };
 use crate::runtime_inputs::{
     DirectGsiDailyReceiptV1, DirectGsiOwnerConfigurationV1, PreparedSnowFreeGsiDayV1,
@@ -2333,7 +2334,25 @@ impl DirectV9RealConsumerShadow {
             &self.layer_maps,
         )?;
         let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hydrology);
-        let soil_thermal = self.soil_thermal.v1()?;
+        let soil_thermal = if physical_only || v11_duration_s_bits.is_some() {
+            self.soil_thermal.read_view()
+        } else {
+            DirectSoilThermalReadView::V1(self.soil_thermal.v1()?)
+        };
+        soil_thermal.validate()?;
+        let soil_thermal_snapshot_sha256 = match soil_thermal {
+            DirectSoilThermalReadView::V1(beginning) => beginning.snapshot_sha256.clone(),
+            DirectSoilThermalReadView::V2(_) => {
+                self.soil_thermal
+                    .v2()?
+                    .owner()
+                    .snapshot()
+                    .map_err(|_| {
+                        DirectV9RealConsumerError::OwnerClosure("V2 soil snapshot identity")
+                    })?
+                    .snapshot_sha256
+            }
+        };
         let hydrology_snapshot = unified_beginning_hydrology_snapshot_sha256(
             &soil_adapter,
             &self.surface_configuration,
@@ -2361,7 +2380,7 @@ impl DirectV9RealConsumerShadow {
                 self.lse_configuration.configuration_sha256.clone(),
                 forcing_sha256,
                 hydrology_snapshot,
-                soil_thermal.snapshot_sha256.clone(),
+                soil_thermal_snapshot_sha256,
                 transaction_id,
                 vegetation_forcing,
                 receipts,
@@ -2372,7 +2391,7 @@ impl DirectV9RealConsumerShadow {
                 self.lse_configuration.configuration_sha256.clone(),
                 forcing_sha256,
                 hydrology_snapshot,
-                soil_thermal.snapshot_sha256.clone(),
+                soil_thermal_snapshot_sha256,
                 transaction_id,
                 vegetation_forcing,
             )?,
@@ -2429,7 +2448,7 @@ impl DirectV9RealConsumerShadow {
         v8_configuration: &VegetationConfiguration,
         v8_beginning: &V8CoupledOwnedState,
         hydrology: &RealHydrologyShadowAdapter,
-        soil_thermal: &SoilThermalSnapshot,
+        soil_thermal: DirectSoilThermalReadView<'_>,
         canopy_forcing: &V8CanopyForcingReceipt,
     ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
         let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
@@ -2440,6 +2459,26 @@ impl DirectV9RealConsumerShadow {
             "physical-only covered endpoint destination set",
         ))?;
         let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(hydrology);
+        let soil_thermal = match soil_thermal {
+            DirectSoilThermalReadView::V1(beginning) => {
+                crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning::try_from_v1(
+                    beginning,
+                )?
+            }
+            DirectSoilThermalReadView::V2(_) => {
+                let binding = wb14_coupled_child_binding.ok_or(
+                    DirectV9RealConsumerError::Identity("native V2 physical support binding"),
+                )?;
+                let prepared = self.soil_thermal.prepare_v2_support(
+                    input.lse_forcing.transaction_id,
+                    binding.child_support_start_ns,
+                    binding.child_support_end_ns,
+                )?;
+                crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning::try_from_v2(
+                    &prepared,
+                )?
+            }
+        };
         let physical = execute_v8_lse_runtime_shadow_v11_physical_with_carriers(
             v8_configuration,
             v8_beginning,
@@ -2453,7 +2492,7 @@ impl DirectV9RealConsumerShadow {
             day_index,
             interval_index,
             &input.wb14_parameters,
-            soil_thermal,
+            &soil_thermal,
             &nitrogen,
             &self.biogeochemistry,
             openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered,
@@ -2487,13 +2526,33 @@ impl DirectV9RealConsumerShadow {
         v8_configuration: &VegetationConfiguration,
         v8_beginning: &V8CoupledOwnedState,
         hydrology: &RealHydrologyShadowAdapter,
-        soil_thermal: &SoilThermalSnapshot,
+        soil_thermal: DirectSoilThermalReadView<'_>,
         canopy_forcing: &V8CanopyForcingReceipt,
     ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
         let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
         let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(hydrology);
-        match v11_duration_s_bits {
-            Some(bits) => match covered_destinations {
+        if let Some(bits) = v11_duration_s_bits {
+            let native_soil_thermal = match soil_thermal {
+                DirectSoilThermalReadView::V1(beginning) => {
+                    crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning::try_from_v1(
+                        beginning,
+                    )?
+                }
+                DirectSoilThermalReadView::V2(_) => {
+                    let binding = wb14_coupled_child_binding.ok_or(
+                        DirectV9RealConsumerError::Identity("native V2 V11 support binding"),
+                    )?;
+                    let prepared = self.soil_thermal.prepare_v2_support(
+                        input.lse_forcing.transaction_id,
+                        binding.child_support_start_ns,
+                        binding.child_support_end_ns,
+                    )?;
+                    crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning::try_from_v2(
+                        &prepared,
+                    )?
+                }
+            };
+            match covered_destinations {
                 Some(destinations) => self.construct_canopy_soil_complete_v11_with_carriers(
                     day_index,
                     interval_index,
@@ -2507,7 +2566,7 @@ impl DirectV9RealConsumerShadow {
                     v8_configuration,
                     v8_beginning,
                     &soil_adapter,
-                    soil_thermal,
+                    &native_soil_thermal,
                     canopy_forcing,
                     &nitrogen,
                 ),
@@ -2523,12 +2582,21 @@ impl DirectV9RealConsumerShadow {
                     v8_configuration,
                     v8_beginning,
                     &soil_adapter,
-                    soil_thermal,
+                    &native_soil_thermal,
                     canopy_forcing,
                     &nitrogen,
                 ),
-            },
-            None => self.construct_canopy_soil_complete_v8(
+            }
+        } else {
+            let soil_thermal = match soil_thermal {
+                DirectSoilThermalReadView::V1(beginning) => beginning,
+                DirectSoilThermalReadView::V2(_) => {
+                    return Err(DirectV9RealConsumerError::Unsupported(
+                        "historical V8 endpoint on V2 soil resident",
+                    ));
+                }
+            };
+            self.construct_canopy_soil_complete_v8(
                 day_index,
                 interval_index,
                 input,
@@ -2538,7 +2606,7 @@ impl DirectV9RealConsumerShadow {
                 soil_thermal,
                 canopy_forcing,
                 &nitrogen,
-            ),
+            )
         }
     }
 
@@ -2560,11 +2628,11 @@ impl DirectV9RealConsumerShadow {
         v8_configuration: &VegetationConfiguration,
         v8_beginning: &V8CoupledOwnedState,
         soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
-        soil_thermal: &SoilThermalSnapshot,
+        soil_thermal: &crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning,
         canopy_forcing: &V8CanopyForcingReceipt,
         nitrogen: &BiogeochemistryNitrogenArbiter,
     ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
-        let envelope = execute_v8_lse_runtime_shadow_v11_with_carriers(
+        let envelope = execute_v8_lse_runtime_shadow_v11_with_native_soil_beginning(
             v8_configuration,
             v8_beginning,
             &self.vegetation_owner_id,
@@ -2611,11 +2679,11 @@ impl DirectV9RealConsumerShadow {
         v8_configuration: &VegetationConfiguration,
         v8_beginning: &V8CoupledOwnedState,
         soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
-        soil_thermal: &SoilThermalSnapshot,
+        soil_thermal: &crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning,
         canopy_forcing: &V8CanopyForcingReceipt,
         nitrogen: &BiogeochemistryNitrogenArbiter,
     ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
-        let envelope = crate::land_surface_energy_shadow::execute_v8_lse_runtime_shadow_v11(
+        let envelope = execute_v8_lse_runtime_shadow_v11_with_native_soil_beginning(
             v8_configuration,
             v8_beginning,
             &self.vegetation_owner_id,
@@ -2635,6 +2703,7 @@ impl DirectV9RealConsumerShadow {
             covered_lower_boundaries,
             duration_s_bits,
             !provisional_v11,
+            None,
             finalize_wb14_parent_interval,
             self.wb14_parent_working_state.as_ref(),
             wb14_coupled_child_binding,
@@ -3013,7 +3082,7 @@ fn validate_repository_day_projection(
 fn project_live_vegetation_forcing(
     provider: &SnowFreeForcing,
     hydrology: &RealHydrologyShadowAdapter,
-    soil_thermal: &SoilThermalSnapshot,
+    soil_thermal: DirectSoilThermalReadView<'_>,
     root_zone: Option<&DirectRootZoneHydraulicConfiguration>,
     surface_configuration: &DirectSurfaceLiquidConfiguration,
     lse_configuration: &LandSurfaceEnergyConfiguration,
@@ -3041,13 +3110,13 @@ fn project_live_vegetation_forcing(
             .map(|(_, fact)| fact.liquid_supply_kg_m2)
             .collect::<Vec<_>>();
         let temperature_values = soil_thermal
-            .ofes
-            .iter()
+            .ordered_ofes()
+            .into_iter()
             .filter_map(|ofe| {
-                ofe.ordered_layers
-                    .iter()
-                    .find(|candidate| candidate.layer_id == layer.layer_id)
-                    .map(|candidate| candidate.temperature_k)
+                ofe.ordered_layers()
+                    .into_iter()
+                    .find(|candidate| candidate.layer_id() == &layer.layer_id)
+                    .map(DirectSoilThermalLayerReadView::temperature_k)
             })
             .collect::<Vec<_>>();
         let water = if root_zone.is_some() {

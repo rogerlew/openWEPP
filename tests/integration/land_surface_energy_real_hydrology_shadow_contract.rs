@@ -429,11 +429,18 @@ fn unified_finalization(water_protocol: WaterProtocol) -> UnifiedLseFinalization
         vec![SoilThermalTileCandidate {
             owner_id: ResourceOwnerId::try_new("soil-thermal").expect("owner"),
             beginning_state_sha256: soil_digest,
+            beginning_identity:
+                openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V1 {
+                    configuration_sha256: Sha256Digest::try_new("5".repeat(64))
+                        .expect("configuration digest"),
+                    last_accepted_transaction_id: None,
+                },
             ofe_id: OfeId::try_new("ofe-1").expect("OFE"),
             tile_id: TileId::try_new("open").expect("tile"),
             layers: vec![SoilThermalLayerCandidate {
                 layer_id: SoilLayerId::try_new("thermal-1").expect("layer"),
                 beginning_enthalpy_j_m2_ofe_ground: 1.0e6,
+                beginning_enthalpy_carry: openwepp_land_surface_energy::ExactDyadicEnthalpy::zero(),
                 ground_heat_credit_j_m2_ofe_ground: 0.0,
                 infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
                 ending_enthalpy_j_m2_ofe_ground: 1.0e6,

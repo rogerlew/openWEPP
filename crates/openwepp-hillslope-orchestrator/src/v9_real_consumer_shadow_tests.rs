@@ -1302,10 +1302,7 @@ mod tests {
             Some(TransactionId(40))
         );
         assert_eq!(
-            committed
-                .inner
-                .soil_thermal
-                .last_accepted_transaction_id(),
+            committed.inner.soil_thermal.last_accepted_transaction_id(),
             Some(TransactionId(40))
         );
         assert_eq!(committed.inner.biogeochemistry.last_transaction_id, 40);
@@ -1906,10 +1903,7 @@ mod tests {
         let canonical = project_live_vegetation_forcing(
             provider,
             &fixture.hydrology,
-            shadow
-                .inner
-                .soil_thermal()
-                .expect("V1 soil resident"),
+            DirectSoilThermalReadView::V1(shadow.inner.soil_thermal().expect("V1 soil resident")),
             shadow.inner.root_zone_hydraulic_configuration.as_ref(),
             &shadow.inner.surface_configuration,
             &shadow.inner.lse_configuration,
@@ -1935,10 +1929,7 @@ mod tests {
         let projected = project_live_vegetation_forcing(
             &poisoned,
             &fixture.hydrology,
-            shadow
-                .inner
-                .soil_thermal()
-                .expect("V1 soil resident"),
+            DirectSoilThermalReadView::V1(shadow.inner.soil_thermal().expect("V1 soil resident")),
             shadow.inner.root_zone_hydraulic_configuration.as_ref(),
             &shadow.inner.surface_configuration,
             &shadow.inner.lse_configuration,
@@ -2275,6 +2266,16 @@ mod tests {
                     SoilThermalTileCandidate {
                         owner_id: fixture.thermal.owner_id.clone(),
                         beginning_state_sha256: fixture.thermal.state_sha256.clone(),
+                        beginning_identity:
+                            openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V1 {
+                                configuration_sha256: fixture
+                                    .thermal
+                                    .configuration_sha256
+                                    .clone(),
+                                last_accepted_transaction_id: fixture
+                                    .thermal
+                                    .last_accepted_transaction_id,
+                            },
                         ofe_id: ofe.ofe_id.clone(),
                         tile_id: tile.tile_id.clone(),
                         layers: beginning
@@ -2291,6 +2292,8 @@ mod tests {
                                     layer_id: layer.layer_id.clone(),
                                     beginning_enthalpy_j_m2_ofe_ground: layer
                                         .enthalpy_j_m2_ofe_ground,
+                                    beginning_enthalpy_carry:
+                                        openwepp_land_surface_energy::ExactDyadicEnthalpy::zero(),
                                     ground_heat_credit_j_m2_ofe_ground: credit,
                                     infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
                                     ending_enthalpy_j_m2_ofe_ground: layer.enthalpy_j_m2_ofe_ground
