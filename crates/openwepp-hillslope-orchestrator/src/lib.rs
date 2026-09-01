@@ -10,6 +10,7 @@ mod snow_owner_v4;
 pub mod snow_stage3_open_boundary;
 pub mod snow_stage3_terminal_handoff;
 pub mod snow_stage3_v11_attachment;
+pub mod snow_stage3_v11_snow_enthalpy_carry;
 pub mod v11_vegetation_consumer;
 pub mod v9_real_consumer_shadow;
 pub mod vegetation_diagnostic;
@@ -180,6 +181,14 @@ pub use snow_stage3_v11_attachment::{
     select_common_earliest_actual_terminal_group_v1,
 };
 
+pub use snow_stage3_v11_snow_enthalpy_carry::{
+    AuthenticatedCoveredSnowMaterialOwnerV1, CoveredSnowEnthalpyCarryErrorV1,
+    CoveredSnowEnthalpyCarryReceiptInputsV1, CoveredSnowEnthalpyCarryReceiptV1,
+    CoveredSnowEnthalpyCarryStateV1, CoveredSnowEnthalpyEnergyOperandKindV1,
+    CoveredSnowEnthalpyEnergyOperandV1, covered_snow_base_material_owner_sha256,
+    covered_snow_enthalpy_carry_definition_sha256, covered_snow_material_candidate_sha256,
+};
+
 pub use direct_runtime::{
     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
     DirectOpenLiquidIngressParcel, DirectSurfaceLiquidClosureOperands,
@@ -210,14 +219,25 @@ pub use direct_runtime::{
     DirectSurfaceLiquidPhase, DirectSurfaceLiquidResourceCandidate,
     DirectSurfaceLiquidRollbackHashes, DirectSurfaceLiquidStateRecord, DirectSurfaceLiquidStoreKey,
     DirectZeroDurationSnowLiquidDispositionV1, DirectZeroDurationSnowLiquidReceiptV1,
-    SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V3_SCHEMA,
-    SurfaceLiquidCompleteOwnerProjectionIdentityV3, SurfaceLiquidCompleteOwnerProjectionV3,
+    LSE_SURFACE_ENTHALPY_ENERGY_CREDIT_RECEIPT_V1_TAG,
+    LSE_SURFACE_ENTHALPY_EXACT_CARRY_V1_DEFINITION_SHA256,
+    LSE_SURFACE_ENTHALPY_OWNER_V1_SCHEMA_SHA256, LSE_SURFACE_ENTHALPY_OWNER_V1_TAG,
+    LseSurfaceEnthalpyAcceptedCandidateV1, LseSurfaceEnthalpyAcceptedEnergyOperandV1,
+    LseSurfaceEnthalpyEnergyCreditReceiptV1, LseSurfaceEnthalpyEnergyOperandKindV1,
+    LseSurfaceEnthalpyErrorV1, LseSurfaceEnthalpyOwnerCheckpointV1,
+    LseSurfaceEnthalpyOwnerEnvelopeV1, LseSurfaceEnthalpyOwnerRestartV1,
+    LseSurfaceEnthalpyStateRecordV1, SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V3_SCHEMA,
+    SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V4_SCHEMA,
+    SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V4_SCHEMA_SHA256,
+    SurfaceLiquidCompleteOwnerProjectionIdentityV3, SurfaceLiquidCompleteOwnerProjectionIdentityV4,
+    SurfaceLiquidCompleteOwnerProjectionV3, SurfaceLiquidCompleteOwnerProjectionV4,
     SurfaceLiquidConfigurationRecordV2, SurfaceLiquidConfigurationV2, SurfaceLiquidOwnedStateV2,
     SurfaceLiquidOwnerClosureRecordV2, SurfaceLiquidOwnerEnvelopeV2,
     SurfaceLiquidOwnerModelDefinitionV2, SurfaceLiquidOwnerRestartV2,
     SurfaceLiquidOwnerSourceIdentityV2, SurfaceLiquidStateRecordV2,
     apply_surface_liquid_resource_phase, authorize_surface_liquid_withdrawals, migrate_v1_to_v2,
-    validate_surface_liquid_owner_mass_closure_v2, zero_duration_snow_liquid_receipt_set_sha256,
+    refuse_lse_surface_enthalpy_v1_downgrade, validate_surface_liquid_owner_mass_closure_v2,
+    zero_duration_snow_liquid_receipt_set_sha256,
 };
 #[cfg(test)]
 pub use direct_runtime::{

@@ -42,7 +42,10 @@ use crate::{
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RuntimeTileIdentity {
+    /// Outer LSE/forcing/canopy/hydrology transaction authority.
     pub transaction_id: TransactionId,
+    /// Authenticated soil-child transaction authority for native V2 finalization.
+    pub soil_thermal_transaction_id: TransactionId,
     pub lse_owner_id: ResourceOwnerId,
     pub hydrology_owner_id: ResourceOwnerId,
     pub soil_thermal_owner_id: ResourceOwnerId,
@@ -68,7 +71,7 @@ pub struct RuntimeTileIdentity {
 
 impl RuntimeTileIdentity {
     fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
-        if self.transaction_id.0 == 0 {
+        if self.transaction_id.0 == 0 || self.soil_thermal_transaction_id.0 == 0 {
             return Err(LandSurfaceEnergyError::StateLineage(
                 "zero runtime transaction",
             ));
@@ -936,10 +939,18 @@ fn validate_soil_thermal_finalization_beginning(
     {
         return Err(LandSurfaceEnergyError::OwnerEnvelope(mismatch));
     }
-    if let SoilThermalFinalizationBeginning::V2(view) = soil
-        && view.owner().transaction_id != identity.transaction_id
-    {
-        return Err(LandSurfaceEnergyError::OwnerEnvelope(mismatch));
+    match soil {
+        SoilThermalFinalizationBeginning::V2(view)
+            if view.owner().transaction_id != identity.soil_thermal_transaction_id =>
+        {
+            return Err(LandSurfaceEnergyError::OwnerEnvelope(mismatch));
+        }
+        SoilThermalFinalizationBeginning::V2Unpublished(beginning)
+            if beginning.transaction_id() != identity.soil_thermal_transaction_id =>
+        {
+            return Err(LandSurfaceEnergyError::OwnerEnvelope(mismatch));
+        }
+        _ => {}
     }
     Ok(())
 }
@@ -2894,6 +2905,9 @@ pub fn build_lse_ending_state(
 pub fn specific_liquid_enthalpy(temperature_k: f64) -> Result<f64, LandSurfaceEnergyError> {
     Ok(liquid_enthalpy_j_kg(temperature_k))
 }
+
+#[path = "transaction_v3_bridge.rs"]
+pub(crate) mod transaction_v3_bridge;
 
 #[cfg(test)]
 include!("transaction_tests.rs");

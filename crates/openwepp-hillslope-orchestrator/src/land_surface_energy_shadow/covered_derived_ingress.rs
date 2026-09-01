@@ -445,7 +445,7 @@ where
         requests: request_batch.requests.clone(),
         authorizations,
         soil,
-        surface,
+        surface: Some(surface),
     };
     profile_record("unified authorization", authorization_started);
     let (finalized, ingress) = finalize_fixed_caps(&arbitration.authorizations)?;

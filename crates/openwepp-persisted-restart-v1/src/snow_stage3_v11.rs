@@ -8,9 +8,10 @@ use openwepp_hillslope_orchestrator::{
     DirectSnowStage3PersistentState,
     runtime_inputs::SnowFreeHalfHourProviderCursor,
     snow_stage3_v11_attachment::{
-        DirectSnowStage3V11CommittedState, DirectSnowStage3V11InterruptionPostureV2,
-        DirectSnowStage3V11ParentCandidate, DirectSnowStage3V11ShadowAttachment,
-        DirectSnowStage3V11StaticContext, restart_authority_decode_in_progress_metadata_v2,
+        DirectSnowStage3V11CommittedState, DirectSnowStage3V11InProgressExecutionV2,
+        DirectSnowStage3V11InterruptionPostureV2, DirectSnowStage3V11ParentCandidate,
+        DirectSnowStage3V11ShadowAttachment, DirectSnowStage3V11StaticContext,
+        restart_authority_decode_in_progress_metadata_v2,
         restart_authority_decode_receipt_state_v2,
         restart_authority_encode_in_progress_metadata_base_v3,
         restart_authority_encode_in_progress_metadata_v2,
@@ -23,6 +24,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest as _, Sha256};
 use thiserror::Error;
 
+use crate::projection::project_complete_owner_state_v1_for_exact_parent;
 use crate::{
     AcceptedIntervalCount, CompleteCommittedOwnerStateV1, DirectV10CheckpointPhaseV1,
     DirectV10RealConsumerCheckpointV1, DirectV10RestartHost, ExpectedRestartStaticContext, HexU128,
@@ -178,6 +180,22 @@ struct StaticContextIdentity<'a> {
     vegetation_configuration_sha256: &'a str,
     surface_liquid_configuration_sha256: &'a str,
     wb14_parameters: &'a [openwepp_hillslope_orchestrator::DirectOfeWb14Parameters],
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum SnowStage3V11ExactResidentPositionV4 {
+    Committed,
+    PendingCandidate,
+    InProgressDayCandidate,
+    InProgressSupportCurrent,
+}
+
+pub(crate) trait SnowStage3V11ExactResidentRestorerV4 {
+    fn restore_exact_resident(
+        &self,
+        position: SnowStage3V11ExactResidentPositionV4,
+        consumer: &mut DirectV10RealConsumerShadow,
+    ) -> Result<(), SnowStage3V11RestartError>;
 }
 
 impl DirectSnowStage3V11AttachmentRestartV2 {
@@ -341,6 +359,50 @@ impl DirectSnowStage3V11AttachmentRestartV2 {
         context: &ExpectedSnowStage3V11RestartContext<'_>,
         for_v3: bool,
     ) -> Result<DirectSnowStage3V11ShadowAttachment, SnowStage3V11RestartError> {
+        self.validate_restore_envelope(context)?;
+        let committed = restore_committed(
+            &self.committed,
+            context,
+            CommittedRestartPosture::BetweenDays,
+            for_v3,
+            SnowStage3V11ExactResidentPositionV4::Committed,
+            None,
+        )?;
+        let pending_candidate = self
+            .pending_candidate
+            .as_deref()
+            .map(|pending| {
+                let ending_state = restore_committed(
+                    &pending.ending_state,
+                    context,
+                    CommittedRestartPosture::BetweenDays,
+                    for_v3,
+                    SnowStage3V11ExactResidentPositionV4::PendingCandidate,
+                    None,
+                )?;
+                let parent_receipt = ending_state.receipt_chain.last().cloned().ok_or(
+                    SnowStage3V11RestartError::Identity("pending candidate parent receipt"),
+                )?;
+                Ok(DirectSnowStage3V11ParentCandidate {
+                    ending_state,
+                    parent_receipt,
+                })
+            })
+            .transpose()?;
+        let in_progress_execution = self.restore_in_progress(context, for_v3, None)?;
+        DirectSnowStage3V11ShadowAttachment::restart_authority_restore_parts_with_in_progress_v2(
+            context.static_context.clone(),
+            committed,
+            pending_candidate,
+            in_progress_execution,
+        )
+        .map_err(nested)
+    }
+
+    fn validate_restore_envelope(
+        &self,
+        context: &ExpectedSnowStage3V11RestartContext<'_>,
+    ) -> Result<(), SnowStage3V11RestartError> {
         if self.schema != SCHEMA
             || self.version != VERSION
             || self.static_context_sha256 != static_context_sha256(context.static_context)?
@@ -396,31 +458,15 @@ impl DirectSnowStage3V11AttachmentRestartV2 {
                 "in-progress provider cursor posture join",
             ));
         }
-        let committed = restore_committed(
-            &self.committed,
-            context,
-            CommittedRestartPosture::BetweenDays,
-            for_v3,
-        )?;
-        let pending_candidate = self
-            .pending_candidate
-            .as_deref()
-            .map(|pending| {
-                let ending_state = restore_committed(
-                    &pending.ending_state,
-                    context,
-                    CommittedRestartPosture::BetweenDays,
-                    for_v3,
-                )?;
-                let parent_receipt = ending_state.receipt_chain.last().cloned().ok_or(
-                    SnowStage3V11RestartError::Identity("pending candidate parent receipt"),
-                )?;
-                Ok(DirectSnowStage3V11ParentCandidate {
-                    ending_state,
-                    parent_receipt,
-                })
-            })
-            .transpose()?;
+        Ok(())
+    }
+
+    fn restore_in_progress(
+        &self,
+        context: &ExpectedSnowStage3V11RestartContext<'_>,
+        for_v3: bool,
+        exact_restorer: Option<&dyn SnowStage3V11ExactResidentRestorerV4>,
+    ) -> Result<Option<DirectSnowStage3V11InProgressExecutionV2>, SnowStage3V11RestartError> {
         let in_progress_execution = self
             .in_progress_execution
             .as_deref()
@@ -441,12 +487,16 @@ impl DirectSnowStage3V11AttachmentRestartV2 {
                     context,
                     CommittedRestartPosture::InProgressDayCandidate,
                     for_v3,
+                    SnowStage3V11ExactResidentPositionV4::InProgressDayCandidate,
+                    exact_restorer,
                 )?;
                 let mut support_current = restore_committed(
                     &in_progress.support_current,
                     context,
                     CommittedRestartPosture::InProgressSupport(interruption),
                     for_v3,
+                    SnowStage3V11ExactResidentPositionV4::InProgressSupportCurrent,
+                    exact_restorer,
                 )?;
                 if in_progress.support_current.has_last_v11_parent_candidate
                     != day_candidate.last_v11_parent_candidate.is_some()
@@ -492,6 +542,53 @@ impl DirectSnowStage3V11AttachmentRestartV2 {
                 Ok(restored)
             })
             .transpose()?;
+        Ok(in_progress_execution)
+    }
+
+    pub(crate) fn restore_active_base_v4(
+        &self,
+        context: &ExpectedSnowStage3V11RestartContext<'_>,
+        restorer: &dyn SnowStage3V11ExactResidentRestorerV4,
+    ) -> Result<DirectSnowStage3V11ShadowAttachment, SnowStage3V11RestartError> {
+        self.restore_mode_v4(context, restorer)
+    }
+
+    fn restore_mode_v4(
+        &self,
+        context: &ExpectedSnowStage3V11RestartContext<'_>,
+        restorer: &dyn SnowStage3V11ExactResidentRestorerV4,
+    ) -> Result<DirectSnowStage3V11ShadowAttachment, SnowStage3V11RestartError> {
+        self.validate_restore_envelope(context)?;
+        let committed = restore_committed(
+            &self.committed,
+            context,
+            CommittedRestartPosture::BetweenDays,
+            true,
+            SnowStage3V11ExactResidentPositionV4::Committed,
+            Some(restorer),
+        )?;
+        let pending_candidate = self
+            .pending_candidate
+            .as_deref()
+            .map(|pending| {
+                let ending_state = restore_committed(
+                    &pending.ending_state,
+                    context,
+                    CommittedRestartPosture::BetweenDays,
+                    true,
+                    SnowStage3V11ExactResidentPositionV4::PendingCandidate,
+                    Some(restorer),
+                )?;
+                let parent_receipt = ending_state.receipt_chain.last().cloned().ok_or(
+                    SnowStage3V11RestartError::Identity("pending candidate parent receipt"),
+                )?;
+                Ok(DirectSnowStage3V11ParentCandidate {
+                    ending_state,
+                    parent_receipt,
+                })
+            })
+            .transpose()?;
+        let in_progress_execution = self.restore_in_progress(context, true, Some(restorer))?;
         DirectSnowStage3V11ShadowAttachment::restart_authority_restore_parts_with_in_progress_v2(
             context.static_context.clone(),
             committed,
@@ -563,12 +660,21 @@ fn project_committed_mode(
     let real_consumer_wb14_parent = consumer
         .restart_authority_wb14_parent_canonical_bytes()
         .map_err(nested)?;
-    let real_consumer = project_complete_owner_state_v1(
-        consumer,
-        phase_plan_sha256,
-        day_input_digests,
-        consumer_next_day,
-    )
+    let real_consumer = if for_v3 {
+        project_complete_owner_state_v1_for_exact_parent(
+            consumer,
+            phase_plan_sha256,
+            day_input_digests,
+            consumer_next_day,
+        )
+    } else {
+        project_complete_owner_state_v1(
+            consumer,
+            phase_plan_sha256,
+            day_input_digests,
+            consumer_next_day,
+        )
+    }
     .map_err(SnowStage3V11RestartError::Projection)?;
     let accepted_publication_supports = if for_v3 {
         consumer.restart_authority_accepted_publication_active_tail_canonical_bytes_v3()
@@ -676,6 +782,8 @@ fn restore_committed(
     context: &ExpectedSnowStage3V11RestartContext<'_>,
     posture: CommittedRestartPosture,
     for_v3: bool,
+    exact_position: SnowStage3V11ExactResidentPositionV4,
+    exact_restorer: Option<&dyn SnowStage3V11ExactResidentRestorerV4>,
 ) -> Result<DirectSnowStage3V11CommittedState, SnowStage3V11RestartError> {
     if value.stage3_by_lane.is_empty()
         || value
@@ -698,13 +806,16 @@ fn restore_committed(
     .map_err(nested)?
     .clock()
     .clone();
-    let real_consumer = restore_real_consumer(
+    let mut real_consumer = restore_real_consumer(
         value,
         context.real_consumer_context,
         posture,
         &coupled_clock,
         for_v3,
     )?;
+    if let Some(restorer) = exact_restorer {
+        restorer.restore_exact_resident(exact_position, &mut real_consumer)?;
+    }
     // The checkpoint is the authority for the exact dynamic parent state.
     // `initial_state_sha256` is an imported receipt and is intentionally not
     // part of the canonical vegetation-configuration digest; rebuilding the
@@ -796,8 +907,10 @@ fn restore_committed(
         // the receipt checkpoint and posture match exactly.
         receipt.ending_last_v11_parent_candidate = Some(candidate.clone());
     }
+    let stage3_by_lane: std::collections::BTreeMap<_, _> =
+        value.stage3_by_lane.iter().cloned().collect();
     Ok(DirectSnowStage3V11CommittedState {
-        stage3_by_lane: value.stage3_by_lane.iter().cloned().collect(),
+        stage3_by_lane,
         real_consumer,
         v11_parent_state,
         coupled_clock,
@@ -805,6 +918,8 @@ fn restore_committed(
         last_v11_parent_candidate,
         terminal_parcels,
         receipt_chain,
+        snow_enthalpy_material_owner: None,
+        snow_enthalpy_material_owner_chronology: Vec::new(),
     })
 }
 

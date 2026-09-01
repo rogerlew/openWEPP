@@ -619,8 +619,14 @@ pub fn aggregate_soil_thermal_physical_ending_v2(
     top_boundary_credits: &[SoilThermalTopBoundaryCreditV1],
     top_boundary_source_owner_id: &ResourceOwnerId,
 ) -> Result<SoilThermalAcceptedCandidateV2, DirectV9RealConsumerError> {
+    let transaction_authority =
+        crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            transaction_id,
+            beginning.transaction_id,
+        )
+        .map_err(DirectV9RealConsumerError::LandSurfaceShadow)?;
     let mut operands = crate::land_surface_energy_shadow::physical_soil_energy_operands_v2(
-        transaction_id,
+        transaction_authority,
         beginning.support_start_ns,
         beginning.support_end_ns,
         lse_owner_id,
@@ -630,7 +636,7 @@ pub fn aggregate_soil_thermal_physical_ending_v2(
     )
     .map_err(DirectV9RealConsumerError::LandSurfaceShadow)?;
     crate::land_surface_energy_shadow::validate_soil_thermal_v2_surface_cancellation(
-        transaction_id,
+        transaction_authority,
         beginning.support_start_ns,
         beginning.support_end_ns,
         surface_owner_id,

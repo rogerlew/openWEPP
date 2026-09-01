@@ -33,6 +33,11 @@ mod continuation_template;
 mod erosion;
 #[cfg(feature = "fixtures")]
 mod evidence_fixture;
+mod frozen_litter_v3_checkpoint;
+mod frozen_litter_v3_host;
+mod frozen_litter_v3_projection;
+mod frozen_litter_v3_scientific_owner;
+mod frozen_litter_v4_exact_enthalpy;
 mod groundwater;
 mod growth_et;
 mod gsi_forcing;
@@ -48,6 +53,8 @@ mod scientific_owners_v2;
 mod snow_stage3_handoff;
 mod snow_stage3_v11;
 mod snow_stage3_v11_v3;
+mod snow_stage3_v11_v4_exact_enthalpy;
+mod snow_stage3_v11_v5_snow_enthalpy;
 mod soil_thermal_v2;
 mod subsurface;
 mod surface_liquid;
@@ -75,6 +82,11 @@ pub use erosion::{
 };
 #[cfg(feature = "fixtures")]
 pub use evidence_fixture::*;
+pub use frozen_litter_v3_checkpoint::*;
+pub use frozen_litter_v3_host::*;
+pub use frozen_litter_v3_projection::*;
+pub use frozen_litter_v3_scientific_owner::*;
+pub use frozen_litter_v4_exact_enthalpy::*;
 pub use groundwater::{DirectGroundwaterRunStateRestartV1, GroundwaterRestartError};
 pub use growth_et::{
     DirectEvapotranspirationStageRestartV1, DirectGrowthStateSurfaceRestartV1, GrowthEtRestartError,
@@ -92,15 +104,19 @@ pub use host::{
 pub use host_v2::*;
 pub use hydrology_core::{DirectHydrologyCoreError, DirectWaterStateRestartV1};
 pub use hydrology_restart::{
+    DIRECT_HYDROLOGY_EXACT_ENTHALPY_RESTART_V2_SCHEMA, DirectHydrologyExactEnthalpyRestartV2,
     DirectHydrologyRestartV1, DirectLaneRestartV1, DirectRuntimePostureV1,
-    ExpectedDirectHydrologyRestartContext, HydrologyRestartError,
+    ExpectedDirectHydrologyExactEnthalpyRestartContextV2, ExpectedDirectHydrologyRestartContext,
+    HydrologyRestartError,
 };
 pub use primitives::{
     AcceptedIntervalCount, DestinationCount, HexF64, HexU128, InProgressIntervalIndex, LaneCount,
     OptionalLaneLink, Sha256Hex, WireDayIndex, WireIntervalIndex, WireLaneId, WirePrimitiveError,
 };
 pub use projection::{
-    checkpoint_identities_v1, project_complete_owner_state_v1, project_scientific_owner_state_v1,
+    DirectHydrologyExactEnthalpyProjectionInputsV2, checkpoint_identities_v1,
+    project_complete_owner_state_v1, project_exact_hydrology_state_v2,
+    project_scientific_owner_state_v1,
 };
 pub use projection_v2::*;
 pub use scientific_owners::*;
@@ -111,13 +127,19 @@ pub use snow_stage3_v11::{
     SnowStage3V11RestartError,
 };
 pub use snow_stage3_v11_v3::*;
+pub use snow_stage3_v11_v4_exact_enthalpy::*;
+pub use snow_stage3_v11_v5_snow_enthalpy::*;
 pub use soil_thermal_v2::*;
 pub use subsurface::{DirectSubsurfaceLayerRestartV1, SubsurfaceRestartError};
 pub use surface_liquid::{
     DirectSurfaceLiquidConfigurationRestartV1, DirectSurfaceLiquidOwnedStateRestartV1,
     GroundIngressModeWireV1, SurfaceClassWireV1, SurfaceLiquidRestartError, WaterSourceWireV1,
 };
-pub use transaction::{DirectV10PreparedDayTransactionV1, RestartTransactionError};
+pub use transaction::{
+    DirectV10ExactEnthalpyCheckpointPhaseV2, DirectV10ExactEnthalpyCheckpointV2,
+    DirectV10PreparedDayExactEnthalpyTransactionV2, DirectV10PreparedDayTransactionV1,
+    RestartTransactionError,
+};
 pub use transaction_v2::*;
 pub use transfer::{
     DirectLaneTransferLedgerRestartV1, DirectRunTransferDownstreamOperandsRestartV1,
@@ -127,5 +149,7 @@ pub use vegetation_v11::*;
 pub use vegetation_v11_v3::*;
 pub use winter::{DirectWinterColumnRestartV1, RestoredWinterCompatibility, WinterRestartError};
 
+#[cfg(test)]
+mod frozen_litter_v3_tests;
 #[cfg(test)]
 mod v2_tests;

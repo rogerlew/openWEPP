@@ -113,6 +113,7 @@ pub(crate) use canonical_owner_bytes::{
 mod v11_covered;
 #[cfg(test)]
 pub(crate) use v11_covered::audit_covered_carrier_support;
+pub(crate) use v11_covered::normalize_v11_staged_parent_lineage;
 pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilTrialReceiptV1;
 pub(crate) use v11_covered::physical_outcome_ledger::ledger_set_digest as stage3_physical_outcome_ledger_set_digest;
 pub use v11_covered::physical_outcome_ledger::{
@@ -122,12 +123,15 @@ pub use v11_covered::physical_outcome_ledger::{
 #[cfg(test)]
 pub(crate) use v11_covered::{
     CoveredProvisionalPhysicalAuditV1, begin_covered_provisional_physical_audit_v1,
-    force_covered_full_provisional_envelope_for_test, take_covered_provisional_physical_audit_v1,
+    begin_v50_outer_owner_transition_evidence_v1, force_covered_full_provisional_envelope_for_test,
+    take_covered_provisional_physical_audit_v1, take_v50_outer_owner_transition_evidence_v1,
 };
 
 pub(crate) use v11_covered::CoveredCarrierEphemeralCandidatesV1;
 pub(crate) use v11_covered::CoveredCarrierPhaseResultV1;
 pub(crate) use v11_covered::CoveredPhysicalCustodyJoinInputs;
+pub(crate) use v11_covered::DeferredNativeV2SoilCustodyV1;
+pub(crate) use v11_covered::covered_carrier_initial_owner_bytes_with_deferred_native_v2_soil_custody_v1;
 pub(crate) use v11_covered::stage3_support_forcing_digest;
 use v11_covered::*;
 pub use v11_covered::{
@@ -401,12 +405,31 @@ pub struct DirectV10RealConsumerShadow {
     /// receipts they follow. They are the only authority that may bridge a
     /// pre-event publication owner set to a post-event receiver support.
     accepted_publication_history: AcceptedPublicationHistoryV1,
+    /// Native successor owner set for snow-free forest litter. Retained V1/V2
+    /// checkpoints leave this absent; the V3 execution path requires it.
+    frozen_litter_v3: Option<FrozenLitterV3Resident>,
+    /// Mandatory exact surface-enthalpy successor. When present, the parallel
+    /// V3 resident is a nonauthoritative physical/high-mirror owner only.
+    frozen_litter_v4: Option<FrozenLitterV4Resident>,
 }
 
 include!("v9_real_consumer_shadow_equilibrium_fixture.rs");
 
 include!("v9_real_consumer_shadow_publication_retention.rs");
 include!("v9_real_consumer_shadow_root_zone_configuration.rs");
+#[path = "v9_real_consumer_shadow/frozen_litter_v3_adoption.rs"]
+mod frozen_litter_v3_adoption;
+pub use frozen_litter_v3_adoption::FrozenLitterV3Resident;
+#[path = "v9_real_consumer_shadow/frozen_litter_v4_adoption.rs"]
+mod frozen_litter_v4_adoption;
+pub use frozen_litter_v4_adoption::FrozenLitterV4Resident;
+#[path = "v9_real_consumer_shadow/frozen_litter_v3_publication_retention.rs"]
+mod frozen_litter_v3_publication_retention;
+#[cfg(any(test, feature = "restart-authority-evidence"))]
+pub(crate) use frozen_litter_v3_publication_retention::FrozenLitterV3PublicationSupportV1;
+#[cfg(test)]
+#[path = "v9_real_consumer_shadow/v3_publication_retention_tests.rs"]
+mod v3_publication_retention_tests;
 
 pub type DirectV10ShadowDayInput = DirectV9ShadowDayInput;
 pub type DirectV10ShadowDayReceipt = DirectV9ShadowDayReceipt;
@@ -421,6 +444,10 @@ pub enum DirectV10RealConsumerError {
     V10(#[from] V10StateError),
     #[error(transparent)]
     LseV2(#[from] LseV2StateError),
+    #[error(transparent)]
+    LseV3(#[from] openwepp_land_surface_energy::LseV3StateError),
+    #[error(transparent)]
+    SurfaceLiquidV2(#[from] crate::DirectSurfaceLiquidError),
     #[error(transparent)]
     LandSurface(#[from] LandSurfaceEnergyError),
     #[error(transparent)]
@@ -437,6 +464,8 @@ impl DirectV10RealConsumerError {
             Self::RootDomain(_) => "root_domain",
             Self::V10(_) => "vegetation_v10",
             Self::LseV2(_) => "land_surface_energy_v2",
+            Self::LseV3(_) => "land_surface_energy_v3",
+            Self::SurfaceLiquidV2(_) => "surface_liquid_v2",
             Self::LandSurface(_) => "land_surface_energy",
             Self::ForcingProvider(_) => "forcing_provider",
             Self::Runtime(error) => error.category(),
@@ -466,6 +495,191 @@ pub(crate) fn v11_soil_thermal_owner_envelope(
     .map_err(Into::into)
 }
 
+/// Select the LSE beginning that exactly owns the staged V11 bytes.
+///
+/// Frozen-litter V3/V4 retains the legacy LSE state only as an inner
+/// compatibility projection. Support receipts must bind the native V3 owner
+/// whenever that owner occupies the staged complete-owner set.
+pub(crate) fn v11_support_lse_beginning<'a>(
+    beginning: &'a DirectV10RealConsumerShadow,
+    staged_lse_bytes: &[u8],
+) -> Result<
+    (
+        &'a LandSurfaceEnergyConfiguration,
+        &'a LandSurfaceEnergyState,
+    ),
+    DirectV11RealConsumerError,
+> {
+    let inner_lse_bytes = serde_json::to_vec(&beginning.inner.lse_state).map_err(|error| {
+        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+            DirectV9RealConsumerError::Serialization(error.to_string()),
+        ))
+    })?;
+    let resident_bytes = beginning
+        .frozen_litter_v3
+        .as_ref()
+        .map(|resident| {
+            serde_json::to_vec(resident.lse_state()).map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                    DirectV9RealConsumerError::Serialization(error.to_string()),
+                ))
+            })
+        })
+        .transpose()?;
+    let exact_resident_bytes =
+        beginning
+            .frozen_litter_v4
+            .as_ref()
+            .map(|exact| {
+                let physical = beginning.frozen_litter_v3.as_ref().ok_or(
+                    DirectV11RealConsumerError::Identity(
+                        "native V4 support selection requires physical resident",
+                    ),
+                )?;
+                exact
+                    .v11_complete_lse_owner_bytes(physical)
+                    .map_err(DirectV11RealConsumerError::Runtime)
+            })
+            .transpose()?;
+    match select_v11_support_lse_bytes(
+        staged_lse_bytes,
+        &inner_lse_bytes,
+        resident_bytes.as_deref(),
+        exact_resident_bytes.as_deref(),
+    )? {
+        V11SupportLseSelection::Legacy => Ok((
+            &beginning.inner.lse_configuration,
+            &beginning.inner.lse_state,
+        )),
+        V11SupportLseSelection::NativeV3 | V11SupportLseSelection::NativeV4 => {
+            let resident =
+                beginning
+                    .frozen_litter_v3
+                    .as_ref()
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "native V3 support selection requires resident",
+                    ))?;
+            Ok((resident.lse_configuration(), &resident.lse_state().0))
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum V11SupportLseSelection {
+    Legacy,
+    NativeV3,
+    NativeV4,
+}
+
+fn select_v11_support_lse_bytes(
+    staged_lse_bytes: &[u8],
+    legacy_lse_bytes: &[u8],
+    native_v3_lse_bytes: Option<&[u8]>,
+    native_v4_lse_bytes: Option<&[u8]>,
+) -> Result<V11SupportLseSelection, DirectV11RealConsumerError> {
+    if let Some(native_v4) = native_v4_lse_bytes {
+        return (staged_lse_bytes == native_v4)
+            .then_some(V11SupportLseSelection::NativeV4)
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "staged LSE owner does not match the exact native V4 resident",
+            ));
+    }
+    if staged_lse_bytes == legacy_lse_bytes {
+        return Ok(V11SupportLseSelection::Legacy);
+    }
+    if native_v3_lse_bytes.is_some_and(|native| staged_lse_bytes == native) {
+        return Ok(V11SupportLseSelection::NativeV3);
+    }
+    Err(DirectV11RealConsumerError::Identity(
+        if native_v3_lse_bytes.is_some() {
+            "staged LSE owner is neither legacy beginning nor native V3 resident"
+        } else {
+            "staged LSE owner does not match the resident beginning"
+        },
+    ))
+}
+
+#[cfg(test)]
+mod covered_support_receipt_selection_tests {
+    use super::*;
+
+    #[test]
+    fn covered_receipt_selects_exact_legacy_staged_bytes() {
+        assert_eq!(
+            select_v11_support_lse_bytes(b"legacy", b"legacy", Some(b"native"), None)
+                .expect("legacy bytes"),
+            V11SupportLseSelection::Legacy,
+        );
+    }
+
+    #[test]
+    fn covered_receipt_selects_exact_native_v3_staged_bytes() {
+        assert_eq!(
+            select_v11_support_lse_bytes(b"native", b"legacy", Some(b"native"), None)
+                .expect("native V3 bytes"),
+            V11SupportLseSelection::NativeV3,
+        );
+    }
+
+    #[test]
+    fn covered_receipt_selects_exact_native_v4_staged_bytes() {
+        assert_eq!(
+            select_v11_support_lse_bytes(
+                b"native-v4",
+                b"legacy",
+                Some(b"native-v3"),
+                Some(b"native-v4"),
+            )
+            .expect("native V4 bytes"),
+            V11SupportLseSelection::NativeV4,
+        );
+    }
+
+    #[test]
+    fn covered_receipt_refuses_legacy_or_v3_downgrade_after_v4_adoption() {
+        for staged in [b"legacy".as_slice(), b"native-v3".as_slice()] {
+            assert!(
+                select_v11_support_lse_bytes(
+                    staged,
+                    b"legacy",
+                    Some(b"native-v3"),
+                    Some(b"native-v4"),
+                )
+                .is_err()
+            );
+        }
+    }
+
+    #[test]
+    fn covered_receipt_rejects_mismatched_or_missing_native_owner() {
+        for native in [None, Some(b"native".as_slice())] {
+            assert!(select_v11_support_lse_bytes(b"poison", b"legacy", native, None).is_err());
+        }
+    }
+
+    #[test]
+    fn covered_receipt_mismatch_is_exact_rollback_with_no_publication() {
+        let staged = b"poison".to_vec();
+        let legacy = b"legacy".to_vec();
+        let native = b"native".to_vec();
+        let before = (
+            staged.clone(),
+            legacy.clone(),
+            native.clone(),
+            Vec::<Vec<u8>>::new(),
+        );
+        assert!(
+            select_v11_support_lse_bytes(&staged, &legacy, Some(&native), None).is_err(),
+            "mismatch must fail before receipt construction or publication",
+        );
+        assert_eq!(
+            (staged, legacy, native, Vec::<Vec<u8>>::new()),
+            before,
+            "pure selection failure preserves all owner bytes and publishes nothing",
+        );
+    }
+}
+
 impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealConsumerStack<'_> {
     type Error = DirectV11RealConsumerError;
 
@@ -485,9 +699,22 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
         }
         let _interval_index = u8::try_from(self.interval_index)
             .map_err(|_| DirectV11RealConsumerError::Identity("V11 interval index overflow"))?;
+        // V3 imports the unchanged V1 support-admission receipt schema and
+        // policy, but its identity fields must bind the native successor
+        // configuration/state published in the staged complete-owner set.
+        // The legacy/V2 paths continue to bind their existing inner owner.
+        let staged_lse_bytes = &input
+            .staged_resource_owners
+            .get("land_surface_energy")
+            .ok_or(DirectV11RealConsumerError::Identity(
+                "missing staged LSE owner",
+            ))?
+            .state_bytes;
+        let (support_configuration, support_beginning) =
+            v11_support_lse_beginning(&self.beginning, staged_lse_bytes)?;
         let support_receipt = LseSupportAdmissibilityReceiptV1::admit(
-            &self.beginning.inner.lse_configuration,
-            &self.beginning.inner.lse_state,
+            support_configuration,
+            support_beginning,
             digest32_hex(input.parent_transaction_id.digest()),
             digest32_hex(input.accepted_slab_receipt.segment_id().digest()),
             digest32_hex(input.accepted_slab_receipt.slab_id().digest()),
@@ -510,20 +737,102 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
         // V8, owns the exact inactive hydraulic anchors required by a
         // structurally zero occupancy while retaining the snow-free boundary.
         install_imported_v10_snow_free_authority(&mut candidate);
-        let envelope = candidate
-            .inner
-            .construct_snow_free_parent_child_envelope_with_duration(
+        let frozen_litter_v4 = if candidate.frozen_litter_v4.is_some() {
+            let binding =
+                self.wb14_coupled_child_binding
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "native frozen-litter V4 requires coupled-child binding",
+                    ))?;
+            let fixed = candidate.prepare_frozen_litter_v3_fixed_final(
                 self.day_index,
                 self.interval_index,
                 self.interval,
-                f64::from_bits(input.duration_s_bits),
-                Some(input.duration_s_bits),
+                input.duration_s_bits,
                 self.finalize_wb14_parent_interval,
-                self.wb14_coupled_child_binding,
-            )
-            .map_err(|error| {
-                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-            })?;
+                binding,
+            )?;
+            let accepted = candidate.execute_and_accept_frozen_litter_v4(
+                &fixed,
+                input.support.start_ns().get(),
+                input.support.end_ns().get(),
+                self.finalize_wb14_parent_interval,
+                binding,
+            )?;
+            Some((fixed, accepted))
+        } else {
+            None
+        };
+        let frozen_litter_v3 = if frozen_litter_v4.is_none() && candidate.frozen_litter_v3.is_some()
+        {
+            let binding =
+                self.wb14_coupled_child_binding
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "native frozen-litter V3 requires coupled-child binding",
+                    ))?;
+            let fixed = candidate.prepare_frozen_litter_v3_fixed_final(
+                self.day_index,
+                self.interval_index,
+                self.interval,
+                input.duration_s_bits,
+                self.finalize_wb14_parent_interval,
+                binding,
+            )?;
+            let accepted = candidate.execute_and_accept_frozen_litter_v3(
+                &fixed,
+                input.support.start_ns().get(),
+                input.support.end_ns().get(),
+                self.finalize_wb14_parent_interval,
+                binding,
+            )?;
+            Some((fixed, accepted))
+        } else {
+            None
+        };
+        let deferred_soil = self.deferred_native_v2_soil_custody.as_ref();
+        let envelope = if let Some((fixed, accepted)) = frozen_litter_v4.as_ref() {
+            if deferred_soil.is_some() {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "native frozen-litter V4 deferred soil custody is not yet joined",
+                ));
+            }
+            candidate.construct_frozen_litter_v3_complete_envelope(
+                self.day_index,
+                input.duration_s_bits,
+                fixed,
+                &accepted.physical,
+                true,
+            )?
+        } else if let Some((fixed, accepted)) = frozen_litter_v3.as_ref() {
+            if deferred_soil.is_some() {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "native frozen-litter V3 deferred soil custody is not yet joined",
+                ));
+            }
+            candidate.construct_frozen_litter_v3_complete_envelope(
+                self.day_index,
+                input.duration_s_bits,
+                fixed,
+                accepted,
+                false,
+            )?
+        } else {
+            candidate
+                .inner
+                .construct_snow_free_parent_child_envelope_with_duration_and_soil_beginning(
+                    self.day_index,
+                    self.interval_index,
+                    self.interval,
+                    f64::from_bits(input.duration_s_bits),
+                    Some(input.duration_s_bits),
+                    self.finalize_wb14_parent_interval,
+                    self.wb14_coupled_child_binding,
+                    deferred_soil.map(DeferredNativeV2SoilCustodyV1::candidate),
+                    deferred_soil.and_then(DeferredNativeV2SoilCustodyV1::continuation),
+                )
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+                })?
+        };
         envelope.validate().map_err(|error| {
             DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
         })?;
@@ -539,36 +848,111 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
             input,
         )?);
 
-        candidate
-            .inner
-            .accept_envelope(envelope.transaction_id(), &envelope)
+        let completed_deferred_soil = deferred_soil
+            .map(|custody| custody.advance_snow_free_child(&self.beginning, input, &envelope))
+            .transpose()?;
+        if let Some(custody) = completed_deferred_soil.as_ref() {
+            let continuation =
+                custody
+                    .continuation()
+                    .ok_or(DirectV11RealConsumerError::Identity(
+                        "deferred native V2 soil final continuation",
+                    ))?;
+            candidate
+                .inner
+                .accept_envelope_preserving_native_v2_soil(envelope.transaction_id(), &envelope)
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+                })?;
+            let accepted = continuation
+                .compose_accepted_outer_candidate(&self.beginning.inner.lse_configuration)
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+                })?;
+            let seals = seal_soil_thermal_accepted_candidate_v2(
+                continuation.original_prepared().beginning_owner(),
+                &accepted,
+            )
             .map_err(|error| {
                 DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
             })?;
-        candidate.vegetation_state = project_v9_runtime_to_v10(
-            candidate.inner.vegetation_state(),
-            &candidate.vegetation_configuration,
-        )
-        .map_err(|error| {
-            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::V10(error))
-        })?;
-        candidate.lse_state = project_validated_v1_runtime_to_v2(
-            &candidate.inner.lse_configuration,
-            candidate.inner.lse_state(),
-            &candidate.lse_configuration,
-            &openwepp_land_surface_energy::Sha256Digest::try_new(
-                candidate
-                    .vegetation_configuration
-                    .configuration_sha256
-                    .clone(),
+            let transaction_authority = candidate
+                .authenticate_soil_thermal_unpublished_continuation_install_authority_v2(
+                    continuation,
+                    continuation.original_prepared().beginning_owner(),
+                )
+                .map_err(DirectV11RealConsumerError::Runtime)?;
+            candidate
+                .install_soil_thermal_accepted_v2_from_unpublished_continuation(
+                    &self.beginning,
+                    continuation,
+                    continuation.original_prepared().beginning_owner(),
+                    transaction_authority,
+                    accepted,
+                    seals,
+                )
+                .map_err(DirectV11RealConsumerError::Runtime)?;
+        } else if let Some((_, accepted)) = frozen_litter_v4.as_ref() {
+            candidate
+                .accept_frozen_litter_v3_complete_envelope(
+                    &self.beginning,
+                    input.support.start_ns().get(),
+                    input.support.end_ns().get(),
+                    &accepted.physical,
+                    &envelope,
+                )
+                .map_err(DirectV11RealConsumerError::Runtime)?;
+        } else if frozen_litter_v3.is_some() {
+            candidate
+                .accept_frozen_litter_v3_complete_envelope(
+                    &self.beginning,
+                    input.support.start_ns().get(),
+                    input.support.end_ns().get(),
+                    frozen_litter_v3
+                        .as_ref()
+                        .map(|(_, accepted)| accepted)
+                        .ok_or(DirectV11RealConsumerError::Identity(
+                            "missing accepted frozen-litter V3 candidate",
+                        ))?,
+                    &envelope,
+                )
+                .map_err(DirectV11RealConsumerError::Runtime)?;
+        } else {
+            candidate
+                .inner
+                .accept_envelope(envelope.transaction_id(), &envelope)
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+                })?;
+        }
+        if frozen_litter_v4.is_none() && frozen_litter_v3.is_none() {
+            candidate.vegetation_state = project_v9_runtime_to_v10(
+                candidate.inner.vegetation_state(),
+                &candidate.vegetation_configuration,
             )
             .map_err(|error| {
-                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(error))
-            })?,
-        )
-        .map_err(|error| {
-            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
-        })?;
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::V10(error))
+            })?;
+            candidate.lse_state = project_validated_v1_runtime_to_v2(
+                &candidate.inner.lse_configuration,
+                candidate.inner.lse_state(),
+                &candidate.lse_configuration,
+                &openwepp_land_surface_energy::Sha256Digest::try_new(
+                    candidate
+                        .vegetation_configuration
+                        .configuration_sha256
+                        .clone(),
+                )
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LandSurface(
+                        error,
+                    ))
+                })?,
+            )
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::LseV2(error))
+            })?;
+        }
 
         let segment_ending = candidate.vegetation_state.clone();
         normalize_v11_staged_parent_lineage(&mut candidate, input.beginning.0.last_transaction_id)?;
@@ -582,21 +966,31 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
             .ok_or(DirectV11RealConsumerError::Identity(
                 "missing staged snow owner",
             ))?;
-        let surface = candidate
-            .inner
-            .hydrology_frame
-            .surface_liquid_shadow
-            .as_ref()
-            .ok_or(DirectV11RealConsumerError::Identity(
-                "missing staged surface-liquid owner",
-            ))?;
-        let surface_bytes = surface
-            .canonical_bytes(&candidate.inner.surface_configuration)
-            .map_err(|error| {
-                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
-                    DirectV9RealConsumerError::Serialization(error.to_string()),
-                ))
-            })?;
+        let surface_bytes = if let Some(resident) = candidate.frozen_litter_v3.as_ref() {
+            resident
+                .surface_owner()
+                .canonical_bytes(
+                    resident.surface_configuration().parent(),
+                    Some(resident.surface_configuration()),
+                )
+                .map_err(DirectV10RealConsumerError::SurfaceLiquidV2)?
+        } else {
+            let surface = candidate
+                .inner
+                .hydrology_frame
+                .surface_liquid_shadow
+                .as_ref()
+                .ok_or(DirectV11RealConsumerError::Identity(
+                    "missing staged surface-liquid owner",
+                ))?;
+            surface
+                .canonical_bytes(&candidate.inner.surface_configuration)
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                        DirectV9RealConsumerError::Serialization(error.to_string()),
+                    ))
+                })?
+        };
         let beginning_hydrology_adapter = RealHydrologyShadowAdapter::try_from_day_start(
             &self.beginning.inner.hydrology_frame,
             self.day_index,
@@ -619,15 +1013,27 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
         .map_err(|error| {
             DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error.into()))
         })?;
-        let ending_resource_owners = [
+        let ending_resource_owners: BTreeMap<String, V11OwnerEnvelope> = [
             ("snow".to_owned(), snow),
             (
                 "land_surface_energy".to_owned(),
-                // The support receipt and the actual LSE solver are bound to
-                // the immutable V1 physical owner.  Keep the staged owner on
-                // that same canonical payload; the surrounding V2 wrapper is
-                // an identity projection, not a second physical owner.
-                v11_owner_envelope("land_surface_energy", &candidate.inner.lse_state)?,
+                if let Some(exact) = candidate.frozen_litter_v4.as_ref() {
+                    let physical = candidate.frozen_litter_v3.as_ref().ok_or(
+                        DirectV11RealConsumerError::Identity(
+                            "native V4 ending requires physical resident",
+                        ),
+                    )?;
+                    V11OwnerEnvelope::try_new(
+                        "land_surface_energy".to_owned(),
+                        exact
+                            .v11_complete_lse_owner_bytes(physical)
+                            .map_err(DirectV11RealConsumerError::Runtime)?,
+                    )?
+                } else if let Some(resident) = candidate.frozen_litter_v3.as_ref() {
+                    v11_owner_envelope("land_surface_energy", resident.lse_state())?
+                } else {
+                    v11_owner_envelope("land_surface_energy", &candidate.inner.lse_state)?
+                },
             ),
             (
                 "surface_liquid".to_owned(),
@@ -651,7 +1057,6 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
         ]
         .into_iter()
         .collect();
-
         let shared_resource_transitions = v11_shared_resource_transitions(
             &envelope,
             input,
@@ -692,6 +1097,28 @@ impl crate::v11_vegetation_consumer::DirectV11ImportedStack for DirectV11RealCon
             envelope.hydrology(),
             None,
         )?;
+
+        if frozen_litter_v3.is_some()
+            && candidate
+                .frozen_litter_v3
+                .as_ref()
+                .is_none_or(|resident| resident.accepted_publication_count() == 0)
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "missing accepted frozen-litter V3 publication",
+            ));
+        }
+        if frozen_litter_v4.is_some()
+            && candidate.frozen_litter_v4.as_ref().is_none_or(|resident| {
+                resident
+                    .accepted_publication_supports_canonical_bytes()
+                    .is_empty()
+            })
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "missing accepted frozen-litter V4 publication",
+            ));
+        }
 
         let output = V11ImportedV10SegmentOutput {
             ending: segment_ending,
@@ -1182,6 +1609,8 @@ impl DirectV10RealConsumerShadow {
             provider_cursor,
             root_zone_hydraulic_configuration,
             accepted_publication_history: AcceptedPublicationHistoryV1::default(),
+            frozen_litter_v3: None,
+            frozen_litter_v4: None,
         })
     }
 
@@ -1876,1130 +2305,7 @@ impl DirectV9RealConsumerError {
     }
 }
 
-impl DirectV9RealConsumerShadow {
-    /// Derive provider identity exclusively from canonical shadow owners and
-    /// the live interval template.
-    pub fn snow_free_provider_configuration(
-        &self,
-        template: &DirectV9ShadowDayInput,
-    ) -> Result<SnowFreeHalfHourProviderConfiguration, DirectV9RealConsumerError> {
-        let first = template
-            .intervals
-            .first()
-            .ok_or(DirectV9RealConsumerError::Identity("shadow day intervals"))?;
-        if template.intervals.len() != INTERVALS_PER_DAY {
-            return Err(DirectV9RealConsumerError::Identity(
-                "shadow day interval cardinality",
-            ));
-        }
-        let mut destinations = Vec::new();
-        for ofe in &self.lse_configuration.ofes {
-            let wb14 = first
-                .wb14_parameters
-                .iter()
-                .find(|value| value.ofe_id == ofe.ofe_id)
-                .ok_or(DirectV9RealConsumerError::Identity(
-                    "repository WB14 OFE binding",
-                ))?;
-            for tile in &ofe.tiles {
-                destinations.push(SnowFreeHalfHourDestination {
-                    ofe_id: ofe.ofe_id.as_str().to_string(),
-                    tile_id: tile.tile_id.as_str().to_string(),
-                    wb14_configuration_sha256: wb14_parameter_sha256(wb14),
-                });
-            }
-        }
-        Ok(SnowFreeHalfHourProviderConfiguration {
-            run_id: self.hydrology_frame.identity.run_id.to_string(),
-            co2_pa: first.vegetation_forcing.co2_pa,
-            reference_height_m: first.vegetation_forcing.reference_height_m,
-            gsi: first.vegetation_forcing.gsi,
-            gsi_receipt_sha256: self.provider_gsi_receipt_sha256.clone(),
-            destinations,
-        })
-    }
-
-    /// Project a sealed repository forcing receipt into real Child-4 interval
-    /// types while joining run, GSI-owner, and WB14-owner identity.
-    pub fn project_repository_forcing_receipts(
-        &self,
-        provider: &ValidatedSnowFreeHalfHourForcingReceipts,
-        template: DirectV9ShadowDayInput,
-    ) -> Result<DirectV9ShadowDayInput, DirectV9RealConsumerError> {
-        let expected_destinations = self
-            .lse_configuration
-            .ofes
-            .iter()
-            .flat_map(|ofe| {
-                ofe.tiles.iter().map(|tile| {
-                    (
-                        ofe.ofe_id.as_str().to_string(),
-                        tile.tile_id.as_str().to_string(),
-                    )
-                })
-            })
-            .collect();
-        project_repository_forcing_receipts_to_v9_day(
-            provider,
-            template,
-            self.hydrology_frame.identity.run_id,
-            &self.provider_gsi_receipt_sha256,
-            &expected_destinations,
-        )
-    }
-
-    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-    pub fn try_new(
-        vegetation_configuration: VegetationConfiguration,
-        vegetation_state: V9CoupledOwnedState,
-        vegetation_owner_id: ResourceOwnerId,
-        lse_configuration: LandSurfaceEnergyConfiguration,
-        lse_state: LandSurfaceEnergyState,
-        surface_configuration: DirectSurfaceLiquidConfiguration,
-        layer_maps: Vec<RealHydrologyLaneLayerMap>,
-        soil_thermal: SoilThermalSnapshot,
-        biogeochemistry: BiogeochemistryState,
-        hydrology_frame: DirectRunFrame,
-        next_day_index: usize,
-    ) -> Result<Self, DirectV9RealConsumerError> {
-        let provider_gsi_receipt_sha256 = vegetation_state.0.state_sha256.clone();
-        Self::try_new_with_authority(
-            vegetation_configuration,
-            vegetation_state,
-            vegetation_owner_id,
-            lse_configuration,
-            lse_state,
-            surface_configuration,
-            layer_maps,
-            DirectSoilThermalResident::try_new_v1(soil_thermal)?,
-            biogeochemistry,
-            hydrology_frame,
-            next_day_index,
-            CoveredColumnAuthority::HistoricalV8,
-            provider_gsi_receipt_sha256,
-        )
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn try_new_with_authority(
-        vegetation_configuration: VegetationConfiguration,
-        vegetation_state: V9CoupledOwnedState,
-        vegetation_owner_id: ResourceOwnerId,
-        lse_configuration: LandSurfaceEnergyConfiguration,
-        lse_state: LandSurfaceEnergyState,
-        surface_configuration: DirectSurfaceLiquidConfiguration,
-        layer_maps: Vec<RealHydrologyLaneLayerMap>,
-        soil_thermal: DirectSoilThermalResident,
-        biogeochemistry: BiogeochemistryState,
-        hydrology_frame: DirectRunFrame,
-        next_day_index: usize,
-        authority: CoveredColumnAuthority,
-        provider_gsi_receipt_sha256: String,
-    ) -> Result<Self, DirectV9RealConsumerError> {
-        vegetation_state.validate(&vegetation_configuration)?;
-        let (v8_configuration, v8_state) =
-            project_v9_runtime_to_v8(&vegetation_configuration, &vegetation_state)?;
-        lse_configuration.validate()?;
-        lse_state.validate(&lse_configuration)?;
-        soil_thermal.validate()?;
-        if lse_configuration
-            .vegetation_configuration
-            .configuration_sha256
-            .as_str()
-            != v8_configuration.configuration_sha256
-        {
-            return Err(DirectV9RealConsumerError::Identity(
-                "initial V9/V8/LSE configuration join",
-            ));
-        }
-        if lse_state
-            .last_accepted_transaction_id
-            .is_some_and(|value| value.0 != v8_state.last_transaction_id)
-        {
-            return Err(DirectV9RealConsumerError::Identity(
-                "initial vegetation/LSE transaction lineage",
-            ));
-        }
-        if next_day_index >= hydrology_frame.identity.day_count
-            || surface_configuration.run_id != hydrology_frame.identity.run_id
-        {
-            return Err(DirectV9RealConsumerError::Identity(
-                "initial scheduler/surface owner identity",
-            ));
-        }
-        let value = Self {
-            authority,
-            provider_gsi_receipt_sha256,
-            vegetation_configuration,
-            vegetation_state,
-            vegetation_owner_id,
-            lse_configuration,
-            lse_state,
-            surface_configuration,
-            layer_maps,
-            soil_thermal,
-            biogeochemistry,
-            hydrology_frame,
-            next_day_index,
-            accepted_interval_count: 0,
-            wb14_parent_working_state: None,
-            root_zone_hydraulic_configuration: None,
-        };
-        value.validate_complete_owner_set()?;
-        Ok(value)
-    }
-
-    #[must_use]
-    pub fn checkpoint(&self) -> DirectV9RealConsumerCheckpoint {
-        DirectV9RealConsumerCheckpoint {
-            shadow: self.clone(),
-        }
-    }
-
-    pub fn wb14_parent_restart_bytes(&self) -> Result<Option<Vec<u8>>, DirectV9RealConsumerError> {
-        self.wb14_parent_working_state
-            .as_ref()
-            .map(|state| state.restart_bytes(&self.surface_configuration))
-            .transpose()
-            .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))
-    }
-
-    pub fn restore_wb14_parent_restart_bytes(
-        &mut self,
-        bytes: Option<&[u8]>,
-    ) -> Result<(), DirectV9RealConsumerError> {
-        let restored = bytes
-            .map(|bytes| {
-                crate::direct_runtime::DirectWb14ParentWorkingState::from_restart_bytes(
-                    &self.surface_configuration,
-                    bytes,
-                )
-            })
-            .transpose()
-            .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
-        if let Some(restored) = &restored {
-            let current = self
-                .hydrology_frame
-                .surface_liquid_shadow
-                .as_deref()
-                .ok_or(DirectV9RealConsumerError::Identity(
-                    "missing restart receiving surface owner",
-                ))?;
-            restored
-                .validate_receiving_owner(current)
-                .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
-        }
-        self.validate_complete_owner_set()?;
-        self.wb14_parent_working_state = restored;
-        Ok(())
-    }
-
-    pub fn restore(
-        checkpoint: DirectV9RealConsumerCheckpoint,
-    ) -> Result<Self, DirectV9RealConsumerError> {
-        checkpoint.shadow.validate_complete_owner_set()?;
-        Ok(checkpoint.shadow)
-    }
-
-    #[must_use]
-    pub const fn next_day_index(&self) -> usize {
-        self.next_day_index
-    }
-
-    #[must_use]
-    pub const fn accepted_interval_count(&self) -> u64 {
-        self.accepted_interval_count
-    }
-
-    #[must_use]
-    pub const fn vegetation_state(&self) -> &V9CoupledOwnedState {
-        &self.vegetation_state
-    }
-
-    #[must_use]
-    pub const fn lse_state(&self) -> &LandSurfaceEnergyState {
-        &self.lse_state
-    }
-
-    #[must_use]
-    pub fn soil_thermal(&self) -> Result<&SoilThermalSnapshot, DirectV9RealConsumerError> {
-        self.soil_thermal.v1()
-    }
-
-    #[must_use]
-    pub const fn hydrology_frame(&self) -> &DirectRunFrame {
-        &self.hydrology_frame
-    }
-
-    #[must_use]
-    pub const fn biogeochemistry(&self) -> &BiogeochemistryState {
-        &self.biogeochemistry
-    }
-
-    #[cfg(any(
-        feature = "restart-authority-evidence",
-        feature = "persisted-restart-v1"
-    ))]
-    #[must_use]
-    pub const fn restart_authority_surface_configuration(
-        &self,
-    ) -> &DirectSurfaceLiquidConfiguration {
-        &self.surface_configuration
-    }
-
-    pub(crate) fn execute_day(
-        &mut self,
-        production_frame: &DirectRunFrame,
-        projected_day_frames: &[DirectDayFrame],
-        projected_day_inputs: &[DirectPublicationDayInput],
-        input: &DirectV9ShadowDayInput,
-    ) -> Result<DirectV9ShadowDayReceipt, DirectV9RealConsumerError> {
-        if input.day_index != self.next_day_index
-            || input.day_index >= production_frame.identity.day_count
-            || production_frame.identity != self.hydrology_frame.identity
-        {
-            return Err(DirectV9RealConsumerError::Identity(
-                "scheduler day or production frame identity",
-            ));
-        }
-        if input.intervals.len() != INTERVALS_PER_DAY {
-            return Err(DirectV9RealConsumerError::Unsupported(
-                "a shadow day requires exactly 48 intervals",
-            ));
-        }
-        validate_repository_day_projection(
-            production_frame,
-            projected_day_frames,
-            projected_day_inputs,
-            input,
-            &self.lse_configuration,
-            &self.surface_configuration,
-        )?;
-        let beginning_shadow_diagnostic_fingerprint = self.diagnostic_fingerprint()?;
-        let first_transaction_id = input.intervals[0].lse_forcing.transaction_id;
-        let last_transaction_id = input.intervals[INTERVALS_PER_DAY - 1]
-            .lse_forcing
-            .transaction_id;
-        let mut candidate = self.clone();
-        for (interval_index, interval) in input.intervals.iter().enumerate() {
-            candidate.execute_interval(input.day_index, interval_index, interval)?;
-        }
-        candidate.next_day_index = candidate
-            .next_day_index
-            .checked_add(1)
-            .ok_or(DirectV9RealConsumerError::Identity("shadow day overflow"))?;
-        candidate.validate_complete_owner_set()?;
-        let ending_shadow_diagnostic_fingerprint = candidate.diagnostic_fingerprint()?;
-        *self = candidate;
-        Ok(DirectV9ShadowDayReceipt {
-            day_index: input.day_index,
-            accepted_interval_count: INTERVALS_PER_DAY,
-            first_transaction_id,
-            last_transaction_id,
-            beginning_shadow_diagnostic_fingerprint,
-            ending_shadow_diagnostic_fingerprint,
-        })
-    }
-
-    #[allow(clippy::too_many_lines)]
-    fn execute_interval(
-        &mut self,
-        day_index: usize,
-        interval_index: usize,
-        input: &DirectV9ShadowIntervalInput,
-    ) -> Result<(), DirectV9RealConsumerError> {
-        let envelope = self.construct_snow_free_interval_envelope_with_duration(
-            day_index,
-            interval_index,
-            input,
-            INTERVAL_S,
-            None,
-        )?;
-        self.accept_envelope(envelope.vegetation().transaction_id(), &envelope)
-    }
-
-    #[allow(clippy::too_many_lines)]
-    fn construct_snow_free_interval_envelope_with_duration(
-        &self,
-        day_index: usize,
-        interval_index: usize,
-        input: &DirectV9ShadowIntervalInput,
-        interval_s: f64,
-        v11_duration_s_bits: Option<u64>,
-    ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
-        self.construct_snow_free_parent_child_envelope_with_duration(
-            day_index,
-            interval_index,
-            input,
-            interval_s,
-            v11_duration_s_bits,
-            true,
-            None,
-        )
-    }
-
-    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-    fn construct_snow_free_parent_child_envelope_with_duration(
-        &self,
-        day_index: usize,
-        interval_index: usize,
-        input: &DirectV9ShadowIntervalInput,
-        interval_s: f64,
-        v11_duration_s_bits: Option<u64>,
-        finalize_wb14_parent_interval: bool,
-        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
-    ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
-        self.construct_canopy_soil_interval_envelope_with_duration(
-            day_index,
-            interval_index,
-            input,
-            interval_s,
-            v11_duration_s_bits,
-            None,
-            false,
-            None,
-            finalize_wb14_parent_interval,
-            wb14_coupled_child_binding,
-            false,
-        )
-        .and_then(CanopySoilEvaluationV1::into_complete)
-    }
-
-    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-    fn construct_canopy_soil_interval_envelope_with_duration(
-        &self,
-        day_index: usize,
-        interval_index: usize,
-        input: &DirectV9ShadowIntervalInput,
-        interval_s: f64,
-        v11_duration_s_bits: Option<u64>,
-        covered_lower_boundaries: Option<
-            &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
-        >,
-        provisional_v11: bool,
-        covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
-        finalize_wb14_parent_interval: bool,
-        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
-        physical_only: bool,
-    ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
-        let transaction_id = TransactionId(
-            self.vegetation_state
-                .0
-                .last_transaction_id
-                .checked_add(1)
-                .ok_or(DirectV9RealConsumerError::Identity(
-                    "vegetation transaction overflow",
-                ))?,
-        );
-        let interval_index = u8::try_from(interval_index)
-            .map_err(|_| DirectV9RealConsumerError::Identity("interval index overflow"))?;
-        if input.lse_forcing.transaction_id != transaction_id {
-            return Err(DirectV9RealConsumerError::Unsupported(
-                "forcing transaction identity",
-            ));
-        }
-        if input.lse_forcing.interval_s.to_bits() != interval_s.to_bits()
-            || v11_duration_s_bits.is_some_and(|bits| bits != interval_s.to_bits())
-        {
-            return Err(DirectV9RealConsumerError::Unsupported(
-                "forcing cadence identity",
-            ));
-        }
-        if input.lse_forcing.snow_present_at_beginning
-            || input.lse_forcing.snow_present_at_end
-            || input.lse_forcing.snow_terminal_payload_present
-        {
-            return Err(DirectV9RealConsumerError::Unsupported(
-                "forcing snow domain",
-            ));
-        }
-        if !input.lse_forcing.runon_parcels.is_empty() {
-            return Err(DirectV9RealConsumerError::Unsupported(
-                "runon requires an accepted routing publication owner",
-            ));
-        }
-        input.lse_forcing.validate(transaction_id)?;
-        let (v8_configuration, v8_beginning) =
-            project_v9_runtime_to_v8(&self.vegetation_configuration, &self.vegetation_state)?;
-        if self
-            .lse_configuration
-            .vegetation_configuration
-            .configuration_sha256
-            .as_str()
-            != v8_configuration.configuration_sha256
-        {
-            return Err(DirectV9RealConsumerError::Identity(
-                "V9/V8/LSE configuration join",
-            ));
-        }
-        let mut effective_hydrology_frame = self.hydrology_frame.clone();
-        if let Some(parent) = &self.wb14_parent_working_state {
-            effective_hydrology_frame.surface_liquid_shadow =
-                Some(Box::new(parent.candidate_state().clone()));
-        }
-        let hydrology = RealHydrologyShadowAdapter::try_from_day_start(
-            &effective_hydrology_frame,
-            day_index,
-            transaction_id,
-            interval_s,
-            self.surface_configuration.owner_id.clone(),
-            &self.layer_maps,
-        )?;
-        let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hydrology);
-        let soil_thermal = if physical_only || v11_duration_s_bits.is_some() {
-            self.soil_thermal.read_view()
-        } else {
-            DirectSoilThermalReadView::V1(self.soil_thermal.v1()?)
-        };
-        soil_thermal.validate()?;
-        let soil_thermal_snapshot_sha256 = match soil_thermal {
-            DirectSoilThermalReadView::V1(beginning) => beginning.snapshot_sha256.clone(),
-            DirectSoilThermalReadView::V2(_) => {
-                self.soil_thermal
-                    .v2()?
-                    .owner()
-                    .snapshot()
-                    .map_err(|_| {
-                        DirectV9RealConsumerError::OwnerClosure("V2 soil snapshot identity")
-                    })?
-                    .snapshot_sha256
-            }
-        };
-        let hydrology_snapshot = unified_beginning_hydrology_snapshot_sha256(
-            &soil_adapter,
-            &self.surface_configuration,
-        )?;
-        let forcing_sha256 = input.lse_forcing.canonical_sha256()?;
-        let (vegetation_forcing, root_zone_hydraulics) = project_live_vegetation_forcing(
-            &input.vegetation_forcing,
-            &hydrology,
-            soil_thermal,
-            self.root_zone_hydraulic_configuration.as_ref(),
-            &self.surface_configuration,
-            &self.lse_configuration,
-            &self.vegetation_configuration,
-            &self.vegetation_state,
-            v8_configuration.configuration_sha256.clone(),
-            hydrology_snapshot.clone(),
-            transaction_id,
-            day_index,
-            interval_index,
-        )?;
-        let canopy_forcing = match root_zone_hydraulics {
-            Some(receipts) => V8CanopyForcingReceipt::try_new_with_root_zone(
-                v8_configuration.configuration_sha256.clone(),
-                v8_beginning.state_sha256.clone(),
-                self.lse_configuration.configuration_sha256.clone(),
-                forcing_sha256,
-                hydrology_snapshot,
-                soil_thermal_snapshot_sha256,
-                transaction_id,
-                vegetation_forcing,
-                receipts,
-            )?,
-            None => V8CanopyForcingReceipt::try_new(
-                v8_configuration.configuration_sha256.clone(),
-                v8_beginning.state_sha256.clone(),
-                self.lse_configuration.configuration_sha256.clone(),
-                forcing_sha256,
-                hydrology_snapshot,
-                soil_thermal_snapshot_sha256,
-                transaction_id,
-                vegetation_forcing,
-            )?,
-        };
-        if physical_only {
-            return self.construct_canopy_soil_physical_only_envelope(
-                day_index,
-                interval_index,
-                input,
-                v11_duration_s_bits,
-                covered_destinations,
-                covered_lower_boundaries,
-                finalize_wb14_parent_interval,
-                wb14_coupled_child_binding,
-                &v8_configuration,
-                &v8_beginning,
-                &hydrology,
-                soil_thermal,
-                &canopy_forcing,
-            );
-        }
-        self.construct_canopy_soil_complete_envelope(
-            day_index,
-            interval_index,
-            input,
-            v11_duration_s_bits,
-            covered_destinations,
-            covered_lower_boundaries,
-            provisional_v11,
-            finalize_wb14_parent_interval,
-            wb14_coupled_child_binding,
-            &v8_configuration,
-            &v8_beginning,
-            &hydrology,
-            soil_thermal,
-            &canopy_forcing,
-        )
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    #[inline(never)]
-    fn construct_canopy_soil_physical_only_envelope(
-        &self,
-        day_index: usize,
-        interval_index: u8,
-        input: &DirectV9ShadowIntervalInput,
-        v11_duration_s_bits: Option<u64>,
-        covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
-        covered_lower_boundaries: Option<
-            &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
-        >,
-        finalize_wb14_parent_interval: bool,
-        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
-        v8_configuration: &VegetationConfiguration,
-        v8_beginning: &V8CoupledOwnedState,
-        hydrology: &RealHydrologyShadowAdapter,
-        soil_thermal: DirectSoilThermalReadView<'_>,
-        canopy_forcing: &V8CanopyForcingReceipt,
-    ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
-        let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
-        let bits = v11_duration_s_bits.ok_or(DirectV9RealConsumerError::Identity(
-            "physical-only endpoint requires V11 duration",
-        ))?;
-        let destinations = covered_destinations.ok_or(DirectV9RealConsumerError::Identity(
-            "physical-only covered endpoint destination set",
-        ))?;
-        let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(hydrology);
-        let soil_thermal = match soil_thermal {
-            DirectSoilThermalReadView::V1(beginning) => {
-                crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning::try_from_v1(
-                    beginning,
-                )?
-            }
-            DirectSoilThermalReadView::V2(_) => {
-                let binding = wb14_coupled_child_binding.ok_or(
-                    DirectV9RealConsumerError::Identity("native V2 physical support binding"),
-                )?;
-                let prepared = self.soil_thermal.prepare_v2_support(
-                    input.lse_forcing.transaction_id,
-                    binding.child_support_start_ns,
-                    binding.child_support_end_ns,
-                )?;
-                crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning::try_from_v2(
-                    &prepared,
-                )?
-            }
-        };
-        let physical = execute_v8_lse_runtime_shadow_v11_physical_with_carriers(
-            v8_configuration,
-            v8_beginning,
-            &self.vegetation_owner_id,
-            canopy_forcing,
-            &self.lse_configuration,
-            &self.lse_state,
-            &input.lse_forcing,
-            &soil_adapter,
-            &self.surface_configuration,
-            day_index,
-            interval_index,
-            &input.wb14_parameters,
-            &soil_thermal,
-            &nitrogen,
-            &self.biogeochemistry,
-            openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered,
-            covered_lower_boundaries,
-            bits,
-            Some(destinations),
-            finalize_wb14_parent_interval,
-            self.wb14_parent_working_state.as_ref(),
-            wb14_coupled_child_binding,
-        )?;
-        Ok(CanopySoilEvaluationV1::PhysicalOnly(
-            ProvisionalCoveredV8PhysicalEvaluationV1::try_new(physical)?,
-        ))
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    #[inline(never)]
-    fn construct_canopy_soil_complete_envelope(
-        &self,
-        day_index: usize,
-        interval_index: u8,
-        input: &DirectV9ShadowIntervalInput,
-        v11_duration_s_bits: Option<u64>,
-        covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
-        covered_lower_boundaries: Option<
-            &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
-        >,
-        provisional_v11: bool,
-        finalize_wb14_parent_interval: bool,
-        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
-        v8_configuration: &VegetationConfiguration,
-        v8_beginning: &V8CoupledOwnedState,
-        hydrology: &RealHydrologyShadowAdapter,
-        soil_thermal: DirectSoilThermalReadView<'_>,
-        canopy_forcing: &V8CanopyForcingReceipt,
-    ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
-        let nitrogen = BiogeochemistryNitrogenArbiter::try_new(&self.biogeochemistry)?;
-        let soil_adapter = LandSurfaceEnergyRealHydrologyAdapter::new(hydrology);
-        if let Some(bits) = v11_duration_s_bits {
-            let native_soil_thermal = match soil_thermal {
-                DirectSoilThermalReadView::V1(beginning) => {
-                    crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning::try_from_v1(
-                        beginning,
-                    )?
-                }
-                DirectSoilThermalReadView::V2(_) => {
-                    let binding = wb14_coupled_child_binding.ok_or(
-                        DirectV9RealConsumerError::Identity("native V2 V11 support binding"),
-                    )?;
-                    let prepared = self.soil_thermal.prepare_v2_support(
-                        input.lse_forcing.transaction_id,
-                        binding.child_support_start_ns,
-                        binding.child_support_end_ns,
-                    )?;
-                    crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning::try_from_v2(
-                        &prepared,
-                    )?
-                }
-            };
-            match covered_destinations {
-                Some(destinations) => self.construct_canopy_soil_complete_v11_with_carriers(
-                    day_index,
-                    interval_index,
-                    input,
-                    bits,
-                    destinations,
-                    covered_lower_boundaries,
-                    provisional_v11,
-                    finalize_wb14_parent_interval,
-                    wb14_coupled_child_binding,
-                    v8_configuration,
-                    v8_beginning,
-                    &soil_adapter,
-                    &native_soil_thermal,
-                    canopy_forcing,
-                    &nitrogen,
-                ),
-                None => self.construct_canopy_soil_complete_v11(
-                    day_index,
-                    interval_index,
-                    input,
-                    bits,
-                    covered_lower_boundaries,
-                    provisional_v11,
-                    finalize_wb14_parent_interval,
-                    wb14_coupled_child_binding,
-                    v8_configuration,
-                    v8_beginning,
-                    &soil_adapter,
-                    &native_soil_thermal,
-                    canopy_forcing,
-                    &nitrogen,
-                ),
-            }
-        } else {
-            let soil_thermal = match soil_thermal {
-                DirectSoilThermalReadView::V1(beginning) => beginning,
-                DirectSoilThermalReadView::V2(_) => {
-                    return Err(DirectV9RealConsumerError::Unsupported(
-                        "historical V8 endpoint on V2 soil resident",
-                    ));
-                }
-            };
-            self.construct_canopy_soil_complete_v8(
-                day_index,
-                interval_index,
-                input,
-                v8_configuration,
-                v8_beginning,
-                &soil_adapter,
-                soil_thermal,
-                canopy_forcing,
-                &nitrogen,
-            )
-        }
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    #[inline(never)]
-    fn construct_canopy_soil_complete_v11_with_carriers(
-        &self,
-        day_index: usize,
-        interval_index: u8,
-        input: &DirectV9ShadowIntervalInput,
-        duration_s_bits: u64,
-        destinations: &BTreeSet<(OfeId, TileId)>,
-        covered_lower_boundaries: Option<
-            &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
-        >,
-        provisional_v11: bool,
-        finalize_wb14_parent_interval: bool,
-        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
-        v8_configuration: &VegetationConfiguration,
-        v8_beginning: &V8CoupledOwnedState,
-        soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
-        soil_thermal: &crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning,
-        canopy_forcing: &V8CanopyForcingReceipt,
-        nitrogen: &BiogeochemistryNitrogenArbiter,
-    ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
-        let envelope = execute_v8_lse_runtime_shadow_v11_with_native_soil_beginning(
-            v8_configuration,
-            v8_beginning,
-            &self.vegetation_owner_id,
-            canopy_forcing,
-            &self.lse_configuration,
-            &self.lse_state,
-            &input.lse_forcing,
-            soil_adapter,
-            &self.surface_configuration,
-            day_index,
-            interval_index,
-            &input.wb14_parameters,
-            soil_thermal,
-            nitrogen,
-            &self.biogeochemistry,
-            // This entry point is the typed V11 snow-covered carrier path
-            // even for unpublished probe envelopes.
-            openwepp_land_surface_energy::CoveredColumnAuthority::V11SnowCovered,
-            covered_lower_boundaries,
-            duration_s_bits,
-            !provisional_v11,
-            Some(destinations),
-            finalize_wb14_parent_interval,
-            self.wb14_parent_working_state.as_ref(),
-            wb14_coupled_child_binding,
-        )?;
-        Ok(CanopySoilEvaluationV1::Complete(envelope))
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    #[inline(never)]
-    fn construct_canopy_soil_complete_v11(
-        &self,
-        day_index: usize,
-        interval_index: u8,
-        input: &DirectV9ShadowIntervalInput,
-        duration_s_bits: u64,
-        covered_lower_boundaries: Option<
-            &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
-        >,
-        provisional_v11: bool,
-        finalize_wb14_parent_interval: bool,
-        wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
-        v8_configuration: &VegetationConfiguration,
-        v8_beginning: &V8CoupledOwnedState,
-        soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
-        soil_thermal: &crate::land_surface_energy_shadow::V8SoilThermalPhysicalBeginning,
-        canopy_forcing: &V8CanopyForcingReceipt,
-        nitrogen: &BiogeochemistryNitrogenArbiter,
-    ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
-        let envelope = execute_v8_lse_runtime_shadow_v11_with_native_soil_beginning(
-            v8_configuration,
-            v8_beginning,
-            &self.vegetation_owner_id,
-            canopy_forcing,
-            &self.lse_configuration,
-            &self.lse_state,
-            &input.lse_forcing,
-            soil_adapter,
-            &self.surface_configuration,
-            day_index,
-            interval_index,
-            &input.wb14_parameters,
-            soil_thermal,
-            nitrogen,
-            &self.biogeochemistry,
-            self.authority,
-            covered_lower_boundaries,
-            duration_s_bits,
-            !provisional_v11,
-            None,
-            finalize_wb14_parent_interval,
-            self.wb14_parent_working_state.as_ref(),
-            wb14_coupled_child_binding,
-        )?;
-        Ok(CanopySoilEvaluationV1::Complete(envelope))
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    #[inline(never)]
-    fn construct_canopy_soil_complete_v8(
-        &self,
-        day_index: usize,
-        interval_index: u8,
-        input: &DirectV9ShadowIntervalInput,
-        v8_configuration: &VegetationConfiguration,
-        v8_beginning: &V8CoupledOwnedState,
-        soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
-        soil_thermal: &SoilThermalSnapshot,
-        canopy_forcing: &V8CanopyForcingReceipt,
-        nitrogen: &BiogeochemistryNitrogenArbiter,
-    ) -> Result<CanopySoilEvaluationV1, DirectV9RealConsumerError> {
-        let envelope = execute_v8_lse_runtime_shadow_internal(
-            v8_configuration,
-            v8_beginning,
-            &self.vegetation_owner_id,
-            canopy_forcing,
-            &self.lse_configuration,
-            &self.lse_state,
-            &input.lse_forcing,
-            soil_adapter,
-            &self.surface_configuration,
-            day_index,
-            interval_index,
-            &input.wb14_parameters,
-            soil_thermal,
-            nitrogen,
-            &self.biogeochemistry,
-            None,
-            self.authority,
-        )?;
-        Ok(CanopySoilEvaluationV1::Complete(envelope))
-    }
-
-    /// Construct the V11 canopy/soil envelope for a Child-2C covered slab.
-    ///
-    /// Snow is not admitted to the snow-free LSE owner. The Stage-3 snow
-    /// column and the canopy/snow air carrier are evaluated and sealed by the
-    /// covered adopter before this projection. The V8/LSE endpoint here is
-    /// consequently a typed canopy/soil continuation with the carrier's
-    /// shared air state; it is not the snow-free lower-boundary selector.
-    #[allow(clippy::too_many_arguments)]
-    fn construct_covered_interval_envelope_with_duration(
-        &self,
-        day_index: usize,
-        interval_index: usize,
-        input: &DirectV11SnowCoveredSegmentInput,
-        interval_s: f64,
-        v11_duration_s_bits: u64,
-        covered_destinations: &BTreeSet<(OfeId, TileId)>,
-        lower_boundaries: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
-        provisional_v11: bool,
-        finalize_wb14_parent_interval: bool,
-        wb14_coupled_child_binding: crate::direct_runtime::DirectWb14CoupledChildBindingV1,
-    ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV9RealConsumerError> {
-        if !input.lse_forcing.snow_present_at_end || input.lse_forcing.snow_terminal_payload_present
-        {
-            return Err(DirectV9RealConsumerError::Unsupported(
-                "covered adopter requires persistent snow operands",
-            ));
-        }
-        // The carrier owns the snow surface. The LSE endpoint receives only
-        // shared air state by keyed destination; no parent aggregate is used.
-        let mut canopy_soil_forcing = input.lse_forcing.clone();
-        canopy_soil_forcing.snow_present_at_beginning = false;
-        canopy_soil_forcing.snow_present_at_end = false;
-        canopy_soil_forcing.forcing_sha256 = canopy_soil_forcing.canonical_sha256()?;
-        let covered_vegetation_forcing = input.vegetation_forcing.clone();
-        let covered_input = DirectV9ShadowIntervalInput {
-            lse_forcing: canopy_soil_forcing,
-            vegetation_forcing: covered_vegetation_forcing,
-            wb14_parameters: input.wb14_parameters.clone(),
-        };
-        self.construct_canopy_soil_interval_envelope_with_duration(
-            day_index,
-            interval_index,
-            &covered_input,
-            interval_s,
-            Some(v11_duration_s_bits),
-            Some(lower_boundaries),
-            provisional_v11,
-            Some(covered_destinations),
-            finalize_wb14_parent_interval,
-            Some(wb14_coupled_child_binding),
-            false,
-        )
-        .and_then(CanopySoilEvaluationV1::into_complete)
-    }
-
-    fn prepare_covered_canopy_soil_input(
-        input: &DirectV11SnowCoveredSegmentInput,
-    ) -> Result<PreparedCoveredCanopySoilInputV1, DirectV9RealConsumerError> {
-        if !input.lse_forcing.snow_present_at_end || input.lse_forcing.snow_terminal_payload_present
-        {
-            return Err(DirectV9RealConsumerError::Unsupported(
-                "covered adopter requires persistent snow operands",
-            ));
-        }
-        let mut canopy_soil_forcing = input.lse_forcing.clone();
-        canopy_soil_forcing.snow_present_at_beginning = false;
-        canopy_soil_forcing.snow_present_at_end = false;
-        canopy_soil_forcing.forcing_sha256 = canopy_soil_forcing.canonical_sha256()?;
-        let covered_input = DirectV9ShadowIntervalInput {
-            lse_forcing: canopy_soil_forcing,
-            vegetation_forcing: input.vegetation_forcing.clone(),
-            wb14_parameters: input.wb14_parameters.clone(),
-        };
-        Ok(PreparedCoveredCanopySoilInputV1(covered_input))
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn construct_prepared_covered_interval_physical_with_duration(
-        &self,
-        day_index: usize,
-        interval_index: usize,
-        prepared: &PreparedCoveredCanopySoilInputV1,
-        interval_s: f64,
-        v11_duration_s_bits: u64,
-        covered_destinations: &BTreeSet<(OfeId, TileId)>,
-        lower_boundaries: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
-        finalize_wb14_parent_interval: bool,
-        wb14_coupled_child_binding: crate::direct_runtime::DirectWb14CoupledChildBindingV1,
-    ) -> Result<ProvisionalCoveredV8PhysicalEvaluationV1, DirectV9RealConsumerError> {
-        self.construct_canopy_soil_interval_envelope_with_duration(
-            day_index,
-            interval_index,
-            &prepared.0,
-            interval_s,
-            Some(v11_duration_s_bits),
-            Some(lower_boundaries),
-            true,
-            Some(covered_destinations),
-            finalize_wb14_parent_interval,
-            Some(wb14_coupled_child_binding),
-            true,
-        )
-        .and_then(CanopySoilEvaluationV1::into_physical)
-    }
-
-    fn accept_envelope(
-        &mut self,
-        transaction_id: TransactionId,
-        envelope: &UncommittedCoveredV8OwnerEnvelope,
-    ) -> Result<(), DirectV9RealConsumerError> {
-        envelope.validate()?;
-        let vegetation_state = project_v8_runtime_to_v9(
-            envelope.vegetation().ending_state(),
-            &self.vegetation_configuration,
-        )?;
-        let lse_state = build_lse_ending_state(
-            &self.lse_state,
-            transaction_id,
-            envelope.hydrology().ending_lse_tile_states().to_vec(),
-        )?;
-        let soil_thermal = aggregate_soil_thermal_ending(
-            self.soil_thermal.v1()?,
-            &self.lse_configuration,
-            transaction_id,
-            envelope.hydrology().soil_thermal_candidates(),
-        )?;
-        self.vegetation_state = vegetation_state;
-        self.lse_state = lse_state;
-        self.soil_thermal = DirectSoilThermalResident::try_new_v1(soil_thermal)?;
-        self.biogeochemistry = envelope.biogeochemistry().ending().clone();
-        self.hydrology_frame = envelope.hydrology().ending_frame().clone();
-        self.wb14_parent_working_state = envelope
-            .hydrology()
-            .surface_ingress()
-            .parent_working_state()
-            .cloned();
-        if envelope
-            .hydrology()
-            .surface_ingress()
-            .advances_persistent_parent_interval()
-        {
-            self.accepted_interval_count = self.accepted_interval_count.checked_add(1).ok_or(
-                DirectV9RealConsumerError::Identity("accepted parent interval count overflow"),
-            )?;
-        }
-        Ok(())
-    }
-
-    fn accept_envelope_with_soil_top_boundary_credits(
-        &mut self,
-        transaction_id: TransactionId,
-        envelope: &UncommittedCoveredV8OwnerEnvelope,
-        credits: &[SoilThermalTopBoundaryCreditV1],
-    ) -> Result<SoilThermalTopBoundaryCreditSetV1, DirectV9RealConsumerError> {
-        for credit in credits {
-            if credit.snow_soil_heat_receipt_sha256.as_str().len() != 64 {
-                return Err(DirectV9RealConsumerError::OwnerClosure(
-                    "snow-soil receipt digest encoding",
-                ));
-            }
-        }
-        let beginning_soil = self.soil_thermal.v1()?.clone();
-        self.accept_envelope(transaction_id, envelope)?;
-        let accepted = aggregate_soil_thermal_ending_with_top_boundary_credits(
-            &beginning_soil,
-            &self.lse_configuration,
-            transaction_id,
-            envelope.hydrology().soil_thermal_candidates(),
-            credits,
-        )?;
-        self.soil_thermal = DirectSoilThermalResident::try_new_v1(accepted.ending.clone())?;
-        Ok(accepted)
-    }
-
-    fn validate_complete_owner_set(&self) -> Result<(), DirectV9RealConsumerError> {
-        self.vegetation_state
-            .validate(&self.vegetation_configuration)?;
-        self.lse_state.validate(&self.lse_configuration)?;
-        self.soil_thermal.validate()?;
-        let transaction_id = TransactionId(self.vegetation_state.0.last_transaction_id);
-        let lse_transaction_matches = self
-            .lse_state
-            .last_accepted_transaction_id
-            .is_none_or(|value| value == transaction_id);
-        let soil_transaction_matches = self
-            .soil_thermal
-            .last_accepted_transaction_id()
-            .is_none_or(|value| value == transaction_id);
-        let complete_accepted_lineage = self.accepted_interval_count == 0
-            || (self.lse_state.last_accepted_transaction_id == Some(transaction_id)
-                && self.soil_thermal.last_accepted_transaction_id() == Some(transaction_id));
-        let mapping_matches = self
-            .surface_configuration
-            .ofe_bindings
-            .iter()
-            .zip(&self.layer_maps)
-            .all(|(binding, map)| {
-                binding.production_lane_index == map.ofe_lane.lane_index
-                    && binding.production_lane_id == map.ofe_lane.lane_id
-                    && binding.ordered_soil_layer_ids == map.layer_ids
-            });
-        if self.surface_configuration.ofe_bindings.len() != self.hydrology_frame.lanes.len()
-            || self.layer_maps.len() != self.hydrology_frame.lanes.len()
-            || self.biogeochemistry.last_transaction_id
-                != self.vegetation_state.0.last_transaction_id
-            || !lse_transaction_matches
-            || !soil_transaction_matches
-            || !complete_accepted_lineage
-            || !mapping_matches
-        {
-            return Err(DirectV9RealConsumerError::Identity(
-                "incomplete or mixed complete-owner state",
-            ));
-        }
-        Ok(())
-    }
-
-    fn diagnostic_fingerprint(&self) -> Result<String, DirectV9RealConsumerError> {
-        #[derive(Serialize)]
-        struct ShadowBytes<'a> {
-            vegetation: &'a V9CoupledOwnedState,
-            lse: &'a LandSurfaceEnergyState,
-            soil_thermal: &'a DirectSoilThermalResident,
-            biogeochemistry: &'a BiogeochemistryState,
-            hydrology_debug: String,
-            next_day_index: usize,
-            accepted_interval_count: u64,
-        }
-        let bytes = serde_json::to_vec(&ShadowBytes {
-            vegetation: &self.vegetation_state,
-            lse: &self.lse_state,
-            soil_thermal: &self.soil_thermal,
-            biogeochemistry: &self.biogeochemistry,
-            hydrology_debug: format!("{:?}", self.hydrology_frame),
-            next_day_index: self.next_day_index,
-            accepted_interval_count: self.accepted_interval_count,
-        })
-        .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
-        Ok(format!("{:x}", Sha256::digest(bytes)))
-    }
-}
+include!("v9_real_consumer_shadow/direct_v9_real_consumer_shadow_impl.rs");
 
 fn validate_repository_day_projection(
     production_frame: &DirectRunFrame,

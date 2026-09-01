@@ -133,7 +133,7 @@ impl PotentialTilePhase {
         }
     }
 
-    fn request_batch(&self) -> Option<&PotentialWaterRequestBatch> {
+    pub(super) fn request_batch(&self) -> Option<&PotentialWaterRequestBatch> {
         match self {
             Self::Open { phase, .. } => Some(&phase.request_batch),
             Self::Stage3OpenSnow { request_batch, .. } => Some(request_batch),
@@ -183,7 +183,7 @@ impl FinalizedRuntimeTile {
     }
 
     #[must_use]
-    fn water_protocol(&self) -> Option<&WaterProtocol> {
+    pub(super) fn water_protocol(&self) -> Option<&WaterProtocol> {
         match self {
             Self::Open(value) => Some(&value.water_protocol),
             Self::Stage3OpenSnow { water_protocol, .. } => Some(water_protocol),

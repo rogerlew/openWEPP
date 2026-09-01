@@ -26,24 +26,21 @@
 ## Core Directives
 - `??` in a prompt means provide critical analysis only; do not implement code.
 - Ask for clarification when requirements or debug context are ambiguous.
-- Do not stop at an internal milestone, intake result, contract-first gate,
-  partial implementation, or validation subset when the user authorized a
-  larger end-to-end checkpoint. Continue autonomously through the full
-  authorized objective, reviews, verification, and truthful disposition while
-  safe in-scope work remains. Hand back early only for a genuine authority,
-  safety, external-state, or user-decision blocker; context length, effort,
-  elapsed time, or a convenient progress boundary are not blockers.
+- Do not stop at an internal milestone, intake result, contract-first gate, partial
+  implementation, or validation subset when the user authorized a larger end-to-end
+  checkpoint. Continue through review, verification, and truthful disposition while
+  safe in-scope work remains. Hand back early only for a genuine authority, safety,
+  external-state, or user-decision blocker; context length, effort, elapsed time, or a
+  convenient progress boundary are not blockers.
 - Keep docs terse: Codex loads context in bulk and does not compress verbose guidance.
 - Work packages are autonomous execution specs; front-load enough planning, context, evidence, review, verification, and gates for no-intervention execution.
 - Do not split work into tiny diagnostic-only packages unless authority, safety, validation-cost, or write-set boundaries require it.
 - Substantive implementation work must occur within an authorized `docs/work-packages/<id>/` scope, or as user-directed follow-on work from that package.
 - If follow-on work extends beyond the current package objective/write set, evaluate closing the package and planning a new one first.
-- For package-required subagent review, verification, comparator, or parallel
-  work, follow `docs/work-packages/AGENTS.md` and the standing user
-  authorization wording in `docs/standards/prompt-wording-guidance.md`.
+- For package-required subagent review, verification, comparator, or parallel work,
+  follow `docs/work-packages/AGENTS.md` and `docs/standards/prompt-wording-guidance.md`.
 - Producer-only, skeleton-only, counter-only, or shadow-only evidence cannot close
-  endpoint, direct-path, publication, or cutover claims. The real downstream
-  consumer must be proven to read the new path.
+  endpoint, direct-path, publication, or cutover claims; prove the real consumer reads it.
 - Do not create or switch git branches unless the user explicitly asks.
 - Keep required scaffold/intermediate commits local and push once per stable
   increment unless an explicit remote checkpoint is necessary.
@@ -53,6 +50,11 @@
   and retained forest1 records remain historical evidence and do not occupy a
   live queue.
 - Do not add fallback wrappers that silently mask missing required dependencies; prefer explicit failures.
+- Production numerical solvers must not accrete historical-version, eligibility,
+  convergence, or recovery fallbacks. Use one canonical solver per physical regime;
+  nonconvergence uses its canonical adaptive response or a typed failure, and successors
+  delete superseded paths. Follow `docs/standards/numerical-solver-architecture.md` and
+  ADR-0044; Stage 3 v33--v57 is quarantined for removal and may not be extended or copied.
 - Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
 - Execute the full authorized checkpoint through gates, review, disposition,
   and delivery; intermediate progress or HOLD is not a stopping condition
@@ -113,21 +115,16 @@ openWEPP is the Rust simulation engine. openWEPP owns its architecture and scien
 
 ## Documentation Map
 - Work packages: `docs/work-packages/AGENTS.md`, `docs/work-packages/README.md`, `docs/codex_exec_plans.md`, `docs/defect_closure_execplans.md`.
-- Agent instruction discovery: `docs/agent-guidance-map.md`,
-  `tools/agents/find-agents`.
+- Agent instruction discovery: `docs/agent-guidance-map.md`, `tools/agents/find-agents`.
 - Array-native burn-down ExecPlans: R4 hydrology direct paths in `docs/work-packages/r4-burndown-execplan.md`; R5 full OFE-day direct path in `docs/work-packages/r5-burndown-execplan.md`.
 - Science contracts: `docs/specifications/science-contracts/AGENTS.md`, `docs/specifications/science-contract-authoring-procedure.md`, `docs/specifications/science-contracts/kernel-process-contract-profile.md`, `docs/specifications/science-contracts/index.md`.
-- Standards and prompt wording: `docs/standards/AGENTS.md`, `docs/standards/kernel-work-package-preparation.md`, `docs/standards/prompt-wording-guidance.md`, `docs/standards/mechanical-refactor-authoring-guide.md`, `docs/standards/local-ci-gate-selection.md`.
+- Standards: `docs/standards/AGENTS.md`, `docs/standards/numerical-solver-architecture.md`, `docs/standards/kernel-work-package-preparation.md`, `docs/standards/prompt-wording-guidance.md`.
 - Canonical gate lifecycle: `docs/standards/testing-and-gate-strategy.md`.
 - Local CI timing tooling: `tools/local_ci/README.md`.
 - Adjudicated CRAP gate: `tools/release/README.md`.
 - Rust crates: `crates/AGENTS.md`.
 - Tests: `tests/AGENTS.md`.
-- Numerics: `docs/numerics/README.md`.
-- Subprocess orchestration: `docs/decisions/0004-subprocess-hillslope-orchestration.md`.
-- Architecture/science-contract strategy: `docs/decisions/0011-architecture-first-top-down-science-contracts.md`.
-- Legacy baseline anchor: `docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md`.
-- Comparator distrust / flag-not-target posture: `docs/decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md`.
+- Numerics and key ADRs: `docs/numerics/README.md`; ADR-0004 (subprocess), ADR-0011 (architecture), ADR-0012 (baseline), ADR-0017 (comparator), and ADR-0044 (solver anti-accretion).
 
 ## Subsystem Maps
 - Nearest `AGENTS.md` wins. See the documentation map above for local playbooks; add new subsystem entries there rather than duplicating detailed guidance in root.

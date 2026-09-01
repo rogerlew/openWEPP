@@ -1,0 +1,10 @@
+Command: RUST_MIN_STACK=67108864 nix develop -c cargo nextest run --test erosion_single_ofe_p61_sediment
+Result: FAIL
+Test wall time: 394.137 s
+Build time reported before test: 33.01 s
+Stack: 67108864 bytes
+Peak RSS: not captured by this run
+Test: openwepp::erosion_single_ofe_p61_sediment erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime
+Failure: RuntimeSurfaceFailure { surface: "r7c_direct_production_executor", detail: "HS-SIMPIPE-E-001 direct runtime kernel guard failed in snow_stage3_v11: prepare: Stage-3/V11 adaptive terminal direct trial failure at 178200000000000..178260000000000 ns (60000000000 ns): VEG-E-123: imported V10 segment execution failed: SC-SNOWENERGY-E-FIXED-POINT-001: bounded covered fixed-point iteration did not converge" }
+Disposition: former 176400000000000..178200000000000 ns LSE support-receipt mismatch cleared; distinct covered fixed-point limiter remains at the immediately following 60-second support.
+Diagnostics: no fixed-point iteration audit enabled or retained; only the typed terminal error above was emitted.

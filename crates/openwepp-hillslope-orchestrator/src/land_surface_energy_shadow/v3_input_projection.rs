@@ -35,6 +35,8 @@ pub(crate) enum FrozenLitterV3RuntimeError {
     SurfaceLiquid(#[from] DirectSurfaceLiquidError),
     #[error(transparent)]
     SoilThermal(#[from] openwepp_land_surface_energy::SoilThermalExactCarryError),
+    #[error(transparent)]
+    ExactSurface(#[from] crate::LseSurfaceEnthalpyErrorV1),
     #[error("frozen-litter V3 canonical serialization failure: {0}")]
     Serialization(&'static str),
 }
@@ -72,7 +74,7 @@ impl FrozenLitterV3PhaseFreeInput {
         }
     }
 
-    #[cfg(test)]
+    #[cfg(any(test, feature = "restart-authority-evidence"))]
     pub(crate) fn from_authority_operands_for_test(
         ofe_id: OfeId,
         tile_id: TileId,

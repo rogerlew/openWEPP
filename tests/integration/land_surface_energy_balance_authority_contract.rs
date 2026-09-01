@@ -103,7 +103,7 @@ fn contract_preserves_adjacent_owners_and_rejects_terminal_payload() {
 fn current_version_releases_named_authority_without_production_claims() {
     let contract = read(CONTRACT);
     for required in [
-        "contract_version: 15",
+        "contract_version: 16",
         "status: approved",
         "maturity: active",
         "OPENWEPP_SNOW_FREE_LSE_V1",
@@ -283,7 +283,7 @@ fn version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry() {
     let index = read(INDEX);
     assert!(
         row(&index, "SC-LANDSURFACEENERGY-001")
-            .contains("v15 adds receiver-owned exact soil-layer enthalpy")
+            .contains("v16 adds a minimal LSE-owned exact per-tile surface-enthalpy companion")
     );
 }
 
@@ -301,6 +301,64 @@ fn version_fifteen_requires_exact_carry_production_identity() {
         assert!(
             production.contains(required),
             "unchanged production is missing required v15 exact-carry binding {required}"
+        );
+    }
+}
+
+#[test]
+fn version_sixteen_binds_exact_lse_surface_enthalpy_carry() {
+    let contract = read(CONTRACT);
+    for required in [
+        "contract_version: 16",
+        "INV-LANDSURFACEENERGY-151",
+        "U = exact(U_hi) + R_U",
+        "LseSurfaceEnthalpyOwnerEnvelopeV1",
+        "LseSurfaceEnthalpyEnergyCreditReceiptV1",
+        "LseSurfaceEnthalpyOwnerRestartV1",
+        "LseSurfaceEnthalpyOwnerCheckpointV1",
+        "SurfaceLiquidCompleteOwnerProjectionV4",
+        "nonauthoritative high mirror",
+        "retained_ingress_tile_credit",
+        "U_candidate=U_begin+sum(Q_surface,j)",
+        "binary64 nearest-even",
+        "R_U,candidate=U_candidate-exact(U_hi,candidate)",
+        "176400000000000..178200000000000 ns",
+        "did not preserve the exact\nbeginning high bits or retained tile-credit operands",
+        "exact `60000000000 ns` fallback floor remains unchanged",
+        "LSEB-E-050",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    let index = read(INDEX);
+    assert!(
+        row(&index, "SC-LANDSURFACEENERGY-001")
+            .contains("v16 adds a minimal LSE-owned exact per-tile surface-enthalpy companion")
+    );
+}
+
+#[test]
+fn version_sixteen_requires_exact_surface_owner_receipt_and_projection_symbols() {
+    let production = read_existing(&[
+        "crates/openwepp-land-surface-energy/src/lib.rs",
+        "crates/openwepp-land-surface-energy/src/exact_dyadic_enthalpy.rs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v3_exact_enthalpy.rs",
+        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v4_projection.rs",
+        "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs",
+        "crates/openwepp-persisted-restart-v1/src/lib.rs",
+    ]);
+    for required in [
+        "pub struct LseSurfaceEnthalpyOwnerEnvelopeV1",
+        "pub struct LseSurfaceEnthalpyEnergyCreditReceiptV1",
+        "pub struct LseSurfaceEnthalpyOwnerRestartV1",
+        "pub struct LseSurfaceEnthalpyOwnerCheckpointV1",
+        "SurfaceLiquidCompleteOwnerProjectionV4",
+        "LSEB-E-050",
+    ] {
+        assert!(
+            production.contains(required),
+            "unchanged production is missing required v16 exact-surface binding {required}"
         );
     }
 }
@@ -335,7 +393,13 @@ fn version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks
 
     let index = read(INDEX);
     let index_row = row(&index, "SC-LANDSURFACEENERGY-001");
-    assert!(index_row.contains("v12 retains exact centered interior differences"));
+    assert!(index_row.starts_with(
+        "| `SC-LANDSURFACEENERGY-001` | Land-Surface Energy-Balance Process Contract | `approved` | `active` |"
+    ));
+    assert!(
+        index_row
+            .contains("v16 adds a minimal LSE-owned exact per-tile surface-enthalpy companion")
+    );
 }
 
 #[test]

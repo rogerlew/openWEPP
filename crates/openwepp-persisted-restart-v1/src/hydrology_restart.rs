@@ -3,9 +3,12 @@ use crate::{
     DirectErosionRuntimeCarryRestartV1, DirectEvapotranspirationStageRestartV1,
     DirectGroundwaterRunStateRestartV1, DirectGrowthStateSurfaceRestartV1,
     DirectLaneTransferLedgerRestartV1, DirectRunTransferDownstreamOperandsRestartV1,
-    DirectSnowStage3V11AttachmentRestartV2, DirectSubsurfaceLayerRestartV1,
-    DirectSurfaceLiquidOwnedStateRestartV1, DirectTransferBuffersRestartV1,
-    DirectWaterStateRestartV1, DirectWinterColumnRestartV1, HexF64, Sha256Hex,
+    DirectSnowStage3V11AttachmentRestartV2, DirectSnowStage3V11ExactEnthalpyRestartV4,
+    DirectSubsurfaceLayerRestartV1, DirectSurfaceLiquidOwnedStateRestartV1,
+    DirectTransferBuffersRestartV1, DirectWaterStateRestartV1, DirectWinterColumnRestartV1,
+    ExpectedSnowStage3V11ExactEnthalpyRestartContextV4,
+    ExpectedSnowStage3V11ExactResidentContextsV4, ExpectedStage3CommittedDayArchiveV3, HexF64,
+    Sha256Hex, SnowStage3V11ExactResidentSetV4,
 };
 use openwepp_hillslope_orchestrator::{
     DirectDayConstructorInputs, DirectLaneFrame, DirectLaneTransferLedger, DirectPhaseKind,
@@ -323,6 +326,23 @@ impl DirectHydrologyRestartV1 {
         phase_plan_sha256: Sha256Hex,
         day_input_digests: &[Sha256Hex],
     ) -> Result<Self, HydrologyRestartError> {
+        Self::project_mode(value, phase_plan_sha256, day_input_digests, false)
+    }
+
+    pub(crate) fn project_for_exact_parent(
+        value: &DirectRunFrame,
+        phase_plan_sha256: Sha256Hex,
+        day_input_digests: &[Sha256Hex],
+    ) -> Result<Self, HydrologyRestartError> {
+        Self::project_mode(value, phase_plan_sha256, day_input_digests, true)
+    }
+
+    fn project_mode(
+        value: &DirectRunFrame,
+        phase_plan_sha256: Sha256Hex,
+        day_input_digests: &[Sha256Hex],
+        for_exact_parent: bool,
+    ) -> Result<Self, HydrologyRestartError> {
         let DirectRunFrame {
             identity,
             lanes,
@@ -419,11 +439,19 @@ impl DirectHydrologyRestartV1 {
             snow_stage3_v11_attachment: snow_stage3_v11_attachment
                 .as_deref()
                 .map(|attachment| {
-                    DirectSnowStage3V11AttachmentRestartV2::project(
-                        attachment,
-                        &phase_plan_sha256,
-                        day_input_digests,
-                    )
+                    if for_exact_parent {
+                        DirectSnowStage3V11AttachmentRestartV2::project_active_base_v3(
+                            attachment,
+                            &phase_plan_sha256,
+                            day_input_digests,
+                        )
+                    } else {
+                        DirectSnowStage3V11AttachmentRestartV2::project(
+                            attachment,
+                            &phase_plan_sha256,
+                            day_input_digests,
+                        )
+                    }
                 })
                 .transpose()
                 .map_err(nested)?
@@ -595,6 +623,189 @@ impl DirectHydrologyRestartV1 {
     }
 }
 
+pub const DIRECT_HYDROLOGY_EXACT_ENTHALPY_RESTART_V2_SCHEMA: &str =
+    "OPENWEPP_DIRECT_HYDROLOGY_EXACT_ENTHALPY_RESTART_V2";
+
+/// Additive production restart. The complete V1 hydrology bytes and the
+/// complete Stage-3/V3 bytes remain nested unchanged; V4 owns only the exact
+/// frozen-litter supplement needed to reconstruct the mandatory successor.
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectHydrologyExactEnthalpyRestartV2 {
+    pub schema: String,
+    pub version: u16,
+    pub parent_v1_bytes: Vec<u8>,
+    pub parent_v1_sha256: Sha256Hex,
+    pub stage3_v4: DirectSnowStage3V11ExactEnthalpyRestartV4,
+    pub payload_sha256: Sha256Hex,
+}
+
+#[derive(Serialize)]
+struct DirectHydrologyExactEnthalpyDigestBodyV2<'a> {
+    schema: &'a str,
+    version: u16,
+    parent_v1_bytes: &'a [u8],
+    parent_v1_sha256: &'a Sha256Hex,
+    stage3_v4: &'a DirectSnowStage3V11ExactEnthalpyRestartV4,
+}
+
+pub struct ExpectedDirectHydrologyExactEnthalpyRestartContextV2<'a> {
+    pub hydrology: &'a ExpectedDirectHydrologyRestartContext<'a>,
+    pub stage3_v4: &'a ExpectedSnowStage3V11ExactEnthalpyRestartContextV4<'a>,
+}
+
+impl DirectHydrologyExactEnthalpyRestartV2 {
+    #[allow(clippy::too_many_arguments)]
+    pub fn project(
+        value: &DirectRunFrame,
+        phase_plan_sha256: Sha256Hex,
+        day_input_digests: &[Sha256Hex],
+        archive: &ExpectedStage3CommittedDayArchiveV3<'_>,
+        exact_residents: SnowStage3V11ExactResidentSetV4,
+        exact_contexts: &ExpectedSnowStage3V11ExactResidentContextsV4<'_>,
+    ) -> Result<Self, HydrologyRestartError> {
+        let parent = DirectHydrologyRestartV1::project_for_exact_parent(
+            value,
+            phase_plan_sha256.clone(),
+            day_input_digests,
+        )?;
+        let attachment =
+            value
+                .snow_stage3_v11_attachment
+                .as_deref()
+                .ok_or(HydrologyRestartError::Join(
+                    "missing production Stage-3/V11 attachment",
+                ))?;
+        let stage3_v4 = DirectSnowStage3V11ExactEnthalpyRestartV4::project(
+            attachment,
+            &phase_plan_sha256,
+            day_input_digests,
+            archive,
+            exact_residents,
+            exact_contexts,
+        )
+        .map_err(nested)?;
+        let parent_v1_bytes = crate::to_canonical_bytes(&parent).map_err(nested)?;
+        let mut projected = Self {
+            schema: DIRECT_HYDROLOGY_EXACT_ENTHALPY_RESTART_V2_SCHEMA.to_owned(),
+            version: 2,
+            parent_v1_sha256: restart_sha(&parent_v1_bytes)?,
+            parent_v1_bytes,
+            stage3_v4,
+            payload_sha256: restart_zero_sha()?,
+        };
+        projected.payload_sha256 = projected.compute_digest()?;
+        projected.validate_envelope()?;
+        Ok(projected)
+    }
+
+    pub fn restore(
+        &self,
+        context: &ExpectedDirectHydrologyExactEnthalpyRestartContextV2<'_>,
+    ) -> Result<DirectRunFrame, HydrologyRestartError> {
+        self.validate_envelope()?;
+        let parent: DirectHydrologyRestartV1 =
+            crate::from_canonical_bytes(&self.parent_v1_bytes).map_err(nested)?;
+        if crate::to_canonical_bytes(&parent).map_err(nested)? != self.parent_v1_bytes {
+            return Err(HydrologyRestartError::Join(
+                "noncanonical nested hydrology V1",
+            ));
+        }
+        let parent_stage3 = parent
+            .snow_stage3_v11_attachment
+            .as_deref()
+            .ok_or(HydrologyRestartError::Join(
+                "nested hydrology V1 Stage-3 posture",
+            ))?
+            .to_canonical_bytes()
+            .map_err(nested)?;
+        require_exact_parent_stage3_join(
+            &parent_stage3,
+            &self.stage3_v4.nested_active_v2_bytes().map_err(nested)?,
+        )?;
+        let mut frame = parent.restore_without_stage3(context.hydrology)?;
+        let attachment = self.stage3_v4.restore(context.stage3_v4).map_err(nested)?;
+        if frame
+            .lanes
+            .iter()
+            .map(|lane| lane.lane_id)
+            .collect::<Vec<_>>()
+            != attachment.static_context.lane_ids
+        {
+            return Err(HydrologyRestartError::Join(
+                "V4 restored Stage-3 lane topology",
+            ));
+        }
+        frame.snow_stage3_v11_attachment = Some(Box::new(attachment));
+        Ok(frame)
+    }
+
+    pub fn to_canonical_bytes(&self) -> Result<Vec<u8>, HydrologyRestartError> {
+        crate::to_canonical_bytes(self).map_err(nested)
+    }
+
+    pub fn from_canonical_bytes(
+        bytes: &[u8],
+        context: &ExpectedDirectHydrologyExactEnthalpyRestartContextV2<'_>,
+    ) -> Result<Self, HydrologyRestartError> {
+        let value: Self = crate::from_canonical_bytes(bytes).map_err(nested)?;
+        if value.to_canonical_bytes()? != bytes {
+            return Err(HydrologyRestartError::Join(
+                "noncanonical hydrology exact-enthalpy V2",
+            ));
+        }
+        value.restore(context)?;
+        Ok(value)
+    }
+
+    fn validate_envelope(&self) -> Result<(), HydrologyRestartError> {
+        if self.schema != DIRECT_HYDROLOGY_EXACT_ENTHALPY_RESTART_V2_SCHEMA
+            || self.version != 2
+            || self.parent_v1_sha256 != restart_sha(&self.parent_v1_bytes)?
+            || self.payload_sha256 != self.compute_digest()?
+        {
+            return Err(HydrologyRestartError::Join(
+                "hydrology exact-enthalpy schema or digest",
+            ));
+        }
+        Ok(())
+    }
+
+    fn compute_digest(&self) -> Result<Sha256Hex, HydrologyRestartError> {
+        let bytes = crate::to_canonical_bytes(&DirectHydrologyExactEnthalpyDigestBodyV2 {
+            schema: &self.schema,
+            version: self.version,
+            parent_v1_bytes: &self.parent_v1_bytes,
+            parent_v1_sha256: &self.parent_v1_sha256,
+            stage3_v4: &self.stage3_v4,
+        })
+        .map_err(nested)?;
+        restart_sha(&bytes)
+    }
+}
+
+fn require_exact_parent_stage3_join(
+    parent_active_base_bytes: &[u8],
+    exact_supplement_active_base_bytes: &[u8],
+) -> Result<(), HydrologyRestartError> {
+    if parent_active_base_bytes != exact_supplement_active_base_bytes {
+        return Err(HydrologyRestartError::Join(
+            "nested hydrology V1/Stage-3 V3 active-base join",
+        ));
+    }
+    Ok(())
+}
+
+fn restart_sha(bytes: &[u8]) -> Result<Sha256Hex, HydrologyRestartError> {
+    Sha256Hex::try_new(format!("{:x}", Sha256::digest(bytes)))
+        .map_err(|_| HydrologyRestartError::Domain("restart digest"))
+}
+
+fn restart_zero_sha() -> Result<Sha256Hex, HydrologyRestartError> {
+    Sha256Hex::try_new("0".repeat(64))
+        .map_err(|_| HydrologyRestartError::Domain("restart digest seed"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -606,6 +817,31 @@ mod tests {
     };
     use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId};
     use openwepp_land_surface_energy::{OfeId, SourceId, SurfaceClass, SurfaceId, WaterSourceType};
+
+    #[test]
+    fn exact_enthalpy_restart_is_on_the_hydrology_checkpoint_and_reload_path() {
+        let source = include_str!("hydrology_restart.rs");
+        let implementation = source
+            .split("impl DirectHydrologyExactEnthalpyRestartV2")
+            .nth(1)
+            .expect("V2 exact hydrology implementation");
+        assert!(implementation.contains("DirectHydrologyRestartV1::project_for_exact_parent"));
+        assert!(implementation.contains("DirectSnowStage3V11ExactEnthalpyRestartV4::project"));
+        assert!(implementation.contains("nested_active_v2_bytes"));
+        assert!(implementation.contains("require_exact_parent_stage3_join"));
+        assert!(implementation.contains("parent.restore_without_stage3"));
+        assert!(implementation.contains("self.stage3_v4.restore"));
+        assert!(implementation.contains("frame.snow_stage3_v11_attachment = Some"));
+    }
+
+    #[test]
+    fn exact_parent_requires_byte_identical_active_base_v3() {
+        let active_base_v3 = br#"{"schema":"active-v3","payload":[0,1,2]}"#;
+        assert!(require_exact_parent_stage3_join(active_base_v3, active_base_v3).is_ok());
+
+        let substituted = br#"{"schema":"active-v3","payload":[0,1,3]}"#;
+        assert!(require_exact_parent_stage3_join(active_base_v3, substituted).is_err());
+    }
 
     fn frame() -> DirectRunFrame {
         let identity = DirectRunIdentity::new(9, 4, 2, 1).unwrap();

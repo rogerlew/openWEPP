@@ -5,15 +5,25 @@ use openwepp_runner::{
 
 #[allow(dead_code)]
 pub(crate) fn bind_complete_stage3_owner_seed(request: &HillslopeRunRequest) {
-    bind_stage3_owner_seed(request, Stage3TestFixtureSeedProfile::CompleteOwner);
+    bind_frozen_litter_v3_stage3_owner_seed(request, Stage3TestFixtureSeedProfile::CompleteOwner);
 }
 
 #[allow(dead_code)]
 pub(crate) fn bind_adaptive_stage3_owner_seed(request: &HillslopeRunRequest) {
-    bind_stage3_owner_seed(request, Stage3TestFixtureSeedProfile::AdaptiveNoStrataOwner);
+    bind_frozen_litter_v3_stage3_owner_seed(
+        request,
+        Stage3TestFixtureSeedProfile::AdaptiveNoStrataOwner,
+    );
 }
 
-fn bind_stage3_owner_seed(request: &HillslopeRunRequest, profile: Stage3TestFixtureSeedProfile) {
+/// Author the retained V1 bootstrap-provenance wire whose checked production
+/// bootstrap installs the native `OPENWEPP_SNOW_FREE_LSE_V3`/surface-V2
+/// resident before any Stage-3 support executes. The wire is not V1/V2
+/// execution or consumer evidence.
+fn bind_frozen_litter_v3_stage3_owner_seed(
+    request: &HillslopeRunRequest,
+    profile: Stage3TestFixtureSeedProfile,
+) {
     let binding = if request.legacy_sidecar_discovery {
         Stage3TestFixtureSeedBinding::LegacyDiscovery
     } else {

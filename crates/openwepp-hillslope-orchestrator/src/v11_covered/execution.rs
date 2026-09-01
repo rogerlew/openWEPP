@@ -1,187 +1,315 @@
-/// One explicit default-off invocation of the actual `DirectV10` owner stack.
-#[cfg(test)]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) struct CoveredCarrierLiveConsumptionRowV1 {
-    pub lane_id: u32,
-    pub forcing_sha256: Digest32,
-    pub reference_specific_humidity_bits: u64,
-    pub snow_specific_humidity_bits: u64,
-    pub shared_specific_humidity_bits: u64,
-    pub snow_vapor_into_surface_bits: u64,
+include!("execution_carrier_humidity.rs");
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct DeferredNativeV2SoilCustodyV1 {
+    candidate: DirectSoilThermalCandidate,
+    continuation: Option<DirectSoilThermalUnpublishedContinuationResultV2>,
 }
 
-#[cfg(test)]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) struct CoveredCarrierCondensationCreditAuditV1 {
-    pub transaction_id: u128,
-    pub hydrology_owner_id: String,
-    pub ofe_id: String,
-    pub tile_id: String,
-    pub surface_id: String,
-    pub amount_bits: u64,
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum DeferredNativeV2SnowFreeTemporalPostureV1 {
+    SameSupportReplay,
+    ContiguousSuccessor,
 }
 
-#[cfg(test)]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) struct OpenSnowLiveConsumptionRowV1 {
-    pub lane_id: u32,
-    pub forcing_sha256: Digest32,
-    pub reference_specific_humidity_bits: u64,
-    pub snow_specific_humidity_bits: u64,
-    pub vapor_outward_bits: u64,
-}
-
-#[cfg(test)]
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub(crate) struct CoveredCarrierLiveConsumptionAuditV1 {
-    pub carrier_rows: Vec<CoveredCarrierLiveConsumptionRowV1>,
-    pub open_snow_rows: Vec<OpenSnowLiveConsumptionRowV1>,
-    pub condensation_credits: Vec<CoveredCarrierCondensationCreditAuditV1>,
-}
-
-#[cfg(test)]
-std::thread_local! {
-    static COVERED_CARRIER_LIVE_CONSUMPTION_AUDIT: std::cell::RefCell<Option<CoveredCarrierLiveConsumptionAuditV1>> = const { std::cell::RefCell::new(None) };
-}
-
-#[cfg(test)]
-pub(crate) fn begin_covered_carrier_live_consumption_audit() {
-    COVERED_CARRIER_LIVE_CONSUMPTION_AUDIT.with(|audit| {
-        *audit.borrow_mut() = Some(CoveredCarrierLiveConsumptionAuditV1::default());
-    });
-}
-
-#[cfg(test)]
-pub(crate) fn take_covered_carrier_live_consumption_audit() -> CoveredCarrierLiveConsumptionAuditV1
-{
-    COVERED_CARRIER_LIVE_CONSUMPTION_AUDIT
-        .with(|audit| audit.borrow_mut().take().unwrap_or_default())
-}
-
-#[cfg(test)]
-fn audit_covered_carrier_live_row(row: CoveredCarrierLiveConsumptionRowV1) {
-    COVERED_CARRIER_LIVE_CONSUMPTION_AUDIT.with(|audit| {
-        if let Some(audit) = audit.borrow_mut().as_mut() {
-            audit.carrier_rows.push(row);
-        }
-    });
-}
-
-#[cfg(test)]
-fn audit_covered_carrier_condensation_credits(
-    credits: &[openwepp_land_surface_energy::CondensationCredit],
-) {
-    COVERED_CARRIER_LIVE_CONSUMPTION_AUDIT.with(|audit| {
-        if let Some(audit) = audit.borrow_mut().as_mut() {
-            audit
-                .condensation_credits
-                .extend(
-                    credits
-                        .iter()
-                        .map(|credit| CoveredCarrierCondensationCreditAuditV1 {
-                            transaction_id: credit.transaction_id.0,
-                            hydrology_owner_id: credit.hydrology_owner_id.as_str().to_owned(),
-                            ofe_id: credit.ofe_id.as_str().to_owned(),
-                            tile_id: credit.tile_id.as_str().to_owned(),
-                            surface_id: credit.surface_id.as_str().to_owned(),
-                            amount_bits: credit.amount_kg_m2_stand_ground.to_bits(),
-                        }),
-                );
-        }
-    });
-}
-
-#[cfg(not(test))]
-fn audit_covered_carrier_condensation_credits(
-    _: &[openwepp_land_surface_energy::CondensationCredit],
-) {
-}
-
-fn shared_carrier_specific_humidity_v1(
-    surfaces: &[CarrierSurface],
-) -> Result<f64, DirectV11RealConsumerError> {
-    let mut denominator = 0.0;
-    let mut numerator = 0.0;
-    let mut common_active_bits = None;
-    let mut equal_active_nodes = true;
-    for surface in surfaces {
-        let conductance = surface.vapor_conductance_m_s;
-        if !conductance.is_finite()
-            || conductance < 0.0
-            || !surface.specific_humidity.is_finite()
-            || !(0.0..=1.0).contains(&surface.specific_humidity)
-        {
-            return Err(DirectV11RealConsumerError::Identity(
-                "covered carrier humidity conductance domain",
-            ));
-        }
-        if conductance.to_bits() == 0.0_f64.to_bits() {
-            continue;
-        }
-        denominator += conductance;
-        numerator += conductance * surface.specific_humidity;
-        match common_active_bits {
-            None => common_active_bits = Some(surface.specific_humidity.to_bits()),
-            Some(bits) => equal_active_nodes &= bits == surface.specific_humidity.to_bits(),
-        }
+fn deferred_native_v2_snow_free_temporal_posture_v1(
+    candidate_start_ns: u128,
+    candidate_end_ns: u128,
+    input_start_ns: u128,
+    input_end_ns: u128,
+) -> Result<DeferredNativeV2SnowFreeTemporalPostureV1, DirectV11RealConsumerError> {
+    if candidate_start_ns == input_start_ns && candidate_end_ns == input_end_ns {
+        Ok(DeferredNativeV2SnowFreeTemporalPostureV1::SameSupportReplay)
+    } else if candidate_end_ns == input_start_ns && input_start_ns < input_end_ns {
+        Ok(DeferredNativeV2SnowFreeTemporalPostureV1::ContiguousSuccessor)
+    } else {
+        Err(DirectV11RealConsumerError::Identity(
+            "deferred native V2 snow-free temporal overlap or gap",
+        ))
     }
-    if !denominator.is_finite() || denominator <= 0.0 || !numerator.is_finite() {
-        return Err(DirectV11RealConsumerError::Identity(
-            "covered carrier humidity denominator",
-        ));
-    }
-    if equal_active_nodes {
-        return Ok(f64::from_bits(common_active_bits.ok_or(
-            DirectV11RealConsumerError::Identity("covered carrier active humidity set"),
-        )?));
-    }
-    let shared = numerator / denominator;
-    if !shared.is_finite() || !(0.0..=1.0).contains(&shared) {
-        return Err(DirectV11RealConsumerError::Identity(
-            "covered carrier shared humidity domain",
-        ));
-    }
-    Ok(shared)
 }
 
 #[cfg(test)]
-mod shared_carrier_specific_humidity_tests {
+mod deferred_native_v2_snow_free_replay_tests {
     use super::*;
 
-    fn surface(q: f64, conductance: f64) -> CarrierSurface {
-        CarrierSurface {
-            temperature_k: 273.15,
-            specific_humidity: q,
-            heat_conductance_m_s: conductance,
-            vapor_conductance_m_s: conductance,
-        }
+    #[test]
+    fn same_support_and_contiguous_successor_are_distinct_exact_postures() {
+        assert_eq!(
+            deferred_native_v2_snow_free_temporal_posture_v1(900, 1_320, 900, 1_320)
+                .expect("same-support replay"),
+            DeferredNativeV2SnowFreeTemporalPostureV1::SameSupportReplay,
+        );
+        assert_eq!(
+            deferred_native_v2_snow_free_temporal_posture_v1(0, 900, 900, 1_320)
+                .expect("contiguous successor"),
+            DeferredNativeV2SnowFreeTemporalPostureV1::ContiguousSuccessor,
+        );
     }
 
     #[test]
-    fn equal_active_nodes_are_exact_and_active_one_bit_poison_uses_weighted_solve() {
-        let q = 0.003_757_503_415_507_667_5_f64;
-        let inactive_poison_q = f64::from_bits(q.to_bits() + 9);
-        let exact = shared_carrier_specific_humidity_v1(&[
-            surface(q, 1.0),
-            surface(inactive_poison_q, 0.0),
-            surface(q, 3.0),
-        ])
-        .expect("equal active-node humidity");
-        assert_eq!(exact.to_bits(), q.to_bits());
+    fn overlap_gap_and_zero_width_refuse_without_changing_the_input_vector() {
+        let poisons = [
+            (0, 900, 800, 1_320),
+            (0, 900, 901, 1_320),
+            (0, 900, 900, 900),
+            (900, 1_320, 0, 900),
+        ];
+        let before = poisons;
+        for (candidate_start, candidate_end, input_start, input_end) in poisons {
+            assert!(deferred_native_v2_snow_free_temporal_posture_v1(
+                candidate_start,
+                candidate_end,
+                input_start,
+                input_end,
+            )
+            .is_err());
+        }
+        assert_eq!(poisons, before, "refusal must leave custody inputs exact");
+    }
 
-        let active_poison_q = f64::from_bits(q.to_bits() + 1);
-        let weighted = shared_carrier_specific_humidity_v1(&[
-            surface(q, 1.0),
-            surface(inactive_poison_q, 0.0),
-            surface(active_poison_q, 1.0),
-        ])
-        .expect("one-bit active-node weighted humidity");
-        let expected = (q + active_poison_q) / 2.0;
-        assert_eq!(weighted.to_bits(), expected.to_bits());
-        assert_ne!(weighted.to_bits(), q.to_bits());
+    #[test]
+    fn same_support_replay_validates_operand_suffix_without_advancing_or_installing() {
+        let source = include_str!("execution.rs");
+        let body = source
+            .rsplit("pub(crate) fn advance_snow_free_child")
+            .next()
+            .expect("snow-free child method")
+            .split("let original_start_ns")
+            .next()
+            .expect("same-support branch");
+        assert!(body.contains("validate_terminal_operand_suffix"));
+        assert!(body.contains("Self::try_new(authoritative, self.candidate.clone(), Some(replay))"));
+        for forbidden in [
+            "prepare_next_soil_thermal_unpublished_continuation_v2",
+            "advance_soil_thermal_unpublished_continuation_v2",
+            "install_soil_thermal_accepted_v2",
+        ] {
+            assert!(!body.contains(forbidden), "same-support replay used {forbidden}");
+        }
+    }
+}
 
-        assert!(shared_carrier_specific_humidity_v1(&[surface(q, 0.0), surface(q, 0.0),]).is_err());
-        assert!(shared_carrier_specific_humidity_v1(&[surface(q, -f64::MIN_POSITIVE)]).is_err());
+impl DeferredNativeV2SoilCustodyV1 {
+    pub(crate) fn try_new(
+        authoritative: &DirectV10RealConsumerShadow,
+        candidate: DirectSoilThermalCandidate,
+        continuation: Option<DirectSoilThermalUnpublishedContinuationResultV2>,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        let trial = candidate.v2().map_err(|_| {
+            DirectV11RealConsumerError::Identity("deferred native V2 soil candidate posture")
+        })?;
+        if let Some(continuation) = continuation.as_ref() {
+            let original = continuation.original_prepared();
+            let expected = authoritative
+                .prepare_next_soil_thermal_support_v2(
+                    original.beginning_owner().support_start_ns,
+                    original.beginning_owner().support_end_ns,
+                )
+                .map_err(DirectV11RealConsumerError::Runtime)?;
+            if continuation.physical_trial() != trial || &expected != original {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "deferred native V2 soil custody join",
+                ));
+            }
+        } else {
+            openwepp_land_surface_energy::validate_soil_thermal_unpublished_trial_v2(trial)
+                .map_err(|_| {
+                    DirectV11RealConsumerError::Identity(
+                        "deferred native V2 base trial seal",
+                    )
+                })?;
+            let prepared = authoritative
+                .prepare_next_soil_thermal_support_v2(
+                    trial.support_start_ns(),
+                    trial.support_end_ns(),
+                )
+                .map_err(DirectV11RealConsumerError::Runtime)?;
+            let beginning = prepared.beginning_owner();
+            if trial.transaction_id() != beginning.transaction_id
+                || trial.predecessor_transaction_id()
+                    != beginning.expected_predecessor_transaction_id
+                || trial.support_start_ns() != beginning.support_start_ns
+                || trial.support_end_ns() != beginning.support_end_ns
+                || trial.beginning_state_sha256() != &beginning.state.state_sha256
+                || trial.accepted_predecessor_receipt_chain_sha256()
+                    != Some(&beginning.receipt_chain_sha256)
+                || trial.unpublished_predecessor_trial_sha256().is_some()
+            {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "deferred native V2 base trial custody join",
+                ));
+            }
+        }
+        Ok(Self {
+            candidate,
+            continuation,
+        })
+    }
+
+    pub(crate) const fn candidate(&self) -> &DirectSoilThermalCandidate {
+        &self.candidate
+    }
+
+    pub(crate) const fn continuation(
+        &self,
+    ) -> Option<&DirectSoilThermalUnpublishedContinuationResultV2> {
+        self.continuation.as_ref()
+    }
+
+    pub(crate) fn advance_snow_free_child(
+        &self,
+        authoritative: &DirectV10RealConsumerShadow,
+        input: &V11ImportedV10SegmentInput,
+        envelope: &UncommittedCoveredV8OwnerEnvelope,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        let trial = self.candidate.v2().map_err(|_| {
+            DirectV11RealConsumerError::Identity(
+                "deferred native V2 snow-free candidate posture",
+            )
+        })?;
+        let input_start_ns = input.support.start_ns().get();
+        let input_end_ns = input.support.end_ns().get();
+        let temporal_posture = deferred_native_v2_snow_free_temporal_posture_v1(
+            trial.support_start_ns(),
+            trial.support_end_ns(),
+            input_start_ns,
+            input_end_ns,
+        )?;
+        if temporal_posture == DeferredNativeV2SnowFreeTemporalPostureV1::SameSupportReplay {
+            let replay = if let Some(continuation) = self.continuation.as_ref() {
+                continuation.clone()
+            } else {
+                let active_owner = authoritative
+                    .soil_thermal_v2()
+                    .map_err(DirectV11RealConsumerError::Runtime)?
+                    .owner();
+                let original = authoritative
+                    .prepare_next_soil_thermal_support_v2(
+                        active_owner.support_start_ns,
+                        input_end_ns,
+                    )
+                    .map_err(DirectV11RealConsumerError::Runtime)?;
+                let authenticated_operands = trial
+                    .layer_credits()
+                    .iter()
+                    .flat_map(|credit| credit.accepted_operands.iter().cloned())
+                    .collect::<Vec<_>>();
+                authoritative
+                    .authenticate_soil_thermal_base_unpublished_result_v2(
+                        &original,
+                        trial,
+                        &authenticated_operands,
+                    )
+                    .map_err(DirectV11RealConsumerError::Runtime)?
+            };
+            if replay.physical_trial() != trial {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "deferred native V2 same-support trial replay",
+                ));
+            }
+            let reconstructed_suffix =
+                crate::land_surface_energy_shadow::physical_soil_energy_operands_v2(
+                    crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_from_pre_ingress_candidates(
+                        envelope.transaction_id(),
+                        input_start_ns,
+                        input_end_ns,
+                        envelope.hydrology().pre_ingress_soil_thermal_candidates(),
+                    )
+                    .map_err(|error| {
+                        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                            DirectV9RealConsumerError::LandSurfaceShadow(error),
+                        ))
+                    })?,
+                    input_start_ns,
+                    input_end_ns,
+                    &authoritative.inner.lse_configuration.owner_id,
+                    &authoritative.inner.surface_configuration.owner_id,
+                    envelope.hydrology().pre_ingress_soil_thermal_candidates(),
+                    envelope.hydrology().surface_ingress(),
+                )
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                        DirectV9RealConsumerError::LandSurfaceShadow(error),
+                    ))
+                })?;
+            replay
+                .validate_terminal_operand_suffix(&reconstructed_suffix)
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+                })?;
+            return Self::try_new(authoritative, self.candidate.clone(), Some(replay));
+        }
+        let original_start_ns = self.continuation.as_ref().map_or_else(
+            || {
+                authoritative
+                    .soil_thermal_v2()
+                    .map(|resident| resident.owner().support_start_ns)
+            },
+            |continuation| {
+                Ok(continuation
+                    .original_prepared()
+                    .beginning_owner()
+                    .support_start_ns)
+            },
+        )
+        .map_err(DirectV11RealConsumerError::Runtime)?;
+        let original = authoritative
+            .prepare_next_soil_thermal_support_v2(original_start_ns, input.support.end_ns().get())
+            .map_err(DirectV11RealConsumerError::Runtime)?;
+        let next = if let Some(prior) = self.continuation.as_ref() {
+            authoritative.prepare_next_soil_thermal_unpublished_continuation_v2(
+                &original,
+                prior,
+                self.candidate.state_sha256(),
+                input.support.start_ns().get(),
+                input.support.end_ns().get(),
+            )
+        } else {
+            authoritative.prepare_soil_thermal_base_unpublished_continuation_v2(
+                &original,
+                self.candidate.v2().map_err(|_| {
+                    DirectV11RealConsumerError::Identity("unreachable V2 candidate posture")
+                })?,
+                self.candidate.state_sha256(),
+                input.support.start_ns().get(),
+                input.support.end_ns().get(),
+            )
+        }
+        .map_err(DirectV11RealConsumerError::Runtime)?;
+        let operands = crate::land_surface_energy_shadow::physical_soil_energy_operands_v2(
+            crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_from_pre_ingress_candidates(
+                envelope.transaction_id(),
+                input.support.start_ns().get(),
+                input.support.end_ns().get(),
+                envelope.hydrology().pre_ingress_soil_thermal_candidates(),
+            )
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                    DirectV9RealConsumerError::LandSurfaceShadow(error),
+                ))
+            })?,
+            input.support.start_ns().get(),
+            input.support.end_ns().get(),
+            &authoritative.inner.lse_configuration.owner_id,
+            &authoritative.inner.surface_configuration.owner_id,
+            envelope.hydrology().pre_ingress_soil_thermal_candidates(),
+            envelope.hydrology().surface_ingress(),
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                DirectV9RealConsumerError::LandSurfaceShadow(error),
+            ))
+        })?;
+        let continuation = authoritative
+            .advance_soil_thermal_unpublished_continuation_v2(&next, &operands)
+            .map_err(DirectV11RealConsumerError::Runtime)?;
+        let candidate = continuation
+            .clone()
+            .into_physical_candidate()
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+            })?;
+        Self::try_new(authoritative, candidate, Some(continuation))
     }
 }
 
@@ -200,6 +328,7 @@ pub struct DirectV11RealConsumerStack<'a> {
     pub(super) last_hydrology_candidate:
         Option<crate::land_surface_energy_shadow::UnifiedRealHydrologyCandidate>,
     pub(super) ending_snow_owner_bytes: Option<Vec<u8>>,
+    pub(super) deferred_native_v2_soil_custody: Option<DeferredNativeV2SoilCustodyV1>,
 }
 
 #[derive(Clone)]
@@ -696,6 +825,10 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     last_component_carrier_receipts:
         Option<BTreeMap<(OfeId, TileId), ComponentResolvedCarrierReceiptV1>>,
     last_snow_soil_heat_receipts: Option<BTreeMap<u32, SnowSoilHeatReceiptV1>>,
+    beginning_snow_enthalpy_material_owner:
+        Option<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
+    last_snow_enthalpy_material_owner:
+        Option<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
     last_terminal_snow_soil_heat_receipts:
         Option<BTreeMap<u32, physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1>>,
     last_adaptive_terminal_snow_soil_trial_receipts:
@@ -713,6 +846,10 @@ pub struct DirectV11SnowCoveredRealConsumerStack<'a> {
     last_wb14_parent_replay_bytes: Option<Vec<u8>>,
     ordinary_physical_reuse_seed: Option<CoveredOrdinaryPhysicalReuseSeedV1>,
     terminal_physical_reuse_seed: Option<CoveredTerminalPhysicalReuseSeedV1>,
+    /// Authenticated unpublished native-V2 soil custody used only as the
+    /// physical beginning of a contiguous covered child. It is never an
+    /// installed owner or publication surface.
+    pub(super) deferred_native_v2_soil_custody: Option<DeferredNativeV2SoilCustodyV1>,
     terminal_publication_posture: TerminalPublicationPostureV1,
     last_publication_retained: Option<bool>,
 }
@@ -728,6 +865,9 @@ struct CoveredTerminalPhysicalReuseSeedV1 {
     physical_authority_sha256: Digest32,
     envelope: UncommittedCoveredV8OwnerEnvelope,
     compositional_envelopes: Vec<UncommittedCoveredV8OwnerEnvelope>,
+    soil_candidate: DirectSoilThermalCandidate,
+    soil_continuation:
+        Option<crate::v9_real_consumer_shadow::DirectSoilThermalUnpublishedContinuationResultV2>,
     ending_snow_owner_bytes: Vec<u8>,
     soil_top_boundary_credits: Vec<SoilThermalTopBoundaryCreditV1>,
 }
@@ -736,6 +876,9 @@ struct CoveredTerminalPhysicalReuseSeedV1 {
 enum TerminalPublicationPostureV1 {
     #[default]
     RetainFinal,
+    RetainFinalWithDeferredNativeV2Soil {
+        pre_event_authority_sha256: Digest32,
+    },
     DeferProvisional {
         pre_event_authority_sha256: Digest32,
     },
@@ -1007,6 +1150,8 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             last_lane_boundary_receipts: None,
             last_component_carrier_receipts: None,
             last_snow_soil_heat_receipts: None,
+            beginning_snow_enthalpy_material_owner: None,
+            last_snow_enthalpy_material_owner: None,
             last_terminal_snow_soil_heat_receipts: None,
             last_adaptive_terminal_snow_soil_trial_receipts: None,
             last_precipitation_parcel_sets: None,
@@ -1018,9 +1163,46 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
             last_wb14_parent_replay_bytes: None,
             ordinary_physical_reuse_seed: None,
             terminal_physical_reuse_seed: None,
+            deferred_native_v2_soil_custody: None,
             terminal_publication_posture: TerminalPublicationPostureV1::RetainFinal,
             last_publication_retained: None,
         }
+    }
+
+    pub(crate) fn try_with_deferred_native_v2_soil_custody(
+        mut self,
+        custody: DeferredNativeV2SoilCustodyV1,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        let authenticated = DeferredNativeV2SoilCustodyV1::try_new(
+            &self.beginning,
+            custody.candidate().clone(),
+            custody.continuation().cloned(),
+        )?;
+        if authenticated != custody || self.deferred_native_v2_soil_custody.is_some() {
+            return Err(DirectV11RealConsumerError::Identity(
+                "covered stack deferred native V2 soil custody",
+            ));
+        }
+        self.deferred_native_v2_soil_custody = Some(authenticated);
+        Ok(self)
+    }
+
+    pub(crate) fn try_with_beginning_snow_enthalpy_material_owner(
+        mut self,
+        owner: crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        owner.validate().map_err(|_| {
+            DirectV11RealConsumerError::Identity("V56 beginning compound snow material owner")
+        })?;
+        if self.beginning_snow_enthalpy_material_owner.is_some()
+            || owner.base_material_owner() != &self.stage3_beginning_by_lane
+        {
+            return Err(DirectV11RealConsumerError::Identity(
+                "V56 beginning compound snow material owner join",
+            ));
+        }
+        self.beginning_snow_enthalpy_material_owner = Some(owner);
+        Ok(self)
     }
 
     pub(crate) fn prepare_ordinary_physical_reuse(
@@ -1069,7 +1251,10 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
                 ));
             }
             self.wb14_coupled_child_binding = final_binding;
-            self.terminal_publication_posture = TerminalPublicationPostureV1::RetainFinal;
+            self.terminal_publication_posture =
+                TerminalPublicationPostureV1::RetainFinalWithDeferredNativeV2Soil {
+                    pre_event_authority_sha256: endpoint.pre_event_authority_sha256,
+                };
             self.precomputed_terminal_accepted = Some(endpoint);
             Ok(self)
         })();
@@ -1088,6 +1273,10 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         endpoint: PrecomputedTerminalAcceptedEndpointV1,
     ) -> Self {
         self.terminal_endpoint_mode = true;
+        self.terminal_publication_posture =
+            TerminalPublicationPostureV1::RetainFinalWithDeferredNativeV2Soil {
+                pre_event_authority_sha256: endpoint.pre_event_authority_sha256,
+            };
         self.precomputed_terminal_accepted = Some(endpoint);
         self
     }
@@ -2688,6 +2877,14 @@ impl<'a> DirectV11SnowCoveredRealConsumerStack<'a> {
         &self,
     ) -> Option<&BTreeMap<u32, SnowSoilHeatReceiptV1>> {
         self.last_snow_soil_heat_receipts.as_ref()
+    }
+
+    pub(crate) fn last_snow_enthalpy_material_owner(
+        &self,
+    ) -> Option<
+        &crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    > {
+        self.last_snow_enthalpy_material_owner.as_ref()
     }
 
     pub(crate) fn last_terminal_snow_soil_heat_receipts(

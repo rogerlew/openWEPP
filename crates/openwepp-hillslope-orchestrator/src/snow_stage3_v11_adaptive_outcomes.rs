@@ -9,6 +9,10 @@ type AdaptiveSupportCompleteV2 = (
     CoupledClockStateV1,
     V11ParentCandidate,
     BTreeMap<u32, DirectSnowStage3PersistentState>,
+    Option<
+        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    >,
+    Vec<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
     Vec<Stage3CoupledSubslabReceiptV1>,
     Vec<Stage3V11TerminalEventGroupV1>,
     Vec<DirectSnowStage3V11TerminalParcel>,

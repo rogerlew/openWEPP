@@ -17,6 +17,7 @@ struct ProvisionalCoveredIterationEvidenceV1 {
     lse_states: BTreeMap<(OfeId, TileId), CoveredLseIterationState>,
     transaction_id: TransactionId,
     soil_candidates: Vec<SoilThermalTileCandidate>,
+    soil_energy_operands_v2: Vec<openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2>,
 }
 
 fn complete_stage3_lower_boundaries_v1(
@@ -81,11 +82,11 @@ fn accepted_carrier_parent_cadence_beginning_v1(
     discovery
         .iter()
         .map(|(lane_id, discovery)| {
-            let installed = installed.get(lane_id).ok_or(
-                DirectV11RealConsumerError::Identity(
+            let installed = installed
+                .get(lane_id)
+                .ok_or(DirectV11RealConsumerError::Identity(
                     "accepted carrier physical Stage-3 beginning lane",
-                ),
-            )?;
+                ))?;
             Wb11HydrologyKernel::validate_stage3_persistent_state(discovery).map_err(|_| {
                 DirectV11RealConsumerError::Identity(
                     "accepted carrier physical Stage-3 discovery beginning",
@@ -263,9 +264,13 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
 
     /// Build one unpublished carrier envelope from a complete, disjoint
     /// covered/open destination set. The returned value is not adopted.
-    fn build_covered_carrier_envelope_value_v1(
+    fn build_covered_carrier_envelope_value_with_soil_beginning_v1(
         &self,
         inputs: CoveredCarrierEnvelopeBuildV1<'_>,
+        unpublished_soil_candidate: Option<&DirectSoilThermalCandidate>,
+        unpublished_soil_continuation: Option<
+            &DirectSoilThermalUnpublishedContinuationResultV2,
+        >,
     ) -> Result<UncommittedCoveredV8OwnerEnvelope, DirectV11RealConsumerError> {
         let expected_open = self
             .snow_surface_forcing_by_destination
@@ -290,7 +295,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         let envelope = inputs
             .candidate
             .inner
-            .construct_covered_interval_envelope_with_duration(
+            .construct_covered_interval_envelope_with_duration_and_soil_beginning(
                 self.day_index,
                 self.interval_index,
                 self.interval,
@@ -301,6 +306,8 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 inputs.provisional,
                 inputs.finalize_wb14_parent_interval,
                 self.wb14_coupled_child_binding,
+                unpublished_soil_candidate,
+                unpublished_soil_continuation,
             )
             .map_err(|error| {
                 DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
@@ -312,10 +319,14 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
     /// Evaluate only the physical covered endpoint needed by one fixed-point
     /// iterate. This posture cannot construct or expose vegetation/BGC owner
     /// candidates, V8 projection receipts, or accepted publication state.
-    fn build_covered_carrier_physical_value_v1(
+    fn build_covered_carrier_physical_value_with_soil_beginning_v1(
         &self,
         prepared: &PreparedCoveredCanopySoilInputV1,
         inputs: CoveredCarrierEnvelopeBuildV1<'_>,
+        unpublished_soil_candidate: Option<&DirectSoilThermalCandidate>,
+        unpublished_soil_continuation: Option<
+            &DirectSoilThermalUnpublishedContinuationResultV2,
+        >,
     ) -> Result<
         crate::land_surface_energy_shadow::ProvisionalCoveredV8PhysicalEvaluationV1,
         DirectV11RealConsumerError,
@@ -346,7 +357,7 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         let physical = inputs
             .candidate
             .inner
-            .construct_prepared_covered_interval_physical_with_duration(
+            .construct_prepared_covered_interval_physical_with_duration_and_soil_beginning(
                 self.day_index,
                 self.interval_index,
                 prepared,
@@ -356,6 +367,8 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 &complete,
                 inputs.finalize_wb14_parent_interval,
                 self.wb14_coupled_child_binding,
+                unpublished_soil_candidate,
+                unpublished_soil_continuation,
             )
             .map_err(|error| {
                 DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
@@ -370,13 +383,21 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         current_boundaries: &BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>,
         prepared: &PreparedCoveredCanopySoilInputV1,
         inputs: CoveredCarrierEnvelopeBuildV1<'_>,
+        unpublished_soil_candidate: Option<&DirectSoilThermalCandidate>,
+        unpublished_soil_continuation: Option<
+            &DirectSoilThermalUnpublishedContinuationResultV2,
+        >,
     ) -> Result<ProvisionalCoveredIterationEvidenceV1, DirectV11RealConsumerError> {
         #[cfg(test)]
         let force_full = covered_full_provisional_envelope_forced_for_test();
         #[cfg(not(test))]
         let force_full = false;
         let evidence = if force_full {
-            let envelope = self.build_covered_carrier_envelope_value_v1(inputs)?;
+            let envelope = self.build_covered_carrier_envelope_value_with_soil_beginning_v1(
+                inputs,
+                unpublished_soil_candidate,
+                unpublished_soil_continuation,
+            )?;
             let precipitation_sets = self.precipitation_parcel_sets(support, &envelope)?;
             let (corrected_boundaries, _, _) =
                 self.corrected_covered_boundaries_from_envelope(current_boundaries, &envelope)?;
@@ -391,9 +412,39 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 lse_states,
                 transaction_id: envelope.transaction_id(),
                 soil_candidates: envelope.hydrology().soil_thermal_candidates().to_vec(),
+                soil_energy_operands_v2:
+                    crate::land_surface_energy_shadow::physical_soil_energy_operands_v2(
+                        crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_from_pre_ingress_candidates(
+                            envelope.transaction_id(),
+                            support.start_ns().get(),
+                            support.end_ns().get(),
+                            envelope.hydrology().pre_ingress_soil_thermal_candidates(),
+                        )
+                        .map_err(|error| {
+                            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                                DirectV9RealConsumerError::LandSurfaceShadow(error),
+                            ))
+                        })?,
+                        support.start_ns().get(),
+                        support.end_ns().get(),
+                        &self.beginning.inner.lse_configuration.owner_id,
+                        &self.beginning.inner.surface_configuration.owner_id,
+                        envelope.hydrology().pre_ingress_soil_thermal_candidates(),
+                        envelope.hydrology().surface_ingress(),
+                    )
+                    .map_err(|error| {
+                        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                            DirectV9RealConsumerError::LandSurfaceShadow(error),
+                        ))
+                    })?,
             }
         } else {
-            let physical = self.build_covered_carrier_physical_value_v1(prepared, inputs)?;
+            let physical = self.build_covered_carrier_physical_value_with_soil_beginning_v1(
+                prepared,
+                inputs,
+                unpublished_soil_candidate,
+                unpublished_soil_continuation,
+            )?;
             let precipitation_sets =
                 self.precipitation_parcel_sets_from_physical(support, &physical)?;
             let (corrected_boundaries, _, _) =
@@ -409,6 +460,31 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 lse_states,
                 transaction_id: physical.transaction_id(),
                 soil_candidates: physical.hydrology().soil_thermal_candidates().to_vec(),
+                soil_energy_operands_v2:
+                    crate::land_surface_energy_shadow::physical_soil_energy_operands_v2(
+                        crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_from_pre_ingress_candidates(
+                            physical.transaction_id(),
+                            support.start_ns().get(),
+                            support.end_ns().get(),
+                            physical.hydrology().pre_ingress_soil_thermal_candidates(),
+                        )
+                        .map_err(|error| {
+                            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                                DirectV9RealConsumerError::LandSurfaceShadow(error),
+                            ))
+                        })?,
+                        support.start_ns().get(),
+                        support.end_ns().get(),
+                        &self.beginning.inner.lse_configuration.owner_id,
+                        &self.beginning.inner.surface_configuration.owner_id,
+                        physical.hydrology().pre_ingress_soil_thermal_candidates(),
+                        physical.hydrology().surface_ingress(),
+                    )
+                    .map_err(|error| {
+                        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                            DirectV9RealConsumerError::LandSurfaceShadow(error),
+                        ))
+                    })?,
             }
         };
         #[cfg(test)]
@@ -508,25 +584,21 @@ mod accepted_carrier_evidence_tests {
         assert!(complete.contains_key(&open_destination));
         assert_eq!(complete.len(), 2);
 
-        assert!(
-            complete_stage3_lower_boundaries_v1(
-                &expected_covered,
-                &covered,
-                &expected_open,
-                &BTreeMap::new(),
-            )
-            .is_err()
-        );
+        assert!(complete_stage3_lower_boundaries_v1(
+            &expected_covered,
+            &covered,
+            &expected_open,
+            &BTreeMap::new(),
+        )
+        .is_err());
         let substituted = BTreeMap::from([(destination("substituted"), boundary(3))]);
-        assert!(
-            complete_stage3_lower_boundaries_v1(
-                &expected_covered,
-                &covered,
-                &expected_open,
-                &substituted,
-            )
-            .is_err()
-        );
+        assert!(complete_stage3_lower_boundaries_v1(
+            &expected_covered,
+            &covered,
+            &expected_open,
+            &substituted,
+        )
+        .is_err());
     }
 
     #[test]
@@ -579,13 +651,11 @@ mod accepted_carrier_evidence_tests {
             accepted_carrier_parent_cadence_beginning_v1(&discovery, &physical_substitution,)
                 .is_err()
         );
-        assert!(
-            accepted_carrier_parent_cadence_beginning_v1(
-                &discovery,
-                &BTreeMap::from([(2, stage3_state(2))]),
-            )
-            .is_err()
-        );
+        assert!(accepted_carrier_parent_cadence_beginning_v1(
+            &discovery,
+            &BTreeMap::from([(2, stage3_state(2))]),
+        )
+        .is_err());
     }
 
     #[test]
@@ -595,7 +665,7 @@ mod accepted_carrier_evidence_tests {
             .split("pub(crate) fn seal_accepted_carrier_evidence_v1")
             .nth(1)
             .expect("accepted sealer")
-            .split("fn build_covered_carrier_envelope_value_v1")
+            .split("fn build_covered_carrier_envelope_value_with_soil_beginning_v1")
             .next()
             .expect("accepted sealer body");
         for forbidden in [

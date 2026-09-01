@@ -13,6 +13,9 @@ fn execute_real_v11_parent(
     interval_index: usize,
     forcing_receipt: Digest32,
     ending_snow_owner_bytes: Vec<u8>,
+    deferred_native_v2_soil_custody: Option<
+        crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1,
+    >,
     finalize_parent_at_endpoint: bool,
 ) -> Result<
     (
@@ -117,6 +120,12 @@ fn execute_real_v11_parent(
         },
         ending_snow_owner_bytes.clone(),
     );
+    let provisional_stack = match deferred_native_v2_soil_custody.as_ref() {
+        Some(custody) => provisional_stack
+            .try_with_deferred_native_v2_soil_custody(custody.clone())
+            .map_err(DirectSnowStage3V11AttachmentError::Owner)?,
+        None => provisional_stack,
+    };
     let mut provisional_executor = crate::v11_vegetation_consumer::DirectV11VegetationExecutor {
         stack: provisional_stack,
     };
@@ -162,6 +171,12 @@ fn execute_real_v11_parent(
         },
         ending_snow_owner_bytes,
     );
+    let final_stack = match deferred_native_v2_soil_custody {
+        Some(custody) => final_stack
+            .try_with_deferred_native_v2_soil_custody(custody)
+            .map_err(DirectSnowStage3V11AttachmentError::Owner)?,
+        None => final_stack,
+    };
     let mut final_executor =
         crate::v11_vegetation_consumer::DirectV11VegetationExecutor { stack: final_stack };
     let final_segment = execute_direct_v11_segment(

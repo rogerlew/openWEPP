@@ -503,6 +503,10 @@ name = "advisory_linter_authority_contract"
 path = "tests/integration/advisory_linter_authority_contract.rs"
 
 [[test]]
+name = "solver_architecture_authority_contract"
+path = "tests/integration/solver_architecture_authority_contract.rs"
+
+[[test]]
 name = "quality_observatory_merged_coverage_contract"
 path = "tests/integration/quality_observatory_merged_coverage_contract.rs"
 

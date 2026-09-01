@@ -76,6 +76,7 @@ mod tests {
     fn identity() -> RuntimeTileIdentity {
         RuntimeTileIdentity {
             transaction_id: TransactionId(41),
+            soil_thermal_transaction_id: TransactionId(41),
             lse_owner_id: owner("lse"),
             hydrology_owner_id: owner("hydrology"),
             soil_thermal_owner_id: owner("soil-thermal"),

@@ -1,4 +1,126 @@
+#[inline(never)]
+fn stage3_boxed_execution_v1<T, E>(execute: impl FnOnce() -> Result<T, E>) -> Result<Box<T>, E> {
+    execute().map(Box::new)
+}
+
 impl DirectSnowStage3V11ShadowAttachment {
+    pub fn restart_authority_snow_enthalpy_material_residents_v1(
+        &self,
+    ) -> Result<
+        SnowStage3V11SnowEnthalpyMaterialResidentSetV1,
+        DirectSnowStage3V11AttachmentError,
+    > {
+        Ok(SnowStage3V11SnowEnthalpyMaterialResidentSetV1 {
+            committed: snow_enthalpy_material_resident_from_committed_v1(&self.committed)?,
+            pending_candidate: self
+                .pending_candidate
+                .as_ref()
+                .map(|candidate| {
+                    snow_enthalpy_material_resident_from_committed_v1(&candidate.ending_state)
+                })
+                .transpose()?,
+            in_progress_day_candidate: self
+                .in_progress_execution
+                .as_ref()
+                .map(|execution| {
+                    snow_enthalpy_material_resident_from_committed_v1(&execution.day_candidate)
+                })
+                .transpose()?,
+            in_progress_support_current: self
+                .in_progress_execution
+                .as_ref()
+                .and_then(|execution| execution.support_current.as_ref())
+                .map(snow_enthalpy_material_resident_from_committed_v1)
+                .transpose()?,
+        })
+    }
+
+    pub fn restart_authority_install_snow_enthalpy_material_residents_v1(
+        &mut self,
+        residents: SnowStage3V11SnowEnthalpyMaterialResidentSetV1,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        if residents.pending_candidate.is_some() != self.pending_candidate.is_some()
+            || residents.in_progress_day_candidate.is_some()
+                != self.in_progress_execution.is_some()
+            || residents.in_progress_support_current.is_some()
+                != self
+                    .in_progress_execution
+                    .as_ref()
+                    .is_some_and(|execution| execution.support_current.is_some())
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "V56 restart material resident posture",
+            ));
+        }
+        let mut committed = self.committed.clone();
+        install_snow_enthalpy_material_resident_into_committed_v1(
+            &mut committed,
+            residents.committed,
+        )?;
+        let mut pending_candidate = self.pending_candidate.clone();
+        if let (Some(candidate), Some(resident)) =
+            (pending_candidate.as_mut(), residents.pending_candidate)
+        {
+            install_snow_enthalpy_material_resident_into_committed_v1(
+                &mut candidate.ending_state,
+                resident,
+            )?;
+        }
+        let mut in_progress_execution = self.in_progress_execution.clone();
+        if let Some(execution) = in_progress_execution.as_mut() {
+            install_snow_enthalpy_material_resident_into_committed_v1(
+                &mut execution.day_candidate,
+                residents.in_progress_day_candidate.ok_or(
+                    DirectSnowStage3V11AttachmentError::Identity(
+                        "V56 restart in-progress day resident",
+                    ),
+                )?,
+            )?;
+            if let Some(current) = execution.support_current.as_mut() {
+                install_snow_enthalpy_material_resident_into_committed_v1(
+                    current,
+                    residents.in_progress_support_current.ok_or(
+                        DirectSnowStage3V11AttachmentError::Identity(
+                            "V56 restart in-progress current resident",
+                        ),
+                    )?,
+                )?;
+            }
+        }
+        self.committed = committed;
+        self.pending_candidate = pending_candidate;
+        self.in_progress_execution = in_progress_execution;
+        Ok(())
+    }
+
+    /// Restart projection guard: exact V4 custody anywhere in the retained
+    /// Stage-3 transaction graph prohibits the legacy hydrology wire.
+    #[cfg(feature = "persisted-restart-v1")]
+    #[must_use]
+    pub fn restart_authority_contains_frozen_litter_v4(&self) -> bool {
+        self.committed
+            .real_consumer
+            .frozen_litter_v4_resident()
+            .is_some()
+            || self.pending_candidate.as_ref().is_some_and(|candidate| {
+                candidate
+                    .ending_state
+                    .real_consumer
+                    .frozen_litter_v4_resident()
+                    .is_some()
+            })
+            || self.in_progress_execution.as_deref().is_some_and(|execution| {
+                execution
+                    .day_candidate()
+                    .real_consumer
+                    .frozen_litter_v4_resident()
+                    .is_some()
+                    || execution.support_current().is_some_and(|current| {
+                        current.real_consumer.frozen_litter_v4_resident().is_some()
+                    })
+            })
+    }
+
     /// Prepare one repository-provider day from the live owners retained by
     /// the committed V10 consumer. This is deliberately attachment-owned:
     /// after production initialization the runner no longer owns the GSI
@@ -187,6 +309,8 @@ impl DirectSnowStage3V11ShadowAttachment {
                 last_v11_parent_candidate: None,
                 terminal_parcels: BTreeMap::new(),
                 receipt_chain: Vec::new(),
+                snow_enthalpy_material_owner: None,
+                snow_enthalpy_material_owner_chronology: Vec::new(),
             },
         )
     }
@@ -595,7 +719,15 @@ impl DirectSnowStage3V11ShadowAttachment {
                 forcing_receipt,
                 candidate.next_parent_sequence,
             )?;
-            let (parent, consumer, clock, finalized, covered_stage3) = if covered_support {
+            let (
+                parent,
+                consumer,
+                clock,
+                finalized,
+                covered_stage3,
+                covered_snow_enthalpy_material_owner,
+                covered_snow_enthalpy_material_owner_chronology,
+            ) = if covered_support {
                 let support_restart = if restart.is_some() {
                     restart.take()
                 } else if let Some(posture) = interrupt_at {
@@ -615,6 +747,10 @@ impl DirectSnowStage3V11ShadowAttachment {
                             last_v11_parent_candidate: candidate.last_v11_parent_candidate.clone(),
                             terminal_parcels: candidate.terminal_parcels.clone(),
                             receipt_chain: candidate.receipt_chain.clone(),
+                            snow_enthalpy_material_owner:
+                                candidate.snow_enthalpy_material_owner.clone(),
+                            snow_enthalpy_material_owner_chronology:
+                                candidate.snow_enthalpy_material_owner_chronology.clone(),
                         }),
                         day_index: prepared.day_index(),
                         support_index,
@@ -657,6 +793,8 @@ impl DirectSnowStage3V11ShadowAttachment {
                         support_index,
                         forcing_receipt,
                         beginning_stage3,
+                        candidate.snow_enthalpy_material_owner.clone(),
+                        candidate.snow_enthalpy_material_owner_chronology.clone(),
                         candidate.terminal_parcels.clone(),
                         self.failure_injection,
                         &mut evidence,
@@ -669,6 +807,8 @@ impl DirectSnowStage3V11ShadowAttachment {
                     clock,
                     finalized,
                     ending_stage3,
+                    ending_snow_enthalpy_material_owner,
+                    ending_snow_enthalpy_material_owner_chronology,
                     owner_joins,
                     support_event_groups,
                     support_terminal_parcels,
@@ -768,7 +908,15 @@ impl DirectSnowStage3V11ShadowAttachment {
                 coupled_subslabs.extend(owner_joins);
                 adaptive_support_receipts.push(adaptive_support_receipt);
                 snow_free_successor_receipts.extend(support_snow_free_successor_receipts);
-                (parent, consumer, clock, finalized, Some(ending_stage3))
+                (
+                    parent,
+                    consumer,
+                    clock,
+                    finalized,
+                    Some(ending_stage3),
+                    ending_snow_enthalpy_material_owner,
+                    ending_snow_enthalpy_material_owner_chronology,
+                )
             } else {
                 let beginning_pending_terminal_parcels = candidate.terminal_parcels.clone();
                 let (parent, consumer, clock, finalized, accepted_support) = execute_real_v11_parent(
@@ -797,6 +945,7 @@ impl DirectSnowStage3V11ShadowAttachment {
                             .state_bytes()
                             .to_vec()
                     },
+                    None,
                     true,
                 )?;
                 let finalized = finalized.ok_or(
@@ -815,7 +964,15 @@ impl DirectSnowStage3V11ShadowAttachment {
                     &candidate.terminal_parcels,
                     accepted_support,
                 )?);
-                (parent, consumer, clock, finalized, None)
+                (
+                    parent,
+                    consumer,
+                    clock,
+                    finalized,
+                    None,
+                    candidate.snow_enthalpy_material_owner.clone(),
+                    candidate.snow_enthalpy_material_owner_chronology.clone(),
+                )
             };
             candidate.v11_parent_state = parent;
             candidate.real_consumer = consumer;
@@ -824,6 +981,14 @@ impl DirectSnowStage3V11ShadowAttachment {
             if let Some(ending_stage3) = covered_stage3 {
                 candidate.stage3_by_lane = ending_stage3;
             }
+            install_snow_enthalpy_material_resident_into_committed_v1(
+                &mut candidate,
+                SnowStage3V11SnowEnthalpyMaterialResidentV1 {
+                    current_owner: covered_snow_enthalpy_material_owner,
+                    accepted_owner_chronology:
+                        covered_snow_enthalpy_material_owner_chronology,
+                },
+            )?;
             candidate.next_parent_sequence = candidate.next_parent_sequence.checked_add(1).ok_or(
                 DirectSnowStage3V11AttachmentError::Identity("V11 parent sequence overflow"),
             )?;

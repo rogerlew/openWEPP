@@ -32,6 +32,8 @@ fn execute_adaptive_snow_free_successor_v1(
     interval_index: usize,
     forcing_receipt: Digest32,
     ending_snow_owner_bytes: Vec<u8>,
+    deferred_native_v2_soil_custody:
+        Option<crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1>,
 ) -> Result<Box<AdaptiveSnowFreeSuccessorExecutionV1>, DirectSnowStage3V11AttachmentError> {
     let (parent, consumer, clock, _, accepted_support) = execute_real_v11_parent(
         context,
@@ -43,6 +45,7 @@ fn execute_adaptive_snow_free_successor_v1(
         interval_index,
         forcing_receipt,
         ending_snow_owner_bytes,
+        deferred_native_v2_soil_custody,
         false,
     )?;
     Ok(Box::new(AdaptiveSnowFreeSuccessorExecutionV1 {
@@ -51,6 +54,269 @@ fn execute_adaptive_snow_free_successor_v1(
         clock,
         accepted_support,
     }))
+}
+
+#[cfg(test)]
+mod transient_native_v2_soil_custody_tests {
+    #[test]
+    fn custody_is_a_typed_pair_and_stays_out_of_checkpoint_shapes() {
+        let terminal = include_str!("snow_stage3_v11_terminal_execution.rs");
+        let helper = terminal
+            .split("fn deferred_native_v2_soil_custody_v1")
+            .nth(1)
+            .expect("typed custody helper")
+            .split("enum CoveredTerminalProviderRetentionV1")
+            .next()
+            .expect("typed custody helper body");
+        assert!(terminal.contains("fn deferred_native_v2_soil_custody_v1"));
+        assert!(helper.contains("DeferredNativeV2SoilCustodyV1::try_new"));
+        assert!(!helper.contains("serde_json"));
+        assert!(!helper.contains("transient_diagnostics"));
+
+        let custody = include_str!("v11_covered/execution.rs");
+        let declaration = custody
+            .split("pub(crate) struct DeferredNativeV2SoilCustodyV1")
+            .nth(1)
+            .expect("typed custody declaration")
+            .split("impl DeferredNativeV2SoilCustodyV1")
+            .next()
+            .expect("typed custody fields");
+        assert!(declaration.contains("DirectSoilThermalCandidate"));
+        assert!(declaration.contains(
+            "DirectSoilThermalUnpublishedContinuationResultV2"
+        ));
+
+        let restart = include_str!("snow_stage3_v11_restart.rs");
+        assert!(!restart.contains("deferred_native_v2_soil_custody"));
+    }
+
+    #[test]
+    fn successor_clears_custody_only_after_successful_handoff() {
+        let source = include_str!("snow_stage3_v11_adaptive_execution.rs");
+        let call = source
+            .split("let next = execute_adaptive_snow_free_successor_v1")
+            .nth(1)
+            .expect("snow-free successor handoff");
+        let passed = call
+            .find("deferred_native_v2_soil_custody.clone()")
+            .expect("custody clone at handoff");
+        let clear = call
+            .find("deferred_native_v2_soil_custody = None;")
+            .expect("custody clear after handoff");
+        assert!(passed < clear);
+        assert!(call[..clear].contains(")?;"));
+    }
+
+    #[test]
+    fn successor_failure_rolls_back_without_consuming_custody() {
+        let source = include_str!("snow_stage3_v11_adaptive_execution.rs");
+        let call = source
+            .split("let next = execute_adaptive_snow_free_successor_v1")
+            .nth(1)
+            .expect("snow-free successor handoff");
+        let handoff = call.find(")?;").expect("fallible successor handoff");
+        let clear = call
+            .find("deferred_native_v2_soil_custody = None;")
+            .expect("post-success custody clear");
+        assert!(handoff < clear);
+        assert!(call[..handoff].contains("deferred_native_v2_soil_custody.clone()"));
+        assert!(!call[..handoff].contains("deferred_native_v2_soil_custody.take()"));
+    }
+
+    #[test]
+    fn interruption_and_memo_paths_do_not_persist_custody() {
+        let helpers = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+        let state = helpers
+            .split("\nstruct AdaptiveParentExecutionStateV1")
+            .nth(1)
+            .expect("adaptive parent state")
+            .split("\nenum AdaptiveParentInitializationOutcomeV1")
+            .next()
+            .expect("adaptive parent state body");
+        assert!(state.contains("deferred_native_v2_soil_custody"));
+        assert!(!state.contains("serde"));
+
+        let adaptive = include_str!("snow_stage3_v11_adaptive_execution.rs");
+        let interruption = adaptive
+            .split("macro_rules! interrupt")
+            .nth(1)
+            .expect("adaptive interruption macro");
+        assert!(interruption.contains("deferred_native_v2_soil_custody.is_none()"));
+        assert!(adaptive.contains(
+            "Memoized ordinary covered trials cannot carry terminal"
+        ));
+    }
+
+    #[test]
+    fn terminal_composition_replaces_transient_custody_only_after_each_child_succeeds() {
+        let adaptive = include_str!("snow_stage3_v11_adaptive_execution.rs");
+        let path = adaptive
+            .split("fn execute_adaptive_terminal_path_v1")
+            .nth(1)
+            .expect("adaptive terminal path")
+            .split("fn execute_adaptive_covered_trial_v1")
+            .next()
+            .expect("adaptive terminal path body");
+        let handoff = path
+            .find("deferred_native_v2_soil_custody.as_ref()")
+            .expect("custody handoff into child");
+        let returned = path
+            .find("actual.deferred_native_v2_soil_custody.take()")
+            .expect("successful child custody result");
+        let replace = path
+            .find("deferred_native_v2_soil_custody = next_deferred_native_v2_soil_custody")
+            .expect("post-success custody replacement");
+        assert!(handoff < returned && returned < replace);
+        assert!(path.contains("custody lost between terminal children"));
+        assert!(path.contains(
+            "beginning_deferred_native_v2_soil_custody.cloned()"
+        ));
+        assert!(!path.contains("serde"));
+    }
+
+    #[test]
+    fn rejected_direct_and_composed_trials_share_an_immutable_custody_clone() {
+        let helpers = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+        let selection = helpers
+            .rsplit("fn select_adaptive_terminal_candidate_v1")
+            .next()
+            .expect("terminal candidate selection")
+            .split("fn execute_adaptive_parent_loop_closure_v1")
+            .next()
+            .expect("terminal candidate selection body");
+        assert_eq!(
+            selection
+                .matches("beginning_deferred_native_v2_soil_custody,")
+                .count(),
+            2,
+            "both direct/composed trials use one immutable beginning",
+        );
+        assert!(selection.contains(
+            "beginning_deferred_native_v2_soil_custody: Option<"
+        ));
+
+        let adaptive = include_str!("snow_stage3_v11_adaptive_execution.rs");
+        let acceptance = adaptive
+            .split("let terminal_trial_beginning_soil_custody =")
+            .nth(1)
+            .expect("outer terminal trial custody clone");
+        let refine = acceptance
+            .find("AdaptiveCandidateSelectionV1::Refine")
+            .expect("refinement branch");
+        let consume = acceptance
+            .find("deferred_native_v2_soil_custody.take()")
+            .expect("accepted custody consume");
+        assert!(refine < consume, "a rejected trial cannot consume outer custody");
+    }
+
+    #[test]
+    fn accepted_terminal_custody_replacement_retains_duplicate_poison_guard() {
+        let adaptive = include_str!("snow_stage3_v11_adaptive_execution.rs");
+        let acceptance = adaptive
+            .split("let terminal_trial_beginning_soil_custody =")
+            .nth(1)
+            .expect("outer terminal trial custody clone");
+        let poison = acceptance
+            .find("deferred_native_v2_soil_custody != terminal_trial_beginning_soil_custody")
+            .expect("duplicate/substitution poison guard");
+        let consume = acceptance
+            .find("deferred_native_v2_soil_custody.take()")
+            .expect("accepted beginning custody consume");
+        let replace = acceptance
+            .find("deferred_native_v2_soil_custody = terminal_soil_custody")
+            .expect("accepted ending custody replacement");
+        assert!(poison < consume && consume < replace);
+        assert!(acceptance[..consume].contains("duplicate deferred native V2 soil custody"));
+        assert!(acceptance.contains("custody lost by accepted terminal trial"));
+    }
+
+    #[test]
+    fn parent_end_native_v2_close_is_soil_only_exact_once_and_receipted() {
+        let source = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+        let body = source
+            .rsplit("fn close_deferred_native_v2_soil_at_parent_end_v1")
+            .next()
+            .expect("parent-end native V2 close")
+            .split("fn finalize_adaptive_parent_execution_state_v1")
+            .next()
+            .expect("parent-end native V2 close body");
+        assert!(body.contains("clock.accepted_until() != prepared.support.end_ns()"));
+        assert!(body.contains("clock.accepted_until() != clock.parent_support().end_ns()"));
+        assert!(body.contains("DeferredNativeV2SoilCustodyV1::try_new"));
+        assert!(body.contains("compose_accepted_outer_candidate"));
+        assert!(body.contains("seal_soil_thermal_accepted_candidate_v2"));
+        assert_eq!(
+            body.matches("install_soil_thermal_accepted_v2_from_unpublished_continuation")
+                .count(),
+            1,
+        );
+        assert_eq!(
+            body.matches("normalize_v11_staged_parent_lineage").count(),
+            2,
+            "the cloned install host enters and exits accepted support lineage exactly once",
+        );
+        assert!(body.contains("beginning_non_soil_owner_bytes"));
+        assert!(body.contains("ending_non_soil_owner_bytes"));
+        assert!(body.contains("EventClass::OwnershipTransfer"));
+        assert!(body.contains("[owner] if owner == \"soil_thermal\""));
+        assert!(body.contains("retain_accepted_publication_zero_duration_event"));
+        assert!(!body.contains("snow_free_successor_receipts"));
+        assert!(!body.contains("advance_soil_thermal"));
+    }
+
+    #[test]
+    fn parent_end_native_v2_close_is_atomic_and_clears_only_after_validation() {
+        let source = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+        let body = source
+            .rsplit("fn close_deferred_native_v2_soil_at_parent_end_v1")
+            .next()
+            .expect("parent-end native V2 close")
+            .split("fn finalize_adaptive_parent_execution_state_v1")
+            .next()
+            .expect("parent-end native V2 close body");
+        let retain = body
+            .find("candidate_consumer.retain_accepted_publication_zero_duration_event")
+            .expect("sealed accepted publication");
+        let parent_replace = body.find("*parent = candidate_parent").expect("parent replace");
+        let consumer_replace = body
+            .find("*consumer = candidate_consumer")
+            .expect("consumer replace");
+        let clock_replace = body.find("*clock = candidate_clock").expect("clock replace");
+        let digest_refresh = body
+            .find("*expected_child_beginning = ending_owner_set")
+            .expect("owner digest refresh");
+        let clear = body.find("*custody = None").expect("custody clear");
+        assert!(
+            retain < parent_replace
+                && parent_replace < consumer_replace
+                && consumer_replace < clock_replace
+                && clock_replace < digest_refresh
+                && digest_refresh < clear
+        );
+        assert!(!body[..retain].contains("*parent ="));
+        assert!(!body[..retain].contains("*consumer ="));
+        assert!(!body[..retain].contains("*clock ="));
+        assert!(!body[..retain].contains("*custody = None"));
+    }
+
+    #[test]
+    fn parent_end_native_v2_close_refuses_missing_or_substituted_custody() {
+        let source = include_str!("snow_stage3_v11_adaptive_execution_stack_helpers.rs");
+        let body = source
+            .rsplit("fn close_deferred_native_v2_soil_at_parent_end_v1")
+            .next()
+            .expect("parent-end native V2 close")
+            .split("fn finalize_adaptive_parent_execution_state_v1")
+            .next()
+            .expect("parent-end native V2 close body");
+        assert!(body.contains("deferred native V2 parent-end continuation"));
+        assert!(body.contains("authenticated != retained"));
+        assert!(body.contains("deferred native V2 parent-end custody reauthentication"));
+        assert!(body.contains("deferred native V2 parent-end non-soil lineage round trip"));
+        assert!(body.contains("deferred native V2 parent-end exact soil mutation"));
+        assert!(body.contains("deferred native V2 parent-end event owner join"));
+        assert!(source.contains("deferred native V2 soil custody survived parent handoff"));
+    }
 }
 
 #[inline(never)]
@@ -78,6 +344,9 @@ fn select_adaptive_covered_candidate_v1(
     interval_index: usize,
     forcing_receipt: Digest32,
     stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    snow_enthalpy_material_owner: Option<
+        &crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    >,
     pending_terminal_parcels: &BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
     covered_trial_memo: &mut Vec<AdaptiveCoveredTrialMemoEntryV1>,
     adaptive_receipts: &mut AdaptiveReceiptAccumulatorV1,
@@ -103,6 +372,7 @@ fn select_adaptive_covered_candidate_v1(
             interval_index,
             forcing_receipt,
             stage3,
+            snow_enthalpy_material_owner,
             pending_terminal_parcels,
             Some(covered_trial_memo),
             &direct_supports,
@@ -166,6 +436,7 @@ fn select_adaptive_covered_candidate_v1(
             interval_index,
             forcing_receipt,
             stage3,
+            snow_enthalpy_material_owner,
             pending_terminal_parcels,
             Some(covered_trial_memo),
             &composed_supports,
@@ -333,7 +604,13 @@ fn select_adaptive_terminal_candidate_v1<M>(
     interval_index: usize,
     forcing_receipt: Digest32,
     stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    snow_enthalpy_material_owner: Option<
+        &crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    >,
     pending_terminal_parcels: &BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
+    beginning_deferred_native_v2_soil_custody: Option<
+        &crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1,
+    >,
     adaptive_receipts: &mut AdaptiveReceiptAccumulatorV1,
     adaptive_request: &Stage3AdaptiveParentRequestReceiptV1,
     support: TimeSupport,
@@ -361,7 +638,9 @@ where
             interval_index,
             forcing_receipt,
             stage3,
+            snow_enthalpy_material_owner,
             pending_terminal_parcels,
+            beginning_deferred_native_v2_soil_custody,
             &direct_supports,
             child_ordinal,
             event_ordinal,
@@ -425,7 +704,9 @@ where
             interval_index,
             forcing_receipt,
             stage3,
+            snow_enthalpy_material_owner,
             pending_terminal_parcels,
+            beginning_deferred_native_v2_soil_custody,
             &composed_supports,
             child_ordinal,
             event_ordinal,
@@ -619,6 +900,12 @@ fn adaptive_interruption_outcome_v2(
     consumer: &DirectV10RealConsumerShadow,
     clock: &CoupledClockStateV1,
     stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+    snow_enthalpy_material_owner: Option<
+        &crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    >,
+    snow_enthalpy_material_owner_chronology: &[
+        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1
+    ],
     pending_terminal_parcels: &BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
     owner_joins: &[Stage3CoupledSubslabReceiptV1],
     event_groups: &[Stage3V11TerminalEventGroupV1],
@@ -646,6 +933,9 @@ fn adaptive_interruption_outcome_v2(
         last_v11_parent_candidate: checkpoint.day_candidate.last_v11_parent_candidate.clone(),
         terminal_parcels: pending_terminal_parcels.clone(),
         receipt_chain: checkpoint.day_candidate.receipt_chain.clone(),
+        snow_enthalpy_material_owner: snow_enthalpy_material_owner.cloned(),
+        snow_enthalpy_material_owner_chronology:
+            snow_enthalpy_material_owner_chronology.to_vec(),
     });
     checkpoint.support_owner_joins = owner_joins.to_vec();
     checkpoint.support_event_groups = event_groups.to_vec();
@@ -671,6 +961,11 @@ struct AdaptiveParentExecutionStateV1 {
     consumer: DirectV10RealConsumerShadow,
     clock: CoupledClockStateV1,
     stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    snow_enthalpy_material_owner: Option<
+        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    >,
+    snow_enthalpy_material_owner_chronology:
+        Vec<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
     owner_joins: Vec<Stage3CoupledSubslabReceiptV1>,
     event_groups: Vec<Stage3V11TerminalEventGroupV1>,
     terminal_parcels: Vec<DirectSnowStage3V11TerminalParcel>,
@@ -680,6 +975,10 @@ struct AdaptiveParentExecutionStateV1 {
     snow_free_successor_receipts: Vec<Stage3SnowFreeSuccessorReceiptV1>,
     adaptive_trial_quanta: u128,
     covered_trial_memo: Vec<AdaptiveCoveredTrialMemoEntryV1>,
+    /// Transient exact native-V2 soil custody from a deferred terminal
+    /// endpoint. It has no checkpoint/restart representation.
+    deferred_native_v2_soil_custody:
+        Option<crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1>,
 }
 
 enum AdaptiveParentInitializationOutcomeV1 {
@@ -696,6 +995,11 @@ fn initialize_adaptive_parent_execution_v1(
     beginning_clock: &CoupledClockStateV1,
     prepared: &DirectSnowStage3V11PreparedSupport,
     beginning_stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    beginning_snow_enthalpy_material_owner: Option<
+        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    >,
+    beginning_snow_enthalpy_material_owner_chronology:
+        Vec<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
     beginning_terminal_parcels: BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
     failure_injection: Option<Stage3V11FailureInjection>,
     restart: Option<Box<DirectSnowStage3V11InProgressExecutionV2>>,
@@ -785,6 +1089,8 @@ fn initialize_adaptive_parent_execution_v1(
                 &consumer,
                 &clock,
                 &stage3,
+                beginning_snow_enthalpy_material_owner.as_ref(),
+                &beginning_snow_enthalpy_material_owner_chronology,
                 &pending_terminal_parcels,
                 &owner_joins,
                 &event_groups,
@@ -894,6 +1200,9 @@ fn initialize_adaptive_parent_execution_v1(
             consumer,
             clock,
             stage3,
+            snow_enthalpy_material_owner: beginning_snow_enthalpy_material_owner,
+            snow_enthalpy_material_owner_chronology:
+                beginning_snow_enthalpy_material_owner_chronology,
             owner_joins,
             event_groups,
             terminal_parcels,
@@ -903,12 +1212,215 @@ fn initialize_adaptive_parent_execution_v1(
             snow_free_successor_receipts,
             adaptive_trial_quanta,
             covered_trial_memo: Vec::new(),
+            deferred_native_v2_soil_custody: None,
         },
     )))
 }
 
 #[allow(clippy::too_many_arguments)]
 #[inline(never)]
+fn close_deferred_native_v2_soil_at_parent_end_v1(
+    context: &DirectSnowStage3V11StaticContext,
+    prepared: &DirectSnowStage3V11PreparedSupport,
+    parent: &mut V11ParentTransaction,
+    consumer: &mut DirectV10RealConsumerShadow,
+    clock: &mut CoupledClockStateV1,
+    expected_child_beginning: &mut Digest32,
+    custody: &mut Option<crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1>,
+) -> Result<(), DirectSnowStage3V11AttachmentError> {
+    let Some(retained) = custody.as_ref() else {
+        return Ok(());
+    };
+    if clock.accepted_until() != prepared.support.end_ns()
+        || clock.accepted_until() != clock.parent_support().end_ns()
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "deferred native V2 soil close before exact parent endpoint",
+        ));
+    }
+    let continuation = retained.continuation().ok_or(
+        DirectSnowStage3V11AttachmentError::Identity(
+            "deferred native V2 parent-end continuation",
+        ),
+    )?;
+    let authenticated =
+        crate::v9_real_consumer_shadow::DeferredNativeV2SoilCustodyV1::try_new(
+            consumer,
+            retained.candidate().clone(),
+            Some(continuation.clone()),
+        )
+        .map_err(DirectSnowStage3V11AttachmentError::Owner)?;
+    if &authenticated != retained {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "deferred native V2 parent-end custody reauthentication",
+        ));
+    }
+
+    let authoritative_beginning = consumer.clone();
+    let mut candidate_consumer = consumer.clone();
+    let mut beginning_non_soil_owner_bytes = consumer.canonical_owner_state_bytes()?;
+    beginning_non_soil_owner_bytes.remove("soil_thermal").ok_or(
+        DirectSnowStage3V11AttachmentError::Identity(
+            "deferred native V2 parent-end beginning soil owner bytes",
+        ),
+    )?;
+    let accepted = continuation
+        .compose_accepted_outer_candidate(consumer.lse_configuration())
+        .map_err(|error| {
+            DirectSnowStage3V11AttachmentError::Owner(
+                crate::v9_real_consumer_shadow::DirectV11RealConsumerError::Runtime(
+                    crate::v9_real_consumer_shadow::DirectV10RealConsumerError::Runtime(error),
+                ),
+            )
+    })?;
+    let prepared_beginning = continuation.original_prepared().beginning_owner();
+    let seals = crate::v9_real_consumer_shadow::seal_soil_thermal_accepted_candidate_v2(
+        prepared_beginning,
+        &accepted,
+    )
+    .map_err(|error| {
+        DirectSnowStage3V11AttachmentError::Owner(
+            crate::v9_real_consumer_shadow::DirectV11RealConsumerError::Runtime(
+                crate::v9_real_consumer_shadow::DirectV10RealConsumerError::Runtime(error),
+            ),
+            )
+        })?;
+    let transaction_authority = candidate_consumer
+        .authenticate_soil_thermal_unpublished_continuation_install_authority_v2(
+            continuation,
+            prepared_beginning,
+        )
+        .map_err(|error| {
+            DirectSnowStage3V11AttachmentError::Owner(
+                crate::v9_real_consumer_shadow::DirectV11RealConsumerError::Runtime(error),
+            )
+        })?;
+    candidate_consumer
+        .install_soil_thermal_accepted_v2_from_unpublished_continuation(
+            &authoritative_beginning,
+            continuation,
+            prepared_beginning,
+            transaction_authority,
+            accepted,
+            seals,
+        )
+        .map_err(|error| {
+            DirectSnowStage3V11AttachmentError::Owner(
+                crate::v9_real_consumer_shadow::DirectV11RealConsumerError::Runtime(error),
+            )
+        })?;
+    let mut ending_non_soil_owner_bytes = candidate_consumer.canonical_owner_state_bytes()?;
+    ending_non_soil_owner_bytes.remove("soil_thermal").ok_or(
+        DirectSnowStage3V11AttachmentError::Identity(
+            "deferred native V2 parent-end ending soil owner bytes",
+        ),
+    )?;
+    if ending_non_soil_owner_bytes != beginning_non_soil_owner_bytes {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "deferred native V2 parent-end non-soil lineage round trip",
+        ));
+    }
+
+    let mut ending_owners = clock.owners().to_vec();
+    let soil_slot = ending_owners
+        .iter_mut()
+        .find(|owner| owner.owner_id() == "soil_thermal")
+        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+            "deferred native V2 parent-end clock soil owner",
+        ))?;
+    *soil_slot = crate::v9_real_consumer_shadow::v11_soil_thermal_owner_envelope(
+        candidate_consumer.soil_thermal_resident(),
+    )
+    .map_err(DirectSnowStage3V11AttachmentError::Owner)?
+    .to_owner_state()?;
+    let mutation_set = clock
+        .owners()
+        .iter()
+        .zip(&ending_owners)
+        .filter_map(|(before, after)| (before != after).then(|| before.owner_id().to_owned()))
+        .collect::<Vec<_>>();
+    if !matches!(mutation_set.as_slice(), [owner] if owner == "soil_thermal") {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "deferred native V2 parent-end exact soil mutation",
+        ));
+    }
+    let beginning_owner_set = complete_owner_set_digest(clock.owners())?;
+    let ending_owner_set = complete_owner_set_digest(&ending_owners)?;
+    let tick = clock.accepted_until();
+    let tick_bytes = tick.get().to_be_bytes();
+    let context_digest = framed_sha256(
+        "stage3-v11-parent-end-native-v2-soil",
+        &[
+            FramedField {
+                tag: "parent_transaction_id",
+                value: clock.parent_transaction_id().digest().as_bytes(),
+            },
+            FramedField {
+                tag: "tick_ns",
+                value: &tick_bytes,
+            },
+            FramedField {
+                tag: "beginning_owner_set",
+                value: beginning_owner_set.as_bytes(),
+            },
+            FramedField {
+                tag: "ending_owner_set",
+                value: ending_owner_set.as_bytes(),
+            },
+        ],
+    )?;
+    let ledger = LedgerEntryV1::new(
+        "native-v2-soil-parent-end".to_owned(),
+        "canonical-owner-transition".to_owned(),
+        context_digest,
+        context_digest,
+        context_digest,
+    )?;
+    let event = EventProposalV1::new(
+        EventClass::OwnershipTransfer,
+        "soil_thermal".to_owned(),
+        context_digest,
+        ending_owners.clone(),
+        mutation_set.clone(),
+        "snow-stage3-v11".to_owned(),
+        clock.active_participants().to_vec(),
+        vec![ledger],
+    )?;
+    let mut candidate_clock = clock.clone();
+    let mut queue = EventQueueV1::new(tick, vec![event])?;
+    let accepted_event = queue
+        .apply_next(&mut candidate_clock)?
+        .ok_or(DirectSnowStage3V11AttachmentError::Identity(
+            "deferred native V2 parent-end event application",
+        ))?;
+    if queue.apply_next(&mut candidate_clock)?.is_some()
+        || accepted_event.beginning_owner_set_digest() != beginning_owner_set
+        || accepted_event.ending_owner_set_digest() != ending_owner_set
+        || candidate_clock.owners() != ending_owners
+        || complete_owner_set_digest(candidate_clock.owners())? != ending_owner_set
+    {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "deferred native V2 parent-end event owner join",
+        ));
+    }
+    accepted_event.validate()?;
+    let mut candidate_parent = parent.clone();
+    candidate_parent.accept_zero_duration_owner_transition(
+        &context.vegetation_configuration,
+        tick,
+        owner_envelopes_from_states(&ending_owners)?,
+        &mutation_set,
+    )?;
+    candidate_consumer.retain_accepted_publication_zero_duration_event(&accepted_event)?;
+
+    *parent = candidate_parent;
+    *consumer = candidate_consumer;
+    *clock = candidate_clock;
+    *expected_child_beginning = ending_owner_set;
+    *custody = None;
+    Ok(())
+}
+
 fn finalize_adaptive_parent_execution_state_v1(
     context: &DirectSnowStage3V11StaticContext,
     failure_injection: Option<Stage3V11FailureInjection>,
@@ -920,20 +1432,37 @@ fn finalize_adaptive_parent_execution_state_v1(
     let AdaptiveParentExecutionStateV1 {
         prepared,
         restart: _,
-        parent,
-        consumer,
-        clock,
+        mut parent,
+        mut consumer,
+        mut clock,
         stage3,
+        snow_enthalpy_material_owner,
+        snow_enthalpy_material_owner_chronology,
         owner_joins,
         event_groups,
         terminal_parcels,
         pending_terminal_parcels: _,
-        expected_child_beginning: _,
+        mut expected_child_beginning,
         adaptive_receipts,
         snow_free_successor_receipts,
         adaptive_trial_quanta: _,
         covered_trial_memo: _,
+        mut deferred_native_v2_soil_custody,
     } = *execution;
+    close_deferred_native_v2_soil_at_parent_end_v1(
+        context,
+        &prepared,
+        &mut parent,
+        &mut consumer,
+        &mut clock,
+        &mut expected_child_beginning,
+        &mut deferred_native_v2_soil_custody,
+    )?;
+    if deferred_native_v2_soil_custody.is_some() {
+        return Err(DirectSnowStage3V11AttachmentError::Identity(
+            "deferred native V2 soil custody survived parent handoff",
+        ));
+    }
     finalize_adaptive_parent_execution_v1(
         context,
         failure_injection,
@@ -945,6 +1474,8 @@ fn finalize_adaptive_parent_execution_state_v1(
         consumer,
         clock,
         stage3,
+        snow_enthalpy_material_owner,
+        snow_enthalpy_material_owner_chronology,
         owner_joins,
         event_groups,
         terminal_parcels,
@@ -966,6 +1497,11 @@ fn finalize_adaptive_parent_execution_v1(
     mut consumer: DirectV10RealConsumerShadow,
     mut clock: CoupledClockStateV1,
     stage3: BTreeMap<u32, DirectSnowStage3PersistentState>,
+    snow_enthalpy_material_owner: Option<
+        crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    >,
+    snow_enthalpy_material_owner_chronology:
+        Vec<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
     owner_joins: Vec<Stage3CoupledSubslabReceiptV1>,
     event_groups: Vec<Stage3V11TerminalEventGroupV1>,
     terminal_parcels: Vec<DirectSnowStage3V11TerminalParcel>,
@@ -1083,6 +1619,8 @@ fn finalize_adaptive_parent_execution_v1(
         clock,
         finalized,
         stage3,
+        snow_enthalpy_material_owner,
+        snow_enthalpy_material_owner_chronology,
         owner_joins,
         event_groups,
         terminal_parcels,

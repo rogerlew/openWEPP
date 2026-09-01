@@ -100,7 +100,7 @@ const LIQUID_VAPOR_PHASE_MINIMUM_K: f64 = 273.15;
 /// so their inactive target cannot be colder than that law's phase-domain
 /// minimum. The dry-stem coordinate has no such constitutive restriction and
 /// continues to track canopy-air temperature exactly.
-fn inactive_component_temperature_anchor_k(
+pub(crate) fn inactive_component_temperature_anchor_k(
     component_index: usize,
     canopy_air_temperature_k: f64,
 ) -> f64 {
@@ -1661,6 +1661,16 @@ pub fn evaluate_covered_column(
     caps: Option<&CoveredWaterCaps>,
     frozen: Option<&CoveredFrozenBranches>,
 ) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
+    evaluate_covered_column_with_v3_litter(column, trial, caps, frozen, None)
+}
+
+fn evaluate_covered_column_with_v3_litter(
+    column: &CoveredColumnInputs,
+    trial: &[f64],
+    caps: Option<&CoveredWaterCaps>,
+    frozen: Option<&CoveredFrozenBranches>,
+    v3_litter: Option<crate::V3LitterResidualContext>,
+) -> Result<CoveredColumnEvaluation, LandSurfaceEnergyError> {
     if column.occupancies.is_empty() || column.ground.soil_nodes.is_empty() {
         return Err(LandSurfaceEnergyError::topology_cardinality(
             "covered_column",
@@ -1699,7 +1709,7 @@ pub fn evaluate_covered_column(
         || !covered_trial_is_valid(
             trial,
             column.occupancies.len(),
-            covered_ground_uses_liquid_vapor_phase_domain(column),
+            v3_litter.is_none() && covered_ground_uses_liquid_vapor_phase_domain(column),
         )
     {
         return Err(LandSurfaceEnergyError::ConstitutiveDomain(
@@ -1811,8 +1821,24 @@ pub fn evaluate_covered_column(
         column.reference_wind_m_s,
     )?;
     let ground = &column.ground;
+    let v3_vapor = v3_litter
+        .map(|context| {
+            resolve_v3_litter_vapor(
+                column,
+                canopy_temperature,
+                canopy_q,
+                ground_temperature,
+                context,
+            )
+        })
+        .transpose()?;
     let (ground_law, _) = if stage3_boundary.is_some() {
         (0.0, None)
+    } else if let Some((raw, _)) = v3_vapor {
+        (
+            raw.raw_liquid_signed_rate_kg_m2_s + raw.raw_ice_signed_rate_kg_m2_s,
+            None,
+        )
     } else if ground.class == SurfaceClassKind::BareMineralSoil
         && ground.surface_liquid_kg_m2_tile == 0.0
     {
@@ -1865,6 +1891,8 @@ pub fn evaluate_covered_column(
         .unwrap_or(natural_ground_branch);
     let final_ground_vapor = if stage3_boundary.is_some() {
         0.0
+    } else if let Some((_, finalized)) = v3_vapor {
+        finalized.liquid_signed_rate_kg_m2_s + finalized.ice_signed_rate_kg_m2_s
     } else if ground_branch == WaterBranch::AuthorizationActiveOrTie {
         caps.ok_or(LandSurfaceEnergyError::water_cardinality(
             "frozen_ground_cap_without_authorization",
@@ -1877,7 +1905,11 @@ pub fn evaluate_covered_column(
     let ending_water = if stage3_boundary.is_none() {
         let uses_store = !(ground.class == SurfaceClassKind::BareMineralSoil
             && ground.surface_liquid_kg_m2_tile == 0.0);
-        let ending_water = if uses_store {
+        let ending_water = if let Some((_, finalized)) = v3_vapor {
+            ground.surface_liquid_kg_m2_tile
+                - finalized.liquid_signed_rate_kg_m2_s.max(0.0) * column.interval_s
+                + (-finalized.liquid_signed_rate_kg_m2_s).max(0.0) * column.interval_s
+        } else if uses_store {
             ground.surface_liquid_kg_m2_tile - final_ground_vapor.max(0.0) * column.interval_s
                 + (-final_ground_vapor).max(0.0) * column.interval_s
         } else {
@@ -2099,44 +2131,23 @@ pub fn evaluate_covered_column(
     })
 }
 
-pub(crate) fn evaluate_covered_column_v3(
+fn resolve_v3_litter_vapor(
     column: &CoveredColumnInputs,
-    trial: &[f64],
-    caps: Option<&CoveredWaterCaps>,
-    frozen: Option<&CoveredFrozenBranches>,
+    canopy_temperature_k: f64,
+    canopy_q: f64,
+    ground_temperature_k: f64,
     context: crate::V3LitterResidualContext,
-) -> Result<crate::V3PhaseFreeCoveredEvaluation, LandSurfaceEnergyError> {
-    if column.ground.class != SurfaceClassKind::ForestLitter
-        || column.ground.storage_branch != SurfaceStorageBranch::FiniteCapacity
-        || column.stage3_lower_boundary.is_some()
-        || column.ground.surface_liquid_kg_m2_tile.to_bits()
-            != context.beginning.liquid_kg_m2_tile.to_bits()
-        || column.ground.surface_enthalpy_j_m2_tile.to_bits()
-            != context.beginning.sensible_energy_j_m2_tile.to_bits()
-    {
-        return Err(LandSurfaceEnergyError::FrozenLitterV3Identity(
-            "V3 covered-column predecessor/state join",
-        ));
-    }
-    crate::validate_litter_phase_configuration(context.configuration)?;
-    crate::validate_beginning_litter_state(context.configuration, context.beginning)?;
-    if column.interval_s.to_bits() != column.ground.interval_s.to_bits() {
-        return Err(LandSurfaceEnergyError::FrozenLitterTransaction(
-            "V3 column/ground support mismatch",
-        ));
-    }
-
-    let mut detail = evaluate_covered_column(column, trial, caps, frozen)?;
-    let rho = column.pressure_pa / (DRY_AIR_GAS_CONSTANT_J_KG_K * detail.canopy_air_temperature_k);
+) -> Result<(crate::RawLitterVapor, crate::FinalizedLitterVapor), LandSurfaceEnergyError> {
+    let rho = column.pressure_pa / (DRY_AIR_GAS_CONSTANT_J_KG_K * canopy_temperature_k);
     let resistance = crate::physics::under_canopy_neutral_resistance(
         column.under_canopy_geometry,
         column.reference_wind_m_s,
     )?;
     let environment = crate::LitterVaporEnvironment {
-        accepted_phase_free_temperature_k: detail.ground_temperature_k,
+        accepted_phase_free_temperature_k: ground_temperature_k,
         air_density_kg_m3: rho,
         air_pressure_pa: column.pressure_pa,
-        recipient_specific_humidity_kg_kg: detail.canopy_air_specific_humidity_kg_kg,
+        recipient_specific_humidity_kg_kg: canopy_q,
         litter_to_canopy_resistance_s_m: resistance.resistance_s_m,
     };
     let raw =
@@ -2175,6 +2186,45 @@ pub(crate) fn evaluate_covered_column_v3(
                 },
             }
         });
+    Ok((raw, finalized))
+}
+
+pub(crate) fn evaluate_covered_column_v3(
+    column: &CoveredColumnInputs,
+    trial: &[f64],
+    caps: Option<&CoveredWaterCaps>,
+    frozen: Option<&CoveredFrozenBranches>,
+    context: crate::V3LitterResidualContext,
+) -> Result<crate::V3PhaseFreeCoveredEvaluation, LandSurfaceEnergyError> {
+    if column.ground.class != SurfaceClassKind::ForestLitter
+        || column.ground.storage_branch != SurfaceStorageBranch::FiniteCapacity
+        || column.stage3_lower_boundary.is_some()
+        || column.ground.surface_liquid_kg_m2_tile.to_bits()
+            != context.beginning.liquid_kg_m2_tile.to_bits()
+        || column.ground.surface_enthalpy_j_m2_tile.to_bits()
+            != context.beginning.sensible_energy_j_m2_tile.to_bits()
+    {
+        return Err(LandSurfaceEnergyError::FrozenLitterV3Identity(
+            "V3 covered-column predecessor/state join",
+        ));
+    }
+    crate::validate_litter_phase_configuration(context.configuration)?;
+    crate::validate_beginning_litter_state(context.configuration, context.beginning)?;
+    if column.interval_s.to_bits() != column.ground.interval_s.to_bits() {
+        return Err(LandSurfaceEnergyError::FrozenLitterTransaction(
+            "V3 column/ground support mismatch",
+        ));
+    }
+
+    let mut detail =
+        evaluate_covered_column_with_v3_litter(column, trial, caps, frozen, Some(context))?;
+    let (raw, finalized) = resolve_v3_litter_vapor(
+        column,
+        detail.canopy_air_temperature_k,
+        detail.canopy_air_specific_humidity_kg_kg,
+        detail.ground_temperature_k,
+        context,
+    )?;
     let vapor = crate::finalize_litter_vapor(
         raw,
         finalized,

@@ -84,9 +84,18 @@ pub enum V8InputProjectionError {
 pub(crate) enum V8SoilThermalPhysicalBeginning {
     V1(SoilThermalSnapshot),
     V2(Box<PreparedSoilThermalSupportV2>),
+    V2Unpublished(Box<openwepp_land_surface_energy::SoilThermalUnpublishedPhysicalBeginningV2>),
 }
 
 impl V8SoilThermalPhysicalBeginning {
+    pub(crate) fn transaction_id_or(&self, outer: TransactionId) -> TransactionId {
+        match self {
+            Self::V1(_) => outer,
+            Self::V2(beginning) => beginning.beginning_owner().transaction_id,
+            Self::V2Unpublished(beginning) => beginning.transaction_id(),
+        }
+    }
+
     pub(crate) fn try_from_v1(
         beginning: &SoilThermalSnapshot,
     ) -> Result<Self, V8InputProjectionError> {
@@ -104,6 +113,17 @@ impl V8SoilThermalPhysicalBeginning {
         Ok(Self::V2(Box::new(prepared.clone())))
     }
 
+    pub(crate) fn try_from_v2_unpublished(
+        beginning: openwepp_land_surface_energy::SoilThermalUnpublishedPhysicalBeginningV2,
+    ) -> Result<Self, V8InputProjectionError> {
+        beginning
+            .predecessor_trial()
+            .ending_state()
+            .validate()
+            .map_err(|_| V8InputProjectionError::Identity("unpublished V2 soil beginning"))?;
+        Ok(Self::V2Unpublished(Box::new(beginning)))
+    }
+
     pub(crate) fn validate(&self) -> Result<(), V8InputProjectionError> {
         match self {
             Self::V1(beginning) => beginning.validate().map_err(Into::into),
@@ -112,6 +132,11 @@ impl V8SoilThermalPhysicalBeginning {
                 .state
                 .validate()
                 .map_err(|_| V8InputProjectionError::Identity("native V2 soil beginning")),
+            Self::V2Unpublished(beginning) => beginning
+                .predecessor_trial()
+                .ending_state()
+                .validate()
+                .map_err(|_| V8InputProjectionError::Identity("unpublished V2 soil beginning")),
         }
     }
 
@@ -119,6 +144,9 @@ impl V8SoilThermalPhysicalBeginning {
         match self {
             Self::V1(beginning) => &beginning.owner_id,
             Self::V2(beginning) => &beginning.beginning_owner().state.owner_id,
+            Self::V2Unpublished(beginning) => {
+                &beginning.predecessor_trial().ending_state().owner_id
+            }
         }
     }
 
@@ -126,6 +154,12 @@ impl V8SoilThermalPhysicalBeginning {
         match self {
             Self::V1(beginning) => &beginning.configuration_sha256,
             Self::V2(beginning) => &beginning.beginning_owner().state.configuration_sha256,
+            Self::V2Unpublished(beginning) => {
+                &beginning
+                    .predecessor_trial()
+                    .ending_state()
+                    .configuration_sha256
+            }
         }
     }
 
@@ -133,6 +167,9 @@ impl V8SoilThermalPhysicalBeginning {
         match self {
             Self::V1(beginning) => &beginning.state_sha256,
             Self::V2(beginning) => &beginning.beginning_owner().state.state_sha256,
+            Self::V2Unpublished(beginning) => {
+                &beginning.predecessor_trial().ending_state().state_sha256
+            }
         }
     }
 
@@ -144,6 +181,10 @@ impl V8SoilThermalPhysicalBeginning {
                 .snapshot()
                 .map(|snapshot| snapshot.snapshot_sha256)
                 .map_err(|_| V8InputProjectionError::Identity("native V2 soil snapshot digest")),
+            Self::V2Unpublished(beginning) => Ok(beginning
+                .predecessor_trial()
+                .unpublished_trial_sha256()
+                .clone()),
         }
     }
 
@@ -157,6 +198,11 @@ impl V8SoilThermalPhysicalBeginning {
             Self::V2(beginning) => {
                 openwepp_land_surface_energy::SoilThermalFinalizationBeginning::V2(
                     beginning.physical_read_view(),
+                )
+            }
+            Self::V2Unpublished(beginning) => {
+                openwepp_land_surface_energy::SoilThermalFinalizationBeginning::V2Unpublished(
+                    beginning,
                 )
             }
         }
@@ -184,6 +230,25 @@ impl V8SoilThermalPhysicalBeginning {
             Self::V2(beginning) => beginning
                 .beginning_owner()
                 .state
+                .ofes
+                .iter()
+                .map(|ofe| V8ProjectedSoilThermalOfe {
+                    ofe_id: ofe.ofe_id.clone(),
+                    ordered_layers: ofe
+                        .ordered_layers
+                        .iter()
+                        .map(|layer| V8ProjectedSoilThermalLayer {
+                            layer_id: layer.layer_id.clone(),
+                            temperature_k: layer.temperature_k,
+                            enthalpy_hi_j_m2_ofe_ground: layer.enthalpy_hi_j_m2_ofe_ground,
+                            enthalpy_carry: layer.enthalpy_carry.clone(),
+                        })
+                        .collect(),
+                })
+                .collect(),
+            Self::V2Unpublished(beginning) => beginning
+                .predecessor_trial()
+                .ending_state()
                 .ofes
                 .iter()
                 .map(|ofe| V8ProjectedSoilThermalOfe {
@@ -1308,7 +1373,7 @@ fn open_beginning_trial(problem: &OpenSurfaceProblem) -> Vec<f64> {
         .collect()
 }
 
-fn project_forest_litter_conductivity(
+pub(crate) fn project_forest_litter_conductivity(
     beginning_litter_liquid_kg_m2_tile: f64,
     litter_thickness_m: f64,
 ) -> Result<f64, V8InputProjectionError> {
@@ -1371,6 +1436,96 @@ fn tile_qualified_component_id(
     ))?)
 }
 
+pub(crate) fn validate_native_v2_soil_support_join(
+    soil_thermal: &V8SoilThermalPhysicalBeginning,
+    lse_transaction_id: TransactionId,
+    soil_thermal_transaction_id: TransactionId,
+    forcing_interval_s: f64,
+    wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
+) -> Result<(), V8InputProjectionError> {
+    let (owner, unpublished_child) = match soil_thermal {
+        V8SoilThermalPhysicalBeginning::V1(_) => return Ok(()),
+        V8SoilThermalPhysicalBeginning::V2(prepared) => (prepared.beginning_owner(), None),
+        V8SoilThermalPhysicalBeginning::V2Unpublished(beginning) => (
+            beginning.authority().beginning_owner(),
+            Some((beginning.support_start_ns(), beginning.support_end_ns())),
+        ),
+    };
+    let forcing_duration = std::time::Duration::try_from_secs_f64(forcing_interval_s)
+        .map_err(|_| V8InputProjectionError::Identity("native V2 forcing duration"))?;
+    let Some(binding) = wb14_coupled_child_binding else {
+        let owner_width_ns = owner
+            .support_end_ns
+            .checked_sub(owner.support_start_ns)
+            .ok_or(V8InputProjectionError::Identity(
+                "native V2 soil support bounds",
+            ))?;
+        if unpublished_child.is_some() {
+            return Err(V8InputProjectionError::Identity(
+                "native V2 soil unpublished child binding",
+            ));
+        }
+        if owner.transaction_id != soil_thermal_transaction_id
+            || soil_thermal_transaction_id != lse_transaction_id
+        {
+            return Err(V8InputProjectionError::Identity(
+                "native V2 soil support transaction",
+            ));
+        }
+        if forcing_duration.as_nanos() != owner_width_ns {
+            return Err(V8InputProjectionError::Identity(
+                "native V2 soil forcing duration",
+            ));
+        }
+        return Ok(());
+    };
+    let child_width_ns = binding
+        .child_support_end_ns
+        .checked_sub(binding.child_support_start_ns)
+        .ok_or(V8InputProjectionError::Identity(
+            "native V2 soil parent or child order",
+        ))?;
+    if owner.transaction_id != soil_thermal_transaction_id {
+        return Err(V8InputProjectionError::Identity(
+            "native V2 soil support transaction",
+        ));
+    }
+    if binding.parent_support_start_ns >= binding.parent_support_end_ns
+        || binding.child_support_start_ns >= binding.child_support_end_ns
+    {
+        return Err(V8InputProjectionError::Identity(
+            "native V2 soil parent or child order",
+        ));
+    }
+    if binding.parent_support_start_ns > owner.support_start_ns
+        || owner.support_start_ns > binding.child_support_start_ns
+    {
+        return Err(V8InputProjectionError::Identity(
+            "native V2 soil authority or child start",
+        ));
+    }
+    if binding.child_support_end_ns != owner.support_end_ns
+        || owner.support_end_ns > binding.parent_support_end_ns
+    {
+        return Err(V8InputProjectionError::Identity(
+            "native V2 soil child or authority end",
+        ));
+    }
+    if unpublished_child.is_some_and(|child| {
+        child != (binding.child_support_start_ns, binding.child_support_end_ns)
+    }) {
+        return Err(V8InputProjectionError::Identity(
+            "native V2 soil unpublished child binding",
+        ));
+    }
+    if forcing_duration.as_nanos() != child_width_ns {
+        return Err(V8InputProjectionError::Identity(
+            "native V2 soil forcing duration",
+        ));
+    }
+    Ok(())
+}
+
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn project_v8_runtime_inputs_with_carriers(
     vegetation_configuration: &VegetationConfiguration,
@@ -1388,6 +1543,7 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
     day_index: usize,
     interval_index: u8,
     authenticated_duration_s_bits: Option<u64>,
+    wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
     covered_lower_boundaries: Option<&BTreeMap<(OfeId, TileId), Stage3SnowCoveredLowerBoundary>>,
     covered_destinations: Option<&BTreeSet<(OfeId, TileId)>>,
 ) -> Result<ValidatedV8RuntimeInputProjection, V8InputProjectionError> {
@@ -1414,21 +1570,35 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
         .validate(vegetation_configuration)
         .map_err(|_| V8InputProjectionError::Identity("invalid V8 vegetation state"))?;
     match lse_configuration.model_version.as_str() {
-        openwepp_land_surface_energy::MODEL_VERSION => lse_configuration.validate()?,
-        openwepp_land_surface_energy::V2_MODEL_VERSION => lse_configuration.validate_v2()?,
+        openwepp_land_surface_energy::MODEL_VERSION => {
+            lse_configuration.validate()?;
+            lse_state.validate(lse_configuration)?;
+        }
+        openwepp_land_surface_energy::V2_MODEL_VERSION => {
+            lse_configuration.validate_v2()?;
+            openwepp_land_surface_energy::LandSurfaceEnergyV2State(lse_state.clone())
+                .validate(lse_configuration)
+                .map_err(|_| V8InputProjectionError::Identity("invalid LSE V2 state"))?;
+        }
+        openwepp_land_surface_energy::V3_MODEL_VERSION => {
+            lse_configuration.validate_v3()?;
+            openwepp_land_surface_energy::LandSurfaceEnergyV3State(lse_state.clone())
+                .validate(lse_configuration)
+                .map_err(|_| V8InputProjectionError::Identity("invalid LSE V3 state"))?;
+        }
         _ => {
             return Err(V8InputProjectionError::Identity(
                 "unsupported LSE configuration version",
             ));
         }
     }
-    lse_state.validate(lse_configuration)?;
     let transaction_id = TransactionId(
         vegetation_state
             .last_transaction_id
             .checked_add(1)
             .ok_or(V8InputProjectionError::Identity("transaction overflow"))?,
     );
+    let soil_thermal_transaction_id = soil_thermal.transaction_id_or(transaction_id);
     lse_state.validate_transaction_lineage(transaction_id)?;
     lse_forcing.validate(transaction_id)?;
     soil_thermal.validate()?;
@@ -1454,24 +1624,13 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
         lse_forcing,
         authenticated_duration_s_bits,
     )?;
-    if let V8SoilThermalPhysicalBeginning::V2(prepared) = soil_thermal {
-        let owner = prepared.beginning_owner();
-        let support_duration_ns = owner
-            .support_end_ns
-            .checked_sub(owner.support_start_ns)
-            .ok_or(V8InputProjectionError::Identity(
-                "native V2 soil support bounds",
-            ))?;
-        let forcing_duration = std::time::Duration::try_from_secs_f64(lse_forcing.interval_s)
-            .map_err(|_| V8InputProjectionError::Identity("native V2 forcing duration"))?;
-        if owner.transaction_id != transaction_id
-            || forcing_duration.as_nanos() != support_duration_ns
-        {
-            return Err(V8InputProjectionError::Identity(
-                "native V2 soil support join",
-            ));
-        }
-    }
+    validate_native_v2_soil_support_join(
+        soil_thermal,
+        transaction_id,
+        soil_thermal_transaction_id,
+        lse_forcing.interval_s,
+        wb14_coupled_child_binding,
+    )?;
     let surface_state = soil_adapter
         .owner
         .beginning_frame()
@@ -1572,6 +1731,7 @@ pub(crate) fn project_v8_runtime_inputs_with_carriers(
             tiles.push(V8ProjectedTileRuntimeInput {
                 identity: RuntimeTileIdentity {
                     transaction_id,
+                    soil_thermal_transaction_id,
                     lse_owner_id: lse_configuration.owner_id.clone(),
                     hydrology_owner_id: lse_configuration.hydrology_configuration.owner_id.clone(),
                     soil_thermal_owner_id: lse_configuration
@@ -2224,6 +2384,7 @@ mod tests {
         };
         let identity = RuntimeTileIdentity {
             transaction_id: TransactionId(1),
+            soil_thermal_transaction_id: TransactionId(1),
             lse_owner_id: owner("lse"),
             hydrology_owner_id: owner("hydrology"),
             soil_thermal_owner_id: owner("soil-thermal"),

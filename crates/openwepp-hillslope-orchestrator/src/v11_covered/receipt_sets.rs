@@ -1,9 +1,15 @@
 use super::*;
 
-mod owner_finalization;
+pub(crate) mod owner_finalization;
 pub use owner_finalization::CoveredParentOwnerJoinReceiptV1;
 pub(crate) use owner_finalization::CoveredPhysicalCustodyJoinInputs;
 pub(crate) use owner_finalization::stage3_support_forcing_digest;
+pub(crate) use owner_finalization::normalize_v11_staged_parent_lineage;
+#[cfg(test)]
+pub(crate) use owner_finalization::{
+    begin_v50_outer_owner_transition_evidence_v1,
+    take_v50_outer_owner_transition_evidence_v1,
+};
 pub(super) use owner_finalization::*;
 
 struct CoveredFixedPointPolicy {

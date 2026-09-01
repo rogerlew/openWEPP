@@ -228,7 +228,7 @@ fn soil_owner_and_restart(
         configuration_sha256: typed_digest('5'),
         state_sha256: typed_digest('6'),
         snapshot_sha256: typed_digest('7'),
-        last_accepted_transaction_id: None,
+        last_accepted_transaction_id: Some(TransactionId(17)),
         ofes: vec![SoilThermalOfeSnapshot {
             ofe_id: ofe,
             ordered_layers: vec![SoilThermalLayerSnapshot {
@@ -335,6 +335,7 @@ fn fixture() -> ProjectionFixture {
         run_id: configuration.parent().run_id,
         transaction_id,
         predecessor_transaction_id: None,
+        soil_thermal_predecessor_transaction_id: soil_owner.expected_predecessor_transaction_id,
         parent_support_start_ns: parent_start,
         parent_support_end_ns: parent_end,
         support_start_ns: parent_start,
@@ -348,7 +349,8 @@ fn fixture() -> ProjectionFixture {
         &configuration,
         identity,
         candidate.ending_owner(),
-        &parent_bytes,
+        &beginning,
+        Some(&parent_bytes),
         &[receipt],
         candidate.inner().receipts(),
         &soil_owner,
@@ -382,6 +384,14 @@ fn canonical_roundtrip_binds_every_exact_frame_and_preserves_v2_bytes() {
         bytes
     );
     assert_ne!(replay.projection_sha256(), ZERO_SHA256);
+    assert_eq!(
+        replay.identity().soil_thermal_predecessor_transaction_id,
+        Some(TransactionId(17))
+    );
+    assert_ne!(
+        replay.identity().soil_thermal_predecessor_transaction_id,
+        replay.identity().predecessor_transaction_id
+    );
     let restored = SurfaceLiquidOwnerEnvelopeV2::from_canonical_bytes(
         fixture.configuration.parent(),
         Some(&fixture.configuration),
@@ -394,6 +404,41 @@ fn canonical_roundtrip_binds_every_exact_frame_and_preserves_v2_bytes() {
             .expect("unchanged V2 bytes"),
         fixture.legacy_envelope_bytes
     );
+}
+
+#[test]
+fn finalized_wb14_projection_requires_exact_parent_end_and_no_open_parent_bytes() {
+    let fixture = fixture();
+    let mut finalized = fixture.projection.clone();
+    finalized.identity.parent_support_end_ns = finalized.identity.support_end_ns;
+    finalized.wb14_parent_finalized = true;
+    finalized.wb14_parent_working_state_bytes.clear();
+    finalized.identity.receipt_chain_sha256 = finalized
+        .recomputed_receipt_chain_sha256()
+        .expect("finalized chain");
+    finalized.projection_sha256 = finalized.recomputed_sha256().expect("finalized projection");
+    finalized
+        .validate(&fixture.configuration)
+        .expect("closed WB14 projection");
+
+    let mut early = finalized.clone();
+    early.identity.parent_support_end_ns = early
+        .identity
+        .support_end_ns
+        .checked_add(60_000_000_000)
+        .expect("later parent end");
+    early.projection_sha256 = early.recomputed_sha256().expect("resealed early poison");
+    assert!(early.validate(&fixture.configuration).is_err());
+
+    let mut omitted = finalized;
+    omitted.wb14_parent_finalized = false;
+    omitted.identity.receipt_chain_sha256 = omitted
+        .recomputed_receipt_chain_sha256()
+        .expect("resealed omitted chain");
+    omitted.projection_sha256 = omitted
+        .recomputed_sha256()
+        .expect("resealed omitted parent poison");
+    assert!(omitted.validate(&fixture.configuration).is_err());
 }
 
 #[test]

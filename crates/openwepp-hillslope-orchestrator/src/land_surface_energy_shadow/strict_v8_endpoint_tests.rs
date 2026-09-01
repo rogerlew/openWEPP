@@ -14,7 +14,9 @@ use crate::land_surface_energy_shadow::{
     LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError, OfeId, Sha256Digest,
     SoilThermalLayerSnapshot, SoilThermalOfeSnapshot, SoilThermalSnapshot, SourceId, SurfaceClass,
     SurfaceId, V8RollbackSnapshot, WaterSourceType, unified_beginning_hydrology_snapshot_sha256,
+    v8_input_projection::validate_native_v2_soil_support_join,
 };
+use crate::v9_real_consumer_shadow::SoilThermalExpectedAcceptedOperandSetV2;
 use crate::vegetation_real_hydrology_shadow::{
     RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter,
     RealHydrologySourceKey,
@@ -954,6 +956,357 @@ fn native_v2_zero_and_nonzero_carry_preserve_constitutive_image_and_owner_bytes(
                 }
             }
         }
+    }
+}
+
+#[test]
+fn native_v2_suffix_support_joins_outer_authority_to_exact_child_and_refuses_poisons() {
+    const OUTER_START_NS: u128 = 1_800_000_000_000;
+    const PRIOR_END_NS: u128 = 1_860_000_000_000;
+    const OUTER_END_NS: u128 = 1_980_000_000_000;
+    const PARENT_END_NS: u128 = 3_600_000_000_000;
+
+    let fixture = endpoint_fixture();
+    let accepted = openwepp_land_surface_energy::migrate_soil_thermal_v1_to_v2(
+        &fixture.thermal,
+        openwepp_land_surface_energy::SoilThermalV2MigrationIdentity {
+            model_version: fixture
+                .lse_configuration
+                .soil_thermal_configuration
+                .model_version
+                .clone(),
+            model_definition_sha256: fixture
+                .lse_configuration
+                .soil_thermal_configuration
+                .model_definition_sha256
+                .clone(),
+            run_id: "strict-v8-native-v2-suffix".to_owned(),
+            transaction_id: TransactionId(40),
+            support_start_ns: OUTER_START_NS,
+            support_end_ns: OUTER_END_NS,
+            receipt_chain_sha256: digest('8'),
+        },
+    )
+    .expect("migrate suffix authority");
+    let authority = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
+        &accepted,
+        TransactionId(41),
+        OUTER_START_NS,
+        OUTER_END_NS,
+    )
+    .expect("prepare suffix outer authority");
+    let beginning = authority.beginning_owner();
+    let operand = openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2 {
+        ofe_id: beginning.state.ofes[0].ofe_id.clone(),
+        layer_id: beginning.state.ofes[0].ordered_layers[0].layer_id.clone(),
+        source_kind: openwepp_land_surface_energy::SoilThermalEnergyOperandKindV2::SoilInternal,
+        source_owner_id: ResourceOwnerId::try_new("strict-v8-suffix-source").expect("owner"),
+        debit_credit_identity_sha256: digest('9'),
+        ordinal: 0,
+        units: "J m^-2 OFE-ground".to_owned(),
+        basis: "ofe_ground".to_owned(),
+        energy_j_m2_ofe_ground: 0.0,
+    };
+    let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
+        beginning,
+        &fixture.lse_configuration,
+        vec![operand],
+    )
+    .expect("suffix expected operands");
+    let predecessor = openwepp_land_surface_energy::advance_soil_thermal_composed_trial_v2(
+        &authority,
+        OUTER_START_NS,
+        PRIOR_END_NS,
+        expected.accepted_operands(),
+        expected.temperature_projections(),
+    )
+    .expect("suffix predecessor trial");
+    let unpublished =
+        openwepp_land_surface_energy::SoilThermalUnpublishedPhysicalBeginningV2::try_new(
+            &authority,
+            &predecessor,
+            TransactionId(41),
+            PRIOR_END_NS,
+            OUTER_END_NS,
+        )
+        .expect("suffix physical beginning");
+    let soil_thermal = V8SoilThermalPhysicalBeginning::try_from_v2_unpublished(unpublished)
+        .expect("typed suffix beginning");
+    let binding = crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+        proposed_upper_bound_s_bits: 180.0_f64.to_bits(),
+        coupled_parent_transaction_sha256: [1; 32],
+        accepted_slab_sha256: [2; 32],
+        parent_beginning_complete_owner_set_sha256: [3; 32],
+        parent_support_start_ns: OUTER_START_NS,
+        parent_support_end_ns: PARENT_END_NS,
+        child_support_start_ns: PRIOR_END_NS,
+        child_support_end_ns: OUTER_END_NS,
+    };
+    let prepared_soil =
+        V8SoilThermalPhysicalBeginning::try_from_v2(&authority).expect("typed outer authority");
+    validate_native_v2_soil_support_join(
+        &prepared_soil,
+        TransactionId(41),
+        TransactionId(41),
+        120.0,
+        Some(binding),
+    )
+    .expect("plain V2 outer-authority suffix support join");
+    assert_eq!(
+        validate_native_v2_soil_support_join(
+            &prepared_soil,
+            TransactionId(41),
+            TransactionId(42),
+            120.0,
+            Some(binding),
+        ),
+        Err(V8InputProjectionError::Identity(
+            "native V2 soil support transaction"
+        ))
+    );
+    assert_eq!(
+        validate_native_v2_soil_support_join(
+            &prepared_soil,
+            TransactionId(41),
+            TransactionId(41),
+            120.0,
+            None,
+        ),
+        Err(V8InputProjectionError::Identity(
+            "native V2 soil forcing duration"
+        ))
+    );
+    validate_native_v2_soil_support_join(
+        &soil_thermal,
+        TransactionId(41),
+        TransactionId(41),
+        120.0,
+        Some(binding),
+    )
+    .expect("exact suffix support join");
+
+    let mut parent_accepted = accepted.clone();
+    parent_accepted.transaction_id = TransactionId(41);
+    parent_accepted.expected_predecessor_transaction_id = Some(TransactionId(40));
+    parent_accepted.support_start_ns = OUTER_START_NS;
+    parent_accepted.support_end_ns = PARENT_END_NS;
+    parent_accepted.state.last_accepted_transaction_id = Some(TransactionId(41));
+    for ofe in &mut parent_accepted.state.ofes {
+        for layer in &mut ofe.ordered_layers {
+            layer.last_accepted_transaction_id = Some(TransactionId(41));
+        }
+    }
+    parent_accepted
+        .state
+        .reseal()
+        .expect("parent accepted state");
+    parent_accepted.validate().expect("parent accepted owner");
+    let first_child_authority = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
+        &parent_accepted,
+        TransactionId(42),
+        OUTER_START_NS,
+        PRIOR_END_NS,
+    )
+    .expect("first child authority");
+    let first_child = V8SoilThermalPhysicalBeginning::try_from_v2(&first_child_authority)
+        .expect("first child beginning");
+    let first_binding = crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+        child_support_start_ns: OUTER_START_NS,
+        child_support_end_ns: PRIOR_END_NS,
+        ..binding
+    };
+    validate_native_v2_soil_support_join(
+        &first_child,
+        TransactionId(42),
+        TransactionId(42),
+        60.0,
+        Some(first_binding),
+    )
+    .expect("first child keeps outer and soil transaction together");
+
+    let mut first_child_accepted = first_child_authority.beginning_owner().clone();
+    first_child_accepted.state.last_accepted_transaction_id = Some(TransactionId(42));
+    for ofe in &mut first_child_accepted.state.ofes {
+        for layer in &mut ofe.ordered_layers {
+            layer.last_accepted_transaction_id = Some(TransactionId(42));
+        }
+    }
+    first_child_accepted
+        .state
+        .reseal()
+        .expect("first child accepted state");
+    first_child_accepted
+        .validate()
+        .expect("first child accepted owner");
+    let second_child_authority = openwepp_land_surface_energy::prepare_soil_thermal_support_v2(
+        &first_child_accepted,
+        TransactionId(43),
+        PRIOR_END_NS,
+        OUTER_END_NS,
+    )
+    .expect("second child authority");
+    let second_child = V8SoilThermalPhysicalBeginning::try_from_v2(&second_child_authority)
+        .expect("second child beginning");
+    assert_eq!(
+        second_child.transaction_id_or(TransactionId(42)),
+        TransactionId(43),
+        "authenticated soil-child authority must not be overwritten by outer LSE transaction"
+    );
+    validate_native_v2_soil_support_join(
+        &second_child,
+        TransactionId(42),
+        TransactionId(43),
+        120.0,
+        Some(binding),
+    )
+    .expect("second child separates outer LSE transaction from exact soil transaction");
+    for poison in [TransactionId(0), TransactionId(42), TransactionId(44)] {
+        assert_eq!(
+            validate_native_v2_soil_support_join(
+                &second_child,
+                TransactionId(42),
+                poison,
+                120.0,
+                Some(binding),
+            ),
+            Err(V8InputProjectionError::Identity(
+                "native V2 soil support transaction"
+            )),
+            "missing, stale, foreign, or out-of-order soil transaction must fail closed"
+        );
+    }
+
+    assert_eq!(
+        validate_native_v2_soil_support_join(
+            &soil_thermal,
+            TransactionId(41),
+            TransactionId(42),
+            120.0,
+            Some(binding),
+        ),
+        Err(V8InputProjectionError::Identity(
+            "native V2 soil support transaction"
+        ))
+    );
+    assert_eq!(
+        validate_native_v2_soil_support_join(
+            &soil_thermal,
+            TransactionId(41),
+            TransactionId(41),
+            119.0,
+            Some(binding),
+        ),
+        Err(V8InputProjectionError::Identity(
+            "native V2 soil forcing duration"
+        ))
+    );
+    assert_eq!(
+        validate_native_v2_soil_support_join(
+            &soil_thermal,
+            TransactionId(41),
+            TransactionId(41),
+            120.0,
+            None,
+        ),
+        Err(V8InputProjectionError::Identity(
+            "native V2 soil unpublished child binding"
+        ))
+    );
+    for (poison, expected) in [
+        (
+            crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                child_support_start_ns: OUTER_START_NS - 1,
+                ..binding
+            },
+            "native V2 soil authority or child start",
+        ),
+        (
+            crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                child_support_end_ns: OUTER_END_NS - 1,
+                ..binding
+            },
+            "native V2 soil child or authority end",
+        ),
+        (
+            crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                child_support_end_ns: OUTER_END_NS + 1,
+                parent_support_end_ns: PARENT_END_NS + 1,
+                ..binding
+            },
+            "native V2 soil child or authority end",
+        ),
+    ] {
+        let width_s =
+            (poison.child_support_end_ns - poison.child_support_start_ns) as f64 / 1_000_000_000.0;
+        assert_eq!(
+            validate_native_v2_soil_support_join(
+                &prepared_soil,
+                TransactionId(41),
+                TransactionId(41),
+                width_s,
+                Some(poison),
+            ),
+            Err(V8InputProjectionError::Identity(expected)),
+            "plain V2 overlap/gap/end poison must report its fail-closed family"
+        );
+    }
+    for (poison, expected) in [
+        (
+            crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                child_support_start_ns: OUTER_START_NS - 1,
+                ..binding
+            },
+            "native V2 soil authority or child start",
+        ),
+        (
+            crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                child_support_start_ns: PRIOR_END_NS + 1,
+                ..binding
+            },
+            "native V2 soil unpublished child binding",
+        ),
+        (
+            crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                child_support_end_ns: OUTER_END_NS - 1,
+                ..binding
+            },
+            "native V2 soil child or authority end",
+        ),
+        (
+            crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                parent_support_start_ns: OUTER_START_NS + 1,
+                ..binding
+            },
+            "native V2 soil authority or child start",
+        ),
+        (
+            crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                parent_support_end_ns: OUTER_END_NS - 1,
+                ..binding
+            },
+            "native V2 soil child or authority end",
+        ),
+        (
+            crate::direct_runtime::DirectWb14CoupledChildBindingV1 {
+                parent_support_start_ns: PARENT_END_NS,
+                parent_support_end_ns: PARENT_END_NS,
+                ..binding
+            },
+            "native V2 soil parent or child order",
+        ),
+    ] {
+        let width_s =
+            (poison.child_support_end_ns - poison.child_support_start_ns) as f64 / 1_000_000_000.0;
+        assert_eq!(
+            validate_native_v2_soil_support_join(
+                &soil_thermal,
+                TransactionId(41),
+                TransactionId(41),
+                width_s,
+                Some(poison),
+            ),
+            Err(V8InputProjectionError::Identity(expected))
+        );
     }
 }
 

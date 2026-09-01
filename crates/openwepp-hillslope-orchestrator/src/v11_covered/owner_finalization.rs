@@ -34,6 +34,8 @@ const fn requires_adaptive_terminal_snow_soil_receipt(
     beginning_terminal && ending_terminal
 }
 
+include!("owner_finalization_v50_transition.rs");
+
 #[cfg(test)]
 mod terminal_custody_lane_set_tests {
     use super::*;
@@ -220,22 +222,133 @@ mod terminal_custody_lane_set_tests {
             finalization
                 .matches("install_soil_thermal_accepted_v2(")
                 .count(),
-            1
+            0
         );
         assert_eq!(
             finalization
                 .matches("install_soil_thermal_accepted_v2_from_beginning(")
                 .count(),
+            0
+        );
+        assert_eq!(
+            finalization
+                .matches("install_v2_soil_from_authenticated_prepared_beginning_v2(")
+                .count(),
+            2
+        );
+        assert_eq!(
+            finalization
+                .matches("install_soil_thermal_accepted_v2_from_unpublished_continuation(")
+                .count(),
             1
         );
-        assert!(finalization.contains(
-            ".install_soil_thermal_accepted_v2_from_beginning(\n                    beginning,"
-        ));
         assert!(
-            !finalization
+            finalization
+                .contains("precomputed_soil_candidate: Option<&DirectSoilThermalCandidate>")
+        );
+        assert!(finalization.contains("precomputed_soil_continuation,"));
+        assert!(finalization.contains("precomputed_soil_candidate.is_none()"));
+        assert!(!finalization.contains("requires selected continuation"));
+        assert_eq!(
+            finalization
+                .matches("candidate.inner.soil_thermal = beginning.inner.soil_thermal.clone()")
+                .count(),
+            2
+        );
+        assert!(!finalization.contains("OPENWEPP_V2_PREINSTALL_POSTURE_CAPTURE"));
+        assert!(!finalization.contains("OPENWEPP_V2_SEQUENTIAL_MATCH_CAPTURE"));
+        assert!(!finalization.contains("eprintln!("));
+        assert!(!finalization.contains("if !v2_soil"));
+    }
+
+    #[test]
+    fn v48_real_finalizer_source_never_erases_split_authority() {
+        let source = include_str!("owner_finalization.rs");
+        let consumer = include_str!("../v9_real_consumer_shadow/v10_soil_thermal_v2.rs");
+        let v3 = consumer
+            .rsplit("pub fn authenticate_soil_thermal_prepared_beginning_install_authority_v3(")
+            .next()
+            .expect("V49 authenticated prepared-beginning authority")
+            .split("pub fn authenticate_soil_thermal_prepared_beginning_install_authority_v4(")
+            .next()
+            .expect("V49 authority body");
+        assert!(v3.contains(
+            "authenticate_soil_thermal_prepared_beginning_install_authority_v3("
+        ));
+        assert!(v3.contains(
+            "install_soil_thermal_accepted_v2_from_authenticated_beginning_v3("
+        ));
+        assert!(!v3.contains(
+            "authenticate_soil_thermal_prepared_beginning_install_authority_v2("
+        ));
+        assert!(!v3.contains("install_soil_thermal_accepted_v2("));
+
+        let finalization = source
+            .rsplit("pub(crate) fn finalize_v11_imported_segment")
+            .next()
+            .expect("V11 finalization")
+            .split("pub(crate) fn digest32_hex")
+            .next()
+            .expect("V11 finalization body");
+        assert_eq!(
+            finalization
+                .matches("install_v2_soil_from_authenticated_prepared_beginning_v2(")
+                .count(),
+            2,
+        );
+        assert!(!finalization.contains("install_soil_thermal_accepted_v2("));
+    }
+
+    #[test]
+    fn deferred_native_v2_shadow_retains_beginning_while_final_install_retains_trial() {
+        let source = include_str!("owner_finalization.rs");
+        let finalization = source
+            .rsplit("pub(crate) fn finalize_v11_imported_segment")
+            .next()
+            .expect("V11 finalization")
+            .split("pub(crate) fn digest32_hex")
+            .next()
+            .expect("V11 finalization body");
+        let deferred = finalization
+            .split("if defer_native_v2_soil_install {")
+            .nth(2)
+            .expect("deferred native V2 branch")
+            .split("} else if let Some(continuation)")
+            .next()
+            .expect("deferred native V2 body");
+        assert!(
+            deferred
                 .contains("candidate.inner.soil_thermal = beginning.inner.soil_thermal.clone()")
         );
-        assert!(!finalization.contains("if !v2_soil"));
+        assert!(!deferred.contains("precomputed_soil_continuation.is_none()"));
+        assert!(
+            !deferred.contains("install_soil_thermal_accepted_v2_from_unpublished_continuation(")
+        );
+
+        let retained = finalization
+            .split("} else if let Some(continuation)")
+            .nth(1)
+            .expect("retained-final native V2 branch")
+            .split("} else {")
+            .next()
+            .expect("retained-final native V2 body");
+        assert!(
+            retained.contains("install_soil_thermal_accepted_v2_from_unpublished_continuation(")
+        );
+        assert!(
+            !retained
+                .contains("candidate.inner.soil_thermal = beginning.inner.soil_thermal.clone()")
+        );
+        assert!(finalization.contains(
+            "normalize_v11_staged_parent_lineage(&mut candidate, outward_staged_parent_transaction)"
+        ));
+        assert_eq!(
+            finalization
+                .matches("TransactionId(outward_staged_parent_transaction)")
+                .count(),
+            2,
+            "both outward hydrology snapshots use the authenticated V2 predecessor"
+        );
     }
 
     #[test]
@@ -294,6 +407,57 @@ mod terminal_custody_lane_set_tests {
                 ))
             ));
         }
+    }
+
+    #[test]
+    fn deferred_native_v2_outward_lineage_retains_exact_outer_predecessor() {
+        let predecessor = deferred_native_v2_outward_parent_transaction_v1(
+            42,
+            TransactionId(42),
+            Some(TransactionId(41)),
+        )
+        .expect("contiguous outer transaction successor");
+        assert_eq!(predecessor, 41);
+        assert_eq!(predecessor.checked_add(1), Some(42));
+    }
+
+    #[test]
+    fn deferred_native_v2_outward_lineage_rejects_advanced_or_poisoned_transactions() {
+        for (accepted, outer, predecessor) in [
+            (42, 41, Some(40)),
+            (40, 41, Some(40)),
+            (41, 41, Some(39)),
+            (41, 42, Some(40)),
+            (41, 41, None),
+        ] {
+            assert!(matches!(
+                deferred_native_v2_outward_parent_transaction_v1(
+                    accepted,
+                    TransactionId(outer),
+                    predecessor.map(TransactionId),
+                ),
+                Err(DirectV11RealConsumerError::Identity(
+                    "deferred terminal native V2 transaction custody"
+                ))
+            ));
+        }
+    }
+
+    #[test]
+    fn deferred_native_v2_transaction_refusal_precedes_outward_lineage_mutation() {
+        let mut outward_parent = 41;
+        let result = deferred_native_v2_outward_parent_transaction_v1(
+            42,
+            TransactionId(41),
+            Some(TransactionId(40)),
+        );
+        if let Ok(predecessor) = result {
+            outward_parent = predecessor;
+        }
+        assert_eq!(
+            outward_parent, 41,
+            "refusal leaves staged lineage untouched"
+        );
     }
 }
 
@@ -1157,6 +1321,9 @@ pub(crate) fn canonical_stage3_snow_owner_bytes_v11_with_pending_and_receipts(
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum AcceptedPublicationFinalizationPostureV1 {
     RetainFinal,
+    RetainFinalWithDeferredNativeV2Soil {
+        pre_event_authority_sha256: Digest32,
+    },
     DeferTerminalProvisional {
         pre_event_authority_sha256: Digest32,
     },
@@ -1168,6 +1335,7 @@ fn accepted_v2_soil_candidate_for_v11_segment(
     envelope: &UncommittedCoveredV8OwnerEnvelope,
     compositional_envelopes: Option<&[UncommittedCoveredV8OwnerEnvelope]>,
     soil_top_boundary_credits: &[SoilThermalTopBoundaryCreditV1],
+    continuation: Option<&DirectSoilThermalUnpublishedContinuationResultV2>,
 ) -> Result<
     (
         openwepp_land_surface_energy::PreparedSoilThermalSupportV2,
@@ -1176,12 +1344,16 @@ fn accepted_v2_soil_candidate_for_v11_segment(
     ),
     DirectV11RealConsumerError,
 > {
-    let prepared = beginning
-        .prepare_next_soil_thermal_support_v2(
-            input.support.start_ns().get(),
-            input.support.end_ns().get(),
-        )
-        .map_err(DirectV11RealConsumerError::Runtime)?;
+    let prepared = if let Some(continuation) = continuation {
+        continuation.original_prepared().clone()
+    } else {
+        beginning
+            .prepare_next_soil_thermal_support_v2(
+                input.support.start_ns().get(),
+                input.support.end_ns().get(),
+            )
+            .map_err(DirectV11RealConsumerError::Runtime)?
+    };
     let mut child_supports = soil_top_boundary_credits
         .iter()
         .map(|credit| (credit.support_start_ns, credit.support_end_ns))
@@ -1228,7 +1400,17 @@ fn accepted_v2_soil_candidate_for_v11_segment(
         })?;
         operands.extend(
             crate::land_surface_energy_shadow::physical_soil_energy_operands_v2(
-                child.transaction_id(),
+                crate::land_surface_energy_shadow::PhysicalSoilEnergyTransactionAuthorityV2::try_from_pre_ingress_candidates(
+                    child.transaction_id(),
+                    start,
+                    end,
+                    child.hydrology().pre_ingress_soil_thermal_candidates(),
+                )
+                .map_err(|error| {
+                    DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(
+                        DirectV9RealConsumerError::LandSurfaceShadow(error),
+                    ))
+                })?,
                 start,
                 end,
                 &beginning.inner.lse_configuration.owner_id,
@@ -1251,6 +1433,15 @@ fn accepted_v2_soil_candidate_for_v11_segment(
     })?;
     let parent_end = i64::try_from(input.support.end_ns().get())
         .map_err(|_| DirectV11RealConsumerError::Identity("V2 accepted soil parent support end"))?;
+    let selected_trial_support = continuation
+        .map(DirectSoilThermalUnpublishedContinuationResultV2::physical_trial)
+        .map(|trial| {
+            (
+                trial.beginning_state_sha256(),
+                i64::try_from(trial.support_start_ns()).ok(),
+                i64::try_from(trial.support_end_ns()).ok(),
+            )
+        });
     for credit in soil_top_boundary_credits {
         let ofe = prepared
             .beginning_owner()
@@ -1267,14 +1458,28 @@ fn accepted_v2_soil_candidate_for_v11_segment(
             .ok_or(DirectV11RealConsumerError::Identity(
                 "V2 accepted top-boundary layer",
             ))?;
+        let beginning_state_matches = selected_trial_support.as_ref().map_or_else(
+            || credit.beginning_state_sha256 == prepared.beginning_owner().state.state_sha256,
+            |(state_sha256, _, _)| &credit.beginning_state_sha256 == *state_sha256,
+        );
+        let support_matches = selected_trial_support.as_ref().map_or_else(
+            || {
+                credit.support_start_ns >= parent_start
+                    && credit.support_end_ns <= parent_end
+                    && credit.support_start_ns < credit.support_end_ns
+            },
+            |(_, start, end)| {
+                *start == Some(credit.support_start_ns)
+                    && *end == Some(credit.support_end_ns)
+                    && credit.support_start_ns < credit.support_end_ns
+            },
+        );
         if credit.beginning_owner_id != prepared.beginning_owner().state.owner_id
             || credit.beginning_configuration_sha256
                 != prepared.beginning_owner().state.configuration_sha256
-            || credit.beginning_state_sha256 != prepared.beginning_owner().state.state_sha256
+            || !beginning_state_matches
             || credit.first_layer_id != layer.layer_id
-            || credit.support_start_ns < parent_start
-            || credit.support_end_ns > parent_end
-            || credit.support_start_ns >= credit.support_end_ns
+            || !support_matches
             || credit.soil_thermal_credit_j_m2_ofe_ground.to_bits()
                 != credit.accepted_positive_downward_j_m2_ofe_ground.to_bits()
         {
@@ -1332,22 +1537,35 @@ fn accepted_v2_soil_candidate_for_v11_segment(
     canonicalize_v2_operand_order(prepared.beginning_owner(), &mut operands).map_err(|error| {
         DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
     })?;
-    let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
-        prepared.beginning_owner(),
-        &beginning.inner.lse_configuration,
-        operands,
-    )
-    .map_err(|error| {
-        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-    })?;
-    let accepted = aggregate_soil_thermal_ending_v2(
-        prepared.beginning_owner(),
-        &beginning.inner.lse_configuration,
-        &expected,
-    )
-    .map_err(|error| {
-        DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
-    })?;
+    let accepted = if let Some(retained) = continuation {
+        retained
+            .validate_terminal_operand_suffix(&operands)
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+            })?;
+        retained
+            .compose_accepted_outer_candidate(&beginning.inner.lse_configuration)
+            .map_err(|error| {
+                DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+            })?
+    } else {
+        let expected = SoilThermalExpectedAcceptedOperandSetV2::try_new(
+            prepared.beginning_owner(),
+            &beginning.inner.lse_configuration,
+            operands,
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+        })?;
+        aggregate_soil_thermal_ending_v2(
+            prepared.beginning_owner(),
+            &beginning.inner.lse_configuration,
+            &expected,
+        )
+        .map_err(|error| {
+            DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
+        })?
+    };
     let seals = seal_soil_thermal_accepted_candidate_v2(prepared.beginning_owner(), &accepted)
         .map_err(|error| {
             DirectV11RealConsumerError::Runtime(DirectV10RealConsumerError::Runtime(error))
@@ -1398,6 +1616,137 @@ fn validate_native_v2_preinstall_soil_posture_v1(
     Ok(())
 }
 
+fn deferred_native_v2_outward_parent_transaction_v1(
+    accepted_transaction: u128,
+    outer_transaction: TransactionId,
+    outer_predecessor_transaction: Option<TransactionId>,
+) -> Result<u128, DirectV11RealConsumerError> {
+    let predecessor = outer_predecessor_transaction.ok_or(DirectV11RealConsumerError::Identity(
+        "deferred terminal native V2 transaction custody",
+    ))?;
+    if outer_transaction.0 != accepted_transaction
+        || predecessor.0.checked_add(1) != Some(outer_transaction.0)
+    {
+        return Err(DirectV11RealConsumerError::Identity(
+            "deferred terminal native V2 transaction custody",
+        ));
+    }
+    Ok(predecessor.0)
+}
+
+fn native_v2_physical_ending_matches_final_replay_v1(
+    physical: &openwepp_land_surface_energy::SoilThermalOwnedStateV2,
+    replay: &openwepp_land_surface_energy::SoilThermalOwnedStateV2,
+) -> bool {
+    physical.owner_id == replay.owner_id
+        && physical.configuration_sha256 == replay.configuration_sha256
+        && physical.ofes.len() == replay.ofes.len()
+        && physical
+            .ofes
+            .iter()
+            .zip(&replay.ofes)
+            .all(|(physical_ofe, replay_ofe)| {
+                physical_ofe.ofe_id == replay_ofe.ofe_id
+                    && physical_ofe.ordered_layers.len() == replay_ofe.ordered_layers.len()
+                    && physical_ofe
+                        .ordered_layers
+                        .iter()
+                        .zip(&replay_ofe.ordered_layers)
+                        .all(|(physical_layer, replay_layer)| {
+                            physical_layer.layer_id == replay_layer.layer_id
+                                && physical_layer.temperature_k.to_bits()
+                                    == replay_layer.temperature_k.to_bits()
+                                && physical_layer.enthalpy_hi_j_m2_ofe_ground.to_bits()
+                                    == replay_layer.enthalpy_hi_j_m2_ofe_ground.to_bits()
+                                && physical_layer.enthalpy_carry == replay_layer.enthalpy_carry
+                        })
+            })
+}
+
+fn native_v2_selected_trial_matches_accepted_ending_v1(
+    trial: &openwepp_land_surface_energy::SoilThermalTrialStateV2,
+    continuation: Option<&DirectSoilThermalUnpublishedContinuationResultV2>,
+    accepted: &SoilThermalAcceptedCandidateV2,
+) -> bool {
+    let receipt = &accepted.credit_receipt;
+    if let Some(retained) = continuation {
+        let original = retained.original_prepared().beginning_owner();
+        let physical_ending = trial.ending_state();
+        let accepted_ending = &accepted.ending_owner.state;
+        let predicates = [
+            retained.physical_trial() == trial,
+            trial.accepted_predecessor_receipt_chain_sha256().is_none(),
+            trial.unpublished_predecessor_trial_sha256().is_some(),
+            trial.support_end_ns() == original.support_end_ns,
+            receipt.transaction_id == original.transaction_id,
+            receipt.predecessor_transaction_id == original.expected_predecessor_transaction_id,
+            receipt.support_start_ns == original.support_start_ns,
+            receipt.support_end_ns == original.support_end_ns,
+            receipt.beginning_owner_state_sha256 == original.state.state_sha256,
+            receipt.predecessor_receipt_chain_sha256 == original.receipt_chain_sha256,
+            accepted.expected_sources.accepted_operands() == retained.accumulated_operands(),
+            native_v2_physical_ending_matches_final_replay_v1(physical_ending, accepted_ending),
+        ];
+        return predicates.into_iter().all(|predicate| predicate);
+    }
+    let predecessor_custody_matches = match (
+        trial.accepted_predecessor_receipt_chain_sha256(),
+        trial.unpublished_predecessor_trial_sha256(),
+        None::<&DirectSoilThermalUnpublishedContinuationResultV2>,
+    ) {
+        (Some(chain), None, None) => chain == &receipt.predecessor_receipt_chain_sha256,
+        (None, Some(_), Some(retained)) => retained.physical_trial() == trial,
+        _ => false,
+    };
+    let predicates = [
+        trial.transaction_id() == accepted.ending_owner.transaction_id,
+        trial.transaction_id() == receipt.transaction_id,
+        trial.predecessor_transaction_id()
+            == accepted.ending_owner.expected_predecessor_transaction_id,
+        trial.predecessor_transaction_id() == receipt.predecessor_transaction_id,
+        trial.support_start_ns() == accepted.ending_owner.support_start_ns,
+        trial.support_start_ns() == receipt.support_start_ns,
+        trial.support_end_ns() == accepted.ending_owner.support_end_ns,
+        trial.support_end_ns() == receipt.support_end_ns,
+        trial.beginning_state_sha256() == &receipt.beginning_owner_state_sha256,
+        predecessor_custody_matches,
+        trial.ending_state() == &accepted.ending_owner.state,
+        trial.ending_state().ofes == accepted.ending_owner.state.ofes,
+        trial.ending_state().state_sha256 == receipt.ending_owner_state_sha256,
+        trial.layer_credits() == receipt.layer_credits,
+        accepted.ending_owner.receipt_chain_sha256 == receipt.receipt_sha256,
+    ];
+    predicates.into_iter().all(|value| value)
+}
+
+#[allow(clippy::result_large_err)]
+pub(crate) fn install_v2_soil_from_authenticated_prepared_beginning_v2(
+    candidate: &mut DirectV10RealConsumerShadow,
+    authoritative_beginning: &DirectV10RealConsumerShadow,
+    prepared_beginning: &openwepp_land_surface_energy::SoilThermalOwnerEnvelopeV2,
+    outer_owner_transition_authority: DirectSoilThermalOuterOwnerTransitionAuthorityV2,
+    accepted: SoilThermalAcceptedCandidateV2,
+    seals: SoilThermalOrchestratorSealsV2,
+) -> Result<(), DirectV11RealConsumerError> {
+    let transaction_authority = candidate
+        .authenticate_soil_thermal_prepared_beginning_install_authority_v4(
+            authoritative_beginning,
+            prepared_beginning,
+            &outer_owner_transition_authority,
+        )
+        .map_err(DirectV11RealConsumerError::Runtime)?;
+    candidate
+        .install_soil_thermal_accepted_v2_from_authenticated_beginning_v4(
+            authoritative_beginning,
+            prepared_beginning,
+            outer_owner_transition_authority,
+            transaction_authority,
+            accepted,
+            seals,
+        )
+        .map_err(DirectV11RealConsumerError::Runtime)
+}
+
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn finalize_v11_imported_segment(
     beginning: &DirectV10RealConsumerShadow,
@@ -1405,6 +1754,52 @@ pub(crate) fn finalize_v11_imported_segment(
     envelope: &UncommittedCoveredV8OwnerEnvelope,
     compositional_envelopes: Option<&[UncommittedCoveredV8OwnerEnvelope]>,
     precomputed_physical_ending: Option<&DirectV10RealConsumerShadow>,
+    precomputed_soil_candidate: Option<&DirectSoilThermalCandidate>,
+    ending_snow_owner_bytes: Vec<u8>,
+    day_index: usize,
+    interval_index: usize,
+    publication_interval: &DirectV11SnowCoveredSegmentInput,
+    soil_top_boundary_credits: &[SoilThermalTopBoundaryCreditV1],
+    physical_outcome_ledgers: &BTreeMap<
+        u32,
+        physical_outcome_ledger::Stage3LanePhysicalOutcomeLedgerV1,
+    >,
+    publication_posture: AcceptedPublicationFinalizationPostureV1,
+) -> Result<
+    (
+        V11ImportedV10SegmentOutput,
+        DirectV10RealConsumerShadow,
+        LseSupportAdmissibilityReceiptV1,
+    ),
+    DirectV11RealConsumerError,
+> {
+    finalize_v11_imported_segment_with_soil_continuation(
+        beginning,
+        input,
+        envelope,
+        compositional_envelopes,
+        precomputed_physical_ending,
+        precomputed_soil_candidate,
+        None,
+        ending_snow_owner_bytes,
+        day_index,
+        interval_index,
+        publication_interval,
+        soil_top_boundary_credits,
+        physical_outcome_ledgers,
+        publication_posture,
+    )
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+pub(crate) fn finalize_v11_imported_segment_with_soil_continuation(
+    beginning: &DirectV10RealConsumerShadow,
+    input: &V11ImportedV10SegmentInput,
+    envelope: &UncommittedCoveredV8OwnerEnvelope,
+    compositional_envelopes: Option<&[UncommittedCoveredV8OwnerEnvelope]>,
+    precomputed_physical_ending: Option<&DirectV10RealConsumerShadow>,
+    precomputed_soil_candidate: Option<&DirectSoilThermalCandidate>,
+    precomputed_soil_continuation: Option<&DirectSoilThermalUnpublishedContinuationResultV2>,
     ending_snow_owner_bytes: Vec<u8>,
     day_index: usize,
     interval_index: usize,
@@ -1424,9 +1819,21 @@ pub(crate) fn finalize_v11_imported_segment(
     DirectV11RealConsumerError,
 > {
     let reused_precomputed_physical_ending = precomputed_physical_ending.is_some();
+    let staged_lse_bytes = &input
+        .staged_resource_owners
+        .get("land_surface_energy")
+        .ok_or(DirectV11RealConsumerError::Identity(
+            "missing staged LSE owner",
+        ))?
+        .state_bytes;
+    let (support_configuration, support_beginning) =
+        crate::v9_real_consumer_shadow::v11_support_lse_beginning(
+            beginning,
+            staged_lse_bytes,
+        )?;
     let support_receipt = LseSupportAdmissibilityReceiptV1::admit(
-        &beginning.inner.lse_configuration,
-        &beginning.inner.lse_state,
+        support_configuration,
+        support_beginning,
         digest32_hex(input.parent_transaction_id.digest()),
         digest32_hex(input.accepted_slab_receipt.segment_id().digest()),
         digest32_hex(input.accepted_slab_receipt.slab_id().digest()),
@@ -1569,42 +1976,183 @@ pub(crate) fn finalize_v11_imported_segment(
         candidate.vegetation_state.0.last_transaction_id,
         candidate.inner.vegetation_state.0.last_transaction_id,
     )?;
+    let defer_native_v2_soil_install = matches!(
+        publication_posture,
+        AcceptedPublicationFinalizationPostureV1::DeferTerminalProvisional { .. }
+            | AcceptedPublicationFinalizationPostureV1::RetainFinalWithDeferredNativeV2Soil { .. }
+    );
+    let mut outward_staged_parent_transaction = input.beginning.0.last_transaction_id;
+    if v2_soil && defer_native_v2_soil_install && precomputed_soil_candidate.is_none() {
+        return Err(DirectV11RealConsumerError::Identity(
+            "deferred terminal native V2 soil requires selected candidate",
+        ));
+    }
     if v2_soil {
         if reused_precomputed_physical_ending {
             normalize_v11_staged_parent_lineage(&mut candidate, accepted_transaction)?;
         }
+        let authenticated_outer_owner_transition =
+            authenticate_v50_covered_v8_outer_owner_transition_v1(beginning, envelope)?;
+        let outer_owner_transition_authority = candidate
+            .authenticate_soil_thermal_outer_owner_transition_v2(
+                &authenticated_outer_owner_transition,
+            )
+            .map_err(DirectV11RealConsumerError::Runtime)?;
         let (prepared, accepted, seals) = accepted_v2_soil_candidate_for_v11_segment(
             beginning,
             input,
             envelope,
             compositional_envelopes,
             soil_top_boundary_credits,
+            precomputed_soil_continuation,
         )?;
+        if defer_native_v2_soil_install {
+            let outer = prepared.beginning_owner();
+            outward_staged_parent_transaction = deferred_native_v2_outward_parent_transaction_v1(
+                accepted_transaction,
+                outer.transaction_id,
+                outer.expected_predecessor_transaction_id,
+            )?;
+        }
         if reused_precomputed_physical_ending {
-            let preinstall_soil_owner = candidate
-                .soil_thermal_v2()
-                .map_err(DirectV11RealConsumerError::Runtime)?
-                .owner();
             let authenticated_beginning_soil_owner = beginning
                 .soil_thermal_v2()
                 .map_err(DirectV11RealConsumerError::Runtime)?
                 .owner();
+            let (matches_authenticated_beginning, matches_selected_ending) = if let Some(selected) =
+                precomputed_soil_candidate
+            {
+                let trial = selected.v2().map_err(|_| {
+                    DirectV11RealConsumerError::Identity(
+                        "V2 accepted soil precomputed candidate posture",
+                    )
+                })?;
+                let matches_selected_ending =
+                    if let Some(continuation) = precomputed_soil_continuation {
+                        candidate
+                            .validate_soil_thermal_accepted_v2_from_unpublished_continuation(
+                                trial,
+                                continuation,
+                                prepared.beginning_owner(),
+                                &accepted,
+                            )
+                            .map_err(DirectV11RealConsumerError::Runtime)?;
+                        true
+                    } else {
+                        native_v2_selected_trial_matches_accepted_ending_v1(trial, None, &accepted)
+                    };
+                (false, matches_selected_ending)
+            } else {
+                let preinstall_soil_owner = candidate
+                    .soil_thermal_v2()
+                    .map_err(DirectV11RealConsumerError::Runtime)?
+                    .owner();
+                (
+                    preinstall_soil_owner == authenticated_beginning_soil_owner,
+                    preinstall_soil_owner == &accepted.ending_owner,
+                )
+            };
             validate_native_v2_preinstall_soil_posture_v1(
-                preinstall_soil_owner == authenticated_beginning_soil_owner,
-                preinstall_soil_owner == &accepted.ending_owner,
+                matches_authenticated_beginning,
+                matches_selected_ending,
             )?;
-            candidate
-                .install_soil_thermal_accepted_v2_from_beginning(
+            if defer_native_v2_soil_install {
+                // The selected unpublished trial leaves this finalizer as
+                // separately authenticated transient custody.  The outward
+                // provisional shadow must therefore retain the exact resident
+                // that began the terminal support; publishing the selected
+                // trial here would be an intermediate V2 install.
+                candidate.inner.soil_thermal = beginning.inner.soil_thermal.clone();
+                if candidate
+                    .soil_thermal_v2()
+                    .map_err(DirectV11RealConsumerError::Runtime)?
+                    .owner()
+                    != authenticated_beginning_soil_owner
+                {
+                    return Err(DirectV11RealConsumerError::Identity(
+                        "deferred terminal native V2 soil custody",
+                    ));
+                }
+            } else if let Some(continuation) = precomputed_soil_continuation {
+                // The selected continuation is a receipt-free alternative to
+                // the already accepted shorter child. Its authenticated outer
+                // beginning is therefore the exact resident retained beside
+                // the selected carrier, not the installed shorter-child
+                // resident supplied as `beginning`.
+                let authoritative_outer_beginning = candidate.clone();
+                let transaction_authority = candidate
+                    .authenticate_soil_thermal_unpublished_continuation_install_authority_v2(
+                        continuation,
+                        prepared.beginning_owner(),
+                    )
+                    .map_err(DirectV11RealConsumerError::Runtime)?;
+                candidate
+                    .install_soil_thermal_accepted_v2_from_unpublished_continuation(
+                        &authoritative_outer_beginning,
+                        continuation,
+                        prepared.beginning_owner(),
+                        transaction_authority,
+                        accepted,
+                        seals,
+                    )
+                    .map_err(DirectV11RealConsumerError::Runtime)?;
+            } else {
+                install_v2_soil_from_authenticated_prepared_beginning_v2(
+                    &mut candidate,
                     beginning,
                     prepared.beginning_owner(),
+                    outer_owner_transition_authority.clone(),
                     accepted,
                     seals,
+                )?;
+            }
+        } else if defer_native_v2_soil_install {
+            let selected =
+                precomputed_soil_candidate.ok_or(DirectV11RealConsumerError::Identity(
+                    "deferred terminal native V2 soil requires selected candidate",
+                ))?;
+            let trial = selected.v2().map_err(|_| {
+                DirectV11RealConsumerError::Identity(
+                    "deferred terminal native V2 soil selected candidate posture",
                 )
-                .map_err(DirectV11RealConsumerError::Runtime)?;
+            })?;
+            if let Some(continuation) = precomputed_soil_continuation {
+                candidate
+                    .validate_soil_thermal_accepted_v2_from_unpublished_continuation(
+                        trial,
+                        continuation,
+                        prepared.beginning_owner(),
+                        &accepted,
+                    )
+                    .map_err(DirectV11RealConsumerError::Runtime)?;
+            } else if !native_v2_selected_trial_matches_accepted_ending_v1(trial, None, &accepted) {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "deferred terminal native V2 selected candidate",
+                ));
+            }
+            candidate.inner.soil_thermal = beginning.inner.soil_thermal.clone();
+            if candidate
+                .soil_thermal_v2()
+                .map_err(DirectV11RealConsumerError::Runtime)?
+                .owner()
+                != beginning
+                    .soil_thermal_v2()
+                    .map_err(DirectV11RealConsumerError::Runtime)?
+                    .owner()
+            {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "deferred terminal native V2 soil custody",
+                ));
+            }
         } else {
-            candidate
-                .install_soil_thermal_accepted_v2(prepared.beginning_owner(), accepted, seals)
-                .map_err(DirectV11RealConsumerError::Runtime)?;
+            install_v2_soil_from_authenticated_prepared_beginning_v2(
+                &mut candidate,
+                beginning,
+                prepared.beginning_owner(),
+                outer_owner_transition_authority,
+                accepted,
+                seals,
+            )?;
         }
     }
     let mut segment_ending = candidate.vegetation_state.clone();
@@ -1614,7 +2162,7 @@ pub(crate) fn finalize_v11_imported_segment(
     // whose logical owners are normalized to the parent transaction. For V2,
     // this helper deliberately leaves the installed exact-carry soil resident
     // untouched while rebasing vegetation, LSE, surface, and BGC lineage.
-    normalize_v11_staged_parent_lineage(&mut candidate, input.beginning.0.last_transaction_id)?;
+    normalize_v11_staged_parent_lineage(&mut candidate, outward_staged_parent_transaction)?;
     let snow = V11OwnerEnvelope::try_new("snow".to_owned(), ending_snow_owner_bytes)?;
     // WB14 can retain an in-parent working state whose effective surface
     // owner is newer than the frame shadow. Publish the same effective owner
@@ -1632,7 +2180,7 @@ pub(crate) fn finalize_v11_imported_segment(
     let beginning_hydrology_adapter = RealHydrologyShadowAdapter::try_from_day_start(
         &beginning.inner.hydrology_frame,
         day_index,
-        TransactionId(input.beginning.0.last_transaction_id),
+        TransactionId(outward_staged_parent_transaction),
         f64::from_bits(input.duration_s_bits),
         candidate.inner.surface_configuration.owner_id.clone(),
         &candidate.inner.layer_maps,
@@ -1643,7 +2191,7 @@ pub(crate) fn finalize_v11_imported_segment(
     let hydrology_adapter = RealHydrologyShadowAdapter::try_from_day_start(
         envelope.hydrology().ending_frame(),
         day_index,
-        TransactionId(input.beginning.0.last_transaction_id),
+        TransactionId(outward_staged_parent_transaction),
         f64::from_bits(input.duration_s_bits),
         candidate.inner.surface_configuration.owner_id.clone(),
         &candidate.inner.layer_maps,
@@ -1655,7 +2203,10 @@ pub(crate) fn finalize_v11_imported_segment(
         ("snow".to_owned(), snow),
         (
             "land_surface_energy".to_owned(),
-            v11_owner_envelope("land_surface_energy", &candidate.inner.lse_state)?,
+            V11OwnerEnvelope::try_new(
+                "land_surface_energy".to_owned(),
+                candidate.canonical_v11_lse_owner_bytes()?,
+            )?,
         ),
         (
             "surface_liquid".to_owned(),
@@ -1674,7 +2225,7 @@ pub(crate) fn finalize_v11_imported_segment(
         ),
         (
             "soil_thermal".to_owned(),
-            v11_owner_envelope("soil_thermal", &candidate.inner.soil_thermal)?,
+            v11_soil_thermal_owner_envelope(&candidate.inner.soil_thermal)?,
         ),
     ]
     .into_iter()
@@ -1704,7 +2255,10 @@ pub(crate) fn finalize_v11_imported_segment(
             DirectV11RealConsumerError::Identity("accepted publication ending complete-owner set")
         })?;
     match publication_posture {
-        AcceptedPublicationFinalizationPostureV1::RetainFinal => {
+        AcceptedPublicationFinalizationPostureV1::RetainFinal
+        | AcceptedPublicationFinalizationPostureV1::RetainFinalWithDeferredNativeV2Soil {
+            ..
+        } => {
             candidate.retain_accepted_publication_support(
                 day_index,
                 interval_index,
@@ -2394,461 +2948,4 @@ mod nitrogen_protocol_cardinality_tests {
     }
 }
 
-pub(crate) fn v11_shared_resource_transitions(
-    envelope: &UncommittedCoveredV8OwnerEnvelope,
-    input: &V11ImportedV10SegmentInput,
-    debits: &[V11ResourceDebit],
-    owners: &BTreeMap<String, V11OwnerEnvelope>,
-    beginning_hydrology: &RealHydrologyShadowAdapter,
-    ending_hydrology: &RealHydrologyShadowAdapter,
-    beginning_bgc: &openwepp_biogeochemistry::BiogeochemistryState,
-    ending_bgc: &openwepp_biogeochemistry::BiogeochemistryState,
-    compositional: bool,
-) -> Result<Vec<V11SharedResourceOwnerTransition>, DirectV11RealConsumerError> {
-    let hydrology_digest = owners
-        .get("hydrology")
-        .ok_or(DirectV11RealConsumerError::Identity(
-            "V11 hydrology candidate",
-        ))?
-        .state_sha256;
-    let mut rows = v11_water_owner_transitions(
-        envelope,
-        input,
-        debits,
-        beginning_hydrology,
-        ending_hydrology,
-        hydrology_digest,
-    )?;
-    let bgc_digest = owners
-        .get("bgc")
-        .ok_or(DirectV11RealConsumerError::Identity("V11 BGC candidate"))?
-        .state_sha256;
-    let bgc_ofes = debits
-        .iter()
-        .filter(|debit| matches!(&debit.resource_key, V11ResourceKey::MineralNitrogen(_)))
-        .map(|debit| debit.ofe_id.as_str())
-        .collect::<BTreeSet<_>>();
-    let ofe_id = bgc_ofes
-        .iter()
-        .next()
-        .filter(|_| bgc_ofes.len() == 1)
-        .copied();
-    if envelope
-        .biogeochemistry()
-        .mineral_operands()
-        .iter()
-        .any(|operand| operand.finalized_use_kg_n_m2 > 0.0)
-        && ofe_id.is_none()
-    {
-        return Err(DirectV11RealConsumerError::Identity(
-            "V11 exact-one BGC transition OFE",
-        ));
-    }
-    if let Some(ofe_id) = ofe_id {
-        rows.extend(v11_bgc_owner_transitions(
-            envelope,
-            input,
-            debits,
-            beginning_bgc,
-            ending_bgc,
-            ofe_id,
-            bgc_digest,
-            compositional,
-        )?);
-    }
-    Ok(rows)
-}
-
-pub(crate) fn v11_water_owner_transitions(
-    envelope: &UncommittedCoveredV8OwnerEnvelope,
-    input: &V11ImportedV10SegmentInput,
-    debits: &[V11ResourceDebit],
-    beginning: &RealHydrologyShadowAdapter,
-    ending: &RealHydrologyShadowAdapter,
-    owner_digest: Digest32,
-) -> Result<Vec<V11SharedResourceOwnerTransition>, DirectV11RealConsumerError> {
-    let mut rows = Vec::new();
-    for (ofe_index, ofe) in envelope
-        .hydrology()
-        .receiver_closure_operands()
-        .production_soil
-        .iter()
-        .enumerate()
-    {
-        for layer in &ofe.ordered_layers {
-            let key = V11SharedResourceKey {
-                resource: V11SharedResourceKind::Water,
-                owner_id: "hydrology".into(),
-                ofe_id: ofe.ofe_id.as_str().to_owned(),
-                layer_id: layer.layer_id.as_str().to_owned(),
-                source_id: "soil_water".into(),
-                amount_basis: "kg_m2_stand_ground".into(),
-            };
-            let ids = v11_linked_debit_ids(debits, &key, true);
-            if ids.is_empty() {
-                continue;
-            }
-            let amount = |owner: &RealHydrologyShadowAdapter, message| {
-                owner
-                    .layer_facts()
-                    .values()
-                    .find(|fact| {
-                        fact.source.ofe_lane.lane_index == ofe_index
-                            && fact.source.layer_id == layer.layer_id
-                    })
-                    .map(|fact| fact.liquid_supply_kg_m2)
-                    .ok_or(DirectV11RealConsumerError::Identity(message))
-            };
-            rows.push(v11_shared_transition(
-                input,
-                key,
-                amount(beginning, "V11 beginning hydrology layer binding")?,
-                amount(ending, "V11 ending hydrology layer binding")?,
-                ids,
-                owner_digest,
-            )?);
-        }
-    }
-    Ok(rows)
-}
-
-pub(crate) fn v11_bgc_owner_transitions(
-    envelope: &UncommittedCoveredV8OwnerEnvelope,
-    input: &V11ImportedV10SegmentInput,
-    debits: &[V11ResourceDebit],
-    beginning_bgc: &openwepp_biogeochemistry::BiogeochemistryState,
-    ending_bgc: &openwepp_biogeochemistry::BiogeochemistryState,
-    ofe_id: &str,
-    owner_digest: Digest32,
-    compositional: bool,
-) -> Result<Vec<V11SharedResourceOwnerTransition>, DirectV11RealConsumerError> {
-    let mut rows = Vec::new();
-    for operand in envelope.biogeochemistry().mineral_operands() {
-        let source_id = match operand.key.species {
-            MineralNitrogenSpecies::Ammonium => "nh4",
-            MineralNitrogenSpecies::Nitrate => "no3",
-        };
-        let resource = match operand.key.species {
-            MineralNitrogenSpecies::Ammonium => V11SharedResourceKind::Ammonium,
-            MineralNitrogenSpecies::Nitrate => V11SharedResourceKind::Nitrate,
-        };
-        let key = V11SharedResourceKey {
-            resource,
-            owner_id: "bgc".into(),
-            ofe_id: ofe_id.to_owned(),
-            layer_id: operand.key.layer_id.as_str().to_owned(),
-            source_id: source_id.into(),
-            amount_basis: "kg_n_m2".into(),
-        };
-        let ids = v11_linked_debit_ids(debits, &key, true);
-        if ids.is_empty() {
-            if operand.finalized_use_kg_n_m2 > 0.0 {
-                return Err(DirectV11RealConsumerError::Identity(
-                    "V11 BGC debit omission",
-                ));
-            }
-            continue;
-        }
-        let beginning_layer = beginning_bgc
-            .layers
-            .get(operand.key.layer_id.as_str())
-            .ok_or(DirectV11RealConsumerError::Identity(
-                "V11 beginning BGC layer binding",
-            ))?;
-        let beginning_amount = match operand.key.species {
-            MineralNitrogenSpecies::Ammonium => beginning_layer.ammonium_n,
-            MineralNitrogenSpecies::Nitrate => beginning_layer.nitrate_n,
-        };
-        let ending_layer = ending_bgc.layers.get(operand.key.layer_id.as_str()).ok_or(
-            DirectV11RealConsumerError::Identity("V11 ending BGC layer binding"),
-        )?;
-        let ending_amount = match operand.key.species {
-            MineralNitrogenSpecies::Ammonium => ending_layer.ammonium_n,
-            MineralNitrogenSpecies::Nitrate => ending_layer.nitrate_n,
-        };
-        let linked_use = ids
-            .iter()
-            .map(|id| {
-                debits.iter().find(|debit| debit.receipt_id == *id).ok_or(
-                    DirectV11RealConsumerError::Identity("V11 BGC linked debit identity"),
-                )
-            })
-            .try_fold(0.0_f64, |sum, debit| {
-                let next = sum + debit?.final_use;
-                next.is_finite()
-                    .then_some(next)
-                    .ok_or(DirectV11RealConsumerError::Identity(
-                        "V11 BGC finalized-use sum",
-                    ))
-            })?;
-        let reconstructed_ending = beginning_amount - linked_use;
-        if (!compositional
-            && (linked_use.to_bits() != operand.finalized_use_kg_n_m2.to_bits()
-                || ending_amount.to_bits() != operand.ending_kg_n_m2.to_bits()))
-            || reconstructed_ending.to_bits() != ending_amount.to_bits()
-                && (!compositional
-                    || !v11_compositional_pool_roundoff_within_one_ulp(
-                        reconstructed_ending,
-                        ending_amount,
-                    ))
-        {
-            return Err(DirectV11RealConsumerError::Identity(
-                "V11 BGC mineral-pool delta",
-            ));
-        }
-        rows.push(v11_shared_transition(
-            input,
-            key,
-            beginning_amount,
-            ending_amount,
-            ids,
-            owner_digest,
-        )?);
-    }
-    Ok(rows)
-}
-
-fn v11_compositional_pool_roundoff_within_one_ulp(reconstructed: f64, installed: f64) -> bool {
-    reconstructed.is_finite()
-        && installed.is_finite()
-        && reconstructed >= 0.0
-        && installed >= 0.0
-        && reconstructed.to_bits().abs_diff(installed.to_bits()) <= 1
-}
-
-pub(crate) fn v11_linked_debit_ids(
-    debits: &[V11ResourceDebit],
-    key: &V11SharedResourceKey,
-    bind_amount_basis: bool,
-) -> Vec<Digest32> {
-    let mut linked = debits
-        .iter()
-        .filter(|debit| {
-            debit.owner_id == key.owner_id
-                && debit.ofe_id == key.ofe_id
-                && debit.layer_id == key.layer_id
-                && debit.source_id == key.source_id
-                && (!bind_amount_basis || debit.amount_basis == key.amount_basis)
-        })
-        .collect::<Vec<_>>();
-    if key.owner_id == "bgc"
-        && matches!(
-            key.resource,
-            V11SharedResourceKind::Ammonium | V11SharedResourceKind::Nitrate
-        )
-    {
-        linked.sort_by(|left, right| {
-            left.occupancy_id
-                .cmp(&right.occupancy_id)
-                .then_with(|| left.layer_id.cmp(&right.layer_id))
-                .then_with(|| left.resource_key.cmp(&right.resource_key))
-        });
-    } else {
-        linked.sort_by_key(|debit| debit.receipt_id);
-    }
-    linked.into_iter().map(|debit| debit.receipt_id).collect()
-}
-
-pub(crate) fn v11_shared_transition(
-    input: &V11ImportedV10SegmentInput,
-    key: V11SharedResourceKey,
-    beginning_amount: f64,
-    ending_amount: f64,
-    debit_receipt_ids: Vec<Digest32>,
-    owner_candidate_sha256: Digest32,
-) -> Result<V11SharedResourceOwnerTransition, DirectV11RealConsumerError> {
-    Ok(V11SharedResourceOwnerTransition::new(
-        V11SharedResourceOwnerTransition {
-            transition_id: Digest32::zero(),
-            parent_transaction_id: input.parent_transaction_id,
-            segment_id: input.accepted_slab_receipt.segment_id(),
-            accepted_slab_id: input.accepted_slab_receipt.slab_id(),
-            support: input.support,
-            shared_resource_key: key,
-            beginning_amount,
-            ending_amount,
-            debit_receipt_ids,
-            admitted_flux_receipt_ids: Vec::new(),
-            owner_candidate_sha256,
-        },
-    )?)
-}
-
-pub(crate) fn v11_water_resource_debits(
-    envelope: &UncommittedCoveredV8OwnerEnvelope,
-    configuration: &VegetationConfiguration,
-    input: &V11ImportedV10SegmentInput,
-) -> Result<Vec<V11ResourceDebit>, DirectV11RealConsumerError> {
-    let occupancies = configuration
-        .expected_occupancies()
-        .into_iter()
-        .map(|id| {
-            (
-                format!("{}::{}", id.stratum_id.as_str(), id.tile_id.as_str()),
-                id,
-            )
-        })
-        .collect::<BTreeMap<_, _>>();
-    let requests = &envelope.hydrology().arbitration().requests;
-    let authorizations = &envelope.hydrology().arbitration().authorizations;
-    envelope
-        .hydrology()
-        .finalized_uses()
-        .iter()
-        .filter_map(|value| {
-            let component = value.key.occupancy_id.as_ref()?;
-            let layer = value.key.soil_layer_id.as_ref()?;
-            Some((value, component.as_str(), layer))
-        })
-        .map(|(value, component, layer)| {
-            let occupancy =
-                occupancies
-                    .get(component)
-                    .ok_or(DirectV11RealConsumerError::Identity(
-                        "V11 water occupancy binding",
-                    ))?;
-            let request = requests.iter().find(|row| row.key == value.key).ok_or(
-                DirectV11RealConsumerError::Identity("V11 water request binding"),
-            )?;
-            let authorization = authorizations
-                .iter()
-                .find(|row| row.key == value.key)
-                .ok_or(DirectV11RealConsumerError::Identity(
-                    "V11 water authorization binding",
-                ))?;
-            V11ResourceDebit::new(V11ResourceDebit {
-                receipt_id: Digest32::zero(),
-                parent_transaction_id: input.parent_transaction_id,
-                segment_id: input.accepted_slab_receipt.segment_id(),
-                accepted_slab_id: input.accepted_slab_receipt.slab_id(),
-                support: input.support,
-                owner_id: "hydrology".to_owned(),
-                resource_key: V11ResourceKey::Water(openwepp_kernel_contract::WaterResourceKey {
-                    occupancy_id: occupancy.clone(),
-                    layer_id: layer.clone(),
-                }),
-                ofe_id: value.key.ofe_id.as_str().to_owned(),
-                tile_id: occupancy.tile_id.as_str().to_owned(),
-                occupancy_id: component.to_owned(),
-                layer_id: layer.as_str().to_owned(),
-                source_id: "soil_water".to_owned(),
-                amount_basis: "kg_m2_stand_ground".to_owned(),
-                request: request.amount_kg_m2_stand_ground,
-                authorization: authorization.amount_kg_m2_stand_ground,
-                final_use: value.amount_kg_m2_stand_ground,
-            })
-            .map_err(|_| DirectV11RealConsumerError::Identity("V11 water debit"))
-        })
-        .collect()
-}
-
-#[cfg(test)]
-mod owner_join_tests {
-    use super::*;
-    use openwepp_coupled_time::{ModelTimeNs, TimeSupport};
-
-    #[test]
-    fn compositional_pool_roundoff_accepts_only_one_ulp() {
-        let value = 1.0_f64;
-        assert!(v11_compositional_pool_roundoff_within_one_ulp(value, value));
-        assert!(v11_compositional_pool_roundoff_within_one_ulp(
-            value,
-            f64::from_bits(value.to_bits() + 1),
-        ));
-        assert!(!v11_compositional_pool_roundoff_within_one_ulp(
-            value,
-            f64::from_bits(value.to_bits() + 2),
-        ));
-        assert!(!v11_compositional_pool_roundoff_within_one_ulp(
-            f64::NAN,
-            value,
-        ));
-        assert!(!v11_compositional_pool_roundoff_within_one_ulp(
-            -value, value,
-        ));
-    }
-
-    #[test]
-    fn final_owner_join_seal_rejects_each_owner_digest_substitution() {
-        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(1_800_000_000_000))
-            .expect("support");
-        let mut receipt = CoveredParentOwnerJoinReceiptV1 {
-            run_identity: Digest32::from_bytes([21; 32]),
-            parent_interval_sha256: Digest32::from_bytes([20; 32]),
-            parent_transaction_sha256: Digest32::from_bytes([22; 32]),
-            segment_sha256: Digest32::from_bytes([23; 32]),
-            accepted_slab_sha256: Digest32::from_bytes([24; 32]),
-            forcing_receipt_sha256: Digest32::from_bytes([25; 32]),
-            beginning_complete_owner_set_sha256: Digest32::from_bytes([26; 32]),
-            ending_complete_owner_set_sha256: Digest32::from_bytes([27; 32]),
-            support,
-            final_boundary_receipt_set_sha256: Digest32::from_bytes([1; 32]),
-            final_lane_boundary_receipt_set_sha256: Digest32::from_bytes([18; 32]),
-            component_carrier_receipt_set_sha256: Digest32::from_bytes([2; 32]),
-            snow_soil_heat_receipt_set_sha256: Digest32::from_bytes([19; 32]),
-            terminal_snow_soil_heat_receipt_set_sha256: Digest32::from_bytes([30; 32]),
-            physical_outcome_ledger_set_sha256: Digest32::from_bytes([31; 32]),
-            wb14_child_receipt_set_sha256: Digest32::from_bytes([29; 32]),
-            wb14_parent_receipt_set_sha256: None,
-            stage3_physical_state_sha256: Digest32::from_bytes([3; 32]),
-            vegetation_owner_sha256: Digest32::from_bytes([4; 32]),
-            snow_owner_sha256: Digest32::from_bytes([5; 32]),
-            land_surface_energy_owner_sha256: Digest32::from_bytes([6; 32]),
-            hydrology_owner_sha256: Digest32::from_bytes([7; 32]),
-            biogeochemistry_owner_sha256: Digest32::from_bytes([8; 32]),
-            soil_thermal_owner_sha256: Digest32::from_bytes([9; 32]),
-            surface_liquid_owner_sha256: Digest32::from_bytes([10; 32]),
-            receipt_sha256: Digest32::zero(),
-        };
-        receipt.receipt_sha256 = receipt.reconstructed_digest().expect("join digest");
-        receipt.validate_seal().expect("valid join seal");
-        for mutate in [
-            |value: &mut CoveredParentOwnerJoinReceiptV1| {
-                value.ending_complete_owner_set_sha256 = Digest32::from_bytes([28; 32]);
-            },
-            |value: &mut CoveredParentOwnerJoinReceiptV1| {
-                value.final_lane_boundary_receipt_set_sha256 = Digest32::from_bytes([19; 32]);
-            },
-            |value: &mut CoveredParentOwnerJoinReceiptV1| {
-                value.vegetation_owner_sha256 = Digest32::from_bytes([11; 32]);
-            },
-            |value: &mut CoveredParentOwnerJoinReceiptV1| {
-                value.snow_owner_sha256 = Digest32::from_bytes([12; 32]);
-            },
-            |value: &mut CoveredParentOwnerJoinReceiptV1| {
-                value.land_surface_energy_owner_sha256 = Digest32::from_bytes([13; 32]);
-            },
-            |value: &mut CoveredParentOwnerJoinReceiptV1| {
-                value.hydrology_owner_sha256 = Digest32::from_bytes([14; 32]);
-            },
-            |value: &mut CoveredParentOwnerJoinReceiptV1| {
-                value.biogeochemistry_owner_sha256 = Digest32::from_bytes([15; 32]);
-            },
-            |value: &mut CoveredParentOwnerJoinReceiptV1| {
-                value.soil_thermal_owner_sha256 = Digest32::from_bytes([16; 32]);
-            },
-            |value: &mut CoveredParentOwnerJoinReceiptV1| {
-                value.surface_liquid_owner_sha256 = Digest32::from_bytes([17; 32]);
-            },
-        ] {
-            let mut poisoned = receipt.clone();
-            mutate(&mut poisoned);
-            assert!(poisoned.validate_seal().is_err());
-        }
-    }
-
-    #[test]
-    fn valid_alternate_snow_owner_rejects_against_unchanged_physical_bytes() {
-        let expected = b"canonical-stage3-and-boundaries";
-        let expected_owner =
-            V11OwnerEnvelope::try_new("snow".into(), expected.to_vec()).expect("snow owner");
-        validate_exact_snow_owner_bytes(expected, &expected_owner).expect("exact snow join");
-
-        let alternate = V11OwnerEnvelope::try_new(
-            "snow".into(),
-            b"different-valid-canonical-snow-owner".to_vec(),
-        )
-        .expect("alternate valid snow owner");
-        assert!(validate_exact_snow_owner_bytes(expected, &alternate).is_err());
-    }
-}
+include!("owner_finalization_resource_transitions.rs");

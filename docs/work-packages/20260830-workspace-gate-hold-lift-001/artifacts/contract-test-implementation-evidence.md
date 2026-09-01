@@ -1,6 +1,6 @@
 # Contract-test implementation evidence
 
-Status: `V31 TESTS AUTHORED — EXPECTED RED`
+Status: `SUSPENDED — V56/V57 FOCUSED PASS, CANONICAL UNRESOLVED`
 
 Evidence mode: `Static + Ran`
 
@@ -73,9 +73,34 @@ solver-order and controller-test findings on this source. Fresh execution is
 green: 5/5 focused, run `baaf9f04-769f-4de0-82bd-f98695c081db`; 87/87 complete
 crate, run `dcd3e84b-d3ce-4bae-8960-df2c2a2c1767`.
 
+Final hardening adds full-trial classification poisons for NaN, positive
+infinity, and negative infinity in every governed coordinate. Any nonfinite
+governed member makes the complete exact prospective classification
+unavailable; only a fully finite vector with an actual governed threshold
+excess can activate that typed refusal. Focused 6/6 and full LSE 103/103 pass,
+runs `6efcec2e-2666-4a58-b911-80a2267bf0dd` and
+`86f824a0-4486-4b9d-80ff-fe8fe0e8fbfd`.
+
 Ran: both unchanged interior-terminal consumers advance beyond the prior LSE
 backtracking failure and currently stop at the later shared Stage-3 identity
 guard `qualification terminal snow-free successor chronology`, run
 `ec067bbd-443d-45ce-ba76-5c4fdd2e252b`. No `LSEB-E-034` remains in either
 path. Terminal real-consumer PASS awaits the concurrently owned chronology
 correction and rerun; no consumer assertion was changed.
+
+## SC-SNOWENERGY-001 v56/v57 test disposition
+
+Status: `FOCUSED PASS — CANONICAL FAIL — SUSPENDED`
+
+Ran: v57 expected-red source-contract evidence failed before implementation as
+required (`1/2`, run `df31d505-4d9d-4526-a1f9-043e5b5cd5ec`). After
+implementation, its source-contract vectors pass `2/2`, run
+`511adad7-bb21-4c61-8d1a-e1ded7f79ee1`; v57 focused vectors pass `6/6` and
+the retained v56 focused vectors pass `10/10`.
+
+These focused results do not discharge the real-consumer gate. Canonical r151
+reaches the specialization and fails at the 60-second `1800..1860 s` support
+inside the frozen temperature-primary safeguarded physical solve. The one-day
+fixture does not complete, so no step-count, width-distribution, qualified
+runtime, or final ledger-closure test claim is available. The owner stopped
+execution at r151; no V58 or further numerical successor test is authorized.

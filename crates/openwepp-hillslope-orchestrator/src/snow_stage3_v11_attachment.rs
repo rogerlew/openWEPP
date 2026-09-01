@@ -5,7 +5,7 @@
 //! rather than an event request or live carrier receipt.  The legacy
 //! caller-built handoff remains test-only in `direct_runtime::snow_stage3_shadow`.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 #[path = "snow_stage3_v11_profile.rs"]
 mod profile;
@@ -102,6 +102,69 @@ pub struct CoveredFixedPointLimitDetailV1 {
     pub stage3_first_difference: Option<(u32, &'static str, u64, u64, u64, u64)>,
 }
 
+/// One bounded, diagnostic-only observation of the covered fixed-point map.
+///
+/// Delta fields are stored as IEEE-754 bits so this evidence remains exactly
+/// comparable without making floating-point values part of owner state. A
+/// normalized delta at or below one satisfies the corresponding dimensional
+/// norm. The booleans remain authoritative for exact-field predicates, while
+/// infinity denotes a topology or other non-numeric mismatch.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct CoveredFixedPointLimiterSampleV1 {
+    pub support: TimeSupport,
+    pub iteration: usize,
+    pub stage: CoveredFixedPointLimitStageV1,
+    pub lse_converged: bool,
+    pub stage3_converged: bool,
+    pub soil_converged: bool,
+    pub boundary_converged: bool,
+    pub lse_max_normalized_delta_bits: u64,
+    pub stage3_max_normalized_delta_bits: u64,
+    pub soil_enthalpy_max_normalized_delta_bits: u64,
+    pub soil_temperature_max_normalized_delta_bits: u64,
+    pub boundary_max_normalized_delta_bits: u64,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CoveredFixedPointLimiterAuditV1 {
+    pub total_sample_count: u64,
+    pub dropped_sample_count: u64,
+    pub retained_tail: Vec<CoveredFixedPointLimiterSampleV1>,
+    pub peak_lse_normalized_delta_bits: u64,
+    pub peak_stage3_normalized_delta_bits: u64,
+    pub peak_soil_enthalpy_normalized_delta_bits: u64,
+    pub peak_soil_temperature_normalized_delta_bits: u64,
+    pub peak_boundary_normalized_delta_bits: u64,
+}
+
+const COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY: usize = 384;
+
+struct CoveredFixedPointLimiterAuditStateV1 {
+    total_sample_count: u64,
+    dropped_sample_count: u64,
+    retained_tail: VecDeque<CoveredFixedPointLimiterSampleV1>,
+    peak_lse_normalized_delta_bits: u64,
+    peak_stage3_normalized_delta_bits: u64,
+    peak_soil_enthalpy_normalized_delta_bits: u64,
+    peak_soil_temperature_normalized_delta_bits: u64,
+    peak_boundary_normalized_delta_bits: u64,
+}
+
+impl Default for CoveredFixedPointLimiterAuditStateV1 {
+    fn default() -> Self {
+        Self {
+            total_sample_count: 0,
+            dropped_sample_count: 0,
+            retained_tail: VecDeque::with_capacity(COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY),
+            peak_lse_normalized_delta_bits: 0.0_f64.to_bits(),
+            peak_stage3_normalized_delta_bits: 0.0_f64.to_bits(),
+            peak_soil_enthalpy_normalized_delta_bits: 0.0_f64.to_bits(),
+            peak_soil_temperature_normalized_delta_bits: 0.0_f64.to_bits(),
+            peak_boundary_normalized_delta_bits: 0.0_f64.to_bits(),
+        }
+    }
+}
+
 std::thread_local! {
     static COVERED_FIXED_POINT_ITERATION_AUDIT_ENABLED: std::cell::Cell<bool> = const {
         std::cell::Cell::new(false)
@@ -118,6 +181,9 @@ std::thread_local! {
     static COVERED_RECEIPT_RESEAL_MAX_ABS_TEMPERATURE_RESIDUAL_BITS: std::cell::Cell<u64> = const {
         std::cell::Cell::new(0.0_f64.to_bits())
     };
+    static COVERED_FIXED_POINT_LIMITER_AUDIT: std::cell::RefCell<
+        Option<CoveredFixedPointLimiterAuditStateV1>
+    > = const { std::cell::RefCell::new(None) };
 }
 
 pub struct CoveredFixedPointIterationAuditGuardV1 {
@@ -566,6 +632,9 @@ pub(crate) fn adaptive_parent_telemetry_enabled_v1() -> bool {
 impl Drop for CoveredFixedPointIterationAuditGuardV1 {
     fn drop(&mut self) {
         COVERED_FIXED_POINT_ITERATION_AUDIT_ENABLED.with(|enabled| enabled.set(false));
+        COVERED_FIXED_POINT_LIMITER_AUDIT.with(|audit| {
+            audit.borrow_mut().take();
+        });
     }
 }
 
@@ -573,6 +642,11 @@ impl Drop for CoveredFixedPointIterationAuditGuardV1 {
 /// in owner identity, receipts, controller decisions, or persisted bytes.
 pub fn begin_covered_fixed_point_iteration_audit_v1() -> CoveredFixedPointIterationAuditGuardV1 {
     COVERED_FIXED_POINT_ITERATION_AUDIT.with(|audit| audit.borrow_mut().clear());
+    COVERED_FIXED_POINT_LIMITER_AUDIT.with(|audit| {
+        audit
+            .borrow_mut()
+            .replace(CoveredFixedPointLimiterAuditStateV1::default())
+    });
     COVERED_FIXED_POINT_LIMIT_DETAIL.with(|detail| detail.set(None));
     COVERED_RECEIPT_RESEAL_MAX_ABS_RESIDUAL_BITS.with(|maximum| maximum.set(0.0_f64.to_bits()));
     COVERED_RECEIPT_RESEAL_MAX_ABS_TEMPERATURE_RESIDUAL_BITS
@@ -591,6 +665,72 @@ pub fn take_covered_fixed_point_iteration_audit_v1() -> Vec<CoveredFixedPointIte
     COVERED_RECEIPT_RESEAL_MAX_ABS_TEMPERATURE_RESIDUAL_BITS
         .with(|maximum| maximum.set(0.0_f64.to_bits()));
     COVERED_FIXED_POINT_ITERATION_AUDIT.with(|audit| std::mem::take(&mut *audit.borrow_mut()))
+}
+
+/// Returns the bounded fixed-point limiter tail accumulated by the explicit
+/// iteration-audit guard. This diagnostic state is thread-local and has no
+/// serialization, restart, publication, or controller path.
+pub fn take_covered_fixed_point_limiter_audit_v1() -> CoveredFixedPointLimiterAuditV1 {
+    let state = COVERED_FIXED_POINT_LIMITER_AUDIT
+        .with(|audit| audit.borrow_mut().take())
+        .unwrap_or_default();
+    CoveredFixedPointLimiterAuditV1 {
+        total_sample_count: state.total_sample_count,
+        dropped_sample_count: state.dropped_sample_count,
+        retained_tail: state.retained_tail.into_iter().collect(),
+        peak_lse_normalized_delta_bits: state.peak_lse_normalized_delta_bits,
+        peak_stage3_normalized_delta_bits: state.peak_stage3_normalized_delta_bits,
+        peak_soil_enthalpy_normalized_delta_bits: state.peak_soil_enthalpy_normalized_delta_bits,
+        peak_soil_temperature_normalized_delta_bits: state
+            .peak_soil_temperature_normalized_delta_bits,
+        peak_boundary_normalized_delta_bits: state.peak_boundary_normalized_delta_bits,
+    }
+}
+
+pub(crate) fn covered_fixed_point_limiter_audit_enabled_v1() -> bool {
+    COVERED_FIXED_POINT_LIMITER_AUDIT.with(|audit| audit.borrow().is_some())
+}
+
+pub(crate) fn record_covered_fixed_point_limiter_sample_v1(
+    sample: CoveredFixedPointLimiterSampleV1,
+) {
+    fn update_peak(peak_bits: &mut u64, candidate_bits: u64) {
+        let candidate = f64::from_bits(candidate_bits);
+        if !candidate.is_nan() && candidate > f64::from_bits(*peak_bits) {
+            *peak_bits = candidate_bits;
+        }
+    }
+
+    COVERED_FIXED_POINT_LIMITER_AUDIT.with(|audit| {
+        let mut audit = audit.borrow_mut();
+        let Some(state) = audit.as_mut() else { return };
+        state.total_sample_count = state.total_sample_count.saturating_add(1);
+        update_peak(
+            &mut state.peak_lse_normalized_delta_bits,
+            sample.lse_max_normalized_delta_bits,
+        );
+        update_peak(
+            &mut state.peak_stage3_normalized_delta_bits,
+            sample.stage3_max_normalized_delta_bits,
+        );
+        update_peak(
+            &mut state.peak_soil_enthalpy_normalized_delta_bits,
+            sample.soil_enthalpy_max_normalized_delta_bits,
+        );
+        update_peak(
+            &mut state.peak_soil_temperature_normalized_delta_bits,
+            sample.soil_temperature_max_normalized_delta_bits,
+        );
+        update_peak(
+            &mut state.peak_boundary_normalized_delta_bits,
+            sample.boundary_max_normalized_delta_bits,
+        );
+        if state.retained_tail.len() == COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY {
+            state.retained_tail.pop_front();
+            state.dropped_sample_count = state.dropped_sample_count.saturating_add(1);
+        }
+        state.retained_tail.push_back(sample);
+    });
 }
 
 pub(crate) fn record_covered_receipt_reseal_roundoff_v1(
@@ -2164,318 +2304,7 @@ impl DirectSnowStage3V11PreparedSupport {
     }
 }
 
-fn append_canonical_bytes(bytes: &mut Vec<u8>, value: &[u8]) {
-    bytes.extend_from_slice(&(value.len() as u64).to_be_bytes());
-    bytes.extend_from_slice(value);
-}
-
-fn append_canonical_str(bytes: &mut Vec<u8>, value: &str) {
-    append_canonical_bytes(bytes, value.as_bytes());
-}
-
-fn append_canonical_f64(bytes: &mut Vec<u8>, value: f64) {
-    bytes.extend_from_slice(&value.to_bits().to_be_bytes());
-}
-
-fn append_canonical_option_f64(bytes: &mut Vec<u8>, value: Option<f64>) {
-    match value {
-        Some(value) => {
-            bytes.push(1);
-            append_canonical_f64(bytes, value);
-        }
-        None => bytes.push(0),
-    }
-}
-
-fn canonical_stage3_support_forcing_digest(
-    forcing_by_lane: &BTreeMap<u32, DirectSnowStage3SupportInput>,
-) -> Digest32 {
-    let mut bytes = Vec::new();
-    append_canonical_bytes(&mut bytes, b"OPENWEPP_STAGE3_SUPPORT_FORCING_V2");
-    for (lane, support) in forcing_by_lane {
-        bytes.extend_from_slice(&lane.to_be_bytes());
-        append_canonical_f64(&mut bytes, support.duration_seconds);
-        let forcing = support.forcing;
-        for value in [
-            forcing.active_precipitation_m,
-            forcing.rain_m,
-            forcing.snowfall_m,
-            forcing.radiation_mj_m2,
-            forcing.air_temperature_c,
-            forcing.cloud_fraction,
-            forcing.rain_fraction,
-            forcing.snow_fraction,
-        ] {
-            append_canonical_f64(&mut bytes, value);
-        }
-        append_canonical_str(&mut bytes, forcing.phase_model.id());
-        append_canonical_option_f64(&mut bytes, forcing.hydrometeor_temperature_c);
-    }
-    digest_bytes(&bytes)
-}
-
-fn canonical_stage3_configuration_digest(
-    inputs_by_lane: &BTreeMap<u32, DirectActiveSnowPartitionInputs>,
-) -> Digest32 {
-    let mut bytes = Vec::new();
-    append_canonical_bytes(&mut bytes, b"OPENWEPP_STAGE3_CONFIGURATION_V2");
-    for (lane, input) in inputs_by_lane {
-        bytes.extend_from_slice(&lane.to_be_bytes());
-        for value in [
-            input.hyetograph_rainfall_m,
-            input.rst_c,
-            input.newsnw_kg_m3,
-            input.ssd_kg_m3,
-            input.tmax_c,
-            input.tmin_c,
-            input.canopy_cover_fraction,
-            input.wind_m_s,
-            input.dewpoint_c,
-            input.coe_boundary_depth_m,
-            input.coe_boundary_density_kg_m3,
-            input.coe_boundary_settle_day_count,
-            input.underlying_surface_albedo,
-        ] {
-            append_canonical_f64(&mut bytes, value);
-        }
-        for id in [
-            input.snow_melt_model.id(),
-            input.snow_density_model.id(),
-            input.stage3_liquid_routing_model.id(),
-            input.surface_energy_options.longwave_model.id(),
-            input.surface_energy_options.sublimation_model.id(),
-        ] {
-            append_canonical_str(&mut bytes, id);
-        }
-        if let Some(model) = input.snow_albedo_model {
-            bytes.push(1);
-            append_canonical_str(&mut bytes, model.id());
-        } else {
-            bytes.push(0);
-        }
-        if let Some(class) = input.sturm_climate_class {
-            bytes.push(1);
-            append_canonical_str(&mut bytes, class.id());
-        } else {
-            bytes.push(0);
-        }
-        append_canonical_option_f64(&mut bytes, input.sturm_day_of_year);
-        let options = input.surface_energy_options;
-        for value in [
-            options.daily_solar_radiation_mj_m2,
-            options.daily_extraterrestrial_radiation_mj_m2,
-            options.atmospheric_pressure_pa,
-            options.turbulent_geometry.air_temperature_height_m,
-            options.turbulent_geometry.vapor_pressure_height_m,
-            options.turbulent_geometry.wind_speed_height_m,
-            options.turbulent_geometry.aerodynamic_roughness_length_m,
-        ] {
-            append_canonical_f64(&mut bytes, value);
-        }
-        bytes.push(u8::from(options.daylight));
-        bytes.push(u8::from(options.complete_carrier_shadow));
-    }
-    digest_bytes(&bytes)
-}
-
-fn canonical_v11_forcing_digest(
-    lse_forcing: &openwepp_land_surface_energy::LandSurfaceForcing,
-    vegetation_forcing: &openwepp_vegetation::SnowFreeForcing,
-) -> Digest32 {
-    let mut bytes = Vec::new();
-    append_canonical_bytes(&mut bytes, b"OPENWEPP_COVERED_V11_FORCING_V2");
-    append_canonical_str(&mut bytes, lse_forcing.forcing_sha256.as_str());
-    bytes.extend_from_slice(&lse_forcing.transaction_id.0.to_be_bytes());
-    append_canonical_f64(&mut bytes, lse_forcing.interval_s);
-    for value in [
-        vegetation_forcing.air_temperature_k,
-        vegetation_forcing.pressure_pa,
-        vegetation_forcing.co2_pa,
-        vegetation_forcing.vapor_pressure_deficit_kpa,
-        vegetation_forcing.wind_m_s,
-        vegetation_forcing.rain_kg_m2,
-        vegetation_forcing.direct_par_w_m2,
-        vegetation_forcing.diffuse_par_w_m2,
-        vegetation_forcing.direct_nir_w_m2,
-        vegetation_forcing.diffuse_nir_w_m2,
-        vegetation_forcing.solar_zenith_cosine,
-        vegetation_forcing.ground_albedo_vis,
-        vegetation_forcing.ground_albedo_nir,
-        vegetation_forcing.longwave_down_w_m2,
-        vegetation_forcing.longwave_up_w_m2,
-        vegetation_forcing.specific_humidity,
-        vegetation_forcing.reference_height_m,
-        vegetation_forcing.gsi,
-    ] {
-        append_canonical_f64(&mut bytes, value);
-    }
-    for layer in &vegetation_forcing.soil_layers {
-        append_canonical_str(&mut bytes, layer.layer_id.as_str());
-        for value in [
-            layer.water_beginning_kg_m2,
-            layer.matric_potential_mm,
-            layer.hydraulic_conductivity_mm_s,
-            layer.root_path_length_mm,
-            layer.gravity_root_mm,
-            layer.temperature_k,
-        ] {
-            append_canonical_f64(&mut bytes, value);
-        }
-        bytes.push(u8::from(layer.accessible));
-        bytes.push(u8::from(layer.frozen));
-    }
-    digest_bytes(&bytes)
-}
-
-fn canonical_snow_surface_forcing_digest(
-    by_destination: &BTreeMap<(OfeId, TileId), SealedStage3TileBoundaryForcingV1>,
-) -> Digest32 {
-    let mut bytes = Vec::new();
-    append_canonical_bytes(&mut bytes, b"OPENWEPP_STAGE3_SNOW_SURFACE_SET_V1");
-    for (destination, forcing) in by_destination {
-        append_canonical_str(&mut bytes, destination.0.as_str());
-        append_canonical_str(&mut bytes, destination.1.as_str());
-        match forcing {
-            SealedStage3TileBoundaryForcingV1::V11CanopyCovered(forcing) => {
-                bytes.push(0);
-                bytes.extend_from_slice(forcing.exposure_identity().as_bytes());
-            }
-            SealedStage3TileBoundaryForcingV1::OpenSnow(forcing) => {
-                bytes.push(1);
-                bytes.extend_from_slice(forcing.receipt_sha256.as_bytes());
-            }
-        }
-    }
-    digest_bytes(&bytes)
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct PreparedStage3V11SupportIdentityV1 {
-    destination_ofe_id: String,
-    destination_tile_id: String,
-    wb14_configuration_sha256: String,
-    exposure_identity: Digest32,
-    precipitation_parcels: Vec<SnowFreePrecipitationParcelReceipt>,
-    solid_precipitation_parcels: Vec<SnowFreeSolidPrecipitationParcelReceipt>,
-    forcing_receipt_digest: Digest32,
-}
-
-impl PreparedStage3V11SupportIdentityV1 {
-    /// Project an open destination identity from one repository interval.
-    /// Exposure identity is derived from the same raw-wind projection later
-    /// sealed by provider binding; callers cannot supply an arbitrary digest.
-    pub fn from_provider_open_interval(
-        support: TimeSupport,
-        interval: &SnowFreeHalfHourIntervalReceipt,
-    ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
-        let interval_start_ns = day_start_ns(interval.day_index)?
-            .checked_add(
-                u128::try_from(interval.start_s)
-                    .map_err(|_| {
-                        DirectSnowStage3V11AttachmentError::Support(
-                            "provider open interval start width",
-                        )
-                    })?
-                    .checked_mul(1_000_000_000)
-                    .ok_or(DirectSnowStage3V11AttachmentError::Support(
-                        "provider open interval start overflow",
-                    ))?,
-            )
-            .ok_or(DirectSnowStage3V11AttachmentError::Support(
-                "provider open interval day overflow",
-            ))?;
-        if support.start_ns().get() != interval_start_ns
-            || support.duration_ns() != STAGE3_V11_PARENT_SUPPORT_NS
-        {
-            return Err(DirectSnowStage3V11AttachmentError::Support(
-                "provider open interval support",
-            ));
-        }
-        let destination = (
-            OfeId::try_new(interval.ofe_id.clone()).map_err(|_| {
-                DirectSnowStage3V11AttachmentError::Identity("provider open interval OFE")
-            })?,
-            TileId::try_new(interval.tile_id.clone()).map_err(|_| {
-                DirectSnowStage3V11AttachmentError::Identity("provider open interval tile")
-            })?,
-        );
-        let exposure = SealedOpenSnowExposureReceiptV1::try_new(
-            support,
-            destination,
-            parse_lower_hex_digest(&interval.interval_receipt_sha256)?,
-            parse_lower_hex_digest(&interval.provider_definition_sha256)?,
-            interval.wind_m_s,
-            digest_bytes(b"OPENWEPP_STAGE3_RAW_WIND_IDENTITY_PROJECTION_V1"),
-        )?;
-        Ok(Self::new_with_phase_parcels(
-            interval.ofe_id.clone(),
-            interval.tile_id.clone(),
-            interval.wb14_configuration_sha256.clone(),
-            exposure.receipt_sha256,
-            interval.precipitation_parcels.clone(),
-            interval.solid_precipitation_parcels.clone(),
-            parse_lower_hex_digest(&interval.interval_receipt_sha256)?,
-        ))
-    }
-
-    /// Project a covered destination identity from the already sealed V11
-    /// carrier capability and one repository interval.
-    pub fn from_provider_covered_interval(
-        interval: &SnowFreeHalfHourIntervalReceipt,
-        forcing: &SealedCoveredCarrierForcing,
-    ) -> Result<Self, DirectSnowStage3V11AttachmentError> {
-        Ok(Self::new_with_phase_parcels(
-            interval.ofe_id.clone(),
-            interval.tile_id.clone(),
-            interval.wb14_configuration_sha256.clone(),
-            forcing.exposure_identity(),
-            interval.precipitation_parcels.clone(),
-            interval.solid_precipitation_parcels.clone(),
-            parse_lower_hex_digest(&interval.interval_receipt_sha256)?,
-        ))
-    }
-
-    #[must_use]
-    pub fn new(
-        destination_ofe_id: String,
-        destination_tile_id: String,
-        wb14_configuration_sha256: String,
-        exposure_identity: Digest32,
-        precipitation_parcels: Vec<SnowFreePrecipitationParcelReceipt>,
-        forcing_receipt_digest: Digest32,
-    ) -> Self {
-        Self {
-            destination_ofe_id,
-            destination_tile_id,
-            wb14_configuration_sha256,
-            exposure_identity,
-            precipitation_parcels,
-            solid_precipitation_parcels: Vec::new(),
-            forcing_receipt_digest,
-        }
-    }
-
-    #[must_use]
-    pub fn new_with_phase_parcels(
-        destination_ofe_id: String,
-        destination_tile_id: String,
-        wb14_configuration_sha256: String,
-        exposure_identity: Digest32,
-        precipitation_parcels: Vec<SnowFreePrecipitationParcelReceipt>,
-        solid_precipitation_parcels: Vec<SnowFreeSolidPrecipitationParcelReceipt>,
-        forcing_receipt_digest: Digest32,
-    ) -> Self {
-        Self {
-            destination_ofe_id,
-            destination_tile_id,
-            wb14_configuration_sha256,
-            exposure_identity,
-            precipitation_parcels,
-            solid_precipitation_parcels,
-            forcing_receipt_digest,
-        }
-    }
-}
+include!("snow_stage3_v11_prepared_support_identity.rs");
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct PreparedStage3V11DayV1 {
@@ -2831,6 +2660,153 @@ pub struct DirectSnowStage3V11CommittedState {
     pub last_v11_parent_candidate: Option<V11ParentCandidate>,
     pub terminal_parcels: BTreeMap<Digest32, DirectSnowStage3V11TerminalParcel>,
     pub receipt_chain: Vec<DirectSnowStage3V11ParentReceipt>,
+    pub snow_enthalpy_material_owner:
+        Option<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
+    pub snow_enthalpy_material_owner_chronology:
+        Vec<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
+}
+
+impl DirectSnowStage3V11CommittedState {
+    fn validate_snow_enthalpy_material_resident_v1(
+        &self,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        match &self.snow_enthalpy_material_owner {
+            None if self.snow_enthalpy_material_owner_chronology.is_empty() => Ok(()),
+            None => Err(DirectSnowStage3V11AttachmentError::Identity(
+                "V56 snow material chronology without current owner",
+            )),
+            Some(current) => {
+                current.validate().map_err(|_| {
+                    DirectSnowStage3V11AttachmentError::Identity(
+                        "V56 current compound snow material owner",
+                    )
+                })?;
+                if current.base_material_owner() != &self.stage3_by_lane
+                    || self.snow_enthalpy_material_owner_chronology.last() != Some(current)
+                {
+                    return Err(DirectSnowStage3V11AttachmentError::Identity(
+                        "V56 current compound owner/base/chronology join",
+                    ));
+                }
+                for pair in self.snow_enthalpy_material_owner_chronology.windows(2) {
+                    pair[1]
+                        .receipt()
+                        .validate_successor_of(&pair[0])
+                        .map_err(|_| {
+                            DirectSnowStage3V11AttachmentError::Identity(
+                                "V56 compound snow material successor chronology",
+                            )
+                        })?;
+                }
+                Ok(())
+            }
+        }
+    }
+
+    pub fn snow_enthalpy_material_owner_v1(
+        &self,
+    ) -> Option<&crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>
+    {
+        self.snow_enthalpy_material_owner.as_ref()
+    }
+
+    pub fn snow_enthalpy_material_owner_chronology_v1(
+        &self,
+    ) -> &[crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1]
+    {
+        &self.snow_enthalpy_material_owner_chronology
+    }
+
+    pub fn install_snow_enthalpy_material_owner_v1(
+        &mut self,
+        owner: crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1,
+    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
+        owner.validate().map_err(|_| {
+            DirectSnowStage3V11AttachmentError::Identity(
+                "V56 accepted compound snow material owner",
+            )
+        })?;
+        if owner.base_material_owner() != &self.stage3_by_lane {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "V56 accepted compound owner/base material join",
+            ));
+        }
+        if let Some(predecessor) = self.snow_enthalpy_material_owner.as_ref() {
+            owner
+                .receipt()
+                .validate_successor_of(predecessor)
+                .map_err(|_| {
+                    DirectSnowStage3V11AttachmentError::Identity(
+                        "V56 accepted compound owner predecessor",
+                    )
+                })?;
+        } else if owner.receipt().predecessor_transaction_id().is_some()
+            || owner.receipt().predecessor_receipt_chain_sha256() != Digest32::zero()
+        {
+            return Err(DirectSnowStage3V11AttachmentError::Identity(
+                "V56 initial compound owner has foreign predecessor",
+            ));
+        }
+        let mut chronology = self.snow_enthalpy_material_owner_chronology.clone();
+        chronology.push(owner.clone());
+        let previous_owner = self.snow_enthalpy_material_owner.replace(owner);
+        let previous_chronology = std::mem::replace(
+            &mut self.snow_enthalpy_material_owner_chronology,
+            chronology,
+        );
+        if let Err(error) = self.validate_snow_enthalpy_material_resident_v1() {
+            self.snow_enthalpy_material_owner = previous_owner;
+            self.snow_enthalpy_material_owner_chronology = previous_chronology;
+            return Err(error);
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct SnowStage3V11SnowEnthalpyMaterialResidentV1 {
+    pub current_owner:
+        Option<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
+    pub accepted_owner_chronology:
+        Vec<crate::snow_stage3_v11_snow_enthalpy_carry::AuthenticatedCoveredSnowMaterialOwnerV1>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct SnowStage3V11SnowEnthalpyMaterialResidentSetV1 {
+    pub committed: SnowStage3V11SnowEnthalpyMaterialResidentV1,
+    pub pending_candidate: Option<SnowStage3V11SnowEnthalpyMaterialResidentV1>,
+    pub in_progress_day_candidate: Option<SnowStage3V11SnowEnthalpyMaterialResidentV1>,
+    pub in_progress_support_current: Option<SnowStage3V11SnowEnthalpyMaterialResidentV1>,
+}
+
+fn snow_enthalpy_material_resident_from_committed_v1(
+    state: &DirectSnowStage3V11CommittedState,
+) -> Result<SnowStage3V11SnowEnthalpyMaterialResidentV1, DirectSnowStage3V11AttachmentError> {
+    state.validate_snow_enthalpy_material_resident_v1()?;
+    Ok(SnowStage3V11SnowEnthalpyMaterialResidentV1 {
+        current_owner: state.snow_enthalpy_material_owner.clone(),
+        accepted_owner_chronology: state.snow_enthalpy_material_owner_chronology.clone(),
+    })
+}
+
+fn install_snow_enthalpy_material_resident_into_committed_v1(
+    state: &mut DirectSnowStage3V11CommittedState,
+    resident: SnowStage3V11SnowEnthalpyMaterialResidentV1,
+) -> Result<(), DirectSnowStage3V11AttachmentError> {
+    let previous_owner = std::mem::replace(
+        &mut state.snow_enthalpy_material_owner,
+        resident.current_owner,
+    );
+    let previous_chronology = std::mem::replace(
+        &mut state.snow_enthalpy_material_owner_chronology,
+        resident.accepted_owner_chronology,
+    );
+    if let Err(error) = state.validate_snow_enthalpy_material_resident_v1() {
+        state.snow_enthalpy_material_owner = previous_owner;
+        state.snow_enthalpy_material_owner_chronology = previous_chronology;
+        return Err(error);
+    }
+    Ok(())
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -2974,6 +2950,76 @@ include!("snow_stage3_v11_adaptive_execution.rs");
 
 include!("snow_stage3_v11_restart.rs");
 include!("snow_stage3_v11_terminal_execution.rs");
+#[cfg(test)]
+mod fixed_point_limiter_audit_tests {
+    use super::*;
+
+    #[test]
+    fn limiter_audit_is_explicit_thread_local_and_retains_a_bounded_tail() {
+        let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(60_000_000_000))
+            .expect("limiter audit support");
+        let _guard = begin_covered_fixed_point_iteration_audit_v1();
+        for iteration in 1..=(COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3) {
+            let delta = iteration as f64;
+            record_covered_fixed_point_limiter_sample_v1(CoveredFixedPointLimiterSampleV1 {
+                support,
+                iteration,
+                stage: CoveredFixedPointLimitStageV1::Picard,
+                lse_converged: false,
+                stage3_converged: false,
+                soil_converged: false,
+                boundary_converged: false,
+                lse_max_normalized_delta_bits: delta.to_bits(),
+                stage3_max_normalized_delta_bits: delta.to_bits(),
+                soil_enthalpy_max_normalized_delta_bits: delta.to_bits(),
+                soil_temperature_max_normalized_delta_bits: delta.to_bits(),
+                boundary_max_normalized_delta_bits: delta.to_bits(),
+            });
+        }
+
+        let audit = take_covered_fixed_point_limiter_audit_v1();
+        assert_eq!(
+            audit.total_sample_count,
+            (COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3) as u64
+        );
+        assert_eq!(audit.dropped_sample_count, 3);
+        assert_eq!(
+            audit.retained_tail.len(),
+            COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY
+        );
+        assert_eq!(
+            audit.retained_tail.first().map(|row| row.iteration),
+            Some(4)
+        );
+        assert_eq!(
+            audit.retained_tail.last().map(|row| row.iteration),
+            Some(COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3)
+        );
+        assert_eq!(
+            f64::from_bits(audit.peak_lse_normalized_delta_bits),
+            (COVERED_FIXED_POINT_LIMITER_AUDIT_CAPACITY + 3) as f64
+        );
+
+        record_covered_fixed_point_limiter_sample_v1(CoveredFixedPointLimiterSampleV1 {
+            support,
+            iteration: usize::MAX,
+            stage: CoveredFixedPointLimitStageV1::Picard,
+            lse_converged: true,
+            stage3_converged: true,
+            soil_converged: true,
+            boundary_converged: true,
+            lse_max_normalized_delta_bits: 0.0_f64.to_bits(),
+            stage3_max_normalized_delta_bits: 0.0_f64.to_bits(),
+            soil_enthalpy_max_normalized_delta_bits: 0.0_f64.to_bits(),
+            soil_temperature_max_normalized_delta_bits: 0.0_f64.to_bits(),
+            boundary_max_normalized_delta_bits: 0.0_f64.to_bits(),
+        });
+        assert_eq!(
+            take_covered_fixed_point_limiter_audit_v1().total_sample_count,
+            0
+        );
+    }
+}
 #[cfg(test)]
 include!("snow_stage3_v11_attachment_tests.rs");
 #[cfg(test)]

@@ -1058,7 +1058,7 @@ impl DirectV10RealConsumerShadow {
         let mut owners = self.canonical_owner_state_bytes()?;
         owners.insert(
             "land_surface_energy".to_owned(),
-            serde_json::to_vec(&self.inner.lse_state)?,
+            self.canonical_v11_lse_owner_bytes()?,
         );
         Ok(owners)
     }

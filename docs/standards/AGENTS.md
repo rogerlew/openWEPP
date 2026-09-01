@@ -11,6 +11,8 @@
 - Keep standards task-oriented, terse, and aligned with package/contract governance.
 
 ## Primary Assets / Key Files
+- `docs/standards/numerical-solver-architecture.md` — repository-wide
+  single-authority solver and anti-accretion rules.
 - `docs/standards/kernel-work-package-preparation.md` — required kernel work-package preparation procedure.
 - `docs/standards/prompt-wording-guidance.md` — required wording standard for kernel/science execution prompts.
 - `docs/standards/mechanical-refactor-authoring-guide.md` — mechanical refactor authoring and closure loop.
@@ -27,6 +29,10 @@
 5. Delegate gate frequency and lifecycle to the testing/gate strategy. Retain
    specialized correctness and evidence obligations in their owning standards.
 6. Use concrete path-scoped language and runnable checks; avoid broad inspirational prose.
+7. Any standard, package, prompt, or contract that changes a production
+   numerical solver must preserve the single-authority rules in
+   `numerical-solver-architecture.md`; do not encode a historical solver
+   fallback as a safety or compatibility mechanism.
 
 ## Prompt Wording Maintenance
 - Kernel/science kickoff prompts should start with an explicit local-repository scope sentence.

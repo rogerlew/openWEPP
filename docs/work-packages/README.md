@@ -1,5 +1,17 @@
 # Work Packages
 
+## 20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001
+
+Owner-directed replacement for the suspended workspace-gate solver work. It
+first establishes representative OFE-day and watershed-scale runtime budgets,
+profiles the actual Stage 3/native-vegetation/Lane D path, and derives
+physically justified convergence tolerances. It then replaces the accumulated
+v33--v57 production dispatch with one canonical solver per physical regime;
+older solver versions cannot remain as eligibility, convergence, or recovery
+fallbacks. Lane D per-OFE MOFE execution, the native RHESSys-derived vegetation
+and ET process model, non-CoE Stage 3 snow, and frozen-litter source authority
+are protected requirements. Status: `QUEUED — SCAFFOLDED — PRE-IMPLEMENTATION`.
+
 ## 20260830-frozen-forest-litter-phase-authority-001
 
 Queued contract-first successor required by the workspace gate hold-lift after
@@ -11,13 +23,13 @@ consumer proof, and independent closure. Status: `QUEUED — SCAFFOLDED`.
 
 ## 20260830-workspace-gate-hold-lift-001
 
-Active owner-authorized hold-lift for the mandatory warnings-denied workspace
+Suspended owner-authorized hold-lift for the mandatory warnings-denied workspace
 Clippy and complete full-workspace correctness failures blocking the Stage-3
-fixed-point optimization package. It performs exact baseline/current failure
-classification, narrow behavior-preserving corrections, exact-clean heavy
-reruns through delegated comparator runners, dual review, and dual
-verification. Test weakening and implicit baseline waivers are forbidden.
-Status: `ACTIVE — EXECUTION`.
+fixed-point optimization package. Canonical r151 reached the V56/V57
+temperature-primary path and failed after 5:09.55 without completing the
+one-day fixture. V56/V57 remain unresolved, no V58 is authorized, and the
+preserved worktree transfers only as intake evidence to the throughput-recovery
+package above. Status: `SUSPENDED — R151 DISPOSITIONED — NOT COMPLETE`.
 
 ## 20260830-snow-stage3-cold-content-fixed-point-optimization-001
 

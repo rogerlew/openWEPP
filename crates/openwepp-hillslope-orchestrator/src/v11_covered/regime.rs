@@ -18,7 +18,21 @@ impl<'a> DirectV11RealConsumerStack<'a> {
             #[cfg(test)]
             last_hydrology_candidate: None,
             ending_snow_owner_bytes: None,
+            deferred_native_v2_soil_custody: None,
         }
+    }
+
+    pub(crate) fn try_with_deferred_native_v2_soil_custody(
+        mut self,
+        custody: DeferredNativeV2SoilCustodyV1,
+    ) -> Result<Self, DirectV11RealConsumerError> {
+        let custody = DeferredNativeV2SoilCustodyV1::try_new(
+            &self.beginning,
+            custody.candidate().clone(),
+            custody.continuation().cloned(),
+        )?;
+        self.deferred_native_v2_soil_custody = Some(custody);
+        Ok(self)
     }
 
     #[must_use]

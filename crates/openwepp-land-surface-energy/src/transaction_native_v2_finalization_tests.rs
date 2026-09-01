@@ -23,6 +23,7 @@ mod native_v2_finalization_tests {
     fn identity() -> RuntimeTileIdentity {
         RuntimeTileIdentity {
             transaction_id: TransactionId(41),
+            soil_thermal_transaction_id: TransactionId(41),
             lse_owner_id: owner("lse"),
             hydrology_owner_id: owner("hydrology"),
             soil_thermal_owner_id: owner("soil-thermal"),
@@ -257,12 +258,96 @@ mod native_v2_finalization_tests {
     }
 
     #[test]
+    fn native_v2_finalization_separates_outer_and_second_child_soil_transactions() {
+        let mut first_child_accepted = migrated();
+        first_child_accepted.transaction_id = TransactionId(42);
+        first_child_accepted.expected_predecessor_transaction_id = Some(TransactionId(41));
+        first_child_accepted.state.last_accepted_transaction_id = Some(TransactionId(42));
+        for ofe in &mut first_child_accepted.state.ofes {
+            for layer in &mut ofe.ordered_layers {
+                layer.last_accepted_transaction_id = Some(TransactionId(42));
+            }
+        }
+        first_child_accepted
+            .state
+            .reseal()
+            .expect("first-child accepted state");
+        first_child_accepted
+            .validate()
+            .expect("first-child accepted owner");
+        let second_child = prepare_soil_thermal_support_v2(
+            &first_child_accepted,
+            TransactionId(43),
+            0,
+            1_800_000_000_000,
+        )
+        .expect("second-child support");
+
+        let mut split_identity = identity();
+        split_identity.transaction_id = TransactionId(42);
+        split_identity.soil_thermal_transaction_id = TransactionId(43);
+        split_identity.beginning_soil_thermal_state_sha256 =
+            first_child_accepted.state.state_sha256.clone();
+        let phase = solve_open_potential_phase(split_identity, &problem(), None)
+            .expect("outer-42/soil-43 potential");
+        assert_eq!(phase.identity.transaction_id, TransactionId(42));
+        assert_eq!(
+            phase.identity.soil_thermal_transaction_id,
+            TransactionId(43)
+        );
+        assert_eq!(phase.request_batch.transaction_id, TransactionId(42));
+        let candidate = finalize_open_phase_with_soil_thermal_beginning(
+            &phase,
+            &digest('b'),
+            &authorization(&phase),
+            None,
+            SoilThermalFinalizationBeginning::V2(second_child.physical_read_view()),
+        )
+        .expect("outer-42/soil-43 finalization");
+        assert!(matches!(
+            candidate.soil_thermal.beginning_identity,
+            SoilThermalCandidateBeginningIdentity::V2 {
+                transaction_id: TransactionId(43),
+                expected_predecessor_transaction_id: Some(TransactionId(42)),
+                ..
+            }
+        ));
+        build_soil_thermal_passthrough_candidate(
+            &phase.identity,
+            SoilThermalFinalizationBeginning::V2(second_child.physical_read_view()),
+        )
+        .expect("outer-42/soil-43 pass-through");
+
+        for poison in [TransactionId(42), TransactionId(44)] {
+            let mut poisoned = phase.clone();
+            poisoned.identity.soil_thermal_transaction_id = poison;
+            assert!(
+                finalize_open_phase_with_soil_thermal_beginning(
+                    &poisoned,
+                    &digest('b'),
+                    &authorization(&poisoned),
+                    None,
+                    SoilThermalFinalizationBeginning::V2(second_child.physical_read_view()),
+                )
+                .is_err(),
+                "stale or out-of-order soil transaction must fail closed"
+            );
+        }
+        let mut missing = phase.identity.clone();
+        missing.soil_thermal_transaction_id = TransactionId(0);
+        assert!(
+            solve_open_potential_phase(missing, &problem(), None).is_err(),
+            "missing soil transaction must fail before physics"
+        );
+    }
+
+    #[test]
     fn native_v2_finalization_rejects_stale_reordered_duplicate_and_physical_poison() {
         let owner = migrated();
 
         let mut stale_identity = identity();
         stale_identity.beginning_soil_thermal_state_sha256 = owner.state.state_sha256.clone();
-        stale_identity.transaction_id = TransactionId(42);
+        stale_identity.soil_thermal_transaction_id = TransactionId(42);
         let stale_phase =
             solve_open_potential_phase(stale_identity, &problem(), None).expect("stale potential");
         let prepared =

@@ -196,6 +196,64 @@ impl DirectSurfaceLiquidIngressCandidateV2 {
         self.parent_working_state.as_ref()
     }
 
+    /// Rebind only the frozen binary64 enthalpy high mirrors after V16 has
+    /// rounded the authoritative exact total once. Liquid arithmetic, mass,
+    /// ice, continuation, receipts, and WB14 progression remain byte-for-byte
+    /// the already accepted physical candidate.
+    pub(crate) fn with_exact_surface_enthalpy_high_owner(
+        &self,
+        configuration: &SurfaceLiquidConfigurationV2,
+        ending_owner: SurfaceLiquidOwnerEnvelopeV2,
+    ) -> Result<Self, DirectSurfaceLiquidError> {
+        ending_owner.canonical_bytes(configuration.parent(), Some(configuration))?;
+        let physical = self
+            .ending_owner
+            .v2_state()
+            .ok_or(DirectSurfaceLiquidError::Identity(
+                "V16 physical ending owner is not V2",
+            ))?;
+        let exact_high = ending_owner
+            .v2_state()
+            .ok_or(DirectSurfaceLiquidError::Identity(
+                "V16 exact-high ending owner is not V2",
+            ))?;
+        if physical.continuations() != exact_high.continuations()
+            || physical.records().len() != exact_high.records().len()
+            || physical
+                .records()
+                .iter()
+                .zip(exact_high.records())
+                .any(|(left, right)| {
+                    left.key != right.key
+                        || left.liquid_kg_m2_tile.to_bits() != right.liquid_kg_m2_tile.to_bits()
+                        || left.litter_ice_kg_m2_tile.to_bits()
+                            != right.litter_ice_kg_m2_tile.to_bits()
+                        || left.last_accepted_transaction_id != right.last_accepted_transaction_id
+                })
+        {
+            return Err(DirectSurfaceLiquidError::Identity(
+                "V16 high-only ending-owner replacement",
+            ));
+        }
+        let parent_working_state = self
+            .parent_working_state
+            .as_ref()
+            .map(|parent| {
+                let mut adjusted = parent.clone();
+                adjusted.candidate_owner.clone_from(&ending_owner);
+                adjusted.validate(configuration)?;
+                Ok(adjusted)
+            })
+            .transpose()?;
+        Ok(Self {
+            beginning_owner: self.beginning_owner.clone(),
+            phase_adjusted_owner: self.phase_adjusted_owner.clone(),
+            ending_owner,
+            inner: self.inner.clone(),
+            parent_working_state,
+        })
+    }
+
     pub(crate) fn validate(
         &self,
         configuration: &SurfaceLiquidConfigurationV2,

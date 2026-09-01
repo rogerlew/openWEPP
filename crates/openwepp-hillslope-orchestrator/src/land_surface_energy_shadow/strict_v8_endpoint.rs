@@ -9,8 +9,9 @@ use std::{
 use openwepp_biogeochemistry::BiogeochemistryState;
 use openwepp_kernel_contract::ResourceOwnerId;
 use openwepp_land_surface_energy::{
-    GroundWaterKey, LandSurfaceEnergyConfiguration, LandSurfaceEnergyState, LandSurfaceForcing,
-    LiquidParcel, Sha256Digest, SoilThermalSnapshot, Stage3SnowCoveredLowerBoundary,
+    GroundWaterKey, LandSurfaceEnergyConfiguration, LandSurfaceEnergyState,
+    LandSurfaceEnergyV3State, LandSurfaceForcing, LiquidParcel, Sha256Digest, SoilThermalSnapshot,
+    Stage3SnowCoveredLowerBoundary,
 };
 use openwepp_vegetation::{
     NitrogenArbiter, V8CoupledOwnedState, V8PersistentForcingReceipt, VegetationConfiguration,
@@ -21,6 +22,7 @@ use thiserror::Error;
 use crate::{
     DirectGroundIngressMode, DirectIngressAmount, DirectOfeWb14Parameters,
     DirectOpenLiquidIngressParcel, DirectSurfaceLiquidParcelKind, DirectTileGroundIngress,
+    SurfaceLiquidConfigurationV2, SurfaceLiquidOwnerEnvelopeV2,
 };
 
 use super::covered_v8_owner::{
@@ -31,6 +33,11 @@ use super::multi_tile_runtime::{
     MultiTileFailurePhase, MultiTileRuntimeResult, PendingPayloadKind, StrictProjectedCoveredTile,
     StrictProjectedOpenTile, StrictProjectedStage3OpenSnowTile, StrictProjectedTileProblem,
     execute_multi_tile_runtime, execute_multi_tile_runtime_provisional,
+};
+use super::v3_multitile_adoption::{
+    V3MultiTileAcceptedFixedFinalCandidate, authorize_v3_multitile_potential,
+    finalize_v3_multitile_fixed_final, prepare_v3_multitile_potential,
+    project_native_frozen_litter_v3_solver_inputs,
 };
 use super::v8_input_projection::{
     V8SoilThermalPhysicalBeginning, V8SolverReadyTilePhysics,
@@ -556,6 +563,153 @@ pub(crate) fn execute_v8_lse_runtime_shadow_v11_physical_with_carriers(
     .and_then(V8EndpointEvaluationResultV1::into_physical)
 }
 
+/// Execute the native frozen-litter V3 potential/authorization/fixed-final
+/// path and stop before phase installation, current ingress, WB14, or any
+/// owner mutation. Forest-litter rows have no legacy solve branch here.
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+pub(crate) fn execute_frozen_litter_v3_fixed_final_pre_ingress(
+    vegetation_configuration: &VegetationConfiguration,
+    vegetation_beginning: &V8CoupledOwnedState,
+    vegetation_owner_id: &ResourceOwnerId,
+    canopy_forcing: &V8CanopyForcingReceipt,
+    structural_lse_configuration: &LandSurfaceEnergyConfiguration,
+    structural_lse_beginning: &openwepp_land_surface_energy::LandSurfaceEnergyState,
+    lse_configuration: &LandSurfaceEnergyConfiguration,
+    lse_beginning: &LandSurfaceEnergyV3State,
+    lse_forcing: &LandSurfaceForcing,
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &SurfaceLiquidConfigurationV2,
+    surface_beginning: &SurfaceLiquidOwnerEnvelopeV2,
+    day_index: usize,
+    interval_index: u8,
+    wb14_parameters: &[DirectOfeWb14Parameters],
+    soil_thermal: &V8SoilThermalPhysicalBeginning,
+    biogeochemistry_beginning: &BiogeochemistryState,
+    authority: openwepp_land_surface_energy::CoveredColumnAuthority,
+    covered_lower_boundaries: Option<
+        &BTreeMap<
+            (
+                openwepp_land_surface_energy::OfeId,
+                openwepp_kernel_contract::TileId,
+            ),
+            Stage3SnowCoveredLowerBoundary,
+        >,
+    >,
+    duration_s_bits: u64,
+    covered_destinations: Option<
+        &BTreeSet<(
+            openwepp_land_surface_energy::OfeId,
+            openwepp_kernel_contract::TileId,
+        )>,
+    >,
+    finalize_wb14_parent_interval: bool,
+    wb14_parent_working_state: Option<&crate::direct_runtime::DirectWb14ParentWorkingState>,
+    wb14_coupled_child_binding: Option<crate::direct_runtime::DirectWb14CoupledChildBindingV1>,
+) -> Result<V3MultiTileAcceptedFixedFinalCandidate, ExecuteV8LseRuntimeShadowError> {
+    let projected = project_v8_runtime_inputs_with_carriers(
+        vegetation_configuration,
+        vegetation_beginning,
+        vegetation_owner_id,
+        &ResourceOwnerId::try_new("biogeochemistry")
+            .map_err(|_| ExecuteV8LseRuntimeShadowError::Identity("BGC owner identity"))?,
+        &Sha256Digest::try_new(format!(
+            "{:x}",
+            Sha256::digest(
+                serde_json::to_vec(biogeochemistry_beginning)
+                    .map_err(|_| ExecuteV8LseRuntimeShadowError::Identity("BGC state bytes"))?
+            )
+        ))
+        .map_err(|_| ExecuteV8LseRuntimeShadowError::Identity("BGC state digest"))?,
+        canopy_forcing,
+        structural_lse_configuration,
+        structural_lse_beginning,
+        lse_forcing,
+        soil_adapter,
+        surface_configuration.parent(),
+        soil_thermal,
+        day_index,
+        interval_index,
+        Some(duration_s_bits),
+        wb14_coupled_child_binding,
+        covered_lower_boundaries,
+        covered_destinations,
+    )?;
+    let stage3_snow_destinations = covered_lower_boundaries
+        .map_or_else(BTreeSet::new, |values| values.keys().cloned().collect());
+    let ingress_schedule = derive_ingress_schedule(
+        lse_forcing,
+        surface_configuration.parent(),
+        &stage3_snow_destinations,
+        day_index,
+        interval_index,
+        wb14_parameters,
+        finalize_wb14_parent_interval,
+        wb14_parent_working_state,
+        wb14_coupled_child_binding,
+    )?;
+    let solver_inputs = project_native_frozen_litter_v3_solver_inputs(
+        &projected,
+        vegetation_owner_id,
+        authority,
+        covered_lower_boundaries,
+        lse_configuration,
+        lse_beginning,
+        surface_configuration,
+        surface_beginning,
+    )?;
+    let receiver_expectations = receiver_expectations_v3(
+        lse_configuration,
+        lse_beginning,
+        &projected.hydrology_snapshot_sha256,
+        soil_thermal,
+    )?;
+    let potential =
+        prepare_v3_multitile_potential(surface_configuration.parent(), solver_inputs.tiles)?;
+    let (authorizations, phase_authorizations, soil_arbitration) =
+        authorize_v3_multitile_potential(
+            &potential,
+            soil_adapter,
+            &solver_inputs.soil_sources,
+            surface_configuration,
+            surface_beginning,
+        )?;
+    let configured_root_layers = vegetation_configuration
+        .strata
+        .iter()
+        .flat_map(|stratum| stratum.root_layers.iter().map(|root| root.layer_id.clone()))
+        .collect::<BTreeSet<_>>();
+    let persistent_forcing = V8PersistentForcingReceipt {
+        model_definition_sha256: vegetation_beginning.model_definition_sha256.clone(),
+        configuration_sha256: vegetation_configuration.configuration_sha256.clone(),
+        transaction_id: lse_forcing.transaction_id,
+        vegetation_beginning_state_sha256: vegetation_beginning.state_sha256.clone(),
+        air_temperature_k: canopy_forcing.forcing().air_temperature_k,
+        gsi: canopy_forcing.forcing().gsi,
+        soil_temperature_k_by_layer: canopy_forcing
+            .forcing()
+            .soil_layers
+            .iter()
+            .filter(|layer| configured_root_layers.contains(&layer.layer_id))
+            .map(|layer| (layer.layer_id.clone(), layer.temperature_k))
+            .collect(),
+    };
+    Ok(finalize_v3_multitile_fixed_final(
+        surface_configuration.parent(),
+        potential,
+        &lse_beginning.0.state_sha256,
+        authorizations,
+        phase_authorizations,
+        soil_arbitration,
+        receiver_expectations,
+        solver_inputs.soil_sources,
+        solver_inputs.vegetation_bindings,
+        vegetation_configuration.clone(),
+        vegetation_beginning.clone(),
+        persistent_forcing,
+        &ingress_schedule,
+    )?)
+}
+
 fn injection_requires_actual_pending_payload(
     injection: Option<V8EndpointFailureInjection>,
 ) -> bool {
@@ -672,6 +826,7 @@ fn execute_v8_lse_runtime_shadow_phases(
         day_index,
         interval_index,
         duration_s_bits,
+        wb14_coupled_child_binding,
         covered_lower_boundaries,
         covered_destinations,
     )?;
@@ -1138,6 +1293,44 @@ fn receiver_expectations(
     UnifiedReceiverExpectations::try_new(
         configuration.owner_id.clone(),
         beginning.state_sha256.clone(),
+        configuration.hydrology_configuration.owner_id.clone(),
+        hydrology_snapshot_sha256.clone(),
+        configuration.soil_thermal_configuration.owner_id.clone(),
+        soil_thermal.state_sha256().clone(),
+        ordered_layers,
+    )
+}
+
+fn receiver_expectations_v3(
+    configuration: &LandSurfaceEnergyConfiguration,
+    beginning: &LandSurfaceEnergyV3State,
+    hydrology_snapshot_sha256: &openwepp_land_surface_energy::Sha256Digest,
+    soil_thermal: &V8SoilThermalPhysicalBeginning,
+) -> Result<UnifiedReceiverExpectations, LandSurfaceEnergyShadowError> {
+    let thermal_ofes = soil_thermal.ordered_ofes();
+    let mut ordered_layers = Vec::new();
+    for ofe in &configuration.ofes {
+        let thermal = thermal_ofes
+            .iter()
+            .find(|value| value.ofe_id == ofe.ofe_id)
+            .ok_or(LandSurfaceEnergyShadowError::Identity(
+                "missing V3 receiver soil-thermal OFE",
+            ))?;
+        for tile in &ofe.tiles {
+            ordered_layers.push((
+                ofe.ofe_id.clone(),
+                tile.tile_id.clone(),
+                thermal
+                    .ordered_layers
+                    .iter()
+                    .map(|layer| layer.layer_id.clone())
+                    .collect(),
+            ));
+        }
+    }
+    UnifiedReceiverExpectations::try_new(
+        configuration.owner_id.clone(),
+        beginning.0.state_sha256.clone(),
         configuration.hydrology_configuration.owner_id.clone(),
         hydrology_snapshot_sha256.clone(),
         configuration.soil_thermal_configuration.owner_id.clone(),

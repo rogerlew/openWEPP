@@ -90,7 +90,7 @@ where
         requests: request_batch.requests.clone(),
         authorizations,
         soil,
-        surface,
+        surface: Some(surface),
     };
     let finalized = finalize_fixed_caps(&arbitration.authorizations).map_err(|error| {
         unified_entry_preflight::canonicalize_callback_failure(
@@ -584,9 +584,16 @@ fn construct_unified_candidate(
         soil_adapter.candidate_from_finalized_uses(&arbitration.soil, &soil_uses)?;
     profile_record("candidate soil", soil_started);
     let surface_resource_started = profile_start();
+    let surface_arbitration =
+        arbitration
+            .surface
+            .as_ref()
+            .ok_or(LandSurfaceEnergyShadowError::Identity(
+                "missing legacy surface arbitration",
+            ))?;
     let surface_resource = apply_surface_liquid_resource_phase(
         surface_configuration,
-        &arbitration.surface,
+        surface_arbitration,
         &surface_uses,
         &water_protocol.condensation_credits,
     )?;
@@ -617,6 +624,7 @@ fn construct_unified_candidate(
         &mut soil_thermal_candidates,
         &rollback_hashes,
         &water_protocol.beginning_snapshot_sha256,
+        false,
     )?;
     profile_record("candidate receivers", receivers_started);
     let validation_started = profile_start();
@@ -642,6 +650,147 @@ fn construct_unified_candidate(
     Ok(candidate)
 }
 
+/// Join an already accepted native frozen-litter V3 transaction to the
+/// production soil and receiver owners without re-running either surface
+/// authorization, the covered solver, phase physics, or WB14. The V1-shaped
+/// surface values retained here are arithmetic carriers from the accepted V2
+/// owner transaction; they are never published as an owner downgrade.
+#[allow(clippy::too_many_lines)]
+pub(crate) fn construct_v3_unified_hydrology_candidate(
+    soil_adapter: &LandSurfaceEnergyRealHydrologyAdapter<'_>,
+    surface_configuration: &DirectSurfaceLiquidConfiguration,
+    fixed: &v3_multitile_adoption::V3MultiTileAcceptedFixedFinalCandidate,
+    accepted: &v3_execution::AcceptedFrozenLitterV3RuntimeCandidate,
+    exact_surface_custody: bool,
+) -> Result<UnifiedRealHydrologyCandidate, LandSurfaceEnergyShadowError> {
+    let request_batch = PotentialWaterRequestBatch::try_new(
+        fixed.water_protocol.transaction_id,
+        fixed
+            .receiver_expectations
+            .beginning_lse_state_sha256
+            .clone(),
+        fixed.water_protocol.requests.clone(),
+    )?;
+    let arbitration = UnifiedRealHydrologyArbitration {
+        transaction_id: fixed.water_protocol.transaction_id,
+        requests: fixed.water_protocol.requests.clone(),
+        authorizations: fixed.water_protocol.authorizations.clone(),
+        soil: fixed.soil_arbitration.clone(),
+        surface: None,
+    };
+    validate_final_protocol(
+        &fixed.water_protocol,
+        &arbitration,
+        &fixed
+            .receiver_expectations
+            .beginning_hydrology_snapshot_sha256,
+        &surface_configuration.owner_id,
+    )?;
+    let finalized = fixed.unified_finalization(&accepted.ending_lse_state)?;
+    let UnifiedLseFinalization {
+        water_protocol,
+        mut ending_tile_states_pre_ingress,
+        mut soil_thermal_candidates,
+        rollback_hashes,
+    } = finalized;
+    let (soil_uses, surface_uses) =
+        partition_finalized_uses(&arbitration, &water_protocol.finalized_uses)?;
+
+    // Every surface row on this seam must be the exact aggregate view of one
+    // named frozen-litter phase receipt. Ordinary surface-liquid rows require
+    // their own V2 application and therefore fail closed here.
+    let mut matched_phase_keys = BTreeSet::new();
+    for receipt in &accepted.litter_phase_receipts {
+        let fixed_tile = fixed
+            .frozen_litter_tiles
+            .iter()
+            .find(|tile| {
+                tile.fixed_final.identity.ofe_id == receipt.identity.ofe_id
+                    && tile.fixed_final.identity.tile_id == receipt.identity.tile_id
+            })
+            .ok_or(LandSurfaceEnergyShadowError::Identity(
+                "V3 phase receipt/fixed-final tile",
+            ))?;
+        let row = surface_uses
+            .iter()
+            .find(|row| {
+                row.key.ofe_id == receipt.identity.ofe_id
+                    && row.key.requesting_tile_id == receipt.identity.tile_id
+                    && row.key.source_type == WaterSourceType::LitterLiquid
+            })
+            .ok_or(LandSurfaceEnergyShadowError::UnsupportedCustody(
+                "V3 phase receipt has no exact litter finalized use",
+            ))?;
+        let expected = openwepp_land_surface_energy::V3PhaseSpecificVaporAuthorization {
+            liquid_outbound_rate_kg_m2_s: receipt
+                .vapor
+                .finalized
+                .liquid_signed_rate_kg_m2_s
+                .max(0.0),
+            ice_outbound_rate_kg_m2_s: receipt.vapor.finalized.ice_signed_rate_kg_m2_s.max(0.0),
+        }
+        .aggregate_outbound_kg_m2_stand_ground(
+            fixed_tile.fixed_final.identity.tile_fraction,
+            f64::from_bits(receipt.identity.support_duration_seconds_bits),
+        )?;
+        if row.amount_kg_m2_stand_ground.to_bits() != expected.to_bits() {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "V3 phase receipt/finalized use amount",
+            ));
+        }
+        matched_phase_keys.insert(row.key.clone());
+    }
+    if surface_uses.iter().any(|row| {
+        !matched_phase_keys.contains(&row.key)
+            && row.amount_kg_m2_stand_ground.to_bits() != 0.0_f64.to_bits()
+    }) {
+        return Err(LandSurfaceEnergyShadowError::UnsupportedCustody(
+            "V3 finalized uses include a nonzero ordinary surface row",
+        ));
+    }
+
+    let soil_candidate =
+        soil_adapter.candidate_from_finalized_uses(&arbitration.soil, &soil_uses)?;
+    let surface_resource = accepted.surface_resource.liquid_arithmetic().clone();
+    let surface_ingress = accepted.ingress.inner().clone();
+    let mut ending_frame = soil_candidate.ending_frame().clone();
+    let pre_ingress_soil_thermal_candidates = soil_thermal_candidates.clone();
+    let pre_ingress_soil_thermal_sha256 =
+        finalization_receiver_sets_sha256(&[], &pre_ingress_soil_thermal_candidates, &[]);
+    let receiver_closure_operands = apply_ingress_to_real_receivers(
+        soil_adapter.owner,
+        surface_configuration,
+        &fixed.receiver_expectations,
+        &request_batch,
+        &surface_ingress,
+        &mut ending_frame,
+        &mut ending_tile_states_pre_ingress,
+        &mut soil_thermal_candidates,
+        &rollback_hashes,
+        &water_protocol.beginning_snapshot_sha256,
+        exact_surface_custody,
+    )?;
+    ending_frame.surface_liquid_shadow = Some(Box::new(surface_ingress.ending_state().clone()));
+    let candidate = UnifiedRealHydrologyCandidate {
+        transaction_id: arbitration.transaction_id,
+        beginning_frame: soil_candidate.beginning_frame().clone(),
+        ending_frame,
+        arbitration,
+        finalized_uses: water_protocol.finalized_uses,
+        condensation_credits: water_protocol.condensation_credits,
+        surface_resource,
+        surface_ingress,
+        ending_lse_tile_states: ending_tile_states_pre_ingress,
+        pre_ingress_soil_thermal_candidates,
+        pre_ingress_soil_thermal_sha256,
+        soil_thermal_candidates,
+        receiver_closure_operands,
+        rollback_hashes,
+    };
+    candidate.validate(surface_configuration)?;
+    Ok(candidate)
+}
+
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn apply_ingress_to_real_receivers(
     owner: &RealHydrologyShadowAdapter,
@@ -654,6 +803,7 @@ fn apply_ingress_to_real_receivers(
     soil_thermal: &mut [SoilThermalTileCandidate],
     rollback_hashes: &[OwnerRollbackHash],
     beginning_hydrology_snapshot_sha256: &Sha256Digest,
+    exact_surface_custody: bool,
 ) -> Result<RealReceiverClosureOperands, LandSurfaceEnergyShadowError> {
     validate_surface_production_binding(owner, configuration)?;
     let receiver_attempt_sha256 =
@@ -773,7 +923,13 @@ fn apply_ingress_to_real_receivers(
         }
     }
     for (store_key, receipts) in retained_by_store {
-        credit_retained_receipt_group(&failure_scope, &store_key, &receipts, lse_tiles)?;
+        credit_retained_receipt_group(
+            &failure_scope,
+            &store_key,
+            &receipts,
+            lse_tiles,
+            exact_surface_custody,
+        )?;
     }
     apply_production_infiltration(owner, &failure_scope, ending_frame, infiltration_m_by_lane)?;
     let operands = freeze_real_receiver_closure_operands(
@@ -1362,8 +1518,9 @@ fn credit_retained_receipt_group(
     store_key: &DirectSurfaceLiquidStoreKey,
     receipts: &[&DirectSurfaceLiquidParcelReceipt],
     lse_tiles: &mut [TileState],
+    exact_surface_custody: bool,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
-    let representative = receipts.first().copied().ok_or_else(|| {
+    let representative = receipts.first().copied().ok_or({
         LandSurfaceEnergyShadowError::Identity("empty retained surface receipt group")
     })?;
     if receipts.iter().any(|receipt| {
@@ -1428,17 +1585,37 @@ fn credit_retained_receipt_group(
                 "retained enthalpy OFE-to-tile arithmetic",
             )
         })?;
-    tile.surface_enthalpy_j_m2_tile_ground =
-        checked_receiver_credit_add(tile.surface_enthalpy_j_m2_tile_ground, retained_tile)
-            .ok_or_else(|| {
-                scope.failure(
-                    DirectSurfaceLiquidErrorCode::E003,
-                    &scope.expectations.lse_owner_id,
-                    representative,
-                    "retained surface enthalpy arithmetic",
-                )
-            })?;
+    // This is a frozen binary64 high mirror only when the caller is the V16
+    // path that already carries and has validated the authoritative exact
+    // owner. Legacy and V3-only candidates retain their historical fail-closed
+    // refusal when a nonzero credit would disappear below high-term spacing.
+    let beginning = tile.surface_enthalpy_j_m2_tile_ground;
+    tile.surface_enthalpy_j_m2_tile_ground = checked_retained_surface_high_add(
+        beginning,
+        retained_tile,
+        exact_surface_custody,
+    )
+    .ok_or_else(|| {
+        scope.failure(
+            DirectSurfaceLiquidErrorCode::E003,
+            &scope.expectations.lse_owner_id,
+            representative,
+            "retained surface enthalpy arithmetic",
+        )
+    })?;
     Ok(())
+}
+
+fn checked_retained_surface_high_add(
+    beginning: f64,
+    credit: f64,
+    exact_surface_custody: bool,
+) -> Option<f64> {
+    if exact_surface_custody {
+        checked_surface_liquid_add(beginning, credit)
+    } else {
+        checked_receiver_credit_add(beginning, credit)
+    }
 }
 
 fn checked_receiver_credit_add(beginning: f64, credit: f64) -> Option<f64> {
@@ -1446,10 +1623,240 @@ fn checked_receiver_credit_add(beginning: f64, credit: f64) -> Option<f64> {
     (credit == 0.0 || ending.to_bits() != beginning.to_bits()).then_some(ending)
 }
 
+#[cfg(test)]
+mod v16_retained_surface_high_custody_tests {
+    use super::checked_retained_surface_high_add;
+
+    #[test]
+    fn sub_ulp_retained_credit_requires_exact_v4_custody() {
+        let beginning = 2.0_f64.powi(100);
+        for credit in [1.0, -1.0] {
+            assert!(
+                checked_retained_surface_high_add(beginning, credit, false).is_none(),
+                "legacy and V3-only callers must refuse a lost retained credit",
+            );
+            let ending = checked_retained_surface_high_add(beginning, credit, true)
+                .expect("V4 exact custody admits an unchanged high mirror");
+            assert_eq!(ending.to_bits(), beginning.to_bits());
+        }
+    }
+}
+
+/// Exact V16 custody operand produced after the existing accepted binary64
+/// OFE-to-tile retained-ingress conversion.  The physical parcel partition and
+/// basis conversion remain owned by the surface-liquid transaction; the
+/// exact-surface owner decodes only `energy_j_m2_tile_ground`.
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct RetainedSurfaceTileCreditV1 {
+    pub store_key: DirectSurfaceLiquidStoreKey,
+    pub source_receipt_sha256: Sha256Digest,
+    pub ordinal: u32,
+    pub energy_j_m2_ofe_ground: f64,
+    pub tile_fraction: f64,
+    pub energy_j_m2_tile_ground: f64,
+}
+
+/// Reconstruct the named accepted retained-ingress tile credits without
+/// reading the mutated high mirror or a producer residual.
+/// Replay the retained tile-credit groups directly from the canonical nested
+/// ingress receipts. V4 projection/restart validation uses this path so source
+/// identities are checked independently of the exact receipt's operand copy.
+pub(crate) fn retained_surface_tile_credits_from_receipts_v1(
+    configuration: &crate::direct_runtime::SurfaceLiquidConfigurationV2,
+    transaction_id: TransactionId,
+    receipts: &[DirectSurfaceLiquidParcelReceipt],
+) -> Result<Vec<RetainedSurfaceTileCreditV1>, LandSurfaceEnergyShadowError> {
+    let mut grouped =
+        BTreeMap::<DirectSurfaceLiquidStoreKey, Vec<&DirectSurfaceLiquidParcelReceipt>>::new();
+    for receipt in receipts {
+        if receipt.disposition != DirectSurfaceLiquidReceiptDisposition::RetainedSurface {
+            continue;
+        }
+        let DirectSurfaceLiquidReceiptRecipient::SurfaceStore { store_key } = &receipt.recipient
+        else {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "V16 retained receipt typed recipient",
+            ));
+        };
+        if receipt.transaction_id != transaction_id
+            || receipt.recipient_store_key != *store_key
+            || receipt.basis_ofe_id != store_key.ofe_id
+            || !receipt.enthalpy_j_m2_basis_ofe_ground.is_finite()
+        {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "V16 retained receipt identity or domain",
+            ));
+        }
+        grouped.entry(store_key.clone()).or_default().push(receipt);
+    }
+
+    let mut credits = Vec::with_capacity(grouped.len());
+    for (ordinal, (store_key, mut receipts)) in grouped.into_iter().enumerate() {
+        receipts.sort_unstable_by(|left, right| {
+            (&left.parcel_id, &left.source_parcel_id)
+                .cmp(&(&right.parcel_id, &right.source_parcel_id))
+        });
+        if receipts
+            .windows(2)
+            .any(|rows| rows[0].parcel_id == rows[1].parcel_id)
+        {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "V16 duplicate retained receipt identity",
+            ));
+        }
+        let record = configuration
+            .parent()
+            .records
+            .iter()
+            .find(|record| record.key == store_key)
+            .ok_or(LandSurfaceEnergyShadowError::Identity(
+                "V16 retained receipt configured surface",
+            ))?;
+        let energy_j_m2_ofe_ground = checked_surface_liquid_sum(
+            receipts
+                .iter()
+                .map(|receipt| receipt.enthalpy_j_m2_basis_ofe_ground),
+        )
+        .ok_or(LandSurfaceEnergyShadowError::Bound(
+            "V16 retained receipt OFE-ground sum",
+        ))?;
+        let energy_j_m2_tile_ground =
+            checked_surface_liquid_div(energy_j_m2_ofe_ground, record.tile_fraction).ok_or(
+                LandSurfaceEnergyShadowError::Bound(
+                    "V16 retained receipt accepted OFE-to-tile conversion",
+                ),
+            )?;
+        let source_receipt_sha256 = v2_physical_operand_digest(&receipts)?;
+        credits.push(RetainedSurfaceTileCreditV1 {
+            store_key,
+            source_receipt_sha256,
+            ordinal: u32::try_from(ordinal).map_err(|_| {
+                LandSurfaceEnergyShadowError::Bound("V16 retained receipt ordinal overflow")
+            })?,
+            energy_j_m2_ofe_ground,
+            tile_fraction: record.tile_fraction,
+            energy_j_m2_tile_ground,
+        });
+    }
+    Ok(credits)
+}
+
 /// Reconstruct canonical V2 soil-energy operands from accepted LSE storage
 /// deltas and typed infiltration receipts before a soil credit exists.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct PhysicalSoilEnergyTransactionAuthorityV2 {
+    pub(crate) source_transaction_id: TransactionId,
+    pub(crate) soil_thermal_transaction_id: TransactionId,
+    beginning_posture: PhysicalSoilEnergyBeginningPostureV2,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum PhysicalSoilEnergyBeginningPostureV2 {
+    LegacyV1,
+    NativeV2,
+}
+
+impl PhysicalSoilEnergyTransactionAuthorityV2 {
+    pub fn try_new(
+        source_transaction_id: TransactionId,
+        soil_thermal_transaction_id: TransactionId,
+    ) -> Result<Self, LandSurfaceEnergyShadowError> {
+        if source_transaction_id.0 == 0 || soil_thermal_transaction_id.0 == 0 {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "V2 soil transaction authority",
+            ));
+        }
+        Ok(Self {
+            source_transaction_id,
+            soil_thermal_transaction_id,
+            beginning_posture: PhysicalSoilEnergyBeginningPostureV2::NativeV2,
+        })
+    }
+
+    pub fn try_from_pre_ingress_candidates(
+        source_transaction_id: TransactionId,
+        support_start_ns: u128,
+        support_end_ns: u128,
+        candidates: &[SoilThermalTileCandidate],
+    ) -> Result<Self, LandSurfaceEnergyShadowError> {
+        let first = candidates
+            .first()
+            .ok_or(LandSurfaceEnergyShadowError::Identity(
+                "soil target transaction authority",
+            ))?;
+        let authority = match &first.beginning_identity {
+                openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V2 {
+                    transaction_id,
+                    ..
+                } => Self::try_new(source_transaction_id, *transaction_id)?,
+                openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V1 {
+                    ..
+                } => Self {
+                    source_transaction_id,
+                    soil_thermal_transaction_id: source_transaction_id,
+                    beginning_posture: PhysicalSoilEnergyBeginningPostureV2::LegacyV1,
+                },
+            };
+        if source_transaction_id.0 == 0 {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "soil transaction authority",
+            ));
+        }
+        authority.validate_pre_ingress_candidates(
+            support_start_ns,
+            support_end_ns,
+            candidates,
+        )?;
+        Ok(authority)
+    }
+
+    fn validate_pre_ingress_candidates(
+        self,
+        support_start_ns: u128,
+        support_end_ns: u128,
+        candidates: &[SoilThermalTileCandidate],
+    ) -> Result<(), LandSurfaceEnergyShadowError> {
+        let first = candidates
+            .first()
+            .ok_or(LandSurfaceEnergyShadowError::Identity(
+                "V2 soil target transaction or support",
+            ))?;
+        if candidates.iter().any(|candidate| {
+                candidate.owner_id != first.owner_id
+                    || candidate.beginning_state_sha256 != first.beginning_state_sha256
+                    || candidate.beginning_identity != first.beginning_identity
+                    || match self.beginning_posture {
+                        PhysicalSoilEnergyBeginningPostureV2::LegacyV1 => {
+                            self.source_transaction_id != self.soil_thermal_transaction_id
+                                || !matches!(
+                                    &candidate.beginning_identity,
+                                    openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V1 { .. }
+                                )
+                        }
+                        PhysicalSoilEnergyBeginningPostureV2::NativeV2 => !matches!(
+                            &candidate.beginning_identity,
+                            openwepp_land_surface_energy::SoilThermalCandidateBeginningIdentity::V2 {
+                                transaction_id,
+                                support_start_ns: candidate_start_ns,
+                                support_end_ns: candidate_end_ns,
+                                ..
+                            } if *transaction_id == self.soil_thermal_transaction_id
+                                && *candidate_start_ns == support_start_ns
+                                && *candidate_end_ns == support_end_ns
+                        ),
+                    }
+            })
+        {
+            return Err(LandSurfaceEnergyShadowError::Identity(
+                "V2 soil target transaction or support",
+            ));
+        }
+        Ok(())
+    }
+}
+
 pub fn physical_soil_energy_operands_v2(
-    transaction_id: TransactionId,
+    authority: PhysicalSoilEnergyTransactionAuthorityV2,
     support_start_ns: u128,
     support_end_ns: u128,
     lse_owner_id: &ResourceOwnerId,
@@ -1457,17 +1864,27 @@ pub fn physical_soil_energy_operands_v2(
     pre_ingress_candidates: &[SoilThermalTileCandidate],
     ingress: &DirectSurfaceLiquidIngressCandidate,
 ) -> Result<Vec<SoilThermalEnergyOperandV2>, LandSurfaceEnergyShadowError> {
-    if transaction_id.0 == 0
-        || ingress.transaction_id() != transaction_id
+    if authority.source_transaction_id.0 == 0
+        || authority.soil_thermal_transaction_id.0 == 0
+        || ingress.transaction_id() != authority.source_transaction_id
+        || ingress
+            .receipts()
+            .iter()
+            .any(|receipt| receipt.transaction_id != authority.source_transaction_id)
         || support_start_ns >= support_end_ns
     {
         return Err(LandSurfaceEnergyShadowError::Identity(
             "V2 soil support identity",
         ));
     }
+    authority.validate_pre_ingress_candidates(
+        support_start_ns,
+        support_end_ns,
+        pre_ingress_candidates,
+    )?;
     let mut operands = Vec::new();
     append_v2_soil_internal_operands(
-        transaction_id,
+        authority,
         support_start_ns,
         support_end_ns,
         lse_owner_id,
@@ -1475,7 +1892,7 @@ pub fn physical_soil_energy_operands_v2(
         &mut operands,
     )?;
     append_v2_infiltration_operands(
-        transaction_id,
+        authority,
         support_start_ns,
         support_end_ns,
         surface_owner_id,
@@ -1494,7 +1911,7 @@ pub fn physical_soil_energy_operands_v2(
 }
 
 fn append_v2_soil_internal_operands(
-    transaction_id: TransactionId,
+    authority: PhysicalSoilEnergyTransactionAuthorityV2,
     support_start_ns: u128,
     support_end_ns: u128,
     lse_owner_id: &ResourceOwnerId,
@@ -1528,22 +1945,48 @@ fn append_v2_soil_internal_operands(
                 &candidate.ofe_id,
                 &layer.layer_id,
             )?;
-            let digest = v2_physical_operand_digest(&(
-                "OPENWEPP_ACCEPTED_SOIL_INTERNAL_ENERGY_V2",
-                transaction_id,
-                support_start_ns,
-                support_end_ns,
-                lse_owner_id,
-                &candidate.owner_id,
-                &candidate.beginning_state_sha256,
-                &candidate.ofe_id,
-                &candidate.tile_id,
-                &layer.layer_id,
-                ordinal,
-                layer.beginning_enthalpy_j_m2_ofe_ground,
-                layer.ending_enthalpy_j_m2_ofe_ground,
-                energy,
-            ))?;
+            let digest = match authority.beginning_posture {
+                PhysicalSoilEnergyBeginningPostureV2::LegacyV1 => {
+                    v2_physical_operand_digest(&(
+                        "OPENWEPP_ACCEPTED_SOIL_INTERNAL_ENERGY_V2",
+                        authority.source_transaction_id,
+                        support_start_ns,
+                        support_end_ns,
+                        lse_owner_id,
+                        &candidate.owner_id,
+                        &candidate.beginning_state_sha256,
+                        &candidate.ofe_id,
+                        &candidate.tile_id,
+                        &layer.layer_id,
+                        ordinal,
+                        layer.beginning_enthalpy_j_m2_ofe_ground,
+                        layer.ending_enthalpy_j_m2_ofe_ground,
+                        energy,
+                    ))?
+                }
+                PhysicalSoilEnergyBeginningPostureV2::NativeV2 => {
+                    v2_physical_operand_digest(&(
+                        "OPENWEPP_ACCEPTED_SOIL_INTERNAL_ENERGY_V2_TX_SPLIT_V1",
+                        ("source_transaction_id", authority.source_transaction_id),
+                        (
+                            "soil_thermal_transaction_id",
+                            authority.soil_thermal_transaction_id,
+                        ),
+                        support_start_ns,
+                        support_end_ns,
+                        lse_owner_id,
+                        &candidate.owner_id,
+                        &candidate.beginning_state_sha256,
+                        &candidate.ofe_id,
+                        &candidate.tile_id,
+                        &layer.layer_id,
+                        ordinal,
+                        layer.beginning_enthalpy_j_m2_ofe_ground,
+                        layer.ending_enthalpy_j_m2_ofe_ground,
+                        energy,
+                    ))?
+                }
+            };
             operands.push(SoilThermalEnergyOperandV2 {
                 ofe_id: candidate.ofe_id.clone(),
                 layer_id: layer.layer_id.clone(),
@@ -1562,7 +2005,7 @@ fn append_v2_soil_internal_operands(
 }
 
 fn append_v2_infiltration_operands(
-    transaction_id: TransactionId,
+    authority: PhysicalSoilEnergyTransactionAuthorityV2,
     support_start_ns: u128,
     support_end_ns: u128,
     surface_owner_id: &ResourceOwnerId,
@@ -1591,16 +2034,32 @@ fn append_v2_infiltration_operands(
         }
         let ordinal =
             next_v2_operand_ordinal(&mut infiltration_ordinals, ofe_id, soil_thermal_layer_id)?;
-        let digest = v2_physical_operand_digest(&(
-            "OPENWEPP_ACCEPTED_SOIL_INFILTRATION_ENERGY_V2",
-            transaction_id,
-            support_start_ns,
-            support_end_ns,
-            surface_owner_id,
-            receipt,
-            soil_thermal_layer_id,
-            ordinal,
-        ))?;
+        let digest = match authority.beginning_posture {
+            PhysicalSoilEnergyBeginningPostureV2::LegacyV1 => v2_physical_operand_digest(&(
+                "OPENWEPP_ACCEPTED_SOIL_INFILTRATION_ENERGY_V2",
+                authority.source_transaction_id,
+                support_start_ns,
+                support_end_ns,
+                surface_owner_id,
+                receipt,
+                soil_thermal_layer_id,
+                ordinal,
+            ))?,
+            PhysicalSoilEnergyBeginningPostureV2::NativeV2 => v2_physical_operand_digest(&(
+                "OPENWEPP_ACCEPTED_SOIL_INFILTRATION_ENERGY_V2_TX_SPLIT_V1",
+                ("source_transaction_id", authority.source_transaction_id),
+                (
+                    "soil_thermal_transaction_id",
+                    authority.soil_thermal_transaction_id,
+                ),
+                support_start_ns,
+                support_end_ns,
+                surface_owner_id,
+                receipt,
+                soil_thermal_layer_id,
+                ordinal,
+            ))?,
+        };
         operands.push(SoilThermalEnergyOperandV2 {
             ofe_id: ofe_id.clone(),
             layer_id: soil_thermal_layer_id.clone(),
@@ -1973,9 +2432,9 @@ fn partition_finalized_uses(
         .map(|row| (row.request.key.clone(), row.source.clone()))
         .collect::<BTreeMap<_, _>>();
     let surface_keys = arbitration
-        .surface
-        .requests()
+        .requests
         .iter()
+        .filter(|row| !soil_sources.contains_key(&row.key))
         .map(|row| row.key.clone())
         .collect::<BTreeSet<_>>();
     let mut seen = BTreeSet::new();
@@ -2006,4 +2465,318 @@ fn partition_finalized_uses(
         ));
     }
     Ok((soil, surface))
+}
+
+#[cfg(test)]
+mod v39_soil_energy_transaction_authority_tests {
+    use super::*;
+    use openwepp_land_surface_energy::{
+        ExactDyadicEnthalpy, SoilThermalCandidateBeginningIdentity,
+        SoilThermalLayerCandidate,
+    };
+
+    fn digest(character: char) -> Sha256Digest {
+        Sha256Digest::try_new(character.to_string().repeat(64)).expect("digest")
+    }
+
+    fn v2_candidate(
+        transaction_id: TransactionId,
+        support_start_ns: u128,
+        support_end_ns: u128,
+        suffix: &str,
+    ) -> SoilThermalTileCandidate {
+        SoilThermalTileCandidate {
+            owner_id: ResourceOwnerId::try_new(format!("soil-owner-{suffix}"))
+                .expect("soil owner"),
+            beginning_state_sha256: digest('1'),
+            beginning_identity: SoilThermalCandidateBeginningIdentity::V2 {
+                owner_tag: format!("soil-owner-{suffix}"),
+                schema_sha256: digest('2'),
+                exact_carry_definition_sha256: digest('3'),
+                parent_v1_state_sha256: digest('4'),
+                contract_version: 2,
+                model_version: "v39-test".to_owned(),
+                model_definition_sha256: digest('5'),
+                run_id: "v39-test".to_owned(),
+                configuration_sha256: digest('6'),
+                transaction_id,
+                expected_predecessor_transaction_id: Some(TransactionId(
+                    transaction_id.0.saturating_sub(1),
+                )),
+                support_start_ns,
+                support_end_ns,
+                receipt_chain_sha256: digest('7'),
+            },
+            ofe_id: OfeId::try_new(format!("ofe-{suffix}")).expect("OFE"),
+            tile_id: TileId::try_new(format!("tile-{suffix}")).expect("tile"),
+            layers: vec![SoilThermalLayerCandidate {
+                layer_id: SoilLayerId::try_new(format!("layer-{suffix}")).expect("layer"),
+                beginning_enthalpy_j_m2_ofe_ground: 10.0,
+                beginning_enthalpy_carry: ExactDyadicEnthalpy::zero(),
+                ground_heat_credit_j_m2_ofe_ground: 0.0,
+                infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
+                ending_enthalpy_j_m2_ofe_ground: 11.0,
+                ending_temperature_k: 273.15,
+            }],
+        }
+    }
+
+    fn v1_candidate(suffix: &str) -> SoilThermalTileCandidate {
+        SoilThermalTileCandidate {
+            owner_id: ResourceOwnerId::try_new(format!("soil-owner-{suffix}"))
+                .expect("soil owner"),
+            beginning_state_sha256: digest('8'),
+            beginning_identity: SoilThermalCandidateBeginningIdentity::V1 {
+                configuration_sha256: digest('9'),
+                last_accepted_transaction_id: Some(TransactionId(41)),
+            },
+            ofe_id: OfeId::try_new(format!("ofe-{suffix}")).expect("OFE"),
+            tile_id: TileId::try_new(format!("tile-{suffix}")).expect("tile"),
+            layers: vec![SoilThermalLayerCandidate {
+                layer_id: SoilLayerId::try_new(format!("layer-{suffix}")).expect("layer"),
+                beginning_enthalpy_j_m2_ofe_ground: 10.0,
+                beginning_enthalpy_carry: ExactDyadicEnthalpy::zero(),
+                ground_heat_credit_j_m2_ofe_ground: 0.0,
+                infiltration_enthalpy_credit_j_m2_ofe_ground: 0.0,
+                ending_enthalpy_j_m2_ofe_ground: 11.0,
+                ending_temperature_k: 273.15,
+            }],
+        }
+    }
+
+    #[test]
+    fn v39_legacy_v1_candidates_retain_exact_single_transaction_operand_identity() {
+        let candidate = v1_candidate("legacy");
+        let authority = PhysicalSoilEnergyTransactionAuthorityV2::
+            try_from_pre_ingress_candidates(
+                TransactionId(42),
+                1_800,
+                1_860,
+                std::slice::from_ref(&candidate),
+            )
+            .expect("legacy V1 authority");
+        assert_eq!(authority.source_transaction_id, TransactionId(42));
+        assert_eq!(authority.soil_thermal_transaction_id, TransactionId(42));
+        assert_eq!(
+            authority.beginning_posture,
+            PhysicalSoilEnergyBeginningPostureV2::LegacyV1
+        );
+        let lse_owner = ResourceOwnerId::try_new("legacy-lse-owner").expect("LSE owner");
+        let mut operands = Vec::new();
+        append_v2_soil_internal_operands(
+            authority,
+            1_800,
+            1_860,
+            &lse_owner,
+            std::slice::from_ref(&candidate),
+            &mut operands,
+        )
+        .expect("legacy operand");
+        let layer = &candidate.layers[0];
+        let expected = v2_physical_operand_digest(&(
+            "OPENWEPP_ACCEPTED_SOIL_INTERNAL_ENERGY_V2",
+            TransactionId(42),
+            1_800_u128,
+            1_860_u128,
+            &lse_owner,
+            &candidate.owner_id,
+            &candidate.beginning_state_sha256,
+            &candidate.ofe_id,
+            &candidate.tile_id,
+            &layer.layer_id,
+            0_u32,
+            layer.beginning_enthalpy_j_m2_ofe_ground,
+            layer.ending_enthalpy_j_m2_ofe_ground,
+            1.0_f64,
+        ))
+        .expect("legacy digest oracle");
+        assert_eq!(operands[0].debit_credit_identity_sha256, expected);
+    }
+
+    #[test]
+    fn v39_legacy_v1_refuses_split_target_mixed_posture_or_identity_substitution() {
+        let candidate = v1_candidate("legacy-poison");
+        let split = PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            TransactionId(42),
+            TransactionId(43),
+        )
+        .expect("native split authority");
+        assert!(split
+            .validate_pre_ingress_candidates(
+                1_800,
+                1_860,
+                std::slice::from_ref(&candidate),
+            )
+            .is_err());
+
+        let mut mixed = v2_candidate(TransactionId(42), 1_800, 1_860, "mixed");
+        mixed.owner_id = candidate.owner_id.clone();
+        mixed.beginning_state_sha256 = candidate.beginning_state_sha256.clone();
+        assert!(PhysicalSoilEnergyTransactionAuthorityV2::
+            try_from_pre_ingress_candidates(
+                TransactionId(42),
+                1_800,
+                1_860,
+                &[candidate.clone(), mixed],
+            )
+            .is_err());
+
+        let mut changed_identity = candidate.clone();
+        changed_identity.beginning_identity = SoilThermalCandidateBeginningIdentity::V1 {
+            configuration_sha256: digest('0'),
+            last_accepted_transaction_id: Some(TransactionId(41)),
+        };
+        assert!(PhysicalSoilEnergyTransactionAuthorityV2::
+            try_from_pre_ingress_candidates(
+                TransactionId(42),
+                1_800,
+                1_860,
+                &[candidate, changed_identity],
+            )
+            .is_err());
+    }
+
+    #[test]
+    fn v39_physical_soil_energy_operands_bind_outer_source_and_soil_target_transactions() {
+        let candidate = v2_candidate(TransactionId(43), 1_860, 1_980, "bind");
+        let authority = PhysicalSoilEnergyTransactionAuthorityV2::
+            try_from_pre_ingress_candidates(
+                TransactionId(42),
+                1_860,
+                1_980,
+                std::slice::from_ref(&candidate),
+            )
+            .expect("split authority");
+        assert_eq!(authority.source_transaction_id, TransactionId(42));
+        assert_eq!(authority.soil_thermal_transaction_id, TransactionId(43));
+
+        let lse_owner = ResourceOwnerId::try_new("lse-owner").expect("LSE owner");
+        let mut exact = Vec::new();
+        append_v2_soil_internal_operands(
+            authority,
+            1_860,
+            1_980,
+            &lse_owner,
+            std::slice::from_ref(&candidate),
+            &mut exact,
+        )
+        .expect("exact operand");
+        let mut changed_source = Vec::new();
+        append_v2_soil_internal_operands(
+            PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+                TransactionId(44),
+                TransactionId(43),
+            )
+            .expect("changed source authority"),
+            1_860,
+            1_980,
+            &lse_owner,
+            std::slice::from_ref(&candidate),
+            &mut changed_source,
+        )
+        .expect("changed source operand");
+        let mut changed_target = Vec::new();
+        append_v2_soil_internal_operands(
+            PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+                TransactionId(42),
+                TransactionId(44),
+            )
+            .expect("changed target authority"),
+            1_860,
+            1_980,
+            &lse_owner,
+            std::slice::from_ref(&candidate),
+            &mut changed_target,
+        )
+        .expect("changed target operand");
+        assert_ne!(
+            exact[0].debit_credit_identity_sha256,
+            changed_source[0].debit_credit_identity_sha256
+        );
+        assert_ne!(
+            exact[0].debit_credit_identity_sha256,
+            changed_target[0].debit_credit_identity_sha256
+        );
+    }
+
+    #[test]
+    fn v39_second_child_soil_operands_keep_outer_ingress_transaction() {
+        let first = v2_candidate(TransactionId(42), 1_800, 1_860, "first");
+        let second = v2_candidate(TransactionId(43), 1_860, 1_980, "second");
+        let first_authority = PhysicalSoilEnergyTransactionAuthorityV2::
+            try_from_pre_ingress_candidates(
+                TransactionId(42),
+                1_800,
+                1_860,
+                std::slice::from_ref(&first),
+            )
+            .expect("first child authority");
+        let second_authority = PhysicalSoilEnergyTransactionAuthorityV2::
+            try_from_pre_ingress_candidates(
+                TransactionId(42),
+                1_860,
+                1_980,
+                std::slice::from_ref(&second),
+            )
+            .expect("second child authority");
+        assert_eq!(first_authority.source_transaction_id, TransactionId(42));
+        assert_eq!(first_authority.soil_thermal_transaction_id, TransactionId(42));
+        assert_eq!(second_authority.source_transaction_id, TransactionId(42));
+        assert_eq!(second_authority.soil_thermal_transaction_id, TransactionId(43));
+    }
+
+    #[test]
+    fn v39_soil_operand_transaction_substitution_refuses_without_publication() {
+        let candidate = v2_candidate(TransactionId(43), 1_860, 1_980, "poison");
+        let substituted = PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            TransactionId(42),
+            TransactionId(44),
+        )
+        .expect("substituted authority");
+        assert!(substituted
+            .validate_pre_ingress_candidates(
+                1_860,
+                1_980,
+                std::slice::from_ref(&candidate),
+            )
+            .is_err());
+        assert!(PhysicalSoilEnergyTransactionAuthorityV2::
+            try_from_pre_ingress_candidates(
+                TransactionId(42),
+                1_800,
+                1_980,
+                std::slice::from_ref(&candidate),
+            )
+            .is_err());
+        let foreign = v2_candidate(TransactionId(44), 1_860, 1_980, "foreign");
+        assert!(PhysicalSoilEnergyTransactionAuthorityV2::
+            try_from_pre_ingress_candidates(
+                TransactionId(42),
+                1_860,
+                1_980,
+                &[candidate.clone(), foreign],
+            )
+            .is_err());
+        let mut foreign_owner = candidate.clone();
+        foreign_owner.owner_id =
+            ResourceOwnerId::try_new("foreign-owner").expect("foreign owner");
+        assert!(PhysicalSoilEnergyTransactionAuthorityV2::
+            try_from_pre_ingress_candidates(
+                TransactionId(42),
+                1_860,
+                1_980,
+                &[candidate, foreign_owner],
+            )
+            .is_err());
+        assert!(PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            TransactionId(0),
+            TransactionId(43),
+        )
+        .is_err());
+        assert!(PhysicalSoilEnergyTransactionAuthorityV2::try_new(
+            TransactionId(42),
+            TransactionId(0),
+        )
+        .is_err());
+    }
 }

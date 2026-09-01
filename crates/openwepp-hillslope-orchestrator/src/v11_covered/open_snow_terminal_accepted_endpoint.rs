@@ -5,6 +5,15 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         trial_stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
         trial_soil: &DirectSoilThermalCandidate,
     ) -> Result<BTreeMap<u32, SnowSoilHeatReceiptV1>, DirectV11RealConsumerError> {
+        self.snow_soil_heat_receipts_for_read_view_v2(support, trial_stage3, trial_soil.read_view())
+    }
+
+    fn snow_soil_heat_receipts_for_read_view_v2(
+        &self,
+        support: TimeSupport,
+        trial_stage3: &BTreeMap<u32, DirectSnowStage3PersistentState>,
+        ending_soil: DirectSoilThermalReadView<'_>,
+    ) -> Result<BTreeMap<u32, SnowSoilHeatReceiptV1>, DirectV11RealConsumerError> {
         let lane_to_ofe = self.covered_lane_to_ofe(&self.stage3_beginning_by_lane)?;
         let mut topology_bytes = Vec::new();
         for binding in &self.beginning.inner.surface_configuration.ofe_bindings {
@@ -23,7 +32,6 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         let beginning_soil_owner_identity_sha256 =
             digest32_from_lower_hex(self.beginning.inner.soil_thermal.state_sha256().as_str())?;
         let beginning_soil = self.beginning.inner.soil_thermal.read_view();
-        let ending_soil = trial_soil.read_view();
         let mut receipts = BTreeMap::new();
         for (lane_id, ofe_id) in lane_to_ofe {
             let inputs = self.stage3_inputs_by_lane.get(&lane_id).ok_or(
@@ -413,6 +421,18 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
             TerminalPublicationPostureV1::RetainFinal => {
                 AcceptedPublicationFinalizationPostureV1::RetainFinal
             }
+            TerminalPublicationPostureV1::RetainFinalWithDeferredNativeV2Soil {
+                pre_event_authority_sha256,
+            } if pre_event_authority_sha256 == endpoint.pre_event_authority_sha256 => {
+                AcceptedPublicationFinalizationPostureV1::RetainFinalWithDeferredNativeV2Soil {
+                    pre_event_authority_sha256,
+                }
+            }
+            TerminalPublicationPostureV1::RetainFinalWithDeferredNativeV2Soil { .. } => {
+                return Err(DirectV11RealConsumerError::Identity(
+                    "terminal final deferred-soil publication authority substitution",
+                ));
+            }
             TerminalPublicationPostureV1::DeferProvisional {
                 pre_event_authority_sha256,
             } if pre_event_authority_sha256 == endpoint.pre_event_authority_sha256 => {
@@ -691,26 +711,35 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
                 )?,
                 envelope: endpoint.carrier_phase.carrier_envelope.clone(),
                 compositional_envelopes: compositional_envelopes.clone(),
+                soil_candidate: endpoint.carrier_phase.soil_candidate.clone(),
+                soil_continuation: endpoint
+                    .carrier_phase
+                    .ending_candidates
+                    .soil_continuation()
+                    .cloned(),
                 ending_snow_owner_bytes: ending_snow_owner_bytes.clone(),
                 soil_top_boundary_credits: soil_credits.clone(),
             })
         } else {
             None
         };
-        let (output, candidate, support_receipt) = finalize_v11_imported_segment(
-            &self.beginning,
-            input,
-            &endpoint.carrier_phase.carrier_envelope,
-            Some(&compositional_envelopes),
-            Some(endpoint.carrier_phase.ending_candidates.shadow()),
-            ending_snow_owner_bytes,
-            self.day_index,
-            self.interval_index,
-            self.interval,
-            &soil_credits,
-            &physical_ledgers,
-            publication_posture,
-        )?;
+        let (output, candidate, support_receipt) =
+            finalize_v11_imported_segment_with_soil_continuation(
+                &self.beginning,
+                input,
+                &endpoint.carrier_phase.carrier_envelope,
+                Some(&compositional_envelopes),
+                Some(endpoint.carrier_phase.ending_candidates.shadow()),
+                Some(&endpoint.carrier_phase.soil_candidate),
+                endpoint.carrier_phase.ending_candidates.soil_continuation(),
+                ending_snow_owner_bytes,
+                self.day_index,
+                self.interval_index,
+                self.interval,
+                &soil_credits,
+                &physical_ledgers,
+                publication_posture,
+            )?;
 
         // Publication fields are assigned only after every acceptance and
         // finalization guard above has succeeded.
@@ -735,6 +764,9 @@ impl DirectV11SnowCoveredRealConsumerStack<'_> {
         self.last_publication_retained = Some(matches!(
             publication_posture,
             AcceptedPublicationFinalizationPostureV1::RetainFinal
+                | AcceptedPublicationFinalizationPostureV1::RetainFinalWithDeferredNativeV2Soil {
+                    ..
+                }
         ));
         Ok(output)
     }

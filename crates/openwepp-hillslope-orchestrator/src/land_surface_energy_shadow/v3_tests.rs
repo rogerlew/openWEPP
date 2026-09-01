@@ -1,10 +1,11 @@
 //! Focused frozen-litter V3 coordinator vectors.
 
-use openwepp_kernel_contract::TransactionId;
+use openwepp_kernel_contract::{ResourceOwnerId, TransactionId};
 use openwepp_land_surface_energy::{
-    BeginningLitterPhaseState, FinalizedLitterVapor, LandSurfaceEnergyConfiguration,
-    LandSurfaceEnergyV3State, LitterPhaseConfiguration, LitterVaporEnvironment, Sha256Digest,
-    SoilThermalOwnerEnvelopeV2, SoilThermalOwnerRestartV2, SoilThermalV2MigrationIdentity,
+    BeginningLitterPhaseState, ExactDyadicEnthalpy, FinalizedLitterVapor,
+    LandSurfaceEnergyConfiguration, LandSurfaceEnergyV3State, LitterPhaseConfiguration,
+    LitterVaporEnvironment, OfeId, Sha256Digest, SoilThermalOwnerEnvelopeV2,
+    SoilThermalOwnerRestartV2, SoilThermalV2MigrationIdentity, SurfaceId,
     V2_MODEL_DEFINITION_SHA256, V2_MODEL_VERSION, V2_VEGETATION_MODEL_DEFINITION_SHA256,
     V2_VEGETATION_MODEL_VERSION, V3PhaseFreeSurfaceEnergyLedger, evaluate_raw_litter_vapor,
     finalize_litter_vapor, install_finalized_vapor, migrate_soil_thermal_v1_to_v2,
@@ -14,13 +15,18 @@ use openwepp_land_surface_energy::{
 
 use crate::direct_runtime::{
     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
-    DirectSurfaceLiquidIngressInput, DirectTileGroundIngress, DirectWb14CoupledChildBindingV1,
-    SurfaceLiquidConfigurationV2, SurfaceLiquidOwnedStateV2, SurfaceLiquidOwnerEnvelopeV2,
-    SurfaceLiquidOwnerModelDefinitionV2,
+    DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidReceiptDisposition,
+    DirectTileGroundIngress, DirectWb14CoupledChildBindingV1,
+    LseSurfaceEnthalpyAcceptedEnergyOperandV1, LseSurfaceEnthalpyEnergyOperandKindV1,
+    LseSurfaceEnthalpyOwnerEnvelopeV1, SurfaceLiquidConfigurationV2, SurfaceLiquidOwnedStateV2,
+    SurfaceLiquidOwnerEnvelopeV2, SurfaceLiquidOwnerModelDefinitionV2,
 };
 
 use super::endpoint_fixture;
-use super::v3_execution::{FrozenLitterV3RuntimeInput, execute_frozen_litter_v3};
+use super::v3_execution::{
+    FrozenLitterV3RuntimeInput, FrozenLitterV4RuntimeInput, execute_frozen_litter_v3,
+    execute_frozen_litter_v4,
+};
 use super::v3_input_projection::{
     FROZEN_LITTER_V3_SUPPORT_FLOOR_NS, FrozenLitterV3PhaseFreeInput, FrozenLitterV3RuntimeError,
     project_frozen_litter_v3_phase,
@@ -396,10 +402,34 @@ fn execute_fixture(
         phase_inputs: &fixture.phase_inputs,
         current_ingress: &fixture.ingress,
         wb14_parent: None,
+        finalize_wb14_parent_interval: false,
         coupled_binding: fixture.binding,
         soil_thermal_owner: &fixture.soil_owner,
         soil_thermal_restart: &fixture.soil_restart,
     })
+}
+
+fn physical_input(fixture: &RuntimeFixture) -> FrozenLitterV3RuntimeInput<'_> {
+    FrozenLitterV3RuntimeInput {
+        transaction_id: TRANSACTION,
+        predecessor_transaction_id: None,
+        parent_support_start_ns: SUPPORT_START_NS,
+        parent_support_end_ns: PARENT_END_NS,
+        support_start_ns: SUPPORT_START_NS,
+        support_end_ns: SUPPORT_END_NS,
+        predecessor_receipt_chain_sha256: digest('b'),
+        surface_configuration: &fixture.surface_configuration,
+        beginning_surface_owner: &fixture.surface_owner,
+        lse_configuration: &fixture.lse_configuration,
+        beginning_lse_state: &fixture.lse_state,
+        phase_inputs: &fixture.phase_inputs,
+        current_ingress: &fixture.ingress,
+        wb14_parent: None,
+        finalize_wb14_parent_interval: false,
+        coupled_binding: fixture.binding,
+        soil_thermal_owner: &fixture.soil_owner,
+        soil_thermal_restart: &fixture.soil_restart,
+    }
 }
 
 #[test]
@@ -593,6 +623,973 @@ fn complete_projection_joins_surface_owner_soil_v2_and_canonical_replay() {
         )
         .expect("beginning rollback")
     );
+}
+
+#[test]
+fn exact_surface_successor_joins_v3_mirrors_receipt_and_projection_v4() {
+    let fixture = runtime_fixture(273.15, false, 0.0);
+    let beginning_exact = LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+        ResourceOwnerId::try_new("lse-surface-enthalpy-exact").expect("exact owner ID"),
+        &fixture.lse_configuration,
+        &fixture.lse_state,
+        &fixture.surface_configuration,
+        &fixture.surface_owner,
+    )
+    .expect("exact owner adoption");
+    let accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
+        physical: physical_input(&fixture),
+        beginning_exact_surface_owner: &beginning_exact,
+    })
+    .expect("accepted exact-surface candidate");
+    accepted
+        .exact_surface_receipt
+        .validate(&beginning_exact, &accepted.ending_exact_surface_owner)
+        .expect("exact receipt replay");
+    let replay = crate::SurfaceLiquidCompleteOwnerProjectionV4::from_canonical_bytes(
+        &fixture.surface_configuration,
+        &accepted
+            .complete_owner_projection
+            .canonical_bytes(&fixture.surface_configuration)
+            .expect("projection V4 bytes"),
+        fixture.lse_state.0.state_sha256.as_str(),
+    )
+    .expect("projection V4 replay");
+    assert_eq!(replay, accepted.complete_owner_projection);
+    for exact in accepted.ending_exact_surface_owner.records() {
+        let surface = accepted
+            .physical
+            .ending_surface_owner
+            .v2_state()
+            .expect("surface V2")
+            .records()
+            .iter()
+            .find(|record| record.key == exact.surface_key)
+            .expect("surface high mirror");
+        let lse = accepted
+            .physical
+            .ending_lse_state
+            .0
+            .tiles
+            .iter()
+            .find(|tile| {
+                tile.ofe_id == exact.surface_key.ofe_id && tile.tile_id == exact.surface_key.tile_id
+            })
+            .expect("LSE high mirror");
+        assert_eq!(
+            exact.enthalpy_hi_j_m2_tile.to_bits(),
+            surface.surface_enthalpy_j_m2_tile.to_bits()
+        );
+        assert_eq!(
+            exact.enthalpy_hi_j_m2_tile.to_bits(),
+            lse.surface_enthalpy_j_m2_tile_ground.to_bits()
+        );
+    }
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn exact_surface_operands_refuse_reorder_omission_owner_and_source_substitution() {
+    let fixture = runtime_fixture(272.5, false, 0.0);
+    let beginning = LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+        ResourceOwnerId::try_new("lse-surface-enthalpy-exact").expect("exact owner ID"),
+        &fixture.lse_configuration,
+        &fixture.lse_state,
+        &fixture.surface_configuration,
+        &fixture.surface_owner,
+    )
+    .expect("exact owner adoption");
+    let accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
+        physical: physical_input(&fixture),
+        beginning_exact_surface_owner: &beginning,
+    })
+    .expect("accepted exact-surface candidate");
+    let original = accepted.exact_surface_receipt.accepted_operands.clone();
+    let beginning_bytes = beginning.canonical_bytes().expect("beginning exact bytes");
+    let surface_before = fixture.surface_owner.clone();
+    let lse_before = fixture.lse_state.clone();
+    let attempt = |operands| {
+        beginning.advance_exact(
+            &accepted.physical.ending_lse_state,
+            &fixture.surface_configuration,
+            &accepted.physical.ending_surface_owner,
+            TRANSACTION,
+            None,
+            SUPPORT_START_NS,
+            SUPPORT_END_NS,
+            &original,
+            operands,
+        )
+    };
+    let assert_operand_poison = |label: &str, operands| {
+        assert!(
+            attempt(operands).is_err(),
+            "accepted operand poison: {label}"
+        );
+        assert_eq!(
+            beginning.canonical_bytes().expect("rollback exact bytes"),
+            beginning_bytes,
+            "exact owner changed after {label}",
+        );
+        assert_eq!(
+            fixture.surface_owner, surface_before,
+            "surface owner changed after {label}"
+        );
+        assert_eq!(
+            fixture.lse_state, lse_before,
+            "LSE owner changed after {label}"
+        );
+    };
+
+    let mut reordered = original.clone();
+    reordered.swap(0, 1);
+    assert_operand_poison("reorder", reordered);
+
+    let mut omitted = original.clone();
+    let phase_index = omitted
+        .iter()
+        .position(|operand| {
+            operand.kind == LseSurfaceEnthalpyEnergyOperandKindV1::PhaseFreeSurfaceEnergy
+        })
+        .expect("phase operand");
+    omitted.remove(phase_index);
+    assert_operand_poison("omission", omitted);
+
+    let mut duplicated = original.clone();
+    duplicated.insert(0, duplicated[0].clone());
+    assert_operand_poison("duplication", duplicated);
+
+    let mut kind_poison = original.clone();
+    kind_poison[0].kind = LseSurfaceEnthalpyEnergyOperandKindV1::LitterFusionEnergy;
+    assert_operand_poison("kind", kind_poison);
+
+    let mut ordinal_poison = original.clone();
+    ordinal_poison[0].ordinal = 17;
+    assert_operand_poison("ordinal", ordinal_poison);
+
+    let mut owner_poison = original.clone();
+    owner_poison[0].source_owner_id =
+        ResourceOwnerId::try_new("foreign-surface-owner").expect("foreign owner");
+    assert_operand_poison("source owner", owner_poison);
+
+    let mut receipt_poison = original.clone();
+    let litter_key = receipt_poison
+        .iter()
+        .find(|operand| {
+            operand.kind == LseSurfaceEnthalpyEnergyOperandKindV1::PhaseFreeSurfaceEnergy
+        })
+        .expect("litter operand")
+        .surface_key
+        .clone();
+    for operand in receipt_poison.iter_mut().filter(|operand| {
+        operand.surface_key == litter_key
+            && operand.kind != LseSurfaceEnthalpyEnergyOperandKindV1::RetainedIngressTileCredit
+    }) {
+        operand.source_receipt_sha256 = typed_digest('e');
+    }
+    assert_operand_poison("source receipt", receipt_poison);
+
+    let mut ofe_poison = original.clone();
+    ofe_poison[0].surface_key.ofe_id = OfeId::try_new("foreign-ofe").expect("foreign OFE");
+    assert_operand_poison("OFE", ofe_poison);
+
+    let mut tile_poison = original.clone();
+    tile_poison[0].surface_key.tile_id =
+        openwepp_kernel_contract::TileId::try_new("foreign-tile").expect("foreign tile");
+    assert_operand_poison("tile", tile_poison);
+
+    let mut surface_poison = original.clone();
+    surface_poison[0].surface_key.surface_id =
+        SurfaceId::try_new("foreign-surface").expect("foreign surface");
+    assert_operand_poison("surface", surface_poison);
+
+    let mut transaction_poison = original.clone();
+    transaction_poison[0].transaction_id = TransactionId(TRANSACTION.0 + 1);
+    assert_operand_poison("transaction", transaction_poison);
+
+    let mut predecessor_poison = original.clone();
+    predecessor_poison[0].predecessor_transaction_id = Some(TransactionId(1));
+    assert_operand_poison("predecessor", predecessor_poison);
+
+    let mut support_start_poison = original.clone();
+    support_start_poison[0].support_start_ns += 1;
+    assert_operand_poison("support start", support_start_poison);
+
+    let mut support_end_poison = original.clone();
+    support_end_poison[0].support_end_ns -= 1;
+    assert_operand_poison("support end", support_end_poison);
+
+    let mut units_poison = original.clone();
+    units_poison[0].units = "producer residual".to_owned();
+    assert_operand_poison("units/producer residual", units_poison);
+
+    let mut basis_poison = original.clone();
+    basis_poison[0].basis = "OFE_ground".to_owned();
+    assert_operand_poison("basis/tolerance repair", basis_poison);
+
+    let nonzero_index = original
+        .iter()
+        .position(|operand| operand.energy_j_m2_tile_ground != 0.0)
+        .expect("nonzero accepted phase/fusion operand");
+    let nonzero = original[nonzero_index].energy_j_m2_tile_ground;
+    for (label, replacement) in [
+        ("discarded credit", 0.0),
+        ("forced ULP", f64::from_bits(nonzero.to_bits() ^ 1)),
+        ("zero snap", -0.0_f64),
+    ] {
+        let mut amount_poison = original.clone();
+        amount_poison[nonzero_index].energy_j_m2_tile_ground = replacement;
+        assert_operand_poison(label, amount_poison);
+    }
+    assert_eq!(
+        beginning,
+        LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+            ResourceOwnerId::try_new("lse-surface-enthalpy-exact").expect("exact owner ID"),
+            &fixture.lse_configuration,
+            &fixture.lse_state,
+            &fixture.surface_configuration,
+            &fixture.surface_owner,
+        )
+        .expect("rollback replay"),
+        "failed trials must leave the exact beginning bit-identical",
+    );
+}
+
+#[test]
+fn exact_surface_refuses_retained_credit_omission_before_candidate_seal() {
+    let fixture = runtime_fixture(273.15, false, 0.01);
+    let beginning = LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+        ResourceOwnerId::try_new("lse-surface-enthalpy-exact").expect("exact owner ID"),
+        &fixture.lse_configuration,
+        &fixture.lse_state,
+        &fixture.surface_configuration,
+        &fixture.surface_owner,
+    )
+    .expect("exact owner adoption");
+    let accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
+        physical: physical_input(&fixture),
+        beginning_exact_surface_owner: &beginning,
+    })
+    .expect("accepted retained-credit candidate");
+    let mut expected = accepted.exact_surface_receipt.accepted_operands.clone();
+    let mut retained = expected
+        .iter()
+        .find(|operand| {
+            operand.kind == LseSurfaceEnthalpyEnergyOperandKindV1::PhaseFreeSurfaceEnergy
+        })
+        .expect("litter phase operand")
+        .clone();
+    retained.kind = LseSurfaceEnthalpyEnergyOperandKindV1::RetainedIngressTileCredit;
+    retained.ordinal = 0;
+    retained.energy_j_m2_tile_ground = 0.0;
+    expected.push(retained);
+    expected.sort_by(|left, right| {
+        (&left.surface_key, left.kind, left.ordinal).cmp(&(
+            &right.surface_key,
+            right.kind,
+            right.ordinal,
+        ))
+    });
+    let mut omitted = expected.clone();
+    omitted.remove(
+        omitted
+            .iter()
+            .position(|operand| {
+                operand.kind == LseSurfaceEnthalpyEnergyOperandKindV1::RetainedIngressTileCredit
+            })
+            .expect("retained operand"),
+    );
+    assert!(
+        beginning
+            .advance_exact(
+                &accepted.physical.ending_lse_state,
+                &fixture.surface_configuration,
+                &accepted.physical.ending_surface_owner,
+                TRANSACTION,
+                None,
+                SUPPORT_START_NS,
+                SUPPORT_END_NS,
+                &expected,
+                omitted,
+            )
+            .is_err()
+    );
+    assert_eq!(beginning.receipt_chain_sha256.as_str(), digest('0'));
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn exact_surface_groups_multiple_parcels_and_distinct_tile_credits_with_fusion() {
+    let mut fixture = runtime_fixture(272.5, false, 0.01);
+    let energetic_amount = |mass, temperature_k| {
+        let mut value = amount(mass);
+        value.temperature_k = temperature_k;
+        value.specific_liquid_enthalpy_j_kg =
+            openwepp_land_surface_energy::liquid_enthalpy_j_kg(temperature_k);
+        value
+    };
+    for tile in &mut fixture.ingress.tile_ingress {
+        match tile {
+            DirectTileGroundIngress::CoveredCanopyRelease { release, .. } => {
+                release.throughfall = energetic_amount(0.01, 274.0);
+                release.initial_drainage = energetic_amount(0.02, 275.0);
+                release.second_drainage = energetic_amount(0.03, 276.0);
+                release.stemflow = energetic_amount(0.04, 277.0);
+            }
+            DirectTileGroundIngress::OpenRawPrecipitation {
+                raw_precipitation, ..
+            } => *raw_precipitation = energetic_amount(0.05, 278.0),
+            DirectTileGroundIngress::OpenLiquidParcels { .. }
+            | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { .. } => {
+                panic!("fixture ingress posture")
+            }
+        }
+    }
+    let beginning = LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+        ResourceOwnerId::try_new("lse-surface-enthalpy-exact").expect("exact owner ID"),
+        &fixture.lse_configuration,
+        &fixture.lse_state,
+        &fixture.surface_configuration,
+        &fixture.surface_owner,
+    )
+    .expect("exact owner adoption");
+    let accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
+        physical: physical_input(&fixture),
+        beginning_exact_surface_owner: &beginning,
+    })
+    .expect("accepted multi-parcel/multitile exact candidate");
+
+    let retained_receipts = accepted
+        .physical
+        .ingress
+        .inner()
+        .receipts()
+        .iter()
+        .filter(|receipt| {
+            receipt.disposition == DirectSurfaceLiquidReceiptDisposition::RetainedSurface
+        })
+        .collect::<Vec<_>>();
+    let forest_receipt_count = retained_receipts
+        .iter()
+        .filter(|receipt| receipt.recipient_store_key.tile_id.as_str() == "forest")
+        .count();
+    assert!(
+        forest_receipt_count >= 2,
+        "multiple same-tile parcels must survive as receipts"
+    );
+
+    let replayed_credits = super::retained_surface_tile_credits_from_receipts_v1(
+        &fixture.surface_configuration,
+        TRANSACTION,
+        accepted.physical.ingress.inner().receipts(),
+    )
+    .expect("independent retained-credit replay");
+    assert_eq!(
+        replayed_credits.len(),
+        2,
+        "both distinct tiles retain a credit"
+    );
+    assert_ne!(
+        replayed_credits[0].tile_fraction.to_bits(),
+        replayed_credits[1].tile_fraction.to_bits(),
+        "the two exact credits exercise distinct OFE-to-tile fractions",
+    );
+    assert_ne!(
+        replayed_credits[0].energy_j_m2_tile_ground.to_bits(),
+        replayed_credits[1].energy_j_m2_tile_ground.to_bits(),
+        "the two exact credits must be numerically distinct",
+    );
+    let retained_operands = accepted
+        .exact_surface_receipt
+        .accepted_operands
+        .iter()
+        .filter(|operand| {
+            operand.kind == LseSurfaceEnthalpyEnergyOperandKindV1::RetainedIngressTileCredit
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(retained_operands.len(), replayed_credits.len());
+    for (operand, replayed) in retained_operands.iter().zip(&replayed_credits) {
+        assert_eq!(operand.surface_key, replayed.store_key);
+        assert_eq!(operand.ordinal, replayed.ordinal);
+        assert_eq!(
+            operand.source_receipt_sha256,
+            replayed.source_receipt_sha256
+        );
+        assert_eq!(
+            operand.energy_j_m2_tile_ground.to_bits(),
+            replayed.energy_j_m2_tile_ground.to_bits(),
+        );
+    }
+    assert!(
+        accepted
+            .exact_surface_receipt
+            .accepted_operands
+            .iter()
+            .any(|operand| {
+                operand.kind == LseSurfaceEnthalpyEnergyOperandKindV1::LitterFusionEnergy
+                    && operand.energy_j_m2_tile_ground != 0.0
+            })
+    );
+    accepted
+        .exact_surface_receipt
+        .validate_independent(
+            &beginning,
+            &accepted.ending_exact_surface_owner,
+            &accepted.exact_surface_receipt.accepted_operands,
+        )
+        .expect("multi-parcel/multitile/fusion exact replay");
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn exact_surface_authentic_retained_sub_ulp_credits_and_poisons_are_fail_closed() {
+    let freezing = 273.15_f64;
+    let warm_temperature_k = 274.0_f64;
+    let symmetric_cold_bits = (2.0 * freezing - warm_temperature_k).to_bits();
+    for expect_positive in [true, false] {
+        let cold_temperature_k = (-128_i64..=128)
+            .map(|offset| {
+                if offset.is_negative() {
+                    f64::from_bits(symmetric_cold_bits - offset.unsigned_abs())
+                } else {
+                    f64::from_bits(symmetric_cold_bits + offset.unsigned_abs())
+                }
+            })
+            .filter(|candidate| {
+                let sum = openwepp_land_surface_energy::liquid_enthalpy_j_kg(warm_temperature_k)
+                    + openwepp_land_surface_energy::liquid_enthalpy_j_kg(*candidate);
+                sum != 0.0 && sum.is_sign_positive() == expect_positive
+            })
+            .min_by(|left, right| {
+                let left_sum =
+                    (openwepp_land_surface_energy::liquid_enthalpy_j_kg(warm_temperature_k)
+                        + openwepp_land_surface_energy::liquid_enthalpy_j_kg(*left))
+                    .abs();
+                let right_sum =
+                    (openwepp_land_surface_energy::liquid_enthalpy_j_kg(warm_temperature_k)
+                        + openwepp_land_surface_energy::liquid_enthalpy_j_kg(*right))
+                    .abs();
+                left_sum.total_cmp(&right_sum)
+            })
+            .expect("near-cancelling retained temperature pair");
+        let mut fixture = runtime_fixture(315.0, false, 0.0);
+        for tile in &mut fixture.ingress.tile_ingress {
+            if let DirectTileGroundIngress::CoveredCanopyRelease { release, .. } = tile {
+                release.throughfall = DirectIngressAmount {
+                    mass_kg_m2_tile_ground: 0.05,
+                    temperature_k: warm_temperature_k,
+                    specific_liquid_enthalpy_j_kg:
+                        openwepp_land_surface_energy::liquid_enthalpy_j_kg(warm_temperature_k),
+                    start_s: 0.0,
+                    end_s: 900.0,
+                };
+                release.initial_drainage = DirectIngressAmount {
+                    mass_kg_m2_tile_ground: 0.05,
+                    temperature_k: cold_temperature_k,
+                    specific_liquid_enthalpy_j_kg:
+                        openwepp_land_surface_energy::liquid_enthalpy_j_kg(cold_temperature_k),
+                    start_s: 0.0,
+                    end_s: 900.0,
+                };
+            }
+        }
+        let beginning = LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+            ResourceOwnerId::try_new("lse-surface-enthalpy-exact").expect("exact owner ID"),
+            &fixture.lse_configuration,
+            &fixture.lse_state,
+            &fixture.surface_configuration,
+            &fixture.surface_owner,
+        )
+        .expect("authentic retained sub-ULP adoption");
+        let beginning_bytes = beginning.canonical_bytes().expect("beginning exact bytes");
+        let accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
+            physical: physical_input(&fixture),
+            beginning_exact_surface_owner: &beginning,
+        })
+        .expect("authentic retained sub-ULP V4 support");
+        let expected = accepted.exact_surface_receipt.accepted_operands.clone();
+        let retained_index = expected
+            .iter()
+            .position(|operand| {
+                operand.kind == LseSurfaceEnthalpyEnergyOperandKindV1::RetainedIngressTileCredit
+                    && operand.surface_key.tile_id.as_str() == "forest"
+            })
+            .expect("authentic retained forest operand");
+        let retained = &expected[retained_index];
+        assert_ne!(retained.energy_j_m2_tile_ground, 0.0);
+        assert_eq!(
+            retained.energy_j_m2_tile_ground.is_sign_positive(),
+            expect_positive
+        );
+        let beginning_high = beginning
+            .records()
+            .iter()
+            .find(|record| record.surface_key == retained.surface_key)
+            .expect("beginning retained exact record")
+            .enthalpy_hi_j_m2_tile;
+        let without_retained = expected
+            .iter()
+            .enumerate()
+            .filter(|(index, operand)| {
+                *index != retained_index && operand.surface_key == retained.surface_key
+            })
+            .map(|(_, operand)| operand.energy_j_m2_tile_ground)
+            .collect::<Vec<_>>();
+        let (high_without_retained, carry_without_retained) =
+            ExactDyadicEnthalpy::exact_sum_binary64(
+                beginning_high,
+                &ExactDyadicEnthalpy::zero(),
+                &without_retained,
+            )
+            .expect("exact total without retained credit")
+            .rounded_high_and_remainder()
+            .expect("rounded total without retained credit");
+        let ending = accepted
+            .ending_exact_surface_owner
+            .records()
+            .iter()
+            .find(|record| record.surface_key == retained.surface_key)
+            .expect("ending retained exact record");
+        assert_eq!(
+            ending.enthalpy_hi_j_m2_tile.to_bits(),
+            high_without_retained.to_bits(),
+            "authentic retained credit must be sub-ULP of the accepted high term",
+        );
+        assert_ne!(ending.enthalpy_carry, carry_without_retained);
+
+        let assert_poison = |accepted_operands: Vec<LseSurfaceEnthalpyAcceptedEnergyOperandV1>| {
+            assert!(
+                beginning
+                    .advance_exact(
+                        &accepted.physical.ending_lse_state,
+                        &fixture.surface_configuration,
+                        &accepted.physical.ending_surface_owner,
+                        TRANSACTION,
+                        None,
+                        SUPPORT_START_NS,
+                        SUPPORT_END_NS,
+                        &expected,
+                        accepted_operands,
+                    )
+                    .is_err(),
+                "authentic retained operand poison must fail closed",
+            );
+        };
+        let mut omitted = expected.clone();
+        omitted.remove(retained_index);
+        assert_poison(omitted);
+        let mut source_substitution = expected.clone();
+        source_substitution[retained_index].source_receipt_sha256 = typed_digest('f');
+        assert_poison(source_substitution);
+        let mut reordered = expected.clone();
+        let swap_index = retained_index.checked_sub(1).unwrap_or(retained_index + 1);
+        reordered.swap(retained_index, swap_index);
+        assert_poison(reordered);
+        let replayed = super::retained_surface_tile_credits_from_receipts_v1(
+            &fixture.surface_configuration,
+            TRANSACTION,
+            accepted.physical.ingress.inner().receipts(),
+        )
+        .expect("authentic retained replay");
+        let credit = replayed
+            .iter()
+            .find(|credit| credit.store_key == retained.surface_key)
+            .expect("replayed retained forest credit");
+        assert_ne!(
+            credit.energy_j_m2_ofe_ground.to_bits(),
+            credit.energy_j_m2_tile_ground.to_bits(),
+        );
+        let mut wrong_basis_formula = expected.clone();
+        wrong_basis_formula[retained_index].energy_j_m2_tile_ground = credit.energy_j_m2_ofe_ground;
+        assert_poison(wrong_basis_formula);
+        assert_eq!(
+            beginning.canonical_bytes().expect("rollback exact bytes"),
+            beginning_bytes,
+        );
+    }
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn exact_surface_v2_v3_high_mirror_poisons_roll_back_all_beginning_bytes() {
+    let fixture = runtime_fixture(272.5, false, 0.0);
+    let beginning = LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+        ResourceOwnerId::try_new("lse-surface-enthalpy-exact").expect("exact owner ID"),
+        &fixture.lse_configuration,
+        &fixture.lse_state,
+        &fixture.surface_configuration,
+        &fixture.surface_owner,
+    )
+    .expect("exact owner adoption");
+    let accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
+        physical: physical_input(&fixture),
+        beginning_exact_surface_owner: &beginning,
+    })
+    .expect("accepted exact-surface candidate");
+    let expected = &accepted.exact_surface_receipt.accepted_operands;
+    let beginning_bytes = beginning.canonical_bytes().expect("beginning exact bytes");
+    let surface_beginning_bytes = fixture
+        .surface_owner
+        .canonical_bytes(
+            fixture.surface_configuration.parent(),
+            Some(&fixture.surface_configuration),
+        )
+        .expect("beginning surface bytes");
+    let lse_beginning_bytes = serde_json::to_vec(&fixture.lse_state).expect("beginning LSE bytes");
+
+    let mut lse_poison = accepted.physical.ending_lse_state.clone();
+    let poisoned_tile = lse_poison
+        .0
+        .tiles
+        .iter_mut()
+        .find(|tile| tile.tile_id.as_str() == "forest")
+        .expect("forest LSE tile");
+    poisoned_tile.surface_enthalpy_j_m2_tile_ground =
+        f64::from_bits(poisoned_tile.surface_enthalpy_j_m2_tile_ground.to_bits() ^ 1);
+    lse_poison.0.state_sha256 = lse_poison.canonical_sha256().expect("poisoned LSE digest");
+    assert!(
+        beginning
+            .advance_exact(
+                &lse_poison,
+                &fixture.surface_configuration,
+                &accepted.physical.ending_surface_owner,
+                TRANSACTION,
+                None,
+                SUPPORT_START_NS,
+                SUPPORT_END_NS,
+                expected,
+                expected.clone(),
+            )
+            .is_err(),
+        "V3 high-mirror mismatch must refuse before owner replacement",
+    );
+
+    let surface_state = accepted
+        .physical
+        .ending_surface_owner
+        .v2_state()
+        .expect("ending V2 state");
+    let surface_poison = accepted
+        .physical
+        .ending_surface_owner
+        .try_replace_v2_state(
+            &fixture.surface_configuration,
+            surface_state
+                .records()
+                .iter()
+                .cloned()
+                .map(|mut record| {
+                    if record.key.tile_id.as_str() == "forest" {
+                        record.surface_enthalpy_j_m2_tile =
+                            f64::from_bits(record.surface_enthalpy_j_m2_tile.to_bits() ^ 1);
+                    }
+                    record
+                })
+                .collect(),
+            surface_state.continuations().to_vec(),
+        )
+        .expect("sealed V2 high poison");
+    assert!(
+        beginning
+            .advance_exact(
+                &accepted.physical.ending_lse_state,
+                &fixture.surface_configuration,
+                &surface_poison,
+                TRANSACTION,
+                None,
+                SUPPORT_START_NS,
+                SUPPORT_END_NS,
+                expected,
+                expected.clone(),
+            )
+            .is_err(),
+        "V2 high-mirror mismatch must refuse before owner replacement",
+    );
+    assert_eq!(
+        beginning.canonical_bytes().expect("rollback bytes"),
+        beginning_bytes
+    );
+    assert_eq!(
+        fixture
+            .surface_owner
+            .canonical_bytes(
+                fixture.surface_configuration.parent(),
+                Some(&fixture.surface_configuration),
+            )
+            .expect("rollback surface bytes"),
+        surface_beginning_bytes,
+    );
+    assert_eq!(
+        serde_json::to_vec(&fixture.lse_state).expect("rollback LSE bytes"),
+        lse_beginning_bytes,
+    );
+}
+
+#[test]
+fn exact_surface_noncanonical_carry_and_stale_restart_checkpoint_refuse() {
+    let fixture = runtime_fixture(272.5, false, 0.0);
+    let beginning = LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+        ResourceOwnerId::try_new("lse-surface-enthalpy-exact").expect("exact owner ID"),
+        &fixture.lse_configuration,
+        &fixture.lse_state,
+        &fixture.surface_configuration,
+        &fixture.surface_owner,
+    )
+    .expect("exact owner adoption");
+    let accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
+        physical: physical_input(&fixture),
+        beginning_exact_surface_owner: &beginning,
+    })
+    .expect("accepted exact-surface candidate");
+    let beginning_bytes = beginning.canonical_bytes().expect("beginning exact bytes");
+
+    let mut noncanonical_carry = accepted.ending_exact_surface_owner.clone();
+    noncanonical_carry.records[0].enthalpy_carry = ExactDyadicEnthalpy {
+        sign: 0,
+        coefficient_hex: "1".to_owned(),
+        exponent2: 0,
+    };
+    assert!(noncanonical_carry.validate().is_err());
+
+    let mut stale_restart = accepted
+        .ending_exact_surface_owner
+        .restart()
+        .expect("ending restart");
+    stale_restart.owner = beginning.clone();
+    assert!(stale_restart.validate().is_err());
+
+    let mut stale_checkpoint = accepted
+        .ending_exact_surface_owner
+        .checkpoint(Some(accepted.exact_surface_receipt.clone()))
+        .expect("ending checkpoint");
+    stale_checkpoint.owner = beginning.clone();
+    assert!(stale_checkpoint.validate().is_err());
+
+    assert_eq!(
+        beginning.canonical_bytes().expect("rollback bytes"),
+        beginning_bytes
+    );
+}
+
+#[test]
+fn exact_surface_true_noop_preserves_negative_zero_high_bits() {
+    let mut fixture = runtime_fixture(273.15, false, 0.0);
+    for tile in &mut fixture.lse_state.0.tiles {
+        if tile.tile_id.as_str() == "forest" {
+            tile.surface_enthalpy_j_m2_tile_ground = -0.0;
+        }
+    }
+    fixture.lse_state.0.state_sha256 = fixture
+        .lse_state
+        .canonical_sha256()
+        .expect("negative-zero V3 state digest");
+    let (surface_configuration, surface_owner) = surface_v2_fixture(&fixture.lse_state);
+    fixture.surface_configuration = surface_configuration;
+    fixture.surface_owner = surface_owner;
+    fixture.phase_inputs = vec![phase_input(
+        &fixture.surface_configuration,
+        &fixture.surface_owner,
+        273.15,
+        false,
+    )];
+    fixture.ingress = ingress(&fixture.surface_configuration, 0.0);
+    let beginning = LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+        ResourceOwnerId::try_new("lse-surface-enthalpy-exact").expect("exact owner ID"),
+        &fixture.lse_configuration,
+        &fixture.lse_state,
+        &fixture.surface_configuration,
+        &fixture.surface_owner,
+    )
+    .expect("negative-zero exact owner adoption");
+    let accepted = execute_frozen_litter_v4(&FrozenLitterV4RuntimeInput {
+        physical: physical_input(&fixture),
+        beginning_exact_surface_owner: &beginning,
+    })
+    .expect("accepted negative-zero no-op");
+    let forest = accepted
+        .ending_exact_surface_owner
+        .records()
+        .iter()
+        .find(|record| record.surface_key.tile_id.as_str() == "forest")
+        .expect("forest exact record");
+    assert_eq!(forest.enthalpy_hi_j_m2_tile.to_bits(), (-0.0_f64).to_bits());
+    assert_eq!(
+        accepted
+            .physical
+            .ending_surface_owner
+            .v2_state()
+            .expect("ending V2")
+            .records()
+            .iter()
+            .find(|record| record.key.tile_id.as_str() == "forest")
+            .expect("forest surface record")
+            .surface_enthalpy_j_m2_tile
+            .to_bits(),
+        (-0.0_f64).to_bits(),
+    );
+}
+
+#[allow(clippy::too_many_lines)]
+fn exact_surface_named_operand_trial(
+    beginning_high: f64,
+    nonzero_values: &[f64],
+) -> Result<(f64, ExactDyadicEnthalpy), crate::LseSurfaceEnthalpyErrorV1> {
+    let mut fixture = runtime_fixture(273.15, false, 0.0);
+    for tile in &mut fixture.lse_state.0.tiles {
+        if tile.tile_id.as_str() == "forest" {
+            tile.surface_enthalpy_j_m2_tile_ground = beginning_high;
+        }
+    }
+    fixture.lse_state.0.state_sha256 = fixture.lse_state.canonical_sha256().expect("V3 digest");
+    let (surface_configuration, surface_owner) = surface_v2_fixture(&fixture.lse_state);
+    fixture.surface_configuration = surface_configuration;
+    fixture.surface_owner = surface_owner;
+    let beginning = LseSurfaceEnthalpyOwnerEnvelopeV1::adopt_from_frozen_v2_v3(
+        ResourceOwnerId::try_new("lse-surface-enthalpy-vector").expect("exact owner ID"),
+        &fixture.lse_configuration,
+        &fixture.lse_state,
+        &fixture.surface_configuration,
+        &fixture.surface_owner,
+    )
+    .expect("vector adoption");
+    let key = beginning
+        .records()
+        .iter()
+        .find(|record| record.surface_key.tile_id.as_str() == "forest")
+        .expect("forest exact key")
+        .surface_key
+        .clone();
+    let mut values = [0.0; 7];
+    for (target, source) in values.iter_mut().zip(nonzero_values) {
+        *target = *source;
+    }
+    let operands = values
+        .iter()
+        .enumerate()
+        .map(
+            |(ordinal, value)| LseSurfaceEnthalpyAcceptedEnergyOperandV1 {
+                surface_key: key.clone(),
+                kind: if ordinal < 6 {
+                    LseSurfaceEnthalpyEnergyOperandKindV1::PhaseFreeSurfaceEnergy
+                } else {
+                    LseSurfaceEnthalpyEnergyOperandKindV1::LitterFusionEnergy
+                },
+                ordinal: if ordinal < 6 {
+                    u32::try_from(ordinal).expect("phase ordinal")
+                } else {
+                    0
+                },
+                source_owner_id: fixture.surface_configuration.parent().owner_id.clone(),
+                source_receipt_sha256: typed_digest('a'),
+                transaction_id: TRANSACTION,
+                predecessor_transaction_id: None,
+                support_start_ns: SUPPORT_START_NS,
+                support_end_ns: SUPPORT_END_NS,
+                units: "J m^-2 tile-ground".to_owned(),
+                basis: "tile_ground".to_owned(),
+                energy_j_m2_tile_ground: *value,
+            },
+        )
+        .collect::<Vec<_>>();
+    let (expected_high, expected_carry) = ExactDyadicEnthalpy::exact_sum_binary64(
+        beginning_high,
+        &ExactDyadicEnthalpy::zero(),
+        &values,
+    )?
+    .rounded_high_and_remainder()?;
+    let mut ending_lse = fixture.lse_state.clone();
+    for tile in &mut ending_lse.0.tiles {
+        if tile.tile_id.as_str() == "forest" {
+            tile.surface_enthalpy_j_m2_tile_ground = expected_high;
+        }
+    }
+    ending_lse.0.state_sha256 = ending_lse.canonical_sha256().expect("ending V3 digest");
+    let surface_state = fixture.surface_owner.v2_state().expect("surface V2");
+    let ending_surface = fixture
+        .surface_owner
+        .try_replace_v2_state(
+            &fixture.surface_configuration,
+            surface_state
+                .records()
+                .iter()
+                .cloned()
+                .map(|mut record| {
+                    if record.key == key {
+                        record.surface_enthalpy_j_m2_tile = expected_high;
+                    }
+                    record
+                })
+                .collect(),
+            surface_state.continuations().to_vec(),
+        )
+        .expect("ending surface V2");
+    let accepted = beginning.advance_exact(
+        &ending_lse,
+        &fixture.surface_configuration,
+        &ending_surface,
+        TRANSACTION,
+        None,
+        SUPPORT_START_NS,
+        SUPPORT_END_NS,
+        &operands,
+        operands.clone(),
+    )?;
+    let ending = accepted
+        .ending_owner
+        .records()
+        .iter()
+        .find(|record| record.surface_key == key)
+        .expect("ending forest exact record");
+    assert_eq!(
+        ending.enthalpy_hi_j_m2_tile.to_bits(),
+        expected_high.to_bits()
+    );
+    assert_eq!(ending.enthalpy_carry, expected_carry);
+    Ok((ending.enthalpy_hi_j_m2_tile, ending.enthalpy_carry.clone()))
+}
+
+#[test]
+fn exact_surface_rounding_vectors_cover_sub_ulp_ties_crossing_cancellation_and_subnormal() {
+    let (_, positive_sub_ulp) =
+        exact_surface_named_operand_trial(1.0, &[2.0_f64.powi(-54)]).expect("positive sub-ULP");
+    let (_, negative_sub_ulp) =
+        exact_surface_named_operand_trial(1.0, &[-2.0_f64.powi(-54)]).expect("negative sub-ULP");
+    assert_ne!(positive_sub_ulp, ExactDyadicEnthalpy::zero());
+    assert_ne!(negative_sub_ulp, ExactDyadicEnthalpy::zero());
+
+    let (even_tie, _) =
+        exact_surface_named_operand_trial(1.0, &[2.0_f64.powi(-53)]).expect("even tie");
+    assert_eq!(even_tie.to_bits(), 1.0_f64.to_bits());
+    let odd = f64::from_bits(1.0_f64.to_bits() + 1);
+    let (odd_tie, _) =
+        exact_surface_named_operand_trial(odd, &[2.0_f64.powi(-53)]).expect("odd tie");
+    assert_eq!(odd_tie.to_bits(), 1.0_f64.to_bits() + 2);
+
+    let (crossing, _) =
+        exact_surface_named_operand_trial(1.0, &[2.0_f64.powi(-53), f64::from_bits(1)])
+            .expect("ULP crossing");
+    assert_eq!(crossing.to_bits(), 1.0_f64.to_bits() + 1);
+    let (cancelled, cancelled_carry) =
+        exact_surface_named_operand_trial(1.0, &[2.0_f64.powi(100), -2.0_f64.powi(100)])
+            .expect("cancellation");
+    assert_eq!(cancelled.to_bits(), 1.0_f64.to_bits());
+    assert_eq!(cancelled_carry, ExactDyadicEnthalpy::zero());
+    let (positive_subnormal, carry) =
+        exact_surface_named_operand_trial(0.0, &[f64::from_bits(1)]).expect("subnormal");
+    assert_eq!(positive_subnormal.to_bits(), 1);
+    assert_eq!(carry, ExactDyadicEnthalpy::zero());
+    let (negative_subnormal, carry) =
+        exact_surface_named_operand_trial(0.0, &[f64::from_bits((1_u64 << 63) | 1)])
+            .expect("negative subnormal");
+    assert_eq!(negative_subnormal.to_bits(), (1_u64 << 63) | 1);
+    assert_eq!(carry, ExactDyadicEnthalpy::zero());
+
+    let (largest_finite, carry) =
+        exact_surface_named_operand_trial(f64::MAX, &[-f64::from_bits(1)])
+            .expect("largest-finite boundary");
+    assert_eq!(largest_finite.to_bits(), f64::MAX.to_bits());
+    assert_ne!(carry, ExactDyadicEnthalpy::zero());
+
+    assert!(exact_surface_named_operand_trial(f64::MAX, &[f64::MAX]).is_err());
 }
 
 #[test]

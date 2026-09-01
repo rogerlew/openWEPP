@@ -1,6 +1,6 @@
 # Contract implementation evidence
 
-Status: `V31 CONTRACT/TEST AUTHORED — PRODUCTION NOT STARTED`
+Status: `SUSPENDED — V56/V57 UNRESOLVED`
 
 Evidence mode: `Static + Ran`
 
@@ -34,6 +34,38 @@ with `E0425` for missing
 `fixed_point.rs` and `open_snow.rs` remain unedited by v31. Implementation,
 real DFF-WS2 execution, A0/canonical gates, review, and promotion remain
 pending; no implementation or activation claim is made.
+
+### SC-SNOWENERGY-001 v33 corrective implementation
+
+Status: `IMPLEMENTED — FOCUSED PASS — CANONICAL DEFAULT-STACK HOLD`
+
+Evidence mode: `Static + Ran`
+
+Static: current canonical source is `SC-SNOWENERGY-001@33`, SHA-256
+`a3a4de78b02af73de9a336ece5e6569d2871ea58c6f55512d75100f68a1e016c`.
+Production removes the v31/v32 synthetic controller from control flow and
+implements the corrective private reduced residual solve in canonical
+`W/H/E/T` coordinates with one shared 96 physical-evaluation budget. The
+transition-reset detector, dense safeguarded solve, physical residual/side
+gates, and `CoupledAuthentic` admission retain fresh physical replay/reseal and
+all prior owner, receipt, event, conservation, rollback, and publication
+requirements.
+
+Static: soil state is consumed natively through typed V1/V2 read views and
+unpublished candidates. V2 exact carry, operand ordering, source identity, and
+predecessor state remain in the native trial; no V1 projection/cache or trial
+installation exists. The private CN operand has no digest or publication
+eligibility. Only the existing final accepted segment creates the sealed V2
+candidate/receipt/install.
+
+Ran: v33 focused vectors pass 7/7, the canonical terminal numerics contract
+passes 10/10, native V2 resident vectors pass 4/4, and exact-carry refusal and
+rollback vectors pass 6/6. Terminal batch and exact successor-partition parity
+tests pass. The canonical one-day fixture remains unavailable for contract
+closure because its default test thread overflows before returning a physical
+result; the retained latest log and mechanical frame evidence are recorded in
+`implementation-test-evidence.md` and `gate-results.md`. No canonical runtime,
+step-count, width-distribution, or ledger-closure claim is made yet.
 
 ## WGHL-FULL-001F covered no-update witness
 
@@ -83,3 +115,34 @@ clarified prospectively in canonical v14; no separate public or persisted
 field was added. Fresh focused vectors pass 5/5, run
 `baaf9f04-769f-4de0-82bd-f98695c081db`, and the complete crate passes 87/87,
 run `dcd3e84b-d3ce-4bae-8960-df2c2a2c1767`.
+
+Final hardening requires all four governed full-trial norms finite before the
+typed threshold-excess refusal can be produced. NaN and either infinity now
+leave the halved no-update witness unavailable and retain the ordinary strict-
+decrease/fail-closed path. No threshold, contract, API, or diagnostic changed.
+Focused 6/6 and full LSE 103/103 pass, runs
+`6efcec2e-2666-4a58-b911-80a2267bf0dd` and
+`86f824a0-4486-4b9d-80ff-fe8fe0e8fbfd`.
+
+## SC-SNOWENERGY-001 v56/v57 terminal disposition
+
+Status: `IMPLEMENTED — FOCUSED PASS — CANONICAL FAIL — SUSPENDED`
+
+Evidence mode: `Static + Ran`
+
+Static: v56 supplies the frozen temperature-primary specialization. V57 adds
+only the contract-bounded external-liquid eligibility and zero-charge
+post-root transition; the exact operand remains unchanged and no production
+diagnostic is retained. The corrected eligibility includes the intended
+terminal one-volume modeled domain while still refusing actual event,
+model-change, melt-change, and liquid-change cases outside the contract.
+
+Ran: v57 contract-derived/source-binding tests pass, and the retained v56
+focused tests pass. Canonical r151 nevertheless fails at `1800..1860 s` inside
+the V56 safeguarded physical solve, after V57 dispatch. It exits `101` after
+`5:09.55` wall time; retained log SHA-256 is
+`d4a26e0194a769c1303cc7500ea254d2a9dbcdaa08e05f65188e4ba07ea27252`.
+Focused passage is not canonical convergence evidence. Neither version has a
+completed one-day result, accepted/rejected microstep totals, final width
+distribution, runtime qualification, or final ledger closure. Both remain
+unresolved and no package-completion claim is made.

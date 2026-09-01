@@ -138,11 +138,53 @@ mod adaptive_trial_failure_classification_tests {
         let error = accept_adaptive_floor_trial_v1::<()>(Err(cold_open_snow_candidate()))
             .expect_err("no admissible child below the exact 60-second floor");
         assert!(adaptive_refinable_trial_failure_v1(&error));
-        assert!(
-            error
-                .to_string()
-                .contains("snow_temperature_k=184.92603057009023")
-        );
+        assert!(error
+            .to_string()
+            .contains("snow_temperature_k=184.92603057009023"));
+    }
+
+    #[test]
+    fn exact_floor_terminal_phase_midpoint_is_retained_only_as_v33_diagnostic_oracle() {
+        let controller = include_str!("v11_covered/open_snow.rs");
+        let numerics = include_str!("v11_covered/fixed_point.rs");
+        let helper = "covered_exact_floor_terminal_phase_iterate_v1";
+        assert!(numerics.contains(helper), "missing retained v31 oracle");
+        assert_eq!(controller.matches(helper).count(), 0);
+        assert!(!controller.contains("let phase_iterate ="));
+    }
+
+    #[test]
+    fn vapor_active_set_images_are_captured_above_floor_and_remain_unpublished() {
+        let controller = include_str!("v11_covered/open_snow.rs");
+        let numerics = include_str!("v11_covered/fixed_point.rs");
+        for symbol in [
+            "CoveredVaporActiveSetInterfaceV1",
+            "covered_vapor_active_set_interface_v1",
+            "covered_vapor_active_set_branch_entry_v1",
+            "COVERED_VAPOR_ACTIVE_SET_MIN_SUPPORT_NS",
+        ] {
+            assert!(numerics.contains(symbol), "missing v32 symbol {symbol}");
+        }
+        assert!(!controller.contains("let active_set_iterate ="));
+    }
+
+    #[test]
+    fn v33_exact_cycle_uses_only_physical_residual_trials_and_authentic_replay() {
+        let controller = include_str!("v11_covered/open_snow.rs");
+        let solver = include_str!("v11_covered/phase_consistent_coupled_solve.rs");
+        for symbol in [
+            "PhaseConsistentCoupledSolveV1",
+            "phase_consistent_coupled_solve_v1",
+            "phase_consistent_coupled_authentic_final_evaluation_v1",
+            "phase_consistent_coupled_authentic_final_replay_reseal_v1",
+        ] {
+            assert!(solver.contains(symbol), "missing v33 solver symbol {symbol}");
+        }
+        assert!(solver.contains("phase_consistent_coupled_active_set_transition_reset_v1"));
+        assert!(solver.contains("CoveredPhaseConsistentResidualInputsV1"));
+        assert!(solver.contains("CoveredPhysicalEvaluationBudgetV1"));
+        assert!(solver.contains("CoveredConvergenceAdmissionV1::CoupledAuthentic"));
+        assert!(!controller.contains("phase_consistent_coupled_trial_maps_v1"));
     }
 
     #[test]
@@ -378,6 +420,102 @@ mod adaptive_covered_child_memo_authority_tests {
     }
 }
 
+mod terminal_successor_partition_tests {
+    use super::*;
+
+    const SECOND_NS: u128 = 1_000_000_000;
+
+    fn support(start_s: u128, end_s: u128) -> TimeSupport {
+        TimeSupport::new(
+            ModelTimeNs::new(start_s * SECOND_NS),
+            ModelTimeNs::new(end_s * SECOND_NS),
+        )
+        .expect("terminal successor test support")
+    }
+
+    fn digest(seed: u8) -> Digest32 {
+        Digest32::from_bytes([seed; 32])
+    }
+
+    fn terminal_receipts() -> AdaptiveReceiptAccumulatorV1 {
+        let parent_support = support(0, 1_800);
+        let step_support = support(420, 900);
+        let mut accepted = Stage3AdaptiveAcceptedMicrostepReceiptV1 {
+            context: Stage3AdaptiveReceiptContextV1 {
+                parent_transaction_id: ParentTransactionId::from_digest(digest(1)),
+                parent_support,
+                step_support,
+                step_ordinal: 1,
+                attempt_ordinal: 0,
+                beginning_complete_owner_set_sha256: digest(2),
+                forcing_projection_sha256: digest(3),
+                topology_sha256: digest(4),
+                configuration_sha256: digest(5),
+            },
+            comparison_receipt_sha256: digest(6),
+            decision: Stage3AdaptiveStepDecisionV1::ComposedAccepted,
+            physical_ledger_sha256: digest(7),
+            ending_complete_owner_set_sha256: digest(8),
+            phase_result_sha256: digest(9),
+            event_posture: Stage3AdaptiveEventPostureV1::TerminalEvent,
+            receipt_sha256: Digest32::zero(),
+        };
+        accepted.receipt_sha256 = accepted
+            .reconstructed_digest()
+            .expect("sealed accepted terminal microstep");
+        AdaptiveReceiptAccumulatorV1 {
+            accepted_microsteps: vec![accepted],
+            ..AdaptiveReceiptAccumulatorV1::default()
+        }
+    }
+
+    #[test]
+    fn producer_derives_terminal_successor_boundary_from_sealed_child() {
+        let receipts = terminal_receipts();
+        let parent = support(0, 1_800);
+        assert_eq!(
+            adaptive_terminal_child_end_v1(&receipts, parent).expect("terminal-child boundary"),
+            ModelTimeNs::new(900 * SECOND_NS),
+        );
+    }
+
+    #[test]
+    fn terminal_child_end_derivation_is_restart_equivalent_and_seal_guarded() {
+        let receipts = terminal_receipts();
+        let restored: AdaptiveReceiptAccumulatorV1 = serde_json::from_slice(
+            &serde_json::to_vec(&receipts).expect("checkpoint adaptive receipts"),
+        )
+        .expect("restore adaptive receipts");
+        let parent = support(0, 1_800);
+        let derive =
+            |value: &AdaptiveReceiptAccumulatorV1| adaptive_terminal_child_end_v1(value, parent);
+        assert_eq!(derive(&receipts).unwrap(), derive(&restored).unwrap());
+
+        let mut poison = restored;
+        poison.accepted_microsteps[0].context.step_support = support(420, 960);
+        assert!(matches!(
+            derive(&poison),
+            Err(DirectSnowStage3V11AttachmentError::Identity(
+                "adaptive terminal child seal"
+            ))
+        ));
+
+        let missing = AdaptiveReceiptAccumulatorV1::default();
+        assert!(matches!(
+            derive(&missing),
+            Err(DirectSnowStage3V11AttachmentError::Identity(
+                "adaptive terminal child authority"
+            ))
+        ));
+        assert!(matches!(
+            adaptive_terminal_child_end_v1(&receipts, support(0, 1_740)),
+            Err(DirectSnowStage3V11AttachmentError::Identity(
+                "adaptive terminal child parent"
+            ))
+        ));
+    }
+}
+
 mod solid_reappearance_publication_posture_tests {
     use super::*;
 
@@ -390,12 +528,10 @@ mod solid_reappearance_publication_posture_tests {
             (true, true, true, true),
             (true, true, true, false),
         ] {
-            assert!(
-                validate_solid_reappearance_publication_posture_v1(
-                    poisoned.0, poisoned.1, poisoned.2, poisoned.3,
-                )
-                .is_err()
-            );
+            assert!(validate_solid_reappearance_publication_posture_v1(
+                poisoned.0, poisoned.1, poisoned.2, poisoned.3,
+            )
+            .is_err());
         }
     }
 
@@ -404,12 +540,10 @@ mod solid_reappearance_publication_posture_tests {
         validate_solid_reappearance_publication_posture_v1(false, true, true, true)
             .expect("atomic event/support publication posture");
         for poisoned in [(false, true, false, false), (false, true, true, false)] {
-            assert!(
-                validate_solid_reappearance_publication_posture_v1(
-                    poisoned.0, poisoned.1, poisoned.2, poisoned.3,
-                )
-                .is_err()
-            );
+            assert!(validate_solid_reappearance_publication_posture_v1(
+                poisoned.0, poisoned.1, poisoned.2, poisoned.3,
+            )
+            .is_err());
         }
     }
 }

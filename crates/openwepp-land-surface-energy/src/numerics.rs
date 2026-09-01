@@ -163,15 +163,23 @@ where
     None
 }
 
-fn centered_jacobian<D, B, E>(
+fn bounded_jacobian<D, B, E, V>(
     evaluator: &mut E,
+    valid_trial: &mut V,
     x: &[f64],
+    current_residual: &[f64],
     unit_scales: &[f64],
     frozen: &B,
 ) -> Result<Vec<Vec<f64>>, LandSurfaceEnergyError>
 where
     E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
+    V: FnMut(&[f64]) -> bool,
 {
+    if !valid_trial(x) || current_residual.len() != x.len() {
+        return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+            "normalized_jacobian_current_domain",
+        ));
+    }
     let perturbations: Vec<f64> = x
         .iter()
         .zip(unit_scales)
@@ -183,11 +191,34 @@ where
         let mut plus = x.to_vec();
         minus[column] -= perturbations[column];
         plus[column] += perturbations[column];
-        let (minus_residual, _) = evaluator(&minus, Some(frozen))?;
-        let (plus_residual, _) = evaluator(&plus, Some(frozen))?;
+        let minus_valid = valid_trial(&minus);
+        let plus_valid = valid_trial(&plus);
+        let minus_residual = minus_valid
+            .then(|| evaluator(&minus, Some(frozen)))
+            .transpose()?
+            .map(|value| value.0);
+        let plus_residual = plus_valid
+            .then(|| evaluator(&plus, Some(frozen)))
+            .transpose()?
+            .map(|value| value.0);
+        if !minus_valid && !plus_valid {
+            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                "normalized_jacobian_bound",
+            ));
+        }
         for row in 0..x.len() {
-            jacobian[row][column] =
-                (plus_residual[row] - minus_residual[row]) / (2.0 * perturbations[column]);
+            jacobian[row][column] = match (&minus_residual, &plus_residual) {
+                (Some(minus), Some(plus)) => {
+                    (plus[row] - minus[row]) / (2.0 * perturbations[column])
+                }
+                (Some(minus), None) => (current_residual[row] - minus[row]) / perturbations[column],
+                (None, Some(plus)) => (plus[row] - current_residual[row]) / perturbations[column],
+                (None, None) => {
+                    return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                        "normalized_jacobian_bound",
+                    ));
+                }
+            };
         }
     }
     Ok(jacobian)
@@ -248,17 +279,48 @@ fn unreachable_solver_state<D>() -> Result<NormalizedSolveOutcome<D>, LandSurfac
 ///
 /// Returns a typed domain error when shapes or residual evaluations are invalid.
 pub fn solve_normalized_system<D, B, E, V, F>(
-    mut evaluator: E,
+    evaluator: E,
     initial: Vec<f64>,
     unit_scales: &[f64],
-    mut valid_trial: V,
-    mut freeze_branches: F,
+    valid_trial: V,
+    freeze_branches: F,
 ) -> Result<NormalizedSolveOutcome<D>, LandSurfaceEnergyError>
 where
     D: Clone,
     E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
     V: FnMut(&[f64]) -> bool,
     F: FnMut(&D) -> B,
+    B: Clone,
+{
+    solve_normalized_system_with_adjustment(
+        evaluator,
+        initial,
+        unit_scales,
+        valid_trial,
+        freeze_branches,
+        |_: &[f64],
+         _: &D,
+         _: &[f64],
+         _: &mut [Vec<f64>],
+         _: &mut [f64]|
+         -> Result<(), LandSurfaceEnergyError> { Ok(()) },
+    )
+}
+
+pub(crate) fn solve_normalized_system_with_adjustment<D, B, E, V, F, A>(
+    mut evaluator: E,
+    initial: Vec<f64>,
+    unit_scales: &[f64],
+    mut valid_trial: V,
+    mut freeze_branches: F,
+    mut adjust_linear_system: A,
+) -> Result<NormalizedSolveOutcome<D>, LandSurfaceEnergyError>
+where
+    D: Clone,
+    E: FnMut(&[f64], Option<&B>) -> Result<(Vec<f64>, D), LandSurfaceEnergyError>,
+    V: FnMut(&[f64]) -> bool,
+    F: FnMut(&D) -> B,
+    A: FnMut(&[f64], &D, &[f64], &mut [Vec<f64>], &mut [f64]) -> Result<(), LandSurfaceEnergyError>,
     B: Clone,
 {
     validate_solver_shape(&initial, unit_scales)?;
@@ -301,8 +363,22 @@ where
             ));
         }
         let frozen = freeze_branches(&detail);
-        let jacobian = centered_jacobian(&mut evaluator, &x, unit_scales, &frozen)?;
-        let right_hand_side: Vec<f64> = normalized.iter().map(|value| -value).collect();
+        let mut jacobian = bounded_jacobian(
+            &mut evaluator,
+            &mut valid_trial,
+            &x,
+            &normalized,
+            unit_scales,
+            &frozen,
+        )?;
+        let mut right_hand_side: Vec<f64> = normalized.iter().map(|value| -value).collect();
+        adjust_linear_system(
+            &x,
+            &detail,
+            unit_scales,
+            &mut jacobian,
+            &mut right_hand_side,
+        )?;
         let (delta, current_pivot, current_matrix_norm) =
             match solve_linear(&jacobian, &right_hand_side) {
                 Ok(value) => value,

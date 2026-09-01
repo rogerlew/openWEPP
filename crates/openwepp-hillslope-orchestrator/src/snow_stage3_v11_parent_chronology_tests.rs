@@ -421,8 +421,39 @@ struct RealParentFixture {
 
 fn real_parent_fixture(case: ChronologyCase, parent_duration_ns: u128) -> RealParentFixture {
     let (shadow, fixture) = v10_shadow_fixture();
-    let support = TimeSupport::new(ModelTimeNs::new(0), ModelTimeNs::new(parent_duration_ns))
-        .expect("chronology parent support");
+    real_parent_fixture_from_shadow(case, 0, parent_duration_ns, shadow, fixture)
+}
+
+fn native_v2_real_parent_fixture(
+    case: ChronologyCase,
+    parent_duration_ns: u128,
+) -> RealParentFixture {
+    let (v1_shadow, fixture) = v10_shadow_fixture();
+    let shadow = crate::v9_real_consumer_shadow::migrate_shadow_to_native_v2_for_parent_test(
+        v1_shadow,
+        parent_duration_ns * 2,
+    );
+    real_parent_fixture_from_shadow(
+        case,
+        parent_duration_ns,
+        parent_duration_ns,
+        shadow,
+        fixture,
+    )
+}
+
+fn real_parent_fixture_from_shadow(
+    case: ChronologyCase,
+    parent_start_ns: u128,
+    parent_duration_ns: u128,
+    shadow: DirectV10RealConsumerShadow,
+    fixture: EndpointFixture,
+) -> RealParentFixture {
+    let support = TimeSupport::new(
+        ModelTimeNs::new(parent_start_ns),
+        ModelTimeNs::new(parent_start_ns + parent_duration_ns),
+    )
+    .expect("chronology parent support");
     let mut interval = DirectV9ShadowIntervalInput {
         lse_forcing: fixture.forcing.clone(),
         vegetation_forcing: fixture.receipt.forcing().clone(),
@@ -786,6 +817,52 @@ fn production_adaptive_deposition_meltout_reports_exact_event_tick() {
         .expect("spawn real parent chronology fixture")
         .join()
         .expect("join real parent chronology fixture");
+}
+
+#[test]
+fn v50_native_v2_real_finalizer_uses_validated_envelope_transition() {
+    std::thread::Builder::new()
+        .name("v50-native-v2-real-finalizer".to_owned())
+        .stack_size(64 * 1024 * 1024)
+        .spawn(|| {
+            let _short_wb14_parent =
+                crate::direct_runtime::permit_short_wb14_parent_support_for_test(
+                    CHRONOLOGY_TEST_PARENT_NS,
+                );
+            let fixture = native_v2_real_parent_fixture(
+                ChronologyCase {
+                    swe_m: 0.08,
+                    cold_delta_k: 8.0,
+                    radiation_mj_m2: 0.0,
+                    open_snow_shortwave_multiplier: 1.0,
+                    reference_specific_humidity: 0.002,
+                    snowfall_m: 0.0,
+                    rain_m: 0.0,
+                    terminal_event: false,
+                    hard_boundary_ns: None,
+                },
+                CHRONOLOGY_TEST_PARENT_NS,
+            );
+            crate::v9_real_consumer_shadow::begin_v50_outer_owner_transition_evidence_v1();
+            execute_real_parent(&fixture, None).expect("V50 native-V2 real finalizer");
+            let rows =
+                crate::v9_real_consumer_shadow::take_v50_outer_owner_transition_evidence_v1();
+            assert!(!rows.is_empty(), "V50 real finalizer produced no proof");
+            assert!(rows.iter().all(|row| {
+                row.reconstructed_vegetation_transaction_id == row.envelope_transaction_id.0
+                    && row.reconstructed_lse_transaction_id == Some(row.envelope_transaction_id)
+                    && row.reconstructed_bgc_transaction_id == row.envelope_transaction_id.0
+            }));
+            assert!(rows.iter().any(|row| {
+                row.beginning_vegetation_transaction_id != row.envelope_transaction_id.0
+                    || row.beginning_lse_transaction_id != Some(row.envelope_transaction_id)
+                    || row.beginning_bgc_transaction_id != row.envelope_transaction_id.0
+                    || row.beginning_soil_transaction_id != Some(row.envelope_transaction_id)
+            }));
+        })
+        .expect("spawn V50 native-V2 real finalizer")
+        .join()
+        .expect("join V50 native-V2 real finalizer");
 }
 
 fn production_adaptive_deposition_meltout_reports_exact_event_tick_on_large_stack() {

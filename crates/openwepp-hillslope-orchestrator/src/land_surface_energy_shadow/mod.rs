@@ -80,6 +80,8 @@ mod receiver_failure;
 mod receiver_preflight;
 mod receiver_validation;
 pub(crate) mod strict_v8_endpoint;
+#[allow(dead_code)]
+pub(crate) mod v3_multitile_adoption;
 #[cfg(feature = "restart-authority-evidence")]
 pub use strict_v8_endpoint::endpoint_rollback_tests::{
     EndpointFixture, endpoint_fixture, two_ofe_routed_endpoint_fixture,
@@ -94,6 +96,14 @@ pub(crate) mod v3_input_projection;
 pub(crate) mod v3_rollback;
 #[cfg(test)]
 mod v3_tests;
+#[cfg(feature = "restart-authority-evidence")]
+mod v4_restart_evidence;
+#[cfg(feature = "restart-authority-evidence")]
+pub use v4_restart_evidence::{
+    AcceptedNegativeZeroV4EvidenceV1, AcceptedNonzeroCarrySplitV4EvidenceV1,
+    AcceptedNonzeroCarryV4SupportEvidenceV1, accepted_negative_zero_v4_evidence_v1,
+    accepted_nonzero_carry_split_v4_evidence_v1, execute_nonzero_carry_successor_after_reload_v1,
+};
 mod v8_input_projection;
 mod v8_projection;
 mod v8_rollback;
@@ -101,7 +111,7 @@ pub(super) use covered_derived_ingress::CoveredIngressSchedule;
 pub(crate) use covered_forest::CoveredForestShadowResult;
 pub(crate) use covered_v8_owner::{
     CoveredCarrierComponentState, CoveredLseIterationState, FixedCapCanopyReleasesByDestination,
-    ProvisionalCoveredV8PhysicalEvaluationV1,
+    ProvisionalCoveredV8PhysicalEvaluationV1, construct_frozen_litter_v3_owner_envelope_v11,
 };
 pub use covered_v8_owner::{CoveredV8OwnerEnvelopeError, UncommittedCoveredV8OwnerEnvelope};
 use finalization_sealing::first_sealed_finalization_violation;
@@ -120,6 +130,7 @@ use receiver_validation::{
 };
 #[cfg(all(test, not(feature = "restart-authority-evidence")))]
 pub(crate) use strict_v8_endpoint::endpoint_rollback_tests::{EndpointFixture, endpoint_fixture};
+pub(crate) use strict_v8_endpoint::execute_frozen_litter_v3_fixed_final_pre_ingress;
 pub(crate) use strict_v8_endpoint::execute_v8_lse_runtime_shadow_internal;
 #[allow(unused_imports)]
 pub(crate) use strict_v8_endpoint::execute_v8_lse_runtime_shadow_v11;
@@ -262,7 +273,7 @@ pub struct UnifiedRealHydrologyArbitration {
     pub requests: Vec<WaterAmount>,
     pub authorizations: Vec<WaterAuthorization>,
     soil: MixedRealHydrologyArbitration,
-    surface: DirectSurfaceLiquidArbitration,
+    surface: Option<DirectSurfaceLiquidArbitration>,
 }
 
 /// Complete default-off water candidate after resource use and timed ingress.

@@ -36,6 +36,11 @@ use super::{HillslopeCliError, SIMOUT_GUARD_ID};
 #[path = "snow_stage3_v11_production_seed_v2_bootstrap.rs"]
 mod snow_stage3_v11_production_seed_v2_bootstrap;
 use snow_stage3_v11_production_seed_v2_bootstrap::bootstrap_soil_thermal_v2;
+#[path = "snow_stage3_v11_production_seed_frozen_litter_v3.rs"]
+mod snow_stage3_v11_production_seed_frozen_litter_v3;
+#[path = "snow_stage3_v11_production_seed_frozen_litter_v4.rs"]
+mod snow_stage3_v11_production_seed_frozen_litter_v4;
+use snow_stage3_v11_production_seed_frozen_litter_v4::bootstrap_frozen_litter_v4_resident;
 
 const SCHEMA: &str = "OPENWEPP_SNOW_STAGE3_V11_PRODUCTION_SEED_V1";
 const VERSION: u16 = 1;
@@ -230,8 +235,10 @@ impl DirectSnowStage3V11ProductionSeedV1 {
     }
 
     /// Reconstruct every embedded owner through the canonical restart DTOs,
-    /// require byte-exact live hydrology equality, and install the production
-    /// attachment. No value is inferred from runner fixtures or defaults.
+    /// require byte-exact live hydrology equality, migrate the retained V1/V2
+    /// bootstrap provenance into a mandatory native frozen-litter V3 resident,
+    /// and install the production attachment. No value is inferred from runner
+    /// fixtures or defaults, and the old wire is not execution evidence.
     #[allow(clippy::too_many_lines)]
     pub(super) fn bootstrap(&self, frame: &mut DirectRunFrame) -> Result<(), HillslopeCliError> {
         let artifact = &self.artifact;
@@ -309,6 +316,13 @@ impl DirectSnowStage3V11ProductionSeedV1 {
             .ok_or_else(|| failure("Stage-3 production seed omits the surface-liquid owner"))?
             .restore_with_configuration(&surface_configuration)
             .map_err(nested)?;
+        let (frozen_litter_v3, frozen_litter_v4) = bootstrap_frozen_litter_v4_resident(
+            &artifact.lse_configuration,
+            &lse_state,
+            &surface_configuration,
+            &surface_state,
+        )
+        .map_err(nested)?;
         frame
             .configure_surface_liquid_shadow(&surface_configuration, surface_state)
             .map_err(nested)?;
@@ -358,7 +372,7 @@ impl DirectSnowStage3V11ProductionSeedV1 {
                     .collect(),
             })
             .collect::<Vec<_>>();
-        let real_consumer = DirectV10RealConsumerShadow::try_new_v2(
+        let mut real_consumer = DirectV10RealConsumerShadow::try_new_v2(
             artifact.vegetation_configuration.clone(),
             vegetation_state,
             artifact.vegetation_owner_id.clone(),
@@ -378,6 +392,9 @@ impl DirectSnowStage3V11ProductionSeedV1 {
             artifact.root_zone_hydraulic_configuration.clone(),
         )
         .map_err(nested)?;
+        real_consumer
+            .install_frozen_litter_v4_resident(frozen_litter_v3, frozen_litter_v4)
+            .map_err(nested)?;
 
         let stage3_by_lane = frame
             .lanes
@@ -1659,6 +1676,17 @@ mod snow_stage3_v11_production_seed_inventory_tests;
 #[cfg(test)]
 #[path = "snow_stage3_v11_production_seed_v2_bootstrap_tests.rs"]
 mod snow_stage3_v11_production_seed_v2_bootstrap_tests;
+
+#[cfg(test)]
+#[path = "snow_stage3_v11_production_seed_frozen_litter_v3_tests.rs"]
+mod snow_stage3_v11_production_seed_frozen_litter_v3_tests;
+
+#[cfg(test)]
+#[path = "snow_stage3_v11_production_seed_frozen_litter_v4_tests.rs"]
+mod snow_stage3_v11_production_seed_frozen_litter_v4_tests;
+#[cfg(test)]
+#[path = "snow_stage3_v11_production_seed_snow_enthalpy_v5_tests.rs"]
+mod snow_stage3_v11_production_seed_snow_enthalpy_v5_tests;
 
 #[cfg(test)]
 mod tests {

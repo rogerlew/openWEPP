@@ -348,6 +348,7 @@ fn surface_potential_phase_with_snapshot(
     solve_open_potential_phase(
         RuntimeTileIdentity {
             transaction_id: TransactionId(41),
+            soil_thermal_transaction_id: TransactionId(41),
             lse_owner_id: ResourceOwnerId::try_new("land-surface-energy-v1").expect("LSE owner"),
             hydrology_owner_id: ResourceOwnerId::try_new("production-hydrology")
                 .expect("hydrology owner"),

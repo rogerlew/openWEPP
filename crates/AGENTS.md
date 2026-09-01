@@ -34,6 +34,10 @@
 - Preserve variable naming continuity with legacy WEPP symbols where contracts require it.
 
 ## Kernel Behavior Rules
+- Production numerical solver work must follow
+  `docs/standards/numerical-solver-architecture.md`: one canonical solver per
+  pre-iteration physical regime, no historical-version or failure-recovery
+  cascade, and same-increment deletion of superseded production paths.
 - No provisional, surrogate, or heuristic process-physics math in production kernel/runtime publication paths.
 - Do not canonicalize-and-proceed on domain violations unless a canonical `SC-*` contract authorizes bounded normalization.
 - Do not remove, loosen, or convert fail-closed guards without contract-first amendment, regression tests, before/after evidence, and accepted dual-review disposition.

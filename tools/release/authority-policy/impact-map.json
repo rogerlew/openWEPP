@@ -2,10 +2,20 @@
   "schema_version": "openwepp-gate-impact-map-v1",
   "policy_id": "ADR-0039",
   "policy_sha256": "7a95025d00a8dd655f1a858c6990573c85ca202a11228520ed2370ba2d09cea3",
-  "generation": 37,
+  "generation": 39,
   "enforcement_status": "SCHEMA_ONLY_NONBLOCKING",
   "unknown_path_action": "ESCALATE_CRITICAL",
   "entries": [
+    {
+      "entry_id": "workspace-hold-lift-watershed-cli-stage3-test",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs" },
+      "owner": "openwepp-snow-energy-owner", "semantic_surface": "watershed-cli-stage3-fixture-authoring", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp-runner"], "covering_test_targets": ["openwepp-runner"],
+      "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
+    },
     {
       "entry_id": "child1-stage3-diagnostics-snow-energy", "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs" },
       "owner": "openwepp-snow-energy-owner", "semantic_surface": "persistent-stage3-physical-diagnostics", "risk_floor": "CRITICAL", "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"], "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"], "contracts": ["SC-SNOWENERGY-001"], "authority_suites": [], "assurance_watches": [], "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"], "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md"]
@@ -1345,6 +1355,106 @@
       "contracts": ["SC-VEGETATIONTRANSACTION-001"], "authority_suites": [], "assurance_watches": [],
       "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
       "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md"]
+    },
+    {
+      "entry_id": "wghl-001e-stage3-committed-publication-wat5",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "accepted-stage3-five-minute-publication", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wghl-001e-stage3-committed-publication-surface-liquid",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "accepted-stage3-routed-runon-custody", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "wghl-001e-stage3-wat5-source",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_wat5.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "accepted-stage3-five-minute-source-assembly", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wghl-001e-stage3-wat5-runon-custody",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_wat5.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "accepted-stage3-routed-runon-reconstruction", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "wghl-001e-stage3-publication-tests",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "accepted-stage3-publication-contract-tests", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wghl-001e-stage3-publication-tail-wat5",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests_tail.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "accepted-stage3-wat5-source-tests", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wghl-001e-stage3-publication-tail-surface-liquid",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/stage3_committed_publication_tests_tail.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "accepted-stage3-routed-runon-tests", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "wghl-001e-accepted-publication-retention",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs" },
+      "owner": "openwepp-water-output-owner", "semantic_surface": "accepted-stage3-wat5-operand-retention", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp", "openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp", "openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-OUTPUT-WAT5-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md"]
+    },
+    {
+      "entry_id": "wghl-001e-real-routed-runon-test",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_wb14_routing_tests.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "accepted-real-child-routed-runon-custody-test", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
+    },
+    {
+      "entry_id": "wghl-001e-public-runon-operands",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs" },
+      "owner": "openwepp-water-balance-process-owner", "semantic_surface": "accepted-public-routed-runon-operands", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-SURFACELIQUID-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-wat5-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md"]
     }
   ]
 }

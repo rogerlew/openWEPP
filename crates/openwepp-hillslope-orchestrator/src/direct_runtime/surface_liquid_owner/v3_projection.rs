@@ -28,6 +28,7 @@ pub struct SurfaceLiquidCompleteOwnerProjectionIdentityV3 {
     pub run_id: u64,
     pub transaction_id: TransactionId,
     pub predecessor_transaction_id: Option<TransactionId>,
+    pub soil_thermal_predecessor_transaction_id: Option<TransactionId>,
     pub parent_support_start_ns: u128,
     pub parent_support_end_ns: u128,
     pub support_start_ns: u128,
@@ -47,6 +48,8 @@ pub struct SurfaceLiquidCompleteOwnerProjectionV3 {
     identity: SurfaceLiquidCompleteOwnerProjectionIdentityV3,
     envelope_sha256: String,
     envelope_bytes: Vec<u8>,
+    phase_adjusted_envelope_bytes: Vec<u8>,
+    wb14_parent_finalized: bool,
     wb14_parent_working_state_bytes: Vec<u8>,
     litter_vapor_receipt_bytes: Vec<Vec<u8>>,
     litter_phase_receipt_bytes: Vec<Vec<u8>>,
@@ -69,6 +72,7 @@ struct CanonicalSurfaceLiquidCompleteOwnerProjectionV3 {
     run_id: u64,
     transaction_id: TransactionId,
     predecessor_transaction_id: Option<TransactionId>,
+    soil_thermal_predecessor_transaction_id: Option<TransactionId>,
     parent_support_start_ns: u128,
     parent_support_end_ns: u128,
     support_start_ns: u128,
@@ -79,6 +83,8 @@ struct CanonicalSurfaceLiquidCompleteOwnerProjectionV3 {
     receipt_chain_sha256: String,
     envelope_sha256: String,
     envelope_bytes: Vec<u8>,
+    phase_adjusted_envelope_bytes: Vec<u8>,
+    wb14_parent_finalized: bool,
     wb14_parent_working_state_bytes: Vec<u8>,
     litter_vapor_receipt_bytes: Vec<Vec<u8>>,
     litter_phase_receipt_bytes: Vec<Vec<u8>>,
@@ -137,7 +143,8 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
         configuration: &SurfaceLiquidConfigurationV2,
         identity: SurfaceLiquidCompleteOwnerProjectionIdentityV3,
         envelope: &SurfaceLiquidOwnerEnvelopeV2,
-        wb14_parent_working_state_bytes: &[u8],
+        phase_adjusted_envelope: &SurfaceLiquidOwnerEnvelopeV2,
+        wb14_parent_working_state_bytes: Option<&[u8]>,
         litter_phase_receipts: &[LitterPhaseReceipt],
         current_ingress_receipts: &[DirectSurfaceLiquidParcelReceipt],
         soil_thermal_owner: &SoilThermalOwnerEnvelopeV2,
@@ -145,6 +152,8 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
     ) -> Result<Self, DirectSurfaceLiquidError> {
         let envelope_bytes =
             envelope.canonical_bytes(configuration.parent(), Some(configuration))?;
+        let phase_adjusted_envelope_bytes =
+            phase_adjusted_envelope.canonical_bytes(configuration.parent(), Some(configuration))?;
         let litter_phase_receipt_bytes = litter_phase_receipts
             .iter()
             .map(litter_phase_receipt_json)
@@ -167,6 +176,11 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
             soil_thermal_restart,
             "soil-thermal restart V2 serialization",
         )?;
+        let (wb14_parent_finalized, wb14_parent_working_state_bytes) =
+            match wb14_parent_working_state_bytes {
+                Some(bytes) => (false, bytes.to_vec()),
+                None => (true, Vec::new()),
+            };
         let mut value = Self {
             schema_sha256: projection_schema_sha256(),
             model_definition_sha256: envelope.model_definition_sha256().into(),
@@ -175,7 +189,9 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
             identity,
             envelope_sha256: envelope.envelope_sha256().into(),
             envelope_bytes,
-            wb14_parent_working_state_bytes: wb14_parent_working_state_bytes.to_vec(),
+            phase_adjusted_envelope_bytes,
+            wb14_parent_finalized,
+            wb14_parent_working_state_bytes,
             litter_vapor_receipt_bytes,
             litter_phase_receipt_bytes,
             current_ingress_receipt_bytes,
@@ -207,8 +223,28 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
     }
 
     #[must_use]
+    pub(crate) fn envelope_sha256(&self) -> &str {
+        &self.envelope_sha256
+    }
+
+    #[must_use]
     pub fn wb14_parent_working_state_bytes(&self) -> &[u8] {
         &self.wb14_parent_working_state_bytes
+    }
+
+    #[must_use]
+    pub fn litter_phase_receipt_bytes(&self) -> &[Vec<u8>] {
+        &self.litter_phase_receipt_bytes
+    }
+
+    #[must_use]
+    pub fn soil_thermal_owner_envelope_bytes(&self) -> &[u8] {
+        &self.soil_thermal_owner_envelope_bytes
+    }
+
+    #[must_use]
+    pub fn soil_thermal_restart_identity_bytes(&self) -> &[u8] {
+        &self.soil_thermal_restart_identity_bytes
     }
 
     pub fn canonical_bytes(
@@ -238,6 +274,8 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
                 run_id: wire.run_id,
                 transaction_id: wire.transaction_id,
                 predecessor_transaction_id: wire.predecessor_transaction_id,
+                soil_thermal_predecessor_transaction_id: wire
+                    .soil_thermal_predecessor_transaction_id,
                 parent_support_start_ns: wire.parent_support_start_ns,
                 parent_support_end_ns: wire.parent_support_end_ns,
                 support_start_ns: wire.support_start_ns,
@@ -249,6 +287,8 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
             },
             envelope_sha256: wire.envelope_sha256,
             envelope_bytes: wire.envelope_bytes,
+            phase_adjusted_envelope_bytes: wire.phase_adjusted_envelope_bytes,
+            wb14_parent_finalized: wire.wb14_parent_finalized,
             wb14_parent_working_state_bytes: wire.wb14_parent_working_state_bytes,
             litter_vapor_receipt_bytes: wire.litter_vapor_receipt_bytes,
             litter_phase_receipt_bytes: wire.litter_phase_receipt_bytes,
@@ -312,23 +352,49 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
             ));
         }
 
-        let wb14 = DirectWb14ParentWorkingStateV2::from_restart_bytes(
-            configuration,
-            &self.wb14_parent_working_state_bytes,
+        let phase_adjusted_envelope = SurfaceLiquidOwnerEnvelopeV2::from_canonical_bytes(
+            configuration.parent(),
+            Some(configuration),
+            &self.phase_adjusted_envelope_bytes,
         )?;
-        let wb14_wire: Wb14ParentWorkingStateV2Frame =
-            serde_json::from_slice(&self.wb14_parent_working_state_bytes)
-                .map_err(|_| schema_failure("WB14 parent V2 frame parse"))?;
-        if wb14_wire.schema.trim().is_empty()
-            || wb14_wire.surface_configuration_sha256 != self.configuration_sha256
-            || wb14_wire.surface_model_definition_sha256 != self.model_definition_sha256
-            || wb14.candidate_owner() != &envelope
-            || wb14_wire.candidate_owner_bytes != self.envelope_bytes
+        if phase_adjusted_envelope.v2_state().is_none()
+            || phase_adjusted_envelope.envelope_sha256()
+                != identity.phase_adjusted_surface_owner_sha256
         {
-            return Err(identity_failure("complete-owner projection V3 WB14 join"));
+            return Err(identity_failure(
+                "complete-owner projection V3 phase-adjusted envelope join",
+            ));
         }
-        self.validate_wb14_support(&wb14_wire)?;
-        Self::validate_wb14_ice_carry(configuration, &wb14_wire)?;
+        Self::validate_wb14_ice_carry(&phase_adjusted_envelope, &envelope)?;
+
+        if self.wb14_parent_finalized {
+            if !self.wb14_parent_working_state_bytes.is_empty()
+                || identity.support_end_ns != identity.parent_support_end_ns
+            {
+                return Err(identity_failure(
+                    "complete-owner projection V3 finalized WB14 join",
+                ));
+            }
+        } else {
+            let wb14 = DirectWb14ParentWorkingStateV2::from_restart_bytes(
+                configuration,
+                &self.wb14_parent_working_state_bytes,
+            )?;
+            let wb14_wire: Wb14ParentWorkingStateV2Frame =
+                serde_json::from_slice(&self.wb14_parent_working_state_bytes)
+                    .map_err(|_| schema_failure("WB14 parent V2 frame parse"))?;
+            if wb14_wire.schema.trim().is_empty()
+                || wb14_wire.surface_configuration_sha256 != self.configuration_sha256
+                || wb14_wire.surface_model_definition_sha256 != self.model_definition_sha256
+                || wb14.candidate_owner() != &envelope
+                || wb14_wire.persistent_beginning_owner_bytes.is_empty()
+                || wb14_wire.candidate_owner_bytes != self.envelope_bytes
+                || identity.support_end_ns >= identity.parent_support_end_ns
+            {
+                return Err(identity_failure("complete-owner projection V3 WB14 join"));
+            }
+            self.validate_wb14_support(&wb14_wire)?;
+        }
 
         let litter_receipts = self.validate_litter_receipts(configuration)?;
         if litter_receipts.first().is_some_and(|first| {
@@ -373,27 +439,17 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
     }
 
     fn validate_wb14_ice_carry(
-        configuration: &SurfaceLiquidConfigurationV2,
-        wire: &Wb14ParentWorkingStateV2Frame,
+        phase_adjusted: &SurfaceLiquidOwnerEnvelopeV2,
+        ending: &SurfaceLiquidOwnerEnvelopeV2,
     ) -> Result<(), DirectSurfaceLiquidError> {
-        let beginning = SurfaceLiquidOwnerEnvelopeV2::from_canonical_bytes(
-            configuration.parent(),
-            Some(configuration),
-            &wire.persistent_beginning_owner_bytes,
-        )?;
-        let ending = SurfaceLiquidOwnerEnvelopeV2::from_canonical_bytes(
-            configuration.parent(),
-            Some(configuration),
-            &wire.candidate_owner_bytes,
-        )?;
-        let beginning = beginning
+        let phase_adjusted = phase_adjusted
             .v2_state()
-            .ok_or_else(|| identity_failure("WB14 parent beginning cross-version owner"))?;
+            .ok_or_else(|| identity_failure("WB14 phase-adjusted cross-version owner"))?;
         let ending = ending
             .v2_state()
-            .ok_or_else(|| identity_failure("WB14 parent candidate cross-version owner"))?;
-        if beginning.records().len() != ending.records().len()
-            || beginning
+            .ok_or_else(|| identity_failure("WB14 ending cross-version owner"))?;
+        if phase_adjusted.records().len() != ending.records().len()
+            || phase_adjusted
                 .records()
                 .iter()
                 .zip(ending.records())
@@ -408,6 +464,13 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
             ));
         }
         Ok(())
+    }
+
+    pub(crate) fn replay_litter_phase_receipts(
+        &self,
+        configuration: &SurfaceLiquidConfigurationV2,
+    ) -> Result<Vec<LitterPhaseReceipt>, DirectSurfaceLiquidError> {
+        self.validate_litter_receipts(configuration)
     }
 
     fn validate_litter_receipts(
@@ -473,13 +536,22 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
         Ok(receipts)
     }
 
-    fn validate_current_ingress_receipts(&self) -> Result<(), DirectSurfaceLiquidError> {
+    pub(crate) fn replay_current_ingress_receipts(
+        &self,
+    ) -> Result<Vec<DirectSurfaceLiquidParcelReceipt>, DirectSurfaceLiquidError> {
+        self.validate_current_ingress_receipts()
+    }
+
+    fn validate_current_ingress_receipts(
+        &self,
+    ) -> Result<Vec<DirectSurfaceLiquidParcelReceipt>, DirectSurfaceLiquidError> {
         let duration_s = std::time::Duration::from_nanos(
             u64::try_from(self.identity.support_end_ns - self.identity.support_start_ns)
                 .map_err(|_| identity_failure("projection support exceeds u64 nanoseconds"))?,
         )
         .as_secs_f64();
         let mut exact_receipts = BTreeSet::new();
+        let mut receipts = Vec::with_capacity(self.current_ingress_receipt_bytes.len());
         for bytes in &self.current_ingress_receipt_bytes {
             let receipt: DirectSurfaceLiquidParcelReceipt = serde_json::from_slice(bytes)
                 .map_err(|_| schema_failure("current-ingress receipt parse"))?;
@@ -502,8 +574,9 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
                     "current-ingress receipt identity or replay",
                 ));
             }
+            receipts.push(receipt);
         }
-        Ok(())
+        Ok(receipts)
     }
 
     fn validate_soil_thermal_join(&self) -> Result<(), DirectSurfaceLiquidError> {
@@ -517,7 +590,8 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
             != self.soil_thermal_owner_envelope_bytes
             || owner.run_id != self.identity.run_id.to_string()
             || owner.transaction_id != self.identity.transaction_id
-            || owner.expected_predecessor_transaction_id != self.identity.predecessor_transaction_id
+            || owner.expected_predecessor_transaction_id
+                != self.identity.soil_thermal_predecessor_transaction_id
             || owner.support_start_ns != self.identity.support_start_ns
             || owner.support_end_ns != self.identity.support_end_ns
             || owner.state.state_sha256.as_str() != self.soil_thermal_owner_state_sha256
@@ -570,6 +644,8 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
             append_frame(&mut bytes, ingress)?;
         }
         append_frame(&mut bytes, &self.wb14_parent_working_state_bytes)?;
+        append_frame(&mut bytes, &self.phase_adjusted_envelope_bytes)?;
+        append_frame(&mut bytes, &[u8::from(self.wb14_parent_finalized)])?;
         append_frame(&mut bytes, &self.envelope_bytes)?;
         append_frame(&mut bytes, &self.soil_thermal_owner_envelope_bytes)?;
         append_frame(&mut bytes, &self.soil_thermal_restart_identity_bytes)?;
@@ -590,6 +666,9 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
                 run_id: self.identity.run_id,
                 transaction_id: self.identity.transaction_id,
                 predecessor_transaction_id: self.identity.predecessor_transaction_id,
+                soil_thermal_predecessor_transaction_id: self
+                    .identity
+                    .soil_thermal_predecessor_transaction_id,
                 parent_support_start_ns: self.identity.parent_support_start_ns,
                 parent_support_end_ns: self.identity.parent_support_end_ns,
                 support_start_ns: self.identity.support_start_ns,
@@ -609,6 +688,8 @@ impl SurfaceLiquidCompleteOwnerProjectionV3 {
                 receipt_chain_sha256: self.identity.receipt_chain_sha256.clone(),
                 envelope_sha256: self.envelope_sha256.clone(),
                 envelope_bytes: self.envelope_bytes.clone(),
+                phase_adjusted_envelope_bytes: self.phase_adjusted_envelope_bytes.clone(),
+                wb14_parent_finalized: self.wb14_parent_finalized,
                 wb14_parent_working_state_bytes: self.wb14_parent_working_state_bytes.clone(),
                 litter_vapor_receipt_bytes: self.litter_vapor_receipt_bytes.clone(),
                 litter_phase_receipt_bytes: self.litter_phase_receipt_bytes.clone(),

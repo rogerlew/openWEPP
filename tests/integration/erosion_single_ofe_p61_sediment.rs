@@ -4,6 +4,9 @@
 //! climate) with an explicit 2x mutation of its dominant storm so the native
 //! post-partition runoff path clears the erosion activation gate. This is a
 //! controlled real-consumer exercise, not a legacy-output oracle.
+//! The common production seed installs `OPENWEPP_SNOW_FREE_LSE_V3`; accepted
+//! frozen-litter supports must retain and replay an
+//! `OPENWEPP_FOREST_LITTER_PHASE_RECEIPT_V1` before this fixture can publish.
 
 use std::fs;
 use std::fs::File;

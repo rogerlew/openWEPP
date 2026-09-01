@@ -13,16 +13,19 @@ use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::{
     EXACT_DYADIC_ENTHALPY_V1_DEFINITION_SHA256, OfeId, SOIL_THERMAL_OWNER_V2_SCHEMA_SHA256,
-    Sha256Digest, SoilThermalOwnerEnvelopeV2, canonical_digest,
+    Sha256Digest, SoilThermalOwnedStateV2, SoilThermalOwnerEnvelopeV2, canonical_digest,
 };
 
 const MAX_WIRE_HEX_DIGITS: usize = 1_048_576;
 const MAX_WIRE_EXPONENT_MAGNITUDE: i32 = 16_777_216;
+const MAX_WIRE_COEFFICIENT_BITS: usize = MAX_WIRE_HEX_DIGITS * 4;
+const WATER_FREEZING_TEMPERATURE_K: f64 = 273.15;
 
 /// `LSEB-E-049` exact-carry schema/domain/overflow refusal.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ExactDyadicEnthalpyError {
     NonFiniteBinary64,
+    Domain(&'static str),
     NonCanonicalWire(&'static str),
     CoefficientResourceLimit,
     ExponentOutOfRange,
@@ -34,6 +37,7 @@ impl fmt::Display for ExactDyadicEnthalpyError {
         formatter.write_str("LSEB-E-049: ")?;
         match self {
             Self::NonFiniteBinary64 => formatter.write_str("nonfinite binary64 exact operand"),
+            Self::Domain(detail) => write!(formatter, "exact-dyadic domain refusal: {detail}"),
             Self::NonCanonicalWire(detail) => {
                 write!(formatter, "noncanonical exact-dyadic wire: {detail}")
             }
@@ -191,7 +195,7 @@ impl ExactDyadicEnthalpy {
     ) -> Result<Self, ExactDyadicEnthalpyError> {
         let mut total = Dyadic::zero();
         for value in values {
-            total = total.add(&Dyadic::from_wire(value)?);
+            total = total.checked_add(&Dyadic::from_wire(value)?)?;
         }
         Ok(total.into_wire())
     }
@@ -201,23 +205,144 @@ impl ExactDyadicEnthalpy {
         beginning_carry: &Self,
         operands: &[f64],
     ) -> Result<Self, ExactDyadicEnthalpyError> {
-        let mut total = Dyadic::from_f64(beginning_high)?.add(&Dyadic::from_wire(beginning_carry)?);
+        let mut total =
+            Dyadic::from_f64(beginning_high)?.checked_add(&Dyadic::from_wire(beginning_carry)?)?;
         for operand in operands {
-            total = total.add(&Dyadic::from_f64(*operand)?);
+            total = total.checked_add(&Dyadic::from_f64(*operand)?)?;
         }
         Ok(total.into_wire())
     }
 
+    /// Multiplies finite binary64 operands without an intermediate
+    /// floating-point rounding.
+    ///
+    /// The empty product is exactly one. Coefficient and exponent growth are
+    /// checked against the canonical wire resource limits before allocation.
+    pub fn exact_product_binary64(factors: &[f64]) -> Result<Self, ExactDyadicEnthalpyError> {
+        let mut product = Dyadic::from_f64(1.0)?;
+        for factor in factors {
+            product = product.checked_multiply(&Dyadic::from_f64(*factor)?)?;
+        }
+        Ok(product.into_wire())
+    }
+
+    /// Computes `exact(left) - exact(right)` with no floating-point
+    /// subtraction.
+    pub fn exact_difference_binary64(
+        left: f64,
+        right: f64,
+    ) -> Result<Self, ExactDyadicEnthalpyError> {
+        let difference =
+            Dyadic::from_f64(left)?.checked_add(&Dyadic::from_f64(right)?.negated())?;
+        Ok(difference.into_wire())
+    }
+
+    /// Multiplies two canonical exact values with checked coefficient and
+    /// exponent growth.
+    pub fn exact_multiply(&self, other: &Self) -> Result<Self, ExactDyadicEnthalpyError> {
+        let left = Dyadic::from_wire(self)?;
+        let right = Dyadic::from_wire(other)?;
+        Ok(left.checked_multiply(&right)?.into_wire())
+    }
+
+    /// Returns whether this exact value lies in the IEEE-754
+    /// round-to-nearest, ties-to-even cell of `candidate_high`.
+    pub fn rounds_to_binary64(
+        &self,
+        candidate_high: f64,
+    ) -> Result<bool, ExactDyadicEnthalpyError> {
+        if !candidate_high.is_finite() {
+            return Err(ExactDyadicEnthalpyError::NonFiniteBinary64);
+        }
+        Ok(self.round_to_f64()?.to_bits() == candidate_high.to_bits())
+    }
+
     pub fn round_to_f64(&self) -> Result<f64, ExactDyadicEnthalpyError> {
+        self.round_nearest_even()
+    }
+
+    /// Projects the exact signed-dyadic value to binary64 using IEEE-754
+    /// round-to-nearest, ties-to-even exactly once.
+    pub fn round_nearest_even(&self) -> Result<f64, ExactDyadicEnthalpyError> {
         Dyadic::from_wire(self)?.round_to_f64()
     }
 
     pub fn rounded_high_and_remainder(&self) -> Result<(f64, Self), ExactDyadicEnthalpyError> {
         let total = Dyadic::from_wire(self)?;
-        let high = total.round_to_f64()?;
-        let remainder = total.add(&Dyadic::from_f64(-high)?).into_wire();
+        let high = self.round_nearest_even()?;
+        let remainder = total.checked_add(&Dyadic::from_f64(-high)?)?.into_wire();
         Ok((high, remainder))
     }
+}
+
+/// Constructs strictly frozen snow enthalpy exactly as
+/// `-exact(W) * exact(c_ice) * (exact(273.15) - exact(T_s))`, then performs
+/// exactly one IEEE-754 round-to-nearest, ties-to-even projection and retains
+/// the exact additive remainder.
+pub fn frozen_snow_enthalpy_high_and_carry(
+    water_kg_m2: f64,
+    ice_heat_capacity_j_kg_k: f64,
+    snow_temperature_k: f64,
+) -> Result<(f64, ExactDyadicEnthalpy), ExactDyadicEnthalpyError> {
+    if !water_kg_m2.is_finite()
+        || !ice_heat_capacity_j_kg_k.is_finite()
+        || !snow_temperature_k.is_finite()
+    {
+        return Err(ExactDyadicEnthalpyError::NonFiniteBinary64);
+    }
+    if water_kg_m2 <= 0.0 {
+        return Err(ExactDyadicEnthalpyError::Domain(
+            "frozen snow water must be positive",
+        ));
+    }
+    if ice_heat_capacity_j_kg_k <= 0.0 {
+        return Err(ExactDyadicEnthalpyError::Domain(
+            "ice heat capacity must be positive",
+        ));
+    }
+    if snow_temperature_k <= 0.0 || snow_temperature_k >= WATER_FREEZING_TEMPERATURE_K {
+        return Err(ExactDyadicEnthalpyError::Domain(
+            "strictly frozen snow temperature must be between 0 K and 273.15 K",
+        ));
+    }
+
+    let temperature_deficit = ExactDyadicEnthalpy::exact_difference_binary64(
+        WATER_FREEZING_TEMPERATURE_K,
+        snow_temperature_k,
+    )?;
+    let magnitude =
+        ExactDyadicEnthalpy::exact_product_binary64(&[-water_kg_m2, ice_heat_capacity_j_kg_k])?;
+    magnitude
+        .exact_multiply(&temperature_deficit)?
+        .rounded_high_and_remainder()
+}
+
+/// Compares two exact reconstructed enthalpy totals against a binary64
+/// absolute tolerance.
+///
+/// Each total is reconstructed as `exact(high) + carry`. The difference and
+/// its comparison with `exact(absolute_tolerance)` remain signed-dyadic and
+/// are never rounded to binary64.
+pub fn exact_reconstructed_enthalpy_within_abs_tolerance(
+    left_high_j_m2: f64,
+    left_carry: &ExactDyadicEnthalpy,
+    right_high_j_m2: f64,
+    right_carry: &ExactDyadicEnthalpy,
+    absolute_tolerance_j_m2: f64,
+) -> Result<bool, ExactDyadicEnthalpyError> {
+    if !absolute_tolerance_j_m2.is_finite() {
+        return Err(ExactDyadicEnthalpyError::NonFiniteBinary64);
+    }
+    if absolute_tolerance_j_m2 < 0.0 {
+        return Err(ExactDyadicEnthalpyError::NonCanonicalWire(
+            "absolute tolerance must be nonnegative",
+        ));
+    }
+    let left = Dyadic::from_f64(left_high_j_m2)?.checked_add(&Dyadic::from_wire(left_carry)?)?;
+    let right = Dyadic::from_f64(right_high_j_m2)?.checked_add(&Dyadic::from_wire(right_carry)?)?;
+    let difference = left.checked_add(&right.negated())?;
+    let tolerance = Dyadic::from_f64(absolute_tolerance_j_m2)?;
+    Ok(difference.cmp_abs_magnitude(&tolerance)? != Ordering::Greater)
 }
 
 /// Correctly rounded projection of the unchanged layer equation
@@ -240,14 +365,14 @@ pub fn project_soil_temperature_k(
         ));
     }
     let beginning_energy = Dyadic::from_f64(beginning_enthalpy_hi_j_m2_ofe_ground)?
-        .add(&Dyadic::from_wire(beginning_enthalpy_carry)?);
+        .checked_add(&Dyadic::from_wire(beginning_enthalpy_carry)?)?;
     let ending_energy = Dyadic::from_f64(ending_enthalpy_hi_j_m2_ofe_ground)?
-        .add(&Dyadic::from_wire(ending_enthalpy_carry)?);
-    let energy_delta = ending_energy.add(&beginning_energy.negated());
+        .checked_add(&Dyadic::from_wire(ending_enthalpy_carry)?)?;
+    let energy_delta = ending_energy.checked_add(&beginning_energy.negated())?;
     let capacity = Dyadic::from_f64(heat_capacity_j_m2_k)?;
     let numerator = Dyadic::from_f64(beginning_temperature_k)?
-        .multiply(&capacity)
-        .add(&energy_delta);
+        .checked_multiply(&capacity)?
+        .checked_add(&energy_delta)?;
     let projected = round_dyadic_ratio_to_f64(&numerator, &capacity)?;
     if !(200.0..=350.0).contains(&projected) {
         return Err(SoilThermalExactCarryError::Domain(
@@ -431,12 +556,19 @@ impl SoilThermalEnergyCreditReceiptV2 {
             ));
         }
 
+        let expected_layer_count: usize = beginning
+            .state
+            .ofes
+            .iter()
+            .map(|ofe| ofe.ordered_layers.len())
+            .sum();
+        let sequential = self.layer_credits.len() > expected_layer_count;
         let flattened: Vec<_> = self
             .layer_credits
             .iter()
             .flat_map(|credit| credit.accepted_operands.iter().cloned())
             .collect();
-        if flattened != expected_operands {
+        if !sequential && flattened != expected_operands {
             return Err(SoilThermalExactCarryError::Receipt(
                 "accepted operand omission, duplication, reorder, or substitution",
             ));
@@ -451,7 +583,7 @@ impl SoilThermalEnergyCreditReceiptV2 {
                 ending_temperature_k: credit.ending_temperature_k,
             })
             .collect();
-        if bound_projections != expected_temperature_projections {
+        if !sequential && bound_projections != expected_temperature_projections {
             return Err(SoilThermalExactCarryError::Receipt(
                 "temperature projection omission, reorder, or substitution",
             ));
@@ -464,12 +596,15 @@ impl SoilThermalEnergyCreditReceiptV2 {
                 "duplicate debit/credit identity across layers",
             ));
         }
-        let expected_layer_count: usize = beginning
-            .state
-            .ofes
-            .iter()
-            .map(|ofe| ofe.ordered_layers.len())
-            .sum();
+        if sequential {
+            return validate_sequential_layer_credits_v2(
+                self,
+                beginning,
+                ending,
+                expected_operands,
+                expected_layer_count,
+            );
+        }
         if self.layer_credits.len() != expected_layer_count {
             return Err(SoilThermalExactCarryError::Cardinality(
                 "incomplete or duplicate layer credit",
@@ -568,6 +703,168 @@ impl SoilThermalEnergyCreditReceiptV2 {
         }
         Ok(())
     }
+}
+
+fn validate_sequential_layer_credits_v2(
+    receipt: &SoilThermalEnergyCreditReceiptV2,
+    beginning: &SoilThermalOwnerEnvelopeV2,
+    ending: &SoilThermalOwnerEnvelopeV2,
+    expected_operands: &[SoilThermalAcceptedEnergyOperandV2],
+    layer_count: usize,
+) -> Result<(), SoilThermalExactCarryError> {
+    if layer_count == 0
+        || receipt.layer_credits.len() % layer_count != 0
+        || receipt.layer_credits.len() / layer_count < 2
+    {
+        return Err(SoilThermalExactCarryError::Cardinality(
+            "sequential layer-credit chain",
+        ));
+    }
+    let mut prior = beginning.state.clone();
+    let mut operands = Vec::new();
+    for child in receipt.layer_credits.chunks_exact(layer_count) {
+        let mut credits = child.iter();
+        let mut next = prior.clone();
+        for ofe in &prior.ofes {
+            for layer in &ofe.ordered_layers {
+                let credit = credits
+                    .next()
+                    .ok_or(SoilThermalExactCarryError::Cardinality(
+                        "sequential child layer credit",
+                    ))?;
+                if credit.ofe_id != ofe.ofe_id
+                    || credit.layer_id != layer.layer_id
+                    || credit.beginning_enthalpy_hi_j_m2_ofe_ground.to_bits()
+                        != layer.enthalpy_hi_j_m2_ofe_ground.to_bits()
+                    || credit.beginning_enthalpy_carry != layer.enthalpy_carry
+                    || credit.beginning_temperature_k.to_bits() != layer.temperature_k.to_bits()
+                    || !credit.heat_capacity_j_m2_k.is_finite()
+                    || credit.heat_capacity_j_m2_k <= 0.0
+                {
+                    return Err(SoilThermalExactCarryError::Identity(
+                        "sequential layer beginning",
+                    ));
+                }
+                validate_operand_order(credit)?;
+                let values = credit
+                    .accepted_operands
+                    .iter()
+                    .map(|operand| operand.energy_j_m2_ofe_ground)
+                    .collect::<Vec<_>>();
+                let total = ExactDyadicEnthalpy::exact_sum_binary64(
+                    layer.enthalpy_hi_j_m2_ofe_ground,
+                    &layer.enthalpy_carry,
+                    &values,
+                )?;
+                let (high, carry) = if values.is_empty() {
+                    (
+                        layer.enthalpy_hi_j_m2_ofe_ground,
+                        layer.enthalpy_carry.clone(),
+                    )
+                } else {
+                    total.rounded_high_and_remainder()?
+                };
+                let projected_temperature = project_soil_temperature_k(
+                    layer.temperature_k,
+                    credit.heat_capacity_j_m2_k,
+                    layer.enthalpy_hi_j_m2_ofe_ground,
+                    &layer.enthalpy_carry,
+                    high,
+                    &carry,
+                )?;
+                if high.to_bits() != credit.ending_enthalpy_hi_j_m2_ofe_ground.to_bits()
+                    || carry != credit.ending_enthalpy_carry
+                    || projected_temperature.to_bits() != credit.ending_temperature_k.to_bits()
+                {
+                    return Err(SoilThermalExactCarryError::Reconstruction);
+                }
+                let next_layer = next.layer_mut(&ofe.ofe_id, &layer.layer_id).ok_or(
+                    SoilThermalExactCarryError::Identity("sequential ending layer"),
+                )?;
+                next_layer.enthalpy_hi_j_m2_ofe_ground = high;
+                next_layer.enthalpy_carry = carry;
+                next_layer.temperature_k = credit.ending_temperature_k;
+                operands.extend(credit.accepted_operands.iter().cloned());
+            }
+        }
+        prior = next;
+    }
+    if !sequential_state_physically_equals(&prior, &ending.state) {
+        return Err(SoilThermalExactCarryError::Reconstruction);
+    }
+    canonicalize_sequential_operands(beginning, &mut operands)?;
+    if operands != expected_operands {
+        return Err(SoilThermalExactCarryError::Receipt(
+            "sequential accepted operand chain",
+        ));
+    }
+    Ok(())
+}
+
+fn sequential_state_physically_equals(
+    left: &SoilThermalOwnedStateV2,
+    right: &SoilThermalOwnedStateV2,
+) -> bool {
+    left.ofes.len() == right.ofes.len()
+        && left.ofes.iter().zip(&right.ofes).all(|(left, right)| {
+            left.ofe_id == right.ofe_id
+                && left.ordered_layers.len() == right.ordered_layers.len()
+                && left
+                    .ordered_layers
+                    .iter()
+                    .zip(&right.ordered_layers)
+                    .all(|(left, right)| {
+                        left.layer_id == right.layer_id
+                            && left.temperature_k.to_bits() == right.temperature_k.to_bits()
+                            && left.enthalpy_hi_j_m2_ofe_ground.to_bits()
+                                == right.enthalpy_hi_j_m2_ofe_ground.to_bits()
+                            && left.enthalpy_carry == right.enthalpy_carry
+                    })
+        })
+}
+
+fn canonicalize_sequential_operands(
+    beginning: &SoilThermalOwnerEnvelopeV2,
+    operands: &mut [SoilThermalAcceptedEnergyOperandV2],
+) -> Result<(), SoilThermalExactCarryError> {
+    let mut ordinals = std::collections::BTreeMap::new();
+    for operand in operands.iter_mut() {
+        let ordinal = ordinals
+            .entry((
+                operand.ofe_id.clone(),
+                operand.layer_id.clone(),
+                operand.source_kind,
+            ))
+            .or_insert(0_u32);
+        operand.ordinal = *ordinal;
+        *ordinal = ordinal
+            .checked_add(1)
+            .ok_or(SoilThermalExactCarryError::Cardinality(
+                "sequential operand ordinal overflow",
+            ))?;
+    }
+    let topology_position = |operand: &SoilThermalAcceptedEnergyOperandV2| {
+        beginning
+            .state
+            .ofes
+            .iter()
+            .position(|ofe| ofe.ofe_id == operand.ofe_id)
+            .and_then(|ofe_index| {
+                beginning.state.ofes[ofe_index]
+                    .ordered_layers
+                    .iter()
+                    .position(|layer| layer.layer_id == operand.layer_id)
+                    .map(|layer_index| (ofe_index, layer_index))
+            })
+    };
+    operands.sort_by_key(|operand| {
+        (
+            topology_position(operand),
+            operand.source_kind,
+            operand.ordinal,
+        )
+    });
+    Ok(())
 }
 
 fn validate_operand_order(
@@ -977,21 +1274,115 @@ impl Dyadic {
         }
     }
 
+    fn checked_add(&self, other: &Self) -> Result<Self, ExactDyadicEnthalpyError> {
+        if self.sign == 0 {
+            return Ok(other.clone());
+        }
+        if other.sign == 0 {
+            return Ok(self.clone());
+        }
+        let exponent2 = self.exponent2.min(other.exponent2);
+        let left_shift = usize::try_from(i64::from(self.exponent2) - i64::from(exponent2))
+            .map_err(|_| ExactDyadicEnthalpyError::ExponentOutOfRange)?;
+        let right_shift = usize::try_from(i64::from(other.exponent2) - i64::from(exponent2))
+            .map_err(|_| ExactDyadicEnthalpyError::ExponentOutOfRange)?;
+        let left_work_bits = self
+            .coefficient
+            .bit_len()
+            .checked_add(left_shift)
+            .ok_or(ExactDyadicEnthalpyError::CoefficientResourceLimit)?;
+        let right_work_bits = other
+            .coefficient
+            .bit_len()
+            .checked_add(right_shift)
+            .ok_or(ExactDyadicEnthalpyError::CoefficientResourceLimit)?;
+        if left_work_bits.max(right_work_bits) > MAX_WIRE_COEFFICIENT_BITS {
+            return Err(ExactDyadicEnthalpyError::CoefficientResourceLimit);
+        }
+        let result = self.add(other);
+        if result.coefficient.bit_len() > MAX_WIRE_COEFFICIENT_BITS {
+            return Err(ExactDyadicEnthalpyError::CoefficientResourceLimit);
+        }
+        if result.exponent2.unsigned_abs() > MAX_WIRE_EXPONENT_MAGNITUDE as u32 {
+            return Err(ExactDyadicEnthalpyError::ExponentOutOfRange);
+        }
+        Ok(result)
+    }
+
     fn negated(&self) -> Self {
         let mut result = self.clone();
         result.sign = -result.sign;
         result
     }
 
-    fn multiply(&self, other: &Self) -> Self {
+    fn checked_multiply(&self, other: &Self) -> Result<Self, ExactDyadicEnthalpyError> {
         if self.sign == 0 || other.sign == 0 {
-            return Self::zero();
+            return Ok(Self::zero());
         }
-        Self::normalized(
-            self.sign * other.sign,
-            self.coefficient.multiply(&other.coefficient),
-            self.exponent2.saturating_add(other.exponent2),
-        )
+        let exponent2 = self
+            .exponent2
+            .checked_add(other.exponent2)
+            .ok_or(ExactDyadicEnthalpyError::ExponentOutOfRange)?;
+        if exponent2.unsigned_abs() > MAX_WIRE_EXPONENT_MAGNITUDE as u32 {
+            return Err(ExactDyadicEnthalpyError::ExponentOutOfRange);
+        }
+        let maximum_product_bits = self
+            .coefficient
+            .bit_len()
+            .checked_add(other.coefficient.bit_len())
+            .ok_or(ExactDyadicEnthalpyError::CoefficientResourceLimit)?;
+        if maximum_product_bits.saturating_sub(1) > MAX_WIRE_COEFFICIENT_BITS {
+            return Err(ExactDyadicEnthalpyError::CoefficientResourceLimit);
+        }
+        let coefficient = self.coefficient.multiply(&other.coefficient);
+        if coefficient.bit_len() > MAX_WIRE_COEFFICIENT_BITS {
+            return Err(ExactDyadicEnthalpyError::CoefficientResourceLimit);
+        }
+        Ok(Self {
+            sign: self.sign * other.sign,
+            coefficient,
+            exponent2,
+        })
+    }
+
+    fn cmp_abs_magnitude(&self, other: &Self) -> Result<Ordering, ExactDyadicEnthalpyError> {
+        if self.sign == 0 {
+            return Ok(if other.sign == 0 {
+                Ordering::Equal
+            } else {
+                Ordering::Less
+            });
+        }
+        if other.sign == 0 {
+            return Ok(Ordering::Greater);
+        }
+
+        let self_top = i128::from(self.exponent2) + self.coefficient.bit_len() as i128;
+        let other_top = i128::from(other.exponent2) + other.coefficient.bit_len() as i128;
+        match self_top.cmp(&other_top) {
+            Ordering::Equal => {}
+            ordering => return Ok(ordering),
+        }
+        Ok(match self.exponent2.cmp(&other.exponent2) {
+            Ordering::Equal => self.coefficient.cmp_magnitude(&other.coefficient),
+            Ordering::Greater => {
+                let shift = usize::try_from(
+                    (i64::from(self.exponent2) - i64::from(other.exponent2)).unsigned_abs(),
+                )
+                .map_err(|_| ExactDyadicEnthalpyError::ExponentOutOfRange)?;
+                self.coefficient
+                    .shl(shift)
+                    .cmp_magnitude(&other.coefficient)
+            }
+            Ordering::Less => {
+                let shift = usize::try_from(
+                    (i64::from(other.exponent2) - i64::from(self.exponent2)).unsigned_abs(),
+                )
+                .map_err(|_| ExactDyadicEnthalpyError::ExponentOutOfRange)?;
+                self.coefficient
+                    .cmp_magnitude(&other.coefficient.shl(shift))
+            }
+        })
     }
 
     fn rounded_integer_at(&self, unit_exponent: i32) -> BigUint {
@@ -1159,6 +1550,10 @@ fn round_dyadic_ratio_to_f64(
 }
 
 #[cfg(test)]
+#[path = "exact_dyadic_enthalpy_v56_tests.rs"]
+mod v56_tests;
+
+#[cfg(test)]
 #[allow(
     clippy::excessive_precision,
     clippy::float_cmp,
@@ -1179,6 +1574,69 @@ mod tests {
         total
             .rounded_high_and_remainder()
             .expect("finite rounded split")
+    }
+
+    #[test]
+    fn exact_reconstructed_enthalpy_absolute_tolerance_boundaries_are_inclusive() {
+        let zero = ExactDyadicEnthalpy::zero();
+        let half_tolerance = ExactDyadicEnthalpy::from_f64(5.0e-7).expect("half tolerance");
+        let tolerance = ExactDyadicEnthalpy::from_f64(1.0e-6).expect("tolerance");
+        let above_tolerance =
+            ExactDyadicEnthalpy::from_f64(f64::from_bits(1.0e-6_f64.to_bits() + 1))
+                .expect("next binary64 above tolerance");
+
+        assert!(
+            exact_reconstructed_enthalpy_within_abs_tolerance(
+                0.0,
+                &zero,
+                0.0,
+                &half_tolerance,
+                1.0e-6,
+            )
+            .expect("exact half-tolerance comparison")
+        );
+        assert!(
+            exact_reconstructed_enthalpy_within_abs_tolerance(0.0, &zero, 0.0, &tolerance, 1.0e-6,)
+                .expect("inclusive exact tolerance comparison")
+        );
+        assert!(
+            !exact_reconstructed_enthalpy_within_abs_tolerance(
+                0.0,
+                &zero,
+                0.0,
+                &above_tolerance,
+                1.0e-6,
+            )
+            .expect("exact above-tolerance comparison")
+        );
+    }
+
+    #[test]
+    fn exact_reconstructed_enthalpy_comparison_joins_high_and_carry_without_mutation() {
+        let left_carry = ExactDyadicEnthalpy::from_f64(0.5).expect("left carry");
+        let right_high = f64::from_bits(1.0e16_f64.to_bits() + 1);
+        let right_carry = ExactDyadicEnthalpy::from_f64(-1.5).expect("right carry");
+        let before = serde_json::to_vec(&(&left_carry, &right_carry)).expect("wire bytes");
+        let left_before = left_carry.clone();
+        let right_before = right_carry.clone();
+
+        assert!(
+            exact_reconstructed_enthalpy_within_abs_tolerance(
+                1.0e16,
+                &left_carry,
+                right_high,
+                &right_carry,
+                0.0,
+            )
+            .expect("high/carry exact cancellation")
+        );
+
+        assert_eq!(left_carry, left_before);
+        assert_eq!(right_carry, right_before);
+        assert_eq!(
+            serde_json::to_vec(&(&left_carry, &right_carry)).expect("wire bytes after comparison"),
+            before
+        );
     }
 
     #[test]

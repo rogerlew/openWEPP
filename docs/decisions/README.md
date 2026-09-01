@@ -47,6 +47,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0041](0041-separate-testgate-from-observational-quality-ci.md) | Separate TESTGATE admission from optional observational quality CI | Accepted 2026-07-24 |
 | [0042](0042-science-implementation-and-calibration-readiness.md) | Implement authoritative science and preserve calibration readiness when data are limited | Accepted 2026-07-27 |
 | [0043](0043-gate-planner-is-a-non-authoritative-advisory-linter.md) | Gate planner is a non-authoritative advisory linter | Accepted 2026-07-27 |
+| [0044](0044-prohibit-accretive-production-solver-dispatch.md) | Prohibit accretive production solver dispatch; require one canonical solver per physical regime and successor deletion | Accepted 2026-09-01 |
 
 At its 2026-07-18 cutover boundary, ADR-0040 amended ADR-0039's transition
 policy: TESTGATE cutover became event-driven after trusted self-hosted runner
@@ -73,6 +74,13 @@ Agents execute and record canonical requirements directly. Linter output,
 failure, or absence cannot alter lifecycle state, while independently binding
 correctness, science, package, quality, security, and protected-data
 requirements remain intact.
+
+ADR-0044 prohibits live historical-version, eligibility, convergence, and
+recovery solver cascades. Each pre-iteration physical regime has one canonical
+production solver; successors delete superseded paths, and nonconvergence uses
+only that solver's bounded response, the canonical adaptive controller, or a
+typed failure. The Stage 3 v33--v57 chain is named noncompliance quarantined for
+removal, not a reusable precedent.
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further

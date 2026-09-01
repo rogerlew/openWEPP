@@ -43,6 +43,11 @@ For code-authoring work where contract authority applies:
 - If baseline-authoritative process physics is not yet ported, keep disposition in `HOLD` and open an actionable follow-on; do not close with temporary formulas.
 
 ## Domain and Guard Rules
+- A process contract may define distinct solvers only for authoritative
+  physical regimes selected before iteration. It may not encode historical
+  solver versions, eligibility cascades, or nonconvergence fallbacks; apply
+  `docs/standards/numerical-solver-architecture.md` and require successor
+  deletion of the superseded production path.
 - Invalid, missing, physically impossible, or out-of-contract process state must fail closed with typed guards unless a canonical `SC-*` contract explicitly authorizes bounded tolerance normalization.
 - Bounded canonicalization is allowed only for contract-cited roundoff or publication-format normalization with explicit threshold, units, provenance, tests, and evidence.
 - Do not change process control flow, hide mass imbalance, replace missing authority, or convert material negative storage/flux/SWE into valid values.

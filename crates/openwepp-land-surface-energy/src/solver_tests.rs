@@ -312,6 +312,26 @@ fn normalized_solver_rejects_increase_remaining_below_one() {
     assert!(failure.step_norms.temperature_k.is_some());
 }
 
+#[test]
+fn normalized_solver_uses_inward_jacobian_probe_at_closed_lower_bound() {
+    let outcome = solve_normalized_system(
+        |trial: &[f64], _: Option<&()>| {
+            if trial[0] < 0.0 {
+                return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+                    "test closed lower bound",
+                ));
+            }
+            Ok((vec![trial[0]], ()))
+        },
+        vec![0.0],
+        &[1.0],
+        |trial| trial[0] >= 0.0,
+        |()| (),
+    )
+    .expect("inward one-sided Jacobian probe");
+    assert!(matches!(outcome, NormalizedSolveOutcome::Accepted { .. }));
+}
+
 fn distinct_bands(total: f64, seed: f64) -> BandDirectionalFluxes {
     let direct_vis = total * (0.10 + seed);
     let diffuse_vis = total * (0.17 - seed / 2.0);

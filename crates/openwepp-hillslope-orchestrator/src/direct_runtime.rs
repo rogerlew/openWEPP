@@ -183,6 +183,10 @@ mod surface_liquid_attachment;
 mod surface_liquid_closure;
 mod surface_liquid_ingress;
 mod surface_liquid_owner;
+#[path = "direct_runtime/surface_liquid_owner/v3_exact_enthalpy.rs"]
+mod surface_liquid_owner_v3_exact_enthalpy;
+#[path = "direct_runtime/surface_liquid_owner/v4_projection.rs"]
+mod surface_liquid_owner_v4_projection;
 pub use surface_liquid_owner::{
     DirectZeroDurationSnowLiquidDispositionV1, DirectZeroDurationSnowLiquidReceiptV1,
     zero_duration_snow_liquid_receipt_set_sha256,
@@ -190,6 +194,8 @@ pub use surface_liquid_owner::{
 pub(crate) use surface_liquid_owner::{
     DirectZeroDurationSnowLiquidInputV1, validate_zero_duration_snow_liquid_surface_delta_v1,
 };
+pub use surface_liquid_owner_v3_exact_enthalpy::*;
+pub use surface_liquid_owner_v4_projection::*;
 mod surface_liquid_wb14;
 #[cfg(test)]
 pub(crate) use surface_liquid_wb14::{
@@ -432,7 +438,8 @@ pub(crate) use surface_liquid_ingress::{
     validate_wb14_parent_replay, wb14_child_replay_binding,
 };
 pub(crate) use surface_liquid_owner::v2_ingress_adapter::{
-    DirectSurfaceLiquidIngressCandidateV2, DirectWb14ParentWorkingStateV2,
+    DirectSurfaceLiquidIngressCandidateV2, DirectSurfaceLiquidResourceCandidateV2,
+    DirectWb14ParentWorkingStateV2,
     execute_surface_liquid_ingress_v2_with_parent_state_and_coupled_binding,
     prepare_surface_liquid_resource_candidate_v2,
 };

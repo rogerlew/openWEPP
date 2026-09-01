@@ -7,10 +7,10 @@ use super::{
     OwnerKind, OwnerRollbackHash, PotentialWaterRequestBatch, ProductionSoilLayerReceiverOperands,
     ProductionSoilReceiverOperands, RealReceiverClosureOperands, RequestingComponent,
     ResourceOwnerId, Sha256, Sha256Digest, SoilLayerId, SoilThermalTileCandidate, SourceId,
-    SurfaceId, TileId, TileState, TransactionId, UnifiedReceiverExpectations, WaterProtocol,
-    WaterProtocolRow, WaterProtocolViolation, checked_surface_liquid_add,
-    checked_surface_liquid_close, checked_surface_liquid_div, checked_surface_liquid_mul,
-    checked_surface_liquid_sub, checked_surface_liquid_sum,
+    SurfaceId, TileId, TileState, UnifiedReceiverExpectations, WaterProtocol, WaterProtocolRow,
+    WaterProtocolViolation, checked_surface_liquid_add, checked_surface_liquid_close,
+    checked_surface_liquid_div, checked_surface_liquid_mul, checked_surface_liquid_sub,
+    checked_surface_liquid_sum,
 };
 use crate::DirectSurfaceLiquidConfigurationRecord;
 use crate::direct_runtime::{
@@ -58,13 +58,23 @@ pub(super) fn shadow_error_code(
 /// surface-owner debit and the exact soil-owner credit. Expected values come
 /// from typed surface receipts, never from the soil credit receipt under test.
 pub fn validate_soil_thermal_v2_surface_cancellation(
-    transaction_id: TransactionId,
+    authority: super::PhysicalSoilEnergyTransactionAuthorityV2,
     support_start_ns: u128,
     support_end_ns: u128,
     surface_owner_id: &ResourceOwnerId,
     operands: &[openwepp_land_surface_energy::SoilThermalAcceptedEnergyOperandV2],
     ingress: &crate::DirectSurfaceLiquidIngressCandidate,
 ) -> Result<(), LandSurfaceEnergyShadowError> {
+    if ingress.transaction_id() != authority.source_transaction_id
+        || ingress
+            .receipts()
+            .iter()
+            .any(|receipt| receipt.transaction_id != authority.source_transaction_id)
+    {
+        return Err(LandSurfaceEnergyShadowError::Identity(
+            "V2 infiltration source transaction",
+        ));
+    }
     let actual = operands
         .iter()
         .filter(|operand| {
@@ -90,8 +100,12 @@ pub fn validate_soil_thermal_v2_surface_cancellation(
             .entry((ofe_id.clone(), soil_thermal_layer_id.clone()))
             .or_insert(0);
         let digest = super::v2_physical_operand_digest(&(
-            "OPENWEPP_ACCEPTED_SOIL_INFILTRATION_ENERGY_V2",
-            transaction_id,
+            "OPENWEPP_ACCEPTED_SOIL_INFILTRATION_ENERGY_V2_TX_SPLIT_V1",
+            ("source_transaction_id", authority.source_transaction_id),
+            (
+                "soil_thermal_transaction_id",
+                authority.soil_thermal_transaction_id,
+            ),
             support_start_ns,
             support_end_ns,
             surface_owner_id,

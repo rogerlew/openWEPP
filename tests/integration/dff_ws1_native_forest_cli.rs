@@ -2,6 +2,9 @@
 //! (`ow-lanuse-1`) hillslope through the production hillslope runner and prove
 //! it parses, reconciles against its disturbed `.sol` policy, resolves an
 //! explicit PMET record (no compatibility fallback), and produces outputs.
+//! The shared production seed installs `OPENWEPP_SNOW_FREE_LSE_V3`; accepted
+//! frozen-litter supports must retain and replay an
+//! `OPENWEPP_FOREST_LITTER_PHASE_RECEIPT_V1` before this fixture can publish.
 
 use std::fs;
 use std::path::{Path, PathBuf};

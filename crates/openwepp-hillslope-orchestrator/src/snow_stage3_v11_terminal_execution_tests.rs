@@ -273,6 +273,58 @@ mod terminal_exact_installation_source_guards {
     }
 
     #[test]
+    fn deferred_native_v2_preterminal_join_reauthenticates_the_retained_trial() {
+        let source = include_str!("snow_stage3_v11_terminal_execution.rs");
+        let validator = source
+            .split("fn validate_native_v2_preterminal_installation_v1(")
+            .nth(1)
+            .expect("native V2 preterminal validator")
+            .split("fn advance_preterminal_state_v1(")
+            .next()
+            .expect("native V2 preterminal validator body");
+        assert!(validator.contains("DeferredNativeV2SoilCustodyV1::try_new("));
+        assert!(validator.contains("deferred_custody.candidate() != endpoint_soil"));
+        assert!(validator.contains("deferred_custody.continuation() != endpoint_continuation"));
+        assert!(!validator.contains("installed_soil_view.physically_equals(endpoint_soil_view)"));
+        assert!(!validator.contains("installed_soil_view == endpoint_soil_view"));
+    }
+
+    #[test]
+    fn deferred_native_v2_stack_input_remains_the_immutable_iterate_beginning() {
+        let source = include_str!("snow_stage3_v11_terminal_execution.rs");
+        let evaluator = source
+            .split("fn evaluate_covered_terminal_candidate_with_evidence_v1")
+            .nth(1)
+            .expect("covered terminal evaluator")
+            .split("fn prepare_exact_terminal_endpoint_v1")
+            .next()
+            .expect("covered terminal evaluator body");
+        let stack_binding = evaluator
+            .find("try_with_deferred_native_v2_soil_custody(custody.clone())")
+            .expect("deferred stack binding");
+        let provider = evaluator
+            .find("let provider_result")
+            .expect("carrier provider execution");
+        assert!(stack_binding < provider);
+        assert!(!evaluator[..provider].contains("request.beginning_joint.receipt_sha256() =="));
+    }
+
+    #[test]
+    fn terminal_batch_non_event_paths_preserve_deferred_native_v2_child_custody() {
+        let source = include_str!("snow_stage3_v11_terminal_execution_batch.rs");
+        assert_eq!(
+            source
+                .matches("deferred_native_v2_soil_custody: None")
+                .count(),
+            0,
+            "a completed physical child must not clear custody needed to authenticate its successor",
+        );
+        assert!(source.contains(
+            "let (parent, consumer, clock, stage3, receipt, deferred_native_v2_soil_custody) = *outcome;"
+        ));
+    }
+
+    #[test]
     fn touched_real_consumer_host_remains_below_hard_source_ceiling() {
         let source = include_str!("v9_real_consumer_shadow.rs");
         assert!(source.lines().count() < 3_000);

@@ -122,7 +122,7 @@ fn contract_binds_existing_lse_identity_and_restart_bytes() {
     let contract = read(CONTRACT);
     for required in [
         "contract_id: SC-SURFACELIQUID-001",
-        "contract_version: 15",
+        "contract_version: 16",
         "status: approved",
         "maturity: active",
         "INV-SURFACELIQUID-001",
@@ -281,9 +281,9 @@ fn version_15_binds_exact_soil_energy_credit_custody_before_production() {
 
     assert!(read(LSE).contains("INV-LANDSURFACEENERGY-150"));
     let registry = read("docs/specifications/science-contracts/index.md");
-    assert!(registry.contains(
-        "v15 binds accepted infiltration-energy custody to a versioned soil-thermal receiver"
-    ));
+    assert!(
+        registry.contains("v16 binds exact per-tile LSE surface enthalpy to a companion owner")
+    );
 }
 
 #[test]
@@ -304,6 +304,57 @@ fn version_15_requires_exact_carry_owner_receipt_and_restart_symbols() {
         assert!(
             production.contains(required),
             "unchanged production is missing required v15 exact-carry symbol {required}"
+        );
+    }
+}
+
+#[test]
+fn version_16_binds_exact_surface_enthalpy_custody_before_production() {
+    let contract = read(CONTRACT);
+    for required in [
+        "contract_version: 16",
+        "INV-SURFACELIQUID-023",
+        "U_t = exact(U_hi,t) + R_U,t",
+        "LseSurfaceEnthalpyOwnerEnvelopeV1",
+        "LseSurfaceEnthalpyEnergyCreditReceiptV1",
+        "SurfaceLiquidCompleteOwnerProjectionV4",
+        "nonauthoritative high mirrors",
+        "retained_ingress_tile_credit",
+        "U_candidate,t = U_begin,t + sum_j exact(Q_surface,t,j)",
+        "rounded once to binary64 nearest-even",
+        "176400000000000..178200000000000 ns",
+        "exact high bits and retained tile-credit operands were not\npreserved",
+        "exact\n60-second floor remains a minimum fallback",
+        "SURFACELIQUID-E-012",
+        "LSEB-E-050",
+    ] {
+        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+    }
+
+    assert!(read(LSE).contains("INV-LANDSURFACEENERGY-151"));
+    let registry = read("docs/specifications/science-contracts/index.md");
+    assert!(
+        registry.contains("v16 binds exact per-tile LSE surface enthalpy to a companion owner")
+    );
+}
+
+#[test]
+fn version_16_requires_exact_surface_owner_receipt_restart_and_projection_symbols() {
+    let orchestrator = read_rust_tree(Path::new("crates/openwepp-hillslope-orchestrator/src"));
+    let lse = read_rust_tree(Path::new("crates/openwepp-land-surface-energy/src"));
+    let restart = read_rust_tree(Path::new("crates/openwepp-persisted-restart-v1/src"));
+    let production = format!("{orchestrator}\n{lse}\n{restart}");
+    for required in [
+        "pub struct LseSurfaceEnthalpyOwnerEnvelopeV1",
+        "pub struct LseSurfaceEnthalpyEnergyCreditReceiptV1",
+        "pub struct LseSurfaceEnthalpyOwnerRestartV1",
+        "pub struct LseSurfaceEnthalpyOwnerCheckpointV1",
+        "SurfaceLiquidCompleteOwnerProjectionV4",
+        "SURFACELIQUID-E-012",
+    ] {
+        assert!(
+            production.contains(required),
+            "unchanged production is missing required v16 exact-surface symbol {required}"
         );
     }
 }
@@ -348,9 +399,17 @@ fn version_9_binds_multi_lane_stage3_parent_release() {
     ] {
         assert!(contract.contains(required), "{CONTRACT} missing {required}");
     }
+    let registry_row = registry
+        .lines()
+        .find(|line| line.starts_with("| `SC-SURFACELIQUID-001` |"))
+        .expect("surface-liquid lifecycle registry row");
     assert!(
-        registry
-            .contains("v13 retains the exact 60-second adaptive floor and conservative routing",)
+        registry_row.starts_with(
+            "| `SC-SURFACELIQUID-001` | Persistent Snow-Free Surface-Liquid Hydrology Custody Contract | `approved` | `active` |"
+        )
+    );
+    assert!(
+        registry_row.contains("v16 binds exact per-tile LSE surface enthalpy to a companion owner")
     );
     assert!(!registry.contains("multi-lane covered Stage-3 remains unauthorized"));
 }

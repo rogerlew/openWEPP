@@ -4,7 +4,7 @@ title: Persistent Snow-Free Surface-Liquid Hydrology Custody Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology/land-surface-energy reviewer
-contract_version: 15
+contract_version: 16
 producer_scope:
   - Persistent snow-free bare-surface and forest-litter liquid hydrology state
   - Versioned snow-free forest-litter liquid/ice custody and restart state
@@ -69,6 +69,7 @@ as WB14 supply or soil `frozwt`.
 | `REF-SURFACELIQUID-LITTER-LSE-V3` | `SC-LANDSURFACEENERGY-001` version 14, frozen-litter successor invariants | Exact phase-specific vapor/enthalpy operands and bounded kinetic phase receipt consumed by the surface owner. | `[DIRECT][Static]` |
 | `REF-SURFACELIQUID-LITTER-WATBAL` | `SC-WATBAL-001#INV-WATBAL-103` and daily WB17 ownership in `SC-EVAP-001` | Only post-vapor/post-phase liquid may enter the existing WB14 chronology; litter ice is neither infiltration supply nor soil frozen water. | `[DIRECT][Static]` |
 | `REF-SURFACELIQUID-EXACT-DYADIC` | IEEE 754 binary64 round-to-nearest, ties-to-even; exact integer arithmetic over the finite-binary64 dyadic domain; `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-150` | Receiver-owned exact soil-layer enthalpy total, one correctly rounded binary64 high term, normalized signed-dyadic carry, and exact accepted-credit reconstruction. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `REF-SURFACELIQUID-SURFACE-EXACT-DYADIC` | IEEE 754 binary64 round-to-nearest, ties-to-even; exact integer arithmetic over finite-binary64 dyadics; `SC-LANDSURFACEENERGY-001#INV-LANDSURFACEENERGY-151` | LSE-owned exact per-tile surface enthalpy, frozen V2/V3 high mirrors, exact retained-ingress tile-credit aggregation, and successor receipt/restart custody. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 Package artifacts summarize implementation evidence but do not replace these
 canonical authorities.
@@ -100,6 +101,10 @@ canonical authorities.
 | `R_k` | `J m^-2 OFE-ground` | exact normalized signed-dyadic soil-layer enthalpy carry |
 | `E_k` | `J m^-2 OFE-ground` | exact receiver-owned soil-layer enthalpy, `exact(H_hi,k)+R_k` |
 | `Q_soil,k`, `Q_top,k`, `Q_inf,k` | `J m^-2 OFE-ground interval` | accepted soil-internal, top-boundary, and infiltration energy operands credited to layer `k` |
+| `U_hi,t` | `J m^-2 tile-ground` | finite nearest-even high term of authoritative LSE surface enthalpy; frozen surface-owner V2/LSE V3 fields mirror it on the successor path |
+| `R_U,t` | `J m^-2 tile-ground` | exact normalized signed-dyadic surface-enthalpy carry |
+| `U_t` | `J m^-2 tile-ground` | authoritative LSE surface enthalpy `exact(U_hi,t)+R_U,t` |
+| `Q_retained,t,j` | `J m^-2 tile-ground interval` | exact decode of one named finite accepted retained-ingress tile credit |
 | `Delta t_parent` | `s` | immutable `1800 s` WB14 parent interval and persistent cursor unit |
 | `Delta t_proposed` | `s` | Stage-3 adaptive candidate upper bound, an exact positive integer multiple of `60 s` no greater than the parent remainder |
 | `Delta t_child` | `s` | exact positive coupled-time-selected child support, no greater than `Delta t_proposed` or the parent remainder |
@@ -697,6 +702,7 @@ string. A generic category plus prose detail is not the canonical payload.
 | `INV-SURFACELIQUID-020` | Only post-vapor/post-phase liquid enters current-ingress/WB14 custody. Litter ice is never WB14 liquid supply, runoff, routed runon, soil-layer liquid, or soil `frozwt`; SC-EVAP daily WB17 ownership remains unchanged. | `REF-SURFACELIQUID-LITTER-WATBAL` | ingress/WB14 adapter and complete-owner join | identity/custody; `E-002,E-004..010` | `[DIRECT][Static]`; ice-alias and unchanged-WB14 vectors required |
 | `INV-SURFACELIQUID-021` | V2 model definition, state/restart, phase-specific vapor, phase transfer, closure operands, ordered receipts, successor complete-owner projection, warm start, and rollback bind exact identities and bytes; any failure preserves every V1/V2/V3 beginning and production owner byte. Both unchanged `p61` and native-forest real consumers must read the successor path. | correctness authority model + transaction atomicity | successor owner envelope, restart replay, and real-consumer gates | identity/restart/rollback; `E-001..011` | `[DIRECT][Static]`; unchanged-production V2 pre-red and runtime evidence required |
 | `INV-SURFACELIQUID-022` | Every accepted soil-layer energy credit is owned by a versioned soil-thermal V2 receiver as the exact total `E=exact(H_hi)+R`: aggregate the exact beginning total and every canonical accepted soil-internal, top-boundary, and infiltration operand; round once to finite binary64 nearest-even `H_hi`; retain the exact normalized signed-dyadic remainder `R`. V1 bytes remain frozen, V1-to-V2 initializes exact zero carry, downgrade is prohibited, identity/receipt/restart/checkpoint joins are exact, and any refusal rolls back the complete envelope byte-for-byte. | `REF-SURFACELIQUID-EXACT-DYADIC` + physical energy conservation + transaction atomicity | `SoilThermalOwnerEnvelopeV2`, `SoilThermalEnergyCreditReceiptV2`, restart/checkpoint replay, independent exact reconstruction, and real-consumer gates | schema/domain/identity/closure/rollback; `E-001..003,E-005,E-009..011` | `[DIRECT][Static] + [INFERENCE][Static]`; unchanged-production V2 expected-red and runtime evidence required |
+| `INV-SURFACELIQUID-023` | On the V16 successor path, the LSE exact-surface owner exclusively owns `U=exact(U_hi)+R_U` for every complete surface key. Surface-owner V2 and LSE V3 bytes remain frozen and their enthalpy fields are nonauthoritative bit-identical high mirrors. Every accepted phase-free, fusion, and named retained-ingress tile credit is aggregated exactly, rounded once to finite nearest-even `U_hi`, and retained with its exact normalized signed-dyadic remainder through receipt, projection V4, restart/checkpoint, real consumers, and full rollback. | `REF-SURFACELIQUID-SURFACE-EXACT-DYADIC` + physical energy conservation + transaction atomicity | `LseSurfaceEnthalpyOwnerEnvelopeV1`, `LseSurfaceEnthalpyEnergyCreditReceiptV1`, `SurfaceLiquidCompleteOwnerProjectionV4`, restart/checkpoint replay, independent exact reconstruction, and real-consumer gates | schema/domain/identity/mirror/closure/rollback; `E-001..003,E-005,E-009..012` | `[DIRECT][Static] + [INFERENCE][Static]`; unchanged-production expected-red and `p61`/native runtime evidence required |
 
 ## Producer Obligations
 
@@ -706,6 +712,7 @@ string. A generic category plus prose detail is not the canonical payload.
 | Vegetation/forcing/upstream OFE | Timed, typed ingress parcels with exact OFE/tile/source and mass/enthalpy identity. | Untimed daily scalar, wrong destination, air-temperature enthalpy fallback. |
 | Hydrology configuration/state | Strict complete persistent store, capacities, topology, predecessor lineage, and digest. | Residue, WAT5, snow, soil-layer, or legacy depression-delta alias. |
 | Soil-energy credit producer | Canonically ordered, identity-complete accepted soil-internal, top-boundary, and infiltration energy operands; each operand remains independently reconstructable from its physical receipt. | Rounded aggregate, producer carry/residual, tolerance repair, `nextafter`, forced ULP, or receipt omission/reorder/substitution. |
+| Surface-energy credit producer | Canonically ordered, identity-complete phase-free, fusion, and retained-ingress tile credits, each independently reconstructable from its physical receipt after the named accepted OFE-to-tile conversion. | Producer residual/carry, pre-conversion rational substitute, omitted/duplicated tile credit, tolerance repair, zero snap, `nextafter`, or forced ULP. |
 | Coupled Stage-3 controller | Select `Delta t_proposed` result-blindly on the exact 60-second grid, evaluate each complete-owner candidate from the latest accepted owner set, and supply the exact accepted-slab receipt/support. | Select cadence from snow mass or another physical threshold, infer proposal from elapsed duration, reuse an obsolete beginning state, or treat a zero-time event as physics. |
 | WB14 parent coordinator | One sealed scalar authority per configured OFE, one actual shared-kernel call per OFE/child in topology order, immutable parameter/model identity, ordered child receipts, final parent receipts, retained day carry, zero legacy depression capacity, and exact ground-ingress records. | Independent per-OFE publication, full-day replay, per-parcel Green-Ampt, copied formula, proportional infiltration proxy, raw-rain plus canopy duplication. |
 
@@ -717,6 +724,7 @@ string. A generic category plus prose detail is not the canonical payload.
 | Soil liquid/thermal owners | Independently receive attributed infiltration mass and enthalpy. Soil thermal V2 owns `H_hi`, exact carry `R`, credit receipts, and their successor restart/checkpoint identity. | Accept producer residual or unmatched energy; store carry in the producer; zero a nonzero carry; downgrade to V1. |
 | Routed hydrology | Preserve timing/source/destination and insert only before a later topology lane. | Cycle, backward route, scalar carry, duplicate debit. |
 | Shadow orchestrator/restart | Validate the complete candidate and replace the whole shadow state only after all joins pass. Select and replay the exact V1 or V2 surface-owner/restart tag and successor complete-owner projection. | Partial owner commit, production mutation, synthesized state, implicit ice, or V2-to-V1 fallback. |
+| LSE exact-surface owner | Own authoritative `U=exact(U_hi)+R_U`, require both frozen high mirrors bit-identical, persist/replay the exact receipt and restart/checkpoint chain, and install only through projection V4. | Treat either frozen mirror as independently authoritative, discard a carry/credit, feed carry into flux/phase/temperature, downgrade, or commit separately. |
 | Coupled owner join | Bind exact beginning/ending complete-owner sets, coupled slab, ordered WB14 child receipts, and final-only parent receipts/cursor transition. | Digest-only trust, inactive-owner mutation, omitted receipt, or child-local persistent lineage. |
 
 ## Symbol Alias Map
@@ -749,6 +757,9 @@ string. A generic category plus prose detail is not the canonical payload.
 | `m_sub,i/m_dep,i` | V3 ice-vapor receipt | litter-vapor custody | `kg H2O m^-2 tile-ground interval` | snow vapor, liquid vapor, `frozwt` |
 | `m_frz/m_mlt` | V3 litter-phase receipt | atomic phase custody | `kg H2O m^-2 tile-ground interval` | soil/snow phase, net-only producer residual |
 | `U_lit` | V3 litter state/receipt enthalpy | phase energy custody | `J m^-2 tile-ground` relative to `T_ref` | power, air-energy proxy, old-capacity temperature increment |
+| `U_hi` | `LseSurfaceEnthalpyStateRecordV1.enthalpy_hi_j_m2_tile` and bit-identical frozen V2/V3 surface-enthalpy fields | successor LSE high term; frozen fields are mirrors only | `J m^-2 tile-ground`; finite binary64 nearest-even from exact total | independently authoritative frozen field, flux, temperature, producer-rounded aggregate |
+| `R_U` | `LseSurfaceEnthalpyStateRecordV1.enthalpy_carry` / `ExactDyadicEnthalpy` | persistent exact LSE carry | `J m^-2 tile-ground`; normalized signed dyadic | floating residual, diagnostic, tolerance bucket, phase/temperature forcing |
+| `Q_retained` | `LseSurfaceEnthalpyEnergyCreditReceiptV1.accepted_operands` with kind `retained_ingress_tile_credit` | accepted per-tile retained-ingress custody | `J m^-2 tile-ground interval`; exact finite-binary64 dyadic after named accepted OFE-to-tile conversion | OFE-ground amount, rational replacement, aggregate producer residual, another tile/support |
 | `H_hi` | `SoilThermalLayerStateV2.enthalpy_hi_j_m2_ofe_ground` | persistent soil-thermal high term | `J m^-2 OFE-ground`; finite binary64, nearest-even from exact total | tile energy, temperature, flux, producer-rounded aggregate |
 | `R` | `SoilThermalLayerStateV2.enthalpy_carry` / `ExactDyadicEnthalpy` | persistent exact receiver carry | `J m^-2 OFE-ground`; normalized signed dyadic | floating residual, diagnostic, tolerance bucket, canonical-zero rewrite |
 | `Q_soil/Q_top/Q_inf` | `SoilThermalEnergyCreditReceiptV2.accepted_operands` | accepted per-layer credit custody | `J m^-2 OFE-ground interval`; exact finite-binary64 dyadics with typed source identity | rate, aggregate producer residual, another layer/support |
@@ -795,6 +806,7 @@ capacity, inferred capacity, or executable default is admitted.
 | `m_evap,l,m_cond,l,m_sub,i,m_dep,i,m_frz,m_mlt` | `kg H2O m^-2 tile-ground interval` | successor phase/vapor boundary entries required before promotion | typed phase-specific receipt fields | tile/OFE conversion is explicit and once; no aggregate phase-erasing scalar |
 | `U_lit,Q_v,Q_phase` | `J m^-2 tile-ground` | successor enthalpy boundary entries required before promotion | typed receipt/state fields | amount, never `W m^-2`; exact `T_ref=273.15 K` reference |
 | `H_hi,R,E,Q_soil,Q_top,Q_inf` | `J m^-2 OFE-ground` | successor soil-thermal exact-carry entries required before promotion | finite binary64 high term plus canonical arbitrary-precision signed-dyadic carry and typed credit operands | same unit/basis throughout; no conversion, publication, scalar tolerance, or producer residual |
+| `U_hi,R_U,U,Q_surface,Q_retained` | `J m^-2 tile-ground` | successor LSE surface-enthalpy exact-carry entries required before promotion | finite binary64 high term plus canonical arbitrary-precision signed-dyadic carry and typed credit operands | exact arithmetic begins after accepted tile-basis conversion; no publication, scalar tolerance, or producer residual |
 
 Raw dimensional literals are limited to frozen `T_ref`, `C_w`, `C_i`,
 `rho_i`, `rho_w`, `L_f`, `tau_ice`, the named `0.85` capacity, and declared
@@ -833,6 +845,11 @@ Signed zero handling of the existing `H_hi` state is unchanged; only the
 dyadic carry has one schema zero form. No closure tolerance, `nextafter`,
 forced ULP, zero snapping, canonical-zero change, or subnormal flush may alter
 the exact total.
+
+Version-16 surface-energy arithmetic is exact and has no tolerance. Both
+frozen high mirrors equal `U_hi` bit-for-bit. No enthalpy closure envelope,
+`nextafter`, forced ULP, zero snap, discarded sub-ULP credit, canonical-zero
+change, or subnormal flush may alter authoritative `U`.
 
 ## Calibration And Identifiability Posture
 
@@ -911,6 +928,19 @@ old-capacity temperature update; phase-triggered re-solve; ice-as-WB14,
 runoff, soil-liquid, or `frozwt`; stale model/restart identity; production
 downgrade; receipt omission/reorder/replay; producer residual; and rollback at
 every new fallible boundary.
+
+Version-16 vectors additionally cover immutable V2/V3 bytes; exact-zero carry
+adoption; positive/negative sub-ULP retained credit; exact-halfway even/odd
+ties; adjacent-high crossings; opposite-sign cancellation; multi-receipt
+same-tile aggregation; distinct two-tile credits/fractions; fusion plus
+retained ingress; subnormal and largest-finite boundaries; overflow refusal;
+split restart; projection-V4 replay; and full rollback. Poisons reject either
+high-mirror mismatch, missing/duplicate/reordered/wrong-source retained tile
+credit, wrong basis/key/support/transaction/predecessor, stale schema/model/
+definition/restart/checkpoint/projection identity, producer residual, carry as
+temperature/phase forcing, forced ULP, zero snap, discarded credit, downgrade,
+and partial commit. The unchanged `p61` and native-forest consumers must read,
+persist, restore, and advance the authoritative exact total.
 
 Expected values are independently reconstructed from frozen operands rather
 than generated by production Rust.
@@ -1159,6 +1189,102 @@ the high term, zeroing any nonzero carry, floating compensated-sum state,
 subnormal flushing, process-physics changes, production downgrade, persisted
 microstepping or exact-carry diagnostics, and partial commit.
 
+## Version 16 Exact LSE Surface-Enthalpy-Carry Amendment
+
+Version 16 adds one minimal LSE-owned companion to the frozen surface-owner V2
+and LSE V3 states. Those parent bytes remain unchanged. When and only when the
+successor is active, their per-tile `surface_enthalpy_j_m2_tile[_ground]`
+fields are nonauthoritative high mirrors of
+`LseSurfaceEnthalpyOwnerEnvelopeV1`; neither frozen owner may advance that
+field independently. The authoritative state is
+
+```text
+U_t = exact(U_hi,t) + R_U,t                    [J m^-2 tile-ground],
+```
+
+where `U_hi,t` is finite binary64 and `R_U,t` uses the version-15 canonical
+`ExactDyadicEnthalpy` representation. The exact owner has one record for every
+complete ordered LSE surface key and no others. Its schema/definition digest,
+frozen LSE V3 and surface-owner V2 parent digests, configuration/key order,
+owner/state digest, transaction/predecessor, half-open support, accepted
+operand receipt chain, restart, checkpoint, and rollback hashes are mandatory.
+`SurfaceLiquidCompleteOwnerProjectionV4` nests the exact frozen projection-V3
+bytes and this companion; it does not modify projection-V3 serialization.
+
+Checked adoption first proves both frozen high mirrors bit-identical, copies
+those bits to `U_hi`, and initializes canonical exact-zero `R_U`. Temperature
+never synthesizes a carry. Production downgrade, partial adoption, missing
+companion state, or mixed parent identity rejects even when the carry is zero.
+
+For each candidate, the owner validates the exact beginning total and consumes
+one canonical `LseSurfaceEnthalpyEnergyCreditReceiptV1`. Its exhaustive operand
+kinds are `phase_free_surface_energy`, `litter_fusion_energy`, and
+`retained_ingress_tile_credit`. Every operand is the exact dyadic decode of a
+finite binary64 physical receipt amount with exact surface key, source owner,
+source receipt, kind, ordinal, support, transaction/predecessor, unit, and
+tile-ground basis. No producer residual, floating compensation, or carry is an
+input operand.
+
+The retained-ingress adapter preserves the existing physical calculation. It
+groups accepted retained parcel receipts by complete destination surface key,
+orders them by canonical receipt identity, reconstructs the accepted finite
+binary64 OFE-ground group amount, and performs the existing checked binary64
+division by the configured tile fraction. That finite accepted tile amount is
+the named `retained_ingress_tile_credit` and is decoded exactly once. Exact
+carry begins after this named conversion; it neither changes WB14/parcel
+partitioning nor substitutes an exact rational division for the physical
+binary64 result.
+
+For each tile, exact integer arithmetic computes
+
+```text
+U_candidate,t = U_begin,t + sum_j exact(Q_surface,t,j).
+```
+
+The result is rounded once to binary64 nearest-even `U_hi,candidate`; overflow
+or a nonfinite high term rejects. The owner computes
+`R_U,candidate=U_candidate-exact(U_hi,candidate)`, normalizes it, and requires
+exact reconstruction. Both frozen candidate mirrors must then equal the new
+high bits. Carry contributes to exact beginning/ending storage and independent
+closure only. It is not a temperature adjustment, flux, phase amount, solver
+residual, tolerance, or WB14 mass operand.
+
+The exact owner, V2/V3 mirrors, phase/vapor/ingress receipts, projection V4,
+restart/checkpoint, and complete transaction commit atomically. Any missing,
+duplicate, reordered, stale, wrong-key/basis/source/kind/ordinal/support/
+transaction/predecessor/schema/model/definition/digest operand or mirror,
+rounding, reconstruction, replay, restart, or later owner failure returns
+`SURFACELIQUID-E-012` / `LSEB-E-050` and preserves all beginning V1/V2/V3,
+companion, receipt, restart/checkpoint, and production bytes exactly.
+
+Independent vectors reconstruct the exact start, named operands, high/carry,
+ending total, and high-mirror joins. Required cases include zero, positive and
+negative sub-ULP retained credit; exact-halfway ties; adjacent-high crossing;
+opposite-sign cancellation; multiple same-tile receipts; two unequal tile
+fractions with distinct credits; fusion plus retained ingress; subnormal and
+largest-finite boundaries; overflow refusal; split restart; replay refusal;
+and every identity/operand/mirror poison above. Wrong formulas must differ from
+the expected total, including forced ULP, omitted credit, duplicated credit,
+OFE-ground credit used as tile-ground, rational pre-round division, another
+tile's credit, and producer-residual closure.
+
+The retained `p61` run reached support
+`176400000000000..178200000000000 ns` and identified the sub-ULP high-term
+predicate, but its exact high bits and retained tile-credit operands were not
+preserved. They are therefore unavailable for a numeric pre-implementation
+oracle and must not be guessed. The implementation gate must capture the typed
+physical operands from the unchanged fixture, independently reconstruct exact
+closure, persist/reload the successor, and prove the next support consumes it.
+The unchanged native-forest fixture must prove the same real downstream path.
+
+This representation amendment changes no V14 liquid/ice mass or fusion law,
+phase-specific vapor, ingress/WB14 chronology, event, topology, receipt
+cardinality, physical tolerance, rollback, or fail-closed behavior. The exact
+60-second floor remains a minimum fallback and stable ordinary supports must
+accept substantially larger steps. Forced ULPs, `nextafter`, zero snap,
+tolerance/discard, subnormal flush, carry-driven physics, persisted carry or
+microstepping diagnostics, and partial commit are prohibited.
+
 ## Terminal Meltout Receipt And Partial-WB14 Amendment
 
 `INV-SURFACELIQUID-010` admits one `terminal_receiver_v1` ingress parcel keyed
@@ -1360,6 +1486,7 @@ persistent continuation advance.
 | `SURFACELIQUID-V12-INVERSE-BASIS-AUTHORIZATION` | Section 2 checked OFE/tile-basis authorization rule | `active` | `maps-to-existing-INV` | `INV-SURFACELIQUID-003, INV-SURFACELIQUID-004` | `none` | One common binary64 scale must make both the OFE-ground authorization sum and the exact resource-phase tile-ground inverse sum no greater than their immutable beginning supplies; no clamp or candidate tolerance is admitted. |
 | `SURFACELIQUID-V14-FROZEN-LITTER-V2` | Frozen Forest-Litter Surface-Owner V2 Amendment above | `active` | `new-INV` | `INV-SURFACELIQUID-016, INV-SURFACELIQUID-017, INV-SURFACELIQUID-018, INV-SURFACELIQUID-019, INV-SURFACELIQUID-020, INV-SURFACELIQUID-021` | `flagged-binding-addition` | Admits only the immutable snow-free forest-litter liquid/ice successor after contract review, production closure, exact restart/rollback, independent mass/energy reconstruction, and both real-consumer gates. |
 | `SURFACELIQUID-V15-SOIL-THERMAL-EXACT-CARRY` | Version 15 Exact Soil-Thermal Enthalpy-Carry Amendment above | `active` | `new-INV` | `INV-SURFACELIQUID-022` | `flagged-binding-addition` | Admits only receiver-owned exact energy representation/custody with a finite binary64 high term and normalized signed-dyadic carry; constitutive physics and chronology remain unchanged. |
+| `SURFACELIQUID-V16-SURFACE-ENTHALPY-EXACT-CARRY` | Version 16 Exact LSE Surface-Enthalpy-Carry Amendment above | `active` | `new-INV` | `INV-SURFACELIQUID-023` | `flagged-binding-addition` | Admits one minimal LSE-owned exact per-tile enthalpy companion with frozen surface-owner V2/LSE V3 high mirrors, exact named retained tile-credit custody, and successor projection/restart/rollback. |
 
 ## Gap Register And Promotability
 
@@ -1372,6 +1499,7 @@ persistent continuation advance.
 | `GAP-SURFACELIQUID-005` multi-production-lane covered Stage-3 parent execution | `CLOSED` | Version 9 admits the lane-keyed parent after real snow/snow-free and dual-resolved-snow attachment fixtures, independent per-lane boundary-ledger closure, common-earliest cadence, topology-ordered WB14/runon closure, atomic publication, and child/final-join rollback verification. |
 | `GAP-SURFACELIQUID-006` forest-litter surface-owner/restart V2 production and real consumers | `OPEN`, `NON_PROMOTABLE` | Contract-first authority is frozen; unchanged production must fail the V2 gate until owner, restart, projection, closure, rollback, `p61`, and native-forest evidence pass. |
 | `GAP-SURFACELIQUID-007` soil-thermal owner/restart V2 exact-carry production and real consumers | `OPEN`, `NON_PROMOTABLE` | Version-15 contract/test authority is frozen; unchanged production must fail only for missing exact-carry V2 symbols until owner, receipt, restart/checkpoint, exact closure, rollback, WAT5, `p61`, and native-forest evidence pass. |
+| `GAP-SURFACELIQUID-008` LSE surface-enthalpy exact-carry production and real consumers | `OPEN`, `NON_PROMOTABLE` | Version-16 contract/test authority is frozen; unchanged production must fail only for missing exact-surface owner/receipt/restart/checkpoint/projection symbols until immutable mirror joins, exact closure, rollback, `p61`, and native-forest evidence pass. |
 
 This contract authorizes exact-grid adaptive child-slab attachment, including
 lane-keyed multi-lane covered Stage-3 execution. It does not by itself
@@ -1391,6 +1519,7 @@ rerun; this amendment claims no replacement execution.
 
 | Date | Version | Author | Change |
 |---|---|---|---|
+| 2026-08-31 | 16 | Codex | Added a minimal LSE-owned exact per-tile surface-enthalpy companion `U=exact(U_hi)+R_U`, frozen surface-owner V2/LSE V3 high mirrors, exact named phase-free/fusion/retained-ingress tile-credit aggregation, nearest-even high/canonical carry, successor receipt/restart/checkpoint/projection custody, full rollback and `p61`/native real-consumer gates, with unchanged V14 physics, phase, chronology, tolerances, and exact 60-second floor. |
 | 2026-08-30 | 15 | Codex | Added receiver-owned exact soil-layer enthalpy representation `E=exact(H_hi)+R`, canonical normalized signed-dyadic carry, exact accepted operand reconstruction, one nearest-even high-term rounding, V1-to-V2 zero-carry migration, versioned credit/restart/checkpoint custody, exact rollback, WAT5 sub-ULP and numeric/identity poison vectors, and unchanged physics, v14 phase chronology, tolerances, and 60-second floor. Production remains non-promotable pending the retained contract-first red. |
 | 2026-08-30 | 14 | Codex | Added immutable surface-owner/restart V2 authority for snow-free forest-litter liquid/ice, exact V1 migration and byte preservation, phase-specific vapor custody, bounded phase chronology, fusion-energy closure, liquid-only WB14 handoff, successor receipts/restart/rollback, explicit refusals, and unchanged `p61`/native-forest real-consumer obligations. Production remains non-promotable pending the retained contract-first red. |
 | 2026-08-29 | 13 | Codex | Bound the WB14 child ordinal and digest-keyed per-OFE receipt-map identity as exact per-trial factorization lineage rather than direct-versus-composed physical state. Retained exact accepted-path receipt chronology, replay, custody, event/topology posture, rollback, and mass/energy closure. |

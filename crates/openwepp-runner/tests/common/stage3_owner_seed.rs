@@ -3,12 +3,13 @@ use std::path::Path;
 use std::thread;
 
 const SEED_FILE: &str = "snow_stage3_v11_owner_seed.json";
-const TWO_DAY_SEED: &[u8] = include_bytes!("../fixtures/snow_stage3_v11_owner_seed_two_day.json");
+const FROZEN_LITTER_V4_SEED: &[u8] =
+    include_bytes!("../fixtures/snow_stage3_v11_owner_seed_frozen_litter_v4.json");
 
 #[test]
-fn checked_seed_and_explicit_runfile_binding_are_current() {
-    let artifact: serde_json::Value =
-        serde_json::from_slice(TWO_DAY_SEED).expect("checked Stage-3 owner seed should parse");
+fn checked_successor_seed_and_explicit_runfile_binding_are_current() {
+    let artifact: serde_json::Value = serde_json::from_slice(FROZEN_LITTER_V4_SEED)
+        .expect("checked frozen-litter V4 Stage-3 owner seed should parse");
     assert_eq!(
         artifact.get("schema").and_then(serde_json::Value::as_str),
         Some("OPENWEPP_SNOW_STAGE3_V11_PRODUCTION_SEED_V1")
@@ -34,7 +35,8 @@ fn checked_seed_and_explicit_runfile_binding_are_current() {
 /// construction, not a production default or missing-input fallback.
 pub(crate) fn install(run_dir: &Path, runfile_payload: &str) -> String {
     install_matching_native_inputs(run_dir);
-    fs::write(run_dir.join(SEED_FILE), TWO_DAY_SEED).expect("write explicit Stage-3 owner seed");
+    fs::write(run_dir.join(SEED_FILE), FROZEN_LITTER_V4_SEED)
+        .expect("write explicit frozen-litter V4 Stage-3 owner seed");
 
     render_runfile(runfile_payload)
 }

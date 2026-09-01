@@ -5,12 +5,49 @@ use openwepp_hillslope_orchestrator::{
 
 use crate::{
     BiogeochemistryStateRestartV1, CompleteCommittedOwnerStateV1,
-    DirectGsiOwnerConfigurationRestartV1, DirectGsiOwnerStateRestartV1, DirectHydrologyRestartV1,
-    DirectSurfaceLiquidConfigurationRestartV1, LseV2StateRestartV1, ScientificOwnerStateSetV1,
-    Sha256Hex, SnowFreeHalfHourProviderCursorRestartV1,
-    SnowFreeHalfHourStaticConfigurationRestartV1, SoilThermalStateRestartV1,
-    VegetationV10StateRestartV1,
+    DirectGsiOwnerConfigurationRestartV1, DirectGsiOwnerStateRestartV1,
+    DirectHydrologyExactEnthalpyRestartV2, DirectHydrologyRestartV1,
+    DirectSurfaceLiquidConfigurationRestartV1, ExpectedSnowStage3V11ExactResidentContextsV4,
+    ExpectedStage3CommittedDayArchiveV3, LseV2StateRestartV1, ScientificOwnerStateSetV1, Sha256Hex,
+    SnowFreeHalfHourProviderCursorRestartV1, SnowFreeHalfHourStaticConfigurationRestartV1,
+    SnowStage3V11ExactResidentSetV4, SoilThermalStateRestartV1, VegetationV10StateRestartV1,
 };
+
+/// Complete projection inputs for the additive hydrology V2 supplement. The
+/// resident set is independently reconstructed by the checkpoint caller and
+/// rejoined to the live attachment by `DirectHydrologyExactEnthalpyRestartV2`.
+pub struct DirectHydrologyExactEnthalpyProjectionInputsV2<'a> {
+    pub archive: &'a ExpectedStage3CommittedDayArchiveV3<'a>,
+    pub exact_residents: SnowStage3V11ExactResidentSetV4,
+    pub exact_contexts: &'a ExpectedSnowStage3V11ExactResidentContextsV4<'a>,
+}
+
+fn frame_contains_v4(shadow: &DirectV10RealConsumerShadow) -> bool {
+    exact_v4_custody_present(
+        shadow.frozen_litter_v4_resident().is_some(),
+        shadow
+            .restart_authority_hydrology_frame()
+            .snow_stage3_v11_attachment
+            .as_deref()
+            .is_some_and(|attachment| attachment.restart_authority_contains_frozen_litter_v4()),
+    )
+}
+
+#[inline]
+const fn exact_v4_custody_present(direct_resident: bool, nested_resident: bool) -> bool {
+    direct_resident || nested_resident
+}
+
+fn guard_legacy_projection(
+    exact_v4_custody: bool,
+    allow_exact_parent: bool,
+) -> Result<(), &'static str> {
+    if exact_v4_custody && !allow_exact_parent {
+        Err("hydrology V1 projection would omit exact V4 custody")
+    } else {
+        Ok(())
+    }
+}
 
 /// Project every scientific owner from the actual default-off consumer.
 pub fn project_scientific_owner_state_v1(
@@ -18,6 +55,16 @@ pub fn project_scientific_owner_state_v1(
     phase_plan_sha256: &Sha256Hex,
     day_input_digests: &[Sha256Hex],
 ) -> Result<ScientificOwnerStateSetV1, &'static str> {
+    project_scientific_owner_state_v1_inner(shadow, phase_plan_sha256, day_input_digests, false)
+}
+
+fn project_scientific_owner_state_v1_inner(
+    shadow: &DirectV10RealConsumerShadow,
+    phase_plan_sha256: &Sha256Hex,
+    day_input_digests: &[Sha256Hex],
+    allow_exact_parent: bool,
+) -> Result<ScientificOwnerStateSetV1, &'static str> {
+    guard_legacy_projection(frame_contains_v4(shadow), allow_exact_parent)?;
     Ok(ScientificOwnerStateSetV1 {
         vegetation_v10: VegetationV10StateRestartV1::project(
             shadow.vegetation_state(),
@@ -30,11 +77,19 @@ pub fn project_scientific_owner_state_v1(
             shadow.restart_authority_lse_configuration(),
         )
         .map_err(|_| "LSE projection")?,
-        direct_hydrology: DirectHydrologyRestartV1::project(
-            shadow.restart_authority_hydrology_frame(),
-            phase_plan_sha256.clone(),
-            day_input_digests,
-        )
+        direct_hydrology: if allow_exact_parent {
+            DirectHydrologyRestartV1::project_for_exact_parent(
+                shadow.restart_authority_hydrology_frame(),
+                phase_plan_sha256.clone(),
+                day_input_digests,
+            )
+        } else {
+            DirectHydrologyRestartV1::project(
+                shadow.restart_authority_hydrology_frame(),
+                phase_plan_sha256.clone(),
+                day_input_digests,
+            )
+        }
         .map_err(|_| "hydrology projection")?,
         soil_thermal: SoilThermalStateRestartV1::project(
             shadow
@@ -49,12 +104,71 @@ pub fn project_scientific_owner_state_v1(
     })
 }
 
+pub fn project_exact_hydrology_state_v2(
+    shadow: &DirectV10RealConsumerShadow,
+    phase_plan_sha256: &Sha256Hex,
+    day_input_digests: &[Sha256Hex],
+    inputs: DirectHydrologyExactEnthalpyProjectionInputsV2<'_>,
+) -> Result<DirectHydrologyExactEnthalpyRestartV2, &'static str> {
+    if !frame_contains_v4(shadow) {
+        return Err("hydrology V2 projection requires live exact V4 custody");
+    }
+    DirectHydrologyExactEnthalpyRestartV2::project(
+        shadow.restart_authority_hydrology_frame(),
+        phase_plan_sha256.clone(),
+        day_input_digests,
+        inputs.archive,
+        inputs.exact_residents,
+        inputs.exact_contexts,
+    )
+    .map_err(|_| "hydrology exact V2 projection")
+}
+
+pub(crate) fn project_scientific_owner_state_v1_for_exact_parent(
+    shadow: &DirectV10RealConsumerShadow,
+    phase_plan_sha256: &Sha256Hex,
+    day_input_digests: &[Sha256Hex],
+) -> Result<ScientificOwnerStateSetV1, &'static str> {
+    project_scientific_owner_state_v1_inner(shadow, phase_plan_sha256, day_input_digests, true)
+}
+
 /// Project the complete between-days owner envelope from the actual consumer.
 pub fn project_complete_owner_state_v1(
     shadow: &DirectV10RealConsumerShadow,
     phase_plan_sha256: &Sha256Hex,
     day_input_digests: &[Sha256Hex],
     expected_next_day_index: usize,
+) -> Result<CompleteCommittedOwnerStateV1, &'static str> {
+    project_complete_owner_state_v1_inner(
+        shadow,
+        phase_plan_sha256,
+        day_input_digests,
+        expected_next_day_index,
+        false,
+    )
+}
+
+pub(crate) fn project_complete_owner_state_v1_for_exact_parent(
+    shadow: &DirectV10RealConsumerShadow,
+    phase_plan_sha256: &Sha256Hex,
+    day_input_digests: &[Sha256Hex],
+    expected_next_day_index: usize,
+) -> Result<CompleteCommittedOwnerStateV1, &'static str> {
+    project_complete_owner_state_v1_inner(
+        shadow,
+        phase_plan_sha256,
+        day_input_digests,
+        expected_next_day_index,
+        true,
+    )
+}
+
+fn project_complete_owner_state_v1_inner(
+    shadow: &DirectV10RealConsumerShadow,
+    phase_plan_sha256: &Sha256Hex,
+    day_input_digests: &[Sha256Hex],
+    expected_next_day_index: usize,
+    allow_exact_parent: bool,
 ) -> Result<CompleteCommittedOwnerStateV1, &'static str> {
     let native_gsi_state = restart_authority_project_gsi_state(shadow.gsi_state())
         .map_err(|_| "GSI native projection")?;
@@ -79,10 +193,11 @@ pub fn project_complete_owner_state_v1(
             shadow.restart_authority_surface_configuration(),
         )
         .map_err(|_| "surface configuration projection")?,
-        scientific: project_scientific_owner_state_v1(
+        scientific: project_scientific_owner_state_v1_inner(
             shadow,
             phase_plan_sha256,
             day_input_digests,
+            allow_exact_parent,
         )?,
     })
 }
@@ -127,4 +242,30 @@ pub fn checkpoint_identities_v1(
     )
     .map_err(|_| "topology identity projection")?;
     Ok((run, topology))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{exact_v4_custody_present, guard_legacy_projection};
+
+    #[test]
+    fn restart_selection_detects_direct_and_nested_v4_custody() {
+        assert!(exact_v4_custody_present(true, false));
+        assert!(exact_v4_custody_present(false, true));
+        assert!(exact_v4_custody_present(true, true));
+        assert!(!exact_v4_custody_present(false, false));
+    }
+
+    #[test]
+    fn ordinary_v1_refuses_exact_custody_but_v3_only_and_exact_parent_are_admitted() {
+        let direct_v4 = exact_v4_custody_present(true, false);
+        let nested_v4 = exact_v4_custody_present(false, true);
+        let v3_only = exact_v4_custody_present(false, false);
+
+        assert!(guard_legacy_projection(direct_v4, false).is_err());
+        assert!(guard_legacy_projection(nested_v4, false).is_err());
+        assert!(guard_legacy_projection(v3_only, false).is_ok());
+        assert!(guard_legacy_projection(direct_v4, true).is_ok());
+        assert!(guard_legacy_projection(nested_v4, true).is_ok());
+    }
 }

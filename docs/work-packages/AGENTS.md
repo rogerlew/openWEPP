@@ -210,6 +210,12 @@
 - Encode explicit subagent authorization when package-required work depends on delegated reviewers, verifiers, comparator runners, or other role agents.
 - Require dual reviews with finding disposition: `accepted`, `rejected`, `deferred`, or `follow-up`.
 - Require `.rs` line-count governance: 2000+ lines is `WARN`; 3000+ nonexempt files require refactor before closure.
+- Packages touching production numerical solvers must bind
+  `docs/standards/numerical-solver-architecture.md`, inventory every
+  production-reachable solver/regime, prohibit historical or recovery
+  fallback chains, and require deletion of superseded production paths in the
+  successor increment. A known inherited chain must be named as noncompliant
+  quarantine with one removal owner and may not be expanded.
 
 ## DC-ExecPlan Requirements
 - Use a Defect-Closure ExecPlan when closing an observed invariant violation, fail-closed event on valid input, or conservation residual.

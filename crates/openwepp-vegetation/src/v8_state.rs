@@ -57,6 +57,7 @@ pub struct V8OccupancyState {
     pub beta_hyd: f64,
     pub canopy_liquid_kg_h2o_m2_tile_ground: f64,
     pub dry_stem_temperature_k: f64,
+    #[serde(with = "canonical_option_u128")]
     pub last_accepted_transaction_id: Option<u128>,
     pub root_node_potential_mm: f64,
     pub shade_ci_pa: f64,
@@ -128,6 +129,7 @@ impl V8TileCanopyAirState {
 #[serde(deny_unknown_fields)]
 pub struct V8CoupledOwnedState {
     pub configuration_sha256: String,
+    #[serde(with = "canonical_u128")]
     pub last_transaction_id: u128,
     pub model_definition_sha256: String,
     #[serde(with = "occupancy_map")]
@@ -653,6 +655,129 @@ pub(crate) fn v8_test_fixture() -> (VegetationConfiguration, V8CoupledOwnedState
     (target_configuration, migration.initial_state)
 }
 
+mod canonical_u128 {
+    use std::fmt;
+
+    use serde::de::Visitor;
+    use serde::{Deserializer, Serializer};
+
+    pub(super) fn serialize<S>(value: &u128, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        if let Ok(value) = u64::try_from(*value) {
+            serializer.serialize_u64(value)
+        } else {
+            serializer.serialize_str(&value.to_string())
+        }
+    }
+
+    pub(super) fn deserialize<'de, D>(deserializer: D) -> Result<u128, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct CanonicalU128;
+
+        impl Visitor<'_> for CanonicalU128 {
+            type Value = u128;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str(
+                    "a nonnegative u64 JSON integer or a canonical decimal string above u64::MAX",
+                )
+            }
+
+            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E> {
+                Ok(u128::from(value))
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if value.is_empty()
+                    || value.starts_with('0')
+                    || !value.bytes().all(|byte| byte.is_ascii_digit())
+                {
+                    return Err(E::custom("noncanonical decimal u128 string"));
+                }
+                let parsed = value
+                    .parse::<u128>()
+                    .map_err(|_| E::custom("decimal u128 string overflows u128"))?;
+                if parsed <= u128::from(u64::MAX) || parsed.to_string() != value {
+                    return Err(E::custom("noncanonical decimal u128 string"));
+                }
+                Ok(parsed)
+            }
+        }
+
+        deserializer.deserialize_any(CanonicalU128)
+    }
+}
+
+mod canonical_option_u128 {
+    use std::fmt;
+
+    use serde::de::Visitor;
+    use serde::{Deserializer, Serialize, Serializer};
+
+    struct CanonicalU128(u128);
+
+    impl Serialize for CanonicalU128 {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            super::canonical_u128::serialize(&self.0, serializer)
+        }
+    }
+
+    // Serde's `with` contract requires the serializer to borrow the field's
+    // exact `Option<u128>` type rather than accepting `Option<&u128>`.
+    #[allow(clippy::ref_option)]
+    pub(super) fn serialize<S>(value: &Option<u128>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match value {
+            Some(value) => serializer.serialize_some(&CanonicalU128(*value)),
+            None => serializer.serialize_none(),
+        }
+    }
+
+    pub(super) fn deserialize<'de, D>(deserializer: D) -> Result<Option<u128>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct CanonicalOptionU128;
+
+        impl<'de> Visitor<'de> for CanonicalOptionU128 {
+            type Value = Option<u128>;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("null or a canonical u128")
+            }
+
+            fn visit_none<E>(self) -> Result<Self::Value, E> {
+                Ok(None)
+            }
+
+            fn visit_unit<E>(self) -> Result<Self::Value, E> {
+                Ok(None)
+            }
+
+            fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                super::canonical_u128::deserialize(deserializer).map(Some)
+            }
+        }
+
+        deserializer.deserialize_option(CanonicalOptionU128)
+    }
+}
+
 mod occupancy_map {
     use std::collections::BTreeMap;
     use std::fmt;
@@ -824,11 +949,137 @@ mod stratum_map {
     use std::fmt;
     use std::marker::PhantomData;
 
-    use openwepp_kernel_contract::StratumId;
+    use openwepp_kernel_contract::{MaterialDonorClass, ResourceOwnerId, StratumId};
     use serde::de::{MapAccess, Visitor};
-    use serde::{Deserializer, Serializer};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-    use super::StratumSharedState;
+    use crate::PhenologyPhase;
+    use crate::carbon_nitrogen::{
+        ElementPool, MaterialTransfer, ReceiverClass, Tissue, TissuePool,
+    };
+
+    use super::{StratumSharedState, canonical_u128};
+
+    #[derive(Deserialize, Serialize)]
+    #[serde(deny_unknown_fields)]
+    struct MaterialTransferWire {
+        #[serde(with = "canonical_u128")]
+        transaction_id: u128,
+        owner_id: ResourceOwnerId,
+        proposal_id: u64,
+        donor: MaterialDonorClass,
+        receiver: ReceiverClass,
+        carbon: f64,
+        nitrogen: f64,
+        dry_matter: f64,
+    }
+
+    impl From<&MaterialTransfer> for MaterialTransferWire {
+        fn from(value: &MaterialTransfer) -> Self {
+            Self {
+                transaction_id: value.transaction_id,
+                owner_id: value.owner_id.clone(),
+                proposal_id: value.proposal_id,
+                donor: value.donor,
+                receiver: value.receiver,
+                carbon: value.carbon,
+                nitrogen: value.nitrogen,
+                dry_matter: value.dry_matter,
+            }
+        }
+    }
+
+    impl From<MaterialTransferWire> for MaterialTransfer {
+        fn from(value: MaterialTransferWire) -> Self {
+            Self {
+                transaction_id: value.transaction_id,
+                owner_id: value.owner_id,
+                proposal_id: value.proposal_id,
+                donor: value.donor,
+                receiver: value.receiver,
+                carbon: value.carbon,
+                nitrogen: value.nitrogen,
+                dry_matter: value.dry_matter,
+            }
+        }
+    }
+
+    #[derive(Deserialize, Serialize)]
+    #[serde(deny_unknown_fields)]
+    struct StratumSharedStateWire {
+        #[serde(with = "tissue_map")]
+        tissues: BTreeMap<Tissue, TissuePool>,
+        retranslocation_n: f64,
+        nsc_c: f64,
+        xs_c: f64,
+        standing_dead: ElementPool,
+        standing_dead_dm: f64,
+        phase: PhenologyPhase,
+        onset_remaining_s: f64,
+        offset_remaining_s: f64,
+        previous_gsi: f64,
+        pending_transfers: Vec<MaterialTransferWire>,
+        t10_k: f64,
+        leaf_area: f64,
+        root_area: f64,
+        stem_area: f64,
+        #[serde(with = "canonical_u128")]
+        last_transaction_id: u128,
+    }
+
+    impl From<&StratumSharedState> for StratumSharedStateWire {
+        fn from(value: &StratumSharedState) -> Self {
+            Self {
+                tissues: value.tissues.clone(),
+                retranslocation_n: value.retranslocation_n,
+                nsc_c: value.nsc_c,
+                xs_c: value.xs_c,
+                standing_dead: value.standing_dead,
+                standing_dead_dm: value.standing_dead_dm,
+                phase: value.phase,
+                onset_remaining_s: value.onset_remaining_s,
+                offset_remaining_s: value.offset_remaining_s,
+                previous_gsi: value.previous_gsi,
+                pending_transfers: value
+                    .pending_transfers
+                    .iter()
+                    .map(MaterialTransferWire::from)
+                    .collect(),
+                t10_k: value.t10_k,
+                leaf_area: value.leaf_area,
+                root_area: value.root_area,
+                stem_area: value.stem_area,
+                last_transaction_id: value.last_transaction_id,
+            }
+        }
+    }
+
+    impl From<StratumSharedStateWire> for StratumSharedState {
+        fn from(value: StratumSharedStateWire) -> Self {
+            Self {
+                tissues: value.tissues,
+                retranslocation_n: value.retranslocation_n,
+                nsc_c: value.nsc_c,
+                xs_c: value.xs_c,
+                standing_dead: value.standing_dead,
+                standing_dead_dm: value.standing_dead_dm,
+                phase: value.phase,
+                onset_remaining_s: value.onset_remaining_s,
+                offset_remaining_s: value.offset_remaining_s,
+                previous_gsi: value.previous_gsi,
+                pending_transfers: value
+                    .pending_transfers
+                    .into_iter()
+                    .map(MaterialTransfer::from)
+                    .collect(),
+                t10_k: value.t10_k,
+                leaf_area: value.leaf_area,
+                root_area: value.root_area,
+                stem_area: value.stem_area,
+                last_transaction_id: value.last_transaction_id,
+            }
+        }
+    }
 
     pub(super) fn serialize<S>(
         values: &BTreeMap<StratumId, StratumSharedState>,
@@ -837,7 +1088,11 @@ mod stratum_map {
     where
         S: Serializer,
     {
-        serde::Serialize::serialize(values, serializer)
+        values
+            .iter()
+            .map(|(identity, state)| (identity.clone(), StratumSharedStateWire::from(state)))
+            .collect::<BTreeMap<_, _>>()
+            .serialize(serializer)
     }
 
     pub(super) fn deserialize<'de, D>(
@@ -860,19 +1115,74 @@ mod stratum_map {
             {
                 let mut result = BTreeMap::new();
                 let mut previous: Option<StratumId> = None;
-                while let Some((identity, state)) = map.next_entry()? {
+                while let Some((identity, state)) =
+                    map.next_entry::<StratumId, StratumSharedStateWire>()?
+                {
                     if previous.as_ref().is_some_and(|value| value >= &identity) {
                         return Err(serde::de::Error::custom(
                             "V8 strata are duplicated or not identity-sorted",
                         ));
                     }
                     previous = Some(identity.clone());
-                    result.insert(identity, state);
+                    result.insert(identity, state.into());
                 }
                 Ok(result)
             }
         }
         deserializer.deserialize_map(Strata(PhantomData))
+    }
+
+    mod tissue_map {
+        use std::collections::BTreeMap;
+        use std::fmt;
+        use std::marker::PhantomData;
+
+        use serde::de::{MapAccess, Visitor};
+        use serde::{Deserializer, Serialize, Serializer};
+
+        use super::{Tissue, TissuePool};
+
+        pub(super) fn serialize<S>(
+            values: &BTreeMap<Tissue, TissuePool>,
+            serializer: S,
+        ) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            values.serialize(serializer)
+        }
+
+        pub(super) fn deserialize<'de, D>(
+            deserializer: D,
+        ) -> Result<BTreeMap<Tissue, TissuePool>, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            struct Tissues(PhantomData<()>);
+
+            impl<'de> Visitor<'de> for Tissues {
+                type Value = BTreeMap<Tissue, TissuePool>;
+
+                fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    formatter.write_str("a duplicate-free V8 tissue map")
+                }
+
+                fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+                where
+                    A: MapAccess<'de>,
+                {
+                    let mut result = BTreeMap::new();
+                    while let Some((identity, pool)) = map.next_entry()? {
+                        if result.insert(identity, pool).is_some() {
+                            return Err(serde::de::Error::custom("duplicate V8 tissue identity"));
+                        }
+                    }
+                    Ok(result)
+                }
+            }
+
+            deserializer.deserialize_map(Tissues(PhantomData))
+        }
     }
 }
 
@@ -1219,8 +1529,103 @@ mod tests {
         state.state_sha256 = state.canonical_sha256();
         state.validate(&target).expect("accepted state");
         let bytes = serde_json::to_vec(&state).expect("restart serialize");
+        assert_eq!(
+            format!("{:x}", Sha256::digest(&bytes)),
+            "497b8b6e833ea99cdd3e80f7b598e99e0df1249188a7bddb8c95d6d9ca11c4e4",
+            "the established <=u64 JSON numeric representation must remain byte-identical",
+        );
         let restarted = V8CoupledOwnedState::parse_strict(&bytes, &target).expect("restart parse");
         assert_eq!(restarted, state);
+    }
+
+    #[test]
+    fn u128_wire_is_numeric_through_u64_and_canonical_decimal_above() {
+        #[derive(Debug, Deserialize, PartialEq, Serialize)]
+        struct Required {
+            #[serde(with = "canonical_u128")]
+            value: u128,
+        }
+
+        for (value, expected) in [
+            (0, r#"{"value":0}"#.to_owned()),
+            (u128::from(u64::MAX), format!(r#"{{"value":{}}}"#, u64::MAX)),
+            (
+                u128::from(u64::MAX) + 1,
+                format!(r#"{{"value":"{}"}}"#, u128::from(u64::MAX) + 1),
+            ),
+            (u128::MAX, format!(r#"{{"value":"{}"}}"#, u128::MAX)),
+        ] {
+            let bytes = serde_json::to_vec(&Required { value }).expect("serialize u128");
+            assert_eq!(bytes, expected.as_bytes());
+            assert_eq!(
+                serde_json::from_slice::<Required>(&bytes).expect("deserialize u128"),
+                Required { value },
+            );
+        }
+
+        for rejected in [
+            r#"{"value":-1}"#,
+            r#"{"value":1.0}"#,
+            r#"{"value":""}"#,
+            r#"{"value":"0"}"#,
+            r#"{"value":"01"}"#,
+            r#"{"value":"+18446744073709551616"}"#,
+            r#"{"value":" 18446744073709551616"}"#,
+            r#"{"value":"18446744073709551615"}"#,
+            r#"{"value":"340282366920938463463374607431768211456"}"#,
+        ] {
+            assert!(
+                serde_json::from_str::<Required>(rejected).is_err(),
+                "accepted noncanonical u128 form: {rejected}",
+            );
+        }
+    }
+
+    #[test]
+    fn accepted_state_above_u64_round_trips_all_v8_lineage_as_decimal_strings() {
+        let (target, mut state) = migrated_fixture();
+        let transaction_id = u128::from(u64::MAX) + 1;
+        state.last_transaction_id = transaction_id;
+        for shared in state.strata.values_mut() {
+            shared.last_transaction_id = transaction_id;
+        }
+        for lane in state.occupancies.values_mut() {
+            lane.last_accepted_transaction_id = Some(transaction_id);
+        }
+        let (stratum_id, shared) = state.strata.iter_mut().next().expect("fixture stratum");
+        shared
+            .pending_transfers
+            .push(crate::carbon_nitrogen::MaterialTransfer {
+                transaction_id,
+                owner_id: openwepp_kernel_contract::ResourceOwnerId::try_new(format!(
+                    "stratum:{}",
+                    stratum_id.as_str()
+                ))
+                .expect("stratum owner"),
+                proposal_id: 1,
+                donor: openwepp_kernel_contract::MaterialDonorClass::Leaf,
+                receiver: crate::carbon_nitrogen::ReceiverClass::Metabolic,
+                carbon: 0.0,
+                nitrogen: 0.0,
+                dry_matter: 0.0,
+            });
+        state.state_sha256 = state.canonical_sha256();
+        state.validate(&target).expect("accepted high-u128 state");
+
+        let bytes = serde_json::to_vec(&state).expect("serialize high-u128 state");
+        let decimal = format!(r#""{transaction_id}""#);
+        assert!(
+            std::str::from_utf8(&bytes)
+                .expect("JSON is UTF-8")
+                .matches(&decimal)
+                .count()
+                >= 4,
+            "root, stratum, occupancy, and pending-transfer lineage must use the canonical decimal string",
+        );
+        assert_eq!(
+            V8CoupledOwnedState::parse_strict(&bytes, &target).expect("parse high-u128 state"),
+            state,
+        );
     }
 
     #[test]

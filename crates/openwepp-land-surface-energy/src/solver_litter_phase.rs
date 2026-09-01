@@ -2,11 +2,12 @@
 
 #![allow(clippy::missing_errors_doc)]
 
+use crate::numerics::solve_normalized_system_with_adjustment;
 use crate::{
     BeginningLitterPhaseState, CoveredColumnEvaluation, CoveredColumnInputs, CoveredFrozenBranches,
     CoveredWaterCaps, FinalizedLitterVapor, LandSurfaceEnergyError, LitterPhaseConfiguration,
     LitterVaporEnvironment, LitterVaporReceipt, NormalizedSolveOutcome, PostVaporLitterState,
-    RawLitterVapor, evaluate_raw_litter_vapor, solve_normalized_system,
+    RawLitterVapor, evaluate_raw_litter_vapor,
 };
 use serde::{Deserialize, Serialize};
 
@@ -125,6 +126,73 @@ fn physical_trial(values: &[f64], coordinate_scales: &[f64]) -> Vec<f64> {
         .collect()
 }
 
+fn adjust_v3_inactive_coordinates(
+    column: &CoveredColumnInputs,
+    coordinate_scales: &[f64],
+    scaled_initial: &[f64],
+    scaled_trial: &[f64],
+    detail: &V3PhaseFreeCoveredEvaluation,
+    jacobian: &mut [Vec<f64>],
+    right_hand_side: &mut [f64],
+) -> Result<(), LandSurfaceEnergyError> {
+    if coordinate_scales.len() != scaled_trial.len()
+        || scaled_initial.len() != scaled_trial.len()
+        || jacobian.len() != scaled_trial.len()
+        || right_hand_side.len() != scaled_trial.len()
+    {
+        return Err(LandSurfaceEnergyError::topology_domain(
+            "V3 inactive-coordinate linear-system shape",
+        ));
+    }
+    for (occupancy_index, occupancy) in column.occupancies.iter().enumerate() {
+        let completely_inactive = column.authority.admits_nonpositive_assimilation()
+            && occupancy.sun.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits()
+            && occupancy.shade.leaf_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits()
+            && occupancy.stem_area_m2_m2_tile.to_bits() == 0.0_f64.to_bits()
+            && occupancy.lai.to_bits() == 0.0_f64.to_bits()
+            && occupancy.sai.to_bits() == 0.0_f64.to_bits();
+        if !completely_inactive {
+            continue;
+        }
+        let block_start = 10 * occupancy_index;
+        for local_index in 0..6 {
+            let index = block_start + local_index;
+            jacobian[index].fill(0.0);
+            jacobian[index][index] = 1.0;
+            let target = if local_index < 4 {
+                scaled_initial[index]
+            } else {
+                1.0 / coordinate_scales[index]
+            };
+            right_hand_side[index] = target - scaled_trial[index];
+        }
+    }
+    let canopy_temperature_index = 10 * column.occupancies.len();
+    let canopy_temperature_k =
+        scaled_trial[canopy_temperature_index] * coordinate_scales[canopy_temperature_index];
+    for (occupancy_index, occupancy) in detail.predecessor.occupancies.iter().enumerate() {
+        for (component_index, area) in occupancy
+            .component_areas_m2_m2_tile
+            .iter()
+            .copied()
+            .enumerate()
+        {
+            if area.to_bits() != 0.0_f64.to_bits() {
+                continue;
+            }
+            let index = 10 * occupancy_index + 6 + component_index;
+            jacobian[index].fill(0.0);
+            jacobian[index][index] = 1.0;
+            let target = crate::solver::inactive_component_temperature_anchor_k(
+                component_index,
+                canopy_temperature_k,
+            ) / coordinate_scales[index];
+            right_hand_side[index] = target - scaled_trial[index];
+        }
+    }
+    Ok(())
+}
+
 /// Solve the covered V3 phase-free system with phase-specific vapor present
 /// in every residual and finite-difference evaluation. Coordinate scaling
 /// preserves the governed covered-column step thresholds: `1e-7 mm`,
@@ -143,6 +211,7 @@ pub fn solve_v3_phase_free_covered_column(
         ));
     }
     let scaled_initial = scaled_trial(initial_trial, &coordinate_scales);
+    let scaled_inactive_anchors = scaled_initial.clone();
     let physical_units: Vec<f64> = (0..column.occupancies.len())
         .flat_map(|_| [1000.0, 1000.0, 1000.0, 1000.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
         .chain([1.0, 0.001, 1.0])
@@ -153,7 +222,7 @@ pub fn solve_v3_phase_free_covered_column(
         .zip(&coordinate_scales)
         .map(|(unit, scale)| unit / scale)
         .collect();
-    let result = solve_normalized_system(
+    let result = solve_normalized_system_with_adjustment(
         |scaled: &[f64], frozen: Option<&CoveredFrozenBranches>| {
             let physical = physical_trial(scaled, &coordinate_scales);
             let evaluation =
@@ -167,13 +236,20 @@ pub fn solve_v3_phase_free_covered_column(
         &scaled_units,
         |scaled: &[f64]| {
             let physical = physical_trial(scaled, &coordinate_scales);
-            crate::solver::covered_trial_is_valid(
-                &physical,
-                column.occupancies.len(),
-                crate::solver::covered_ground_uses_liquid_vapor_phase_domain(column),
-            )
+            crate::solver::covered_trial_is_valid(&physical, column.occupancies.len(), false)
         },
         freeze_v3_covered_branches,
+        |trial, detail, _, jacobian, right_hand_side| {
+            adjust_v3_inactive_coordinates(
+                column,
+                &coordinate_scales,
+                &scaled_inactive_anchors,
+                trial,
+                detail,
+                jacobian,
+                right_hand_side,
+            )
+        },
     )?;
     Ok(match result {
         NormalizedSolveOutcome::Accepted {

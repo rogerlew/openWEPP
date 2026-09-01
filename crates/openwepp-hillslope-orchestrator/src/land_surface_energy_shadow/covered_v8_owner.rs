@@ -11,7 +11,7 @@ use std::collections::BTreeMap;
 
 use openwepp_biogeochemistry::{
     BiogeochemistryError, BiogeochemistryOwnerCandidate, BiogeochemistryState, MaterialPool,
-    MaterialProposal, TransformationsMode, construct_biogeochemistry_candidate,
+    MaterialProposal, MaterialReceipt, TransformationsMode, construct_biogeochemistry_candidate,
 };
 use openwepp_kernel_contract::{TileId, TransactionId};
 use openwepp_land_surface_energy::{
@@ -21,15 +21,17 @@ use openwepp_land_surface_energy::{
 use openwepp_vegetation::{
     NitrogenArbiter, UncommittedV8VegetationCandidate, V8ComponentOccupancyBinding,
     V8CoupledOwnedState, V8PersistentForcingReceipt, VegetationConfiguration, VegetationError,
-    construct_uncommitted_v8_vegetation_candidate, execute_uncommitted_v8_persistent_phase,
-    execute_uncommitted_v8_persistent_phase_v11,
+    carbon_nitrogen::MaterialTransfer, construct_uncommitted_v8_vegetation_candidate,
+    execute_uncommitted_v8_persistent_phase, execute_uncommitted_v8_persistent_phase_v11,
 };
 use thiserror::Error;
 
 use super::{
     CoveredForestShadowResult, UnifiedRealHydrologyCandidate,
     multi_tile_runtime::MultiTileRuntimeResult,
-    v8_projection::{V8CoveredProjection, project_covered_forest_v8_passes},
+    v8_projection::{
+        V8CoveredProjection, project_covered_forest_v8_passes, project_multi_tile_v8_passes_v11,
+    },
 };
 
 pub(crate) type FixedCapCanopyReleasesByDestination = BTreeMap<
@@ -118,6 +120,7 @@ pub(crate) struct CoveredCarrierComponentState {
 enum CoveredV8PhysicalOwner {
     Legacy(CoveredForestShadowResult),
     MultiTile(MultiTileRuntimeResult),
+    FrozenLitterV3(UnifiedRealHydrologyCandidate),
 }
 
 /// Unpublished physical result used only while solving the covered Stage-3
@@ -401,6 +404,7 @@ impl CoveredV8PhysicalOwner {
         match self {
             Self::Legacy(value) => value.hydrology_candidate(),
             Self::MultiTile(value) => value.hydrology_candidate(),
+            Self::FrozenLitterV3(value) => value,
         }
     }
 }
@@ -432,6 +436,11 @@ impl UncommittedCoveredV8OwnerEnvelope {
             CoveredV8PhysicalOwner::Legacy(_) => Err(CoveredV8OwnerEnvelopeError::Identity(
                 "fixed-cap release requires multi-tile physical owner",
             )),
+            CoveredV8PhysicalOwner::FrozenLitterV3(_) => {
+                Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "fixed-cap release is unavailable after V3 finalization",
+                ))
+            }
         }
     }
 
@@ -444,6 +453,11 @@ impl UncommittedCoveredV8OwnerEnvelope {
             CoveredV8PhysicalOwner::Legacy(_) => {
                 return Err(CoveredV8OwnerEnvelopeError::Identity(
                     "covered iteration state requires multi-tile physical owner",
+                ));
+            }
+            CoveredV8PhysicalOwner::FrozenLitterV3(_) => {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "covered iteration state is unavailable after V3 finalization",
                 ));
             }
         };
@@ -572,6 +586,11 @@ impl UncommittedCoveredV8OwnerEnvelope {
                     "covered longwave requires multi-tile physical owner",
                 ));
             }
+            CoveredV8PhysicalOwner::FrozenLitterV3(_) => {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "covered longwave is unavailable after V3 finalization",
+                ));
+            }
         };
         let mut receipts = BTreeMap::new();
         for tile in physical.finalized_tiles() {
@@ -605,6 +624,11 @@ impl UncommittedCoveredV8OwnerEnvelope {
             CoveredV8PhysicalOwner::Legacy(_) => {
                 return Err(CoveredV8OwnerEnvelopeError::Identity(
                     "covered shortwave requires multi-tile physical owner",
+                ));
+            }
+            CoveredV8PhysicalOwner::FrozenLitterV3(_) => {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "covered shortwave is unavailable after V3 finalization",
                 ));
             }
         };
@@ -654,6 +678,11 @@ impl UncommittedCoveredV8OwnerEnvelope {
                     "covered optical receipt requires multi-tile physical owner",
                 ));
             }
+            CoveredV8PhysicalOwner::FrozenLitterV3(_) => {
+                return Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "covered optical receipt is unavailable after V3 finalization",
+                ));
+            }
         };
         let mut receipts = BTreeMap::new();
         for tile in physical.finalized_tiles() {
@@ -691,16 +720,28 @@ impl UncommittedCoveredV8OwnerEnvelope {
     pub fn validate(&self) -> Result<(), CoveredV8OwnerEnvelopeError> {
         self.vegetation.validate_sealed()?;
         self.biogeochemistry.validate()?;
-        if self.transaction_id != self.vegetation.transaction_id()
-            || self.transaction_id != self.physical.hydrology().transaction_id()
-            || self.transaction_id != self.biogeochemistry.transaction_id()
-        {
-            return Err(CoveredV8OwnerEnvelopeError::Identity(
-                "heterogeneous transaction identity",
-            ));
-        }
+        validate_owner_transaction_identity(
+            self.transaction_id,
+            self.vegetation.transaction_id(),
+            self.physical.hydrology().transaction_id(),
+            self.biogeochemistry.transaction_id(),
+        )?;
         compare_material_receipts(&self.vegetation, &self.biogeochemistry)
     }
+}
+
+fn validate_owner_transaction_identity(
+    envelope: TransactionId,
+    vegetation: TransactionId,
+    physical: TransactionId,
+    biogeochemistry: TransactionId,
+) -> Result<(), CoveredV8OwnerEnvelopeError> {
+    if envelope != vegetation || envelope != physical || envelope != biogeochemistry {
+        return Err(CoveredV8OwnerEnvelopeError::Identity(
+            "heterogeneous transaction identity",
+        ));
+    }
+    Ok(())
 }
 
 /// Construct BGC independently from the sealed vegetation protocol and join it
@@ -824,6 +865,74 @@ pub(crate) fn construct_multi_tile_v8_owner_envelope_v11(
         vegetation,
         biogeochemistry_beginning,
         failure_hook,
+    )
+}
+
+/// Complete the vegetation/BGC owner join from an already accepted native V3
+/// physical transaction. This is projection-only: it cannot invoke an LSE
+/// solve, water authorization, surface mutation, or WB14 execution.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn construct_frozen_litter_v3_owner_envelope_v11(
+    fixed: &super::v3_multitile_adoption::V3MultiTileAcceptedFixedFinalCandidate,
+    hydrology: UnifiedRealHydrologyCandidate,
+    vegetation_configuration: &VegetationConfiguration,
+    vegetation_beginning: &V8CoupledOwnedState,
+    persistent_forcing: &V8PersistentForcingReceipt,
+    nitrogen: &dyn NitrogenArbiter,
+    biogeochemistry_beginning: &BiogeochemistryState,
+    duration_s_bits: u64,
+) -> Result<UncommittedCoveredV8OwnerEnvelope, CoveredV8OwnerEnvelopeError> {
+    let potentials = fixed
+        .potential_vegetation_operands
+        .iter()
+        .collect::<Vec<_>>();
+    let mut finals = fixed
+        .legacy_tiles
+        .iter()
+        .filter_map(|tile| match tile {
+            super::multi_tile_runtime::FinalizedRuntimeTile::Covered(value) => {
+                Some(&value.vegetation_operands)
+            }
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    finals.extend(fixed.frozen_litter_tiles.iter().map(|tile| {
+        &tile
+            .fixed_final
+            .complete_physical_candidate
+            .vegetation_operands
+    }));
+    let projected = project_multi_tile_v8_passes_v11(
+        &potentials,
+        &finals,
+        &fixed.vegetation_bindings,
+        &hydrology,
+        vegetation_configuration,
+        vegetation_beginning,
+        duration_s_bits,
+    )?;
+    let persistent = execute_uncommitted_v8_persistent_phase_v11(
+        vegetation_configuration,
+        vegetation_beginning,
+        projected.potential(),
+        projected.capped(),
+        persistent_forcing,
+        nitrogen,
+        duration_s_bits,
+    )?;
+    let vegetation = construct_uncommitted_v8_vegetation_candidate(
+        vegetation_configuration,
+        vegetation_beginning,
+        projected.potential(),
+        projected.capped(),
+        projected.final_state(),
+        &persistent,
+    )?;
+    join_covered_v8_owner_envelope(
+        CoveredV8PhysicalOwner::FrozenLitterV3(hydrology),
+        vegetation,
+        biogeochemistry_beginning,
+        None,
     )
 }
 
@@ -992,8 +1101,13 @@ fn compare_material_receipts(
     vegetation: &UncommittedV8VegetationCandidate,
     biogeochemistry: &BiogeochemistryOwnerCandidate,
 ) -> Result<(), CoveredV8OwnerEnvelopeError> {
-    let proposals = vegetation.material_proposals();
-    let receipts = biogeochemistry.receipts();
+    compare_material_receipt_rows(vegetation.material_proposals(), biogeochemistry.receipts())
+}
+
+fn compare_material_receipt_rows(
+    proposals: &[MaterialTransfer],
+    receipts: &[MaterialReceipt],
+) -> Result<(), CoveredV8OwnerEnvelopeError> {
     if proposals.len() != receipts.len()
         || proposals.iter().zip(receipts).any(|(proposal, receipt)| {
             proposal.transaction_id != receipt.transaction_id
@@ -1015,7 +1129,10 @@ fn compare_material_receipts(
 
 #[cfg(test)]
 mod tests {
-    use openwepp_kernel_contract::{ResourceOwnerId, SoilLayerId, TileId, TransactionId};
+    use openwepp_kernel_contract::{
+        MaterialDonorClass, MaterialReceiverClass, ResourceOwnerId, SoilLayerId, TileId,
+        TransactionId,
+    };
     use openwepp_land_surface_energy::{
         ComponentId, OfeId, RequestingComponent, SourceId, StandGroundWaterAmountBasis,
         WaterSourceType,
@@ -1067,5 +1184,88 @@ mod tests {
                 "duplicate actual hydrology water row"
             ))
         );
+    }
+
+    #[test]
+    fn v50_envelope_transaction_join_refuses_each_owner_substitution() {
+        let exact = TransactionId(42);
+        validate_owner_transaction_identity(exact, exact, exact, exact)
+            .expect("exact V50 envelope transaction join");
+        for (label, envelope, vegetation, physical, biogeochemistry) in [
+            ("envelope", TransactionId(41), exact, exact, exact),
+            ("vegetation", exact, TransactionId(41), exact, exact),
+            ("physical", exact, exact, TransactionId(41), exact),
+            ("biogeochemistry", exact, exact, exact, TransactionId(41)),
+        ] {
+            assert_eq!(
+                validate_owner_transaction_identity(
+                    envelope,
+                    vegetation,
+                    physical,
+                    biogeochemistry,
+                ),
+                Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "heterogeneous transaction identity"
+                )),
+                "{label} transaction substitution must refuse",
+            );
+        }
+    }
+
+    #[test]
+    fn v50_envelope_material_receipt_substitution_refuses() {
+        let owner = ResourceOwnerId::try_new("v50-envelope-owner").expect("owner");
+        let proposal = MaterialTransfer {
+            transaction_id: 42,
+            owner_id: owner.clone(),
+            proposal_id: 7,
+            donor: MaterialDonorClass::Leaf,
+            receiver: MaterialReceiverClass::Metabolic,
+            carbon: 0.0048,
+            nitrogen: 0.0001,
+            dry_matter: 0.01,
+        };
+        let receipt = MaterialReceipt {
+            transaction_id: proposal.transaction_id,
+            owner_id: owner,
+            donor: proposal.donor,
+            receiver: proposal.receiver,
+            proposal_id: proposal.proposal_id,
+            amounts: MaterialPool {
+                carbon: proposal.carbon,
+                nitrogen: proposal.nitrogen,
+                dry_matter: proposal.dry_matter,
+            },
+        };
+        compare_material_receipt_rows(
+            std::slice::from_ref(&proposal),
+            std::slice::from_ref(&receipt),
+        )
+        .expect("exact V50 material receipt join");
+        for (label, mut poison) in [
+            ("transaction", receipt.clone()),
+            ("owner", receipt.clone()),
+            ("proposal", receipt.clone()),
+            ("carbon", receipt.clone()),
+        ] {
+            match label {
+                "transaction" => poison.transaction_id = 41,
+                "owner" => {
+                    poison.owner_id = ResourceOwnerId::try_new("foreign-owner").expect("owner")
+                }
+                "proposal" => poison.proposal_id = 8,
+                _ => poison.amounts.carbon = f64::from_bits(poison.amounts.carbon.to_bits() + 1),
+            }
+            assert_eq!(
+                compare_material_receipt_rows(
+                    std::slice::from_ref(&proposal),
+                    std::slice::from_ref(&poison),
+                ),
+                Err(CoveredV8OwnerEnvelopeError::Identity(
+                    "vegetation proposal/BGC receipt correspondence"
+                )),
+                "{label} material receipt substitution must refuse",
+            );
+        }
     }
 }
